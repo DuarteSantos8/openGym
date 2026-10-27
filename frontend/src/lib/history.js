@@ -762,7 +762,7 @@ function shapeRows(sets, cfg, grid) {
   }
   return [warmup, work]
 }
-export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
+export function workoutVolume(w, { warmups = false, bodyweight = 0, partials = false } = {}) {
   let v = 0
   // Count each completed limb at its own load, including drops. A rest-pause side's r already
   // includes its bursts. Unchecked limbs and warm-ups contribute no volume.
@@ -787,9 +787,9 @@ export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
       if (!warmups && isWarmupRow(s)) return
       if (body && modeForSet(s, e.target) === 'reps') {
         v += body.assisted
-          ? completedVolumeOf(withLoad(s, x => Math.max(0, own - x)))
-          : completedVolumeOf(s) * f + completedVolumeOf(withLoad(s, () => own))
-      } else v += completedVolumeOf(s) * f
+          ? completedVolumeOf(withLoad(s, x => Math.max(0, own - x)), { partials })
+          : completedVolumeOf(s, { partials }) * f + completedVolumeOf(withLoad(s, () => own), { partials })
+      } else v += completedVolumeOf(s, { partials }) * f
     })
   })
   return v
@@ -809,13 +809,17 @@ export { countsBodyweight }
 // work sets only whatever it says, so the switch only changes what screens show and can be
 // flipped back without rewriting a single workout.
 export const countsWarmups = S => S?.volumeWarmups === true
+// Settings → Units → "Count partials in volume", off by default: lengthened partials add load x
+// partial reps x 0.2 (workout-model partialVolumeOf). Like the warm-up switch it only changes what
+// screens show; the saved `vol` never includes them, so it can be flipped back freely.
+export const countsPartials = S => S?.volumePartials === true
 // The volume a screen shows for one session: counted from its sets, so units and the warm-up
 // switch always apply. A legacy record without entries only has its cached number.
 // With "Count body weight in bodyweight lifts" on (#794) the session's body weight goes in too.
 export function sessionVolume(w, S) {
   if (Array.isArray(w?.entries)) {
     const bodyweight = countsBodyweight(S) ? bodyweightFor(w, S) : 0
-    return Math.max(0, Number(workoutVolume(w, { warmups: countsWarmups(S), bodyweight })) || 0)
+    return Math.max(0, Number(workoutVolume(w, { warmups: countsWarmups(S), bodyweight, partials: countsPartials(S) })) || 0)
   }
   const v = Number(w?.vol)
   return Number.isFinite(v) ? Math.max(0, v) : 0

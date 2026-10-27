@@ -120,6 +120,8 @@ export const DEF = {
   volumeWarmups: false,
   // Settings → Units → "Count body weight in bodyweight lifts" (#794): off keeps a pull-up at its belt.
   volumeBodyweight: false,
+  // Settings → Units → "Count partials in volume": off keeps lengthened partials out of volume.
+  volumePartials: false,
   // How the active workout is laid out — 'cards' (one exercise at a time with Prev/Next),
   // 'list' (every exercise stacked and scrollable) or 'compact' (that stack stripped to just
   // names and set rows — no media, tags, notes, last-time or progression line). Purely

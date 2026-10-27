@@ -15,6 +15,7 @@ import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
 import { effortOf } from '../lib/history.js'
+import { PARTIAL_REP_WEIGHT } from '../lib/workout-model.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
@@ -937,6 +938,15 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             { value: 'avg', label: t('Average'), subtitle: t('Every weigh-in of the day counts the same.') },
             { value: 'last', label: t('Last'), subtitle: t('The most recent one of the day.') },
           ]} />}
+        {/* Lengthened partials in the volume: each partial rep counts a fifth of a rep at the set's
+            load (workout-model partialVolumeOf), so 10 x 100 kg and 3 partials reads 1,060 kg.
+            Off by default, so the figure matches other apps; the recovery map counts the extra
+            effort either way. */}
+        <Row icon="arrowDown" iconTint="var(--orange)" title={t('Count partials in volume')}
+          subtitle={t('Each partial counts {0}% of a rep at the set’s weight. Records and progression ignore them either way.', Math.round(PARTIAL_REP_WEIGHT * 100))}>
+          <Switch aria-label={t('Count partials in volume')} checked={S.volumePartials === true}
+            onChange={v => update(s => { s.volumePartials = v })} />
+        </Row>
       </Section>
     </>,
 

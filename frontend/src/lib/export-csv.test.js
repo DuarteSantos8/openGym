@@ -16,7 +16,7 @@ const state = (extra = {}) => ({
         { id: '0025', note: 'Paused, 1 s', sets: [
           { w: 40, r: 10, done: true, phase: 'warmup' },
           { w: 62.5, r: 8, done: true, rpe: 8.5 },
-          { w: 62.5, r: 6, done: true, failure: true, rir: 0 },
+          { w: 62.5, r: 6, done: true, failure: true, rir: 0, lp: 3 },
           { w: 60, r: 8, done: false },
         ] },
         { id: '0334', sg: 'sgA', sets: [{ w: 10, r: 12, done: true }, { w: 10, r: 12, done: true }] },
@@ -94,6 +94,12 @@ describe('the workout CSV', () => {
     expect(curl[3][col('rir')]).toBe('2')
     const ss = body.filter(r => r[col('superset_id')]).map(r => r[col('superset_id')])
     expect(new Set(ss)).toEqual(new Set(['1']))
+  })
+
+  it('writes lengthened partials in their own column, on the set they belong to', () => {
+    const bench = body.filter(r => r[col('exercise_id')] === '0025')
+    expect(bench.map(r => r[col('partials')])).toEqual(['', '', '3'])
+    expect(body.filter(r => r[col('partials')]).length).toBe(1)
   })
 
   it('writes cardio as distance and seconds, a hold as seconds only', () => {
@@ -194,6 +200,16 @@ describe('the round trip: our export through our own importer', () => {
 
   it('drops the formula guard again on the way back in', () => {
     expect(into.workouts[2].name).toBe('=HYPERLINK("x")')
+  })
+
+  it('only reads partials on a failure set, the way the app keeps them', () => {
+    const row = (type, rir, lp) => `2026-03-02,2026-03-02 18:00,,X,,Barbell Bench Press,0025,chest,,1,${type},,60,kg,5,,${rir},,,,${lp},`
+    const sets = rows => parseWorkoutCSV(WORKOUT_COLUMNS.join(',') + '\n' + rows.join('\n'), { unit: 'kg' }).workouts[0].entries[0].sets
+    const [failed, rated, plain, short] = sets([row('failure', '', 4), row('normal', 0, 4), row('normal', '', 4), row('failure', 2, 4)])
+    expect(failed).toMatchObject({ failure: true, lp: 4 })
+    expect(rated).toMatchObject({ rir: 0, lp: 4 })
+    expect('lp' in plain).toBe(false)
+    expect('lp' in short).toBe(false)
   })
 
   it('ignores an id that is a key of Object.prototype and matches by name instead', () => {
