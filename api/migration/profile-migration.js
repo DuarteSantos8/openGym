@@ -60,7 +60,9 @@ const BODYWEIGHT_EQ = new Set(['body weight', 'band', 'resistance band']);
 // (an ab wheel, a stability ball…) is worked in reps when nothing is loaded on it.
 const LOADED_EQ = new Set(['barbell', 'ez barbell', 'olympic barbell', 'trap bar', 'dumbbell', 'kettlebell', 'cable', 'leverage machine', 'smith machine', 'sled machine', 'weighted']);
 const exerciseOf = (ctx, id) => records(ctx.state.customEx).find(c => String(c.id) === id) || ctx.catalogue.get(id) || null;
-const modeOf = (cfg, ex) => (MODES.includes(cfg?.mode) ? cfg.mode : ex?.bp === 'cardio' ? 'cardio' : 'reps');
+// A plan saved as minutes and speed stays cardio even where the catalogue has since moved its
+// exercise out of cardio (jumping jacks, #678): reclassifying must not rewrite a plan.
+const modeOf = (cfg, ex) => (MODES.includes(cfg?.mode) ? cfg.mode : cfg && (cfg.min != null || cfg.speed != null) && cfg.reps == null && cfg.sec == null ? 'cardio' : ex?.bp === 'cardio' ? 'cardio' : 'reps');
 const isBodyweight = (cfg, ex) => (cfg?.bodyweight != null ? !!cfg.bodyweight : BODYWEIGHT_EQ.has(ex?.eq));
 const isAssisted = ex => (typeof ex?.assisted === 'boolean' ? ex.assisted
   : ex?.eq === 'leverage machine' && /\bassist(ed)?\b/i.test(String(ex?.n || '')));
