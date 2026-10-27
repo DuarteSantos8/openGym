@@ -419,9 +419,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   }
   // Everything about this exercise that is not a set you are logging right now lives behind one
   // button. What used to be a row of buttons in the header, a chip under the bar, a strip of
-  // three under the sets and four more below the card is a single list you open once a session,
-  // in groups since v1.3.11: what you change today, what you look up, the exercise's settings,
-  // the order of the session, and Remove on its own at the end.
+  // three under the sets and four more below the card is a single list you open once a session.
+  // Since v1.4.4 it leads with the handful you reach for at the gym (note, swap, warm-up, rest,
+  // history) and folds the rest under one More row (MenuSheet's `more`): the exercise's
+  // settings, the how-to, the order of the session and the progression toggle. Remove stays
+  // last, on its own.
   // The exercise's own rest, or the default it falls back to (lib/supersetFlow.js restSecFor).
   const ownRest = ownExerciseRest(entry.target)
   const restSub = ownRest === 0 ? t('No timer') : ownRest ? fmtRest(ownRest) : t('Default ({0})', fmtRest(S.restSec))
@@ -430,29 +432,31 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     title: exerciseNameFor(ex),
     titleClass: exerciseNameClass(ex),
     sections: [
-      { title: t('Today'), items: [
+      { items: [
+        { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), sub: entry.note || undefined, onClick: () => exerciseNoteSheet(entryIdx) },
         onSwap && { icon: 'swap', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
         // The slot's planned backups (#649), one tap each: the machine is taken, the plan says what next.
         ...(onSwapBackup ? backups.map(b => ({ icon: 'swap', label: t('Swap to {0}', exerciseNameText(b)), sub: t('Planned backup, same sets and reps'), onClick: () => onSwapBackup(b.id), disabled: busy })) : []),
         { icon: 'sunrise', label: t('Add warm-up set'), onClick: onAddWarmup },
-        { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), sub: entry.note || undefined, onClick: () => exerciseNoteSheet(entryIdx) },
-        onNoProg && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
-      ] },
-      { title: t('Look it up'), items: [
-        { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
-        { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) },
-      ] },
-      { title: t('Settings'), items: [
-        onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
         onRest && { icon: 'timer', label: t('Rest timer'), sub: restSub, onClick: onRest },
-        plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
-        routineUpdate && { icon: 'clipboard', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
+        { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
       ] },
-      { title: t('Order and supersets'), items: [
-        onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
-        onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
-        onMoveUp && { icon: 'chevronUp', label: t('Move up'), onClick: onMoveUp, disabled: busy || !canMoveUp },
-        onMoveDown && { icon: 'chevronDown', label: t('Move down'), onClick: onMoveDown, disabled: busy || !canMoveDown },
+      { more: [
+        { title: t('Exercise'), items: [
+          onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
+          plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
+          { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) },
+          routineUpdate && { icon: 'clipboard', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
+        ] },
+        { title: t('Order and supersets'), items: [
+          onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
+          onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
+          onMoveUp && { icon: 'chevronUp', label: t('Move up'), onClick: onMoveUp, disabled: busy || !canMoveUp },
+          onMoveDown && { icon: 'chevronDown', label: t('Move down'), onClick: onMoveDown, disabled: busy || !canMoveDown },
+        ] },
+        { title: t('This session'), items: [
+          onNoProg && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
+        ] },
       ] },
       { items: [
         onRemoveExercise && { icon: 'trash', label: t('Remove exercise'), onClick: onRemoveExercise, danger: true, disabled: busy },
@@ -497,13 +501,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     menuSheet({
       title: warm ? t('Warm-up') : sideTag ? t('Set {0} ({1})', setNumOf(s, i), sideTag) : t('Set {0}', setNumOf(s, i)),
       subtitle: setLabel(entry.id, s, entry.target, speedUnit),
+      // What you do to a set mid-workout comes first (failure, a drop or a burst on top, a copy);
+      // the phase and the set's own rest are rarer and fold under More (v1.4.4). Remove stays last.
       sections: [
-        // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
-        // only, the kind a warm-up is added as; one work set always stays. A per-side set keeps
-        // its two sides either way (#575), so it goes back and forth like any other.
         { items: [
-          !warm && mode === 'reps' && canBeWarmup(s) && entry.sets.some((x, j) => j !== i && !isWarmupRow(x)) && { icon: 'sunrise', label: t('Make it a warm-up set'), onClick: () => setPhaseAt(i, true) },
-          warm && mode === 'reps' && { icon: 'dumbbell', label: t('Count it as a working set'), onClick: () => setPhaseAt(i, false) },
           // Taken to failure: a toggle with its check, like the menu's other on/off rows. It counts
           // as RIR 0 wherever effort is read, unless a rating was logged on the set. A timed
           // per-side pair is one set, so both halves get it.
@@ -512,15 +513,20 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           // whatever the profile logs, since reps in reserve mean nothing on a treadmill. Stored as
           // `rpe` on the set, which the fatigue model already reads (recovery.js via rirOf).
           !warm && cardio && { icon: 'gauge', label: t('How hard it felt'), sub: s.rpe != null ? t(EFFORT.rpe.hd) + ' ' + fmtNum(s.rpe) : t('Not rated yet'), onClick: () => effortPickerSheet('rpe', s.rpe ?? null, nv => onField(i, 'rpe', nv), { cardio: true }) },
-          // Just this set's rest, this session (#609): a long one before the top set, none after a light one.
-          !editing && { icon: 'timer', label: t('Rest after this set'), sub: ownRestHere == null ? t('Default ({0})', fmtRest(setRestDefault(i))) : ownRestHere === 0 ? t('No timer') : fmtRest(ownRestHere), onClick: () => openSetRest(i) },
-        ] },
-        { title: t('Add to this set'), items: [
           !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) },
           !warm && mode === 'reps' && !isDropSet(s) && { icon: 'bolt', label: t('Rest-pause burst'), sub: t('+ Burst'), onClick: () => addBurstRow(i) },
-        ] },
-        { items: [
           onCopySetAt && { icon: 'copy', label: t('Copy this set'), onClick: () => onCopySetAt(i) },
+        ] },
+        { more: [{ items: [
+          // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
+          // only, the kind a warm-up is added as; one work set always stays. A per-side set keeps
+          // its two sides either way (#575), so it goes back and forth like any other.
+          !warm && mode === 'reps' && canBeWarmup(s) && entry.sets.some((x, j) => j !== i && !isWarmupRow(x)) && { icon: 'sunrise', label: t('Make it a warm-up set'), onClick: () => setPhaseAt(i, true) },
+          warm && mode === 'reps' && { icon: 'dumbbell', label: t('Count it as a working set'), onClick: () => setPhaseAt(i, false) },
+          // Just this set's rest, this session (#609): a long one before the top set, none after a light one.
+          !editing && { icon: 'timer', label: t('Rest after this set'), sub: ownRestHere == null ? t('Default ({0})', fmtRest(setRestDefault(i))) : ownRestHere === 0 ? t('No timer') : fmtRest(ownRestHere), onClick: () => openSetRest(i) },
+        ] }] },
+        { items: [
           { icon: 'trash', label: t('Remove this set'), danger: true, disabled: !editing && entry.sets.length <= setSpanAt(entry.sets, i)[1], onClick: () => onRemoveSetAt(i) },
         ] },
       ],
@@ -1586,8 +1592,10 @@ function ActiveWorkout() {
     onConfirm: discardNow,
   })
   // The header ⋯, in groups: the settings you change at the gym first (their own sheet, the same
-  // values as Settings), then what to add and what to change about this workout. Nothing in it
-  // throws the session away: that is the Finish sheet's (#751).
+  // values as Settings), then what you do to this workout most: add an exercise, write the
+  // session note, switch the layout. Adding a whole routine, renaming and keeping the session out
+  // of progression are once-in-a-while and fold under More (v1.4.4). Nothing in it throws the
+  // session away: that is the Finish sheet's (#751).
   // Layout here stays this session's own (s.active.workoutView); the settings sheet's Layout is
   // the saved one.
   const openViewMenu = () => menuSheet({
@@ -1597,17 +1605,17 @@ function ActiveWorkout() {
           sub: [S.restSec > 0 ? t('{0} rest', fmtRest(S.restSec)) : t('No rest timer'), S.sound ? t('Sound') : t('Silent')].join(' · '),
           onClick: workoutSettingsSheet },
       ] },
-      { title: t('Add'), items: [
-        { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
-        !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
-      ] },
-      { title: t('This workout'), items: [
+      { items: [
         A.backfill && A.entries.length > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), onClick: markAllDone },
-        { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
-        { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
+        { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
         { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
-        noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
+        { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
       ] },
+      { more: [{ items: [
+        !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
+        { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
+        noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
+      ] }] },
     ],
   })
   // An exercise's own rest, from its ⋯ menu: the default, no timer, or a time of its own, as on

@@ -2801,7 +2801,6 @@ export default {
   "Its own page": "Página própria",
   "It’s the first row of the list. Tap it.": "É a primeira linha da lista. Toca nela.",
   "Log a past workout with its own date and time. It counts like any other.": "Regista um treino passado com data e hora próprias. Conta como qualquer outro.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "Registaste no dia errado? Muda-o aqui. A duração tem o seu próprio botão mais abaixo.",
   "Measurements and photos": "Medidas e fotos",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "Falta algum? Cria-o. Funciona como qualquer outro: rotinas, treinos, recordes, mapa do corpo, cópias e sincronização. Nada é criado até tocares em Criar exercício.",
   "Moving in?": "Vens de outra app?",
@@ -2826,7 +2825,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "Dia de Empurrar, Pernas, Segunda Sofrida. Toca no nome e escreve o teu.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Reabre-o: séries, pesos, repetições, exercícios. Nada muda até tocares em Guardar.",
   "Restore a backup": "Restaurar uma cópia",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Reescreve a nota da sessão quando quiseres. Eliminar treino espera lá bem no fundo.",
   "Routine name": "Nome da rotina",
   "Routines are made in Plan. Tap it.": "As rotinas fazem-se no Plano. Toca nele.",
   "Save plan": "Guardar plano",
@@ -2879,4 +2877,7 @@ export default {
   "Your real data is exactly as you left it.": "Os teus dados reais estão exatamente como os deixaste.",
   "Your routines live behind this tab. Tap Plan.": "As tuas rotinas vivem atrás deste separador. Toca em Plano.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "As tuas séries, pesagens e medidas em CSV. O nosso importador também as lê.",
+  "Date, duration, share, export, delete": "Data, duração, partilhar, exportar, eliminar",
+  "Rewrite the session note whenever.": "Reescreve a nota da sessão quando quiseres.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Dia errado ou esqueceste-te de terminar a tempo? Corrige aqui dentro. Partilhar, exportar e Eliminar treino também moram aqui.",
 }

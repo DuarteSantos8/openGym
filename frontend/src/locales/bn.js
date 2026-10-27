@@ -2880,7 +2880,6 @@ export default {
   "Its own page": "এর নিজের পাতা",
   "It’s the first row of the list. Tap it.": "তালিকার প্রথম সারিতেই আছে। ট্যাপ করুন।",
   "Log a past workout with its own date and time. It counts like any other.": "পুরোনো ওয়ার্কআউট তার নিজের তারিখ আর সময় দিয়ে লগ করুন। এটা বাকিগুলোর মতোই গোনা হয়।",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "ভুল দিনে লগ করেছেন? এখানে সরান। সময়কালের নিজের বোতাম নিচে আছে।",
   "Measurements and photos": "মাপ আর ছবি",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "কোনোটা নেই? বানিয়ে ফেলুন। এটা বাকিগুলোর মতোই চলে: রুটিন, ওয়ার্কআউট, রেকর্ড, বডি ম্যাপ, ব্যাকআপ আর সিঙ্ক। \"ব্যায়াম তৈরি করুন\" ট্যাপ না করা পর্যন্ত কিছুই তৈরি হয় না।",
   "Moving in?": "নতুন করে আসছেন?",
@@ -2905,7 +2904,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "পুশ ডে, লেগস, সোমবারের যন্ত্রণা। নামে ট্যাপ করে নিজেরটা লিখুন।",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "আবার খোলে: সেট, ওজন, রেপ, ব্যায়াম। \"সেভ করুন\" ট্যাপ না করা পর্যন্ত কিছুই বদলায় না।",
   "Restore a backup": "ব্যাকআপ ফিরিয়ে আনুন",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "সেশন নোট যখন খুশি নতুন করে লিখুন। \"ওয়ার্কআউট মুছুন\" একদম নিচে অপেক্ষা করছে।",
   "Routine name": "রুটিনের নাম",
   "Routines are made in Plan. Tap it.": "রুটিন বানানো হয় \"প্ল্যান\"-এ। ট্যাপ করুন।",
   "Save plan": "প্ল্যান সেভ করুন",
@@ -2958,4 +2956,7 @@ export default {
   "Your real data is exactly as you left it.": "আপনার আসল ডেটা ঠিক যেমন রেখে গিয়েছিলেন তেমনই আছে।",
   "Your routines live behind this tab. Tap Plan.": "আপনার রুটিন এই ট্যাবের পেছনে। \"প্ল্যান\"-এ ট্যাপ করুন।",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "আপনার সেট, ওজন মাপা আর মাপ CSV হিসেবে। আমাদের ইমপোর্টারও এটা আবার পড়তে পারে।",
+  "Date, duration, share, export, delete": "তারিখ, সময়কাল, শেয়ার, এক্সপোর্ট, মুছুন",
+  "Rewrite the session note whenever.": "সেশন নোট যখন খুশি নতুন করে লিখুন।",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "ভুল দিন, নাকি সময়মতো শেষ করতে ভুলে গেছেন? এখানেই ঠিক করুন। শেয়ার, এক্সপোর্ট আর \"ওয়ার্কআউট মুছুন\"ও এখানে।",
 }

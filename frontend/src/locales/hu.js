@@ -2804,7 +2804,6 @@ export default {
   "Its own page": "Saját oldal",
   "It’s the first row of the list. Tap it.": "Ez a lista első sora. Koppints rá.",
   "Log a past workout with its own date and time. It counts like any other.": "Rögzíts egy korábbi edzést saját dátummal és idővel. Ugyanúgy számít, mint bármelyik másik.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "Rossz napra rögzítetted? Itt áthelyezheted. Az időtartamnak lent saját gombja van.",
   "Measurements and photos": "Méretek és fotók",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "Hiányzik egy? Csináld meg. Úgy működik, mint bármelyik másik: rutinok, edzések, rekordok, testtérkép, mentések és szinkron. Semmi nem jön létre, amíg nem koppintasz a Gyakorlat létrehozása gombra.",
   "Moving in?": "Költözöl?",
@@ -2829,7 +2828,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "Nyomós nap, Láb, Hétfői szenvedés. Koppints a névre, és írd be a sajátodat.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Újra megnyitja: sorozatok, súlyok, ismétlések, gyakorlatok. Semmi nem változik, amíg nem koppintasz a Mentésre.",
   "Restore a backup": "Mentés visszaállítása",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Az edzés jegyzetét bármikor átírhatod. Az Edzés törlése a legalján vár.",
   "Routine name": "Rutin neve",
   "Routines are made in Plan. Tap it.": "A rutinok a Tervben készülnek. Koppints rá.",
   "Save plan": "Terv mentése",
@@ -2882,4 +2880,7 @@ export default {
   "Your real data is exactly as you left it.": "A valódi adataid pontosan úgy vannak, ahogy hagytad őket.",
   "Your routines live behind this tab. Tap Plan.": "A rutinjaid e mögött a fül mögött laknak. Koppints a Tervre.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "A sorozataid, méréseid és méreteid CSV-ben. Az importálónk vissza is olvassa.",
+  "Date, duration, share, export, delete": "Dátum, időtartam, megosztás, export, törlés",
+  "Rewrite the session note whenever.": "Az edzés jegyzetét bármikor átírhatod.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Rossz nap, vagy elfelejtetted időben befejezni? Itt kijavíthatod. A megosztás, az export és az Edzés törlése is itt lakik.",
 }

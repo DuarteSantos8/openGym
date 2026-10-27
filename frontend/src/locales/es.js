@@ -2801,7 +2801,6 @@ export default {
   "Its own page": "Su propia página",
   "It’s the first row of the list. Tap it.": "Es la primera fila de la lista. Tócala.",
   "Log a past workout with its own date and time. It counts like any other.": "Registra un entrenamiento pasado con su propia fecha y hora. Cuenta como cualquier otro.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "¿Lo registraste el día equivocado? Muévelo aquí. La duración tiene su propio botón más abajo.",
   "Measurements and photos": "Medidas y fotos",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "¿Te falta uno? Créalo. Funciona como cualquier otro: rutinas, entrenamientos, récords, el mapa corporal, copias y sincronización. No se crea nada hasta que toques Crear ejercicio.",
   "Moving in?": "¿Te mudas?",
@@ -2826,7 +2825,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "Día de empuje, Piernas, Lunes de sufrimiento. Toca el nombre y escribe el tuyo.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Lo vuelve a abrir: series, pesos, repeticiones, ejercicios. Nada cambia hasta que toques Guardar.",
   "Restore a backup": "Restaurar una copia",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Reescribe la nota de la sesión cuando quieras. Eliminar entrenamiento espera al final del todo.",
   "Routine name": "Nombre de la rutina",
   "Routines are made in Plan. Tap it.": "Las rutinas se crean en Plan. Tócalo.",
   "Save plan": "Guardar plan",
@@ -2879,4 +2877,7 @@ export default {
   "Your real data is exactly as you left it.": "Tus datos reales están tal y como los dejaste.",
   "Your routines live behind this tab. Tap Plan.": "Tus rutinas viven tras esta pestaña. Toca Plan.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Tus series, pesajes y medidas en CSV. Nuestro importador también los lee.",
+  "Date, duration, share, export, delete": "Fecha, duración, compartir, exportar, eliminar",
+  "Rewrite the session note whenever.": "Reescribe la nota de la sesión cuando quieras.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "¿Día equivocado o se te olvidó terminar a tiempo? Arréglalo aquí dentro. Compartir, exportar y Eliminar entrenamiento también viven aquí.",
 }

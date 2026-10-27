@@ -2794,7 +2794,6 @@ export default {
   "Its own page": "它的專屬頁面",
   "It’s the first row of the list. Tap it.": "就是清單的第一行。點它。",
   "Log a past workout with its own date and time. It counts like any other.": "補記一次過去的訓練，帶上自己的日期和時間。它跟其他訓練一樣算數。",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "記錯日子了？在這裡挪過去。時長在下面有自己的按鈕。",
   "Measurements and photos": "身體測量與照片",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "少了哪個？自己做一個。它跟其他動作一樣好用：課表、訓練、紀錄、身體地圖、備份和同步。點「建立動作」之前什麼都不會建立。",
   "Moving in?": "搬家過來？",
@@ -2819,7 +2818,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "推日、練腿、週一受難日。點名字，寫你自己的。",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "重新打開它：組數、重量、次數、動作。點「儲存」之前什麼都不會變。",
   "Restore a backup": "還原備份",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "訓練筆記隨時重寫。「刪除訓練」在最底下等著。",
   "Routine name": "課表名稱",
   "Routines are made in Plan. Tap it.": "課表在「計畫」裡建立。點它。",
   "Save plan": "儲存計畫",
@@ -2872,4 +2870,7 @@ export default {
   "Your real data is exactly as you left it.": "你的真實資料原封不動。",
   "Your routines live behind this tab. Tap Plan.": "你的課表都在這個分頁後面。點「計畫」。",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "你的組數、體重紀錄和測量資料，匯出成 CSV。我們的匯入工具也讀得回來。",
+  "Date, duration, share, export, delete": "日期、時長、分享、匯出、刪除",
+  "Rewrite the session note whenever.": "訓練筆記隨時重寫。",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "記錯日子，或忘了準時結束？在這裡改。分享、匯出和「刪除訓練」也都在這裡。",
 }

@@ -146,24 +146,45 @@ export function askAddDeviceData(extras) {
 // A title is shown as written: most are sentences ("Convert to lb?", "Set 2"), which a default
 // title-casing turned into "Convert To Lb?". An exercise name passes exerciseNameClass as
 // titleClass, which title-cases the lower-case packs and leaves a cased one alone.
+// A section can also be `{ more: [sections], label }`: the rarely used part of a menu, folded
+// into one "More" row (v1.4.4, "the ⋯ menu has a lot lot lot"). Its sub names what is inside,
+// so nothing is hidden without a hint; a tap opens the groups right there, in place of the row,
+// and moves focus to the first of them. A fold with a single item left in it is not worth a
+// tap and shows that item as is; with none it is left out like any empty group.
+const menuGroups = list => (list || [])
+  .map(g => g.more ? g : { title: g.title, items: (g.items || []).filter(Boolean) })
+  .filter(g => g.more || g.items.length)
 function MenuSheet({ title, titleClass = '', subtitle, items, sections, close }) {
-  const groups = (sections || [{ items }])
-    .map(g => ({ title: g.title, items: (g.items || []).filter(Boolean) }))
-    .filter(g => g.items.length)
+  const [open, setOpen] = useState(false)
+  const firstMore = useRef(null)
+  useEffect(() => { if (open) firstMore.current?.focus() }, [open])
+  const groups = []
+  for (const g of menuGroups(sections || [{ items }])) {
+    if (!g.more) { groups.push(g); continue }
+    const inner = menuGroups(g.more)
+    const all = inner.flatMap(x => x.items)
+    if (!all.length) continue
+    if (all.length === 1) { groups.push({ items: all }); continue }
+    if (open) { inner.forEach((x, i) => groups.push({ ...x, first: i === 0 })); continue }
+    groups.push({ items: [{ icon: 'more', label: g.label || t('More'), sub: all.map(x => x.label).join(', '),
+      fold: true, expanded: false, onClick: () => setOpen(true) }] })
+  }
   return <>
     {title && <h3 className={titleClass || undefined} style={{ marginBottom: subtitle ? 2 : 10 }}>{title}</h3>}
     {subtitle && <div className="muted small" style={{ marginBottom: 10 }}>{subtitle}</div>}
     {groups.map((g, gi) => <div key={gi} className={'menu-group' + (sections ? ' grouped' : '')}>
       {g.title && <div className="menu-sec">{g.title}</div>}
       <div className="list menu-list">
-        {g.items.map((it, i) => <div key={i}
-          className={'item menu-item' + (it.danger ? ' danger' : '') + (it.disabled ? ' disabled' : '') + (it.accent ? ' accent' : '')}
+        {g.items.map((it, i) => <div key={i} ref={g.first && i === 0 ? firstMore : undefined}
+          className={'item menu-item' + (it.danger ? ' danger' : '') + (it.disabled ? ' disabled' : '') + (it.accent ? ' accent' : '') + (it.fold ? ' menu-more' : '')}
           aria-disabled={it.disabled || undefined}
-          {...tappable(it.disabled ? null : () => { close(); it.onClick && it.onClick() })}>
+          aria-expanded={it.fold ? false : undefined}
+          {...tappable(it.disabled ? null : it.fold ? it.onClick : () => { close(); it.onClick && it.onClick() })}>
           {it.icon && <span className="lrow-i"><Icon name={it.icon} /></span>}
           <div className="grow"><div className="tt">{it.label}</div>{it.sub && <div className="ss">{it.sub}</div>}</div>
           {it.on != null && <span className={'menu-on' + (it.on ? ' is-on' : '')}><Icon name="check" /></span>}
           {it.chevron && <Icon name="chevronRight" className="menu-chev" />}
+          {it.fold && <Icon name="chevronDown" className="menu-chev" />}
         </div>)}
       </div>
     </div>)}
@@ -2967,6 +2988,53 @@ function WorkoutDetail({ w, close }) {
   // order, with each section's supersets paired inside it (sessionSections, which "Copy as text"
   // reads the workout through too). A legacy single-routine workout (one routineIds, or no rid
   // anywhere) renders flat.
+  // The note lives in a textarea that only writes on blur, and moving the workout re-keys a
+  // legacy record — so whatever leaves this sheet flushes it first and stops the unmount hook
+  // writing it a second time.
+  const flushNote = () => {
+    saveNote()
+    initial.current = latest.current.trim().slice(0, NOTE_MAX)
+  }
+  const saveAsRoutine = () => confirmSheet({
+    title: t('Save as routine?'),
+    message: t('Create an independent routine from these exercise targets. Your workout history is kept.'),
+    confirmText: t('Save'),
+    onConfirm: () => {
+      let id
+      try { update(s => { id = saveSessionAsRoutine(s, w, w.name) }) }
+      catch (e) { toast(t(e.message)); return }
+      close()
+      nav('/plan/r/' + id)
+    }
+  })
+  // Matched the way the edits above are, not by id: a workout from before ids has none, and
+  // filtering on `x.id !== undefined` took every other one of them with it.
+  const deleteWorkout = () => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })
+  // The once-in-a-while things, in one menu over this sheet: when it happened, keeping it as a
+  // routine, getting it out of the app (on paper: the browser's print dialog or the phone's
+  // print sheet; .fit for Garmin Connect), and Delete on its own at the end.
+  const openOptions = () => {
+    flushNote()
+    menuSheet({
+      title: w.name,
+      sections: [
+        { items: [
+          { icon: 'calendar', label: t('Change date & time'), onClick: () => workoutDateSheet(w, close) },
+          { icon: 'stopwatch', label: t('Change duration'), onClick: () => workoutDurationSheet(w, close) },
+          { icon: 'plus', label: t('Save as routine'), onClick: saveAsRoutine },
+        ] },
+        { title: t('Share'), items: [
+          { icon: 'share', label: t('Share as image'), onClick: shareAsImage },
+          { icon: 'copy', label: t('Copy as text'), onClick: copyAsText },
+          { icon: 'note', label: t('Save as PDF'), onClick: saveAsPdf },
+          { icon: 'download', label: t('Export as .fit file'), onClick: exportFit },
+        ] },
+        { items: [
+          { icon: 'trash', label: t('Delete workout'), danger: true, onClick: deleteWorkout },
+        ] },
+      ],
+    })
+  }
   const groups = sessionSections(w.entries)
   const grouped = groups.length > 1 || (groups[0] && groups[0].rid && (w.routineIds || []).length > 1)
   return <>
@@ -2998,56 +3066,28 @@ function WorkoutDetail({ w, close }) {
     {/* The editor starts from the record as it is, so a note typed here goes in first — the same
         flush the date row does, and the unmount hook then has nothing left to write over it. */}
     <Button icon="pencil" data-tour="wd-edit" disabled={!!st.active} onClick={() => {
-      saveNote()
-      initial.current = latest.current.trim().slice(0, NOTE_MAX)
+      flushNote()
       try { update(state => { editCompletedSession(state, w) }); closeThenNav(close, '/workout') }
       catch (error) { toast(t(error.message)) }
     }}>{t('Edit workout')}</Button>
     <div style={{ height: 8 }} />
     {/* The same exercises again, today, as a new session (#58): the rows read what was logged
         in this workout. The record itself stays as it is. */}
-    <Button icon="reset" disabled={!!st.active} style={{ marginBottom: 8 }} onClick={() => {
-      saveNote()
-      initial.current = latest.current.trim().slice(0, NOTE_MAX)
+    <Button icon="reset" disabled={!!st.active} onClick={() => {
+      flushNote()
       repeatWorkout(w, close)
     }}>{t('Repeat today')}</Button>
-    {/* The note lives in a textarea that only writes on blur, and moving the workout re-keys a
-        legacy record — so flush it first and stop the unmount hook writing it a second time. */}
-    <Button icon="calendar" data-tour="wd-date" style={{ marginBottom: 8 }} onClick={() => {
-      saveNote()
-      initial.current = latest.current.trim().slice(0, NOTE_MAX)
-      workoutDateSheet(w, close)
-    }}>{t('Change date & time')}</Button>
-    <Button icon="stopwatch" style={{ marginBottom: 8 }} onClick={() => {
-      saveNote()
-      initial.current = latest.current.trim().slice(0, NOTE_MAX)
-      workoutDurationSheet(w, close)
-    }}>{t('Change duration')}</Button>
-    <Button icon="plus" onClick={() => confirmSheet({
-      title: t('Save as routine?'),
-      message: t('Create an independent routine from these exercise targets. Your workout history is kept.'),
-      confirmText: t('Save'),
-      onConfirm: () => {
-        let id
-        try { update(s => { id = saveSessionAsRoutine(s, w, w.name) }) }
-        catch (e) { toast(t(e.message)); return }
-        close()
-        nav('/plan/r/' + id)
-      }
-    })}>{t('Save as routine')}</Button>
-    <div style={{ height: 8 }} />
-    <Button icon="copy" onClick={copyAsText}>{t('Copy as text')}</Button>
-    <div style={{ height: 8 }} />
-    <Button icon="share" onClick={shareAsImage}>{t('Share as image')}</Button>
-    <div style={{ height: 8 }} />
-    {/* On paper: every exercise and every set, the browser's print dialog or the phone's print sheet. */}
-    <Button icon="note" onClick={saveAsPdf}>{t('Save as PDF')}</Button>
-    <div style={{ height: 8 }} />
-    <Button icon="download" onClick={exportFit}>{t('Export as .fit file')}</Button>
     <div style={{ height: 10 }} />
-    {/* Matched the way the edits above are, not by id: a workout from before ids has none, and
-        filtering on `x.id !== undefined` took every other one of them with it. */}
-    <Button variant="danger" onClick={() => confirmSheet({ title: t('Delete workout?'), message: t('This removes it from your history for good.') + mediaGoesToo(S().workouts.find(x => sameWorkout(x, w))), confirmText: t('Delete'), danger: true, onConfirm: () => { update(s => { s.workouts = s.workouts.filter(x => !sameWorkout(x, w)) }); close(); toast(t('Workout deleted')) } })}>{t('Delete workout')}</Button>
+    {/* Everything else a past workout can do, once in a while each, behind one row (v1.4.4): it
+        used to be eight more buttons down the sheet. */}
+    <div className="list menu-list">
+      <div className="item menu-item menu-more" data-tour="wd-options" aria-haspopup="dialog" {...tappable(openOptions)}>
+        <span className="lrow-i"><Icon name="more" /></span>
+        <div className="grow"><div className="tt">{t('Workout options')}</div>
+          <div className="ss">{t('Date, duration, share, export, delete')}</div></div>
+        <Icon name="chevronRight" className="menu-chev" />
+      </div>
+    </div>
   </>
 }
 // "Share as image" (#453): the card lib/workout-card.js lays out, painted in the theme and accent

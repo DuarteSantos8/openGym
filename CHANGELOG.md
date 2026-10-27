@@ -6,6 +6,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Tidier menus** (thanks seals). An exercise's ⋯ now opens with the five things you reach for
+mid-workout: note, swap, warm-up set, rest and history. Settings, plate loading, the how-to, moving
+and supersets wait under one More row, Remove is still last. The set menu and the workout's ⋯ got
+the same trim. A past workout in History shows the workout, the note, Edit and Repeat today; date
+and time, duration, save as routine, sharing, export and Delete sit behind one Workout options row
+instead of a long column of buttons.
+
 **A 1-minute tour, and four tutorials.** Right after the first setup, openGym asks if you want a quick
 look around. Say yes and it points at the real thing, screen by screen: today's session, week or
 rotation, the Library, a practice workout (tick a set, meet the rest timer, swipe, the ⋯ menu, Finish),

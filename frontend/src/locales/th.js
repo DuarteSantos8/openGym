@@ -2812,7 +2812,6 @@ export default {
   "Its own page": "หน้าของมันเอง",
   "It’s the first row of the list. Tap it.": "อยู่แถวแรกของรายการ แตะเลย",
   "Log a past workout with its own date and time. It counts like any other.": "บันทึกการออกกำลังกายย้อนหลังพร้อมวันที่และเวลาของมันเอง นับเหมือนครั้งอื่นทุกอย่าง",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "บันทึกผิดวัน? ย้ายได้ตรงนี้ ระยะเวลามีปุ่มของมันเองอยู่ด้านล่าง",
   "Measurements and photos": "การวัดสัดส่วนและรูป",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "ขาดท่าไหน? สร้างเองเลย ใช้ได้เหมือนท่าอื่นทุกอย่าง: รูทีน การออกกำลังกาย สถิติสูงสุด แผนที่ร่างกาย การสำรอง และการซิงก์ จะไม่มีอะไรถูกสร้างจนกว่าคุณจะแตะ “สร้างท่าออกกำลังกาย”",
   "Moving in?": "ย้ายบ้านมา?",
@@ -2837,7 +2836,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "วันดัน วันขา วันจันทร์ทรมาน แตะที่ชื่อแล้วพิมพ์ของคุณเอง",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "เปิดขึ้นมาใหม่: เซ็ต น้ำหนัก จำนวนครั้ง ท่า จะไม่มีอะไรเปลี่ยนจนกว่าคุณจะแตะ “บันทึก”",
   "Restore a backup": "กู้คืนข้อมูลสำรอง",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "เขียนโน้ตของรอบใหม่ได้ทุกเมื่อ “ลบการออกกำลังกาย” รออยู่ล่างสุด",
   "Routine name": "ชื่อรูทีน",
   "Routines are made in Plan. Tap it.": "รูทีนสร้างใน “แผน” แตะเลย",
   "Save plan": "บันทึกแผน",
@@ -2890,4 +2888,7 @@ export default {
   "Your real data is exactly as you left it.": "ข้อมูลจริงของคุณยังอยู่ครบเหมือนเดิมทุกอย่าง",
   "Your routines live behind this tab. Tap Plan.": "รูทีนของคุณอยู่หลังแท็บนี้ แตะ “แผน”",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "เซ็ต บันทึกน้ำหนัก และการวัดสัดส่วนของคุณเป็น CSV ตัวนำเข้าของเราก็อ่านกลับได้ด้วย",
+  "Date, duration, share, export, delete": "วันที่ ระยะเวลา แชร์ ส่งออก ลบ",
+  "Rewrite the session note whenever.": "เขียนโน้ตของรอบใหม่ได้ทุกเมื่อ",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "ผิดวันหรือลืมกดจบตรงเวลา? แก้ได้ในนี้ การแชร์ การส่งออก และ “ลบการออกกำลังกาย” ก็อยู่ในนี้",
 }

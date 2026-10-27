@@ -2805,7 +2805,6 @@ export default {
   "Its own page": "Своя страница",
   "It’s the first row of the list. Tap it.": "Это первая строка списка. Нажмите.",
   "Log a past workout with its own date and time. It counts like any other.": "Запишите прошлую тренировку с её датой и временем. Она считается как любая другая.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "Записали не в тот день? Перенесите здесь. Для длительности есть своя кнопка ниже.",
   "Measurements and photos": "Замеры и фото",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "Чего-то не хватает? Создайте. Работает как любое другое: программы, тренировки, рекорды, карта тела, копии и синхронизация. Ничего не создаётся, пока вы не нажмёте «Создать упражнение».",
   "Moving in?": "Переезжаете?",
@@ -2830,7 +2829,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "День жима, Ноги, Понедельничная каторга. Нажмите на название и впишите своё.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Открывает её заново: подходы, веса, повторы, упражнения. Ничего не меняется, пока вы не нажмёте «Сохранить».",
   "Restore a backup": "Восстановить копию",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Заметку к тренировке можно переписать когда угодно. «Удалить тренировку» ждёт в самом низу.",
   "Routine name": "Название программы",
   "Routines are made in Plan. Tap it.": "Программы создаются в «Плане». Нажмите.",
   "Save plan": "Сохранить план",
@@ -2883,4 +2881,7 @@ export default {
   "Your real data is exactly as you left it.": "Ваши настоящие данные ровно такие, какими вы их оставили.",
   "Your routines live behind this tab. Tap Plan.": "Ваши программы за этой вкладкой. Нажмите «План».",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Ваши подходы, взвешивания и замеры в CSV. Наш импорт тоже умеет их читать.",
+  "Date, duration, share, export, delete": "Дата, длительность, поделиться, экспорт, удаление",
+  "Rewrite the session note whenever.": "Заметку к тренировке можно переписать когда угодно.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Не тот день или забыли вовремя закончить? Исправьте здесь. Поделиться, экспорт и «Удалить тренировку» тоже тут.",
 }
