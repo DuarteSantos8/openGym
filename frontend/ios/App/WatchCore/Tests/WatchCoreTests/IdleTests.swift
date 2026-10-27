@@ -46,4 +46,17 @@ final class IdleTests: XCTestCase {
         XCTAssertEqual(Idle.since(lastSet: 10 * min, seen: 2 * min, activity: nil, snooze: 40 * min), 40 * min, "keep going")
         XCTAssertEqual(Idle.since(lastSet: 10 * min, seen: nil, activity: nil, snooze: nil), 10 * min)
     }
+
+    func testTheCardCountsWholeMinutes() {
+        XCTAssertEqual(Idle.minutes(since: 0, now: Idle.askAfter), 20)
+        XCTAssertEqual(Idle.minutes(since: 0, now: Idle.endAfter - 1), 44, "a minute short of the end rounds down")
+        XCTAssertEqual(Idle.minutes(since: 0, now: 20 * min + 59_999), 20)
+        XCTAssertEqual(Idle.minutes(since: 10 * min, now: 5 * min), 0, "a since after now is zero, never negative")
+    }
+
+    func testATickAHairEarlyIsStillItsMinute() {
+        let since = 1_761_500_000_123.4
+        XCTAssertEqual(Idle.minutes(since: since, now: since + 23 * min - 0.0004), 23)
+        XCTAssertEqual(Idle.minutes(since: since, now: since + 23 * min - 2), 22)
+    }
 }

@@ -449,6 +449,9 @@ enum Idle: Equatable {
         let idle = now - since
         return idle >= endAfter ? .end : idle >= askAfter ? .ask : .active
     }
+
+    /// Whole minutes since `since` (ms), for the card: rounded down, never negative. A timeline's date a hair early (floating point) still counts as its minute.
+    static func minutes(since: Double, now: Double) -> Int { max(0, Int((now - since).rounded() / 60_000)) }
 }
 
 /*

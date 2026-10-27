@@ -106,7 +106,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var restEndsAt: Date?
     @Published private(set) var restStartedAt: Date?
     /// "All done?": the workout has had no set logged for 20 minutes (WatchCore's Idle).
-    @Published var askDone = false
+    @Published private(set) var askDone = false
+    /// When the last set was logged (the start if none), which "All done?" counts from.
+    @Published private(set) var idleSince: Date?
     /// A set picked by hand in an exercise (entry index → set index); otherwise the first not done.
     @Published private var picked: [Int: Int] = [:]
 
@@ -270,7 +272,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         loadTargets()
     }
 
-    /// The workout is at its end (last set done, or "All done?"): the Overview comes up with Finish in view. The Overview clears it.
+    /// The workout is at its end (last set done, or the "All done?" Finish workout): the Overview comes up with Finish in view. The Overview clears it.
     @Published var finishWanted = false
 
     func showFinish() {
@@ -712,8 +714,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     private func checkIdle() {
-        // A rest or a hold running is a workout going on, however long it takes.
-        guard let w = workout, holdEndsAt == nil, restEndsAt == nil else { return }
+        // A rest or a hold running is a workout going on, however long it takes (and takes the card down).
+        guard let w = workout, holdEndsAt == nil, restEndsAt == nil else { askDone = false; return }
         let now = Date().timeIntervalSince1970 * 1000
         let ms = { (d: Date?) in d.map { $0.timeIntervalSince1970 * 1000 } }
         let seen = ms(workoutSeenAt)
@@ -722,9 +724,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // "keep going" since: counted from then, never ended earlier.
         let since = Idle.since(lastSet: last, seen: seen, activity: ms(activityAt), snooze: ms(idleSnooze))
         switch Idle.state(since: since, now: now) {
-        case .active: break
+        case .active: askDone = false      // a set logged on the phone while the card is up
         case .ask:
-            if !askDone { askDone = true; Haptics.ask() }
+            if !askDone {
+                idleSince = Date(timeIntervalSince1970: last / 1000)
+                touchLock.lock(at: Date())        // arrival the lifter did not cause
+                askDone = true
+                Haptics.ask()
+            }
         case .end:
             askDone = false
             finish(at: Date(timeIntervalSince1970: last / 1000))
@@ -736,6 +743,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         idleSnooze = Date()
         askDone = false
     }
+
+    /// "Finish workout" on "All done?": the Overview with Finish in view, on the exercise the lifter was on. Nothing ends until Finish is held there.
+    func finishFromAsk() { keepGoing(); finishWanted = true; touchLock.lock(at: Date()) }
+    func lockTouch() { touchLock.lock(at: Date()) }
 
     /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
     /// ended (a workout left running ends at its last set), else now.
@@ -999,7 +1010,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
+            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "finish-auto", "forgotten", "forgotten-finish": self.picked[0] = 2
             case "hold": self.state.entryIndex = 1
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
@@ -1023,6 +1034,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
+            if screen == "forgotten" || screen == "forgotten-finish" {
+                self.idleSince = Date().addingTimeInterval(-(23 * 60 + 20)); self.askDone = true
+            }
+            if screen == "forgotten-finish" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.finishFromAsk() } }
             if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3 }
@@ -1100,7 +1115,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
  *   finished   stop, then two successes: the workout is saved
  *   skip       a soft one going down
  *   count      a click each second of the 3-2-1 before a workout
- *   ask        two taps: "All done?", nothing logged for 20 minutes
+ *   ask        one tap: "All done?"
  *   discarded  stop alone: the workout is gone, nothing saved
  */
 enum Haptics {
@@ -1117,6 +1132,6 @@ enum Haptics {
     static func finished() { play([(0, .stop), (0.5, .success), (0.9, .success)]) }
     static func skip() { play([(0, .directionDown)]) }
     static func count() { play([(0, .click)]) }
-    static func ask() { play([(0, .notification), (0.6, .notification)]) }
+    static func ask() { play([(0, .notification)]) }
     static func discarded() { play([(0, .stop)]) }
 }

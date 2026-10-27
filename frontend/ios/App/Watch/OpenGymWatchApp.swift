@@ -15,6 +15,7 @@ import WidgetKit
  *           and, when the profile rates effort, RPE or RIR in a small disc beside Done
  *   rest    a full-screen ring around a huge countdown, +15 s and Skip as small round buttons
  *   hold    a timed set: the seconds on the crown, Start, then a ring counting down, Stop
+ *   forgotten  "All done?" after 20 minutes without a set: how long, Continue workout or Finish workout (the Overview's hold)
  *   summary the workout at its end: time, sets, volume, heart rate, calories, records; Done
  * Overview ← the exercises: swipe right from a set for every exercise with its sets done (tap one to
  * jump to it) and Finish workout, a one-second hold at its bottom, Discard workout apart below it.
@@ -148,6 +149,7 @@ func formatNumber(_ v: Double) -> String {
 
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         Group {
@@ -159,6 +161,8 @@ struct RootView: View {
                 CountdownView(from: from)
             } else if store.workout == nil {
                 IdleView()
+            } else if store.askDone {
+                ForgottenView()
             } else if let end = store.holdEndsAt {
                 HoldView(end: end)
             } else {
@@ -168,14 +172,8 @@ struct RootView: View {
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
         // Text's words up by this locale).
         .environment(\.locale, store.locale)
-        // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Overview's Finish.
-        .alert(Text("All done?"), isPresented: $store.askDone) {
-            Button("Continue workout", role: .cancel) { store.keepGoing() }
-            Button("Finish workout") {
-                store.keepGoing()
-                store.showFinish()
-            }
-        }
+        // The "All done?" card fades in over the session and out again.
+        .animation(dimmed ? nil : .easeInOut(duration: 0.25), value: store.askDone)
         // Any touch: the rest-over alarm was noticed (it would tap once more otherwise).
         .simultaneousGesture(TapGesture().onEnded { store.ackRestOver() })
         // The complication's Start: today's workout, when none runs yet.
@@ -1474,6 +1472,84 @@ struct HoldView: View {
 }
 
 /* ---------- the end of a workout ---------- */
+
+/// "All done?": no set for 20 minutes. One calm card. Continue, or Finish workout, which opens the Overview (nothing ends here).
+struct ForgottenView: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.locale) private var locale
+    @ScaledMetric(relativeTo: .title2) private var timeSize: CGFloat = 30
+    @State private var armed = false      // false for the lock's first second: the buttons show they wait
+
+    var body: some View {
+        ViewThatFits(in: .vertical) { card(caption: true); card(caption: false); ScrollView { card(caption: false) } }   // drops the caption, then scrolls, only when a text size or language does not fit
+            .ignoresSafeArea(edges: .vertical)     // the 41 mm canvas is 215 pt; the card keeps its own margins
+            .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+            .task(id: dimmed) {           // on arrival and on each wrist raise
+                armed = false
+                try? await Task.sleep(for: .seconds(TouchLock.seconds))
+                armed = true
+            }
+            .onChange(of: dimmed) { _, on in if !on { store.lockTouch() } }
+            .onAppear { AccessibilityNotification.ScreenChanged().post() }
+    }
+
+    private func card(caption: Bool) -> some View {
+        VStack(spacing: 0) {
+            // Top left, in the clock's row and clear of it (the system clock is top right).
+            Text("All done?")
+                .font(.system(.headline, design: .rounded))
+                .lineLimit(2).minimumScaleFactor(0.75).multilineTextAlignment(.leading)
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .accessibilityAddTraits(.isHeader)
+                .frame(maxWidth: .infinity, alignment: .leading).padding(.trailing, 60)
+            Spacer(minLength: 4)
+            quiet(caption: caption)
+            Spacer(minLength: 6)
+            VStack(spacing: 8) {
+                Button { if store.touchAllowed { store.keepGoing() } } label: {
+                    Text("Continue workout").font(.headline).multilineTextAlignment(.center)
+                        .lineLimit(2).minimumScaleFactor(0.85).padding(.horizontal, 8).padding(.vertical, 4)
+                }
+                .buttonStyle(PrimaryButton())
+                Button { if store.touchAllowed { store.finishFromAsk() } } label: {
+                    HStack(spacing: 6) {
+                        Text("Finish workout").multilineTextAlignment(.center).lineLimit(2).minimumScaleFactor(0.85)
+                        Image(systemName: "chevron.forward").font(.footnote.weight(.bold))
+                            .foregroundStyle(.secondary).accessibilityHidden(true)   // it opens the Overview
+                    }
+                    .font(.body.weight(.semibold)).foregroundStyle(Theme.ink(.white, dimmed))
+                    .padding(.horizontal, 8).padding(.vertical, 4)
+                    .frame(maxWidth: .infinity, minHeight: Theme.tap)
+                }
+                .buttonStyle(SecondaryButton())
+            }
+            .opacity(armed || dimmed ? 1 : 0.7)
+            .animation(dimmed || reduceMotion ? nil : .easeOut(duration: 0.25), value: armed)
+        }
+        .padding(.horizontal, Theme.side).padding(.top, 14).padding(.bottom, 8)
+    }
+
+    /// Whole minutes, ticking on the last set's own minute mark: no second hand, nothing runs between.
+    private func quiet(caption: Bool) -> some View {
+        let since = store.idleSince ?? Date()
+        return TimelineView(.periodic(from: since, by: 60)) { ctx in
+            let m = Idle.minutes(since: since.timeIntervalSince1970 * 1000, now: ctx.date.timeIntervalSince1970 * 1000)
+            VStack(spacing: 1) {
+                Text(verbatim: SummaryView.duration(Double(m * 60), locale: locale))
+                    .font(.system(size: min(timeSize, 40), weight: .bold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(Theme.ink(.white, dimmed))
+                    .lineLimit(1).minimumScaleFactor(0.6)
+                    .contentTransition(.numericText())
+                    .animation(dimmed || reduceMotion ? nil : .easeOut(duration: 0.3), value: m)
+                if caption { Text("With no set logged").font(.footnote).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center).lineLimit(2).minimumScaleFactor(0.85) }
+            }
+        }
+        .accessibilityElement(children: .combine)    // "23 min, With no set logged"
+    }
+}
 
 struct SummaryView: View {
     @EnvironmentObject var store: SessionStore

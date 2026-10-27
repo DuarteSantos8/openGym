@@ -172,6 +172,10 @@ const OWN = {
   'All done?': {
     de: 'Alles erledigt?', fr: 'Terminé ?', es: '¿Has terminado?', it: 'Hai finito?', 'pt-PT': 'Terminaste?', 'pt-BR': 'Terminou?', pl: 'Koniec treningu?', hu: 'Végeztél?', tr: 'Bitirdin mi?', ru: 'Тренировка окончена?', uk: 'Тренування завершено?', ar: 'هل انتهيت؟', hi: 'हो गया?', bn: 'শেষ হয়েছে?', th: 'เสร็จแล้วหรือยัง', ko: '다 끝났나요?', 'zh-Hans': '练完了吗？', 'zh-Hant': '練完了嗎？',
   },
+  // "All done?" after 20 minutes without a set: true whether sets were logged earlier or never.
+  'With no set logged': {
+    de: 'Ohne eingetragenen Satz', fr: 'Sans série enregistrée', es: 'Sin series registradas', it: 'Senza serie registrate', 'pt-PT': 'Sem séries registadas', 'pt-BR': 'Sem séries registradas', pl: 'Bez zapisanej serii', hu: 'Rögzített sorozat nélkül', tr: 'Kayıtlı set olmadan', ru: 'Без записанных подходов', uk: 'Без записаних підходів', ar: 'دون تسجيل أي مجموعة', hi: 'बिना कोई सेट दर्ज किए', bn: 'কোনো সেট না লিখে', th: 'โดยไม่ได้บันทึกเซ็ต', ko: '기록된 세트 없이', 'zh-Hans': '没有记录任何一组', 'zh-Hant': '沒有記錄任何一組',
+  },
   // Water Lock (the screen and the crown's press off until the crown is turned), as in Apple's Workout.
   'Lock': {
     de: 'Sperren', fr: 'Verrouiller', es: 'Bloquear', it: 'Blocca', 'pt-PT': 'Bloquear', 'pt-BR': 'Bloquear', pl: 'Zablokuj', hu: 'Zárolás', tr: 'Kilitle', ru: 'Блокировка', uk: 'Блокування', ar: 'قفل', hi: 'लॉक करें', bn: 'লক করুন', th: 'ล็อก', ko: '잠금', 'zh-Hans': '锁定', 'zh-Hant': '鎖定',
