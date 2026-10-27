@@ -352,3 +352,22 @@ describe('the notification permission never holds the rest alarm back', () => {
     expect(h.request).not.toHaveBeenCalled()
   })
 })
+
+// Discord (baodor): the iPhone app paused the music when the rest sound played. The app's session
+// must always be a mixing one: .ambient at rest, and .playback (for "Play even on silent") only
+// with .mixWithOthers and .duckOthers, back to .ambient after the tone.
+describe('iPhone: the rest tone never stops the music', () => {
+  const swift = readFileSync(new URL('../../ios/App/App/RestAlertPlugin.swift', import.meta.url), 'utf8')
+
+  it('sets the mixing .ambient session at load and after every tone', () => {
+    expect(swift).toMatch(/static func mixWithMusic\(\)\s*\{\s*try\? AVAudioSession\.sharedInstance\(\)\.setCategory\(\.ambient/)
+    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(2)
+  })
+
+  it('takes .playback only mixed and ducking, and reads the onSilent flag', () => {
+    expect(swift).toMatch(/call\.getBool\("onSilent"\) \?\? false/)
+    for (const m of swift.matchAll(/setCategory\(\.playback[^)]*\)/g)) expect(m[0]).toMatch(/\.mixWithOthers/)
+    expect(swift).not.toMatch(/setCategory\(\.soloAmbient/)
+    expect(swift).toMatch(/setActive\(false, options: \[\.notifyOthersOnDeactivation\]\)/)
+  })
+})

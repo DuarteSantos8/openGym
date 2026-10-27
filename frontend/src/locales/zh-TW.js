@@ -454,6 +454,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': '開始訓練時提示輸入體重。關閉後將直接進入訓練。',
   'No weigh-ins yet. Log your weight to start the curve.': '還沒有量體重的紀錄。記一下體重，曲線就開始了。',
   'Music playing on this phone stops during a workout and does not resume by itself.': '訓練期間正在播放的音樂將會暫停，且不會自動恢復播放。',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': '即使在靜音模式下，休息結束也會響鈴。音樂會暫時調低，然後繼續播放。',
   'Export backup (JSON)': '匯出備份（JSON）',
   'Import backup': '匯入備份',
   'Auto-backup on changes': '內容變更時自動備份',

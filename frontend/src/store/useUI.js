@@ -215,7 +215,8 @@ const runRest = (set, get) => {
 function endTone(enabled, kind) {
   if (!enabled) return
   if (!MOBILE) { chime(enabled, kind); return }
-  toneNative(kind === true ? 'classic' : kind).then(ok => { if (!ok) chime(enabled, kind) })
+  const onSilent = useStore.getState().S.soundOnSilent === true
+  toneNative(kind === true ? 'classic' : kind, { onSilent }).then(ok => { if (!ok) chime(enabled, kind) })
 }
 
 export const useUI = create((set, get) => ({

@@ -151,6 +151,13 @@ No new switch: the Apple Health one covers it.
 - **Self-hosting: containers report healthy in half a minute**, not after five. TrueNAS and friends
   wait for that before they call openGym running (#844, thanks @andi242 for spotting it).
 
+**Fixes**
+
+- The rest timer starts after the last set of an exercise again, also when the next exercise opens with warm-ups (#853).
+- A per-side set with its own "Rest after this set" now takes that break between its sides too (#853).
+- Ask the Coach for more core (or arms, legs, glutes...) and its review gets a real choice of those exercises, not the same four, plus room for new ones beside your plan (#829).
+- iPhone app: the rest sound no longer pauses your music. It turns it down for a moment and lets it play on, also with Play even on silent.
+
 ## v1.4.3 (2026-10-26)
 
 The community release. Most of what's below was asked for on GitHub and Discord or sent in as a

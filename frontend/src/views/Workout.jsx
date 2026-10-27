@@ -1834,13 +1834,16 @@ function ActiveWorkout() {
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
 
-    // One side of a per-side reps set ticked, the other still to go: the exercise's own break
-    // between sides, when it has one (sideRestFor); none otherwise, as before.
+    // One side of a per-side reps set ticked, the other still to go: the set's own rest when it
+    // has one ("Rest after this set", #853), else the exercise's break between sides
+    // (sideRestFor); none otherwise, as before.
     if (side && !checked) {
-      const row = useStore.getState().S.active?.entries[idx]?.sets[i]
+      const sets = useStore.getState().S.active?.entries[idx]?.sets
+      const row = sets?.[i]
       const other = side === 'L' ? 'R' : 'L'
       if (row?.sides?.[side]?.done && !row.sides[other]?.done) {
-        const pause = sideRestFor(useStore.getState().S.active.entries[idx].target, { timed: false })
+        const ownSec = ownSetRest(sets[setSpanAt(sets, i)[0]])
+        const pause = sideRestFor(useStore.getState().S.active.entries[idx].target, { timed: false, ownSec })
         if (pause > 0) startRest(pause, idx, { kind: 'switch', forSet: i })
       }
     }
@@ -1856,9 +1859,6 @@ function ActiveWorkout() {
       const freshUnitDone = freshUnit?.every(ui => fresh.entries[ui].sets.every(x => x.done))
       const nextUnit = freshUnitDone ? nextUnfinishedUnit(fresh.entries, freshUnits, idx) : null
       const freshWorkoutDone = freshUnitDone && !nextUnit
-      const restBeforeWarmup = nextUnit?.some(ui =>
-        fresh.entries[ui].sets.some(set => isWarmupRow(set) && !set.done),
-      )
       // The rest this set has earned: the exercise's own restSec when it set one, the global
       // timer when it did not, and the longest of the group's across a superset (issue #10).
       // Resolved once here so every branch below times the same break.
@@ -1877,7 +1877,7 @@ function ActiveWorkout() {
       // still the rest you are in, held on purpose, and a re-check leaves it as it is.
       if (!progress.isNew) {
         const rest = useUI.getState().timer
-        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
         return
       }
 
@@ -1906,11 +1906,12 @@ function ActiveWorkout() {
       }
 
       // Singleton units are ordinary exercises: they rest between sets and after the closing
-      // one unless the next unit has an unfinished warm-up, and never enter superset navigation.
+      // one (also when the next exercise starts with warm-ups, #853), and never enter superset
+      // navigation.
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
       if (!freshUnit || freshUnit.length <= 1) {
-        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
         onFocusProgress?.({ unitDone: freshUnitDone })
         return
       }
@@ -1918,7 +1919,7 @@ function ActiveWorkout() {
       const step = supersetFlowStep(fresh.entries, freshUnit, idx)
       if (!step) { onFocusProgress?.({ unitDone: freshUnitDone }); return }
       if (step.unitDone) {
-        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, { forSet: i })
+        if (nextUnit?.length) startRest(restAfter, idx, { forSet: i })
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
         if (step.roundDone) startRest(restAfter, idx, { forSet: i })

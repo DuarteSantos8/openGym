@@ -473,6 +473,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Frågar efter din kroppsvikt när ett pass startar. Av startar passet direkt.',
   'No weigh-ins yet. Log your weight to start the curve.': 'Inga vägningar än. Logga din vikt för att starta kurvan.',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'Musik som spelas på telefonen stoppas under ett pass och fortsätter inte av sig själv.',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': 'Slutet på vilan hörs även i ljudlöst läge. Musiken sänks en stund och fortsätter spela.',
   'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'Det tystare ljudet med tre pip från före 1.3.9, i stället för den högre klockan.',
   'Export backup (JSON)': 'Exportera backup (JSON)',
   'Import backup': 'Importera backup',

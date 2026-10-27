@@ -905,6 +905,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'ถามน้ำหนักตัวเมื่อเริ่มออกกำลังกาย ถ้าปิด เซสชันจะเริ่มทันที',
   'No weigh-ins yet. Log your weight to start the curve.': 'ยังไม่มีการชั่งน้ำหนัก บันทึกน้ำหนักเพื่อเริ่มกราฟได้เลย',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'เพลงที่เล่นอยู่บนโทรศัพท์นี้จะหยุดระหว่างการออกกำลังกาย และจะไม่เล่นต่อเอง',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': 'เสียงหมดเวลาพักจะดังแม้อยู่ในโหมดเงียบ เพลงจะเบาลงครู่หนึ่งแล้วเล่นต่อ',
   'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'เสียงบี๊บสามครั้งที่เบากว่าแบบก่อนเวอร์ชัน 1.3.9 แทนเสียงกริ่งที่ดังกว่า',
   'Import from Hevy': 'นำเข้าจาก Hevy',
   'Pull your history with a Hevy Pro API key': 'ดึงประวัติด้วยคีย์ API ของ Hevy Pro',

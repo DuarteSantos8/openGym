@@ -458,6 +458,7 @@ export default {
   'Asks for your body weight when a workout starts. Off starts the session straight away.': 'Demande ton poids au début d’une séance. Désactivé, la séance démarre directement.',
   'No weigh-ins yet. Log your weight to start the curve.': 'Aucune pesée pour l’instant. Note ton poids pour lancer la courbe.',
   'Music playing on this phone stops during a workout and does not resume by itself.': 'La musique en cours de lecture sur ce téléphone s’arrête pendant une séance et ne reprend pas toute seule.',
+  'The end of a rest rings through silent. Music turns down for it and keeps playing.': 'La fin du repos sonne même en mode silencieux. La musique baisse un instant et continue.',
   'The quieter three-beep sound from before 1.3.9, instead of the louder chime.': 'Le son plus discret à trois bips d’avant la 1.3.9, au lieu du carillon plus fort.',
   'Export backup (JSON)': 'Exporter une sauvegarde (JSON)',
   'Import backup': 'Importer une sauvegarde',
