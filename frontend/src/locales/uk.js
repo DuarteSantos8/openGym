@@ -2237,6 +2237,7 @@ export default {
   'Not downloaded': 'Не завантажено',
   'On this device': 'На цьому пристрої',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Чіткіші анімації на цьому пристрої поки недоступні. Вбудовані працюють усюди.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Чіткіші анімації доступні лише через магазини застосунків. У цьому APK залишаються вбудовані.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Чіткіші анімації завантажуються один раз для кожної фігури. Поки їх немає, ви бачите вбудовані, тож порожньо не буває.',
   'Still only': 'Лише зображення',
   'Waiting for Wi-Fi': 'Чекаємо на Wi-Fi',

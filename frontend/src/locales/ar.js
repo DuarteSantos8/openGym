@@ -2295,6 +2295,7 @@ export default {
   'Not downloaded': 'لم يتم التنزيل',
   'On this device': 'على هذا الجهاز',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'الرسوم الأوضح غير متاحة على هذا الجهاز بعد. الرسوم المدمجة تعمل في كل مكان.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'الرسوم المتحركة الأوضح متاحة فقط عبر متاجر التطبيقات. يحتفظ ملف APK هذا بالرسوم المدمجة فيه.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'تُنزَّل الرسوم الأوضح مرة واحدة لكل هيئة. وحتى تصل ترى الرسوم المدمجة، فلا يبقى شيء فارغًا.',
   'Still only': 'صورة ثابتة فقط',
   'Waiting for Wi-Fi': 'بانتظار Wi-Fi',

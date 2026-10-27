@@ -1431,6 +1431,7 @@ export const PT_BR_OVERRIDES = {
   'No animation, just the picture. Easy on battery.': 'Sem animação, só a imagem. Economiza bateria.',
   'Not downloaded': 'Não baixadas',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'As animações mais nítidas ainda não estão disponíveis neste dispositivo. As incluídas funcionam em qualquer lugar.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'As animações mais nítidas só chegam pelas lojas de apps. Este APK mantém as que já vêm nele.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'As animações mais nítidas são baixadas uma vez por figura. Até lá você vê as incluídas, então nada fica em branco.',
   'Waiting for Wi-Fi': 'Esperando o Wi-Fi',
   // --- background check before the nudge ---

@@ -2319,6 +2319,7 @@ export default {
   'Not downloaded': 'ডাউনলোড হয়নি',
   'On this device': 'এই ডিভাইসে',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'আরও স্পষ্ট অ্যানিমেশন এই ডিভাইসে এখনও নেই। অন্তর্ভুক্তগুলো সব জায়গায় চলে।',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'আরও স্পষ্ট অ্যানিমেশন শুধু অ্যাপ স্টোরের মাধ্যমে আসে। এই APK তার ভেতরের অ্যানিমেশনগুলোই রাখে।',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'আরও স্পষ্ট অ্যানিমেশন প্রতিটি অবয়বের জন্য একবার ডাউনলোড হয়। ততক্ষণ অন্তর্ভুক্তগুলো দেখবেন, তাই কিছুই ফাঁকা থাকে না।',
   'Still only': 'শুধু স্থির ছবি',
   'Waiting for Wi-Fi': 'Wi-Fi-র অপেক্ষায়',

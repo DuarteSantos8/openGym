@@ -2240,6 +2240,7 @@ export default {
   'Not downloaded': 'डाउनलोड नहीं हुआ',
   'On this device': 'इस डिवाइस पर',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'ज़्यादा साफ़ एनिमेशन इस डिवाइस पर अभी उपलब्ध नहीं हैं। बिल्ट-इन एनिमेशन हर जगह चलते हैं।',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'ज़्यादा साफ़ एनिमेशन सिर्फ़ ऐप स्टोर के ज़रिए मिलते हैं। यह APK अपने अंदर वाले एनिमेशन ही रखता है।',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'ज़्यादा साफ़ एनिमेशन हर आकृति के लिए एक बार डाउनलोड होते हैं। तब तक आप बिल्ट-इन देखते हैं, इसलिए कुछ भी खाली नहीं रहता।',
   'Still only': 'सिर्फ़ स्थिर तस्वीर',
   'Waiting for Wi-Fi': 'Wi-Fi का इंतज़ार',
