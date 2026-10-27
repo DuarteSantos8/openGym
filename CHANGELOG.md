@@ -174,6 +174,14 @@ No new switch: the Apple Health one covers it.
 - **Self-hosting: containers report healthy in half a minute**, not after five. TrueNAS and friends
   wait for that before they call openGym running (#844, thanks @andi242 for spotting it).
 
+**Tap your phone on a sticker** (NFC, phone app and Chrome on Android). Settings → Look & Home → Set
+up an NFC sticker writes a cheap blank NTAG sticker for your locker, bag or the gym door: tap it and
+today's workout starts (or the one already running opens), or have it just show your membership code
+at the turnstile. Stick one on a machine too (an exercise's details → Write NFC sticker): tapped during
+a workout it jumps to that exercise, or offers to add it; outside a workout it opens the exercise. On
+iPhone (XS and newer) a tap shows a banner that leads into the app. openGym only writes and reads its
+own stickers: it never reads, copies or imitates your gym's access card.
+
 **Fixes**
 
 - The rest timer starts after the last set of an exercise again, also when the next exercise opens with warm-ups (#853).

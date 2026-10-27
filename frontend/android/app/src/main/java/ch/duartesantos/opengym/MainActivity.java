@@ -37,6 +37,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NudgeCheckPlugin.class);
         registerPlugin(GymReminderPlugin.class);
         registerPlugin(AppIconPlugin.class);
+        registerPlugin(NfcTagsPlugin.class);
         super.onCreate(savedInstanceState);
         passSystemBarsToPage();
     }

@@ -484,6 +484,51 @@ then the phone walks in at 1.4 m/s and the time from crossing the radius to the 
 measured; then the server check against a fake paired server on the host (trained elsewhere:
 quiet; a black-holed server: posts after the 3 s bound; no server: posts).
 
+### NFC stickers (v1.4.4)
+
+Settings → Look & Home → **Set up an NFC sticker** writes a blank NTAG sticker (NTAG213 or bigger;
+the link is under 110 bytes) with one NDEF URI record. Two kinds, chosen in the sheet
+(`components/Nfc.jsx`); what a sticker says and does is `src/lib/nfc-tags.js`:
+
+| Sticker | Link | A tap |
+| --- | --- | --- |
+| Start | `https://opengym.ch/nfc?do=start` | starts today's planned session through the usual Start (weigh-in first, if on); a running workout opens instead, never a second one; nothing planned: the Start screen |
+| Check in | `https://opengym.ch/nfc?do=checkin&card=<id>` | the membership code screen (`#/checkin`) on that card; offered only when a code is saved |
+| Machine | `https://opengym.ch/nfc?ex=<exercise id>` | during a workout: jumps to the exercise (`active.cur`), or asks before adding it after the current one; outside: the exercise's details. An exercise the profile lacks: a short toast |
+
+The same tap within 4 s, or any tap within 1.2 s of the last, is dropped (`tagDebouncer`). A link
+that opens the app before it is set up (cold start, sign-in) waits until it is (`useNfcTagLinks`).
+`opengym://nfc?...`, `opengym://checkin`, `opengym://start` and `opengym://exercise/<id>` are read
+too. Machine stickers come from an exercise's details → **Write NFC sticker for this exercise**.
+
+- **Why an https link:** that is what a phone reads with the app closed. Android routes it to the
+  app by the `NDEF_DISCOVERED` filter on `MainActivity` (scheme https, host opengym.ch, path
+  `/nfc`), no App Links verification needed; `NfcTagsPlugin.java` passes it on as its `open`
+  event (kept until the page listens). iOS background tag reading (iPhone XS and newer) only routes
+  web links and universal links, never custom schemes. The app has **no associated domains yet**,
+  so on an iPhone the tap shows a banner that opens `opengym.ch/nfc` in Safari, and that page
+  (`website/nfc.html`) hands the query to the app as `opengym://nfc?...` (CFBundleURLTypes in
+  Info.plist, delivered through `@capacitor/app`'s `appUrlOpen`). A phone without openGym lands on
+  the same page. To make it one tap on iPhone later: enable Associated Domains on the app id, add
+  `applinks:opengym.ch` to `App.entitlements`, and serve `/.well-known/apple-app-site-association`
+  for `/nfc*` on opengym.ch.
+- **Writing, Android:** `NfcAdapter.enableReaderMode` while the sheet waits (so the system's tag
+  dispatch stays out of it), `Ndef.writeNdefMessage`, or `NdefFormatable.format` for an
+  unformatted sticker. `android.permission.NFC` (normal, no prompt) and
+  `uses-feature android.hardware.nfc required=false`, so phones without NFC still install it.
+- **Writing, iOS:** `NfcTagsPlugin.swift`, an `NFCNDEFReaderSession` with Core NFC's own sheet
+  (`queryNDEFStatus`, `writeNDEF`). Needs the **NFC Tag Reading** capability on the app id
+  (`com.apple.developer.nfc.readersession.formats` = `TAG`; App Store Connect refuses `NDEF`
+  there, `scripts/ios/finish-ipa.sh` drops it from the profile's entitlements) and
+  `NFCReaderUsageDescription` in Info.plist. There is no permission prompt: the system sheet is
+  the consent, so the app shows no explainer before it.
+- **Web:** Web NFC (`NDEFReader`), which only Chrome on Android has. It writes, and reads while
+  the page is open once the site has the NFC permission (asked at the first write). Every other
+  browser, and phones without NFC, never see the NFC rows (`nfcSupport()`).
+- **Not a card cloner.** No host card emulation, no reading of other tags' contents beyond our own
+  link, nothing that copies or imitates a gym's access card. The membership code stays the QR or
+  barcode the check-in screen draws.
+
 ## Prerequisites
 
 - Node 22 (the Capacitor 8 CLI needs it)

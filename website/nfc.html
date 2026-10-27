@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>openGym sticker</title>
+<meta name="description" content="An openGym NFC sticker: tap it with openGym on your phone to start your workout or jump to an exercise.">
+<meta name="theme-color" content="#000000">
+<!-- Where an openGym NFC sticker lands when the phone opens it in a browser (an iPhone until
+     opengym.ch is an associated domain of the app, or a phone without openGym). The app wrote
+     https://opengym.ch/nfc?...; this hands the same query to the app as opengym://nfc?...
+     (frontend/src/lib/nfc-tags.js reads both). Nothing here reads or stores anything. -->
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="styles.css?v=28">
+<style>
+  .nfc { max-width: 30rem; margin: 0 auto; padding: 18vh 16px 48px; text-align: center; }
+  .nfc img { border-radius: 22%; }
+  .nfc h1 { font-size: 1.6rem; margin: 18px 0 8px; }
+  .nfc p { margin: 0 0 22px; opacity: .8; }
+  .nfc .btn { display: inline-block; }
+  .nfc small { display: block; margin-top: 26px; opacity: .65; }
+</style>
+</head>
+<body>
+<main class="nfc">
+  <img src="icon-180.png" alt="" width="72" height="72">
+  <h1>This is an openGym sticker</h1>
+  <p>Tap it with openGym on your phone and it starts your workout, shows your gym code or jumps to an exercise.</p>
+  <a class="btn" id="open" href="opengym://nfc">Open in openGym</a>
+  <small>No openGym yet? <a href="/">Get it here</a>. It’s free and open source.</small>
+</main>
+<script>
+(function () {
+  // Only the query the app wrote: the action and an id, nothing else is passed on.
+  var q = new URLSearchParams(location.search), out = new URLSearchParams()
+  ;['do', 'ex', 'card', 'start'].forEach(function (k) {
+    var v = q.get(k)
+    if (v && /^[A-Za-z0-9_-]{1,64}$/.test(v)) out.set(k, v)
+  })
+  var link = 'opengym://nfc' + (String(out) ? '?' + out : '')
+  document.getElementById('open').href = link
+  // Straight into the app where it is installed; the page stays as it is where it isn't.
+  if (String(out) && /Android|iPhone|iPad/i.test(navigator.userAgent)) location.href = link
+})()
+</script>
+</body>
+</html>
