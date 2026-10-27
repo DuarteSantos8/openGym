@@ -3947,5 +3947,7 @@ export default {
   'High': 'Верхн.',
   'Use': 'Узяти',
   '{0}% of {1} → {2}': '{0}% від {1} → {2}',
+  'Moved up to {0}.': 'Перехід на {0}.',
+  'Back to {0}.': 'Повернення до {0}.',
   "Stop this programme before changing how it counts the weeks.": "Зупини цей цикл, перш ніж змінювати, як він рахує тижні.",
 }

@@ -3962,5 +3962,7 @@ export default {
   'High': 'สูง',
   'Use': 'ใช้',
   '{0}% of {1} → {2}': '{0}% ของ {1} → {2}',
+  'Moved up to {0}.': 'ขยับขึ้นเป็น {0}',
+  'Back to {0}.': 'กลับไปที่ {0}',
   "Stop this programme before changing how it counts the weeks.": "หยุดโปรแกรมนี้ก่อนเปลี่ยนวิธีนับสัปดาห์",
 }

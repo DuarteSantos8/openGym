@@ -3951,5 +3951,7 @@ export default {
   'High': 'Yüksek',
   'Use': 'Kullan',
   '{0}% of {1} → {2}': '{1} değerinin %{0} kadarı → {2}',
+  'Moved up to {0}.': '{0} aşamasına geçildi.',
+  'Back to {0}.': '{0} aşamasına geri dönüldü.',
   "Stop this programme before changing how it counts the weeks.": "Haftaları nasıl saydığını değiştirmeden önce bu programı durdur.",
 }

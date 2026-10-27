@@ -3955,5 +3955,7 @@ export default {
   'High': 'Верхн.',
   'Use': 'Взять',
   '{0}% of {1} → {2}': '{0}% от {1} → {2}',
+  'Moved up to {0}.': 'Переход на {0}.',
+  'Back to {0}.': 'Возврат к {0}.',
   "Stop this programme before changing how it counts the weeks.": "Остановите этот цикл, прежде чем менять, как он считает недели.",
 }

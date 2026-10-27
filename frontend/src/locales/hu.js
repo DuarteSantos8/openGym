@@ -3954,5 +3954,7 @@ export default {
   'High': 'Felső',
   'Use': 'Használd',
   '{0}% of {1} → {2}': '{1} {0}%-a → {2}',
+  'Moved up to {0}.': 'Továbbléptél: {0}.',
+  'Back to {0}.': 'Vissza ide: {0}.',
   "Stop this programme before changing how it counts the weeks.": "Állítsd le ezt a programot, mielőtt megváltoztatod, hogyan számolja a heteket.",
 }

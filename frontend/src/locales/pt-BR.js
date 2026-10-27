@@ -2679,6 +2679,8 @@ export const PT_BR_OVERRIDES = {
   'High': 'Alto',
   'Use': 'Usar',
   '{0}% of {1} → {2}': '{0}% de {1} → {2}',
+  'Moved up to {0}.': 'Subiu para {0}.',
+  'Back to {0}.': 'De volta para {0}.',
   "Stop this programme before changing how it counts the weeks.": "Encerre este programa antes de mudar como ele conta as semanas.",
 }
 

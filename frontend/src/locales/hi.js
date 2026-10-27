@@ -3951,5 +3951,7 @@ export default {
   'High': 'उच्च',
   'Use': 'इस्तेमाल करें',
   '{0}% of {1} → {2}': '{1} का {0}% → {2}',
+  'Moved up to {0}.': '{0} पर पहुँचे।',
+  'Back to {0}.': 'वापस {0} पर।',
   "Stop this programme before changing how it counts the weeks.": "हफ़्ते गिनने का तरीका बदलने से पहले यह प्रोग्राम रोकें।",
 }

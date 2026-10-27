@@ -3951,5 +3951,7 @@ export default {
   'High': '높게',
   'Use': '사용',
   '{0}% of {1} → {2}': '{1}의 {0}% → {2}',
+  'Moved up to {0}.': '{0}(으)로 올라갔어요.',
+  'Back to {0}.': '{0}(으)로 돌아갔어요.',
   "Stop this programme before changing how it counts the weeks.": "주를 세는 방식을 바꾸려면 먼저 이 프로그램을 멈추세요.",
 }

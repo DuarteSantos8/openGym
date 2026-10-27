@@ -3943,5 +3943,7 @@ export default {
   'High': '高',
   'Use': '使用',
   '{0}% of {1} → {2}': '{1} 的 {0}% → {2}',
+  'Moved up to {0}.': '已升級到{0}。',
+  'Back to {0}.': '已退回到{0}。',
   "Stop this programme before changing how it counts the weeks.": "要改變計週方式，請先停止這個訓練週期。",
 }

@@ -3951,5 +3951,7 @@ export default {
   'High': 'Alto',
   'Use': 'Usar',
   '{0}% of {1} → {2}': '{0}% de {1} → {2}',
+  'Moved up to {0}.': 'Subiu para {0}.',
+  'Back to {0}.': 'De volta a {0}.',
   "Stop this programme before changing how it counts the weeks.": "Termina este programa antes de mudar a forma como conta as semanas.",
 }

@@ -4005,5 +4005,7 @@ export default {
   'High': 'مرتفع',
   'Use': 'استخدم',
   '{0}% of {1} → {2}': '{0}% من {1} ← {2}',
+  'Moved up to {0}.': 'انتقلت إلى {0}.',
+  'Back to {0}.': 'العودة إلى {0}.',
   "Stop this programme before changing how it counts the weeks.": "أوقف هذا البرنامج قبل تغيير طريقة عدّه للأسابيع.",
 }

@@ -4030,5 +4030,7 @@ export default {
   'High': 'বেশি',
   'Use': 'ব্যবহার করুন',
   '{0}% of {1} → {2}': '{1}-এর {0}% → {2}',
+  'Moved up to {0}.': '{0}-এ উঠে গেছেন।',
+  'Back to {0}.': 'আবার {0}-এ ফিরে গেছেন।',
   "Stop this programme before changing how it counts the weeks.": "সপ্তাহ গোনার নিয়ম বদলানোর আগে এই প্রোগ্রাম থামান।",
 }
