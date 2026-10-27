@@ -4,3 +4,13 @@
 "Streak" = "ต่อเนื่อง";
 "Weeks in a row with a workout." = "จำนวนสัปดาห์ติดต่อกันที่มีการฝึก";
 "Open openGym once to see your plan here." = "เปิด openGym สักครั้งเพื่อดูแผนของคุณที่นี่";
+"What to show" = "แสดงอะไร";
+"And beside it" = "และข้างๆ";
+"Week streak" = "ต่อเนื่องรายสัปดาห์";
+"Weight goal" = "เป้าหมายน้ำหนัก";
+"This week" = "สัปดาห์นี้";
+"Next workout" = "การฝึกครั้งถัดไป";
+"Records" = "สถิติสูงสุด";
+"Volume" = "ปริมาณงาน";
+"Your streak, weight goal, week, next workout, records or volume. You pick." = "สถิติต่อเนื่อง เป้าหมายน้ำหนัก สัปดาห์ การฝึกครั้งถัดไป สถิติสูงสุด หรือปริมาณงาน คุณเลือกเอง";
+"Pick what the widget shows." = "เลือกสิ่งที่วิดเจ็ตแสดง";

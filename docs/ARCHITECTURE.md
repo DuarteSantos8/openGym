@@ -168,7 +168,9 @@ packages are put together and signed on the release machine (`scripts/android/bu
   Apple Watch taking the workout, the iPhone runs the workout session itself so AirPods Pro 3 measure
   the heart rate, which fills the same per-set fields the watch does.
 - **Widgets and the Live Activity** (`ios/App/OpenGymWidgets`): the page writes a small snapshot to
-  the App Group (`lib/widgets.js` → `WidgetBridgePlugin.swift`), the widgets read it.
+  the App Group (`lib/widgets.js` → `WidgetBridgePlugin.swift`), the widgets read it. On Android the
+  same snapshot goes to SharedPreferences (`WidgetBridgePlugin.java`) and `OpenGymWidgetProvider.java`
+  draws the Home Screen widget. A tap opens an `opengym://` link the page routes (`lib/widget-links.js`).
 - **Animation packs** (`ios/App/AnimationPacksDownloader`, `AnimationPacksPlugin.swift`): the
   sharper animation sizes as Apple-hosted Background Assets.
 

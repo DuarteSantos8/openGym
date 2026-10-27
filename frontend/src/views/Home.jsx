@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, lastBW, setsDoneActive } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive } from '../lib/history.js'
+import { streakInfo } from '../lib/streak.js'
+import { StreakMeta, StreakParty } from '../components/Streak.jsx'
 import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
@@ -96,7 +98,11 @@ export default function Home() {
   const next = !S.active && !todayRoutines.length && !(rotating && !plannerQueue) ? nextTrainingDay(S, todayISO()) : null
   // The streak card's fraction: this calendar week's workouts over the weekdays with a plan, or,
   // in a coach week, the queue's sessions and your own days together (lib/queue.js weekTally).
-  const { done: doneThisWeek, planned: plannedPerWeek } = weekTally(S, todayISO())
+  const tally = weekTally(S, todayISO())
+  const { done: doneThisWeek, planned: plannedPerWeek } = tally
+  // The streak with its best run and freezes (lib/streak.js), read back from the workouts.
+  const todayKey = todayISO()
+  const streak = useMemo(() => streakInfo(S, todayKey), [S.workouts, S.weekStart, todayKey]) // eslint-disable-line react-hooks/exhaustive-deps
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
@@ -241,12 +247,14 @@ export default function Home() {
         <div>
           <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
             <Icon name="flame" style={{ color: 'var(--orange)' }} />
-            {t('{0} week streak', streakWeeks(S))}
+            {t('{0} week streak', streak.current)}
           </div>
           <div className="muted small" style={{ marginTop: 2 }}>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</div>
+          {(streak.best > 0 || streak.freezes > 0) && <div className="muted small" style={{ marginTop: 2 }}><StreakMeta info={streak} /></div>}
         </div>
         <Icon name="calendar" className="chev" style={{ fontSize: 20 }} />
       </div>
+      <StreakParty S={S} info={streak} tally={tally} />
     </div>
   </div>
 }

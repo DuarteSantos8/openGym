@@ -11,7 +11,7 @@ import { setLang, useLang, baseLang } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
-import { setNav, notePath, keyBefore, navToWorkout } from './lib/nav.js'
+import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen } from './lib/gym-reminder.js'
 import { workoutVolume } from './lib/history.js'
 import { setSystemBarsLight } from './lib/system-bars.js'
@@ -24,6 +24,7 @@ import { startPhoneWorkout } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
+import { startWidgetLinks } from './lib/widget-links.js'
 import { startLiveActivitySync } from './lib/live-activity.js'
 import { useWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
@@ -31,7 +32,7 @@ import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
-import { exitWorkoutEdit, startFlow, beginWorkout } from './sheets.jsx'
+import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ScrollTopButton from './components/ScrollTopButton.jsx'
@@ -458,8 +459,8 @@ export default function App() {
     }).then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
     return () => { gone = true; stop?.() }
   }, [])
-  // iPhone app: the Home Screen widgets and the workout's Live Activity (lib/widgets.js,
-  // lib/live-activity.js). Nothing at all on the web or on Android.
+  // Phone app: the Home Screen and Lock Screen widgets (lib/widgets.js, iPhone and Android) and
+  // the workout's Live Activity (lib/live-activity.js, iPhone). Nothing at all on the web.
   useEffect(() => {
     if (!MOBILE) return
     const stops = [], gone = { v: false }
@@ -467,6 +468,14 @@ export default function App() {
     startWidgetSync({ useStore }).then(keep).catch(() => {})
     startLiveActivitySync({ useStore, useUI }).then(keep).catch(() => {})
     return () => { gone.v = true; stops.forEach(fn => fn()) }
+  }, [])
+  // Phone app: a tap on a widget opens the screen it is about (lib/widget-links.js).
+  useEffect(() => {
+    if (!MOBILE) return
+    let stop = null, gone = false
+    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet })
+      .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
+    return () => { gone = true; stop?.() }
   }, [])
   // Phone app: a tap on the gym reminder (lib/gym-reminder.js) opens the Start screen, or the
   // workout already running. Nothing on the web.

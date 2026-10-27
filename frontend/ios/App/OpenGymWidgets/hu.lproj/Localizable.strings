@@ -4,3 +4,13 @@
 "Streak" = "Sorozat";
 "Weeks in a row with a workout." = "Egymást követő hetek edzéssel.";
 "Open openGym once to see your plan here." = "Nyisd meg egyszer az openGymet, és itt látod a terved.";
+"What to show" = "Mit mutasson";
+"And beside it" = "És mellette";
+"Week streak" = "Heti sorozat";
+"Weight goal" = "Testsúlycél";
+"This week" = "Ezen a héten";
+"Next workout" = "Következő edzés";
+"Records" = "Rekordok";
+"Volume" = "Volumen";
+"Your streak, weight goal, week, next workout, records or volume. You pick." = "Sorozat, testsúlycél, hét, következő edzés, rekordok vagy volumen. Te választasz.";
+"Pick what the widget shows." = "Válaszd ki, mit mutasson a widget.";

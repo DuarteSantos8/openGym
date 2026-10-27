@@ -31,15 +31,20 @@ enum WidgetPreview {
     private static func snapshot(today: String, active: String = "null") -> WidgetSnapshot? {
         decode(WidgetSnapshot.self, """
         {"v":1,"today":"\(today)","weekFrom":"\(today)","weekUntil":"9999-12-31","unit":"kg","accent":"#30d158","ink":"#000000",
-         "days":[{"iso":"\(today)","weekday":"Wednesday","name":"Push Day","count":5,"done":false,"exercises":[
+         "days":[{"iso":"\(today)","weekday":"Wednesday","name":"Push Day","count":5,"done":false,"ids":["r1"],"exercises":[
            {"name":"Barbell Bench Press","line":"4 × 6 · 80 kg"},{"name":"Overhead Press","line":"3 × 8 · 45 kg"},
            {"name":"Incline Dumbbell Press","line":"3 × 10 · 26 kg"},{"name":"Lateral Raise","line":"3 × 15 · 10 kg"},
            {"name":"Triceps Pushdown","line":"3 × 12 · 30 kg"}]},
           {"iso":"9999-12-30","weekday":"Friday","name":"Leg Day","count":4}],
          "week":{"done":2,"planned":4},"streak":7,"lastPR":{"name":"Barbell Squat","value":"120 kg","d":"\(today)"},
+         "streakInfo":{"current":7,"best":12,"freezes":1,"weekDone":true,"next":12,"line":"7 week streak","bestLine":"Best: 12"},
+         "weight":{"current":82.4,"goal":78,"toGo":4.4,"unit":"kg","trend":[84.1,83.8,83.9,83.2,82.9,82.7,82.4],"currentText":"82.4 kg","goalText":"78 kg","line":"4.4 kg to go"},
+         "records":{"month":3,"monthLine":"3 PRs this month","last":{"name":"Barbell Squat","value":"120 kg","d":"\(today)"}},
+         "volume":{"now":12400,"prev":10300,"unit":"kg","pct":20,"nowText":"12.4k kg","prevText":"10.3k kg","line":"+20% vs last week"},"level":null,
          "active":\(active),
          "labels":{"today":"Today","restDay":"Rest day","upNext":"Up next","thisWeek":"This week","weekStreak":"Week streak",
-           "streak":"7 week streak","lastPR":"Last PR","done":"Done","running":"Workout running"}}
+           "streak":"7 week streak","lastPR":"Last PR","done":"Done","running":"Workout running",
+           "weightGoal":"Weight goal","nextWorkout":"Next workout","records":"Records","volume":"Volume","nothingPlanned":"Nothing planned","noWeighIn":"No weigh-ins yet"}}
         """)
     }
 
@@ -115,6 +120,21 @@ enum WidgetPreview {
             if case let (a, s)? = liveV1() {
                 save("live-lock-v1-open-app", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
             }
+        }
+        // The configurable "openGym" widget (v1.4.4): every kind small, two pairs medium.
+        for dark in [false, true] {
+            for kind in GymWidgetKind.allCases {
+                save("pick-small-\(kind.rawValue)", CGSize(width: 170, height: 170), dark: dark) { KindBlock(model: plan, c: plan.content(kind)) }
+            }
+            for (a, b) in [(GymWidgetKind.streak, GymWidgetKind.weight), (.next, .volume)] {
+                save("pick-medium-\(a.rawValue)-\(b.rawValue)", CGSize(width: 364, height: 170), dark: dark) {
+                    HStack(spacing: 14) { KindBlock(model: plan, c: plan.content(a)); Divider(); KindBlock(model: plan, c: plan.content(b)) }
+                }
+            }
+        }
+        for kind in GymWidgetKind.allCases {
+            save("pick-lock-circle-\(kind.rawValue)", CGSize(width: 76, height: 76), dark: true, radius: 38, padding: 0) { KindCircleView(c: plan.content(kind)) }
+            save("pick-lock-rect-\(kind.rawValue)", CGSize(width: 172, height: 76), dark: true, radius: 12, padding: 6) { KindRectView(c: plan.content(kind)) }
         }
         // The Lock Screen's accessories and the Dynamic Island are drawn light on dark.
         save("lock-rect", CGSize(width: 172, height: 76), dark: true, radius: 12, padding: 6) { NextRectView(model: plan) }
