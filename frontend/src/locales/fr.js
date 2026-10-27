@@ -2773,4 +2773,6 @@ export default {
   'High': 'Haut',
   'Use': 'Utiliser',
   '{0}% of {1} → {2}': '{0} % de {1} → {2}',
+  'Moved up to {0}.': 'Passage à {0}.',
+  'Back to {0}.': 'Retour à {0}.',
 }

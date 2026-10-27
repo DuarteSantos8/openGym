@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
+import { effectiveExerciseId } from '../lib/session-start.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid, exerciseNameText, exCount, fmtNum } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -464,7 +465,7 @@ export default function RoutineEdit() {
   }
   const inSS = new Set(units.filter(u => u.length > 1).flat())
   const profile = activeProfile(S)
-  const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(exIdOf(e)))).length : 0
+  const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(effectiveExerciseId(e, S) ?? exIdOf(e)))).length : 0
   const swipe = workoutControls(S).swipeSets
   const effort = effortOf(S)
   const plannedTotal = r.ex.reduce((n, e) => n + plannedSets(e), 0)
@@ -537,7 +538,9 @@ export default function RoutineEdit() {
       // An unresolvable id is shown rather than skipped — hiding it left an entry you
       // could neither see nor delete, but that still turned up in the workout.
       const ex = exOr(exIdOf(e))
-      const noEquip = profile && !exAvailable(S, ex)
+      // A chain shows the exercise its track is on now; the sheet still edits the occurrence (ex).
+      const shown = exOr(effectiveExerciseId(e, S) ?? exIdOf(e))
+      const noEquip = profile && !exAvailable(S, shown)
       const linkedPrev = i > 0 && e.sg && r.ex[i - 1].sg === e.sg
       // At a superset's edge an arrow takes the exercise out of it rather than past a neighbour.
       const leavesUp = inSS.has(i) && !linkedPrev
@@ -555,16 +558,16 @@ export default function RoutineEdit() {
           {/* Shown on pointer devices only (index.css .routine-grip); the Move buttons and the
               long press stay the way in for a keyboard and a finger. */}
           <span className="routine-grip" data-drag-handle aria-hidden="true" title={t('Reorder exercises')}><Icon name="grip" /></span>
-          <Thumb ex={ex} />
+          <Thumb ex={shown} />
           <button type="button" className="grow item-open" data-row-open>
-            <span className={`tt ${exerciseNameClass(ex)}`}>
+            <span className={`tt ${exerciseNameClass(shown)}`}>
               {ssPos.has(i) && <span className="ss-pos" aria-label={t('Superset position {0}', ssPos.get(i))}>{ssPos.get(i)}</span>}
-              {exerciseNameFor(ex)}
+              {exerciseNameFor(shown)}
             </span>
             <span className="ss">{occurrenceTargets(e)}</span>
             {(chips.length > 0 || noEquip) && <span className="re-chips">
               {chips.slice(0, 3).map(c => <span key={c} className="re-chip">{c}</span>)}
-              {noEquip && <span className="re-chip warn" title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" />{t('Equipment')}</span>}
+              {noEquip && <span className="re-chip warn" title={t('Needs {0}, which isn’t in your active profile', t(shown.eq))}><Icon name="warning" />{t('Equipment')}</span>}
             </span>}
             {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}
           </button>

@@ -2773,4 +2773,6 @@ export default {
   'High': 'Yüksek',
   'Use': 'Kullan',
   '{0}% of {1} → {2}': '{1} değerinin %{0} kadarı → {2}',
+  'Moved up to {0}.': '{0} aşamasına geçildi.',
+  'Back to {0}.': '{0} aşamasına geri dönüldü.',
 }

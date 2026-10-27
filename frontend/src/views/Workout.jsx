@@ -730,6 +730,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {prescription?.provenance.deload && <div className="small dim" style={{ marginBottom: 6 }}>{t('Backed off after {0} sessions short of the plan: {1} → {2} {3}.',
       prescription.provenance.deload.stalls, fmtNum(prescription.provenance.deload.from), fmtNum(prescription.provenance.deload.to),
       prescription.provenance.deload.method === 'seconds' ? 's' : prescription.parameters.load.expression.mode === 'percent_1rm' ? '%' : S.unit)}</div>}
+    {prescription?.provenance.rung && <div className="small dim" style={{ marginBottom: 6 }}>{prescription.provenance.rung.reason === 'promote' ? t('Moved up to {0}.', rungName(prescription, prescription.provenance.rung.to)) : t('Back to {0}.', rungName(prescription, prescription.provenance.rung.to))}</div>}
     <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
           columns; over L/R rows it also has to skip the side badge that sits in front of the weight cell */}

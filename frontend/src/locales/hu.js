@@ -2776,4 +2776,6 @@ export default {
   'High': 'Felső',
   'Use': 'Használd',
   '{0}% of {1} → {2}': '{1} {0}%-a → {2}',
+  'Moved up to {0}.': 'Továbbléptél: {0}.',
+  'Back to {0}.': 'Vissza ide: {0}.',
 }

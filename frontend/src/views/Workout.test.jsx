@@ -848,6 +848,20 @@ describe('active workout weight controls', () => {
     expect(container.textContent).toContain('Variation: Full')
   })
 
+  it('says when the ladder moved up or back a rung', async () => {
+    const rule = defaultPlanRule('bodyweight_ladder', { id: 'rule', exerciseId: 'plain-bench', rungs: ['easy', 'hard'] })
+    await mountCanonical([exercise('plain-bench', [false])], 0, [rule])
+    const id = mocks.A.exposures[0].prescriptionId
+    const p = mocks.S.prescriptions[id]
+    mocks.S.prescriptions[id] = { ...p, provenance: { ...p.provenance, rung: { from: 0, to: 1, reason: 'promote' } } }
+    await rerender()
+    expect(container.textContent).toContain('Moved up to hard.')
+    mocks.S.prescriptions[id] = { ...p, provenance: { ...p.provenance, rung: { from: 1, to: 0, reason: 'regress' } } }
+    await rerender()
+    expect(container.textContent).toContain('Back to easy.')
+    expect(container.textContent).not.toContain('Moved up to')
+  })
+
   const press = async (label, selector) => {
     const control = container.querySelector(selector)
     const button = control?.querySelector(`button[aria-label="${label}"]`)

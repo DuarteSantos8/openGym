@@ -2817,4 +2817,6 @@ export default {
   'High': 'Hög',
   'Use': 'Använd',
   '{0}% of {1} → {2}': '{0} % av {1} → {2}',
+  'Moved up to {0}.': 'Vidare till {0}.',
+  'Back to {0}.': 'Tillbaka till {0}.',
 }
