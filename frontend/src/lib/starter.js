@@ -4,7 +4,7 @@
 //
 // A routine is [key, name, emoji, [[exerciseId, sets, reps], …]]. The key is what a plan's
 // schedule points at, so a weekday never depends on the position of a routine in the array.
-// Names stay canonical English — they become ordinary user routines, which are not translated.
+// Names are localized once on creation, then become ordinary, editable user data.
 import { uid } from './format.js'
 import { EXIDX } from './exercises.js'
 import { eqAvailable, ALL_EQUIPMENT } from './equipment.js'
@@ -43,12 +43,20 @@ const PLANS = {
   '5x5': { routines: FIVE_BY_FIVE, schedule: [[1, '5x5-a'], [3, '5x5-b'], [5, '5x5-c']] }
 }
 
-const build = routines =>
-  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })) }))
+// Built-in data labels, separate from UI strings. Existing user-written names never pass here.
+const FA_NAMES = {
+  'Push Day': 'روز پوش (فشاری)', 'Pull Day': 'روز پول (کششی)', 'Leg Day': 'روز پا',
+  'Upper A': 'بالاتنه A', 'Upper B': 'بالاتنه B',
+  'Lower A': 'پایین‌تنه A', 'Lower B': 'پایین‌تنه B',
+  'Full Body A': 'تمام بدن A', 'Full Body B': 'تمام بدن B', 'Full Body C': 'تمام بدن C',
+}
+export const starterRoutineName = (name, lang) => lang === 'fa' ? FA_NAMES[name] || name : name
+const build = (routines, lang) =>
+  routines.map(([, name, emoji, list]) => ({ id: uid(), name: starterRoutineName(name, lang), emoji, ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })) }))
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
 // top of exactly these three, so this entry point keeps its shape.
-export const starterRoutines = () => build(PPL)
+export const starterRoutines = (lang = 'en') => build(PPL, lang)
 
 // [{ id, days }] for the chooser. The day count is read off the schedule rather than stored
 // beside it, so the two can never disagree.
@@ -121,12 +129,12 @@ const fitRoutines = (routines, equipment) => {
 // Fresh routines plus the weekdays to put them on, or null for an unknown id — a caller that
 // treats null as "change nothing" can never half-apply a plan. With an equipment list the
 // plan is fitted to it first, and `fit` reports how many exercises that swapped or dropped.
-export const buildStarterPlan = (id, equipment) => {
+export const buildStarterPlan = (id, equipment, lang = 'en') => {
   const plan = PLANS[id]
   if (!plan) return null
   const fit = equipment ? fitRoutines(plan.routines, equipment) : null
   const source = fit ? fit.routines : plan.routines
-  const routines = build(source)
+  const routines = build(source, lang)
   // key → the id just minted for it, so the schedule below names its routine
   const byKey = Object.fromEntries(source.map(([key], i) => [key, routines[i].id]))
   return {

@@ -187,7 +187,7 @@ const PLAN_COPY = {
 // nothing at all. planId is deliberately required — a default invites `onClick={loadStarterPlan}`,
 // which hands the click event in as the plan and silently loads nothing.
 export function loadStarterPlan(planId, profile) {
-  const plan = buildStarterPlan(planId, profile ? profileEquipment(profile) : undefined)
+  const plan = buildStarterPlan(planId, profile ? profileEquipment(profile) : undefined, getLang())
   if (!plan) return false
   update(st => {
     // Loading the same plan again reuses the routines it added last time (same name, same

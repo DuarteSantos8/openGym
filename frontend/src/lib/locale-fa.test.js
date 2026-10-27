@@ -135,7 +135,7 @@ describe('Persian exercise catalogue', () => {
       [/\bclean\b/, /کلین/], [/\bsnatch\b/, /اسنچ/],
       [/\bdeadlift\b/, /ددلیفت/], [/\bsquat\b/, /اسکات|اسکوات/],
       [/\bpress\b/, /پرس|فشار/], [/\b(?:biceps?|arm) curl\b/, /جلو بازو/],
-      [/\brow\b/, /قایقی|زیربغل|روئینگ/], [/\blunge\b/, /لانج|لانژ|لانگز/],
+      [/\brow\b/, /قایقی|زیربغل|روئینگ|کول/], [/\blunge\b/, /لانج|لانژ|لانگز/],
       [/\bplank\b/, /پلانک|تخته/], [/\bdip\b/, /دیپ|پارالل/],
       [/\bfly\b/, /فلای/], [/\bcrunch\b/, /کرانچ/],
     ]
@@ -166,6 +166,17 @@ describe('Persian exercise catalogue', () => {
     expect(names['0786']).toContain('جرک')
     expect(names['0754']).toContain('زیرسینه')
     expect(names['0758']).toContain('بالاسینه')
+  })
+
+  it('keeps the reviewed concentration, pass-through, pike and leg-curl names distinct', () => {
+    expect(names['1631']).toBe('جلو بازو تمرکزی با سیم‌کش')
+    expect(names['5856']).toBe('جلو بازو تمرکزی با کتل‌بل')
+    expect(names['1586']).toContain('پشت پا تک‌پا نشسته')
+    expect(names['5497']).toContain('زیر بدن در حالت پلانک')
+    expect(names['4607']).toContain('لوله PVC')
+    expect(names['1081']).toContain('پایک')
+    expect(names['1082']).toContain('جمع کردن زانو')
+    for (const name of Object.values(names)) expect(name).not.toMatch(/غلظت|باخت‌آپ|عبور می کند/)
   })
 
   it('retains English instructions, descriptions, and custom names when untranslated', async () => {

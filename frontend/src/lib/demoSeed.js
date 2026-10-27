@@ -1,7 +1,7 @@
 // The example profile behind the demo build (see demo.js). Imported dynamically, so it stays
 // out of the bundle self-hosters ship.
 import { isoOf, uid } from './format.js'
-import { starterRoutines } from './starter.js'
+import { starterRoutines, starterRoutineName } from './starter.js'
 import { modeOf } from './history.js'
 import { emptyMeasurement } from './measurements.js'
 
@@ -13,6 +13,29 @@ const PROG = {
   '0043': [70, 1.5], '0085': [60, 1.25], '0739': [120, 3], '0585': [45, 1], '0586': [40, 1], '0605': [60, 1.5]
 }
 const WEEKS = 12                       // how much history to fabricate
+
+// Only unchanged names on the original example prescriptions follow the demo language.
+// A renamed routine, changed prescription or custom session title is user data and stays put.
+export function localizeDemoRoutineNames(state, lang) {
+  const originals = starterRoutines()
+  let changed = false
+  for (const routine of state.routines || []) {
+    const original = originals.find(r => r.emoji === routine.emoji &&
+      r.ex.length === routine.ex?.length && r.ex.every((e, i) =>
+        e.id === routine.ex[i].id && e.sets === routine.ex[i].sets && e.reps === routine.ex[i].reps))
+    if (!original || ![original.name, starterRoutineName(original.name, 'fa')].includes(routine.name)) continue
+    const name = starterRoutineName(original.name, lang)
+    if (name === routine.name) continue
+    const previous = routine.name
+    routine.name = name
+    for (const workout of [...(state.workouts || []), ...(state.active ? [state.active] : [])]) {
+      const ids = workout.routineIds || (workout.routineId ? [workout.routineId] : [])
+      if (ids.length === 1 && ids[0] === routine.id && workout.name === previous) workout.name = name
+    }
+    changed = true
+  }
+  return changed
+}
 const BW_FROM = 82.4, BW_TO = 78.3     // body-weight trend across those weeks
 const TARGET_W = 77
 
