@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// openGym-lean optional sync mode. One rule: a signed-in user can read and write only their own
+// openGym optional sync mode. One rule: a signed-in user can read and write only their own
 // users/{uid} tree: the meta doc and its workouts / routines / exercises / bodyweight /
 // measurements subcollections. Everything else is denied, including the passkey
 // collections (passkeys, passkeyUsers, passkeyChallenges), which only the Admin SDK in
