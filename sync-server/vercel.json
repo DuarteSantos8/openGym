@@ -1,0 +1,1 @@
+{"$schema":"https://openapi.vercel.sh/vercel.json","buildCommand":"node scripts/check-env.mjs && (cd ../frontend && npm ci && VITE_FIREBASE=1 npm run build) && node scripts/copy-dist.mjs","framework":null,"outputDirectory":"public"}
