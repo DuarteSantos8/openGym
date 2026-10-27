@@ -988,6 +988,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// CI: the screens that open on the Overview.
     static var demoOpensOverview: Bool { ["overview", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
 
+    /// CI: the screens that open on the Metrics page.
+    static var demoOpensMetrics: Bool { demoScreen?.hasPrefix("metrics") == true }
+
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
@@ -1008,6 +1011,21 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 // The Pull-up done, so the Overview shows all three states.
                 for si in 0..<2 { self.state.workout?.entries[2].sets[si].done = true }
                 if screen != "overview" { self.state.entryIndex = self.workout?.entries.count ?? 0 }
+            case _ where screen.hasPrefix("metrics"):
+                // The Bench and the Pull-up done (5 of 13 sets, 1,670 kg), 52 minutes in. -early: nothing done, 42 s in.
+                let early = screen == "metrics-early"
+                if !early {
+                    for si in 1..<4 { self.state.workout?.entries[0].sets[si].done = true }
+                    for si in 0..<2 { self.state.workout?.entries[2].sets[si].done = true }
+                }
+                if screen == "metrics-big" {
+                    for si in 1..<4 { self.state.workout?.entries[0].sets[si].w = 2000; self.state.workout?.entries[0].sets[si].r = 10 }
+                }
+                if screen == "metrics-lb" { self.state.workout?.unit = "lb" }
+                self.workoutSeenAt = Date().addingTimeInterval(early ? -42 : screen == "metrics-big" ? -3913 : -3133)
+                let none = screen == "metrics-wait" || screen == "metrics-nohealth"
+                self.health.demo(heartRate: none ? nil : early ? 96 : 128, calories: none ? nil : early ? 3 : 312, running: screen != "metrics-nohealth")
+                if screen == "metrics-hrhidden" { self.state.settings.show = WatchShow(hr: false) }
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])

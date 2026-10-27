@@ -16,6 +16,7 @@ import WidgetKit
  *   rest    a full-screen ring around a huge countdown, +15 s and Skip as small round buttons
  *   hold    a timed set: the seconds on the crown, Start, then a ring counting down, Stop
  *   summary the workout at its end: time, sets, volume, heart rate, calories, records; Done
+ * Metrics → after the set: swipe left for the time so far, heart rate, calories, volume and sets.
  * Overview ← the exercises: swipe right from a set for every exercise with its sets done (tap one to
  * jump to it) and Finish workout, a one-second hold at its bottom, Discard workout apart below it.
  * The exercises are vertical pages (swipe, the crown pages them), with the system's page indicator;
@@ -463,15 +464,15 @@ struct IdleView: View {
     }
 }
 
-/* ---------- the session: Overview ← the exercises, the rest over them ---------- */
+/* ---------- the session: Overview ← the exercises → Metrics, the rest over the exercises ---------- */
 
 struct SessionScreen: View {
-    enum Page { case overview, set }
+    enum Page { case overview, set, metrics }
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var page: Page = SessionStore.demoOpensOverview ? .overview : .set
+    @State private var page: Page = SessionStore.demoOpensOverview ? .overview : SessionStore.demoOpensMetrics ? .metrics : .set
 
     var body: some View {
         let end = store.restEndsAt.flatMap { $0 > Date() ? $0 : nil }
@@ -489,11 +490,13 @@ struct SessionScreen: View {
                 }
                 .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: end != nil)
                 .tag(Page.set)
+                MetricsPage(health: store.health, front: page == .metrics && scenePhase == .active).tag(Page.metrics)
             }
             // PageTabViewStyle, not .page(...): that one draws the pages too wide.
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: dimmed || end != nil ? .never : .automatic))
-            // Wrist down or the app left: back to the live set. Nothing else moves the page, and never on a timer.
-            .onChange(of: dimmed) { _, on in if on { page = .set } }
+            // Wrist down or the app left: back to the live set (Metrics stays: it has no actions and keeps ticking in
+            // Always On). Nothing else moves the page, and never on a timer.
+            .onChange(of: dimmed) { _, on in if on && page == .overview { page = .set } }
             .onChange(of: scenePhase) { _, p in if p != .active { page = .set } }
             // The end of the workout, at the moment the lifter is looking.
             .onChange(of: store.finishWanted) { _, want in
@@ -1228,6 +1231,128 @@ struct OverviewRow: View {
         case .current: Image(systemName: "play.circle.fill").foregroundStyle(Theme.ink(Theme.accent, dimmed))
         case .todo: Image(systemName: "circle").foregroundStyle(.secondary)
         }
+    }
+}
+
+/*
+ * Metrics, the page after the set: the time so far big, then the heart rate, calories, volume and sets.
+ * Numbers only: no control, no scrolling, so the crown has nothing to do here. It ticks once a second
+ * while it is in front and awake, and not at all otherwise.
+ */
+struct MetricsPage: View {
+    @EnvironmentObject var store: SessionStore
+    @ObservedObject var health: WorkoutManager
+    /// In front and awake: the only time anything ticks.
+    let front: Bool
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.locale) private var locale
+    @ScaledMetric(relativeTo: .largeTitle) private var heroScaled: CGFloat = 40
+    @ScaledMetric(relativeTo: .title) private var rowScaled: CGFloat = 30
+    @ScaledMetric(relativeTo: .caption) private var unitScaled: CGFloat = 12
+    private var hero: CGFloat { min(heroScaled, 44) }
+    private var row: CGFloat { min(rowScaled, 32) }
+    private var unit: CGFloat { min(unitScaled, 13) }
+
+    var body: some View {
+        if front {
+            TimelineView(.periodic(from: .now, by: 1)) { ctx in content(ctx.date, ctx.cadence) }
+        } else {
+            content(Date(), .live)      // a still frame: the page next to the set costs nothing
+        }
+    }
+
+    private func content(_ now: Date, _ cadence: TimelineViewDefaultContext.Cadence) -> some View {
+        let p = store.progress
+        let w = store.workout
+        let volume = w.map { SessionCore.summary($0, end: 0).volume } ?? 0
+        let elapsed = store.workoutStart.map { now.timeIntervalSince($0) }
+        let clock = elapsed.map { Metrics.clock($0, seconds: cadence <= .seconds) } ?? "--"
+        let hr = Metrics.heart(health.heartRate, at: health.heartAt, now: now)
+        let none = "‒‒‒"      // figure dashes: as wide as three digits, so a first reading changes the text and little else
+        return GeometryReader { g in VStack(alignment: .leading, spacing: 0) {
+            Text(verbatim: clock)
+                .font(.system(size: hero, weight: .semibold, design: .rounded).monospacedDigit())
+                .foregroundStyle(Theme.ink(Theme.accent, dimmed))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .frame(height: hero, alignment: .top).frame(height: hero * 0.8, alignment: .top)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("Time"))
+                .accessibilityValue(elapsed.map { Text(Duration.seconds(Int(min(max($0, 0), 1e7))), format: .units(allowed: [.hours, .minutes, .seconds], width: .wide).locale(locale)) } ?? Text(verbatim: ""))
+                .accessibilityAddTraits(.updatesFrequently)
+            if health.running && store.show.showHr {
+                MetricRow(size: row, unitSize: unit, key: hr.map(String.init) ?? none,
+                          value: Text(verbatim: hr.map(String.init) ?? none), color: Theme.ink(.red, dimmed),
+                          unit: {
+                    HStack(spacing: 2) {
+                        Image(systemName: dimmed ? "heart" : "heart.fill").font(.system(size: unit)).foregroundStyle(Theme.ink(.red, dimmed)).accessibilityHidden(true)
+                        Text(verbatim: "bpm")
+                    }
+                }, label: Text("Heart rate"), spoken: hr.map { Text(verbatim: "\($0)") } ?? (health.measuring ? Text("measuring") : Text(verbatim: "")))
+            }
+            if health.running {
+                let kcal = health.calories.map { Int($0) }
+                MetricRow(size: row, unitSize: unit, key: kcal.map(String.init) ?? none,
+                          value: Text(verbatim: kcal.map(String.init) ?? none), color: Theme.ink(.white, dimmed),
+                          unit: { Text(verbatim: "kcal") }, label: Text("Calories"),
+                          spoken: health.calories.map {
+                    Text(Measurement(value: $0, unit: UnitEnergy.kilocalories),
+                         format: .measurement(width: .wide, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale))
+                } ?? Text(verbatim: ""))
+            }
+            MetricRow(size: row, unitSize: unit, key: "\(Int(volume))",
+                      value: volume > 0 ? Text(volume, format: .number.precision(.fractionLength(0))) : Text(verbatim: none),
+                      color: Theme.ink(.white, dimmed), unit: { Text(verbatim: w?.unit ?? "kg") }, label: Text("Volume"),
+                      spoken: volume > 0 ? Text(verbatim: "\(volume.formatted(.number.precision(.fractionLength(0)).locale(locale))) \(w?.unit ?? "kg")") : Text(verbatim: ""))
+            if p.total > 0 {
+                MetricRow(size: row, unitSize: unit, key: "\(p.done)/\(p.total)",
+                          value: Text(verbatim: "\(p.done)").foregroundStyle(Theme.ink(.white, dimmed)) + Text(verbatim: "/\(p.total)").foregroundStyle(.secondary),
+                          color: Theme.ink(.white, dimmed), unit: { Text("Sets") }, label: Text("Sets"), spoken: Text("\(p.done) of \(p.total) sets"))
+            }
+        }
+        .padding(.leading, 12).padding(.trailing, Theme.side)
+        // Under the clock's bottom (35 pt); the clock is at the right, so the hero would fit beside it, but not 1:05:25 at AX.
+        .padding(.top, 26)
+        // Pinned top-left: a page proposes no height, so a plain frame would centre the rows and every state would shift them.
+        .frame(width: g.size.width, height: g.size.height, alignment: .topLeading) }
+        .ignoresSafeArea(edges: .top)
+    }
+}
+
+/// One number with its unit on the numerals' baseline.
+private struct MetricRow<Unit: View>: View {
+    let size: CGFloat
+    let unitSize: CGFloat
+    /// Changes when the number does: the roll runs on it.
+    let key: String
+    let value: Text
+    let color: Color
+    @ViewBuilder let unit: () -> Unit
+    let label: Text
+    let spoken: Text
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 4) {
+            value
+                .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
+                .foregroundStyle(color)
+                .contentTransition(.numericText())
+                .animation(reduceMotion || dimmed ? nil : .easeOut(duration: 0.15), value: key)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            unit()
+                .font(.system(size: unitSize, weight: .bold, design: .rounded))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .fixedSize()
+        }
+        // Laid out at full height (no shrink), then the row takes only 0.8 of it: digits have no descenders, so rows stack tight like Apple's Workout.
+        .frame(height: size, alignment: .top).frame(height: size * 0.8, alignment: .top)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(label)
+        .accessibilityValue(spoken)
     }
 }
 
