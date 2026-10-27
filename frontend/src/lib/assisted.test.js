@@ -5,6 +5,9 @@ import { describe, it, expect } from 'vitest'
 import { isAssisted, betterWeight, beatsWeight, EXIDX } from './exercises.js'
 import { bestWeightFor, bestWeightForEntry } from './history.js'
 import { bestSetOf, e1rmSeries, is1RMRecord } from './onerm.js'
+import { buildSessionExposures } from './session-start.js'
+import { advanceProgression } from './prescription/index.js'
+import { ruleOccurrence } from './test-fixtures.js'
 
 const ASSISTED = '0017'          // assisted pull-up, leverage machine
 const PLAIN = '0025'             // barbell bench press
@@ -83,5 +86,45 @@ describe('a sync does not hand the help back', () => {
     // and the other way round, so it does not depend on which copy is newer
     expect(mergeStates(server, phone).exWeights[ASSISTED].w).toBe(20)
     expect(mergeStates(server, phone).exWeights[PLAIN].w).toBe(100)
+  })
+})
+
+describe('assisted chain (G6)', () => {
+  const chain = [{ name: 'Assisted', exerciseId: '0017' }, { name: 'Chin-up', exerciseId: '1326' }, 'Hold']
+  const occ = (over = {}) => ({ ...ruleOccurrence('0652', { preset: 'bodyweight_ladder', options: { rungs: chain, sets: { min: 1, max: 1 }, reps: { min: 1, max: 2 }, completion: [] } }), ...over })
+  const ctx = k => ({ now: Date.UTC(2026, 8, 24) + k, newId: seed => seed })
+  const fresh = () => ({ unit: 'kg', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} })
+  // One finished session: the exposure is logged and its track advanced, as finish-session does.
+  const session = (S, o, k, reps) => {
+    const [x] = buildSessionExposures(S, { id: 'r1', ex: [o] }, ctx(k))
+    const p = S.prescriptions[x.prescriptionId]
+    const actual = { sets: 1, reps }
+    S.workouts.push({ id: 'w' + k, start: k, d: '2026-09-' + String(10 + k).padStart(2, '0'), exposures: [{ ...x, actual, audit: [] }] })
+    S.progression[o.occurrenceId] = advanceProgression({ state: S.progression[o.occurrenceId] ?? null, prescription: p, log: { id: x.exposureId, actual }, now: new Date(ctx(k).now).toISOString() })
+    return { x, p, state: S.progression[o.occurrenceId] }
+  }
+
+  it('assisted follows the rung exercise', () => {
+    const S = fresh()
+    expect(session(S, occ(), 0, 2).x).toMatchObject({ exerciseId: '0017', assisted: true })
+    session(S, occ(), 1, 2)
+    expect(session(S, occ(), 2, 1).x).toMatchObject({ exerciseId: '1326', assisted: false })
+  })
+
+  it('an occurrence that says assisted: false overrides both rungs', () => {
+    const S = fresh()
+    expect(session(S, occ({ assisted: false }), 0, 2).x.assisted).toBe(false)
+  })
+
+  it('climbing to the next rung keeps the track, restarts reps and sets and inherits no load', () => {
+    const S = fresh()
+    const first = session(S, occ(), 0, 2).state
+    const promoted = session(S, occ(), 1, 2).state
+    expect(promoted).toMatchObject({ trackId: first.trackId, cyclesCompleted: 0, phaseExposures: 2, values: { difficulty: 1, sets: null, reps: null } })
+    const { x, p } = session(S, occ(), 2, 1)
+    expect(x.exerciseId).toBe('1326')
+    expect(p.parameters.load.expression.mode).toBe('empty')
+    expect(p.values).toMatchObject({ difficulty: 1, sets: 1, reps: 1 })
+    expect(S.progression[x.trackId].phaseExposures).toBe(3)
   })
 })

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { advanceProgression, editPlan, planPhase } from './prescription/index.js'
-import { buildSessionExposures, missingOneRms, occurrenceFor } from './session-start.js'
+import { advanceProgression, editPlan, generatePrescription, planPhase } from './prescription/index.js'
+import { buildSessionExposures, effectiveExerciseId, missingOneRms, occurrenceFor } from './session-start.js'
 import { entriesForExposures } from './session-ui-adapter.js'
 import { loggedExposure, ruleOccurrence } from './test-fixtures.js'
 import { EXIDX, isAssisted } from './exercises.js'
@@ -153,3 +153,87 @@ describe('warm-up inputs', () => {
 
 // An exercise's ⋯ menu sets `noProg` by hand; a deload or rehab routine freezes it onto its
 // exercises. Only the second is rebuilt without a prescription.
+
+describe('rung exercises', () => {
+  // A pull-up occurrence whose chain starts on the assisted machine, then chin-ups, then a named hold.
+  const chain = [{ name: 'Assisted', exerciseId: '0017' }, { name: 'Chin-up', exerciseId: '1326' }, 'Weighted hold']
+  const ladder = (rungs = chain) => ruleOccurrence('0652', { preset: 'bodyweight_ladder', options: { rungs, sets: { min: 1, max: 1 }, reps: { min: 1, max: 2 }, completion: [] } })
+  // The track's state from a real finish (so its planFingerprint is stamped), moved to `difficulty`.
+  const at = (occ, difficulty, over = {}) => {
+    const p = generatePrescription({ id: 'p0', now: '2026-09-24T00:00:00.000Z', trackId: occ.occurrenceId, rule: occ.rule })
+    const s = advanceProgression({ state: null, prescription: p, log: { id: 'l0', actual: { sets: 1, reps: 1 } }, now: '2026-09-24T01:00:00.000Z' })
+    return profile({ progression: { [occ.occurrenceId]: { ...s, values: { ...s.values, difficulty }, ...over } } })
+  }
+
+  it('effectiveExerciseId follows the rung, a label-only rung keeping the occurrence', () => {
+    const occ = ladder()
+    expect([0, 1, 2].map(d => effectiveExerciseId(occ, at(occ, d)))).toEqual(['0017', '1326', '0652'])
+  })
+
+  it('starts on rung 0, and a chain of names never changes the exercise', () => {
+    expect(effectiveExerciseId(ladder(), profile())).toBe('0017')
+    expect(effectiveExerciseId(ladder(['easy', 'hard']), at(ladder(['easy', 'hard']), 1))).toBe('0652')
+    expect(effectiveExerciseId(ruleOccurrence('0025'), profile())).toBe('0025')
+  })
+
+  it('a plan edit restarts the track, and its exercise, at rung 0', () => {
+    const occ = ladder()
+    expect(effectiveExerciseId(occ, at(occ, 1, { planFingerprint: 'an older plan' }))).toBe('0017')
+  })
+
+  it('a rungs list shortened below the current rung clamps to the last rung', () => {
+    const occ = ladder()
+    expect(effectiveExerciseId(occ, at(occ, 5))).toBe('0652')
+    const two = ladder(chain.slice(0, 2))
+    expect(effectiveExerciseId(two, at(two, 5))).toBe('1326')
+  })
+
+  it('a rung exercise that no longer exists falls back to the occurrence', () => {
+    const occ = ladder([{ name: 'Gone', exerciseId: 'c-deleted' }, 'b'])
+    expect(effectiveExerciseId(occ, profile())).toBe('0652')
+  })
+
+  it('the session logs the rung exercise on the same track', () => {
+    const occ = ladder()
+    const S = at(occ, 1)
+    const [x] = buildSessionExposures(S, { id: 'r1', ex: [occ] }, ctx)
+    expect(x).toMatchObject({ exerciseId: '1326', exerciseNameSnapshot: '1326', trackId: occ.occurrenceId, occurrenceId: occ.occurrenceId })
+    expect(S.prescriptions[x.prescriptionId].exerciseId).toBe('0652')
+  })
+
+  // Shared by both "Any workout" tests: a logged exposure of `exerciseId` on `trackId`.
+  const work = { role: 'work', status: 'completed', prescribed: true, observations: [{ metric: 'repetitions', unit: 'reps', value: 5 }], resistance: { kind: 'external-load', value: 30, unit: 'kg' } }
+  const logOf = (exposureId, exerciseId, trackId, prescriptionId, day) => ({ id: 'w-' + exposureId, d: `2026-09-0${day}`, start: Date.UTC(2026, 8, day), exposures: [{ exposureId, exerciseId, trackId, prescriptionId, actual: { sets: 1, reps: 5, load: { value: 30, unit: 'kg' } }, performance: { sets: [work] }, excludedFromProgression: false }] })
+  const linearOn = (id, trackId) => generatePrescription({ id: 'p-' + trackId, now: '2026-09-01T00:00:00.000Z', trackId, rule: ruleOccurrence(id, { options: { load: { mode: 'absolute', value: 30, unit: 'kg' } } }).rule })
+
+  it('"Any workout" borrows the rung exercise\'s log from another routine', () => {
+    const occ = ladder()
+    const other = linearOn('0017', 'occ-other')
+    const source = d => {
+      const S = Object.assign(at(occ, d), { lastFrom: 'any', workouts: [logOf('other', '0017', 'occ-other', other.id, 1)], prescriptions: { [other.id]: other } })
+      const [x] = buildSessionExposures(S, { id: 'r1', ex: [occ] }, ctx)
+      return S.prescriptions[x.prescriptionId].provenance.sourceLogId
+    }
+    expect(source(0)).toBe('other')
+    expect(source(1)).toBe(null)
+  })
+
+  it('"Any workout" never hands a chain the state of another routine\'s track', () => {
+    const occ = ladder()
+    const p0 = generatePrescription({ id: 'p0', now: '2026-09-01T00:00:00.000Z', trackId: occ.occurrenceId, rule: occ.rule })
+    const s0 = advanceProgression({ state: null, prescription: p0, log: { id: 'own', actual: { sets: 1, reps: 1 } }, now: '2026-09-01T01:00:00.000Z' })
+    const other = linearOn('1326', 'occ-other')
+    const S = profile({
+      lastFrom: 'any',
+      workouts: [logOf('own', '0017', occ.occurrenceId, 'p0', 1), logOf('other', '1326', 'occ-other', other.id, 2)],
+      prescriptions: { p0, [other.id]: other },
+      progression: {
+        [occ.occurrenceId]: { ...s0, values: { ...s0.values, difficulty: 1 } },
+        'occ-other': advanceProgression({ state: null, prescription: other, log: { id: 'other', actual: { sets: 3, reps: 5, load: { value: 30, unit: 'kg' } } }, now: '2026-09-02T01:00:00.000Z' })
+      }
+    })
+    const [x] = buildSessionExposures(S, { id: 'r1', ex: [occ] }, ctx)
+    expect(x.exerciseId).toBe('1326')
+    expect(S.prescriptions[x.prescriptionId].values.difficulty).toBe(1)
+  })
+})
