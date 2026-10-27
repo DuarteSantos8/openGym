@@ -70,6 +70,9 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     const to = regimeExit(program, phase, opening)
     if (to) { values = entryValues(to, values, { load: bestLoadOf(lastLog, assisted, values.load.unit) ?? heldLoad, reps: lastLog?.actual?.reps, previous: lastPrescription?.values?.reps ?? lastPrescription?.prefill?.reps }); phase = to }
   }
+  // A rungs list shortened since the last finish: the track stands on its new last rung.
+  const rungOp = operatorFor(phase, 'difficulty')
+  if (rungOp && values.difficulty > rungOp.max) values.difficulty = rungOp.max
   const p = phase.parameters
   const trainingMax = !program.trainingMax ? null
     : carry && values.trainingMax && same(before.program.trainingMax, program.trainingMax) ? copy(values.trainingMax) : trainingMaxFor(program, snapshot1RM, rule.rounding)
@@ -87,8 +90,8 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   const rest = valueOf(phase, values, 'restSeconds')
   const deload = carry ? state.deload ?? null : null
   // The rung the last finish moved to, for the workout's one line (promote or regress).
-  const rungFrom = lastPrescription?.values?.difficulty ?? 0, rungTo = values.difficulty ?? 0
-  const rung = carry && operatorFor(phase, 'difficulty') && lastPrescription.phaseId === phase.id && rungFrom !== rungTo ? { from: rungFrom, to: rungTo, reason: rungTo > rungFrom ? 'promote' : 'regress' } : null
+  const rungFrom = Math.min(lastPrescription?.values?.difficulty ?? 0, rungOp?.max ?? 0), rungTo = values.difficulty ?? 0
+  const rung = carry && rungOp && lastPrescription.phaseId === phase.id && rungFrom !== rungTo ? { from: rungFrom, to: rungTo, reason: rungTo > rungFrom ? 'promote' : 'regress' } : null
 
   // The last session of a loaded lift carried no weight: v1 held the plan.
   const unweighted = !!lastLog && !reset && !!before && lastPrescription.phaseId === phase.id && unweightedLog(lastPrescription, lastLog)
