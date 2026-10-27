@@ -2370,3 +2370,12 @@ body.tabbar-side.resting #toast{bottom:calc(100px + var(--sab))}
   body.tabbar-side #tabbar button > span:not(.tab-ic):not(.cir){display:none}
   body.tabbar-side #tabbar button.start .cir{width:44px;height:44px}
 }
+
+/* The right edge is the system's own column, the time and the battery at its top (the iPhone Duo
+   closed, body.tabbar-status from App.jsx): the bar is that column, as wide as it, with the tabs
+   below the status block instead of beside it, and the page gets the width back. */
+body.tabbar-side.tabbar-status{--rail:max(84px,var(--sar))}
+body.tabbar-side.tabbar-status #tabbar{
+  justify-content:flex-start;
+  padding:max(calc(var(--sat) + 8px),160px) 4px calc(var(--sab) + 8px) 4px;
+}
