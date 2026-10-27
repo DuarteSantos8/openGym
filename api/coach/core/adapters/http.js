@@ -232,6 +232,13 @@ export function httpAdapter(spec) {
             transientRetries++;
             continue;
           }
+          if (res.status === 400 && spec.withSupportedParameters) {
+            const next = spec.withSupportedParameters(body, msg);
+            if (next !== body) {
+              body = next;
+              continue;
+            }
+          }
           // A hosted validator that enforces strict JSON Schema refuses the flat schemas on
           // additionalProperties (OpenRouter, #701). The strict copy is a wire-only change —
           // local grammar-sampling servers keep getting the flat shape they can convert — and
