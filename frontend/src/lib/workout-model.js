@@ -53,6 +53,60 @@ export function toggleFailure(set) {
   return out
 }
 
+// Lengthened partials: extra reps in the stretched half of the range, done straight after the
+// last full rep of a set taken to failure (no rest in between, so they belong to the same set).
+// Stored as `lp: <count>` on the row, written only when above zero. Like drops and clusters they
+// ride on the row: `w`/`r` stay the full-ROM work, so volume, records, 1RM and progression
+// never see them. Only effort-aware readers (recovery) add them back, each partial rep at
+// PARTIAL_REP_WEIGHT of a full one. Never planned - only logged once the set is done.
+export const PARTIAL_REP_WEIGHT = 0.2
+// A set's partials never add more than one extra set of stimulus, however many are logged.
+export const PARTIAL_MAX_EXTRA_SETS = 1
+
+/** Count of lengthened partial reps on a row; 0 for none, warm-ups and anything malformed. */
+export function partialsOf(set) {
+  const source = objectOf(set)
+  if (isWarmupRow(source)) return 0
+  const n = Number(source.lp)
+  return Number.isInteger(n) && n > 0 ? n : 0
+}
+
+/** True when the set is rated short of failure (RIR above 0 or RPE below 10): partials can't follow it. */
+export function partialsRefused(set) {
+  const s = objectOf(set)
+  return (s.rir != null && Number(s.rir) > 0) || (s.rpe != null && Number(s.rpe) < 10)
+}
+
+/**
+ * Extra effective sets a row's partials are worth: each partial rep counts PARTIAL_REP_WEIGHT of
+ * a full rep, expressed against the set's own reps (8 reps + 5 partials = 5 x 0.2 / 8 sets).
+ * Timed rows and rows without reps have no rep to compare against and add nothing.
+ */
+export function partialSetsOf(set) {
+  const lp = partialsOf(set)
+  const reps = Number(objectOf(set).r)
+  if (!lp || !(reps >= 1)) return 0
+  return Math.min(PARTIAL_MAX_EXTRA_SETS, (lp * PARTIAL_REP_WEIGHT) / reps)
+}
+
+/**
+ * Set a row's partial count. Partials only happen after failure, so a positive count also marks
+ * the row as taken to failure (unless it was rated RIR 0 / RPE 10 by hand); zero or less drops
+ * the key and leaves the failure mark as it is.
+ */
+export function withPartials(set, count) {
+  const out = { ...objectOf(set) }
+  const n = Math.floor(Number(count))
+  if (!(n > 0) || isWarmupRow(out)) {
+    delete out.lp
+    return out
+  }
+  out.lp = n
+  const rated = out.rir === 0 || out.rpe === 10
+  if (!rated) out.failure = true
+  return out
+}
+
 /** A drop-set's weight drops, oldest first; empty for anything else. */
 export function dropsOf(set) {
   const source = objectOf(set)

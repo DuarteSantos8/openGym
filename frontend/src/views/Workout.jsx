@@ -34,7 +34,7 @@ import { durationSheet } from '../components/DurationWheel.jsx'
 import { REST_MAX, fmtRest, restWheelValue } from '../lib/duration.js'
 import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
-import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, swapActiveWorkoutToBackup, setNoteSheet } from '../sheets.jsx'
+import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, partialsPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, swapActiveWorkoutToBackup, setNoteSheet } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
 import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
@@ -58,7 +58,7 @@ import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
-import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
+import { isWarmupRow, isFailureSet, toggleFailure, withPartials, partialsOf, partialsRefused, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -175,6 +175,14 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const on = !isFailureSet(e.sets[i])
     for (let j = start; j < start + count; j++) if (isFailureSet(e.sets[j]) !== on) e.sets[j] = toggleFailure(e.sets[j])
   }, true)
+  // Lengthened partials ride on the set's row (workout-model withPartials), which also marks it
+  // as taken to failure. A timed or side set has no single rep count to count them against.
+  const setPartialsAt = (i, n) => mutSet(i, row => withPartials(row, n))
+  // Partials only follow a set taken to failure: a set rated RIR > 0 / RPE < 10 refuses them.
+  const openPartials = (s, i) => {
+    if (!partialsOf(s) && partialsRefused(s)) return useUI.getState().toast(t('Partials only follow a set taken to failure. Change the RIR to 0 (or RPE to 10) first.'))
+    partialsPickerSheet(partialsOf(s), n => setPartialsAt(i, n))
+  }
   // One set's own rest for this session (#609): null takes it away, 0 is "No timer". It sits on
   // the set's first row, the one the rest flow reads (ownSetRest). The wheel may outlive the
   // set it was opened for, so a Done after the rows moved or the workout changed does nothing.
@@ -586,6 +594,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             : { icon: 'camera', label: t('Film this set'), sub: t('Check your form later'), onClick: () => filmSet(i) },
           // A word about this one set (lib/set-notes.js), kept with the workout.
           { icon: 'note', label: noteHere ? t('Edit note') : t('Note'), sub: noteHere || t('A word about this set'), onClick: () => setNoteSheet(entryIdx, spanStart, warm ? t('Warm-up') : t('Set {0}', setNumOf(s, i))) },
+          // Only once the set is done, and never on a per-side pair: partials follow the last full rep.
+          !warm && mode === 'reps' && !isSideSet(s) && s.done && { icon: 'arrowDown', label: t('Lengthened partials'), sub: partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('After failure, no rest'), onClick: () => openPartials(s, i) },
         ] },
         { more: [{ items: [
           // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
@@ -726,8 +736,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // hold draws two of them, L then R, inside one swipe so the pair slides as the one set it is.
   // A set taken to failure wears a small "F" on its number, the button every row's menu opens
   // from. The button's own label speaks for it, so a screen reader hears it with the set number.
-  const failMark = s => isFailureSet(s) ? <span className="failmark" aria-hidden="true">{t('F')}</span> : null
-  const failSay = (s, label) => isFailureSet(s) ? label + ', ' + t('Taken to failure') : label
+  const failMark = s => isFailureSet(s) ? <span className="failmark" aria-hidden="true">{t('F')}{partialsOf(s) ? '+' + partialsOf(s) : ''}</span> : null
+  const failSay = (s, label) => (isFailureSet(s) ? label + ', ' + t('Taken to failure') : label) + (partialsOf(s) ? ', ' + t('Partials: {0}', partialsOf(s)) : '')
   const plainRow = (s, i) => (
     <div ref={el => onSetRowRef?.(i, el)} data-tour="set" className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '')}>
       <button type="button" className="n" aria-label={trendSay(i, failSay(s, sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}{trendMark(i)}</button>
@@ -905,6 +915,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             {wc.setShortcuts && <div className="setextra">
               {!isRestPauseSet(s) && <button className="chip add" onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
               {!isDropSet(s) && <button className="chip add" onClick={() => addBurstRow(i)}><Icon name="bolt" />{t('+ Burst')}</button>}
+              {s.done && !isSideSet(s) && <button className="chip add" onClick={() => openPartials(s, i)}><Icon name="arrowDown" />{partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('+ Partials')}</button>}
             </div>}
           </>}
         </div>
@@ -1138,8 +1149,14 @@ function ActiveWorkout() {
   const [openedState, setOpenedState] = useState(() => ({ len: A.entries.length, keys: new Set() }))
   const opened = openedState.len === A.entries.length ? openedState.keys : new Set()
   const finished = u => u.every(idx => A.entries[idx].sets.length > 0 && A.entries[idx].sets.every(s => s.done))
+  // Optional (Settings → Workout): the exercise just left stays open one step longer, so a late
+  // addition such as lengthened partials doesn't mean reopening it. Remembered per screen.
+  const prevCurRef = useRef(cur)
+  const leftRef = useRef(null)
+  if (prevCurRef.current !== cur) { leftRef.current = prevCurRef.current; prevCurRef.current = cur }
+  const keepLast = workoutControls(S).keepLastOpen === true
   const collapsed = new Set(collapseOn ? units.filter(u =>
-    !u.includes(cur) && !opened.has(u.join('-')) && finished(u),
+    !u.includes(cur) && !(keepLast && leftRef.current != null && u.includes(leftRef.current)) && !opened.has(u.join('-')) && finished(u),
   ).map(u => u.join('-')) : [])
   const setUnitOpen = (key, open) => setOpenedState(prev => {
     const keys = new Set(prev.len === A.entries.length ? prev.keys : [])
@@ -2073,7 +2090,8 @@ function ActiveWorkout() {
       // and revealCur brings the next exercise up if it was left low on the screen. Only on new
       // progress, never on a re-tick, and never in the other layouts, where the marker stays put.
       if (collapseOn && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
-        revealCur.current = true
+        // "Keep the last exercise open" stays where it is: no glide to the next one either.
+        revealCur.current = !wc.keepLastOpen
         update(s => { if (s.active) s.active.cur = nextUnit[0] })
       }
 
