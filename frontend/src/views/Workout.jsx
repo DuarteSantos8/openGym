@@ -58,7 +58,7 @@ import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
-import { isWarmupRow, isFailureSet, toggleFailure, withPartials, partialsOf, partialsRefused, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
+import { isWarmupRow, isFailureSet, toggleFailure, withPartials, partialsOf, partialsRefused, partialsAllowed, settlePartials, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -169,18 +169,28 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const e = s.active.entries[entryIdx]
     e.sets = warm ? makeWarmupAt(e.sets, i) : makeWorkAt(e.sets, i)
   }, true)
-  const toggleFailureAt = i => update(s => {
-    const e = s.active.entries[entryIdx]
-    const [start, count] = setSpanAt(e.sets, i)
-    const on = !isFailureSet(e.sets[i])
-    for (let j = start; j < start + count; j++) if (isFailureSet(e.sets[j]) !== on) e.sets[j] = toggleFailure(e.sets[j])
-  }, true)
+  const toggleFailureAt = i => {
+    let lost = false
+    update(s => {
+      const e = s.active.entries[entryIdx]
+      const [start, count] = setSpanAt(e.sets, i)
+      const on = !isFailureSet(e.sets[i])
+      for (let j = start; j < start + count; j++) {
+        if (isFailureSet(e.sets[j]) !== on) e.sets[j] = toggleFailure(e.sets[j])
+        // Switching F off ends the partials too, unless a RIR 0 / RPE 10 rating still holds the failure.
+        const had = Number(e.sets[j].lp) > 0
+        e.sets[j] = settlePartials(e.sets[j])
+        if (had && !(Number(e.sets[j].lp) > 0)) lost = true
+      }
+    }, true)
+    if (lost) useUI.getState().toast(t('Partials removed: the set is no longer taken to failure.'))
+  }
   // Lengthened partials ride on the set's row (workout-model withPartials), which also marks it
   // as taken to failure. A timed or side set has no single rep count to count them against.
   const setPartialsAt = (i, n) => mutSet(i, row => withPartials(row, n))
   // Partials only follow a set taken to failure: a set rated RIR > 0 / RPE < 10 refuses them.
   const openPartials = (s, i) => {
-    if (!partialsOf(s) && partialsRefused(s)) return useUI.getState().toast(t('Partials only follow a set taken to failure. Change the RIR to 0 (or RPE to 10) first.'))
+    if (!partialsAllowed(s)) return useUI.getState().toast(t('Partials only follow a set taken to failure. Mark it as failure, or rate it RIR 0 (RPE 10), first.'))
     partialsPickerSheet(partialsOf(s), n => setPartialsAt(i, n))
   }
   // One set's own rest for this session (#609): null takes it away, 0 is "No timer". It sits on
@@ -595,7 +605,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           // A word about this one set (lib/set-notes.js), kept with the workout.
           { icon: 'note', label: noteHere ? t('Edit note') : t('Note'), sub: noteHere || t('A word about this set'), onClick: () => setNoteSheet(entryIdx, spanStart, warm ? t('Warm-up') : t('Set {0}', setNumOf(s, i))) },
           // Only once the set is done, and never on a per-side pair: partials follow the last full rep.
-          !warm && mode === 'reps' && !isSideSet(s) && s.done && { icon: 'arrowDown', label: t('Lengthened partials'), sub: partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('After failure, no rest'), onClick: () => openPartials(s, i) },
+          !warm && mode === 'reps' && !isSideSet(s) && s.done && { icon: 'arrowDown', label: t('Lengthened partials'), sub: !partialsAllowed(s) ? t('Needs a set taken to failure') : partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('After failure, no rest'), onClick: () => openPartials(s, i) },
         ] },
         { more: [{ items: [
           // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
@@ -736,8 +746,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // hold draws two of them, L then R, inside one swipe so the pair slides as the one set it is.
   // A set taken to failure wears a small "F" on its number, the button every row's menu opens
   // from. The button's own label speaks for it, so a screen reader hears it with the set number.
-  const failMark = s => isFailureSet(s) ? <span className="failmark" aria-hidden="true">{t('F')}{partialsOf(s) ? '+' + partialsOf(s) : ''}</span> : null
-  const failSay = (s, label) => (isFailureSet(s) ? label + ', ' + t('Taken to failure') : label) + (partialsOf(s) ? ', ' + t('Partials: {0}', partialsOf(s)) : '')
+  const failMark = s => isFailureSet(s) || partialsOf(s) ? <span className="failmark" aria-hidden="true">{t('F')}{partialsOf(s) ? '+' + partialsOf(s) : ''}</span> : null
+  const failSay = (s, label) => (isFailureSet(s) || partialsOf(s) ? label + ', ' + t('Taken to failure') : label) + (partialsOf(s) ? ', ' + t('Partials: {0}', partialsOf(s)) : '')
   const plainRow = (s, i) => (
     <div ref={el => onSetRowRef?.(i, el)} data-tour="set" className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '')}>
       <button type="button" className="n" aria-label={trendSay(i, failSay(s, sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}{trendMark(i)}</button>
@@ -915,7 +925,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             {wc.setShortcuts && <div className="setextra">
               {!isRestPauseSet(s) && <button className="chip add" onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
               {!isDropSet(s) && <button className="chip add" onClick={() => addBurstRow(i)}><Icon name="bolt" />{t('+ Burst')}</button>}
-              {s.done && !isSideSet(s) && <button className="chip add" onClick={() => openPartials(s, i)}><Icon name="arrowDown" />{partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('+ Partials')}</button>}
+              {s.done && !isSideSet(s) && <button className="chip add" aria-disabled={!partialsAllowed(s) || undefined} style={!partialsAllowed(s) ? { opacity: 0.45 } : undefined} onClick={() => openPartials(s, i)}><Icon name="arrowDown" />{partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('+ Partials')}</button>}
             </div>}
           </>}
         </div>
@@ -1390,8 +1400,16 @@ function ActiveWorkout() {
   const mutEntry = (idx, fn) => update(s => { inEntryUnit(s, idx, fn) }, true)
   // Clearing an optional field drops the key rather than storing null, so a set only carries
   // what was actually logged — in the session, in history and in a backup.
-  const setField = (idx, i, field, v) => mutEntry(idx, e => {
+  const setField = (idx, i, field, v) => {
+    let lost = false
+    mutEntry(idx, e => {
     if (v == null) delete e.sets[i][field]; else e.sets[i][field] = v
+    // A rating short of failure ends the set's partials with it (workout-model settlePartials).
+    if (field === 'rir' || field === 'rpe') {
+      const had = Number(e.sets[i].lp) > 0
+      e.sets[i] = settlePartials(e.sets[i])
+      lost = had && !(Number(e.sets[i].lp) > 0)
+    }
     // Typing a duration IS the new plan, the same way ticking the row ends it: a plan a displaced
     // hold put aside must not outrank what you just typed, or the field would read 45 and the ▶
     // would still hold the 30 the row was asking for before.
@@ -1406,7 +1424,9 @@ function ActiveWorkout() {
     }
     // A warm-up you changed is yours from now on ("Your last session" carries it, #525).
     e.sets[i] = markWarmupEdited(e.sets[i], field)
-  })
+    })
+    if (lost) useUI.getState().toast(t('Partials removed: the set is no longer taken to failure.'))
+  }
   const modeAt = idx => modeOf({ ...(A.entries[idx].target || {}), id: A.entries[idx].id })
   const addSet = idx => mutEntry(idx, e => {
     const l = e.sets[e.sets.length - 1]

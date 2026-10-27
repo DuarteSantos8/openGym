@@ -66,7 +66,9 @@ export const PARTIAL_MAX_EXTRA_SETS = 1
 /** Count of lengthened partial reps on a row; 0 for none, warm-ups and anything malformed. */
 export function partialsOf(set) {
   const source = objectOf(set)
-  if (isWarmupRow(source)) return 0
+  // A set rated short of failure has none, whatever the row still carries (an edit, an import or
+  // another device can leave `lp` behind): every reader - label, engine, MCP - sees zero.
+  if (isWarmupRow(source) || !partialsAllowed(source)) return 0
   const n = Number(source.lp)
   return Number.isInteger(n) && n > 0 ? n : 0
 }
@@ -75,6 +77,16 @@ export function partialsOf(set) {
 export function partialsRefused(set) {
   const s = objectOf(set)
   return (s.rir != null && Number(s.rir) > 0) || (s.rpe != null && Number(s.rpe) < 10)
+}
+
+/**
+ * Whether partials may be added in the app: the set must already be a failure set - marked F, or
+ * rated RIR 0 / RPE 10 - and not rated short of it. (The MCP is the exception: a set logged
+ * through it with partials and no rating is taken as one the user forgot to mark, and is marked.)
+ */
+export function partialsAllowed(set) {
+  const s = objectOf(set)
+  return !isWarmupRow(s) && !partialsRefused(s) && (isFailureSet(s) || s.rir === 0 || s.rpe === 10)
 }
 
 /**
@@ -105,6 +117,19 @@ export function withPartials(set, count) {
   const rated = out.rir === 0 || out.rpe === 10
   if (!rated) out.failure = true
   return out
+}
+
+/**
+ * Run after an edit that can end a set's failure (a rating moved above RIR 0 / below RPE 10, the
+ * F mark switched off): partials only follow failure, so they go with it. Returns the row, minus
+ * `lp` when it no longer holds, and the same object when nothing changes.
+ */
+export function settlePartials(set) {
+  const row = objectOf(set)
+  if (!(Number(row.lp) > 0)) return set
+  if (partialsAllowed(row)) return set
+  const { lp, ...rest } = row
+  return rest
 }
 
 /** A drop-set's weight drops, oldest first; empty for anything else. */
