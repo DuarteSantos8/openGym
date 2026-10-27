@@ -97,10 +97,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var holdStartedAt: Date?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
     @Published private(set) var summary: WorkoutSummary?
-    /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
+    /// Whether the phone is in reach now.
     @Published private(set) var reachable = true
-    @Published private(set) var queued = 0
-    /// Sets logged here whose events the phone has not got yet (Unsent), for the complications.
+    /// Sets logged here whose events the phone has not got yet (Unsent), for the pill and the complications.
     @Published private(set) var unsent = 0
     /// Whether a snapshot from the phone ever arrived on this watch. The phone sends only while
     /// openGym runs there, so until then the start screen says to open it once.
@@ -247,8 +246,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return workout == nil ? nil : workoutSeenAt
     }
 
-    /// Events wait on the watch for a phone out of reach: "Saved on the watch, syncs later".
-    var offline: Bool { queued > 0 && !reachable }
+    // lean: a queue stuck while the phone is reachable reads "On your iPhone"; add a linger timer if the wrist test finds one.
+    /// What to say about the sets of the workout on screen (or the summary), see WatchCore's SyncState.
+    var sync: SyncState {
+        SyncState.state(reachable: reachable, unsent: unsent, logged: workout.map(SyncState.anySet) ?? summary.map { $0.sets > 0 })
+    }
 
     func isSkipped(_ exId: String, _ si: Int) -> Bool { SessionCore.isSkipped(state, exId, si) }
 
@@ -295,8 +297,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     var widgetState: WidgetState {
         var w = widgetStateWithoutLang
         w.lang = state.settings.lang
-        // Like `offline`: with the phone in reach the transfers finish in a second, no blink of 1.
-        w.unsent = reachable ? 0 : unsent
+        w.unsent = SyncState.count(reachable: reachable, unsent: unsent)
         return w
     }
 
@@ -899,14 +900,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         let r = session.activationState == .activated && session.isReachable
-        let q = session.outstandingUserInfoTransfers.count
         let u = Unsent.sets(in: outbox + session.outstandingUserInfoTransfers.compactMap { $0.userInfo["event"] as? String })
         DispatchQueue.main.async {
-            let before = self.reachable ? 0 : self.unsent // what the faces show
+            let before = SyncState.count(reachable: self.reachable, unsent: self.unsent) // what the faces show
             if self.reachable != r { self.reachable = r }
-            if self.queued != q { self.queued = q }
             if self.unsent != u { self.unsent = u }
-            if before != (r ? 0 : u) { self.publishWidget() }
+            if before != SyncState.count(reachable: r, unsent: u) { self.publishWidget() }
         }
     }
 
@@ -1004,28 +1003,28 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
     /// CI: the screens that open on the Overview.
-    static var demoOpensOverview: Bool { ["overview", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
+    static var demoOpensOverview: Bool { ["overview", "overview-offline", "overview-away", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
 
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
         switch screen {
         case "empty", "empty-heard": break
-        case "idle", "idle-end": apply(json: SessionStore.demoReadyJSON)
+        case "idle", "idle-end", "idle-offline": apply(json: SessionStore.demoReadyJSON)
         case "idle-rest": apply(json: SessionStore.demoReadyRestJSON)
         default: apply(json: SessionStore.demoJSON)
         }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
+            case "set", "weight", "rest", "rest-offline", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
             case "hold": self.state.entryIndex = 1
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
-            case "overview", "finish", "finish-hold", "finish-hold-full", "discard":
+            case "overview", "overview-offline", "overview-away", "finish", "finish-hold", "finish-hold-full", "discard":
                 // The Pull-up done, so the Overview shows all three states.
                 for si in 0..<2 { self.state.workout?.entries[2].sets[si].done = true }
-                if screen != "overview" { self.state.entryIndex = self.workout?.entries.count ?? 0 }
+                if !screen.hasPrefix("overview") { self.state.entryIndex = self.workout?.entries.count ?? 0 }
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
@@ -1036,16 +1035,32 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if let lang = SessionStore.argument("-OpenGymWatchLang") { self.state.settings.lang = lang }
             if let show = SessionStore.argument("-OpenGymWatchShow") {
                 // "all": every optional thing on, for a look at the fullest screen.
-                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
+                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring"); self.health.showDemo(heartRate: 128) }
                 if show == "plain" { self.state.settings.show = WatchShow(rest: "plain") }
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen.hasPrefix("rest") { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             if screen == "hold" { self.startHold() }
-            if screen == "offline" { self.reachable = false; self.queued = 3 }
+            // The phone out of reach: with 3 sets waiting for it, or (the "-away" screens) with none logged yet.
+            if screen.hasSuffix("away"), var w = self.state.workout {
+                for ei in w.entries.indices {
+                    for si in w.entries[ei].sets.indices {
+                        w.entries[ei].sets[si].done = false
+                        w.entries[ei].sets[si].at = nil
+                        w.entries[ei].sets[si].sides?.L.done = false
+                        w.entries[ei].sets[si].sides?.R.done = false
+                    }
+                }
+                self.state.workout = w
+                self.reachable = false
+            }
+            if screen.hasSuffix("offline") {
+                self.reachable = false
+                self.unsent = screen == "idle-offline" ? 2 : 3
+            }
             if screen == "finish-auto" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.showFinish() } }
-            if screen == "summary" || screen == "summary-end" || screen == "ended" {
+            if screen.hasPrefix("summary") || screen == "ended" {
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
                                               endedOnPhone: screen == "ended")

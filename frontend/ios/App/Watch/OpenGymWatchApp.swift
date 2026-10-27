@@ -129,6 +129,8 @@ enum Theme {
     static let accent = Color(red: 0x30 / 255, green: 0xd1 / 255, blue: 0x58 / 255)
     /// Warm-up sets (the app's --orange).
     static let warmup = Color(red: 1, green: 0x9f / 255, blue: 0x0a / 255)
+    /// Sets waiting for the iPhone (the app's --yellow).
+    static let caution = Color(red: 1, green: 0xd6 / 255, blue: 0x0a / 255)
     static let dim = Color.white.opacity(0.14)
     /// The smallest a thing a finger has to hit may be.
     static let tap: CGFloat = 44
@@ -238,6 +240,10 @@ struct RootView: View {
             if url.host == "start", store.workout == nil, let today = store.ready?.today { store.start(today) }
         }
         .onChange(of: store.widgetState) { _ in store.publishWidget() }
+        // The sets that waited have reached the iPhone: said to VoiceOver, as the pill vanishes.
+        .onChange(of: store.sync) { old, new in
+            if old.unsent > 0, new.unsent == 0, !store.isDemo { AccessibilityNotification.Announcement(store.L("On your iPhone")).post() }
+        }
         // A count that went stale while the app was away is fresh again once it is on screen.
         .onChange(of: scenePhase) { phase in if phase == .active, !store.isDemo { store.updateLink() } }
     }
@@ -261,17 +267,55 @@ struct Tag: View {
     }
 }
 
-/// The phone is out of reach and events wait on the watch: a small sign, said in words to VoiceOver.
-struct OfflineSign: View {
+/// Whether the sets logged here reached the iPhone (SessionStore.sync): glyph + count + colour, with the words in
+/// the full form. Nothing to tap. The set header has no room for words (compact); the rest header has none
+/// for a capsule either (inline: the glyph and count while sets wait).
+struct SyncPill: View {
+    enum Form { case compact, inline, full }
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let form: Form
 
     var body: some View {
-        if store.offline {
-            Image(systemName: "iphone.slash")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .accessibilityLabel(Text("Saved on the watch, syncs later"))
+        let s = store.sync
+        Group {
+            if s != .none, form == .full || (form == .inline ? s.unsent > 0 : s != .onPhone) {
+                pill(s).transition(.opacity)
+            }
         }
+        .animation(reduceMotion || dimmed ? nil : .easeOut(duration: Theme.fast), value: s)
+    }
+
+    private func pill(_ s: SyncState) -> some View {
+        let waiting = s.unsent > 0
+        let color = waiting ? Theme.ink(Theme.caution, dimmed) : Color.secondary
+        let glyph = waiting ? "arrow.up" : s == .onPhone ? "iphone" : "iphone.slash"
+        let word = store.L(waiting ? "Waiting to sync" : s == .onPhone ? "On your iPhone" : "iPhone out of reach")
+        // The count after the words, as a value: in some languages the words would not agree with it before them.
+        // (a no-break space keeps the count with the last word when the line wraps)
+        let text = form == .full ? " \(word)" + (waiting ? "\u{A0}\(s.countText)" : "") : (waiting ? " \(s.countText)" : "")
+        // The glyph is inline in the text, so a second line starts under it.
+        let shape = RoundedRectangle(cornerRadius: form == .full ? 11 : 9, style: .continuous)
+        return Text("\(Image(systemName: glyph))\(text)")
+            .font(.system(.caption2, design: .rounded).weight(.bold))
+            .contentTransition(.numericText())
+            .foregroundStyle(color)
+            .multilineTextAlignment(.leading)
+            .lineLimit(form == .full ? 3 : 1)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, form == .full ? 8 : form == .compact ? 5 : 0)
+            .padding(.vertical, form == .full ? 3 : form == .compact ? 1 : 0)
+            .frame(minHeight: form == .full ? 22 : nil)
+            // Always On: an outline in place of the fill.
+            .background { if !dimmed, form != .inline { shape.fill(waiting ? Theme.caution.opacity(0.18) : Theme.dim) } }
+            .overlay { if dimmed, form != .inline { shape.stroke(Theme.outline, lineWidth: 1) } }
+            .dynamicTypeSize(...(form == .full ? DynamicTypeSize.accessibility5 : DynamicTypeSize.xLarge))
+            .allowsHitTesting(false)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(word)
+            .accessibilityValue(waiting ? "\(store.L("Sets")) \(s.unsent)" : "")
+            .accessibilityHint(s == .onPhone ? "" : store.L("Saved on the watch, syncs later"))
     }
 }
 
@@ -429,6 +473,8 @@ struct IdleView: View {
                                 .buttonStyle(PrimaryButton(minHeight: 52))
                                 .accessibilityValue(Text(verbatim: today.name))
                             }
+                            // Sets still waiting after a finished workout; Start does not move.
+                            if store.sync.unsent > 0 { SyncPill(form: .full).padding(.leading, 10) }
                             if !ready.others.isEmpty {
                                 VStack(spacing: 6) {
                                     if ready.today != nil {
@@ -540,6 +586,7 @@ struct SessionScreen: View {
                         .accessibilityHidden(end != nil)
                     if let end { RestView(end: end).transition(.opacity) }
                 }
+                .modifier(DemoEnvironment())        // CI's Always On and text size: the pager's pages do not inherit them
                 .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: end != nil)
                 .tag(Page.set)
             }
@@ -574,7 +621,7 @@ struct ExercisePager: View {
         let n = store.workout?.entries.count ?? 0
         TabView(selection: Binding(get: { min(store.entryIndex, max(0, n - 1)) }, set: { store.show(entry: $0) })) {
             ForEach(Array((store.workout?.entries ?? []).enumerated()), id: \.offset) { pair in
-                ExercisePage(index: pair.offset, covered: covered).tag(pair.offset)
+                ExercisePage(index: pair.offset, covered: covered).modifier(DemoEnvironment()).tag(pair.offset)
             }
         }
         .tabViewStyle(.verticalPage)
@@ -610,7 +657,7 @@ struct ExercisePage: View {
             let si = store.setIndex(in: index)
             let current = index == store.entryIndex
             VStack(spacing: 0) {
-                header(entry)
+                header(entry, pill: !hasTags(entry, si.map { entry.sets[$0] }))
                 Spacer(minLength: 2)
                 if let si = si {
                     let row = entry.sets[si]
@@ -705,7 +752,7 @@ struct ExercisePage: View {
         }
     }
 
-    @ViewBuilder private func header(_ entry: Entry) -> some View {
+    @ViewBuilder private func header(_ entry: Entry, pill: Bool) -> some View {
         HStack(alignment: .top, spacing: 6) {
             if store.show.showClip, let clip = store.clips[entry.id] {
                 ClipView(clip: clip, animating: index == store.entryIndex && !covered).frame(width: 30, height: 30)
@@ -720,22 +767,29 @@ struct ExercisePage: View {
                 WorkoutExtras()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            OfflineSign()
+            // Below the system clock (the top 28 pt), without making the row taller and clear of the page dots.
+            // With a tag row the page is higher and the pill sits in that row instead.
+            if pill { SyncPill(form: .compact).padding(.trailing, 4).offset(y: 10) }
             if store.show.showHr { HeartRateBadge(health: store.health) }
         }
         // The top row sits just under the clock: it grows less than the numbers do.
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
+    private func hasTags(_ entry: Entry, _ row: SetRow?) -> Bool {
+        row.map { $0.warmup || $0.sideUp != nil || entry.group != nil } ?? false
+    }
+
     /// Warm-up, the side up next, superset: what kind of set this is, above the numbers.
     @ViewBuilder private func tags(_ entry: Entry, _ row: SetRow) -> some View {
         let side = row.sideUp
-        if row.warmup || side != nil || entry.group != nil {
+        if hasTags(entry, row) {
             HStack(spacing: 4) {
                 if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
                 if side == "L" { Tag(text: Text("Left"), color: .cyan) }
                 if side == "R" { Tag(text: Text("Right"), color: .cyan) }
                 if entry.group != nil { Tag(text: Text("Superset"), color: .purple) }
+                SyncPill(form: .compact)
             }
             .padding(.bottom, 2)
             .dynamicTypeSize(...DynamicTypeSize.xLarge)
@@ -1197,6 +1251,7 @@ struct OverviewPage: View {
                 .padding(.bottom, 24)       // keeps the last control clear of the page dots
             }
             .scrollBounceBehavior(.basedOnSize)
+            .modifier(DemoEnvironment())        // the scroll view's content gets the system's luminance, not the screenshots' (CI only)
             .overlay { FinishFlood(cover: cover) }
             // The workout ended: Finish in view, once the page has settled.
             .task(id: store.finishWanted) {
@@ -1230,9 +1285,7 @@ struct OverviewPage: View {
             if p.total > 0 {
                 Text("\(p.done) of \(p.total) sets").font(.footnote.monospacedDigit()).foregroundStyle(.secondary)
             }
-            if store.offline {
-                Text("Saved on the watch, syncs later").font(.footnote).foregroundStyle(.secondary)
-            }
+            SyncPill(form: .full)
         }
         .padding(.horizontal, 10)
     }
@@ -1443,7 +1496,12 @@ struct RestView: View {
                     CountdownRing(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end)
                 }
                 VStack(spacing: 1) {
-                    Text("Rest").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Text("Rest").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                        SyncPill(form: .inline)
+                    }
+                    // The ring is narrow up here: the label stays small at the large text sizes.
+                    .dynamicTypeSize(...DynamicTypeSize.xLarge)
                     Text(timerInterval: Date()...end, countsDown: true)
                         .font(.system(size: store.show.restRing ? countdownSize : countdownSize * 1.35, weight: .semibold, design: .rounded).monospacedDigit())
                         .minimumScaleFactor(0.5)
@@ -1462,13 +1520,6 @@ struct RestView: View {
                         .lineLimit(2)
                         .minimumScaleFactor(0.7)
                         .multilineTextAlignment(.center)
-                    }
-                    if store.offline {
-                        Text("Saved on the watch, syncs later")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
                     }
                 }
                 .padding(.horizontal, 18)
@@ -1546,6 +1597,7 @@ struct SummaryView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Text(verbatim: summary.name).font(.footnote).foregroundStyle(.secondary)
+                if !summary.endedOnPhone { SyncPill(form: .full) }
                 if let d = summary.duration { stat(Text("Time"), Text(verbatim: SummaryView.duration(d, locale: locale))) }
                 stat(Text("Sets"), Text(verbatim: "\(summary.sets)"))
                 if summary.volume > 0 {
@@ -1569,11 +1621,6 @@ struct SummaryView: View {
                     }
                     .accessibilityElement(children: .combine)
                     .padding(.top, 2)
-                }
-                if store.offline {
-                    Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
                 }
                 Button { store.closeSummary() } label: {
                     Text("Done").frame(maxWidth: .infinity, minHeight: Theme.tap)
@@ -1624,8 +1671,7 @@ struct ClipView: View {
 
     var body: some View {
         Group {
-            // (SessionStore.demoAOD: CI's Always On, which the pager's pages don't get as an environment value)
-            if dimmed || SessionStore.demoAOD || !animating || clip.images.count < 2 {
+            if dimmed || !animating || clip.images.count < 2 {
                 // Wrist down or off screen: one still frame, no timeline at all.
                 frame(clip.images[0])
             } else {

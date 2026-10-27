@@ -170,6 +170,13 @@ const OWN = {
   'Saved on the watch, syncs later': {
     de: 'Auf der Watch gespeichert, synct später', fr: 'Gardé sur la montre, synchro plus tard', es: 'Guardado en el reloj, se sincroniza luego', it: 'Salvato sull’orologio, si sincronizza dopo', 'pt-PT': 'Guardado no relógio, sincroniza depois', 'pt-BR': 'Salvo no relógio, sincroniza depois', pl: 'Zapisano na zegarku, zsynchronizuje się później', hu: 'Az órán mentve, később szinkronizál', tr: 'Saatte kaydedildi, sonra eşitlenir', ru: 'Сохранено на часах, синхронизируется позже', uk: 'Збережено на годиннику, синхронізується пізніше', ar: 'حُفظ على الساعة، تتم المزامنة لاحقًا', hi: 'वॉच पर सहेजा, बाद में सिंक होगा', bn: 'ঘড়িতে সেভ হয়েছে, পরে সিঙ্ক হবে', th: 'บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง', ko: '워치에 저장됨, 나중에 동기화돼요', 'zh-Hans': '已存在手表上，稍后同步', 'zh-Hant': '已存在手錶上，稍後同步',
   },
+  // Sync state on the watch: the sets logged here have reached the iPhone / the iPhone is out of reach.
+  'On your iPhone': {
+    de: 'Auf deinem iPhone', fr: 'Sur ton iPhone', es: 'En tu iPhone', it: 'Sull’iPhone', 'pt-PT': 'No teu iPhone', 'pt-BR': 'No seu iPhone', pl: 'Na iPhonie', hu: 'Az iPhone-on', tr: 'iPhone’unda', ru: 'На iPhone', uk: 'На iPhone', ar: 'على iPhone', hi: 'iPhone पर', bn: 'iPhone-এ', th: 'อยู่บน iPhone แล้ว', ko: 'iPhone에 있어요', 'zh-Hans': '已在 iPhone 上', 'zh-Hant': '已在 iPhone 上',
+  },
+  'iPhone out of reach': {
+    de: 'iPhone außer Reichweite', fr: 'iPhone hors de portée', es: 'iPhone fuera de alcance', it: 'iPhone fuori portata', 'pt-PT': 'iPhone fora de alcance', 'pt-BR': 'iPhone fora de alcance', pl: 'iPhone poza zasięgiem', hu: 'iPhone hatótávon kívül', tr: 'iPhone menzil dışında', ru: 'iPhone вне зоны доступа', uk: 'iPhone поза зоною досяжності', ar: 'iPhone خارج النطاق', hi: 'iPhone पहुँच से बाहर', bn: 'iPhone নাগালের বাইরে', th: 'iPhone อยู่นอกระยะ', ko: 'iPhone이 범위 밖이에요', 'zh-Hans': 'iPhone 不在范围内', 'zh-Hant': 'iPhone 不在範圍內',
+  },
   'All done?': {
     de: 'Alles erledigt?', fr: 'Terminé ?', es: '¿Has terminado?', it: 'Hai finito?', 'pt-PT': 'Terminaste?', 'pt-BR': 'Terminou?', pl: 'Koniec treningu?', hu: 'Végeztél?', tr: 'Bitirdin mi?', ru: 'Тренировка окончена?', uk: 'Тренування завершено?', ar: 'هل انتهيت؟', hi: 'हो गया?', bn: 'শেষ হয়েছে?', th: 'เสร็จแล้วหรือยัง', ko: '다 끝났나요?', 'zh-Hans': '练完了吗？', 'zh-Hant': '練完了嗎？',
   },

@@ -57,6 +57,8 @@
 "Tap a dot to do a skipped set." = "แตะจุดเพื่อทำเซ็ตที่ข้ามไป";
 "Log this one on your iPhone." = "อันนี้บันทึกบน iPhone";
 "Saved on the watch, syncs later" = "บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง";
+"On your iPhone" = "อยู่บน iPhone แล้ว";
+"iPhone out of reach" = "iPhone อยู่นอกระยะ";
 "All done?" = "เสร็จแล้วหรือยัง";
 "Lock" = "ล็อก";
 "Skip this set?" = "ข้ามเซ็ตนี้ไหม";

@@ -26,6 +26,8 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     @Published private(set) var running = false
     /// A session runs and no reading has come yet.
     var measuring: Bool { running && heartRate == nil }
+    /// CI's screenshots (-OpenGymWatchShow all): a reading, with no session behind it.
+    func showDemo(heartRate hr: Double) { heartRate = hr }
 
     private let store = HKHealthStore()
     private var session: HKWorkoutSession?
