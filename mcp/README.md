@@ -3,7 +3,8 @@
 A [Model Context Protocol](https://modelcontextprotocol.io) bridge that lets an external LLM
 application (Claude Desktop, Cursor, Cline, Continue, etc.) read your openGym profile —
 routines, workouts, body-weight log, estimated 1RMs, and muscle balance — directly from your
-self-hosted `./data` directory, and log a workout you describe to it.
+self-hosted `./data` directory or through your server's api
+([Reading through your server too](#reading-through-your-server-too)), and log a workout you describe to it.
 
 It runs locally as a stdio process spawned by the LLM client and adds no new container. The
 read tools need no authentication: they read the same `state-<uid>.json` files the openGym api
@@ -151,8 +152,25 @@ Things to know about that token:
 - Pairing again gets you a new token but does **not** end the old one. To retire a token you
   think has leaked, use Sign out everywhere (which also disconnects paired phones).
 - If the MCP server also reads a `./data` directory, the token has to belong to the same profile
-  (`OPENGYM_UID`); a token for another one is refused. The server can be remote: without
-  `OPENGYM_DATA` the read tools have nothing to read, but `log_workout` still works.
+  (`OPENGYM_UID`); a token for another one is refused.
+
+### Reading through your server too
+
+Leave `OPENGYM_DATA` out and the read tools go through the api as well, with the same
+`OPENGYM_URL` and `OPENGYM_TOKEN`:
+
+```jsonc
+"env": {
+  "OPENGYM_URL": "https://gym.example.com",
+  "OPENGYM_TOKEN": "<the token pair.mjs printed>"
+}
+```
+
+The MCP server then needs no access to the data folder, which holds every profile on the
+instance, so it can run on another machine and only ever sees the profile the token belongs
+to. Before each read tool it asks `GET /api/data/rev` and downloads the profile
+(`GET /api/data`) only when the revision moved, the way an open tab polls. With `OPENGYM_DATA`
+set, the read tools read the folder as before.
 
 ### What it does not do (yet)
 
