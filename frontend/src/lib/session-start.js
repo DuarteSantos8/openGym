@@ -1,6 +1,6 @@
 // Generate one immutable prescription per routine occurrence. The engine decides; this boundary
 // only gathers its inputs (rule, track state, newest log, current 1RM) and stores its output.
-import { currentOneRm, bestLoad, operatorFor, phaseOf, defaultPlanRule, generatePrescription, needsOneRm, resolveProgressionContext, supports, withRest } from './prescription/index.js'
+import { currentOneRm, bestLoad, operatorFor, phaseOf, planFingerprint, planPhase, rungsOf, defaultPlanRule, generatePrescription, needsOneRm, resolveProgressionContext, supports, withRest } from './prescription/index.js'
 import { EXIDX, isAssisted, isBodyweightEq } from './exercises.js'
 import { modeOf, barFloor, lastAcrossRoutines } from './history.js'
 import { oneRmForMeaning } from './onerm.js'
@@ -34,10 +34,25 @@ export function occurrenceFor(exerciseId, { sets, reps, sec, weight } = {}, { id
   return { occurrenceId: id, exerciseId, rule: defaultPlanRule(preset, { id, exerciseId, routineId, unit, ...o }) }
 }
 
+/** The exercise the track's current rung names: the occurrence's own when the rung names none. */
+export function effectiveExerciseId(occ, profile) {
+  const op = occ.rule && operatorFor(planPhase(occ.rule), 'difficulty')
+  if (!op) return occ.exerciseId
+  const s = profile?.progression?.[occ.occurrenceId]
+  // A plan edit restarts the track at rung 0 (advance.js `restart`): so does its exercise.
+  const at = s && (!s.planFingerprint || s.planFingerprint === planFingerprint(occ.rule)) ? s.values?.difficulty ?? 0 : 0
+  const rungs = rungsOf(op)
+  const id = rungs[Math.min(at, rungs.length - 1)]?.exerciseId
+  return id && EXIDX[id] ? id : occ.exerciseId
+}
+
 /** Mutates `profile.prescriptions` (the store's update draft) and returns the session exposures. */
 export function buildSessionExposures(profile, routine, ctx) {
   profile.prescriptions ||= {}
   return (routine?.ex || []).map((occ, i) => {
+    const id = effectiveExerciseId(occ, profile)
+    // The rung's exercise for everything exercise-specific; the track (occurrenceId) never changes.
+    if (id !== occ.exerciseId) occ = { ...occ, exerciseId: id, exerciseName: undefined }
     const trackId = occ.occurrenceId
     const meaning = dbLoadFor(profile, occ)
     const owned = ownedWeightsFor(profile, occ)
@@ -49,7 +64,8 @@ export function buildSessionExposures(profile, routine, ctx) {
     const context = resolveProgressionContext({
       trackId, exerciseId: occ.exerciseId, rule: occ.rule, assisted,
       workouts: history.workouts, prescriptions: profile.prescriptions, progression: profile.progression,
-      acrossRoutines: lastAcrossRoutines(profile)
+      // A ladder's rung is its own track's: another routine's state for the same exercise would move it.
+      acrossRoutines: lastAcrossRoutines(profile) && !(occ.rule && operatorFor(planPhase(occ.rule), 'difficulty'))
     })
     const previous = (profile.workouts || []).flatMap(w => w.exposures || []).find(x => x.exposureId === context.baseline?.exposureId)
     const previousMeaning = entryDbLoad(previous)
