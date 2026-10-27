@@ -240,7 +240,7 @@ describe('rung regression', () => {
       last = p
       return state
     })
-    return { states, state, next: generatePrescription({ id: 'next', now: NOW, trackId: 't1', rule: plan, state, lastPrescription: last }) }
+    return { states, state, last, next: generatePrescription({ id: 'next', now: NOW, trackId: 't1', rule: plan, state, lastPrescription: last }) }
   }
   // Two clean sessions at the top: rung 0 → 1.
   const up = [2, 2]
@@ -279,6 +279,16 @@ describe('rung regression', () => {
     const { states } = run([...up, 0, 0], ladder())
     expect(states.at(-1).values.difficulty).toBe(1)
     expect(states.some(s => 'rungMisses' in s)).toBe(false)
+  })
+
+  it('a list shortened below the track opens at its last rung, and regresses from there', () => {
+    const { state, last } = run([...up, 2, 2])
+    expect(state.values.difficulty).toBe(2)
+    const short = ladder({ rungs: ['a', 'b'], regress: { after: 1 } })
+    const p = generatePrescription({ id: 'p4', now: NOW, trackId: 't1', rule: short, state, lastPrescription: last })
+    expect(p.values.difficulty).toBe(1)
+    expect(p.provenance).not.toHaveProperty('rung')
+    expect(finish(p, { sets: 1, reps: 0 }, state).values.difficulty).toBe(0)
   })
 
   it('rung provenance', () => {
