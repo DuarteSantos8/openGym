@@ -161,6 +161,7 @@ No new switch: the Apple Health one covers it.
 - A per-side set with its own "Rest after this set" now takes that break between its sides too (#853).
 - Ask the Coach for more core (or arms, legs, glutes...) and its review gets a real choice of those exercises, not the same four, plus room for new ones beside your plan (#829).
 - iPhone app: the rest sound no longer pauses your music. It turns it down for a moment and lets it play on, also with Play even on silent.
+- **Searching a muscle shows the lifts people do**: "chest" opens on the bench press, flyes and dips, "back" on rows and pulldowns. Stretches only lead when you search for a stretch.
 
 ## v1.4.3 (2026-10-26)
 
