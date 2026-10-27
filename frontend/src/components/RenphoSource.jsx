@@ -60,10 +60,22 @@ export default function RenphoSource() {
     // A sync that just ended: bring its readings into this device's copy now.
     if (wasSyncing.current && !s.syncing && typeof pullState === 'function') Promise.resolve().then(pullState).catch(() => {})
     wasSyncing.current = !!s.syncing
-  }).catch(() => setSt(false))
+  }).catch(e => {
+    // No RENPHO here at all (signed out, no server for this phone): nothing shows. The server
+    // only out of reach for now (restarting, the phone offline): the card says so and asks again.
+    clearTimeout(timer.current)
+    if (e && (e.status === 401 || e.status === 404 || e.code === 'not-paired')) { setSt(false); return }
+    setSt(s => (s && !s.unreachable ? s : { unreachable: e?.message || t('The sync failed. Try again later.') }))
+    timer.current = setTimeout(load, 10000)
+  })
   useEffect(() => { load(); return () => clearTimeout(timer.current) }, [])
 
   if (!user || st === false || st === null) return null
+  if (st.unreachable) return <Section title="RENPHO Health">
+    <Row icon="warning" iconTint="var(--orange)" title={t('Try again')} subtitle={st.unreachable}>
+      <Button size="sm" onClick={load}>{t('Try again')}</Button>
+    </Row>
+  </Section>
 
   const connect = async () => {
     if (!form.email.trim() || !form.password) { toast(errorText('missing')); return }

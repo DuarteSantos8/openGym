@@ -32,6 +32,16 @@ describe('RENPHO Health card', () => {
     expect(host.innerHTML).toBe('')
   })
 
+  it('a server out of reach for now keeps the card, says so, and the card comes back when it answers', async () => {
+    m.api.mockRejectedValueOnce(Object.assign(new Error('The server did not answer in time.'), { code: 'timeout' }))
+    await mount()
+    expect(host.textContent).toContain('RENPHO Health')
+    expect(host.textContent).toContain('The server did not answer in time.')
+    m.api.mockResolvedValueOnce({ connected: true, email: 'me@example.com' })
+    await act(async () => { button('Try again').click() })
+    expect(host.textContent).toContain('me@example.com')
+  })
+
   it('signs in with e-mail and password, and forgets the password on the device', async () => {
     m.api.mockImplementation(async (p, o) => {
       if (p === '/api/renpho' && !o) return { connected: false }
