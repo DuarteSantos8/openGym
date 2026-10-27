@@ -197,6 +197,7 @@ StrongLifts 5×5, Fitbod and JEFIT. Warm-ups, RPE, notes, cardio and timed sets 
 its own unit, on the day you trained, and importing a file twice still adds nothing twice. A file that
 looks like one of these but doesn't read right is turned away with a message instead of half
 imported. How to export from each app is in docs/DATA_IMPORTS.md.
+- **Done is right under the numbers** when a workout ends, no scrolling past the body map and the photo corner to leave.
 
 ## v1.4.3 (2026-10-26)
 
