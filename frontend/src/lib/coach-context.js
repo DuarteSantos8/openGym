@@ -9,7 +9,7 @@
 // planned or extra, targets and logged sets — no notes, media or device bookkeeping.
 import { isWarmupRow } from './workout-model.js'
 
-const SET_KEYS = ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe']
+const SET_KEYS = ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe', 'lp']
 
 /** The running session as the Coach reads it, or null when there is none (or it is a history edit). */
 export function todayForCoach(S, now = Date.now()) {

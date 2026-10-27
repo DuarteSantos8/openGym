@@ -6,7 +6,32 @@ import {
   nextDropWeight, nextBurstReps, splitBurstReps,
   isSideSet, makeSideSet, syncSideAggregate, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL,
   addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt,
+  partialsOf, partialsRefused, partialsAllowed, settlePartials, withPartials,
 } from './workout-model.js'
+
+describe('lengthened partials follow failure', () => {
+  it('a set rated short of failure has none, whatever the row carries', () => {
+    expect(partialsOf({ r: 8, lp: 4, rir: 0 })).toBe(4)
+    expect(partialsOf({ r: 8, lp: 4, rpe: 10 })).toBe(4)
+    expect(partialsOf({ r: 8, lp: 4, rir: 2 })).toBe(0)
+    expect(partialsOf({ r: 8, lp: 4, rpe: 8 })).toBe(0)
+    expect(partialsRefused({ rir: 2 })).toBe(true)
+    expect(partialsAllowed({ r: 8 })).toBe(false)
+    expect(partialsAllowed({ r: 8, failure: true })).toBe(true)
+    expect(partialsAllowed({ r: 8, rir: 0 })).toBe(true)
+    expect(partialsAllowed({ r: 8, failure: true, rir: 1 })).toBe(false)
+    expect(partialsOf({ r: 8, lp: 4 })).toBe(0)
+    expect(partialsRefused({})).toBe(false)
+  })
+  it('settlePartials drops them once failure no longer holds, and keeps them while it does', () => {
+    expect(settlePartials({ r: 8, lp: 4, rir: 2 })).toEqual({ r: 8, rir: 2 })
+    expect(settlePartials({ r: 8, lp: 4 })).toEqual({ r: 8 })
+    const failed = withPartials({ r: 8 }, 4)
+    expect(settlePartials(failed)).toBe(failed)
+    const rated = { r: 8, lp: 4, rir: 0 }
+    expect(settlePartials(rated)).toBe(rated)
+  })
+})
 
 describe('phaseForSet / isWarmupRow', () => {
   it('reads both the explicit phase and the legacy boolean', () => {

@@ -11,11 +11,12 @@ import { progressionGuidance } from '../lib/progression-copy.js'
 import {
   addCluster, addDrop, addSideCluster, addSideDrop, clustersOf, dropsOf,
   isFailureSet, isSideSet, isWarmupRow, nextBurstReps, toggleFailure, nextDropWeight, setClusterAt,
-  setDropAt, setSideClusterAt, setSideDropAt, setSideField,
+  setDropAt, setSideClusterAt, setSideDropAt, setSideField, partialsOf, partialsAllowed, settlePartials, withPartials,
 } from '../lib/workout-model.js'
+import { useUI } from '../store/useUI.js'
 import { weightIncrement, stepWeight } from '../lib/progression.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
-import { effortPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet, barWeightSheet } from '../sheets.jsx'
+import { effortPickerSheet, partialsPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet, barWeightSheet } from '../sheets.jsx'
 import { baseWeightFor, inventoryFor, loadKindFor, rowLoad } from '../lib/plates.js'
 import { ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import Icon from '../components/Icon.jsx'
@@ -250,7 +251,12 @@ export default function FocusView({
       { icon: 'flame', label: isWarmupRow(set) ? t('Mark as work set') : t('Mark as warm-up'), onClick: () => onMutateSet(setIdx, toggleWarmup) },
       { icon: 'arrowDown', label: t('Add drop set'), onClick: () => onMutateSet(setIdx, row => addDropTo(row, entry.target)) },
       { icon: 'bolt', label: t('Add burst'), onClick: () => onMutateSet(setIdx, row => addBurstTo(row, entry.target?.intensifier?.type === 'restpause' ? entry.target.intensifier.restSec : (S.restPauseSec || 15))) },
-      !isWarmupRow(set) && mode !== 'cardio' && { icon: 'gauge', label: t('Taken to failure'), sub: t('Nothing left in the tank'), on: isFailureSet(set), onClick: () => onMutateSet(setIdx, toggleFailure) },
+      !isWarmupRow(set) && mode !== 'cardio' && { icon: 'gauge', label: t('Taken to failure'), sub: t('Nothing left in the tank'), on: isFailureSet(set), onClick: () => onMutateSet(setIdx, row => settlePartials(toggleFailure(row))) },
+      !isWarmupRow(set) && mode === 'reps' && !isSideSet(set) && set.done && { icon: 'arrowDown', label: t('Lengthened partials'),
+        sub: !partialsAllowed(set) ? t('Needs a set taken to failure') : partialsOf(set) ? t('Partials: {0}', partialsOf(set)) : t('After failure, no rest'),
+        onClick: () => !partialsAllowed(set)
+          ? useUI.getState().toast(t('Partials only follow a set taken to failure. Mark it as failure, or rate it RIR 0 (RPE 10), first.'))
+          : partialsPickerSheet(partialsOf(set), n => onMutateSet(setIdx, row => withPartials(row, n))) },
       // Cardio rates in RPE from here, as in the list's set menu (Workout.jsx): no column to spare.
       !isWarmupRow(set) && mode === 'cardio' && { icon: 'gauge', label: t('How hard it felt'), sub: set.rpe != null ? t(EFFORT.rpe.hd) + ' ' + fmtNum(set.rpe) : t('Not rated yet'), onClick: () => effortPickerSheet('rpe', set.rpe ?? null, value => onField(setIdx, 'rpe', value), { cardio: true }) },
       { icon: 'trash', label: t('Delete set'), danger: true, disabled: entry.sets.length <= 1, onClick: () => onRemoveSetAt(setIdx) },
@@ -273,7 +279,7 @@ export default function FocusView({
         <h2>{exerciseNameFor(ex)}</h2>
         <button className="iconbtn" aria-label={t('Details')} onClick={() => exerciseDetailSheet(ex)}><Icon name="info" /></button>
         {isWarmupRow(set) && <span className="focus-warmup" aria-label={t('Warm-up')}>🔥</span>}
-        {isFailureSet(set) && <span className="focus-failure" role="img" aria-label={t('Taken to failure')}>{t('F')}</span>}
+        {(isFailureSet(set) || partialsOf(set) > 0) && <span className="focus-failure" role="img" aria-label={t('Taken to failure')}>{t('F')}{partialsOf(set) ? '+' + partialsOf(set) : ''}</span>}
         <button className="iconbtn" aria-label={t('More')} onClick={openExerciseMenu}><Icon name="more" /></button>
       </header>
 

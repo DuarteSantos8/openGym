@@ -4,6 +4,15 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased
+
+**Lengthened partials.** After a set taken to failure, add the partial reps you squeezed out with
+"+ Partials" under the set (or from the set number's menu). They show as F+4 on the set, in the
+history and in the exports of the text and the Coach, they never count as volume, records or
+progression, and the recovery map counts them as a little extra effort. The AI assistant can log
+them too. Switch on "Keep the last exercise open" in Settings, Workout, Fine-tuning to keep the
+exercise you just finished unfolded for them.
+
 ## v1.4.3 (2026-10-26)
 
 The community release. Most of what's below was asked for on GitHub and Discord or sent in as a

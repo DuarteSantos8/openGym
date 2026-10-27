@@ -2486,7 +2486,7 @@ function PartialsPicker({ value, onPick, close }) {
   const commit = n => { close(); onPick(Math.max(0, Math.min(99, Math.floor(Number(n) || 0)))) }
   return <>
     <h3 style={{ marginBottom: 2 }}>{t('Lengthened partials')}</h3>
-    <div className="muted small" style={{ marginBottom: 10 }}>{t('Only after the last full rep, with no rest. The set is marked as taken to failure. Counted as a fifth of a rep each, and not as volume.')}</div>
+    <div className="muted small" style={{ marginBottom: 10 }}>{t('Only after the last full rep, with no rest. Counted as a fifth of a rep each, and not as volume.')}</div>
     <div className="list menu-list effpick">
       <div className="item menu-item effpick-free">
         <div className="grow"><div className="tt">{t('Partial reps')}</div></div>

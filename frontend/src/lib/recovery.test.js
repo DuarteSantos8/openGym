@@ -437,11 +437,13 @@ describe('lengthened partials', () => {
     const more = fatigueOf([partial], NOW)[SINGLE_SLUG]
     // 5 partials x 0.2 / 10 reps = 0.1 extra sets; same stimulus scale as the failure set
     expect(more).toBeGreaterThan(base)
-    expect(partialSetsOf({ r: 10, lp: 5 })).toBeCloseTo(0.1, 10)
+    expect(partialSetsOf({ r: 10, lp: 5, failure: true })).toBeCloseTo(0.1, 10)
     // never more than one extra set, never for warm-ups or rows without reps
-    expect(partialSetsOf({ r: 1, lp: 50 })).toBe(1)
-    expect(partialSetsOf({ r: 10, lp: 5, phase: 'warmup' })).toBe(0)
-    expect(partialSetsOf({ sec: 30, lp: 5 })).toBe(0)
+    expect(partialSetsOf({ r: 1, lp: 50, failure: true })).toBe(1)
+    expect(partialSetsOf({ r: 10, lp: 5, failure: true, phase: 'warmup' })).toBe(0)
+    expect(partialSetsOf({ sec: 30, lp: 5, failure: true })).toBe(0)
+    // and none on a set that is not a failure set
+    expect(partialSetsOf({ r: 10, lp: 5 })).toBe(0)
   })
 })
 
