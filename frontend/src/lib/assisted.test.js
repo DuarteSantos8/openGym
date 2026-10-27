@@ -1,8 +1,8 @@
 // Issue #232: an assistance machine carries part of your body weight, so LESS load is the
 // harder set, the record, and what progression should aim for. The reporter's case: 30 kg of
 // assistance, then 20 kg — the 20 is the new best, and the next session should ask for less.
-import { describe, it, expect } from 'vitest'
-import { isAssisted, betterWeight, beatsWeight, EXIDX } from './exercises.js'
+import { afterEach, describe, it, expect } from 'vitest'
+import { isAssisted, betterWeight, beatsWeight, EXIDX, registerCustom } from './exercises.js'
 import { bestWeightFor, bestWeightForEntry } from './history.js'
 import { bestSetOf, e1rmSeries, is1RMRecord } from './onerm.js'
 import { buildSessionExposures } from './session-start.js'
@@ -126,5 +126,17 @@ describe('assisted chain (G6)', () => {
     expect(p.parameters.load.expression.mode).toBe('empty')
     expect(p.values).toMatchObject({ difficulty: 1, sets: 1, reps: 1 })
     expect(S.progression[x.trackId].phaseExposures).toBe(3)
+  })
+})
+
+describe('a custom exercise marked assisted', () => {
+  afterEach(() => registerCustom([]))
+  it('runs as assisted in a session', () => {
+    registerCustom([{ id: 'c1', n: 'Band pull-up', bp: 'back', eq: 'band', custom: true, assisted: true }])
+    expect(isAssisted('c1')).toBe(true)
+    const S = { unit: 'kg', workouts: [], prescriptions: {}, oneRepMaxes: {}, progression: {} }
+    const [x] = buildSessionExposures(S, { id: 'r1', ex: [ruleOccurrence('c1')] }, { now: Date.UTC(2026, 8, 24), newId: seed => seed })
+    expect(x.assisted).toBe(true)
+    expect(S.prescriptions[x.prescriptionId].assisted).toBe(true)
   })
 })

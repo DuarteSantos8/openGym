@@ -441,3 +441,14 @@ describe('estimate1RMRange', () => {
     expect(oneRmForMeaning(profile, 'x', 'total')).toMatchObject({ value: 50, low: 40, high: 60 })
   })
 })
+
+
+describe('1RM ranges across dumbbell load meanings', () => {
+  it.each([['total', 'each', 0.5], ['each', 'total', 2]])('scales %s to %s without rewriting the frozen record', (from, to, factor) => {
+    const record = { id: 'rm', exerciseId: '0289', value: 50, low: 40, high: 60, unit: 'kg', source: 'estimated', sourceRecordId: 'source', capturedAt: '2026-10-01T00:00:00Z' }
+    const profile = { oneRepMaxes: { rm: record }, workouts: [{ exposures: [{ exposureId: 'source', exerciseId: '0289', dbLoad: from, bells: 2 }] }] }
+    const original = structuredClone(record)
+    expect(oneRmForMeaning(profile, '0289', to)).toMatchObject({ value: 50 * factor, low: 40 * factor, high: 60 * factor })
+    expect(record).toEqual(original)
+  })
+})
