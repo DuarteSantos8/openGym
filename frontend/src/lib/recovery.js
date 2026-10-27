@@ -281,7 +281,8 @@ function sessionEffSets(workout, anchors, opts = {}) {
       ? Math.max(0, minutes) / CARDIO_MINUTES_PER_SET
       : 1
     // Lengthened partials follow failure in the same set: real extra fatigue even though they
-    // are not counted as volume, at 0.2 per partial rep against the set's reps (drops carry none).
+    // are not counted as volume, at PARTIAL_REP_WEIGHT per partial rep against the set's reps
+    // (workout-model partialSetsOf; drops carry none).
     const extra = row === set ? partialSetsOf(set) : 0
     for (const [slug, weight] of Object.entries(weights)) {
       if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += (count + extra) * durationScale * weight
