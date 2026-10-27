@@ -1004,6 +1004,7 @@ export default {
   'Most reps in a set per workout': 'Meiste Wdh. in einem Satz pro Training',
   'Warm-up sets': 'Aufwärmsätze',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Kommen vor deine Arbeitssätze und zählen nicht für Volumen, Rekorde und Progression. Jeder halbiert den Abstand zum Arbeitsgewicht, bei Langhantelübungen nie leichter als die leere Stange, und im Training kannst du jeden davon trotzdem ändern.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Kommen vor deine Arbeitssätze und zählen nicht für Volumen, Rekorde und Progression. An einer Assistenzmaschine hat jeder mehr Unterstützung als der Arbeitssatz und nähert sich ihm schrittweise an, und im Training kannst du jeden davon trotzdem ändern.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Aufwärmsätze vor den Arbeitssätzen, damit du sie nicht jedes Mal von Hand hinzufügen musst.',
   'Note': 'Notiz',
   'This session': 'Dieses Training',
@@ -2528,6 +2529,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} muss zwischen 0 und 100 % liegen.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Kommen vor deine Arbeitssätze. Sie zählen in dein Volumen (Einstellungen), aber nicht für Rekorde und Progression. Jeder halbiert den Abstand zum Arbeitsgewicht, bei Langhantelübungen nie leichter als die leere Stange, und im Training kannst du jeden davon trotzdem ändern.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Kommen vor deine Arbeitssätze. Sie zählen in dein Volumen (Einstellungen), aber nicht für Rekorde und Progression. An einer Assistenzmaschine hat jeder mehr Unterstützung als der Arbeitssatz und nähert sich ihm schrittweise an, und im Training kannst du jeden davon trotzdem ändern.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Wiegung gelöscht",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

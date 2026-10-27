@@ -1063,6 +1063,7 @@ export default {
   'reps': 'রেপ',
   'Most reps in a set per workout': 'প্রতি ওয়ার্কআউটে এক সেটে সর্বাধিক রেপ',
   'Warm-up sets': 'ওয়ার্ম-আপ সেট',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'ওয়ার্কিং সেটের আগে যোগ হয় এবং ভলিউম, রেকর্ড ও প্রগ্রেশনে গণ্য হয় না। অ্যাসিস্টেড মেশিনে প্রতিটি সেটে ওয়ার্কিং সেটের চেয়ে বেশি সহায়তা থাকে এবং ধীরে ধীরে সেটির দিকে কমে আসে, আর ওয়ার্কআউটের মাঝেও যেকোনোটি বদলাতে পারো।',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'ওয়ার্কিং সেটের আগে ধাপে ধাপে বাড়ানো সেট যোগ হয়, তাই প্রতি সেশনে হাতে যোগ করতে হয় না।',
   'Note': 'নোট',
   'This session': 'এই সেশন',
@@ -2587,6 +2588,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} অবশ্যই ০ থেকে ১০০%-এর মধ্যে হতে হবে।",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "ওয়ার্ক সেটের আগে যোগ হয়। আপনার ভলিউমে গোনা হয় (সেটিংস), কিন্তু রেকর্ড আর প্রগ্রেশনে নয়। প্রতিটি ওয়ার্ক ওয়েটের দূরত্বের অর্ধেক কমায়, বারবেল লিফটে বারের নিচে কখনো নামে না, আর সেশনের মাঝেও যেকোনোটা বদলাতে পারবেন।",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "ওয়ার্ক সেটের আগে যোগ হয়। আপনার ভলিউমে গোনা হয় (সেটিংস), কিন্তু রেকর্ড আর প্রগ্রেশনে নয়। অ্যাসিস্টেড মেশিনে প্রতিটি সেটে ওয়ার্ক সেটের চেয়ে বেশি সহায়তা থাকে এবং ধীরে ধীরে সেটির দিকে কমে আসে, আর সেশনের মাঝেও যেকোনোটা বদলাতে পারবেন।",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "ওজন মুছে ফেলা হয়েছে",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

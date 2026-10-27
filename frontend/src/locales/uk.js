@@ -796,6 +796,7 @@ export default {
   'Most reps in a set per workout': 'Найбільше повт. в підході за тренування',
   'Warm-up sets': 'Розминкові підходи',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Додаються перед робочими підходами і не враховуються в обсязі, рекордах і прогресії. Кожен удвічі скорочує розрив до робочої ваги, але у вправах зі штангою ніколи не легший за порожній гриф, і будь-який із них можна змінити під час тренування.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Додаються перед робочими підходами й не враховуються в обсязі, рекордах і прогресії. У гравітроні кожен із них дає більше допомоги, ніж робочий підхід, і поступово наближається до нього, а під час тренування будь-який можна змінити.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Підвідні підходи перед робочими, щоб не додавати їх вручну щоразу.',
   'Note': 'Нотатка',
   'This session': 'Це тренування',
@@ -2505,6 +2506,7 @@ export default {
   "{0} must be between 0 and 100%.": "Значення «{0}» має бути від 0 до 100%.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Додаються перед робочими підходами. Вони враховуються у твоєму обсязі (Налаштування), але не в рекордах і прогресії. Кожен удвічі скорочує розрив до робочої ваги, але у вправах зі штангою ніколи не легший за порожній гриф, і будь-який із них можна змінити під час тренування.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Додаються перед робочими підходами. Вони враховуються у твоєму обсязі (Налаштування), але не в рекордах і прогресії. У гравітроні кожен із них дає більше допомоги, ніж робочий підхід, і поступово наближається до нього, а будь-який із них можна змінити під час тренування.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Зважування видалено",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

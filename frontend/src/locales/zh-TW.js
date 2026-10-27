@@ -978,6 +978,7 @@ export default {
   'Most reps in a set per workout': '每次訓練單組最高次數',
   'Warm-up sets': '熱身組',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': '排在正式組之前，不列入總訓練量、個人紀錄與漸進計算。每組都會把與正式重量的差距縮小一半，槓鈴動作不會低於空槓，訓練中仍可隨時修改任何一組。',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': '加在正式組之前，不計入訓練量、紀錄和進階。在輔助器械上，每組的輔助都比正式組更多，並逐步向正式組靠近，訓練中仍可隨時調整。',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': '在正式組前自動加入遞增熱身組，免除每次手動新增的麻煩。',
   'Note': '備忘錄',
   'This session': '本次筆記',
@@ -2501,6 +2502,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0}必須介於 0% 到 100% 之間。",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "排在正式組之前。會列入你的總訓練量（設定），但不列入個人紀錄與漸進計算。每組都會把與正式重量的差距縮小一半，槓鈴動作不會低於空槓，訓練中仍可隨時修改任何一組。",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "排在正式組之前。會列入你的總訓練量（設定），但不列入個人紀錄與漸進計算。在輔助器械上，每組的輔助都比正式組更多，並逐步向正式組靠近，訓練中仍可隨時修改任何一組。",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "已刪除體重紀錄",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

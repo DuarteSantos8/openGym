@@ -1005,6 +1005,7 @@ export default {
   'Most reps in a set per workout': 'Flest reps i ett set per pass',
   'Warm-up sets': 'Uppvärmningsset',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Läggs till före dina arbetsset och räknas inte in i volym, rekord eller progression. Varje set halverar avståndet till arbetsvikten, aldrig under stången i en skivstångsövning, och du kan fortfarande ändra dem under passet.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Läggs till före dina arbetsset och räknas inte in i volym, rekord eller progression. I en assisterad maskin har varje set mer hjälp än arbetsseten och trappas ner mot dem, och du kan fortfarande ändra dem under passet.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Stegrande set som läggs till före arbetsseten, så att du slipper lägga till dem för hand varje pass.',
   'Note': 'Anteckning',
   'This session': 'Det här passet',
@@ -2552,6 +2553,7 @@ export default {
 
   // --- warm-ups counted in volume (#719) ---
   'Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Läggs till före dina arbetsset. De räknas i din volym (Inställningar), men hålls utanför rekord och progression. Varje set tar halva steget upp mot arbetsvikten, aldrig under stången på ett skivstångslyft, och du kan fortfarande ändra vilket som helst av dem mitt i passet.',
+  'Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Läggs till före dina arbetsset. De räknas i din volym (Inställningar), men hålls utanför rekord och progression. I en assisterad maskin har varje set mer hjälp än arbetsseten och trappas ner mot dem, och du kan fortfarande ändra dem under passet.',
 
   // --- weigh-in undo (#756) ---
   'Weigh-in deleted': 'Vägningen borttagen',

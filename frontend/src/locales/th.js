@@ -861,6 +861,7 @@ export default {
   'Most reps in a set per workout': 'จำนวนครั้งมากที่สุดในหนึ่งเซ็ตต่อการออกกำลังกาย',
   'Warm-up sets': 'เซ็ตวอร์มอัพ',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'เพิ่มไว้ก่อนเซ็ตหลัก และไม่นับรวมในปริมาณงาน สถิติ หรือการเพิ่มน้ำหนัก แต่ละเซ็ตจะลดช่องว่างไปครึ่งหนึ่งจนถึงน้ำหนักเซ็ตหลัก ท่าบาร์เบลจะไม่เบากว่าบาร์เปล่า และยังปรับเปลี่ยนได้ระหว่างออกกำลังกาย',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'เพิ่มก่อนเซ็ตหลัก และไม่นับรวมในปริมาณ สถิติ และการเพิ่มน้ำหนัก ในเครื่องช่วยพยุง แต่ละเซ็ตจะช่วยมากกว่าเซ็ตหลักและค่อย ๆ ลดลงเข้าใกล้เซ็ตหลัก และยังแก้ไขแต่ละเซ็ตได้ระหว่างเล่น',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'เพิ่มเซ็ตไต่ระดับไว้ก่อนเซ็ตหลัก จะได้ไม่ต้องเพิ่มเองทุกครั้ง',
   'Note': 'บันทึก',
   'This session': 'รอบนี้',
@@ -2519,6 +2520,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} ต้องอยู่ระหว่าง 0 ถึง 100%",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "เพิ่มไว้ก่อนเซ็ตหลัก นับรวมในปริมาณงานของคุณ (การตั้งค่า) แต่ไม่นับในสถิติหรือการเพิ่มน้ำหนัก แต่ละเซ็ตจะลดช่องว่างไปครึ่งหนึ่งจนถึงน้ำหนักเซ็ตหลัก ท่าบาร์เบลจะไม่เบากว่าบาร์เปล่า และยังปรับเปลี่ยนได้ระหว่างออกกำลังกาย",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "เพิ่มไว้ก่อนเซ็ตหลัก นับรวมในปริมาณงานของคุณ (การตั้งค่า) แต่ไม่นับในสถิติหรือการเพิ่มน้ำหนัก ในเครื่องช่วยพยุง แต่ละเซ็ตจะช่วยมากกว่าเซ็ตหลักและค่อย ๆ ลดลงเข้าใกล้เซ็ตหลัก และยังปรับเปลี่ยนได้ระหว่างออกกำลังกาย",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "ลบการชั่งน้ำหนักแล้ว",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

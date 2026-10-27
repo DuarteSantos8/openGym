@@ -2150,8 +2150,12 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {/* Settings > Units can count warm-ups in volume (#719); records and progression never do. */}
         {(c.warmupSets || 0) > 0
           ? st.volumeWarmups === true
-            ? t('Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
-            : t('Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
+            ? isAssisted({ ...c, id: ex.id })
+              ? t('Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.')
+              : t('Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
+            : isAssisted({ ...c, id: ex.id })
+              ? t('Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.')
+              : t('Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
           : t('Ramp-up sets added before the work sets, so you do not have to add them by hand each session.')}
       </div>
     </>}

@@ -717,6 +717,7 @@ export default {
   'Most reps in a set per workout': 'أكثر تكرارات في مجموعة لكل تمرين',
   'Warm-up sets': 'مجموعات الإحماء',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'تُضاف قبل مجموعات العمل ولا تُحتسب في الحجم أو الأرقام القياسية أو التدرج. كل واحدة تقلص الفجوة إلى وزن العمل إلى النصف، ولا تقل أبدًا عن وزن البار في تمارين البار، ويمكنك تعديل أي منها أثناء الجلسة.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'تُضاف قبل مجموعات العمل ولا تُحتسب في الحجم أو الأرقام القياسية أو التقدّم. في جهاز المساعدة، تحمل كل مجموعة مساعدة أكبر من مجموعة العمل وتتناقص تدريجيًا نحوها، ويمكنك تعديل أي منها أثناء التمرين.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'مجموعات إحماء تصاعدية تُضاف قبل مجموعات العمل، حتى لا تضطر لإضافتها يدويًا في كل جلسة.',
   'Note': 'ملاحظة',
   'This session': 'هذه الجلسة',
@@ -2563,6 +2564,7 @@ export default {
   "{0} must be between 0 and 100%.": "يجب أن تكون قيمة {0} بين 0 و100٪.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "تُضاف قبل مجموعات العمل. تُحتسب في حجمك (الإعدادات)، لكنها لا تُحتسب في الأرقام القياسية أو التدرج. كل واحدة تقلص الفجوة إلى وزن العمل إلى النصف، ولا تقل أبدًا عن وزن البار في تمارين البار، ويمكنك تعديل أي منها أثناء الجلسة.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "تُضاف قبل مجموعات العمل. تُحتسب في حجمك (الإعدادات)، لكنها لا تُحتسب في الأرقام القياسية أو التدرج. في جهاز المساعدة، تحمل كل مجموعة مساعدة أكبر من مجموعة العمل وتتناقص تدريجيًا نحوها، ويمكنك تعديل أي منها أثناء الجلسة.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "تم حذف الوزن",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---
