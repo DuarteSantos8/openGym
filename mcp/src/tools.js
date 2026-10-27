@@ -7,7 +7,7 @@ import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, setUnitsTotal, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
+  modeOf, sessionVolume, countsWarmups, countsPartials, setsDone, setUnitsTotal, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
 } from '../../frontend/src/lib/history.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
 import { exOr, registerCustom } from '../../frontend/src/lib/exercises.js'
@@ -49,6 +49,29 @@ const exerciseOf = (id, S) => customOf(id, S) || exOr(id)
 export function withCustomsIndexed(S, build) {
   registerCustom(Array.isArray(S.customEx) ? S.customEx : [])
   try { return build() } finally { registerCustom([]) }
+}
+
+// Volume the way the app shows it (warm-up and partials switches), plus which switches applied.
+export function volumeOf(w, S) {
+  return sessionVolume(w, S)
+}
+export function volumeBasis(S) {
+  return {
+    warmups: countsWarmups(S) ? 'included' : 'excluded',
+    partials: countsPartials(S) ? 'included at 0.2 per partial rep' : 'excluded'
+  }
+}
+// Partials are only worth mentioning when they could pass for full-ROM reps: a set with as many
+// partials as half its full reps (or more).
+export function partialsNote(w) {
+  let n = 0
+  for (const e of w.entries || []) for (const row of e.sets || []) {
+    const lp = partialsOf(row)
+    if (lp > 0 && lp >= (Number(row.r) || 0) / 2) n++
+  }
+  return n
+    ? `${n} set${n === 1 ? '' : 's'} had lengthened partials amounting to at least half the full reps. Partials are not full-range reps: weight, reps and volume above count full reps only.`
+    : null
 }
 
 export function entryView(e, S) {
@@ -281,6 +304,7 @@ export const listWorkouts = {
     const filtered = matching.slice(0, lim)
     return {
       unit: S.unit || 'kg',
+      volume_counts: volumeBasis(S),
       // total_count is all-time and predates the filter — kept as it is, since callers read it
       // that way. matching_count is how many are in the from/to range, and truncated says the
       // limit cut the list: without them "how many sessions did I do in March" was unanswerable,
@@ -301,7 +325,7 @@ export const listWorkouts = {
         sets_done: setsDone(w),
         sets_planned: setUnitsTotal(w.entries),
         sets_ratio: ratio(setsDone(w), setUnitsTotal(w.entries)),
-        volume: workoutVolume(w),
+        volume: volumeOf(w, S),
         duration_ms: w.end && w.start ? (w.end - w.start) : null,
         duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
         prs: (w.prs || []).length,
@@ -341,7 +365,7 @@ export const getWorkout = {
             id: x.id || null,
             routine_name: x.name || null,
             sets_done: setsDone(x),
-            volume: workoutVolume(x),
+            volume: volumeOf(x, S),
             duration: x.end && x.start ? friendlyDuration(x.end - x.start) : null
           }))
         }
@@ -357,7 +381,9 @@ export const getWorkout = {
       routine_name: w.name || null,
       unit: S.unit || 'kg',
       bodyweight_at_workout: w.bw || null,
-      volume: workoutVolume(w),
+      volume: volumeOf(w, S),
+      volume_counts: volumeBasis(S),
+      ...(partialsNote(w) ? { partials_note: partialsNote(w) } : {}),
       sets_done: setsDone(w),
       sets_planned: setUnitsTotal(w.entries),
       duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,

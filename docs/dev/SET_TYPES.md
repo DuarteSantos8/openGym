@@ -225,6 +225,11 @@ written only when above zero, like `drops` and `clusters`.
 - Shown as `F+N` on the set number, the focus card and in `setLabel` (history, export, MCP labels).
 - MCP: `log_workout` takes `lengthened_partials` per set; `get_workout` returns it.
 - Coach: `lp` is passed through on a set (`coach-context.js`, `api/coach/core/payload.js`).
-- Not yet: a column in the CSV export or an equivalent in the Hevy import, and a settings tick to
-  count partials in volume (0.2 of a rep).
+- CSV: the export has a `partials` column (after `incline`); the importer reads it back, only on a
+  failure set (`partialsAllowed`). Hevy has no such field, so a Hevy import never carries them.
+- Volume: off by default. Settings → Units → "Count partials in volume" (`S.volumePartials`) adds
+  load x partials x 0.2 (`partialVolumeOf`) wherever a volume is shown (`sessionVolume`,
+  `workoutVolume({ partials })`, exercise history, the print report, copy as text, the share card).
+  The saved `vol` never includes them, like the warm-up switch (#719). Sets counts stay whole
+  sets: a set is a set, and the recovery map already carries the extra effort.
 

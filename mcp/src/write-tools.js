@@ -8,7 +8,8 @@
    What the lib will not guess at — a name the library spells twice, an exercise the user has not
    made yet — comes back as `problems` with candidates, for the LLM to put to the user. */
 import { z } from 'zod'
-import { isoDate, entryView, withCustomsIndexed } from './tools.js'
+import { isoDate, entryView, withCustomsIndexed, volumeBasis, partialsNote } from './tools.js'
+import { sessionVolume } from '../../frontend/src/lib/history.js'
 import { localUid, invalidate } from './state.js'
 import { apiConfig, apiFetch } from './api-client.js'
 import { buildLoggedWorkout, appendLoggedWorkout, findDuplicate, BODY_PARTS, LOG_LIMITS } from '../../frontend/src/lib/log-workout.js'
@@ -60,7 +61,9 @@ function viewOf(w, S, resolved) {
     duration: w.end > w.start ? friendlyDuration(w.end - w.start) : null,
     name: w.name,
     unit: S.unit === 'lb' ? 'lb' : 'kg',
-    volume: w.vol,
+    volume: sessionVolume(w, S),
+    volume_counts: volumeBasis(S),
+    ...(partialsNote(w) ? { partials_note: partialsNote(w) } : {}),
     ...(w.note ? { note: w.note } : {}),
     prs: (w.prs || []).map(id => resolved.resolved.find(r => r.id === id)?.name || id),
     exercises: w.entries.map(e => {

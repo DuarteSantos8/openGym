@@ -1847,7 +1847,10 @@ function ActiveWorkout() {
       }
     }, true)
     if (editing) return
-    if (workoutDone) workoutCompleteSheet()
+    // "Keep the last exercise open" (Settings → Workout) also holds back the finish sheet, so a
+    // late addition such as lengthened partials doesn't start with dismissing it. Finish stays
+    // one tap away on the Finish button.
+    if (workoutDone && !keepLast) workoutCompleteSheet()
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
 

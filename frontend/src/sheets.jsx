@@ -4,7 +4,7 @@ import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, countsPartials, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
@@ -52,7 +52,7 @@ import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incline.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
-import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
+import { isWarmupRow, hasCompletedWork, PARTIAL_REP_WEIGHT } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { saveSessionAsRoutine, routineAdditions, addToRoutine } from './lib/session-routines.js'
 import { repeatSessionEntries } from './lib/session-repeat.js'
@@ -2486,7 +2486,7 @@ function PartialsPicker({ value, onPick, close }) {
   const commit = n => { close(); onPick(Math.max(0, Math.min(99, Math.floor(Number(n) || 0)))) }
   return <>
     <h3 style={{ marginBottom: 2 }}>{t('Lengthened partials')}</h3>
-    <div className="muted small" style={{ marginBottom: 10 }}>{t('Only after the last full rep, with no rest. Counted as a fifth of a rep each, and not as volume.')}</div>
+    <div className="muted small" style={{ marginBottom: 10 }}>{t('Only after the last full rep, with no rest. Counted as {0}% of a rep each, and not as volume.', Math.round(PARTIAL_REP_WEIGHT * 100))}</div>
     <div className="list menu-list effpick">
       <div className="item menu-item effpick-free">
         <div className="grow"><div className="tt">{t('Partial reps')}</div></div>
@@ -2852,7 +2852,7 @@ function WorkoutDetail({ w, close }) {
   // Copied with the note as it stands in the box, which may not be saved yet.
   const copyAsText = async () => {
     const rec = { ...(st.workouts.find(x => sameWorkout(x, w)) || w), note: note.trim() }
-    toast(await copyText(workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st) })) ? t('Copied') : t('Could not copy'))
+    toast(await copyText(workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st), partials: countsPartials(st) })) ? t('Copied') : t('Could not copy'))
   }
   // A Garmin .fit activity (#447) of the saved record, for Garmin Connect's Import Data.
   const exportFit = () => {
@@ -2884,7 +2884,7 @@ function WorkoutDetail({ w, close }) {
       const r = g.rid ? st.routines.find(x => x.id === g.rid) : null
       const items = g.items.map(i => w.entries[i])
       const setN = items.reduce((n, e) => n + e.sets.filter(s => s.done && !isWarmupRow(s)).length, 0)
-      const vol = workoutVolume({ entries: items }, { warmups: countsWarmups(st) })
+      const vol = workoutVolume({ entries: items }, { warmups: countsWarmups(st), partials: countsPartials(st) })
       return <div key={g.rid || '__none'}>
         <div className="row between" style={{ margin: '2px 0 8px', paddingBottom: 6, borderBottom: '1px solid var(--sep)' }}>
           <div className="row" style={{ gap: 7, fontWeight: 600 }}>
@@ -2966,7 +2966,8 @@ function ShareWorkoutImage({ w, nameOf, close }) {
   const update = useStore(s => s.update)
   const withMap = st.shareMap !== false
   const warmups = countsWarmups(st)
-  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf, warmups }), [w, st.unit, warmups])
+  const partials = countsPartials(st)
+  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf, warmups, partials }), [w, st.unit, warmups, partials])
   // The last picture stays up while the next one is drawn, so the toggle never blanks the sheet.
   const [img, setImg] = useState(null)
   const [busy, setBusy] = useState(false)

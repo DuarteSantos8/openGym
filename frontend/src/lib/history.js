@@ -753,7 +753,7 @@ function shapeRows(sets, cfg, grid) {
   }
   return [warmup, work]
 }
-export function workoutVolume(w, { warmups = false } = {}) {
+export function workoutVolume(w, { warmups = false, partials = false } = {}) {
   let v = 0
   // Count each completed limb at its own load, including drops. A rest-pause side's r already
   // includes its bursts. Unchecked limbs and warm-ups contribute no volume.
@@ -770,7 +770,7 @@ export function workoutVolume(w, { warmups = false } = {}) {
   ;(Array.isArray(w?.entries) ? w.entries : []).forEach(e => {
     const f = volumeFactor(e)
     ;(Array.isArray(e?.sets) ? e.sets : []).forEach(s => {
-      if (warmups || !isWarmupRow(s)) v += completedVolumeOf(s) * f
+      if (warmups || !isWarmupRow(s)) v += completedVolumeOf(s, { partials }) * f
     })
   })
   return v
@@ -779,10 +779,14 @@ export function workoutVolume(w, { warmups = false } = {}) {
 // work sets only whatever it says, so the switch only changes what screens show and can be
 // flipped back without rewriting a single workout.
 export const countsWarmups = S => S?.volumeWarmups === true
+// Settings → Units → "Count partials in volume", off by default: lengthened partials add load x
+// partial reps x 0.2 (workout-model partialVolumeOf). Like the warm-up switch it only changes what
+// screens show; the saved `vol` never includes them, so it can be flipped back freely.
+export const countsPartials = S => S?.volumePartials === true
 // The volume a screen shows for one session: counted from its sets, so units and the warm-up
 // switch always apply. A legacy record without entries only has its cached number.
 export function sessionVolume(w, S) {
-  if (Array.isArray(w?.entries)) return Math.max(0, Number(workoutVolume(w, { warmups: countsWarmups(S) })) || 0)
+  if (Array.isArray(w?.entries)) return Math.max(0, Number(workoutVolume(w, { warmups: countsWarmups(S), partials: countsPartials(S) })) || 0)
   const v = Number(w?.vol)
   return Number.isFinite(v) ? Math.max(0, v) : 0
 }

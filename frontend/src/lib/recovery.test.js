@@ -28,7 +28,7 @@ import { EXDB, registerCustom } from './exercises.js'
 import { MUSCLES, exerciseMuscleSnapshot, musclesOf } from './muscles.js'
 import { fatigueStateOf } from './recovery-view.js'
 import { estimate1RM } from './onerm.js'
-import { partialSetsOf } from './workout-model.js'
+import { partialSetsOf, PARTIAL_REP_WEIGHT } from './workout-model.js'
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
 const NOW = Date.UTC(2026, 0, 1, 12)
@@ -430,14 +430,14 @@ describe('causal session scoring', () => {
 })
 
 describe('lengthened partials', () => {
-  it('add a fifth of a rep each against the set, on top of the failure set itself, and nothing without failure', () => {
+  it('add PARTIAL_REP_WEIGHT of a rep each against the set, on top of the failure set itself, and nothing without failure', () => {
     const plain = workoutAt(SINGLE.id, NOW, [{ done: true, w: 80, r: 10, failure: true }])
     const partial = workoutAt(SINGLE.id, NOW, [{ done: true, w: 80, r: 10, failure: true, lp: 5 }])
     const base = fatigueOf([plain], NOW)[SINGLE_SLUG]
     const more = fatigueOf([partial], NOW)[SINGLE_SLUG]
-    // 5 partials x 0.2 / 10 reps = 0.1 extra sets; same stimulus scale as the failure set
+    // 5 partials x weight / 10 reps extra sets; same stimulus scale as the failure set
     expect(more).toBeGreaterThan(base)
-    expect(partialSetsOf({ r: 10, lp: 5, failure: true })).toBeCloseTo(0.1, 10)
+    expect(partialSetsOf({ r: 10, lp: 5, failure: true })).toBeCloseTo(5 * PARTIAL_REP_WEIGHT / 10, 10)
     // never more than one extra set, never for warm-ups or rows without reps
     expect(partialSetsOf({ r: 1, lp: 50, failure: true })).toBe(1)
     expect(partialSetsOf({ r: 10, lp: 5, failure: true, phase: 'warmup' })).toBe(0)

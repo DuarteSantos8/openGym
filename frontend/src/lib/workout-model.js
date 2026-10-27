@@ -279,11 +279,22 @@ export const hasCompletedWork = set => isSideSet(set)
   ? set.sides.L.done === true || set.sides.R.done === true
   : set?.done === true
 
-/** Actual completed load x reps; the scalar maximum weight is only a summary. */
-export function completedVolumeOf(set) {
-  if (isSideSet(set)) return completedVolumeOf(set.sides.L) + completedVolumeOf(set.sides.R)
+/**
+ * The volume the partials of a done set are worth when the profile counts them: load x partial
+ * reps x PARTIAL_REP_WEIGHT, the same fifth of a rep the recovery engine uses. 0 for a set that
+ * is not done, a warm-up, a set not allowed partials (partialsOf) and a per-side set.
+ */
+export function partialVolumeOf(set) {
+  if (!set?.done || isSideSet(set)) return 0
+  return (Number(set.w) || 0) * partialsOf(set) * PARTIAL_REP_WEIGHT
+}
+
+/** Actual completed load x reps; the scalar maximum weight is only a summary. `partials` adds
+ *  the set's lengthened partials at PARTIAL_REP_WEIGHT of a rep (Settings → Units), off by default. */
+export function completedVolumeOf(set, { partials = false } = {}) {
+  if (isSideSet(set)) return completedVolumeOf(set.sides.L, { partials }) + completedVolumeOf(set.sides.R, { partials })
   if (!set?.done) return 0
-  return (Number(set.w) || 0) * (Number(set.r) || 0) + extraVolumeOf(set)
+  return (Number(set.w) || 0) * (Number(set.r) || 0) + extraVolumeOf(set) + (partials ? partialVolumeOf(set) : 0)
 }
 
 const sideOf = value => {
