@@ -11,7 +11,7 @@
 //
 // Data (Firestore, Admin SDK only: firestore.rules denies clients all access):
 //   passkeyUsers/{username}     { uid, userHandle, createdAt }
-//   passkeys/{credentialId}     { uid, username, publicKey, counter, transports, … }
+//   passkeys/{credentialId}     { uid, username, publicKey, counter, transports, ... }
 //   passkeyChallenges/{id}      { kind, challenge, username, userHandle, expiresAt }
 import { initializeApp, cert, getApps } from 'firebase-admin/app'
 import { getAuth } from 'firebase-admin/auth'

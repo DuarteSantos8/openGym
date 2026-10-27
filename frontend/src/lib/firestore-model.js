@@ -3,7 +3,7 @@
 //
 //   users/{uid}                      the "meta" doc: every field of S that is not one of the
 //                                    lists below (profile, week, dayPlan, settings, exWeights,
-//                                    the sync stamps `deleted`/`edited`, …)
+//                                    the sync stamps `deleted`/`edited`, ...)
 //   users/{uid}/workouts/{id}       one doc per workout, keyed the way sync-merge keys it
 //   users/{uid}/routines/{id}        one doc per routine
 //   users/{uid}/exercises/{id}      one doc per custom exercise
@@ -25,7 +25,7 @@ export const FB_LISTS = [
 
 const LIST_FIELDS = new Set(FB_LISTS.map(l => l.field))
 
-// Firestore document ids: any UTF-8 except '/', never '.'/'..' or '__…__'. Item keys are
+// Firestore document ids: any UTF-8 except '/', never '.'/'..' or '__...__'. Item keys are
 // app-generated ids or dates, plus the workout fallback `${d}|${start}`, percent-encoding
 // covers every case uniformly and decodes back to the exact key.
 export const docIdFor = key => encodeURIComponent(String(key))
