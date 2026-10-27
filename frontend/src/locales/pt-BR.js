@@ -2681,6 +2681,14 @@ export const PT_BR_OVERRIDES = {
   '{0}% of {1} → {2}': '{0}% de {1} → {2}',
   'Moved up to {0}.': 'Subiu para {0}.',
   'Back to {0}.': 'De volta para {0}.',
+  'Step {0}': 'Etapa {0}',
+  'Choose exercise': 'Escolher exercício',
+  'Clear exercise': 'Remover exercício',
+  'Remove step': 'Remover etapa',
+  'From easiest to hardest, top first.': 'Do mais fácil ao mais difícil, a de cima primeiro.',
+  'Go back a step after missed sessions': 'Voltar uma etapa após sessões que não deram certo',
+  'Missed sessions before going back': 'Sessões que não deram certo antes de voltar',
+  'Missed means short of the minimum sets and reps.': 'Não deu certo significa abaixo do mínimo de séries e repetições.',
   "Stop this programme before changing how it counts the weeks.": "Encerre este programa antes de mudar como ele conta as semanas.",
 }
 

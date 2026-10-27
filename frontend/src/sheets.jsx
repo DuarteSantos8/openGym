@@ -2306,7 +2306,7 @@ function ExConfig({ ex, existing: stored, initial, onSave, onDelete, onReplace, 
           onChange={v => setCardioCfg(x => ({ ...x, incline: clampIncline(v) }))} />}
       </div>)}
       {panel('progression', <div className="small dim">{t('Cardio uses intervals, duration and speed. Strength progression templates do not apply.')}</div>)}
-    </> : <RuleEditor tab={tab} hidePreset={freestyle === 'add'} rule={rule} unit={st.unit} oneRm={oneRmForMeaning(st, rule.exerciseId, currentDbLoad(st, rule.exerciseId))} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} onChange={next => {
+    </> : <RuleEditor tab={tab} hidePreset={freestyle === 'add'} rule={rule} unit={st.unit} oneRm={oneRmForMeaning(st, rule.exerciseId, currentDbLoad(st, rule.exerciseId))} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} pickExercise={exercisePicker} onChange={next => {
       setRule(next)
       if (next.preset === 'greyskull' && !failureDecided.current) setFailure('last')
     }}

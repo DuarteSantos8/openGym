@@ -3953,5 +3953,13 @@ export default {
   '{0}% of {1} → {2}': '{1} değerinin %{0} kadarı → {2}',
   'Moved up to {0}.': '{0} aşamasına geçildi.',
   'Back to {0}.': '{0} aşamasına geri dönüldü.',
+  'Step {0}': '{0}. aşama',
+  'Choose exercise': 'Egzersiz seç',
+  'Clear exercise': 'Egzersizi kaldır',
+  'Remove step': 'Aşamayı kaldır',
+  'From easiest to hardest, top first.': 'En kolaydan en zora, en üstteki önce.',
+  'Go back a step after missed sessions': 'Kaçırılan seanslardan sonra bir aşama geri dön',
+  'Missed sessions before going back': 'Geri dönmeden önce kaçırılan seans',
+  'Missed means short of the minimum sets and reps.': 'Kaçırılan, en az set ve tekrar sayısının altında kalmak demektir.',
   "Stop this programme before changing how it counts the weeks.": "Haftaları nasıl saydığını değiştirmeden önce bu programı durdur.",
 }
