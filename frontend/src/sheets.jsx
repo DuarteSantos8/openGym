@@ -53,6 +53,7 @@ import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incl
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
+import { keepGoingLine, frequentExtras } from './lib/keep-going.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { saveSessionAsRoutine, routineAdditions, addToRoutine } from './lib/session-routines.js'
 import { repeatSessionEntries } from './lib/session-repeat.js'
@@ -138,13 +139,14 @@ export function askAddDeviceData(extras) {
 // A title is shown as written: most are sentences ("Convert to lb?", "Set 2"), which a default
 // title-casing turned into "Convert To Lb?". An exercise name passes exerciseNameClass as
 // titleClass, which title-cases the lower-case packs and leaves a cased one alone.
-function MenuSheet({ title, titleClass = '', subtitle, items, sections, close }) {
+function MenuSheet({ title, titleClass = '', subtitle, lead, items, sections, close }) {
   const groups = (sections || [{ items }])
     .map(g => ({ title: g.title, items: (g.items || []).filter(Boolean) }))
     .filter(g => g.items.length)
   return <>
     {title && <h3 className={titleClass || undefined} style={{ marginBottom: subtitle ? 2 : 10 }}>{title}</h3>}
     {subtitle && <div className="muted small" style={{ marginBottom: 10 }}>{subtitle}</div>}
+    {lead}
     {groups.map((g, gi) => <div key={gi} className={'menu-group' + (sections ? ' grouped' : '')}>
       {g.title && <div className="menu-sec">{g.title}</div>}
       <div className="list menu-list">
@@ -152,7 +154,7 @@ function MenuSheet({ title, titleClass = '', subtitle, items, sections, close })
           className={'item menu-item' + (it.danger ? ' danger' : '') + (it.disabled ? ' disabled' : '') + (it.accent ? ' accent' : '')}
           aria-disabled={it.disabled || undefined}
           {...tappable(it.disabled ? null : () => { close(); it.onClick && it.onClick() })}>
-          {it.icon && <span className="lrow-i"><Icon name={it.icon} /></span>}
+          {it.thumb ? <Thumb ex={it.thumb} /> : it.icon && <span className="lrow-i"><Icon name={it.icon} /></span>}
           <div className="grow"><div className="tt">{it.label}</div>{it.sub && <div className="ss">{it.sub}</div>}</div>
           {it.on != null && <span className={'menu-on' + (it.on ? ' is-on' : '')}><Icon name="check" /></span>}
           {it.chevron && <Icon name="chevronRight" className="menu-chev" />}
@@ -3518,18 +3520,39 @@ export const supersetSheet = (meta, onSave) => ui().openSheet(close => <Superset
    already computed via applyIntensifierPlan; an unplanned straight set can still grow one live
    by tapping "+ Drop"/"+ Burst", which appends with the same suggested-next-value math. */
 
-// Shown when the last exercise's last set is checked — finish, or keep going.
-function WorkoutComplete({ close }) {
+// Shown when the last exercise's last set is checked — finish, or keep going. In a live session
+// (`onAdd`, the workout screen's add) it also cheers you on to one more, and offers the exercises
+// you most often add on top of your routines (lib/keep-going.js): a tap adds one to this workout
+// the way the picker's "+" does. A workout logged into the past only finishes.
+const extraPicks = () => frequentExtras(S().workouts, S().active, { routines: S().routines, keep: id => !!EXIDX[id] && !EXIDX[id].missing })
+function WorkoutComplete({ close, onAdd }) {
+  const [line] = useState(() => keepGoingLine())
+  const [picks] = useState(() => (onAdd ? extraPicks() : []))
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="checkCircle" /></div>
     <h3 style={{ margin: '8px 0' }}>{t("That's the whole workout!")}</h3>
+    {onAdd && <div style={{ fontWeight: 600, color: 'var(--acc)', marginBottom: 6 }}>{line}</div>}
     <div className="muted small" style={{ marginBottom: 16 }}>{t('All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.')}</div>
+    {picks.length > 0 && <div style={{ textAlign: 'start', marginBottom: 16 }}>
+      <div className="small dim" style={{ margin: '0 4px 6px' }}>{t('You often add')}</div>
+      <div className="list">
+        {picks.map(({ id, times }) => {
+          const ex = EXIDX[id]
+          return <div key={id} className="item keep-going-pick" {...tappable(() => { close(); onAdd(ex) })}>
+            <Thumb ex={ex} />
+            <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</div>
+              <div className="ss">{t('{0}× as an extra', times)}</div></div>
+            <span style={{ color: 'var(--acc)', display: 'flex' }}><Icon name="plusCircle" /></span>
+          </div>
+        })}
+      </div>
+    </div>}
     <Button variant="primary" icon="flag" onClick={() => { close(); finishWorkout() }}>{t('Finish workout')}</Button>
     <div style={{ height: 8 }} />
     <Button onClick={() => { close(); useUI.getState().toast(t('Keep going: tap “+ Add exercise” below')) }}>{t('Continue workout')}</Button>
   </div>
 }
-export const workoutCompleteSheet = () => ui().openSheet(close => <WorkoutComplete close={close} />, { kind: 'center' })
+export const workoutCompleteSheet = ({ onAdd } = {}) => ui().openSheet(close => <WorkoutComplete close={close} onAdd={onAdd} />, { kind: 'center' })
 
 export function saveWorkoutEdits(onExit = () => nav('/history')) {
   // A save decision left open after the editor already closed (a second prompt from a route
@@ -3715,20 +3738,30 @@ export function finishWorkout() {
 // Discard. It says what finishWorkout's confirm would have said about sets still unchecked, so
 // the save needs no second question. `onDiscard` is the screen's own discard, with its confirm.
 // The editor of a saved workout still saves at once.
-export function finishWorkoutSheet({ onDiscard } = {}) {
+// In a live session (`onAdd`, the screen's add) it also cheers you on and offers your usual extras,
+// as the sheet after the last set does (WorkoutComplete, lib/keep-going.js), and Continue workout
+// closes it; Finish and save and Discard stay as they were.
+export function finishWorkoutSheet({ onDiscard, onAdd } = {}) {
   if (S().active?.editingWorkoutId) { saveWorkoutEdits(); return }
   const A = S().active
   if (!A) return
   const done = setsDoneActive(A)
   const total = setUnitsTotal(A.entries)
+  const live = !!onAdd && !A.backfill
+  const picks = live ? extraPicks() : []
   menuSheet({
     title: !done ? t('Nothing logged yet') : done < total ? t('Finish early?') : t('Finish workout?'),
     subtitle: !done ? t('You haven’t checked off any sets. Finish the workout anyway?')
       : done < total ? tn('{0} set still unchecked. Finish the workout now?', '{0} sets still unchecked. Finish the workout now?', total - done) : null,
+    lead: live ? <div className="keep-going-line" style={{ fontWeight: 600, color: 'var(--acc)', margin: '0 0 10px' }}>{keepGoingLine()}</div> : null,
     sections: [
-      { items: [{ icon: 'flag', accent: true, label: t('Finish and save'), onClick: doFinishWorkout }] },
+      picks.length > 0 && { title: t('You often add'), items: picks.map(({ id, times }) => ({
+        thumb: EXIDX[id], label: exerciseNameText(EXIDX[id]), sub: t('{0}× as an extra', times), onClick: () => onAdd(EXIDX[id]),
+      })) },
+      { items: [{ icon: 'flag', accent: true, label: t('Finish and save'), onClick: doFinishWorkout },
+        live && { icon: 'play', label: t('Continue workout') }] },
       { items: [onDiscard && { icon: 'trash', danger: true, label: t('Discard workout'), onClick: onDiscard }] },
-    ],
+    ].filter(Boolean),
   })
 }
 // Finish and save without a question: the Apple Watch's Finish (lib/watch-sync.js) runs exactly
