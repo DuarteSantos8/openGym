@@ -581,6 +581,13 @@ test('a cardio interval keeps its speed and minutes on the rule, and opens a ses
   assert.deepEqual(validateCanonicalProfile(profile), { ok: true, errors: [] });
 });
 
+test('a treadmill plan keeps its incline on the occurrence, and a flat one has none', () => {
+  const state = v1({ routines: [{ id: 'r1', name: 'Run', ex: [{ id: CARDIO, sets: 1, min: 20, speed: 9, incline: 4 }, { id: CARDIO, sets: 1, min: 10, speed: 8 }] }] });
+  const [hill, flat] = migrate(state).profile.routines[0].ex;
+  assert.deepEqual(hill.cardio, { sets: 1, min: 20, speed: 9, incline: 4 });
+  assert.equal('incline' in flat.cardio, false);
+});
+
 test('the run of misses v1 recomputed from history is counted, so the deload comes when v1\'s would have', () => {
   const at = (day, reps) => ({
     id: 'w' + day, d: `2026-01-0${day}`, start: Date.UTC(2026, 0, day, 18), end: Date.UTC(2026, 0, day, 19), routineIds: ['r1'], routineId: 'r1',
