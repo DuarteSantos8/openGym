@@ -384,7 +384,17 @@ struct LiveRest: View {
 
     var body: some View {
         let accent = Color(hex: attributes.accent) ?? .green
-        if let range = state.restRange {
+        // A hold (or its count-in) comes first: it is what is happening now.
+        if let range = state.holdRange {
+            Text(timerInterval: range, countsDown: true)
+                .font(font.weight(.bold)).monospacedDigit()
+                .multilineTextAlignment(.trailing)
+                .foregroundStyle(accent)
+        } else if let left = state.holdLeft {
+            Label(String(format: "%d:%02d", Int(left) / 60, Int(left) % 60), systemImage: "pause.fill")
+                .font(font.weight(.bold)).monospacedDigit()
+                .foregroundStyle(.secondary)
+        } else if let range = state.restRange {
             Text(timerInterval: range, countsDown: true)
                 .font(font.weight(.bold)).monospacedDigit()
                 .multilineTextAlignment(.trailing)
@@ -403,6 +413,12 @@ extension WorkoutActivityAttributes {
     /// (many taps with the page asleep), where "All sets done" was simply wrong (Discord).
     func noSetText(_ state: ContentState) -> String {
         state.done < state.total ? (labels.openApp ?? "Open openGym for the next set") : labels.allDone
+    }
+
+    /// The word over the clock: the count-in, the hold, or the rest.
+    func clockLabel(_ state: ContentState) -> String {
+        if state.holding { return state.holdKind == "countin" ? (labels.getReady ?? labels.rest) : (labels.hold ?? labels.rest) }
+        return labels.rest
     }
 }
 
@@ -434,7 +450,14 @@ struct LiveSecondaryButton: View {
 
     var body: some View {
         let accent = Color(hex: attributes.accent) ?? .green
-        if state.resting {
+        if state.holding && state.auto == true {
+            Button(intent: StopAutoIntent(wid: attributes.wid)) {
+                Image(systemName: "stop.fill").font(.subheadline.weight(.semibold))
+            }
+            .buttonStyle(.bordered)
+            .tint(accent)
+            .accessibilityLabel(Text(attributes.labels.stopAuto ?? "Stop auto"))
+        } else if state.resting {
             Button(intent: SkipRestIntent(wid: attributes.wid)) {
                 Image(systemName: "forward.fill").font(.subheadline.weight(.semibold))
             }
@@ -472,9 +495,9 @@ struct LiveLockView: View {
                     }
                 }
                 Spacer(minLength: 6)
-                if state.restRange != nil || state.restLeft != nil {
+                if state.holding || state.restRange != nil || state.restLeft != nil {
                     VStack(alignment: .trailing, spacing: 0) {
-                        Text(attributes.labels.rest).font(.caption2.weight(.semibold)).textCase(.uppercase).foregroundStyle(.secondary)
+                        Text(attributes.clockLabel(state)).font(.caption2.weight(.semibold)).textCase(.uppercase).foregroundStyle(.secondary)
                         LiveRest(attributes: attributes, state: state).frame(maxWidth: 96, alignment: .trailing)
                     }
                 }
@@ -497,7 +520,7 @@ struct LiveCompactTrailing: View {
     let state: WorkoutActivityAttributes.ContentState
 
     var body: some View {
-        if state.restRange != nil || state.restLeft != nil {
+        if state.holding || state.restRange != nil || state.restLeft != nil {
             LiveRest(attributes: attributes, state: state, font: .caption).frame(width: 46)
         } else {
             Text("\(state.done)/\(state.total)").font(.caption.weight(.bold)).monospacedDigit()
@@ -512,7 +535,7 @@ struct LiveMinimal: View {
     let state: WorkoutActivityAttributes.ContentState
 
     var body: some View {
-        if let range = state.restRange {
+        if let range = state.holdRange ?? state.restRange {
             Text(timerInterval: range, countsDown: true, showsHours: false)
                 .font(.caption2.weight(.bold)).monospacedDigit()
                 .multilineTextAlignment(.center)

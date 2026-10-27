@@ -1891,6 +1891,16 @@ export const PT_BR_OVERRIDES = {
   "Rewrite the session note whenever.": "Reescreva a nota da sessão quando quiser.",
   "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Dia errado ou esqueceu de terminar na hora? Corrija aqui dentro. Compartilhar, exportar e Excluir treino também ficam aqui.",
   "That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.": "É um backup ou um arquivo de plano do openGym. Use Importar backup, ou importe-o na tela Plano.",
+  // --- workout: timed holds that start by themselves ---
+  "Get ready": "Prepare-se",
+  "Go now": "Começar agora",
+  "As in Settings": "Como nos Ajustes",
+  "Get ready: {0}": "Prepare-se: {0}",
+  "Timed holds start by themselves": "As isometrias começam sozinhas",
+  "Waiting till you close that": "Esperando você fechar isso",
+  "Up next: {0}, starts by itself": "Próximo: {0}, começa sozinho",
+  "When the rest ends: 3, 2, 1 and the hold starts. Pause, restart or stop it any time.": "Quando o descanso acaba: 3, 2, 1 e a isometria começa. Pause, recomece ou pare quando quiser.",
+  "Holds start by themselves": "Começa sozinha",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

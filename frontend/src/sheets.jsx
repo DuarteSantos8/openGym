@@ -2139,6 +2139,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
       ...(c.warmupRestOff === true ? { warmupRestOff: true } : c.warmupRestSec > 0 ? { warmupRestSec: Math.round(c.warmupRestSec) } : {}),
       ...(perSide && mode === 'time' && c.sideRestOff === true ? { sideRestOff: true }
         : perSide && c.sideRestSec > 0 ? { sideRestSec: Math.round(c.sideRestSec) } : {}),
+      // Holds that start by themselves, this exercise's own say (lib/auto-holds.js autoHoldsFor):
+      // written only when picked, so every other hold follows Settings.
+      ...(mode === 'time' && typeof c.autoHold === 'boolean' ? { autoHold: c.autoHold } : {}),
     }
     // The treadmill's grade, only when it has one, so a flat slot keeps the shape it had.
     const incline = clampIncline(c.incline)
@@ -2371,6 +2374,18 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {t('A breather after one side, before the other. The full rest comes once both sides are done.')}
       </div>
     </>}
+    {/* Holds that start by themselves (Settings → Workout): as Settings says, or always on or off
+        for this exercise (a plank yes, a dead hang you want to chalk up for, no). */}
+    {!cardio && mode === 'time' && <div className="sect-b" style={{ marginBottom: 18 }}>
+      <SelectRow icon="stopwatch" iconTint="var(--orange)" title={t('Holds start by themselves')} sheetTitle={t('Holds start by themselves')}
+        value={c.autoHold === true ? 'on' : c.autoHold === false ? 'off' : 'default'}
+        onChange={v => setC(x => { const { autoHold, ...rest } = x; return v === 'on' ? { ...rest, autoHold: true } : v === 'off' ? { ...rest, autoHold: false } : rest })}
+        options={[
+          { value: 'default', label: t('As in Settings') },
+          { value: 'on', label: t('On') },
+          { value: 'off', label: t('Off') },
+        ]} />
+    </div>}
     {/* Planned substitutes for this slot, in the routine editor: what the swap sheet offers first
         when the machine is taken. */}
     {backupsEditable && <>

@@ -33,6 +33,16 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     static let requestId = "opengym.rest"
+    /// Timed holds that run themselves (lib/auto-holds.js): the alerts after the rest's, each its own
+    /// notification. At most this many, and all of them taken back with the rest's.
+    static let maxCues = 16
+    static let cueIds: [String] = (1...RestAlertPlugin.maxCues).map { "\(RestAlertPlugin.requestId).c\($0)" }
+
+    /** One alert after the first: `dt` seconds after it. */
+    private struct Cue {
+        let dt: TimeInterval
+        let title: String
+    }
 
     /** The rest waiting to be rung, kept so it can go back in when the app leaves the screen. */
     private struct Pending {
@@ -40,6 +50,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
         let title: String
         let sound: Bool
         let tone: String
+        var cues: [Cue] = []
     }
     private var pending: Pending?
     private var player: AVAudioPlayer?
@@ -50,6 +61,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
         nc.addObserver(self, selector: #selector(leftFront), name: UIApplication.didEnterBackgroundNotification, object: nil)
         // The Live Activity's Skip rest (WorkoutActivity.swift): this rest's alert is not posted later.
         nc.addObserver(self, selector: #selector(restSkipped), name: LiveActivityQueue.restSkipped, object: nil)
+        // The Live Activity's Stop auto: the chain's alerts after this one are not rung.
+        nc.addObserver(self, selector: #selector(autoStopped), name: LiveActivityQueue.autoStopped, object: nil)
         // Written ahead, off the main thread: the first rest then finds its sound file there.
         DispatchQueue.global(qos: .utility).async { RestTone.kinds.forEach { _ = RestTone.soundFile($0) } }
         // An app's session starts as .soloAmbient, which stops the music the moment anything in
@@ -77,14 +90,25 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("at must be in the future")
             return
         }
+        let given: [JSObject] = call.getArray("cues", JSObject.self) ?? []
+        let cues: [Cue] = given.prefix(RestAlertPlugin.maxCues).compactMap { c in
+            let raw = c["dt"]
+            guard let dt = (raw as? Double) ?? (raw as? NSNumber)?.doubleValue ?? (raw as? Int).map(Double.init), dt >= 0,
+                  let title = c["title"] as? String else { return nil }
+            return Cue(dt: dt / 1000, title: title)
+        }
         pending = Pending(
             at: at,
             title: call.getString("title") ?? "Rest’s over. Next set!",
             sound: call.getBool("sound") ?? true,
-            tone: RestTone.normalised(call.getString("tone") ?? ((call.getBool("classic") ?? false) ? "classic" : "chime"))
+            tone: RestTone.normalised(call.getString("tone") ?? ((call.getBool("classic") ?? false) ? "classic" : "chime")),
+            cues: cues
         )
         DispatchQueue.main.async {
-            if UIApplication.shared.applicationState != .active { self.post() }
+            if UIApplication.shared.applicationState != .active {
+                self.withdraw()
+                self.post()
+            }
             call.resolve()
         }
     }
@@ -179,28 +203,56 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
         post()
     }
 
+    /// Skip rest on the Lock Screen. Before a hold that starts by itself, the chain goes on from
+    /// now: its count-in rings at once and the alerts after it move up by the time skipped.
     @objc private func restSkipped() {
-        DispatchQueue.main.async { self.pending = nil }
+        DispatchQueue.main.async {
+            guard var p = self.pending, !p.cues.isEmpty else {
+                self.pending = nil
+                return
+            }
+            p = Pending(at: Date().addingTimeInterval(1), title: p.title, sound: p.sound, tone: p.tone, cues: p.cues)
+            self.pending = p
+            self.withdraw()
+            if UIApplication.shared.applicationState != .active { self.post() }
+        }
+    }
+
+    /// Stop auto on the Lock Screen: the alert booked now stays (a hold running still ends), the
+    /// chain's alerts after it go.
+    @objc private func autoStopped() {
+        DispatchQueue.main.async {
+            guard var p = self.pending else { return }
+            p.cues = []
+            self.pending = p
+            self.withdraw()
+            if UIApplication.shared.applicationState != .active { self.post() }
+        }
     }
 
     private func post() {
-        guard let p = pending, p.at > Date() else { return }
-        let content = UNMutableNotificationContent()
-        content.title = p.title
-        if p.sound {
-            content.sound = RestTone.soundFile(p.tone) != nil
-                ? UNNotificationSound(named: UNNotificationSoundName(RestTone.soundName(p.tone)))
-                : .default
+        guard let p = pending else { return }
+        // The rest's own alert, then each of the chain's at its time after it (the ones still ahead).
+        let alerts: [(String, Date, String)] = [(RestAlertPlugin.requestId, p.at, p.title)]
+            + p.cues.enumerated().map { (RestAlertPlugin.cueIds[$0.offset], p.at.addingTimeInterval($0.element.dt), $0.element.title) }
+        for (id, at, title) in alerts where at > Date() {
+            let content = UNMutableNotificationContent()
+            content.title = title
+            if p.sound {
+                content.sound = RestTone.soundFile(p.tone) != nil
+                    ? UNNotificationSound(named: UNNotificationSoundName(RestTone.soundName(p.tone)))
+                    : .default
+            }
+            if #available(iOS 15.0, *) { content.interruptionLevel = .active }
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, at.timeIntervalSinceNow), repeats: false)
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: content, trigger: trigger))
         }
-        if #available(iOS 15.0, *) { content.interruptionLevel = .active }
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, p.at.timeIntervalSinceNow), repeats: false)
-        let request = UNNotificationRequest(identifier: RestAlertPlugin.requestId, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request)
     }
 
     private func withdraw() {
         let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: [RestAlertPlugin.requestId])
-        center.removeDeliveredNotifications(withIdentifiers: [RestAlertPlugin.requestId])
+        let ids = [RestAlertPlugin.requestId] + RestAlertPlugin.cueIds
+        center.removePendingNotificationRequests(withIdentifiers: ids)
+        center.removeDeliveredNotifications(withIdentifiers: ids)
     }
 }
