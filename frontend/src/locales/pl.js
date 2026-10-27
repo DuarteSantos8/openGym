@@ -2923,7 +2923,7 @@ export default {
   "{0} weeks: not yet": "Tygodnie: {0}, jeszcze nie",
   "{0} weeks: reached": "Tygodnie: {0}, zdobyte",
   "{0} PR this month": "Rekordy w tym miesiącu: {0}",
-  "{0} PRs this month": "Rekordy w tym miesiącu: {0}",
+  "{0} PRs this month": { one: "{0} rekord w tym miesiącu", few: "{0} rekordy w tym miesiącu", many: "{0} rekordów w tym miesiącu", other: "{0} rekordu w tym miesiącu" },
   "One more week with a workout earns a freeze.": "Jeszcze jeden tydzień z treningiem i masz zamrożenie.",
-  "{0} more weeks with a workout earn a freeze.": "Jeszcze tygodnie z treningiem: {0}, i masz zamrożenie.",
+  "{0} more weeks with a workout earn a freeze.": { one: "Jeszcze {0} tydzień z treningiem i masz zamrożenie.", few: "Jeszcze {0} tygodnie z treningiem i masz zamrożenie.", many: "Jeszcze {0} tygodni z treningiem i masz zamrożenie.", other: "Jeszcze {0} tygodnia z treningiem i masz zamrożenie." },
 }
