@@ -295,3 +295,21 @@ describe('object rungs', () => {
     expect(rungsOf(null)).toEqual([])
   })
 })
+
+describe('rung regression option', () => {
+  const ladder = (more = {}) => rule('bodyweight_ladder', { rungs: ['a', 'b'], ...more })
+  it('regress.after is an integer from 1 to 10', () => {
+    for (const after of [0, 11, 1.5]) expect(errorsOf(ladder({ regress: { after } })).join()).toMatch(/regress.after must be an integer from 1 to 10/)
+    expect(errorsOf(ladder({ regress: { after: 10 } }))).toEqual([])
+  })
+  it('regress belongs to a difficulty step', () =>
+    expect(errorsOf(withPhase(ladder(), ph => ({ progression: ph.progression.map(o => (o.metric === 'reps' ? { ...o, regress: { after: 2 } } : o)) }))).join()).toMatch(/regress belongs to a difficulty step/))
+  it('planFingerprint ignores regress', () => expect(planFingerprint(ladder({ regress: { after: 2 } }))).toBe(planFingerprint(ladder())))
+  it('reads regress back, and a null patch removes it', () => {
+    const r = ladder({ regress: { after: 2 } })
+    expect(planOptions(r).regress).toEqual({ after: 2 })
+    expect(isTemplateRule(r)).toBe(true)
+    expect(planOptions(ladder())).not.toHaveProperty('regress')
+    expect(operatorFor(planPhase(editPlan(r, { regress: null })), 'difficulty')).not.toHaveProperty('regress')
+  })
+})
