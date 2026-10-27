@@ -1834,13 +1834,16 @@ function ActiveWorkout() {
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
 
-    // One side of a per-side reps set ticked, the other still to go: the exercise's own break
-    // between sides, when it has one (sideRestFor); none otherwise, as before.
+    // One side of a per-side reps set ticked, the other still to go: the set's own rest when it
+    // has one ("Rest after this set", #853), else the exercise's break between sides
+    // (sideRestFor); none otherwise, as before.
     if (side && !checked) {
-      const row = useStore.getState().S.active?.entries[idx]?.sets[i]
+      const sets = useStore.getState().S.active?.entries[idx]?.sets
+      const row = sets?.[i]
       const other = side === 'L' ? 'R' : 'L'
       if (row?.sides?.[side]?.done && !row.sides[other]?.done) {
-        const pause = sideRestFor(useStore.getState().S.active.entries[idx].target, { timed: false })
+        const ownSec = ownSetRest(sets[setSpanAt(sets, i)[0]])
+        const pause = sideRestFor(useStore.getState().S.active.entries[idx].target, { timed: false, ownSec })
         if (pause > 0) startRest(pause, idx, { kind: 'switch', forSet: i })
       }
     }

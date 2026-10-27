@@ -335,6 +335,23 @@ describe('Workout set completion flow', () => {
     expect(mocks.startRest).not.toHaveBeenCalled()
   })
 
+  it('a per-side set with its own rest pauses that long between its sides (#853)', async () => {
+    const half = (extra = {}) => ({ w: 20, r: 10, done: false, ...extra, sides: { L: { w: 20, r: 5, done: false }, R: { w: 20, r: 5, done: false } } })
+    const lunge = row => exercise('split-squat', [false], {
+      target: { mode: 'reps', reps: 10, weight: 20, side: true, sideRestSec: 20 },
+      sets: [half({ phase: 'warmup', ...row }), half()],
+    })
+    await mount([lunge({ restSec: 45 })], 0, { active: { workoutView: 'focus' } })
+    await click(container.querySelector('[data-focus-side="L"] button[aria-label="Complete left side"]'))
+    expect(mocks.startRest).toHaveBeenLastCalledWith(45, 0, { kind: 'switch', forSet: 0 })
+    await unmount()
+    mocks.startRest.mockClear()
+    // "No timer" on the set: no pause between its sides either
+    await mount([lunge({ restSec: 0 })], 0, { active: { workoutView: 'focus' } })
+    await click(container.querySelector('[data-focus-side="L"] button[aria-label="Complete left side"]'))
+    expect(mocks.startRest).not.toHaveBeenCalled()
+  })
+
   it('starts rest after a non-final ordinary set, but stops rest without restarting it on the final set', async () => {
     await mount([exercise('plain-bench', [false, false, false])])
     await toggleSet(0)

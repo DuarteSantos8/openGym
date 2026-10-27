@@ -150,6 +150,7 @@ No new switch: the Apple Health one covers it.
 **Fixes**
 
 - The rest timer starts after the last set of an exercise again, also when the next exercise opens with warm-ups (#853).
+- A per-side set with its own "Rest after this set" now takes that break between its sides too (#853).
 
 ## v1.4.3 (2026-10-26)
 
