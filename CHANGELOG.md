@@ -146,6 +146,8 @@ with the watch, a little ♥ in the workout header shows the latest beat, and th
 Apple Health once, with its heart rate. Take the buds out and the readings simply pause; pop them
 back in and they carry on. Wearing the watch? It keeps the job, so there's never a second workout.
 No new switch: the Apple Health one covers it.
+- **Self-hosting: containers report healthy in half a minute**, not after five. TrueNAS and friends
+  wait for that before they call openGym running (#844, thanks @andi242 for spotting it).
 
 ## v1.4.3 (2026-10-26)
 
