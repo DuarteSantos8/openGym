@@ -247,6 +247,36 @@ export const weighInsWithoutSource = (bodyweight, src) => list(bodyweight).filte
  * other metrics from the records, folded by the metric's `daily` rule. BMI with no reading of
  * its own is worked out from weight and the latest height (`derived: true`).
  */
+/**
+ * The workouts, one per workout done: Apple Health may hold the same one twice, written by two
+ * apps at once (the Apple Watch's session and the iPhone's copy, or Apple's Workout app next to
+ * openGym's), starting seconds apart. Two that share most of their time (half of the shorter one
+ * or more) are one: the one with energy or distance stays, with what the other adds, and `dups`
+ * lists the ids it stands for, so deleting it deletes them all. Oldest first.
+ */
+export function distinctWorkouts(rows) {
+  const end = r => r.t + Number(r.v) * 60000
+  const rich = r => (r.kc != null) + (r.km != null) + (r.a && r.a !== 'other' ? 0.5 : 0)
+  const out = []
+  for (const r of list(rows).filter(r => r?.type === 'workout').sort(byTime)) {
+    const prev = out[out.length - 1]
+    const shared = prev ? Math.min(end(prev), end(r)) - Math.max(prev.t, r.t) : 0
+    if (!prev || shared < 0.5 * Math.min(Number(prev.v), Number(r.v)) * 60000) {
+      out.push(r)
+      continue
+    }
+    const [keep, other] = rich(r) > rich(prev) ? [r, prev] : [prev, r]
+    out[out.length - 1] = {
+      ...keep,
+      ...(keep.kc == null && other.kc != null ? { kc: other.kc } : {}),
+      ...(keep.km == null && other.km != null ? { km: other.km } : {}),
+      ...((!keep.a || keep.a === 'other') && other.a && other.a !== 'other' ? { a: other.a } : {}),
+      dups: [...(prev.dups || [prev.id]), ...(r.dups || [r.id])].filter(id => id !== keep.id),
+    }
+  }
+  return out
+}
+
 export function dailyValues(S, type) {
   const m = metricOf(type)
   if (!m) return []
@@ -257,7 +287,7 @@ export function dailyValues(S, type) {
       .sort((a, b) => (a.d < b.d ? -1 : 1))
   }
   const byDay = new Map()
-  for (const r of list(S?.health)) {
+  for (const r of type === 'workout' ? distinctWorkouts(S?.health) : list(S?.health)) {
     if (r?.type !== type) continue
     let day = byDay.get(r.d)
     if (!day) byDay.set(r.d, day = [])
@@ -351,5 +381,5 @@ export function seriesOf(S, type, range = 'month', { now = Date.now(), ws = 1 } 
 /** Every record of `type`, newest first, for a metric's history list (weight: the weigh-ins). */
 export function historyOf(S, type) {
   if (type === 'weight') return dailyValues(S, 'weight').reverse().map(x => ({ id: 'bw:' + x.d, type, v: x.v, t: x.t, d: x.d, src: x.src, weighIn: true }))
-  return list(S?.health).filter(r => r?.type === type).slice().sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : b.t - a.t))
+  return (type === 'workout' ? distinctWorkouts(S?.health) : list(S?.health).filter(r => r?.type === type)).slice().sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : b.t - a.t))
 }
