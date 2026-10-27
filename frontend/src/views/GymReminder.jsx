@@ -35,10 +35,12 @@ const explainAlways = () => new Promise(resolve => confirmSheet({
     <p style={{ marginTop: 8 }}>{t('The phone itself watches the gyms you added and only wakes openGym when you arrive. No tracking in between, and your locations never leave this phone.')}</p>
     {!ios() && <p style={{ marginTop: 8 }}>{t('On the next screen, pick “Allow all the time”.')}</p>}
   </>,
+  // One button that always leads to the phone's own dialog, where the no belongs (App Review
+  // 5.1.1(iv), the same rule as the first-start permission screens).
   confirmText: t('Continue'),
-  cancelText: t('Not now'),
+  noCancel: true,
+  locked: true,
   onConfirm: () => resolve(true),
-  onCancel: () => resolve(false),
 }))
 
 const permLabel = p => !p ? '' : p.background === 'granted' ? (ios() ? t('Always') : t('All the time'))

@@ -88,13 +88,17 @@ const toast = m => ui().toast(m)
 const snd = () => S().sound
 
 /* ============================ custom confirm dialog ============================ */
-function ConfirmDialog({ title, message, confirmText, cancelText, danger, onConfirm, onCancel, close }) {
+// `noCancel`: one button only, for an explainer that must lead straight to the phone's own
+// permission dialog (App Review 5.1.1(iv)); pass `locked` with it so the sheet can't be swiped away.
+function ConfirmDialog({ title, message, confirmText, cancelText, danger, noCancel, onConfirm, onCancel, close }) {
   return <div style={{ textAlign: 'center', padding: '4px 0' }}>
     {title && <h3 style={{ marginBottom: 8 }}>{title}</h3>}
     <div className="muted" style={{ marginBottom: 18, lineHeight: 1.5 }}>{message}</div>
     <button className={'btn ' + (danger ? 'danger' : 'primary')} onClick={() => { close(); onConfirm && onConfirm() }}>{confirmText || t('Confirm')}</button>
-    <div style={{ height: 8 }} />
-    <Button variant="ghost" className="dim" onClick={() => { close(); onCancel && onCancel() }}>{cancelText || t('Cancel')}</Button>
+    {!noCancel && <>
+      <div style={{ height: 8 }} />
+      <Button variant="ghost" className="dim" onClick={() => { close(); onCancel && onCancel() }}>{cancelText || t('Cancel')}</Button>
+    </>}
   </div>
 }
 // "1 workouts and 1 weigh-ins" read wrong: a count of one takes the singular, per noun. Four

@@ -45,7 +45,7 @@ vi.mock('../lib/gym-reminder.js', async () => {
   }
 })
 vi.mock('../sheets.jsx', () => ({
-  confirmSheet: o => { mocks.asked.push(o.danger ? 'confirm-remove' : 'explainer'); if (mocks.confirm) o.onConfirm?.(); else o.onCancel?.() },
+  confirmSheet: o => { (mocks.confirmOpts ||= []).push(o); mocks.asked.push(o.danger ? 'confirm-remove' : 'explainer'); if (mocks.confirm) o.onConfirm?.(); else o.onCancel?.() },
 }))
 vi.mock('../store/useUI.js', () => {
   const snap = () => ({ toast: mocks.toast, openSheet: () => {} })
@@ -108,7 +108,7 @@ const gymsConfig = () => ({ on: true, gyms: [
 beforeEach(() => {
   mocks.config = { on: false, gyms: [], window: null }
   mocks.perm = { location: 'prompt', background: 'prompt', notifications: 'granted' }
-  mocks.saved = []; mocks.asked = []; mocks.confirm = true; mocks.location = { state: null }
+  mocks.saved = []; mocks.asked = []; mocks.confirmOpts = []; mocks.confirm = true; mocks.location = { state: null }
   mocks.finds = []; mocks.hits = []; mocks.findError = false; mocks.picks = []; mocks.resolved = undefined; mocks.reverse = []
   mocks.address = 'Gym St 1, 8000 Zürich'; mocks.source = 'osm'; mocks.platform = 'android'; mocks.map = null
   mocks.here = { lat: 47.3769, lng: 8.5417, accuracy: 12 }
@@ -138,12 +138,16 @@ describe('Gym reminder page', () => {
     expect(mocks.saved.at(-1).on).toBe(true)
   })
 
-  it('"Not now" on the explainer: no system prompt, stays off', async () => {
-    mocks.confirm = false
+  // App Review 5.1.1(iv): the explainer has one button, Continue, and it always leads to the
+  // phone's own dialog; saying no is the phone dialog's job.
+  it('the explainer has one button and can\'t be swiped away', async () => {
     await render(<GymReminderPage />)
     await click(switchIn('Gym reminder'))
-    expect(mocks.asked).toEqual(['explainer'])
-    expect(mocks.saved).toEqual([])
+    const opts = mocks.confirmOpts.at(-1)
+    expect(opts.noCancel).toBe(true)
+    expect(opts.locked).toBe(true)
+    expect(opts.cancelText).toBeUndefined()
+    expect(opts.onCancel).toBeUndefined()
   })
 
   it('Always already given: no explainer, straight on', async () => {
