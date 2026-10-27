@@ -107,6 +107,7 @@ const COLUMNS = [
   ['durationSec', ['duration sec', 'duration secs']],
   ['setType', ['set type']],
   // The set's number and, for a set logged per side, which side the row is (our own export).
+  // Strong's Set Order is a number, or W (warm-up), D (drop), F (failure); "Rest Timer" and "Note" rows are not sets.
   ['setNo', ['set', 'set order', 'set index']],
   ['side', ['side']],
   // Hevy numbers the supersets of a workout; rows sharing a number were done as one.
@@ -578,6 +579,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
   const byDate = new Map()           // session key -> the workout being built (see `sessionKey` below)
   const created = new Map()
   const unmatched = new Set()
+  const rowNotes = new Map()         // session key -> Strong's Note rows, as [exact title, name key, text]
   let sets = 0, skipped = 0, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
   let sawLb = false, sawKg = false
 
@@ -586,6 +588,9 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     const v = map[f] === undefined ? '' : String(r[map[f]] ?? '').trim()
     return own && /^'[=+\-@\t\r]/.test(v) ? v.slice(1) : v
   }
+  const sessionKeyOf = (when, r) => (source === 'Strong' || source === 'Hevy' || own) && when.t != null
+    ? when.d + '|' + when.t + '|' + (cell(r, 'workoutName') || '')
+    : when.d
 
   for (let i = 1; i < rows.length; i++) {
     const r = rows[i]
@@ -596,6 +601,19 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     if (own && map.startTime !== undefined) {
       const st = parseWhen(cell(r, 'startTime'))
       if (st && st.t != null) when = { d: when.d, t: st.t }
+    }
+    const order = cell(r, 'setNo').toLowerCase()
+    if (order === 'rest timer') continue
+    // Strong's note on an exercise for that workout is a row of its own; it joins the entry once
+    // the sets have placed it.
+    if (order === 'note') {
+      const text = cell(r, 'note')
+      if (text) {
+        const sk = sessionKeyOf(when, r)
+        if (!rowNotes.has(sk)) rowNotes.set(sk, [])
+        rowNotes.get(sk).push([name.trim().toLowerCase(), keyOf(name), text])
+      }
+      continue
     }
 
     // explicit kg/lb columns beat a generic column plus a unit column
@@ -625,7 +643,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     // broken, and kept it would show as an infinite PR or a NaN chart. Skip the row, say so.
     const maxW = rowUnit === 'lb' || (!rowUnit && unit === 'lb') ? MAX_KG / LB_TO_KG : MAX_KG
     if (w < 0 || reps < 0 || secs < 0 || mins < 0 || km < 0 || w > maxW || reps > MAX_REPS || mins > 24 * 60 || km > MAX_KM) { skipped++; continue }
-    const warmup = /warm/i.test(cell(r, 'setType'))
+    const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w'
     if (warmup) warmups++
 
     // Our own file names the exercise by id: a catalogue id is taken as it is, and a custom one
@@ -688,7 +706,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
         : { w, r: reps || 0, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
     // A "failure" set type (Hevy's CSV writes one) is the app's set taken to failure; not on
     // cardio, which has no effort to read it as.
-    if (!warmup && !isCardio && /^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim())) set.failure = true
+    if (!warmup && !isCardio && (/^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim()) || order === 'f')) set.failure = true
     // Effort rides along only where the app can show it again: a weighted rep set. A treadmill
     // row with an RPE would have nowhere to put it. A set is kept on one scale, so a file
     // carrying both columns is read as RIR — the same precedence setLabel reads them back with.
@@ -703,9 +721,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     // told apart by it (and by the name) and stay two workouts (#505). FitNotes has no times, and
     // a generic file may stamp each set with its own, so everything else stays one per day. Ours
     // writes the start on every row the way those two do.
-    const sessionKey = (source === 'Strong' || source === 'Hevy' || own) && when.t != null
-      ? when.d + '|' + when.t + '|' + (cell(r, 'workoutName') || '')
-      : when.d
+    const sessionKey = sessionKeyOf(when, r)
     let day = byDate.get(sessionKey)
     if (!day) {
       day = { d: when.d, ex: new Map(), name: cell(r, 'workoutName') || '', start: when.t, end: null, note: '', notes: new Map(), sg: new Map(), groups: new Map() }
@@ -760,6 +776,21 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
       day.sg.set(id, day.groups.get(ss))
     }
     sets++
+  }
+
+  // The exercise's own note goes first, before the notes written against its sets. One for an
+  // exercise with no sets in that workout has no entry to go to.
+  for (const [sk, list] of rowNotes) {
+    const day = byDate.get(sk)
+    if (!day) continue
+    const exNotes = new Map()
+    for (const [exact, key, text] of list) {
+      const id = resolved.get(exact) || created.get(key)?.id
+      if (!id || !day.ex.has(id)) continue
+      if (!exNotes.has(id)) exNotes.set(id, [])
+      if (!exNotes.get(id).includes(text)) exNotes.get(id).push(text)
+    }
+    for (const [id, texts] of exNotes) day.notes.set(id, [...texts, ...(day.notes.get(id) || []).filter(n => !texts.includes(n))])
   }
 
   // lb -> kg only where a row disagrees with the profile. The app never converts units on
