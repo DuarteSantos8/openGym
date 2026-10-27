@@ -2794,4 +2794,11 @@ export default {
   'Go back a step after missed sessions': 'ถอยกลับหนึ่งขั้นหลังพลาดหลายครั้ง',
   'Missed sessions before going back': 'จำนวนครั้งที่พลาดก่อนถอยกลับ',
   'Missed means short of the minimum sets and reps.': 'พลาดหมายถึงทำได้ไม่ถึงจำนวนเซ็ตและครั้งขั้นต่ำ',
+  'Assistance': 'การช่วยผ่อนแรง',
+  'Automatic': 'อัตโนมัติ',
+  'Assisted': 'มีตัวช่วย',
+  'Not assisted': 'ไม่มีตัวช่วย',
+  'Automatic: assisted': 'อัตโนมัติ: มีตัวช่วย',
+  'Automatic: not assisted': 'อัตโนมัติ: ไม่มีตัวช่วย',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'บนเครื่องช่วยผ่อนแรง น้ำหนักคือแรงช่วย ยิ่งน้อยยิ่งยาก แอปรู้จักเครื่องแปดเครื่องจากชื่อ สำหรับยางยืดและเครื่องอื่นให้ตั้งที่นี่',
 }

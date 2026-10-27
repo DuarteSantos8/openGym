@@ -2803,4 +2803,11 @@ export default {
   'Go back a step after missed sessions': 'Nach verfehlten Einheiten eine Stufe zurück',
   'Missed sessions before going back': 'Verfehlte Einheiten bis zur Rückstufung',
   'Missed means short of the minimum sets and reps.': 'Verfehlt heißt: weniger als die Mindestzahl an Sätzen und Wiederholungen.',
+  'Assistance': 'Unterstützung',
+  'Automatic': 'Automatisch',
+  'Assisted': 'Unterstützt',
+  'Not assisted': 'Ohne Unterstützung',
+  'Automatic: assisted': 'Automatisch: unterstützt',
+  'Automatic: not assisted': 'Automatisch: ohne Unterstützung',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'An einer Unterstützungsmaschine ist das Gewicht die Hilfe, also ist weniger schwerer. Die App erkennt acht Maschinen am Namen; für Bänder und andere Maschinen hier einstellen.',
 }

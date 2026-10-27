@@ -2827,4 +2827,11 @@ export default {
   'Go back a step after missed sessions': 'Gå tillbaka ett steg efter missade pass',
   'Missed sessions before going back': 'Missade pass innan du går tillbaka',
   'Missed means short of the minimum sets and reps.': 'Missat betyder färre än minsta antal set och reps.',
+  'Assistance': 'Avlastning',
+  'Automatic': 'Automatiskt',
+  'Assisted': 'Avlastad',
+  'Not assisted': 'Utan avlastning',
+  'Automatic: assisted': 'Automatiskt: avlastad',
+  'Automatic: not assisted': 'Automatiskt: utan avlastning',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'I en avlastningsmaskin är vikten hjälpen du får, så mindre är tyngre. Appen känner igen åtta maskiner på namnet; för gummiband och andra maskiner ställer du in det här.',
 }

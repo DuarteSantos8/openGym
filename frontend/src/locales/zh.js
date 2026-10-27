@@ -2783,4 +2783,11 @@ export default {
   'Go back a step after missed sessions': '多次未达标后退回一级',
   'Missed sessions before going back': '退回前的未达标次数',
   'Missed means short of the minimum sets and reps.': '未达标指组数和次数低于最低要求。',
+  'Assistance': '助力',
+  'Automatic': '自动',
+  'Assisted': '有助力',
+  'Not assisted': '无助力',
+  'Automatic: assisted': '自动：有助力',
+  'Automatic: not assisted': '自动：无助力',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': '在助力器械上，负重就是给你的助力，所以越少越难。应用能按名称识别八台器械；弹力带和其他器械请在这里设置。',
 }

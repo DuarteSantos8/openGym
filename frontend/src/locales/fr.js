@@ -2783,4 +2783,11 @@ export default {
   'Go back a step after missed sessions': 'Revenir d’une étape après des séances manquées',
   'Missed sessions before going back': 'Séances manquées avant de revenir',
   'Missed means short of the minimum sets and reps.': 'Manquée signifie en dessous du minimum de séries et de répétitions.',
+  'Assistance': 'Assistance',
+  'Automatic': 'Automatique',
+  'Assisted': 'Assisté',
+  'Not assisted': 'Sans assistance',
+  'Automatic: assisted': 'Automatique : assisté',
+  'Automatic: not assisted': 'Automatique : sans assistance',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'Sur une machine d’assistance, la charge est l’aide reçue : moins, c’est plus dur. L’app reconnaît huit machines à leur nom ; pour les bandes et les autres machines, réglez-le ici.',
 }

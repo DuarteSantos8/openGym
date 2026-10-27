@@ -2783,4 +2783,11 @@ export default {
   'Go back a step after missed sessions': 'Kaçırılan seanslardan sonra bir aşama geri dön',
   'Missed sessions before going back': 'Geri dönmeden önce kaçırılan seans',
   'Missed means short of the minimum sets and reps.': 'Kaçırılan, en az set ve tekrar sayısının altında kalmak demektir.',
+  'Assistance': 'Destek',
+  'Automatic': 'Otomatik',
+  'Assisted': 'Destekli',
+  'Not assisted': 'Desteksiz',
+  'Automatic: assisted': 'Otomatik: destekli',
+  'Automatic: not assisted': 'Otomatik: desteksiz',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'Destek makinesinde yük, alınan yardımdır; yani az olan daha zordur. Uygulama sekiz makineyi adından tanır; bantlar ve diğer makineler için burada ayarlayın.',
 }

@@ -2783,4 +2783,11 @@ export default {
   'Go back a step after missed sessions': '놓친 세션 후 한 단계 뒤로',
   'Missed sessions before going back': '뒤로 가기 전 놓친 세션 수',
   'Missed means short of the minimum sets and reps.': '놓쳤다는 건 최소 세트와 반복 수에 못 미쳤다는 뜻이에요.',
+  'Assistance': '보조',
+  'Automatic': '자동',
+  'Assisted': '보조 있음',
+  'Not assisted': '보조 없음',
+  'Automatic: assisted': '자동: 보조 있음',
+  'Automatic: not assisted': '자동: 보조 없음',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': '보조 머신에서는 무게가 받는 도움이라서 적을수록 더 어려워요. 앱은 이름으로 머신 8종을 알아봐요. 밴드나 다른 머신은 여기서 설정하세요.',
 }

@@ -2863,4 +2863,11 @@ export default {
   'Go back a step after missed sessions': 'ব্যর্থ সেশনের পরে এক ধাপ পিছিয়ে যান',
   'Missed sessions before going back': 'পিছিয়ে যাওয়ার আগে ব্যর্থ সেশন',
   'Missed means short of the minimum sets and reps.': 'ব্যর্থ মানে সর্বনিম্ন সেট ও রেপের কম।',
+  'Assistance': 'সহায়তা',
+  'Automatic': 'স্বয়ংক্রিয়',
+  'Assisted': 'সহায়তাসহ',
+  'Not assisted': 'সহায়তা ছাড়া',
+  'Automatic: assisted': 'স্বয়ংক্রিয়: সহায়তাসহ',
+  'Automatic: not assisted': 'স্বয়ংক্রিয়: সহায়তা ছাড়া',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'সহায়তা মেশিনে লোড মানে দেওয়া সাহায্য, তাই কম মানে কঠিন। অ্যাপ নাম দেখে আটটি মেশিন চেনে; ব্যান্ড ও অন্য মেশিনের জন্য এখানে ঠিক করুন।',
 }

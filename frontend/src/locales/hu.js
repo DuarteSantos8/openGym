@@ -2786,4 +2786,11 @@ export default {
   'Go back a step after missed sessions': 'Sikertelen edzések után egy lépcsővel vissza',
   'Missed sessions before going back': 'Sikertelen edzések a visszalépésig',
   'Missed means short of the minimum sets and reps.': 'Sikertelen: a minimális sorozat- és ismétlésszám alatt.',
+  'Assistance': 'Rásegítés',
+  'Automatic': 'Automatikus',
+  'Assisted': 'Rásegítéssel',
+  'Not assisted': 'Rásegítés nélkül',
+  'Automatic: assisted': 'Automatikus: rásegítéssel',
+  'Automatic: not assisted': 'Automatikus: rásegítés nélkül',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'Rásegítő gépen a súly a kapott segítség, így a kevesebb a nehezebb. Az app nyolc gépet ismer fel név alapján; gumikötélhez és más gépekhez itt állítsd be.',
 }

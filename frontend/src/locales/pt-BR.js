@@ -1844,6 +1844,13 @@ export const PT_BR_OVERRIDES = {
   'Go back a step after missed sessions': 'Voltar uma etapa após sessões que não deram certo',
   'Missed sessions before going back': 'Sessões que não deram certo antes de voltar',
   'Missed means short of the minimum sets and reps.': 'Não deu certo significa abaixo do mínimo de séries e repetições.',
+  'Assistance': 'Assistência',
+  'Automatic': 'Automático',
+  'Assisted': 'Assistido',
+  'Not assisted': 'Sem assistência',
+  'Automatic: assisted': 'Automático: assistido',
+  'Automatic: not assisted': 'Automático: sem assistência',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'Em uma máquina de assistência, a carga é a ajuda recebida, então menos é mais difícil. O app reconhece oito máquinas pelo nome; para elásticos e outras máquinas, defina aqui.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

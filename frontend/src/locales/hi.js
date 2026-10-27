@@ -2783,4 +2783,11 @@ export default {
   'Go back a step after missed sessions': 'चूके सत्रों के बाद एक चरण पीछे जाएँ',
   'Missed sessions before going back': 'पीछे जाने से पहले चूके सत्र',
   'Missed means short of the minimum sets and reps.': 'चूका मतलब न्यूनतम सेट और रेप्स से कम।',
+  'Assistance': 'सहायता',
+  'Automatic': 'स्वचालित',
+  'Assisted': 'सहायता सहित',
+  'Not assisted': 'बिना सहायता',
+  'Automatic: assisted': 'स्वचालित: सहायता सहित',
+  'Automatic: not assisted': 'स्वचालित: बिना सहायता',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'सहायता मशीन पर भार दी गई मदद है, इसलिए कम भार कठिन है। ऐप नाम से आठ मशीनें पहचानता है; बैंड और दूसरी मशीनों के लिए इसे यहाँ सेट करें।',
 }

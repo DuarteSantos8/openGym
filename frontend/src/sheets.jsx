@@ -61,7 +61,7 @@ import { swapActiveExercise } from './lib/active-exercise-swap.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
 import { useAutoMore } from './lib/use-auto-more.js'
 import { isFav, toggleFav, sortFavouritesFirst, sortYoursFirst } from './lib/favourites.js'
-import { buildSessionExposures, missingOneRms, occurrenceFor } from './lib/session-start.js'
+import { buildSessionExposures, effectiveExerciseId, missingOneRms, occurrenceFor } from './lib/session-start.js'
 import { buildCombinedExposures, deriveSessionName } from './lib/session-merge.js'
 import { entriesForExposures, planSummary, exposuresWithPerformance } from './lib/session-ui-adapter.js'
 import { reconcileSessionHistory, editCompletedSession, editChangesNothing, editLeftEmpty, editedRecord } from './lib/session-edit.js'
@@ -1306,6 +1306,19 @@ function AddToRoutine({ ex, close }) {
 }
 export const addToRoutineSheet = ex => ui().openSheet(close => <AddToRoutine ex={ex} close={close} />)
 
+// Whether the load is help given, so less is harder (#232): the catalogue's answer, or the user's.
+// value: 'auto' | 'on' | 'off'; `auto` is what the catalogue says for this exercise.
+const assistModeOf = x => (typeof x?.assisted === 'boolean' ? (x.assisted ? 'on' : 'off') : 'auto')
+function AssistanceField({ value, auto, onChange }) {
+  return <div data-field="Assistance" style={{ margin: '4px 0 18px' }}>
+    <div className="stp-l" style={{ textAlign: 'left', marginBottom: 6 }}>{t('Assistance')}</div>
+    <Segmented value={value} onChange={onChange}
+      options={[{ value: 'auto', label: t('Automatic') }, { value: 'on', label: t('Assisted') }, { value: 'off', label: t('Not assisted') }]} />
+    {value === 'auto' && <div className="small" style={{ marginTop: 6 }}>{auto ? t('Automatic: assisted') : t('Automatic: not assisted')}</div>}
+    <div className="small dim" style={{ marginTop: 4 }}>{t('On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.')}</div>
+  </div>
+}
+
 /* ============================ custom exercises (issue #11) ============================ */
 // Name + body part is all it takes — the exercise then behaves like any built-in one
 // (planning, logging, PRs, stats). A photo, GIF or video of your own, and a link to a video or
@@ -1321,6 +1334,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   const [eq, setEq] = useState(existing ? (existing.eq || '') : '')
   const storedEq = existing && typeof existing.eq === 'string' && existing.eq && !ALL_EQUIPMENT.includes(existing.eq) ? existing.eq : null
   const [desc, setDesc] = useState(existing ? (existing.desc || '') : '')
+  const [assistMode, setAssistMode] = useState(() => assistModeOf(existing))
   const [media, setMedia] = useState(() => mediaOf(existing))
   // Whether this form changed the media at all. An edit that did not touch it writes back what the
   // exercise had, byte for byte: a ref from a newer version of the app (a codec or type this one
@@ -1386,6 +1400,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
       c.aliases = normalizeAliases(aliases)
       if (!keepMedia) { if (ref) c.media = ref; else delete c.media }
       if (link) c.url = link; else delete c.url
+      if (bp !== 'cardio' && assistMode !== 'auto') c.assisted = assistMode === 'on'; else delete c.assisted
     }
     if (existing) update(s => { const c = (s.customEx || []).find(x => x.id === id); if (c) {
       c.n = name; c.bp = bp; c.desc = d; c.tg = tg; c.sm = sm; c.muscleGroups = groups; c.primaries = prim; c.secondaries = sm; c.eq = eq
@@ -1428,6 +1443,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
         options={MUSCLES.filter(m => !primaries.includes(m)).map(m => ({ value: m, label: t(MUSCLE_NAME[m]) }))}
         onToggle={toggleSecondary} noneLabel={t('No explicit muscle group')} doneLabel={t('Done')} />
     </>}
+    {bp && bp !== 'cardio' && <AssistanceField value={assistMode} auto={isAssisted({ n, eq })} onChange={setAssistMode} />}
     {bp === 'cardio' && <div className="small dim row" style={{ marginBottom: 10, gap: 5 }}><Icon name="figureRun" style={{ fontSize: 13 }} />{t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
     <textarea className="input" rows={4} maxLength={1000} placeholder={t('Description (optional): setup, cues, anything you want to remember')}
       value={desc} onChange={e => setDesc(e.target.value)} />
@@ -1865,7 +1881,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
   const [note, setNote] = useState(() => existing?.note || '')
   const speedUnit = speedUnitOf(st)
   // The load of an assistance machine is the help given: the rule steps it down (issue #232).
-  const assisted = typeof existing?.assisted === 'boolean' ? existing.assisted : isAssisted(ex.id)
+  const [assistMode, setAssistMode] = useState(() => assistModeOf(existing))
+  // A chain logs the exercise of the step its track is on: Automatic reads that one.
+  const autoAssisted = isAssisted(effectiveExerciseId({ occurrenceId, exerciseId: ex.id, rule }, st))
+  const assisted = assistMode === 'auto' ? autoAssisted : assistMode === 'on'
   const [cardioCfg, setCardioCfg] = useState(() => existing?.cardio || cardioOf(existing?.rule) || { sets: 4, min: 20, speed: 8 })
   const [intensifierRaw, setIntensifier] = useState(() => existing?.intensifier || null)
   const [warmupRaw, setWarmup] = useState(() => existing?.warmup || { mode: 'off' })
@@ -1917,11 +1936,12 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
     // Any edit is an explicit plan edit: a new revision, which is what reopens a completed track.
     const revision = before && canonicalJSON(before) !== canonicalJSON(planned) ? before.revision + 1 : planned.revision
     const trimmedNote = (note || '').trim().slice(0, 500)
-    // A saved config replaces the occurrence, so what this sheet does not edit rides along: a
-    // machine marked (not) assisted, a ramp's own rest, an exercise kept out of progression.
-    const kept = Object.fromEntries(['assisted', 'excludeFromProgression'].filter(key => existing?.[key] != null).map(key => [key, existing[key]]))
+    // A saved config replaces the occurrence, so what this sheet does not edit rides along: an
+    // exercise kept out of progression.
+    const kept = Object.fromEntries(['excludeFromProgression'].filter(key => existing?.[key] != null).map(key => [key, existing[key]]))
     onSave({
       ...kept,
+      ...(assistMode !== 'auto' ? { assisted: assistMode === 'on' } : {}),
       occurrenceId, exerciseId: ex.id, rule: { ...planned, revision },
       ...(restDefault ? { restFromProfile: true } : {}),
       ...(cardio ? { mode: 'cardio', cardio: cardioPlan } : cardioEx ? { mode: cardioMode } : {}),
@@ -2056,6 +2076,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
             ? (backoffPreview ? t('Sets open at {0}. The first set goes up when every set reaches its reps, and the rest follow it.', backoffPreview) : t('The first set goes up when every set reaches its reps, and the rest follow it.'))
             : t('All sets at the same weight.')}</div></>}
         </div>
+        <AssistanceField value={assistMode} auto={autoAssisted} onChange={setAssistMode} />
         {isBellEx(ex) && !bw && <Disclosure title={t('Weight means')} value={dbLoadFor(st, { id: ex.id, dbLoad })}>
           <DbLoadPicker ex={ex} cfg={{ id: ex.id, dbLoad }} value={dbLoadFor(st, { id: ex.id, dbLoad })}
             onChange={v => setDbLoad(v === dbLoadFor(st, ex.id) ? undefined : v)} />

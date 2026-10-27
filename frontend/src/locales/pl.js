@@ -2783,4 +2783,11 @@ export default {
   'Go back a step after missed sessions': 'Cofnij o etap po nieudanych sesjach',
   'Missed sessions before going back': 'Nieudane sesje przed cofnięciem',
   'Missed means short of the minimum sets and reps.': 'Nieudana oznacza mniej niż minimum serii i powtórzeń.',
+  'Assistance': 'Wspomaganie',
+  'Automatic': 'Automatycznie',
+  'Assisted': 'Ze wspomaganiem',
+  'Not assisted': 'Bez wspomagania',
+  'Automatic: assisted': 'Automatycznie: ze wspomaganiem',
+  'Automatic: not assisted': 'Automatycznie: bez wspomagania',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'Na maszynie ze wspomaganiem obciążenie to otrzymana pomoc, więc mniej znaczy trudniej. Aplikacja rozpoznaje osiem maszyn po nazwie; dla gum i innych maszyn ustaw to tutaj.',
 }

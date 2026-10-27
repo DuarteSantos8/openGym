@@ -2838,4 +2838,11 @@ export default {
   'Go back a step after missed sessions': 'العودة خطوة بعد الحصص الفائتة',
   'Missed sessions before going back': 'الحصص الفائتة قبل العودة',
   'Missed means short of the minimum sets and reps.': 'الفائتة تعني أقل من الحد الأدنى من المجموعات والتكرارات.',
+  'Assistance': 'المساعدة',
+  'Automatic': 'تلقائي',
+  'Assisted': 'بمساعدة',
+  'Not assisted': 'بدون مساعدة',
+  'Automatic: assisted': 'تلقائي: بمساعدة',
+  'Automatic: not assisted': 'تلقائي: بدون مساعدة',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'على آلة المساعدة يكون الحمل هو المساعدة المقدمة، فالأقل أصعب. يتعرف التطبيق على ثماني آلات بالاسم؛ اضبطه هنا للأحزمة المطاطية والآلات الأخرى.',
 }

@@ -2787,4 +2787,11 @@ export default {
   'Go back a step after missed sessions': 'Возвращаться на ступень после неудачных тренировок',
   'Missed sessions before going back': 'Неудачных тренировок до возврата',
   'Missed means short of the minimum sets and reps.': 'Неудачная значит меньше минимума подходов и повторений.',
+  'Assistance': 'Помощь',
+  'Automatic': 'Авто',
+  'Assisted': 'С помощью',
+  'Not assisted': 'Без помощи',
+  'Automatic: assisted': 'Авто: с помощью',
+  'Automatic: not assisted': 'Авто: без помощи',
+  'On an assistance machine the load is the help given, so less is harder. The app finds eight machines by name; set it here for bands and other machines.': 'На тренажёре с противовесом вес — это помощь, поэтому меньше значит тяжелее. Приложение узнаёт восемь тренажёров по названию; для резинок и других тренажёров укажите это здесь.',
 }
