@@ -21,6 +21,8 @@ vi.mock('../lib/mobile.js', async importOriginal => {
 import RoutineEdit from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { printPlan } from '../lib/plan-share.js'
+import { _setLangState } from '../lib/i18n-core.js'
+import fa from '../locales/fa.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, host
@@ -43,6 +45,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount())
   host.remove()
+  _setLangState('en', {}, null, null)
 })
 
 describe('RoutineEdit — print this routine (#282)', () => {
@@ -74,6 +77,17 @@ describe('RoutineEdit — print this routine (#282)', () => {
     mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }], '')
     act(() => printButton().click())
     expect(env.printHtml.mock.calls[0][1]).toBe('Routine')
+  })
+
+  it('embeds Vazirmatn when a Persian routine goes to native print', async () => {
+    env.mobile = true
+    _setLangState('fa', fa, null, null)
+    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }], 'روز تمرین')
+    const button = [...host.querySelectorAll('button')].find(b => b.textContent.trim() === fa['Print / Save as PDF'])
+    await act(async () => button.click())
+    await vi.waitFor(() => expect(env.printHtml).toHaveBeenCalledOnce())
+    expect(env.printHtml.mock.calls[0][0]).toContain('data:font/woff2;base64,d09GMg')
+    expect(env.printHtml.mock.calls[0][1]).toBe('روز تمرین')
   })
 
   it('has nothing to print for an empty routine', () => {
