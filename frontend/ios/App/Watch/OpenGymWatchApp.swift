@@ -15,13 +15,14 @@ import WidgetKit
  *           value on the crown), what is planned, a Done pill (RPE or RIR in a small disc beside
  *           it, when the profile rates effort) and the set dots; the crown pages the exercises
  *   rest    the time left beside the clock, a bar draining under it, −15 s · Skip · +15 s, what is next
- *   hold    a timed set: the seconds on the crown, Start, then a ring counting down, Stop
+ *   hold    a timed set: the seconds in a box (a tap sets them on the crown), Start hold, then, over the
+ *           set as the rest is, the time left in teal with a bar draining under it, and Stop
  *   summary the workout at its end: time, sets, volume, heart rate, calories, records; Done
  * Overview ← the exercises: swipe right from a set for every exercise with its sets done (tap one to
  * jump to it) and Finish workout, a one-second hold at its bottom, Discard workout apart below it.
  * The exercises are vertical pages (swipe, the crown pages them), with the system's page indicator;
- * the rest comes up over them, so the exercises never leave. Each kind of set has its
- * own look: a warm-up is orange and says so, a per-side set says Left or Right, a bodyweight set
+ * the rest or a hold comes up over them, so the exercises never leave. Each kind of set has its
+ * own look: a warm-up is orange and says so, a per-side set (a hold too) says Left or Right, a bodyweight set
  * shows the reps (and added weight, when there is some), a superset says so and goes in turns.
  *
  * Battery: nothing ticks while nothing runs (no timers at the start screen), the animation and the
@@ -76,6 +77,8 @@ enum Theme {
     static let accent = Color(red: 0x30 / 255, green: 0xd1 / 255, blue: 0x58 / 255)
     /// Warm-up sets (the app's --orange).
     static let warmup = Color(red: 1, green: 0x9f / 255, blue: 0x0a / 255)
+    /// The app's --teal (dark): a hold running.
+    static let teal = Color(red: 0x40 / 255, green: 0xc8 / 255, blue: 0xe0 / 255)
     static let dim = Color.white.opacity(0.14)
     /// The smallest a thing a finger has to hit may be.
     static let tap: CGFloat = 44
@@ -111,14 +114,15 @@ private struct Press: ViewModifier {
 /// .btn.primary: solid accent, black label, full width, 44 pt. Wrist down: 2 pt accent outline, no fill.
 struct PrimaryButton: ButtonStyle {
     var minHeight = Theme.tap
+    var tint = Theme.accent
     @Environment(\.isLuminanceReduced) private var dimmed
     func makeBody(configuration: Configuration) -> some View {
         let shape = RoundedRectangle(cornerRadius: Theme.radiusLarge, style: .continuous)
-        let accent = Theme.ink(Theme.accent, dimmed)
+        let accent = Theme.ink(tint, dimmed)
         configuration.label
             .foregroundStyle(dimmed ? accent : Color.black)
             .frame(maxWidth: .infinity, minHeight: minHeight)
-            .background(shape.fill(dimmed ? Color.clear : Theme.accent))
+            .background(shape.fill(dimmed ? Color.clear : tint))
             .overlay(shape.stroke(accent, lineWidth: dimmed ? 2 : 0))
             .contentShape(shape)
             .modifier(Press(on: configuration.isPressed))
@@ -163,8 +167,6 @@ struct RootView: View {
                 CountdownView(from: from)
             } else if store.workout == nil {
                 IdleView()
-            } else if let end = store.holdEndsAt {
-                HoldView(end: end)
             } else {
                 SessionScreen()
             }
@@ -457,23 +459,26 @@ struct SessionScreen: View {
 
     var body: some View {
         let end = store.restEndsAt.flatMap { $0 > Date() ? $0 : nil }
+        let hold = store.holdEndsAt
+        let covered = end != nil || hold != nil
         if store.workout?.entries.isEmpty ?? true {
             OverviewPage()      // no exercises: the Overview alone
         } else {
             TabView(selection: $page) {
                 OverviewPage(onPick: { page = .set }).tag(Page.overview)
                 ZStack {
-                    ExercisePager(covered: end != nil || page != .set)
-                        .disabled(end != nil || page != .set)       // nothing under the rest or the Overview takes the crown
-                        .opacity(end == nil ? 1 : 0)
-                        .accessibilityHidden(end != nil)
-                    if let end { RestView(end: end).transition(.opacity) }
+                    ExercisePager(covered: covered || page != .set)
+                        .disabled(covered || page != .set)       // nothing under the rest, a hold or the Overview takes the crown
+                        .opacity(covered ? 0 : 1)
+                        .accessibilityHidden(covered)
+                    if let hold { HoldView(end: hold).modifier(DemoEnvironment()).transition(.opacity) }
+                    else if let end { RestView(end: end).transition(.opacity) }
                 }
-                .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: end != nil)
+                .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: [end != nil, hold != nil])
                 .tag(Page.set)
             }
             // PageTabViewStyle, not .page(...): that one draws the pages too wide.
-            .tabViewStyle(PageTabViewStyle(indexDisplayMode: dimmed || end != nil ? .never : .automatic))
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: dimmed || covered ? .never : .automatic))
             // Wrist down or the app left: back to the live set. Nothing else moves the page, and never on a timer.
             .onChange(of: dimmed) { _, on in if on { page = .set } }
             .onChange(of: scenePhase) { _, p in if p != .active { page = .set } }
@@ -528,7 +533,6 @@ struct ExercisePage: View {
     let covered: Bool
     @State private var editing: EditField?
     @State private var confirmSkip = false
-    @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.isLuminanceReduced) private var dimmed
 
     /// How many of the two extra lines (last time, planned) a layout carries; the page takes the first that fits.
@@ -655,7 +659,7 @@ struct ExercisePage: View {
         let last = store.show.showLast ? SetPage.lastTime(entry.last, pos) : nil
         let plan = SetPage.planned(entry, set: si, unit: unit) { store.isSkipped(entry.id, $0) }
         VStack(spacing: 0) {
-            positionRow(entry, row, pos)
+            positionRow(entry, pos, side: SetPage.side(entry, set: si))
             Spacer(minLength: 1)
             if lines != .none, let last { lastLine(last) }
             boxes(entry, row, unit: unit, current: current)
@@ -670,20 +674,19 @@ struct ExercisePage: View {
 
     /// "Set 2 of 4", or Warm-up, then Left / Right and Superset. Short of room, Superset is a link glyph,
     /// then the place is "2/4" (long words: ru has "Подход 2 из 4" beside "ПРАВАЯ"). VoiceOver says it in full.
-    private func positionRow(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position) -> some View {
+    private func positionRow(_ entry: Entry, _ pos: SetPage.Position, side: String?) -> some View {
         ViewThatFits(in: .horizontal) {
-            positionItems(entry, row, pos, glyph: false, short: false)
-            positionItems(entry, row, pos, glyph: true, short: false)
-            positionItems(entry, row, pos, glyph: true, short: true)
+            positionItems(entry, pos, side: side, glyph: false, short: false)
+            positionItems(entry, pos, side: side, glyph: true, short: false)
+            positionItems(entry, pos, side: side, glyph: true, short: true)
         }
         .frame(maxWidth: .infinity, minHeight: 16, alignment: .leading)
         .padding(.leading, 4)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
-    private func positionItems(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position, glyph: Bool, short: Bool) -> some View {
-        let side = row.sideUp
-        return HStack(spacing: 4) {
+    private func positionItems(_ entry: Entry, _ pos: SetPage.Position, side: String?, glyph: Bool, short: Bool) -> some View {
+        HStack(spacing: 4) {
             if let n = pos.number {
                 (short ? Text(verbatim: "\(n)/\(pos.total)") : Text("Set \(n) of \(pos.total)"))
                     .font(.footnote.weight(.semibold).monospacedDigit())
@@ -747,7 +750,7 @@ struct ExercisePage: View {
                 .frame(maxWidth: .infinity, minHeight: 50)
         } else if entry.isTimed {
             ValueTile(value: formatNumber(current ? store.seconds : (row.sec ?? 0)), unit: "s", label: Text("Hold"),
-                      tint: .white) { if current { editing = .seconds } }
+                      tint: row.warmup ? Theme.warmup : .white) { if current { editing = .seconds } }
         } else {
             numbers(entry, row, unit: unit, current: current)
         }
@@ -785,14 +788,15 @@ struct ExercisePage: View {
     @ViewBuilder private func doneButton(_ entry: Entry, current: Bool) -> some View {
         let timed = entry.isTimed
         Button { if timed { store.startHold() } else { store.completeSet() } } label: {
-            // At the accessibility sizes the glyph goes and the word stands alone.
-            HStack(spacing: 6) {
-                if !typeSize.isAccessibilitySize { Image(systemName: timed ? "play.fill" : "checkmark").accessibilityHidden(true) }
-                if timed { Text("Start hold") } else { Text("Done") }
+            // Short of room (a long word beside the effort disc, or an accessibility size) the glyph goes.
+            let word = timed ? Text("Start hold") : Text("Done")
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 6) { Image(systemName: timed ? "play.fill" : "checkmark").accessibilityHidden(true); word }
+                word.padding(.horizontal, 8)      // the word alone must not touch the rounded ends
             }
             .font(.headline.weight(.semibold))
             .lineLimit(1)
-            .minimumScaleFactor(0.7)
+            .minimumScaleFactor(timed ? 0.8 : 0.7)
             .dynamicTypeSize(...DynamicTypeSize.xLarge)
         }
         .buttonStyle(PrimaryButton(minHeight: Theme.tap))
@@ -1311,6 +1315,7 @@ struct OverviewRow: View {
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
         }
         .buttonStyle(SecondaryButton())
+        .disabled(store.holdEndsAt != nil)      // the exercise stays while a hold runs
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: row.name))
         .accessibilityValue(row.total > 0 ? Text("\(row.done) of \(row.total) sets") : Text(verbatim: ""))
@@ -1445,14 +1450,13 @@ struct FinishFlood: View {
     }
 }
 
-/* ---------- a hold: a ring counting down (the rest has its own bar, below) ---------- */
+/* ---------- the 3-2-1 ring, and the bar that drains under a rest or a hold ---------- */
 
 /// A ring that empties from `start` to `end`. With the wrist down (Always On) it moves once a
 /// second, not four times: the screen is updated rarely then anyway, and each update costs.
 struct CountdownRing: View {
     let start: Date
     let end: Date
-    var color: Color = Theme.accent
     @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
@@ -1463,7 +1467,7 @@ struct CountdownRing: View {
                 Circle().stroke(Theme.dim, lineWidth: 7)
                 Circle()
                     .trim(from: 0, to: CGFloat(left / total))
-                    .stroke(color.opacity(dimmed ? 0.6 : 1), style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                    .stroke(Theme.accent.opacity(dimmed ? 0.6 : 1), style: StrokeStyle(lineWidth: 7, lineCap: .round))
                     .rotationEffect(.degrees(-90))
             }
         }
@@ -1471,13 +1475,15 @@ struct CountdownRing: View {
     }
 }
 
-/// A bar that drains from `start` to `end`, a step on each second the digits change. It never animates
-/// (Reduce Motion or not). Wrist down the screen updates about once a minute, so a fill would stand at a
+/// A bar that drains from `start` to `end`, gliding over each second the digits change (a step with Reduce
+/// Motion). Wrist down the screen updates about once a minute, so a fill would stand at a
 /// stale fraction: only the outline stays, the digits are the truth.
 struct RestBar: View {
     let start: Date
     let end: Date
+    var tint = Theme.accent
     @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -1488,7 +1494,9 @@ struct RestBar: View {
                     let full = Rest.progress(left: end.timeIntervalSince(ctx.date), total: end.timeIntervalSince(start))
                     Capsule().fill(Theme.dim)
                         .overlay(alignment: .leading) {
-                            GeometryReader { g in Capsule().fill(Theme.accent).frame(width: g.size.width * full) }
+                            GeometryReader { g in Capsule().fill(tint).frame(width: g.size.width * full)
+                                .animation(reduceMotion ? nil : .linear(duration: 1), value: full)
+                            }
                         }
                 }
             }
@@ -1623,8 +1631,15 @@ struct RestView: View {
                 .foregroundStyle(Theme.ink(.white, dimmed))
                 .lineLimit(nameLines)
                 .minimumScaleFactor(nameLines == 1 ? 0.75 : 1)      // the last resort: smaller, before cut off
-            if showsPlace { detail(place(n), lines: 1) }
-            if let s = side(n) { detail(s, lines: 1) }
+            // The side shares the place line, so a timed per-side set keeps its label; too long for that (es), it takes
+            // a line of its own, and without the place it stands alone.
+            if showsPlace, let s = side(n) {
+                ViewThatFits(in: .horizontal) {
+                    detail(place(n) + " · " + s, lines: 1)
+                    VStack(alignment: .leading, spacing: 0) { detail(place(n), lines: 1); detail(s, lines: 1) }
+                }
+            } else if showsPlace { detail(place(n), lines: 1) }
+            else if let s = side(n) { detail(s, lines: 1) }
             if let l = load(n) { detail(l, lines: 2) }
         }
         .multilineTextAlignment(.leading)
@@ -1646,7 +1661,9 @@ struct RestView: View {
     }
 }
 
-/// A timed set running: the ring counts the hold down; Stop ends it early with what it lasted.
+/// A timed set running, over the set as the rest is: the time left in teal beside the clock, a bar draining under
+/// it, the exercise and the side, and Stop (the one costly tap) full width. At zero it logs itself. The Crown does
+/// here what it did: nothing on this layer.
 struct HoldView: View {
     @EnvironmentObject var store: SessionStore
     let end: Date
@@ -1654,31 +1671,89 @@ struct HoldView: View {
     @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 42
 
     var body: some View {
-        VStack(spacing: 2) {
-            ZStack {
-                CountdownRing(start: store.holdStartedAt ?? end, end: end, color: .cyan)
-                VStack(spacing: 1) {
-                    Text(store.entry?.name ?? "").font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
-                    Text(timerInterval: Date()...end, countsDown: true)
-                        .font(.system(size: countdownSize, weight: .semibold, design: .rounded).monospacedDigit())
-                        .minimumScaleFactor(0.5)
+        GeometryReader { g in
+            let inset = g.safeAreaInsets
+            let width = g.size.width + inset.leading + inset.trailing
+            VStack(spacing: 0) {
+                HStack(spacing: 6) {
+                    Text(timerInterval: min(Date(), end)...end, countsDown: true)
+                        .font(.system(size: min(countdownSize * 1.35, 64), weight: .semibold, design: .rounded).monospacedDigit())
+                        .foregroundStyle(Theme.ink(Theme.teal, dimmed))
                         .lineLimit(1)
-                        .multilineTextAlignment(.center)
-                    Text("Hold").font(.caption2).foregroundStyle(.secondary)
+                        .minimumScaleFactor(0.5)
+                        .accessibilityLabel(Text("\(Text("Hold")) \(Text(timerInterval: min(Date(), end)...end, countsDown: true))"))
+                    OfflineSign()
+                    Spacer(minLength: 0)
                 }
-                .padding(.horizontal, 18)
+                .frame(minHeight: 42)
+                .padding(.top, 2)
+                // The clock's 30 % of the screen is the system's, as on the set page.
+                .padding(.trailing, width * 0.3 - Theme.side)
+                .padding(.horizontal, Theme.side)
+                // Always shown: the phone's "countdown only" is about the rest.
+                RestBar(start: store.holdStartedAt ?? end, end: end, tint: Theme.teal)
+                    .padding(.horizontal, Theme.side)
+                    .padding(.top, 4)
+                // Takes what is left, so the middle block is offered that much height (ViewThatFits).
+                HStack(alignment: .bottom, spacing: 8) {
+                    middle
+                    LockButton(health: store.health)
+                }
+                .padding(.horizontal, Theme.side)
+                .padding(.top, 8)
+                .frame(maxHeight: .infinity, alignment: .bottom)
+                // The system's page dots sit at the trailing edge; Stop stops short of them.
+                stop.padding(.leading, 5).padding(.trailing, 11).padding(.top, 12)
             }
-            .aspectRatio(1, contentMode: .fit)
-            .padding(.horizontal, 6)
-            HStack {
-                LockButton(health: store.health)
-                Spacer()
-                EdgeButton(systemImage: "stop.fill", label: Text("Stop")) { store.endHold(early: true) }
-            }
-            .opacity(dimmed ? 0 : 1)
+            .padding(.bottom, 12)
+            .frame(width: width, height: g.size.height + inset.top + inset.bottom, alignment: .top)
+            .offset(x: -inset.leading, y: -inset.top)
         }
-        .ignoresSafeArea(edges: .bottom)
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+    }
+
+    private var side: String? { store.entry.flatMap { e in store.setIndex.flatMap { SetPage.side(e, set: $0) } } }
+
+    /// "Hold", the exercise, then the side: short of room the label goes, then the name shrinks to one line. The
+    /// side never goes (Left or Right is what a hold is for).
+    private var middle: some View {
+        let name = store.entry?.name ?? ""
+        return ViewThatFits(in: .vertical) {
+            lines(name, label: true, nameLines: 2)
+            lines(name, label: false, nameLines: 2)
+            lines(name, label: false, nameLines: 1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        // Whichever lines fit, VoiceOver gets all of them.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: ([name, side.map { store.L($0 == "L" ? "Left" : "Right") }] as [String?]).compactMap { $0 }.joined(separator: ", ")))
+    }
+
+    private func lines(_ name: String, label: Bool, nameLines: Int) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if label { Text("Hold").font(.footnote.weight(.semibold)).foregroundStyle(.secondary) }
+            Text(verbatim: name)
+                .font(.headline)
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .lineLimit(nameLines)
+                .minimumScaleFactor(nameLines == 1 ? 0.75 : 1)      // the last resort: smaller, before cut off
+            if let s = side { Tag(text: s == "L" ? Text("Left") : Text("Right"), color: Theme.teal).padding(.top, 2) }
+        }
+        .multilineTextAlignment(.leading)
+    }
+
+    /// Ends the hold early with what it lasted. Full width and 52 pt, teal; Always On: the outline, not hidden.
+    private var stop: some View {
+        Button { if store.touchAllowed { store.endHold(early: true) } } label: {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 6) { Image(systemName: "stop.fill").accessibilityHidden(true); Text("Stop") }
+                Text("Stop")
+            }
+            .font(.headline.weight(.semibold))
+            .lineLimit(1)
+        }
+        .buttonStyle(PrimaryButton(minHeight: 52, tint: Theme.teal))
+        .accessibilityLabel(Text("Stop"))
     }
 }
 

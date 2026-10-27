@@ -94,6 +94,15 @@ final class RestTests: XCTestCase {
         XCTAssertNil(Rest.next(entry([row()], mode: "cardio"), set: 0, unit: "kg")?.load)
     }
 
+    func testNextCarriesTheSideOfATimedHold() {
+        var h = row(0, 0)
+        h.sec = 45
+        let e = Entry(id: "p", name: "Side Plank", mode: "time", restSec: nil, last: nil, sets: [h, h], perSide: true)
+        let n = Rest.next(e, set: 1, unit: "kg")
+        XCTAssertEqual(n?.side, "R")
+        XCTAssertEqual(n?.load, "45 s")
+    }
+
     func testNextIsNilWithoutThatSet() {
         XCTAssertNil(Rest.next(entry([]), set: 0, unit: "kg"))
         XCTAssertNil(Rest.next(entry([row()]), set: 1, unit: "kg"))

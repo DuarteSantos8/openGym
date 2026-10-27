@@ -109,6 +109,53 @@ final class SetPageTests: XCTestCase {
         XCTAssertNil(planned(entry([row()]), 5))
     }
 
+    func hold(_ sets: [SetRow], perSide: Bool? = true, mode: String = "time") -> Entry {
+        Entry(id: "p", name: "Side Plank", mode: mode, restSec: nil, last: nil, sets: sets, perSide: perSide)
+    }
+
+    func holdRow(done: Bool = false, warmup: Bool = false) -> SetRow {
+        SetRow(w: nil, r: nil, sec: 40, done: done, warmup: warmup, at: done ? 1 : nil)
+    }
+
+    func testATimedPerSideHoldIsLeftThenRight() {
+        let e = hold([holdRow(), holdRow(), holdRow(), holdRow()])
+        XCTAssertEqual((0..<4).map { SetPage.side(e, set: $0) }, ["L", "R", "L", "R"])
+        let some = hold([holdRow(done: true), holdRow(done: true), holdRow(), holdRow()])
+        XCTAssertEqual((0..<4).map { SetPage.side(some, set: $0) }, ["L", "R", "L", "R"], "done flags change nothing")
+    }
+
+    func testAWarmUpHoldHasNoSideAndDoesNotShiftTheOthers() {
+        let e = hold([holdRow(warmup: true), holdRow(), holdRow()])
+        XCTAssertEqual((0..<3).map { SetPage.side(e, set: $0) }, [nil, "L", "R"])
+    }
+
+    func testRowsThatDoNotPairUpSayNothing() {
+        let e = hold([holdRow(), holdRow(), holdRow()])
+        XCTAssertEqual((0..<3).map { SetPage.side(e, set: $0) }, [nil, nil, nil])
+    }
+
+    func testOnlyATimedPerSideEntryIsGuessed() {
+        XCTAssertNil(SetPage.side(hold([holdRow(), holdRow()], perSide: nil), set: 0))
+        XCTAssertNil(SetPage.side(hold([row(), row()], mode: "reps"), set: 0), "reps rows carry their own sides")
+    }
+
+    func testARepsPerSideSetKeepsItsOwnRule() {
+        var s = row(20, 8)
+        s.sides = Sides(L: SideRow(w: 20, r: 8, done: false), R: SideRow(w: 20, r: 8, done: false))
+        let e = hold([s], mode: "reps")
+        XCTAssertEqual(SetPage.side(e, set: 0), "L")
+        s = SessionCore.markSide(s, "L", w: 20, r: 8, at: 1)
+        XCTAssertEqual(SetPage.side(hold([s], mode: "reps"), set: 0), "R")
+        s = SessionCore.markSide(s, "R", w: 20, r: 8, at: 2)
+        XCTAssertNil(SetPage.side(hold([s], mode: "reps"), set: 0))
+    }
+
+    func testOutOfRangeIsNil() {
+        let e = hold([holdRow(), holdRow()])
+        XCTAssertNil(SetPage.side(e, set: 2))
+        XCTAssertNil(SetPage.side(e, set: -1))
+    }
+
     func testFormatNumber() {
         XCTAssertEqual(formatNumber(62.5), "62.5")
         XCTAssertEqual(formatNumber(60), "60")

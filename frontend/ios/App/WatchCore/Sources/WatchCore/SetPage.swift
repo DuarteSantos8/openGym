@@ -66,4 +66,16 @@ enum SetPage {
         let one = r.sideUp.flatMap { r.sides?[$0] } ?? r.sides?.L
         return (one?.w ?? r.w ?? 0, one?.r ?? r.r ?? 0)
     }
+
+    /// The side a set is done on: a per-side set's side up next, or, for a timed per-side hold, the one its place
+    /// says. The phone lays a hold out as plain rows, left then right, and the snapshot carries no side per row.
+    /// nil when there is none, or when the rows do not pair up.
+    static func side(_ e: Entry, set si: Int) -> String? {
+        guard e.sets.indices.contains(si) else { return nil }
+        if e.sets[si].sides != nil { return e.sets[si].sideUp }
+        guard e.isTimed, e.perSide == true, !e.sets[si].warmup else { return nil }
+        let work = e.sets.indices.filter { !e.sets[$0].warmup }
+        guard work.count % 2 == 0, let at = work.firstIndex(of: si) else { return nil }
+        return at % 2 == 0 ? "L" : "R"
+    }
 }

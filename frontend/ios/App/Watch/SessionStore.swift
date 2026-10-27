@@ -287,7 +287,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// A row of the Overview: that exercise's set page comes up under the thumb that picked it, so its taps wait a second.
     /// False when the tap lock refused it.
     @discardableResult func choose(entry ei: Int) -> Bool {
-        guard touchAllowed else { return false }
+        guard touchAllowed, holdEndsAt == nil else { return false }      // a hold runs for the exercise up: not another
         show(entry: ei)                    // unlocks (a swipe by hand) ...
         touchLock.lock(at: Date())         // ... so lock again: this arrival was a tap, not a swipe
         return true
@@ -534,6 +534,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let end = now.addingTimeInterval(seconds)
         holdStartedAt = now
         holdEndsAt = end
+        touchLock.lock(at: now)         // the thumb that hit Start hold is still over the full-width Stop
         Haptics.start()
         holdTimer?.invalidate()
         holdTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { [weak self] _ in
@@ -546,6 +547,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard let from = holdStartedAt, let end = holdEndsAt else { return }
         let lasted = early ? Date().timeIntervalSince(from).rounded() : end.timeIntervalSince(from).rounded()
         stopHold()
+        touchLock.lock(at: Date())      // the set page comes back under the thumb that hit Stop
         if lasted >= 1 { completeSet(sec: lasted) }
     }
 
@@ -751,6 +753,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
     /// ended (a workout left running ends at its last set), else now.
     func finish(at end: Date = Date()) {
+        if holdEndsAt != nil { endHold(early: true) }       // a hold running is logged with what it lasted, not lost
         closeRest(at: end)
         let now = end.timeIntervalSince1970 * 1000
         let ended = workout
@@ -1020,6 +1023,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             switch screen {
             case "set", "weight", "rest", "rest-low", "rest-offline", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
             case "hold", "hold-set", "rest-hold": self.state.entryIndex = 1
+            case "hold-side", "hold-side-set", "rest-hold-side": self.state.entryIndex = 6
             case "all-done": for si in self.state.workout?.entries[0].sets.indices ?? 0..<0 { self.state.workout?.entries[0].sets[si].done = true }
             case "bodyweight", "rest-bodyweight": self.state.entryIndex = 2
             case "side", "rest-side": self.state.entryIndex = 3
@@ -1047,13 +1051,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if ["rest", "rest-side", "rest-offline", "rest-hold", "rest-bodyweight"].contains(screen) { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if ["rest", "rest-side", "rest-offline", "rest-hold", "rest-hold-side", "rest-bodyweight"].contains(screen) { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             // 20 s left of 80 (a few seconds of that pass before the picture): the bar nearly empty.
             if screen == "rest-low" {
                 self.startRest(until: Date().addingTimeInterval(20), notify: false)
                 self.restStartedAt = Date().addingTimeInterval(-60)
             }
-            if screen == "hold" { self.startHold() }
+            // The page change above locks taps for a second; the hold waits for none.
+            if screen == "hold" || screen == "hold-side" { self.touchLock.unlock(); self.startHold() }
             if screen == "offline" || screen == "rest-offline" { self.reachable = false; self.queued = 3 }
             if screen == "finish-auto" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.showFinish() } }
             if screen == "summary" || screen == "summary-end" || screen == "ended" {
@@ -1120,7 +1125,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     {"id":"curl","name":"Biceps Curl","mode":"reps","restSec":null,"last":null,"group":"s1","sets":[
     {"w":12,"r":10,"sec":null,"done":false,"warmup":false},{"w":12,"r":10,"sec":null,"done":false,"warmup":false}]},
     {"id":"pushdown","name":"Triceps Pushdown","mode":"reps","restSec":null,"last":null,"group":"s1","sets":[
-    {"w":25,"r":12,"sec":null,"done":false,"warmup":false},{"w":25,"r":12,"sec":null,"done":false,"warmup":false}]}]}}
+    {"w":25,"r":12,"sec":null,"done":false,"warmup":false},{"w":25,"r":12,"sec":null,"done":false,"warmup":false}]},
+    {"id":"sideplank","name":"Side Plank","mode":"time","restSec":60,"last":"40 s, 40 s, 40 s, 40 s","perSide":true,"sets":[
+    {"w":null,"r":null,"sec":40,"done":false,"warmup":false},{"w":null,"r":null,"sec":40,"done":false,"warmup":false},{"w":null,"r":null,"sec":40,"done":false,"warmup":false},{"w":null,"r":null,"sec":40,"done":false,"warmup":false}]}]}}
     """
 }
 

@@ -37,7 +37,7 @@ enum Rest {
     static func next(_ e: Entry, set si: Int, unit: String) -> Next? {
         guard e.sets.indices.contains(si) else { return nil }
         let row = e.sets[si]
-        var n = Next(name: e.name, position: SetPage.position(e, set: si), side: row.sideUp)
+        var n = Next(name: e.name, position: SetPage.position(e, set: si), side: SetPage.side(e, set: si))
         if e.isTimed {
             n.load = row.sec.map { formatNumber($0) + " s" }
         } else if e.mode == "reps" {
