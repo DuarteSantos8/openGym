@@ -256,7 +256,7 @@ const occurrenceOf = d => ({
   ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff'].filter(k => d.cfg[k] != null).map(k => [k, clone(d.cfg[k])])),
   ...(d.intensifier ? { intensifier: d.intensifier } : {}),
   // What the cardio sheet edits (sheets.jsx): the rule holds the same numbers for the engine.
-  ...(d.mode === 'cardio' ? { cardio: { sets: planPhase(d.rule).parameters.sets.min, min: planPhase(d.rule).parameters.durationSeconds.min / 60, speed: planPhase(d.rule).parameters.speed } } : {})
+  ...(d.mode === 'cardio' ? { cardio: { sets: planPhase(d.rule).parameters.sets.min, min: planPhase(d.rule).parameters.durationSeconds.min / 60, speed: planPhase(d.rule).parameters.speed, ...(num(d.cfg.incline) > 0 ? { incline: num(d.cfg.incline) } : {}) } } : {})
 });
 
 /* ---------- history ---------- */
