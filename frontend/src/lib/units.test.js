@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { convertWeight, convertStateUnit, convertActiveUnit } from './units.js'
+import { convertWeight, convertStateUnit, convertActiveUnit, convertExact, EXACT_VIEW } from './units.js'
 import { workoutVolume } from './history.js'
 import { inventoryFor, withPlatePairs } from './plates.js'
 
@@ -191,5 +191,17 @@ describe('convertStateUnit: programs', () => {
     expect(program.trainingMax).toEqual({ mode: 'direct', value: 220.5, unit: 'lb' })
     expect(program.cycleIncrement).toEqual({ value: 5.5, unit: 'lb' })
     expect(program.phases.map(ph => [ph.groups[0].load.percent, ph.parameters.restSeconds])).toEqual([[65, 120], [80, 120]])
+  })
+})
+
+
+describe('1RM ranges across pinned exercise units', () => {
+  it('uses the exact conversion for the midpoint and both range ends', () => {
+    const record = { id: 'rm', exerciseId: '0289', value: 50.1, low: 48.2, high: 52.4, unit: 'kg' }
+    const S = { unit: 'kg', exUnit: { '0289': { unit: 'lb', _ts: 1 } }, oneRepMaxes: { rm: record } }
+    const expected = Object.fromEntries(['value', 'low', 'high'].map(key => [key, convertExact(record[key], 'kg', 'lb', EXACT_VIEW)]))
+    expect(convertStateUnit(S, 'lb').oneRepMaxes.rm).toMatchObject({ ...expected, unit: 'lb' })
+    expect(convertStateUnit(S, 'lb', { convert: false }).oneRepMaxes.rm).toMatchObject({ value: 50.1, low: 48.2, high: 52.4, unit: 'lb' })
+    expect(record).toEqual({ id: 'rm', exerciseId: '0289', value: 50.1, low: 48.2, high: 52.4, unit: 'kg' })
   })
 })
