@@ -23,6 +23,8 @@ import { exView } from '../lib/ex-unit.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Stepper } from '../components/ui.jsx'
 import './FocusView.css'
+import { youtubeSearchUrl } from '../lib/youtube.js'
+import { openExternal } from '../components/CustomMedia.jsx'
 
 const firstIncomplete = entry => {
   const index = entry.sets.findIndex(set => !set.done)
@@ -253,6 +255,7 @@ export default function FocusView({
         { title: t('Exercise'), items: [
           onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
           mode === 'reps' && { icon: 'plate', label: t('Plate loading'), onClick: () => barWeightSheet(entry.id, { ...(entry.target || {}), id: entry.id }) },
+          youtubeSearchUrl(exOr(entry.id)) && { icon: 'play', label: t('Watch on YouTube'), sub: t('Opens a search for good form'), onClick: () => openExternal(youtubeSearchUrl(exOr(entry.id))) },
         ] },
         { title: t('Order and supersets'), items: [
           onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },

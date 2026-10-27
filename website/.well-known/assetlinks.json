@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ch.duartesantos.opengym",
+      "sha256_cert_fingerprints": [
+        "0D:22:A4:9E:1F:60:74:A9:A5:4B:DE:7C:BF:6F:A8:FC:4D:69:66:C0:B5:45:69:40:62:3D:05:7D:CA:48:27:F9"
+      ]
+    }
+  }
+]
