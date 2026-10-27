@@ -2378,4 +2378,12 @@ body.tabbar-side.tabbar-status{--rail:max(84px,var(--sar))}
 body.tabbar-side.tabbar-status #tabbar{
   justify-content:flex-start;
   padding:max(calc(var(--sat) + 8px),160px) 4px calc(var(--sab) + 8px) 4px;
+  transition:padding-top .3s ease;
 }
+/* While the screen records or a call goes on, the island is taller and the time and the battery
+   move down to about 250px (ios MainViewController puts island-tall on the root): the icons go
+   below them, close together so all of them still fit. What another app shows in the island iOS
+   does not tell, and the icons stay up then. */
+html.island-tall body.tabbar-side.tabbar-status #tabbar{gap:0;padding-top:max(calc(var(--sat) + 8px),264px)}
+html.island-tall body.tabbar-side.tabbar-status #tabbar button{padding:3px 0}
+html.island-tall body.tabbar-side.tabbar-status #tabbar button.start{margin:4px 0}
