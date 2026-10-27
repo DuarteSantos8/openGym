@@ -343,7 +343,7 @@ A **phase**:
 | `entry?` | `{ load:'declared'\|'previous', reps:'declared'\|'last_actual' }` — how a phase entered by a load exit starts |
 | `prefill?` | `'plan'` (default) \| `'last'` — where sets and reps open when nothing moved |
 
-An **operator** `{ id, metric, when, step, basis?, direction?, min?, max?, resetOnCarry?, amrapDoubleAt?, rungs? }`:
+An **operator** `{ id, metric, when, step, basis?, direction?, min?, max?, resetOnCarry?, amrapDoubleAt?, rungs?, regress? }`:
 `metric` is `load` (its `step` is an increment `{ type, value, unit? }`; types `absolute`,
 `current_load_percent`, `snapshot_1rm_percent`, `target_load_percent`, `percentage_points` — the last
 only, and always, with a `percent_1rm` load), or `reps`, `sets`, `durationSeconds`, `restSeconds`,
@@ -351,6 +351,9 @@ only, and always, with a `percent_1rm` load), or `reps`, `sets`, `durationSecond
 `maximum` (success and the top of the range reached), `worked`. `basis: 'last_actual'` steps from what
 was logged (v1: the heaviest load lifted; the weakest set's reps), `current` from what was prescribed.
 `restSeconds` and `difficulty` need `min` and `max`; `rungs` names a difficulty operator's variations.
+A rung is a name or `{ name, exerciseId }`: the session logs that exercise while the track is on it
+(single-phase ladders only). `regress: { after }` (1 to 10, difficulty only) sends the track one rung
+back after that many sessions in a row short of the minimum, opening at that rung's top sets and reps.
 The chain: operators run in order; one at its bound carries to the next; the first that moves ends
 it, and the operators it carried past restart (`resetOnCarry`) at the bottom of the range the next
 session's plan gives. Greyskull's load step doubles when the AMRAP reaches `amrapDoubleAt` × the
@@ -366,7 +369,7 @@ minimum.
 | `double` | reps +1 (2 per side) after any worked session from the last result, then load at the top; stall 3 counted without improvement → Epley with reps | `double` |
 | `triple` | reps +1, then a set, then load, after clean sessions | — |
 | `hold_seconds` | the seconds window +step at its top; stall 3 → window back | `time` ("Add time") |
-| `bodyweight_ladder` | reps (from the last result), then sets, after clean sessions; named rungs then move to the next variation and start over. With `loadedPreset`, a second phase runs that policy while weight is logged (`load_present` / `load_absent`) | `linear` on an unloaded bodyweight exercise |
+| `bodyweight_ladder` | reps (from the last result), then sets, after clean sessions; named rungs then move to the next variation and start over, and `regress` moves back one. With `loadedPreset`, a second phase runs that policy while weight is logged (`load_present` / `load_absent`) | `linear` on an unloaded bodyweight exercise |
 | `linear`/`greyskull`/`double` + `unloadedLadder` | the policy, and a rep ladder while nothing is loaded | a loaded policy on unloaded equipment |
 | `pyramid_reps` | a group per set (`max` sets open at what that set managed), own rests | v1.3.10 pyramid sets |
 | `pyramid` | a group per set at a % of the anchor, lightest first (ascending) or heaviest first (descending, e.g. RPT); the 100 % sets decide | — |
@@ -396,6 +399,7 @@ Deload defaults (`DELOAD_AFTER`): `linear` 3, `greyskull` 1, `double` 3, `hold_s
 | `values` | The aims the session was built from; the load is `parameters.load.expression` |
 | `rows[]` | `{ groupId?, reps{min,max}, load, loadTo?, restSeconds?, amrap?, max? }` — `groupId` only when the phase has several groups, `restSeconds` only when it differs from the exercise's |
 | `provenance.deload` | `{ stalls, from, to, method: 'epley'\|'factor'\|'assist'\|'seconds', reps? }` when the values carried a back-off |
+| `provenance.rung` | `{ from, to, reason: 'promote'\|'regress' }` when the last finish moved the ladder's rung |
 
 The pack form (`profile-pack.js`) keeps `ruleSnapshot` in the shared template block.
 
@@ -408,6 +412,7 @@ The pack form (`profile-pack.js`) keeps `ruleSnapshot` in the shared template bl
 | `phaseId`, `phaseExposures`, `phaseSuccesses` | Where the track is and the counters its exit reads |
 | `values` | What the next session targets: `{ load, sets, reps, durationSeconds, restSeconds, difficulty, trainingMax }`; `null` sets/reps = the bottom of the range the next plan gives |
 | `stalls`, `stallAt`, `stallBest` | The run of sessions short of the minimum at one load (or window); `stallBest` for a double counted without improvement |
+| `rungMisses` | Only on a ladder with `regress`: sessions in a row short of the minimum at the current rung; a hit, a rung change or a phase change resets it |
 | `deload` | The back-off the values carry, shown on the next prescription |
 
 Advancing is a fixed order: judge the session (`verdictOf`), its phase exit and the program's cycle,
