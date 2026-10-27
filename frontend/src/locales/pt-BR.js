@@ -1889,6 +1889,16 @@ export const PT_BR_OVERRIDES = {
   "Your real data is exactly as you left it.": "Seus dados reais estão exatamente como você deixou.",
   "Your routines live behind this tab. Tap Plan.": "Suas rotinas ficam atrás dessa aba. Toque em Plano.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Suas séries, pesagens e medidas em CSV. Nosso importador também lê de volta.",
+  // --- workout: timed holds that start by themselves ---
+  "Get ready": "Prepare-se",
+  "Go now": "Começar agora",
+  "As in Settings": "Como nos Ajustes",
+  "Get ready: {0}": "Prepare-se: {0}",
+  "Timed holds start by themselves": "As isometrias começam sozinhas",
+  "Waiting till you close that": "Esperando você fechar isso",
+  "Up next: {0}, starts by itself": "Próximo: {0}, começa sozinho",
+  "When the rest ends: 3, 2, 1 and the hold starts. Pause, restart or stop it any time.": "Quando o descanso acaba: 3, 2, 1 e a isometria começa. Pause, recomece ou pare quando quiser.",
+  "Holds start by themselves": "Começa sozinha",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

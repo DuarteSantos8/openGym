@@ -33,7 +33,22 @@ export function accentColors(key) {
   return { accent: argb(accent), ink: argb(ink) }
 }
 
-export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, now = Date.now() } = {}) {
+// `cues`: alerts that follow this one by themselves, `[{ dt, title }]` with `dt` in ms after `at`
+// (timed holds that run themselves, lib/auto-holds.js chainCues): the count-in, the go and the end
+// of each hold, rung by the phone while the page sleeps. The native side books each one when the
+// one before it rang, so a skip or a paused rest moves them all (RestAlert.java, RestAlertPlugin.swift).
+// `countdown: false` books the alert without the rest's countdown card (a count-in or a hold has
+// none: the card's buttons are the rest's).
+const MAX_CUES = 16
+export function buildCues(cues) {
+  if (!Array.isArray(cues)) return []
+  return cues
+    .filter(c => c && Number.isFinite(c.dt) && c.dt >= 0 && typeof c.title === 'string')
+    .slice(0, MAX_CUES)
+    .map(c => ({ dt: Math.round(c.dt), title: c.title }))
+}
+
+export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, cues = null, countdown = true, now = Date.now() } = {}) {
   if (typeof at !== 'number' || !(at > now)) return null
   // Settings → Sound (#306): one of lib/sound.js REST_SOUNDS; without one, `classic` decides, as before.
   const kind = Object.hasOwn(REST_SOUNDS, tone) ? tone : classic === true ? 'classic' : 'chime'
@@ -67,6 +82,8 @@ export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, so
     localOnly: false,
     visibility: 'public',
     importance: 'high',
+    cues: buildCues(cues),
+    countdown: countdown !== false,
   }
 }
 
@@ -98,7 +115,7 @@ const restPlugin = () => pluginP || (pluginP = (async () => {
 export function armRestAlert(at, opts = {}) {
   if (!MOBILE) return Promise.resolve(false)
   const mine = ++token
-  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, classic: opts.classic === true, tone: opts.tone, vibrate: opts.vibrate !== false, alarmBuzz: !!opts.alarmBuzz })
+  const alert = buildRestAlert({ at, title: opts.title, countdownTitle: opts.countdownTitle, totalSec: opts.totalSec, accent: opts.accent, sound: opts.sound, classic: opts.classic === true, tone: opts.tone, vibrate: opts.vibrate !== false, alarmBuzz: !!opts.alarmBuzz, cues: opts.cues, countdown: opts.countdown !== false })
   if (!alert) return Promise.resolve(false)
   // Outside the chain and never awaited: the alarm, its tone and the alarm buzz do not need the
   // notification permission, and a dialog left open while the phone is put away must not hold
@@ -247,6 +264,8 @@ async function deliver(alert) {
     skip: alert.skip,
     accent: alert.accent,
     ink: alert.ink,
+    cues: alert.cues,
+    countdown: alert.countdown,
   })
   return 'native'
 }

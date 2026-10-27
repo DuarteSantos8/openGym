@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
+import { autoHoldsFor, forecastHolds, nextAutoHold } from '../lib/auto-holds.js'
 import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
 import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
@@ -1735,7 +1736,8 @@ function ActiveWorkout() {
   // finish logs 0:38 of a 0:45 target rather than crediting the full prescription — and then
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
-  const startTimed = (idx, i, onFocusProgress) => {
+  // `startedAt`/`auto`: a hold the chain started by itself when its count-in ended (lib/auto-holds.js).
+  const startTimed = (idx, i, onFocusProgress, { startedAt = null } = {}) => {
     if (editing) return
     const e = A.entries[idx]
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
@@ -1749,13 +1751,16 @@ function ActiveWorkout() {
     // reaches S.workouts (lib/finish-workout.js).
     const plan = (!e.sets[i].done && e.sets[i].planSec) || e.sets[i].sec || 45
     const owner = { idx, i }
-    useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), holdDone(owner, plan, onFocusProgress), { idx, i, id: e.id })
+    // A hold of an exercise whose holds run themselves gets the chain's controls on its bar, also
+    // when it was started by hand: after it the chain carries on by itself.
+    const auto = autoHoldsFor(useStore.getState().S, e.target)
+    useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), holdDone(owner, plan, onFocusProgress), { idx, i, id: e.id }, { startedAt, auto })
     // After startWork: a hold it displaced has already written its seconds to its own row.
     holdAt = { owner, idx, i }
   }
   // What a hold hands back to its row: on its end, its Done, or a rest displacing it. Also bound
   // again to a hold restored after a reload (useUI.bindWork, below).
-  const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false } = {}) => {
+  const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false, endedAt = null } = {}) => {
     const { idx } = owner
     // The row may have moved while the hold ran (a set copied or removed above it): write to
     // where it is now. holdAt is that place (deleteActiveSet, copyActiveSet).
@@ -1775,8 +1780,43 @@ function ActiveWorkout() {
       return
     }
     mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
+    const restBefore = useUI.getState().timer
     if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress })
+    // Holds that run themselves (lib/auto-holds.js). A hold that ran out while the phone was locked
+    // is heard of late: its set is logged at the time it ended and its rest started then, so the
+    // rest is as far along as it would have been. With no rest after it, the next hold counts in.
+    const late = endedAt && Date.now() - endedAt > 1000 ? endedAt : null
+    if (late) mutEntry(idx, en => { if (en.sets[i]?.done) en.sets[i].at = late })
+    const rest = useUI.getState().timer
+    if (rest && rest !== restBefore && !rest.ready && !rest.paused) { if (late) useUI.getState().backdateRest?.(late); return }
+    useUI.getState().autoAfterHold?.(late || Date.now())
   }
+  // What the chain needs from this screen (store/useUI.js bindAuto): the next hold that starts by
+  // itself, the move to its exercise, its start, and the holds after it for the locked phone.
+  const timedAt = idx => {
+    const live = useStore.getState().S.active
+    const en = live?.entries?.[idx]
+    return !!en && modeOf({ ...(en.target || {}), id: en.id }) === 'time'
+  }
+  const autoStartRef = useRef(null)
+  autoStartRef.current = (owner, startedAt) => {
+    const live = useStore.getState().S.active
+    const en = live?.entries?.[owner.idx]
+    // Only the set it counted in for, while it is still that one and still open.
+    if (!en || en.id !== owner.id || !en.sets?.[owner.i] || en.sets[owner.i].done || useUI.getState().work) return
+    startTimed(owner.idx, owner.i, undefined, { startedAt })
+  }
+  useEffect(() => useUI.getState().bindAuto?.({
+    peek: () => {
+      const live = useStore.getState().S
+      const next = nextAutoHold(live, timedAt)
+      return next && { ...next, label: exerciseNameText(exOr(next.id)) }
+    },
+    focus: owner => { if (!owner.current) update(s => { if (s.active && s.active.entries?.[owner.idx]?.id === owner.id) s.active.cur = owner.idx }) },
+    startHold: (owner, startedAt) => autoStartRef.current?.(owner, startedAt),
+    forecast: owner => forecastHolds(useStore.getState().S, owner, { isTimed: timedAt, switchSec: SWITCH_SIDES_SEC }),
+    stop: () => update(s => { if (s.active) s.active.autoHoldsOff = true }),
+  }), [])
   // A hold that came back from a reload has no handler yet: this screen gives it its own.
   const holdDoneRef = useRef(holdDone)
   holdDoneRef.current = holdDone
@@ -2010,6 +2050,9 @@ function ActiveWorkout() {
       const A = useStore.getState().S.active
       if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
       const restBefore = useUI.getState().timer
+      // Log set on a hold that is running: the hold ends there, with what was held up to the tap.
+      const wk = useUI.getState().work
+      if (wk?.owner && wk.owner.idx === idx && wk.owner.i === i && useUI.getState().finishWorkEarly) { useUI.getState().finishWorkEarly(at || Date.now()); return }
       liveToggleRef.current(idx, i)
       if (!at) return
       mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
@@ -2021,7 +2064,9 @@ function ActiveWorkout() {
     },
     // Next exercise and Skip rest: what this screen's own Next and the rest bar's Skip do.
     next: idx => update(s => { if (s.active && !s.active.editingWorkoutId && s.active.entries?.[idx]) s.active.cur = idx }),
-    restSkip: () => useUI.getState().stopRest(),
+    restSkip: () => (useUI.getState().skipRest || useUI.getState().stopRest)(),
+    // Stop auto on the Lock Screen: the chain ends, as with the bar's own button.
+    autoStop: () => useUI.getState().stopAuto?.(),
     timer: () => useUI.getState().timer,
   }), [])
 

@@ -1587,6 +1587,31 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   #timer .t{font-size:25px}
   #timer .acts .skip{min-width:0}
 }
+/* Timed holds that run themselves (lib/auto-holds.js): the chain's controls are a second row
+   under the clock (RestTimer.jsx AutoRow), three equal buttons a thumb finds mid-plank. Labels
+   give way before the buttons do, so a long language on a 320 px phone still gets three targets. */
+#timer.auto{flex-wrap:wrap;row-gap:10px}
+#timer .autorow{flex:1 0 100%;display:flex;gap:6px;min-width:0}
+#timer .autorow .btn{flex:1 1 0;min-width:0;min-height:44px;background:var(--surface-2);color:var(--label)}
+#timer .autorow .btn:active{background:var(--surface-3)}
+#timer .autorow .btn > span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#timer .autorow.next{align-items:center}
+#timer .autorow.next .up{flex:1 1 auto;min-width:0;font-size:13px;color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#timer .autorow.next .btn{flex:none}
+/* The count-in: a big number in the accent, which pops on each second (still under reduced motion). */
+#timer.countin{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
+body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+#timer.countin .tclock{flex:1 1 0;min-width:0}
+#timer.countin .t{font-size:40px;color:var(--acc);animation:countpop .35s var(--ease)}
+#timer.countin .lbl{display:block}
+#timer.countin.paused .t,#timer.countin.paused .bar,#timer.working.paused .t,#timer.working.paused .bar{opacity:.5}
+#timer.countin.paused .t{animation:none}
+@keyframes countpop{from{transform:scale(1.25)}to{transform:none}}
+@media (max-width:359px){
+  #timer .autorow{gap:4px}
+  #timer .autorow .btn{padding-inline:6px;gap:3px}
+  #timer.countin .t{font-size:34px}
+}
 
 /* ---------------------------------------------------------------- modal -- */
 #modal-root{position:fixed;inset:0;z-index:100;display:none}

@@ -530,6 +530,8 @@ export function watchExtras (S) {
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
+    // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
+    ...(S?.autoHolds === true ? { autoHolds: true } : {}),
   }
 }
 

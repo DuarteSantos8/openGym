@@ -631,6 +631,13 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             <Switch aria-label={t('Keep timing after target')} checked={!!S.timedSetOvertime}
               onChange={v => update(s => { s.timedSetOvertime = v })} />
           </Row>
+          {/* Timed holds that run themselves (lib/auto-holds.js): rest over, 3-2-1, the hold, its
+              rest, and round again. Off by default; an exercise can say otherwise in its settings. */}
+          <Row icon="timer" iconTint="var(--teal)" title={t('Timed holds start by themselves')}
+            subtitle={t('When the rest ends: 3, 2, 1 and the hold starts. Pause, restart or stop it any time.')}>
+            <Switch aria-label={t('Timed holds start by themselves')} checked={S.autoHolds === true}
+              onChange={v => update(s => { s.autoHolds = v })} />
+          </Row>
         </Section>
         {/* The lean workout screen keeps the sets and one "more" button per exercise; each switch
             brings one of the old always-visible button groups back for people who liked them. */}

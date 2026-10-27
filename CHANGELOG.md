@@ -6,6 +6,18 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Timed holds that run themselves.** Planche, L-sit, front lever, plank: your hands are busy, so the
+app now keeps going without them. Switch on Settings → Workout → Timed holds start by themselves and
+the rest ends with a 3, 2, 1 (beeps and buzzes the way your timer alerts are set, also with the phone
+locked), the hold starts, at zero the set is logged with the planned time, the rest starts, and round
+again. Per-side holds still get their short switch pause, and supersets keep their order. Big buttons
+under the clock let you pause for a breather, restart a hold that went wobbly, or stop auto for the
+rest of the workout; +15 s and Skip still work on the rest. Tap Done early and it logs what you
+actually held. It never starts a hold while a sheet is open, and an exercise can opt in or out in its
+own settings. The Lock Screen counts the hold down with a Stop auto button, and the Apple Watch counts
+in by itself too. Thanks Mirco for the idea and the perfect description, and to our calisthenics friend
+on Discord who was tired of tapping play between every plank.
+
 **A 1-minute tour, and four tutorials.** Right after the first setup, openGym asks if you want a quick
 look around. Say yes and it points at the real thing, screen by screen: today's session, week or
 rotation, the Library, a practice workout (tick a set, meet the rest timer, swipe, the ⋯ menu, Finish),

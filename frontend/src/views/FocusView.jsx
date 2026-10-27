@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
+import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { clampIncline, hasIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
 import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
@@ -146,6 +147,13 @@ export default function FocusView({
     next.set(entryIdx, clampSet(entry, index))
     return { epoch: pointerEpoch, pointers: next }
   })
+  // Holds that run themselves (lib/auto-holds.js): the set on screen follows the one the chain is
+  // counting in or holding, which no tap here moved to.
+  const autoAt = useUI(s => {
+    const o = s.countIn?.owner || (s.work?.auto ? s.work.owner : null)
+    return o && o.idx === entryIdx ? o.i : null
+  })
+  useEffect(() => { if (autoAt != null && autoAt !== setIdx) selectSet(autoAt) }, [autoAt])
   const sequence = unit.length > 1 ? supersetSequence(S.active.entries, unit) : []
   const sequenceIdx = sequence.findIndex(item => item.entryIdx === entryIdx && item.setIdx === setIdx)
   const clearPointer = index => setPointerState(current => {
