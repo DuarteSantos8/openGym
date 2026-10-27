@@ -45,6 +45,9 @@ vi.mock('../lib/push.js', () => ({ pushSupported: () => false, enablePush: vi.fn
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => false }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE }, isAndroid: () => Promise.resolve(false), shareExport: vi.fn(), syncReminder: vi.fn() }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
+// The NFC row asks the native side at mount; importing @capacitor/core for it would replace the
+// globalThis.Capacitor these tests set up for the next test.
+vi.mock('../lib/nfc.js', () => ({ nfcSupport: () => Promise.resolve({ supported: false }), writeTag: vi.fn(), cancelWrite: vi.fn(), onTagLink: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   loadStarterPlan: vi.fn(), starterPlanSheet: vi.fn(), confirmSheet: vi.fn(), importFromApp: vi.fn(),
   importFromHevy: vi.fn(), equipmentProfileSheet: vi.fn(),

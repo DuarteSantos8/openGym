@@ -18,6 +18,7 @@
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		AA0100000000000000000002 /* PrintPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0100000000000000000001 /* PrintPlugin.swift */; };
 		AA0900000000000000000002 /* AppIconPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0900000000000000000001 /* AppIconPlugin.swift */; };
+		AA0A00000000000000000002 /* NfcTagsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0A00000000000000000001 /* NfcTagsPlugin.swift */; };
 		AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */; };
 		AA0200000000000000000002 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000001 /* MainViewController.swift */; };
 		AA0200000000000000000004 /* RestAlertPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000003 /* RestAlertPlugin.swift */; };
@@ -47,6 +48,7 @@
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AA0000000000000000000001 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		AA0900000000000000000001 /* AppIconPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPlugin.swift; sourceTree = "<group>"; };
+		AA0A00000000000000000001 /* NfcTagsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NfcTagsPlugin.swift; sourceTree = "<group>"; };
 		AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneWorkoutPlugin.swift; sourceTree = "<group>"; };
 		AA0100000000000000000001 /* PrintPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintPlugin.swift; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				AA0000000000000000000001 /* SceneDelegate.swift */,
 				AA0100000000000000000001 /* PrintPlugin.swift */,
 				AA0900000000000000000001 /* AppIconPlugin.swift */,
+				AA0A00000000000000000001 /* NfcTagsPlugin.swift */,
 				AA0818000000000000000001 /* PhoneWorkoutPlugin.swift */,
 				AA0200000000000000000001 /* MainViewController.swift */,
 				AA0200000000000000000003 /* RestAlertPlugin.swift */,
@@ -285,6 +288,7 @@
 				AA0000000000000000000002 /* SceneDelegate.swift in Sources */,
 				AA0100000000000000000002 /* PrintPlugin.swift in Sources */,
 				AA0900000000000000000002 /* AppIconPlugin.swift in Sources */,
+				AA0A00000000000000000002 /* NfcTagsPlugin.swift in Sources */,
 				AA0818000000000000000002 /* PhoneWorkoutPlugin.swift in Sources */,
 				AA0200000000000000000002 /* MainViewController.swift in Sources */,
 				AA0200000000000000000004 /* RestAlertPlugin.swift in Sources */,

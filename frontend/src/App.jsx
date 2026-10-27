@@ -44,6 +44,7 @@ import TimerFlash from './components/TimerFlash.jsx'
 import { SeasonalLayer } from './components/Seasonal.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import { useAnimPacksBoot } from './components/Animations.jsx'
+import { useNfcTagLinks } from './components/Nfc.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import PermissionSteps from './views/PermissionSteps.jsx'
@@ -293,6 +294,8 @@ function Shell() {
   const tour = useTour()
   const tourAsked = useRef(false)
   const setupDone = authed && ready && !needsMobileOnboarding && !permSteps
+  // A tapped NFC sticker (components/Nfc.jsx): one that opened the app waits for the setup.
+  useNfcTagLinks(setupDone)
   useEffect(() => {
     if (!setupDone || tourAsked.current) return
     const tm = setTimeout(() => {
