@@ -60,7 +60,7 @@ import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
-import GymReminderPage, { GymEditPage } from './GymReminder.jsx'
+import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
 import { readGymConfig } from '../lib/gym-reminder.js'
 import { THEMES, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
 
@@ -513,6 +513,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const pages = {
     watch: () => <WatchSettingsPage />,
     gym: () => <GymReminderPage />,
+    'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
     workout: () => <>
       <Section title={t('Rest')} footer={t('Each exercise can have its own rest too. Set it in the exercise settings of a routine.')}>

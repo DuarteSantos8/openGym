@@ -2422,56 +2422,55 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   box-shadow:0 0 28px rgba(0,0,0,.28);
 }
 
-/* Gym reminder (#614, views/GymReminder.jsx; redrawn in 1.4.4). The list: cards like Plan's
-   routines, a switch and a ⋯ each. A switched-off gym fades but stays readable. */
-.gym-list-t{margin-top:4px}
-.gym-list{margin-bottom:12px}
-.gym-item{padding-block:8px}
-.gym-item .item-open{flex:1;min-width:0;padding:4px 0;background:none;border:0;color:inherit;font:inherit;cursor:pointer}
-.gym-item .item-open .ss{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gym-item.off .lrow-i,.gym-item.off .item-open{opacity:.5}
-.gym-more{flex:none;display:grid;place-items:center;width:36px;height:44px;margin-inline-end:-6px;border:0;background:none;color:var(--label-2);font-size:20px;border-radius:10px;cursor:pointer}
-.gym-more:active{background:var(--surface-2)}
-.gym-empty{padding:30px 20px 22px}
-.gym-add{margin:0 0 26px}
-/* The editor: a big map in a card, the search floating on top of it, the radius in the accent. */
-.gmap{position:relative;height:clamp(360px,calc(100dvh - 300px),640px);border-radius:var(--r-lg);overflow:hidden;background:var(--surface-2);isolation:isolate;box-shadow:0 0 0 .5px var(--sep)}
+/* Gym reminder (#614, views/GymReminder.jsx; redrawn again in 1.4.4 to work like Apple Maps).
+   Plain grouped rows everywhere; a switched-off gym's row fades but stays readable. */
+.gym-row .lrow-s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gym-row .lrow-m{min-width:0}
+.gym-row.off .lrow-i,.gym-row.off .lrow-m{opacity:.5}
+.gym-add-row .lrow-t{color:var(--acc)}
+/* The search: the app's own search field (.searchf, as in Settings and the Library). */
+.gym-find-bar{margin:0 0 6px}
+.gym-find-note{font-size:12px;color:var(--label-2);line-height:1.35;margin:0 4px 14px}
+.gym-hit .lrow-m{min-width:0}
+.gym-hit .lrow-t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gym-hit .lrow-s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gym-hit.busy{opacity:.55}
+.gym-hit-none .lrow-t{font-size:15px;color:var(--label-2)}
+/* The editor's map: a rounded card about 40% of the screen, the pin fixed in the middle while the
+   map moves under it. The pin lifts a little while you drag. */
+.gmap{position:relative;height:clamp(200px,40dvh,380px);border-radius:var(--r-card);overflow:hidden;background:var(--surface-2);isolation:isolate}
 .gym-map{position:absolute;inset:0;z-index:0;background:var(--surface-2)}
-/* Dark mode: OpenStreetMap's tiles turned to night on the phone, no second tile provider. */
 :root:not([data-theme="light"]) .gym-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.7)}
-/* Attribution stays readable in both themes and clear of the card's rounded corner. */
-.gym-map.leaflet-container .leaflet-control-attribution{font-size:10px;line-height:1.5;background:var(--surface);color:var(--label-2);opacity:.92;border-radius:8px;padding:1px 7px;margin:0 10px 8px 0}
+.gym-map.leaflet-container{font:inherit}
+.gym-map.leaflet-container .leaflet-control-attribution{font-size:10px;line-height:1.5;background:var(--surface);color:var(--label-2);opacity:.9;border-radius:8px 0 0 0;padding:1px 7px}
 .gym-map.leaflet-container .leaflet-control-attribution a{color:var(--label)}
-.gym-map .leaflet-bar{border:0;box-shadow:0 2px 10px rgba(0,0,0,.25);border-radius:12px;overflow:hidden}
-.gym-map .leaflet-bar a{width:38px;height:38px;line-height:38px;font-size:20px;background:var(--surface);color:var(--label);border-color:var(--sep)}
-.gym-map .leaflet-bar a.leaflet-disabled{color:var(--label-3);background:var(--surface)}
-.gym-pin span{position:relative;display:block;width:34px;height:34px;border-radius:50% 50% 50% 0;background:var(--acc);transform:rotate(-45deg);box-shadow:0 3px 8px rgba(0,0,0,.35);border:3px solid #fff}
-.gym-pin span::after{content:'';position:absolute;inset:9px;border-radius:50%;background:#fff}
-.gym-handle span{display:block;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--acc);box-shadow:0 2px 6px rgba(0,0,0,.35);cursor:ew-resize}
-.gym-radius{stroke:var(--acc);fill:var(--acc);stroke-width:2.5}
-.gmap-top{position:absolute;z-index:1000;inset:10px 10px auto;display:flex;flex-direction:column;gap:6px;pointer-events:none}
-.gmap-top>*{pointer-events:auto}
-.gmap-search{display:flex;gap:8px;align-items:center}
-.gmap-search>.searchf{flex:1;min-width:0}
-.gmap-search .field{height:48px;font-size:17px;background:var(--surface);box-shadow:0 3px 14px rgba(0,0,0,.28)}
-:root[data-theme="light"] .gmap-search .field{background:var(--surface)}
-.gmap-search>.btn{flex:none;width:auto;height:48px;padding-inline:16px;box-shadow:0 3px 14px rgba(0,0,0,.28)}
-.gmap-note{align-self:flex-start;margin:0;padding:3px 9px;border-radius:999px;font-size:11.5px;color:var(--label-2);background:var(--surface);opacity:.94}
-.gmap-hits{max-height:min(330px,calc(100% - 90px));overflow-y:auto;overscroll-behavior:contain;gap:6px;padding:2px;border-radius:var(--r-card)}
-.gmap-hit{box-shadow:0 2px 10px rgba(0,0,0,.22);cursor:pointer;min-height:56px}
-.gmap-hit .ss{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gmap-hit.none{cursor:default;min-height:0}
-.gmap-chip{position:absolute;z-index:1000;left:50%;transform:translateX(-50%);bottom:24px;white-space:nowrap;padding:6px 11px;border-radius:999px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--acc);color:var(--on-acc);box-shadow:0 2px 8px rgba(0,0,0,.3);pointer-events:none}
-.gmap-hint{margin:8px 4px 14px}
-.gmap-btns{display:flex;flex-direction:column;gap:8px;margin:0 0 24px}
-.gmap-btns>.btn.primary{min-height:52px;font-size:17px}
-@media (min-width:700px){.gmap-btns{flex-direction:row}.gmap-btns>.btn{flex:1}}
-.gym-field{padding:8px 12px}
-.gym-field input{width:100%}
-.gym-radius-row{display:flex;align-items:center;gap:12px;padding:12px 14px}
-.gym-radius-row>:first-child{flex:1}
-.gym-radius-val{min-width:64px;text-align:end;font-variant-numeric:tabular-nums;color:var(--label-2)}
-.gym-actions{display:flex;flex-direction:column;gap:10px;margin:4px 0 30px}
+.gym-radius{stroke:var(--acc);fill:var(--acc);fill-opacity:.14;stroke-width:2}
+.gmap-pin{position:absolute;z-index:1000;left:50%;top:50%;width:30px;height:30px;margin:-30px 0 0 -15px;pointer-events:none;transition:transform var(--fast) var(--ease)}
+.gmap-pin>span{position:absolute;inset:0;border-radius:50% 50% 50% 0;background:var(--acc);transform:rotate(-45deg);box-shadow:0 3px 8px rgba(0,0,0,.35);border:3px solid #fff}
+.gmap-pin>span::after{content:'';position:absolute;inset:7px;border-radius:50%;background:#fff}
+.gmap-pin::after{content:'';position:absolute;left:50%;bottom:-3px;width:8px;height:4px;margin-left:-4px;border-radius:50%;background:rgba(0,0,0,.35);transition:transform var(--fast) var(--ease)}
+.gmap.moving .gmap-pin{transform:translateY(-8px)}
+.gmap.moving .gmap-pin::after{transform:translateY(8px) scale(1.4)}
+@media (prefers-reduced-motion:reduce){.gmap-pin,.gmap-pin::after{transition:none}}
+.gmap-locate{position:absolute;z-index:1000;top:10px;inset-inline-end:10px;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:var(--surface);color:var(--acc);font-size:19px;box-shadow:0 1px 6px rgba(0,0,0,.25);cursor:pointer}
+.gmap-locate:active{background:var(--surface-2)}
+.gmap-locate:disabled{opacity:.6}
+.gmap-hint{display:flex;flex-direction:column;gap:2px;margin:0 4px 20px}
+.gmap-addr{color:var(--label);font-size:15px}
+/* Rows with their own text input, like iOS's: the label on the start, the text on the end. */
+.gym-in-row{cursor:text}
+.lrow-in{flex:1 1 60%;min-width:0;background:none;border:0;outline:none;padding:0;font:inherit;font-size:17px;letter-spacing:-.012em;color:var(--label);text-align:end}
+.lrow-in::placeholder{color:var(--label-3)}
+.lrow-in.full{text-align:start}
+.gym-radius{padding-block:8px}
+.gym-radius .seg{flex:1}
+.gym-size{display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.gym-size b{font-weight:inherit}
+.gym-size small{font-size:11px;color:var(--label-2);font-variant-numeric:tabular-nums}
+.gym-radius .seg button{min-height:42px}
+.gym-actions{display:flex;flex-direction:column;gap:10px;margin:0 0 22px}
+.gym-remove{justify-content:center}
+.gym-remove .lrow-m{flex:none;align-items:center}
 .youtube-video{width:100%;min-width:0;margin:8px 0}
 .youtube-video iframe{display:block;width:100%;min-height:200px;aspect-ratio:16/9;border:0;border-radius:12px;background:#000}
 .youtube-actions{display:flex;justify-content:space-between;gap:8px;margin-top:8px}

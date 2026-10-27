@@ -1,20 +1,23 @@
 import { describe, expect, it } from 'vitest'
-import { edgeOf, radiusAt } from './GymMap.jsx'
-import { distanceM } from '../lib/gym-reminder.js'
+import { zoomFor } from './GymMap.jsx'
 
-// The radius handle on the map's circle (1.4.4): it sits on the edge due east of the pin, and
-// dragging it reads the radius back in the slider's 10 m steps, kept between 50 and 500.
-describe('the radius handle', () => {
-  const c = { lat: 47.3769, lng: 8.5417 }
-  it('sits on the circle, east of the pin', () => {
-    const e = edgeOf(c, 150)
-    expect(e.lat).toBe(c.lat)
-    expect(e.lng).toBeGreaterThan(c.lng)
-    expect(distanceM(c, e)).toBeCloseTo(150, -1)
+// The editor's map (1.4.4): the zoom fits the radius circle into the card, with room around it,
+// a bigger circle zooms out, and the zoom stays where OpenStreetMap has tiles.
+describe('the zoom for a radius', () => {
+  it('a bigger circle zooms out', () => {
+    const z75 = zoomFor(75, 47.37, 300), z120 = zoomFor(120, 47.37, 300), z200 = zoomFor(200, 47.37, 300)
+    expect(z75).toBeGreaterThan(z120)
+    expect(z120).toBeGreaterThan(z200)
   })
-  it('dragged out or in: the radius in 10 m steps, within 50 to 500', () => {
-    expect(radiusAt(c, edgeOf(c, 213), distanceM)).toBe(210)
-    expect(radiusAt(c, edgeOf(c, 5), distanceM)).toBe(50)
-    expect(radiusAt(c, edgeOf(c, 5000), distanceM)).toBe(500)
+  it('the circle fits the card height with room to spare', () => {
+    const lat = 47.37, px = 300, r = 120
+    const z = zoomFor(r, lat, px)
+    const mPerPx = 156543.034 * Math.cos(lat * Math.PI / 180) / 2 ** z
+    expect(2 * r / mPerPx).toBeLessThan(px)
+    expect(2 * r / mPerPx).toBeGreaterThan(px / 3)
+  })
+  it('kept between 3 and 18', () => {
+    expect(zoomFor(1, 0, 4000)).toBe(18)
+    expect(zoomFor(5e6, 0, 100)).toBe(3)
   })
 })

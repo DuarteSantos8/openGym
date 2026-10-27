@@ -379,23 +379,31 @@ cellular with Wi-Fi only on, it waits; Still only shows stills everywhere a work
 ### Gym reminder (#614)
 
 Settings → Reminders → **Gym reminder**, in the phone app only (the web build has no such page:
-a browser cannot watch where you are with the page closed). Off by default. The gyms are cards
-(address, radius, an on/off switch each; swipe or ⋯ to rename or remove). A gym is picked on a map
-with "I'm here right now" (the phone's position), a search or a pin you drag:
+a browser cannot watch where you are with the page closed). Off by default. The gyms are plain
+Settings rows (name, address, radius; "Off" on one that is switched off), the last row adds one.
+Adding is search first, like a maps app (`views/GymReminder.jsx` `GymFindPage`): the app's search
+field, "Current location" as the first row, results as you type (after a 350 ms pause, newest
+question wins) with distance, a kind hint and the address. A pick opens the editor
+(`GymEditPage`): a small map card with the pin fixed in the middle and the map moving under it,
+the radius as a circle, a "show where I am" button; then Name, an on/off switch, the radius as
+Small 75 m / Medium 120 m / Large 200 m (a saved gym with another radius keeps it as a fourth
+choice), the notification text, Save, "Open in Apple Maps / Google Maps" and Remove.
 
-- **iPhone: Apple Maps.** `ios/App/App/GymMapPickerPlugin.swift` (`GymMapPicker.pick`) presents a
-  full-screen MKMapView in the app's tint and theme, MKLocalSearch on top (fitness centres first,
-  then everything else), a draggable pin, the radius circle and slider; it returns
-  `{ name, address, lat, lng, radius }` and keeps nothing. No API key. A build without the plugin
-  (or `UNIMPLEMENTED`) falls back to the web map (`lib/gym-places.js` `pickOnNativeMap`).
-- **Android (and the iPhone fallback): OpenStreetMap** through Leaflet (`components/GymMap.jsx`):
-  standard OSM tiles with attribution (tile usage policy), darkened by a CSS filter in dark mode
-  (no second provider: CARTO's dark basemaps need an API key now); the radius circle in the accent
-  with a handle on its edge to drag. The search asks Nominatim within its usage policy: only on
-  Enter or the Search button (no search-as-you-type), at most one request a second, answers cached
-  for the session, repeats in flight not sent again, a User-Agent naming the app, biased (not
-  bounded) to the map's area, gyms ranked first. "Open in Google Maps" opens a plain
-  `google.com/maps/search/?api=1` link (the Maps app if it is installed), no key, no SDK.
+- **iPhone search: Apple Maps.** `ios/App/App/GymMapPickerPlugin.swift` answers `complete`
+  (two MKLocalSearchCompleters, one filtered to fitness centres, those first), `resolve` (one
+  MKLocalSearch for the row picked) and `reverse` (CLGeocoder, the address of a spot). It keeps
+  nothing and needs no API key. A build without these calls (1.4.4 build 45 had a full-screen
+  picker instead) answers `UNIMPLEMENTED`, and `lib/gym-places.js` uses OpenStreetMap from then on.
+- **Android search (and the iPhone fallback): OpenStreetMap data.** The type-ahead asks Photon
+  (`photon.komoot.io`, built for search-as-you-type; fair use): at least two letters, at most one
+  request every 500 ms, answers cached for the session, repeats in flight not sent again, a
+  User-Agent naming the app, biased to where you are, gyms ranked first, `lang` only where Photon
+  has it (en, de, fr). If Photon fails, Nominatim answers within its policy (one request a second,
+  cached). The address of a moved pin is Photon's reverse lookup, once per spot.
+- **The map, both phones:** Leaflet (`components/GymMap.jsx`) with standard OSM tiles and
+  attribution (tile usage policy), darkened by a CSS filter in dark mode (no second provider:
+  CARTO's dark basemaps need an API key now). "Open in Google Maps" / "Open in Apple Maps" open
+  plain links, no key, no SDK.
 
 Each gym has a radius (100 m by default, 50 to 500), an optional text and an `off` flag (kept on
 the list, not watched: both native sides skip it when they arm the regions). Up to 20 gyms (iOS watches at
