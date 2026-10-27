@@ -50,6 +50,7 @@ export function legacyEntriesOf(workout, prescriptions = {}) {
   if (!Array.isArray(workout?.exposures)) return workout?.entries || []
   return workout.exposures.map(x => ({
     id: x.exerciseId, rid: x.routineId ?? null,
+    ...(x.sg ? { sg: x.sg } : {}),
     target: targetOf(x, prescriptions?.[x.prescriptionId]),
     ...(prescriptions?.[x.prescriptionId] ? { planned: plannedOf(prescriptions[x.prescriptionId]) } : x.legacyPlanned ? { planned: x.legacyPlanned } : {}),
     ...(x.muscleSnapshot ? { muscleSnapshot: x.muscleSnapshot } : {}),
