@@ -1890,6 +1890,7 @@ export const PT_BR_OVERRIDES = {
   "Date, duration, share, export, delete": "Data, duração, compartilhar, exportar, excluir",
   "Rewrite the session note whenever.": "Reescreva a nota da sessão quando quiser.",
   "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Dia errado ou esqueceu de terminar na hora? Corrija aqui dentro. Compartilhar, exportar e Excluir treino também ficam aqui.",
+  "That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.": "É um backup ou um arquivo de plano do openGym. Use Importar backup, ou importe-o na tela Plano.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

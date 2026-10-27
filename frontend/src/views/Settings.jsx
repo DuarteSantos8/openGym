@@ -953,7 +953,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       <Section title={t('Bring data in')}>
         <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} tour="data-import" />
         <Row icon="download" iconTint="var(--teal)" title={t('Import from another app')}
-          subtitle={t('FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health')}
+          subtitle={t('Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health')}
           accessory="chevron" onClick={() => importRef.current.click()} tour="data-apps" />
         <Row icon="key" iconTint="var(--teal)" title={t('Import from Hevy')}
           subtitle={t('Pull your history with a Hevy Pro API key')}
@@ -965,7 +965,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
       <input ref={fileRef} type="file" accept=".json,.zip,application/json,application/zip" style={{ display: 'none' }} onChange={doImport} />
       {/* Reset after reading so picking the same file twice still fires onChange. */}
-      <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
+      <input ref={importRef} type="file" accept=".csv,.xml,.json,text/csv,text/xml,application/json" style={{ display: 'none' }}
         onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
     </>,
 

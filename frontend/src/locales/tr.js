@@ -637,7 +637,12 @@ export default {
   'Shins': 'İncik',
   // --- import from another app ---
   'Import from another app': 'Başka uygulamadan içe aktar',
-  'FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health': 'FitNotes, Strong, Hevy, GymMane, openGym CSV ya da Apple Health’ten vücut ağırlığı',
+  'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT ve dahası ya da Apple Health’ten vücut ağırlığı',
+  'Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.': 'Liftoscript ilerlemeleri egzersizlere not olarak gelir. openGym bunları çalıştırmaz.',
+  '{0} routine is already here and will be left alone.': '{0} rutin zaten burada ve olduğu gibi kalacak.',
+  '{0} routines are already here and will be left alone.': '{0} rutin zaten burada ve olduğu gibi kalacak.',
+  'This looks like a {0} export, but we couldn’t read it. Nothing was imported.': 'Bu bir {0} dışa aktarımına benziyor ama okuyamadık. Hiçbir şey içe aktarılmadı.',
+  'That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.': 'Bu bir openGym yedeği ya da plan dosyası. Yedeği içe aktar’ı kullan ya da Plan ekranında içe aktar.',
   'Import from {0}': '{0} uygulamasından içe aktar',
   'Import history': 'Geçmişi içe aktar',
   'Weigh-ins': 'Tartımlar',

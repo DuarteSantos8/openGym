@@ -640,7 +640,12 @@ export default {
   'Shins': 'หน้าแข้ง',
   // --- import from another app ---
   'Import from another app': 'นำเข้าจากแอปอื่น',
-  'FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health': 'FitNotes, Strong, Hevy, GymMane, openGym CSV หรือน้ำหนักตัวจาก Apple Health',
+  'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT และอื่น ๆ หรือน้ำหนักตัวจาก Apple Health',
+  'Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.': 'การเพิ่มความหนักแบบ Liftoscript จะมาเป็นโน้ตในท่าออกกำลังกาย openGym ไม่ได้รันสคริปต์นั้น',
+  '{0} routine is already here and will be left alone.': 'มีรูทีน {0} รายการอยู่แล้ว และจะคงไว้ตามเดิม',
+  '{0} routines are already here and will be left alone.': 'มีรูทีน {0} รายการอยู่แล้ว และจะคงไว้ตามเดิม',
+  'This looks like a {0} export, but we couldn’t read it. Nothing was imported.': 'ไฟล์นี้ดูเหมือนไฟล์ส่งออกจาก {0} แต่เราอ่านไม่ได้ ไม่มีอะไรถูกนำเข้า',
+  'That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.': 'นี่คือไฟล์สำรองหรือไฟล์แผนของ openGym ใช้ "นำเข้าข้อมูลสำรอง" หรือนำเข้าที่หน้าจอแผน',
   'Import from {0}': 'นำเข้าจาก {0}',
   'Import history': 'นำเข้าประวัติ',
   'Weigh-ins': 'บันทึกน้ำหนัก',

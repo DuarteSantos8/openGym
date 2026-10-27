@@ -259,7 +259,63 @@ const ALIAS_EX = {
   // Cardio again: the only candidates in a 29-entry cardio vocabulary.
   'jumping jack': '3220', 'jumping jacks': '3220', 'battle ropes': '0128',
   'stair machine (steps)': '2311', 'stair machine': '2311',
+  // The apps added in 1.4.4 (lib/import-apps.js). Each group was checked name by name against
+  // the catalogue: a word-bag miss, or a word-bag hit on a neighbour, put right by hand.
+  // Liftosaur (github.com/astashov/liftosaur, src/models/exercise.ts): its built-in names, with
+  // the default equipment written in front the way import-apps.js matches them.
+  'bench dip': '0129', crunch: '0274', 'cable crunch': '0175', plank: '0463', 'oblique crunch': '0635',
+  'lever calf press on leg press': '1391', 'lever calf press on seated leg press': '2335',
+  'dumbbell chest press': '0289', 'dumbbell incline chest press': '0314', 'flat knee raise': '8194',
+  'lever hip abductor': '0597', 'lever hip adductor': '0598', 'pistol squat': '1759',
+  'barbell press under': '4966', 'dumbbell reverse curl': '0429', 'dumbbell reverse grip concentration curl': '0403',
+  'single leg hip thrust': '2071', 'barbell snatch pull': '0776', 'barbell stiff leg deadlift': '1543',
+  'wide pull up': '1429', 'knee push up': '1182', 'hollow body hold': '1246', 'band shoulder pass through': '8365',
+  'barbell power clean': '0648', 'ez barbell skullcrusher': '5873', 'dumbbell shoulder press': '0405',
+  'dumbbell triceps extension': '0430', 'dumbbell tricep extension': '0430', 'barbell behind the neck press': '0788',
+  'elliptical machine': '2141',
+  // Fitbod (its names as the Fitbod-to-Hevy converter github.com/sinan92/fitbod-to-hevy-converter maps them).
+  'single arm dumbbell tricep extension': '4343', 'vertical leg raise': '0826', 'air squats': '3948', 'bodyweight squat': '3948',
+  'barbell shoulder press': '0091', 'seated barbell shoulder press': '0091', 'smith machine overhead shoulder press': '0766',
+  'mid cable crossover fly': '1269', 'cable crossover fly': '1269', 'cable row': '0180', 'machine row': '1350',
+  'hammerstrength iso row': '0571', 'machine fly': '0596', 'machine rear delt fly': '0602', 'machine leg press': '0739',
+  'machine hip abductor': '0597', 'machine tigh abductor': '0597', 'machine hip adductor': '0598',
+  'machine bench press': '0577', 'triceps pressdown': '0241', 'straight-arm pulldown': '0238',
+  'dumbbell shoulder raise': '0334', 'side lateral raise': '0334', 'dumbbell bent over reverse fly': '0383',
+  'lying hamstrings curl': '0586', dip: '0814', crunches: '0274', 'hammer curl': '0313', 'hammer curls': '0313',
+  // JEFIT (its names as the JEFIT-to-Hevy converter github.com/sondrealf/JeFit2Hevy maps them).
+  'back hyperextension': '0573', 'hyperextensions - back extensions': '0573',
+  'barbell ab rollout on knees': '0857', 'barbell ab rollout (kneeling)': '0857', 'barbell deep squat': '0043',
+  'barbell tricep extension (supine)': '0060', 'cable mid chest crossover': '1269', 'cable mid chest crossovers': '1269',
+  'cable high cross over': '1269', 'cable rope face pull': '0203',
+  'cable rope tricep pushdown': '0200', 'cable rope triceps pushdown': '0200', 'cable tricep pushdown (rope)': '0200',
+  'cable triceps pushdown': '0241', 'cable tricep pushdown (v-bar)': '0241', 'triceps pushdown v bar': '0241',
+  'cable up right row': '0246', 'calf press on leg press machine': '1391',
+  'dumbbell alternating bicep curl': '0294', 'dumbbell one-arm bicep curl': '0294',
+  'dumbbell alternating hammer curl': '0313', 'dumbbell alternate hammer curl': '0313', 'dumbbell one-arm hammer curl': '0313',
+  'dumbbell alternating incline curl': '0318', 'dumbbell incline bench curl': '0318', 'dumbbell bent-over reverse fly': '0383',
+  'dumbbell calf raise': '0417', 'dumbbell decline press': '0301', 'dumbbell incline bench row': '0327',
+  'dumbbell palm in bent-over row': '0293', 'dumbbell seated side lateral raise': '0396', 'dumbbell side lateral raise': '0334',
+  'dumbbell shoulder shrug': '0406', 'dumbbell step ups': '0431', 'elliptical training': '2141',
+  'leverage machine iso row': '0571', 'machine iso lateral high row': '0581',
+  'machine assisted pull up': '0017', 'machine assisted pull-up': '0017', 'machine assisted dip': '0009',
+  'machine hip abduction': '0597', 'thigh abductor': '0597', 'machine hip adduction': '0598', 'thigh adductor': '0598',
+  'machine leg curl': '0586', 'machine leg curl (prone)': '0586', 'prone leg curl': '0586', 'prone leg curls': '0586',
+  'leg press machine': '0739', 'machine reverse flye': '0602', 'machine reverse flyes': '0602',
+  'machine tricep extension': '0607', 'reverse grip lat pull down': '0673', 'weighted crunches': '0832',
+  'cable standing curl': '0868', 'cable straight arm push down': '0238', 'leverage chest press': '0577',
+  'machine deltoid raise': '0584', 'machine lat pull down': '0579',
 }
+
+// Names that must stay the user's own exercise: the word-bag finds a neighbour for them (a wide
+// grip turned into a reverse grip, a plain reverse lunge into one from a deficit), and no
+// catalogue entry is the same lift. Checked the same way as the aliases above.
+const NO_MATCH = new Set([
+  'barbell bench press wide grip', 'barbell incline bench press wide grip', 'dumbbell reverse lunge',
+  'assisted squat', 'dumbbell snatch', 'barbell chest supported row', 'barbell deadlift high pull',
+  'dumbbell lying bicep curl', 'barbell safety squat bar squat',
+].map(n => keyOf(n)))
+/** True when a name is one of those: matching it must not fall back to a looser name either. */
+export const isNoMatch = name => NO_MATCH.has(keyOf(name))
 
 let ALIAS_IDX = null
 const aliasIndex = () => {
@@ -288,6 +344,7 @@ export function matchExercise(name) {
   const sorted = w.slice().sort().join(' ')
   const aliased = aliasIndex().get(sorted)
   if (aliased && EXIDX[aliased]) return aliased
+  if (NO_MATCH.has(sorted)) return null
   const exact = idx.exact.get(sorted)
   if (exact) return exact
   const q = new Set(w)
@@ -551,11 +608,23 @@ export function priorCustom(customEx, id, name) {
 }
 
 // `customEx`: the custom exercises already in state (priorCustom above).
-export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
+export function parseWorkoutCSV(text, opts = {}) {
   const rows = parseCSV(text)
   if (rows.length < 2) return { error: 'empty' }
-  const map = mapHeader(rows[0])
-  const source = detectSource(rows[0])
+  return parseWorkoutRows(rows, mapHeader(rows[0]), detectSource(rows[0]), opts)
+}
+
+/**
+ * The rows of a table as workouts: `rows[0]` is the header (skipped), `map` says which column
+ * holds which field (the names in COLUMNS), `source` is the app the file came from. Shared by
+ * the CSV reader above and by lib/import-apps.js, which turns the exports that are not a plain
+ * one-row-per-set CSV (Liftosaur, Liftoff, StrongLifts, JEFIT...) into rows like these first.
+ * Two fields only those exports fill: `session`, a column naming the workout a row belongs to
+ * (so two sessions on one day stay two), and `matchName`, the name to match against the
+ * catalogue when the app's own display name leaves out what it means (Liftosaur's "Front Raise"
+ * is a dumbbell one). `skipped` counts rows the caller already threw away.
+ */
+export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0 } = {}) {
   // Our own export (lib/export-csv.js) says more than the others: the catalogue id, which side of
   // a per-side set a row is, a drop-set's drops as rows of their own. Read that way only when the
   // header says it is ours.
@@ -580,7 +649,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
   const created = new Map()
   const unmatched = new Set()
   const rowNotes = new Map()         // session key -> Strong's Note rows, as [exact title, name key, text]
-  let sets = 0, skipped = 0, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
+  let sets = 0, skipped = preSkipped, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
   let sawLb = false, sawKg = false
 
   // The export puts an apostrophe in front of a name a spreadsheet would run as a formula.
@@ -588,7 +657,9 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     const v = map[f] === undefined ? '' : String(r[map[f]] ?? '').trim()
     return own && /^'[=+\-@\t\r]/.test(v) ? v.slice(1) : v
   }
-  const sessionKeyOf = (when, r) => (source === 'Strong' || source === 'Hevy' || own) && when.t != null
+  const sessionKeyOf = (when, r) => map.session !== undefined
+    ? when.d + '|' + cell(r, 'session')
+    : (source === 'Strong' || source === 'Hevy' || own) && when.t != null
     ? when.d + '|' + when.t + '|' + (cell(r, 'workoutName') || '')
     : when.d
 
@@ -664,7 +735,9 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
         // Hevy CSV: prefer the generated English-title map (same table as the API import).
         // Localized titles still fall through to the word-bag matcher. A custom exercise of ours
         // stays custom: it was not in the catalogue on purpose.
-        id = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || matchExercise(name))
+        const alt = map.matchName !== undefined ? cell(r, 'matchName') : ''
+        const byName = () => (alt ? matchExercise(alt) || (isNoMatch(alt) ? null : matchExercise(name)) : matchExercise(name))
+        id = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || byName())
       }
       resolved.set(exact, id)
     }
@@ -695,7 +768,8 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     const exCardio = isCardioEx(id) || (created.get(key) || prior.get(key))?.bp === 'cardio' || nameBp === 'cardio'
     // Ours says it outright: a cardio row always has a distance, "0" included, a timed one none.
     const ownCardio = own && cell(r, 'distanceKm') !== ''
-    const timed = own ? secs > 0 && !reps && !ownCardio : secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || !!nameBp)
+    // Liftosaur's set timer is the set's own time too (lib/import-apps.js).
+    const timed = own ? secs > 0 && !reps && !ownCardio : secs > 0 && !km && !reps && !exCardio && (source === 'Strong' || source === 'Liftosaur' || !!nameBp)
     const isCardio = own ? ownCardio && !timed : !timed && (km > 0 || mins > 0) && !reps
     // `u` carries the row's own unit into the conversion pass below and is dropped there —
     // it never reaches the stored set.
@@ -857,6 +931,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     // distinct library exercises behind the matched rows — the summary calls this
     // "exercises matched", and counting rows there made three exercises read as five
     matched: new Set([...resolved.values()].filter(Boolean)).size,
+    matchedIds: [...new Set([...resolved.values()].filter(Boolean))],
     matchedSets: matched,
     created: created.size, unmatchedNames: [...unmatched].sort(),
     sets, skipped, warmups, fileUnit, mixedUnits, converted, rpeSets, rirSets,

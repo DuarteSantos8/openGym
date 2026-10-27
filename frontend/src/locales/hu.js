@@ -640,7 +640,12 @@ export default {
   'Shins': 'Sípcsont',
   // --- import from another app ---
   'Import from another app': 'Importálás másik appból',
-  'FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health': 'FitNotes, Strong, Hevy, GymMane, openGym CSV vagy testsúly az Apple Healthből',
+  'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT és mások, vagy testsúly az Apple Healthből',
+  'Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.': 'A Liftoscript-progressziók jegyzetként érkeznek a gyakorlatokhoz. Az openGym nem futtatja őket.',
+  '{0} routine is already here and will be left alone.': '{0} rutin már itt van, és marad, ahogy van.',
+  '{0} routines are already here and will be left alone.': '{0} rutin már itt van, és marad, ahogy van.',
+  'This looks like a {0} export, but we couldn’t read it. Nothing was imported.': 'Ez {0}-exportnak tűnik, de nem tudtuk beolvasni. Semmi sem lett importálva.',
+  'That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.': 'Ez egy openGym-mentés vagy tervfájl. Használd a Biztonsági mentés importálását, vagy importáld a Terv képernyőn.',
   'Import from {0}': 'Importálás innen: {0}',
   'Import history': 'Előzmények importálása',
   'Weigh-ins': 'Mérések',

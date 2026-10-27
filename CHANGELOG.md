@@ -170,6 +170,14 @@ No new switch: the Apple Health one covers it.
 - iPhone app: the rest sound no longer pauses your music. It turns it down for a moment and lets it play on, also with Play even on silent.
 - **Searching a muscle shows the lifts people do**: "chest" opens on the bench press, flyes and dips, "back" on rows and pulldowns. Stretches only lead when you search for a stretch.
 
+**Bring your history from more apps** (#862, thanks @Gitoffomalawn). Import from another app now
+reads Liftosaur (the history CSV, or the JSON export, whose programs arrive as routines with their
+Liftoscript progression as a note), Liftoff (the JSON from the unofficial liftoff-export-cli),
+StrongLifts 5×5, Fitbod and JEFIT. Warm-ups, RPE, notes, cardio and timed sets come along, each in
+its own unit, on the day you trained, and importing a file twice still adds nothing twice. A file that
+looks like one of these but doesn't read right is turned away with a message instead of half
+imported. How to export from each app is in docs/DATA_IMPORTS.md.
+
 ## v1.4.3 (2026-10-26)
 
 The community release. Most of what's below was asked for on GitHub and Discord or sent in as a

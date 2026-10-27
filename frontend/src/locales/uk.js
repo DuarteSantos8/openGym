@@ -465,7 +465,12 @@ export default {
   'Shins': 'Гомілки',
   // --- import from another app ---
   'Import from another app': 'Імпорт з іншого застосунку',
-  'FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health': 'FitNotes, Strong, Hevy, GymMane, openGym CSV або вага з Apple Health',
+  'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT та інші або вага з Apple Health',
+  'Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.': 'Прогресії Liftoscript прийдуть як нотатки до вправ. openGym їх не виконує.',
+  '{0} routine is already here and will be left alone.': '{0} програма вже є і залишиться як є.',
+  '{0} routines are already here and will be left alone.': { one: '{0} програма вже є і залишиться як є.', few: '{0} програми вже є і залишаться як є.', many: '{0} програм уже є і залишаться як є.', other: '{0} програми вже є і залишаться як є.' },
+  'This looks like a {0} export, but we couldn’t read it. Nothing was imported.': 'Схоже на експорт із {0}, але прочитати його не вдалося. Нічого не імпортовано.',
+  'That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.': 'Це резервна копія або файл плану openGym. Скористайся «Імпорт резервної копії» або імпортуй його на екрані «План».',
   'Import from {0}': 'Імпорт з {0}',
   'Import history': 'Імпорт історії',
   'Weigh-ins': 'Зважування',

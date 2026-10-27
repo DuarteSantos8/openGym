@@ -37,7 +37,8 @@ import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
 import { suggestedSubstitutes, relatedSubstitutes } from './lib/exercise-substitutes.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
-import { parseImport, mergeImport } from './lib/import-csv.js'
+import { mergeImport } from './lib/import-csv.js'
+import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
 import { buildPlanBundle, buildProgrammeBundle, parsePlan, mergePlan } from './lib/plan-share.js'
 import PrintPlanSheet from './components/PrintPlanSheet.jsx'
@@ -487,22 +488,31 @@ function ImportSummary({ parsed, close }) {
   const have = (isBW
     ? parsed.bodyweight.filter(b => st.bodyweight.some(x => x.d === b.d)).length
     : parsed.workouts.filter(w => st.workouts.some(x => x.d === w.d)).length) + haveM
-  const fresh = (isBW ? parsed.bodyweight.length + checkIns.length : parsed.workouts.length) - have
+  // Liftosaur and Liftoff bring plans as well (lib/import-apps.js); one already imported stays as it is.
+  const plans = !isBW && parsed.routines?.routines?.length ? parsed.routines : null
+  const newPlans = plans ? freshRoutines(st, plans) : 0
+  const fresh = (isBW ? parsed.bodyweight.length + checkIns.length : parsed.workouts.length) - have + newPlans
+  const hasWorkouts = isBW || parsed.workouts.length > 0
+  const unmatched = [...new Set([...(isBW ? [] : parsed.unmatchedNames), ...(plans?.unmatchedNames || [])])].sort()
 
   const doImport = () => {
-    let res
-    update(s => { res = mergeImport(s, parsed) })
+    let res, planRes
+    update(s => {
+      res = mergeImport(s, parsed)
+      if (plans) planRes = mergeImportedRoutines(s, plans)
+    })
     close()
     const measured = res.measurements ? tn('{0} measurement check-in imported', '{0} measurement check-ins imported', res.measurements) : ''
+    const routinesLine = planRes?.added ? tn('{0} routine imported', '{0} routines imported', planRes.added) : ''
     toast(isBW
       ? (res.added || !measured ? tn('{0} weigh-in imported', '{0} weigh-ins imported', res.added) + (measured ? ' · ' + measured : '') : measured)
-      : tn('{0} workout imported', '{0} workouts imported', res.added))
+      : [res.added || !routinesLine ? tn('{0} workout imported', '{0} workouts imported', res.added) : '', routinesLine].filter(Boolean).join(' · '))
   }
 
   return <>
     <h3>{parsed.source ? t('Import from {0}', parsed.source) : t('Import history')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>
-      {fmtDateRange(parsed.from, parsed.to, true)}
+      {hasWorkouts && fmtDateRange(parsed.from, parsed.to, true)}
     </div>
 
     <div className="tiles" style={{ textAlign: 'start' }}>
@@ -511,10 +521,13 @@ function ImportSummary({ parsed, close }) {
         {checkIns.length > 0 && <div className="tile"><div className="l">{t('Body measurements')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{checkIns.length}</div></div>}
         <div className="tile"><div className="l">{t('New')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{fresh}</div></div>
       </> : <>
-        <div className="tile"><div className="l">{t('Workouts')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.workouts.length}</div></div>
-        <div className="tile"><div className="l">{t('Sets')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.sets}</div></div>
-        <div className="tile"><div className="l">{t('Exercises matched')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.matched}</div></div>
-        <div className="tile"><div className="l">{t('Added as your own')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.created}</div></div>
+        {hasWorkouts && <>
+          <div className="tile"><div className="l">{t('Workouts')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.workouts.length}</div></div>
+          <div className="tile"><div className="l">{t('Sets')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.sets}</div></div>
+        </>}
+        {plans && <div className="tile"><div className="l">{t('Routines')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{plans.routines.length}</div></div>}
+        <div className="tile"><div className="l">{t('Exercises matched')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{plans ? new Set([...(parsed.matchedIds || []), ...plans.matchedIds]).size : parsed.matched}</div></div>
+        <div className="tile"><div className="l">{t('Added as your own')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{plans ? unmatched.length : parsed.created}</div></div>
       </>}
     </div>
 
@@ -523,7 +536,7 @@ function ImportSummary({ parsed, close }) {
     </div> : parsed.converted ? <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
       {t('The file is in {0} and your profile is in {1}, so weights get converted.', parsed.fileUnit, st.unit)}
     </div> : null}
-    {!isBW && !parsed.fileUnit && !parsed.mixedUnits && <div className="small dim" style={{ marginBottom: 10 }}>
+    {hasWorkouts && !isBW && !parsed.fileUnit && !parsed.mixedUnits && <div className="small dim" style={{ marginBottom: 10 }}>
       {t('The file doesn’t say which unit it uses, so numbers are imported as they are.')}
     </div>}
     {have > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
@@ -539,11 +552,18 @@ function ImportSummary({ parsed, close }) {
     {!isBW && parsed.skipped > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
       {tn('{0} row skipped (couldn’t read it)', '{0} rows skipped (couldn’t read them)', parsed.skipped)}
     </div>}
-    {!isBW && parsed.unmatchedNames.length > 0 && <>
+    {/* A Liftosaur plan's progression is a script; it arrives as a note on each exercise. */}
+    {plans?.scripted > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
+      {t('Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.')}
+    </div>}
+    {plans && newPlans < plans.routines.length && <div className="small dim" style={{ marginBottom: 10 }}>
+      {tn('{0} routine is already here and will be left alone.', '{0} routines are already here and will be left alone.', plans.routines.length - newPlans)}
+    </div>}
+    {!isBW && unmatched.length > 0 && <>
       <h4 className="sec">{t('Not in the library, so they’re added as your own exercises')}</h4>
       <div className="mchips" style={{ marginBottom: 12 }}>
-        {parsed.unmatchedNames.slice(0, 12).map(n => <span key={n} className="mchip capitalize">{n}</span>)}
-        {parsed.unmatchedNames.length > 12 && <span className="mchip">+{parsed.unmatchedNames.length - 12}</span>}
+        {unmatched.slice(0, 12).map(n => <span key={n} className="mchip capitalize">{n}</span>)}
+        {unmatched.length > 12 && <span className="mchip">+{unmatched.length - 12}</span>}
       </div>
     </>}
 
@@ -555,16 +575,19 @@ function ImportSummary({ parsed, close }) {
   </>
 }
 
-/** Read a CSV/XML export, then show what it would do. */
+/** Read a CSV/XML/JSON export, then show what it would do. */
 export function importFromApp(file, onDone) {
   const rd = new FileReader()
   rd.onload = () => {
     let parsed
-    try { parsed = parseImport(String(rd.result), { unit: S().unit, customEx: S().customEx }) }
+    try { parsed = parseImportFile(String(rd.result), { unit: S().unit, customEx: S().customEx }) }
     catch (e) { toast(t('Could not read that file')); return }
     if (parsed.error === 'empty') { toast(t('That file is empty')); return }
+    // It looks like that app's export but does not read as one: say so rather than guess.
+    if (parsed.error === 'format') { toast(t('This looks like a {0} export, but we couldn’t read it. Nothing was imported.', parsed.app)); return }
+    if (parsed.error === 'opengym') { toast(t('That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.')); return }
     if (parsed.error) { toast(t("We don't recognise that file's columns. Check the docs for supported apps.")); return }
-    if (parsed.kind === 'bodyweight' ? !parsed.bodyweight.length && !parsed.measurements?.length : !parsed.workouts.length) {
+    if (parsed.kind === 'bodyweight' ? !parsed.bodyweight.length && !parsed.measurements?.length : !parsed.workouts.length && !parsed.routines?.routines?.length) {
       toast(t('Nothing to import from that file')); return
     }
     ui().openSheet(close => <ImportSummary parsed={parsed} close={close} />)

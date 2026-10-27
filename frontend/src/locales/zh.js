@@ -637,7 +637,12 @@ export default {
   'Shins': '胫前肌',
   // --- import from another app ---
   'Import from another app': '从其他应用导入',
-  'FitNotes, Strong, Hevy, GymMane, openGym CSV, or body weight from Apple Health': 'FitNotes、Strong、Hevy、GymMane、openGym CSV，或来自 Apple 健康的体重',
+  'Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health': 'Strong、Hevy、FitNotes、Liftosaur、Fitbod、StrongLifts、JEFIT 等，或来自 Apple 健康的体重',
+  'Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.': 'Liftoscript 进阶规则会作为备注随动作一起导入。openGym 不会运行它们。',
+  '{0} routine is already here and will be left alone.': '{0} 个训练计划已存在，将保持不变。',
+  '{0} routines are already here and will be left alone.': '{0} 个训练计划已存在，将保持不变。',
+  'This looks like a {0} export, but we couldn’t read it. Nothing was imported.': '这看起来是 {0} 的导出文件，但我们无法读取。没有导入任何内容。',
+  'That’s an openGym backup or plan file. Use Import backup, or import it on the Plan screen.': '这是 openGym 的备份或计划文件。请使用“导入备份”，或在计划页面导入。',
   'Import from {0}': '从 {0} 导入',
   'Import history': '导入历史记录',
   'Weigh-ins': '称重记录',
