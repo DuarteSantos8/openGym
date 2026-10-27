@@ -7,7 +7,7 @@ export const LANGS = {
   en: 'English', de: 'Deutsch', 'de-CH': 'Deutsch (Schweiz)', es: 'Español', fr: 'Français',
   it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
   tr: 'Türkçe', ru: 'Русский', uk: 'Українська', zh: '简体中文', 'zh-TW': '繁體中文',
-  ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', ar: 'العربية'
+  ko: '한국어', hi: 'हिन्दी', bn: 'বাংলা', th: 'ไทย', hu: 'Magyar', sv: 'Svenska', ar: 'العربية'
 }
 // Languages with exercise instructions / names, generated from catalogue/i18n by
 // scripts/catalogue/build.mjs. A pack can be partial; what it lacks shows in English.
@@ -18,7 +18,7 @@ export const RTL_LANGS = new Set(['ar'])
 export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
-  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', ar: 'ar-u-nu-latn'
+  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', sv: 'sv-SE', ar: 'ar-u-nu-latn'
 }
 
 // Locales derived from another language by a pure text transform rather than carried as their
@@ -214,8 +214,15 @@ export const exerciseNameFor = ex => {
   return translated.toLocaleLowerCase(lang) === ex.n.toLocaleLowerCase('en')
       || !enParens
     ? translated
-    : `${translated} (${ex.n})`
+    : `${translated} ${englishInParens(ex.n)}`
 }
+
+// In a right-to-left language the English title in brackets is a left-to-right run inside
+// right-to-left text. Left loose, its closing bracket took the paragraph's direction wherever the
+// name broke across two lines, and the second line began with it turned round: "(Lunge". A
+// first-strong isolate (U+2068 … U+2069) lays the brackets out with the words they hold. The marks
+// are invisible and travel with the name to the watch, the widgets and Apple Health.
+const englishInParens = n => (RTL_LANGS.has(baseLang(lang)) ? `\u2068(${n})\u2069` : `(${n})`)
 
 // Exercise-name packs written in the language's own casing. German capitalises its nouns and
 // lower-cases the adjectives in front of them ("Assistiertes hängendes Knieheben"), which

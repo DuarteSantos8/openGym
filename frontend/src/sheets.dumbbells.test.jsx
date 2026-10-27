@@ -45,6 +45,25 @@ describe('dumbbell inventory sheet', () => {
     expect(S().dumbbells.kg.weights).toEqual([])
   })
 
+  // Discord (deamondo): an empty list means any weight, so owning none is a switch of its own.
+  it('says "I own no dumbbells" with a switch, stamped, and keeps the list for later', () => {
+    useStore.setState(s => ({ S: { ...s.S, dumbbells: { kg: { weights: [10, 12], _ts: 1 } } } }))
+    act(() => dumbbellInventorySheet())
+    const host = mountTopSheet()
+    const sw = () => host.querySelector('[role="switch"], input[type="checkbox"]')
+    expect(host.textContent).toContain('I own no dumbbells')
+    expect(chips(host)).toHaveLength(2)
+    act(() => sw().click())
+    expect(S().dumbbells.none).toEqual({ on: true, _ts: expect.any(Number) })
+    // Nothing to list while you own none; the list itself stays.
+    expect(chips(host)).toHaveLength(0)
+    expect(button(host, 'Fill in')).toBeUndefined()
+    expect(S().dumbbells.kg.weights).toEqual([10, 12])
+    act(() => sw().click())
+    expect(S().dumbbells.none.on).toBe(false)
+    expect(chips(host)).toHaveLength(2)
+  })
+
   it('adds a typed weight in order and keeps the other unit alone', () => {
     useStore.setState(s => ({ S: { ...s.S, dumbbells: { kg: { weights: [3, 9], _ts: 1 }, lb: { weights: [10], _ts: 1 } } } }))
     act(() => dumbbellInventorySheet())

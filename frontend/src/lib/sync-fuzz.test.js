@@ -393,6 +393,10 @@ function run(seed, opts = {}) {
 function sortKeys(x) { if (Array.isArray(x)) return x.map(sortKeys); if (x && typeof x === 'object') return Object.fromEntries(Object.keys(x).sort().map(k => [k, sortKeys(x[k])])); return x }
 
 
+// The seeds are fixed so a failure reproduces; the weekly robustness run (audit.yml) sets
+// SYNC_FUZZ_SEED_BASE to explore new ones. A failure there names its seed: put it in a test.
+const SEED_BASE = Number(process.env.SYNC_FUZZ_SEED_BASE) || 0
+
 const CASES = [
   { name: 'two or three devices, short gaps', seeds: 300, opts: {} },
   { name: 'three devices, long offline gaps', seeds: 300, opts: { ops: 150, replicas: 3, gap: 300000 } },
@@ -404,11 +408,11 @@ describe('sync fuzz: clocks up to a day apart still converge, with nothing dupli
   it('three devices, skewed clocks', () => {
     const bad = []
     for (let s = 1; s <= 200; s++) {
-      const { problems } = run(s, { skew: 86400000, ops: 80, replicas: 3 })
+      const { problems } = run(SEED_BASE + s, { skew: 86400000, ops: 80, replicas: 3 })
       // which of two changes neither device had seen comes last is the clocks' call; only
       // convergence and duplicates are checked here (the ordering is checked without skew)
       const hard = problems.filter(p => p.startsWith('no-converge') || p.startsWith('dup'))
-      if (hard.length) bad.push(`seed ${s}: ${hard.join('; ')}`)
+      if (hard.length) bad.push(`seed ${SEED_BASE + s}: ${hard.join('; ')}`)
     }
     expect(bad.slice(0, 5)).toEqual([])
   }, 120000)
@@ -419,8 +423,8 @@ describe('sync fuzz: every device converges on every last change', () => {
     it(c.name, () => {
       const bad = []
       for (let s = 1; s <= c.seeds; s++) {
-        const { problems } = run(s, c.opts)
-        if (problems.length) bad.push(`seed ${s}: ${problems.slice(0, 3).join('; ')}`)
+        const { problems } = run(SEED_BASE + s, c.opts)
+        if (problems.length) bad.push(`seed ${SEED_BASE + s}: ${problems.slice(0, 3).join('; ')}`)
       }
       expect(bad.slice(0, 5)).toEqual([])
     }, 120000)

@@ -6,6 +6,7 @@ import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass, instrFor, instrTranslated, getLang } from '../lib/i18n.js'
 import { applyGuidedWarmupAction, pendingGuidedWarmup, warmupRemainingMs } from '../lib/guided-warmup-session.js'
 import { confirmSheet } from '../sheets.jsx'
+import { markDiscarded } from '../lib/watch-sync.js'
 import Media from '../components/Media.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -39,6 +40,7 @@ export default function GuidedWarmup() {
     onConfirm: () => {
       const current = useStore.getState().S.active
       if (current?.id !== sessionId) return
+      markDiscarded(sessionId)
       update(s => { if (s.active?.id === sessionId) s.active = null })
       useUI.getState().stopRest()
       useUI.getState().stopWork()

@@ -9,6 +9,9 @@
     "forearms"
   ],
   "category": "calisthenics",
+  "needs": [
+    "pull-up bar"
+  ],
   "description": "Hanging beneath a bar, you pull your chest up with a straight body. This version changes the grip or angle. It builds the upper back and biceps.",
   "instructions": [
     "Set up a bar at waist height on a Smith machine or use a suspension trainer.",

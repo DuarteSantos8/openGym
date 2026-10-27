@@ -14,7 +14,7 @@ import { CONTRACT } from './payload.js';
 import { buildPrompt, buildPromptParts } from './prompt.js';
 import { SCHEMAS } from './schemas.js';
 import { extractJSON, contractOK } from './parse.js';
-import { validatePlan, validateReview, validateDebrief } from './validate.js';
+import { validatePlan, validateReview, validateDebrief, validateAsk } from './validate.js';
 import { isChangeList, changesOntoPlan } from './refine-changes.js';
 
 /**
@@ -39,7 +39,12 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
   if (r.spawnError) return { ok: false, errorClass: 'missing', detail: r.stderr?.slice(0, 300) };
   if (r.code !== 0) {
     const err = (r.stderr || r.text || '').toLowerCase();
-    const authish = /auth|unauthor|api key|credential|token|401|403|login/.test(err);
+    // An HTTP adapter's stderr starts with the status, and the status is the answer: once a
+    // provider's own words ride along ("the input token count exceeds…"), a word match would
+    // call a budget error a rejected key. The CLIs have no status, so they keep the words.
+    const status = /^(\d{3})\b/.exec(err);
+    const authish = status ? status[1] === '401' || status[1] === '403'
+      : /auth|unauthor|api key|credential|token|401|403|login/.test(err);
     return { ok: false, errorClass: authish ? 'auth' : 'provider', detail: (r.stderr || r.text || '').slice(0, 300) };
   }
 
@@ -62,17 +67,20 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
   const customIds = (payload.library || []).filter(e => e && e.custom).map(e => e.id);
   const equipment = payload.coachProfile?.equipment || [];
   const offered = new Set((payload.library || []).map(e => e && e.id));
+  const noDumbbells = payload.noDumbbells === true;
   // A revision answered as a review-style change list (#471) is laid onto the plan it revises
   // when every change can be placed exactly, and then judged as the plan it now is.
   const answer = kind === 'create' && isChangeList(parsed.value)
     ? changesOntoPlan(payload.refine?.previous, parsed.value) || parsed.value
     : parsed.value;
   const checked = kind === 'review'
-    ? validateReview(parsed.value, payload.plan, { customIds, equipment, offered })
+    ? validateReview(parsed.value, payload.plan, { customIds, equipment, offered, noDumbbells })
     : kind === 'debrief'
       ? validateDebrief(parsed.value)
+      : kind === 'ask'
+      ? validateAsk(parsed.value)
       : validatePlan(answer, {
-      customIds, equipment, offered,
+      customIds, equipment, offered, noDumbbells,
       workingWeights: payload.history?.workingWeights,
       daysPerWeek: payload.coachProfile?.daysPerWeek
     });

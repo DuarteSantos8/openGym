@@ -35,7 +35,10 @@ describe('planPrintHTML', () => {
     expect(body).not.toContain('Week schedule')
     expect(body).not.toContain('Weekly Training Plan')
     expect(body).not.toContain('Pull day')
-    expect(body).toContain('3 exercises · Ana ·')
+    // The masthead: the openGym logo, who it is for, the count under the title.
+    expect(html).toContain('class="logo-mark"')
+    expect(html).toMatch(/<div class="mast-meta"><b>Ana<\/b><br>/)
+    expect(html).toMatch(/<div class="facts">3 exercises<\/div>/)
     expect(body).toContain('barbell bench press')
     expect(body).toContain('3 × 5 · 80 kg')
     expect(body).toContain('pause on the chest')
@@ -113,9 +116,73 @@ describe('planPrintHTML guided warm-up', () => {
     expect(body.indexOf('Warm-up')).toBeLessThan(body.indexOf('barbell bench press'))
   })
 
+  it('keeps preparation movements whole with the heading and reserves numbers and boxes for working sets', () => {
+    const weekly = planPrintHTML(withWarmup(true), '')
+    expect(weekly).toMatch(/<div class="warmup"><div class="keep"><h3 class="sec-h">Routines<\/h3><div class="r-head"><h2>Push day<\/h2>[^]*?<h3 class="warmup-title">Warm-up<\/h3>[^]*?arm circles/)
+    expect(weekly.match(/<div class="keep">/g)).toHaveLength(5)
+    expect(weekly.match(/<h2>Push day<\/h2>/g)).toHaveLength(1)
+    const single = planPrintHTML(withWarmup(true), '', { routineId: 'push' })
+    expect(single.match(/<div class="ex-num">[123]<\/div>/g)).toHaveLength(3)
+    expect(single.match(/<div class="ticks">/g)).toHaveLength(3)
+    const preparation = single.match(/<div class="warmup">([^]*?)<\/div><div class="keep"><div class="ex"><div class="ex-num">/)[1]
+    expect(preparation).not.toContain('class="ticks"')
+    expect(preparation).not.toContain('class="ex-num"')
+  })
+
+  it('uses the upstream translated-name layout and page probes for preparation too', () => {
+    _setLangState('de', {}, null, { '3905': 'Armkreisen' })
+    try {
+      const html = planPrintHTML(withWarmup(true), '', { routineId: 'push', probe: true })
+      expect(html).toContain('<div class="ex-n ">Armkreisen</div><div class="ex-en">arm circles</div>')
+      expect(html).toContain('<i class="probe">~s:r0-w0~</i>')
+      expect(html).toContain('<i class="probe">~e:r0-w1~</i>')
+    } finally { _setLangState('en', {}, null, null) }
+  })
+
   it('omits disabled preparation from the printable workout', () => {
     const html = planPrintHTML(withWarmup(false), '', { routineId: 'push' })
     expect(html).not.toContain('<div class="warmup">')
     expect(text(html)).not.toContain('arm circles')
+  })
+})
+
+// The redesign (v1.4.3): what keeps a printout readable across pages.
+describe('planPrintHTML page breaks', () => {
+  const many = { unit: 'kg', week: { 1: ['r'] }, routines: [{ id: 'r', name: 'Long day', ex: Array.from({ length: 6 }, (_, i) => ({ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 60 + i, ...(i === 2 || i === 3 ? { sg: 's' } : {}) })) }] }
+
+  it('keeps every exercise and superset in a block of its own, and the routine heading with the first one', () => {
+    const html = planPrintHTML(many, '')
+    // 6 exercises, two of them a superset: 5 blocks, plus the week table.
+    expect(html.match(/<div class="keep">/g)).toHaveLength(6)
+    // The routine heading is inside the first exercise block, never on its own.
+    expect(html).toMatch(/<div class="keep"><h3 class="sec-h">Routines<\/h3><div class="r-head"><h2>Long day<\/h2>[^]*?<div class="ex">/)
+    // The whole routine is not one unbreakable block any more (it left pages blank).
+    expect(html).not.toMatch(/\.routine \{[^}]*break-inside: avoid/)
+  })
+
+  it('numbers the exercises and gives the single-routine sheet a box per set', () => {
+    const html = planPrintHTML(many, '', { routineId: 'r' })
+    expect(html.match(/<div class="ex-num">/g)).toHaveLength(6)
+    expect(html.match(/<div class="ticks">(<i><\/i>){3}<\/div>/g)).toHaveLength(6)
+    expect(planPrintHTML(many, '')).not.toContain('class="ticks"')
+  })
+
+  it('puts the English title of a translated name on its own line instead of in parentheses', () => {
+    _setLangState('de', {}, null, { '0025': 'Bankdrücken mit Langhantel' })
+    try {
+      const html = planPrintHTML(many, '', { routineId: 'r' })
+      expect(html).toContain('>Bankdrücken mit Langhantel <span class="part">')
+      expect(html).toContain('<div class="ex-en">barbell bench press</div>')
+    } finally { _setLangState('en', {}, null, null) }
+  })
+
+  it('carries page numbers in the reader’s language and no probe marks unless asked', () => {
+    _setLangState('de', { 'Page {0} of {1}': 'Seite {0} von {1}' }, null, null)
+    try {
+      const html = planPrintHTML(many, '')
+      expect(html).toContain('@bottom-right { content: "Seite " counter(page) " von " counter(pages); }')
+      expect(html).not.toContain('class="probe"')
+      expect(planPrintHTML(many, '', { probe: true })).toContain('<i class="probe">~s:')
+    } finally { _setLangState('en', {}, null, null) }
   })
 })

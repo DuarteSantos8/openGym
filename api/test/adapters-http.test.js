@@ -16,7 +16,9 @@ const gemini = (await import('../coach/core/adapters/gemini.js')).default;
 const compatible = (await import('../coach/core/adapters/compatible.js')).default;
 const { attemptOnce } = await import('../coach/core/pipeline.js');
 const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders } = await import('../coach/core/providers.js');
+const { modelSubstitute } = await import('../coach/core/adapters/http.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
+const { REVIEW_SCHEMA } = await import('../coach/core/schemas.js');
 
 /** A fetch that records what it was asked and answers from a script. Like the real one, it
  *  refuses an already-aborted signal without putting anything on the wire. */
@@ -170,9 +172,10 @@ test('compatible: the 404 fallback keeps the first error when neither form answe
     ? { status: 404, body: { error: { message: 'model "nope" not found, try pulling it first' } } }
     : { status: 404, body: '404 page not found' }));
   const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'nope', fetch: f });
-  assert.deepEqual(f.calls.map(c => c.url), ['http://ollama.lan:11434/v1/chat/completions', 'http://ollama.lan:11434/chat/completions']);
+  assert.deepEqual(f.calls.slice(0, 2).map(c => c.url), ['http://ollama.lan:11434/v1/chat/completions', 'http://ollama.lan:11434/chat/completions']);
   assert.equal(r.code, 1);
-  assert.match(r.stderr, /^404 model "nope" not found/);
+  // (then the model fallback asks for the list, which this endpoint cannot give: #758)
+  assert.match(r.stderr, /^404 the model "nope" is not available to this key: model "nope" not found/);
   // …and a failed fallback teaches nothing: the next request still starts at /v1.
   const g = fakeFetch([ok({ data: [] })]);
   await compatible.models(cfgCompat, {}, { fetch: g });
@@ -186,8 +189,8 @@ test('compatible: the 404 fallback keeps the first error when neither form answe
   // OpenAI itself always lives at /v1; a 404 there is a real answer, not a missing prefix.
   const o = fakeFetch([{ status: 404, body: { error: { message: 'The model `x` does not exist' } } }]);
   const ro = await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'x', fetch: o });
-  assert.equal(o.calls.length, 1);
-  assert.match(ro.stderr, /^404 The model/);
+  assert.ok(o.calls.every(c => c.url.startsWith('https://api.openai.com/v1/')), 'never the bare form');
+  assert.match(ro.stderr, /^404 the model "x" is not available to this key \(and neither is "gpt-[^"]+"\): The model/);
 });
 
 test('compatible: no endpoint configured, or no model chosen, is a clean failure rather than a request', async () => {
@@ -209,6 +212,179 @@ test('compatible: a server that rejects JSON mode gets the same request once mor
   assert.equal(f.calls.length, 2);
   assert.ok('response_format' in f.calls[0].body);
   assert.ok(!('response_format' in f.calls[1].body));
+});
+
+// OpenRouter in front of Gemini, as it really answers a schema Gemini cannot serve: the
+// provider's words are only in metadata.raw (JSON in a string), the outer message is generic.
+const openRouterWrapped = providerMessage => ({
+  status: 400,
+  body: { error: { message: 'Provider returned error', code: 400, metadata: {
+    raw: JSON.stringify({ error: { code: 400, message: providerMessage, status: 'INVALID_ARGUMENT' } }),
+    provider_name: 'Google AI Studio'
+  } } }
+});
+
+test('compatible: a schema the provider cannot serve, wrapped by OpenRouter, is retried once in plain JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? openRouterWrapped('The specified schema produces a constraint that has too many states for serving.')
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const schema = { type: 'object', properties: { coach_contract: { type: 'integer' } } };
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema, env: {}, model: 'google/gemini-2.5-flash-lite', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.deepEqual(f.calls[1].body.response_format, { type: 'json_object' });
+});
+
+test('a provider error wrapped by OpenRouter reaches stderr in the provider’s own words', async () => {
+  const f = fakeFetch([openRouterWrapped('Request contains an invalid argument: temperature out of range.')]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
+  assert.equal(r.code, 1);
+  assert.equal(f.calls.length, 1, 'not a JSON-mode problem, so no second request');
+  assert.ok(r.stderr.includes('Provider returned error'), r.stderr);
+  assert.ok(r.stderr.includes('temperature out of range'), r.stderr);
+});
+
+test('a wrapped provider error that mentions tokens is still "provider", not "auth"', async () => {
+  const f = fakeFetch([openRouterWrapped('The input token count exceeds the maximum number of tokens allowed.')]);
+  const payload = { plan: { routines: [], week: {} } };
+  const cls = await attemptOnce({ adapter: openai, cfg: {}, kind: 'review', payload, invokeOpts: { env, fetch: f } }, null);
+  assert.equal(cls.errorClass, 'provider', cls.detail);
+  assert.ok(cls.detail.includes('token count'), cls.detail);
+});
+
+test('a wrapped provider error whose raw text is not JSON is passed through as it is', async () => {
+  const f = fakeFetch([{ status: 400, body: { error: { message: 'Provider returned error', metadata: { raw: 'upstream said no' } } } }]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
+  assert.ok(r.stderr.includes('upstream said no'), r.stderr);
+});
+
+test('a validator that rejects the flat schema on additionalProperties gets one strict copy of the same request (#701)', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { type: 'invalid_request_error', message: "output_config.format.schema: For 'object' type, 'additionalProperties' must be explicitly set to false" } } }
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', schema: REVIEW_SCHEMA, fetch: f });
+  assert.equal(r.code, 0);
+  assert.equal(f.calls.length, 2);
+  const first = f.calls[0].body.response_format.json_schema.schema;
+  const second = f.calls[1].body.response_format.json_schema.schema;
+  // the strict copy says what the validator asked for, at every level it walks
+  assert.equal(first.additionalProperties, undefined);
+  assert.equal(second.additionalProperties, false);
+  assert.equal(second.properties.evidence.additionalProperties, false);
+  assert.equal(second.properties.changes.items.additionalProperties, false);
+  assert.equal(second.properties.changes.items.properties.target.additionalProperties, false);
+  // union types that can be an object say it too, so the walker has no gap to trip on
+  assert.equal(second.properties.changes.items.properties.before.additionalProperties, false);
+  // nothing else about the request moved — the added marker is the only difference at
+  // the top level — and the flat schema the grammar converters need is still the one
+  // stored in schemas.js
+  assert.deepEqual(Object.keys(second), [...Object.keys(first), 'additionalProperties']);
+  assert.equal(second.type, first.type);
+  assert.deepEqual(second.required, first.required);
+  assert.deepEqual(Object.keys(second.properties), Object.keys(first.properties));
+  assert.equal(f.calls[1].body.model, f.calls[0].body.model);
+  assert.deepEqual(f.calls[1].body.messages, f.calls[0].body.messages);
+  assert.equal(REVIEW_SCHEMA.additionalProperties, undefined);
+  assert.equal(REVIEW_SCHEMA.properties.evidence.additionalProperties, undefined);
+});
+
+test('a validator that rejects the strict copy as well still falls back to plain JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: "output_config.format.schema: For 'object' type, 'additionalProperties' must be explicitly set to false" } } }
+    : n === 2
+      ? { status: 400, body: { error: { message: 'response_format is not supported' } } }
+      : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', schema: REVIEW_SCHEMA, fetch: f });
+  assert.equal(r.code, 0);
+  assert.equal(f.calls.length, 3);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.equal(f.calls[1].body.response_format.type, 'json_schema');
+  assert.equal(f.calls[1].body.response_format.json_schema.schema.additionalProperties, false);
+  assert.deepEqual(f.calls[2].body.response_format, { type: 'json_object' });
+});
+
+test('an additionalProperties complaint about a request with no schema never invents a strict schema', async () => {
+  const f = fakeFetch([{ status: 400, body: { error: { message: "output_config.format.schema: For 'object' type, 'additionalProperties' must be explicitly set to false" } } }]);
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', fetch: f });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /^400 /);
+  // the plain-JSON fallback may still drop JSON mode once; a json_schema never goes out
+  assert.ok(f.calls.every(c => !c.body.response_format || c.body.response_format.type !== 'json_schema'));
+  assert.ok(f.calls.length <= 2);
+});
+
+// Gemini as it answers a key made after a model was retired for new users (#758).
+const GEMINI_GONE = { status: 404, body: { error: { code: 404, status: 'NOT_FOUND', message: 'This model models/gemini-2.5-pro is no longer available to new users. Please update your code to use models/gemini-3.1-pro-preview for the latest features and improvements.' } } };
+const geminiList = names => ok({ models: names.map(n => ({ name: 'models/' + n, supportedGenerationMethods: ['generateContent'] })) });
+const geminiAnswer = ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] });
+const geminiAt = host => ({ provider: 'gemini', providerOptions: { gemini: { baseUrl: `https://${host}` } } });
+
+test('Gemini: the default is a current model, not one Google refuses new keys (#758)', () => {
+  assert.doesNotMatch(HTTP_PROVIDERS.gemini.defaultModel, /^gemini-(1|2)\./);
+});
+
+test('a model the key cannot use is swapped once for the provider default it lists, and remembered (#758)', async () => {
+  const cfg = geminiAt('g1.test');
+  const f = fakeFetch((n, url) => url.includes('/models?') ? geminiList(['gemini-2.5-pro', 'gemini-embedding-001', HTTP_PROVIDERS.gemini.defaultModel])
+    : url.includes('gemini-2.5-pro') ? GEMINI_GONE : geminiAnswer);
+  const r = await gemini.invoke({ cfg, prompt: 'P', env, model: 'gemini-2.5-pro', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.model, HTTP_PROVIDERS.gemini.defaultModel);
+  assert.equal(f.calls.length, 3);
+  assert.ok(f.calls[2].url.includes(`/models/${HTTP_PROVIDERS.gemini.defaultModel}:generateContent`), f.calls[2].url);
+  assert.equal(modelSubstitute('gemini', cfg, 'gemini-2.5-pro'), HTTP_PROVIDERS.gemini.defaultModel);
+  // the repair round and the next job go straight to the model that answered
+  const g = fakeFetch(() => geminiAnswer);
+  const again = await gemini.invoke({ cfg, prompt: 'P', env, model: 'gemini-2.5-pro', fetch: g });
+  assert.equal(again.code, 0);
+  assert.equal(g.calls.length, 1);
+  assert.ok(g.calls[0].url.includes(HTTP_PROVIDERS.gemini.defaultModel));
+});
+
+test('without the default in the list, the newest plain Flash the key lists is the one tried (#758)', async () => {
+  const f = fakeFetch((n, url) => url.includes('/models?')
+    ? geminiList(['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3.1-pro-preview', 'gemini-3.6-flash', 'gemini-3.8-flash-tts', 'gemini-3.5-flash-lite'])
+    : url.includes('gemini-2.5-pro') ? GEMINI_GONE : geminiAnswer);
+  const r = await gemini.invoke({ cfg: geminiAt('g2.test'), prompt: 'P', env, model: 'gemini-2.5-pro', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.model, 'gemini-3.6-flash');
+});
+
+test('when no other model works either, the error names the model and says where to change it (#758)', async () => {
+  const f = fakeFetch((n, url) => url.includes('/models?') ? geminiList(['gemini-2.5-pro', 'gemini-embedding-001']) : GEMINI_GONE);
+  const r = await gemini.invoke({ cfg: geminiAt('g3.test'), prompt: 'P', env, model: 'gemini-2.5-pro', fetch: f });
+  assert.equal(r.code, 1);
+  assert.equal(f.calls.length, 2, 'the list had nothing else to try, so no second job request');
+  assert.match(r.stderr, /^404 the model "gemini-2\.5-pro" is not available to this key: This model models\/gemini-2\.5-pro is no longer available/);
+  assert.match(r.stderr, /Coach settings/);
+  const payload = { plan: { routines: [], week: {} } };
+  const cls = await attemptOnce({ adapter: gemini, cfg: geminiAt('g3.test'), kind: 'review', payload, model: 'gemini-2.5-pro', invokeOpts: { env, fetch: f } }, null);
+  assert.equal(cls.errorClass, 'provider');
+});
+
+test('the swap is one try: a substitute that is refused as well ends the job, naming it (#758)', async () => {
+  const f = fakeFetch((n, url) => url.endsWith('/v1/models') ? ok({ data: [{ id: 'claude-old' }, { id: 'claude-older' }] })
+    : { status: 404, body: { type: 'error', error: { type: 'not_found_error', message: 'model: whatever' } } });
+  const r = await anthropic.invoke({ cfg: { providerOptions: { anthropic: { baseUrl: 'https://a1.test' } } }, prompt: 'P', env, model: 'claude-old', fetch: f });
+  assert.equal(r.code, 1);
+  const posts = f.calls.filter(c => c.method === 'POST');
+  assert.deepEqual(posts.map(c => c.body.model), ['claude-old', 'claude-older']);
+  assert.match(r.stderr, /^404 the model "claude-old" is not available to this key \(and neither is "claude-older"\)/);
+});
+
+test('a 400 that names an unknown model (OpenRouter) is a model problem too; other 400s are not (#758)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://openrouter.test/api/v1' } } };
+  const f = fakeFetch((n, url, init) => init.method === 'GET' ? ok({ data: [{ id: 'anthropic/claude-x' }, { id: 'google/gemini-3.8-flash' }, { id: 'openai/gpt-x' }] })
+    : JSON.parse(init.body).model === 'google/gemini-2.5-pro' ? { status: 400, body: { error: { message: 'google/gemini-2.5-pro is not a valid model ID' } } }
+      : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'google/gemini-2.5-pro', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.model, 'google/gemini-3.8-flash', 'the same vendor as the refused name');
+  const h = fakeFetch([{ status: 400, body: { error: { message: 'temperature must be between 0 and 2' } } }]);
+  const rh = await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-x', fetch: h });
+  assert.equal(h.calls.length, 1);
+  assert.match(rh.stderr, /^400 temperature/);
 });
 
 test('a missing key is "missing", like an absent CLI — no request is made', async () => {
@@ -266,11 +442,17 @@ test('an abort that lands during a retry pause sends nothing more and ends as a 
   assert.equal(r.timedOut, true);
 });
 
-test('a body that is not JSON on an error still yields a readable stderr', async () => {
+test('a body that is not JSON on an error yields its status, never the body itself', async () => {
   const f = fakeFetch([{ status: 502, body: '<html>bad gateway</html>' }]);
   const r = await gemini.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
   assert.equal(r.code, 1);
-  assert.match(r.stderr, /^502 .*bad gateway/);
+  assert.match(r.stderr, /^502 \(the endpoint sent no error message\)$/);
+  // The model list too: an admin pointing a compatible endpoint at a page inside the network
+  // learns the status, not the page.
+  const g = fakeFetch([{ status: 403, body: 'router admin: secret-ssid' }, { status: 403, body: 'router admin: secret-ssid' }]);
+  const m = await compatible.models(cfgCompat, {}, { fetch: g });
+  assert.equal(m.ok, false);
+  assert.doesNotMatch(m.error, /secret/);
 });
 
 test('an answer cut off at the output limit fails as "provider", not as a half-parsed proposal', async () => {

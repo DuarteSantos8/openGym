@@ -1,9 +1,10 @@
-// The Capacitor side of the rest alert (#296). The iOS app has no RestAlert plugin, and the
-// listener this file adds at startup used to reject there with nothing to catch it. On Android
+// The Capacitor side of the rest alert (#296). Both phone apps have a RestAlert plugin
+// (RestAlertPlugin.java, RestAlertPlugin.swift); anywhere else nothing may be registered, and the
+// listener this file adds at startup must not reject with nothing to catch it. On Android
 // the plugin is a Capacitor proxy that answers `then` with a native call that never settles, so
 // it must never become the value of a promise (the Coach hang, #42): here that would hang every
 // rest alert call.
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 
 const h = vi.hoisted(() => {
@@ -14,14 +15,14 @@ const h = vi.hoisted(() => {
 })
 
 // Shaped like the proxy registerPlugin() returns: every property is a native method, `then`
-// included, and that one never calls back. Off Android every method rejects, as Capacitor's do
+// included, and that one never calls back. Off the phone every method rejects, as Capacitor's do
 // for a plugin the platform does not have.
 const pluginProxy = () => new Proxy({}, {
   get: (_, prop) => {
     if (prop === 'then') return () => new Promise(() => {})
     return (...args) => {
       h.calls.push(String(prop))
-      if (h.platform !== 'android') return Promise.reject(new Error(`"RestAlert.${String(prop)}()" is not implemented on ${h.platform}`))
+      if (h.platform !== 'android' && h.platform !== 'ios') return Promise.reject(new Error(`"RestAlert.${String(prop)}()" is not implemented on ${h.platform}`))
       return Promise.resolve(prop === 'addListener' ? { remove: async () => {} } : undefined)
     }
   },
@@ -38,6 +39,12 @@ vi.mock('@capacitor/local-notifications', () => ({
   },
 }))
 
+// Transforming what rest-alert.js pulls in (mobile.js → history.js → exercises.js and its 1 MB
+// table) takes seconds on a cold worker, and a busy machine pushed that past the first test's
+// timeout. Done here, while the file is collected, no test is billed for it; vi.resetModules()
+// below runs the modules again but keeps their transform, so every import stays a fresh start.
+await Promise.all([import('./mobile.js'), import('./accent.js'), import('./rest-sounds.js')])
+
 const settle = async () => { for (let i = 0; i < 10; i++) await new Promise(r => setTimeout(r, 0)) }
 
 const unhandled = []
@@ -53,14 +60,28 @@ beforeEach(() => {
   unhandled.length = 0
   process.on('unhandledRejection', onUnhandled)
 })
-afterAll(() => {
-  process.off('unhandledRejection', onUnhandled)
-  vi.unstubAllEnvs()
-})
+// One listener per test, taken off after it: added in every beforeEach and only removed in
+// afterAll, twenty of them tripped Node's MaxListeners warning in a full run.
+afterEach(() => { process.off('unhandledRejection', onUnhandled) })
+afterAll(() => { vi.unstubAllEnvs() })
 
 describe('the rest alert in the iOS app', () => {
-  it('registers nothing, rejects nothing and leaves the end to the server push', async () => {
+  it('schedules the end on the phone, like Android, and rejects nothing', async () => {
     h.platform = 'ios'
+    const alert = await import('./rest-alert.js')
+    await expect(alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })).resolves.toBe(true)
+    alert.holdRestAlert(60, 90)
+    alert.disarmRestAlert()
+    await settle()
+    expect(h.registerPlugin).toHaveBeenCalledTimes(1)
+    expect(h.calls).toEqual(expect.arrayContaining(['schedule', 'hold', 'cancel']))
+    expect(unhandled).toEqual([])
+  })
+})
+
+describe('the rest alert in a browser shell', () => {
+  it('registers nothing, rejects nothing and leaves the end to the server push', async () => {
+    h.platform = 'web'
     const alert = await import('./rest-alert.js')
     await expect(alert.armRestAlert(Date.now() + 90_000, { totalSec: 90 })).resolves.toBe(false)
     alert.holdRestAlert(60, 90)
@@ -166,8 +187,8 @@ describe('the alarm buzz in the Android app', () => {
     expect(calls.buzz).toHaveLength(1)
   })
 
-  it('answers false in the iOS app without touching any plugin', async () => {
-    h.platform = 'ios'
+  it('answers false in a browser shell without touching any plugin', async () => {
+    h.platform = 'web'
     const alert = await import('./rest-alert.js')
     await expect(alert.buzzAsAlarm([200, 100, 200])).resolves.toBe(false)
     expect(h.registerPlugin).not.toHaveBeenCalled()
@@ -266,14 +287,19 @@ describe('the notification permission never holds the rest alarm back', () => {
         : async () => ({ remove: async () => {} }),
     }))
     const alert = await import('./rest-alert.js')
-    alert.holdRestAlert(30, 60)                       // a slow bridge call ahead in the chain
-    const late = alert.armRestAlert(Date.now() + 30, { totalSec: 1 })
-    await new Promise(r => setTimeout(r, 60))
-    release()
-    await expect(late).resolves.toBe(false)
-    expect(schedule).not.toHaveBeenCalled()
-    await expect(alert.armRestAlert(Date.now() + 60_000, { totalSec: 60 })).resolves.toBe(true)
-    expect(schedule).toHaveBeenCalledTimes(1)
+    // Only the clock is faked: the chain runs on real promises. Moving it past the end is what
+    // a slow bridge call does, without sleeping for it.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    try {
+      alert.holdRestAlert(30, 60)                     // a slow bridge call ahead in the chain
+      const late = alert.armRestAlert(Date.now() + 30, { totalSec: 1 })
+      vi.setSystemTime(Date.now() + 60)
+      release()
+      await expect(late).resolves.toBe(false)
+      expect(schedule).not.toHaveBeenCalled()
+      await expect(alert.armRestAlert(Date.now() + 60_000, { totalSec: 60 })).resolves.toBe(true)
+      expect(schedule).toHaveBeenCalledTimes(1)
+    } finally { vi.useRealTimers() }
   })
 
   it('asks once, and after a "Don\'t allow" never again, not even after a restart', async () => {

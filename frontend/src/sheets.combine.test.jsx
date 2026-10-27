@@ -98,4 +98,18 @@ describe('beginWorkout with a routine-id list', () => {
     expect(useStore.getState().S.active).not.toHaveProperty('warmup')
   })
 
+  it('keeps a watch-started session’s identity and time alongside guided preparation', () => {
+    const start = Date.parse('2026-10-26T12:00:00Z')
+    useStore.getState().update(s => {
+      s.routines[0].warmup = { enabled: true, steps: [defaultWarmupStep('3905')] }
+    })
+    act(() => beginWorkout(['strength'], 75, { id: 'watch-start', start }))
+    const active = useStore.getState().S.active
+    expect(active).toMatchObject({ id: 'watch-start', start, d: '2026-10-26', bw: 75, routineIds: ['strength'] })
+    expect(active.warmup).toMatchObject({ status: 'in_progress', current: 0,
+      steps: [{ ...defaultWarmupStep('3905'), status: 'pending' }] })
+    expect(active.entries).toHaveLength(1)
+    expect(active.entries[0].id).toBe(ids[0])
+  })
+
 })

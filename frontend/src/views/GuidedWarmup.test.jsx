@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import GuidedWarmup from './GuidedWarmup.jsx'
 import { createGuidedWarmup } from '../lib/guided-warmup-session.js'
+import { discardedFor } from '../lib/watch-sync.js'
 
 const mock = vi.hoisted(() => ({ S: null, nav: vi.fn(), confirm: vi.fn(), stopRest: vi.fn(), stopWork: vi.fn() }))
 vi.mock('../store/useStore.js', () => {
@@ -41,6 +42,7 @@ beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(1000)
   vi.clearAllMocks()
+  localStorage.clear()
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   mock.S = { active: {
     id: 'session', name: 'Test day', entries: [{ id: '0025', sets: [{ w: 50, r: 8, done: false }] }],
@@ -102,10 +104,12 @@ it('allows discarding preparation and protects a replacement session from a stal
   mock.S.active.id = 'replacement'
   await act(async () => staleConfirmation.onConfirm())
   expect(mock.S.active.id).toBe('replacement')
+  expect(discardedFor()).toEqual([])
   await render()
   await click('Discard workout')
   await act(async () => mock.confirm.mock.calls.at(-1)[0].onConfirm())
   expect(mock.S.active).toBeNull()
+  expect(discardedFor()).toEqual(['replacement'])
   expect(mock.stopWork).toHaveBeenCalledOnce()
   expect(mock.stopRest).toHaveBeenCalledOnce()
   expect(mock.nav).toHaveBeenCalledWith('/home')

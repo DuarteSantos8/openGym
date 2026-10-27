@@ -7,9 +7,9 @@ This guide takes you from "just cloned it" to "using it from my phone over the i
 
 1. [Run it locally](#1-run-it-locally-5-minutes) — five minutes, nothing else needed
 2. [The passkey requirement](#2-understand-the-passkey-requirement-important) — why your phone needs HTTPS
-3. [HTTPS on your own domain](#3-expose-it-over-https-on-your-own-domain) — Cloudflare Tunnel, Caddy, Traefik, nginx
+3. [HTTPS on your own domain](#3-expose-it-over-https-on-your-own-domain) — Cloudflare Tunnel, Caddy, Traefik, nginx, Tailscale Serve
 4. [Multiple users](#4-multiple-users) — admin dashboard, invites, language, activity log, password sign-in
-5. [Fitting into an existing stack](#5-fitting-it-into-an-existing-stack) — ports, subpaths, media uploads
+5. [Fitting into an existing stack](#5-fitting-it-into-an-existing-stack) — ports, [NAS](#on-a-nas-synology-qnap-unraid-truenas), subpaths, media uploads
 6. [Backups](#6-backups)
 7. [Notifications](#7-notifications)
 8. [Updating](#8-updating)
@@ -17,8 +17,8 @@ This guide takes you from "just cloned it" to "using it from my phone over the i
 - [Which passkey providers work](#which-passkey-providers-work)
 - [Troubleshooting](#troubleshooting)
 
-HTTPS on a LAN without a public domain has [its own guide](SELF_HOSTING_HTTPS.md), and so does
-[Kubernetes](SELF_HOSTING_KUBERNETES.md). Short answers to common questions are in the [FAQ](FAQ.md).
+HTTPS on a LAN without a public domain has [its own guide](SELF_HOSTING_HTTPS.md), and so do
+[a Mac at home with Tailscale](SELF_HOSTING_MAC.md) and [Kubernetes](SELF_HOSTING_KUBERNETES.md). Short answers to common questions are in the [FAQ](FAQ.md).
 
 ## 1. Run it locally (5 minutes)
 
@@ -67,7 +67,8 @@ Settings → Account → "Pair the mobile app" in an already signed-in browser t
 sent as an `Authorization` header rather than a cookie. Two consequences worth knowing if
 you're poking at the API directly:
 
-- `POST /api/pair/create` (needs a session) and `POST /api/pair/redeem` (doesn't) implement
+- `POST /api/pair/create` (needs a session plus the owner proof: a passkey, or the current
+  password where that counts) and `POST /api/pair/redeem` (doesn't) implement
   this — see `api/server.js`. The returned token is the exact same signed value a cookie
   carries, so "sign out everywhere" invalidates it too — and a phone has no passkey to sign
   back in with, so every paired phone has to be **paired again** afterwards. The phone says
@@ -79,6 +80,8 @@ you're poking at the API directly:
   header, so the app's own WebView origin can call the API cross-origin. It never sends
   `Access-Control-Allow-Credentials`, so this doesn't let a browser read your cookie session
   from another origin — only bearer-token requests benefit from it.
+- A request body has to be sent as `Content-Type: application/json`; any other type gets a
+  `415`. `curl -d` sends a form type, so a script needs `-H 'Content-Type: application/json'`.
 
 ## 3. Expose it over HTTPS on your own domain
 
@@ -108,6 +111,31 @@ request bodies (nginx does, at 1 MiB by default), allow at least 5 MiB on `/api/
 its whole history in one PUT; the bundled web image already allows 5 MiB, matching the API. The
 photos and videos people attach to their own exercises need more room and more time on
 `/api/media/` — see [Photos and videos of custom exercises](#photos-and-videos-of-custom-exercises).
+
+### Option D — Tailscale Serve (no domain, nothing on the internet)
+
+For an instance only you (or your household) use, with [Tailscale](https://tailscale.com) on the
+phones: Tailscale Serve gives the Docker host an HTTPS address inside your tailnet, with a real
+certificate. No domain to buy, no open ports, and nothing reachable from the internet.
+
+1. In the Tailscale admin console, on the **DNS** page, turn on **MagicDNS** and **HTTPS
+   Certificates**.
+2. On the Docker host:
+
+   ```bash
+   tailscale serve --bg http://127.0.0.1:8080
+   ```
+
+   The first time, it prints a link to enable Serve for your tailnet; open it, approve, and the
+   command carries on. `tailscale serve status` then shows the address, something like
+   `https://myhost.tail1234.ts.net`.
+3. Use that hostname as your domain below (`RP_ID=myhost.tail1234.ts.net`,
+   `ORIGIN=https://myhost.tail1234.ts.net`). Since Tailscale is the only way in, you can also set
+   `WEB_PORT=127.0.0.1:8080` so the container isn't reachable from the rest of your LAN.
+
+Phones need the Tailscale app connected to open openGym. The address comes from the machine's
+name in your tailnet, so renaming the host or moving openGym to another machine changes it, and
+with it `RP_ID` (see the note on passkeys below).
 
 Then set your domain in `.env` and restart:
 
@@ -227,6 +255,18 @@ right now, each user's workout history and body weight, the ability to disable a
 out and locked out everywhere until you re-enable it), and — with `INVITE_ONLY=1` — generating and
 revoking invite codes. Existing accounts keep working when you switch invite-only on. Admin access
 is gated by your passkey and enforced server-side, so it needs no separate login.
+
+**Already registered and there's no Admin dashboard?** That's the usual way to find out
+`FIRST_USER_ADMIN` was off when you signed up (it is by default). It only ever applies to the very
+first profile, so switching it on now does nothing. Do this instead:
+
+1. Copy your id from **Settings → Account → Account ID** (tap it to copy).
+2. Put it in `.env`: `ADMIN_UIDS=<that id>`.
+3. `docker compose up -d`. Not `docker compose restart`: that keeps the old environment.
+4. Reload the app. **Settings → Account → Admin dashboard** is there now.
+
+The [AI Coach](AI_COACH.md#turning-it-on), invite codes and recovery codes all live in that
+dashboard, so this is step one for each of them.
 
 ### Default language
 
@@ -466,6 +506,14 @@ were issued; lowering it never cuts an existing session short. A browser renews 
 signing in; a paired phone renews its token by itself whenever it starts past half of that
 time, so only a phone left unopened for longer than `SESSION_DAYS` has to be paired again.
 
+The web container sends a Content-Security-Policy that lets scripts run only from your instance
+(plus the app's one inline script, by its hash), so a script that found its way into a page does
+not run. Requests the app makes itself stay open: the Coach on a device talks to whatever provider
+you chose, a LAN Ollama included. If your reverse proxy injects a script of its own (analytics,
+say), it gets blocked; give the `web` service a policy that allows it in `environment:`, or
+`CONTENT_SECURITY_POLICY=frame-ancestors 'none'` for the old, minimal header. The default is in
+`web/Dockerfile`.
+
 The web image renders its nginx config from these when the container starts, so they take effect
 on a **prebuilt image** — no rebuild. `BACKEND` and `PORT` together are what `/api` is proxied to,
 so they have to name a service the web container can actually reach on your compose network.
@@ -473,6 +521,84 @@ so they have to name a service the web container can actually reach on your comp
 Note the difference from `VITE_IMG_BASE` / `VITE_GIF_BASE` (see Troubleshooting): those are
 build-time values baked into the frontend bundle, and setting them next to `docker compose` does
 nothing to an image you pulled.
+
+### On a NAS (Synology, QNAP, Unraid, TrueNAS)
+
+A NAS runs openGym like any other Docker host. What trips people up is the NAS's own compose UI,
+which is not quite `docker compose` in a folder you chose. Four things to get right:
+
+**1. Both services, every time.** openGym is `api` *and* `web`. A stack with only `web` still
+loads, but every sign-in fails and the only way in that works is **Continue without account**:
+you are a guest, your data lives in that one browser, and nothing reaches the NAS. If the
+sign-in screen never accepts anything, check that `docker ps` shows both containers.
+
+**2. Absolute paths.** Container Station, Container Manager and Portainer keep the compose file
+in a folder of their own, so `./data` and `env_file: .env` resolve somewhere you did not put
+them. Spell them out (here for QNAP; use your share's path):
+
+```yaml
+name: opengym
+services:
+  api:
+    image: ghcr.io/duartesantos8/opengym-api:latest
+    restart: unless-stopped
+    env_file: /share/Container/opengym/.env
+    environment:
+      - PORT=3000
+      - DATA_DIR=/data
+      - TRUST_PROXY=1
+    volumes:
+      - /share/Container/opengym/data:/data
+  web:
+    image: ghcr.io/duartesantos8/opengym-web:latest
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "3030:80"
+    environment:
+      - BACKEND=api
+      - PORT=3000
+```
+
+Typical roots: Synology `/volume1/docker/opengym`, QNAP `/share/Container/opengym`, Unraid
+`/mnt/user/appdata/opengym`, TrueNAS SCALE a dataset such as `/mnt/tank/apps/opengym`. Create the
+`data` folder and the `.env` file there first. On TrueNAS SCALE 24.10 and later this file goes in
+**Apps → Discover Apps → ⋮ → Install via YAML**; on Synology in **Container Manager →
+Project → Create**; on Unraid in the Compose Manager plugin. Unraid's single-container templates
+can work too, as long as both containers share one custom network and `BACKEND` names the API
+container.
+
+**3. ORIGIN is the address you type.** Pick the port on the left of `ports:` (`3030` above, any
+free one: DSM itself sits on 5000/5001, QNAP's on 8080) and put the exact address in `.env`:
+
+```env
+ORIGIN=http://10.11.0.4:3030
+RP_ID=10.11.0.4
+```
+
+Get this wrong and every save is refused. The app says "This server only takes changes made
+at ...", and `docker compose logs api` prints a `refused cross-origin` line with the `ORIGIN=`
+and `RP_ID=` to set. After changing `.env`, recreate the stack (Container Station's **Recreate**,
+Container Manager's **Build**, or `docker compose up -d`); a plain restart keeps the old values.
+Over plain http on a LAN address there are no passkeys (see [§2](#2-understand-the-passkey-requirement-important)),
+so for a first look either add `PASSWORD_LOGIN=1` ([password sign-in](#password-sign-in-optional))
+or keep going to step 4.
+
+**4. HTTPS through the NAS's reverse proxy.** For passkeys, the iPhone web app and
+notifications, give openGym a hostname with a certificate and point the proxy at the `web`
+port: Synology **Control Panel → Login Portal → Advanced → Reverse Proxy** (certificate under
+**Security → Certificate**), QNAP **Network & File Services → Network Access → Reverse Proxy**,
+Unraid and TrueNAS with Nginx Proxy Manager, Caddy or SWAG, or a Cloudflare Tunnel or Tailscale
+Serve from [§3](#3-expose-it-over-https-on-your-own-domain). Then `ORIGIN` and `RP_ID` become that
+hostname, and the LAN address stops being a way in.
+
+**Permissions.** The `api` container runs as root and writes everything under `data/`; its
+`secret`, `db.json` and `coach.json` end up root-owned with mode 600. A share mounted over NFS
+with root squash, or a TrueNAS dataset whose ACL maps root away, refuses those writes, and the
+API log says `EACCES` or `EPERM`. Give the dataset to root, or run `api` with `user: "568:568"`
+(TrueNAS's `apps` user, say) and make `data/` that user's first. Coach providers with an API key
+work either way; only the in-container CLI runtimes (`API_TARGET=coach`) need root. Your backup
+job reads `data/` as root, or as that user.
 
 ### Serving openGym under a subpath
 
@@ -507,6 +633,71 @@ Either way, keep `ORIGIN` and `RP_ID` pointing at the address in the browser's b
 (`ORIGIN=https://example.com`, `RP_ID=example.com`). Passkeys key on the host, not the path, so a
 subpath changes nothing about section 2 — but it does mean two instances under one hostname share
 a passkey scope and can see each other's credentials. Give each its own hostname if that matters.
+
+#### nginx under `/gym`, both ways
+
+Pick one of these two and keep `.env` in step with it. Both were run against the shipped web
+container's config behind nginx with TLS, with a passkey sign-up and a password sign-up going
+through each. `8080` is `WEB_PORT`; use yours.
+
+**Passing the prefix through** (nothing after the port in `proxy_pass`), with `BASE_PATH=/gym`:
+
+```nginx
+location = /gym { return 301 /gym/; }
+
+location /gym/ {
+    proxy_pass http://127.0.0.1:8080;   # no trailing slash: the container sees /gym/...
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    client_max_body_size 48m;           # photos and videos of custom exercises
+    proxy_read_timeout 300s;            # a Coach request can take minutes
+}
+```
+
+```bash
+# .env
+BASE_PATH=/gym
+RP_ID=example.com
+ORIGIN=https://example.com
+```
+
+**Stripping the prefix** (a slash after the port), with `BASE_PATH` left empty:
+
+```nginx
+location = /gym { return 301 /gym/; }
+
+location /gym/ {
+    proxy_pass http://127.0.0.1:8080/;  # trailing slash: the container sees /...
+    proxy_redirect / /gym/;             # keeps the container's own redirects under /gym
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    client_max_body_size 48m;
+    proxy_read_timeout 300s;
+}
+```
+
+```bash
+# .env
+BASE_PATH=
+RP_ID=example.com
+ORIGIN=https://example.com
+```
+
+Then `docker compose up -d` (a plain `restart` does not re-read `.env`). The three ways this
+goes wrong, so you can spot them:
+
+- **Stripping and `BASE_PATH=/gym` at the same time.** The page loads, so it looks fine, but
+  every `/api` call answers 404: no profile can be created and nothing signs in. One or the
+  other, never both.
+- **A path in `ORIGIN`.** `ORIGIN=https://example.com/gym` makes every passkey fail with
+  *Unexpected registration response origin*. An origin never has a path; the prefix lives in
+  `BASE_PATH` and in the proxy.
+- **`proxy_cookie_path / "/gym; Secure";`** Leave it out. Over https the session cookie is
+  called `__Host-gymsid`, and browsers throw away any `__Host-` cookie whose path isn't `/`. The
+  profile gets created, then the app insists you're not signed in. The cookie is already
+  `Secure`, `HttpOnly` and tied to its host without help.
 
 ### Photos and videos of custom exercises
 
@@ -548,8 +739,8 @@ timeout the app can only report as "The server refused the file as too large":
   `entryPoints.<name>.transport.respondingTimeouts.readTimeout` (`600s`, say). nginx's
   `client_body_timeout` counts the gap between two reads, so its default of 60 s is fine. The
   API itself gives a request 30 minutes and drops one that sends nothing for 60 s.
-- **Content-Security-Policy**: if the proxy adds one, it must allow `blob:` in `img-src` and
-  `media-src`. The app shows the files from its own verified local copy through `blob:` URLs.
+- **Content-Security-Policy**: the web container already sends one that allows this. If the
+  proxy adds its own, it must allow `blob:` in `img-src` and `media-src`. The app shows the files from its own verified local copy through `blob:` URLs.
 
 **What is removed, and when.** A file goes when its owner's stored state has not used it for
 `MEDIA_GC_GRACE_DAYS` (checked every hour), after one hour unused when the owner's quota is full,
@@ -757,6 +948,10 @@ then creates a passkey of its own and is signed in by it. So a Windows Hello pas
 the phone's own passkey can sign in to the same profile, instead of the phone ending up with a
 second, empty one. (#95)
 
+The device that makes the code has to be signed in to this server. A phone app that keeps
+everything on the phone has no account here and so no such row: connect it first under
+**Settings → Account → Connect to my server**, and the row shows up in its Server & sync block. (#551)
+
 Both ways ask you to confirm first — with a passkey the profile already has, or its password
 while `PASSWORD_LOGIN=1` — because each adds a lasting way in: a session on its own may be a
 copied cookie. Removing a passkey asks for the same, since a copied cookie could otherwise pick
@@ -779,13 +974,53 @@ only on one phone (or on a hardware key) goes with that phone.
 **I lost my passkey.** If the profile has another passkey, sign in with that one and remove the
 lost one under **Settings → Account → Passkeys**, confirming with the passkey you signed in
 with (then **Sign out everywhere**). A browser that is still signed in can give a new device a
-passkey with **Add another device** only if the profile also has a password and
-`PASSWORD_LOGIN=1`: making the code asks for a passkey or the current password first,
-because a session on its own may be a stolen cookie. Otherwise there is no self-service recovery: with `PASSWORD_LOGIN=1` an admin can issue a reset code, and without
-it the only way back is a backup (**Settings → Data & backup → Export backup (JSON)**, from any device still
-signed in) imported into a new profile. When you ask your admin for help, the id under
-**Settings → Account → Account ID** tells them exactly which account is yours. Adding a second
-passkey early is what keeps one lost phone from being a lost profile.
+passkey with **Add another device** (making the code asks for a passkey, or the current password
+where that counts, because a session on its own may be a stolen cookie). The sign-in screen's
+**Lost access?** walks through these. If none of them is left, ask for a recovery code (below).
+When you ask your admin for help, the id under **Settings → Account → Account ID** tells them
+exactly which account is yours. Adding a second passkey early is what keeps one lost phone from
+being a lost profile.
+
+#### Recovery codes: when every way in is gone
+
+For someone who lost every device and passkey and has no password, on any instance, with or
+without `PASSWORD_LOGIN`:
+
+- **An admin** opens the profile in the admin dashboard and taps **Recovery code**. Any admin can
+  make one for a profile that is not an admin; only the owner for an admin; nobody for the owner
+  (see below), and nobody for themselves.
+- **The person** taps **Lost access? → I have a code** on the sign-in screen (or **Use a code from
+  your other device**) and enters it. The device they use gets a new passkey for their profile
+  and is signed in. In the phone app: redeem the code in a browser, then pair the app again.
+  Once back in, they can remove the lost device's passkey under **Settings → Account → Passkeys**
+  and, where `PASSWORD_LOGIN=1`, set a password there too.
+
+A recovery code is 12 characters (60 bits), works once, for 24 hours, and is stored only as a
+hash, like a password reset code. Making one signs the profile out everywhere at once (a lost
+phone should not stay signed in for that day) and voids any device link or pairing code; the
+profile's passkeys and password stay. Wrong codes count toward the same per-address pause as
+wrong reset and device codes, and a wrong code looks the same whoever it was meant for. A
+profile already holding the maximum number of passkeys still gets back in: the passkey used
+longest ago makes room. The activity log records each code made (`admin.recovery.create`,
+`server.recovery.create`) and used (`auth.recovery.ok`).
+
+**The owner, or anyone, from the server itself.** No one in the app may take over the owner's
+login, so the owner's way back is a command on the server, which works for any profile:
+
+```sh
+docker compose exec api node recover.js "Their name"
+# several profiles with that name? it lists them; pick one:
+docker compose exec api node recover.js --id <profile id>
+```
+
+It prints a one-time code to use as above. The command asks the running server for the code over
+a local Unix socket that only the server's own user can open (in the image: root, which is who
+`docker compose exec` runs as; the AI Coach's sandboxed jobs cannot reach it). It never edits
+`db.json` itself, because the server keeps its data in memory and would overwrite such a change
+on its next save. So the server has to be running: `docker compose up -d` first. On Kubernetes:
+`kubectl exec deploy/<deployment> -c api -- node recover.js "Their name"`. Outside Docker, run
+`node recover.js` from the api directory as the same user and with the same `DATA_DIR` as the
+server (or set `ADMIN_SOCKET_DIR` for both).
 
 The phone app never uses a passkey at all: it pairs with a one-time code from a signed-in
 browser (see section 2).
@@ -795,6 +1030,8 @@ browser (see section 2).
 | Symptom | Fix |
 |---|---|
 | No passkey prompt on my phone | You're on `http://` or an IP, not HTTPS. Set up a domain (section 3). |
+| "This server only takes changes made at ...", or `refused cross-origin` in the API log | `ORIGIN` is not the address in your browser. The log line names the `ORIGIN=` and `RP_ID=` to set; then `docker compose up -d`. See [On a NAS](#on-a-nas-synology-qnap-unraid-truenas). |
+| The sign-in screen accepts nothing, only "Continue without account" works | The `api` service is not running or `web` cannot reach it (`BACKEND`, `PORT`). Without it you are a guest and nothing is saved on the server. |
 | "verification failed" on login | `RP_ID`/`ORIGIN` don't match the URL in the address bar. See the section above — start with what the server logged on startup. |
 | Exercise pictures missing | You are on an image older than v1.4.0 or a custom build: `docker compose pull && docker compose up -d`. A source build needs `catalogue/media/` checked out. |
 | Port 8080 already used | Set `WEB_PORT=9090` in `.env` (and update `ORIGIN` for local testing). |
@@ -802,6 +1039,8 @@ browser (see section 2).
 | No "Reminders" page in Settings | Requires a signed-in profile and HTTPS (or `localhost`) — guest mode and plain HTTP over LAN can't subscribe. |
 | Day reminder fires at the wrong time | Toggle it off and on in Settings → Reminders so it re-detects your browser's timezone (also happens automatically on every app load — see section 7). |
 | Notifications switch is off although I turned it on | The server no longer holds the subscription (rebuilt `data/db.json`, regenerated `vapid.json`); the app re-registers on the next start, or switch it on again. On iOS, push only works from the Home Screen icon. |
+| No Admin dashboard in Settings, so no AI Coach either | Nobody is admin yet. Put your **Settings → Account → Account ID** in `ADMIN_UIDS`, `docker compose up -d`, reload. See [§4](#4-multiple-users). |
+| Under a subpath: the page loads but no profile can be created, or you sign up and are "not signed in" | `BASE_PATH` doesn't match what the proxy does, or `proxy_cookie_path` rewrote the session cookie. See [nginx under /gym](#nginx-under-gym-both-ways). |
 | Want to reset a stuck login | Delete the cookie in your browser; sessions are just signed cookies. |
 | The app says "Your server no longer accepts this phone" (or "this browser") | The server answered 401. Usual causes: "sign out everywhere" was used, the account was disabled, `data/secret` was lost or replaced when the stack was moved (every session and pairing dies with it), or a proxy with its own login rejects requests that carry `Authorization: Bearer`. Nothing on the device is lost: pair the phone again (browser: Settings → "Pair the mobile app"), or sign in again in the browser, and what the device kept is merged into the account. |
 | The app says the server "answered with something other than openGym (HTTP 200)" | Something other than the API answered `/api/*` with a success page — an auth proxy's sign-in page, or a catch-all route serving `index.html`. Every API answer is JSON; forward `/api/*` to the API unchanged. |
