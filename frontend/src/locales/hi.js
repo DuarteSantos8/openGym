@@ -2801,7 +2801,6 @@ export default {
   "Its own page": "इसका अपना पेज",
   "It’s the first row of the list. Tap it.": "यह सूची की पहली पंक्ति है। टैप कीजिए।",
   "Log a past workout with its own date and time. It counts like any other.": "पिछला वर्कआउट उसकी अपनी तारीख़ और समय के साथ दर्ज कीजिए। यह बाकी सबकी तरह ही गिना जाता है।",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "ग़लत दिन पर दर्ज हो गया? यहाँ खिसकाइए। अवधि का अपना बटन नीचे है।",
   "Measurements and photos": "माप और फ़ोटो",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "कोई कम है? बना लीजिए। यह बाकियों जैसा ही चलता है: रूटीन, वर्कआउट, रिकॉर्ड, बॉडी मैप, बैकअप और सिंक। \"एक्सरसाइज़ बनाएं\" टैप करने तक कुछ नहीं बनता।",
   "Moving in?": "यहाँ शिफ़्ट हो रहे हैं?",
@@ -2826,7 +2825,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "पुश डे, लेग्स, मंडे का दर्द। नाम पर टैप करके अपना लिखिए।",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "इसे फिर खोलता है: सेट, वज़न, रेप्स, व्यायाम। \"सहेजें\" टैप करने तक कुछ नहीं बदलता।",
   "Restore a backup": "बैकअप बहाल कीजिए",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "सेशन का नोट जब चाहें दोबारा लिखिए। \"वर्कआउट हटाएँ\" सबसे नीचे इंतज़ार कर रहा है।",
   "Routine name": "रूटीन का नाम",
   "Routines are made in Plan. Tap it.": "रूटीन \"योजना\" में बनते हैं। टैप कीजिए।",
   "Save plan": "योजना सहेजें",
@@ -2879,4 +2877,7 @@ export default {
   "Your real data is exactly as you left it.": "आपका असली डेटा बिल्कुल वैसा ही है जैसा आपने छोड़ा था।",
   "Your routines live behind this tab. Tap Plan.": "आपके रूटीन इस टैब के पीछे हैं। \"योजना\" पर टैप कीजिए।",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "आपके सेट, वज़न मापन और माप CSV में। हमारा इम्पोर्टर इसे वापस भी पढ़ लेता है।",
+  "Date, duration, share, export, delete": "तारीख़, अवधि, साझा, एक्सपोर्ट, हटाएँ",
+  "Rewrite the session note whenever.": "सेशन का नोट जब चाहें दोबारा लिखिए।",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "ग़लत दिन या समय पर ख़त्म करना भूल गए? यहीं ठीक कीजिए। साझा करना, एक्सपोर्ट और \"वर्कआउट हटाएँ\" भी यहीं हैं।",
 }

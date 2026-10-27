@@ -57,6 +57,13 @@ describe('steps', () => {
     const backup = tourSteps({}, 'backup')
     expect(backup.some(s => s.open || s.tap || s.free || s.sandbox)).toBe(false)
   })
+  // v1.4.4: date & time, duration, sharing and Delete moved behind the detail sheet's one
+  // "Workout options" row (sheets.jsx WorkoutDetail), so the stop points at that row now.
+  it('walks the workout sheet top to bottom: Edit, the note, then the Workout options row', () => {
+    const sheet = tourSteps({}, 'edit').filter(s => s.back === 'e-row')
+    expect(sheet.map(s => [s.id, s.anchor])).toEqual([['e-edit', 'wd-edit'], ['e-note', 'wd-note'], ['e-options', 'wd-options']])
+    expect(sheet.every(s => s.sheet)).toBe(true)
+  })
   it('leaves out what a profile has nothing to show for, and keeps it for one that has', () => {
     const empty = tourSteps({}).map(s => s.id)
     expect(empty).not.toContain('plan-body')

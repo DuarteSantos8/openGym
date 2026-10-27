@@ -2856,7 +2856,6 @@ export default {
   "Its own page": "صفحته الخاصة",
   "It’s the first row of the list. Tap it.": "إنه أول سطر في القائمة. المسه.",
   "Log a past workout with its own date and time. It counts like any other.": "سجّل تمرينًا سابقًا بتاريخه ووقته. يُحتسب مثل أي تمرين آخر.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "سجّلته في اليوم الخطأ؟ انقله من هنا. للمدة زرّها الخاص في الأسفل.",
   "Measurements and photos": "القياسات والصور",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "ينقصك تمرين؟ اصنعه. يعمل مثل أي تمرين آخر: الروتينات والتمارين والأرقام القياسية وخريطة الجسم والنسخ الاحتياطي والمزامنة. لا يُنشأ شيء حتى تلمس إنشاء تمرين.",
   "Moving in?": "قادم من تطبيق آخر؟",
@@ -2881,7 +2880,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "يوم الدفع، أرجل، بؤس الاثنين. المس الاسم واكتب اسمك الخاص.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "يعيد فتحه: المجموعات والأوزان والتكرارات والتمارين. لا يتغير شيء حتى تلمس حفظ.",
   "Restore a backup": "استعد نسخة احتياطية",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "أعد كتابة ملاحظة الجلسة متى شئت. حذف التمرين ينتظر في الأسفل تمامًا.",
   "Routine name": "اسم الروتين",
   "Routines are made in Plan. Tap it.": "الروتينات تُصنع في خطة. المسها.",
   "Save plan": "حفظ الخطة",
@@ -2934,4 +2932,7 @@ export default {
   "Your real data is exactly as you left it.": "بياناتك الحقيقية كما تركتها تمامًا.",
   "Your routines live behind this tab. Tap Plan.": "روتيناتك خلف هذا التبويب. المس خطة.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "مجموعاتك وقياسات وزنك وقياساتك بصيغة CSV. ومستوردنا يقرؤها أيضًا.",
+  "Date, duration, share, export, delete": "التاريخ، المدة، المشاركة، التصدير، الحذف",
+  "Rewrite the session note whenever.": "أعد كتابة ملاحظة الجلسة متى شئت.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "اليوم خطأ أو نسيت الإنهاء في وقته؟ أصلحه من هنا. المشاركة والتصدير و«حذف التمرين» هنا أيضًا.",
 }

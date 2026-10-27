@@ -1822,7 +1822,6 @@ export const PT_BR_OVERRIDES = {
   "It starts today’s plan, or lets you pick something else. Tap it for a practice run.": "Ele começa o plano de hoje ou deixa você escolher outra coisa. Toque para um treino de teste.",
   "It’s the first row of the list. Tap it.": "É a primeira linha da lista. Toque nela.",
   "Log a past workout with its own date and time. It counts like any other.": "Registre um treino passado com data e hora próprias. Conta como qualquer outro.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "Registrou no dia errado? Mude aqui. A duração tem um botão próprio logo abaixo.",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "Faltou algum? Crie. Funciona como qualquer outro: rotinas, treinos, recordes, mapa do corpo, backups e sincronização. Nada é criado até você tocar em Criar exercício.",
   "Moving in?": "Vindo de outro aplicativo?",
   "Name a routine, add exercises, give it a day": "Dê nome a uma rotina, adicione exercícios, escolha um dia",
@@ -1841,7 +1840,6 @@ export const PT_BR_OVERRIDES = {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "Dia de Empurrar, Pernas, Segunda Sofrida. Toque no nome e digite o seu.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Reabre o treino: séries, pesos, repetições, exercícios. Nada muda até você tocar em Salvar.",
   "Restore a backup": "Restaurar um backup",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Reescreva a nota da sessão quando quiser. Excluir treino fica lá no fim.",
   "Routines are made in Plan. Tap it.": "Rotinas são criadas em Plano. Toque aí.",
   "Save plan": "Salvar plano",
   "Save your plan?": "Salvar seu plano?",
@@ -1889,6 +1887,9 @@ export const PT_BR_OVERRIDES = {
   "Your real data is exactly as you left it.": "Seus dados reais estão exatamente como você deixou.",
   "Your routines live behind this tab. Tap Plan.": "Suas rotinas ficam atrás dessa aba. Toque em Plano.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Suas séries, pesagens e medidas em CSV. Nosso importador também lê de volta.",
+  "Date, duration, share, export, delete": "Data, duração, compartilhar, exportar, excluir",
+  "Rewrite the session note whenever.": "Reescreva a nota da sessão quando quiser.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Dia errado ou esqueceu de terminar na hora? Corrija aqui dentro. Compartilhar, exportar e Excluir treino também ficam aqui.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -2848,7 +2848,6 @@ export default {
   "Its own page": "En egen sida",
   "It’s the first row of the list. Tap it.": "Det är första raden i listan. Tryck på den.",
   "Log a past workout with its own date and time. It counts like any other.": "Logga ett tidigare pass med eget datum och egen tid. Det räknas som vilket annat som helst.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "Loggat på fel dag? Flytta det här. Tiden har en egen knapp längre ner.",
   "Measurements and photos": "Mått och foton",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "Saknas en? Gör den. Den fungerar som alla andra: rutiner, pass, rekord, kroppskartan, backuper och synk. Inget skapas förrän du trycker på Skapa övning.",
   "Moving in?": "Flyttar du in?",
@@ -2873,7 +2872,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "Pushdag, Ben, Måndagsmisär. Tryck på namnet och skriv ditt eget.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Öppnar det igen: set, vikter, reps, övningar. Inget ändras förrän du trycker på Spara.",
   "Restore a backup": "Återställ en backup",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Skriv om passets anteckning när du vill. Ta bort pass väntar längst ner.",
   "Routine name": "Rutinens namn",
   "Routines are made in Plan. Tap it.": "Rutiner skapas i Plan. Tryck på den.",
   "Save plan": "Spara plan",
@@ -2926,4 +2924,7 @@ export default {
   "Your real data is exactly as you left it.": "Din riktiga data är exakt som du lämnade den.",
   "Your routines live behind this tab. Tap Plan.": "Dina rutiner bor bakom den här fliken. Tryck på Plan.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Dina set, vägningar och mått som CSV. Vår import läser in det igen också.",
+  "Date, duration, share, export, delete": "Datum, tid, dela, exportera, ta bort",
+  "Rewrite the session note whenever.": "Skriv om passets anteckning när du vill.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Fel dag eller glömde avsluta i tid? Fixa det här inne. Dela, exportera och Ta bort pass bor också här.",
 }

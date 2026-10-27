@@ -2801,7 +2801,6 @@ export default {
   "Its own page": "Kendi sayfası",
   "It’s the first row of the list. Tap it.": "Listenin ilk satırı. Dokun.",
   "Log a past workout with its own date and time. It counts like any other.": "Geçmiş bir antrenmanı kendi tarihi ve saatiyle kaydet. Diğerleri gibi sayılır.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "Yanlış güne mi kaydettin? Buradan taşı. Sürenin aşağıda kendi düğmesi var.",
   "Measurements and photos": "Ölçüler ve fotoğraflar",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "Biri eksik mi? Yap gitsin. Diğerleri gibi çalışır: rutinler, antrenmanlar, rekorlar, vücut haritası, yedekler ve senkron. Egzersiz oluştur'a dokunana kadar hiçbir şey oluşturulmaz.",
   "Moving in?": "Taşınıyor musun?",
@@ -2826,7 +2825,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "İtiş Günü, Bacak, Pazartesi Çilesi. Ada dokun ve kendininkini yaz.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Yeniden açar: setler, ağırlıklar, tekrarlar, egzersizler. Kaydet'e dokunana kadar hiçbir şey değişmez.",
   "Restore a backup": "Bir yedeği geri yükle",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Antrenman notunu istediğin zaman yeniden yaz. Antrenmanı sil en altta bekliyor.",
   "Routine name": "Rutin adı",
   "Routines are made in Plan. Tap it.": "Rutinler Plan'da yapılır. Dokun.",
   "Save plan": "Planı kaydet",
@@ -2879,4 +2877,7 @@ export default {
   "Your real data is exactly as you left it.": "Gerçek verilerin tam bıraktığın gibi.",
   "Your routines live behind this tab. Tap Plan.": "Rutinlerin bu sekmenin arkasında. Plan'a dokun.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Setlerin, tartımların ve ölçülerin CSV olarak. İçe aktarıcımız onu geri de okur.",
+  "Date, duration, share, export, delete": "Tarih, süre, paylaş, dışa aktar, sil",
+  "Rewrite the session note whenever.": "Antrenman notunu istediğin zaman yeniden yaz.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Yanlış gün mü, zamanında bitirmeyi mi unuttun? Burada düzelt. Paylaşma, dışa aktarma ve Antrenmanı sil de burada.",
 }

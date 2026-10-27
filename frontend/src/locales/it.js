@@ -2801,7 +2801,6 @@ export default {
   "Its own page": "Una pagina tutta sua",
   "It’s the first row of the list. Tap it.": "È la prima riga della lista. Toccala.",
   "Log a past workout with its own date and time. It counts like any other.": "Registra un allenamento passato con data e ora sue. Conta come tutti gli altri.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "Registrato nel giorno sbagliato? Spostalo qui. La durata ha il suo pulsante qui sotto.",
   "Measurements and photos": "Misure e foto",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "Ne manca uno? Crealo. Funziona come tutti gli altri: routine, allenamenti, record, mappa del corpo, backup e sincronizzazione. Non viene creato nulla finché non tocchi Crea esercizio.",
   "Moving in?": "Trasloco in arrivo?",
@@ -2826,7 +2825,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "Push Day, Gambe, Lunedì da incubo. Tocca il nome e scrivi il tuo.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Lo riapre: serie, pesi, ripetizioni, esercizi. Non cambia nulla finché non tocchi Salva.",
   "Restore a backup": "Ripristina un backup",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Riscrivi la nota della sessione quando vuoi. Elimina allenamento aspetta in fondo.",
   "Routine name": "Nome della routine",
   "Routines are made in Plan. Tap it.": "Le routine si creano in Piano. Toccalo.",
   "Save plan": "Salva piano",
@@ -2879,4 +2877,7 @@ export default {
   "Your real data is exactly as you left it.": "I tuoi dati veri sono esattamente come li hai lasciati.",
   "Your routines live behind this tab. Tap Plan.": "Le tue routine stanno dietro questa scheda. Tocca Piano.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Le tue serie, pesate e misure in CSV. Il nostro import sa anche rileggerle.",
+  "Date, duration, share, export, delete": "Data, durata, condivisione, esportazione, eliminazione",
+  "Rewrite the session note whenever.": "Riscrivi la nota della sessione quando vuoi.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Giorno sbagliato o dimenticato di finire in tempo? Sistemalo qui dentro. Condivisione, esportazione ed Elimina allenamento abitano qui.",
 }

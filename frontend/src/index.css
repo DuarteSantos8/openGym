@@ -1435,6 +1435,10 @@ body.chips-dragging *{cursor:inherit}
 .menu-list .menu-item.accent .lrow-i{background:var(--acc);color:var(--on-acc)}
 .menu-chev{color:var(--label-3);font-size:14px;flex:none}
 [dir="rtl"] .menu-chev{transform:scaleX(-1)}
+/* The "More" fold: its sub lists what is inside on one line, cut with an ellipsis. */
+.menu-list .menu-more .grow{min-width:0}
+.menu-list .menu-more .ss{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[dir="rtl"] .menu-more .menu-chev{transform:none}
 .setextra{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px 32px}
 .setextra .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc)}
 .setextra .chip.add svg{width:13px;height:13px}

@@ -10,9 +10,9 @@ import { buildCompletedWorkout } from '../lib/finish-workout.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { discardedFor } from '../lib/watch-sync.js'
 import { finishWorkout, finishWorkoutSheet } from '../sheets.jsx'
+import { menuItemsOf } from '../lib/menu-items.js'
 
 // A menu's actions in order, whether it came as one list or in groups (menuSheet `sections`).
-const menuItemsOf = menu => (menu.sections ? menu.sections.flatMap(g => g.items || []) : menu.items || []).filter(Boolean)
 
 const mocks = vi.hoisted(() => {
   const state = {
@@ -1694,7 +1694,7 @@ describe('workout focus view', () => {
     await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, { active: { workoutView: 'focus' } })
 
     await click(buttonNamed('More'))
-    const pair = mocks.menuSheet.mock.calls.at(-1)[0].items.find(item => item?.label === 'Make superset with next')
+    const pair = menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).find(item => item?.label === 'Make superset with next')
     expect(pair).toBeTruthy()
     await act(async () => { pair.onClick() })
     await rerender()
@@ -1820,7 +1820,7 @@ describe('workout focus view', () => {
     })], 0, { active: { workoutView: 'focus' } })
 
     await click(buttonNamed('Set menu'))
-    await act(async () => { mocks.menuSheet.mock.calls.at(-1)[0].items[1].onClick() })
+    await act(async () => { menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).find(item => item.label === 'Add drop set').onClick() })
     await rerender()
     const left = container.querySelector('[data-focus-side="L"]')
     expect(left.textContent).toContain('Drop 1')
@@ -1829,7 +1829,7 @@ describe('workout focus view', () => {
     expect(mocks.S.active.entries[0].sets[0].sides.R.drops[0].w).toBe(16)
 
     await click(buttonNamed('Set menu'))
-    await act(async () => { mocks.menuSheet.mock.calls.at(-1)[0].items[2].onClick() })
+    await act(async () => { menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).find(item => item.label === 'Add burst').onClick() })
     await rerender()
     const burstLeft = container.querySelector('[data-focus-side="L"]')
     expect(burstLeft.textContent).toContain('Drop 1')
@@ -1903,7 +1903,7 @@ describe('workout focus view', () => {
       sets: [{ min: 20, speed: 8, done: false }],
     })], 0, { active: { workoutView: 'focus' } })
     await click(buttonNamed('Set menu'))
-    const rate = mocks.menuSheet.mock.calls.at(-1)[0].items.filter(Boolean).find(item => item.label === 'How hard it felt')
+    const rate = menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).find(item => item.label === 'How hard it felt')
     expect(rate.sub).toBe('Not rated yet')
     await act(async () => { rate.onClick() })
     const [scale, , onPick, opts] = mocks.effortPickerSheet.mock.calls.at(-1)
@@ -1929,10 +1929,10 @@ describe('workout focus view', () => {
     expect(mocks.S.active.entries[0].sets[0].clusters[0].r).toBe(4)
     expect(mocks.S.active.entries[0].sets[0].r).toBe(9)
     await click(buttonNamed('Set menu'))
-    const labels = mocks.menuSheet.mock.calls.at(-1)[0].items.filter(Boolean).map(item => item.label)
-    expect(labels).toEqual(['Mark as warm-up', 'Add drop set', 'Add burst', 'Taken to failure', 'Delete set'])
+    const labels = menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).map(item => item.label)
+    expect(labels).toEqual(['Taken to failure', 'Add drop set', 'Add burst', 'Mark as warm-up', 'Delete set'])
     // Taken to failure toggles the mark, and the focus card shows its F.
-    await act(async () => { mocks.menuSheet.mock.calls.at(-1)[0].items.filter(Boolean).find(item => item.label === 'Taken to failure').onClick() })
+    await act(async () => { menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).find(item => item.label === 'Taken to failure').onClick() })
     expect(mocks.S.active.entries[0].sets[0].failure).toBe(true)
     await rerender()
     expect(container.querySelector('.focus-failure').textContent).toBe('F')
@@ -2072,7 +2072,7 @@ describe('workout focus view', () => {
     await click(container.querySelector('button[aria-label="Set 3"]'))
     await click(buttonNamed('More'))
     await act(async () => {
-      mocks.menuSheet.mock.calls.at(-1)[0].items.find(item => item?.label === 'Swap exercise').onClick()
+      menuItemsOf(mocks.menuSheet.mock.calls.at(-1)[0]).find(item => item?.label === 'Swap exercise').onClick()
       mocks.S.active.entries[0] = exercise('plain-row', [true, false, false])
     })
     await rerender()
@@ -2455,15 +2455,19 @@ describe('workout view header menu', () => {
     return mocks.menuSheet.mock.calls.at(-1)[0]
   }
 
-  it('groups Workout settings, Add and This workout with no Discard (#751), then a Layout sheet with the four layouts marked current', async () => {
+  it('leads with Workout settings and the three things done mid-session, folds the rest under More, no Discard (#751), then a Layout sheet with the four layouts marked current', async () => {
     await mount([exercise('plain-bench', [false])], 0, { active: { workoutView: 'list', routineIds: [] } })
 
     const menu = await openMenu()
-    expect(menu.sections.map(g => g.title)).toEqual([undefined, 'Add', 'This workout'])
+    // v1.4.4: four rows on show, the once-in-a-while ones in one More fold.
+    expect(menu.sections.map(g => g.more ? 'more' : g.items.filter(Boolean).map(it => it.label))).toEqual([
+      ['Workout settings'], ['Add exercise', 'Add session note', 'Layout'], 'more',
+    ])
+    expect(menuItemsOf({ sections: menu.sections[2].more }).map(it => it.label)).toEqual(['Add routine', 'Rename workout', 'Don’t count for progression'])
     // No Discard here: it ended this menu as a red trash, right where the exercise ⋯ keeps
     // Remove exercise, and got hit by mistake (#751). The Finish sheet has it.
     expect(menuItemsOf(menu).map(it => it.label)).toEqual([
-      'Workout settings', 'Add exercise', 'Add routine', 'Rename workout', 'Layout', 'Add session note', 'Don’t count for progression',
+      'Workout settings', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Don’t count for progression',
     ])
     expect(menuItemsOf(menu).some(it => it.danger)).toBe(false)
     expect(item(menu, 'Workout settings').sub).toBe('1:30 rest · Silent')
@@ -2999,7 +3003,7 @@ describe('workout controls: the more menu and the set menu', () => {
   it('opens a per-set menu from the set number with drop, burst and remove', async () => {
     await mount([exercise('plain-bench', [false, false])])
     await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Make it a warm-up set', 'Taken to failure', 'Rest after this set', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Remove this set'])
+    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Make it a warm-up set', 'Rest after this set', 'Remove this set'])
     expect(item('Make it a warm-up set').icon).toBe('sunrise')
 
     await act(async () => { item('Drop set').onClick() })
@@ -3461,8 +3465,9 @@ describe('mark all sets done while logging a past workout', () => {
       exercise('plain-row', [false], { sets: [{ w: 40, r: 8, done: false, phase: 'warmup' }, { w: 70, r: 8, done: false }] }),
     ], 0, { active: { backfill: { durationMin: 60, replaceId: null }, routineIds: [] } })
     const menu = await openMenu()
-    expect(menu.sections[2].items.filter(Boolean)[0].label).toBe('Mark all sets done')
-    await act(async () => { menu.sections[2].items.filter(Boolean)[0].onClick() })
+    // The one thing to do in a past workout leads the rows on show, ahead of Add exercise.
+    expect(menu.sections[1].items.filter(Boolean)[0].label).toBe('Mark all sets done')
+    await act(async () => { menu.sections[1].items.filter(Boolean)[0].onClick() })
     expect(mocks.S.active.entries.every(e => e.sets.every(s => s.done))).toBe(true)
     expect(mocks.S.active.entries.map(e => e.topW)).toEqual([60, 70])
     expect(mocks.workoutCompleteSheet).toHaveBeenCalledTimes(1)
@@ -3623,15 +3628,19 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(mocks.exercisePicker).toHaveBeenCalledOnce()
   })
 
-  it('groups the exercise menu: today, look it up, settings, order, and Remove on its own', async () => {
+  // v1.4.4 ("the ⋯ menu has a lot lot lot"): the five reached for at the gym on show, the rest in
+  // one More fold, grouped, and Remove on its own at the end.
+  it('groups the exercise menu: five on show, the rest under More, and Remove on its own', async () => {
     await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])])
     await openMore()
-    const groups = lastMenu().sections.map(g => [g.title, g.items.filter(Boolean).map(it => it.label)])
-    expect(groups).toEqual([
-      ['Today', ['Swap exercise', 'Add warm-up set', 'Add note', 'Don’t count for progression']],
-      ['Look it up', ['History', 'How to do it']],
-      ['Settings', ['Exercise settings', 'Rest timer', 'Plate loading']],
-      ['Order and supersets', ['Make superset with next', 'Move up', 'Move down']],
+    const groupsOf = sections => sections.map(g => g.more ? ['More', groupsOf(g.more)] : [g.title, g.items.filter(Boolean).map(it => it.label)])
+    expect(groupsOf(lastMenu().sections)).toEqual([
+      [undefined, ['Add note', 'Swap exercise', 'Add warm-up set', 'Rest timer', 'History']],
+      ['More', [
+        ['Exercise', ['Exercise settings', 'Plate loading', 'How to do it']],
+        ['Order and supersets', ['Make superset with next', 'Move up', 'Move down']],
+        ['This session', ['Don’t count for progression']],
+      ]],
       [undefined, ['Remove exercise']],
     ])
   })
@@ -3643,7 +3652,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await openMore()
     const today = lastMenu().sections[0].items.filter(Boolean)
     const name = exerciseNameText(EXIDX['0047'])
-    expect(today.map(it => it.label)).toEqual(['Swap exercise', 'Swap to ' + name, 'Add warm-up set', 'Add note', 'Don’t count for progression'])
+    expect(today.map(it => it.label)).toEqual(['Add note', 'Swap exercise', 'Swap to ' + name, 'Add warm-up set', 'Rest timer', 'History'])
     expect(item('Swap to ' + name).sub).toBe('Planned backup, same sets and reps')
     item('Swap to ' + name).onClick()
     expect(mocks.swapActiveWorkoutToBackup).toHaveBeenCalledWith(0, '0047')
@@ -3686,10 +3695,14 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(item('Rest timer')).toBeUndefined()
   })
 
-  it('groups the set menu: the warm-up switch, then Add to this set, with Remove on its own', async () => {
+  it('groups the set menu: effort and what goes on top first, the phase and rest under More, Remove on its own', async () => {
     await mount([exercise('plain-bench', [false, false])])
     await click(container.querySelector('button[aria-label="Set 1"]'))
-    expect(lastMenu().sections.map(g => g.title)).toEqual([undefined, 'Add to this set', undefined])
+    expect(lastMenu().sections.map(g => g.more ? ['More', menuItemsOf({ sections: g.more }).map(it => it.label)] : g.items.filter(Boolean).map(it => it.label))).toEqual([
+      ['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set'],
+      ['More', ['Make it a warm-up set', 'Rest after this set']],
+      ['Remove this set'],
+    ])
   })
 
   it('shows a thumbnail instead of the animation when animations are Small, and a tap brings it back', async () => {

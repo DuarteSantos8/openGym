@@ -123,8 +123,9 @@ const EDIT = [
   { id: 'e-past', route: '/history', anchor: 'history-add', sandbox: 'edit' },
   { id: 'e-row', route: '/history', anchor: 'history-row', open: true, sandbox: 'edit', until: c => c.sheets > 0 },
   { id: 'e-edit', route: '/history', anchor: 'wd-edit', sheet: true, sandbox: 'edit', lost: c => !c.sheets, back: 'e-row' },
-  { id: 'e-date', route: '/history', anchor: 'wd-date', sheet: true, sandbox: 'edit', lost: c => !c.sheets, back: 'e-row' },
   { id: 'e-note', route: '/history', anchor: 'wd-note', sheet: true, sandbox: 'edit', optional: true, lost: c => !c.sheets, back: 'e-row' },
+  // Date & time, duration, sharing and Delete sit behind one row since v1.4.4 (was: e-date on its own button).
+  { id: 'e-options', route: '/history', anchor: 'wd-options', sheet: true, sandbox: 'edit', lost: c => !c.sheets, back: 'e-row' },
   { id: 'e-back', route: '/history', anchor: 'history-back', go: '/stats', sandbox: 'edit' },
   { id: 'e-measure', route: '/stats', anchor: 'stats-measure', sandbox: 'edit' },
   { id: 'e-routines', route: '/stats', anchor: 'tab-plan', sandbox: 'edit' },

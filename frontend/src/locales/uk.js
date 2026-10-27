@@ -2798,7 +2798,6 @@ export default {
   "Its own page": "Своя сторінка",
   "It’s the first row of the list. Tap it.": "Це перший рядок списку. Торкніться.",
   "Log a past workout with its own date and time. It counts like any other.": "Запишіть минуле тренування з його датою й часом. Воно рахується як будь-яке інше.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "Записали не в той день? Перенесіть тут. Для тривалості є своя кнопка нижче.",
   "Measurements and photos": "Заміри й фото",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "Чогось бракує? Створіть. Працює як будь-яка інша: програми, тренування, рекорди, мапа тіла, копії та синхронізація. Нічого не створюється, поки ви не торкнетеся «Створити вправу».",
   "Moving in?": "Переїжджаєте?",
@@ -2823,7 +2822,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "День жиму, Ноги, Понеділкова каторга. Торкніться назви й впишіть свою.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "Відкриває його знову: підходи, ваги, повторення, вправи. Нічого не зміниться, поки ви не торкнетеся «Зберегти».",
   "Restore a backup": "Відновити копію",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "Нотатку до тренування можна переписати будь-коли. «Видалити тренування» чекає в самому низу.",
   "Routine name": "Назва програми",
   "Routines are made in Plan. Tap it.": "Програми створюються в «Плані». Торкніться.",
   "Save plan": "Зберегти план",
@@ -2876,4 +2874,7 @@ export default {
   "Your real data is exactly as you left it.": "Ваші справжні дані саме такі, якими ви їх залишили.",
   "Your routines live behind this tab. Tap Plan.": "Ваші програми за цією вкладкою. Торкніться «План».",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "Ваші підходи, зважування й заміри в CSV. Наш імпорт теж уміє їх читати.",
+  "Date, duration, share, export, delete": "Дата, тривалість, поділитися, експорт, видалення",
+  "Rewrite the session note whenever.": "Нотатку до тренування можна переписати будь-коли.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "Не той день чи забули вчасно завершити? Виправте тут. Поділитися, експорт і «Видалити тренування» теж тут.",
 }

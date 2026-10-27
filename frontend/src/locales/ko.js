@@ -2801,7 +2801,6 @@ export default {
   "Its own page": "전용 페이지",
   "It’s the first row of the list. Tap it.": "목록의 첫 줄이에요. 눌러 보세요.",
   "Log a past workout with its own date and time. It counts like any other.": "날짜와 시간을 정해서 지난 운동을 기록하세요. 다른 운동이랑 똑같이 쳐줘요.",
-  "Logged it on the wrong day? Move it here. The duration has its own button below.": "날짜를 잘못 적었나요? 여기서 옮기세요. 운동 시간은 아래에 따로 버튼이 있어요.",
   "Measurements and photos": "신체 치수와 사진",
   "Missing one? Make it. It works like any other: routines, workouts, records, the body map, backups and sync. Nothing is created until you tap Create.": "없는 운동이 있나요? 만드세요. 다른 운동이랑 똑같이 쓰여요: 루틴, 운동, 기록, 신체 지도, 백업, 동기화. '운동 만들기'를 누르기 전까진 아무것도 안 만들어져요.",
   "Moving in?": "이사 오셨나요?",
@@ -2826,7 +2825,6 @@ export default {
   "Push Day, Legs, Monday Misery. Tap the name and type your own.": "가슴 데이, 하체, 월요병 루틴. 이름을 눌러 직접 적으세요.",
   "Reopens it: sets, weights, reps, exercises. Nothing changes until you tap Save.": "다시 열어요: 세트, 무게, 횟수, 운동. '저장'을 누르기 전까진 아무것도 안 바뀌어요.",
   "Restore a backup": "백업 복원",
-  "Rewrite the session note whenever. Delete workout waits at the very bottom.": "운동 메모는 언제든 다시 쓰세요. '운동 삭제'는 맨 아래에서 기다려요.",
   "Routine name": "루틴 이름",
   "Routines are made in Plan. Tap it.": "루틴은 '계획'에서 만들어요. 눌러 보세요.",
   "Save plan": "계획 저장",
@@ -2879,4 +2877,7 @@ export default {
   "Your real data is exactly as you left it.": "진짜 데이터는 그대로예요.",
   "Your routines live behind this tab. Tap Plan.": "루틴은 이 탭 뒤에 있어요. '계획'을 누르세요.",
   "Your sets, weigh-ins and measurements as CSV. Our importer reads it back too.": "세트, 체중 기록, 신체 치수를 CSV로. 저희 가져오기 기능도 다시 읽을 수 있어요.",
+  "Date, duration, share, export, delete": "날짜, 시간, 공유, 내보내기, 삭제",
+  "Rewrite the session note whenever.": "운동 메모는 언제든 다시 쓰세요.",
+  "Wrong day or forgot to finish on time? Fix it in here. Sharing, export and Delete live here too.": "날짜가 틀렸거나 제때 끝내는 걸 잊었나요? 여기서 고치세요. 공유, 내보내기, '운동 삭제'도 여기 있어요.",
 }
