@@ -318,6 +318,9 @@ export const editPlan = (rule, patch) => ({ ...defaultPlanRule(rule.preset, { id
 /** The rest every phase asks for, its groups' own rests and a progressed rest untouched (restFromProfile, Update routine). */
 export const withRest = (rule, restSeconds) => ({ ...rule, program: { ...rule.program, phases: rule.program.phases.map(ph => ({ ...ph, parameters: { ...ph.parameters, restSeconds } })) } })
 
+/** A ladder's rungs as `{ name, exerciseId? }`: a rung is a name or an object naming an exercise. */
+export const rungsOf = op => (op?.rungs ?? []).map(r => (typeof r === 'string' ? { name: r } : r))
+
 /** The phase a routine shows and edits: the first. */
 export const planPhase = rule => rule.program.phases[0]
 
@@ -457,7 +460,7 @@ function checkOperators(errors, at, ph) {
     if (o.metric === 'durationSeconds' && !p.durationSeconds) errors.push(`${oat}: seconds need parameters.durationSeconds`)
     if ((o.metric === 'restSeconds' || o.metric === 'difficulty') && !(finite(o.min) && finite(o.max))) errors.push(`${oat}: ${o.metric} needs min and max`)
     if (o.metric === 'difficulty') {
-      if (!(Array.isArray(o.rungs) && o.rungs.length && o.rungs.every(x => typeof x === 'string' && x.trim()))) errors.push(`${oat}.rungs must be non-empty names`)
+      if (!(Array.isArray(o.rungs) && o.rungs.length && o.rungs.every(x => (typeof x === 'string' ? x.trim() : isObj(x) && typeof x.name === 'string' && x.name.trim() && (x.exerciseId === undefined || (typeof x.exerciseId === 'string' && x.exerciseId)))))) errors.push(`${oat}.rungs must be non-empty names`)
       else if (o.max !== o.rungs.length - 1) errors.push(`${oat}.max must be the last rung`)
     } else if (o.rungs !== undefined) errors.push(`${oat}.rungs belong to a difficulty step`)
   })
@@ -534,6 +537,8 @@ export function validatePlanRule(rule) {
     if (c.metric === 'difficulty_rung' && !phases.some(ph => ph.progression?.some(o => o.metric === 'difficulty'))) errors.push('difficulty_rung needs named rungs')
     if (c.metric === 'rest_floor' && !(finite(c.target) && c.target >= 0 && phases.some(ph => ph.progression?.some(o => o.metric === 'restSeconds')))) errors.push('rest_floor needs a rest step and a target ≥ 0')
   })
+  // A phase change (loadedPreset) restarts the rung, so a rung's exercise would jump back to the first.
+  if (phases.length > 1 && phases.some(ph => ph.progression?.some(o => o.metric === 'difficulty' && rungsOf(o).some(r => r.exerciseId)))) errors.push('rung exercises need a single-phase ladder')
   return { ok: errors.length === 0, errors }
 }
 
