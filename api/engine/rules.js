@@ -140,7 +140,7 @@ function ladderPhase(o, id = 'ladder') {
   const climb = [
     { id: 'reps', metric: 'reps', when: 'success', basis: 'current', step: 1, resetOnCarry: true },
     { id: 'sets', metric: 'sets', when: 'success', step: 1, resetOnCarry: true },
-    ...(o.rungs?.length ? [{ id: 'rung', metric: 'difficulty', when: 'success', step: 1, min: 0, max: o.rungs.length - 1, rungs: copy(o.rungs) }] : [])
+    ...(o.rungs?.length ? [{ id: 'rung', metric: 'difficulty', when: 'success', step: 1, min: 0, max: o.rungs.length - 1, rungs: copy(o.rungs), ...(o.regress ? { regress: copy(o.regress) } : {}) }] : [])
   ]
   return phase(id, { ...o, load: { mode: 'empty' }, target: NONE }, { progression: climb })
 }
@@ -273,6 +273,7 @@ export function planOptions(rule) {
   const preset = rule.preset
   if (preset === 'bodyweight_ladder') {
     o.rungs = copy(op(main, 'difficulty')?.rungs ?? [])
+    if (op(main, 'difficulty')?.regress) o.regress = copy(op(main, 'difficulty').regress)
     if (regime) {
       const loaded = pr.phases[1]
       o.loadedPreset = loaded.id
@@ -463,6 +464,10 @@ function checkOperators(errors, at, ph) {
       if (!(Array.isArray(o.rungs) && o.rungs.length && o.rungs.every(x => (typeof x === 'string' ? x.trim() : isObj(x) && typeof x.name === 'string' && x.name.trim() && (x.exerciseId === undefined || (typeof x.exerciseId === 'string' && x.exerciseId)))))) errors.push(`${oat}.rungs must be non-empty names`)
       else if (o.max !== o.rungs.length - 1) errors.push(`${oat}.max must be the last rung`)
     } else if (o.rungs !== undefined) errors.push(`${oat}.rungs belong to a difficulty step`)
+    if (o.regress != null) {
+      if (o.metric !== 'difficulty') errors.push(`${oat}.regress belongs to a difficulty step`)
+      else if (!(isObj(o.regress) && Number.isInteger(o.regress.after) && o.regress.after >= 1 && o.regress.after <= 10)) errors.push(`${oat}.regress.after must be an integer from 1 to 10`)
+    }
   })
 }
 

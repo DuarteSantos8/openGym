@@ -86,6 +86,9 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
   const duration = valueOf(phase, values, 'durationSeconds')
   const rest = valueOf(phase, values, 'restSeconds')
   const deload = carry ? state.deload ?? null : null
+  // The rung the last finish moved to, for the workout's one line (promote or regress).
+  const rungFrom = lastPrescription?.values?.difficulty ?? 0, rungTo = values.difficulty ?? 0
+  const rung = carry && operatorFor(phase, 'difficulty') && lastPrescription.phaseId === phase.id && rungFrom !== rungTo ? { from: rungFrom, to: rungTo, reason: rungTo > rungFrom ? 'promote' : 'regress' } : null
 
   // The last session of a loaded lift carried no weight: v1 held the plan.
   const unweighted = !!lastLog && !reset && !!before && lastPrescription.phaseId === phase.id && unweightedLog(lastPrescription, lastLog)
@@ -190,7 +193,7 @@ export function generatePrescription({ id, now, trackId, rule, state = null, las
     rows,
     ...(warmupRows.length ? { warmupRows } : {}),
     prefill,
-    provenance: { derivedFromOutOfPlan: !!lastLog?.audit?.some(f => f.code !== 'completed_track'), sourceLogId: lastLog?.id ?? null, ...(deload ? { deload: copy(deload) } : {}) }
+    provenance: { derivedFromOutOfPlan: !!lastLog?.audit?.some(f => f.code !== 'completed_track'), sourceLogId: lastLog?.id ?? null, ...(deload ? { deload: copy(deload) } : {}), ...(rung ? { rung } : {}) }
   }
   return deepFreeze({ ...body, contentHash: contentHash(body) })
 }

@@ -153,3 +153,21 @@ describe('a track twice in one workout', () => {
     expect(skipped).toMatchObject({ lastCompletedLogId: 'a', values: { load: { value: 62.5 } } })
   })
 })
+
+describe('replaying a rung regression', () => {
+  it('rebuilds the miss counter the live finishes left', () => {
+    const rule = defaultPlanRule('bodyweight_ladder', { id: 'w', exerciseId: 'ex1', routineId: 'A', unit: 'kg', rungs: ['a', 'b', 'c'], sets: { min: 1, max: 1 }, reps: { min: 1, max: 2 }, completion: [], regress: { after: 3 } })
+    const prescriptions = {}, workouts = []
+    let state = null, last = null
+    ;[2, 2, 0, 0].forEach((reps, k) => {
+      const p = generatePrescription({ id: 'p' + k, now: NOW, trackId: 't', rule, state, lastPrescription: last })
+      const actual = { sets: 1, reps }
+      prescriptions[p.id] = p
+      workouts.push({ start: k, exposures: [{ exposureId: 'x' + k, trackId: 't', prescriptionId: p.id, actual, excludedFromProgression: false }] })
+      state = advanceProgression({ state, prescription: p, log: { id: 'x' + k, actual }, now: null })
+      last = p
+    })
+    expect(state).toMatchObject({ rungMisses: 2, values: { difficulty: 1 } })
+    expect(replayProgression({ workouts, trackId: 't', prescriptions })).toEqual(state)
+  })
+})
