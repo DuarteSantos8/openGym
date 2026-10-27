@@ -2779,4 +2779,12 @@ export default {
   '{0}% of {1} → {2}': '{0}% от {1} → {2}',
   'Moved up to {0}.': 'Переход на {0}.',
   'Back to {0}.': 'Возврат к {0}.',
+  'Step {0}': 'Ступень {0}',
+  'Choose exercise': 'Выбрать упражнение',
+  'Clear exercise': 'Убрать упражнение',
+  'Remove step': 'Удалить ступень',
+  'From easiest to hardest, top first.': 'От самой лёгкой к самой трудной, начиная сверху.',
+  'Go back a step after missed sessions': 'Возвращаться на ступень после неудачных тренировок',
+  'Missed sessions before going back': 'Неудачных тренировок до возврата',
+  'Missed means short of the minimum sets and reps.': 'Неудачная значит меньше минимума подходов и повторений.',
 }

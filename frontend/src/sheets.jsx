@@ -2009,7 +2009,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, s
           onChange={v => setCardioCfg(x => ({ ...x, incline: clampIncline(v) }))} />}
       </div>)}
       {panel('progression', <div className="small dim">{t('Cardio uses intervals, duration and speed. Strength progression templates do not apply.')}</div>)}
-    </> : <RuleEditor tab={tab} rule={rule} unit={st.unit} oneRm={oneRmForMeaning(st, rule.exerciseId, currentDbLoad(st, rule.exerciseId))} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} onChange={next => {
+    </> : <RuleEditor tab={tab} rule={rule} unit={st.unit} oneRm={oneRmForMeaning(st, rule.exerciseId, currentDbLoad(st, rule.exerciseId))} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} pickExercise={exercisePicker} onChange={next => {
       setRule(next)
       if (next.preset === 'greyskull' && !failureDecided.current) setFailure('last')
     }}

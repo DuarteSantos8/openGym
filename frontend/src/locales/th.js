@@ -2786,4 +2786,12 @@ export default {
   '{0}% of {1} → {2}': '{0}% ของ {1} → {2}',
   'Moved up to {0}.': 'ขยับขึ้นเป็น {0}',
   'Back to {0}.': 'กลับไปที่ {0}',
+  'Step {0}': 'ขั้นที่ {0}',
+  'Choose exercise': 'เลือกท่า',
+  'Clear exercise': 'ล้างท่า',
+  'Remove step': 'ลบขั้น',
+  'From easiest to hardest, top first.': 'เรียงจากง่ายไปยาก เริ่มจากบนสุด',
+  'Go back a step after missed sessions': 'ถอยกลับหนึ่งขั้นหลังพลาดหลายครั้ง',
+  'Missed sessions before going back': 'จำนวนครั้งที่พลาดก่อนถอยกลับ',
+  'Missed means short of the minimum sets and reps.': 'พลาดหมายถึงทำได้ไม่ถึงจำนวนเซ็ตและครั้งขั้นต่ำ',
 }

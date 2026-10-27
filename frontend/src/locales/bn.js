@@ -2855,4 +2855,12 @@ export default {
   '{0}% of {1} → {2}': '{1}-এর {0}% → {2}',
   'Moved up to {0}.': '{0}-এ উঠে গেছেন।',
   'Back to {0}.': 'আবার {0}-এ ফিরে গেছেন।',
+  'Step {0}': 'ধাপ {0}',
+  'Choose exercise': 'ব্যায়াম বেছে নিন',
+  'Clear exercise': 'ব্যায়াম সরান',
+  'Remove step': 'ধাপ সরান',
+  'From easiest to hardest, top first.': 'সহজ থেকে কঠিন, উপরেরটি প্রথমে।',
+  'Go back a step after missed sessions': 'ব্যর্থ সেশনের পরে এক ধাপ পিছিয়ে যান',
+  'Missed sessions before going back': 'পিছিয়ে যাওয়ার আগে ব্যর্থ সেশন',
+  'Missed means short of the minimum sets and reps.': 'ব্যর্থ মানে সর্বনিম্ন সেট ও রেপের কম।',
 }

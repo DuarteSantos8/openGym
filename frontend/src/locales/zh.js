@@ -2775,4 +2775,12 @@ export default {
   '{0}% of {1} → {2}': '{1} 的 {0}% → {2}',
   'Moved up to {0}.': '已升级到{0}。',
   'Back to {0}.': '已退回到{0}。',
+  'Step {0}': '第 {0} 级',
+  'Choose exercise': '选择动作',
+  'Clear exercise': '清除动作',
+  'Remove step': '删除这一级',
+  'From easiest to hardest, top first.': '从易到难，从最上面开始。',
+  'Go back a step after missed sessions': '多次未达标后退回一级',
+  'Missed sessions before going back': '退回前的未达标次数',
+  'Missed means short of the minimum sets and reps.': '未达标指组数和次数低于最低要求。',
 }

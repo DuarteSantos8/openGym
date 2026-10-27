@@ -2775,4 +2775,12 @@ export default {
   '{0}% of {1} → {2}': '{0}% z {1} → {2}',
   'Moved up to {0}.': 'Awans na {0}.',
   'Back to {0}.': 'Powrót do {0}.',
+  'Step {0}': 'Etap {0}',
+  'Choose exercise': 'Wybierz ćwiczenie',
+  'Clear exercise': 'Usuń ćwiczenie',
+  'Remove step': 'Usuń etap',
+  'From easiest to hardest, top first.': 'Od najłatwiejszego do najtrudniejszego, zaczynając od góry.',
+  'Go back a step after missed sessions': 'Cofnij o etap po nieudanych sesjach',
+  'Missed sessions before going back': 'Nieudane sesje przed cofnięciem',
+  'Missed means short of the minimum sets and reps.': 'Nieudana oznacza mniej niż minimum serii i powtórzeń.',
 }

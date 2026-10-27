@@ -5,6 +5,8 @@ import { createRoot } from 'react-dom/client'
 import RuleEditor from './RuleEditor.jsx'
 import { bindUI } from './ui.jsx'
 import { defaultPlanRule, editPlan, planOptions, planPhase, rptOffsets, validatePlanRule } from '../lib/prescription/index.js'
+import { EXIDX } from '../lib/exercises.js'
+import { exerciseNameText } from '../lib/format.js'
 
 let root
 let host
@@ -496,5 +498,122 @@ describe('% 1RM load hint', () => {
     expect(hint()).toBeUndefined()
     render({ rule: linear(), oneRm: { value: 142, low: 135, high: 150 } })
     expect(hint()).toBeUndefined()
+  })
+})
+
+describe('RuleEditor: chain steps', () => {
+  const ladder = (options = {}) => ruleOf('bodyweight_ladder', { rungs: ['Step 1', 'Step 2'], ...options })
+  // The exercise picker: opened by the row, answered later by choose().
+  const picker = () => vi.fn(() => ({ close: vi.fn() }))
+  const chooseIn = i => [...rows()[i].querySelectorAll('button')].find(b => b.textContent.trim() === 'Choose exercise')
+  const choose = (pickExercise, i, ex) => {
+    act(() => chooseIn(i).click())
+    expect(pickExercise.mock.calls.at(-1)[1]).toEqual({ title: 'Choose exercise' })
+    act(() => pickExercise.mock.calls.at(-1)[0](ex))
+    expect(pickExercise.mock.results.at(-1).value.close).toHaveBeenCalled()
+  }
+  const rows = () => [...host.querySelectorAll('[data-rung]')]
+  const inRow = (i, label) => rows()[i].querySelector(`button[aria-label="${label}"]`)
+  const lastRule = onChange => onChange.mock.calls.at(-1)[0]
+  const rungsOut = onChange => o(lastRule(onChange)).rungs
+  const maxOf = r => planPhase(r).progression.find(op => op.metric === 'difficulty').max
+  const regressSwitch = () => host.querySelector('[role="switch"][aria-label="Go back a step after missed sessions"]')
+
+  it('chain steps: add, remove, reorder', () => {
+    const rule = ladder({ rungs: ['a', 'b', 'c'] })
+    let onChange = render({ rule, pickExercise: picker() })
+    expect(rows()).toHaveLength(3)
+    act(() => button('Add step').click())
+    expect(rungsOut(onChange)).toEqual(['a', 'b', 'c', 'Step 4'])
+    expect(maxOf(lastRule(onChange))).toBe(3)
+    act(() => inRow(0, 'Move down').click())
+    expect(rungsOut(onChange)).toEqual(['b', 'a', 'c'])
+    expect(inRow(0, 'Move up').disabled).toBe(true)
+    expect(inRow(2, 'Move down').disabled).toBe(true)
+    act(() => inRow(1, 'Remove step').click())
+    expect(rungsOut(onChange)).toEqual(['a', 'c'])
+    expect(maxOf(lastRule(onChange))).toBe(1)
+  })
+
+  it('chain steps: picking sets exerciseId and fills an auto name', () => {
+    const pull = EXIDX['0652']
+    let pickExercise = picker()
+    const onChange = render({ rule: ladder(), pickExercise })
+    choose(pickExercise, 1, pull)
+    expect(rungsOut(onChange)).toEqual(['Step 1', { name: exerciseNameText(pull), exerciseId: '0652' }])
+    pickExercise = picker()
+    const kept = render({ rule: ladder({ rungs: ['Step 1', 'Kipping'] }), pickExercise })
+    choose(pickExercise, 1, pull)
+    expect(rungsOut(kept)).toEqual(['Step 1', { name: 'Kipping', exerciseId: '0652' }])
+  })
+
+  it('chain steps: a row with an exercise names it, and clearing returns to a label', () => {
+    const onChange = render({ rule: ladder({ rungs: ['Step 1', { name: 'Kipping', exerciseId: '0652' }] }), pickExercise: picker() })
+    expect(rows()[1].textContent).toContain(exerciseNameText(EXIDX['0652']))
+    expect(inRow(0, 'Clear exercise')).toBeNull()
+    act(() => inRow(1, 'Clear exercise').click())
+    expect(rungsOut(onChange)).toEqual(['Step 1', 'Kipping'])
+  })
+
+  it('chain steps: an emptied name falls back on blur', () => {
+    const onChange = render({ rule: ladder({ rungs: ['x', { name: 'y', exerciseId: '0652' }] }), pickExercise: picker() })
+    const type = (input, value) => act(() => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(input, value)
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    const [first, second] = rows().map(r => r.querySelector('input'))
+    expect(first.getAttribute('aria-label')).toBe('Step 1')
+    type(first, 'Tuck')
+    expect(rungsOut(onChange)).toEqual(['Tuck', { name: 'y', exerciseId: '0652' }])
+    act(() => { first.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    act(() => { first.value = ''; first.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    expect(rungsOut(onChange)).toEqual(['Step 1', { name: 'y', exerciseId: '0652' }])
+    act(() => { second.value = ' '; second.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    expect(rungsOut(onChange)).toEqual(['x', { name: exerciseNameText(EXIDX['0652']), exerciseId: '0652' }])
+  })
+
+  it('chain steps: legacy strings render and survive', () => {
+    const rule = ruleOf('bodyweight_ladder', { rungs: ['easy', 'hard'] })
+    const onChange = render({ rule, pickExercise: picker() })
+    expect(rows()).toHaveLength(2)
+    expect(rows().every(r => r.textContent.includes('Choose exercise'))).toBe(true)
+    act(() => regressSwitch().click())
+    expect(rungsOut(onChange)).toEqual(['easy', 'hard'])
+  })
+
+  it('chain steps: regression switch', () => {
+    render({ rule: ladder({ rungs: ['only'] }), pickExercise: picker() })
+    expect(regressSwitch()).toBeNull()
+    const rule = ladder()
+    let onChange = render({ rule, pickExercise: picker() })
+    expect(regressSwitch().getAttribute('aria-checked')).toBe('false')
+    act(() => regressSwitch().click())
+    expect(o(lastRule(onChange)).regress).toEqual({ after: 2 })
+    const on = lastRule(onChange)
+    onChange = render({ rule: on, pickExercise: picker() })
+    const stepper = label => [...host.querySelectorAll('.stp-w')].find(w => w.querySelector('.stp-l')?.textContent === label)
+    act(() => stepper('Missed sessions before going back').querySelector('[aria-label="Increase"]').click())
+    expect(o(lastRule(onChange)).regress).toEqual({ after: 3 })
+    onChange = render({ rule: editPlan(on, { regress: { after: 1 } }), pickExercise: picker() })
+    act(() => stepper('Missed sessions before going back').querySelector('[aria-label="Decrease"]').click())
+    expect(o(lastRule(onChange)).regress).toEqual({ after: 1 })
+    onChange = render({ rule: on, pickExercise: picker() })
+    act(() => regressSwitch().click())
+    expect(o(lastRule(onChange))).not.toHaveProperty('regress')
+    expect(host.textContent).toContain('Missed means short of the minimum sets and reps.')
+  })
+
+  it('chain steps: none on a loaded ladder, and no picker without one', () => {
+    render({ rule: ladder({ loadedPreset: 'double' }), pickExercise: picker() })
+    expect(rows()).toHaveLength(0)
+    expect(host.textContent).not.toContain('Choose exercise')
+    render({ rule: ladder() })
+    expect(rows()).toHaveLength(2)
+    expect(host.textContent).not.toContain('Choose exercise')
+  })
+
+  it('chain steps: every row button has an accessible name', () => {
+    render({ rule: ladder({ rungs: ['a', { name: 'b', exerciseId: '0652' }] }), pickExercise: picker() })
+    for (const b of rows().flatMap(r => [...r.querySelectorAll('button')])) expect(b.getAttribute('aria-label') || b.textContent.trim()).toBeTruthy()
   })
 })

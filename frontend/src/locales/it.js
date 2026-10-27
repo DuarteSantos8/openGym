@@ -2775,4 +2775,12 @@ export default {
   '{0}% of {1} → {2}': '{0}% di {1} → {2}',
   'Moved up to {0}.': 'Passi a {0}.',
   'Back to {0}.': 'Torni a {0}.',
+  'Step {0}': 'Livello {0}',
+  'Choose exercise': 'Scegli esercizio',
+  'Clear exercise': 'Togli esercizio',
+  'Remove step': 'Rimuovi livello',
+  'From easiest to hardest, top first.': 'Dal più facile al più difficile, si parte dall’alto.',
+  'Go back a step after missed sessions': 'Torna indietro di un livello dopo sessioni mancate',
+  'Missed sessions before going back': 'Sessioni mancate prima di tornare indietro',
+  'Missed means short of the minimum sets and reps.': 'Mancata significa sotto il minimo di serie e ripetizioni.',
 }

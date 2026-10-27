@@ -7,7 +7,8 @@ import Icon from './Icon.jsx'
 import Stepper from './Stepper.jsx'
 import { Button, Row, Segmented, SelectButton, SelectRow, Switch } from './ui.jsx'
 import { t } from '../lib/i18n.js'
-import { fmtNum, fmtSpread } from '../lib/format.js'
+import { exerciseNameText, fmtNum, fmtSpread } from '../lib/format.js'
+import { EXIDX } from '../lib/exercises.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { REST_MAX, fmtRest } from '../lib/duration.js'
 import { pyramidLabel, PYRAMID_PRESETS, PYRAMID_MAX, MAX_PYRAMID_SETS } from '../lib/pyramid.js'
@@ -102,12 +103,67 @@ function LoadField({ label, value, upTo, rangeable = false, unit, step, noneMode
   </div>
 }
 
+// The ladder's steps, easiest first: a name each, and the exercise it logs when it names one. A step
+// without an exercise is stored as its plain name, so a chain of names saves exactly as it was.
+// `pickExercise` is the sheet's exercise picker (passed in: sheets.jsx imports this file).
+function RungList({ rungs, regress, pickExercise, onChange }) {
+  const list = rungs.map(r => (typeof r === 'string' ? { name: r } : r))
+  const write = next => onChange({ rungs: next.map(r => (r.exerciseId ? { name: r.name, exerciseId: r.exerciseId } : r.name)) })
+  const at = (i, patch) => write(list.map((r, j) => (j === i ? { ...r, ...patch } : r)))
+  const swap = (i, j) => { const next = [...list]; [next[i], next[j]] = [next[j], next[i]]; write(next) }
+  const exOf = r => (r.exerciseId ? EXIDX[r.exerciseId] : null)
+  const autoName = (r, i) => (exOf(r) ? exerciseNameText(exOf(r)) : t('Step {0}', i + 1))
+  const choose = i => {
+    const picker = pickExercise(ex => {
+      picker.close()
+      const r = list[i]
+      // A name the user typed stays; an empty or generated one follows the exercise.
+      const auto = !r.name.trim() || r.name === autoName(r, i) || r.name === t('Step {0}', i + 1)
+      at(i, { exerciseId: ex.id, ...(auto ? { name: exerciseNameText(ex) } : {}) })
+    }, { title: t('Choose exercise') })
+  }
+  return <div style={{ marginBottom: 14 }}>
+    <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      {list.map((r, i) => <li key={i} data-rung={i} className="sect-b" style={{ marginBottom: 10 }}>
+        <div className="row cfgrow" style={{ alignItems: 'center', gap: 10 }}>
+          <span className="re-count" aria-hidden="true" style={{ minWidth: 14, textAlign: 'center' }}>{i + 1}</span>
+          <input className="input grow" aria-label={t('Step {0}', i + 1)} value={r.name}
+            onChange={e => at(i, { name: e.target.value })}
+            onBlur={e => { if (!e.target.value.trim()) at(i, { name: autoName(r, i) }) }} />
+        </div>
+        <div className="row" style={{ alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+          {pickExercise && <Button size="sm" variant="tinted" icon={exOf(r) ? 'swap' : 'plus'} style={{ flex: '1 1 0', justifyContent: 'flex-start', minWidth: 0 }}
+            onClick={() => choose(i)}>{exOf(r) ? exerciseNameText(exOf(r)) : t('Choose exercise')}</Button>}
+          {r.exerciseId && <Button size="sm" icon="xmark" aria-label={t('Clear exercise')} title={t('Clear exercise')} onClick={() => at(i, { exerciseId: undefined })} />}
+          <span className="re-order" style={{ flexDirection: 'row', marginInlineStart: 'auto' }}>
+            <button type="button" className="iconbtn" aria-label={t('Move up')} title={t('Move up')} disabled={i === 0} onClick={() => swap(i, i - 1)}><Icon name="chevronUp" /></button>
+            <button type="button" className="iconbtn" aria-label={t('Move down')} title={t('Move down')} disabled={i === list.length - 1} onClick={() => swap(i, i + 1)}><Icon name="chevronDown" /></button>
+            <button type="button" className="iconbtn" aria-label={t('Remove step')} title={t('Remove step')} onClick={() => write(list.filter((_, j) => j !== i))}><Icon name="trash" /></button>
+          </span>
+        </div>
+      </li>)}
+    </ol>
+    <div className="small dim" style={{ marginBottom: 8 }}>{t('From easiest to hardest, top first.')}</div>
+    <Button size="sm" icon="plus" onClick={() => write([...list, { name: t('Step {0}', list.length + 1) }])}>{t('Add step')}</Button>
+    {list.length >= 2 && <div className="sect-b" style={{ marginTop: 14 }}>
+      <Row title={t('Go back a step after missed sessions')}>
+        <Switch aria-label={t('Go back a step after missed sessions')} checked={!!regress} onChange={on => onChange({ regress: on ? { after: 2 } : null })} />
+      </Row>
+      {regress && <div className="row cfgrow">
+        <Stepper label={t('Missed sessions before going back')} value={regress.after} step={1} decimal={false}
+          onChange={after => onChange({ regress: { after: Math.min(10, Math.max(1, after)) } })} />
+      </div>}
+      <div className="small dim">{t('Missed means short of the minimum sets and reps.')}</div>
+    </div>}
+  </div>
+}
+
 // `restDefault`: the exercise takes the profile's rest (`defaultRest`) instead of its own; the wheel's 0:00 says so.
 // `tab` ('target' | 'progression') lays the form out as the exercise sheet's two tabs: both panels
 // stay mounted and the other one is hidden, so a field keeps what was typed while you switch.
 // Without it the editor is one flat form, Progression then Target. `extra` closes the Target form
 // with what the caller owns beside the rule (the sheet's sets to failure).
-export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, oneRm = null, restDefault = false, defaultRest = 90, onRestDefault, onChange, tab, extra = null }) {
+export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, oneRm = null, restDefault = false, defaultRest = 90, onRestDefault, onChange, tab, extra = null, pickExercise = null }) {
   const def = PRESETS[rule.preset]
   // The template's numbers (planOptions): the plan's sets, reps, load… and its extras (offsets, rungs…).
   const p = planOptions(rule)
@@ -357,11 +413,8 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </div>
     </div>}
 
-    {rule.preset === 'bodyweight_ladder' && <textarea className="input" rows={3} style={{ marginBottom: 14 }}
-      placeholder={t('Harder variations, one per line (optional)')}
-      value={(p.rungs || []).join('\n')}
-      onChange={e => set({ rungs: e.target.value.split('\n') })}
-      onBlur={e => set({ rungs: e.target.value.split('\n').map(x => x.trim()).filter(Boolean) })} />}
+    {/* A ladder that adds weight has no steps: the template drops them on a loaded phase. */}
+    {rule.preset === 'bodyweight_ladder' && !p.loadedPreset && <RungList rungs={p.rungs} regress={p.regress} pickExercise={pickExercise} onChange={set} />}
 
     {def.metrics.includes('target_load') && <LoadField label={t('Target load')} value={p.target} unit={unit} step={step} noneMode="none" oneRm={oneRm} onChange={target => set({ target })} />}
     <div className="sect-b" style={{ marginBottom: 14 }}>

@@ -2778,4 +2778,12 @@ export default {
   '{0}% of {1} → {2}': '{1} {0}%-a → {2}',
   'Moved up to {0}.': 'Továbbléptél: {0}.',
   'Back to {0}.': 'Vissza ide: {0}.',
+  'Step {0}': '{0}. lépcső',
+  'Choose exercise': 'Gyakorlat választása',
+  'Clear exercise': 'Gyakorlat törlése',
+  'Remove step': 'Lépcső törlése',
+  'From easiest to hardest, top first.': 'A legkönnyebbtől a legnehezebbig, felülről kezdve.',
+  'Go back a step after missed sessions': 'Sikertelen edzések után egy lépcsővel vissza',
+  'Missed sessions before going back': 'Sikertelen edzések a visszalépésig',
+  'Missed means short of the minimum sets and reps.': 'Sikertelen: a minimális sorozat- és ismétlésszám alatt.',
 }

@@ -2775,4 +2775,12 @@ export default {
   '{0}% of {1} → {2}': '{1}의 {0}% → {2}',
   'Moved up to {0}.': '{0}(으)로 올라갔어요.',
   'Back to {0}.': '{0}(으)로 돌아갔어요.',
+  'Step {0}': '{0}단계',
+  'Choose exercise': '운동 선택',
+  'Clear exercise': '운동 지우기',
+  'Remove step': '단계 삭제',
+  'From easiest to hardest, top first.': '쉬운 것부터 어려운 순서로, 맨 위부터 시작해요.',
+  'Go back a step after missed sessions': '놓친 세션 후 한 단계 뒤로',
+  'Missed sessions before going back': '뒤로 가기 전 놓친 세션 수',
+  'Missed means short of the minimum sets and reps.': '놓쳤다는 건 최소 세트와 반복 수에 못 미쳤다는 뜻이에요.',
 }

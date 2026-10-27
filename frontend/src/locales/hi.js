@@ -2775,4 +2775,12 @@ export default {
   '{0}% of {1} → {2}': '{1} का {0}% → {2}',
   'Moved up to {0}.': '{0} पर पहुँचे।',
   'Back to {0}.': 'वापस {0} पर।',
+  'Step {0}': 'चरण {0}',
+  'Choose exercise': 'व्यायाम चुनें',
+  'Clear exercise': 'व्यायाम हटाएँ',
+  'Remove step': 'चरण हटाएँ',
+  'From easiest to hardest, top first.': 'आसान से कठिन, ऊपर वाला पहले।',
+  'Go back a step after missed sessions': 'चूके सत्रों के बाद एक चरण पीछे जाएँ',
+  'Missed sessions before going back': 'पीछे जाने से पहले चूके सत्र',
+  'Missed means short of the minimum sets and reps.': 'चूका मतलब न्यूनतम सेट और रेप्स से कम।',
 }

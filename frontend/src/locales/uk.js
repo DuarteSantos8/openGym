@@ -2772,4 +2772,12 @@ export default {
   '{0}% of {1} → {2}': '{0}% від {1} → {2}',
   'Moved up to {0}.': 'Перехід на {0}.',
   'Back to {0}.': 'Повернення до {0}.',
+  'Step {0}': 'Щабель {0}',
+  'Choose exercise': 'Вибрати вправу',
+  'Clear exercise': 'Прибрати вправу',
+  'Remove step': 'Видалити щабель',
+  'From easiest to hardest, top first.': 'Від найлегшого до найважчого, починаючи згори.',
+  'Go back a step after missed sessions': 'Повертатися на щабель після невдалих тренувань',
+  'Missed sessions before going back': 'Невдалих тренувань до повернення',
+  'Missed means short of the minimum sets and reps.': 'Невдале означає менше за мінімум підходів і повторень.',
 }

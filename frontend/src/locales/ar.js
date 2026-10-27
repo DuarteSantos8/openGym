@@ -2830,4 +2830,12 @@ export default {
   '{0}% of {1} → {2}': '{0}% من {1} ← {2}',
   'Moved up to {0}.': 'انتقلت إلى {0}.',
   'Back to {0}.': 'العودة إلى {0}.',
+  'Step {0}': 'الخطوة {0}',
+  'Choose exercise': 'اختر تمرينًا',
+  'Clear exercise': 'إزالة التمرين',
+  'Remove step': 'إزالة الخطوة',
+  'From easiest to hardest, top first.': 'من الأسهل إلى الأصعب، الأعلى أولًا.',
+  'Go back a step after missed sessions': 'العودة خطوة بعد الحصص الفائتة',
+  'Missed sessions before going back': 'الحصص الفائتة قبل العودة',
+  'Missed means short of the minimum sets and reps.': 'الفائتة تعني أقل من الحد الأدنى من المجموعات والتكرارات.',
 }

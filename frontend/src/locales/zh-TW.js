@@ -2768,4 +2768,12 @@ export default {
   '{0}% of {1} → {2}': '{1} 的 {0}% → {2}',
   'Moved up to {0}.': '已升級到{0}。',
   'Back to {0}.': '已退回到{0}。',
+  'Step {0}': '第 {0} 級',
+  'Choose exercise': '選擇動作',
+  'Clear exercise': '清除動作',
+  'Remove step': '刪除這一級',
+  'From easiest to hardest, top first.': '從易到難，從最上面開始。',
+  'Go back a step after missed sessions': '多次未達標後退回一級',
+  'Missed sessions before going back': '退回前的未達標次數',
+  'Missed means short of the minimum sets and reps.': '未達標指組數和次數低於最低要求。',
 }

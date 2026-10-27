@@ -2795,4 +2795,12 @@ export default {
   '{0}% of {1} → {2}': '{0} % von {1} → {2}',
   'Moved up to {0}.': 'Aufgestiegen zu {0}.',
   'Back to {0}.': 'Zurück zu {0}.',
+  'Step {0}': 'Stufe {0}',
+  'Choose exercise': 'Übung wählen',
+  'Clear exercise': 'Übung entfernen',
+  'Remove step': 'Stufe entfernen',
+  'From easiest to hardest, top first.': 'Von leicht nach schwer, oben beginnt.',
+  'Go back a step after missed sessions': 'Nach verfehlten Einheiten eine Stufe zurück',
+  'Missed sessions before going back': 'Verfehlte Einheiten bis zur Rückstufung',
+  'Missed means short of the minimum sets and reps.': 'Verfehlt heißt: weniger als die Mindestzahl an Sätzen und Wiederholungen.',
 }
