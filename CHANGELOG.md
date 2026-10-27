@@ -95,6 +95,10 @@ dragged the page. WebKit's bug, our workaround. The App Store app and Safari tab
 **Tap the picture in a past workout for the how-to** (#805, thanks @sg41). The thumbnail opens the
 exercise's description, the rest of the row still opens its history.
 
+**Discarded means discarded, also in Apple Health** (#776). A workout you discard on the iPhone or
+the Apple Watch no longer shows up in Apple Health anyway. A watch that was away when you discarded
+it drops it as soon as it hears, and takes out any copy it saved in the meantime.
+
 **Server dependencies patched** (#806, thanks @lodepav). body-parser, fast-uri, qs and zod move to
 their fixed versions in the API and the MCP server, nothing you'll notice except fewer CVEs.
 
