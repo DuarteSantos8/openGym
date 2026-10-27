@@ -341,6 +341,10 @@ function aggregates(S, workouts) {
 
 /** Every exercise id the plan names or the given workouts logged — the ones a proposal has to
  *  be able to refer to, so they ride in the library slice whatever the cap or the filter. */
+// What a person said they want more of: the note or refine text and the profile's free fields.
+export const REVIEW_FRESH = 24;
+const focusTexts = (profile, said) => [said, profile?.goal, profile?.likes, profile?.notes].filter(x => typeof x === 'string' && x);
+
 function trainedIds(S, workouts) {
   const ids = new Set();
   (S.routines || []).forEach(r => (r.ex || []).forEach(e => ids.add(e.id)));
@@ -589,10 +593,12 @@ export function build(S, opts = {}) {
     p.bodyweight = { goal: num(S.targetW) ?? null, series: weighIns(S, p.window.from, null) };
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     if (opts.cohort) p.cohort = cleanCohort(opts.cohort);
-    // A review names mostly what is already trained; 60 candidates is plenty for a swap.
-    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, workouts), max: 60 });
+    // A review names mostly what is already trained; 60 candidates is plenty for a swap. But
+    // REVIEW_FRESH of them are always new to the plan, and the body parts the note or the
+    // profile names get the bigger share (#829: "more core" offered four ab exercises).
+    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, workouts), max: 60, fresh: REVIEW_FRESH, focus: focusTexts(p.coachProfile, opts.note) });
   } else {
-    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, S.workouts || []) });
+    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, S.workouts || []), focus: focusTexts(p.coachProfile, opts.refine) });
     // Creation for a returning user: what they have actually handled, so proposed baselines
     // start from evidence rather than optimism (B2/FR-20).
     const best = {};
