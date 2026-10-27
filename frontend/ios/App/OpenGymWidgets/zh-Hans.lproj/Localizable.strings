@@ -4,3 +4,13 @@
 "Streak" = "连续纪录";
 "Weeks in a row with a workout." = "连续有训练的周数。";
 "Open openGym once to see your plan here." = "打开一次 openGym，就能在这里看到你的计划。";
+"What to show" = "显示内容";
+"And beside it" = "旁边再放";
+"Week streak" = "连续周数";
+"Weight goal" = "体重目标";
+"This week" = "本周";
+"Next workout" = "下次训练";
+"Records" = "纪录";
+"Volume" = "总量";
+"Your streak, weight goal, week, next workout, records or volume. You pick." = "连续纪录、体重目标、本周、下次训练、纪录或总量，由你来选。";
+"Pick what the widget shows." = "选择小组件显示的内容。";

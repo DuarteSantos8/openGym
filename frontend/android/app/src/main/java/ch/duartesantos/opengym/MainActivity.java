@@ -38,6 +38,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(GymReminderPlugin.class);
         registerPlugin(AppIconPlugin.class);
         registerPlugin(NfcTagsPlugin.class);
+        registerPlugin(WidgetBridgePlugin.class);
         super.onCreate(savedInstanceState);
         passSystemBarsToPage();
     }

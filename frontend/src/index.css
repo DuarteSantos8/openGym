@@ -1916,6 +1916,36 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .tile .l .icn{font-size:14px;color:var(--label)}
 .tile .v{font-size:26px;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
 .tile.tappable:active{background:var(--surface-2)}
+/* The week streak's extras (components/Streak.jsx): best + freezes, badges, Home's party. */
+.streak-meta{display:inline-flex;align-items:center;gap:8px}
+.streak-freezes{display:inline-flex;gap:2px;vertical-align:middle}
+.streak-freezes .icn{font-size:13px;color:var(--label-3);opacity:.35}
+.streak-freezes .icn.on{color:#64d2ff;opacity:1}
+.streak-freezes.big .icn{font-size:18px}
+.tile-freezes{margin-inline-start:8px}
+.tile-freezes .icn{font-size:15px}
+.streak-badges{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}
+.streak-badge{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;border-radius:12px;background:var(--surface-2);color:var(--label-3)}
+.streak-badge .icn{font-size:20px}
+.streak-badge .n{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.streak-badge.got{background:var(--acc-soft);color:var(--label)}
+.streak-badge.got .icn{color:var(--orange)}
+.streak-party{position:relative;display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:10px 12px;border:0;border-radius:14px;
+  background:var(--acc-soft);color:var(--label);font:inherit;font-weight:600;text-align:start;animation:slideup .45s cubic-bezier(.3,1.4,.5,1) both}
+.streak-party.still{animation:none}
+.streak-party-icon{position:relative;display:inline-flex;font-size:24px;color:var(--orange);animation:streak-pop .7s cubic-bezier(.3,1.8,.5,1) .15s both}
+.streak-party.still .streak-party-icon{animation:none}
+.streak-party .sparks{position:absolute;inset:50% auto auto 50%;pointer-events:none}
+.streak-party .sparks i{position:absolute;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:var(--acc);opacity:0;animation:streak-spark .8s ease-out .3s both}
+.streak-party .sparks i:nth-child(2n){background:var(--orange)}
+.streak-party .sparks i:nth-child(1){--dx:-18px;--dy:-16px}
+.streak-party .sparks i:nth-child(2){--dx:0;--dy:-22px}
+.streak-party .sparks i:nth-child(3){--dx:18px;--dy:-16px}
+.streak-party .sparks i:nth-child(4){--dx:20px;--dy:6px}
+.streak-party .sparks i:nth-child(5){--dx:-20px;--dy:6px}
+.streak-party .sparks i:nth-child(6){--dx:0;--dy:18px}
+@keyframes streak-pop{from{transform:scale(.3)}to{transform:none}}
+@keyframes streak-spark{0%{opacity:1;transform:none}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
 /* the workout summary: time and volume share the first row, sets get the wider cell of the second
    because "15 sets · 15 work" does not fit a half */
 .center .tiles.fin{grid-template-columns:repeat(6,1fr)}

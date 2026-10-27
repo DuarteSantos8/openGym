@@ -6,6 +6,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Widgets you set up yourself, and a streak with backup.** Long press the Home Screen, add the
+openGym widget and pick what it shows: your week streak, the weight goal (how many kg or lb to go,
+with a little curve of your last weigh-ins), this week, the next workout, records this month or this
+week's volume against last week. The wide one shows two side by side. On the iPhone it also comes for
+the Lock Screen, round, wide or as one line. A tap takes you where it makes sense: Stats, the weigh-in,
+or straight into the next workout. Android gets it too, small or wide, light or dark with the phone.
+The streak itself grew up: it remembers your best run, and every 4 weeks with a workout earn a
+freeze (two at most). Miss a week for a holiday or a cold and a freeze covers it by itself, shown as a
+snowflake, no switch to remember. Badges at 4, 12, 26, 52 and 104 weeks, a small party on Home when
+you finish a week or reach one, and Stats shows it all. Points to the next level come later.
+
 **Tidier menus** (thanks seals). An exercise's ⋯ now opens with the five things you reach for
 mid-workout: note, swap, warm-up set, rest and history. Settings, plate loading, the how-to, moving
 and supersets wait under one More row, Remove is still last. The set menu and the workout's ⋯ got

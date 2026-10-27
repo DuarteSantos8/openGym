@@ -241,6 +241,30 @@
             </intent-filter>
         </receiver>
 
+        <!-- The Home Screen widget (v1.4.4): what it shows comes from the app (WidgetBridgePlugin),
+             a tap opens the app at that screen. The configure screen picks what it shows; it
+             only ever writes this app's own widget settings. -->
+        <receiver
+            android:name=".OpenGymWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/opengym_widget_info" />
+        </receiver>
+        <activity
+            android:name=".OpenGymWidgetConfigure"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/WidgetConfigTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <!-- Gym check-in scanner (@capacitor-mlkit/barcode-scanning): pre-fetch the ML Kit
              barcode model at install time so the first scan doesn't wait on a download. -->
         <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />
