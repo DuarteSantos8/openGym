@@ -36,6 +36,7 @@
 "More" = "अधिक";
 "Effort" = "मेहनत";
 "None" = "कोई नहीं";
+"Delete" = "हटाएँ";
 "Planned" = "नियोजित";
 "Last time: %@" = "पिछली बार: %@";
 "Exercises" = "व्यायाम";
@@ -66,6 +67,8 @@
 "Set %lld of %lld" = "सेट %lld / %lld";
 "%lld of %lld sets" = "%lld / %lld सेट";
 "Tap to change it." = "बदलने के लिए टैप करें।";
+"Type a number" = "संख्या लिखें";
+"Tap again to type a number." = "संख्या लिखने के लिए फिर से टैप करें।";
 "Added weight" = "अतिरिक्त वज़न";
 "Your rest, your next set, or today's workout." = "आपका आराम, अगला सेट, या आज का वर्कआउट।";
 "Opens openGym." = "openGym खोलता है।";

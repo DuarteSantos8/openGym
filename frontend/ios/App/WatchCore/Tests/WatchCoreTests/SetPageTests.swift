@@ -114,4 +114,15 @@ final class SetPageTests: XCTestCase {
         XCTAssertEqual(formatNumber(60), "60")
         XCTAssertEqual(formatNumber(0), "0")
     }
+
+    func testFormatNumberShowsWhatIsSaved() {
+        XCTAssertEqual(formatNumber(61.25), "61.25")
+        XCTAssertEqual(formatNumber(62.5), "62.5")
+        XCTAssertEqual(formatNumber(0.30000000000000004), "0.3")
+        XCTAssertEqual(formatNumber(62.999999), "63")
+        XCTAssertEqual(formatNumber(0.001), "0")
+        XCTAssertEqual(formatNumber(20.004), "20")
+        XCTAssertEqual(formatNumber(60), "60")
+        XCTAssertEqual(formatNumber(0), "0")
+    }
 }

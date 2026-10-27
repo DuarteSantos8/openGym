@@ -36,6 +36,7 @@
 "More" = "More";
 "Effort" = "Effort";
 "None" = "None";
+"Delete" = "Delete";
 "Planned" = "Planned";
 "Last time: %@" = "Last time: %@";
 "Exercises" = "Exercises";
@@ -66,6 +67,8 @@
 "Set %lld of %lld" = "Set %lld of %lld";
 "%lld of %lld sets" = "%lld of %lld sets";
 "Tap to change it." = "Tap to change it.";
+"Type a number" = "Type a number";
+"Tap again to type a number." = "Tap again to type a number.";
 "Added weight" = "Added weight";
 "Your rest, your next set, or today's workout." = "Your rest, your next set, or today's workout.";
 "Opens openGym." = "Opens openGym.";

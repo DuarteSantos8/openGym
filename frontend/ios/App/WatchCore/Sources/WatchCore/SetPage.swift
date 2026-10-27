@@ -1,7 +1,12 @@
 import Foundation
 
+/// Up to two decimals, as the keypad and a 1.25 step save them (what is shown is what is saved).
 func formatNumber(_ v: Double) -> String {
-    v.rounded() == v ? String(Int(v)) : String(format: "%.1f", v)
+    let r = (v * 100).rounded() / 100        // 62.999999 is "63", not "63."
+    if r.rounded() == r { return String(Int(r)) }
+    var s = String(format: "%.2f", r)
+    while s.hasSuffix("0") { s.removeLast() }
+    return s
 }
 
 /// What the set page says about the set up next, as text and numbers; the views only draw it.

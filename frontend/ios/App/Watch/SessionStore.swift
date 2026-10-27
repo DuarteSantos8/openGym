@@ -73,7 +73,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         return bundle.localizedString(forKey: key, value: key, table: nil)
     }
-    var crownStartsOnWeight: Bool { state.settings.crown == "weight" }
 
     /// Apple Health: the workout session, its heart rate, and the switch (WorkoutManager).
     let health = WorkoutManager()
@@ -83,7 +82,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var clipLog: [String] = []
     @Published var weight: Double = 0 { didSet { if weight != oldValue { ackRestOver() } } }
     @Published var reps: Double = 0 { didSet { if reps != oldValue { ackRestOver() } } }
-    /// A hold's seconds, for the set up next (the crown turns it).
+    /// A hold's seconds, for the set up next.
     @Published var seconds: Double = 0 { didSet { if seconds != oldValue { ackRestOver() } } }
     /// The effort rated for the set up next (RPE or RIR, the profile's scale), nil until rated.
     /// It belongs to that one set: another set coming up starts empty again (loadTargets).
@@ -91,6 +90,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var effortFor: String?
     /// The scale the phone's profile logs, when it logs one ("rpe" / "rir"): the set page offers it.
     var effortKind: String? { Effort.notches(state.settings.effort) != nil ? state.settings.effort : nil }
+    /// The box the Crown turns (tapped to arm), the direction of the last step (for the number's slide),
+    /// and the Crown's own count. Edits go straight into weight, reps and seconds; only Done sends them.
+    @Published private(set) var arm = CrownArm()
+    @Published private(set) var rising = true
+    private var gate = CrownGate()          // not published: a tick does not redraw the app
+    private var draft = SetDraft()
+    var crownTotal: Double { gate.last }
+    var crownAllowed: Bool { touchLock.allowsCrown(at: Date()) }
+    var armedField: ValueField? { arm.armed(at: Date(), key: setKey) }
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
@@ -256,6 +264,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func pick(set si: Int, in ei: Int) {
+        disarm()
         ackRestOver()
         picked[ei] = si
         if ei == entryIndex { loadTargets() }
@@ -394,8 +403,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
-    /// The set up next, as the effort remembers it (exercise, set, side).
-    private var setKey: String? {
+    /// The set up next, as the effort and the draft remember it (exercise, set, side).
+    var setKey: String? {
         guard let e = entry, let si = setIndex else { return nil }
         return SessionCore.key(e.id, si, e.sets[si].sideUp)
     }
@@ -407,21 +416,73 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         effortFor = v == nil ? nil : setKey
     }
 
-    /// The weight and reps the crown starts from: the set's own target.
+    /// The weight and reps the crown starts from: the set's own target, except the numbers the
+    /// lifter already changed on this set (a snapshot must not take them back).
     func loadTargets() {
         // A rating stays with its set through snapshots; another set starts unrated.
         if effortFor != setKey { effort = nil; effortFor = nil }
+        draft.follow(setKey)
         guard let e = entry else { return }
         let s = setIndex.map { e.sets[$0] } ?? e.sets.last
+        var w = s?.w ?? 0, r = s?.r ?? 0
         if let row = s, let side = row.sideUp, let one = row.sides?[side] {
-            weight = one.w ?? row.w ?? 0
-            reps = one.r ?? 0
-        } else {
-            weight = s?.w ?? 0
-            reps = s?.r ?? 0
+            w = one.w ?? row.w ?? 0
+            r = one.r ?? 0
         }
-        seconds = s?.sec ?? 30
+        if !draft.keeps(.weight) { weight = w }
+        if !draft.keeps(.reps) { reps = r }
+        if !draft.keeps(.seconds) { seconds = s?.sec ?? 30 }
     }
+
+    /* ---------- editing the numbers: the Crown, the keypad, VoiceOver ---------- */
+
+    func spec(_ f: ValueField) -> ValueSpec? { entry.map { .of(f, step: $0.step, unit: $0.weightUnit(unit)) } }
+
+    private func current(_ f: ValueField) -> Double {
+        switch f { case .weight: return weight; case .reps: return reps; case .seconds: return seconds }
+    }
+
+    private func write(_ f: ValueField, _ v: Double) {
+        _ = draft.touch(f, key: setKey)
+        switch f { case .weight: weight = v; case .reps: reps = v; case .seconds: seconds = v }
+    }
+
+    /// A tap on a box arms it; a tap on the armed one asks for the keypad (true). A tap in the lock window does nothing.
+    func tapBox(_ f: ValueField) -> Bool {
+        guard touchAllowed, let k = setKey else { return false }
+        ackRestOver()
+        return arm.tap(f, key: k, at: Date()) == .keypad
+    }
+
+    /// The Crown's count changed: whole steps on the armed box; unarmed (or just after the page turned) swallowed.
+    func turn(to total: Double) {
+        let f = armedField
+        let n = gate.steps(to: total, at: Date(), allowed: crownAllowed && f != nil)
+        guard n != 0, let f, let s = spec(f) else { return }
+        rising = n > 0
+        arm.touch(at: Date())
+        write(f, s.turned(current(f), by: n))
+    }
+
+    /// VoiceOver's adjust: one step, then the box is let go.
+    func nudge(_ f: ValueField, by n: Int) {
+        guard let s = spec(f) else { return }
+        rising = n > 0
+        write(f, s.turned(current(f), by: n))
+        arm.disarm()
+    }
+
+    /// The keypad's ✓: the typed value as typed, only if the set is still the one it was opened on.
+    func setValue(_ f: ValueField, _ v: Double, key: String?) {
+        guard key == setKey else { return }
+        write(f, v)
+        arm.disarm()
+    }
+
+    func disarm() { if arm.field != nil { arm.disarm() } }
+
+    /// The idle timer ran out: let go, unless a tap or turn came since.
+    func disarmIfIdle() { if arm.field != nil, armedField == nil { arm.disarm() } }
 
     /* ---------- what the lifter does here ---------- */
 
@@ -753,6 +814,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         dropClips()
         send(event: ev)
         state = next
+        draft.follow(nil)        // the next workout starts from its plan, not from an edit of this one
         Haptics.finished()
     }
 
@@ -768,6 +830,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         send(event: ev)
         state = next
         summary = nil
+        draft.follow(nil)
         Haptics.discarded()
     }
 
@@ -985,6 +1048,19 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
+    /// CI: the screens that open the keypad on a box, with what is typed.
+    static var demoKeypad: (field: ValueField, text: String)? {
+        switch demoScreen {
+        case "keypad-weight": return (.weight, "")
+        case "keypad-typed": return (.weight, "62.5")
+        case "keypad-over": return (.weight, "800")
+        case "keypad-reps": return (.reps, "")
+        case "keypad-hold": return (.seconds, "")
+        case "keypad-lb": return (.weight, "1500.25")
+        default: return nil
+        }
+    }
+
     /// CI: the screens that open on the Overview.
     static var demoOpensOverview: Bool { ["overview", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
 
@@ -999,8 +1075,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
-            case "hold", "hold-set": self.state.entryIndex = 1
+            case "set", "weight", "rest", "offline", "armed-weight", "armed-reps", "keypad-weight", "keypad-reps",
+                 "keypad-typed", "keypad-over", "finish-auto": self.picked[0] = 2
+            case "keypad-lb":
+                self.picked[0] = 2
+                self.state.workout?.entries[0].unit = "lb"
+            case "hold", "hold-set", "armed-hold", "keypad-hold": self.state.entryIndex = 1
             case "all-done": for si in self.state.workout?.entries[0].sets.indices ?? 0..<0 { self.state.workout?.entries[0].sets[si].done = true }
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
@@ -1026,6 +1106,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
+            // CI: a box armed (it never times out, the shot is taken seconds later).
+            if screen.hasPrefix("armed-"), let k = self.setKey {
+                self.arm = CrownArm(idle: .infinity)
+                _ = self.arm.tap(screen == "armed-weight" ? .weight : screen == "armed-reps" ? .reps : .seconds, key: k, at: Date())
+            }
             if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3 }

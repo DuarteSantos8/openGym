@@ -36,6 +36,7 @@
 "More" = "Több";
 "Effort" = "Megerőltetés";
 "None" = "Nincs";
+"Delete" = "Törlés";
 "Planned" = "Tervezett";
 "Last time: %@" = "Legutóbb: %@";
 "Exercises" = "Gyakorlatok";
@@ -66,6 +67,8 @@
 "Set %lld of %lld" = "%lld. sorozat / %lld";
 "%lld of %lld sets" = "%lld / %lld sorozat";
 "Tap to change it." = "Koppints a módosításhoz.";
+"Type a number" = "Szám beírása";
+"Tap again to type a number." = "Koppints újra egy szám beírásához.";
 "Added weight" = "Plusz súly";
 "Your rest, your next set, or today's workout." = "A pihenőd, a következő sorozat vagy a mai edzés.";
 "Opens openGym." = "Megnyitja az openGymet.";

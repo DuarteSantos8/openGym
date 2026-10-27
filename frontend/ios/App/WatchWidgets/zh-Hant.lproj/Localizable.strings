@@ -36,6 +36,7 @@
 "More" = "較多";
 "Effort" = "強度表現";
 "None" = "無";
+"Delete" = "刪除";
 "Planned" = "已排定";
 "Last time: %@" = "上次: %@";
 "Exercises" = "動作";
@@ -66,6 +67,8 @@
 "Set %lld of %lld" = "第 %lld 組，共 %lld 組";
 "%lld of %lld sets" = "%lld / %lld 組";
 "Tap to change it." = "輕點以更改。";
+"Type a number" = "輸入數字";
+"Tap again to type a number." = "再輕點一次以輸入數字。";
 "Added weight" = "附加重量";
 "Your rest, your next set, or today's workout." = "你的休息、下一組或今天的訓練。";
 "Opens openGym." = "打開 openGym。";

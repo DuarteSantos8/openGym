@@ -36,6 +36,7 @@
 "More" = "Mehr";
 "Effort" = "Anstrengung";
 "None" = "Keine";
+"Delete" = "Löschen";
 "Planned" = "Geplant";
 "Last time: %@" = "Letztes Mal: %@";
 "Exercises" = "Übungen";
@@ -66,6 +67,8 @@
 "Set %lld of %lld" = "Satz %lld von %lld";
 "%lld of %lld sets" = "%lld von %lld Sätzen";
 "Tap to change it." = "Tippe, um es zu ändern.";
+"Type a number" = "Zahl eingeben";
+"Tap again to type a number." = "Tippe erneut, um eine Zahl einzugeben.";
 "Added weight" = "Zusatzgewicht";
 "Your rest, your next set, or today's workout." = "Deine Pause, dein nächster Satz oder das Training von heute.";
 "Opens openGym." = "Öffnet openGym.";

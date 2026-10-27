@@ -215,7 +215,7 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle idle-rest empty empty-heard set warmup edit-weight edit-reps weighin rest hold hold-set bodyweight side superset all-done offline finish overview finish-auto finish-hold finish-hold-full discard summary summary-end ended; do
+            for screen in idle idle-rest empty empty-heard set warmup armed-weight armed-reps armed-hold keypad-weight keypad-typed keypad-over keypad-reps keypad-hold keypad-lb weighin rest hold hold-set bodyweight side superset all-done offline finish overview finish-auto finish-hold finish-hold-full discard summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
@@ -227,6 +227,9 @@ jobs:
             shot "lang-es-set" set -OpenGymWatchLang es
             shot "lang-ru-bodyweight" bodyweight -OpenGymWatchLang ru
             shot "lang-pl-bodyweight" bodyweight -OpenGymWatchLang pl
+            # A box armed for the Crown in the longest labels (ru), and the keypad in Spanish.
+            shot "lang-ru-armed" armed-reps -OpenGymWatchLang ru
+            shot "lang-es-keypad" keypad-typed -OpenGymWatchLang es
             # The start screen: the longest labels (ru), and Always On (wrist down: outlines, no fills).
             shot "lang-ru-idle" idle -OpenGymWatchLang ru
             # The Overview and Finish in the longest language (ru), and the discard question in German.
@@ -242,6 +245,10 @@ jobs:
             shot "aod-set" set -OpenGymWatchAOD
             shot "aod-side" side -OpenGymWatchAOD
             shot "aod-side-rir" side -OpenGymWatchAOD -OpenGymWatchEffort rir
+            # Wrist down disarms: a box armed in the demo shows no ring in Always On.
+            shot "aod-armed-weight" armed-weight -OpenGymWatchAOD
+            shot "aod-keypad-typed" keypad-typed -OpenGymWatchAOD
+            shot "aod-keypad-over" keypad-over -OpenGymWatchAOD
             shot "aod-empty" empty -OpenGymWatchAOD
             # The start screen scrolled to its end: the last row against the screen's rounded corners.
             shot "idle-end" idle-end
@@ -250,7 +257,7 @@ jobs:
             shot "set-rpe" set -OpenGymWatchEffort rpe
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in idle idle-end idle-rest empty empty-heard set side superset hold-set edit-weight weighin rest hold overview finish discard summary summary-end; do
+            for screen in idle idle-end idle-rest empty empty-heard set side superset hold-set armed-weight armed-hold keypad-typed keypad-over keypad-lb weighin rest hold overview finish discard summary summary-end; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX
             done
             # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's
@@ -310,7 +317,7 @@ jobs:
             promo 1-start idle
             promo 2-set set -OpenGymWatchShow noclip
             [ -n "$CLIP" ] && promo 2b-set-with-clip set -OpenGymWatchDemoClip "$CLIP"
-            promo 3-edit-weight edit-weight -OpenGymWatchShow noclip
+            promo 3-armed-weight armed-weight -OpenGymWatchShow noclip
             promo 4-rest rest
             promo 5-superset superset
             promo 6-weigh-in weighin

@@ -403,11 +403,18 @@ struct WorkoutSummary: Codable, Equatable {
 /// otherwise land on the new one and log a set nobody did. A swipe by hand unlocks it at once.
 struct TouchLock: Equatable {
     static let seconds: TimeInterval = 1
+    /// The Crown comes back sooner: it needs no second tap's worth of doubt, only the page's own settling.
+    static let crownSeconds: TimeInterval = 0.6
     private(set) var until = Date.distantPast
+    private(set) var crownUntil = Date.distantPast
 
-    mutating func lock(at t: Date) { until = t.addingTimeInterval(TouchLock.seconds) }
-    mutating func unlock() { until = .distantPast }
+    mutating func lock(at t: Date) {
+        until = t.addingTimeInterval(TouchLock.seconds)
+        crownUntil = t.addingTimeInterval(TouchLock.crownSeconds)
+    }
+    mutating func unlock() { until = .distantPast; crownUntil = .distantPast }
     func allows(at t: Date) -> Bool { t >= until }
+    func allowsCrown(at t: Date) -> Bool { t >= crownUntil }
 }
 
 /// The 3-2-1 before a workout started on the watch: the heart-rate sensor warms up meanwhile (it

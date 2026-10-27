@@ -36,6 +36,7 @@
 "More" = "Çok";
 "Effort" = "Zorluk";
 "None" = "Yok";
+"Delete" = "Sil";
 "Planned" = "Planlandı";
 "Last time: %@" = "Geçen sefer: %@";
 "Exercises" = "Egzersizler";
@@ -66,6 +67,8 @@
 "Set %lld of %lld" = "Set %lld / %lld";
 "%lld of %lld sets" = "%lld / %lld set";
 "Tap to change it." = "Değiştirmek için dokun.";
+"Type a number" = "Sayı gir";
+"Tap again to type a number." = "Sayı girmek için tekrar dokun.";
 "Added weight" = "Ek ağırlık";
 "Your rest, your next set, or today's workout." = "Dinlenmen, sıradaki setin ya da bugünkü antrenman.";
 "Opens openGym." = "openGym’i açar.";

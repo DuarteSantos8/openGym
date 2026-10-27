@@ -36,6 +36,7 @@
 "More" = "Больше";
 "Effort" = "Усилие";
 "None" = "Нет";
+"Delete" = "Удалить";
 "Planned" = "Запланировано";
 "Last time: %@" = "В прошлый раз: %@";
 "Exercises" = "Упражнения";
@@ -66,6 +67,8 @@
 "Set %lld of %lld" = "Подход %lld из %lld";
 "%lld of %lld sets" = "%lld из %lld подходов";
 "Tap to change it." = "Нажмите, чтобы изменить.";
+"Type a number" = "Ввести число";
+"Tap again to type a number." = "Нажмите ещё раз, чтобы ввести число.";
 "Added weight" = "Доп. вес";
 "Your rest, your next set, or today's workout." = "Отдых, следующий подход или сегодняшняя тренировка.";
 "Opens openGym." = "Открывает openGym.";
