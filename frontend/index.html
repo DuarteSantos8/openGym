@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <script>
-  // Set direction before first paint so an Arabic profile never flashes as LTR.
+  // Set direction before first paint so an RTL profile never flashes as LTR.
   // The app re-applies this on every language change (lib/i18n.js setLang).
   // i18n-core RTL_LANGS is the runtime source of truth — keep this list in sync.
   try {
     var s = JSON.parse(localStorage.getItem('gym_state_v1') || '{}');
-    var l = s.lang || ((navigator.language || '').slice(0, 2) === 'ar' ? 'ar' : 'en');
+    var browserLang = (navigator.language || '').slice(0, 2).toLowerCase();
+    var l = s.lang || (browserLang === 'ar' || browserLang === 'fa' ? browserLang : 'en');
     document.documentElement.lang = l;
-    document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = l === 'ar' || l === 'fa' ? 'rtl' : 'ltr';
   } catch (e) {}
   // Boot watchdog. A chunk this browser cannot parse (1.4.2's regex lookbehind on iOS 15.5 to
   // 16.3) kills the module graph before any of the app runs, and the logo lifted forever. Here,

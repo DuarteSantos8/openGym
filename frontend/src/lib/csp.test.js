@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../..')
-const read = p => readFileSync(join(root, p), 'utf8')
+// HTML normalizes CRLF before parsing scripts, including the text checked by CSP.
+const read = p => readFileSync(join(root, p), 'utf8').replace(/\r\n/g, '\n')
 const policy = read('web/Dockerfile').match(/^ENV CONTENT_SECURITY_POLICY="([^"]*)"$/m)?.[1] || ''
 const directive = name => policy.split(';').map(d => d.trim().split(/\s+/)).find(d => d[0] === name)?.slice(1) || []
 
