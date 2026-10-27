@@ -246,6 +246,16 @@ export function advanceProgression({ state, prescription: p, log, now }) {
   } else {
     values = runOperators(phase, p, log, v, values, { loads: !completes })
   }
+  // Opt-in regression (a chain step that keeps failing): consecutive sessions short of the
+  // minimum at one rung send the track one rung back, opening at that rung's top.
+  const rung = operatorFor(phase, 'difficulty')
+  if (rung?.regress) {
+    next.rungMisses = v.hit ? 0 : (samePhase ? base.rungMisses ?? 0 : 0) + 1
+    if (!completes && next.rungMisses >= rung.regress.after && values.difficulty > rung.min) {
+      values = { ...values, difficulty: values.difficulty - 1, sets: phase.parameters.sets.max, reps: phase.parameters.reps.max }
+    }
+    if (values.difficulty !== (p.values?.difficulty ?? 0)) next.rungMisses = 0
+  } else delete next.rungMisses
 
   // 5. The next phase is entered with its own values. A regime exit (bodyweight ↔ loaded) also
   // lets the session count for the regime it led to, as v1 did.
@@ -253,6 +263,7 @@ export function advanceProgression({ state, prescription: p, log, now }) {
   if (to) {
     values = entryValues(to, values, { load: bestLoadOf(log, p.assisted, p.parameters.load.resolved?.unit), reps: a.reps, previous: p.values?.reps ?? p.prefill?.reps })
     Object.assign(next, { phaseId: to.id, phaseExposures: 0, phaseSuccesses: 0, stalls: 0, stallAt: null, stallBest: null, deload: null })
+    delete next.rungMisses
     if (exit.type === 'load_present' || exit.type === 'load_absent') {
       const entered = { ...p, parameters: { ...p.parameters, sets: to.parameters.sets, reps: to.parameters.reps } }
       values = runOperators(to, entered, log, verdictIn(to, a, v), values, { loads: !completes })

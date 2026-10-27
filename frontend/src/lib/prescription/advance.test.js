@@ -227,3 +227,63 @@ describe('timed holds that climb in seconds', () => {
     expect(finish(prescribe(rule('autoregulated', { durationSeconds: { min: 30, max: 60 }, reps: { min: 1, max: 1 }, completion: metrics('max_duration') })), held(60)).status).toBe('completed')
   })
 })
+
+describe('rung regression', () => {
+  const ladder = (more = {}) => rule('bodyweight_ladder', { rungs: ['a', 'b', 'c'], sets: { min: 1, max: 1 }, reps: { min: 1, max: 2 }, completion: [], ...more })
+  const r = ladder({ regress: { after: 2 } })
+  // One session after another, each built from what the last finish left; `next` is the one that follows.
+  const run = (reps, plan = r) => {
+    let state = null, last = null
+    const states = reps.map((n, k) => {
+      const p = generatePrescription({ id: 'p' + k, now: NOW, trackId: 't1', rule: plan, state, lastPrescription: last })
+      state = finish(p, { sets: 1, reps: n }, state)
+      last = p
+      return state
+    })
+    return { states, state, next: generatePrescription({ id: 'next', now: NOW, trackId: 't1', rule: plan, state, lastPrescription: last }) }
+  }
+  // Two clean sessions at the top: rung 0 → 1.
+  const up = [2, 2]
+
+  it('rung regression: a miss counts, a hit resets', () => {
+    expect(run([...up, 0]).state.rungMisses).toBe(1)
+    expect(run([...up, 0, 1]).state.rungMisses).toBe(0)
+  })
+
+  it('rung regression: fires exactly at after', () => {
+    expect(run([...up, 0]).state.values.difficulty).toBe(1)
+    const { state } = run([...up, 0, 0])
+    expect(state.values).toMatchObject({ difficulty: 0, sets: 1, reps: 2 })
+    expect(state.rungMisses).toBe(0)
+  })
+
+  it('rung regression: never below rung 0', () => {
+    expect(run([0, 0, 0]).state.values.difficulty).toBe(0)
+  })
+
+  it('rung regression: a promotion resets the counter', () => {
+    const { states, state } = run([2, 0, 2])
+    expect(states[1].rungMisses).toBe(1)
+    expect(state.rungMisses).toBe(0)
+    expect(state.values).toMatchObject({ difficulty: 1, sets: null, reps: null })
+  })
+
+  it('rung regression: promote, regress, promote keeps trackId and continuity', () => {
+    const { states } = run([...up, 0, 0, 2])
+    expect(states.map(s => s.values.difficulty)).toEqual([0, 1, 1, 0, 1])
+    expect(states.every(s => s.trackId === 't1')).toBe(true)
+    expect(states.map(s => s.phaseExposures)).toEqual([1, 2, 3, 4, 5])
+  })
+
+  it('rung regression: absent regress keeps today\'s behaviour', () => {
+    const { states } = run([...up, 0, 0], ladder())
+    expect(states.at(-1).values.difficulty).toBe(1)
+    expect(states.some(s => 'rungMisses' in s)).toBe(false)
+  })
+
+  it('rung provenance', () => {
+    expect(run(up).next.provenance.rung).toEqual({ from: 0, to: 1, reason: 'promote' })
+    expect(run([...up, 0, 0]).next.provenance.rung).toEqual({ from: 1, to: 0, reason: 'regress' })
+    expect(run([2]).next.provenance).not.toHaveProperty('rung')
+  })
+})
