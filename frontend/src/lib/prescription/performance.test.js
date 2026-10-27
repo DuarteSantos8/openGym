@@ -14,6 +14,10 @@ describe('legacyEntriesOf', () => {
       ]
     }])
   })
+  it('keeps the superset an exposure belongs to', () => {
+    const w = { exposures: [{ ...loggedExposure('0025', [{ r: 5, w: 60 }]), sg: 'g1' }, loggedExposure('0027', [{ r: 5, w: 40 }])] }
+    expect(legacyEntriesOf(w).map(e => e.sg)).toEqual(['g1', undefined])
+  })
   it('bodyweight rows read w: 0, cardio duration reads as minutes', () => {
     const w = { exposures: [loggedExposure('0001', [{ r: 12 }]), loggedExposure('cardio-x', [{ sec: 1200 }], { mode: 'cardio' })] }
     const [bw, cardio] = legacyEntriesOf(w)
