@@ -197,6 +197,7 @@ export const SEARCH = [
   { page: 'advanced', title: 'Timed holds start by themselves', icon: 'timer', tint: 'var(--teal)', kw: 'timed hold plank automatic auto start countdown 3 2 1 hands free rounds' },
   { page: 'advanced', title: 'Weight and reps buttons', icon: 'plusCircle', tint: 'var(--green)', kw: 'steppers plus minus buttons workout controls' },
   { page: 'advanced', title: 'Drop and burst shortcuts on every set', icon: 'bolt', tint: 'var(--orange)', kw: 'drop set burst shortcuts workout controls' },
+  { page: 'advanced', title: 'Keep the last exercise open', icon: 'minimize', tint: 'var(--teal)', kw: 'keep open last exercise folding collapse completed partials workout controls' },
   { page: 'advanced', title: 'Swipe actions', icon: 'swap', tint: 'var(--indigo)', kw: 'swipe gesture slide delete remove copy duplicate set routine loop plan workout controls', tkw: () => t('swipe gesture') },
   { page: 'advanced', title: 'Exercise chips at the top', icon: 'more', tint: 'var(--mint)', kw: 'chips dots overview progress jump navigate exercise list workout controls' },
   { page: 'advanced', title: 'Muscle map at the top', icon: 'figureStrength', tint: 'var(--orange)', kw: 'muscle map body figure diagram workout header lights up workout controls' },

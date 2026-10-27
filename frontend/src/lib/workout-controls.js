@@ -6,6 +6,7 @@
 export const WC_DEFAULT = Object.freeze({
   steppers: true,         // +/- buttons on every weight/reps/effort field
   setShortcuts: false,    // "+ Drop" / "+ Burst" chips on every set and the warm-up/remove/add row
+  keepLastOpen: false,    // with folding on, the exercise just left stays open one step longer (late partials)
   pairButtons: false,     // "Make superset with previous/next" in the exercise header
   exerciseButtons: false, // Move up/down, Swap, Remove exercise below the exercise
   exerciseChips: true,    // the numbered chip per exercise at the top of the workout (#323); one row
