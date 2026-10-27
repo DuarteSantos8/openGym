@@ -507,7 +507,7 @@ too. Machine stickers come from an exercise's details → **Write NFC sticker fo
   event (kept until the page listens). iOS background tag reading (iPhone XS and newer) only routes
   web links and universal links, never custom schemes. The app has **no associated domains yet**,
   so on an iPhone the tap shows a banner that opens `opengym.ch/nfc` in Safari, and that page
-  (`website/nfc.html`) hands the query to the app as `opengym://nfc?...` (CFBundleURLTypes in
+  (`website/nfc/index.html`, served at /nfc) hands the query to the app as `opengym://nfc?...` (CFBundleURLTypes in
   Info.plist, delivered through `@capacitor/app`'s `appUrlOpen`). A phone without openGym lands on
   the same page. To make it one tap on iPhone later: enable Associated Domains on the app id, add
   `applinks:opengym.ch` to `App.entitlements`, and serve `/.well-known/apple-app-site-association`
