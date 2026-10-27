@@ -394,7 +394,7 @@ describe('Workout set completion flow', () => {
   })
 
   it.each(['warmup', 'warm-up', 'warm_up'])(
-    'does not navigate or start transition rest before an incomplete %s row in the next ordinary exercise',
+    'rests after the last set even when the next ordinary exercise starts with a %s row (#853)',
     async phase => {
       await mount([
         exercise('current', [false], { asked: true }),
@@ -410,11 +410,12 @@ describe('Workout set completion flow', () => {
       await toggleSet(0)
 
       expect(mocks.S.active.cur).toBe(0)
-      expect(mocks.startRest).not.toHaveBeenCalled()
+      expect(mocks.startRest).toHaveBeenCalledTimes(1)
+      expect(mocks.startRest).toHaveBeenCalledWith(expect.any(Number), 0, { forSet: 0 })
     },
   )
 
-  it('does not navigate or start transition rest when a completed superset meets an incomplete warm-up', async () => {
+  it('rests after a completed superset round even when the next exercise starts with a warm-up (#853)', async () => {
     await mount([
       exercise('superset-a', [true], { sg: 'group', asked: true }),
       exercise('superset-b', [false], { sg: 'group', asked: true }),
@@ -430,10 +431,11 @@ describe('Workout set completion flow', () => {
     await toggleSet(1)
 
     expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.startRest).not.toHaveBeenCalled()
+    expect(mocks.startRest).toHaveBeenCalledTimes(1)
+    expect(mocks.startRest).toHaveBeenCalledWith(expect.any(Number), 1, { forSet: 0 })
   })
 
-  it('leaves the completed ordinary exercise selected without transition rest before an incomplete warm-up', async () => {
+  it('leaves the completed ordinary exercise selected and still rests before the next exercise\'s warm-up (#853)', async () => {
     await mount([
       exercise('current-loaded', [false]),
       exercise('next', [false, false], {
@@ -448,10 +450,10 @@ describe('Workout set completion flow', () => {
     await toggleSet(0)
 
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).not.toHaveBeenCalled()
+    expect(mocks.startRest).toHaveBeenCalledTimes(1)
   })
 
-  it('does not restart transition rest when re-checking a completed unit before an incomplete warm-up', async () => {
+  it('a re-check of the closing set before the next exercise\'s warm-up still owes its rest (#853)', async () => {
     await mount([
       exercise('current', [true], { asked: true }),
       exercise('next', [false, false], {
@@ -468,7 +470,7 @@ describe('Workout set completion flow', () => {
     await toggleSet(0)
 
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).not.toHaveBeenCalled()
+    expect(mocks.startRest).toHaveBeenCalledTimes(1)
   })
 
   // A rest that ran out stays on screen as Ready (#204) until it is dismissed. It is not a rest

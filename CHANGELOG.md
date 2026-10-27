@@ -147,6 +147,10 @@ Apple Health once, with its heart rate. Take the buds out and the readings simpl
 back in and they carry on. Wearing the watch? It keeps the job, so there's never a second workout.
 No new switch: the Apple Health one covers it.
 
+**Fixes**
+
+- The rest timer starts after the last set of an exercise again, also when the next exercise opens with warm-ups (#853).
+
 ## v1.4.3 (2026-10-26)
 
 The community release. Most of what's below was asked for on GitHub and Discord or sent in as a
