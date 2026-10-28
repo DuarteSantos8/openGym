@@ -2599,4 +2599,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'เฉพาะโทรศัพท์เครื่องนี้ หน้าจอโฮมบางแบบต้องใช้เวลาสักครู่ถึงจะเปลี่ยน',
   'The icon could not be changed.': 'เปลี่ยนไอคอนไม่ได้',
   'Try the Halloween app icon': 'ลองไอคอนแอปฮาโลวีน',
+  "Set coefficient": "ตัวคูณเซ็ต",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "แต่ละเซ็ตทำงานจะนับตามค่านี้ในปริมาณการฝึกกล้ามเนื้อในสถิติ ค่าเริ่มต้น: 1",
 }

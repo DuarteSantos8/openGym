@@ -2635,4 +2635,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Bara för den här telefonen. Vissa hemskärmar behöver en stund på sig att hänga med.',
   'The icon could not be changed.': 'Ikonen gick inte att byta.',
   'Try the Halloween app icon': 'Testa Halloween-appikonen',
+  "Set coefficient": "Setkoefficient",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "Varje arbetsset räknas med detta värde i muskelvolymen i statistiken. Standard: 1.",
 }

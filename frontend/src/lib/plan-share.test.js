@@ -61,6 +61,17 @@ describe('plan-share units', () => {
 })
 
 describe('what survives a shared plan', () => {
+  it('keeps set coefficients through export, JSON import and merge, omitting the default', () => {
+    for (const setCoefficient of [0, 0.3, 1.5]) {
+      const bundle = JSON.parse(JSON.stringify(buildPlanBundle(stateWith({ setCoefficient }), 'Plan')))
+      expect(parsePlan(bundle).routines[0].ex[0].setCoefficient).toBe(setCoefficient)
+      const target = { routines: [], week: {}, customEx: [] }
+      mergePlan(target, bundle)
+      expect(target.routines[0].ex[0].setCoefficient).toBe(setCoefficient)
+    }
+    expect('setCoefficient' in roundTrip({ setCoefficient: 1 })).toBe(false)
+  })
+
   it('carries Per side on a timed hold, and on reps work; never on cardio', () => {
     const hold = roundTrip({ mode: 'time', sec: 30, sets: 2, reps: undefined, weight: undefined, side: true })
     expect(hold).toMatchObject({ mode: 'time', sec: 30, sets: 2, side: true })

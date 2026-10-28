@@ -2588,4 +2588,6 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'सिर्फ़ इस फ़ोन के लिए। कुछ होम स्क्रीन को समझने में थोड़ा समय लगता है।',
   'The icon could not be changed.': 'आइकन बदला नहीं जा सका।',
   'Try the Halloween app icon': 'हैलोवीन ऐप आइकन आज़माएँ',
+  "Set coefficient": "सेट गुणांक",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "आँकड़ों में मांसपेशियों के प्रशिक्षण की मात्रा में हर वर्किंग सेट इतना गिना जाता है। डिफ़ॉल्ट: 1।",
 }

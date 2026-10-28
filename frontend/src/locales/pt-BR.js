@@ -1670,6 +1670,8 @@ export const PT_BR_OVERRIDES = {
   'App icon': 'Ícone do app',
   'Just for this phone. Some home screens take a moment to catch up.': 'Só para este celular. Algumas telas iniciais demoram um pouco para perceber.',
   'Try the Halloween app icon': 'Experimente o ícone de Halloween do app',
+  "Set coefficient": "Coeficiente das séries",
+  "Each working set counts this much toward muscle volume in Stats. Default: 1.": "Cada série de trabalho conta com este valor para o volume muscular nas estatísticas. Padrão: 1.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

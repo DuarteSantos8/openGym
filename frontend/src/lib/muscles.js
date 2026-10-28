@@ -285,6 +285,17 @@ export function loadOf(items) {
   return load
 }
 
+// A set may override its exercise's coefficient. Missing fields keep old profiles at one;
+// the target saved with a workout freezes its coefficient independently of later plan edits.
+export function setCoefficientOf(set, target) {
+  const value = set?.setCoefficient ?? target?.setCoefficient
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 1
+}
+
+const muscleSetCount = (entry, pick) => (entry.sets || [])
+  .filter(s => !isWarmupRow(s) && pick(s))
+  .reduce((n, s) => n + setCoefficientOf(s, entry.target), 0)
+
 /**
  * Load for finished workouts (only sets actually ticked off count). `pick` narrows that
  * further — the map can then answer "where did the *hard* sets go", which is a different
@@ -293,7 +304,7 @@ export function loadOf(items) {
  */
 export const loadOfWorkouts = (workouts, pick) =>
   loadOf((workouts || []).flatMap(w =>
-    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
+    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: muscleSetCount(e, s => s.done && (!pick || pick(s))) }))))
 
 /**
  * Workouts in one existing Muscle balance range, with time injected for deterministic tests.
@@ -311,7 +322,7 @@ export function muscleBalanceWindow(workouts, win, now = Date.now(), today = tod
 
 /** Load a routine *would* produce, from its planned set counts. */
 export const loadOfRoutine = (routine, exercises = {}) =>
-  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
+  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: (c.sets || 1) * setCoefficientOf(c) })))
 
 /**
  * A running session's muscles (#670): `done` from the sets ticked so far, `planned` from every
@@ -320,7 +331,7 @@ export const loadOfRoutine = (routine, exercises = {}) =>
  */
 export function sessionLoad(entries) {
   const of = pick => loadOf((entries || []).map(e => ({
-    id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => !isWarmupRow(s) && pick(s)).length,
+    id: e.id, ex: e.exercise || e, sets: muscleSetCount(e, pick),
   })))
   return { done: of(s => s.done), planned: of(() => true) }
 }
