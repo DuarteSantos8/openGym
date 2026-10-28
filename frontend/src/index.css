@@ -583,6 +583,22 @@ h4.sec{
 /* exercise pictures are decoration inside tappable rows/cards: no save-image callout on
    a long press and no drag ghost when a scroll starts on the picture */
 .thumb,.exmedia img,.exmedia video{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
+/* The whole exercise dataset is line art on white, which in dark mode means a floodlight in
+   the middle of the screen — at 320px tall, mid-set, in a dim gym. The browser inverts it for
+   free, so nothing is reprocessed and the images on the server stay as they are.
+   `hue-rotate(180deg)` is what makes it usable rather than clever: invert() flips lightness AND
+   hue, so the red highlight comes out cyan and stops reading as "this is the muscle"; rotating
+   the hue back half a turn returns it to red, and the saturate compensates for the wash-out
+   that inverting a mid-red leaves behind. The card behind it goes black in the same breath, or
+   the picture would sit in a white frame. `.thumb-x` is excluded throughout: it is the
+   no-media placeholder, an app icon on an app surface, with nothing to invert. */
+:root[data-theme="dark"] .exmedia,
+:root[data-theme="dark"] .thumb:not(.thumb-x){background:#000}
+:root[data-theme="dark"] .exmedia img,
+:root[data-theme="dark"] .exmedia video,
+:root[data-theme="dark"] .thumb:not(.thumb-x){
+  filter:invert(1) hue-rotate(180deg) saturate(1.9);
+}
 .thumb-x{
   display:flex;align-items:center;justify-content:center;font-size:21px;
   background:var(--surface-2);color:var(--label-2);
