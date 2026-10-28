@@ -755,6 +755,33 @@ carries such a track is refused rather than uploaded with it). WebM videos are u
 recorded. The server never decodes or changes a file. Like everything else in `./data`, the files
 are not encrypted at rest — whoever can read that folder can see them.
 
+### A program that writes the training plan (`PLANNER_TOKENS`)
+
+The floating week (`S.queue`) can be written by an API client: a planner that programs the next
+week's sessions, their routines and their weights. Such a program runs on the server's side with
+nobody signed in, so it cannot hold a session. `PLANNER_TOKENS` gives it a fixed bearer token
+instead:
+
+```
+PLANNER_TOKENS=<token>=<uid>
+PLANNER_TOKENS=<token-a>=<uid-a>, <token-b>=<uid-b>
+```
+
+- Each token acts as its own user, on `GET` and `PUT /api/data` only. Every other route refuses
+  it, so one person's planner cannot read or write another's profile, or reach the admin routes.
+- A token must be at least 32 characters (`openssl rand -hex 32`; a base64 one with `=` padding
+  works too). The uid is the profile's id in `./data/db.json`. The server refuses to start on a
+  short token, an entry without a uid, the same token twice, or two tokens for one uid.
+- The planner sends `Authorization: Bearer <token>` and does what the app does: read with `GET`,
+  write the whole document back with `PUT` and the `baseRev` it read, and on a 409 merge with the
+  document that comes back and try again. A disabled profile refuses its token.
+- A write that landed goes to the activity log (`auth.planner.ok`), and so does a refused token
+  (`auth.planner.fail`, the first few a minute from each address). Reads do not, since a planner
+  reads before every write. A planner's read is not the user's last sync in the admin dashboard.
+- To revoke a token, remove it from `.env` and run `docker compose up -d api`: a plain
+  `docker compose restart` keeps the old environment, and the token with it. "Sign out
+  everywhere" does not touch planner tokens.
+
 ## 6. Backups
 
 Everything is in `./data`:
