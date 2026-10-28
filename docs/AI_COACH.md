@@ -99,6 +99,8 @@ answers on instead, and a key only if it wants one.
   (`https://openrouter.ai/api/v1`, Zhipu's `…/paas/v4`, Gemini's `…/v1beta/openai`) is used
   as it is. A base whose API has no version at all (Open WebUI's `…/openai` mount) works too:
   when `{base}/v1/…` answers 404, the app tries `{base}/…` and remembers which one answered.
+  JSON-mode and transient retries use that selected route; a version in the configured base
+  is never removed.
 - A gateway that demands extra headers gets them under **Extra headers**: one `Name: value`
   per line (e.g. opencode Go's `x-opencode-session`), sent with the list, test and job
   calls. `Authorization` and `Content-Type` are refused there — auth framing always wins.
