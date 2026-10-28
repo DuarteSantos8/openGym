@@ -11,6 +11,7 @@ import { Thumb } from '../components/Media.jsx'
 import { exerciseDetailSheet, addToRoutineSheet, customExSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import ExerciseViewToggle from '../components/ExerciseViewToggle.jsx'
+import GymHiddenLine from '../components/GymHiddenLine.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable, useRevealActiveChip } from '../lib/use-sheet-keyboard.js'
 import { useAutoMore } from '../lib/use-auto-more.js'
@@ -36,6 +37,8 @@ export default function Library() {
   // choice the search or body part has narrowed away is ignored for now, never a dead end.
   const { opts: catOpts, on: catOn, list: base } = byCategory(inPart, cat)
   const eqFiltered = (profile && !showAll) ? base.filter(e => exAvailable(S, e)) : base
+  // What a search found that the gym leaves out, counted under the results.
+  const gymHidden = q.trim() ? base.length - eqFiltered.length : 0
   const eqOpts = equipmentOf(eqFiltered)
   // Drop the equipment filter if the search narrowed it away, so you never hit a dead end.
   const eqOn = eqOpts.includes(eq) ? eq : ''
@@ -108,6 +111,7 @@ export default function Library() {
       </div>
       {f.slice(0, shown).map(row)}
       {f.length === 0 && !similar.length && <div className="empty"><div className="ico"><Icon name="magnifier" /></div>{t('No match')}</div>}
+      {f.length <= shown && <GymHiddenLine count={gymHidden} profile={profile} onShowAll={() => setShowAll(true)} />}
       {similar.length > 0 && <h4 className="sec similar-label">{f.length ? t('Similar exercises') : t('No exact match. These come close:')}</h4>}
       {similar.map(row)}
     </div>

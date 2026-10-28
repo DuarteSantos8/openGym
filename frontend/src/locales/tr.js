@@ -958,6 +958,7 @@ export default {
   // --- equipment profiles ---
   'Showing all equipment': 'Tüm ekipman gösteriliyor',
   'Showing what you have in "{0}"': '“{0}” içinde sahip olduklarını gösteriyor',
+  'Not in "{0}": {1} more': '“{0}” içinde yok: {1} tane daha',
   'Show all equipment': 'Tüm ekipmanı göster',
   'Filter by "{0}"': '“{0}” ile filtrele',
   'Edit profile': 'Profili düzenle',

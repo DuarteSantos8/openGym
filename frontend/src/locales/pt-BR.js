@@ -476,6 +476,7 @@ export const PT_BR_OVERRIDES = {
   // --- equipment profiles ---
   'Showing all equipment': 'Mostrando todos os equipamentos',
   'Showing what you have in "{0}"': 'Mostrando o que você tem em “{0}”',
+  'Not in "{0}": {1} more': 'Fora de “{0}”: mais {1}',
   'Show all equipment': 'Mostrar todos os equipamentos',
   'Filter by "{0}"': 'Filtrar por “{0}”',
   'Edit profile': 'Editar perfil',
