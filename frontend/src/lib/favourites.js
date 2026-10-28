@@ -5,6 +5,8 @@
 // personal, so it stays out of shared plan bundles (lib/plan-share.js) on purpose. Profiles
 // written before the field existed simply have no list, hence every reader tolerates undefined.
 
+import { legacyEntriesOf } from './prescription/index.js'
+
 export const favIds = S => (Array.isArray(S?.favEx) ? S.favEx : [])
 
 export const isFav = (S, id) => favIds(S).includes(id)
@@ -44,7 +46,7 @@ export function sortYoursFirst(list, S, usage) {
 /** How often each exercise sits in a routine or a logged workout: id -> count. */
 export function usageOf(S) {
   const u = {}
-  for (const r of S?.routines || []) for (const e of r.ex || []) u[e.id] = (u[e.id] || 0) + 1
-  for (const w of S?.workouts || []) for (const e of w.entries || []) u[e.id] = (u[e.id] || 0) + 1
+  for (const r of S?.routines || []) for (const e of r.ex || []) { const id = e.exerciseId ?? e.id; u[id] = (u[id] || 0) + 1 }   // a v2 occurrence names its exercise by exerciseId
+  for (const w of S?.workouts || []) for (const e of legacyEntriesOf(w, S.prescriptions)) u[e.id] = (u[e.id] || 0) + 1   // exposures after the migration
   return u
 }
