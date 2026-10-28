@@ -164,6 +164,8 @@ export default {
   "That's the whole workout!": '오늘 운동 전부 끝!',
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': '모든 운동 완료. 수고했어요! 마무리하거나, 힘이 남았다면 하나 더 추가하세요.',
   'Continue workout': '운동 계속하기',
+  'All done?': '다 끝났나요?',
+  'Nothing logged for {0}.': '{0} 동안 기록된 것이 없어요.',
   'Keep going: tap “+ Add exercise” below': '계속 가요: 아래 "+ 운동 추가"를 탭하세요',
   'Workout complete!': '운동 완료!',
   'Duration': '시간',

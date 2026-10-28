@@ -41,7 +41,7 @@ export const FORGOTTEN_GAP_MS = 20 * 60 * 1000
 // How long a ticked row itself took: a cardio row its minutes, a hold its seconds (both sides of
 // a per-side hold). A 30-minute treadmill finisher ticked at its end follows the last lift by
 // more than the gap without the session being over, so that time is not counted as a break.
-function rowLengthMs(set) {
+export function rowLengthMs(set) {
   const n = v => (Number(v) > 0 ? Number(v) : 0)
   if (isSideSet(set)) return (n(set.sides.L?.sec) + n(set.sides.R?.sec)) * 1000
   return n(set.min) * 60000 + n(set.sec) * 1000

@@ -162,6 +162,8 @@ export default {
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': 'Minden gyakorlat kész. Szép munka! Fejezd be, vagy adj hozzá még egyet, ha van még benned szufla.',
   'Finish workout': 'Edzés befejezése',
   'Continue workout': 'Edzés folytatása',
+  'All done?': 'Végeztél?',
+  'Nothing logged for {0}.': '{0} óta nincs új rögzítés.',
   'Keep going: tap “+ Add exercise” below': 'Folytasd: koppints lent a „+ Gyakorlat hozzáadása” gombra',
   'Workout complete!': 'Edzés kész!',
   'Duration': 'Időtartam',

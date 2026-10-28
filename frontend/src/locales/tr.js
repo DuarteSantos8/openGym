@@ -164,6 +164,8 @@ export default {
   "That's the whole workout!": 'Antrenmanın tamamı buydu!',
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': 'Tüm egzersizler bitti. Harika iş! Bitir ya da hâlâ gücün varsa bir tane daha ekle.',
   'Continue workout': 'Antrenmana devam et',
+  'All done?': 'Bitirdin mi?',
+  'Nothing logged for {0}.': '{0} boyunca hiçbir şey kaydedilmedi.',
   'Keep going: tap “+ Add exercise” below': 'Devam: aşağıdaki “+ Egzersiz ekle”ye dokun',
   'Workout complete!': 'Antrenman tamamlandı!',
   'Duration': 'Süre',

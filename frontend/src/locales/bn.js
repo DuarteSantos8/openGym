@@ -195,6 +195,8 @@ export default {
   'That\'s the whole workout!': 'পুরো ওয়ার্কআউট শেষ!',
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': 'সব ব্যায়াম শেষ। দারুণ কাজ! শেষ করুন, অথবা আরও শক্তি থাকলে আরেকটি যোগ করুন।',
   'Continue workout': 'ওয়ার্কআউট চালিয়ে যান',
+  'All done?': 'শেষ হয়েছে?',
+  'Nothing logged for {0}.': '{0} ধরে কিছু লগ করা হয়নি।',
   'Keep going: tap “+ Add exercise” below': 'চালিয়ে যান: নিচে “+ ব্যায়াম যোগ করুন”-এ ট্যাপ করুন',
   'Workout complete!': 'ওয়ার্কআউট সম্পন্ন!',
   'Duration': 'সময়কাল',

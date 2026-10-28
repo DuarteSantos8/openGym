@@ -162,6 +162,8 @@ export default {
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': 'ทำครบทุกท่าแล้ว เยี่ยมมาก! จบเลยก็ได้ หรือถ้ายังไหวก็เพิ่มอีกท่า',
   'Finish workout': 'จบการออกกำลังกาย',
   'Continue workout': 'ออกกำลังกายต่อ',
+  'All done?': 'เสร็จแล้วหรือยัง',
+  'Nothing logged for {0}.': 'ไม่มีการบันทึกมา {0}',
   'Keep going: tap “+ Add exercise” below': 'ทำต่อได้เลย: แตะ “+ เพิ่มท่าออกกำลังกาย” ด้านล่าง',
   'Workout complete!': 'ออกกำลังกายเสร็จสิ้น!',
   'Duration': 'ระยะเวลา',
