@@ -77,7 +77,10 @@ enum SessionCore {
         if let r = snap.restSec, r > 0 { s.restSec = r }
         if let st = snap.settings { s.settings = st }
 
-        // A session started here that the phone has not reported back yet stays, whatever it sends.
+        // A session started here that the phone has not reported back yet stays, whatever it sends,
+        // unless the phone says it discarded it: it had it after all, and dropped it.
+        let droppedThere = discarded(s.workout?.id, in: snap)
+        if droppedThere && s.workout?.id == s.startedHere { s.startedHere = nil }
         let unconfirmed = s.workout?.id != nil && s.workout?.id == s.startedHere
         guard var next = snap.active, !(next.id.map { s.finishedHere.contains($0) } ?? false) else {
             // No workout on the phone, or one the watch has finished already.

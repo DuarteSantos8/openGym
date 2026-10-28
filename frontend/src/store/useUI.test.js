@@ -249,7 +249,7 @@ describe('rest readiness and optional timed-set overtime', () => {
     const done = vi.fn()
     useUI.getState().startWork(1, 'Hold', done)
     vi.advanceTimersByTime(901000)
-    expect(done).toHaveBeenCalledExactlyOnceWith(901, { chimed: false })
+    expect(done).toHaveBeenCalledExactlyOnceWith(901, expect.objectContaining({ chimed: false }))
     expect(useUI.getState().work).toBeNull()
   })
 

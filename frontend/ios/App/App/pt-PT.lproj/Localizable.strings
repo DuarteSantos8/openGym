@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "Iniciar treino";
+"Starts today’s planned workout, or opens the one already running." = "Inicia o treino planeado para hoje, ou abre o que já está a decorrer.";
+"Log weight" = "Registar peso";
+"Logs your body weight without opening openGym." = "Regista o teu peso sem abrir o openGym.";
+"Weight" = "Peso";
+"What’s your weight?" = "Quanto pesas?";
+"Today’s workout" = "Treino de hoje";
+"Tells you what’s planned for today." = "Diz-te o que está planeado para hoje.";
+"Week streak" = "Sequência semanal";
+"Tells you how many weeks in a row you trained." = "Diz-te quantas semanas seguidas treinaste.";
+"Open openGym once, then ask me again." = "Abre o openGym uma vez e pergunta-me outra vez.";
+"You’re in the middle of %@." = "Estás a meio de %@.";
+"You’re in the middle of a workout." = "Estás a meio de um treino.";
+"Your workout" = "O teu treino";
+"%@ is done for today. Nice work." = "%@ está feito por hoje. Bom trabalho.";
+"Today: %@." = "Hoje: %@.";
+"Rest day today. Next up: %@ on %@." = "Hoje é dia de descanso. A seguir: %@, %@.";
+"Nothing planned today." = "Nada planeado para hoje.";
+"No streak yet. One workout this week starts one." = "Ainda sem sequência. Um treino esta semana começa uma.";
+"Week streak: %d. This week already counts." = "Sequência: %d semanas. Esta semana já conta.";
+"Week streak: %d. One workout this week keeps it going." = "Sequência: %d semanas. Um treino esta semana mantém-na.";
+"That doesn’t sound like a weight. Try again?" = "Isso não parece um peso. Tentamos outra vez?";
+"Logged %@." = "%@ registado.";

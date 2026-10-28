@@ -11,6 +11,7 @@ import { workoutDateSheet, workoutDetailSheet, workoutDurationSheet } from './sh
 import { backfillStart } from './lib/backfill.js'
 import { startTimeOf } from './lib/workout-date.js'
 import { pickDate } from './components/DateField.test-util.js'
+import { workoutOption } from './lib/workout-options.test-util.js'
 
 const mounted = []
 function render(open) {
@@ -52,7 +53,7 @@ describe('changing the date of a saved workout', () => {
 
   it('is offered from the workout detail sheet and opens prefilled', () => {
     const host = render(() => workoutDetailSheet(history()[1]))
-    const open = button(host, 'Change date & time')
+    const open = workoutOption(host, 'Change date & time')
     expect(open).toBeTruthy()
     const edit = render(() => open.click())
     expect(edit.querySelector('h3').textContent).toBe('Change date & time')
@@ -137,7 +138,7 @@ describe('changing the date of a saved workout', () => {
   it('keeps a note typed but never blurred', () => {
     const host = render(() => workoutDetailSheet(history()[1]))
     act(() => { type(host.querySelector('textarea'), 'felt strong') })
-    const edit = render(() => button(host, 'Change date & time').click())
+    const edit = render(() => workoutOption(host, 'Change date & time').click())
     pickDate(edit.querySelector('[data-datefield]'), '2026-08-18')
     act(() => { button(edit, 'Save').click() })
     unmountAll()
@@ -174,7 +175,7 @@ describe('changing the date of a saved workout', () => {
     const b = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'B', vol: 0, entries: [], prs: [] }
     setHistory([a, b, history()[1]])
     const host = render(() => workoutDetailSheet(b))
-    const confirm = render(() => button(host, 'Delete workout').click())
+    const confirm = render(() => workoutOption(host, 'Delete workout').click())
     act(() => { button(confirm, 'Delete').click() })
     expect(history().map(w => w.name)).toEqual(['A', 'late'])
   })
@@ -205,7 +206,7 @@ describe('changing the duration of a saved workout', () => {
 
   it('is offered from the workout detail sheet and opens at the length it has', () => {
     const host = render(() => workoutDetailSheet(history()[1]))
-    const open = button(host, 'Change duration')
+    const open = workoutOption(host, 'Change duration')
     expect(open).toBeTruthy()
     const edit = render(() => open.click())
     expect(edit.querySelector('h3').textContent).toBe('Change duration')
@@ -294,7 +295,7 @@ describe('changing the duration of a saved workout', () => {
   it('keeps a note typed in the detail sheet but never blurred', () => {
     const host = render(() => workoutDetailSheet(history()[1]))
     act(() => { type(host.querySelector('textarea'), 'forgot to stop') })
-    const edit = render(() => button(host, 'Change duration').click())
+    const edit = render(() => workoutOption(host, 'Change duration').click())
     act(() => { type(edit.querySelector('input.num'), '60') })
     act(() => { button(edit, 'Save').click() })
     unmountAll()

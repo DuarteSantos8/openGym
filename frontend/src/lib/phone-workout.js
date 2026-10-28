@@ -20,7 +20,8 @@
 // side keeps every reading with its own time, and the sets are worked out when the page wakes.
 //
 // When the workout is finished, the session saves it to Apple Health (once: AppleHealthPlugin skips
-// its own post-hoc write for it); discarded, it is dropped. AirPods taken out only pause readings.
+// its own post-hoc write for it); discarded, it is dropped (also a session iOS handed back after a
+// crash, whose workout is gone by then). AirPods taken out only pause readings.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { sanitizeHr, cleanSamples } from './heart-rate.js'
 import { isSideSet } from './workout-model.js'
@@ -244,6 +245,9 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
     if (patches.length) apply(patches)
   }
 
+  // `save`: the workout is over, saved when it is in the history. Not there, it was discarded:
+  // dropped, and the native side takes out a copy that reached Apple Health anyway. `save` false
+  // (the watch took it, Apple Health went off): only the phone's session goes.
   const stop = async save => {
     const r = running
     if (!r) return
@@ -255,7 +259,9 @@ export async function startPhoneWorkout ({ useStore, useUI, apply, watch }) {
     if (w) await measure(r, w, Number(w.end) || Date.now())
     writeRests(null)
     rests = {}
-    try { await p.PW.end({ wid: r.wid, save: !!w, ...(w && Number(w.end) > 0 ? { at: Number(w.end) } : {}), ...(w?.name ? { title: String(w.name) } : {}) }) } catch { /* the session ends with the app */ }
+    const how = w ? { save: true, ...(Number(w.end) > 0 ? { at: Number(w.end) } : {}), ...(w.name ? { title: String(w.name) } : {}) }
+      : save ? { save: false, discarded: true } : { save: false }
+    try { await p.PW.end({ wid: r.wid, ...how }) } catch { /* the session ends with the app */ }
   }
 
   const evaluate = () => { busy = busy.then(evaluateNow).catch(() => {}); return busy }

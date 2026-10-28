@@ -16,6 +16,8 @@ export const APP_ICON_VARIANTS = [
   { id: 'violet', name: 'Purple', bg: '#bf5af2', fg: '#ffffff', ios: 'AppIcon-Violet', android: 'IconViolet' },
   // All year, Halloween theme or not: some people are spooky in March.
   { id: 'halloween', name: 'Halloween', bg: '#0d0517', fg: '#ff7a1a', art: 'resources/icons/halloween.svg', ios: 'AppIcon-Halloween', android: 'IconHalloween' },
+  // The same for Christmas: a Santa hat in July is nobody's business but yours.
+  { id: 'christmas', name: 'Christmas', bg: '#070b16', fg: '#a3e635', art: 'resources/icons/christmas.svg', ios: 'AppIcon-Christmas', android: 'IconChristmas' },
 ]
 
 export const APP_ICON_IDS = APP_ICON_VARIANTS.map(v => v.id)

@@ -164,7 +164,11 @@ export default function Modals() {
     if (sheets.length > prev) {
       for (let i = prev; i < sheets.length; i++) {
         sheetEntries.current.push({ openedAt: location.href, live: true })
-        history.pushState({ openGymSheet: true }, '')
+        // Numbered one past the page's, as the router numbers a push: a page that takes this
+        // entry over (closeThenNav) or is pushed after it gets its index from it, and Settings'
+        // back reads that index to tell whether there is a page to go back to.
+        const idx = history.state?.idx
+        history.pushState(typeof idx === 'number' ? { openGymSheet: true, idx: idx + 1 } : { openGymSheet: true }, '')
         pushedEntries.current++
       }
     } else if (sheets.length < prev) {

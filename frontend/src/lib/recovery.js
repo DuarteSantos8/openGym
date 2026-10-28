@@ -1,5 +1,5 @@
 import { EXIDX, isAssisted } from './exercises.js'
-import { workoutAt } from './history.js'
+import { modeOf, workoutAt } from './history.js'
 import { MUSCLES, musclesOf } from './muscles.js'
 import { isWarmupRow, dropsOf, isSideSet } from './workout-model.js'
 import { estimate1RM, REP_CAP } from './onerm.js'
@@ -11,6 +11,10 @@ import { rirOf, HARD_RIR } from './effort.js'
 // One full session on a muscle (~8 hard sets, the per-session growth plateau)
 // scores 1.0 raw unit; secondary movers count 0.4 via musclesOf weights.
 export const FATIGUE_SETS_PER_UNIT = 8
+// Cardio is continuous work, not one set per imported row. Keep a 30-minute row at the
+// former one-row stimulus as a continuity anchor; duration then scales it linearly. This is
+// an estimate for the fatigue map, not a claim that cardio minutes equal lifting sets.
+export const CARDIO_MINUTES_PER_SET = 30
 // Per-session cap per muscle: beyond ~10-12 sets the growth response plateaus,
 // so extra junk volume must not extend the red tail linearly.
 export const FATIGUE_MAX_SETS_PER_SESSION = 12
@@ -259,9 +263,9 @@ export function estimateSetRir(set, anchorKg, unit) {
 // costs the floor weight even when no anchor exists yet to estimate it from);
 // drop-set drops count as extra sets; rest-pause `clusters` are NOT extra because
 // the row's own set already totals every burst (see applyIntensifierPlan/history.js).
-// Cardio/timed rows count as sets too. Each set is scaled by its RIR weight -
-// logged effort first, Epley-inverse estimate against the anchor second, full
-// credit when intensity is unknowable (rings, load-less imports). Anchors come
+// Cardio rows scale by duration; timed holds still count as one set. Each set is
+// scaled by its RIR weight: logged effort first, estimated RIR second, full credit
+// when intensity is unknowable (rings, load-less imports). Anchors come
 // from the 90-day window ending at this session, never from its future.
 function sessionEffSets(workout, anchors, opts = {}) {
   const sums = emptyMuscleMap(0)
@@ -271,8 +275,13 @@ function sessionEffSets(workout, anchors, opts = {}) {
     const count = resolved?.source !== 'logged' && isWarmupRow(set)
       ? FATIGUE_RIR_FLOOR_WEIGHT
       : rirWeightFor(resolved?.rir)
+    const mode = modeOf({ ...(entry?.target || {}), id: entry?.id })
+    const minutes = Number(row?.min)
+    const durationScale = mode === 'cardio' && Number.isFinite(minutes)
+      ? Math.max(0, minutes) / CARDIO_MINUTES_PER_SET
+      : 1
     for (const [slug, weight] of Object.entries(weights)) {
-      if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += count * weight
+      if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += count * durationScale * weight
     }
   }
   for (const entry of workout?.entries || []) {

@@ -165,6 +165,8 @@ struct RootView: View {
                 CountdownView(from: from)
             } else if store.workout == nil {
                 IdleView()
+            } else if let from = store.holdCountFrom {
+                CountdownView(from: from, label: Text("Start hold"), start: { store.startHold(auto: true) }, cancel: { store.stopHoldCount() })
             } else if let end = store.holdEndsAt {
                 HoldView(end: end)
             } else {
@@ -292,12 +294,16 @@ struct LockButton: View {
 struct CountdownView: View {
     @EnvironmentObject var store: SessionStore
     let from: Date
+    /// The same 3-2-1 before a hold that starts by itself (the phone's setting): its own words and actions.
+    var label: Text? = nil
+    var start: (() -> Void)? = nil
+    var cancel: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 2) {
             TimelineView(.periodic(from: from, by: 1)) { ctx in
                 let n = max(1, Countdown.number(at: ctx.date.timeIntervalSince(from)))
-                Button { store.startNow() } label: {
+                Button { if let start = start { start() } else { store.startNow() } } label: {
                     ZStack {
                         CountdownRing(start: from, end: from.addingTimeInterval(Double(Countdown.seconds)))
                         Text(verbatim: "\(n)")
@@ -308,12 +314,12 @@ struct CountdownView: View {
                     .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(Text("Start workout"))
+                .accessibilityLabel(label ?? Text("Start workout"))
                 .accessibilityValue(Text(verbatim: "\(n)"))
             }
             .padding(.horizontal, 6)
             HStack {
-                EdgeButton(systemImage: "xmark", label: Text("Cancel")) { store.cancelCountdown() }
+                EdgeButton(systemImage: "xmark", label: Text("Cancel")) { if let cancel = cancel { cancel() } else { store.cancelCountdown() } }
                 Spacer()
             }
         }
@@ -1763,7 +1769,7 @@ struct RestView: View {
                 Spacer()
                 LockButton(health: store.health)
                 Spacer()
-                EdgeButton(systemImage: "forward.end.fill", label: Text("Skip")) { store.skipRest() }
+                EdgeButton(systemImage: "forward.end.fill", label: Text("Skip")) { store.skipRestAndGo() }
             }
             .opacity(dimmed ? 0 : 1)
         }
