@@ -464,15 +464,15 @@ struct IdleView: View {
     }
 }
 
-/* ---------- the session: Overview ← the exercises → Metrics, the rest over the exercises ---------- */
+/* ---------- the session: Overview ← the exercises → Metrics → Now Playing, the rest over the exercises ---------- */
 
 struct SessionScreen: View {
-    enum Page { case overview, set, metrics }
+    enum Page { case overview, set, metrics, music }
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var page: Page = SessionStore.demoOpensOverview ? .overview : SessionStore.demoOpensMetrics ? .metrics : .set
+    @State private var page: Page = SessionStore.demoOpensOverview ? .overview : SessionStore.demoOpensMetrics ? .metrics : SessionStore.demoScreen == "music" ? .music : .set
 
     var body: some View {
         let end = store.restEndsAt.flatMap { $0 > Date() ? $0 : nil }
@@ -491,12 +491,13 @@ struct SessionScreen: View {
                 .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: end != nil)
                 .tag(Page.set)
                 MetricsPage(health: store.health, front: page == .metrics && scenePhase == .active).tag(Page.metrics)
+                NowPlayingView().tag(Page.music)        // Apple's own player, as in Workout
             }
             // PageTabViewStyle, not .page(...): that one draws the pages too wide.
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: dimmed || end != nil ? .never : .automatic))
             // Wrist down or the app left: back to the live set (Metrics stays: it has no actions and keeps ticking in
             // Always On). Nothing else moves the page, and never on a timer.
-            .onChange(of: dimmed) { _, on in if on && page == .overview { page = .set } }
+            .onChange(of: dimmed) { _, on in if on && (page == .overview || page == .music) { page = .set } }
             .onChange(of: scenePhase) { _, p in if p != .active { page = .set } }
             // The end of the workout, at the moment the lifter is looking.
             .onChange(of: store.finishWanted) { _, want in

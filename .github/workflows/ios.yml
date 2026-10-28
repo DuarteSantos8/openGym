@@ -215,7 +215,7 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle idle-rest empty empty-heard set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish overview finish-auto finish-hold finish-hold-full discard metrics metrics-wait metrics-nohealth metrics-hrhidden metrics-big metrics-early metrics-lb summary summary-end ended; do
+            for screen in idle idle-rest empty empty-heard set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish overview finish-auto finish-hold finish-hold-full discard metrics metrics-wait metrics-nohealth metrics-hrhidden metrics-big metrics-early metrics-lb music summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
