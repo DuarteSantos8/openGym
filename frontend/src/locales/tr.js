@@ -2289,6 +2289,10 @@ export default {
   // --- #523 skip completed ---
   'In Cards and Focus, Prev and Next hop over a finished exercise.': 'Kartlar ve Odak düzeninde Geri ve İleri, bitmiş egzersizlerin üstünden atlar.',
   'Skip completed exercises': 'Tamamlanan egzersizleri atla',
+  'Superset warm-ups': 'Süpersetlerde ısınma',
+  'All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.': 'Önce hepsi: tüm ısınma setleri, sonra çalışma setleri. Egzersiz başına: her egzersiz, ilk çalışma setinden hemen önce ısınır.',
+  'All first': 'Önce hepsi',
+  'Per exercise': 'Egzersiz başına',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': 'Bu uygulama geçiş anahtarıyla onaylayamaz. Kodu bu profille oturum açmış bir tarayıcıda oluştur ya da önce orada bir parola ekle.',
   // --- Settings → Apple Watch ---

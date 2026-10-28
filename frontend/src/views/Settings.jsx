@@ -554,6 +554,13 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Skip completed exercises')} checked={S.skipCompleted === true}
             onChange={v => update(s => { if (v) s.skipCompleted = true; else delete s.skipCompleted })} />
         </Row>
+        {/* Where a superset's warm-ups go (lib/supersetFlow.js supersetOrder). */}
+        <Row icon="flame" iconTint="var(--orange)" title={t('Superset warm-ups')}
+          subtitle={t('All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.')}>
+          <Segmented className="seg-inline"
+            options={[{ value: 'all', label: t('All first') }, { value: 'each', label: t('Per exercise') }]}
+            value={S.supersetWarmups === 'each' ? 'each' : 'all'} onChange={v => update(s => { s.supersetWarmups = v })} />
+        </Row>
       </Section>
       <Section title={t('Before and during')}>
         {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips

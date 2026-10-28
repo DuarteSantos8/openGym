@@ -2289,6 +2289,10 @@ export default {
   // --- #523 skip completed ---
   'In Cards and Focus, Prev and Next hop over a finished exercise.': 'En Tarjetas y Enfoque, Anterior y Siguiente saltan los ejercicios terminados.',
   'Skip completed exercises': 'Saltar ejercicios completados',
+  'Superset warm-ups': 'Calentamiento en superseries',
+  'All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.': 'Todo primero: todos los calentamientos y luego las series de trabajo. Por ejercicio: cada ejercicio se calienta justo antes de su primera serie de trabajo.',
+  'All first': 'Todo primero',
+  'Per exercise': 'Por ejercicio',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': 'Esta app no puede confirmar con una passkey. Crea el código en un navegador con este perfil abierto, o añade allí una contraseña primero.',
   // --- Settings → Apple Watch ---

@@ -2368,6 +2368,10 @@ export default {
   // --- #523 skip completed ---
   'In Cards and Focus, Prev and Next hop over a finished exercise.': 'কার্ড ও ফোকাসে আগের/পরের বোতাম শেষ হওয়া ব্যায়াম টপকে যায়।',
   'Skip completed exercises': 'শেষ হওয়া ব্যায়াম বাদ দিন',
+  'Superset warm-ups': 'সুপারসেটে ওয়ার্ম-আপ',
+  'All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.': 'আগে সব: প্রথমে সব ওয়ার্ম-আপ, তারপর ওয়ার্ক সেট। প্রতি ব্যায়াম: প্রতিটি ব্যায়াম তার প্রথম ওয়ার্ক সেটের ঠিক আগে ওয়ার্ম-আপ করে।',
+  'All first': 'আগে সব',
+  'Per exercise': 'প্রতি ব্যায়াম',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': 'এই অ্যাপ পাসকি দিয়ে নিশ্চিত করতে পারে না। এই প্রোফাইলে সাইন ইন করা ব্রাউজারে কোডটি বানান, অথবা আগে সেখানে একটি পাসওয়ার্ড যোগ করুন।',
   // --- Settings → Apple Watch ---

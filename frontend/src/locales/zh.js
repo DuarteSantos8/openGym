@@ -2289,6 +2289,10 @@ export default {
   // --- #523 skip completed ---
   'In Cards and Focus, Prev and Next hop over a finished exercise.': '在卡片和专注布局中，上一个/下一个会跳过已完成的动作。',
   'Skip completed exercises': '跳过已完成的动作',
+  'Superset warm-ups': '超级组热身',
+  'All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.': '先全部：先做完所有热身组，再做正式组。按动作：每个动作在其第一组正式组之前热身。',
+  'All first': '先全部',
+  'Per exercise': '按动作',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': '此应用无法用通行密钥确认。请在已登录此档案的浏览器中生成代码，或先在那里设置密码。',
   // --- Settings → Apple Watch ---

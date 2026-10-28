@@ -17,7 +17,7 @@ import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, insertionIntoUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
@@ -1054,6 +1054,8 @@ function ActiveWorkout() {
   const exRefs = useRef(new Map())
   const setRefs = useRef(new Map())
   const focusPointerEpoch = useRef(0)
+  const flowScroll = useRef(false)
+  const [flowTick, setFlowTick] = useState(0)
   const bindExRef = (entry, el) => {
     if (el) exRefs.current.set(entry, el)
     else {
@@ -1161,7 +1163,9 @@ function ActiveWorkout() {
     // a move.
     const was = lastCur.current
     lastCur.current = cur
-    const moved = was != null && was !== cur
+    const forced = flowScroll.current
+    flowScroll.current = false
+    const moved = forced || (was != null && was !== cur)
     if (!isSuperset) return
     // A superset is one card in every layout, so moving the marker from one member to the next
     // does not change which `.wl-unit` is current: the list's own scroll (to `.wl-unit.cur`)
@@ -1170,7 +1174,7 @@ function ActiveWorkout() {
     // view does it — but only when the marker moved WITHIN this superset (member → member). A
     // move that leaves the unit (the next unit after a round, revealCur) is the list's own job,
     // and mount/pairing/layout switches are not moves at all, where the list leaves "current" put.
-    if (listMode && (!moved || !unit.includes(was))) return
+    if (listMode && (!moved || !unit.includes(forced ? cur : was))) return
     // A run the marker did not cause, with a sheet closing in the same tap, never scrolled: the
     // restore undid it. Keep that by not asking at all. Asking after the restore and then judging
     // the row would centre a first row that a tall first block (a note, "Last time", the
@@ -1207,7 +1211,7 @@ function ActiveWorkout() {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
     })
-  }, [cur, isSuperset, listMode, A.entries.length])
+  }, [cur, isSuperset, listMode, A.entries.length, flowTick])
   // The list opens at the exercise you are on, not at the top of the session (issue #224): you
   // switch to it mid-workout to look at what comes before and after. Only on the way in — once
   // the list is open, "current" moves because you tick rows in it, and a list that scrolls
@@ -1328,6 +1332,28 @@ function ActiveWorkout() {
     if (focusMode) focusPointerEpoch.current++
     s.active.entries = unpairSuperset(s.active.entries, idx)
   })
+  // A superset's header "Unpair": two members just come apart; with three or more it asks which
+  // exercise leaves, since detaching "the current one" is not obvious from the header.
+  const unpairFrom = u => {
+    if (u.length <= 2) return unpairAt(u[0])
+    menuSheet({
+      title: t('Unpair'),
+      items: u.map(idx => ({ icon: 'link', label: exerciseNameFor(exOr(A.entries[idx].id)), onClick: () => unpairAt(idx) })),
+    })
+  }
+  // A superset's header "Add": a new exercise, or the neighbour on either side of the group.
+  const groupAddMenu = u => {
+    const first = Math.min(...u), last = Math.max(...u)
+    const nameAt = i => exerciseNameFor(exOr(A.entries[i].id))
+    menuSheet({
+      title: t('Superset'),
+      items: [
+        { icon: 'plusCircle', label: t('Add exercise'), onClick: () => addExercise(u) },
+        first > 0 && { icon: 'link', label: t('Make superset with previous'), sub: nameAt(first - 1), onClick: () => pairAt(first - 1, first) },
+        last < A.entries.length - 1 && { icon: 'link', label: t('Make superset with next'), sub: nameAt(last + 1), onClick: () => pairAt(last, last + 1) },
+      ],
+    })
+  }
   const onPairPrev = !isSuperset && cur > 0 ? () => pairAt(cur - 1, cur) : null
   const onPairNext = !isSuperset && cur < A.entries.length - 1 ? () => pairAt(cur, cur + 1) : null
   // `member`: the exercise ⋯ menu's move, which reorders a superset member inside its superset
@@ -1515,7 +1541,10 @@ function ActiveWorkout() {
     workoutCompleteSheet()
   }
   // Adds an exercise after the current unit: the button under the session and the ⋯ menu's Add.
-  const addExercise = () => exercisePicker((ex, quick) => {
+  // `intoUnit`: a superset's header passes its members, and the exercise joins that superset.
+  // Anything else (the buttons hand over an event) adds after the current unit as before.
+  const addExercise = intoUnit => exercisePicker((ex, quick) => {
+    const group = Array.isArray(intoUnit) ? intoUnit : null
     // A freehand add inherits the current unit's routine (its `rid`) so it lands in that
     // routine's block in a combined session and gets a real prescription; a routine-less
     // freestyle session has no `rid` to inherit. It inherits the block's `noProg` too: an
@@ -1524,7 +1553,7 @@ function ActiveWorkout() {
     // never becomes the baseline the regular sessions progress from. An exercise kept out by
     // hand (its ⋯ menu) is that exercise's own choice for today and is not passed on; a session
     // kept out as a whole (the header ⋮) takes the new one with it (joinSessionNoProg).
-    const curEntry = A.entries[A.cur]
+    const curEntry = A.entries[group ? group[0] : A.cur]
     const curRid = curEntry?.rid
     const routine = curRid ? S.routines.find(r => r.id === curRid) : null
     const freestyle = !routine
@@ -1539,9 +1568,10 @@ function ActiveWorkout() {
         // A planned session builds the exercise the way its routine would (prescription, reps
         // source, target); freestyle reproduces what you did last time (buildSessionEntry).
         const built = buildSessionEntry(s, ex.id, cfg, routine, curEntry)
-        const insertAt = insertionIndexAfterCurrentUnit(supersetUnits(s.active.entries), s.active.cur, s.active.entries.length)
+        const into = group ? insertionIntoUnit(s.active.entries, group) : null
+        const insertAt = into ? into.index : insertionIndexAfterCurrentUnit(supersetUnits(s.active.entries), s.active.cur, s.active.entries.length)
         // `addedInSession`: the finish summary offers to keep it in the routine (#592).
-        s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}) }))
+        s.active.entries.splice(insertAt, 0, joinSessionNoProg(s.active, { id: ex.id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}), ...(into ? { sg: into.sg } : {}) }))
         s.active.cur = insertAt
         useUI.getState().shiftRestOwner(insertAt, 1)
       })
@@ -1895,12 +1925,18 @@ function ActiveWorkout() {
         return
       }
 
-      const step = supersetFlowStep(fresh.entries, freshUnit, idx)
+      const step = supersetFlowStep(fresh.entries, freshUnit, idx, { setIdx: i, warmups: S.supersetWarmups === 'each' ? 'each' : 'all' })
       if (!step) { onFocusProgress?.({ unitDone: freshUnitDone }); return }
       if (step.unitDone) {
         if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, { forSet: i })
       } else {
-        if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
+        if (step.nextIdx != null) {
+          // The marker may already sit on the partner (a superset made with "previous" leaves it
+          // on the second member, and ticking the first sends it there again). Nothing changes
+          // in `cur`, so the scroll effect would never run: ask for it explicitly.
+          if (step.nextIdx === fresh.cur) { flowScroll.current = true; setFlowTick(n => n + 1) }
+          update(s => { if (s.active) s.active.cur = step.nextIdx })
+        }
         if (step.roundDone) startRest(restAfter, idx, { forSet: i })
       }
       onFocusProgress?.({ unitDone: freshUnitDone })
@@ -2212,7 +2248,10 @@ function ActiveWorkout() {
               <div className="ss-card">
                 <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
                   <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(u)}</span>
-                  <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(u[0])}>{t('Unpair')}</Button>
+                  <span className="row" style={{ gap: 5 }}>
+                    <Button size="xs" variant="ghost" icon="plusCircle" title={t('Add')} onClick={() => groupAddMenu(u)}>{t('Add')}</Button>
+                    <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairFrom(u)}>{t('Unpair')}</Button>
+                  </span>
                 </div>
                 {u.map((idx, k) => {
                   const entry = A.entries[idx]
@@ -2252,7 +2291,10 @@ function ActiveWorkout() {
             <div className="ss-card">
               <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
                 <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(adjacent)}</span>
-                <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(adjacent[0])}>{t('Unpair')}</Button>
+                <span className="row" style={{ gap: 5 }}>
+                  <Button size="xs" variant="ghost" icon="plusCircle" title={t('Add')} onClick={() => groupAddMenu(adjacent)}>{t('Add')}</Button>
+                  <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairFrom(adjacent)}>{t('Unpair')}</Button>
+                </span>
               </div>
               {adjacent.map((idx, k) => <div key={idx} className="ss-ex" data-exidx={idx}>
                 {k > 0 && <div className="ss-amp">+</div>}
@@ -2267,13 +2309,16 @@ function ActiveWorkout() {
       {focusMode ? (
         <FocusView entryIdx={cur} unit={unit}
           onSelectEntry={selectFocusEntry} onAdvanceUnit={advanceFocusUnit} pointerEpoch={focusPointerEpoch.current}
-          onPairPrev={onPairPrev} onPairNext={onPairNext} onUnpair={() => unpairAt(cur)}
+          onPairPrev={onPairPrev} onPairNext={onPairNext} onUnpair={() => unpairFrom(unit)} onGroupAdd={() => groupAddMenu(unit)}
           {...blockProps(cur)} />
       ) : isSuperset ? (
         <div className="ss-card">
           <div className="ss-hd" style={{ justifyContent: 'space-between' }}>
             <span className="row" style={{ gap: 5 }}><Icon name="link" />{ssTitle(unit)}</span>
-            <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairAt(cur)}>{t('Unpair')}</Button>
+            <span className="row" style={{ gap: 5 }}>
+              <Button size="xs" variant="ghost" icon="plusCircle" title={t('Add')} onClick={() => groupAddMenu(unit)}>{t('Add')}</Button>
+              <Button size="xs" variant="ghost" icon="link" title={t('Unpair')} onClick={() => unpairFrom(unit)}>{t('Unpair')}</Button>
+            </span>
           </div>
           {unit.map((idx, k) => {
             const entry = A.entries[idx]

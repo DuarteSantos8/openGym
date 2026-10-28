@@ -2292,6 +2292,10 @@ export default {
   // --- #523 skip completed ---
   'In Cards and Focus, Prev and Next hop over a finished exercise.': 'Kártyák és Fókusz nézetben az Előző és a Következő átugorja a kész gyakorlatot.',
   'Skip completed exercises': 'Kész gyakorlatok átugrása',
+  'Superset warm-ups': 'Szuperszett-bemelegítés',
+  'All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.': 'Először mind: először az összes bemelegítő sorozat, utána a munkasorozatok. Gyakorlatonként: minden gyakorlat közvetlenül az első munkasorozata előtt melegít be.',
+  'All first': 'Először mind',
+  'Per exercise': 'Gyakorlatonként',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': 'Ez az app nem tud jelszókulccsal megerősíteni. Készítsd el a kódot egy böngészőben, ahol ebbe a profilba vagy bejelentkezve, vagy előbb adj meg ott egy jelszót.',
   // --- Settings → Apple Watch ---
