@@ -3,10 +3,11 @@ import HealthKit
 
 /*
  * Apple Health on the watch, behind the phone's Apple Health switch (Settings → Data on the iPhone,
- * sent with every snapshot as settings.health): a strength-training workout session as soon
- * as a workout starts here or is picked up from the phone, showing the live heart rate and keeping
- * the watch app running with the wrist down (so the rest still taps the wrist on time), and the
- * workout saved to Apple Health when it ends. Off, nothing of this runs and nothing is asked.
+ * sent with every snapshot as settings.health): a workout session (of the type the phone planned,
+ * strength training unless it says otherwise: a run is a run, #799) as soon as a workout starts
+ * here or is picked up from the phone, showing the live heart rate and keeping the watch app
+ * running with the wrist down (so the rest still taps the wrist on time), and the workout saved to
+ * Apple Health when it ends. Off, nothing of this runs and nothing is asked.
  *
  * The heart rate arrives two ways at once, whichever is first: the workout builder's statistics
  * and an anchored query on heart-rate samples, which carry their own time (the sets' and rests'
@@ -95,15 +96,50 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         b.addMetadata([HKMetadataKeySyncIdentifier: "opengym-w-\(wid)", HKMetadataKeySyncVersion: 1]) { _, _ in }
     }
 
-    /// A workout started here or picked up from the phone: the session starts now.
-    func start(workoutId wid: String? = nil) {
+    /// The phone's names for a workout's type (lib/health-connect.js SESSION_TYPES, #799).
+    static let activityTypes: [String: HKWorkoutActivityType] = [
+        "strength_training": .traditionalStrengthTraining, "walking": .walking, "running": .running,
+        "biking_stationary": .cycling, "biking": .cycling, "elliptical": .elliptical, "stair_climbing_machine": .stairClimbing,
+        "rowing": .rowing, "jump_rope": .jumpRope, "hiit": .highIntensityIntervalTraining, "mixed_cardio": .mixedCardio,
+        "yoga": .yoga, "flexibility": .flexibility, "other_workout": .other,
+    ]
+
+    /// A session made and prepared, not started yet (the countdown before a workout started here).
+    private var prepared = false
+
+    /// The countdown before a workout started here: the session is made and prepared, which turns
+    /// the heart-rate sensor on. It needs a few seconds to lock on, so set 1 has its heart rate.
+    func prepare(type: String? = nil) {
+        guard session == nil, make(type: type, opened: nil) else { return }
+        prepared = true
+        session?.prepare()
+    }
+
+    /// A workout started here or picked up from the phone: the session starts now (the prepared
+    /// one, after a countdown), as the type the phone planned (a run is a run in Apple Health),
+    /// else as the type HealthKit opened the app with, else strength training. A session already
+    /// running keeps its type.
+    func start(workoutId wid: String? = nil, type: String? = nil, opened: HKWorkoutActivityType? = nil) {
         wanted = true
         if let wid = wid { workoutId = wid }
         // Already running (opened by the phone before its workout arrived): only the id to add.
-        if session != nil { tag(); return }
-        guard enabled, HKHealthStore.isHealthDataAvailable() else { return }
+        if session != nil && !prepared { tag(); return }
+        guard session != nil || make(type: type, opened: opened), let s = session, let b = builder else { return }
+        prepared = false
+        let now = Date()
+        s.startActivity(with: now)
+        b.beginCollection(withStart: now) { _, _ in }
+        tagged = nil
+        tag()
+        startQuery(from: now)
+        running = true
+    }
+
+    /// A new session of the planned type and its builder, when Apple Health is on.
+    private func make(type: String?, opened: HKWorkoutActivityType?) -> Bool {
+        guard enabled, HKHealthStore.isHealthDataAvailable() else { return false }
         let config = HKWorkoutConfiguration()
-        config.activityType = .traditionalStrengthTraining
+        config.activityType = type.flatMap { WorkoutManager.activityTypes[$0] } ?? opened ?? .traditionalStrengthTraining
         config.locationType = .indoor
         do {
             let s = try HKWorkoutSession(healthStore: store, configuration: config)
@@ -116,17 +152,30 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             samples = []
             heartRate = nil
             calories = nil
-            let now = Date()
-            s.startActivity(with: now)
-            b.beginCollection(withStart: now) { _, _ in }
-            tagged = nil
-            tag()
-            startQuery(from: now)
-            running = true
+            paused = false
+            return true
         } catch {
             session = nil
             builder = nil
+            return false
         }
+    }
+
+    /// Rested for a workout nobody finishes (SensorPlan): the session pauses, which lets the
+    /// heart-rate sensor go back to its everyday rate. Nothing is lost: the builder keeps what it
+    /// measured, and the workout is still saved when it ends. `resume()` picks it up again.
+    private(set) var paused = false
+
+    func pause() {
+        guard let s = session, !paused, s.state == .running else { return }
+        paused = true
+        s.pause()
+    }
+
+    func resume() {
+        guard paused else { return }
+        paused = false
+        session?.resume()
     }
 
     /// The app was killed (or crashed) with a workout session running: watchOS kept the session and
@@ -147,6 +196,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
                 b.delegate = self
                 self.session = s
                 self.builder = b
+                self.paused = s.state == .paused
                 self.wanted = true
                 if let wid = wid { self.workoutId = wid }
                 self.tagged = nil
@@ -214,8 +264,16 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     private var shownAt = Date.distantPast
 
     private func add(_ readings: [(Date, Double)]) {
-        for r in readings where !samples.contains(where: { abs($0.0.timeIntervalSince(r.0)) < 0.5 }) { samples.append(r) }
-        samples.sort { $0.0 < $1.0 }
+        // Kept in time order by inserting each reading where it belongs: a duplicate (the same reading
+        // from the query and from the builder) can then only be the neighbour on either side, instead
+        // of a scan of the whole workout's readings and a full sort for every new one.
+        for r in readings {
+            var lo = 0, hi = samples.count
+            while lo < hi { let mid = (lo + hi) / 2; if samples[mid].0 < r.0 { lo = mid + 1 } else { hi = mid } }
+            if lo < samples.count && abs(samples[lo].0.timeIntervalSince(r.0)) < 0.5 { continue }
+            if lo > 0 && abs(samples[lo - 1].0.timeIntervalSince(r.0)) < 0.5 { continue }
+            samples.insert(r, at: lo)
+        }
         guard let last = samples.last?.1 else { return }
         let now = Date()
         if heartRate == nil || abs((heartRate ?? 0) - last) >= 5 || now.timeIntervalSince(shownAt) >= 4 {
@@ -232,19 +290,23 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     }
 
     /// The workout ended: saved to Apple Health, or dropped when `save` is false. `totals` gets the
-    /// session's heart rate and calories (nothing when no session ran).
-    func end(save: Bool, totals: ((Totals) -> Void)? = nil) {
+    /// session's heart rate and calories (nothing when no session ran). `at`: when it really ended
+    /// (a workout left running ends at its last set, not when the watch noticed), else now.
+    func end(save: Bool, at: Date? = nil, totals: ((Totals) -> Void)? = nil) {
         wanted = false
         workoutId = nil
+        prepared = false
         if let q = query { store.stop(q); query = nil }
-        let all = samples.map { $0.1 }
+        let endAt = at ?? Date()
+        let all = samples.filter { $0.0 <= endAt }.map { $0.1 }
         let hr = Totals(hrAvg: all.isEmpty ? nil : (all.reduce(0, +) / Double(all.count)).rounded(), hrMax: all.max()?.rounded(), calories: nil)
         guard let s = session, let b = builder else {
             if let totals = totals { DispatchQueue.main.async { totals(Totals()) } }
             return
         }
         s.end()
-        b.endCollection(withEnd: Date()) { _, _ in
+        // Never before the session's own start (a workout picked up from the phone after its last set).
+        b.endCollection(withEnd: max(endAt, b.startDate ?? endAt)) { _, _ in
             var out = hr
             if let kcalType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
                let kcal = b.statistics(for: kcalType)?.sumQuantity()?.doubleValue(for: .kilocalorie()), kcal > 0 {
@@ -259,6 +321,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         }
         session = nil
         builder = nil
+        paused = false
         DispatchQueue.main.async {
             self.running = false
             self.heartRate = nil

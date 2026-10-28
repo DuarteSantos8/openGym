@@ -161,6 +161,16 @@ describe('don’t count the whole workout for progression', () => {
     expect(active().entries.map(e => [e.id, e.noProg])).toEqual([[BENCH, true], [SQUAT, true]])
   })
 
+  // #592: the finish summary offers it to the routine, so the add marks it; the planned one is not.
+  it('an exercise added to a routine session is marked as added there', () => {
+    renderWorkout([entry(BENCH, 'main', 100)])
+    const add = [...container.querySelectorAll('button')].find(b => b.textContent.trim() === 'Add exercise')
+    act(() => add.click())
+    const picker = useUI.getState().sheets.at(-1)
+    act(() => picker.render(picker.close).props.onPick(EXDB.find(e => e.id === SQUAT), true))
+    expect(active().entries.map(e => [e.id, e.rid, e.addedInSession])).toEqual([[BENCH, 'main', undefined], [SQUAT, 'main', true]])
+  })
+
   it('a routine added afterwards joins it, with its own prescription kept', () => {
     renderWorkout([entry(BENCH, 'main', 100)])
     tapHeaderItem()

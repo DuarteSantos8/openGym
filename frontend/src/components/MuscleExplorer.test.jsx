@@ -119,3 +119,34 @@ describe('MuscleExplorer opened on a muscle', () => {
     expect(host.textContent).toContain('Exercises for Biceps')
   })
 })
+
+// #669: the Add exercise picker's "By muscle" lost the Favourites chip its list view has.
+describe('MuscleExplorer Favourites chip', () => {
+  it('lists the favourites that train the chosen muscle', async () => {
+    const { EXDB } = await import('../lib/exercises.js')
+    const { musclesOf } = await import('../lib/muscles.js')
+    const curl = EXDB.find(e => musclesOf(e).biceps === 1)
+    const press = EXDB.find(e => !musclesOf(e).biceps && e.bp === 'chest')
+    mocks.S.favEx = [curl.id, press.id]
+    const onPick = vi.fn()
+    const host = render({ onPick })
+    act(() => { muscleChip(host, 'Biceps').click() })
+    const fav = muscleChip(host, 'Favourites')
+    expect(fav, 'a Favourites chip next to All').toBeTruthy()
+    expect(fav.textContent).toContain('(1)')
+    act(() => { fav.click() })
+    expect(isOn(muscleChip(host, 'Favourites'))).toBe(true)
+    const rows = [...host.querySelectorAll('.list .item')]
+    expect(rows).toHaveLength(1)
+    act(() => { rows[0].click() })
+    expect(onPick).toHaveBeenCalledWith(expect.objectContaining({ id: curl.id }))
+    act(() => { chipByText(host, 'All').click() })
+    expect(host.querySelectorAll('.list .item').length).toBeGreaterThan(1)
+  })
+
+  it('is not there without favourites', () => {
+    const host = render({ onPick: vi.fn() })
+    act(() => { muscleChip(host, 'Biceps').click() })
+    expect(muscleChip(host, 'Favourites')).toBeUndefined()
+  })
+})

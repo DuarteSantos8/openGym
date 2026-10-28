@@ -48,6 +48,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
         let nc = NotificationCenter.default
         nc.addObserver(self, selector: #selector(cameToFront), name: UIApplication.didBecomeActiveNotification, object: nil)
         nc.addObserver(self, selector: #selector(leftFront), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        // The Live Activity's Skip rest (WorkoutActivity.swift): this rest's alert is not posted later.
+        nc.addObserver(self, selector: #selector(restSkipped), name: LiveActivityQueue.restSkipped, object: nil)
         // Written ahead, off the main thread: the first rest then finds its sound file there.
         DispatchQueue.global(qos: .utility).async { RestTone.kinds.forEach { _ = RestTone.soundFile($0) } }
     }
@@ -155,6 +157,10 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc private func leftFront() {
         post()
+    }
+
+    @objc private func restSkipped() {
+        DispatchQueue.main.async { self.pending = nil }
     }
 
     private func post() {

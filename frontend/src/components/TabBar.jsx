@@ -62,7 +62,16 @@ export default function TabBar({ onStart }) {
   useFitLabels(barRef, [t('Home'), t('Plan'), t('Stats'), t('Health'), t('Exercises'), t('Settings')].join('|'))
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
-  const on = k => cur === k || (cur === 'history' && k === 'stats') || (cur === 'muscles' && k === 'library') || (cur === 'structural-balance' && k === 'stats')
+  // A screen without a tab of its own lights the tab it is opened from (Muscles from both).
+  // Settings has a tab of its own here.
+  const PARENT = { history: 'stats', 'structural-balance': 'stats', 'progress-photos': 'stats', measurements: 'stats', checkin: 'home', muscles: 'library' }
+  const parent = cur === 'muscles' && loc.state?.from === '/stats' ? 'stats' : PARENT[cur]
+  const on = k => cur === k || parent === k
+
+  // Root tabs are peers, not another level to unwind with Android Back.
+  const switchTab = path => {
+    if (loc.pathname !== path || loc.search) nav(path, { replace: true })
+  }
 
   const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
   const startWorkout = () => {
@@ -78,9 +87,9 @@ export default function TabBar({ onStart }) {
     <nav id="tabbar" ref={barRef}>
       {/* Three tabs, Start in the middle, three tabs: Settings has its own place instead of a gear
           on Home. */}
-      <Tab active={on('home')} icon="house" label={t('Home')} onClick={() => nav('/home')} />
-      <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => nav('/plan')} />
-      <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => nav('/stats')} />
+      <Tab active={on('home')} icon="house" label={t('Home')} onClick={() => switchTab('/home')} />
+      <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => switchTab('/plan')} />
+      <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} />
       {/* On the workout screen itself there is nothing to resume, so the button reads as the
           tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
           were on — the marker is kept in S.active.cur and never moves on its own (#21). The
@@ -94,9 +103,9 @@ export default function TabBar({ onStart }) {
         {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
           : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
       </button>
-      <Tab active={on('health')} icon="heart" label={t('Health')} onClick={() => nav('/health')} />
-      <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => nav('/library')} />
-      <Tab active={on('settings')} icon="gear" label={t('Settings')} dot={trouble} onClick={() => nav('/settings')} />
+      <Tab active={on('health')} icon="heart" label={t('Health')} onClick={() => switchTab('/health')} />
+      <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} />
+      <Tab active={on('settings')} icon="gear" label={t('Settings')} dot={trouble} onClick={() => switchTab('/settings')} />
     </nav>
   )
 }

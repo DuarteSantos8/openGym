@@ -45,28 +45,44 @@ final class NudgeCheck {
     // ---------------------------------------------------------------- what is kept
 
     static boolean save(Context ctx, JSONObject config) {
-        try {
-            Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
-            c.init(Cipher.ENCRYPT_MODE, key());
-            byte[] sealed = c.doFinal(config.toString().getBytes(StandardCharsets.UTF_8));
-            prefs(ctx).edit()
-                    .putString("iv", Base64.encodeToString(c.getIV(), Base64.NO_WRAP))
-                    .putString("config", Base64.encodeToString(sealed, Base64.NO_WRAP))
-                    .apply();
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        String[] sealed = seal(config.toString());
+        if (sealed == null) return false;
+        prefs(ctx).edit().putString("iv", sealed[0]).putString("config", sealed[1]).apply();
+        return true;
     }
 
     static JSONObject load(Context ctx) {
+        SharedPreferences p = prefs(ctx);
+        String plain = open(p.getString("iv", null), p.getString("config", null));
         try {
-            SharedPreferences p = prefs(ctx);
-            String iv = p.getString("iv", null), sealed = p.getString("config", null);
-            if (iv == null || sealed == null) return null;
+            return plain == null ? null : new JSONObject(plain);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * `plain` encrypted with this app's Keystore key, as { iv, sealed } in Base64, or null. Also
+     * keeps the gym reminder's copy of the server and its headers (GymReminder.saveServer).
+     */
+    static String[] seal(String plain) {
+        try {
+            Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
+            c.init(Cipher.ENCRYPT_MODE, key());
+            byte[] sealed = c.doFinal(plain.getBytes(StandardCharsets.UTF_8));
+            return new String[] { Base64.encodeToString(c.getIV(), Base64.NO_WRAP), Base64.encodeToString(sealed, Base64.NO_WRAP) };
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** The other way round; null when either part is missing or does not open. */
+    static String open(String iv, String sealed) {
+        if (iv == null || sealed == null) return null;
+        try {
             Cipher c = Cipher.getInstance("AES/GCM/NoPadding");
             c.init(Cipher.DECRYPT_MODE, key(), new GCMParameterSpec(128, Base64.decode(iv, Base64.NO_WRAP)));
-            return new JSONObject(new String(c.doFinal(Base64.decode(sealed, Base64.NO_WRAP)), StandardCharsets.UTF_8));
+            return new String(c.doFinal(Base64.decode(sealed, Base64.NO_WRAP)), StandardCharsets.UTF_8);
         } catch (Exception e) {
             return null;
         }

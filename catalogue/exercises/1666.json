@@ -8,6 +8,9 @@
     "forearms"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A one-arm hammer curl lying chest down on a bench. It trains the brachialis and biceps.",
   "instructions": [
     "Lie face down on a flat bench with a dumbbell in one hand, palm facing your body and arm fully extended.",

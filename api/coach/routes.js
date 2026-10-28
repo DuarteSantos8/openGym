@@ -111,6 +111,24 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       } catch (e) { failEnqueue(res, e); }
     },
 
+    // A question in the chat. Answered in words; nothing to apply. The running session rides
+    // along when there is one, since the server never holds it.
+    'POST /api/coach/ask': async (req, res) => {
+      const user = guard(req, res); if (!user) return;
+      const body = await readBody(req);
+      const text = typeof body.text === 'string' ? body.text.trim() : '';
+      if (!text) return json(res, 400, { error: 'a question is required', code: 'invalid' });
+      try {
+        const job = jobs.enqueue(user.id, {
+          kind: 'ask',
+          lang: body.lang,
+          note: text.slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING),
+          today: body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null
+        });
+        json(res, 202, { job });
+      } catch (e) { failEnqueue(res, e); }
+    },
+
     /* How this profile sits against everyone else on the instance who opted in: medians only,
        at least three people, and nothing for a profile that does not share itself. */
     'GET /api/coach/cohort': async (req, res) => {

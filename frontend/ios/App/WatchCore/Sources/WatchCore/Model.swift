@@ -16,6 +16,9 @@ struct Snapshot: Codable, Equatable {
     /// Apple Health sync ids of workouts deleted in openGym ("opengym-w-<id>", newest first): the
     /// watch takes out the copies it saved itself, which the phone may not delete.
     var healthGone: [String]?
+    /// Workouts discarded on the phone lately (their ids): one of these that leaves the snapshot
+    /// was not finished, so the watch drops its Apple Health workout instead of saving it (#776).
+    var discarded: [String]?
 }
 
 /// What the watch can start by itself: today's planned session and a few other routines.
@@ -28,6 +31,8 @@ struct ReadySession: Codable, Equatable {
     var routineIds: [String]
     var name: String
     var entries: [Entry]
+    /// Apple Health's workout type for it (lib/health-connect.js plannedType, #799); none from an older phone.
+    var healthType: String?
 }
 
 struct ActiveWorkout: Codable, Equatable {
@@ -40,6 +45,8 @@ struct ActiveWorkout: Codable, Equatable {
     var entries: [Entry]
     /// When it started (ms since 1970), for the summary's duration.
     var start: Double?
+    /// Apple Health's workout type for it (#799); none: strength training, as before.
+    var healthType: String?
 }
 
 struct RestInfo: Codable, Equatable {
@@ -131,6 +138,8 @@ struct WatchSettings: Codable, Equatable {
     var lastBw: Double?
     /// What the watch shows during a workout (Settings → Apple Watch); nil is the default.
     var show: WatchShow?
+    /// The effort the profile logs per set, "rpe" or "rir"; nil: none (no effort tile).
+    var effort: String?
 }
 
 /// What a workout screen shows. Each nil means its default.
