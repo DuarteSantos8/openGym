@@ -945,20 +945,8 @@ export function moveRoutineEntry(items, index, direction) {
 }
 export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
 
-export function streakWeeks(S) {
-  if (!S.workouts.length) return 0
-  const ws = weekStartOf(S)
-  const weeks = new Set(S.workouts.map(w => weekKey(w.d, ws)))
-  let streak = 0
-  const cur = new Date()
-  for (let i = 0; i < 520; i++) {
-    const wk = weekKey(isoOf(cur), ws)
-    if (weeks.has(wk)) streak++
-    else if (i > 0) break
-    cur.setDate(cur.getDate() - 7)
-  }
-  return streak
-}
+// The week streak, with its freezes and badges, lives in lib/streak.js.
+export { streakWeeks } from './streak.js'
 
 /**
  * Cascade an explicit work-set load edit through the later inherited work sets.
@@ -1186,9 +1174,9 @@ export function setSpanAt(rows, i) {
 // What a copied set leaves behind (v1.3.11, swipe right or "Copy this set"): the tick and when it
 // happened, a hold's set-aside plan, the manual-weight marker (the copy follows a weight change
 // above it like any inherited row) and the drop/burst sub-rows, which belong to the set that was
-// actually done. Weight, reps, time, speed, effort, the warm-up phase, a pyramid's Max and the
-// side layout all come along.
-const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters']
+// actually done, and so does the set's form video (lib/set-videos.js). Weight, reps, time,
+// speed, effort, the warm-up phase, a pyramid's Max and the side layout all come along.
+const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters', 'media']
 const bare = src => {
   const out = { ...src }
   for (const k of NOT_COPIED) delete out[k]

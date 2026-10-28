@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- openGym's Home Screen widget (OpenGymWidgetProvider): 2x1, 2x2 or 4x2, what it shows chosen
+     when it is placed (OpenGymWidgetConfigure) and again later with a long press (Android 12+).
+     The app redraws it whenever what it shows changed; the period only turns the day. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:maxResizeWidth="420dp"
+    android:maxResizeHeight="220dp"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="10800000"
+    android:initialLayout="@layout/widget_small"
+    android:previewLayout="@layout/widget_small"
+    android:previewImage="@mipmap/ic_launcher"
+    android:description="@string/widget_desc"
+    android:configure="ch.duartesantos.opengym.OpenGymWidgetConfigure"
+    android:widgetFeatures="reconfigurable"
+    android:widgetCategory="home_screen" />

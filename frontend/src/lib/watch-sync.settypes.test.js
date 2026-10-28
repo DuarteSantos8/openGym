@@ -150,12 +150,14 @@ describe('the weigh-in from the watch', () => {
     expect(weighIn).toHaveBeenCalledTimes(1)
   })
 
-  it('is logged on its day, replacing that day\'s', async () => {
+  it('is logged on its day, beside that day\'s (#859)', async () => {
     const { logWeighIn } = await import('./bodyweight.js')
     const at = new Date('2026-10-14T08:00:00').getTime()
     const s = { bodyweight: [{ d: '2026-10-13', w: 82, t: 1 }, { d: '2026-10-14', w: 81, t: 2 }] }
     expect(logWeighIn(s, 80.96, at)).toBe(true)
-    expect(s.bodyweight).toEqual([{ d: '2026-10-13', w: 82, t: 1 }, { d: '2026-10-14', w: 81, t: at }])
+    expect(s.bodyweight[0]).toEqual({ d: '2026-10-13', w: 82, t: 1 })
+    expect(s.bodyweight[1].ins.map(r => [r.at, r.w])).toEqual([[null, 81], ['08:00', 81]])
+    expect(s.bodyweight[1]).toMatchObject({ d: '2026-10-14', w: 81, t: at })
     expect(logWeighIn(s, 0, at)).toBe(false)
   })
 

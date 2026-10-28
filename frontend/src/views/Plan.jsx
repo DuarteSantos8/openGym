@@ -332,7 +332,7 @@ function Schedule({ S, update, nav, mode }) {
 
     {mode === 'week' ? <>
       <h4 className="sec">{t('This week')}</h4>
-      <div className="list plan-week">{weekOrder(ws).map(d => dayRow(d))}</div>
+      <div className="list plan-week" data-tour="plan-week">{weekOrder(ws).map(d => dayRow(d))}</div>
       <p className="sect-f">{t('Want two routines on one day? Tap the day and pick both.')}</p>
     </> : <div className="rotation">
       <div className="row between plan-sec-h">
@@ -341,7 +341,7 @@ function Schedule({ S, update, nav, mode }) {
             adopt it first ("Use this rotation" below), never a tap on one of its rows. */}
         {!external && <div className="row plan-sec-acts" style={{ gap: 6 }}>
           {seq.length > 0 && <button className="plan-textbtn" aria-pressed={editLoop} onClick={() => setEditLoop(e => !e)}>{editLoop ? t('Done') : t('Edit')}</button>}
-          <Button size="sm" variant="tinted" icon="plus" aria-label={t('Add routine to the rotation')}
+          <Button size="sm" variant="tinted" icon="plus" data-tour="plan-loop-add" aria-label={t('Add routine to the rotation')}
             disabled={!S.routines.length} onClick={addToSeq}>{t('Add')}</Button>
         </div>}
       </div>
@@ -458,7 +458,7 @@ function Routines({ S, update, nav }) {
       {routines.length > 0
         ? <button className="plan-textbtn" aria-pressed={edit} onClick={() => setEdit(e => !e)}>{edit ? t('Done') : t('Edit')}</button>
         : <span />}
-      <Button size="sm" variant="tinted" icon="plus" onClick={addRoutine}>{t('New routine')}</Button>
+      <Button size="sm" variant="tinted" icon="plus" data-tour="plan-new" onClick={addRoutine}>{t('New routine')}</Button>
     </div>
     {routines.length ? <>
       {edit

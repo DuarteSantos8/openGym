@@ -138,6 +138,18 @@ describe('workout fields of the wrong type', () => {
     }
   })
 
+  it('keeps RPE on imported cardio rows', () => {
+    const cardioTemplate = { id: '040BA2E3', title: 'Jump Rope', primary_muscle_group: 'cardio' }
+    const p = parseHevyWorkouts([workout({ exercises: [{
+      exercise_template_id: cardioTemplate.id,
+      title: cardioTemplate.title,
+      sets: [set({ weight_kg: null, reps: null, duration_seconds: 600, rpe: 8 })],
+    }] })], [cardioTemplate], kg)
+
+    expect(p.rpeSets).toBe(1)
+    expect(p.workouts[0].entries[0].sets[0]).toMatchObject({ min: 10, rpe: 8, done: true })
+  })
+
   it('an end that is not a timestamp falls back to the start', () => {
     for (const end_time of ['garbage', null, {}, undefined]) {
       const p = parseHevyWorkouts([workout({ end_time })], [T_LAT], kg)

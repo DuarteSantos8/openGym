@@ -7,14 +7,14 @@
 // The app build (MOBILE) decodes with @capacitor-mlkit/barcode-scanning (Apache-2.0, see
 // NOTICE.md), dynamic-imported so it never lands in the web bundle. In a browser — the PWA on a
 // phone is the common case — photo import goes through lib/scan-web.js (BarcodeDetector where the
-// browser has one, jsQR otherwise). scanCode() itself is app-only: ML Kit brings its own camera
+// browser has one, jsQR and lib/barcode.js otherwise). scanCode() itself is app-only: ML Kit brings its own camera
 // UI, the browser path is a React sheet and lives with the view.
 //
 // What comes back is a normalized { value, fmt } (or null when the user cancels / nothing was
 // found). `value` is the code's machine-readable content; `fmt` is a lower-cased symbology token
 // matching lib/qr.js's normalizeFmt. The caller checks canRenderFmt(fmt) before saving — we can
-// read many barcode kinds but only redraw QR, so a non-QR code is reported and refused there, not
-// silently stored.
+// read many barcode kinds but only redraw QR and a few 1D ones, so any other code is reported and
+// refused there, not silently stored.
 import { MOBILE } from './mobile.js'
 import { normalizeFmt } from './qr.js'
 

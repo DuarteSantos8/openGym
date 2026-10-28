@@ -11,6 +11,7 @@
 // Body weight and measurements are a second file. They are one row per day, not per set, and a
 // mixed file would leave every workout row with twenty empty measurement columns.
 
+import { readingsOf } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
 import { capWords } from './format.js'
 import { MEASUREMENT_FIELDS, builtinCsvColumn, customCsvColumn, customDisplayValue } from './measurements.js'
@@ -123,17 +124,24 @@ export function workoutRows(S, { from = null, to = null } = {}) {
 export const workoutsCSV = (S, range) => csvText(WORKOUT_COLUMNS, workoutRows(S, range))
 
 /**
- * Body weight and measurements, one row per day. Weight in the profile's unit (the header says
- * which, so the importer needs no unit column), measurements in centimetres the way they are
- * stored, body fat in percent. Custom measurement fields get a column each, under their own name
- * with their unit in brackets and their values in it (#718; lib/measurements.js customCsvColumn).
+ * Body weight and measurements, one row per day, or per weigh-in on a day with several (#859):
+ * the date cell then carries the time too ("2026-10-28 07:12", which every importer of ours and
+ * any spreadsheet reads as a date), and the day's measurements sit on its first row. Weight in
+ * the profile's unit (the header says which, so the importer needs no unit column), measurements
+ * in centimetres the way they are stored, body fat in percent. Custom measurement fields get a
+ * column each, under their own name with their unit in brackets and their values in it (#718;
+ * lib/measurements.js customCsvColumn).
  */
 export function bodyCSV(S, { from = null, to = null } = {}) {
   const unit = S.unit === 'lb' ? 'lb' : 'kg'
   const inside = d => d && (!from || d >= from) && (!to || d <= to)
   const days = new Map()
-  const at = d => { if (!days.has(d)) days.set(d, { w: null, m: null }); return days.get(d) }
-  for (const b of S.bodyweight || []) if (inside(b?.d) && b.w > 0) at(b.d).w = b.w
+  const at = d => { if (!days.has(d)) days.set(d, { rs: [], m: null }); return days.get(d) }
+  for (const b of S.bodyweight || []) {
+    if (!inside(b?.d) || !(b.w > 0)) continue
+    // A day from before keeps its one row with the date alone, as it always had.
+    at(b.d).rs = Array.isArray(b.ins) ? readingsOf(b) : [{ w: b.w, at: null }]
+  }
   for (const m of S.measurements || []) if (inside(m?.d)) at(m.d).m = m
   const fields = MEASUREMENT_FIELDS.filter(f => [...days.values()].some(v => v.m && v.m[f.key] != null))
   // The field's own name and unit where it still exists, else what the reading carries.
@@ -146,11 +154,14 @@ export function bodyCSV(S, { from = null, to = null } = {}) {
   }
   const header = ['date', 'weight_' + unit, ...fields.map(builtinCsvColumn),
     ...[...custom.values()].map(c => customCsvColumn(c.name, c.unit))]
-  const rows = [...days.keys()].sort().map(d => {
-    const { w, m } = days.get(d)
-    return [d, w != null ? n(w) : '', ...fields.map(f => (m && m[f.key] != null ? n(m[f.key]) : '')),
+  const rows = []
+  for (const d of [...days.keys()].sort()) {
+    const { rs, m } = days.get(d)
+    const meas = [...fields.map(f => (m && m[f.key] != null ? n(m[f.key]) : '')),
       ...[...custom].map(([id, c]) => { const o = (m?.other || []).find(x => x?.id === id); return o?.value != null ? n(customDisplayValue(o.value, c.unit)) : '' })]
-  })
+    if (!rs.length) { rows.push([d, '', ...meas]); continue }
+    rs.forEach((r, i) => rows.push([r.at ? `${d} ${r.at}` : d, n(r.w), ...(i ? meas.map(() => '') : meas)]))
+  }
   return csvText(header, rows)
 }
 
@@ -161,7 +172,7 @@ export function csvCounts(S, range) {
   return {
     workouts: workoutsIn(S, from, to).length,
     sets: workoutRows(S, range).length,
-    weighIns: (S.bodyweight || []).filter(b => inside(b?.d) && b.w > 0).length,
+    weighIns: (S.bodyweight || []).filter(b => inside(b?.d) && b.w > 0).reduce((sum, b) => sum + Math.max(1, readingsOf(b).length), 0),
     measurements: (S.measurements || []).filter(m => inside(m?.d)).length,
   }
 }
