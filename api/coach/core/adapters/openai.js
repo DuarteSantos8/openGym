@@ -7,10 +7,11 @@
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
 
-export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_tokens', temperature = null, versionlessFallback = false } = {}) {
+export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_tokens', temperature = null, versionlessFallback = false, stream = false } = {}) {
   return {
     id,
     versionlessFallback,
+    stream,
     path: () => '/v1/chat/completions',
     modelsPath: '/v1/models',
     headers: key => (key ? { authorization: 'Bearer ' + key } : {}),
@@ -25,6 +26,7 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
         { role: 'user', content: prompt }
       ],
       ...(temperature != null ? { temperature } : {}),
+      ...(stream ? { stream: true } : {}),
       response_format: schema
         ? { type: 'json_schema', json_schema: { name: 'coach_answer', schema } }
         : { type: 'json_object' },
