@@ -106,3 +106,17 @@ test('every error code the e-mail and password signup routes return is in their 
     for (const c of codes) assert.ok(doc.includes(c), `${key} returns "${c}" but its openapi entry never mentions it`);
   }
 });
+
+/* #795: the generator kept its own copy of the website's ?v= and fell behind index.html, so
+   --check went red on main. It reads index.html now; this keeps it from growing a copy again. */
+test('the docs generator takes the website ?v= from index.html, and every page agrees', () => {
+  const docs = read(path.join(ROOT, 'scripts', 'build-api-docs.mjs'));
+  assert.doesNotMatch(docs, /\?v=\d/, 'build-api-docs.mjs hard-codes a ?v= number, read it from website/index.html');
+  const web = path.join(ROOT, 'website');
+  const v = /styles\.css\?v=(\d+)/.exec(read(path.join(web, 'index.html')))[1];
+  for (const f of fs.readdirSync(web).filter(f => f.endsWith('.html'))) {
+    for (const m of read(path.join(web, f)).matchAll(/(?:styles\.css|site\.js)\?v=(\d+)/g)) {
+      assert.equal(m[1], v, `website/${f} links ${m[0]}, index.html is on ?v=${v}`);
+    }
+  }
+});

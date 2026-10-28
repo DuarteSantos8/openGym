@@ -4,6 +4,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
+import { openLostAccess } from '../components/LostAccess.jsx'
 import { t } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
@@ -133,6 +134,7 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
     <Button variant="primary" onClick={go} disabled={busy}>{busy ? t('Connecting…') : t('Connect')}</Button>
     <div style={{ height: 10 }} />
     <Button icon="key" onClick={() => openCfAccess(normalizeServerUrl(url) || '')} disabled={busy}>{t('Cloudflare Access')}</Button>
+    <Button variant="ghost" className="dim" onClick={openLostAccess} disabled={busy}>{t('Lost access?')}</Button>
   </div>
 }
 

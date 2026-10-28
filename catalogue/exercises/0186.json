@@ -8,6 +8,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying cable triceps extension with a rope. You lower the rope toward the forehead and extend again, isolating the triceps.",
   "instructions": [
     "Attach a rope handle to a low pulley cable machine.",

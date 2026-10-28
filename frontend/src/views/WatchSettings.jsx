@@ -10,6 +10,7 @@ import { Section, Row, Switch, SelectRow } from '../components/ui.jsx'
 import { readWatchPrefs, writeWatchPrefs, readWatchStatus, onWatchPrefs } from '../lib/watch-settings.js'
 import { watchStatus } from '../lib/watch-sync.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
+import { fmtAgo } from '../lib/format.js'
 
 export default function WatchSettingsPage() {
   const nav = useNavigate()
@@ -43,7 +44,10 @@ export default function WatchSettingsPage() {
   const linkLine = !link ? t('Checking…')
     : !link.paired ? t('No Apple Watch paired with this iPhone')
     : !link.installed ? t('openGym is not on your Apple Watch yet. Install it in the Watch app.')
-    : t('openGym is on your Apple Watch')
+    // What the watch said last (it checks in each time its app starts): the one sign the two talk.
+    : t('openGym is on your Apple Watch') + '. ' + (status?.at
+      ? t('Last heard from the watch: {0}', fmtAgo(status.at))
+      : t('The watch hasn’t checked in yet. Open openGym on it once.'))
   const denied = healthOn && status?.health === 'denied'
   const healthValue = healthOn == null ? '' : denied ? t('Not allowed') : healthOn ? t('On') : t('Off')
   const healthLine = denied ? t('Not allowed on the watch. Allow it in the Health app on your iPhone.')

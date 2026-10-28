@@ -8,16 +8,19 @@
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
+import { EXIDX } from './exercises.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
 export const TEXT_MAX = 1000
 
-// The session type Health Connect files a workout under. A workout with any strength work in it is
-// strength training: ten minutes on the treadmill before the squats do not make it a walk. One that
-// is all cardio takes the machine's type when the catalogue says which machine it is, and "other"
-// when it does not (a custom exercise, burpees, cardio on two different machines).
-// The native side maps each name to its ExerciseSessionRecord.EXERCISE_TYPE_* constant.
+// The session type Health Connect (and Apple Health) files a workout under. A workout with any
+// strength work in it is strength training: ten minutes on the treadmill before the squats do not
+// make it a walk. One that is all cardio takes the type of what was done when the catalogue says
+// (the machine, else the move's name: a run, a row, burpees and jacks as HIIT), stretching at the
+// end of a run leaves it a run, and cardio of two kinds is mixed cardio (#799).
+// The native side maps each name to its ExerciseSessionRecord.EXERCISE_TYPE_* constant, and to an
+// HKWorkoutActivityType on the iPhone and the watch (AppleHealthPlugin, WorkoutManager).
 const CARDIO_TYPES = {
   '3666': 'walking',                // walking on incline treadmill
   '0685': 'running', '0684': 'running', '3656': 'running',
@@ -25,14 +28,66 @@ const CARDIO_TYPES = {
   '2141': 'elliptical', '2331': 'elliptical',
   '2311': 'stair_climbing_machine',
 }
-export const SESSION_TYPES = ['strength_training', 'walking', 'running', 'biking_stationary', 'elliptical', 'stair_climbing_machine', 'other_workout']
+export const SESSION_TYPES = ['strength_training', 'walking', 'running', 'biking_stationary', 'biking', 'elliptical', 'stair_climbing_machine',
+  'rowing', 'jump_rope', 'hiit', 'mixed_cardio', 'yoga', 'flexibility', 'other_workout']
 
+// Catalogue cardio by its name, first match wins: the treadmill before the bike ("run on treadmill"
+// is filed with the stationary bike), the bike before the run ("assault bike run").
+const BY_NAME = [
+  [/treadmill/, n => (/walk/.test(n) ? 'walking' : 'running')],
+  [/\b(bike|bicycle|cycl\w*|aquabike)\b/, (n, ex) => (ex.eq === 'stationary bike' ? 'biking_stationary' : 'biking')],
+  [/jump rope|skip rope|\bskipping\b/, () => 'jump_rope'],
+  [/\brow(ing)?\b/, () => 'rowing'],
+  [/\b(walk\w*|marching)\b/, () => 'walking'],
+  [/\b(run|running|jog|sprints?|trot)\b/, () => 'running'],
+  [/burpee|jacks?\b|mountain climber|squat thrust|battling rope|tuck jump|star jump|hiit|circuit|tabata/, () => 'hiit'],
+]
+const CARDIO_EQ = { 'elliptical machine': 'elliptical', 'stepmill machine': 'stair_climbing_machine' }
+
+/** What one exercise counts as for the session type: one of SESSION_TYPES. */
+export function exerciseType(entry) {
+  const id = String(entry?.id ?? '')
+  if (CARDIO_TYPES[id]) return CARDIO_TYPES[id]
+  const ex = EXIDX[id]
+  if (ex?.cat === 'yoga') return 'yoga'
+  if (ex?.cat === 'stretching' || ex?.cat === 'mobility') return 'flexibility'
+  // Cardio by the catalogue, whether it is logged as minutes or as reps (burpees count reps, #717).
+  if (ex && (ex.cat === 'cardio' || ex.cat === 'plyometrics' || ex.bp === 'cardio')) {
+    if (CARDIO_EQ[ex.eq]) return CARDIO_EQ[ex.eq]
+    const n = String(ex.n || '').toLowerCase()
+    const hit = BY_NAME.find(([re]) => re.test(n))
+    return hit ? hit[1](n, ex) : 'mixed_cardio'
+  }
+  // A custom exercise logged as cardio: nothing says which.
+  return modeForEntry(entry) === 'cardio' ? 'other_workout' : 'strength_training'
+}
+
+const CALM = new Set(['yoga', 'flexibility'])
+
+function typeOf(entries) {
+  if (!entries.length) return 'other_workout'
+  const types = new Set(entries.map(exerciseType))
+  if (types.has('strength_training')) return 'strength_training'
+  // The stretches after a run or a row: still that run. Only stretching: yoga if any yoga.
+  const moving = [...types].filter(x => !CALM.has(x))
+  if (!moving.length) return types.has('yoga') ? 'yoga' : 'flexibility'
+  if (moving.length === 1) return moving[0]
+  // Two kinds of cardio, or cardio the catalogue does not place next to one it does.
+  return moving.includes('other_workout') ? 'other_workout' : 'mixed_cardio'
+}
+
+/** The type of a finished workout, from the exercises with something done in them. */
 export function sessionType(w) {
-  const done = (w?.entries || []).filter(e => (e.sets || []).some(hasCompletedWork))
-  if (!done.length) return 'other_workout'
-  if (done.some(e => modeForEntry(e) !== 'cardio')) return 'strength_training'
-  const types = new Set(done.map(e => CARDIO_TYPES[e.id] || 'other_workout'))
-  return types.size === 1 ? [...types][0] : 'other_workout'
+  return typeOf((w?.entries || []).filter(e => (e.sets || []).some(hasCompletedWork)))
+}
+
+/**
+ * The type a workout is set to be, before anything is done (the watch's workout session, #799).
+ * Null for one with nothing in it yet: the watch keeps its strength training then.
+ */
+export function plannedType(entries) {
+  const planned = (entries || []).filter(e => e && e.id != null)
+  return planned.length ? typeOf(planned) : null
 }
 
 const clip = s => (s.length > TEXT_MAX ? s.slice(0, TEXT_MAX - 1) + '…' : s)
@@ -85,7 +140,8 @@ export function healthRecords(S, { nameOf, speedUnit }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   return {
     sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
-    weights: (S?.bodyweight || []).map(b => weightRecord(b, unit)).filter(Boolean),
+    // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
+    weights: (S?.bodyweight || []).filter(b => !b?.src).map(b => weightRecord(b, unit)).filter(Boolean),
   }
 }
 

@@ -47,12 +47,27 @@ enum WidgetPreview {
     private static func live(rest: Bool) -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
         let end = (Date().timeIntervalSince1970 + 75) * 1000
         guard let a = decode(WorkoutActivityAttributes.self, """
+        {"v":2,"wid":"preview","start":null,"accent":"#30d158","ink":"#000000",
+         "labels":{"done":"Log set","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!",
+           "nextExercise":"Next exercise","skipRest":"Skip rest","openApp":"Open openGym for the next set"}}
+        """), let s = decode(WorkoutActivityAttributes.ContentState.self, """
+        {"name":"Push Day","cur":{"exId":"0025","entryIdx":0,"setIdx":2,"exName":"Barbell Bench Press","setLine":"Set 3 of 4",
+          "target":"80 kg × 6","restAfter":120,"unit":0},"ahead":[],"restEndsAt":\(rest ? String(end) : "null"),"restLeft":null,
+          "restTotal":\(rest ? "120" : "null"),"done":6,"total":17,
+          "unitStarts":[{"exId":"0043","entryIdx":1,"setIdx":0,"exName":"Overhead Press","setLine":"Set 1 of 3","target":"40 kg × 8","restAfter":90,"unit":1}]}
+        """) else { return nil }
+        return (a, s)
+    }
+
+    /// An activity a build before LIVE_VERSION 2 started (no unit, unitStarts or new labels) must
+    /// still decode, and shows Log set's old label with no second button.
+    @available(iOS 17.0, *)
+    private static func liveV1() -> (WorkoutActivityAttributes, WorkoutActivityAttributes.ContentState)? {
+        guard let a = decode(WorkoutActivityAttributes.self, """
         {"v":1,"wid":"preview","start":null,"accent":"#30d158","ink":"#000000",
          "labels":{"done":"Done","rest":"Rest","next":"Up next","allDone":"All sets done","restOver":"Rest’s over. Next set!"}}
         """), let s = decode(WorkoutActivityAttributes.ContentState.self, """
-        {"name":"Push Day","cur":{"exId":"0025","entryIdx":0,"setIdx":2,"exName":"Barbell Bench Press","setLine":"Set 3 of 4",
-          "target":"80 kg × 6","restAfter":120},"ahead":[],"restEndsAt":\(rest ? String(end) : "null"),"restLeft":null,
-          "restTotal":\(rest ? "120" : "null"),"done":6,"total":17}
+        {"name":"Push Day","cur":null,"ahead":[],"restEndsAt":null,"restLeft":null,"restTotal":null,"done":8,"total":17}
         """) else { return nil }
         return (a, s)
     }
@@ -96,6 +111,9 @@ enum WidgetPreview {
             }
             if case let (a, s)? = live(rest: true) {
                 save("live-lock-resting", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
+            }
+            if case let (a, s)? = liveV1() {
+                save("live-lock-v1-open-app", CGSize(width: 370, height: 150), dark: dark, radius: 24, padding: 0) { LiveLockView(attributes: a, state: s) }
             }
         }
         // The Lock Screen's accessories and the Dynamic Island are drawn light on dark.

@@ -8,7 +8,7 @@ import { MOBILE } from '../lib/mobile.js'
 import { BIA_TYPES, BODY_CORE, GROUPS, GROUP_CORE, HEALTH_GROUPS, HEALTH_METRICS, OVERVIEW_TYPES, metricOf, typesInGroup } from '../lib/health/metrics.js'
 import { workoutLabel } from '../../../api/health/catalogue.js'
 import {
-  bridgeWeights, compositionMeasurements, deleteComposition, hasData, historyOf, latestOf, normalizeHealthState,
+  bridgeWeights, compositionMeasurements, deleteComposition, distinctWorkouts, hasData, historyOf, latestOf, normalizeHealthState,
   saveComposition, seriesOf,
 } from '../lib/health/records.js'
 import { chartValue, displayUnit, fmtHealth, fmtHealthDelta, fmtMinutes, fromDisplay, toDisplay } from '../lib/health/units.js'
@@ -190,11 +190,11 @@ const MAIN_TABS = ['overview', 'body', 'activity', 'heart', 'sleep']
 
 /** The workouts Health recorded, newest first: activity, length, energy, distance. */
 function WorkoutList({ S }) {
-  const rows = (S.health || []).filter(r => r?.type === 'workout').sort((a, b) => b.t - a.t).slice(0, 100)
+  const rows = distinctWorkouts(S.health).reverse().slice(0, 100)
   if (!rows.length) return <div className="empty small">{t('No readings yet')}</div>
   const remove = r => confirmSheet({
     title: t('Delete this reading?'), message: t('Deletes the reading of {0}. It will not be imported again.', fmtDate(r.d, true)),
-    confirmText: t('Delete'), danger: true, onConfirm: () => update(s => { s.health = s.health.filter(x => x.id !== r.id) }),
+    confirmText: t('Delete'), danger: true, onConfirm: () => update(s => { const ids = new Set([r.id, ...(r.dups || [])]); s.health = s.health.filter(x => !ids.has(x.id)) }),
   })
   return <div className="list">{rows.map(r => <div key={r.id} className="mrow" style={{ minHeight: 48 }}>
     <span className="nm">

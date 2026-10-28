@@ -65,14 +65,14 @@ export async function setLang(l, showEn, enOnly) {
   lastShowEn = show
   lastEnOnly = only
   const base = baseLang(l)
-  let dict = {}, instr = null, exerciseNames = null
-  try { dict = base === 'en' ? {} : (await localePacks['../locales/' + base + '.js']()).default } catch (e) { dict = {} }
-  try { instr = base === 'en' || !INSTR_LANGS.includes(base) ? null : (await instrPacks['../instr/' + base + '.js']()).default } catch (e) { instr = null }
-  try {
-    exerciseNames = base === 'en' || !EXERCISE_NAME_LANGS.includes(base)
-      ? null
-      : (await exerciseNamePacks['../exercise-names/' + base + '.js']()).default
-  } catch (e) { exerciseNames = null }
+  // The three packs are fetched side by side: one after the other, a start in any language but
+  // English waited three round trips before Home could draw.
+  const pack = async (packs, key, fallback) => { try { return (await packs[key]()).default } catch (e) { return fallback } }
+  const [dict, instr, exerciseNames] = await Promise.all([
+    base === 'en' ? {} : pack(localePacks, '../locales/' + base + '.js', {}),
+    base === 'en' || !INSTR_LANGS.includes(base) ? null : pack(instrPacks, '../instr/' + base + '.js', null),
+    base === 'en' || !EXERCISE_NAME_LANGS.includes(base) ? null : pack(exerciseNamePacks, '../exercise-names/' + base + '.js', null),
+  ])
   _setLangState(l, derivePack(l, dict), derivePack(l, instr), derivePack(l, exerciseNames), show, only)
   if (detailsLoaded) loadDetails()
   document.documentElement.lang = l

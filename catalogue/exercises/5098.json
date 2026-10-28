@@ -9,6 +9,9 @@
     "upper chest"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Perform chest flys with one dumbbell at a time. The alternating pattern challenges stability while working the chest.",
   "instructions": [
     "Lie on a bench with a dumbbell in each hand above your chest.",

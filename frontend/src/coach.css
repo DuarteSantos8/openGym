@@ -75,7 +75,7 @@
   position:sticky;top:0;z-index:40;
   margin:calc(-1 * (var(--sat) + var(--conn) + 8px)) calc(-1 * var(--pad)) 8px;
   padding:calc(var(--sat) + var(--conn) + 8px) var(--pad) 8px;
-  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 88%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(12px);backdrop-filter:saturate(180%) blur(12px)
 }
 .chat-hdr .chat-av{
@@ -96,9 +96,7 @@
 }
 .msg.coach .bub{border-bottom-left-radius:6px}
 .msg.user .bub{background:var(--acc);color:var(--on-acc);border-bottom-right-radius:6px}
-.bub.err{background:color-mix(in srgb,var(--red) 14%,var(--surface));color:var(--label)}
-.bub.sys{background:none;color:var(--label-2);font-size:13px;text-align:center;padding:4px 8px;align-self:center;max-width:100%}
-.msg.sys{align-self:center;max-width:100%;align-items:center}
+.bub.err{background:linear-gradient(rgba(255,69,58,0.14),rgba(255,69,58,0.14)),var(--surface);background:color-mix(in srgb,var(--red) 14%,var(--surface));color:var(--label)}
 .bub ul{margin:6px 0 0;padding-left:18px}
 .bub li{margin:2px 0}
 .msg-t{font-size:11px;color:var(--label-3);margin:4px 8px 0}
@@ -161,8 +159,12 @@
 .composer{
   position:fixed;left:0;right:0;bottom:0;z-index:40;
   padding:8px var(--pad) calc(10px + var(--sab));
-  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 88%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(12px);backdrop-filter:saturate(180%) blur(12px)
+}
+/* Reduce Transparency: the pinned title bar and the composer go solid, like the app's own bars. */
+@media (prefers-reduced-transparency: reduce){
+  .chat-hdr,.composer{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--bg)}
 }
 /* The Android app reports the keyboard instead of shrinking the page (lib/native-keyboard.js):
    the composer rides on top of it. */
@@ -267,8 +269,8 @@
 .recap-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .recap-top .pcard-eyebrow{margin:0}
 .recap-state{font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2);white-space:nowrap;flex:none}
-.recap-state.yes{background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
-.recap-state.no{background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red)}
+.recap-state.yes{background:rgba(48,209,88,0.16);background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green)}
+.recap-state.no{background:rgba(255,69,58,0.14);background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red)}
 .recap-state.mix{background:var(--acc-soft);color:var(--acc)}
 .recap-t{font-size:17px;font-weight:600;letter-spacing:-.018em;margin-top:6px;line-height:1.2}
 .recap-s{font-size:13.5px;color:var(--label-2);line-height:1.42;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}

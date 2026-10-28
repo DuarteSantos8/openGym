@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A forearm plank with feet in the straps and one leg raised, fighting rotation and sag.",
   "instructions": [
     "Place your feet in the straps and rest on your forearms.",

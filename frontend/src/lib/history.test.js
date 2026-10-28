@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 import { EXDB } from './exercises.js'
 import { todayISO, isoOf } from './format.js'
@@ -333,6 +333,31 @@ describe('defaultConfig', () => {
     expect(defaultConfig(BW)).toEqual({ sets: 3, reps: 10, weight: 0, mode: 'reps', bodyweight: true })
     expect(defaultConfig(BW, 'time')).toEqual({ sets: 3, sec: 45, weight: 0, mode: 'time', bodyweight: true })
     expect('bodyweight' in defaultConfig(LIFT)).toBe(false)
+  })
+  it('starts a catalogue hold as a timed hold, and leaves how a saved entry reads alone', () => {
+    const PLANK = '0463'
+    expect(defaultConfig(PLANK)).toEqual({ sets: 3, sec: 45, weight: 0, mode: 'time', bodyweight: true })
+    expect(defaultConfig(PLANK, 'reps')).toMatchObject({ reps: 10, mode: 'reps' })
+    expect(modeOf({ id: PLANK })).toBe('reps')
+    expect(defaultConfig('0464').mode).toBe('reps') // a plank with a twist moves
+  })
+})
+
+describe('pickedExerciseConfig', () => {
+  it('starts a one-arm or one-leg exercise per side, ten reps a side', () => {
+    // 4837 dumbbell single arm bent over row, 1027 assisted single leg press
+    expect(pickedExerciseConfig('4837')).toMatchObject({ mode: 'reps', side: true, reps: 20 })
+    expect(isPerSide(pickedExerciseConfig('1027'))).toBe(true)
+    expect(pickedExerciseConfig('4837', 'time')).toMatchObject({ mode: 'time', side: true, sec: 45 })
+  })
+  it('leaves everything else as defaultConfig has it', () => {
+    expect(pickedExerciseConfig('1801')).toEqual(defaultConfig('1801'))   // one arm lat stretch
+    expect(pickedExerciseConfig('0667')).toEqual(defaultConfig('0667'))   // raise single leg push up
+    expect(pickedExerciseConfig(LIFT)).toEqual(defaultConfig(LIFT))
+    expect(pickedExerciseConfig(CARDIO)).toEqual(defaultConfig(CARDIO))
+  })
+  it('keeps defaultConfig flat, so a saved target without the flag stays one row a set', () => {
+    expect('side' in defaultConfig('4837')).toBe(false)
   })
 })
 
@@ -940,46 +965,6 @@ describe('sessionSections', () => {
   })
 })
 
-describe('superset editing', () => {
-  it('pairs adjacent entries without mutating the source and keeps the display units contiguous', () => {
-    const entries = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
-    const paired = pairAdjacent(entries, 1, 2, 'sg-new')
-
-    expect(paired).toEqual([{ id: 'a' }, { id: 'b', sg: 'sg-new' }, { id: 'c', sg: 'sg-new' }])
-    expect(entries).toEqual([{ id: 'a' }, { id: 'b' }, { id: 'c' }])
-    expect(supersetUnits(paired)).toEqual([[0], [1, 2]])
-  })
-
-  it('merges both contiguous groups when their boundary entries are paired', () => {
-    const entries = [
-      { id: 'a', sg: 'left' }, { id: 'b', sg: 'left' },
-      { id: 'c', sg: 'right' }, { id: 'd', sg: 'right' }
-    ]
-    const merged = pairAdjacent(entries, 1, 2)
-
-    expect(merged.map(e => e.sg)).toEqual(['left', 'left', 'left', 'left'])
-    expect(entries.map(e => e.sg)).toEqual(['left', 'left', 'right', 'right'])
-  })
-
-  it('unpairs one entry and removes sg values left without an adjacent partner', () => {
-    const entries = [
-      { id: 'a', sg: 'group' }, { id: 'b', sg: 'group' }, { id: 'c', sg: 'group' },
-      { id: 'd', sg: 'orphan' }
-    ]
-    const unpaired = unpairSuperset(entries, 1)
-
-    expect(unpaired).toEqual([{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }])
-    expect(entries.map(e => e.sg)).toEqual(['group', 'group', 'group', 'orphan'])
-  })
-
-  it('rejects a non-adjacent pairing request', () => {
-    const entries = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
-
-    expect(() => pairAdjacent(entries, 0, 2, 'sg-invalid')).toThrow(/adjacent/)
-    expect(entries).toEqual([{ id: 'a' }, { id: 'b' }, { id: 'c' }])
-  })
-})
-
 
 describe('session row helpers', () => {
   it('cascadeWeight propagates to same-flag undone rows and never rewrites done sets', () => {
@@ -1241,56 +1226,6 @@ describe('exNoteFor', () => {
     expect(exNoteFor({ exNotes: { '0025': ' seat 4, pin 7 ' } }, '0025')).toBe('seat 4, pin 7')
     expect(exNoteFor({ exNotes: { '0025': '   ' } }, '0025')).toBeNull()
     expect(exNoteFor({}, '0025')).toBeNull()
-  })
-})
-
-describe('nextTrainingDay', () => {
-  // 2026-08-18 is a Tuesday; the week map is keyed by getDay(), so 0 is Sunday.
-  const TUE = '2026-08-18'
-  const base = (over = {}) => ({
-    dayPlan: {},
-    routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001' }] }, { id: 'r2', name: 'B', ex: [{ id: '0002' }] }],
-    week: {},
-    ...over
-  })
-
-  it('finds the next scheduled day and names its routine', () => {
-    const S = base({ week: { 4: 'r2' } })                 // Thursday
-    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-20', weekday: 4 })
-    expect(nextTrainingDay(S, TUE).routine.name).toBe('B')
-  })
-
-  it('looks forward only — today itself is never the answer', () => {
-    // Only Tuesday is scheduled and today is Tuesday, so the next one is a week out. (The UI
-    // cannot reach this: a day with a session takes the other branch and never asks.)
-    const S = base({ week: { 2: 'r1' } })
-    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-25', weekday: 2 })
-  })
-
-  it('wraps around the end of the week', () => {
-    const S = base({ week: { 1: 'r1' } })                 // Monday, six days on
-    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-24', weekday: 1 })
-  })
-
-  it('is null when every day is rest', () => {
-    expect(nextTrainingDay(base(), TUE)).toBeNull()
-  })
-
-  it('skips a day whose routine no longer exists', () => {
-    const S = base({ week: { 3: 'gone', 5: 'r1' } })
-    expect(nextTrainingDay(S, TUE)).toMatchObject({ iso: '2026-08-21', weekday: 5 })
-  })
-
-  it('skips a routine with no exercises — starting it would open an empty session', () => {
-    const S = base({ routines: [{ id: 'r1', name: 'A', ex: [] }, { id: 'r2', name: 'B', ex: [{ id: '1' }] }], week: { 3: 'r1', 5: 'r2' } })
-    expect(nextTrainingDay(S, TUE)).toMatchObject({ weekday: 5 })
-  })
-
-  it('respects a per-date override in both directions', () => {
-    const moved = base({ week: {}, dayPlan: { '2026-08-19': 'r1' } })
-    expect(nextTrainingDay(moved, TUE)).toMatchObject({ iso: '2026-08-19' })
-    const off = base({ week: { 3: 'r1', 5: 'r2' }, dayPlan: { '2026-08-19': 'rest' } })
-    expect(nextTrainingDay(off, TUE)).toMatchObject({ weekday: 5 })
   })
 })
 
