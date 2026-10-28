@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { MOBILE } from '../lib/mobile.js'
+import { getChannel } from '../lib/channel.js'
 import { gifSrc, figureOf } from '../lib/exercises.js'
 import { fmtMB } from '../lib/media-limits.js'
 import { BUILTIN_PX, packId, parsePackId, wantedQuality, clipSources } from '../lib/anim-quality.js'
@@ -102,11 +103,17 @@ export function AnimationQualitySheet({ close }) {
   const taps = useRef(0)
   const [details, setDetails] = useState(false)
   const tapTitle = () => { taps.current += 1; if (taps.current >= 5) setDetails(true) }
+  // The APK from GitHub or opengym.ch never gets packs: only a store delivers them (the licence,
+  // lib/anim-quality.js). "Not on this device yet" read there as a wait for nothing (#863).
+  const [channel, setChannel] = useState(null)
+  useEffect(() => { getChannel().then(setChannel, () => {}) }, [])
   return <>
     <h3 onClick={tapTitle}>{t('Animation quality')}</h3>
     <Section footer={packs.available
       ? t('Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.')
-      : t('Sharper animations aren’t available on this device yet. The built-in ones work everywhere.')}>
+      : channel === 'sideload'
+        ? t('Sharper animations come only through the app stores. This APK keeps the ones built into it.')
+        : t('Sharper animations aren’t available on this device yet. The built-in ones work everywhere.')}>
       {packs.available && <Row title={choiceLabel('auto', packs, figure)} subtitle={t('A good size for this screen.')} accessory={choice === 'auto' ? 'check' : 'none'} onClick={() => pick('auto')} />}
       <Row title={t('Still only')} subtitle={t('No animation, just the picture. Easy on battery.')} accessory={choice === 'still' ? 'check' : 'none'} onClick={() => pick('still')} />
       <Row title={choiceLabel('builtin', packs, figure)} accessory={choice === 'builtin' || (!packs.available && choice !== 'still') ? 'check' : 'none'} onClick={() => pick('builtin')} />

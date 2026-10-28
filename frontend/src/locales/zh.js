@@ -2240,6 +2240,7 @@ export default {
   'Not downloaded': '未下载',
   'On this device': '此设备上',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': '此设备暂时用不了更清晰的动画。内置动画在哪里都能用。',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': '更清晰的动画只能通过应用商店获取。此 APK 使用内置的动画。',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': '更清晰的动画每种体型下载一次。下载好之前显示内置动画，所以永远不会空白。',
   'Still only': '仅静态图',
   'Waiting for Wi-Fi': '等待 Wi-Fi',

@@ -2265,6 +2265,7 @@ export default {
   'Not downloaded': 'Inte nedladdad',
   'On this device': 'På den här enheten',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Skarpare animationer finns inte för den här enheten än. De inbyggda fungerar överallt.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Skarpare animationer kommer bara via appbutikerna. Den här APK:n behåller de inbyggda.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Skarpare animationer laddas ner en gång per figur. Tills de är här ser du de inbyggda, så inget blir någonsin tomt.',
   'Still only': 'Bara stillbild',
   'Waiting for Wi-Fi': 'Väntar på wifi',

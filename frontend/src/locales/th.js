@@ -2251,6 +2251,7 @@ export default {
   'Not downloaded': 'ยังไม่ได้ดาวน์โหลด',
   'On this device': 'ในอุปกรณ์นี้',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'ภาพเคลื่อนไหวที่คมชัดกว่ายังไม่มีในอุปกรณ์นี้ ภาพในตัวแอปใช้ได้ทุกที่',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'แอนิเมชันที่คมชัดกว่ามีให้ผ่านสโตร์แอปเท่านั้น APK นี้ใช้แอนิเมชันที่ติดมาในตัว',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'ภาพเคลื่อนไหวที่คมชัดกว่าจะดาวน์โหลดครั้งเดียวต่อรูปร่าง ระหว่างนั้นคุณจะเห็นภาพในตัวแอป จึงไม่มีช่องว่างเลย',
   'Still only': 'ภาพนิ่งเท่านั้น',
   'Waiting for Wi-Fi': 'รอ Wi-Fi',

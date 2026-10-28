@@ -2240,6 +2240,7 @@ export default {
   'Not downloaded': 'İndirilmedi',
   'On this device': 'Bu cihazda',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Daha net animasyonlar bu cihazda henüz yok. Yerleşik olanlar her yerde çalışır.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Daha net animasyonlar yalnızca uygulama mağazaları üzerinden gelir. Bu APK yerleşik olanları kullanır.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Daha net animasyonlar her figür için bir kez iner. Gelene kadar yerleşik olanları görürsün, yani hiçbir şey boş kalmaz.',
   'Still only': 'Yalnızca sabit resim',
   'Waiting for Wi-Fi': 'Wi-Fi bekleniyor',

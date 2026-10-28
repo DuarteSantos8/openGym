@@ -2240,6 +2240,7 @@ export default {
   'Not downloaded': 'Sin descargar',
   'On this device': 'En este dispositivo',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Las animaciones más nítidas aún no están disponibles en este dispositivo. Las integradas funcionan en todas partes.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Las animaciones más nítidas solo llegan a través de las tiendas de apps. Este APK conserva las que trae integradas.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Las animaciones más nítidas se descargan una vez por figura. Mientras tanto ves las integradas, así que nunca queda nada en blanco.',
   'Still only': 'Solo imagen fija',
   'Waiting for Wi-Fi': 'Esperando Wi-Fi',

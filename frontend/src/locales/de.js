@@ -2260,6 +2260,7 @@ export default {
   'Not downloaded': 'Nicht geladen',
   'On this device': 'Auf diesem Gerät',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Schärfere Animationen gibt es auf diesem Gerät noch nicht. Die eingebauten laufen überall.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Schärfere Animationen gibt es nur über die App-Stores. Diese APK behält die eingebauten.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Schärfere Animationen werden einmal pro Figur geladen. Bis sie da sind, siehst du die eingebauten, es bleibt also nie etwas leer.',
   'Still only': 'Nur Standbild',
   'Waiting for Wi-Fi': 'Wartet auf WLAN',

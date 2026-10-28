@@ -2240,6 +2240,7 @@ export default {
   'Not downloaded': '다운로드 안 됨',
   'On this device': '이 기기에 있음',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': '이 기기에서는 아직 더 선명한 애니메이션을 쓸 수 없어요. 기본 내장 애니메이션은 어디서나 돼요.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': '더 선명한 애니메이션은 앱 스토어를 통해서만 제공됩니다. 이 APK는 내장된 애니메이션을 사용합니다.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': '더 선명한 애니메이션은 체형마다 한 번씩 다운로드돼요. 그전까지는 기본 내장 애니메이션이 보여서 빈칸이 생기지 않아요.',
   'Still only': '정지 이미지만',
   'Waiting for Wi-Fi': 'Wi-Fi 기다리는 중',

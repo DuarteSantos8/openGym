@@ -2243,6 +2243,7 @@ export default {
   'Not downloaded': 'Nincs letöltve',
   'On this device': 'Ezen az eszközön',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Élesebb animációk ezen az eszközön még nem érhetők el. A beépítettek mindenhol működnek.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Az élesebb animációk csak az alkalmazásboltokon keresztül érhetők el. Ez az APK a beépítetteket használja.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Az élesebb animációk figuránként egyszer töltődnek le. Addig a beépítetteket látod, így semmi sem marad üres.',
   'Still only': 'Csak állókép',
   'Waiting for Wi-Fi': 'Wi-Fire vár',
