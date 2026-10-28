@@ -3280,4 +3280,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "완료한 챌린지마다 여기에 배지가 놓여요. 한 달에 한 칸씩.",
   "Monthly challenges": "월간 챌린지",
   "Three goals a month on Home, sized to how you train.": "홈 화면에 매달 세 가지 목표, 내 운동에 맞춰서.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "프리 웨이트",
+  "Barbells": "바벨",
+  "Machines": "머신",
+  "Cables": "케이블",
+  "Bands": "밴드",
+  "Balls & rollers": "볼과 롤러",
+  "Cardio machines": "유산소 머신",
+  "Bench & bar": "벤치와 바",
+  "Show {0}": "{0} 펼치기",
+  "Hide {0}": "{0} 접기",
 }

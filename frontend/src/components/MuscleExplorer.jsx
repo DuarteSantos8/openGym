@@ -14,6 +14,8 @@ import { Button } from './ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useAutoMore } from '../lib/use-auto-more.js'
 import { favIds, isFav, sortFavouritesFirst } from '../lib/favourites.js'
+import { groupKinds, groupValue, groupIdOf, groupOf, eqMatches, eqOnAmong } from '../lib/equipment-groups.js'
+import { GroupStrip } from './GroupChips.jsx'
 
 const FAV = '☆'
 
@@ -45,9 +47,10 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
   const favHere = targeted.filter(e => isFav(S, e.id)).length
   const base = searchExercises(targeted.filter(e => favOn ? isFav(S, e.id) : (!bp || e.bp === bp)), q)
   const eqOpts = equipmentOf(base)
-  const eqOn = eqOpts.includes(eq) ? eq : ''
+  // Equipment by group (lib/equipment-groups.js): `eq` is a kind or a whole group.
+  const eqOn = eqOnAmong(eq, eqOpts)
   // Favourites float to the top of whatever the filters left (issue #6), the rest keeps its order.
-  const exercises = sortFavouritesFirst(eqOn ? base.filter(e => e.eq === eqOn) : base, S)
+  const exercises = sortFavouritesFirst(eqOn ? base.filter(e => eqMatches(eqOn, e)) : base, S)
   const choose = ex => onPick ? onPick(ex) : onDetail(ex)
   // The live count and the × of the Library's search (#338): the count while a search or a
   // filter narrows the muscle's list, the × while there is text.
@@ -91,10 +94,8 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
         <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setEq(''); setShown(40) }}>{t('All')}</button>
         {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(40) }}>{t(b)}</button>)}
       </div>
-      {eqOpts.length > 1 && <div className="chips" style={{ marginBottom: 12 }}>
-        <button className={'chip nocap' + (!eqOn ? ' on' : '')} onClick={() => { setEq(''); setShown(40) }}>{t('Any equipment')}</button>
-        {eqOpts.map(x => <button key={x} className={'chip' + (eqOn === x ? ' on' : '')} onClick={() => { setEq(x); setShown(40) }}>{t(x)}</button>)}
-      </div>}
+      {eqOpts.length > 1 && <GroupStrip groups={groupKinds(eqOpts)} value={eqOn} onChange={x => { setEq(x); setShown(40) }}
+        anyLabel={t('Any equipment')} gv={groupValue} gidOf={groupIdOf} kindGroup={groupOf} style={{ marginBottom: 12 }} />}
       <div className={'list' + (S.exerciseView === 'cards' ? ' ex-grid' : '')}>
         {exercises.slice(0, shown).map(e => {
           const best = bestWeightFor(S, e.id)

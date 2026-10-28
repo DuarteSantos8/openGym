@@ -2211,6 +2211,17 @@ export const PT_BR_OVERRIDES = {
   "Gold month. Take a bow.": "Mês de ouro. Pode agradecer os aplausos.",
   "Every challenge you finish puts a badge here, one shelf per month.": "Cada desafio concluído deixa uma medalha aqui, uma prateleira por mês.",
   "Three goals a month on Home, sized to how you train.": "Três metas por mês no Início, sob medida para você.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Peso livre",
+  "Barbells": "Barras",
+  "Machines": "Máquinas",
+  "Cables": "Polias",
+  "Bands": "Elásticos",
+  "Balls & rollers": "Bolas e rolos",
+  "Cardio machines": "Aparelhos de cardio",
+  "Bench & bar": "Banco e barra",
+  "Show {0}": "Mostrar {0}",
+  "Hide {0}": "Ocultar {0}",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

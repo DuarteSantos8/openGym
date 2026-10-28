@@ -3283,4 +3283,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Minden teljesített kihívás ide tesz egy jelvényt, havonta egy polcot.",
   "Monthly challenges": "Havi kihívások",
   "Three goals a month on Home, sized to how you train.": "Havonta három cél a Kezdőlapon, az edzésedhez igazítva.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Szabadsúlyok",
+  "Barbells": "Rudak",
+  "Machines": "Gépek",
+  "Cables": "Kábelek",
+  "Bands": "Gumiszalagok",
+  "Balls & rollers": "Labdák és hengerek",
+  "Cardio machines": "Kardiógépek",
+  "Bench & bar": "Pad és rúd",
+  "Show {0}": "{0} megjelenítése",
+  "Hide {0}": "{0} elrejtése",
 }

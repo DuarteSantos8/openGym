@@ -3280,4 +3280,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Każde ukończone wyzwanie zostawia tu odznakę, jedna półka na miesiąc.",
   "Monthly challenges": "Miesięczne wyzwania",
   "Three goals a month on Home, sized to how you train.": "Trzy cele na miesiąc na Starcie, na twoją miarę.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Wolne ciężary",
+  "Barbells": "Sztangi",
+  "Machines": "Maszyny",
+  "Cables": "Wyciągi",
+  "Bands": "Gumy",
+  "Balls & rollers": "Piłki i wałki",
+  "Cardio machines": "Maszyny cardio",
+  "Bench & bar": "Ławka i drążek",
+  "Show {0}": "Pokaż: {0}",
+  "Hide {0}": "Ukryj: {0}",
 }

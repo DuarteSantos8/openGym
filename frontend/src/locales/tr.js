@@ -3280,4 +3280,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Bitirdiğin her görev buraya bir rozet koyar, her ay için bir raf.",
   "Monthly challenges": "Aylık görevler",
   "Three goals a month on Home, sized to how you train.": "Ana sayfada ayda üç hedef, antrenmanına göre.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Serbest ağırlıklar",
+  "Barbells": "Barlar",
+  "Machines": "Makineler",
+  "Cables": "Kablolar",
+  "Bands": "Bantlar",
+  "Balls & rollers": "Toplar ve rulolar",
+  "Cardio machines": "Kardiyo makineleri",
+  "Bench & bar": "Sehpa ve bar",
+  "Show {0}": "{0} göster",
+  "Hide {0}": "{0} gizle",
 }

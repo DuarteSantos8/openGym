@@ -3277,4 +3277,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Кожен виконаний челендж залишає тут значок, по полиці на місяць.",
   "Monthly challenges": "Щомісячні челенджі",
   "Three goals a month on Home, sized to how you train.": "Три цілі на місяць на Головній, під твій рівень.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Вільні ваги",
+  "Barbells": "Штанги",
+  "Machines": "Тренажери",
+  "Cables": "Блоки",
+  "Bands": "Гумки",
+  "Balls & rollers": "М'ячі та ролики",
+  "Cardio machines": "Кардіотренажери",
+  "Bench & bar": "Лава й турнік",
+  "Show {0}": "Показати: {0}",
+  "Hide {0}": "Сховати: {0}",
 }

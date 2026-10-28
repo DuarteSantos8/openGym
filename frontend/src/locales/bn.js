@@ -3359,4 +3359,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "প্রতিটি শেষ করা চ্যালেঞ্জ এখানে একটি ব্যাজ রাখে, প্রতি মাসে একটি তাক।",
   "Monthly challenges": "মাসিক চ্যালেঞ্জ",
   "Three goals a month on Home, sized to how you train.": "হোমে প্রতি মাসে তিনটি লক্ষ্য, আপনার ট্রেনিং অনুযায়ী।",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "ফ্রি ওয়েট",
+  "Barbells": "বারবেল",
+  "Machines": "মেশিন",
+  "Cables": "কেবল",
+  "Bands": "ব্যান্ড",
+  "Balls & rollers": "বল ও রোলার",
+  "Cardio machines": "কার্ডিও মেশিন",
+  "Bench & bar": "বেঞ্চ ও বার",
+  "Show {0}": "{0} দেখান",
+  "Hide {0}": "{0} লুকান",
 }
