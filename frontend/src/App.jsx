@@ -25,6 +25,7 @@ import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
 import { startWidgetLinks } from './lib/widget-links.js'
+import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync } from './lib/live-activity.js'
 import { useWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
@@ -482,7 +483,15 @@ export default function App() {
   useEffect(() => {
     if (!MOBILE) return
     let stop = null, gone = false
-    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet })
+    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds })
+      .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
+    return () => { gone = true; stop?.() }
+  }, [])
+  // iPhone app: weigh-ins Siri logged while the app was closed (lib/voice.js), brought in once.
+  useEffect(() => {
+    if (!MOBILE) return
+    let stop = null, gone = false
+    startVoice({ useStore, toast: msg => useUI.getState().toast(msg) })
       .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
     return () => { gone = true; stop?.() }
   }, [])

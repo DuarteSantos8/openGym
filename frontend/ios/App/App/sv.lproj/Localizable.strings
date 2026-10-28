@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "Starta passet";
+"Starts today’s planned workout, or opens the one already running." = "Startar dagens planerade pass, eller öppnar det som redan pågår.";
+"Log weight" = "Logga vikt";
+"Logs your body weight without opening openGym." = "Loggar din kroppsvikt utan att öppna openGym.";
+"Weight" = "Vikt";
+"What’s your weight?" = "Hur mycket väger du?";
+"Today’s workout" = "Dagens pass";
+"Tells you what’s planned for today." = "Berättar vad som är planerat i dag.";
+"Week streak" = "Veckosvit";
+"Tells you how many weeks in a row you trained." = "Berättar hur många veckor i rad du har tränat.";
+"Open openGym once, then ask me again." = "Öppna openGym en gång och fråga mig sedan igen.";
+"You’re in the middle of %@." = "Du är mitt i %@.";
+"You’re in the middle of a workout." = "Du är mitt i ett pass.";
+"Your workout" = "Ditt pass";
+"%@ is done for today. Nice work." = "%@ är klart för i dag. Snyggt jobbat.";
+"Today: %@." = "I dag: %@.";
+"Rest day today. Next up: %@ on %@." = "Vilodag i dag. Nästa: %@ på %@.";
+"Nothing planned today." = "Inget planerat i dag.";
+"No streak yet. One workout this week starts one." = "Ingen svit än. Ett pass den här veckan startar en.";
+"Week streak: %d. This week already counts." = "Veckosvit: %d. Den här veckan räknas redan.";
+"Week streak: %d. One workout this week keeps it going." = "Veckosvit: %d. Ett pass den här veckan håller den vid liv.";
+"That doesn’t sound like a weight. Try again?" = "Det låter inte som en vikt. Försöka igen?";
+"Logged %@." = "%@ loggat.";

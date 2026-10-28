@@ -558,6 +558,54 @@ too. Machine stickers come from an exercise's details → **Write NFC sticker fo
   link, nothing that copies or imitates a gym's access card. The membership code stays the QR or
   barcode the check-in screen draws.
 
+### Siri, Shortcuts and Google Assistant (v1.4.4)
+
+Nothing to switch on: the phrases and shortcuts are there once the app is installed. Settings →
+Look & Home → **Siri & Shortcuts** (Android: **Assistant & shortcuts**) lists them
+(`components/VoiceShortcuts.jsx`). The app side is `src/lib/voice.js`.
+
+**iPhone, iOS 16 and up** (`ios/App/App/VoiceIntents.swift`, App Intents; the deployment target
+stays 15.5 and everything is `@available(iOS 16.0, *)`). One `AppShortcutsProvider`, so the four
+show up in Siri, Spotlight and the Shortcuts app with no setup:
+
+| Phrase | Intent | What happens |
+| --- | --- | --- |
+| "Start my workout in openGym" | `StartWorkoutIntent` (opens the app) | hands `opengym://start?today=1` to Capacitor like any link: today's plan through the widget's Start path (`lib/widget-links.js`, weigh-in step included), the running workout if there is one, Home on a rest day |
+| "Log my weight in openGym" | `LogWeightIntent` (stays closed) | asks for the number, in the profile's unit from the widget snapshot, 20 to 700 kg or 44 to 1500 lb; writes `{ id, w, unit, at, d }` to `voice.pendingWeighIns` in the App Group's defaults and says "Logged 78.2 kg" |
+| "What's my workout today in openGym" | `TodayWorkoutIntent` (stays closed) | answers from `widget.json` (the widget snapshot, `lib/widgets.js`): the running workout, today's plan, done, or the rest day and what's next |
+| "How's my streak in openGym" | `StreakIntent` (stays closed) | the week streak and whether this week counts yet, from the same snapshot |
+
+Before the app has written a snapshot (never opened) the closed ones say "Open openGym once, then
+ask me again" and log nothing: without the profile's unit a number means nothing.
+
+The page brings pending weigh-ins in when it starts and whenever it comes back to the foreground,
+once the store is ready (`startVoice`, through the `VoiceBridge` plugin: `pending()`, `clear({ ids })`).
+`importPendingWeighIns` converts to the profile's unit, keeps the day the phone was on when Siri
+logged it (`d`, so 23:30 stays that evening wherever the phone is now; a day not yet reached here
+becomes today), lets a newer weigh-in of that day win, drops anything that is not a body weight,
+and remembers the ids it brought in (`og_voice_seen`) so one the phone failed to clear never comes
+twice. It goes through the store's `update` like the weigh-in sheet, so it syncs and reaches
+Health like any other weigh-in. A toast says "78.2 kg logged by Siri".
+
+Words: `ios/App/App/<lang>.lproj/AppShortcuts.strings` (the phrases, each keeping
+`${applicationName}`) and `Localizable.strings` (titles and answers), in every language the
+widgets have plus Swedish, written by `node frontend/ios/ci/voice-strings.mjs`. They are real
+localized resources of the App target (variant groups in `project.pbxproj`, `knownRegions`). The
+same phrases appear in Settings from `src/locales`; `src/lib/voice-strings.test.js` keeps the
+Swift source, the generated files and the page's packs in step.
+
+**Android** (`res/xml/shortcuts.xml`, labels in `values*/voice_strings.xml` from the same script).
+Touch and hold the icon: **Start workout** (`opengym://start?today=1`), **Log weight**
+(`opengym://weigh-in`) and **Stats** (`opengym://stats`), plain VIEW intents the app already
+follows. The file is declared with `android.app.shortcuts` on every launcher alias in
+`AndroidManifest.xml` (the launcher reads the enabled one); **a new app icon alias needs that
+meta-data too** (the test checks). The same file holds Google Assistant App Actions:
+`actions.intent.START_EXERCISE` opens today's plan, and the custom
+`custom.actions.intent.LOG_WEIGHT` (English query patterns in `values/voice_actions.xml`) opens
+`opengym://weigh-in?w=<number>`: the weigh-in sheet with the number in, saved by a tap. Assistant
+never logs anything by itself. App Actions only reach users after the app is published on Play
+with them; until then the long-press shortcuts are what Android users get.
+
 ## Prerequisites
 
 - Node 22 (the Capacitor 8 CLI needs it)

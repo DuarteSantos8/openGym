@@ -2142,6 +2142,18 @@ export const PT_BR_OVERRIDES = {
   "Your upper body is still recovering from {0}.": "A parte de cima ainda está se recuperando (sessão: {0}).",
   "The most recent one of the day.": "A mais recente do dia.",
   "Today’s plan takes care of that.": "O plano de hoje resolve isso.",
+  // v1.4.4: Siri & Shortcuts, Assistant and the long-press shortcuts (components/VoiceShortcuts.jsx).
+  "{0} logged by Siri": "{0} registrado pela Siri",
+  "Touch and hold the openGym icon. You can also drag a shortcut onto your home screen.": "Toque e segure o ícone do openGym. Você também pode arrastar um atalho para a tela inicial.",
+  "Ask Siri:": "Diga à Siri:",
+  "Siri asks for the number and logs it without opening the app.": "A Siri pergunta o número e registra sem abrir o aplicativo.",
+  "They are in the Shortcuts app and in Spotlight too, ready for an automation or the Action button.": "Também estão no app Atalhos e no Spotlight, prontos para uma automação ou o botão de Ação.",
+  "Start a workout or log your weight from the app icon.": "Inicie um treino ou registre seu peso pelo ícone do aplicativo.",
+  "Start a workout or log your weight by voice.": "Inicie um treino ou registre seu peso por voz.",
+  "“Start my workout in openGym”": "“Começar meu treino no openGym”",
+  "“Log my weight in openGym”": "“Registrar meu peso no openGym”",
+  "“What’s my workout today in openGym”": "“Qual é meu treino de hoje no openGym”",
+  "“How’s my streak in openGym”": "“Como está minha sequência no openGym”",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

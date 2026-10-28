@@ -255,6 +255,16 @@ a workout it jumps to that exercise, or offers to add it; outside a workout it o
 iPhone (XS and newer) a tap shows a banner that leads into the app. openGym only writes and reads its
 own stickers: it never reads, copies or imitates your gym's access card.
 
+**Hey Siri, log my weight.** On the iPhone (iOS 16 and up) say "Start my workout in openGym" and
+today's plan starts (or the workout already running opens, never a second one), or "Log my weight
+in openGym": Siri asks for the number, in your kg or lb, and logs it without opening the app. It
+lands in openGym the next time you open it, with a small "logged by Siri" note, and syncs like any
+weigh-in. "What's my workout today in openGym" and "How's my streak in openGym" get an answer
+right there. All four are in the Shortcuts app and Spotlight too, ready for an automation or the
+Action button, and Siri understands them in the app's languages. On Android, touch and hold the
+openGym icon for Start workout, Log weight and Stats, and Google Assistant can open them by voice.
+Settings → Look & Home → Siri & Shortcuts lists what to say.
+
 **Fixes**
 
 - The rest timer starts after the last set of an exercise again, also when the next exercise opens with warm-ups (#853).

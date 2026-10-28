@@ -51,6 +51,7 @@ jobs:
               - 'frontend/src/lib/health-sync.js'
               - 'frontend/src/lib/widgets.js'
               - 'frontend/src/lib/widget-links.js'
+              - 'frontend/src/lib/voice.js'
               - 'frontend/src/lib/live-activity.js'
               - '.github/workflows/ios.yml'
       - id: decide
