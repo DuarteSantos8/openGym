@@ -1515,7 +1515,7 @@ function ActiveWorkout() {
     workoutCompleteSheet()
   }
   // Adds an exercise after the current unit: the button under the session and the ⋯ menu's Add.
-  const addExercise = () => exercisePicker((ex, quick) => {
+  const addPicked = (ex, quick) => {
     // A freehand add inherits the current unit's routine (its `rid`) so it lands in that
     // routine's block in a combined session and gets a real prescription; a routine-less
     // freestyle session has no `rid` to inherit. It inherits the block's `noProg` too: an
@@ -1554,7 +1554,8 @@ function ActiveWorkout() {
     if (quick) { commit(seed || pickedExerciseConfig(ex.id)); useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
     // The confirm names what it changes: this workout, never the routine behind it.
     else exConfigSheet(ex, null, commit, null, routine, seed, null, t('Add to this workout'))
-  })
+  }
+  const addExercise = () => exercisePicker(addPicked)
   // Ending the session without saving it, from the Finish sheet only. It used to end the header ⋯
   // as a red trash too, right where the exercise ⋯ keeps Remove exercise, and after a hard session
   // the two got mixed up (#751).
@@ -1810,7 +1811,9 @@ function ActiveWorkout() {
       }
     }, true)
     if (editing) return
-    if (workoutDone) workoutCompleteSheet()
+    // Live, the sheet cheers you on and suggests your usual extras, added the way the picker's
+    // "+" adds (lib/keep-going.js); a past workout being logged only finishes.
+    if (workoutDone) workoutCompleteSheet(A.backfill ? {} : { onAdd: ex => addPicked(ex, true) })
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
 
@@ -2164,7 +2167,7 @@ function ActiveWorkout() {
       {!chipRow && sessionMap}
       <button className="iconbtn" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" aria-label={editing ? t('Save changes') : undefined}
-        onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>
+        onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout, onAdd: ex => addPicked(ex, true) }))}>{editing ? t('Save') : t('Finish')}</button>
     </div>
     {/* The volume so far rides at the end of the progress bar (#774): one line that never wraps,
         so a growing number cannot reflow the header the way a third item in the line above did
