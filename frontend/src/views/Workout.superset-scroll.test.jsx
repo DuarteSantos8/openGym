@@ -170,6 +170,19 @@ describe('the superset card after a rating', () => {
     expect(seen).toEqual([partnerFirstRow()])
   })
 
+  // "Make superset with previous" leaves the marker on the second member. Ticking the first then
+  // sends it to the partner it already stands on: `cur` does not change, and the scroll used to
+  // be keyed on that change alone, so the partner's row stayed below the fold.
+  it('a tick that moves the marker onto the member it already stands on still scrolls there', async () => {
+    await mount(superset(), 1)
+    const seen = watchScrolls()
+    await press(container.querySelector('[role="checkbox"]'))
+    await rerender()
+    expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
+    expect(mocks.S.active.cur).toBe(1)
+    expect(seen).toEqual([partnerFirstRow()])
+  })
+
   it('unpairing during the wait cancels the queued scroll', async () => {
     await mount(superset(), 0)
     mocks.S = { ...mocks.S, effort: 'rir' }; await rerender()

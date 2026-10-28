@@ -9,6 +9,7 @@ import { EFFORT, effortOf, modeOf } from '../lib/history.js'
 import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
 import { effortColor, rirOf } from '../lib/effort.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
+import { supersetOrder } from '../lib/supersetFlow.js'
 import {
   addCluster, addDrop, addSideCluster, addSideDrop, clustersOf, dropsOf,
   isFailureSet, isSideSet, isWarmupRow, nextBurstReps, toggleFailure, nextDropWeight, setClusterAt,
@@ -35,12 +36,8 @@ const firstIncomplete = entry => {
 
 const clampSet = (entry, index) => Math.min(Math.max(index, 0), Math.max(0, entry.sets.length - 1))
 
-const supersetSequence = (entries, unit) => {
-  const rounds = Math.max(0, ...unit.map(index => entries[index]?.sets?.length || 0))
-  return Array.from({ length: rounds }, (_, setIdx) =>
-    unit.filter(entryIdx => entries[entryIdx]?.sets?.[setIdx]).map(entryIdx => ({ entryIdx, setIdx })),
-  ).flat()
-}
+const supersetSequence = (entries, unit, warmups) =>
+  supersetOrder(entries, unit, warmups).map(({ entryIdx, setIdx }) => ({ entryIdx, setIdx }))
 
 const toggleWarmup = row => {
   const next = { ...row }
@@ -117,7 +114,7 @@ function PlateBadge({ S, entry, set }) {
 export default function FocusView({
   entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
   onAddSet, onAddWarmup, onRemoveSetAt, onProgressionSettings, onSwap, onRemoveExercise,
-  onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
+  onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, onGroupAdd, pointerEpoch,
 }) {
   // In the exercise's own weight unit when it has one (#657); the parent stores every change back.
   const live = useStore(state => state.S)
@@ -159,7 +156,7 @@ export default function FocusView({
     return o && o.idx === entryIdx ? o.i : null
   })
   useEffect(() => { if (autoAt != null && autoAt !== setIdx) selectSet(autoAt) }, [autoAt])
-  const sequence = unit.length > 1 ? supersetSequence(S.active.entries, unit) : []
+  const sequence = unit.length > 1 ? supersetSequence(S.active.entries, unit, S.supersetWarmups === 'each' ? 'each' : 'all') : []
   const sequenceIdx = sequence.findIndex(item => item.entryIdx === entryIdx && item.setIdx === setIdx)
   const clearPointer = index => setPointerState(current => {
     if (current.epoch !== pointerEpoch) return { epoch: pointerEpoch, pointers: new Map() }
@@ -301,6 +298,7 @@ export default function FocusView({
         <Icon name="reset" />
         <strong>{t('Superset:')} {unit.map(index => exerciseNameFor(exOr(S.active.entries[index].id))).join(' + ')}</strong>
         <span>{t('Round {0}', setIdx + 1)} · {t('Exercise {0} of {1}', unit.indexOf(entryIdx) + 1, unit.length)}</span>
+        {onGroupAdd && <Button size="xs" variant="ghost" icon="plusCircle" aria-label={t('Add')} onClick={onGroupAdd}>{t('Add')}</Button>}
         <Button size="xs" variant="ghost" icon="link" aria-label={t('Unpair')} onClick={onUnpair}>{t('Unpair')}</Button>
         <div className="focus-superset-nav">
           <button aria-label={t('Previous superset set')} disabled={sequenceIdx <= 0} onClick={() => selectSequence(sequenceIdx - 1)}><Icon name="chevronLeft" /></button>
