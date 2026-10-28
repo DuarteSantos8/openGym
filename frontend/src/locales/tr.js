@@ -986,6 +986,7 @@ export default {
   'Most reps in a set per workout': 'Antrenman başına bir sette en çok tekrar',
   'Warm-up sets': 'Isınma setleri',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Çalışma setlerinden önce eklenir; hacim, rekor ve ilerlemeye sayılmaz. Her biri çalışma ağırlığına kalan farkı yarıya indirir, halter hareketlerinde boş barın altına hiç inmez ve antrenman sırasında hâlâ istediğini değiştirebilirsin.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Çalışma setlerinden önce eklenir; hacme, rekorlara ve ilerlemeye sayılmaz. Destekli makinede her biri çalışma setinden daha fazla destek sağlar ve ona doğru kademeli olarak azalır; antrenman sırasında hepsini yine değiştirebilirsin.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Çalışma setlerinden önce eklenen hazırlık setleri, böylece her antrenmanda elle eklemen gerekmez.',
   'Note': 'Not',
   'This session': 'Bu antrenman',
@@ -2508,6 +2509,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0}, %0 ile %100 arasında olmalı.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Çalışma setlerinden önce eklenir. Hacmine sayılır (Ayarlar), ama rekor ve ilerlemeye sayılmaz. Her biri çalışma ağırlığına kalan farkı yarıya indirir, halter hareketlerinde boş barın altına hiç inmez ve antrenman sırasında hâlâ istediğini değiştirebilirsin.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Çalışma setlerinden önce eklenir. Hacmine sayılır (Ayarlar), ama rekor ve ilerlemeye sayılmaz. Destekli makinede her biri çalışma setinden daha fazla destek sağlar ve ona doğru kademeli olarak azalır; antrenman sırasında hâlâ istediğini değiştirebilirsin.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Tartım silindi",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

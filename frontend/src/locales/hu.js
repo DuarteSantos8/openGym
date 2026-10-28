@@ -821,6 +821,7 @@ export default {
   'How it went, what to change. Saved with today’s workout.': 'Hogyan ment, min változtatnál. A mai edzéssel együtt mentve.',
   'This session': 'Ez az edzés',
   'Note': 'Megjegyzés',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'A munkasorozatok előtt kerülnek be, és nem számítanak bele a volumenbe, a rekordokba és a progresszióba. Segítséggel működő gépen mindegyik több segítséget ad, mint a munkasorozat, és fokozatosan közelít hozzá, az edzés közben pedig bármelyiket módosíthatod.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Fokozatosan növekvő sorozatok a munkasorozatok elé, hogy ne kelljen minden edzésen kézzel hozzáadnod őket.',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'A munkasorozatok elé kerülnek, és kimaradnak a volumenből, a rekordokból és a progresszióból. Mindegyik a felére zárja a különbséget a munkasúlyhoz, rúddal végzett gyakorlatnál soha nem könnyebb az üres rúdnál, és edzés közben is bármelyiket módosíthatod.',
   'Warm-up sets': 'Bemelegítő sorozatok',
@@ -2511,6 +2512,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} értékének 0 és 100% között kell lennie.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "A munkasorozatok elé kerülnek. Beleszámítanak a volumenedbe (Beállítások), de a rekordokból és a progresszióból kimaradnak. Mindegyik a felére zárja a különbséget a munkasúlyhoz, rúddal végzett gyakorlatnál soha nem könnyebb az üres rúdnál, és edzés közben is bármelyiket módosíthatod.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "A munkasorozatok elé kerülnek. Beleszámítanak a volumenedbe (Beállítások), de a rekordokból és a progresszióból kimaradnak. Segítséggel működő gépen mindegyik több segítséget ad, mint a munkasorozat, és fokozatosan közelít hozzá, edzés közben pedig bármelyiket módosíthatod.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Mérés törölve",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

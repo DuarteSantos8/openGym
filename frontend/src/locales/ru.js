@@ -966,6 +966,7 @@ export default {
   'Most reps in a set per workout': 'Больше всего повт. в подходе за тренировку',
   'Warm-up sets': 'Разминочные подходы',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Добавляются перед рабочими подходами и не учитываются в объёме, рекордах и прогрессии. Каждый вдвое сокращает разрыв до рабочего веса, но в упражнениях со штангой никогда не легче пустого грифа, и любой из них можно изменить прямо во время тренировки.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Добавляются перед рабочими подходами и не учитываются в объёме, рекордах и прогрессии. В гравитроне каждый из них даёт больше помощи, чем рабочий подход, и постепенно приближается к нему, а во время тренировки любой можно изменить.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Подводящие подходы перед рабочими, чтобы не добавлять их вручную каждый раз.',
   'Note': 'Заметка',
   'This session': 'Эта тренировка',
@@ -2512,6 +2513,7 @@ export default {
   "{0} must be between 0 and 100%.": "Значение «{0}» должно быть от 0 до 100%.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Добавляются перед рабочими подходами. Они учитываются в вашем объёме (Настройки), но не в рекордах и прогрессии. Каждый вдвое сокращает разрыв до рабочего веса, но в упражнениях со штангой никогда не легче пустого грифа, и любой из них можно изменить прямо во время тренировки.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Добавляются перед рабочими подходами. Они учитываются в вашем объёме (Настройки), но не в рекордах и прогрессии. В гравитроне каждый из них даёт больше помощи, чем рабочий подход, и постепенно приближается к нему, а любой из них можно изменить прямо во время тренировки.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Взвешивание удалено",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---
