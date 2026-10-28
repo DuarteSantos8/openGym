@@ -39,6 +39,8 @@
 "Delete" = "刪除";
 "Planned" = "已排定";
 "Save" = "儲存";
+"Previous set" = "上一組";
+"Next set" = "下一組";
 "Last time: %@" = "上次: %@";
 "Exercises" = "動作";
 "No workout running" = "沒有進行中的訓練";
@@ -56,14 +58,13 @@
 "Start hold" = "開始";
 "Workout saved" = "訓練已儲存";
 "Ended on your iPhone" = "已在 iPhone 上結束";
-"Tap a dot to do a skipped set." = "輕點圓點來做跳過的組。";
+"Go back to do a skipped set." = "返回去做跳過的組。";
 "Log this one on your iPhone." = "這個請在 iPhone 上記錄。";
 "Saved on the watch, syncs later" = "已存在手錶上，稍後同步";
 "All done?" = "練完了嗎？";
 "Lock" = "鎖定";
 "Skip this set?" = "跳過這一組？";
 "Turn the Digital Crown to change it." = "轉動數位錶冠來更改。";
-"%lld done" = "已完成 %lld";
 "%lld avg · %lld max" = "平均 %lld · 最高 %lld";
 "Set %lld of %lld" = "第 %lld 組，共 %lld 組";
 "%lld of %lld sets" = "%lld / %lld 組";
@@ -73,8 +74,5 @@
 "Added weight" = "附加重量";
 "Your rest, your next set, or today's workout." = "你的休息、下一組或今天的訓練。";
 "Opens openGym." = "打開 openGym。";
-"Tap a dot to change a set." = "輕點圓點來更改一組。";
-"Change set %lld" = "更改第 %lld 組";
-"Change warm-up %lld" = "更改熱身 %lld";
 "Changed on your iPhone" = "已在 iPhone 上更改";
 "Hold to finish" = "長按結束";

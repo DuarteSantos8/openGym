@@ -39,6 +39,8 @@
 "Delete" = "हटाएँ";
 "Planned" = "नियोजित";
 "Save" = "सहेजें";
+"Previous set" = "पिछला सेट";
+"Next set" = "अगला सेट";
 "Last time: %@" = "पिछली बार: %@";
 "Exercises" = "व्यायाम";
 "No workout running" = "कोई वर्कआउट नहीं चल रहा";
@@ -56,14 +58,13 @@
 "Start hold" = "शुरू करें";
 "Workout saved" = "वर्कआउट सहेजा गया";
 "Ended on your iPhone" = "iPhone पर खत्म हुआ";
-"Tap a dot to do a skipped set." = "छूटा सेट करने के लिए एक बिंदु टैप करें।";
+"Go back to do a skipped set." = "छूटा सेट करने के लिए पीछे जाएँ।";
 "Log this one on your iPhone." = "इसे iPhone पर दर्ज करें।";
 "Saved on the watch, syncs later" = "वॉच पर सहेजा, बाद में सिंक होगा";
 "All done?" = "हो गया?";
 "Lock" = "लॉक करें";
 "Skip this set?" = "यह सेट छोड़ें?";
 "Turn the Digital Crown to change it." = "बदलने के लिए Digital Crown घुमाएँ।";
-"%lld done" = "%lld पूरे";
 "%lld avg · %lld max" = "औसत %lld · अधिकतम %lld";
 "Set %lld of %lld" = "सेट %lld / %lld";
 "%lld of %lld sets" = "%lld / %lld सेट";
@@ -73,8 +74,5 @@
 "Added weight" = "अतिरिक्त वज़न";
 "Your rest, your next set, or today's workout." = "आपका आराम, अगला सेट, या आज का वर्कआउट।";
 "Opens openGym." = "openGym खोलता है।";
-"Tap a dot to change a set." = "सेट बदलने के लिए एक बिंदु टैप करें।";
-"Change set %lld" = "सेट %lld बदलें";
-"Change warm-up %lld" = "वार्म-अप %lld बदलें";
 "Changed on your iPhone" = "iPhone पर बदला गया";
 "Hold to finish" = "समाप्त करने के लिए दबाए रखें";

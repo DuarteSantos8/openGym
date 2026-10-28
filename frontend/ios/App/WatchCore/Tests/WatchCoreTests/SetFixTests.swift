@@ -135,4 +135,51 @@ final class SetFixTests: XCTestCase {
         s.workout = nil                                                     // finished there
         XCTAssertFalse(f.still(s))
     }
+
+    func testSaveIsOnOnlyOnceSomethingChanged() {
+        let s = state([bench([row(60, 8)])])
+        var f = SetFix.open(s, entry: 0, set: 0)!
+        XCTAssertFalse(f.changed)
+        f.set(.reps, 7)
+        XCTAssertTrue(f.changed)
+        f.set(.reps, 8)
+        XCTAssertFalse(f.changed, "turned back to what was logged: nothing to save")
+        f.effort = 8
+        XCTAssertTrue(f.changed)
+    }
+
+    /// ‹ › on the set page only change what is on screen: a done set to fix, a set ahead to do, or back home.
+    func testTheArrowsMoveThroughTheExercise() {
+        let open = row(60, 8, done: false, at: nil)
+        let e = bench([row(50, 8), row(60, 8), open, open])
+        XCTAssertEqual(SetNav.move(e, from: 2, by: -1, fixing: false, live: true), .fix(1))
+        XCTAssertEqual(SetNav.move(e, from: 2, by: 1, fixing: false, live: true), .pick(3), "a set ahead comes up: Done logs it")
+        XCTAssertNil(SetNav.move(e, from: 3, by: 1, fixing: false, live: true), "› is off on the last set")
+        XCTAssertNil(SetNav.move(e, from: 0, by: -1, fixing: true, live: true), "‹ is off on the first")
+        XCTAssertEqual(SetNav.move(e, from: 0, by: 1, fixing: true, live: true), .fix(1))
+        XCTAssertEqual(SetNav.move(e, from: 1, by: 1, fixing: true, live: true), .pick(2))
+        // a rest running (or another exercise up): nothing comes up early, the arrows step over the sets not done
+        // to the done ones, and › past them is the way home
+        XCTAssertEqual(SetNav.move(e, from: 1, by: 1, fixing: true, live: false), .home)
+        let gap = bench([row(50, 8), open, row(60, 8), open])
+        XCTAssertEqual(SetNav.move(gap, from: 2, by: -1, fixing: true, live: false), .fix(0))
+        XCTAssertNil(SetNav.move(gap, from: 0, by: -1, fixing: true, live: false))
+        XCTAssertEqual(SetNav.move(gap, from: 0, by: 1, fixing: true, live: false), .fix(2))
+        XCTAssertNil(SetNav.move(bench([open, row(60, 8)]), from: 1, by: -1, fixing: true, live: false), "‹ never leads home")
+        // all done: "All sets done" is the page past the last set
+        let all = bench([row(50, 8), row(60, 8)])
+        XCTAssertEqual(SetNav.move(all, from: 2, by: -1, fixing: false, live: true), .fix(1))
+        XCTAssertNil(SetNav.move(all, from: 2, by: 1, fixing: false, live: true))
+        XCTAssertEqual(SetNav.move(all, from: 1, by: 1, fixing: true, live: true), .home)
+    }
+
+    func testTheRestGoesBackToTheSetJustLogged() {
+        let squat = Entry(id: "squat", name: "Squat", mode: "reps", restSec: nil, last: nil,
+                          sets: [row(100, 5, at: 2000), row(100, 5, done: false, at: nil)])
+        let run = Entry(id: "run", name: "Run", mode: "cardio", restSec: nil, last: nil, sets: [row(0, 0, at: 9000)])
+        let s = state([bench([row(60, 8, at: 3000), row(60, 8, at: 1000)]), squat, run])
+        XCTAssertEqual(SetNav.last(s)?.entry, 0, "the latest, in any exercise but cardio (nothing to fix on the watch)")
+        XCTAssertEqual(SetNav.last(s)?.set, 0)
+        XCTAssertNil(SetNav.last(state([bench([row(60, 8, done: false, at: nil)])])))
+    }
 }

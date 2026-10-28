@@ -250,6 +250,28 @@ struct EdgeButton: View {
     }
 }
 
+/// ‹ / › between an exercise's sets, Coaich's 40 × 30 pt (not 44: the row under the name has no more), in
+/// that row, away from Done and the boxes. Dimmed to 0.3 when there is no set that way.
+struct NavArrow: View {
+    let forward: Bool
+    let enabled: Bool
+    let action: () -> Void
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: forward ? "chevron.right" : "chevron.left")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .frame(width: 40, height: 30)
+        }
+        .buttonStyle(SecondaryButton())
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.3)
+        .accessibilityLabel(forward ? Text("Next set") : Text("Previous set"))
+    }
+}
+
 /// Water Lock, as Apple's Workout has it: the screen and the crown's press stop doing anything
 /// (a sleeve or a bent wrist no longer leaves the workout or taps Done); turning the crown unlocks.
 /// watchOS allows it only while a workout session runs, so without Apple Health there is none.
@@ -455,19 +477,21 @@ struct SessionScreen: View {
 
     var body: some View {
         let end = store.restEndsAt.flatMap { $0 > Date() ? $0 : nil }
+        // A set fixed from the rest's ‹ comes up in its place; the rest runs on (its time in the page's band).
+        let resting = end != nil && store.fix == nil
         if store.workout?.entries.isEmpty ?? true {
             OverviewPage()      // no exercises: the Overview alone
         } else {
             TabView(selection: $page) {
                 OverviewPage(onPick: { page = .set }).tag(Page.overview)
                 ZStack {
-                    ExercisePager(covered: end != nil || page != .set)
-                        .disabled(end != nil || page != .set)       // nothing under the rest or the Overview takes the crown
-                        .opacity(end == nil ? 1 : 0)
-                        .accessibilityHidden(end != nil)
-                    if let end { RestView(end: end).transition(.opacity) }
+                    ExercisePager(covered: resting || page != .set)
+                        .disabled(resting || page != .set)       // nothing under the rest or the Overview takes the crown
+                        .opacity(resting ? 0 : 1)
+                        .accessibilityHidden(resting)
+                    if resting, let end { RestView(end: end).transition(.opacity) }
                 }
-                .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: end != nil)
+                .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: resting)
                 .tag(Page.set)
             }
             // PageTabViewStyle, not .page(...): that one draws the pages too wide.
@@ -499,7 +523,7 @@ struct ExercisePager: View {
     var body: some View {
         // Vertical pages, swiped. The crown does not page them: each page owns it (ExercisePage), so it edits the armed box.
         let n = store.workout?.entries.count ?? 0
-        TabView(selection: Binding(get: { min(store.entryIndex, max(0, n - 1)) }, set: { store.show(entry: $0) })) {
+        TabView(selection: Binding(get: { min(store.fix?.entry ?? store.entryIndex, max(0, n - 1)) }, set: { store.show(entry: $0) })) {
             ForEach(Array((store.workout?.entries ?? []).enumerated()), id: \.offset) { pair in
                 ExercisePage(index: pair.offset, covered: covered).tag(pair.offset)
             }
@@ -513,7 +537,8 @@ struct ExercisePager: View {
  * Digital Crown then turns only that value, in the exercise's own steps with a tap of the crown at
  * each, and a second tap on it opens a keypad for a value off the steps. Nothing armed: the crown
  * does nothing here, it never pages the exercises (the page owns it, so the system does not).
- * Edits are written to the store's numbers at once and sent only by Done, as before.
+ * Edits are written to the store's numbers at once and sent only by Done, as before. ‹ › under the
+ * name move through the exercise's sets: a done one shows its logged numbers to fix, and Save sends it.
  */
 struct ExercisePage: View {
     @EnvironmentObject var store: SessionStore
@@ -533,9 +558,11 @@ struct ExercisePage: View {
     var body: some View {
         if let w = store.workout, w.entries.indices.contains(index) {
             let entry = w.entries[index]
-            let si = store.setIndex(in: index)
-            let current = index == store.entryIndex
-            let owns = current && !covered && keypad == nil && !rating && !confirmSkip && !dimmed && store.fix == nil
+            // The page on screen edits: the set being fixed on it, else the set up next (on the exercise up).
+            let fixing = store.fix?.entry == index
+            let si = fixing ? store.fix?.set : store.setIndex(in: index)
+            let current = fixing || (index == store.entryIndex && store.fix == nil)
+            let owns = current && !covered && keypad == nil && !rating && !confirmSkip && !dimmed
             let armed = owns ? store.armedField : nil
             GeometryReader { g in
                 let inset = g.safeAreaInsets
@@ -554,30 +581,23 @@ struct ExercisePage: View {
                     } else {
                         nameRow(entry, lines: 2)
                         let left = entry.sets.contains { !$0.done }
+                        arrows { Spacer(minLength: 0) }
                         Spacer(minLength: 2)
                         Image(systemName: left ? "forward.circle" : "checkmark.circle.fill")
                             .font(.system(size: 40))
                             .foregroundStyle(.secondary)
                             .accessibilityHidden(true)
-                        Text(left ? LocalizedStringKey("Tap a dot to do a skipped set.") : LocalizedStringKey("All sets done"))
+                        Text(left ? LocalizedStringKey("Go back to do a skipped set.") : LocalizedStringKey("All sets done"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .minimumScaleFactor(0.7)
-                        if !left {
-                            Text("Tap a dot to change a set.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                                .minimumScaleFactor(0.7)
-                        }
                         Spacer(minLength: 4)
-                        SetDots(entry: entry, current: nil, skipped: { store.isSkipped(entry.id, $0) }) { tapDot(entry, $0) }
                     }
                 }
                 .padding(.horizontal, Theme.side)
                 .padding(.bottom, 8)        // the horizontal page dots sit about 6 pt from the bottom edge
-                // A tap on the empty page lets go of the armed box (boxes, Done and the dots are buttons and never get here).
+                // A tap on the empty page lets go of the armed box (boxes, Done and the arrows are buttons and never get here).
                 .background(Color.clear.contentShape(Rectangle()).onTapGesture { store.disarm() })
                 // Outside the candidates above, so only one animation runs; level with the name's first line.
                 .overlay(alignment: .topLeading) {
@@ -597,7 +617,7 @@ struct ExercisePage: View {
                 .modifier(DemoEnvironment())        // CI's Always On reaches a pager page only this way
                 .onAppear {
                     if current, keypad == nil, let d = SessionStore.demoKeypad, let spec = store.spec(d.field) {
-                        keypad = Keypad.Request(field: d.field, key: store.setKey, spec: spec, unit: entry.weightUnit(w.unit), text: d.text)
+                        keypad = Keypad.Request(field: d.field, key: store.editKey, spec: spec, unit: entry.weightUnit(w.unit), text: d.text)
                     }
                 }
                 // The page owns the Crown even with nothing armed: swallowing its turns (no click, no step) is what keeps
@@ -627,9 +647,6 @@ struct ExercisePage: View {
                     Keypad(request: r).modifier(DemoEnvironment()).presentationBackground(.black)
                 }
                 .sheet(isPresented: $rating) { EffortEditor() }
-                .sheet(isPresented: Binding(get: { store.fix?.entry == index }, set: { if !$0 { store.closeFix() } })) {
-                    SetFixView().modifier(DemoEnvironment()).presentationBackground(.black)
-                }
                 .confirmationDialog(Text("Skip this set?"), isPresented: $confirmSkip) {
                     Button("Skip set") { store.skipSet() }
                     Button("Cancel", role: .cancel) {}
@@ -660,10 +677,22 @@ struct ExercisePage: View {
 
     private func bandItems(elapsed: Bool, kcal: Bool) -> some View {
         HStack(spacing: 6) {
-            if elapsed { WorkoutExtras(kcal: kcal) }
+            if let end = store.restEndsAt, store.fix != nil, end > Date() { restLeft(end) }
+            else if elapsed { WorkoutExtras(kcal: kcal) }
             if store.show.showHr { HeartRateBadge(health: store.health) }
             OfflineSign()
         }
+    }
+
+    /// The rest still running under a set fixed from it: its time, in the rest's colour, where the workout's time was.
+    private func restLeft(_ end: Date) -> some View {
+        HStack(spacing: 3) {
+            Image(systemName: "timer").accessibilityLabel(Text("Rest"))
+            Text(timerInterval: Date()...end, countsDown: true).monospacedDigit()
+        }
+        .font(.system(.footnote, design: .rounded).weight(.semibold))
+        .foregroundStyle(Theme.ink(Theme.accent, dimmed))
+        .accessibilityElement(children: .combine)
     }
 
     private func hasClip(_ entry: Entry) -> Bool { store.show.showClip && store.clips[entry.id] != nil }
@@ -683,7 +712,7 @@ struct ExercisePage: View {
             .accessibilityAddTraits(.isHeader)
     }
 
-    /// Everything under the name for the set up next: its place, the lines, the boxes, Done, the dots.
+    /// Everything under the name for the set on screen: its place between the arrows, the lines, the boxes, Done (a done set: Save).
     @ViewBuilder private func setBlock(_ entry: Entry, _ si: Int, unit: String, current: Bool, lines: Lines) -> some View {
         let row = entry.sets[si]
         let pos = SetPage.position(entry, set: si)
@@ -694,35 +723,62 @@ struct ExercisePage: View {
             Spacer(minLength: 1)
             if lines != .none, let last { lastLine(last) }
             boxes(entry, row, unit: unit, current: current)
-            if let plan, lines == .both || (lines == .one && last == nil) { plannedLine(plan) }
+            // A done set: the plan ahead is not about it.
+            if let plan, !row.done, lines == .both || (lines == .one && last == nil) { plannedLine(plan) }
             Spacer(minLength: 1)
-            primaryRow(entry, current: current)
-            Spacer(minLength: 1)
-            SetDots(entry: entry, current: si, skipped: { store.isSkipped(entry.id, $0) }) { tapDot(entry, $0) }
+            primaryRow(entry, si, current: current)
         }
         .frame(maxHeight: .infinity)        // the spare room goes between the rows
     }
 
-    /// A dot: a set not done comes up next; a done one opens to be fixed (SetFixView).
-    private func tapDot(_ entry: Entry, _ si: Int) {
-        if entry.sets[si].done { store.openFix(entry: index, set: si) } else { store.pick(set: si, in: index) }
+    /// ‹ and › either side of what is between them (SetNav: they send nothing). None on cardio: nothing to fix here.
+    private func arrows(@ViewBuilder _ middle: () -> some View) -> some View {
+        let cardio = store.workout?.entries[index].isCardio ?? true
+        return HStack(spacing: 4) {
+            if !cardio { NavArrow(forward: false, enabled: store.canMove(index, by: -1)) { store.move(index, by: -1) } }
+            middle().frame(maxWidth: .infinity)
+            if !cardio { NavArrow(forward: true, enabled: store.canMove(index, by: 1)) { store.move(index, by: 1) } }
+        }
     }
 
     /// "Set 2 of 4", or Warm-up, then Left / Right and Superset. Short of room, Superset is a link glyph,
     /// then the place is "2/4" (long words: ru has "Подход 2 из 4" beside "ПРАВАЯ"). VoiceOver says it in full.
     private func positionRow(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position) -> some View {
-        ViewThatFits(in: .horizontal) {
-            positionItems(entry, row, pos, glyph: false, short: false)
-            positionItems(entry, row, pos, glyph: true, short: false)
-            positionItems(entry, row, pos, glyph: true, short: true)
+        arrows {
+            HStack(spacing: 4) {
+                ViewThatFits(in: .horizontal) {
+                    positionItems(entry, row, pos, glyph: false, short: false)
+                    positionItems(entry, row, pos, glyph: true, short: false)
+                    positionItems(entry, row, pos, glyph: true, short: true)
+                }
+                if let side = fixedSide { sideSwitch(side) }
+            }
         }
-        .frame(maxWidth: .infinity, minHeight: 16, alignment: .leading)
-        .padding(.leading, 4)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
+    /// The side on screen of a per-side set being fixed (its Left / Right is a switch then, not a tag).
+    private var fixedSide: String? { store.fix?.entry == index ? store.fix?.side : nil }
+
+    /// Left / Right with a flip glyph: a tap shows the other side; what was changed on this one stays until Save.
+    private func sideSwitch(_ side: String) -> some View {
+        Button { store.fixSide(side == "L" ? "R" : "L") } label: {
+            HStack(spacing: 2) {
+                Tag(text: side == "L" ? Text("Left") : Text("Right"), color: .cyan)
+                Image(systemName: "arrow.left.arrow.right").font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Theme.ink(.cyan, dimmed))
+                    .accessibilityHidden(true)
+            }
+            .frame(minHeight: 30)       // the arrows' height: the row has no room for 44
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressStyle())
+        .accessibilityLabel(side == "L" ? Text("Left") : Text("Right"))
+        .accessibilityHint(Text("Tap to change it."))
+    }
+
     private func positionItems(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position, glyph: Bool, short: Bool) -> some View {
-        let side = row.sideUp
+        let side = fixedSide == nil ? row.sideUp : nil
         return HStack(spacing: 4) {
             if let n = pos.number {
                 (short ? Text(verbatim: "\(n)/\(pos.total)") : Text("Set \(n) of \(pos.total)"))
@@ -786,7 +842,7 @@ struct ExercisePage: View {
                 .minimumScaleFactor(0.7)
                 .frame(maxWidth: .infinity, minHeight: 50)
         } else if entry.isTimed {
-            tile(.seconds, value: formatNumber(current ? store.seconds : (row.sec ?? 0)), unit: "s", label: Text("Hold"),
+            tile(.seconds, value: formatNumber(current ? store.current(.seconds) : (row.sec ?? 0)), unit: "s", label: Text("Hold"),
                  tint: .white, current: current, weightUnit: unit)
         } else {
             numbers(entry, row, unit: unit, current: current)
@@ -805,14 +861,14 @@ struct ExercisePage: View {
     }
 
     private func openKeypad(_ f: ValueField, unit: String) {
-        if let spec = store.spec(f) { keypad = Keypad.Request(field: f, key: store.setKey, spec: spec, unit: unit) }
+        if let spec = store.spec(f) { keypad = Keypad.Request(field: f, key: store.editKey, spec: spec, unit: unit) }
     }
 
     /// Weight × reps; a bodyweight set shows its added weight (or Bodyweight) in the weight box.
     private func numbers(_ entry: Entry, _ row: SetRow, unit: String, current: Bool) -> some View {
         let side = row.sideUp.flatMap { row.sides?[$0] }
-        let weight = current ? store.weight : (side?.w ?? row.w ?? 0)
-        let reps = current ? store.reps : (side?.r ?? row.r ?? 0)
+        let weight = current ? store.current(.weight) : (side?.w ?? row.w ?? 0)
+        let reps = current ? store.current(.reps) : (side?.r ?? row.r ?? 0)
         let tint = row.warmup ? Theme.warmup : Color.white
         return HStack(spacing: 6) {
             if entry.isBodyweight {
@@ -826,15 +882,41 @@ struct ExercisePage: View {
         }
     }
 
-    /// With a profile that rates effort, the RPE / RIR disc, then the Done pill (a hold: Start hold).
-    @ViewBuilder private func primaryRow(_ entry: Entry, current: Bool) -> some View {
-        HStack(spacing: 6) {
-            if let kind = store.effortKind, !entry.isCardio, let si = store.setIndex(in: index), !entry.sets[si].warmup {
-                EffortButton(kind: kind, value: current ? store.effort : nil) { if current { rating = true } }
-                    .disabled(!current)
+    /// With a profile that rates effort, the RPE / RIR disc, then the Done pill (a hold: Start hold; a done set: Save).
+    @ViewBuilder private func primaryRow(_ entry: Entry, _ si: Int, current: Bool) -> some View {
+        let fixing = store.fix?.entry == index
+        if fixing && store.fixStale {
+            // Changed or un-logged on the phone since it came up here: nothing to save over it.
+            Text("Changed on your iPhone")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.7)
+                .frame(maxWidth: .infinity, minHeight: Theme.tap)
+        } else {
+            HStack(spacing: 6) {
+                if let kind = store.effortKind, !entry.isCardio, !entry.sets[si].warmup {
+                    EffortButton(kind: kind, value: current ? store.editEffort : nil) { if current { rating = true } }
+                        .disabled(!current)
+                }
+                if fixing { saveButton } else { doneButton(entry, current: current) }
             }
-            doneButton(entry, current: current)
         }
+    }
+
+    /// Save, on a done set: off (and dimmed) until a number or the effort differs from what was logged.
+    private var saveButton: some View {
+        let on = store.fix?.changed ?? false
+        return Button { store.saveFix() } label: {
+            Text("Save")
+                .font(.headline.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .dynamicTypeSize(...DynamicTypeSize.xLarge)
+        }
+        .buttonStyle(PrimaryButton(minHeight: Theme.tap))
+        .disabled(!on)
+        .opacity(on ? 1 : 0.3)
     }
 
     @ViewBuilder private func doneButton(_ entry: Entry, current: Bool) -> some View {
@@ -1114,172 +1196,6 @@ struct EffortEditor: View {
 }
 
 /*
- * A logged set, opened from its dot to fix it: the exercise and the set on top, the boxes as on the
- * set page (a tap arms one for the Crown, a second tap opens the keypad), the effort disc when the
- * profile rates one, Save across the bottom. ✕ or a swipe down leaves the set as it was. Changed on
- * the phone meanwhile: the boxes freeze and Save makes way for a line saying so.
- */
-struct SetFixView: View {
-    @EnvironmentObject var store: SessionStore
-    @Environment(\.isLuminanceReduced) private var dimmed
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var keypad: Keypad.Request?
-    @State private var rating = false
-    @FocusState private var crownFocus: Bool
-
-    var body: some View {
-        NavigationStack {
-            if let f = store.fix, let e = store.editEntry, e.sets.indices.contains(f.set) {
-                let row = e.sets[f.set]
-                let stale = store.fixStale
-                let owns = keypad == nil && !rating && !dimmed && !stale
-                VStack(spacing: 4) {
-                    // CI's Always On reaches the rows inside the NavigationStack only this way (set on the stack, it does not).
-                    Group {
-                        header(e, row, f)
-                        Spacer(minLength: 2)
-                        boxes(e, row).disabled(stale)
-                        Spacer(minLength: 2)
-                        if stale {
-                            Text("Changed on your iPhone")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                                .minimumScaleFactor(0.7)
-                                .frame(maxWidth: .infinity, minHeight: Theme.tap)
-                        } else {
-                            HStack(spacing: 6) {
-                                if let kind = store.effortKind, !row.warmup {
-                                    EffortButton(kind: kind, value: store.editEffort) { rating = true }
-                                }
-                                Button { store.saveFix() } label: {
-                                    Text("Save").font(.headline.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.7)
-                                }
-                                .buttonStyle(PrimaryButton(minHeight: Theme.tap))
-                            }
-                        }
-                    }
-                    .dynamicTypeSize(...DynamicTypeSize.xLarge)
-                    .modifier(DemoEnvironment())
-                }
-                .padding(.horizontal, 2)
-                // The view owns the Crown while it is up: the armed box turns, nothing else does.
-                .focusable(owns)
-                .focused($crownFocus)
-                .focusEffectDisabled()
-                .digitalCrownRotation(detent: Binding(get: { store.crownTotal }, set: { store.turn(to: $0) }),
-                                      from: -100_000, through: 100_000, by: 1, sensitivity: .low,
-                                      isContinuous: false, isHapticFeedbackEnabled: owns && store.armedField != nil)
-                .onChange(of: owns, initial: true) { _, o in
-                    crownFocus = o
-                    DispatchQueue.main.async { crownFocus = o }
-                }
-                .onChange(of: dimmed) { _, d in if d { store.disarm() } }
-                .onChange(of: scenePhase) { _, p in if p != .active { store.disarm() } }
-                .onChange(of: keypad != nil || rating) { _, over in if over { store.disarm() } }
-                .task(id: store.arm) {
-                    guard !store.isDemo, store.arm.field != nil else { return }
-                    try? await Task.sleep(for: .seconds(store.arm.idle))
-                    store.disarmIfIdle()
-                }
-                .task {
-                    // CI: the keypad over it, once the sheet has finished coming up (a sheet cannot open on one still arriving).
-                    guard SessionStore.demoScreen == "fix-keypad", let spec = store.spec(.reps) else { return }
-                    try? await Task.sleep(for: .seconds(1))
-                    keypad = Keypad.Request(field: .reps, key: store.editKey, spec: spec, unit: e.weightUnit(store.unit), text: "7")
-                }
-                .sheet(item: $keypad) { r in Keypad(request: r).modifier(DemoEnvironment()).presentationBackground(.black) }
-                .sheet(isPresented: $rating) { EffortEditor() }
-                .navigationTitle(title(e, f))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button { store.closeFix() } label: { Image(systemName: "xmark") }
-                            .tint(Theme.muted)
-                            .accessibilityLabel(Text("Cancel"))
-                    }
-                }
-            }
-        }
-        // Fixed layout on one screen, as the set page: the bar's title and the boxes grow to what still fits 41 mm.
-        .dynamicTypeSize(...DynamicTypeSize.xLarge)
-    }
-
-    /// "Set 2 of 4" (or Warm-up): short enough for the bar beside ✕, which a long exercise name is not.
-    private func title(_ e: Entry, _ f: SetFix) -> Text {
-        let p = SetPage.position(e, set: f.set)
-        return p.number.map { Text("Set \($0) of \(p.total)") } ?? Text("Warm-up")
-    }
-
-    /// The exercise (two lines at most) and, on a per-side set, the side as a button that flips it.
-    private func header(_ e: Entry, _ row: SetRow, _ f: SetFix) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 6) {
-                Text(verbatim: e.name)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Theme.ink(.white, dimmed))
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-                    .accessibilityAddTraits(.isHeader)
-                Spacer(minLength: 0)
-                if let side = f.side {
-                    // 32 pt high, not 44: the 41 mm sheet has no room for a third full row; it sits apart from the boxes.
-                    Button { store.fixSide(side == "L" ? "R" : "L") } label: {
-                        HStack(spacing: 3) {
-                            Tag(text: side == "L" ? Text("Left") : Text("Right"), color: .cyan)
-                            Image(systemName: "arrow.left.arrow.right").font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(Theme.ink(.cyan, dimmed))
-                                .accessibilityHidden(true)
-                        }
-                        .frame(minWidth: Theme.tap, minHeight: 32)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(PressStyle())
-                    .accessibilityLabel(side == "L" ? Text("Left") : Text("Right"))
-                    .accessibilityHint(Text("Tap to change it."))
-                }
-            }
-            .frame(minHeight: 32)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.leading, 4)
-    }
-
-    /// As on the set page: weight × reps (a bodyweight set's added weight), or a hold's seconds.
-    @ViewBuilder private func boxes(_ e: Entry, _ row: SetRow) -> some View {
-        let unit = e.weightUnit(store.unit)
-        let tint = row.warmup ? Theme.warmup : Color.white
-        if e.isTimed {
-            tile(.seconds, value: formatNumber(store.current(.seconds)), unit: "s", label: Text("Hold"), tint: .white, weightUnit: unit)
-        } else {
-            let w = store.current(.weight)
-            HStack(spacing: 6) {
-                if e.isBodyweight {
-                    tile(.weight, value: w > 0 ? "+\(formatNumber(w))" : "0", unit: unit,
-                         label: w > 0 ? Text("Added weight") : Text("Bodyweight"), short: Text("Weight"), tint: tint, weightUnit: unit)
-                } else {
-                    tile(.weight, value: formatNumber(w), unit: unit, label: Text("Weight"), tint: tint, weightUnit: unit)
-                }
-                tile(.reps, value: formatNumber(store.current(.reps)), unit: nil, label: Text("Reps"), tint: tint, weightUnit: unit)
-                    .frame(width: 62)
-            }
-        }
-    }
-
-    private func tile(_ f: ValueField, value: String, unit: String?, label: Text, short: Text? = nil, tint: Color, weightUnit: String) -> some View {
-        ValueTile(value: value, unit: unit, label: label, short: short, tint: tint,
-                  armed: !dimmed && store.armedField == f, rising: store.rising,
-                  type: { openKeypad(f, unit: weightUnit) }, adjust: { store.nudge(f, by: $0) }) {
-            if store.tapBox(f) { openKeypad(f, unit: weightUnit) }
-        }
-    }
-
-    private func openKeypad(_ f: ValueField, unit: String) {
-        if let spec = store.spec(f) { keypad = Keypad.Request(field: f, key: store.editKey, spec: spec, unit: unit) }
-    }
-}
-
-/*
  * A keypad for a value the Crown's steps do not reach (a 61.25 kg plate, a 37 s hold): the number
  * typed on top, ✓ beside it, three keys across. ✓ saves exactly what was typed; ✕ or a swipe away
  * changes nothing. The number lands only on the set the keypad was opened on.
@@ -1495,59 +1411,6 @@ struct WeighInView: View {
             .digitalCrownRotation(value, from: range.lowerBound, through: range.upperBound, by: 1,
                                   sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
             .onTapGesture { part = which }
-    }
-}
-
-/// One dot per set: filled when done, ringed when it is the one up, orange and small for a warm-up,
-/// half-filled for a per-side set with one side done, hollow and dim when skipped. A tap picks a set (a done one: to fix it).
-struct SetDots: View {
-    let entry: Entry
-    let current: Int?
-    let skipped: (Int) -> Bool
-    let pick: (Int) -> Void
-    @Environment(\.isLuminanceReduced) private var dimmed
-
-    var body: some View {
-        let position = SetPage.position(entry, set: current ?? -1)
-        HStack(spacing: 4) {
-            ForEach(Array(entry.sets.enumerated()), id: \.offset) { pair in
-                let s = pair.element
-                let color = s.warmup ? Theme.warmup : Color.white
-                let half = !s.done && (s.sides.map { $0.L.done || $0.R.done } ?? false)
-                Circle()
-                    .fill(s.done ? color : (half ? color.opacity(0.5) : Theme.dim))
-                    .overlay(Circle().stroke(color, lineWidth: pair.offset == current ? 1.5 : 0))
-                    .overlay(Circle().stroke(Color.white.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [1.5, 1.5]))
-                        .opacity(skipped(pair.offset) && !s.done ? 1 : 0))
-                    .frame(width: s.warmup ? 6 : 9, height: s.warmup ? 6 : 9)
-                    .frame(width: 16, height: 16)
-                    .contentShape(Rectangle())
-                    .onTapGesture { pick(pair.offset) }
-            }
-        }
-        .opacity(dimmed ? 0.6 : 1)
-        // VoiceOver: "Set 2 of 4, 1 done" (a warm-up: "Warm-up"), swipe up or down to pick another set.
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(current == nil ? Text("Sets") : position.number.map { Text("Set \($0) of \(position.total)") } ?? Text("Warm-up"))
-        .accessibilityValue(Text("\(position.done) done"))
-        // A done set: an action of its own to open it for fixing (a tap on its dot).
-        .accessibilityActions {
-            ForEach(entry.sets.indices.filter { entry.sets[$0].done }, id: \.self) { i in
-                Button { pick(i) } label: {
-                    if let n = SetPage.position(entry, set: i).number { Text("Change set \(n)") }
-                    else { Text("Change warm-up \(entry.sets[...i].filter(\.warmup).count)") }
-                }
-            }
-        }
-        .accessibilityAdjustableAction { direction in
-            let open = entry.sets.indices.filter { !entry.sets[$0].done }
-            guard let cur = current, let at = open.firstIndex(of: cur) else { return }
-            switch direction {
-            case .increment: if at + 1 < open.count { pick(open[at + 1]) }
-            case .decrement: if at > 0 { pick(open[at - 1]) }
-            @unknown default: break
-            }
-        }
     }
 }
 
@@ -1835,12 +1698,20 @@ struct RestView: View {
         // The ring and the countdown in it take the space above the two corner buttons, so nothing
         // overlaps on any size (it did on 46 mm when the ring filled the whole screen).
         VStack(spacing: 2) {
+            // ‹ shows the set just logged to fix it, the rest running on; › is off (the rest is the live end).
+            // At the top, away from the thumb that hit Done and from the buttons below.
+            HStack(spacing: 4) {
+                NavArrow(forward: false, enabled: store.canFixLast) { store.fixLast() }
+                Text("Rest").font(.caption2.weight(.semibold)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
+                NavArrow(forward: true, enabled: false) {}
+            }
+            .opacity(dimmed ? 0 : 1)
+            .padding(.horizontal, Theme.side)
             ZStack {
                 if store.show.restRing {
                     CountdownRing(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end)
                 }
                 VStack(spacing: 1) {
-                    Text("Rest").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                     Text(timerInterval: Date()...end, countsDown: true)
                         .font(.system(size: store.show.restRing ? countdownSize : countdownSize * 1.35, weight: .semibold, design: .rounded).monospacedDigit())
                         .minimumScaleFactor(0.5)

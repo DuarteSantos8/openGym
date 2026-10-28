@@ -215,7 +215,7 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle idle-rest empty empty-heard set warmup armed-weight armed-reps armed-hold keypad-weight keypad-typed keypad-over keypad-reps keypad-hold keypad-lb weighin rest hold hold-set bodyweight side superset all-done fix fix-armed fix-keypad fix-hold fix-side fix-effort fix-stale offline finish overview finish-auto finish-hold finish-hold-full discard summary summary-end ended; do
+            for screen in idle idle-rest empty empty-heard set warmup armed-weight armed-reps armed-hold keypad-weight keypad-typed keypad-over keypad-reps keypad-hold keypad-lb weighin rest hold hold-set bodyweight side superset all-done fix fix-armed fix-changed fix-keypad future fix-hold fix-side fix-effort fix-stale rest-fix offline finish overview finish-auto finish-hold finish-hold-full discard summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
@@ -233,7 +233,7 @@ jobs:
             # The start screen: the longest labels (ru), and Always On (wrist down: outlines, no fills).
             shot "lang-ru-idle" idle -OpenGymWatchLang ru
             # The Overview and Finish in the longest language (ru), and the discard question in German.
-            # A logged set open to fix it, in German and in the longest labels (ru, a per-side set).
+            # A logged set on the set page to fix it, in German and in the longest labels (ru, a per-side set).
             shot "lang-de-fix" fix -OpenGymWatchLang de
             shot "lang-ru-fix-side" fix-side -OpenGymWatchLang ru
             shot "lang-ru-overview" overview -OpenGymWatchLang ru
@@ -251,6 +251,7 @@ jobs:
             # Wrist down disarms: a box armed in the demo shows no ring in Always On.
             shot "aod-armed-weight" armed-weight -OpenGymWatchAOD
             shot "aod-fix-effort" fix-effort -OpenGymWatchAOD
+            shot "aod-rest-fix" rest-fix -OpenGymWatchAOD
             shot "aod-keypad-typed" keypad-typed -OpenGymWatchAOD
             shot "aod-keypad-over" keypad-over -OpenGymWatchAOD
             shot "aod-empty" empty -OpenGymWatchAOD
@@ -261,7 +262,7 @@ jobs:
             shot "set-rpe" set -OpenGymWatchEffort rpe
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in idle idle-end idle-rest empty empty-heard set side superset hold-set armed-weight armed-hold fix fix-side keypad-typed keypad-over keypad-lb weighin rest hold overview finish discard summary summary-end; do
+            for screen in idle idle-end idle-rest empty empty-heard set side superset hold-set armed-weight armed-hold fix fix-side rest-fix keypad-typed keypad-over keypad-lb weighin rest hold overview finish discard summary summary-end; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX
             done
             # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's

@@ -99,7 +99,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     var crownTotal: Double { gate.last }
     var crownAllowed: Bool { touchLock.allowsCrown(at: Date()) }
     var armedField: ValueField? { arm.armed(at: Date(), key: editKey) }
-    /// A logged set opened to fix it (WatchCore's SetFix): the Crown, the keypad and the effort edit it, not the set up next.
+    /// A logged set on the set page to fix it (WatchCore's SetFix): the Crown, the keypad and the effort edit it, not the set up next.
     @Published private(set) var fix: SetFix?
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
@@ -272,8 +272,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if ei == entryIndex { loadTargets() }
     }
 
-    /// Paging to another exercise (a vertical swipe).
+    /// Paging to another exercise (a vertical swipe). A set being fixed is let go, unsaved.
     func show(entry ei: Int) {
+        guard ei != fix?.entry else { return }      // the page a fix brought up, not a swipe
+        fix = nil
         guard ei != state.entryIndex else { return }
         ackRestOver()
         state.entryIndex = ei
@@ -494,33 +496,61 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The idle timer ran out: let go, unless a tap or turn came since.
     func disarmIfIdle() { if arm.field != nil, armedField == nil { arm.disarm() } }
 
-    /* ---------- fixing a logged set ---------- */
+    /* ---------- the arrows: fixing a logged set, a set ahead ---------- */
 
-    /// A tap on a done set's dot. Not in the second after the page turned by itself.
-    func openFix(entry ei: Int, set si: Int) {
-        guard touchAllowed, let f = SetFix.open(state, entry: ei, set: si) else { return }
-        disarm()
-        ackRestOver()
-        fix = f
+    private var resting: Bool { restEndsAt.map { $0 > Date() } ?? false }
+
+    /// The set on exercise `ei`'s page: the one being fixed there, else the one up, else the set count ("All sets done").
+    func shownSet(in ei: Int) -> Int {
+        if let f = fix, f.entry == ei { return f.set }
+        return setIndex(in: ei) ?? workout.map { $0.entries.indices.contains(ei) ? $0.entries[ei].sets.count : 0 } ?? 0
     }
 
-    /// The other side of a per-side set; what was changed on this one is kept until Save or Cancel.
+    private func arrow(_ ei: Int, by d: Int) -> SetNav.Move? {
+        guard let w = workout, w.entries.indices.contains(ei) else { return nil }
+        return SetNav.move(w.entries[ei], from: shownSet(in: ei), by: d, fixing: fix?.entry == ei, live: ei == entryIndex && !resting)
+    }
+
+    func canMove(_ ei: Int, by d: Int) -> Bool { arrow(ei, by: d) != nil }
+
+    /// ‹ or › on a set page. Sends nothing and leaves a rest running as it is; what was changed and not saved is dropped.
+    func move(_ ei: Int, by d: Int) {
+        guard touchAllowed, let m = arrow(ei, by: d) else { return }
+        disarm()
+        switch m {
+        case .fix(let si): fix = SetFix.open(state, entry: ei, set: si)
+        case .pick(let si): fix = nil; pick(set: si, in: ei)
+        case .home: fix = nil
+        }
+    }
+
+    /// The rest's ‹: the set just logged, on its own page, with the rest running on.
+    var canFixLast: Bool { SetNav.last(state) != nil }
+
+    func fixLast() {
+        guard touchAllowed, let l = SetNav.last(state) else { return }
+        disarm()
+        fix = SetFix.open(state, entry: l.entry, set: l.set)
+    }
+
+    /// The other side of a per-side set; what was changed on this one is kept until Save or a move away.
     func fixSide(_ side: String) { disarm(); fix?.side = side }
 
-    /// Changed on the phone (or gone) since it opened: Save is off, Cancel closes.
+    /// Changed on the phone (or gone) since it opened: Save is off.
     var fixStale: Bool { fix.map { !$0.still(state) } ?? false }
 
-    /// Cancel, a swipe down, or Save's end: nothing more is sent.
-    func closeFix() { disarm(); fix = nil }
-
-    /// Save: the set's setDone again, later (SetFix.save); the page stays where it is, no rest starts.
+    /// Save: the set's setDone again, later (SetFix.save). The set stays on screen, as saved; no rest starts or stops.
     func saveFix() {
         guard let f = fix else { return }
         let (next, events) = f.save(state, at: Date().timeIntervalSince1970 * 1000, id: { UUID().uuidString }, effort: effortKind)
+        guard !events.isEmpty else { return }
         for e in events { send(event: e) }       // sent first, saved second, as completeSet
         state = next
-        if !events.isEmpty { Haptics.done(); noteActivity() }
-        closeFix()
+        Haptics.done()
+        noteActivity()
+        disarm()
+        fix = SetFix.open(state, entry: f.entry, set: f.set)
+        fix?.side = f.side
     }
 
     /* ---------- what the lifter does here ---------- */
@@ -569,6 +599,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if rest && restFor > 0 && to < (workout?.entries.count ?? 0) {
             startRest(until: now.addingTimeInterval(restFor), notify: true)
             restAfter = (e.id, ei, si, w.id ?? "", now)
+            touchLock.lock(at: now)         // the rest comes up under the thumb that hit Done
         }
         if to != ei { state.entryIndex = to }
         loadTargets()
@@ -1096,6 +1127,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         case "keypad-reps": return (.reps, "")
         case "keypad-hold": return (.seconds, "")
         case "keypad-lb": return (.weight, "1500.25")
+        case "fix-keypad": return (.reps, "7")
         default: return nil
         }
     }
@@ -1120,7 +1152,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.picked[0] = 2
                 self.state.workout?.entries[0].unit = "lb"
             case "hold", "hold-set", "armed-hold", "keypad-hold": self.state.entryIndex = 1
-            case "fix", "fix-armed", "fix-keypad", "fix-effort", "fix-stale": self.picked[0] = 2
+            case "fix", "fix-armed", "fix-changed", "fix-keypad", "fix-effort", "fix-stale", "rest-fix": self.picked[0] = 2
+            case "future": self.picked[0] = 3
             case "fix-hold":
                 self.state.entryIndex = 1
                 self.state.workout?.entries[1].sets[0].done = true
@@ -1160,11 +1193,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.arm = CrownArm(idle: .infinity)
                 _ = self.arm.tap(screen == "armed-weight" ? .weight : screen == "armed-reps" ? .reps : .seconds, key: k, at: Date())
             }
-            // CI: a logged set open to fix it (Bench Press set 1, the Plank's first hold, the split squat's first set).
+            // CI: a logged set on the set page to fix it (Bench Press set 1, the Plank's first hold, the split squat's first set).
             if screen.hasPrefix("fix") {
                 if screen == "fix-effort" { self.state.settings.effort = "rpe"; self.state.rated = ["0025#1": 8] }
                 self.fix = SetFix.open(self.state, entry: self.state.entryIndex, set: screen == "fix-hold" || screen == "fix-side" ? 0 : 1)
                 if screen == "fix-hold" { self.fix?.set(.seconds, 50) }
+                if screen == "fix-changed" { self.fix?.set(.reps, 7) }
                 if screen == "fix-side" { self.fix?.side = "R"; self.fix?.set(.reps, 7) }
                 if screen == "fix-armed", let k = self.fix?.key {
                     self.arm = CrownArm(idle: .infinity)
@@ -1172,7 +1206,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 }
                 if screen == "fix-stale" { self.state.workout?.entries[0].sets[1].at = 2 }
             }
-            if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen == "rest" || screen == "rest-fix" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen == "rest-fix" { self.fixLast() }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3 }
             if screen == "finish-auto" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.showFinish() } }

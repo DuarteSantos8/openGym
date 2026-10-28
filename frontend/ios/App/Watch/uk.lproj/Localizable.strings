@@ -39,6 +39,8 @@
 "Delete" = "Видалити";
 "Planned" = "Заплановано";
 "Save" = "Зберегти";
+"Previous set" = "Попередній підхід";
+"Next set" = "Наступний підхід";
 "Last time: %@" = "Минулого разу: %@";
 "Exercises" = "Вправи";
 "No workout running" = "Тренування не триває";
@@ -56,14 +58,13 @@
 "Start hold" = "Почати";
 "Workout saved" = "Тренування збережено";
 "Ended on your iPhone" = "Завершено на iPhone";
-"Tap a dot to do a skipped set." = "Торкнись точки, щоб зробити пропущений підхід.";
+"Go back to do a skipped set." = "Повернися назад, щоб зробити пропущений підхід.";
 "Log this one on your iPhone." = "Це записуй на iPhone.";
 "Saved on the watch, syncs later" = "Збережено на годиннику, синхронізується пізніше";
 "All done?" = "Тренування завершено?";
 "Lock" = "Блокування";
 "Skip this set?" = "Пропустити цей підхід?";
 "Turn the Digital Crown to change it." = "Поверни Digital Crown, щоб змінити.";
-"%lld done" = "%lld зроблено";
 "%lld avg · %lld max" = "сер. %lld · макс. %lld";
 "Set %lld of %lld" = "Підхід %lld з %lld";
 "%lld of %lld sets" = "%lld з %lld підходів";
@@ -73,8 +74,5 @@
 "Added weight" = "Додаткова вага";
 "Your rest, your next set, or today's workout." = "Відпочинок, наступний підхід або сьогоднішнє тренування.";
 "Opens openGym." = "Відкриває openGym.";
-"Tap a dot to change a set." = "Торкнись точки, щоб змінити підхід.";
-"Change set %lld" = "Змінити підхід %lld";
-"Change warm-up %lld" = "Змінити розминку %lld";
 "Changed on your iPhone" = "Змінено на iPhone";
 "Hold to finish" = "Утримуй, щоб завершити";

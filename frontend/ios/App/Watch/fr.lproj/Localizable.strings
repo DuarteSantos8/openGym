@@ -39,6 +39,8 @@
 "Delete" = "Supprimer";
 "Planned" = "Prévu";
 "Save" = "Enregistrer";
+"Previous set" = "Série précédente";
+"Next set" = "Série suivante";
 "Last time: %@" = "La dernière fois: %@";
 "Exercises" = "Exercices";
 "No workout running" = "Aucune séance en cours";
@@ -56,14 +58,13 @@
 "Start hold" = "Lancer la tenue";
 "Workout saved" = "Séance enregistrée";
 "Ended on your iPhone" = "Terminée sur ton iPhone";
-"Tap a dot to do a skipped set." = "Touche un point pour faire une série sautée.";
+"Go back to do a skipped set." = "Reviens en arrière pour faire une série sautée.";
 "Log this one on your iPhone." = "Celui-ci se note sur ton iPhone.";
 "Saved on the watch, syncs later" = "Gardé sur la montre, synchro plus tard";
 "All done?" = "Terminé ?";
 "Lock" = "Verrouiller";
 "Skip this set?" = "Sauter cette série ?";
 "Turn the Digital Crown to change it." = "Tourne la Digital Crown pour le changer.";
-"%lld done" = "%lld faites";
 "%lld avg · %lld max" = "moy. %lld · max %lld";
 "Set %lld of %lld" = "Série %lld sur %lld";
 "%lld of %lld sets" = "%lld séries sur %lld";
@@ -73,8 +74,5 @@
 "Added weight" = "Poids ajouté";
 "Your rest, your next set, or today's workout." = "Ton repos, ta prochaine série ou la séance du jour.";
 "Opens openGym." = "Ouvre openGym.";
-"Tap a dot to change a set." = "Touche un point pour modifier une série.";
-"Change set %lld" = "Modifier la série %lld";
-"Change warm-up %lld" = "Modifier l’échauffement %lld";
 "Changed on your iPhone" = "Modifié sur ton iPhone";
 "Hold to finish" = "Maintiens pour terminer";
