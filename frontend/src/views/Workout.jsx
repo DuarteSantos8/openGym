@@ -48,6 +48,8 @@ import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEn
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
+import GuidedWarmup from './GuidedWarmup.jsx'
+import { applyGuidedWarmupAction, pendingGuidedWarmup } from '../lib/guided-warmup-session.js'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 
@@ -984,6 +986,7 @@ function ActiveWorkout() {
   const timerKey = useUI(s => s.timer && `${s.timer.endsAt}:${s.timer.forIdx ?? ''}`)
   const readyRestEnds = useUI(s => (s.timer?.ready ? s.timer.endsAt : undefined))
   const A = S.active
+  const preparing = pendingGuidedWarmup(A)
   const editing = !!A.editingWorkoutId
   // A past workout has no rest to time — the sets were done days ago. The work timer for
   // timed sets stays, since counting a hold is how its duration gets entered.
@@ -1100,7 +1103,7 @@ function ActiveWorkout() {
   const hintSeen = !!(S.hints && S.hints.swipeSets)
   const hintTm = useRef(null)
   useEffect(() => {
-    if (!wc.swipeSets || hintSeen || !A.entries.length) return
+    if (preparing || !wc.swipeSets || hintSeen || !A.entries.length) return
     const startedAt = Date.now()
     let tm = null
     const quietIn = () => Math.max(HINT_DELAY_MS - (Date.now() - startedAt), lastTouchAt + HINT_QUIET_MS - Date.now())
@@ -1129,7 +1132,7 @@ function ActiveWorkout() {
     }
     later()
     return () => clearTimeout(tm)
-  }, [wc.swipeSets, hintSeen, A.entries.length, cur, listMode])
+  }, [preparing, wc.swipeSets, hintSeen, A.entries.length, cur, listMode])
   useEffect(() => () => { clearTimeout(hintTm.current); setUI({ swipeHint: null, setFlash: null }) }, [])
   useEffect(() => {
     const liveEntries = new Set(A.entries)
@@ -1911,11 +1914,20 @@ function ActiveWorkout() {
   // end-of-workout sheet). A row already ticked only takes the numbers.
   const toggleRef = useRef(toggle)
   toggleRef.current = toggle
+  const skipPreparation = () => {
+    if (!pendingGuidedWarmup(useStore.getState().S.active)) return
+    update(s => {
+      const active = s.active
+      if (pendingGuidedWarmup(active)) applyGuidedWarmupAction(active, active.id, active.warmup.steps[active.warmup.current].id, 'skip_all')
+    }, true)
+  }
+  // The Watch shows working sets, so logging one or finishing skips preparation still pending on the phone
   // The time is the watch's: the phone may hear of the set much later (lib/finish-workout.js
   // sessionEnd reads the sets' times). The watch's Finish runs the phone's Finish and save.
   useEffect(() => bindWatchActions({
     setDone: (idx, i, { w, r, sec, side, at, hr, rpe, rir }) => {
       if (useStore.getState().S.active?.editingWorkoutId) return   // a saved workout being edited is not the session
+      skipPreparation()
       const now = useStore.getState().S.active?.entries?.[idx]?.sets?.[i]
       // One side of a per-side set (a unilateral exercise): that side's numbers and its own tick.
       const oneSide = side && isSideSet(now) ? side : null
@@ -1946,7 +1958,7 @@ function ActiveWorkout() {
       if (!wasDone) toggleRef.current(idx, i, oneSide || undefined)
       if (at || hr) mutEntry(idx, en => { const set = en.sets[i]; if (!(oneSide ? set?.sides?.[oneSide]?.done : set?.done)) return; if (at) set.at = at; if (hr) set.hr = hr })
     },
-    finish: () => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow() },
+    finish: () => { if (!useStore.getState().S.active?.editingWorkoutId) { skipPreparation(); finishWorkoutNow() } },
     discard: () => { if (!useStore.getState().S.active?.editingWorkoutId) discardNow() },
   }), [])
 
@@ -1960,6 +1972,7 @@ function ActiveWorkout() {
     setDone: (idx, i, { at }) => {
       const A = useStore.getState().S.active
       if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
+      skipPreparation()
       const restBefore = useUI.getState().timer
       liveToggleRef.current(idx, i)
       if (!at) return
@@ -2064,6 +2077,7 @@ function ActiveWorkout() {
     return true
   }
   onKey.current = event => {
+    if (pendingGuidedWarmup(useStore.getState().S.active)) return false
     // A sheet on top owns the keyboard (Escape closes it, Enter confirms in it).
     if (useUI.getState().sheets.length) return false
     const action = workoutKeyAction(event, { tabbed: tabbed.current, rtl: document.documentElement.dir === 'rtl' })
@@ -2144,6 +2158,9 @@ function ActiveWorkout() {
       api('/api/activity', { method: 'POST', body: JSON.stringify({ active: false, reason: 'navigated' }) }).catch(() => {})
     }
   }, [])
+
+  // Keep the Watch handlers above mounted while the phone shows preparation
+  if (preparing) return <GuidedWarmup />
 
   return <WorkoutScrollAnchor enabled={collapseOn} collapsed={[...collapsed].join(',')}>
     {/* In list mode the whole session scrolls under the header, so the header (name, clock,

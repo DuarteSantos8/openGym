@@ -2,6 +2,7 @@
 // exercise the exact shape the UI writes without mounting React or mutating store state.
 import { bestWeightForEntry, cleanupSg } from './history.js'
 import { hasCompletedWork, isSideSet } from './workout-model.js'
+import { completedGuidedWarmup } from './guided-warmup-session.js'
 
 // planSec is live-session bookkeeping: a hold displaced before it finished puts its plan aside so
 // the row still knows what it is asking for (Workout.startTimed). A finished session keeps only
@@ -112,6 +113,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
   // entries, not read from `active` (which no longer carries the flag). A mixed session omits
   // it — that case is new territory only the per-entry `noProg` readers handle.
   const allNoProg = entries.length > 0 && entries.every(e => e.noProg === true)
+  const warmup = completedGuidedWarmup(active?.warmup)
 
   return {
     id: active.id,
@@ -124,6 +126,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     bw: active.bw,
     entries,
     prs,
+    ...(warmup ? { warmup } : {}),
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),
   }

@@ -99,6 +99,53 @@ describe('planPrintHTML prints the exercise as it is prescribed', () => {
   })
 })
 
+
+describe('planPrintHTML guided warm-up', () => {
+  const warmup = { enabled: true, steps: [
+    { id: '3905', mode: 'time', sec: 30 },
+    { id: '3502', mode: 'reps', reps: 10, perSide: true },
+  ] }
+  const withWarmup = enabled => ({ ...S, routines: [{ ...S.routines[0], warmup: { ...warmup, enabled } }] })
+
+  it('prints preparation before working exercises without adding to their count', () => {
+    const body = text(planPrintHTML(withWarmup(true), '', { routineId: 'push' }))
+    expect(body).toContain('Warm-up')
+    expect(body).toContain('arm circles 30s')
+    expect(body).toContain('10 reps · per side')
+    expect(body).toContain('3 exercises')
+    expect(body.indexOf('Warm-up')).toBeLessThan(body.indexOf('barbell bench press'))
+  })
+
+  it('keeps preparation movements whole with the heading and reserves numbers and boxes for working sets', () => {
+    const weekly = planPrintHTML(withWarmup(true), '')
+    expect(weekly).toMatch(/<div class="warmup"><div class="keep"><h3 class="sec-h">Routines<\/h3><div class="r-head"><h2>Push day<\/h2>[^]*?<h3 class="warmup-title">Warm-up<\/h3>[^]*?arm circles/)
+    expect(weekly.match(/<div class="keep">/g)).toHaveLength(5)
+    expect(weekly.match(/<h2>Push day<\/h2>/g)).toHaveLength(1)
+    const single = planPrintHTML(withWarmup(true), '', { routineId: 'push' })
+    expect(single.match(/<div class="ex-num">[123]<\/div>/g)).toHaveLength(3)
+    expect(single.match(/<div class="ticks">/g)).toHaveLength(3)
+    const preparation = single.match(/<div class="warmup">([^]*?)<\/div><div class="keep"><div class="ex"><div class="ex-num">/)[1]
+    expect(preparation).not.toContain('class="ticks"')
+    expect(preparation).not.toContain('class="ex-num"')
+  })
+
+  it('uses the upstream translated-name layout and page probes for preparation too', () => {
+    _setLangState('de', {}, null, { '3905': 'Armkreisen' })
+    try {
+      const html = planPrintHTML(withWarmup(true), '', { routineId: 'push', probe: true })
+      expect(html).toContain('<div class="ex-n ">Armkreisen</div><div class="ex-en">arm circles</div>')
+      expect(html).toContain('<i class="probe">~s:r0-w0~</i>')
+      expect(html).toContain('<i class="probe">~e:r0-w1~</i>')
+    } finally { _setLangState('en', {}, null, null) }
+  })
+
+  it('omits disabled preparation from the printable workout', () => {
+    const html = planPrintHTML(withWarmup(false), '', { routineId: 'push' })
+    expect(html).not.toContain('<div class="warmup">')
+    expect(text(html)).not.toContain('arm circles')
+  })
+})
+
 // The redesign (v1.4.3): what keeps a printout readable across pages.
 describe('planPrintHTML page breaks', () => {
   const many = { unit: 'kg', week: { 1: ['r'] }, routines: [{ id: 'r', name: 'Long day', ex: Array.from({ length: 6 }, (_, i) => ({ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 60 + i, ...(i === 2 || i === 3 ? { sg: 's' } : {}) })) }] }

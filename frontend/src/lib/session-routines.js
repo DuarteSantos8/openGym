@@ -1,9 +1,10 @@
 import { uid } from './format.js'
 import { modeOf, defaultConfig, isPerSide, entryRoutineId, setsFromRows } from './history.js'
 import { isSideSet, isWarmupRow, hasCompletedWork, modeForEntry } from './workout-model.js'
+import { normalizeWarmup } from '../../../api/training/guided-warmup.js'
 
-// A saved workout is evidence of what was logged, not a live routine. Copy only its flat
-// exercise setup on this explicit action; finishing a workout never calls this helper.
+// A saved workout is evidence of what was logged, not a live routine. Copy its exercise
+// setup and preparation on this explicit action; finishing a workout never calls this helper
 const sessionEntries = session => Array.isArray(session?.entries) ? session.entries : []
 
 function groupIds(ex) {
@@ -134,7 +135,12 @@ export function routineFromSession(session, name = session?.name, routines = [])
   const ex = groupIds(sessionEntries(session).filter(entry => entry?.sets?.length)
     .map(entry => copiedEntry(entry, byId.get(entryRoutineId(session, entry)))))
   if (!ex.length) throw new Error('no exercises')
-  return { id: uid(), name: String(name || 'Workout').trim() || 'Workout', ex }
+  // A skipped preparation still describes the plan for next time. Its outcomes, timer and
+  // navigation belong to the saved session; only the movement targets become routine config.
+  const warmup = ['complete', 'skipped'].includes(session?.warmup?.status)
+    ? normalizeWarmup({ enabled: true, steps: session.warmup.steps })
+    : undefined
+  return { id: uid(), name: String(name || 'Workout').trim() || 'Workout', ...(warmup?.steps.length ? { warmup } : {}), ex }
 }
 
 export function saveSessionAsRoutine(state, session, name) {

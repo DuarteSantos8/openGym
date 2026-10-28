@@ -1374,6 +1374,21 @@ export const PT_BR_OVERRIDES = {
   'Fewer than two workouts in this period. Pick a longer one.': 'Menos de dois treinos neste período. Escolha um mais longo.',
   'Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.': 'Peso corporal neste período: {0} → {1}. Nos exercícios com peso corporal e assistidos, o seu peso corporal conta como parte da carga.',
   'Releases are checked on GitHub. The download is verified against its checksum before the installer opens.': 'As versões são verificadas no GitHub. O download é conferido pela soma de verificação antes de abrir o instalador.',
+  // Guided warm-up
+  'Skip movement': 'Pular movimento',
+  'Skip warm-up': 'Pular aquecimento',
+  'Add movements to build a guided warm-up.': 'Adicione movimentos para criar um aquecimento guiado.',
+  'Complete both sides before continuing.': 'Complete ambos os lados antes de continuar.',
+  'Complete the target on each side.': 'Complete a meta de cada lado.',
+  'Follow these movements before your working sets.': 'Faça estes movimentos antes das séries de trabalho.',
+  'Target': 'Meta',
+  'Timer covers both sides. Switch sides halfway through.': 'O temporizador inclui ambos os lados. Troque de lado na metade do tempo.',
+  'Timer finished. Continue when you are ready.': 'O tempo terminou. Continue quando estiver pronto.',
+  'Warm-up is off. Your movements are saved for later.': 'O aquecimento está desativado. Seus movimentos ficam salvos para depois.',
+  // Warm-up suggestions
+  'Based on this routine’s muscles: {0}. Edit the movements before adding them.': 'Com base nos músculos desta rotina: {0}. Edite os movimentos antes de adicioná-los.',
+  'No warm-up suggestions are available for this routine. Add movements manually.': 'Não há sugestões de aquecimento para esta rotina. Adicione movimentos manualmente.',
+  'Plan or equipment changed. Open suggestions again to review an updated warm-up.': 'O plano ou o equipamento mudou. Abra novamente as sugestões para revisar um aquecimento atualizado.',
   // --- Coach: AI data sharing ---
   'AI data sharing': 'Compartilhamento de dados com IA',
   'Allow': 'Permitir',

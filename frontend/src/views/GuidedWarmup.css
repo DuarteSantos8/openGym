@@ -1,0 +1,14 @@
+.guided-warmup > .wprog { margin: 12px 0 18px; }
+.guided-warmup .hdr h1 { margin-bottom: 2px; }
+.guided-warmup-card > h2 { margin-bottom: 14px; }
+.guided-warmup-target { margin-top: 18px; font-size: 1.25rem; font-weight: 700; text-align: center; }
+.guided-warmup-card > .small { text-align: center; }
+.guided-warmup-timer { margin: 18px auto; text-align: center; }
+.guided-warmup-countdown { font-size: clamp(2.5rem, 12vw, 4rem); line-height: 1.2; font-weight: 700; font-variant-numeric: tabular-nums; }
+.guided-warmup-timer > .btn { margin-top: 12px; }
+.guided-warmup-instructions { margin-top: 20px; }
+.guided-warmup-instructions > summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
+.guided-warmup-actions { display: grid; grid-template-columns: 1fr 1.5fr; gap: 10px; }
+.guided-warmup-skip { width: 100%; margin-top: 12px; }
+
+.guided-warmup .exmedia img, .guided-warmup .exmedia video, .guided-warmup .exmedia-x { height: clamp(150px, 28dvh, 240px); }

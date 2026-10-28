@@ -9,7 +9,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout, { _resetHintQuiet } from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { applyEvents, _resetWatchSync } from '../lib/watch-sync.js'
+import { applyEvents, discardedFor, _resetWatchSync } from '../lib/watch-sync.js'
+import { createGuidedWarmup } from '../lib/guided-warmup-session.js'
+import { applyLiveEvents } from '../lib/live-activity.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), chime: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})), beacon: vi.fn(), appBase: () => '/' }))
@@ -120,5 +122,85 @@ describe('sets of every kind from the watch', () => {
     load([{ id: 'plank', target: { sets: 1, sec: 45, mode: 'time' }, sets: [{ sec: 45, done: false }] }])
     act(() => { applyEvents([{ id: 'h', type: 'setDone', wid: 'w-watch', exId: 'plank', entryIdx: 0, setIdx: 0, sec: 52, at: 30 }], () => useStore.getState()) })
     expect(useStore.getState().S.active.entries[0].sets[0]).toMatchObject({ sec: 52, done: true })
+  })
+})
+
+
+describe('Watch actions while the phone shows guided preparation', () => {
+  beforeEach(() => {
+    act(() => useStore.getState().update(s => {
+      s.active.warmup = createGuidedWarmup([{ warmup: { enabled: true, steps: [
+        { id: '3905', mode: 'time', sec: 30 },
+        { id: '3502', mode: 'reps', reps: 10, perSide: true },
+      ] } }], Date.now() - 1000)
+      s.active.warmup.steps[0].status = 'done'
+      s.active.warmup.current = 1
+      s.active.warmup.timer = { endsAt: Date.now() + 30000 }
+    }))
+    expect(container.textContent).toContain('Guided warm-up')
+  })
+
+  it('applies and acknowledges a working set immediately and skips only unfinished preparation', () => {
+    const event = { id: 'prep-set', type: 'setDone', wid: 'w-watch', exId: '0025', entryIdx: 0, setIdx: 0, w: 62.5, r: 7, at: Date.now() }
+    let applied
+    act(() => { applied = applyEvents([event], () => useStore.getState()) })
+    expect(applied).toEqual(['prep-set'])
+    const active = useStore.getState().S.active
+    expect(active.entries[0].sets[0]).toMatchObject({ w: 62.5, r: 7, done: true, at: event.at })
+    expect(active.entries[0].sets[1].done).toBe(false)
+    expect(active.warmup.status).toBe('skipped')
+    expect(active.warmup.steps.map(step => step.status)).toEqual(['done', 'skipped'])
+    expect(active.warmup.timer).toBeUndefined()
+    expect(useUI.getState().timer).toBeTruthy()
+    expect(container.textContent).not.toContain('Guided warm-up')
+    act(() => { applyEvents([event], () => useStore.getState()) })
+    expect(useStore.getState().S.active.entries[0].sets[0].done).toBe(true)
+  })
+
+  it('finishes immediately and saves the unfinished preparation as skipped', () => {
+    act(() => { useStore.getState().update(s => { s.active.entries[0].sets[0].done = true }) })
+    let applied
+    act(() => { applied = applyEvents([{ id: 'prep-finish', type: 'finish', wid: 'w-watch', at: Date.now() }], () => useStore.getState()) })
+    expect(applied).toEqual(['prep-finish'])
+    const state = useStore.getState().S
+    expect(state.active).toBeNull()
+    expect(state.workouts.at(-1)).toMatchObject({ id: 'w-watch', warmup: { status: 'skipped' } })
+    expect(state.workouts.at(-1).warmup.steps.map(step => step.status)).toEqual(['done', 'skipped'])
+    expect(state.workouts.at(-1).warmup).not.toHaveProperty('timer')
+    expect(discardedFor()).toEqual([])
+  })
+
+  it('discards immediately and marks the session for the next Watch snapshot', () => {
+    const count = useStore.getState().S.workouts.length
+    let applied
+    act(() => { applied = applyEvents([{ id: 'prep-discard', type: 'discard', wid: 'w-watch', at: Date.now() }], () => useStore.getState()) })
+    expect(applied).toEqual(['prep-discard'])
+    expect(useStore.getState().S.active).toBeNull()
+    expect(useStore.getState().S.workouts).toHaveLength(count)
+    expect(discardedFor()).toEqual(['w-watch'])
+  })
+
+  it('also closes pending preparation when a working set is ticked from the Lock Screen', () => {
+    let applied
+    act(() => { applied = applyLiveEvents([{ id: 'prep-live-set', type: 'setDone', wid: 'w-watch', exId: '0025', entryIdx: 0, setIdx: 0, at: Date.now() }], () => useStore.getState()) })
+    expect(applied).toEqual(['prep-live-set'])
+    const active = useStore.getState().S.active
+    expect(active.entries[0].sets[0].done).toBe(true)
+    expect(active.warmup.status).toBe('skipped')
+    expect(active.warmup.steps.map(step => step.status)).toEqual(['done', 'skipped'])
+  })
+
+  it('does not consume the working-set swipe hint while preparation is displayed', () => {
+    act(() => { useStore.getState().update(s => { s.hints = {} }) })
+    act(() => { vi.advanceTimersByTime(10000) })
+    expect(useStore.getState().S.hints.swipeSets).toBeUndefined()
+    expect(useUI.getState().swipeHint).toBeNull()
+  })
+
+  it('keeps workout keyboard shortcuts from logging a hidden working set', () => {
+    act(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })) })
+    const active = useStore.getState().S.active
+    expect(active.entries[0].sets.every(set => !set.done)).toBe(true)
+    expect(active.warmup.status).toBe('in_progress')
   })
 })

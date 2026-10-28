@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildCompletedWorkout, sessionEnd, FORGOTTEN_GAP_MS } from './finish-workout.js'
-import { cascadeWeight } from './history.js'
+import { cascadeWeight, workoutVolume, setsDone } from './history.js'
 import { buildSessionEntries } from './session-start.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 
@@ -338,5 +338,22 @@ describe('sessionEnd: a workout finished long after its last set', () => {
       sides: { L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: false } },
     }] }] }
     expect(sessionEnd(active, T0 + FORGOTTEN_GAP_MS + 1)).toBe(T0)
+  })
+})
+
+
+describe('guided preparation at the finished-workout boundary', () => {
+  it('retains the separate summary without changing lifting volume, sets or records', () => {
+    const base = { id: 'session', start: 1000, entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: true }], target: { sets: 1, reps: 8 } }] }
+    const warmup = { status: 'complete', current: 1, startedAt: 1000, endedAt: 31000,
+      steps: [{ id: '3905', mode: 'time', sec: 30, status: 'done' }] }
+    const plain = buildCompletedWorkout(base, { end: 60000, prs: ['0025'] })
+    const prepared = buildCompletedWorkout({ ...base, warmup }, { end: 60000, prs: ['0025'] })
+    expect(prepared.entries).toEqual(plain.entries)
+    expect(prepared.prs).toEqual(plain.prs)
+    expect(workoutVolume(prepared)).toBe(workoutVolume(plain))
+    expect(setsDone(prepared)).toBe(setsDone(plain))
+    expect(prepared.warmup).toMatchObject({ status: 'complete', steps: [{ id: '3905', mode: 'time', sec: 30 }] })
+    expect(prepared.warmup).not.toHaveProperty('timer')
   })
 })

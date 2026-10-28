@@ -23,6 +23,7 @@ import { convertWeight } from './units.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { clampIncline, hasIncline } from './incline.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
+import { normalizeWarmup } from '../../../api/training/guided-warmup.js'
 import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
 import { normalizeAliases } from './exercise-aliases.js'
@@ -69,6 +70,13 @@ function convertedBundle(bundle, destinationUnit) {
       ex: (r.ex || []).map(e => convertedExercise(e, sourceUnit, destinationUnit))
     }))
   }
+}
+
+// Warm-up preparation is separate from working exercises and is never converted as a load.
+// Use the same gate at each boundary, including callers that merge a bundle directly.
+function warmupFields(r) {
+  const warmup = normalizeWarmup(r.warmup)
+  return warmup ? { warmup } : {}
 }
 
 // Keep only the meaningful config fields, so the file stays small and readable.
@@ -229,6 +237,7 @@ export function buildPlanBundle(S, name) {
     id: r.id, name: r.name, emoji: r.emoji,
     ...(r.prog ? { prog: r.prog } : {}),
     ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
+    ...warmupFields(r),
     ex: (r.ex || []).map(cleanEx)
   }))
   const usedIds = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
@@ -264,8 +273,9 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   const customEx = (Array.isArray(data.customEx) ? data.customEx : []).filter(c => c && c.id)
   const known = new Set(customEx.map(c => c.id))
   let dropped = 0
-  const routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(r => ({
+  const routines = data.routines.filter(r => r && Array.isArray(r.ex)).map(({ warmup, ...r }) => ({
     ...r,
+    ...warmupFields({ warmup }),
     ex: r.ex.filter(e => {
       const ok = !!e && (known.has(e.id) || !!EXIDX[e.id])
       if (!ok) dropped++
@@ -346,6 +356,7 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       emoji: r.emoji,
       ...(r.prog ? { prog: r.prog } : {}),
       ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
+      ...warmupFields(r),
       ex: (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || canonicalExId(e.id) }))
     })
   })
@@ -443,6 +454,19 @@ function exerciseHTML(e, n, unit, { speedUnit, ticks }) {
 // The routine itself may run over a page: holding all of it together left whole pages blank.
 function routineHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '', m, key }) {
   let n = 0
+  const warmup = normalizeWarmup(r.warmup)
+  const preparation = warmup?.enabled ? warmup.steps : []
+  const heading = id => lead + (bare ? '' : `${m.h(id)}<div class="r-head"><h2>${esc(r.name)}</h2><span class="r-count">${esc(exCount(r.ex.length))}</span></div>`)
+  const warmupBlocks = preparation.map((step, i) => {
+    const id = `${key}-w${i}`
+    const { name, en, cls } = printedName(EXIDX[step.id])
+    const target = step.mode === 'time' ? `${step.sec}s` : `${step.reps} ${t('reps')}`
+    const side = step.perSide ? ` · ${t('per side')}` : ''
+    return `<div class="keep">${m.s(id)}${i === 0 ? heading(id) + `<h3 class="warmup-title">${esc(t('Warm-up'))}</h3>` : ''}`
+      + `<div class="ex"><div class="ex-main"><div class="ex-n ${cls}">${esc(name)}</div>`
+      + (en ? `<div class="ex-en">${esc(en)}</div>` : '')
+      + `</div><div class="ex-s">${esc(target + side)}</div></div>${m.e(id)}</div>`
+  })
   const list = units(r.ex)
   const blocks = list.map((u, bi) => {
     const items = u.map(e => exerciseHTML(e, ++n, unit, { speedUnit, ticks })).join('')
@@ -450,13 +474,12 @@ function routineHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '
       ? `<div class="ss"><div class="ss-tag">${esc(t('Superset'))}</div>${items}</div>`
       : items
     const id = `${key}-${bi}`
-    const head = bi === 0
-      ? lead + (bare ? '' : `${m.h(id)}<div class="r-head"><h2>${esc(r.name)}</h2><span class="r-count">${esc(exCount(r.ex.length))}</span></div>`)
-      : ''
+    const head = bi === 0 && !warmupBlocks.length ? heading(id) : ''
     return `<div class="keep">${m.s(id)}${head}${body}${m.e(id)}</div>`
   })
-  if (!blocks.length) blocks.push(`<div class="keep">${lead}${bare ? '' : `<div class="r-head"><h2>${esc(r.name)}</h2></div>`}<div class="none">${esc(t('No exercises yet.'))}</div></div>`)
-  return `<section class="routine">${blocks.join('')}</section>`
+  if (!blocks.length) blocks.push(`<div class="keep">${warmupBlocks.length ? '' : lead + (bare ? '' : `<div class="r-head"><h2>${esc(r.name)}</h2></div>`)}<div class="none">${esc(t('No exercises yet.'))}</div></div>`)
+  const prep = warmupBlocks.length ? `<div class="warmup">${warmupBlocks.join('')}</div>` : ''
+  return `<section class="routine">${prep}${blocks.join('')}</section>`
 }
 
 function weekHTML(S, m) {
@@ -476,6 +499,9 @@ const PLAN_CSS = `
   .r-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10pt; margin: 14pt 0 2pt; padding-bottom: 4pt; border-bottom: 1.5px solid var(--ink); }
   .r-head h2 { font-size: 13pt; letter-spacing: -.01em; margin: 0; overflow-wrap: anywhere; }
   .r-count { font-size: 8pt; color: var(--muted); white-space: nowrap; }
+
+  .warmup { margin-bottom: 8pt; }
+  .warmup-title { margin: 8pt 0 0; font-size: 9pt; color: var(--muted); }
 
   .ex { display: flex; align-items: flex-start; gap: 8pt; padding: 6pt 0; border-bottom: 1px solid var(--rule-soft); }
   .ex-num { flex: none; width: 14pt; height: 14pt; margin-top: 1pt; border-radius: 50%; background: var(--tint); color: var(--muted);

@@ -76,3 +76,18 @@ describe('exercise picker type filter', () => {
     expect(isOn(chipByText(host, 'yoga'))).toBe(true)
   })
 })
+
+
+describe('curated exercise picker', () => {
+  it('keeps results and navigation inside the supplied movement collection', () => {
+    const picked = vi.fn()
+    exercisePicker(picked, { title: 'Warm-up', ids: ['3905', '3502'] })
+    const host = renderTop()
+    expect(listed(host).sort()).toEqual(['Add “Arm Circles”', 'Add “Back Forward Leg Swings”'].sort())
+    expect(host.textContent).not.toContain('Create your own exercise')
+    expect([...host.querySelectorAll('button')].some(b => b.textContent === 'By muscle')).toBe(false)
+    expect(chipByText(host, 'chest')).toBeUndefined()
+    act(() => host.querySelector('.list .item button[aria-label]').click())
+    expect(['3905', '3502']).toContain(picked.mock.calls[0][0].id)
+  })
+})

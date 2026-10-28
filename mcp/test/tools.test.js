@@ -229,6 +229,41 @@ describe('get_routine', () => {
   })
 })
 
+describe('guided warm-up routine projections', () => {
+  const warmup = { enabled: true, steps: [
+    { id: '3905', mode: 'time', sec: 30 },
+    { id: '3502', mode: 'reps', reps: 10, perSide: true },
+  ] }
+
+  test('reports preparation separately while retaining working-exercise counts', () => {
+    const routine = S.routines[0]
+    routine.warmup = warmup
+    const summary = call('list_routines').routines.find(r => r.id === routine.id)
+    const detail = call('get_routine', { routine_id: routine.id })
+    expect(summary.warmup).toEqual({ enabled: true, step_count: 2 })
+    expect(summary.exercise_count).toBe(routine.ex.length)
+    expect(detail.exercises).toHaveLength(routine.ex.length)
+    expect(detail.warmup).toMatchObject({ enabled: true, step_count: 2, steps: [
+      { position: 1, id: '3905', mode: 'time', sec: 30 },
+      { position: 2, id: '3502', mode: 'reps', reps: 10, per_side: true },
+    ] })
+    expect(detail.warmup.steps.every(step => typeof step.name === 'string' && step.name.length > 0)).toBe(true)
+    expect(detail.warmup.steps[0]).not.toHaveProperty('reps')
+    expect(detail.warmup.steps[1]).not.toHaveProperty('sec')
+  })
+
+  test('keeps disabled preparation visible and omits absent or malformed configuration', () => {
+    const routine = S.routines[0]
+    routine.warmup = { ...warmup, enabled: false }
+    expect(call('get_routine', { routine_id: routine.id }).warmup).toMatchObject({ enabled: false, step_count: 2 })
+    for (const invalid of [undefined, null, { enabled: 'yes', steps: [] }]) {
+      routine.warmup = invalid
+      expect(call('get_routine', { routine_id: routine.id })).not.toHaveProperty('warmup')
+      expect(call('list_routines').routines.find(r => r.id === routine.id)).not.toHaveProperty('warmup')
+    }
+  })
+})
+
 /* ---------- get_week_plan ---------- */
 
 describe('get_week_plan', () => {
