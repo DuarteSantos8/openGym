@@ -38,6 +38,9 @@ const ok = body => ({ status: 200, body });
 const env = { ANTHROPIC_API_KEY: 'sk-ant-1', OPENAI_API_KEY: 'sk-oa-1', GEMINI_API_KEY: 'AIza-1', OPENAI_COMPAT_API_KEY: 'compat-1' };
 const cfgCompat = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://ollama.lan:11434/' } } };
 const ANSWER = '{"coach_contract":1,"nochange":true,"reading":"fine"}';
+const MAX_TOKENS_REFUSED = "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.";
+const TEMPERATURE_REFUSED = "Unsupported value: 'temperature' does not support 0 with this model. Only the default (1) value is supported.";
+const badRequest = message => ({ status: 400, body: { error: { message } } });
 
 test('the four HTTP adapters spawn nothing and need no runtime', () => {
   for (const a of [anthropic, openai, gemini, compatible]) {
@@ -107,6 +110,85 @@ test('compatible: the configured base URL, max_tokens, and no Authorization head
   const g = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
   await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env, model: 'llama3', fetch: g });
   assert.equal(g.calls[0].headers.authorization, 'Bearer compat-1');
+});
+
+test('compatible: a refused max_tokens field is renamed without changing the request (#869)', async () => {
+  for (const model of ['gpt-5.4-mini', 'o3', 'openai/gpt-5.4-mini', 'my-azure-deployment']) {
+    const f = fakeFetch([badRequest(MAX_TOKENS_REFUSED), ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+    const cfg = { providerOptions: { compatible: { baseUrl: 'https://example.openai.azure.com/openai/v1', headers: { 'x-routing': 'coach' } } } };
+    const r = await compatible.invoke({ cfg, prompt: 'P', system: 'Extra rules', schema: REVIEW_SCHEMA, env, model, maxTokens: 48000, fetch: f });
+    assert.equal(r.code, 0, r.stderr);
+    assert.equal(r.text, ANSWER);
+    assert.equal(f.calls.length, 2, model);
+    assert.equal(f.calls[0].url, 'https://example.openai.azure.com/openai/v1/chat/completions');
+    const { max_tokens, ...rest } = f.calls[0].body;
+    assert.equal(max_tokens, 48000);
+    assert.deepEqual(f.calls[1], { ...f.calls[0], body: { ...rest, max_completion_tokens: 48000 } });
+  }
+});
+
+test('compatible: token and temperature refusals are negotiated in either order (#869)', async () => {
+  for (const errors of [[MAX_TOKENS_REFUSED, TEMPERATURE_REFUSED], [TEMPERATURE_REFUSED, MAX_TOKENS_REFUSED]]) {
+    const f = fakeFetch([...errors.map(badRequest), ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+    const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'gpt-5.4-mini', maxTokens: 48000, fetch: f });
+    assert.equal(r.code, 0, r.stderr);
+    assert.equal(f.calls.length, 3);
+    assert.equal(f.calls[0].body.temperature, 0);
+    assert.equal(f.calls[0].body.max_tokens, 48000);
+    const final = f.calls[2].body;
+    assert.equal(final.max_completion_tokens, 48000);
+    assert.ok(!('max_tokens' in final));
+    assert.ok(!('temperature' in final));
+    assert.deepEqual(final.messages, f.calls[0].body.messages);
+    assert.deepEqual(final.response_format, f.calls[0].body.response_format);
+  }
+});
+
+test('compatible: unrelated parameter errors and non-400 responses are not retried (#869)', async () => {
+  for (const [status, message] of [
+    [400, 'temperature out of range'],
+    [400, 'max_tokens must be positive; max_completion_tokens must be positive too'],
+    [400, "Unsupported parameter: 'seed'"],
+    [401, MAX_TOKENS_REFUSED],
+    [403, TEMPERATURE_REFUSED],
+    [422, MAX_TOKENS_REFUSED]
+  ]) {
+    const f = fakeFetch([{ status, body: { error: { message } } }]);
+    const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'm', fetch: f });
+    assert.equal(r.code, 1, message);
+    assert.equal(f.calls.length, 1, message);
+    assert.equal(r.stderr, `${status} ${message}`);
+  }
+});
+
+test('compatible: a repeated parameter refusal stops after one change and remains an error (#869)', async () => {
+  for (const message of [MAX_TOKENS_REFUSED, TEMPERATURE_REFUSED]) {
+    const f = fakeFetch([badRequest(message)]);
+    const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'm', fetch: f });
+    assert.equal(r.code, 1);
+    assert.equal(f.calls.length, 2);
+    assert.equal(r.stderr, `400 ${message}`);
+  }
+  const message = "Unsupported parameter: 'max_completion_tokens'";
+  const f = fakeFetch([badRequest(MAX_TOKENS_REFUSED), badRequest(message)]);
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 1);
+  assert.equal(f.calls.length, 2);
+  assert.equal(r.stderr, `400 ${message}`);
+});
+
+test('compatible: a token-field retry preserves subsequent JSON-mode negotiation (#869)', async () => {
+  const f = fakeFetch([
+    badRequest(MAX_TOKENS_REFUSED),
+    badRequest('response_format is not supported'),
+    ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })
+  ]);
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 3);
+  assert.ok(!('response_format' in f.calls[2].body));
+  assert.ok(!('max_tokens' in f.calls[2].body));
+  assert.equal(f.calls[2].body.max_completion_tokens, f.calls[0].body.max_tokens);
 });
 
 test('compatible: a base that already names its API version is used as the full prefix (#437)', async () => {
@@ -222,6 +304,15 @@ const openRouterWrapped = providerMessage => ({
     raw: JSON.stringify({ error: { code: 400, message: providerMessage, status: 'INVALID_ARGUMENT' } }),
     provider_name: 'Google AI Studio'
   } } }
+});
+
+test('compatible: a token-field refusal wrapped by OpenRouter is negotiated too (#869)', async () => {
+  const f = fakeFetch([openRouterWrapped(MAX_TOKENS_REFUSED), ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'openai/gpt-5.4-mini', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[1].body.max_completion_tokens, f.calls[0].body.max_tokens);
+  assert.ok(!('max_tokens' in f.calls[1].body));
 });
 
 test('compatible: a schema the provider cannot serve, wrapped by OpenRouter, is retried once in plain JSON mode', async () => {

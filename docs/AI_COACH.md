@@ -99,6 +99,9 @@ answers on instead, and a key only if it wants one.
   (`https://openrouter.ai/api/v1`, Zhipu's `…/paas/v4`, Gemini's `…/v1beta/openai`) is used
   as it is. A base whose API has no version at all (Open WebUI's `…/openai` mount) works too:
   when `{base}/v1/…` answers 404, the app tries `{base}/…` and remembers which one answered.
+  This provider speaks Chat Completions, not the Responses API. For Azure OpenAI, use
+  `https://<resource>.openai.azure.com/openai/v1` and your deployment name as the model,
+  not a `/responses?api-version=...` URL. Put the key in the credential field.
 - A gateway that demands extra headers gets them under **Extra headers**: one `Name: value`
   per line (e.g. opencode Go's `x-opencode-session`), sent with the list, test and job
   calls. `Authorization` and `Content-Type` are refused there — auth framing always wins.
@@ -109,6 +112,11 @@ answers on instead, and a key only if it wants one.
   starting point, not a pin — names go stale, the list does not); the compatible endpoint has
   none, because it serves whatever you put behind it.
 - **Test the Coach** — a real round trip with no user data anywhere near it.
+
+A compatible model that explicitly rejects `max_tokens` in favor of `max_completion_tokens`
+gets the same request retried with the newer field and the same token limit. If it refuses
+`temperature: 0`, the retry omits that field so the model uses its default. Endpoints that
+accept the original request keep getting it unchanged.
 
 The card says two things worth reading: which account is being spent, and — for these
 providers — that jobs run no child process at all, so the privilege-drop line reads as not
