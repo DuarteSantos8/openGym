@@ -437,6 +437,35 @@ function cleanToday(a) {
   return out;
 }
 
+/** A name for an exercise, the catalogue's or the person's own: a custom exercise's name is
+    theirs, cut the way every other string of theirs is. */
+const exerciseNameFor = (S, id) => libraryName(id) || word((S.customEx || []).find(c => c && c.id === id)?.n, NAME_MAX);
+
+/** The live session, including stable entry keys used to target only unfinished work. */
+function cleanActive(raw, nameOf = libraryName) {
+  if (!raw || typeof raw !== 'object') return null;
+  const entries = entriesOf(raw).slice(0, 30).map((en, i) => ({
+    key: ident(en.key) || `entry-${i}`,
+    id: ident(en.id),
+    name: nameOf(en.id),
+    sg: ident(en.sg),
+    target: targetOf(en),
+    sets: setsOf(en).slice(0, 30).map(cleanSet)
+  })).filter(en => en.id);
+  return {
+    id: ident(raw.id),
+    name: word(raw.name, NAME_MAX),
+    elapsedMin: count(raw.elapsedMin, 0, 24 * 60),
+    anchorKey: ident(raw.anchorKey),
+    entries,
+    conversation: list(raw.coachChat).filter(m => m && (m.role === 'user' || m.role === 'coach') && typeof m.text === 'string')
+      .slice(-CONVERSATION_LINES).map(m => ({
+        who: m.role, text: m.text.trim().slice(0, CONVERSATION_CHARS),
+        ...(ident(m.about) && nameOf(m.about) ? { about: nameOf(m.about) } : {})
+      })).filter(m => m.text)
+  };
+}
+
 /** The body-weight series between two days, each weigh-in a date and a number. */
 function weighIns(S, from, to) {
   return list(S.bodyweight)
@@ -501,7 +530,7 @@ export function build(S, opts = {}) {
   const profile = opts.intake || coach.profile || null;
   const p = {
     coach_contract: CONTRACT,
-    task: opts.kind === 'review' ? 'review' : opts.kind === 'debrief' ? 'debrief' : opts.kind === 'ask' ? 'ask' : 'create',
+    task: opts.kind === 'review' ? 'review' : opts.kind === 'debrief' ? 'debrief' : opts.kind === 'ask' ? 'ask' : opts.kind === 'workout' ? 'workout' : 'create',
     meta: {
       profile: opts.handle,
       // Both are short codes in any real state; cut anyway, since the state is the client's.
@@ -531,13 +560,27 @@ export function build(S, opts = {}) {
   // What the user already turned down, so the Coach does not re-propose it without new
   // evidence (FR-26). Summaries only — the log's full before/after stays on the device.
   const declined = (coach.log || [])
+    // What was turned down mid-workout was about that day, not the plan.
+    .filter(e => e?.kind !== 'workout')
     // `why` was the Coach's own sentence, but it comes back from the synced state, which the
     // client writes; it is cut at the length the intake allows a note.
     .flatMap(e => (e.decisions || []).filter(d => d.status === 'rejected').map(d => ({ type: word(d.type, PROFILE_WORD_MAX), why: text(d.why, PROFILE_TEXT_MAX.notes) })))
     .slice(-15);
   if (declined.length) p.previouslyDeclined = declined;
 
-  if (opts.kind === 'debrief') {
+  if (opts.kind === 'workout') {
+    p.active = cleanActive(opts.session, id => exerciseNameFor(S, id));
+    if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
+    const recent = list(S.workouts).filter(w => w && w.d).slice(-3);
+    p.previous = recent.map(cleanWorkout);
+    const anchor = (p.active?.entries || []).find(e => e.key === p.active?.anchorKey);
+    p.library = librarySlice(S, p.coachProfile?.equipment, {
+      keep: [...new Set([...(p.active?.entries || []).map(e => e.id), ...trainedIds(S, recent)])],
+      focus: anchor ? [anchor.id] : [],
+      max: 80,
+      detail: true
+    });
+  } else if (opts.kind === 'debrief') {
     // One session, read closely: the workout itself, the last few times the same routine was
     // trained, and the stall picture for the exercises in it. No library — a debrief changes
     // nothing and names nothing new.

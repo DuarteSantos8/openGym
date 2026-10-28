@@ -25,6 +25,7 @@ const offEquipment = (ctx, id) => libraryHas(id) && !(ctx.offered && ctx.offered
   && ((!!ctx.equipment?.length && !equipmentAllows(ctx.equipment, id)) || (ctx.noDumbbells === true && isDumbbellLift(id)));
 const OFF_EQUIPMENT = (where, id) => `${where} "${id}" needs equipment the user does not have — use an exercise from the library provided in the payload`;
 import { glyphStr } from './glyphs.js';
+import { isWarmupSet } from './payload.js';
 
 // The closed list (FR-23 / C3). Adding a member here is a deliberate act with an apply
 // implementation on the client to match; there is no default case anywhere.
@@ -655,6 +656,100 @@ export function validateAsk(data) {
   if (!isStr(data.answer) || !data.answer.trim()) errors.push('answer is required — reply to the question in plain text');
   if (errors.length) return fail(errors);
   return { ok: true, proposal: { answer: clampStr(data.answer.trim(), MAX_ANSWER_CHARS) } };
+}
+
+/* =============================== active workout =============================== */
+
+export const WORKOUT_ACTION_TYPES = ['swap-exercise', 'move-exercise', 'add-exercise', 'adjust-exercise', 'skip-exercise', 'note'];
+const WORKOUT_REASONS = ['discomfort', 'equipment', 'time', 'energy', 'preference', 'other'];
+
+/** Validate changes to the unfinished part of the workout currently on screen. */
+export function validateWorkout(data, active, ctx = {}) {
+  if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
+  const errors = [];
+  if (!isStr(data.reply)) errors.push('reply is required');
+  const list = Array.isArray(data.actions) ? data.actions : null;
+  if (!list) return fail(['actions must be an array']);
+  if (list.length > 6) errors.push('actions cannot contain more than 6 items');
+
+  const entries = new Map((active?.entries || []).filter(e => safeId(e?.key)).map(e => [e.key, e]));
+  const known = new Set(ctx.libraryIds || []);
+  const ids = new Set();
+  const targets = new Set();
+  const actions = [];
+  const remaining = entry => (entry?.sets || []).filter(s => !s.done && !isWarmupSet(s));
+  const maxima = sets => ({
+    reps: Math.max(0, ...sets.map(s => Number(s.r ?? 0) || 0)),
+    weight: Math.max(0, ...sets.map(s => Number(s.w ?? 0) || 0)),
+    sec: Math.max(0, ...sets.map(s => Number(s.sec ?? 0) || 0))
+  });
+
+  list.slice(0, 6).forEach((raw, i) => {
+    const where = `actions[${i}]`;
+    if (!raw || typeof raw !== 'object') { errors.push(`${where} is not an object`); return; }
+    if (!WORKOUT_ACTION_TYPES.includes(raw.type)) { errors.push(`${where}.type is not allowed`); return; }
+    if (!isStr(raw.why)) { errors.push(`${where}.why is required`); return; }
+    const id = safeId(raw.id) ? clampStr(raw.id, 40) : `a${i + 1}`;
+    if (ids.has(id)) { errors.push(`${where}.id is duplicated`); return; }
+    ids.add(id);
+
+    const needsTarget = !['add-exercise', 'note'].includes(raw.type);
+    const key = raw.target?.entryKey;
+    const entry = needsTarget ? entries.get(key) : null;
+    if (needsTarget && !entry) { errors.push(`${where}.target.entryKey is not in the active workout`); return; }
+    if (entry && raw.target?.exerciseId !== entry.id) { errors.push(`${where}.target.exerciseId does not match the active entry`); return; }
+    if (entry && !remaining(entry).length) { errors.push(`${where} targets an exercise with no unfinished work`); return; }
+    if (entry && targets.has(key)) { errors.push(`${where} is a second action for the same exercise`); return; }
+    if (entry) targets.add(key);
+
+    const after = raw.after && typeof raw.after === 'object' && !Array.isArray(raw.after) ? raw.after : {};
+    const clean = { id, type: raw.type, why: clampStr(raw.why, 400) };
+    if (entry) clean.target = { entryKey: key, exerciseId: entry.id };
+
+    if (raw.type === 'swap-exercise') {
+      if (!known.has(after.id) || after.id === entry.id) { errors.push(`${where}.after.id must be a different exercise from the supplied library`); return; }
+      clean.after = { id: after.id, sets: isInt(after.sets, 1, remaining(entry).length) ? after.sets : remaining(entry).length };
+      if (isInt(after.reps, 1, 100)) clean.after.reps = after.reps;
+      if (isInt(after.sec, 5, 3600)) clean.after.sec = after.sec;
+    } else if (raw.type === 'move-exercise') {
+      const dest = after.afterEntryKey;
+      if (dest !== null && (!entries.has(dest) || dest === key)) { errors.push(`${where}.after.afterEntryKey is not another active entry or null`); return; }
+      clean.after = { afterEntryKey: dest ?? null };
+    } else if (raw.type === 'add-exercise') {
+      if (!known.has(after.id)) { errors.push(`${where}.after.id must be from the supplied library`); return; }
+      if (after.afterEntryKey != null && !entries.has(after.afterEntryKey)) { errors.push(`${where}.after.afterEntryKey is not in the active workout`); return; }
+      clean.after = { id: after.id, sets: isInt(after.sets, 1, 6) ? after.sets : 3, afterEntryKey: after.afterEntryKey ?? null };
+      if (isInt(after.reps, 1, 100)) clean.after.reps = after.reps;
+      if (isInt(after.sec, 5, 3600)) clean.after.sec = after.sec;
+      if (isInt(after.min, 1, 180)) clean.after.min = after.min;
+    } else if (raw.type === 'adjust-exercise') {
+      const left = remaining(entry);
+      const max = maxima(left);
+      const out = {};
+      // Only fields the remaining sets have, and never above them; the client lowers set by set.
+      if (isInt(after.remainingSets, 1, left.length)) out.remainingSets = after.remainingSets;
+      if (max.reps > 0 && isInt(after.reps, 1, max.reps)) out.reps = after.reps;
+      if (max.weight > 0 && isNum(after.weight) && after.weight >= 0 && after.weight <= max.weight) out.weight = after.weight;
+      if (max.sec > 0 && isInt(after.sec, 5, max.sec)) out.sec = after.sec;
+      if (isInt(after.restSec, 15, 600)) out.restSec = after.restSec;
+      if (after.excludeFromProgression === true) out.excludeFromProgression = true;
+      if (!Object.keys(out).length) { errors.push(`${where}.after has no safe adjustment`); return; }
+      clean.after = out;
+    } else if (raw.type === 'skip-exercise') {
+      clean.after = { excludeFromProgression: true };
+    } else if (raw.type === 'note') {
+      if (!isStr(after.text)) { errors.push(`${where}.after.text is required`); return; }
+      clean.after = { text: clampStr(after.text.trim(), 200) };
+    }
+    actions.push(clean);
+  });
+
+  if (errors.length) return fail(errors);
+  return { ok: true, proposal: {
+    reply: clampStr(data.reply.trim(), 1200),
+    reason: WORKOUT_REASONS.includes(data.reason) ? data.reason : 'other',
+    actions
+  } };
 }
 
 /* =============================== workout debriefs =============================== */

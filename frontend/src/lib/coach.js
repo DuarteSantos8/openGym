@@ -73,6 +73,7 @@ export const coachAvailable = (config, user, { demo, mobile, coachMode } = {}) =
 export const CATEGORY_TEXT = {
   plan: () => [t('Your plan'), t('Routines, exercises, sets and reps, your weekly schedule and progression settings.')],
   training: () => [t('Your logged training'), t('Sets you logged in the review window: weights, reps, times, effort ratings, how long sessions took, and your session notes.')],
+  active: () => [t('Your workout in progress'), t('Exercises, targets and completed sets in the session you are adapting.')],
   bodyweight: () => [t('Body weight'), t('Weigh-ins from the same window, and your goal weight if you set one.')],
   profile: () => [t('What you tell the Coach'), t('Your intake answers, including any limitations or injuries you describe.')],
   prefs: () => [t('A few preferences'), t('Your unit, your language and which effort scale you log.')]

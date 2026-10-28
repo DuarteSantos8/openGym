@@ -272,7 +272,7 @@ describe('the Coach on a phone with its own key', () => {
     const d = await local.localDisclosure()
     expect(d.payer).toBe('you')
     expect(d.host).toBe('api.openai.com')
-    expect(d.categories).toEqual(['plan', 'training', 'bodyweight', 'profile', 'prefs'])
+    expect(d.categories).toEqual(['plan', 'training', 'active', 'bodyweight', 'profile', 'prefs'])
   })
 })
 

@@ -154,6 +154,27 @@ function buildDebrief(S, workoutId) {
   }
 }
 
+function buildWorkout(S, message, session) {
+  const target = (session?.entries || []).find(e => e.key === session.anchorKey)
+    || (session?.entries || []).find(e => (e.sets || []).some(set => !set.done && !set.warmup))
+  if (!target) return {
+    id: 'demo-workout-' + Date.now(), kind: 'workout', activeId: session?.id || null, anchorKey: session?.anchorKey || null,
+    createdAt: Date.now(), expiresAt: Date.now() + 864e5, reply: t('That exercise is already complete, so I left the workout alone.'), reason: 'other', actions: []
+  }
+  const inWorkout = new Set((session.entries || []).map(e => e.id))
+  const bp = EXIDX[target.id]?.bp
+  const replacement = EXDB.find(e => e.bp === bp && e.id !== target.id && !inWorkout.has(e.id))
+  const left = (target.sets || []).filter(set => !set.done && !set.warmup).length
+  return {
+    id: 'demo-workout-' + Date.now(), kind: 'workout', activeId: session.id || null, anchorKey: session.anchorKey || null,
+    createdAt: Date.now(), expiresAt: Date.now() + 864e5,
+    reply: replacement ? t('Keep the session going and use this pain-free alternative for the unfinished work.') : t('Skip the unfinished sets for this movement and continue with the rest of the workout.'),
+    reason: String(message || '').toLowerCase().includes('busy') ? 'equipment' : 'discomfort',
+    actions: replacement ? [{ id: 'dw1', type: 'swap-exercise', target: { entryKey: target.key, exerciseId: target.id }, after: { id: replacement.id, sets: Math.max(1, left) }, why: t('It trains the same area without changing work you already logged.') }]
+      : [{ id: 'dw1', type: 'skip-exercise', target: { entryKey: target.key, exerciseId: target.id }, after: { excludeFromProgression: true }, why: t('Leave the uncomfortable movement for today and continue the session.') }]
+  }
+}
+
 /** What "the room" would say on a busy instance — five people, plausible medians, your real bests. */
 export function demoCohort(S) {
   const since = Date.now() - 56 * 864e5
@@ -213,8 +234,9 @@ export const demoAsk = (S, text) => start('ask', () => ({
   planHash: planHash(S), iteration: 1, prev: waitingProposal(pending),
   answer: t('This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.', String(text || '').slice(0, 80)),
 }))
+export const demoWorkout = (S, message, session) => start('workout', () => buildWorkout(S, message, session))
 export const demoResolve = () => { pending = pending?.kind === 'ask' ? waitingProposal(pending.prev) : null; return { ok: true } }
 export const demoDisclosure = () => ({
   provider: 'demo', providerLabel: t('the configured AI provider'),
-  categories: ['plan', 'training', 'bodyweight', 'profile', 'prefs'], version: 1
+  categories: ['plan', 'training', 'active', 'bodyweight', 'profile', 'prefs'], version: 1
 })

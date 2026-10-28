@@ -48,6 +48,7 @@ vi.mock('../store/useUI.js', () => {
 vi.mock('react-router-dom', () => ({
   useNavigate: () => mocks.nav,
   useSearchParams: () => [new URLSearchParams(mocks.search), vi.fn()],
+  useLocation: () => ({ state: mocks.locationState }),
 }))
 vi.mock('../lib/coach-api.js', () => ({
   requestPlan: vi.fn(() => Promise.resolve({})),
@@ -70,6 +71,7 @@ beforeEach(() => {
   mocks.user = { uid: 'u1', name: 'Ana' }
   mocks.config = { coach: { enabled: true } }
   mocks.search = ''
+  mocks.locationState = null
   mocks.nav.mockReset(); mocks.toast.mockReset()
   vi.mocked(requestPlan).mockReset().mockResolvedValue({})
   vi.mocked(disclosure).mockReset().mockResolvedValue(null)
@@ -214,6 +216,17 @@ describe('CoachIntake — the consent screen', () => {
     expect(vi.mocked(requestPlan)).not.toHaveBeenCalled()
   })
 
+  for (const [button, version] of [['I understand', CONSENT_VERSION], ['Not now', CONSENT_VERSION - 1]]) {
+    it(`sent from a workout to renew consent, "${button}" goes straight back to the workout`, () => {
+      mocks.S.coach = { consent: { agreedAt: '2026-09-01T00:00:00Z', version: CONSENT_VERSION - 1 }, profile: { goal: 'strength', experience: 'intermediate', daysPerWeek: 3 }, chat: [] }
+      mocks.locationState = { fromWorkout: true }
+      mount()
+      tap('button', button)
+      expect(mocks.nav).toHaveBeenCalledWith(-1)
+      expect(mocks.S.coach.consent.version).toBe(version)
+    })
+  }
+
   it('the training line names the session notes, which the Coach reads', () => {
     // api/coach/core/payload.js sends each recent session's note (cleanWorkout). The consent
     // screen listed weights, reps, times, effort and durations, and never said so.
@@ -225,7 +238,7 @@ describe('CoachIntake — the consent screen', () => {
   it('lists the built-in categories first, then whatever the server says actually goes', async () => {
     vi.mocked(disclosure).mockResolvedValue({ categories: ['plan', 'prefs'], providerLabel: 'Anthropic', payer: 'you', host: 'api.anthropic.com' })
     mount()
-    expect(all('.ob-consent-row')).toHaveLength(5)                       // CATEGORY_TEXT, before the call lands
+    expect(all('.ob-consent-row')).toHaveLength(6)                       // CATEGORY_TEXT, before the call lands
     await settle()
     expect(all('.ob-consent-row')).toHaveLength(2)
     expect(host.textContent).toContain('Sent straight to api.anthropic.com with your own API key')
@@ -248,7 +261,7 @@ describe('CoachIntake — the consent screen', () => {
     mocks.config = { coach: { enabled: true, providerLabel: 'Claude Agent SDK' } }
     mount(); await settle()
     expect(host.textContent).toContain('Sent to Claude Agent SDK, running on this server')
-    expect(all('.ob-consent-row')).toHaveLength(5)      // and the built-in list stands in
+    expect(all('.ob-consent-row')).toHaveLength(6)      // and the built-in list stands in
 
     act(() => root.unmount())
     mocks.config = { coach: { enabled: true } }

@@ -1,4 +1,4 @@
-/* JSON schemas for the three answer shapes, handed to providers that can enforce a schema
+/* JSON schemas for the Coach answer shapes, handed to providers that can enforce a schema
  * while decoding (Ollama/llama.cpp grammar sampling, LM Studio, vLLM, OpenAI json_schema).
  *
  * Deliberately flat: no $ref, no anyOf/oneOf, no additionalProperties tricks — llama.cpp's
@@ -118,4 +118,26 @@ export const ASK_SCHEMA = {
   required: ['coach_contract', 'answer']
 };
 
-export const SCHEMAS = { review: REVIEW_SCHEMA, create: CREATE_SCHEMA, refine: CREATE_SCHEMA, debrief: DEBRIEF_SCHEMA, ask: ASK_SCHEMA };
+export const WORKOUT_SCHEMA = {
+  type: 'object',
+  properties: {
+    coach_contract: { type: 'integer' },
+    reply: STR,
+    reason: STR,
+    actions: {
+      type: 'array', maxItems: 6,
+      items: {
+        type: 'object',
+        properties: {
+          id: STR, type: STR,
+          target: { type: 'object', properties: { entryKey: STR, exerciseId: STR } },
+          after: ANY, why: STR
+        },
+        required: ['type', 'why']
+      }
+    }
+  },
+  required: ['coach_contract', 'reply', 'actions']
+};
+
+export const SCHEMAS = { review: REVIEW_SCHEMA, create: CREATE_SCHEMA, refine: CREATE_SCHEMA, debrief: DEBRIEF_SCHEMA, ask: ASK_SCHEMA, workout: WORKOUT_SCHEMA };

@@ -245,7 +245,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>75 endpoints</span>
+    <span>76 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -2384,6 +2384,64 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">400</span>
     <span class="p-desc">No question in the body (<code>code</code> is <code>invalid</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409): a job for this profile is already running. - <code>shared</code> (409): instance mode, and the credential belongs to another profile. - <code>cap</code> (429): this profile's or the instance's daily limit is spent. - <code>consent</code> (403): no consent recorded for this profile. - <code>unprivileged</code> (503): the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409): a job for this profile is already running. - <code>shared</code> (409): instance mode, and the credential belongs to another profile. - <code>cap</code> (429): this profile's or the instance's daily limit is spent. - <code>consent</code> (403): no consent recorded for this profile. - <code>unprivileged</code> (503): the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409): a job for this profile is already running. - <code>shared</code> (409): instance mode, and the credential belongs to another profile. - <code>cap</code> (429): this profile's or the instance's daily limit is spent. - <code>consent</code> (403): no consent recorded for this profile. - <code>unprivileged</code> (503): the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance (switched off, or no provider connected). Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachWorkout">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/workout</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Ask the Coach to adapt the workout in progress</span>
+  </summary>
+  <div class="ep-body">
+<p>Queues a <code>workout</code> job with an allowlisted snapshot of the active session. The validated answer may describe changes to unfinished work; the client applies only the actions the person explicitly selects. Completed sets are never changed.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">message<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 4000 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">session<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc">The active workout, with stable keys on its exercise entries.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lang</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">202</span>
+    <span class="p-desc">Queued. The job runs in the background; its outcome arrives through <code>GET /api/coach/status</code>, which the client polls.<span class="r-sig">{ job: object }</span></span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>

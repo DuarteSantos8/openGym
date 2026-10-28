@@ -28,13 +28,15 @@ import ChatInput from '../components/ChatInput.jsx'
 import {
   coachAvailable, hasConsent, emptyCoach, appendChat, recordTiming, estimateMs, profileLines,
   markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, logEntry,
-  changeTitle, changeValues, exName, canRevert, revertLast
+  changeTitle, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
 import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
+import { useExpireWorkoutProposal } from '../components/WorkoutCoachSheet.jsx'
+import { ChangeRow } from '../components/ChangeRow.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
@@ -52,6 +54,7 @@ export default function CoachChat() {
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
   const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
+  useExpireWorkoutProposal(pending, refresh)
   const [text, setText] = useState('')
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
@@ -87,6 +90,8 @@ export default function CoachChat() {
     const endedUnseen = !was && !!mine && last?.id === mine
     if (!was && !endedUnseen) return
     settleAwaited(was ? was.id : mine)
+    // A workout's reply belongs to that workout's sheet, not this thread.
+    if ((was || last)?.kind === 'workout') return
     const ms = was?.startedAt ? Date.now() - was.startedAt : 0
     update(s => {
       // A run that ended unseen has no duration worth learning from.
@@ -231,7 +236,8 @@ export default function CoachChat() {
 
       {job && <Typing S={S} kind={job.kind} coachLocal={coachLocal} config={config} />}
 
-      {pending && !job && pending.kind !== 'ask' && (pending.kind === 'create'
+      {/* A workout's suggestion is answered in that workout (WorkoutCoachSheet). */}
+      {pending && !job && pending.kind !== 'ask' && pending.kind !== 'workout' && (pending.kind === 'create'
         ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
         : pending.kind === 'debrief'
           ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
@@ -472,20 +478,6 @@ function ReviewCard({ p, S, update, toast, refresh }) {
   </div>
 }
 
-function ChangeRow({ c, S, stale, badge, children }) {
-  const vals = changeValues(c, S)
-  return <div className={'pcard-chg' + (stale ? ' stale' : '') + (c.status === 'rejected' ? ' declined' : '')}>
-    <div className="grow">
-      <div className="pcard-chg-t">{changeTitle(c, S)}{c.routineName ? <span className="dim" style={{ fontWeight: 400 }}> · {c.routineName}</span> : null}</div>
-      {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 12, color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
-      <div className="pcard-chg-w">{c.why}</div>
-      {stale && <div className="pcard-chg-stale">{t('Doesn’t match your plan any more, so it can’t be applied.')}</div>}
-    </div>
-    {badge}
-    {children}
-  </div>
-}
-
 const Notes = ({ notes }) => !!notes?.length && <div className="pcard-notes">
   {notes.map((n, i) => <div key={i}><Icon name="lightbulb" />{n}</div>)}
 </div>
@@ -621,7 +613,7 @@ function Recap({ entry, S, openSheet }) {
   const acc = decisions.filter(d => d.status === 'accepted').length
   const rej = decisions.length - acc
   const kind = entry.kind
-  const eyebrow = kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')
+  const eyebrow = kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : kind === 'workout' ? t('Workout adaptation') : t('Suggestions')
   const state = kind === 'debrief' ? null
     : entry.dismissed ? { cls: 'no', text: t('Declined') }
       : kind === 'create' ? { cls: 'yes', text: t('Imported') }
@@ -653,7 +645,7 @@ function ProposalDetail({ entry, S }) {
   const weekDays = useMemo(() => new Set(Object.keys(b?.week || {}).map(Number)), [b])
   return <div className="pdetail">
     <div className="pcard-hd" style={{ paddingInline: 0 }}>
-      <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')} · {fmtDate(isoOf(new Date(entry.at)))}</div>
+      <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : kind === 'workout' ? t('Workout adaptation') : t('Suggestions')} · {fmtDate(isoOf(new Date(entry.at)))}</div>
       <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : tn('{0} suggestion', '{0} suggestions', entry.decisions?.length || 0)}</h2>
       {!!entry.summary && <p className="pcard-sum">{entry.summary}</p>}
       {entry.dismissed && <p className="pcard-sum" style={{ color: 'var(--red)' }}>{t('You declined this.')}</p>}
@@ -668,6 +660,8 @@ function ProposalDetail({ entry, S }) {
         badge={<span className={'recap-state ' + (d.status === 'accepted' ? 'yes' : 'no')}>{d.status === 'accepted' ? t('Accepted') : d.status === 'stale' ? t('Expired') : t('Declined')}</span>} />)}
       <Notes notes={entry.notes} />
     </>}
+    {kind === 'workout' && (entry.decisions || []).map(d => <ChangeRow key={d.id} c={d} S={S} title={d.title || d.type} vals={null} stale={d.status === 'stale'} staleNote={t('This part of the workout has changed.')}
+      badge={<span className={'recap-state ' + (d.status === 'accepted' ? 'yes' : 'no')}>{d.status === 'accepted' ? t('Accepted') : d.status === 'stale' ? t('Expired') : t('Declined')}</span>} />)}
 
     {kind === 'create' && b && <>
       <WeekStrip days={weekDays} ws={weekStartOf(S)} />
@@ -688,7 +682,7 @@ function ProposalDetail({ entry, S }) {
 /** Every proposal ever made, newest first. Nothing the Coach said is gone after a decision. */
 function HistorySheet({ S, close, openSheet }) {
   const log = [...(S.coach?.log || [])].reverse()
-  const icon = { create: ['clipboard', 'var(--indigo)'], review: ['sparkles', 'var(--acc)'], debrief: ['checkCircle', 'var(--green)'], revert: ['reset', 'var(--blue)'] }
+  const icon = { create: ['clipboard', 'var(--indigo)'], review: ['sparkles', 'var(--acc)'], workout: ['sparkles', 'var(--green)'], debrief: ['checkCircle', 'var(--green)'], revert: ['reset', 'var(--blue)'] }
   return <div className="chat-menu">
     <h3>{t('Everything the Coach proposed')}</h3>
     {!log.length && <div className="chat-empty">{t('Nothing yet. Every plan, suggestion and debrief will be kept here, whether you said yes or no.')}</div>}
@@ -700,7 +694,8 @@ function HistorySheet({ S, close, openSheet }) {
         const title = e.kind === 'create' ? (e.bundle?.name || t('Coach plan')) + (e.iteration > 1 ? ` · ${t('Revision {0}', e.iteration)}` : '')
           : e.kind === 'debrief' ? t('Debrief: {0}', e.workout?.name || t('Workout')) + (e.score != null ? ` · ${e.score}/10` : '')
             : e.kind === 'revert' ? t('Reverted the last Coach changes.')
-              : tn('{0} suggestion', '{0} suggestions', n)
+              : e.kind === 'workout' ? t('Workout adaptation')
+                : tn('{0} suggestion', '{0} suggestions', n)
         const sub = fmtDate(isoOf(new Date(e.at))) + ' · ' + (e.kind === 'debrief' ? String(e.summary || '').slice(0, 60)
           : e.dismissed ? t('Declined') : e.kind === 'create' ? t('Imported') : e.kind === 'revert' ? '' : t('{0} accepted · {1} declined', acc, n - acc))
         return <Row key={e.id} icon={ic} iconTint={tint} title={title} subtitle={sub} accessory="chevron"

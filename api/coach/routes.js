@@ -101,6 +101,20 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       } catch (e) { failEnqueue(res, e); }
     },
 
+    'POST /api/coach/workout': async (req, res) => {
+      const user = guard(req, res); if (!user) return;
+      const body = await readBody(req);
+      try {
+        const job = jobs.enqueue(user.id, {
+          kind: 'workout',
+          lang: body.lang,
+          note: body.message ? String(body.message).slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null,
+          session: body.session && typeof body.session === 'object' ? body.session : null
+        });
+        json(res, 202, { job });
+      } catch (e) { failEnqueue(res, e); }
+    },
+
     // One workout, read closely. Nothing to apply — the card is kept in the user's log.
     'POST /api/coach/debrief': async (req, res) => {
       const user = guard(req, res); if (!user) return;

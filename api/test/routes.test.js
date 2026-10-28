@@ -184,13 +184,13 @@ test('the card does not run a runtime to ask its version when the privilege drop
   }
 });
 
-test('the disclosure names the provider and the same five categories the payload builds from', async () => {
+test('the disclosure names the provider and the same categories the payload builds from', async () => {
   fresh({ provider: 'gemini' });
   const { call } = harness();
   const r = await call('GET /api/coach/disclosure');
   assert.equal(r.status, 200);
   assert.equal(r.body.providerLabel, 'Google Gemini');
-  assert.deepEqual(r.body.categories, ['plan', 'training', 'bodyweight', 'profile', 'prefs']);
+  assert.deepEqual(r.body.categories, ['plan', 'training', 'active', 'bodyweight', 'profile', 'prefs']);
   assert.equal(r.body.host, 'generativelanguage.googleapis.com');
 });
 
