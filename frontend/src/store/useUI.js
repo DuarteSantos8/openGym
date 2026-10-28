@@ -58,7 +58,7 @@ const restAlertsOn = async reg => {
   try { return !!(await reg?.pushManager?.getSubscription?.()) } catch { return false }
 }
 
-const maybeRestNotification = async () => {
+const maybeRestNotification = async (title = t('Rest’s over. Next set!')) => {
   if (!notificationsSupported()) return
   if (!document.hidden && document.visibilityState !== 'hidden') return
   try {
@@ -72,8 +72,8 @@ const maybeRestNotification = async () => {
     // iOS ignores the tag replacement (issue #172): close the previous one by hand, as the
     // worker does on a push, or the end of a rest leaves two banners stacked there.
     try { for (const n of (await reg?.getNotifications?.({ tag: 'rest-timer' })) || []) n.close() } catch { /* no getNotifications: the tag is all there is */ }
-    if (reg?.showNotification) { reg.showNotification(t('Rest’s over. Next set!'), opts); return }
-    new Notification(t('Rest’s over. Next set!'), opts)
+    if (reg?.showNotification) { await reg.showNotification(title, opts); return }
+    new Notification(title, opts)
   } catch {
     // Intentionally ignore: notification APIs vary by browser and policy in edge cases.
   }
@@ -117,6 +117,7 @@ const runWork = (set, get) => {
         alertBuzz([200, 100, 200]); get().flashTimer()
       }
       if (wk.overtime && left > -MAX_WORK_OVERTIME_SEC) { set({ work: { ...wk, left, alerted: true } }); return }
+      if (wk.owner?.interval && !MOBILE) maybeRestNotification(t('Interval complete'))
       const done = workDone || ownerDone(wk)
       get().stopWork()
       // `chimed` tells the set's own tick that this end has already sounded and buzzed — not
@@ -281,7 +282,7 @@ export const useUI = create((set, get) => ({
     if (get().toastMsg) runToast(set)
   },
 
-  startRest(sec, forIdx, { kind, forSet } = {}) {
+  startRest(sec, forIdx, { kind, forSet, interval } = {}) {
     get().stopRest()
     // Rest timer set to Off. Stopping and returning rather than starting a zero-length timer
     // keeps every caller honest: the four places that start a rest do not each need to know.
@@ -301,7 +302,7 @@ export const useUI = create((set, get) => ({
     // with no beep, no vibration and no flash. Each timer starts from where the page is now.
     pageHiddenAt = document.hidden ? Date.now() : null
     const endsAt = Date.now() + sec * 1000
-    set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(kind === 'switch' ? { kind } : {}) } })
+    set({ timer: { left: sec, total: sec, endsAt, forIdx, ...(forSet != null ? { forSet } : {}), ...(interval ? { interval } : {}), ...(kind === 'switch' ? { kind } : {}) } })
     bookRestEnd(endsAt, sec, kind)
     runRest(set, get)
   },
@@ -408,7 +409,7 @@ export const useUI = create((set, get) => ({
     const endsAt = Date.now() + total * 1000
     workDone = onDone
     pageHiddenAt = document.hidden ? Date.now() : null   // see startRest: a stale hide is not a catch-up
-    set({ work: { left: total, total, endsAt, label, overtime: useStore.getState().S.timedSetOvertime === true, ...(owner ? { owner } : {}) } })
+    set({ work: { left: total, total, endsAt, label, overtime: !owner?.interval && useStore.getState().S.timedSetOvertime === true, ...(owner ? { owner } : {}) } })
     runWork(set, get)
   },
   // The workout screen, back on a hold restored after a reload: `make(work)` gives it the handler
@@ -528,6 +529,8 @@ export function restoreWork(now = Date.now()) {
   if (!saved || useUI.getState().work) return false
   const total = Math.round(Number(saved.total))
   const drop = () => { try { ls.removeItem(WORK_KEY) } catch { /* nothing to drop */ } return false }
+  // An automatic group must be restarted explicitly after leaving or reloading the workout.
+  if (saved.owner?.interval) return drop()
   if (!(total > 0) || !(saved.endsAt > 0) || !ownerSet(saved.owner)) return drop()
   const wk = { left: total, total, endsAt: saved.endsAt, label: saved.label || '', overtime: !!saved.overtime, ...(saved.alerted ? { alerted: true } : {}), owner: saved.owner }
   const left = Math.round((saved.endsAt - now) / 1000)

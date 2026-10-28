@@ -23,7 +23,7 @@ import { convertWeight } from './units.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { clampIncline, hasIncline } from './incline.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
-import { SG_NAME_MAX } from './superset-meta.js'
+import { SG_NAME_MAX, supersetMeta, setSupersetMeta } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
 import { normalizeAliases } from './exercise-aliases.js'
 
@@ -139,11 +139,7 @@ function cleanEx(e) {
   else if (e.side && e.sideRestSec > 0) o.sideRestSec = e.sideRestSec
   if (e.sg) {
     o.sg = e.sg
-    // A superset's name and its rest between rounds (#292) ride on every member, so they travel
-    // with the group; without them a shared "Arms · 90 s" arrives nameless, resting the default.
-    const name = cleanSgName(e.sgName), rest = cleanRestSec(e.sgRest)
-    if (name) o.sgName = name
-    if (rest) o.sgRest = rest
+    setSupersetMeta([o], e.sg, { ...supersetMeta([e], [0]), name: cleanSgName(e.sgName), rest: cleanRestSec(e.sgRest) })
   }
   if (e.note) o.note = e.note
   const warm = cleanWarmupSets(e.warmupSets)
@@ -293,6 +289,8 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const pyramidWeight = pyramid.length ? normalizePyramidWeight(e.pyramidWeight, pyramid.length) : []
       const { warmupSets, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, incline: _incline, ...passthrough } = e
       if (!known.has(passthrough.id)) passthrough.id = canonicalExId(passthrough.id)
+      if (passthrough.sg) setSupersetMeta([passthrough], passthrough.sg, { ...supersetMeta([e], [0]), name: sgName, rest: sgRest })
+      else { delete passthrough.sgMode; delete passthrough.sgIntervalRest; delete passthrough.sgWork; delete passthrough.sgPrep; delete passthrough.sgRoundRest }
       return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}) }, sourceUnit || destination, destination)
     })
   }))

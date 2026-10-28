@@ -1,5 +1,20 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Interval": "Intervall",
+  "Group mode": "Gruppläge",
+  "Rest between exercises": "Vila mellan övningar",
+  "Same as between exercises": "Samma som mellan övningar",
+  "Start intervals": "Starta intervaller",
+  "Stop intervals": "Stoppa intervaller",
+  "Intervals continue when you leave this page. Background alerts depend on your browser and notification settings.": "Intervallerna fortsätter när du lämnar sidan. Aviseringar i bakgrunden beror på din webbläsare och dina aviseringsinställningar.",
+  "Interval complete": "Intervallen är klar",
+  "Use timed sets for every exercise. Finish warm-ups and remove per-side or failure sets before starting intervals.": "Använd tidsbestämda set för varje övning. Slutför uppvärmningen och ta bort set per sida eller till utmattning innan du startar intervaller.",
+  "Set each exercise to timed sets. Its set count controls its rounds; its duration controls its work time.": "Ställ in tidsbestämda set för varje övning. Antalet set styr antalet varv och längden styr arbetstiden.",
+  "Work time": "Arbetstid",
+  "Preparation before starting": "Förberedelse före start",
+  "Interval settings": "Intervallinställningar",
+  "Work time applies to unfinished sets. Preparation runs once before the first exercise.": "Arbetstiden gäller oavslutade set. Förberedelsen körs en gång före den första övningen.",
+  "Use a new group for intervals when repetitions are already logged.": "Använd en ny grupp för intervaller när repetitioner redan har loggats.",
   // --- generic ---
   'Confirm': 'Bekräfta',
   'Cancel': 'Avbryt',

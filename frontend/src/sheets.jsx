@@ -1,3 +1,4 @@
+import IntervalSettings, { intervalDefaults } from './components/IntervalSettings.jsx'
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
@@ -23,7 +24,7 @@ import { durationSheet } from './components/DurationWheel.jsx'
 import { cleanBackups, withBackups, MAX_BACKUPS, backupSlotConfig } from './lib/routine-backups.js'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
-import { SG_NAME_MAX } from './lib/superset-meta.js'
+import { SG_NAME_MAX, supersetMeta, setSupersetMeta } from './lib/superset-meta.js'
 import { REST_MAX, fmtRest, restWheelValue } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
 import { SeasonDeco } from './components/Seasonal.jsx'
@@ -3494,7 +3495,9 @@ function SupersetSettings({ meta, onSave, close }) {
   const onFocus = useSheetKeyboard(inputRef)
   const [name, setName] = useState(meta.name || '')
   const [rest, setRest] = useState(meta.rest || 0)
-  const save = () => { onSave({ name: name.trim().slice(0, SG_NAME_MAX), rest }); close() }
+  const [mode, setMode] = useState(meta.mode || 'superset')
+  const [interval, setInterval] = useState(() => intervalDefaults(meta))
+  const save = () => { if (onSave({ name: name.trim().slice(0, SG_NAME_MAX), rest, ...(mode === 'interval' ? { mode, ...interval } : {}) }) !== false) close() }
   return <>
     <h3>{t('Superset')}</h3>
     <input ref={inputRef} className="input" type="text" maxLength={SG_NAME_MAX} value={name}
@@ -3502,16 +3505,47 @@ function SupersetSettings({ meta, onSave, close }) {
       onKeyDown={e => { if (e.key === 'Enter') save() }} />
     <div style={{ height: 12 }} />
     <div className="list">
-      <Row icon="timer" iconTint="var(--orange)" title={t('Rest after each round')}
-        value={rest > 0 ? fmtRest(rest) : t('Longest exercise rest')} accessory="chevron"
-        onClick={() => durationSheet({ title: t('Rest after each round'), value: rest, max: REST_MAX, off: t('Longest exercise rest'),
-          footer: t('Without one, the superset rests as long as its longest exercise rest.'), onDone: setRest })} />
+      <SelectRow icon="link" title={t('Group mode')} value={mode} onChange={setMode}
+        options={[{ value: 'superset', label: t('Superset') }, { value: 'interval', label: t('Interval') }]} />
+      {mode === 'interval' ? <IntervalSettings value={interval} onChange={setInterval} /> :
+        <Row icon="timer" iconTint="var(--orange)" title={t('Rest after each round')}
+          value={rest > 0 ? fmtRest(rest) : t('Off')} accessory="chevron"
+          onClick={() => durationSheet({ title: t('Rest after each round'), value: rest, max: REST_MAX, off: t('Off'), onDone: setRest })} />}
+
     </div>
+    {mode === 'interval' && <p className="small dim">{t('Work time applies to unfinished sets. Preparation runs once before the first exercise.')}</p>}
     <div style={{ height: 18 }} />
     <Button variant="primary" onClick={save}>{t('Save')}</Button>
   </>
 }
 export const supersetSheet = (meta, onSave) => ui().openSheet(close => <SupersetSettings meta={meta} onSave={onSave} close={close} />)
+export function activeSupersetSheet(groupId) {
+  const active = useStore.getState().S.active
+  const members = active?.entries.filter(e => e.sg === groupId) || []
+  if (!groupId || members.length < 2) return
+  const meta = supersetMeta(members, members.map((_, i) => i), { onTarget: true })
+  supersetSheet(meta, settings => {
+    const current = useStore.getState().S.active
+    if (current?.id !== active.id || current.entries.filter(e => e.sg === groupId).length < 2) return false
+    if (settings.mode === 'interval' && current.entries.some(e => e.sg === groupId && modeOf(e.target) !== 'time' && e.sets.some(s => s.done))) {
+      toast(t('Use a new group for intervals when repetitions are already logged.')); return false
+    }
+    update(s => {
+      for (const entry of s.active.entries.filter(e => e.sg === groupId)) {
+        const copy = { ...entry.target, sg: groupId }
+        setSupersetMeta([copy], groupId, settings)
+        delete copy.sg
+        entry.target = copy
+        if (settings.mode === 'interval') {
+          entry.target.mode = 'time'; entry.target.sec = settings.work
+          for (const set of entry.sets) if (!set.done && !isWarmupRow(set)) {
+            set.mode = 'time'; set.sec = settings.work; delete set.planSec
+          }
+        }
+      }
+    })
+  })
+}
 
 /* Drop-set drops and rest-pause bursts are edited inline on the set row itself (Workout.jsx) —
    no sheet, no timer. A planned exercise (see the "Intensifier" config below) arrives with them

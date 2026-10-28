@@ -76,4 +76,14 @@ describe('the local rest-over alert follows the Push switch', () => {
     expect(requestPermission).not.toHaveBeenCalled()
     expect(showNotification).not.toHaveBeenCalled()
   })
+
+  it.each([false, true])('interval work alerts follow notification permission and subscription (enabled=%s)', async enabled => {
+    subscription = enabled ? { endpoint: 'https://push.example/x' } : null
+    useUI.getState().startWork(2, 'Work', vi.fn(), { interval: 'running-group' })
+    hide(true)
+    await vi.advanceTimersByTimeAsync(3000)
+    expect(showNotification).toHaveBeenCalledTimes(enabled ? 1 : 0)
+    if (enabled) expect(showNotification.mock.calls[0][0]).toBe('Interval complete')
+    expect(requestPermission).not.toHaveBeenCalled()
+  })
 })

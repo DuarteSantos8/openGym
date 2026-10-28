@@ -112,17 +112,14 @@ describe('restSecFor', () => {
     expect(restSecFor(entries, [0], 90)).toBe(90)
   })
 
-  it('gives a superset the longest rest its members asked for', () => {
-    // Not the member that closed the round, and not the shortest: the group rests once, and
-    // the 180 s exercise is the one still recovering when the 45 s one is ready to go again.
-    expect(restSecFor(entries, [1, 2], 90)).toBe(180)
-    // A member with no rest of its own pulls in the global, which can be the longest of all.
-    expect(restSecFor(entries, [0, 2], 90)).toBe(90)
+  it('defaults superset rest to Off despite member rest settings', () => {
+    expect(restSecFor(entries, [1, 2], 90)).toBe(0)
+    expect(restSecFor(entries, [0, 2], 90)).toBe(0)
   })
 
   it('honours an explicit rest even with the global timer switched off', () => {
     expect(restSecFor(entries, [1], 0)).toBe(180)
-    expect(restSecFor(entries, [0, 1], 0)).toBe(180)
+    expect(restSecFor(entries, [0, 1], 0)).toBe(0)
   })
 
   it('stays off when the timer is off and nothing asked for a rest', () => {
@@ -236,9 +233,9 @@ describe('restSecFor with a pyramid set’s own rest', () => {
   it('0 falls back to the exercise’s rest', () => {
     expect(restSecFor(entries, [0], 120, { idx: 0, sec: 0 })).toBe(90)
   })
-  it('a superset still takes the longest of the group', () => {
-    expect(restSecFor(entries, [0, 1], 120, { idx: 1, sec: 30 })).toBe(90)
-    expect(restSecFor(entries, [0, 1], 120, { idx: 1, sec: 200 })).toBe(200)
+  it('superset Off does not inherit pyramid rest', () => {
+    expect(restSecFor(entries, [0, 1], 120, { idx: 1, sec: 30 })).toBe(0)
+    expect(restSecFor(entries, [0, 1], 120, { idx: 1, sec: 200 })).toBe(0)
   })
 })
 
@@ -298,8 +295,9 @@ describe('an exercise on "No timer"', () => {
     expect(restSecFor([ex({ restSec: 0 })], [0], 90)).toBe(90)
     expect(restSecFor([ex({})], [0], 90)).toBe(90)
   })
-  it('in a superset the other member’s rest still applies, the longest as always', () => {
-    expect(restSecFor([ex({ restOff: true, sg: 'a' }), ex({ sg: 'a' })], [0, 1], 90)).toBe(90)
+  it('a superset uses its round rest even when a member has No timer', () => {
+    expect(restSecFor([ex({ restOff: true, sg: 'a' }), ex({ sg: 'a' })], [0, 1], 90)).toBe(0)
+    expect(restSecFor([ex({ restOff: true, sg: 'a', sgRest: 60 }), ex({ sg: 'a' })], [0, 1], 90)).toBe(60)
     expect(restSecFor([ex({ restOff: true, sg: 'a' }), ex({ restOff: true, sg: 'a' })], [0, 1], 90)).toBe(0)
   })
   it('a pyramid set’s own rest still stands in for it', () => {
