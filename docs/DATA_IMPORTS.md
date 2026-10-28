@@ -18,6 +18,10 @@ openGym matches exercise names against its library; anything it doesn't recognis
 your own exercises, so nothing in the file is dropped. Days that already have a workout in openGym
 are left alone, so importing the same file twice never duplicates anything.
 
+Before anything is written, the preview lists every exercise in the file with how many sets and
+workouts it brings. Untick the ones you don't want (the walks a watch logged, say): their sets stay
+out, a workout left empty is skipped, and an exercise nothing uses any more isn't created.
+
 These exports work without any editing:
 
 | App | Where to export |
