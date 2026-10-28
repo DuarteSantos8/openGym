@@ -714,6 +714,16 @@ body.chips-dragging *{cursor:inherit}
 .measure-date{display:block;margin-bottom:14px}
 .measure-date>span,.measure-field>span:first-child{display:block;color:var(--label-2);font-size:13px;margin:0 2px 6px}
 .measure-date .field{background:var(--surface-2)}
+/* The weigh-in sheet's date and time side by side (#859); the list's rows open a weigh-in to edit. */
+.bw-when{gap:10px;align-items:stretch;margin-bottom:14px}
+.bw-when>.measure-date{flex:1;min-width:0;margin-bottom:0}
+.bw-when>.bw-time{flex:0 0 auto;display:flex;flex-direction:column}
+.bw-time .timef{display:flex;flex:1;min-height:44px;width:100%;box-sizing:border-box;background:var(--surface-2)}
+.bw-row{padding:9px 2px;border-bottom:1px solid var(--sep)}
+.bw-row.bw-sub{padding-inline-start:14px}
+.bw-when-btn{background:none;border:0;padding:4px 0;font:inherit;color:inherit;text-align:start;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-width:0}
+.bw-src{font-size:11px;color:var(--pink)}
+.bw-day{padding:10px 2px 2px}
 .measure-form{display:grid;grid-template-columns:1fr 1fr;gap:11px 10px}
 .measure-field{min-width:0}
 .measure-input{height:47px;background:var(--surface-2);border-radius:var(--r);display:flex;align-items:center;padding:0 12px;gap:6px}

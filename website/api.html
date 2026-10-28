@@ -4384,10 +4384,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <summary>
     <span class="sch-name"><code>BodyweightEntry</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum"></span>
+    <span class="ep-sum">One day of weigh-ins.</span>
   </summary>
   <div class="ep-body">
-
+<p><code>w</code> is the day's one value, the one the profile's <code>bwDaily</code> setting picks from <code>ins</code> (first, the default; avg; last), so a reader that knows nothing of <code>ins</code> gets the same number the app charts. A day from before v1.4.4 has no <code>ins</code>: one weigh-in without a time. A client that writes <code>w</code> and <code>t</code> of a day with <code>ins</code> (an older app correcting the day) has that taken as a correction of the weigh-in <code>w</code> came from.</p>
 <div class="ptab">
   <div class="prow">
     <span class="p-name">d</span>
@@ -4397,12 +4397,57 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">w</span>
     <span class="p-type">number</span>
-    <span class="p-desc">Weight in <code>unit</code>.</span>
+    <span class="p-desc">The day's weight in <code>unit</code> (see the description).</span>
   </div>
   <div class="prow">
     <span class="p-name">t</span>
     <span class="p-type">number</span>
-    <span class="p-desc">Timestamp (ms).</span>
+    <span class="p-desc">When the day was last edited (ms)</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Set when every weigh-in of the day was read from a health app or a file.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">The day's weigh-ins, by time (#859).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Unique within the day. '0' is the weigh-in a day from before held.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].at</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc">Local time of day, HH:MM; null when not known.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].w</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">Weight in <code>unit</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].t</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">When this weigh-in was last edited (ms).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Read from a health app or a file.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].sid</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The health app's own id of the sample.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">gone</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Weigh-ins removed from a day that keeps others, id → when (ms).</span>
   </div>
 </div>
   </div>

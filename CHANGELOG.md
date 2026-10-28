@@ -6,6 +6,23 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Weigh in as often as you like, with the time** (#859, thanks @Borgna02). A day can now hold several weigh-ins, each with
+its time: the weigh-in sheet has a time field (now for today, the day's first time or 08:00 for an
+earlier day), All weigh-ins lists every one of them under its day, and a tap on one changes its
+weight, time or day. Delete still has Undo. The chart, the trend, the goal, widgets, Your year and
+the Coach use one value per day, and Settings → Units & language → Daily weigh-in value says which:
+the morning one (the default, it is the one worth comparing), the day's average or the last.
+Apple Health and Health Connect bring in every reading with its time, an Apple Health export keeps
+all of its records instead of one a day, and the body CSV has a row per weigh-in. Your old weigh-ins
+stay exactly as they were, and an older app on another device keeps the extra ones when it syncs.
+
+**A kind word about recovery on Home.** Now and then a small card tells you what has rested and what
+has not, from the same recovery data as the muscle map: "Your legs are still recovering from
+yesterday. Upper body today?", or that your back has had a week off. If today's plan leans on
+something still recovering, it suggests going a bit lighter or swapping the session, never skipping
+it, and a rest day only ever hears that the timing is good. One hint at a time, × hides it for the
+day, and Settings → Look & Home → Recovery tips turns it off.
+
 **Your year in openGym.** From 1 December to the end of January, Home has a card: your year is ready.
 Tap it and your year plays as full-screen stories, tap or swipe through: how many workouts, the hours,
 the tonnes you moved (in blue whales, pianos or house cats, whatever fits), your longest streak, your

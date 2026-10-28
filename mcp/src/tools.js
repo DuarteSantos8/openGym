@@ -19,6 +19,7 @@ import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles
 import { policyFor, profileRule } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
+import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 
 /* ---------- helpers ---------- */
 
@@ -373,7 +374,7 @@ export const getWorkout = {
 /** get_bodyweight — recent weigh-ins with the goal line. */
 export const getBodyweight = {
   name: 'get_bodyweight',
-  description: 'Get the body-weight log: chronological weigh-ins with weights, current goal, deltas vs goal (signed positive = above goal), and a latest summary. Useful for "am I trending toward my weight goal?" questions.',
+  description: 'Get the body-weight log: one entry per day, chronological, with the day\'s weight, current goal, deltas vs goal (signed positive = above goal), and a latest summary. A day can hold several weigh-ins: each entry lists them under `readings` with their local time (HH:MM, null when unknown), and the day\'s `weight` is the one the profile\'s daily-value setting picks (`daily_value`: first = morning, avg = average of the day, last). Useful for "am I trending toward my weight goal?" questions.',
   schema: {
     from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD.'),
     to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.')
@@ -393,12 +394,14 @@ export const getBodyweight = {
     return {
       unit: S.unit || 'kg',
       goal,
+      daily_value: dailyModeOf(S),
       count: bw.length,
       latest: latest ? { date: latest.d, weight: latest.w, delta_vs_goal: goal != null ? Math.round((latest.w - goal) * 10) / 10 : null } : null,
       entries: bw.map(b => ({
         date: b.d,
         weight: b.w,
-        delta_vs_goal: goal != null ? Math.round((b.w - goal) * 10) / 10 : null
+        delta_vs_goal: goal != null ? Math.round((b.w - goal) * 10) / 10 : null,
+        readings: readingsOf(b).map(r => ({ time: r.at || null, weight: r.w, ...(r.src ? { source: r.src } : {}) }))
       }))
     }
   }
