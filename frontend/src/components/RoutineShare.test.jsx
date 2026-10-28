@@ -97,8 +97,9 @@ describe('Share with a friend', () => {
     shareRoutineSheet(big)
     await openSheet()
     await click(button('Share link'))
+    // Compressing 120 exercises can outlast a few ticks on a slow CI runner: wait for the result.
+    await vi.waitFor(() => expect(clicks).toHaveBeenCalled(), { timeout: 5000 })
     expect(share).not.toHaveBeenCalled()
-    expect(clicks).toHaveBeenCalled()
     expect(m.toasts.at(-1)).toMatch(/plan file/)
     clicks.mockRestore()
   })

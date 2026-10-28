@@ -442,9 +442,9 @@ describe('Edit your data', () => {
     // poking at the copy
     await act(async () => { useStore.getState().update(s => { s.workouts = [] }) })
     await click(btn('Next'))
-    await settle(400)
-    // already Home, and no weigh-in card in this stand-in: on to Stats
-    expect(step()).toBe('e-go-stats')
+    // already Home, and no weigh-in card in this stand-in: on to Stats (polled: the skip past a
+    // missing anchor takes longer than 400 ms on a slow CI runner)
+    await vi.waitFor(async () => { await settle(50); expect(step()).toBe('e-go-stats') }, { timeout: 5000 })
     expect(localStorage.getItem('gym_state_v1')).toBe(saved)
     await click(document.querySelector('.tour-skip'))
     expect(useStore.getState().tourSandbox).toBe(false)
