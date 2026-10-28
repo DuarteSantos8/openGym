@@ -33,7 +33,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 touchLock.lock(at: Date())
                 if SessionCore.atEnd(state) { finishWanted = true }
             }
-            if state.workout?.id != oldValue.workout?.id { watchIdle() }
+            if state.workout?.id != oldValue.workout?.id { fix = nil; watchIdle() }      // a fix belongs to its workout
         }
     }
 
@@ -98,7 +98,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var draft = SetDraft()
     var crownTotal: Double { gate.last }
     var crownAllowed: Bool { touchLock.allowsCrown(at: Date()) }
-    var armedField: ValueField? { arm.armed(at: Date(), key: setKey) }
+    var armedField: ValueField? { arm.armed(at: Date(), key: editKey) }
+    /// A logged set opened to fix it (WatchCore's SetFix): the Crown, the keypad and the effort edit it, not the set up next.
+    @Published private(set) var fix: SetFix?
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
@@ -409,8 +411,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return SessionCore.key(e.id, si, e.sets[si].sideUp)
     }
 
-    /// The effort for the set up next, from its editor; nil clears it.
+    /// The set the boxes edit: the one being fixed, else the set up next.
+    var editKey: String? { fix?.key ?? setKey }
+    var editEntry: Entry? { fix.flatMap { f in workout?.entries.indices.contains(f.entry) == true ? workout?.entries[f.entry] : nil } ?? entry }
+    var editEffort: Double? { fix == nil ? effort : fix?.effort }
+
+    /// The effort for the set up next (or the one being fixed), from its editor; nil clears it.
     func rate(_ v: Double?) {
+        if fix != nil { fix?.effort = v; return }
         ackRestOver()
         effort = v
         effortFor = v == nil ? nil : setKey
@@ -436,20 +444,22 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /* ---------- editing the numbers: the Crown, the keypad, VoiceOver ---------- */
 
-    func spec(_ f: ValueField) -> ValueSpec? { entry.map { .of(f, step: $0.step, unit: $0.weightUnit(unit)) } }
+    func spec(_ f: ValueField) -> ValueSpec? { editEntry.map { .of(f, step: $0.step, unit: $0.weightUnit(unit)) } }
 
-    private func current(_ f: ValueField) -> Double {
+    func current(_ f: ValueField) -> Double {
+        if let fix { return fix.value(f) }
         switch f { case .weight: return weight; case .reps: return reps; case .seconds: return seconds }
     }
 
     private func write(_ f: ValueField, _ v: Double) {
+        if fix != nil { fix?.set(f, v); return }
         _ = draft.touch(f, key: setKey)
         switch f { case .weight: weight = v; case .reps: reps = v; case .seconds: seconds = v }
     }
 
     /// A tap on a box arms it; a tap on the armed one asks for the keypad (true). A tap in the lock window does nothing.
     func tapBox(_ f: ValueField) -> Bool {
-        guard touchAllowed, let k = setKey else { return false }
+        guard touchAllowed, let k = editKey else { return false }
         ackRestOver()
         return arm.tap(f, key: k, at: Date()) == .keypad
     }
@@ -474,7 +484,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// The keypad's ✓: the typed value as typed, only if the set is still the one it was opened on.
     func setValue(_ f: ValueField, _ v: Double, key: String?) {
-        guard key == setKey else { return }
+        guard key == editKey else { return }
         write(f, v)
         arm.disarm()
     }
@@ -483,6 +493,35 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// The idle timer ran out: let go, unless a tap or turn came since.
     func disarmIfIdle() { if arm.field != nil, armedField == nil { arm.disarm() } }
+
+    /* ---------- fixing a logged set ---------- */
+
+    /// A tap on a done set's dot. Not in the second after the page turned by itself.
+    func openFix(entry ei: Int, set si: Int) {
+        guard touchAllowed, let f = SetFix.open(state, entry: ei, set: si) else { return }
+        disarm()
+        ackRestOver()
+        fix = f
+    }
+
+    /// The other side of a per-side set; what was changed on this one is kept until Save or Cancel.
+    func fixSide(_ side: String) { disarm(); fix?.side = side }
+
+    /// Changed on the phone (or gone) since it opened: Save is off, Cancel closes.
+    var fixStale: Bool { fix.map { !$0.still(state) } ?? false }
+
+    /// Cancel, a swipe down, or Save's end: nothing more is sent.
+    func closeFix() { disarm(); fix = nil }
+
+    /// Save: the set's setDone again, later (SetFix.save); the page stays where it is, no rest starts.
+    func saveFix() {
+        guard let f = fix else { return }
+        let (next, events) = f.save(state, at: Date().timeIntervalSince1970 * 1000, id: { UUID().uuidString }, effort: effortKind)
+        for e in events { send(event: e) }       // sent first, saved second, as completeSet
+        state = next
+        if !events.isEmpty { Haptics.done(); noteActivity() }
+        closeFix()
+    }
 
     /* ---------- what the lifter does here ---------- */
 
@@ -1081,6 +1120,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.picked[0] = 2
                 self.state.workout?.entries[0].unit = "lb"
             case "hold", "hold-set", "armed-hold", "keypad-hold": self.state.entryIndex = 1
+            case "fix", "fix-armed", "fix-keypad", "fix-effort", "fix-stale": self.picked[0] = 2
+            case "fix-hold":
+                self.state.entryIndex = 1
+                self.state.workout?.entries[1].sets[0].done = true
+                self.state.workout?.entries[1].sets[0].at = 1
+            case "fix-side":
+                self.state.entryIndex = 3
+                self.state.workout?.entries[3].sets[0].sides?.R.done = true
+                self.state.workout?.entries[3].sets[0].done = true
+                self.state.workout?.entries[3].sets[0].at = 1
             case "all-done": for si in self.state.workout?.entries[0].sets.indices ?? 0..<0 { self.state.workout?.entries[0].sets[si].done = true }
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
@@ -1110,6 +1159,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             if screen.hasPrefix("armed-"), let k = self.setKey {
                 self.arm = CrownArm(idle: .infinity)
                 _ = self.arm.tap(screen == "armed-weight" ? .weight : screen == "armed-reps" ? .reps : .seconds, key: k, at: Date())
+            }
+            // CI: a logged set open to fix it (Bench Press set 1, the Plank's first hold, the split squat's first set).
+            if screen.hasPrefix("fix") {
+                if screen == "fix-effort" { self.state.settings.effort = "rpe"; self.state.rated = ["0025#1": 8] }
+                self.fix = SetFix.open(self.state, entry: self.state.entryIndex, set: screen == "fix-hold" || screen == "fix-side" ? 0 : 1)
+                if screen == "fix-hold" { self.fix?.set(.seconds, 50) }
+                if screen == "fix-side" { self.fix?.side = "R"; self.fix?.set(.reps, 7) }
+                if screen == "fix-armed", let k = self.fix?.key {
+                    self.arm = CrownArm(idle: .infinity)
+                    _ = self.arm.tap(.reps, key: k, at: Date())
+                }
+                if screen == "fix-stale" { self.state.workout?.entries[0].sets[1].at = 2 }
             }
             if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             if screen == "hold" { self.startHold() }

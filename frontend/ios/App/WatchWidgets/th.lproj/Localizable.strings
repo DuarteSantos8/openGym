@@ -38,6 +38,7 @@
 "None" = "ไม่มี";
 "Delete" = "ลบ";
 "Planned" = "วางแผนไว้";
+"Save" = "บันทึก";
 "Last time: %@" = "ครั้งก่อน: %@";
 "Exercises" = "ท่าออกกำลังกาย";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
@@ -72,4 +73,8 @@
 "Added weight" = "น้ำหนักเพิ่ม";
 "Your rest, your next set, or today's workout." = "ช่วงพัก เซ็ตถัดไป หรือการฝึกวันนี้";
 "Opens openGym." = "เปิด openGym";
+"Tap a dot to change a set." = "แตะจุดเพื่อเปลี่ยนเซ็ต";
+"Change set %lld" = "เปลี่ยนเซ็ต %lld";
+"Change warm-up %lld" = "เปลี่ยนวอร์มอัพ %lld";
+"Changed on your iPhone" = "เปลี่ยนบน iPhone แล้ว";
 "Hold to finish" = "กดค้างเพื่อจบ";

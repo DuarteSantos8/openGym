@@ -59,6 +59,7 @@ const FROM_APP = {
   'None': 'None',
   'Delete': 'Delete',
   'Planned': 'Planned',
+  'Save': 'Save',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
@@ -213,6 +214,19 @@ const OWN = {
   },
   'Opens openGym.': {
     de: 'Öffnet openGym.', fr: 'Ouvre openGym.', es: 'Abre openGym.', it: 'Apre openGym.', 'pt-PT': 'Abre o openGym.', 'pt-BR': 'Abre o openGym.', pl: 'Otwiera openGym.', hu: 'Megnyitja az openGymet.', tr: 'openGym’i açar.', ru: 'Открывает openGym.', uk: 'Відкриває openGym.', ar: 'يفتح openGym.', hi: 'openGym खोलता है।', bn: 'openGym খোলে।', th: 'เปิด openGym', ko: 'openGym을 열어요.', 'zh-Hans': '打开 openGym。', 'zh-Hant': '打開 openGym。',
+  },
+  // Fixing a logged set (a tap on its dot): the hint, VoiceOver's actions, and the phone changed it meanwhile.
+  'Tap a dot to change a set.': {
+    de: 'Tippe auf einen Punkt, um einen Satz zu ändern.', fr: 'Touche un point pour modifier une série.', es: 'Toca un punto para cambiar una serie.', it: 'Tocca un punto per cambiare una serie.', 'pt-PT': 'Toca num ponto para mudar uma série.', 'pt-BR': 'Toque num ponto para mudar uma série.', pl: 'Stuknij kropkę, by zmienić serię.', hu: 'Koppints egy pöttyre egy sorozat módosításához.', tr: 'Bir seti değiştirmek için bir noktaya dokun.', ru: 'Нажмите на точку, чтобы изменить подход.', uk: 'Торкнись точки, щоб змінити підхід.', ar: 'اضغط نقطة لتغيير مجموعة.', hi: 'सेट बदलने के लिए एक बिंदु टैप करें।', bn: 'সেট বদলাতে একটি বিন্দুতে ট্যাপ করুন।', th: 'แตะจุดเพื่อเปลี่ยนเซ็ต', ko: '세트를 바꾸려면 점을 탭하세요.', 'zh-Hans': '轻点圆点来更改一组。', 'zh-Hant': '輕點圓點來更改一組。',
+  },
+  'Change set %lld': {
+    de: 'Satz %lld ändern', fr: 'Modifier la série %lld', es: 'Cambiar la serie %lld', it: 'Cambia la serie %lld', 'pt-PT': 'Mudar a série %lld', 'pt-BR': 'Mudar a série %lld', pl: 'Zmień serię %lld', hu: '%lld. sorozat módosítása', tr: 'Seti değiştir: %lld', ru: 'Изменить подход %lld', uk: 'Змінити підхід %lld', ar: 'تغيير المجموعة %lld', hi: 'सेट %lld बदलें', bn: 'সেট %lld বদলান', th: 'เปลี่ยนเซ็ต %lld', ko: '%lld세트 바꾸기', 'zh-Hans': '更改第 %lld 组', 'zh-Hant': '更改第 %lld 組',
+  },
+  'Change warm-up %lld': {
+    de: 'Aufwärmsatz %lld ändern', fr: 'Modifier l’échauffement %lld', es: 'Cambiar el calentamiento %lld', it: 'Cambia il riscaldamento %lld', 'pt-PT': 'Mudar o aquecimento %lld', 'pt-BR': 'Mudar o aquecimento %lld', pl: 'Zmień rozgrzewkę %lld', hu: '%lld. bemelegítés módosítása', tr: 'Isınmayı değiştir: %lld', ru: 'Изменить разминку %lld', uk: 'Змінити розминку %lld', ar: 'تغيير الإحماء %lld', hi: 'वार्म-अप %lld बदलें', bn: 'ওয়ার্ম-আপ %lld বদলান', th: 'เปลี่ยนวอร์มอัพ %lld', ko: '워밍업 %lld 바꾸기', 'zh-Hans': '更改热身 %lld', 'zh-Hant': '更改熱身 %lld',
+  },
+  'Changed on your iPhone': {
+    de: 'Am iPhone geändert', fr: 'Modifié sur ton iPhone', es: 'Cambiado en tu iPhone', it: 'Modificato sull’iPhone', 'pt-PT': 'Alterado no iPhone', 'pt-BR': 'Alterado no iPhone', pl: 'Zmieniono na iPhonie', hu: 'Az iPhone-on módosítva', tr: 'iPhone’da değiştirildi', ru: 'Изменено на iPhone', uk: 'Змінено на iPhone', ar: 'تم التغيير على iPhone', hi: 'iPhone पर बदला गया', bn: 'iPhone-এ বদলানো হয়েছে', th: 'เปลี่ยนบน iPhone แล้ว', ko: 'iPhone에서 바뀌었어요', 'zh-Hans': '已在 iPhone 上更改', 'zh-Hant': '已在 iPhone 上更改',
   },
   // Finish workout is a one-second hold: this is the line under it.
   'Hold to finish': {

@@ -38,6 +38,7 @@
 "None" = "無";
 "Delete" = "刪除";
 "Planned" = "已排定";
+"Save" = "儲存";
 "Last time: %@" = "上次: %@";
 "Exercises" = "動作";
 "No workout running" = "沒有進行中的訓練";
@@ -72,4 +73,8 @@
 "Added weight" = "附加重量";
 "Your rest, your next set, or today's workout." = "你的休息、下一組或今天的訓練。";
 "Opens openGym." = "打開 openGym。";
+"Tap a dot to change a set." = "輕點圓點來更改一組。";
+"Change set %lld" = "更改第 %lld 組";
+"Change warm-up %lld" = "更改熱身 %lld";
+"Changed on your iPhone" = "已在 iPhone 上更改";
 "Hold to finish" = "長按結束";

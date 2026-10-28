@@ -38,6 +38,7 @@
 "None" = "None";
 "Delete" = "Delete";
 "Planned" = "Planned";
+"Save" = "Save";
 "Last time: %@" = "Last time: %@";
 "Exercises" = "Exercises";
 "No workout running" = "No workout running";
@@ -72,4 +73,8 @@
 "Added weight" = "Added weight";
 "Your rest, your next set, or today's workout." = "Your rest, your next set, or today's workout.";
 "Opens openGym." = "Opens openGym.";
+"Tap a dot to change a set." = "Tap a dot to change a set.";
+"Change set %lld" = "Change set %lld";
+"Change warm-up %lld" = "Change warm-up %lld";
+"Changed on your iPhone" = "Changed on your iPhone";
 "Hold to finish" = "Hold to finish";

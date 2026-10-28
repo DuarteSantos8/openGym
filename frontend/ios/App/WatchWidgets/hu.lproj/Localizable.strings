@@ -38,6 +38,7 @@
 "None" = "Nincs";
 "Delete" = "Törlés";
 "Planned" = "Tervezett";
+"Save" = "Mentés";
 "Last time: %@" = "Legutóbb: %@";
 "Exercises" = "Gyakorlatok";
 "No workout running" = "Nincs folyamatban edzés";
@@ -72,4 +73,8 @@
 "Added weight" = "Plusz súly";
 "Your rest, your next set, or today's workout." = "A pihenőd, a következő sorozat vagy a mai edzés.";
 "Opens openGym." = "Megnyitja az openGymet.";
+"Tap a dot to change a set." = "Koppints egy pöttyre egy sorozat módosításához.";
+"Change set %lld" = "%lld. sorozat módosítása";
+"Change warm-up %lld" = "%lld. bemelegítés módosítása";
+"Changed on your iPhone" = "Az iPhone-on módosítva";
 "Hold to finish" = "Tartsd lenyomva a befejezéshez";

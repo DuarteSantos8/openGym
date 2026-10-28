@@ -58,6 +58,8 @@ struct SessionState: Codable, Equatable {
     /// Sets passed over here ("exerciseId#setIndex"), not done: the next one comes up instead.
     /// Optional, like every field added later, so a state saved by an older build still loads.
     var skipped: [String]?
+    /// The effort this watch sent with a set ("exerciseId#setIndex[#side]"), for fixing that set later (SetFix).
+    var rated: [String: Double]?
 }
 
 typealias Event = [String: Any]
@@ -82,6 +84,7 @@ enum SessionCore {
             if unconfirmed { return s }
             s.workout = nil
             s.pending = [:]
+            s.rated = nil
             return s
         }
         let same = next.id != nil && next.id == s.workout?.id
@@ -95,6 +98,7 @@ enum SessionCore {
             // Another workout (or the first one this watch sees): its own position, no old ticks.
             s.pending = [:]
             s.skipped = nil
+            s.rated = nil
             s.entryIndex = next.cur
         }
         // The watch's ticks the phone has not shown yet win; the later tick wins on a set both changed.
@@ -179,7 +183,10 @@ enum SessionCore {
         if let side = oneSide { event["side"] = side }
         if let hr = hr { event["hr"] = hr }
         // "rpe": 8.5 or "rir": 2, never both; the phone puts it on the set (watch-sync.js effortFrom)
-        if let e = effort, Effort.notches(e.kind) != nil { event[e.kind] = e.value }
+        if let rating = effort, Effort.notches(rating.kind) != nil {
+            event[rating.kind] = rating.value
+            s.rated = (s.rated ?? [:]).merging([key(e.id, si, oneSide): rating.value]) { $1 }
+        }
         return (s, event)
     }
 
@@ -296,6 +303,7 @@ enum SessionCore {
         s.startedHere = wid
         s.pending = [:]
         s.skipped = nil
+        s.rated = nil
         s.entryIndex = 0
         var event: Event = ["id": id, "type": "start", "routineIds": session.routineIds, "wid": wid, "at": at]
         if let bw = bw, bw > 0 { event["bw"] = (bw * 10).rounded() / 10 }
@@ -309,6 +317,7 @@ enum SessionCore {
         s.workout = nil
         s.pending = [:]
         s.skipped = nil
+        s.rated = nil
         s.startedHere = nil
         if let wid = w.id { s.finishedHere = Array((s.finishedHere + [wid]).suffix(5)) }
         return (s, ["id": id, "type": discard ? "discard" : "finish", "wid": w.id ?? "", "at": at])

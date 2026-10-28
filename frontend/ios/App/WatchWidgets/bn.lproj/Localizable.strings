@@ -38,6 +38,7 @@
 "None" = "কিছু না";
 "Delete" = "মুছুন";
 "Planned" = "পরিকল্পিত";
+"Save" = "সেভ করুন";
 "Last time: %@" = "গতবার: %@";
 "Exercises" = "ব্যায়াম";
 "No workout running" = "কোনো ওয়ার্কআউট চলছে না";
@@ -72,4 +73,8 @@
 "Added weight" = "অতিরিক্ত ওজন";
 "Your rest, your next set, or today's workout." = "আপনার বিশ্রাম, পরের সেট, বা আজকের ওয়ার্কআউট।";
 "Opens openGym." = "openGym খোলে।";
+"Tap a dot to change a set." = "সেট বদলাতে একটি বিন্দুতে ট্যাপ করুন।";
+"Change set %lld" = "সেট %lld বদলান";
+"Change warm-up %lld" = "ওয়ার্ম-আপ %lld বদলান";
+"Changed on your iPhone" = "iPhone-এ বদলানো হয়েছে";
 "Hold to finish" = "শেষ করতে চেপে ধরে রাখুন";

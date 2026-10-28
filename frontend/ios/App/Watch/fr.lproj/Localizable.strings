@@ -38,6 +38,7 @@
 "None" = "Aucun";
 "Delete" = "Supprimer";
 "Planned" = "Prévu";
+"Save" = "Enregistrer";
 "Last time: %@" = "La dernière fois: %@";
 "Exercises" = "Exercices";
 "No workout running" = "Aucune séance en cours";
@@ -72,4 +73,8 @@
 "Added weight" = "Poids ajouté";
 "Your rest, your next set, or today's workout." = "Ton repos, ta prochaine série ou la séance du jour.";
 "Opens openGym." = "Ouvre openGym.";
+"Tap a dot to change a set." = "Touche un point pour modifier une série.";
+"Change set %lld" = "Modifier la série %lld";
+"Change warm-up %lld" = "Modifier l’échauffement %lld";
+"Changed on your iPhone" = "Modifié sur ton iPhone";
 "Hold to finish" = "Maintiens pour terminer";

@@ -38,6 +38,7 @@
 "None" = "Немає";
 "Delete" = "Видалити";
 "Planned" = "Заплановано";
+"Save" = "Зберегти";
 "Last time: %@" = "Минулого разу: %@";
 "Exercises" = "Вправи";
 "No workout running" = "Тренування не триває";
@@ -72,4 +73,8 @@
 "Added weight" = "Додаткова вага";
 "Your rest, your next set, or today's workout." = "Відпочинок, наступний підхід або сьогоднішнє тренування.";
 "Opens openGym." = "Відкриває openGym.";
+"Tap a dot to change a set." = "Торкнись точки, щоб змінити підхід.";
+"Change set %lld" = "Змінити підхід %lld";
+"Change warm-up %lld" = "Змінити розминку %lld";
+"Changed on your iPhone" = "Змінено на iPhone";
 "Hold to finish" = "Утримуй, щоб завершити";
