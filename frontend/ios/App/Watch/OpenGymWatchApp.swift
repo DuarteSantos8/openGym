@@ -250,11 +250,13 @@ struct EdgeButton: View {
     }
 }
 
-/// ‹ / › between an exercise's sets, Coaich's 40 × 30 pt (not 44: the row under the name has no more), in
-/// that row, away from Done and the boxes. Dimmed to 0.3 when there is no set that way.
+/// ‹ / › between an exercise's sets: either side of Done, as tall as it (the rest screen: Coaich's 40 × 30 pt
+/// in the row above the ring). Dimmed to 0.3 when there is no set that way.
 struct NavArrow: View {
     let forward: Bool
     let enabled: Bool
+    var width: CGFloat = 40
+    var height: CGFloat = 30
     let action: () -> Void
     @Environment(\.isLuminanceReduced) private var dimmed
 
@@ -263,7 +265,7 @@ struct NavArrow: View {
             Image(systemName: forward ? "chevron.right" : "chevron.left")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Theme.ink(.white, dimmed))
-                .frame(width: 40, height: 30)
+                .frame(width: width, height: height)
         }
         .buttonStyle(SecondaryButton())
         .disabled(!enabled)
@@ -537,8 +539,8 @@ struct ExercisePager: View {
  * Digital Crown then turns only that value, in the exercise's own steps with a tap of the crown at
  * each, and a second tap on it opens a keypad for a value off the steps. Nothing armed: the crown
  * does nothing here, it never pages the exercises (the page owns it, so the system does not).
- * Edits are written to the store's numbers at once and sent only by Done, as before. ‹ › under the
- * name move through the exercise's sets: a done one shows its logged numbers to fix, and Save sends it.
+ * Edits are written to the store's numbers at once and sent only by Done, as before. ‹ › beside
+ * Done move through the exercise's sets: a done one shows its logged numbers to fix, and Save sends it.
  */
 struct ExercisePage: View {
     @EnvironmentObject var store: SessionStore
@@ -581,7 +583,6 @@ struct ExercisePage: View {
                     } else {
                         nameRow(entry, lines: 2)
                         let left = entry.sets.contains { !$0.done }
-                        arrows { Spacer(minLength: 0) }
                         Spacer(minLength: 2)
                         Image(systemName: left ? "forward.circle" : "checkmark.circle.fill")
                             .font(.system(size: 40))
@@ -593,6 +594,7 @@ struct ExercisePage: View {
                             .multilineTextAlignment(.center)
                             .minimumScaleFactor(0.7)
                         Spacer(minLength: 4)
+                        arrows { Spacer(minLength: 0) }        // where they sit beside Done on a set
                     }
                 }
                 .padding(.horizontal, Theme.side)
@@ -712,7 +714,7 @@ struct ExercisePage: View {
             .accessibilityAddTraits(.isHeader)
     }
 
-    /// Everything under the name for the set on screen: its place between the arrows, the lines, the boxes, Done (a done set: Save).
+    /// Everything under the name for the set on screen: its place, the lines, the boxes, Done (a done set: Save) between the arrows.
     @ViewBuilder private func setBlock(_ entry: Entry, _ si: Int, unit: String, current: Bool, lines: Lines) -> some View {
         let row = entry.sets[si]
         let pos = SetPage.position(entry, set: si)
@@ -731,29 +733,28 @@ struct ExercisePage: View {
         .frame(maxHeight: .infinity)        // the spare room goes between the rows
     }
 
-    /// ‹ and › either side of what is between them (SetNav: they send nothing). None on cardio: nothing to fix here.
+    /// ‹ and › either side of what is between them (SetNav: they send nothing), as tall as Done. None on cardio: nothing to fix here.
     private func arrows(@ViewBuilder _ middle: () -> some View) -> some View {
         let cardio = store.workout?.entries[index].isCardio ?? true
         return HStack(spacing: 4) {
-            if !cardio { NavArrow(forward: false, enabled: store.canMove(index, by: -1)) { store.move(index, by: -1) } }
+            if !cardio { NavArrow(forward: false, enabled: store.canMove(index, by: -1), width: 32, height: Theme.tap) { store.move(index, by: -1) } }
             middle().frame(maxWidth: .infinity)
-            if !cardio { NavArrow(forward: true, enabled: store.canMove(index, by: 1)) { store.move(index, by: 1) } }
+            if !cardio { NavArrow(forward: true, enabled: store.canMove(index, by: 1), width: 32, height: Theme.tap) { store.move(index, by: 1) } }
         }
     }
 
     /// "Set 2 of 4", or Warm-up, then Left / Right and Superset. Short of room, Superset is a link glyph,
     /// then the place is "2/4" (long words: ru has "Подход 2 из 4" beside "ПРАВАЯ"). VoiceOver says it in full.
     private func positionRow(_ entry: Entry, _ row: SetRow, _ pos: SetPage.Position) -> some View {
-        arrows {
-            HStack(spacing: 4) {
-                ViewThatFits(in: .horizontal) {
-                    positionItems(entry, row, pos, glyph: false, short: false)
-                    positionItems(entry, row, pos, glyph: true, short: false)
-                    positionItems(entry, row, pos, glyph: true, short: true)
-                }
-                if let side = fixedSide { sideSwitch(side) }
+        HStack(spacing: 4) {
+            ViewThatFits(in: .horizontal) {
+                positionItems(entry, row, pos, glyph: false, short: false)
+                positionItems(entry, row, pos, glyph: true, short: false)
+                positionItems(entry, row, pos, glyph: true, short: true)
             }
+            if let side = fixedSide { sideSwitch(side) }
         }
+        .frame(maxWidth: .infinity)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
@@ -769,7 +770,7 @@ struct ExercisePage: View {
                     .foregroundStyle(Theme.ink(.cyan, dimmed))
                     .accessibilityHidden(true)
             }
-            .frame(minHeight: 30)       // the arrows' height: the row has no room for 44
+            .frame(minHeight: 30)       // the row under the name has no room for 44
             .contentShape(Rectangle())
         }
         .buttonStyle(PressStyle())
@@ -882,57 +883,70 @@ struct ExercisePage: View {
         }
     }
 
-    /// With a profile that rates effort, the RPE / RIR disc, then the Done pill (a hold: Start hold; a done set: Save).
-    @ViewBuilder private func primaryRow(_ entry: Entry, _ si: Int, current: Bool) -> some View {
+    /// ‹, then with a profile that rates effort the RPE / RIR disc, the Done pill (a hold: Start hold; a done set: Save), ›.
+    private func primaryRow(_ entry: Entry, _ si: Int, current: Bool) -> some View {
         let fixing = store.fix?.entry == index
-        if fixing && store.fixStale {
-            // Changed or un-logged on the phone since it came up here: nothing to save over it.
-            Text("Changed on your iPhone")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.7)
-                .frame(maxWidth: .infinity, minHeight: Theme.tap)
-        } else {
-            HStack(spacing: 6) {
-                if let kind = store.effortKind, !entry.isCardio, !entry.sets[si].warmup {
-                    EffortButton(kind: kind, value: current ? store.editEffort : nil) { if current { rating = true } }
-                        .disabled(!current)
+        let effort = entry.isCardio || entry.sets[si].warmup ? nil : store.effortKind
+        return arrows {
+            if fixing && store.fixStale {
+                // Changed or un-logged on the phone since it came up here: nothing to save over it.
+                Text("Changed on your iPhone")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.7)
+                    .frame(maxWidth: .infinity, minHeight: Theme.tap)
+            } else {
+                HStack(spacing: 6) {
+                    if let kind = effort {
+                        EffortButton(kind: kind, value: current ? store.editEffort : nil) { if current { rating = true } }
+                            .disabled(!current)
+                    }
+                    if fixing { saveButton(compact: effort != nil) } else { doneButton(entry, current: current, compact: effort != nil) }
                 }
-                if fixing { saveButton } else { doneButton(entry, current: current) }
             }
         }
     }
 
+    /// The pill's word, after its glyph where there is room. Short of room the glyph alone stands in for Done and
+    /// Start hold ("Inizia la tenuta" does not fit between the arrows), and for Save beside the effort disc
+    /// (41 mm has about 36 pt left there); elsewhere Save's word shrinks ("Сохранить").
+    private func pillLabel(_ word: Text, glyph: String, lead: Bool, compact: Bool) -> some View {
+        ViewThatFits(in: .horizontal) {
+            // At the accessibility sizes the glyph goes and the word stands alone.
+            if lead && !typeSize.isAccessibilitySize {
+                HStack(spacing: 6) { Image(systemName: glyph).accessibilityHidden(true); word }
+            }
+            word
+            if lead || compact { Image(systemName: glyph) }
+        }
+        .font(.headline.weight(.semibold))
+        .lineLimit(1)
+        .minimumScaleFactor(0.7)
+        .padding(.horizontal, 6)        // a long word ("Сохранить") stays off the pill's round ends
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+    }
+
     /// Save, on a done set: off (and dimmed) until a number or the effort differs from what was logged.
-    private var saveButton: some View {
+    private func saveButton(compact: Bool) -> some View {
         let on = store.fix?.changed ?? false
         return Button { store.saveFix() } label: {
-            Text("Save")
-                .font(.headline.weight(.semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .dynamicTypeSize(...DynamicTypeSize.xLarge)
+            pillLabel(Text("Save"), glyph: "checkmark", lead: false, compact: compact)
         }
         .buttonStyle(PrimaryButton(minHeight: Theme.tap))
+        .accessibilityLabel(Text("Save"))
         .disabled(!on)
         .opacity(on ? 1 : 0.3)
     }
 
-    @ViewBuilder private func doneButton(_ entry: Entry, current: Bool) -> some View {
+    @ViewBuilder private func doneButton(_ entry: Entry, current: Bool, compact: Bool) -> some View {
         let timed = entry.isTimed
+        let word = timed ? Text("Start hold") : Text("Done")
         Button { if timed { store.startHold() } else { store.completeSet() } } label: {
-            // At the accessibility sizes the glyph goes and the word stands alone.
-            HStack(spacing: 6) {
-                if !typeSize.isAccessibilitySize { Image(systemName: timed ? "play.fill" : "checkmark").accessibilityHidden(true) }
-                if timed { Text("Start hold") } else { Text("Done") }
-            }
-            .font(.headline.weight(.semibold))
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
-            .dynamicTypeSize(...DynamicTypeSize.xLarge)
+            pillLabel(word, glyph: timed ? "play.fill" : "checkmark", lead: true, compact: compact)
         }
         .buttonStyle(PrimaryButton(minHeight: Theme.tap))
+        .accessibilityLabel(word)
         .disabled(!current)
         // A long press: skip this set instead (VoiceOver: an action of its own).
         .simultaneousGesture(LongPressGesture(minimumDuration: 0.8).onEnded { _ in if current { confirmSkip = true } })
