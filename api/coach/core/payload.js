@@ -625,10 +625,12 @@ export function build(S, opts = {}) {
 // The last few lines of the chat, so "shorter, like last time" has something to point at.
 // The user's own lines (data, never instruction — common.md rule 3) and the Coach's earlier
 // verdicts; never proposals, errors or the intake card, which travel in their own fields or
-// are noise. Six lines, cut short: enough to resolve a reference, not a transcript to argue
+// are noise. Six bounded lines: a verdict often puts its suggested replacement after the
+// training summary, so 240 characters lost what "swap it for what you suggested" referred to.
+// Keep enough of that answer to resolve the reference, not a transcript to argue
 // with. The message being sent right now rides in userNote/refine, so it is left out here.
 export const CONVERSATION_LINES = 6;
-export const CONVERSATION_CHARS = 240;
+export const CONVERSATION_CHARS = 1200;
 function conversation(coach, current) {
   const now = new Set((current || []).filter(Boolean).map(x => String(x).trim()));
   return (coach.chat || [])
