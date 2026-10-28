@@ -3,9 +3,8 @@
   "name": "weighted side crunch",
   "bodyPart": "waist",
   "equipment": "weighted",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core"
   ],
   "category": "strength",

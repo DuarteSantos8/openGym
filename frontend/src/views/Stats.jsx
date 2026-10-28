@@ -3,15 +3,21 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { dayPhotosOf } from '../lib/day-photos.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
-import { lastBW, streakWeeks, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt, lifetimeVolume } from '../lib/history.js'
-import { fmtNum, fmtDate, fmtVol, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
+import { lastBW, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt, lifetimeVolume } from '../lib/history.js'
+import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
+import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
 import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
 import { bwSheet, goalSheet, calendarSheet, dayOverrideSheet, workoutDetailSheet, exerciseHistorySheet, WorkoutRow, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import WeightRate from '../components/WeightRate.jsx'
 import Heatmap from '../components/Heatmap.jsx'
+import { SeasonDeco } from '../components/Seasonal.jsx'
 import Icon from '../components/Icon.jsx'
+import { StreakCard, Freezes } from '../components/Streak.jsx'
+import { ChallengesStatsCard } from '../components/Challenges.jsx'
+import { WrappedStatsCard } from '../components/WrappedEntry.jsx'
+import { streakInfo } from '../lib/streak.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
 import { loadOfWeeklyPlan, loadOfWorkouts, muscleBalanceWindow, rankOf, MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
@@ -32,6 +38,7 @@ import { anchorsByWorkout, resolveSetRir } from '../lib/recovery.js'
 import { Button, Segmented, SelectRow } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
+import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -273,7 +280,7 @@ function MuscleBalance({ S }) {
     {completionSummary}
   </>
 
-  return <div className="card">
+  return <div className="card" data-tour="stats-body">
     <Segmented className="seg-range" value={view} onChange={setView}
       options={[{ value: 'balance', label: t('Muscle balance') }, { value: 'fatigue', label: t('Fatigue') }, { value: 'strength', label: t('Strength') }]} />
     {view === 'balance' ? <>
@@ -470,6 +477,34 @@ export function WeeklyPlanVolume({ S }) {
   </div>
 }
 
+// How long each exercise takes, on average a session, from when its sets were ticked
+// (lib/exercise-time.js): the rest before a set and the setup count, so it is what an exercise
+// costs in a workout. Only workouts with tick times count; imported history has none.
+const TIME_ROWS = 6
+export function ExerciseTimeCard({ S }) {
+  const [win, setWin] = useState(90)
+  const [all, setAll] = useState(false)
+  const rows = useMemo(() => exerciseTimeRows(S.workouts, rangeStart(win)), [S.workouts, win])
+  const shown = all ? rows : rows.slice(0, TIME_ROWS)
+  const max = rows.length ? rows[0].avg : 0
+  const nameOf = id => (EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id)
+  return <div className="card" data-exercise-time>
+    <h2 style={{ marginBottom: 2 }}>{t('Time per exercise')}</h2>
+    <div className="muted small" style={{ marginBottom: 10 }}>{t('Average time a session, counted from when its sets were ticked.')}</div>
+    <Segmented className="seg-range" value={win} onChange={v => { setWin(v); setAll(false) }} options={rangeOptions()} />
+    {rows.length ? shown.map(r => <div className="mrow" key={r.id} {...tappable(() => exerciseHistorySheet(r.id))}>
+      <span className={`nm ${exerciseNameClass(EXIDX[r.id])}`}>{nameOf(r.id)}</span>
+      <span className="bar"><i style={{ width: Math.round(r.avg / max * 100) + '%' }} /></span>
+      <span className="v">{fmtDur(Math.max(r.avg, 60000))}</span>
+    </div>) : <div className="muted small">{t('No timed sets in this period.')}</div>}
+    {rows.length > TIME_ROWS && <>
+      <div style={{ height: 8 }} />
+      <Button trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all}
+        onClick={() => setAll(v => !v)}>{t(all ? 'Show less' : 'Show more')}</Button>
+    </>}
+  </div>
+}
+
 export default function Stats() {
   const nav = useNavigate()
   const S = useStore(s => s.S)
@@ -502,6 +537,8 @@ export default function Stats() {
   const workouts = S.workouts
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
   const lifetime = lifetimeVolume(S)
+  // The streak with its best run, freezes and badges (lib/streak.js).
+  const streak = streakInfo(S)
 
   // Dumbbell weights are read in each exercise's current meaning (lib/dumbbells.js), so the
   // chart and its best compare like with like across a switch between per bell and total.
@@ -560,7 +597,9 @@ export default function Stats() {
       const mx = mode === 'reps'
         ? data.best
         : Math.max(0, ...rows.map(s => mode === 'cardio' ? toSpeed(s.speed || 0, speedUnit) : mode === 'time' ? (s.sec || 0) : (s.w || 0)))
-      if (mx > 0) return { mx, unit: mode === 'cardio' ? speedLabel(speedUnit) : mode === 'time' ? 's' : S.unit }
+      if (mx > 0) return mode === 'cardio' || mode === 'time' ? { mx, unit: mode === 'cardio' ? speedLabel(speedUnit) : 's' }
+        // Sorted by the stored weight, labelled in the exercise's own unit (#657).
+        : { mx, shown: shownWeight(S, id, mx), unit: exUnitOf(S, id) }
       // Unloaded reps work still has a current figure — its rep count. Without this the whole
       // picker label went blank and the exercise sorted to the bottom as if it had no history.
       if (mode === 'reps') {
@@ -576,11 +615,15 @@ export default function Stats() {
   const curEx = exId && exHist.includes(exId) ? exId : exHist[0] || null
   // A completed reps work row is authoritative for strength metrics, even when the parent
   // target also contains timed/cardio work. Entries without reps rows use their selected mode.
+  // The chosen exercise is charted in its own weight unit when it has one (#657, lib/ex-unit.js):
+  // its history read as it sees it. The tiles and totals above stay in the profile's unit.
+  const XS = exView(S, curEx)
+  const xw = XS.workouts
   const curMode = curEx ? (() => {
-    for (let i = workouts.length - 1; i >= 0; i--) {
-      const data = metricDataOf(workouts[i], curEx)
+    for (let i = xw.length - 1; i >= 0; i--) {
+      const data = metricDataOf(xw[i], curEx)
       if (data.mode) return data.mode
-      const entries = entriesForExercise(workouts[i], curEx)
+      const entries = entriesForExercise(xw[i], curEx)
       for (let j = entries.length - 1; j >= 0; j--) {
         const mode = metricModeForEntry(entries[j])
         if (mode) return mode
@@ -595,13 +638,13 @@ export default function Stats() {
   // them (issue #5). When nothing in an exercise's history was ever loaded, the progress IS
   // the rep count, so plot that. Add a weighted set later and it switches back to weight on
   // its own, which is also the honest reading: that is when load became the thing improving.
-  const repsOnly = curEx && curMode === 'reps' && !workouts.some(w =>
+  const repsOnly = curEx && curMode === 'reps' && !xw.some(w =>
     entriesForExercise(w, curEx).some(en => bestWeightForEntry(en) > 0))
   const metric = s => curCardio ? toSpeed(s.speed || 0, speedUnit) : curTimed ? (s.sec || 0) : (s.w || 0)
-  const exUnit = curCardio ? speedLabel(speedUnit) : curTimed ? 's' : repsOnly ? t('reps') : S.unit
+  const exUnit = curCardio ? speedLabel(speedUnit) : curTimed ? 's' : repsOnly ? t('reps') : XS.unit
   let exPts = [], exList = [], exBest = 0
   if (curEx) {
-    workouts.forEach(w => {
+    xw.forEach(w => {
       const data = metricDataOf(w, curEx)
       if (data.mode === curMode) {
         const doneSets = data.rows
@@ -627,11 +670,11 @@ export default function Stats() {
   // tooltip vanish under your finger the moment anything else on this screen re-rendered.
   // Memoising only the .map() would not have helped — its dependency was itself rebuilt each time.
   const e1Pts = useMemo(
-    () => (curEx && curMode === 'reps' ? e1rmSeries(S, curEx) : []),
-    [S, curEx, curMode],
+    () => (curEx && curMode === 'reps' ? e1rmSeries(XS, curEx) : []),
+    [XS, curEx, curMode],
   )
   const e1ChartPts = useMemo(() => e1Pts.filter(p => p.t >= exFrom).map(p => ({ t: p.t, y: p.y, d: p.d })), [e1Pts, exFrom])
-  const e1Best = curEx && curMode === 'reps' ? best1RM(S, curEx) : null
+  const e1Best = curEx && curMode === 'reps' ? best1RM(XS, curEx) : null
   const showE1 = e1Pts.length > 0
   // Effort on this exercise, per session. It rides on the top-set curve as well as having a
   // curve of its own, because the two only mean something together: the same weight moved
@@ -642,8 +685,8 @@ export default function Stats() {
   // Pyramid sets' Max sets: the most reps in one, per workout — the point of a Max set is seeing
   // that number climb, which the top-set weight line does not show.
   const maxPts = useMemo(
-    () => (curEx && curMode === 'reps' ? maxRepsSeries(workouts, curEx).map(p => ({ t: p.t, y: p.y, d: p.d, note: p.w > 0 ? fmtNum(p.w) + ' ' + S.unit : undefined })) : []),
-    [workouts, curEx, curMode, S.unit],
+    () => (curEx && curMode === 'reps' ? maxRepsSeries(xw, curEx).map(p => ({ t: p.t, y: p.y, d: p.d, note: p.w > 0 ? fmtNum(p.w) + ' ' + XS.unit : undefined })) : []),
+    [xw, curEx, curMode, XS.unit],
   )
   const showMax = maxPts.length > 0
   const maxBest = showMax ? Math.max(...maxPts.map(p => p.y)) : 0
@@ -659,8 +702,8 @@ export default function Stats() {
     if (!curEx || curMode !== 'reps') return null
     const usable = list => list.length >= 2 && list.some(s => s.sets.length >= 2)
     let metric = repsOnly || isAssisted(curEx) ? 'reps' : 'e1rm'
-    let sessions = perSetSessions(workouts, curEx, { metric, formula: oneRmFormula })
-    if (metric === 'e1rm' && !usable(sessions)) sessions = perSetSessions(workouts, curEx, { metric: metric = 'reps' })
+    let sessions = perSetSessions(xw, curEx, { metric, formula: oneRmFormula })
+    if (metric === 'e1rm' && !usable(sessions)) sessions = perSetSessions(xw, curEx, { metric: metric = 'reps' })
     if (!usable(sessions)) return null
     const { lines, hidden } = perSetLines(sessions)
     const shown = new Set(lines.map(l => l.n))
@@ -675,7 +718,7 @@ export default function Stats() {
       metric,
       drop: dropOffSet(sessions),
     }
-  }, [workouts, curEx, curMode, repsOnly, oneRmFormula])
+  }, [xw, curEx, curMode, repsOnly, oneRmFormula])
   // The same sessions cut to the range; a set number with nothing left in it drops out of the legend.
   const perSetChart = useMemo(() => {
     if (!perSet) return null
@@ -687,16 +730,16 @@ export default function Stats() {
   // stronger for your size. Both bases are memoised on the same inputs as e1Pts, for the same reason.
   // On a top-set basis a bare bodyweight exercise is a flat 100%, so that basis is only offered
   // when it actually varies.
-  const relE1 = useMemo(() => (curEx && curMode === 'reps' ? relativeSeries(S, curEx, { basis: 'e1rm' }) : []), [S, curEx, curMode])
-  const relTop = useMemo(() => (curEx && curMode === 'reps' ? relativeSeries(S, curEx, { basis: 'top' }) : []), [S, curEx, curMode])
+  const relE1 = useMemo(() => (curEx && curMode === 'reps' ? relativeSeries(XS, curEx, { basis: 'e1rm' }) : []), [XS, curEx, curMode])
+  const relTop = useMemo(() => (curEx && curMode === 'reps' ? relativeSeries(XS, curEx, { basis: 'top' }) : []), [XS, curEx, curMode])
   const canRelE1 = relE1.length >= 2 && !relE1.some(p => p.assisted)
   const canRelTop = relTop.length >= 2 && relTop.some(p => Math.abs(p.y - relTop[0].y) > 1e-9)
   const relUsed = relBasis === 'top' ? (canRelTop ? 'top' : 'e1rm') : (canRelE1 ? 'e1rm' : 'top')
   const relPts = relUsed === 'top' ? relTop : relE1
   const relChartPts = useMemo(() => relPts.filter(p => p.t >= exFrom).map(p => ({
     t: p.t, y: p.y * 100, d: p.d,
-    note: (relUsed === 'e1rm' ? t('Est. 1RM') + ' ' : '') + fmtNum(p.load) + ' ' + S.unit + ' @ ' + fmtNum(p.bw) + ' ' + S.unit,
-  })), [relPts, relUsed, exFrom, S.unit])
+    note: (relUsed === 'e1rm' ? t('Est. 1RM') + ' ' : '') + fmtNum(p.load) + ' ' + XS.unit + ' @ ' + fmtNum(p.bw) + ' ' + XS.unit,
+  })), [relPts, relUsed, exFrom, XS.unit])
   const showRel = canRelE1 || canRelTop
   const onRel = showRel && exMetric === 'bodyweight'
   const onSets = !!perSet && exMetric === 'sets'
@@ -720,23 +763,30 @@ export default function Stats() {
   if (showRel) exOpts.push({ value: 'bodyweight', label: t('Bodyweight') })
 
   return <>
-    <div className="hdr"><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
+    <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
       <div className="row" style={{ gap: 8 }}>
         <button className="iconbtn" onClick={reportSheet} aria-label={t('Performance report')} title={t('Performance report')}><Icon name="note" /></button>
-        <button className="iconbtn" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>
+        <button className="iconbtn" data-tour="stats-history" onClick={() => nav('/history')} aria-label={t('History')}><Icon name="history" /></button>
       </div></div>
 
-    <div className="tiles">
+    <div className="tiles" data-tour="stats-tiles">
       <div className="tile"><div className="l"><Icon name="dumbbell" />{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
       <div className="tile"><div className="l"><Icon name="calendar" />{t('This month')}</div><div className="v">{monthW}</div></div>
-      <div className="tile"><div className="l"><Icon name="flame" />{t('Week streak')}</div><div className="v">{streakWeeks(S)}</div></div>
+      <div className="tile"><div className="l"><Icon name="flame" />{t('Week streak')}</div><div className="v">{streak.current}{streak.freezes > 0 && <Freezes n={streak.freezes} className="tile-freezes" />}</div></div>
       <div className="tile"><div className="l"><Icon name="scale" />{t('Weight 30d')}</div><div className="v" style={{ fontSize: 22, color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>
       {/* Everything ever lifted (Discord): imports included, warm-ups only when the profile
           counts them (#719). Full width, since a few hundred sessions make a long number. */}
-      {lifetime > 0 && <div className="tile" style={{ gridColumn: '1 / -1' }} data-lifetime-volume><div className="l"><Icon name="plate" />{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div></div>}
+      {lifetime > 0 && <div className="tile" style={{ gridColumn: '1 / -1' }} data-lifetime-volume><SeasonDeco spot="stats-tile" /><div className="l"><Icon name="plate" />{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div></div>}
     </div>
 
+    {workouts.length > 0 && <StreakCard info={streak} />}
+    {/* The month's challenges and the trophy shelf (lib/challenges.js). */}
+    {workouts.length > 0 && <ChallengesStatsCard S={S} />}
+    {/* Your year in openGym, for any year with workouts (components/WrappedEntry.jsx). */}
+    <WrappedStatsCard S={S} />
+
     <div className="card">
+      <SeasonDeco spot="stats-heatmap" />
       <h2>{t('Activity (last 12 months)')}</h2>
       <Heatmap
         S={S}
@@ -759,13 +809,15 @@ export default function Stats() {
       <Button size="sm" variant="tinted" trailingIcon="chevronRight" style={{ flexShrink: 0 }} onClick={() => nav('/progress-photos')}>{t('Open')}</Button>
     </div>}
     <div className="card row between" style={{ alignItems: 'center', gap: 12 }}>
+      <SeasonDeco spot="stats-peek" />
       <div style={{ minWidth: 0 }}><h2 style={{ margin: 0 }}>{t('Body measurements')}</h2>
         <div className="muted small" style={{ marginTop: 4 }}>{(S.measurements || []).length
           ? t('Last check-in {0}', fmtDate(S.measurements[S.measurements.length - 1].d, true))
           : t('Waist, arms, body fat and anything else you measure, each with its own curve.')}</div></div>
-      <Button size="sm" variant="tinted" trailingIcon="chevronRight" style={{ flexShrink: 0 }} onClick={() => nav('/measurements')}>{t('Open')}</Button>
+      <Button size="sm" variant="tinted" trailingIcon="chevronRight" style={{ flexShrink: 0 }} data-tour="stats-measure" onClick={() => nav('/measurements')}>{t('Open')}</Button>
     </div>
     {(hasEffort(S) || hasEstimableEffort(S)) && <EffortCard S={S} />}
+    {workouts.some(w => entryTimes(w).length) && <ExerciseTimeCard S={S} />}
 
     <div className="cols">
       <div className="card">
@@ -785,14 +837,15 @@ export default function Stats() {
         {S.bodyweight.length > 0 && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
           <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
         </div>}
+        <SeasonDeco spot="stats-web" />
       </div>
 
-      <div className="card">
+      <div className="card" data-tour="stats-records">
         <h2>{t('Exercise progress')}</h2>
         {exHist.length ? <>
           <div className="sect-b" style={{ marginBottom: 10 }}>
             <SelectRow title={t('Exercise')} sheetTitle={t('Exercise progress')} value={curEx} onChange={setExId} stackedValue
-              options={exHist.map(id => ({ value: id, label: (EXIDX[id] ? exerciseNameText(EXIDX[id]) : nameOf(id)) + (exCurrent[id].mx ? ' · ' + fmtNum(exCurrent[id].mx) + ' ' + exCurrent[id].unit : '') }))}
+              options={exHist.map(id => ({ value: id, label: (EXIDX[id] ? exerciseNameText(EXIDX[id]) : nameOf(id)) + (exCurrent[id].mx ? ' · ' + fmtNum(exCurrent[id].shown ?? exCurrent[id].mx) + ' ' + exCurrent[id].unit : '') }))}
               search={{
                 placeholder: t('Search…'),
                 label: t('Search…'),
@@ -808,7 +861,7 @@ export default function Stats() {
             {rangeTooShort
               ? <div className="empty small">{t('Fewer than two workouts in this period. Pick a longer one.')}</div>
               : onSets
-              ? <LineChart points={perSetChart.anchors} series={perSetChart.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : S.unit} />
+              ? <LineChart points={perSetChart.anchors} series={perSetChart.series} h={150} unit={perSet.metric === 'reps' ? t('reps') : XS.unit} />
               : onRel
               ? <LineChart points={relChartPts} h={150} unit="% BW" />
               : onMax
@@ -827,13 +880,13 @@ export default function Stats() {
           <div className="small dim" style={{ marginTop: 8 }}>
             {onSets ? (perSet.metric === 'reps' ? t('Reps in each working set, one line per set number') : t('Estimated 1RM of each working set, one line per set number')) : onRel ? (relUsed === 'top' ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')) : onMax ? <>{t('Most reps in a Max set per workout')} · {t('Best:')}{' '}<b className="accent">{maxBest} {t('reps')}</b></> : onEff ? t('Average effort per workout') : onE1 ? t('Estimated 1RM per workout') : curCardio ? t('Top speed per workout') : curTimed ? t('Longest hold per workout') : repsOnly ? t('Most reps in a set per workout') : t('Best set weight per workout')}
             {onRel ? <> · {t('Best:')}{' '}<b className="accent">{fmtNum(Math.max(0, ...relPts.map(p => p.y * 100)))} % BW</b></>
-              : onEff || onMax || onSets ? '' : <> · {t('Best:')}{' '}<b className="accent">{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? S.unit : exUnit}</b></>}
+              : onEff || onMax || onSets ? '' : <> · {t('Best:')}{' '}<b className="accent">{fmtNum(onE1 ? e1Best.est : exBest)} {onE1 ? XS.unit : exUnit}</b></>}
           </div>
           {onRel && !rangeTooShort && (() => {
             const inRange = relPts.filter(p => p.t >= exFrom)
             const first = inRange[0], last = inRange[inRange.length - 1]
             return <div className="small dim" style={{ marginTop: 4 }}>
-              {t('Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.', fmtNum(first.bw) + ' ' + S.unit, fmtNum(last.bw) + ' ' + S.unit)}
+              {t('Body weight over this period: {0} → {1}. Bodyweight and assisted exercises count your body weight as part of the load.', fmtNum(first.bw) + ' ' + XS.unit, fmtNum(last.bw) + ' ' + XS.unit)}
             </div>
           })()}
           {onSets && (perSet.drop || perSet.hidden > 0) && <div className="small dim" style={{ marginTop: 4 }}>
@@ -842,7 +895,7 @@ export default function Stats() {
             {perSet.hidden > 0 && t('Only the first {0} sets are drawn.', perSet.ns.length)}
           </div>}
           {onE1 && <div className="small dim" style={{ marginTop: 4 }}>
-            {t('Best estimate from {0} on {1}. An estimate, not a tested max.', fmtNum(e1Best.w) + ' ' + S.unit + ' × ' + e1Best.r, fmtDate(e1Best.d, true))}
+            {t('Best estimate from {0} on {1}. An estimate, not a tested max.', fmtNum(e1Best.w) + ' ' + XS.unit + ' × ' + e1Best.r, fmtDate(e1Best.d, true))}
           </div>}
           {!onEff && !onE1 && !onMax && !onSets && !onRel && showEff && <div className="small dim" style={{ marginTop: 4 }}>
             {t('A fuller dot means less left in the tank. The same weight at a lower {0} is progress the line alone doesn’t show.', hd)}

@@ -3,9 +3,9 @@
   "name": "weighted plate tibialis anterior curl",
   "bodyPart": "lower legs",
   "equipment": "weight plate",
-  "target": "calves",
+  "target": "shins",
   "secondaryMuscles": [
-    "shins",
+    "calves",
     "ankles"
   ],
   "category": "strength",

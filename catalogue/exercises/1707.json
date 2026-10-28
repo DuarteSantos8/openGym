@@ -3,9 +3,9 @@
   "name": "prone twist on stability ball",
   "bodyPart": "waist",
   "equipment": "stability ball",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "lower back"
   ],
   "category": "calisthenics",

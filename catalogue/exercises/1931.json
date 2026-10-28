@@ -3,10 +3,10 @@
   "name": "hip and knee flexion squatting stretch",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
+    "glutes",
     "adductors",
-    "quadriceps",
     "calves"
   ],
   "category": "stretching",

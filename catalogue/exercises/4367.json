@@ -3,11 +3,11 @@
   "name": "cable bent over reverse grip row",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
+    "lats",
     "biceps",
     "rhomboids",
-    "upper back",
     "lower back"
   ],
   "category": "strength",

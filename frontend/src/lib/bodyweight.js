@@ -2,6 +2,7 @@
 // moves with water, salt and the last meal by more than it moves in a month, so the number worth
 // following is the week's mean — the one a single weigh-in on the card cannot give you.
 import { isoOf, weekKey } from './format.js'
+import { addWeighIn, readingsOf, readingAt, timeOf } from './weigh-ins.js'
 
 /**
  * The weigh-ins grouped into weeks, newest week first. Each week carries its mean, how many
@@ -28,29 +29,29 @@ export function weeklyWeights(bodyweight, ws) {
 }
 
 /**
- * Where a weigh-in sits on a time axis. `t` is when it was typed, which is what a sync merge goes
- * by; for a weigh-in logged for an earlier day that is not on its day, so it is put
- * at noon of the day it is for instead.
+ * Where a weigh-in day sits on a time axis. A day with timed weigh-ins (lib/weigh-ins.js) sits
+ * at the time of the one its value comes from. Otherwise `t` is when it was typed, which is what
+ * a sync merge goes by; for a weigh-in logged for an earlier day that is not on its day, so it is
+ * put at noon of the day it is for instead.
  */
 export function weighInAt(b) {
+  if (Array.isArray(b?.ins)) {
+    const r = readingsOf(b).find(x => x.at && Number(x.w) === Number(b.w))
+    return readingAt(b.d, r ? r.at : null)
+  }
   const t = Number(b?.t)
   return t > 0 && isoOf(new Date(t)) === b.d ? t : new Date(b.d + 'T12:00:00').getTime()
 }
 
 /**
  * A weigh-in logged into the profile's list, the way the check-in before a workout does it: on the
- * day it was made, replacing that day's (a second weigh-in the same day is a correction), sorted.
- * Used for the Apple Watch's weigh-in (lib/watch-sync.js). `at` is when it was made (ms).
+ * day and at the time it was made, beside that day's others (#859), sorted. Used for the Apple
+ * Watch's weigh-in (lib/watch-sync.js). `at` is when it was made (ms).
  */
 export function logWeighIn(s, w, at = Date.now()) {
   const n = Math.round(Number(w) * 10) / 10
   if (!(n > 0)) return false
-  if (!Array.isArray(s.bodyweight)) s.bodyweight = []
-  const d = isoOf(new Date(at))
-  const ex = s.bodyweight.find(b => b.d === d)
-  if (ex) { ex.w = n; ex.t = at; delete ex.src } else s.bodyweight.push({ d, w: n, t: at })
-  s.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
-  return true
+  return !!addWeighIn(s, { d: isoOf(new Date(at)), at: timeOf(at), w: n, t: at })
 }
 
 // ---- Weekly rate (#759) ----------------------------------------------------------------------

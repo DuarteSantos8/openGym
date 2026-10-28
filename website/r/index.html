@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>A routine for you</title>
+<meta name="description" content="A friend shared an openGym routine with you. Open it in openGym to add it to your own routines.">
+<meta name="theme-color" content="#000000">
+<!-- Where a "Share with a friend" link lands: https://opengym.ch/r#<routine>
+     (frontend/src/lib/routine-link.js). The routine lives in the part after the #, which the
+     browser never sends to this server, so it is only read right here in the page: shown as a
+     list of names and sets, and handed on to the app as opengym://r#<routine> or to a web app as
+     <server>/#/r/<routine>. Nothing here stores or sends the routine anywhere. -->
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="stylesheet" href="/styles.css?v=28">
+<style>
+  .rt { max-width: 34rem; margin: 0 auto; padding: 9vh 16px 56px; }
+  .rt-head { text-align: center; }
+  .rt-head img { border-radius: 22%; }
+  .rt-kicker { margin: 16px 0 4px; color: var(--fg-2); font-size: 15px; }
+  .rt h1 { font-size: 1.7rem; margin: 0 0 6px; overflow-wrap: anywhere; }
+  .rt-sub { color: var(--fg-3); font-size: 14px; margin-bottom: 22px; }
+  .rt-list { list-style: none; padding: 0; margin: 0 0 24px; border: 1px solid var(--hair); border-radius: var(--r-m); background: var(--surface); overflow: hidden; }
+  .rt-list li { padding: 12px 16px; border-top: 1px solid var(--hair-soft); }
+  .rt-list li:first-child { border-top: 0; }
+  .rt-list .n { display: block; font-weight: 600; text-transform: capitalize; overflow-wrap: anywhere; }
+  .rt-list .s { display: block; color: var(--fg-2); font-size: 14px; margin-top: 2px; }
+  .rt-list .note { display: block; color: var(--fg-3); font-size: 13px; margin-top: 4px; font-style: italic; overflow-wrap: anywhere; }
+  .rt-list .ss { display: block; color: var(--acc); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 2px; }
+  .rt-list li.sg { border-left: 3px solid var(--acc); }
+  .rt-actions { display: grid; gap: 10px; }
+  .rt-actions .btn { display: block; text-align: center; }
+  .rt-web { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--hair); }
+  .rt-web h2 { font-size: 1rem; margin-bottom: 6px; }
+  .rt-web p { color: var(--fg-2); font-size: 14px; margin-bottom: 12px; }
+  .rt-web form { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rt-web input { flex: 1 1 12rem; min-width: 0; font: inherit; font-size: 16px; color: var(--fg); background: var(--surface-2); border: 1px solid var(--hair); border-radius: var(--r-s); padding: 10px 12px; }
+  .rt-web .demo { display: inline-block; margin-top: 12px; font-size: 14px; }
+  .rt-err { text-align: center; color: var(--fg-2); margin: 10px 0 24px; }
+  .rt small { display: block; margin-top: 26px; color: var(--fg-3); text-align: center; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main class="rt" id="main">
+  <div class="rt-head">
+    <img src="/icon-180.png" alt="" width="64" height="64">
+    <p class="rt-kicker" id="kicker">A routine for you</p>
+    <h1 id="name">Loading the routine…</h1>
+    <div class="rt-sub" id="sub"></div>
+  </div>
+  <p class="rt-err" id="err" hidden></p>
+  <ol class="rt-list" id="list" hidden></ol>
+  <div class="rt-actions">
+    <a class="btn" id="open" href="opengym://r">Open in openGym</a>
+    <a class="btn ghost" id="get" href="/#download">Get the app</a>
+  </div>
+  <section class="rt-web" id="web">
+    <h2>Open in the web app</h2>
+    <p>Run your own openGym server? Pop its address in and the routine opens there.</p>
+    <form id="webform">
+      <input id="server" type="url" inputmode="url" autocomplete="url" placeholder="https://gym.example.com" aria-label="Your openGym server">
+      <button class="btn ghost" type="submit">Open</button>
+    </form>
+    <a class="demo" id="demo" href="/demo/">Or try it in the demo, right in this browser</a>
+  </section>
+  <small>openGym is a free, open-source gym tracker. The routine rides in the link itself, so this page never sent it anywhere.</small>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id) }
+  var payload = location.hash.replace(/^#/, '')
+  var ok = /^\d{1,4}\.[a-z]\.[A-Za-z0-9_-]+$/.test(payload) && payload.length <= 16000
+
+  // The App Store on an iPhone, the Android download elsewhere: the home page's download section.
+  if (/iPhone|iPad/i.test(navigator.userAgent)) $('get').href = 'https://apps.apple.com/app/id6822275400'
+
+  function fail(msg) {
+    $('name').textContent = 'Hmm, this link is off'
+    $('kicker').textContent = 'A routine link'
+    $('err').textContent = msg
+    $('err').hidden = false
+  }
+  if (!ok) { fail('It looks cut off. Ask your friend to send it again.'); $('web').hidden = true; return }
+
+  $('open').href = 'opengym://r#' + payload
+  $('demo').href = '/demo/#/r/' + payload
+  var KEY = 'opengym_r_server'
+  try { $('server').value = localStorage.getItem(KEY) || '' } catch (e) { /* storage off: fine */ }
+  $('webform').addEventListener('submit', function (ev) {
+    ev.preventDefault()
+    var v = $('server').value.trim()
+    if (!v) return
+    if (!/^https?:\/\//i.test(v)) v = 'https://' + v
+    var u
+    try { u = new URL(v) } catch (e) { $('server').focus(); return }
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return
+    var base = u.origin + u.pathname.replace(/\/+$/, '')
+    try { localStorage.setItem(KEY, base) } catch (e) { /* fine */ }
+    location.href = base + '/#/r/' + payload
+  })
+
+  function bytesOf(s) {
+    var b = atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4))
+    var out = new Uint8Array(b.length)
+    for (var i = 0; i < b.length; i++) out[i] = b.charCodeAt(i)
+    return out
+  }
+  function inflate(bytes) {
+    var ds = new DecompressionStream('deflate-raw')
+    var w = ds.writable.getWriter(); w.write(bytes); w.close()
+    return new Response(ds.readable).arrayBuffer().then(function (b) { return new Uint8Array(b) })
+  }
+  function decode() {
+    var parts = payload.split('.')
+    if (Number(parts[0]) > 1 || (parts[1] !== 'd' && parts[1] !== 'j')) return Promise.reject('new')
+    var bytes = bytesOf(parts[2])
+    var p = parts[1] === 'd'
+      ? (typeof DecompressionStream === 'function' ? inflate(bytes) : Promise.reject('old'))
+      : Promise.resolve(bytes)
+    return p.then(function (b) { return JSON.parse(new TextDecoder().decode(b)) })
+  }
+
+  var clock = function (s) { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') }
+  function line(e, unit) {
+    var sets = e.sets || 1, side = e.side ? ' / side' : '', w = e.weight > 0 ? ' · ' + e.weight + ' ' + unit : ''
+    if (e.mode === 'cardio') return (sets > 1 ? sets + ' × ' : '') + (e.min || 20) + ' min'
+    if (e.mode === 'time') return sets + ' × ' + clock(e.sec || 30) + side + w
+    if (Array.isArray(e.pyramid) && e.pyramid.length) return e.pyramid.map(function (r) { return r === 0 ? 'Max' : r }).join(' · ') + ' reps' + side + w
+    var reps = e.repsMin && e.reps && e.repsMin < e.reps ? e.repsMin + '–' + e.reps : (e.reps || 10)
+    return sets + ' × ' + reps + side + w
+  }
+  function show(data) {
+    var r = data && Array.isArray(data.routines) && data.routines[0]
+    if (!r || !Array.isArray(r.ex) || !r.ex.length) throw new Error('empty')
+    var names = data.names || {}, custom = {}
+    ;(data.customEx || []).forEach(function (c) { if (c && c.id) custom[c.id] = c.n })
+    var from = typeof data.from === 'string' ? data.from.slice(0, 40) : ''
+    var title = String(r.name || 'A routine').slice(0, 80)
+    document.title = title + ' · openGym'
+    $('name').textContent = title
+    $('kicker').textContent = from ? from + ' shared a routine with you' : 'A friend shared a routine with you'
+    $('sub').textContent = r.ex.length + (r.ex.length === 1 ? ' exercise' : ' exercises') + ' · Tap Open in openGym to add it'
+    var list = $('list'), unit = data.unit === 'lb' ? 'lb' : 'kg'
+    r.ex.slice(0, 60).forEach(function (e, i) {
+      var li = document.createElement('li')
+      var prev = r.ex[i - 1], next = r.ex[i + 1]
+      if (e.sg && (prev && prev.sg === e.sg || next && next.sg === e.sg)) {
+        li.className = 'sg'
+        if (!(prev && prev.sg === e.sg)) {
+          var ss = document.createElement('span'); ss.className = 'ss'
+          ss.textContent = 'Superset' + (typeof e.sgName === 'string' && e.sgName ? ': ' + e.sgName.slice(0, 40) : '')
+          li.appendChild(ss)
+        }
+      }
+      var n = document.createElement('span'); n.className = 'n'
+      n.textContent = String(custom[e.id] || names[e.id] || 'Exercise').slice(0, 100)
+      var s = document.createElement('span'); s.className = 's'
+      s.textContent = line(e, unit) + (e.restSec > 0 ? ' · rest ' + clock(e.restSec) : '')
+      li.appendChild(n); li.appendChild(s)
+      if (typeof e.note === 'string' && e.note.trim()) {
+        var note = document.createElement('span'); note.className = 'note'
+        note.textContent = e.note.trim().slice(0, 200)
+        li.appendChild(note)
+      }
+      list.appendChild(li)
+    })
+    list.hidden = false
+  }
+  decode().then(show).catch(function (why) {
+    if (why === 'new') fail('This link is from a newer openGym than this page knows. The app will still open it.')
+    else if (why === 'old') { $('name').textContent = 'A routine for you'; $('err').textContent = 'This browser can’t show it, but openGym can. Tap Open in openGym.'; $('err').hidden = false }
+    else { fail('It looks cut off. Ask your friend to send it again.'); $('open').hidden = true; $('web').hidden = true }
+  })
+})()
+</script>
+</body>
+</html>

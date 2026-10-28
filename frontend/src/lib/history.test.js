@@ -1555,8 +1555,8 @@ describe('switching a row between warm-up and work', () => {
     const rows = [{ w: 40, r: 8, phase: 'warmup', warmup: true, done: true }, { w: 100, r: 5, done: true, at: 7 }, { w: 100, r: 5, done: false, type: 'dropset', drops: [{ w: 80, r: 4 }], rir: 2 }]
     const plain = [...rows.slice(0, 2), { w: 100, r: 5, done: false, rir: 2 }]
     const next = makeWarmupAt(plain, 2)
-    expect(next).toEqual([rows[0], { w: 100, r: 5, done: false, phase: 'warmup', warmup: true }, rows[1]])
-    expect(makeWarmupAt(rows, 1)[1]).toEqual({ w: 100, r: 5, done: true, phase: 'warmup', warmup: true, at: 7 })
+    expect(next).toEqual([rows[0], { w: 100, r: 5, done: false, phase: 'warmup', warmup: true, edited: true }, rows[1]])
+    expect(makeWarmupAt(rows, 1)[1]).toEqual({ w: 100, r: 5, done: true, phase: 'warmup', warmup: true, edited: true, at: 7 })
     expect(makeWarmupAt(rows, 0)).toBe(rows)
   })
 
@@ -1576,7 +1576,7 @@ describe('switching a row between warm-up and work', () => {
     const rows = [{ w: 30, r: 10, done: true, sides: { L: { w: 30, r: 5, done: true }, R: { w: 30, r: 5, done: true } } }, side]
     expect(canBeWarmup(side)).toBe(true)
     const warm = makeWarmupAt(rows, 1)
-    expect(warm[0]).toEqual({ phase: 'warmup', warmup: true, sides: { L: { w: 30, r: 5, done: true }, R: { w: 32.5, r: 6, done: false } }, r: 11, w: 32.5, done: false })
+    expect(warm[0]).toEqual({ phase: 'warmup', warmup: true, edited: true, sides: { L: { w: 30, r: 5, done: true }, R: { w: 32.5, r: 6, done: false } }, r: 11, w: 32.5, done: false })
     expect(warm[1]).toBe(rows[0])
     const back = makeWorkAt(warm, 0)
     expect(back[0]).toEqual({ sides: { L: { w: 30, r: 5, done: true }, R: { w: 32.5, r: 6, done: false } }, r: 11, w: 32.5, done: false })

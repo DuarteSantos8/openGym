@@ -7,10 +7,11 @@
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
 
-export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_tokens', temperature = null, versionlessFallback = false } = {}) {
-  return {
+export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_tokens', temperature = null, versionlessFallback = false, compatLadder = false } = {}) {
+  const spec = {
     id,
     versionlessFallback,
+    compatLadder,
     path: () => '/v1/chat/completions',
     modelsPath: '/v1/models',
     headers: key => (key ? { authorization: 'Bearer ' + key } : {}),
@@ -42,6 +43,20 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
     withoutJsonMode: body => (body.response_format && body.response_format.type === 'json_schema'
       ? { ...body, response_format: { type: 'json_object' } }
       : (() => { const { response_format: _rf, ...rest } = body; return rest; })()),
+    // The rungs of the compatibility ladder in http.js (#804), each one change to the request.
+    // Every one is a no-op on a request that does not carry what it changes; http.js skips those.
+    compat: {
+      strict: body => spec.withStrictSchema(body),
+      json_object: body => (body.response_format && body.response_format.type === 'json_schema' ? { ...body, response_format: { type: 'json_object' } } : body),
+      tokens: body => {
+        const from = 'max_tokens' in body ? 'max_tokens' : 'max_completion_tokens' in body ? 'max_completion_tokens' : null;
+        if (!from) return body;
+        const { [from]: n, ...rest } = body;
+        return { ...rest, [from === 'max_tokens' ? 'max_completion_tokens' : 'max_tokens']: n };
+      },
+      temperature: body => { const { temperature: _t, ...rest } = body; return rest; },
+      plain: body => { const { response_format: _rf, ...rest } = body; return rest; }
+    },
     errorMessage: data => {
       const e = data && data.error;
       if (!e || typeof e === 'string') return e || null;
@@ -79,6 +94,7 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
       return chat.length ? chat : ids;
     }
   };
+  return spec;
 }
 
 const NOT_CHAT = /realtime|audio|tts|transcri|whisper|embedding|image|dall-e|moderation|search|instruct|codex|computer-use|deep-research|-pro(?:-|$)|davinci|babbage|curie|ada/i;

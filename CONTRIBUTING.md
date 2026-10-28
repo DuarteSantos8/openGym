@@ -85,9 +85,11 @@ it in review.
 </picture>
 </p>
 
-A pull request runs the three test suites and builds and boots both api image targets. The APK and
-the published images come from GitLab CI on the mirror, built from `main` after the merge. If your
-change needs an APK to be judged, say so in the pull request and a maintainer will run that build.
+A pull request runs the three test suites and builds and boots both api image targets. Changes to
+the iPhone or Apple Watch app (`frontend/ios`) can run the `iOS` workflow too (build, UI tests and the
+WatchCore tests on a macOS runner); ask in the pull request if a maintainer should start it. Signed
+APKs, TestFlight and App Store builds are made by the maintainer at release time, so if your change
+needs a phone build to be judged, say so and we'll put it on TestFlight or send you an APK.
 A first-time contributor's workflows wait for a maintainer to approve them, so "no checks yet"
 just means nobody has pressed the button.
 

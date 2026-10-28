@@ -3,9 +3,9 @@
   "name": "lever bent over single arm neutral grip row (with chest support)",
   "bodyPart": "back",
   "equipment": "leverage machine",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "rear deltoids",
     "biceps"
   ],

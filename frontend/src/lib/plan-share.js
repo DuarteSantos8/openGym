@@ -20,14 +20,20 @@ import { MAX_TRIPLE_SETS } from './progression.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, exCount, routineCount } from './format.js'
 import { t, exerciseNameFor, exerciseNameClass } from './i18n-core.js'
 import { convertWeight } from './units.js'
+import { exUnitPin, withExUnit, viewTarget, exUnitOf } from './ex-unit.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { clampIncline, hasIncline } from './incline.js'
 import { MUSCLES, inMuscleOrder } from './muscles.js'
 import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
+import { MEDIA_CREDIT, isPrintPicture, loadPrintPictures } from './print-pictures.js'
 import { normalizeAliases } from './exercise-aliases.js'
+import { bundleProgramme, importedProgramme, programmeById, programmeRoutineIds, programmesOf, IMPORT_MAX_PROGRAMMES } from './programmes.js'
 
 const PLAN_FMT = 1
+// Programmes (#159) ride in a plan file as `programmes`, versioned on their own (`programme_fmt`)
+// so the file stays a format-1 plan: an older app reads its routines and weekdays and skips them.
+const PROGRAMME_FMT = 1
 const WEEK_DAYS = [1, 2, 3, 4, 5, 6, 0]   // every getDay() index; only the reader's own
                                           // screen puts them in an order (see weekOrder)
 const PLAN_UNITS = new Set(['kg', 'lb'])
@@ -240,7 +246,25 @@ export function buildPlanBundle(S, name) {
   // written after are read the same way at the other end.
   const week = {}
   WEEK_DAYS.forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]) })
-  return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', unit, week, routines, customEx }
+  const programmes = programmesOf(S).map(bundleProgramme).filter(Boolean)
+  // The plan's exercises that are shown in a weight unit of their own (#657), so a shared lb
+  // machine arrives as one. The numbers stay in the file's `unit`; an older app skips the map.
+  const exUnit = Object.fromEntries([...usedIds].map(id => [id, exUnitPin(S, id)]).filter(([, u]) => u))
+  return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', unit, week, routines, customEx,
+    ...(Object.keys(exUnit).length ? { exUnit } : {}),
+    ...(programmes.length ? { programme_fmt: PROGRAMME_FMT, programmes } : {}) }
+}
+
+/**
+ * One programme as a plan file: its routines, its weekdays as the file's week (what an older app
+ * imports as the schedule), and the programme itself. Null for an unknown id.
+ */
+export function buildProgrammeBundle(S, id) {
+  const p = programmeById(S, id)
+  if (!p) return null
+  const ids = new Set(programmeRoutineIds(S, p))
+  const sub = { ...S, routines: (S.routines || []).filter(r => ids.has(r.id)), week: p.days || {}, programmes: { [p.id]: p } }
+  return buildPlanBundle(sub, p.name)
 }
 
 /**
@@ -296,15 +320,24 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}) }, sourceUnit || destination, destination)
     })
   }))
+  // Exercise units (#657): only kg or lb, and only for exercises the plan still holds.
+  const inPlan = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
+  const exUnit = Object.fromEntries(Object.entries(data.exUnit && typeof data.exUnit === 'object' && !Array.isArray(data.exUnit) ? data.exUnit : {})
+    .map(([id, u]) => [known.has(id) ? id : canonicalExId(id), u])
+    .filter(([id, u]) => (u === 'kg' || u === 'lb') && inPlan.has(id)))
   return {
     name: (data.name || '').trim(),
     routines,
     week: data.week || {},
+    exUnit,
     customEx,
     dropped,
     routineCount: routines.length,
     exerciseCount: routines.reduce((n, r) => n + r.ex.length, 0),
     scheduledDays: WEEK_DAYS.filter(d => data.week?.[d]?.length).length,
+    // A newer programme format than this app reads is left out rather than half understood.
+    programmes: Array.isArray(data.programmes) && !(Number(data.programme_fmt) > PROGRAMME_FMT)
+      ? data.programmes.filter(p => p && typeof p === 'object' && !Array.isArray(p)).slice(0, IMPORT_MAX_PROGRAMMES) : [],
     // `unit` is the unit of the returned prescriptions. `sourceUnit` is null for a legacy file;
     // that absence means its numbers were intentionally treated as already in `destination`.
     unit: destination,
@@ -359,8 +392,23 @@ export function mergePlan(s, bundle, { schedule } = {}) {
       if (ids.length) s.week[d] = ids
     })
   }
+  // An exercise the plan shows in a unit of its own (#657) is pinned the same here, unless this
+  // profile already made its own choice for it.
+  for (const [id, u] of Object.entries(source.exUnit || {})) {
+    const nid = exIdMap[id] || canonicalExId(id)
+    if (s.exUnit && typeof s.exUnit === 'object' && s.exUnit[nid]) continue
+    s.exUnit = withExUnit(s.exUnit, nid, u)
+  }
+  // Programmes, over the routines just added (lib/programmes.js importedProgramme). Never started.
+  let programmes = 0
+  for (const p of source.programmes || []) {
+    const got = importedProgramme(p, ridMap, exIdMap)
+    if (!got) continue
+    s.programmes = { ...(s.programmes && typeof s.programmes === 'object' ? s.programmes : {}), [got.id]: got }
+    programmes++
+  }
   // `ids`: the new routines' ids in the plan's order, for a caller that puts them in a rotation.
-  return { routines: source.routines.length, ids: source.routines.map(r => ridMap[r.id]) }
+  return { routines: source.routines.length, ids: source.routines.map(r => ridMap[r.id]), programmes }
 }
 
 /* ------------------------------- printable PDF ------------------------------- */
@@ -423,7 +471,10 @@ export function printedName(ex, fallback) {
 
 // One exercise row. `n` is its number in the routine; `ticks` draws a box per set to tick off at
 // the gym (the single-routine sheet, which is the one you take with you).
-function exerciseHTML(e, n, unit, { speedUnit, ticks }) {
+function exerciseHTML(stored, n, profile, { speedUnit, ticks, state }) {
+  // In the exercise's own weight unit when it has one (#657).
+  const e = state ? viewTarget(state, stored.id, stored) : stored
+  const unit = state ? exUnitOf(state, stored.id) : profile
   const ex = EXIDX[e.id]
   const { name, en, cls } = printedName(ex)
   // Translated, and set apart by a real space: glued to the name, "capitalize" read the two as
@@ -441,11 +492,11 @@ function exerciseHTML(e, n, unit, { speedUnit, ticks }) {
 // The routine's heading (and, for the first routine, the section heading above it) travels inside
 // the first block, so it can never be stranded at the bottom of a page with its exercises overleaf.
 // The routine itself may run over a page: holding all of it together left whole pages blank.
-function routineHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '', m, key }) {
+function routineHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '', m, key, state }) {
   let n = 0
   const list = units(r.ex)
   const blocks = list.map((u, bi) => {
-    const items = u.map(e => exerciseHTML(e, ++n, unit, { speedUnit, ticks })).join('')
+    const items = u.map(e => exerciseHTML(e, ++n, unit, { speedUnit, ticks, state })).join('')
     const body = u.length > 1
       ? `<div class="ss"><div class="ss-tag">${esc(t('Superset'))}</div>${items}</div>`
       : items
@@ -504,35 +555,145 @@ const PLAN_CSS = `
   .rest { color: var(--faint); }
 `
 
+// ---- with pictures (#817): a grid of cells, two to a row, like the paper plan a gym hands out ----
+// Each row is one block that stays whole on a page; the routine's heading travels in its first
+// row, as in the list. The row is a CSS table (two cells of equal height), the picture sits on the
+// leading side of its cell with the name, sets, rest and note beside it: at 27 mm the picture
+// reads at a glance and a cell stays short enough for five or six rows to a page.
+const restText = sec => (sec < 60 ? sec + 's' : Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'))
+
+function cellHTML(stored, n, profile, { speedUnit, ticks, state, pictures }) {
+  const e = state ? viewTarget(state, stored.id, stored) : stored
+  const unit = state ? exUnitOf(state, stored.id) : profile
+  const ex = EXIDX[e.id]
+  const { name, en, cls } = printedName(ex)
+  const part = ex && ex.bp && ex.bp !== 'cardio' ? ` <span class="part">${esc(t(ex.bp))}</span>` : ''
+  const pic = pictures[stored.id]
+  const rest = Math.round(Number(e.restSec)) > 0 && modeOf(e) !== 'cardio' ? `<div class="gc-rest">${esc(t('Rest'))} ${esc(restText(Math.round(e.restSec)))}</div>` : ''
+  const boxes = ticks ? `<div class="ticks">${'<i></i>'.repeat(Math.min(12, Math.max(1, e.sets || 1)))}</div>` : ''
+  return `<div class="gc"><div class="gc-in${pic ? '' : ' no-pic'}">`
+    + (pic ? `<div class="gc-pic"><img src="${esc(pic)}" alt="" width="180" height="180"></div>` : '')
+    + `<div class="gc-txt"><div class="gc-top"><span class="ex-num">${n}</span><div class="ex-n ${ex ? cls : ''}">${esc(name)}${part}</div></div>`
+    + (en ? `<div class="ex-en">${esc(en)}</div>` : '')
+    + `<div class="gc-s">${schemeHTML(schemeParts(e, unit, speedUnit))}</div>`
+    + rest
+    + (e.note ? `<div class="ex-note">${esc(e.note)}</div>` : '')
+    + boxes
+    + `</div></div></div>`
+}
+
+// Cells two by two; an odd last one keeps its half of the row.
+const gridRows = cells => {
+  const rows = []
+  for (let i = 0; i < cells.length; i += 2) rows.push(`<div class="g-row">${cells[i]}${cells[i + 1] || '<div class="gc gc-empty"></div>'}</div>`)
+  return rows
+}
+
+function routineGridHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '', m, key, state, pictures }) {
+  let n = 0
+  const opts = { speedUnit, ticks, state, pictures }
+  // Single exercises fill rows two at a time; a superset closes the row before it and gets its
+  // own framed block, its members two to a row inside it, so the group still reads as one.
+  const blocks = []
+  let loose = []
+  const flush = () => { gridRows(loose).forEach(row => blocks.push(row)); loose = [] }
+  for (const u of units(r.ex)) {
+    if (u.length > 1) {
+      flush()
+      const cells = u.map(e => cellHTML(e, ++n, unit, opts))
+      blocks.push(`<div class="ss"><div class="ss-tag">${esc(t('Superset'))}</div>${gridRows(cells).join('')}</div>`)
+    } else loose.push(cellHTML(u[0], ++n, unit, opts))
+  }
+  flush()
+  const html = blocks.map((body, bi) => {
+    const id = `${key}-${bi}`
+    const head = bi === 0
+      ? lead + (bare ? '' : `${m.h(id)}<div class="r-head"><h2>${esc(r.name)}</h2><span class="r-count">${esc(exCount(r.ex.length))}</span></div>`)
+      : ''
+    return `<div class="keep">${m.s(id)}${head}${body}${m.e(id)}</div>`
+  })
+  if (!html.length) html.push(`<div class="keep">${lead}${bare ? '' : `<div class="r-head"><h2>${esc(r.name)}</h2></div>`}<div class="none">${esc(t('No exercises yet.'))}</div></div>`)
+  return `<section class="routine grid">${html.join('')}</section>`
+}
+
+const GRID_CSS = `
+  .g-row { display: table; table-layout: fixed; width: 100%; border-collapse: collapse; }
+  .gc { display: table-cell; width: 50%; vertical-align: top; padding: 7pt 0; border-bottom: 1px solid var(--rule-soft); }
+  .gc:first-child { padding-inline-end: 9pt; }
+  .gc + .gc { padding-inline-start: 9pt; border-inline-start: 1px solid var(--rule-soft); }
+  .gc-empty { border-bottom: 0; }
+  .gc-in { display: flex; align-items: flex-start; gap: 7pt; }
+  .gc-pic { flex: none; width: 27mm; height: 27mm; border: 1px solid var(--rule); border-radius: 3pt; background: #fff; overflow: hidden; }
+  /* Paper is never dark: no inversion or tint a dark theme might carry over. */
+  .gc-pic img { display: block; width: 100%; height: 100%; object-fit: contain; filter: none !important; mix-blend-mode: normal; }
+  .gc-txt { flex: 1 1 auto; min-width: 0; }
+  .gc-top { display: flex; align-items: flex-start; gap: 5pt; }
+  .gc-top .ex-num { flex: none; }
+  .gc-s { margin-top: 3pt; color: var(--ink-2); font-weight: 500; }
+  .gc-s .s-main { display: block; }
+  .gc-s .s-x { display: block; font-size: 8pt; font-weight: 400; color: var(--muted); }
+  .gc-s .sep { display: none; }
+  .gc-rest { font-size: 8pt; color: var(--muted); }
+  .gc .ticks { justify-content: flex-start; }
+  .grid .ss { margin: 4pt 0; }
+  .grid .ss .g-row:last-child .gc { border-bottom: 0; }
+`
+
 /**
  * Full self-contained HTML for the print/PDF view. With `routineId` it is that one routine on
  * its own page (#282) — the session you take to the gym, not the week around it — so the week
  * schedule is left out and the routine's name is the page title. `probe` is for the layout check
  * (lib/print-doc.js probeMarks), never set in the app.
+ * `pictures` ({ [exercise id]: data URL }, lib/print-pictures.js loadPrintPictures) prints the
+ * exercises as a grid with a picture each (#817); an exercise without one gets a text-only cell.
+ * With no picture for any printed exercise the page is the plain list. The licence's credit line
+ * is added only when a catalogue picture is on the page.
  */
-export function planPrintHTML(S, owner, { routineId, probe = false } = {}) {
+export function planPrintHTML(S, owner, { routineId, probe = false, pictures = null } = {}) {
   const m = probeMarks(probe)
   const unit = S.unit || 'kg'
   const speedUnit = speedUnitOf(S)
   const single = routineId ? (S.routines || []).find(r => r.id === routineId) || null : null
   const routines = routineId ? [single].filter(Boolean) : (S.routines || []).filter(r => r.ex && r.ex.length)
+  const pics = {}
+  if (pictures && typeof pictures === 'object') {
+    for (const r of routines) for (const e of r.ex || []) if (isPrintPicture(pictures[e.id])) pics[e.id] = pictures[e.id]
+  }
+  const grid = Object.keys(pics).length > 0
+  const credit = grid && Object.keys(pics).some(id => EXIDX[id] && !isCustomEx(EXIDX[id])) ? MEDIA_CREDIT : ''
   const lead = routineId ? '' : `<h3 class="sec-h">${esc(t('Routines'))}</h3>`
+  const one = (r, i) => {
+    const o = { bare: !!single, speedUnit, ticks: !!single, lead: i === 0 ? lead : '', m, key: 'r' + i, state: S }
+    return grid ? routineGridHTML(r, unit, { ...o, pictures: pics }) : routineHTML(r, unit, o)
+  }
   const body = routines.length
-    ? routines.map((r, i) => routineHTML(r, unit, { bare: !!single, speedUnit, ticks: !!single, lead: i === 0 ? lead : '', m, key: 'r' + i })).join('')
+    ? routines.map(one).join('')
     : `<p class="none">${esc(t('No routines yet.'))}</p>`
   const title = single ? single.name : t('Weekly Training Plan')
   const facts = single ? [exCount(single.ex.length)] : [routineCount(routines.length)]
   return printShell({
     title, kicker: single ? t('Routine') : t('Training plan'), facts, owner, date: todayISO(),
     body: (routineId ? '' : weekHTML(S, m)) + body,
-    css: PLAN_CSS,
+    css: PLAN_CSS + (grid ? GRID_CSS : ''),
+    credit,
   })
 }
 
 /**
- * Print the plan: the browser's print dialog (→ Save as PDF) on the web.
- * `opts` is planPrintHTML's: `{ routineId }` prints a single routine.
+ * Print the plan: the browser's print dialog (→ Save as PDF) on the web, the phone's print sheet
+ * in the app (lib/print-doc.js printDocument). `opts` is planPrintHTML's: `{ routineId }` prints
+ * a single routine; `withPictures` loads the exercise pictures first (lib/print-pictures.js),
+ * waiting at most a few seconds, and prints whatever made it in. `name` names the print job;
+ * `beforePrint` runs once the page is ready, just before the dialog opens; returning false there
+ * (the sheet was dismissed while the pictures loaded) prints nothing.
  */
-export function printPlan(S, owner, opts) {
-  return printDocument(planPrintHTML(S, owner, opts), opts?.routineId ? (S.routines || []).find(r => r.id === opts.routineId)?.name : t('Weekly Training Plan'))
+export async function printPlan(S, owner, { withPictures = false, name, beforePrint, loadPictures = loadPrintPictures, ...opts } = {}) {
+  let pictures = null
+  if (withPictures) {
+    try { pictures = await loadPictures(S, { routineId: opts.routineId }) } catch { pictures = null }
+  }
+  const job = name || (opts.routineId ? (S.routines || []).find(r => r.id === opts.routineId)?.name || t('Routine') : t('Weekly Training Plan'))
+  const html = planPrintHTML(S, owner, { ...opts, pictures })
+  if (beforePrint && beforePrint() === false) return
+  return printDocument(html, job)
 }

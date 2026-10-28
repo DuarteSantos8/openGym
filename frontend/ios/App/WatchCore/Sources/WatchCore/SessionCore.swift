@@ -75,7 +75,10 @@ enum SessionCore {
         if let r = snap.restSec, r > 0 { s.restSec = r }
         if let st = snap.settings { s.settings = st }
 
-        // A session started here that the phone has not reported back yet stays, whatever it sends.
+        // A session started here that the phone has not reported back yet stays, whatever it sends,
+        // unless the phone says it discarded it: it had it after all, and dropped it.
+        let droppedThere = discarded(s.workout?.id, in: snap)
+        if droppedThere && s.workout?.id == s.startedHere { s.startedHere = nil }
         let unconfirmed = s.workout?.id != nil && s.workout?.id == s.startedHere
         guard var next = snap.active, !(next.id.map { s.finishedHere.contains($0) } ?? false) else {
             // No workout on the phone, or one the watch has finished already.
@@ -336,13 +339,15 @@ enum SessionCore {
         var prs: [String] = []
         for e in w.entries {
             let work = e.sets.filter { !$0.warmup }
+            // An exercise in a unit of its own (#657) counts in the workout's unit.
+            let f = e.factor(to: w.unit)
             for row in work {
                 if let sides = row.sides {
-                    for one in [sides.L, sides.R] where one.done { volume += (one.w ?? 0) * (one.r ?? 0) }
+                    for one in [sides.L, sides.R] where one.done { volume += (one.w ?? 0) * (one.r ?? 0) * f }
                     if row.done { sets += 1 }
                 } else if row.done {
                     sets += 1
-                    if !e.isTimed && !e.isCardio { volume += (row.w ?? 0) * (row.r ?? 0) }
+                    if !e.isTimed && !e.isCardio { volume += (row.w ?? 0) * (row.r ?? 0) * f }
                 }
             }
             if let best = e.best, beatsBest(e, work.filter { $0.done }, best) { prs.append(e.name) }

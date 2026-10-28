@@ -29,6 +29,7 @@ const EX = { id: 'bench', n: 'bench press', gif: 'bench.gif', img: 'bench.jpg' }
 
 let host, root
 beforeEach(() => {
+  window.happyDOM.settings.disableIframePageLoading = true
   mocks.S = { gifSize: 'full' }
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -40,6 +41,67 @@ afterEach(() => {
 })
 
 const mount = props => act(() => root.render(<Media ex={EX} {...props} />))
+
+describe('inline YouTube', () => {
+  const url = 'https://www.youtube.com/watch?v=99QhMQoxmOk'
+  it('waits for a tap, embeds a validated video, provides an external fallback and closes', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    mount({ notes: 'Exercise demo: ' + url })
+    expect(host.querySelector('iframe')).toBeNull()
+    expect(host.querySelector('img[src*="youtube"]')).toBeNull()
+    act(() => host.querySelector('.youtube-video button').click())
+    expect(host.querySelector('iframe').src).toBe('https://www.youtube-nocookie.com/embed/99QhMQoxmOk?autoplay=1&playsinline=1')
+    expect(host.querySelector('iframe').title).toContain('YouTube')
+    act(() => host.querySelectorAll('.youtube-actions button')[1].click())
+    expect(open).toHaveBeenCalledWith(url, '_blank', 'noopener,noreferrer')
+    act(() => host.querySelector('.youtube-actions button').click())
+    expect(host.querySelector('iframe')).toBeNull()
+    open.mockRestore()
+  })
+  it('says on the card that the video comes from YouTube, and only after the tap', () => {
+    mount({ notes: url })
+    expect(host.querySelector('.youtube-video .exlink-sub').textContent).toBe('Plays from YouTube, and only once you tap')
+  })
+  // The iPhone app's capacitor:// origin can't send the referrer YouTube's embed needs (Error 153),
+  // so there the tap opens the video in YouTube and no player is ever mounted.
+  it('opens the video in YouTube on the iPhone app instead of embedding it', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    globalThis.Capacitor = { getPlatform: () => 'ios' }
+    try {
+      mount({ notes: url })
+      expect(host.querySelector('.youtube-video .exlink-sub').textContent).toBe('Opens in YouTube')
+      act(() => host.querySelector('.youtube-video button').click())
+      expect(host.querySelector('iframe')).toBeNull()
+      expect(open).toHaveBeenCalledWith(url, '_blank', 'noopener,noreferrer')
+    } finally {
+      delete globalThis.Capacitor
+      open.mockRestore()
+    }
+  })
+  it('plays inline in the Android app', () => {
+    globalThis.Capacitor = { getPlatform: () => 'android' }
+    try {
+      mount({ notes: url })
+      act(() => host.querySelector('.youtube-video button').click())
+      expect(host.querySelector('iframe').src).toContain('https://www.youtube-nocookie.com/embed/99QhMQoxmOk')
+      expect(host.querySelector('iframe').getAttribute('referrerpolicy')).toBe('strict-origin-when-cross-origin')
+    } finally { delete globalThis.Capacitor }
+  })
+  it('does not duplicate a custom exercise link also present in its notes', () => {
+    mount({ ex: { id: 'c-demo', custom: true, n: 'Demo', url }, notes: url })
+    expect(host.querySelectorAll('.youtube-video')).toHaveLength(1)
+  })
+  it('unmounts players when media is switched off and resets when the video changes', () => {
+    mount({ notes: url, minimizable: true })
+    act(() => host.querySelector('.youtube-video button').click())
+    mocks.S.gifSize = 'off'
+    mount({ notes: url, minimizable: true })
+    expect(host.querySelector('iframe')).toBeNull()
+    mocks.S.gifSize = 'full'
+    mount({ notes: 'https://youtu.be/ek9I3ORMU3g', minimizable: true })
+    expect(host.querySelector('iframe')).toBeNull()
+  })
+})
 
 describe('Media gifSize', () => {
   it('renders the full animation by default and toggles to mini in the workout', () => {
@@ -94,6 +156,7 @@ async function holding(...hashes) {
 
 describe('Media — a custom exercise', () => {
   beforeEach(() => {
+  window.happyDOM.settings.disableIframePageLoading = true
     made = []
     media = createMediaStore(memoryBackend(), {
       objectURL: { createObjectURL: b => { const u = 'blob:t/' + made.length; made.push(u); return u }, revokeObjectURL: () => {} },
@@ -282,6 +345,7 @@ describe('Media — a custom exercise', () => {
 
 describe('Thumb — a custom exercise', () => {
   beforeEach(() => {
+  window.happyDOM.settings.disableIframePageLoading = true
     made = []
     media = createMediaStore(memoryBackend(), { objectURL: { createObjectURL: () => 'blob:t/' + made.push(1), revokeObjectURL: () => {} } })
     _setMediaStore(media)

@@ -89,9 +89,12 @@ describe('the swap picker', () => {
     exercisePicker(() => {}, { title: 'Swap exercise', like: '0025', backups: ['0289', 'gone'] })
     const host = render(useUI.getState().sheets.at(-1))
     const heads = [...host.querySelectorAll('h4.sec')].map(h => h.textContent)
-    expect(heads.slice(0, 2)).toEqual(['Your backups', 'Everything else'])
+    // then the suggested substitutes (#674), which leave out what is already a backup
+    expect(heads.slice(0, 2)).toEqual(['Your backups', 'Suggested substitutes'])
     const first = host.querySelector('h4.sec').nextElementSibling
     expect(first.textContent).toContain(exerciseNameFor(EXIDX['0289']))
+    const suggested = host.querySelector('section[aria-label="Suggested substitutes"]')
+    expect(suggested.textContent).not.toContain(exerciseNameFor(EXIDX['0289']))
   })
   it('no backups, no section', () => {
     exercisePicker(() => {}, { title: 'Swap exercise', like: '0025' })

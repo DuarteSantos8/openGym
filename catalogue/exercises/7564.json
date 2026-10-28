@@ -3,9 +3,9 @@
   "name": "cable split stance single arm row",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rear deltoids",
     "core"

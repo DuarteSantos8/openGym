@@ -6,38 +6,50 @@ import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { setWeightDecimals } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
+import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
-import { setNav, notePath, keyBefore, navToWorkout } from './lib/nav.js'
+import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen } from './lib/gym-reminder.js'
+import { autoGymHere } from './lib/gym-auto.js'
 import { workoutVolume } from './lib/history.js'
 import { setSystemBarsLight } from './lib/system-bars.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
-import { startWatchSync, bindWatchAppActions, patchSetIn } from './lib/watch-sync.js'
+import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim } from './lib/watch-sync.js'
+import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
+import { startPhoneWorkout } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
+import { startWidgetLinks } from './lib/widget-links.js'
+import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync } from './lib/live-activity.js'
 import { useWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
-import { exitWorkoutEdit, startFlow, beginWorkout } from './sheets.jsx'
+import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
+import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
+import ScrollTopButton from './components/ScrollTopButton.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import Modals from './components/Modals.jsx'
 import Toast from './components/Toast.jsx'
 import SyncBanner from './components/SyncBanner.jsx'
 import RestTimer from './components/RestTimer.jsx'
 import TimerFlash from './components/TimerFlash.jsx'
+import { SeasonalLayer } from './components/Seasonal.jsx'
+import { WrappedLayer } from './components/WrappedEntry.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import { useAnimPacksBoot } from './components/Animations.jsx'
+import { useNfcTagLinks } from './components/Nfc.jsx'
+import { useRoutineLinks } from './components/RoutineShare.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import PermissionSteps from './views/PermissionSteps.jsx'
@@ -71,11 +83,15 @@ const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
 // only needs Home, and these are fetched right behind it the same way.
 const CheckIn = lazyView(() => import('./views/CheckIn.jsx'))
 const RoutineEdit = lazyView(() => import('./views/RoutineEdit.jsx'))
+const Programmes = lazyView(() => import('./views/Programmes.jsx'))
+const ProgrammeEdit = lazyView(() => import('./views/Programmes.jsx').then(m => ({ default: m.ProgrammeEdit })))
 const Stats = lazyView(() => import('./views/Stats.jsx'))
 const History = lazyView(() => import('./views/History.jsx'))
 const Library = lazyView(() => import('./views/Library.jsx'))
 const Muscles = lazyView(() => import('./views/Muscles.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
+// The app tour's overlay (components/Tour.jsx): fetched when it opens, never before.
+const Tour = lazy(() => import('./components/Tour.jsx'))
 let viewsPrefetched = false
 const prefetchViews = () => {
   if (viewsPrefetched) return
@@ -140,8 +156,10 @@ function Shell() {
     navigate('/workout', { replace: true })
     exitWorkoutEdit(() => navigate(destination, { replace: true }))
   }, [loc.pathname, loc.search, S.active?.editingWorkoutId, navigate])
-  // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked.
-  const accent = accentValue(S)
+  // A preset key, or the user's own colour as '#rrggbb' (lib/accent.js), already checked. A
+  // seasonal theme's colours stand in for it while that theme shows, and only when chosen
+  // (Settings → Look & Home → Seasonal themes); the saved accent itself is never touched.
+  const accent = seasonAccent(S) || accentValue(S)
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
@@ -274,6 +292,32 @@ function Shell() {
   const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding || permSteps
 
   const authed = user || isGuest
+  // The first setup is through (sign-in or "Use on this device", and the phone's permission
+  // steps): "Want a 1-minute tour?" once, on a profile with nothing logged yet, or "Finish the
+  // tour?" once after one was closed halfway (lib/tour.js). A moment after the screen settles,
+  // never over a sheet or a workout, and only once the copy is the account's own.
+  const tour = useTour()
+  const tourAsked = useRef(false)
+  const setupDone = authed && ready && !needsMobileOnboarding && !permSteps
+  // A tapped NFC sticker (components/Nfc.jsx): one that opened the app waits for the setup.
+  useNfcTagLinks(setupDone)
+  // A friend's routine link (components/RoutineShare.jsx): the same wait for the setup.
+  useRoutineLinks(setupDone)
+  useEffect(() => {
+    if (!setupDone || tourAsked.current) return
+    const tm = setTimeout(() => {
+      const st = useStore.getState()
+      if (tourAsked.current || tourState() || st.S.active || useUI.getState().sheets.length || /^#\/workout/.test(window.location.hash || '')) return
+      const rec = readTour()
+      const at = resumeAt(rec)
+      const synced = !st.user || (st.sync?.status === 'ok' && st.sync.lastSynced > 0)
+      if (at) openTour({ kind: 'resume', at })
+      else if (shouldOffer(rec, st.S, { synced })) openTour({ kind: 'offer' })
+      else return
+      tourAsked.current = true
+    }, 1200)
+    return () => clearTimeout(tm)
+  }, [setupDone, S])
   // The boot screen in index.html covers the start; it goes once there is something to show.
   useEffect(() => { if (ready || authed) hideBoot() }, [ready, authed])
   if (!ready && !authed) return (
@@ -292,6 +336,8 @@ function Shell() {
       {S.checkIn !== false && <Route path="/checkin" element={<CheckIn />} />}
       <Route path="/plan" element={<Plan />} />
       <Route path="/plan/r/:id" element={<RoutineEdit />} />
+      <Route path="/plan/programmes" element={<Programmes />} />
+      <Route path="/plan/prog/:id" element={<ProgrammeEdit />} />
       <Route path="/workout" element={<Workout />} />
       <Route path="/stats" element={<Stats />} />
       <Route path="/history" element={<History />} />
@@ -331,10 +377,17 @@ function Shell() {
           including on the sign-in screen, when the server has just ended the session. */}
       <SyncBanner />
       {!noTabs && <TabBar onStart={startFlow} />}
+      {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
       <RestTimer />
       <Modals />
       <Toast />
       <TimerFlash />
+      {tour && authed && <Suspense fallback={null}><Tour /></Suspense>}
+      {/* Seasonal decoration (lib/seasonal.js): nothing, and nothing loaded, out of season. Never
+          over a running workout or the first-launch screens. */}
+      {authed && !needsMobileOnboarding && !permSteps && <SeasonalLayer hidden={inWorkout || loc.pathname === '/workout'} />}
+      {/* Your year in openGym (components/WrappedEntry.jsx): nothing loaded until it is opened. */}
+      {authed && <WrappedLayer ready={setupDone} />}
     </>
   )
 }
@@ -402,8 +455,23 @@ export default function App() {
     })
     return () => { gone = true; stop?.(); unbind() }
   }, [])
-  // iPhone app: the Home Screen widgets and the workout's Live Activity (lib/widgets.js,
-  // lib/live-activity.js). Nothing at all on the web or on Android.
+  // iPhone app on iOS 26+: the phone's own workout session when no Apple Watch app takes the
+  // workout, so AirPods that measure the heart rate fill each set's, as the watch does (#818,
+  // lib/phone-workout.js). Nothing on the web, on Android or on an older iOS.
+  useEffect(() => {
+    if (!MOBILE) return
+    let stop = null, gone = false
+    startPhoneWorkout({
+      useStore, useUI,
+      apply: patches => useStore.getState().update(s => {
+        for (const { where, fields } of patches) patchSetIn(s, where, fields, stampWorkout, { recount: w => { w.vol = workoutVolume(w) } })
+      }),
+      watch: { status: watchStatus, claimed: watchClaimed, onClaim: onWatchClaim, prefs: readWatchPrefs, reported: readWatchStatus },
+    }).then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
+    return () => { gone = true; stop?.() }
+  }, [])
+  // Phone app: the Home Screen and Lock Screen widgets (lib/widgets.js, iPhone and Android) and
+  // the workout's Live Activity (lib/live-activity.js, iPhone). Nothing at all on the web.
   useEffect(() => {
     if (!MOBILE) return
     const stops = [], gone = { v: false }
@@ -412,11 +480,31 @@ export default function App() {
     startLiveActivitySync({ useStore, useUI }).then(keep).catch(() => {})
     return () => { gone.v = true; stops.forEach(fn => fn()) }
   }, [])
-  // Phone app: a tap on the gym reminder (lib/gym-reminder.js) opens the Start screen, or the
-  // workout already running. Nothing on the web.
+  // Phone app: a tap on a widget opens the screen it is about (lib/widget-links.js).
   useEffect(() => {
     if (!MOBILE) return
-    return onGymReminderOpen(() => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() })
+    let stop = null, gone = false
+    startWidgetLinks({ getS: () => useStore.getState().S, nav, navToWorkout, startFlow, bwSheet, todayIds: todayRoutineIds })
+      .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
+    return () => { gone = true; stop?.() }
+  }, [])
+  // iPhone app: weigh-ins Siri logged while the app was closed (lib/voice.js), brought in once.
+  useEffect(() => {
+    if (!MOBILE) return
+    let stop = null, gone = false
+    startVoice({ useStore, toast: msg => useUI.getState().toast(msg) })
+      .then(fn => { if (gone) fn(); else stop = fn }).catch(() => {})
+    return () => { gone = true; stop?.() }
+  }, [])
+  // Phone app: a tap on the gym reminder (lib/gym-reminder.js) opens the Start screen, or the
+  // workout already running. Nothing on the web. A place linked to an equipment profile makes that
+  // gym the active one on the way (lib/gym-auto.js, #808).
+  useEffect(() => {
+    if (!MOBILE) return
+    return onGymReminderOpen(() => {
+      if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout()
+      autoGymHere()
+    })
   }, [])
   return <HashRouter><Shell /></HashRouter>
 }

@@ -1,17 +1,20 @@
-// Browser-side QR decoding for the gym check-in — the PWA half of lib/scan.js. The app build
+// Browser-side code decoding for the gym check-in — the PWA half of lib/scan.js. The app build
 // hands scanning to ML Kit; here in a browser tab (installed PWA on a phone, most often) we do
 // it ourselves: draw the source — an uploaded photo or a live <video> frame — onto an offscreen
 // canvas and decode the pixels.
 //
-// Two decoders, tried in order:
+// Decoders, tried in order:
 //   1. BarcodeDetector — the browser's own (Chrome/Edge on Android, Samsung Internet). Native
-//      speed and quality when it exists; asked for QR only.
-//   2. jsQR (Apache-2.0, see NOTICE.md) — pure JS, works everywhere including iOS Safari, which
-//      has no BarcodeDetector. Loaded with a dynamic import so it only ships when someone scans.
+//      speed and quality when it exists; asked for QR and the 1D formats we can redraw.
+//   2. jsQR (Apache-2.0, see NOTICE.md) — pure JS QR, works everywhere including iOS Safari,
+//      which has no BarcodeDetector. Loaded with a dynamic import so it only ships when someone
+//      scans.
+//   3. lib/barcode.js — our own 1D reader, for the same browsers jsQR covers.
 //
 // decodeImageData is the pure core (pixels in, string out) and is what the unit test exercises;
 // decodeSource wraps it with the canvas plumbing the browser paths need.
 import { normalizeFmt } from './qr.js'
+import { decodeBarcodeImage } from './barcode.js'
 
 let _jsqr = null
 async function loadJsQr() {
@@ -23,30 +26,35 @@ let _detector = null
 function nativeDetector() {
   if (_detector !== null) return _detector
   try {
-    _detector = (typeof BarcodeDetector === 'function') ? new BarcodeDetector({ formats: ['qr_code'] }) : false
+    _detector = (typeof BarcodeDetector === 'function')
+      ? new BarcodeDetector({ formats: ['qr_code', 'code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a'] })
+      : false
   } catch (e) { _detector = false }
   return _detector
 }
 
 // { data, width, height } (an ImageData or anything shaped like one) → { value, fmt } | null.
-// jsQR only; the native detector wants a drawable, not raw pixels, so it lives in decodeSource.
+// jsQR, then our 1D reader; the native detector wants a drawable, not raw pixels, so it lives
+// in decodeSource.
 export async function decodeImageData(img) {
   if (!img || !img.data || !img.width || !img.height) return null
   const jsQR = await loadJsQr()
   const hit = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' })
-  return hit && hit.data ? { value: hit.data, fmt: 'qrcode' } : null
+  return hit && hit.data ? { value: hit.data, fmt: 'qrcode' } : decodeBarcodeImage(img)
 }
 
 // Decode from anything drawImage accepts: <video>, <img>, ImageBitmap, canvas. The source is
-// scaled down to at most MAX px on its long edge — plenty for a QR, and it keeps jsQR fast enough
-// to run on every few video frames on a phone. Reuses one canvas across calls.
-const MAX = 800
+// scaled down to at most `max` px on its long edge — plenty for a QR, and it keeps jsQR fast
+// enough to run on every few video frames on a phone. A still photo gets more pixels (PHOTO_MAX):
+// the thin bars of a 1D code on a card that fills only part of the shot need them. Reuses one
+// canvas across calls.
+const MAX = 800, PHOTO_MAX = 1600
 let _canvas = null
-export async function decodeSource(source) {
+export async function decodeSource(source, max = MAX) {
   const sw = source.videoWidth || source.naturalWidth || source.width || 0
   const sh = source.videoHeight || source.naturalHeight || source.height || 0
   if (!sw || !sh) return null
-  const k = Math.min(1, MAX / Math.max(sw, sh))
+  const k = Math.min(1, max / Math.max(sw, sh))
   const w = Math.max(1, Math.round(sw * k)), h = Math.max(1, Math.round(sh * k))
   if (!_canvas) _canvas = document.createElement('canvas')
   _canvas.width = w; _canvas.height = h
@@ -79,5 +87,5 @@ export async function importCodeFromImageWeb(file) {
       img.src = URL.createObjectURL(file)
     })
   }
-  try { return await decodeSource(bmp) } finally { if (bmp.close) bmp.close() }
+  try { return await decodeSource(bmp, PHOTO_MAX) } finally { if (bmp.close) bmp.close() }
 }

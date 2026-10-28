@@ -103,7 +103,7 @@
   <h1>Privacy</h1>
   <p class="lead">This page covers the openGym apps for Android and iPhone (the APK from this
      site and GitHub, the Google Play and App Store versions) and this website.
-     Last changed: 15 October 2026.</p>
+     Last changed: 26 October 2026.</p>
 
   <h2 id="short">The short version</h2>
   <ul>
@@ -114,7 +114,8 @@
         settings are stored in the app's own storage on your device. We never receive them.</li>
     <li><b>You decide what leaves the phone</b>, and only these things can: a backup you export,
         a server you connect, the AI coach if you set it up, Health Connect or Apple Health if you
-        switch them on, and the address search of the gym reminder.</li>
+        switch them on, the address search of the gym reminder, and a YouTube video you tap to
+        watch.</li>
   </ul>
 
   <h2 id="online">When the app goes online</h2>
@@ -151,6 +152,13 @@
     <li><b>Missed-day reminder</b> (only with your own server connected). In the background the
         app may ask your server whether you already trained today, so it doesn't nag you for
         nothing.</li>
+    <li><b>YouTube videos</b>, only when you tap one. A YouTube link you put on an exercise you
+        added or in a routine's notes shows as a "Watch video" card, and nothing is loaded from
+        YouTube until you tap it. Then, on Android and in the browser, the video plays in the app
+        from youtube-nocookie.com, YouTube's privacy-enhanced player: Google (YouTube's owner) gets
+        your IP address and which video it is, and the player may keep a little data of its own on
+        the phone, under Google's privacy policy. On the iPhone the tap opens the video in YouTube
+        or Safari instead. The app never tells YouTube anything else about you or your training.</li>
     <li><b>Update check</b> (only the APK from this site and GitHub). When you open Settings →
         About, the app asks GitHub's public release list whether there is a newer version, and
         downloads it from GitHub if you tap update. The store versions are updated by their store
@@ -163,9 +171,13 @@
   <p><b>Gym reminder</b> (phone app, off until you switch it on). Where your gyms are stays on your
      phone: not synced, not in backups, not sent to us or to your server. The phone itself notices
      when you walk in (Android's location service or iOS region monitoring), so nobody, us
-     included, learns where you go. We don't want to know, honestly. Two things do go out: an
-     address you search for on the map goes to OpenStreetMap's Nominatim (just the text you
-     typed), and the map tiles come from OpenStreetMap. And if the phone is connected to your own
+     included, learns where you go. We don't want to know, honestly. Two things do go out: what you
+     type into the map's search, and the map itself. On the iPhone the map is Apple Maps, so a search
+     (and the street address of a pin you drop) goes to Apple, like any search in Apple's Maps app.
+     On Android it is OpenStreetMap: a search goes to OpenStreetMap's Nominatim (just the text you
+     typed and the rough area the map shows, at most one request a second) and the map tiles come
+     from OpenStreetMap's tile servers (© OpenStreetMap contributors, under their tile usage
+     policy). "Open in Google Maps" sends the pin's spot to Google only when you tap it. And if the phone is connected to your own
      server, it asks that server "trained today already?" when you arrive, so a workout logged on
      your laptop doesn't get you nagged. That question carries the date, not your location.</p>
   <p id="delete"><b>Deleting your data:</b> it's on your phone, so Settings → Reset or uninstalling the app

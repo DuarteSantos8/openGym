@@ -31,7 +31,7 @@
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
 <script type="application/ld+json">
-{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is openGym really free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — free as in cost and as in freedom (AGPL-3.0). No pro tier, no locked features, no ads, and the license keeps every fork open source too."}}, {"@type": "Question", "name": "Is openGym in the App Store and on Google Play?", "acceptedAnswer": {"@type": "Answer", "text": "The App Store: yes, since 23 October 2026, for iPhone and Apple Watch (https://apps.apple.com/app/id6822275400). Google Play follows once a new developer account has finished its closed test. On Android the signed APK is a direct download in the meantime."}}, {"@type": "Question", "name": "Should I pick the mobile app or self-host?", "acceptedAnswer": {"@type": "Answer", "text": "To simply track your training: the mobile app. For data on your own hardware, synced across devices, with profiles for the people you train with: self-host with Docker. The backup file migrates everything between the two, or pair the app to your server."}}, {"@type": "Question", "name": "What's on the openGym roadmap?", "acceptedAnswer": {"@type": "Answer", "text": "A small, themed release every two weeks: the gym reminder and health data read back from the phone (v1.4.3), then programmes and phases, Google Play with a new progression engine, cardio, better search, password and OIDC accounts, a trainer role, wearables, and database storage after that. The full plan is in ROADMAP.md on GitHub."}}, {"@type": "Question", "name": "Was openGym written with AI?", "acceptedAnswer": {"@type": "Answer", "text": "openGym is developed with Claude Code, Anthropic's coding agent; a large share of the code, tests and docs is drafted that way, and every change is reviewed, tested and released by the maintainer. The app itself calls no AI service unless an admin switches on the optional AI coach."}}, {"@type": "Question", "name": "Where does the exercise database come from?", "acceptedAnswer": {"@type": "Answer", "text": "The exercise text lives in openGym's own catalogue in the repository, open to fixes and translations by pull request; the oldest entries came from ExerciseDB under MIT. The pictures and animations are licensed from Gym visual for use in openGym only and ship with it at 180 px. Reusing them anywhere else needs your own licence from gymvisual.com."}}, {"@type": "Question", "name": "What does the AGPL license mean for me?", "acceptedAnswer": {"@type": "Answer", "text": "You can self-host, use, modify and share openGym freely. Only if you run a modified version as a network service must you offer that version's source under the same license. Using or self-hosting it unmodified obliges you to nothing."}}]}
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is openGym really free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes — free as in cost and as in freedom (AGPL-3.0). No pro tier, no locked features, no ads, and the license keeps every fork open source too."}}, {"@type": "Question", "name": "Is openGym in the App Store and on Google Play?", "acceptedAnswer": {"@type": "Answer", "text": "The App Store: yes, since 23 October 2026, for iPhone and Apple Watch (https://apps.apple.com/app/id6822275400). Google Play follows once a new developer account has finished its closed test. On Android the signed APK is a direct download in the meantime."}}, {"@type": "Question", "name": "Should I pick the mobile app or self-host?", "acceptedAnswer": {"@type": "Answer", "text": "To simply track your training: the mobile app. For data on your own hardware, synced across devices, with profiles for the people you train with: self-host with Docker. The backup file migrates everything between the two, or pair the app to your server."}}, {"@type": "Question", "name": "What's on the openGym roadmap?", "acceptedAnswer": {"@type": "Answer", "text": "A release roughly every one to two weeks. v1.4.3 (gym reminder, health data read back, watch upgrades) is in App Review, v1.4.4 brings programmes with %1RM and RPE targets and custom app icons, v1.4.5 remote MCP and Google Play. After that, in rough order: circuits and EMOM, a trainer role, OIDC sign-in, F-Droid, a free on-device Coach, Strava and Garmin, and database storage. The full plan is in ROADMAP.md on GitHub."}}, {"@type": "Question", "name": "Was openGym written with AI?", "acceptedAnswer": {"@type": "Answer", "text": "openGym is developed with Claude Code, Anthropic's coding agent; a large share of the code, tests and docs is drafted that way, and every change is reviewed, tested and released by the maintainer. The app itself calls no AI service unless an admin switches on the optional AI coach."}}, {"@type": "Question", "name": "Where does the exercise database come from?", "acceptedAnswer": {"@type": "Answer", "text": "The exercise text lives in openGym's own catalogue in the repository, open to fixes and translations by pull request; the oldest entries came from ExerciseDB under MIT. The pictures and animations are licensed from Gym visual for use in openGym only and ship with it at 180 px. Reusing them anywhere else needs your own licence from gymvisual.com."}}, {"@type": "Question", "name": "What does the AGPL license mean for me?", "acceptedAnswer": {"@type": "Answer", "text": "You can self-host, use, modify and share openGym freely. Only if you run a modified version as a network service must you offer that version's source under the same license. Using or self-hosting it unmodified obliges you to nothing."}}]}
 </script>
 </head>
 <body class="topnav dock">
@@ -476,8 +476,8 @@
         (&ldquo;I miss you&rdquo;) or <i>Drill sergeant</i>. Rest days stay quiet, and after
         three missed days in a row it stops until your next workout.</li>
     <li><b>Gym reminder</b> (phone app, off by default): add your gyms in Settings &rarr;
-        Reminders &rarr; Gym reminder, from where you stand or as a pin on a map, each with its
-        own radius and text. Walk into one and the phone nudges you to hit Start: once a day at
+        Reminders &rarr; Gym reminder, from where you stand or by searching the map (Apple Maps on
+        the iPhone, OpenStreetMap on Android), each with its own radius, text and on/off switch. Walk into one and the phone nudges you to hit Start: once a day at
         most, never after you trained, never mid-workout, and only between the hours you pick if
         you like. Your gyms stay on the phone (not on your server, not in backups). Android uses
         the system's own proximity alerts, no Google services needed; it can be slow to notice
@@ -1037,7 +1037,8 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
     <li><b>The app collects nothing.</b> No telemetry, no analytics, no crash reporting, no
         accounts on anyone else's server. The exercise media are inside the mobile app.
         It goes online only for what you set up (your server, the coach, Health Connect, the gym
-        reminder's map and address search, which ask OpenStreetMap) and, in the
+        reminder's map and search, which ask Apple Maps on the iPhone and OpenStreetMap on
+        Android) and, in the
         APK from this site, for GitHub's public release list when you open Settings → About (the
         update check). The full policy: <a href="privacy.html">Privacy</a>. In the browser, a self-hosted instance talks only to your own server.</li>
     <li><b>Passkey private keys never leave your device</b> — the server stores only public
@@ -1123,11 +1124,13 @@ Leg Day,Leg Press,2026-08-21,200,1</code></pre>
      migrates everything, or <a href="#mobile-server">pair the app to your server</a> and
      keep using it.</p>
   <h3>What's on the roadmap?</h3>
-  <p>A small, themed release every two weeks. Next up: the gym reminder and heart rate and
-     weigh-ins read back from Health Connect and Apple Health (v1.4.3), then programmes and
-     phases, Google Play with a new progression engine (AMRAP, %1RM and 5/3/1-style waves),
-     cardio, better search, password and OIDC accounts, a trainer role, wearables, and database
-     storage after that. The full plan with dates is in
+  <p>A release roughly every one to two weeks. v1.4.3 (the gym reminder, heart rate and
+     weigh-ins read back from Apple Health and Health Connect, a smarter Apple Watch) is in App
+     Review. v1.4.4 brings programmes with %1RM and RPE targets, your own app icon and kg or lb
+     per exercise; v1.4.5 remote MCP over HTTPS and Google Play. After that, in rough order and
+     with dates that are honest guesses: circuits and EMOM, a trainer role, OIDC sign-in,
+     F-Droid, a free Coach that runs on the phone, Strava and Garmin, and database storage.
+     The full plan is in
      <a href="https://github.com/DuarteSantos8/openGym/blob/main/ROADMAP.md" rel="noopener">ROADMAP.md</a>;
      ideas and pull requests welcome.</p>
   <h3>Was openGym written with AI?</h3>

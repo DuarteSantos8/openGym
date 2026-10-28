@@ -3,6 +3,7 @@ import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
+import { syncGymInventory } from '../lib/gym-inventory.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
@@ -14,7 +15,7 @@ import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
-import { referencedHashes } from '../lib/media-refs.js'
+import { keptHashes } from '../lib/media-refs.js'
 import { mediaStore, mediaStoreInUse } from '../lib/media-store.js'
 import { countChanges, syncFingerprint } from '../lib/sync-changes.js'
 import { saveWorkoutEdit, deleteEditedWorkout } from '../lib/session-edit.js'
@@ -108,11 +109,17 @@ export const DEF = {
   // to keep Rotation selected, and the weekday grid hidden, from the moment it's chosen in
   // Settings/Plan through to the first routine being added — there's no queue yet to derive it from.
   scheduleMode: null,
+  // Programmes (#159, lib/programmes.js): { [id]: programme }, merged per programme, and the one
+  // running ({ id, startedOn, pausedOn?, cycle, bump, saved }) or null. Starting one writes its
+  // schedule into `week` or `rotation` above, so everything that reads those follows it.
+  programmes: {}, programme: null,
   exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
   // Stats activity heatmap metric. Profiles without this key continue to open on time.
   heatmapMetric: 'time',
   // Settings → Units → "Count warm-ups in volume" (#719): off keeps volume to work sets.
   volumeWarmups: false,
+  // Settings → Units → "Count body weight in bodyweight lifts" (#794): off keeps a pull-up at its belt.
+  volumeBodyweight: false,
   // How the active workout is laid out — 'cards' (one exercise at a time with Prev/Next),
   // 'list' (every exercise stacked and scrollable) or 'compact' (that stack stripped to just
   // names and set rows — no media, tags, notes, last-time or progression line). Purely
@@ -142,6 +149,10 @@ export const DEF = {
   reminder: { on: false, time: '08:00', tz: null, nudge: false, tone: 'friendly' }, effort: null, autoBackup: false,
   // Equipment profiles (issue: filter Library/picker/routines by what you actually own —
   // e.g. "Home" vs "Gym" — building on the session-only equipment filter from issue #6).
+  // Since 1.4.4 (#808) each profile is a gym and also keeps that gym's plates, dumbbells, bars and
+  // machine stacks; the top-level plates/dumbbells/barDefaults/stackWeights below are the active
+  // gym's copy, and `invGym` (absent until there is a profile) names the gym that copy belongs to.
+  // How the two are kept in step, and why: lib/gym-inventory.js.
   equipProfiles: [], activeEquipId: null, equipFilterOn: false,
   // Standing per-exercise notes, keyed by exercise id: the gym-specific facts that are true
   // every time you do the movement ("seat 4, pin 7"). Distinct from a routine's `note`, which
@@ -190,6 +201,10 @@ export const DEF = {
   // A machine's own weight stack, keyed by exercise id: { unit, weights: [5, 11.3, 18.1, …], _ts }
   // (lib/dumbbells.js, issue #688). Absent or empty = the increment decides, as before.
   stackWeights: {},
+  // An exercise's own weight unit, keyed by exercise id: { unit: 'kg' | 'lb' | null, _ts }
+  // (lib/ex-unit.js, issue #657). Shown and typed in that unit, still stored in the profile's.
+  // Absent or null = the profile's unit. Stamped like dbLoad.
+  exUnit: {},
   // Gym check-in cards (see views/CheckIn.jsx). Each is a membership
   // code shown as a QR/barcode at the gym's turnstile — added by typing it, importing a photo
   // of the card, or scanning it. We only ever keep the code's VALUE, never a photo: the image
@@ -237,6 +252,9 @@ export const DEF = {
   // #770): 'routine' is the routine's own last session of the exercise, as it has been since #216;
   // 'any' is its newest session in any workout. Absent reads as 'routine'.
   lastFrom: 'routine',
+  // The rule of a reps exercise whose routine sets none (Settings → Fine-tuning, lib/progression.js
+  // profileRule). Absent reads as 'linear' too, the way the app always behaved.
+  progDefault: 'linear',
   // Per-language choice for translated exercise names: whether the original English name is
   // shown in parentheses next to the translation. Map { '<lang>': boolean }; a missing key
   // (any profile written before this setting existed) reads as shown.
@@ -383,6 +401,12 @@ export const useStore = create((set, get) => {
   let mirrorQ = Promise.resolve()   // phone: the file mirror's writes, one after the other (saveMirror)
   // The write of the saved copy this tab last read or made, and whose copy it was (joinSaved).
   let seenWid = (() => { try { return localStorage.getItem(WID_KEY) } catch { return null } })()
+  // The tour's practice workout (components/Tour.jsx): while it runs the store shows a copy with a
+  // sample session in it, and nothing of that copy is written anywhere: not to storage, not to the
+  // phone's file, not to the server. `real` is the copy it stands in for, untouched, and comes back
+  // as it was. Syncing waits meanwhile (a pull landing in the copy would be lost with it).
+  let sandbox = null       // { real, owesPush }
+  const live = () => (sandbox ? sandbox.real : get().S)
   let seenOwner = (() => { try { return localStorage.getItem('gym_owner') } catch { return null } })()
   // Another tab signed in or out under this one (the gym_owner storage event below): what this
   // tab holds is no copy of the new owner's, so it writes nothing until it has taken that owner's
@@ -534,7 +558,7 @@ export const useStore = create((set, get) => {
   // taken. One write at a time, each of the copy in the store when its turn comes: a slow write
   // can never land after a later one.
   const saveMirror = () => (mirrorQ = mirrorQ.then(async () => {
-    const S = get().S
+    const S = live()
     let owner = null
     try { owner = localStorage.getItem('gym_owner') } catch { /* unknown — the file is then nobody's */ }
     await nativeSave(S)
@@ -546,7 +570,7 @@ export const useStore = create((set, get) => {
   const nativePersist = (now = false) => {
     clearTimeout(saveTm)
     saveTm = null
-    const write = () => { saveTm = null; syncReminder(get().S); syncHealth(get().S).catch(() => {}); readHealth(() => get().S).catch(() => {}); return saveMirror() }
+    const write = () => { saveTm = null; syncReminder(live()); syncHealth(live()).catch(() => {}); readHealth(live).catch(() => {}); return saveMirror() }
     if (now) return write()
     saveTm = setTimeout(write, 800)
     return null
@@ -616,6 +640,7 @@ export const useStore = create((set, get) => {
     return true
   }
   const persist = (S, push = true, stamp = true) => {
+    if (sandbox) { set({ S }); return }
     if (refuseStale(S)) return
     const { base, owed } = metaOf()   // the copy being replaced; the new one stands where it stood
     const joined = joinSaved(S, get()?.S)
@@ -692,6 +717,7 @@ export const useStore = create((set, get) => {
   // server is pushed on the same occasion. A phone that sat in a pocket all afternoon and a
   // desktop tab left open all week used to show, and then push, whatever they last had.
   const checkRev = async (force = false) => {
+    if (sandbox) return
     if (!get().user || !get().ready || document.visibilityState === 'hidden') return
     if (!force && Date.now() - lastCheck < CHECK_MIN_MS) return
     lastCheck = Date.now()
@@ -858,6 +884,7 @@ export const useStore = create((set, get) => {
     if (e.key !== 'gym_owner') return
     const owner = readOwner()
     if (owner === seenOwner) return
+    if (sandbox) get().leaveTourSandbox()
     clearTimeout(pushTm)
     pushTm = null
     // A guest's workout running here went along with the sign-in in the other tab (it joined this
@@ -947,6 +974,7 @@ export const useStore = create((set, get) => {
     if (u && readOwner() === u.id && readWidOwner() !== u.id) persist(get().S, false, false)
   }
   const syncFromSaved = () => {
+    if (sandbox) return
     if (handedOver) { takeSaved(); return }
     const wid = readWid()
     if (wid === seenWid || !savedIsMine()) return
@@ -996,7 +1024,7 @@ export const useStore = create((set, get) => {
   // goes before the wiped copy is written: another tab must learn that the copy is nobody's before
   // it sees the new copy, or it joins its own copy of the account into it (QA 2026-10-06).
   const clearLocalSession = () => {
-    const hadMedia = referencedHashes(get().S).size > 0
+    const hadMedia = keptHashes(get().S).size > 0
     get().setUser(null)
     localStorage.removeItem('gym_guest')
     forgetSync()
@@ -1025,7 +1053,7 @@ export const useStore = create((set, get) => {
     if (hadMedia || mediaStoreInUse()) {
       const since = Date.now()
       Promise.resolve(wiped).then(() => readStashes())
-        .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...referencedHashes(e?.state)])), { keepPutAfter: since }))
+        .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)])), { keepPutAfter: since }))
         .catch(() => {})
     }
     return wiped
@@ -1354,7 +1382,7 @@ export const useStore = create((set, get) => {
   registerExerciseAliases(S0.exAliases)
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
-  if (referencedHashes(S0).size) loadPending()
+  if (keptHashes(S0).size) loadPending()
   meta.set(S0, { base: readStoredSync(), owed: storedOwed() })
   const user0 = (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })()
   adoptHold = !!user0 && readAdopt()?.uid === user0.id
@@ -1378,6 +1406,30 @@ export const useStore = create((set, get) => {
     // once-per-device record (lib/onboarding-perms.js).
     permSteps: false,
     finishPermSteps() { set({ permSteps: false }) },
+    // The tour's practice workout (see `sandbox` above). `mut` prepares the stand-in copy; what
+    // the screens then change in it lasts until leaveTourSandbox, and not a moment longer.
+    tourSandbox: false,
+    enterTourSandbox(mut) {
+      if (sandbox) return
+      // A change still waiting in the debounce goes once the tour hands the real copy back.
+      sandbox = { real: get().S, owesPush: !!pushTm }
+      clearTimeout(pushTm)
+      pushTm = null
+      const S = clone(sandbox.real)
+      mut?.(S)
+      set({ S, tourSandbox: true })
+    },
+    leaveTourSandbox() {
+      if (!sandbox) return
+      const { real, owesPush } = sandbox
+      sandbox = null
+      set({ S: real, tourSandbox: false })
+      registerCustom(real.customEx)
+      // What waited meanwhile: another tab's save, the server's news, a push owed from before.
+      syncFromSaved()
+      if (owesPush && get().user && get().ready) { clearTimeout(pushTm); pushTm = setTimeout(() => get().pushState(), 1500) }
+      checkRev(true)
+    },
     // A one-time device-link code this page was opened with (?link=, #95), until it is redeemed.
     // Never persisted: the code is good for minutes and belongs to this one visit.
     linkCode: null,
@@ -1408,6 +1460,9 @@ export const useStore = create((set, get) => {
       // The stamps below write the change's records into these two maps in place (stampDeletions,
       // stampEdits); a draft that never touched them still shares them with the previous state.
       for (const k of ['deleted', 'edited']) if (S[k] && typeof S[k] === 'object' && S[k] === prev[k]) S[k] = clone(S[k])
+      // Equipment per gym (#808): the active gym's plates, dumbbells, bars and stacks are kept in
+      // step with its profile, whichever side this change (or a sync before it) touched.
+      syncGymInventory(S, prev)
       // What the change removed, and which routines, workouts, settings and plan days it touched,
       // each with one time that comes after every stamp the copy already carries: a conflict then
       // keeps a removal and the edit made last, even from a device whose clock runs behind
@@ -1682,6 +1737,7 @@ export const useStore = create((set, get) => {
     // before signing out knows the last change is on the server.
     async pushState() {
       if (!get().user) return
+      if (sandbox) { sandbox.owesPush = true; return }
       clearTimeout(pushTm)
       pushTm = null
       if (adoptHold) return   // the sign-in has not decided what this copy is yet (adoptProfile)
@@ -1697,6 +1753,7 @@ export const useStore = create((set, get) => {
     // and the push itself is what catches a conflict.
     async pullState() {
       if (adoptHold) return   // as pushState: adoptProfile reads the server itself
+      if (sandbox) return
       if (pulling) return pulling
       pulling = (async () => {
         try {
@@ -1798,7 +1855,7 @@ export const useStore = create((set, get) => {
     // as the stash is (lib/media-sync.js localMediaGc, Reset everything).
     async stashedMediaHashes() {
       const all = await readStashes()
-      return new Set(Object.values(all).flatMap(e => [...referencedHashes(e?.state)]))
+      return new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)]))
     },
 
     // Sign-in (and pairing a phone) takes the server's profile as this device's copy — the

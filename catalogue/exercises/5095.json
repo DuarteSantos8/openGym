@@ -3,9 +3,9 @@
   "name": "dumbbell single arm overhead lunge",
   "bodyPart": "upper legs",
   "equipment": "dumbbell",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "shoulders",
     "core",
     "hamstrings"

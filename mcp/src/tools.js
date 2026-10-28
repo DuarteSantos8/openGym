@@ -1,4 +1,4 @@
-/* The eight read-only tools. Each handler returns JSON; labels.js pre-substitutes any
+/* The read-only tools. Each handler returns JSON; labels.js pre-substitutes any
    {0}/{1} template the lib returns so the LLM gets final text, not template strings.
    ISO dates are validated on the way in; the handlers never see 'yesterday'. */
 import { z } from 'zod'
@@ -16,8 +16,11 @@ import {
   bestSetOf, best1RM, e1rmSeries, DEFAULT_FORMULA, REP_CAP
 } from '../../frontend/src/lib/onerm.js'
 import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles.js'
-import { policyFor } from '../../frontend/src/lib/progression.js'
+import { policyFor, profileRule } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
+import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
+import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
+import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
 
 /* ---------- helpers ---------- */
 
@@ -74,9 +77,13 @@ export function entryView(e, S) {
       sec: Number(s.sec) || 0,
       min: Number(s.min) || 0,
       speed: Number(s.speed) || 0
-    }))
+    })),
+    // How many of its sets have a form video (frontend lib/set-videos.js) — the count only. The
+    // videos themselves, their files and their refs never reach a client of this server.
+    ...(formVideos(e) ? { form_videos: formVideos(e) } : {})
   }
 }
+const formVideos = e => (Array.isArray(e?.sets) ? e.sets.reduce((n, s) => n + setVideosOf(s).length, 0) : 0)
 
 // Best estimate per exercise, mirroring the UI's PR table: every eligible set across history, biggest wins.
 // It asks bestSetOf() rather than scanning the rows here, so this table and the per-exercise answer of
@@ -123,7 +130,7 @@ export const listRoutines = {
         emoji: r.emoji || null,
         exercise_count: (r.ex || []).length,
         superset_groups: [...new Set((r.ex || []).map(e => e.sg).filter(Boolean))].length || 0,
-        policy: policyFor(null, r, 'reps'),
+        policy: policyFor(null, r, 'reps', profileRule(S)),
         exclude_from_progression: r.excludeFromProgression === true
       }))
     }
@@ -144,8 +151,8 @@ export const getRoutine = {
       id: r.id,
       name: r.name,
       emoji: r.emoji || null,
-      policy: policyFor(null, r, 'reps'),
-      policy_name: policyName(policyFor(null, r, 'reps')),
+      policy: policyFor(null, r, 'reps', profileRule(S)),
+      policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
       exercises: (r.ex || []).map((cfg, i) => {
@@ -176,7 +183,7 @@ export const getRoutine = {
           // The exercise's own rest (issue #10). Absent means it inherits the global rest
           // timer; a superset rests once, taking the longest its members ask for.
           rest_sec: cfg.restSec > 0 ? cfg.restSec : undefined,
-          policy: policyFor(cfg, r, mode),
+          policy: policyFor(cfg, r, mode, profileRule(S)),
           policy_override: cfg.prog || null,
           superset_group: cfg.sg || null,
           summary: exLine(cfg, S.unit || 'kg')
@@ -304,16 +311,21 @@ export const listWorkouts = {
         duration_ms: w.end && w.start ? (w.end - w.start) : null,
         duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
         prs: (w.prs || []).length,
-        bodyweight_at_workout: w.bw || null
+        bodyweight_at_workout: w.bw || null,
+        // The gym (equipment profile) it was done at, since 1.4.4; null before, or with no gyms.
+        gym: gymOf(w)
       }))
     }
   }
 }
 
+// Where a workout was done: the name of the gym (equipment profile) the app recorded (#808).
+const gymOf = w => (w && w.gym && typeof w.gym === 'object' && String(w.gym.name || '').trim()) || null
+
 /** get_workout — full entry/set breakdown for one date. */
 export const getWorkout = {
   name: 'get_workout',
-  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
+  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"), and form_videos: how many sets the user filmed (a count only; the videos are never shared). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
   schema: {
     date: isoDate().optional().describe('The workout date as YYYY-MM-DD. If two sessions share that date, the answer lists them instead and asks for a workout_id.'),
     workout_id: z.string().min(1).optional().describe('The id from list_workouts. Preferred: it names one session even on a day with two.')
@@ -356,6 +368,7 @@ export const getWorkout = {
       routine_name: w.name || null,
       unit: S.unit || 'kg',
       bodyweight_at_workout: w.bw || null,
+      gym: gymOf(w),
       volume: workoutVolume(w),
       sets_done: setsDone(w),
       sets_planned: setUnitsTotal(w.entries),
@@ -364,7 +377,9 @@ export const getWorkout = {
         const ex = exerciseOf(id, S)
         return ex.missing ? id : ex.n
       }),
-      entries: (w.entries || []).map(e => entryView(e, S))
+      entries: (w.entries || []).map(e => entryView(e, S)),
+      // The number of sets filmed that day (form videos), nothing about the videos themselves.
+      ...(setVideoCount(w) ? { form_videos: setVideoCount(w) } : {})
     }
   }
 }
@@ -372,7 +387,7 @@ export const getWorkout = {
 /** get_bodyweight — recent weigh-ins with the goal line. */
 export const getBodyweight = {
   name: 'get_bodyweight',
-  description: 'Get the body-weight log: chronological weigh-ins with weights, current goal, deltas vs goal (signed positive = above goal), and a latest summary. Useful for "am I trending toward my weight goal?" questions.',
+  description: 'Get the body-weight log: one entry per day, chronological, with the day\'s weight, current goal, deltas vs goal (signed positive = above goal), and a latest summary. A day can hold several weigh-ins: each entry lists them under `readings` with their local time (HH:MM, null when unknown), and the day\'s `weight` is the one the profile\'s daily-value setting picks (`daily_value`: first = morning, avg = average of the day, last). Useful for "am I trending toward my weight goal?" questions.',
   schema: {
     from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD.'),
     to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.')
@@ -392,12 +407,14 @@ export const getBodyweight = {
     return {
       unit: S.unit || 'kg',
       goal,
+      daily_value: dailyModeOf(S),
       count: bw.length,
       latest: latest ? { date: latest.d, weight: latest.w, delta_vs_goal: goal != null ? Math.round((latest.w - goal) * 10) / 10 : null } : null,
       entries: bw.map(b => ({
         date: b.d,
         weight: b.w,
-        delta_vs_goal: goal != null ? Math.round((b.w - goal) * 10) / 10 : null
+        delta_vs_goal: goal != null ? Math.round((b.w - goal) * 10) / 10 : null,
+        readings: readingsOf(b).map(r => ({ time: r.at || null, weight: r.w, ...(r.src ? { source: r.src } : {}) }))
       }))
     }
   }
@@ -518,6 +535,11 @@ function sourceOf(S, cfg, plan, field, routine) {
   // Except progression off under "start from your last session" (#217): there both the weight and
   // the reps are last time's, when there is a last time. A deload routine keeps its own numbers.
   if (!plan) return 'routine_plan'
+  // A running programme's %1RM set the weight (lib/programmes.js); its reps are the routine's.
+  if (plan.kind === 'programme') {
+    if (field === 'weight' && plan.prog?.pct != null && plan.weight != null) return 'programme'
+    if (field === 'reps') return 'routine_plan'
+  }
   if (plan.kind === 'off') {
     const fromLast = startsFromLast(S) && routine?.excludeFromProgression !== true
     return fromLast && lastEntryFor(S, cfg.id, routine && routine.id) ? 'last_session' : 'routine_plan'
@@ -534,6 +556,7 @@ function sourceOf(S, cfg, plan, field, routine) {
 }
 
 const SOURCE_TEXT = {
+  programme: 'the running programme\'s %1RM target for this week, from the best estimated 1RM',
   progression: 'the progression policy overrode the routine',
   confirmed_weight: 'your confirmed working weight for this exercise',
   last_session: 'carried over from the last time this routine had this exercise (or any routine, if this one never has)',
@@ -604,7 +627,9 @@ export const previewSession = {
           // Triple progression aims each set on its own ("12, 12, 12, 9"); `reps` is the first set's.
           row_reps: Array.isArray(plan.rowReps) ? plan.rowReps : undefined,
           sec: plan.sec != null ? plan.sec : undefined,
-          why: plan.why ? fmt(plan.why[0], plan.why.slice(1)) : null
+          why: plan.why ? fmt(plan.why[0], plan.why.slice(1)) : null,
+          // This week's target of a running programme, when it speaks to this exercise.
+          programme: plan.prog ? { week: plan.prog.week, weeks: plan.prog.weeks, pct_1rm: plan.prog.pct, target_rpe: plan.prog.rpe, deload: plan.prog.deload === true } : undefined
         },
         opening_sets: rows.map(s => ({
           phase: isWarmupRow(s) ? 'warmup' : 'work',
@@ -647,8 +672,8 @@ export const previewSession = {
       // The profile's "Planned sessions start from" setting: 'plan' opens at the routine's own
       // reps, 'last_session' carries them over from the last time.
       starts_from: startsFromLast(S) ? 'last_session' : 'plan',
-      policy: policyFor(null, r, 'reps'),
-      policy_name: policyName(policyFor(null, r, 'reps')),
+      policy: policyFor(null, r, 'reps', profileRule(S)),
+      policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exercises,
       // Surfaced separately so a coach reading this cannot miss it: these are the exercises
       // where what the routine stores and what the athlete will see are two different numbers.
@@ -672,8 +697,49 @@ export const previewSession = {
 
 /* ---------- registration list ---------- */
 
+/* ---------- get_programme ---------- */
+
+/** get_programme — the programmes saved, and where the running one stands (#159). */
+export const getProgramme = {
+  name: 'get_programme',
+  description: 'Show the user\'s programmes: routines run as a block of 1 to 16 calendar weeks, each week with optional targets (a %1RM per exercise, an RPE per exercise or for the whole week, a deload week). `running` is the one in progress, or null: its current week (1-based) of how many, whether it is paused or done, and this week\'s targets. While one runs, its schedule IS the user\'s weekday plan or rotation (get_week_plan shows it), and preview_session already opens sessions at its targets. `programmes` lists every saved one with its schedule and weeks. Targets are keyed by exercise id, or by "routineId:exerciseId" for one routine only.',
+  schema: {},
+  handler: () => {
+    const S = getState()
+    if (!S) return noState()
+    const nameOf = id => (S.routines || []).find(r => r.id === id)?.name || null
+    const weekOut = w => ({
+      deload: w.deload === true,
+      rpe: w.rpe ?? null,
+      targets: Object.entries(w.t || {}).map(([key, v]) => {
+        const i = key.indexOf(':')
+        const exId = i < 0 ? key : key.slice(i + 1)
+        return { exercise_id: exId, exercise_name: exerciseOf(exId, S).n, routine_id: i < 0 ? null : key.slice(0, i), pct_1rm: v.pct ?? null, rpe: v.rpe ?? null }
+      }),
+    })
+    const st = programmeStatus(S, todayIso())
+    return {
+      today: todayIso(),
+      running: st ? {
+        id: st.programme.id, name: st.programme.name, week: st.week, weeks: st.weeks,
+        paused: st.paused, done: st.done, round: st.cycle, started_on: st.run.startedOn,
+        extra_pct_1rm: Number(st.run.bump) || 0,
+        this_week: st.current ? weekOut(st.current) : null,
+      } : null,
+      programmes: programmesOf(S).map(p => ({
+        id: p.id, name: p.name, weeks: p.weeks.length,
+        schedule: p.sequence
+          ? { kind: 'rotation', sequence: p.sequence.map(id => (id === 'rest' ? 'rest' : nameOf(id))) }
+          : { kind: 'weekdays', days: Object.fromEntries(Object.entries(p.days || {}).map(([d, ids]) => [DAY_NAMES[d], ids.map(nameOf).filter(Boolean)])) },
+        routine_ids: programmeRoutineIds(S, p),
+        week_targets: p.weeks.map(weekOut),
+      })),
+    }
+  }
+}
+
 export const TOOLS = [
-  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance
+  listRoutines, getRoutine, previewSession, getWeekPlan, listWorkouts, getWorkout, getBodyweight, estimate1rm, muscleBalance, getProgramme
 ]
 
 function noState() {

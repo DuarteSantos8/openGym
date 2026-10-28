@@ -6,7 +6,7 @@ openapi: 3.1.0
 
 info:
   title: openGym API
-  version: 1.4.2
+  version: 1.4.3
   summary: Passkey (WebAuthn) auth + per-user state storage for openGym
   description: |
     The backend of [openGym](https://opengym.ch), a free, open-source
@@ -3780,7 +3780,14 @@ components:
             This instance also keeps the files of progress photos filed under a day
             (`dayPhotos`, a photo for a day without a workout). Absent on an instance from
             before; the app then only adds photos to logged workouts there.
-      example: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true, days: true }
+        sets:
+          type: boolean
+          const: true
+          description: >-
+            This instance also keeps the files of a form video filmed for one set
+            (`workouts[].entries[].sets[].media`, v1.4.4). Absent on an instance from before; the
+            app then keeps a set's video on the phone that filmed it and never uploads it.
+      example: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true, days: true, sets: true }
 
     MediaUsage:
       type: object
@@ -3861,10 +3868,34 @@ components:
 
     BodyweightEntry:
       type: object
+      description: >-
+        One day of weigh-ins. `w` is the day's one value, the one the profile's `bwDaily`
+        setting picks from `ins` (first, the default; avg; last), so a reader that knows nothing
+        of `ins` gets the same number the app charts. A day from before v1.4.4 has no `ins`: one
+        weigh-in without a time. A client that writes `w` and `t` of a day with `ins` (an older
+        app correcting the day) has that taken as a correction of the weigh-in `w` came from.
       properties:
         d: { type: string, format: date }
-        w: { type: number, description: Weight in `unit`. }
-        t: { type: number, description: Timestamp (ms). }
+        w: { type: number, description: "The day's weight in `unit` (see the description)." }
+        t: { type: number, description: When the day was last edited (ms), its weigh-ins and removals included. }
+        src: { type: string, description: Set when every weigh-in of the day was read from a health app or a file. }
+        ins:
+          type: array
+          description: The day's weigh-ins, by time (#859).
+          items:
+            type: object
+            properties:
+              id: { type: string, description: Unique within the day. '0' is the weigh-in a day from before held. }
+              at: { type: [string, 'null'], description: 'Local time of day, HH:MM; null when not known.' }
+              w: { type: number, description: Weight in `unit`. }
+              t: { type: number, description: When this weigh-in was last edited (ms). }
+              src: { type: string, description: Read from a health app or a file. }
+              sid: { type: string, description: The health app's own id of the sample. }
+            additionalProperties: true
+        gone:
+          type: object
+          description: Weigh-ins removed from a day that keeps others, id → when (ms).
+          additionalProperties: { type: number }
       additionalProperties: true
 
     # ------------------------------------------------------------------ push

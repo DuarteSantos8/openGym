@@ -33,6 +33,19 @@ final class OpenGymUITests: XCTestCase {
     }
 
     /**
+     * Full Body A from the start chooser (views/Workout.jsx StartChooser). On a day the starter plan
+     * schedules it (a Monday) it is today's plan, a card whose name is only a title and whose
+     * button is "Start Full Body A"; on any other day it is a row under Other routines, tapped by
+     * its name. Tapping the title on a Monday did nothing (CI 2026-10-26).
+     */
+    private func startFullBodyA() {
+        let today = app.buttons["Start Full Body A"]
+        let row = app.staticTexts["Full Body A"]
+        XCTAssertTrue(row.waitForExistence(timeout: 15), "Full Body A did not show up")
+        if today.exists { today.tap() } else { row.tap() }
+    }
+
+    /**
      * "Use on this device", until home shows. On a slow simulator the first tap can land while the
      * page is still starting and go nowhere. The first-start steps come right after the choice
      * (views/PermissionSteps.jsx): notifications (allowed here, and so is the system's question)
@@ -127,7 +140,7 @@ final class OpenGymUITests: XCTestCase {
         tap(app.buttons["Load starter plan"], "Load starter plan")
         tap(button(startingWith: "Full Body"), "the Full Body plan")
         tap(app.buttons["Choose a different workout"], "Choose a different workout")
-        tap(app.staticTexts["Full Body A"], "Full Body A")
+        startFullBodyA()
         shot("2-workout")
         let tick = app.switches["Set 1 done"]
         tap(tick, "Set 1 done")
@@ -191,7 +204,7 @@ final class OpenGymUITests: XCTestCase {
                 tap(button(startingWith: "Full Body"), "the Full Body plan")
             }
             tap(app.buttons["Choose a different workout"], "Choose a different workout")
-            tap(app.staticTexts["Full Body A"], "Full Body A")
+            startFullBodyA()
             tap(app.switches["Set 1 done"], "Set 1 done")
             allowSystemAlert(within: 5)
         }

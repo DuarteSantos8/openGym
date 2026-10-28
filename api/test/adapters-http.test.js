@@ -295,7 +295,10 @@ test('a validator that rejects the strict copy as well still falls back to plain
     : n === 2
       ? { status: 400, body: { error: { message: 'response_format is not supported' } } }
       : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
-  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', schema: REVIEW_SCHEMA, fetch: f });
+  // Its own endpoint: the test above taught cfgCompat that this model wants the strict copy,
+  // and the adapter remembers that (#804).
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://strict-too.lan:11434' } } };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'anthropic/claude-haiku', schema: REVIEW_SCHEMA, fetch: f });
   assert.equal(r.code, 0);
   assert.equal(f.calls.length, 3);
   assert.equal(f.calls[0].body.response_format.type, 'json_schema');

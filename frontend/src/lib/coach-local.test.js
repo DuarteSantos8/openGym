@@ -130,6 +130,43 @@ describe('the Coach on a phone with its own key', () => {
     expect((await loadCoachDevice()).model).toBe(next)
   })
 
+  it('a gateway that refuses with a 400 that names nothing gets a simpler request, and the phone keeps it (#804)', async () => {
+    const GENERIC = 'The request could not be processed. Please check the request parameters.'
+    device.data = { mode: 'byok', provider: 'compatible', model: 'gpt-6.1-sol', baseUrl: 'https://gw.test/v1' }
+    // A reasoning model behind a strict gateway: no temperature, no schema it cannot check.
+    wire.answer = (n, url, init) => {
+      const b = JSON.parse(init.body)
+      return 'temperature' in b || b.response_format?.type === 'json_schema' ? { status: 400, body: { error: { message: GENERIC } } } : chat(JSON.stringify(review))
+    }
+    await local.localReview(state())
+    let s = await settle()
+    expect(s.lastError).toBeNull()
+    expect(s.pending?.kind).toBe('review')
+    const kept = (await loadCoachDevice()).compat
+    expect(kept).toMatchObject({ provider: 'compatible', base: 'https://gw.test/v1', model: 'gpt-6.1-sol' })
+    expect(kept.steps).toEqual(expect.arrayContaining(['json_object', 'temperature']))
+
+    // A fresh launch: the in-memory lesson is gone, the device file still has it.
+    const { rememberCompatProfile } = await import('../../../api/coach/core/adapters/http.js')
+    rememberCompatProfile('compatible', { providerOptions: { compatible: { baseUrl: 'https://gw.test/v1' } } }, 'gpt-6.1-sol', [])
+    local._resetLocal(); wire.calls = []
+    await saveCoachDevice({ pending: null })
+    await local.localReview(state())
+    s = await settle()
+    expect(s.lastError).toBeNull()
+    expect(wire.calls).toHaveLength(1)
+
+    // Nothing works any more: the gateway's own words reach the person holding the phone.
+    local._resetLocal(); wire.calls = []
+    await saveCoachDevice({ pending: null })
+    wire.answer = { status: 400, body: { error: { message: GENERIC } } }
+    await local.localReview(state())
+    s = await settle()
+    expect(s.lastError.errorClass).toBe('provider')
+    expect(s.lastError.detail).toContain(GENERIC)
+    expect((await loadCoachDevice()).compat).toBeNull()
+  })
+
   it('a 401 is an auth failure, and never a proposal', async () => {
     wire.answer = { status: 401, body: { error: { message: 'bad key' } } }
     await local.localReview(state())

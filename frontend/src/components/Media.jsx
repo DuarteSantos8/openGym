@@ -4,7 +4,8 @@ import { MOBILE } from '../lib/mobile.js'
 import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
-import CustomMedia, { CustomThumb } from './CustomMedia.jsx'
+import CustomMedia, { CustomThumb, LinkCard } from './CustomMedia.jsx'
+import { youtubeId, youtubeLinks } from '../lib/youtube.js'
 import { useAnimSources } from './Animations.jsx'
 
 // An exercise's picture, wherever one shows. A custom exercise goes to CustomMedia.jsx — its own
@@ -12,7 +13,13 @@ import { useAnimSources } from './Animations.jsx'
 // name files of the shipped dataset (a stray img/gif on a custom exercise, written by a fork, is
 // ignored). The split is by component, not by branch, so each side keeps its own hooks in order.
 export default function Media(p) {
-  return isCustomEx(p.ex) ? <CustomMedia {...p} /> : <BuiltinMedia {...p} />
+  const size = useStore(s => s.S.gifSize)
+  const custom = isCustomEx(p.ex)
+  const links = youtubeLinks(p.notes).filter(url => !custom || youtubeId(url) !== youtubeId(p.ex?.url))
+  return <>
+    {custom ? <CustomMedia {...p} /> : <BuiltinMedia {...p} />}
+    {(!p.minimizable || size !== 'off') && links.map(url => <LinkCard key={url} url={url} compact={p.compact} mini={p.minimizable && size === 'mini'} />)}
+  </>
 }
 
 // Big autoplaying animation; tap toggles to the still frame. `compact` shrinks it (superset cards).

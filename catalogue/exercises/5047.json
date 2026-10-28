@@ -3,9 +3,8 @@
   "name": "side bridge with bent leg",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "glutes",
     "shoulders",
     "core"

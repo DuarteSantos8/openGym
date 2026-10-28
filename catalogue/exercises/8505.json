@@ -3,9 +3,9 @@
   "name": "dumbbell kneeling twist down up raise",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders",
     "glutes"
   ],

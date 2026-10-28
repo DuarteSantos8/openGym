@@ -27,8 +27,9 @@ import { sessionHistory } from './backfill.js'
 import { buildCombinedEntries, deriveSessionName } from './session-merge.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
-import { readWatchPrefs, settingsForWatch, writeWatchStatus, onWatchPrefs } from './watch-settings.js'
+import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs } from './watch-settings.js'
 import { plannedType } from './health-connect.js'
+import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 
 export const SNAPSHOT_VERSION = 1
 const APPLIED_KEY = 'gym_watch_applied'
@@ -91,17 +92,24 @@ function watchSet (s) {
 
 // One exercise as the watch shows it. Only optional fields were added over time (bodyweight,
 // perSide, group, best, assisted), so an older watch app reads a newer phone's snapshot.
-function watchEntry (e, H, S) {
+// An exercise in a weight unit of its own (#657) goes to the watch in that unit, its weights, last
+// time, best and step converted and `unit` saying which; the watch's numbers come back in it too
+// (the workout screen's mutEntry and patchSetIn store them in the profile's unit).
+function watchEntry (stored, H, S) {
+  const e = S ? viewEntry(S, stored) : stored
   const ex = EXIDX[e.id]
   const target = e.target || {}
   const cfg = { ...target, id: e.id }
   const mode = modeOf(cfg)
+  const own = S && exConverted(S, e.id) ? exUnitOf(S, e.id) : null
   let last = null
   try {
     const l = H ? lastEntryFor(H, e.id, e.rid) : null
-    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => setLabel(e.id, s, l.target)).join(', ')
+    if (l && Array.isArray(l.sets) && l.sets.length) last = l.sets.map(s => setLabel(e.id, own ? viewRow(S, e.id, s) : s, l.target)).join(', ')
   } catch { last = null }
-  const best = S ? bestFor(S, e.id, mode) : null
+  const stBest = S ? bestFor(S, e.id, mode) : null
+  const best = stBest && own && stBest.w != null ? { ...stBest, w: shownWeight(S, e.id, stBest.w) } : stBest
+  const V = own ? exView(S, e.id) : S
   return {
     // A string always: the watch reads the whole snapshot or nothing (WatchCore Model.swift), and
     // one id that came in as a number (an import) would leave it with nothing at all.
@@ -119,7 +127,8 @@ function watchEntry (e, H, S) {
     ...(best ? { best } : {}),
     ...(mode === 'reps' && isAssisted(e.id) ? { assisted: true } : {}),
     // the step the weight moves in, as on the phone (this exercise's own, else its plates' default)
-    ...(mode === 'reps' && stepOf(cfg, S) ? { step: stepOf(cfg, S) } : {}),
+    ...(mode === 'reps' && stepOf(cfg, V) ? { step: stepOf(cfg, V) } : {}),
+    ...(own ? { unit: own } : {}),
   }
 }
 
@@ -227,6 +236,25 @@ function entryIndexOf (A, ev) {
   return A.entries.findIndex(e => e.id === ev.exId)
 }
 
+/* ---------- which workouts the watch has (lib/phone-workout.js) ---------- */
+
+// Workouts the watch said it runs: it sent a heart rate for them, or anything at all about them
+// while its Apple Health is on (its workout session then runs). The iPhone's own session (#818)
+// leaves those to the watch, so Apple Health gets one workout, not two.
+const claimedByWatch = new Set()
+const claimListeners = new Set()
+/** Whether the watch runs this workout's session (as far as its events tell). */
+export const watchClaimed = wid => !!wid && (claimedByWatch.has(wid) || (startedOnWatch.has(wid) && readWatchStatus()?.health === 'on'))
+export function onWatchClaim (fn) { claimListeners.add(fn); return () => claimListeners.delete(fn) }
+function claim (ev) {
+  const wid = typeof ev.wid === 'string' && ev.wid ? ev.wid : null
+  if (!wid || claimedByWatch.has(wid)) return
+  const measured = !!(sanitizeHr(ev.hr) || sanitizeHr(ev.restHr))
+  if (!measured && readWatchStatus()?.health !== 'on') return
+  claimedByWatch.add(wid)
+  for (const fn of claimListeners) { try { fn(wid) } catch { /* a listener's problem */ } }
+}
+
 /**
  * Applies the events not applied yet, in order. Returns the ids that are done with: applied now,
  * applied before, or about a workout that is not running any more. An event whose actions are not
@@ -251,6 +279,7 @@ export function applyEvents (events, getState) {
   for (const ev of events) {
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
+    if (['start', 'setDone', 'setHr', 'finish', 'discard'].includes(ev.type)) claim(ev)
     const S = getState()?.S
     const A = S?.active
     const ours = A && Array.isArray(A.entries) && (!ev.wid || ev.wid === A.id)
@@ -462,9 +491,28 @@ export function markDiscarded (wid, now = Date.now()) {
   try { localStorage.setItem(DISCARDED_KEY, JSON.stringify(list)) } catch { /* the watch then saves it, as before */ }
 }
 
-/** The ids of the workouts discarded here lately, oldest first. */
-export function discardedFor (now = Date.now()) {
-  return readDiscarded().filter(x => now - Number(x.at) < DISCARDED_FOR_MS).map(x => x.id)
+/**
+ * The ids of the workouts discarded here lately, oldest first. With `S`: never one that runs or is
+ * in the history after all (a workout set aside for the tour and back, then finished).
+ */
+export function discardedFor (now = Date.now(), S = null) {
+  const kept = id => !S || (S.active?.id !== id && !(Array.isArray(S.workouts) && S.workouts.some(w => w && w.id === id)))
+  return readDiscarded().filter(x => now - Number(x.at) < DISCARDED_FOR_MS && kept(x.id)).map(x => x.id)
+}
+
+/**
+ * The running workout left `prev` without being saved (`next` has neither it running nor in its
+ * history): discarded, whichever way that happened. The workout screen's Discard and
+ * ErrorBoundary name it themselves; this catches the rest (a discard on another device that
+ * synced in), so the watch never takes it for finished. Not for the tour's practice workout
+ * (the real one is only set aside), a saved workout's editor, or one logged into the past.
+ */
+export function leftUnsaved (prev, next, { tour = false } = {}) {
+  const A = prev?.active
+  if (tour || !A || !A.id || A.editingWorkoutId || A.backfill) return null
+  if (next?.active?.id === A.id) return null
+  if (Array.isArray(next?.workouts) && next.workouts.some(w => w && w.id === A.id)) return null
+  return A.id
 }
 
 /**
@@ -482,6 +530,8 @@ export function watchExtras (S) {
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
+    // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
+    ...(S?.autoHolds === true ? { autoHolds: true } : {}),
   }
 }
 
@@ -521,6 +571,7 @@ export async function startWatchSync ({ useStore, useUI }) {
   } catch { /* no Apple Health here: the watch measures nothing */ }
   const send = async () => {
     tm = null
+    if (useStore.getState().tourSandbox) return
     // Not before the store has its copy: an empty one would tell the watch its workout is over.
     if (!linked || !storeReady()) return
     try {
@@ -531,11 +582,16 @@ export async function startWatchSync ({ useStore, useUI }) {
         ? buildSnapshot(S, { timer: useUI.getState().timer, ready: readyFor(S) })
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       snap.settings = { ...settingsForWatch(prefs, healthOn), ...watchExtras(S) }
-      // With Apple Health on: the deleted workouts, so the watch removes the copies it saved.
-      if (healthOn) { const gone = healthGoneFor(S); if (gone.length) snap.healthGone = gone }
       // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
-      const discarded = discardedFor()
+      const discarded = discardedFor(Date.now(), S)
       if (discarded.length) snap.discarded = discarded
+      // With Apple Health on: the deleted workouts, so the watch removes the copies it saved. The
+      // discarded ones too: a copy saved before the watch heard (it was away, or ended the workout
+      // itself as forgotten) is taken out once it does.
+      if (healthOn) {
+        const gone = [...healthGoneFor(S), ...discarded.map(id => 'opengym-w-' + id).reverse()]
+        if (gone.length) snap.healthGone = [...new Set(gone)]
+      }
       const json = JSON.stringify(fitSnapshot(snap))
       if (json !== lastSent) {
         const r = await p.WatchBridge.sendSnapshot({ json })
@@ -554,11 +610,17 @@ export async function startWatchSync ({ useStore, useUI }) {
       }
     } catch { /* no watch, or not now: the next change tries again */ }
   }
-  const schedule = () => { if (!linked) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
+  // The tour's practice workout (useStore enterTourSandbox) never reaches the watch.
+  const schedule = () => { if (!linked || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
   const offStore = useStore.subscribe((s, prev) => {
     // Boot done: what the watch sent meanwhile is applied now, and the watch hears the real state.
     if (s.ready && !prev.ready) { drainWatchEvents(); schedule() }
     if (s.S === prev.S) return
+    // Not while the store boots (its first copy replaces an empty one).
+    if (s.ready !== false && prev.ready !== false) {
+      const gone = leftUnsaved(prev.S, s.S, { tour: !!(s.tourSandbox || prev.tourSandbox) })
+      if (gone && !discardedFor().includes(gone)) markDiscarded(gone)
+    }
     schedule()
     // A workout started on the phone: the watch app opens with it (HealthKit's startWatchApp).
     if (linked && shouldOpenOnWatch(prev.S?.active, s.S?.active)) Promise.resolve().then(() => p.WatchBridge.openOnWatch({ type: plannedType(s.S.active.entries) || undefined })).catch(() => {})
@@ -589,7 +651,7 @@ export async function startWatchSync ({ useStore, useUI }) {
 
 // Test seams.
 export function _setWatchPluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { WatchBridge: plugin } : null); getStateRef = getState || null }
-export function _resetWatchSync () { startedOnWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null }
+export function _resetWatchSync () { startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null }
 
 /**
  * Writes `fields` (heart rate) onto one set: in the running session when it is that workout, else in
@@ -600,7 +662,12 @@ export function _resetWatchSync () { startedOnWatch.clear(); handlers = null; ap
 export function patchSetIn (s, { wid, exId, entryIdx, setIdx, side = null }, fields, stamp, { ifNewer = null, recount = null } = {}) {
   // One side of a per-side set: that side takes the numbers and the tick, the row's own w/r/done
   // follow from both sides (lib/workout-model.js syncSideAggregate).
-  const write = (set, f) => {
+  const write = (set, given) => {
+    // A weight from the watch is in the exercise's own unit (#657), the one it was sent in.
+    const f = given.w != null ? { ...given, w: storedWeight(s, exId, given.w, side && isSideSet(set) ? set.sides[side]?.w : set.w) } : given
+    // A warm-up whose numbers the watch changed is set by hand, as on the phone (#525).
+    const cur = side && isSideSet(set) ? set.sides[side] || {} : set
+    if (isWarmupRow(set) && ((f.w != null && f.w !== cur.w) || (f.r != null && f.r !== cur.r))) set.edited = true
     if (side && isSideSet(set)) {
       const { w, r, done, rpe, rir, ...rest } = f
       const one = { ...set.sides[side] }
@@ -653,6 +720,7 @@ export async function watchStatus () {
   try {
     const st = await p.WatchBridge.status()
     // `activated` false: the link is still starting (right after launch), paired/installed not known yet.
-    return { paired: !!st?.paired, installed: !!st?.installed, activated: st?.activated !== false }
+    // `reachable`: the watch app is there right now (open, or running its workout session).
+    return { paired: !!st?.paired, installed: !!st?.installed, activated: st?.activated !== false, reachable: !!st?.reachable }
   } catch { return { paired: false, installed: false } }
 }

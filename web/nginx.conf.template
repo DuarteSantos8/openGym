@@ -28,7 +28,9 @@ server {
     # inherited set rather than adding to it, so the two locations further down that set their
     # own Cache-Control have to repeat these. The Content-Security-Policy is CONTENT_SECURITY_POLICY
     # (default in web/Dockerfile): scripts only from this origin plus the one inline script in
-    # index.html, by its hash, so an injected <script> or handler does not run. TLS and HSTS stay
+    # index.html, by its hash, so an injected <script> or handler does not run, and frames only from
+    # youtube-nocookie.com (an exercise's video, after a tap). Referrer-Policy stays same-origin: the
+    # player asks for the origin as its referrer itself (YouTubeVideo.jsx). TLS and HSTS stay
     # the reverse proxy's job (see SECURITY.md).
     add_header X-Frame-Options "DENY" always;
     add_header X-Content-Type-Options "nosniff" always;

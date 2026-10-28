@@ -6,6 +6,333 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Film a set and check your form.** Tap a set's number and pick Film this set (or Film a set under
+More in the exercise's ⋯ menu) to record a short video with the phone's camera or pick one from
+your videos. It sticks to that set: a little camera badge under the row plays it right there, muted
+and looping, at 0.5x if you want to see the bottom of your squat, or full screen. Every exercise's
+history and details now have Your form videos, newest first, and Compare two dates puts two
+side by side (so, deeper than in August?). In local mode the videos stay on the phone. Signed in,
+they go to your server like your workout photos, inside the same size, length and space limits,
+unless you switch on Keep videos on this phone only. They are yours alone: never sent to the Coach
+or MCP (it only learns how many), never in share cards, Wrapped or PDFs. Remove the set or the
+workout and the video goes with it.
+
+**Each gym keeps its own equipment** (#808, thanks @hoechstleistungshaartrockner). Plates, dumbbells,
+your bars and machine weight stacks now belong to an equipment profile instead of being one list
+for everywhere, so the home setup with one pair of 20s and the big gym down the street each get the
+plate math, dumbbell steps, warm-ups and progression that fit. Settings → Equipment shows the active
+gym at the top with a switcher, the Plates, Dumbbells and Your bars pages say which gym they are
+for and can copy another gym's list. During a workout the gym sits small next to the clock: tap it
+to switch, and the sets you have not done yet move onto that gym's plates and dumbbells. Saved
+workouts remember where they were done. On the phone, a gym reminder place can say "Equipment
+here": arrive, tap a check-in sticker or start a workout there and openGym switches by itself, with
+a little "Using Home gym equipment" so you know (only with location already allowed, it never asks).
+Nothing changes when you update: every profile starts with the lists you have today.
+
+**Christmas, with an advent calendar.** From 1 December to the end of the year the app gets
+cosy: a little snow drifting behind the cards when you open it, fairy lights along the top of Home
+and Stats, a Santa hat on your streak flame, holly in a corner, a snowman and a gingerbread person
+peeking around Stats, and once a day a sleigh flying past. There is a present hiding on the streak
+card, tap it. On Home, from the 1st to the 24th, the advent calendar: 24 doors, today's one glows,
+a door you missed waits for you, and the ones still to come stay shut (no peeking). Behind them: fun
+facts, small challenges you tick off for a badge, training tips, a joke or two, a cosy stretch
+routine to add, a number from your own year, and something special on the 24th. Opened doors sync
+between your devices. It all works like Halloween: Settings → Look & Home → Seasonal themes has
+Auto, On and Off, optional berry red colors, a switch for the workout screen (never on your sets),
+and the calendar for all of December. Nothing moves with reduced motion, nothing shows during the
+app tour, and none of it is downloaded outside the season. On the phones there is a festive app
+icon too, the barbell in a Santa hat, and Home asks once whether you fancy it.
+
+**Weigh in as often as you like, with the time** (#859, thanks @Borgna02). A day can now hold several weigh-ins, each with
+its time: the weigh-in sheet has a time field (now for today, the day's first time or 08:00 for an
+earlier day), All weigh-ins lists every one of them under its day, and a tap on one changes its
+weight, time or day. Delete still has Undo. The chart, the trend, the goal, widgets, Your year and
+the Coach use one value per day, and Settings → Units & language → Daily weigh-in value says which:
+the morning one (the default, it is the one worth comparing), the day's average or the last.
+Apple Health and Health Connect bring in every reading with its time, an Apple Health export keeps
+all of its records instead of one a day, and the body CSV has a row per weigh-in. Your old weigh-ins
+stay exactly as they were, and an older app on another device keeps the extra ones when it syncs.
+
+**Monthly challenges.** Every month Home has three small goals for you, picked from how you have
+trained the last few months and set a little above your usual: 14 workouts this month, lift 50 t,
+train every week, hit 3 new PRs, 100 pull-ups (only if you do pull-ups), 60 minutes of cardio (only
+if you do cardio), log your weight on 10 days, try 3 exercises you have never done, or every muscle
+group at least once. The bars move as soon as you finish a workout, and each challenge you make
+earns a badge with a small party (it stays put with reduced motion). All three is a gold month.
+Stats → Challenges shows this month and a trophy shelf of every badge so far, and the widgets can
+show them too. A challenge you do not make simply ends with its month: new month, new challenges.
+The card folds away, its × hides it until next month, and Settings → Look & Home → Monthly
+challenges turns it off. It is all worked out on your device from your own workouts, phone-only or
+with a server, and nothing new is sent anywhere; the badges sync with your profile.
+
+**A kind word about recovery on Home.** Now and then a small card tells you what has rested and what
+has not, from the same recovery data as the muscle map: "Your legs are still recovering from
+yesterday. Upper body today?", or that your back has had a week off. If today's plan leans on
+something still recovering, it suggests going a bit lighter or swapping the session, never skipping
+it, and a rest day only ever hears that the timing is good. One hint at a time, × hides it for the
+day, and Settings → Look & Home → Recovery tips turns it off.
+
+**Your year in openGym.** From 1 December to the end of January, Home has a card: your year is ready.
+Tap it and your year plays as full-screen stories, tap or swipe through: how many workouts, the hours,
+the tonnes you moved (in blue whales, pianos or house cats, whatever fits), your longest streak, your
+signature move and the muscle it built, your records and the biggest one, your favourite day and time,
+your best month, your body weight if you logged it (one tap leaves it out for good, and it never
+judges), a training personality from your habits (Early bird, Leg-day loyalist, Night owl and friends)
+and a summary. Every card shares as a picture, 9:16 for Stories or 1:1, dark or light, with a small
+openGym logo. It is all worked out on your phone from your own data and nothing is sent anywhere.
+Stats → Your year plays it for any year with workouts, the current one too. On 1 December there is
+one notification at 18:00: the phone plans it for itself when you open the app in November (only if
+notifications are already allowed, it never asks), and your server sends a web push to the browsers
+that get notifications. Once per year, and Settings → Notifications has a switch for it.
+
+**Share a workout as a picture, right after it.** The "Workout complete!" summary has Share next to
+the way out: a card with the routine, date, duration, volume, sets, records, the muscle map and your
+week streak, as a Story (9:16) or a square, dark or light. History's Share as image makes the same card.
+
+**Widgets you set up yourself, and a streak with backup.** Long press the Home Screen, add the
+openGym widget and pick what it shows: your week streak, the weight goal (how many kg or lb to go,
+with a little curve of your last weigh-ins), this week, the next workout, records this month or this
+week's volume against last week. The wide one shows two side by side. On the iPhone it also comes for
+the Lock Screen, round, wide or as one line. A tap takes you where it makes sense: Stats, the weigh-in,
+or straight into the next workout. Android gets it too, small or wide, light or dark with the phone.
+The streak itself grew up: it remembers your best run, and every 4 weeks with a workout earn a
+freeze (two at most). Miss a week for a holiday or a cold and a freeze covers it by itself, shown as a
+snowflake, no switch to remember. Badges at 4, 12, 26, 52 and 104 weeks, a small party on Home when
+you finish a week or reach one, and Stats shows it all. Points to the next level come later.
+
+**Share a routine with a friend.** A routine's page and a past workout's options now have Share
+with a friend: one link through your phone's share sheet ("Here's my Push Day on openGym 💪"). Your
+friend taps it, sees the exercises and sets, and Add to my routines puts it next to theirs, never
+over one they already have. A workout goes as a routine, so "do what I just did" is one tap. Your
+weights and your name only go along if you switch them on. The routine rides inside the link
+itself (the part after the #), so no server, not even opengym.ch, ever sees it. No openGym yet? The
+link opens a page that shows the routine and where to get the app, or opens it in your own web app
+or the demo. A really long routine goes as a plan file instead.
+
+**Watch on YouTube, for every exercise.** An exercise's details (and the More group of its ⋯ in a
+workout) have a quiet Watch on YouTube button that searches for the exercise plus "form" in the
+YouTube app or your browser. Nothing goes to YouTube before you tap it, and a video link of your
+own still comes first.
+
+**Tidier menus** (thanks seals). An exercise's ⋯ now opens with the five things you reach for
+mid-workout: note, swap, warm-up set, rest and history. Settings, plate loading, the how-to, moving
+and supersets wait under one More row, Remove is still last. The set menu and the workout's ⋯ got
+the same trim. A past workout in History shows the workout, the note, Edit and Repeat today; date
+and time, duration, save as routine, sharing, export and Delete sit behind one Workout options row
+instead of a long column of buttons.
+
+**Timed holds that run themselves.** Planche, L-sit, front lever, plank: your hands are busy, so the
+app now keeps going without them. Switch on Settings → Workout → Timed holds start by themselves and
+the rest ends with a 3, 2, 1 (beeps and buzzes the way your timer alerts are set, also with the phone
+locked), the hold starts, at zero the set is logged with the planned time, the rest starts, and round
+again. Per-side holds still get their short switch pause, and supersets keep their order. Big buttons
+under the clock let you pause for a breather, restart a hold that went wobbly, or stop auto for the
+rest of the workout; +15 s and Skip still work on the rest. Tap Done early and it logs what you
+actually held. It never starts a hold while a sheet is open, and an exercise can opt in or out in its
+own settings. The Lock Screen counts the hold down with a Stop auto button, and the Apple Watch counts
+in by itself too. Thanks Mirco for the idea and the perfect description, and to our calisthenics friend
+on Discord who was tired of tapping play between every plank.
+
+**A 1-minute tour, and four tutorials.** Right after the first setup, openGym asks if you want a quick
+look around. Say yes and it points at the real thing, screen by screen: today's session, week or
+rotation, the Library, a practice workout (tick a set, meet the rest timer, swipe, the ⋯ menu, Finish),
+Stats and Settings. It never just teleports you: to get to the next screen it points at the real tab,
+the gear or the back button and waits for your tap (or taps it for you with Show me), so you learn the
+way. Scroll, turn the phone or open the keyboard and the spotlight sticks to what it's pointing at. The
+practice session is pretend: never saved, never synced, gone when the tour moves on. At the end it
+offers four short tutorials, each its own little guided run: **Build your first plan** (a real routine:
+name it, add exercises, set sets, reps and weight, give it a day; quit before Save and nothing is left
+behind), **Create your own exercise** (the real form, nothing made until you tap Create), **Edit your
+data** (fixing workouts, weigh-ins and the rest, on a pretend copy so your own data stays untouched)
+and **Export & import** (backups, spreadsheets, imports from other apps and syncing, pointed at, never
+run for you). Back, Next and Skip whenever you like; close the app halfway through the tour and it
+offers to pick up once. It works with a screen reader and reduced motion, and the Halloween guests
+take a break while it runs. Settings → About & updates → Tutorials runs any of them again.
+
+**Pictures on the printed plan** (#817, thanks @Teo230). Print / Save as PDF asks one thing first:
+With pictures. On, every exercise gets a small picture next to its sets, rest and note, two to a
+row, like the paper plan your gym hands out. It's on by default and this device remembers your
+choice; off gives you the plain list. Your own exercises print their own photo, and one without a
+picture simply prints as text.
+
+**Programmes** (#159, thanks Giulio Leuci; #679, thanks @peteh and @Gthbacc). Plan → Programmes runs
+your routines as a block of 1 to 16 weeks, and each week can say how hard: a %1RM per lift, an RPE for
+the week, or a deload. Start one and its schedule takes over your plan (Home says "Week 2 of 6"), end it
+and your old plan comes back as it was. A %1RM opens the session at that share of your best estimated
+1RM, rounded to plates, dumbbells or a machine's stack you own, and beats your progression while it
+runs. Pause it for a holiday, run it again a bit heavier when it's done, share it as a plan file. Three
+starters to try: a 4-week strength block, 6 weeks of upper/lower by effort, and 12 weeks of 5×5-style
+linear with a deload every fourth week. The MCP server can read it too (`get_programme`).
+
+**kg and lb in the same gym** (#657, thanks @ifrankerem, and @connor-johnstone, @XinwangTao and
+@youssmohmail-create for the use cases). Any exercise can have its own weight unit: lb dumbbells and
+kg plates, or kg free weights next to the lb machines. Pick it under the exercise's settings, in a
+workout or in the routine editor. That exercise is then shown and typed in its unit everywhere: the
+rows, + and −, plates and bar, your dumbbell and stack lists, steps, warm-ups, last time, records,
+history and its chart. Type 45 lb and you'll see 45 lb again, no 44.9 creeping in. Totals like
+volume and Lifted in total stay in your profile's unit, and so do backups, the CSV, the Coach and
+the MCP server. The Apple Watch shows and edits it in its unit too, and shared plans carry it.
+
+**Your own app icon on Android too.** The picker from 1.4.3 leaves the iPhone: Settings → Look &
+Home → App icon has all nine on Android, Halloween included. It's per phone, so your iPhone and
+your Android can disagree. On Android the new icon moves in once you leave the app, and some
+launchers need a second to notice. The Halloween one pulled its cobweb in from the corner, so round
+launchers no longer snip the spider's home in half.
+
+**Back to the top, fast.** Deep in Exercises and want the search again? Tap the tab you're on and
+the page glides back up, and tap Exercises once more at the top to land in the search field. Every
+tab does it, like on the iPhone. Long pages (Exercises, History and friends) also grow a small
+arrow button once you're a few screens down: one tap and you're back at the top. It stays out of
+your workout, and with Reduce Motion on it jumps instead of gliding.
+
+**Adding your gym works like a maps app now** (#614). Tap Add a gym and you get a search, the
+same field as everywhere else in openGym: start typing and gyms show up as you go, with their
+address (and how far away they are, when the phone knows), or tap Current location if you're
+standing in it. Pick one and a small map opens with the pin in the middle: drag the map, not the
+pin, to nudge it onto the door, and pick Small, Medium or Large for the circle around it. Name,
+notification text and an on/off switch are plain rows like the rest of Settings, with Remove at the
+bottom. Your gyms are a simple list again. On the iPhone the search is Apple Maps, the one you
+already know; on Android it's OpenStreetMap, dark in dark mode, with "Open in Google Maps" for a
+second opinion. Your gyms still never leave the phone; only what you type goes to Apple or
+OpenStreetMap, and the app says so right under the search field.
+
+**AI Coach works with picky OpenAI-compatible gateways** (#804). Some endpoints answer the Coach
+with a plain 400 "please check the request parameters" and no hint why. The Coach now tries a
+simpler request on its own (a looser JSON mode, the other token-limit field, no temperature, and
+as a last resort JSON asked for in the prompt only), remembers what that endpoint and model
+accepted so the next run asks right away, and if nothing works shows you the endpoint's own words.
+
+**"Is that right?" before a likely typo** (#811, thanks @lodepav). Tick a set at 300 kg when your
+best is 30 and openGym asks first, because whatever you tick becomes last time, the next target and
+maybe a shiny fake PR. Fix it leaves the set open, Log as typed means you really did. Only on a tick
+by hand: never an untick, a hold's timer, the watch, a first time or an assisted lift's weight.
+
+**Dates pick like the rest of openGym** (#809, thanks @lajawi). On iOS 27 the date in Log body weight
+stuck out past the edge and the whole sheet scrolled sideways. Every date field (body weight,
+measurements, progress photos, a workout's date, a past workout, the PDF report and CSV export) is
+now openGym's own: it shows the date the way the app writes it and opens a month grid like the
+calendar's, with Today one tap away, days after today greyed out, and a tap on the month to jump
+years. Same look on every phone, light or dark, in your accent colour. And no sheet scrolls sideways
+any more, whatever ends up in it.
+
+**The installed iPhone web app fills the screen** (#810, thanks @kurktchiev). On iOS 26 a Home
+Screen app could leave the tab bar floating a status bar's height above the bottom edge until you
+dragged the page. WebKit's bug, our workaround. The App Store app and Safari tabs were never affected.
+
+**Tap the picture in a past workout for the how-to** (#805, thanks @sg41). The thumbnail opens the
+exercise's description, the rest of the row still opens its history.
+
+**Discarded means discarded, also in Apple Health** (#776). A workout you discard on the iPhone or
+the Apple Watch no longer shows up in Apple Health anyway. A watch that was away when you discarded
+it drops it as soon as it hears, and takes out any copy it saved in the meantime.
+
+**Server dependencies patched** (#806, thanks @lodepav). body-parser, fast-uri, qs and zod move to
+their fixed versions in the API and the MCP server, nothing you'll notice except fewer CVEs.
+
+**How long each exercise takes** (#812, thanks @lodepav). A past workout shows a little timer under
+every exercise, and Stats has a Time per exercise card (1M, 3M, 1Y, All), longest first. It's read from
+when you ticked the sets, rest and setup included, so it's what an exercise really costs you.
+Imported history has no tick times, so it stays quiet there.
+
+**Pull-ups count your body weight, if you want** (#794, thanks @theatosam). A session of pull-ups
+read 0 kg of volume, however many you did. Settings → Units & language → "Count body weight in
+bodyweight lifts" adds your nearest weigh-in to every rep: all of it for pull-ups, chin-ups and dips
+(a belt goes on top), about two thirds for a push-up (less on your knees or hands raised, more with
+feet up), and your weight minus the help on an assisted machine. It's off by default and only moves
+volume and Lifted in total. Records, e1RM and progression stay as you logged them, so a weigh-in never
+hands you a PR.
+
+**Every exercise under the muscle it's known for** (#788, thanks @lodepav). The catalogue filed
+every squat and leg press under glutes, a Romanian deadlift under glutes, a Russian twist under abs
+and a tibialis raise under calves. 668 exercises now have the main muscle you'd expect: squats,
+leg presses and hack squats → quads, lunges, step-ups and hip thrusts → glutes, Romanian and
+stiff-leg deadlifts and leg curls → hamstrings, most rows → upper back, pulldowns and high rows →
+lats, twists and side bends → obliques, knee raises → hip flexors, tibialis work → shins. No muscle
+falls off an exercise's map (the old one stays as a secondary), but the full weight moves, so
+**your recovery, fatigue and muscle balance numbers will shift** after the update, with your history
+recounted the new way. Your quads will suddenly look a lot busier on squat day. That's the fix.
+
+**"Your last session" brings your warm-ups too** (#525, #658, thanks @ifrankerem). With Settings →
+During a workout → Planned sessions start from → Your last session, the warm-ups you set up yourself
+(typed, stepped, added by hand, from the phone or the watch) come back next time just as you left
+them. The ramp the routine builds for you stays automatic and follows today's work weight, so a
+50 % rung from your 60 kg days doesn't stay stuck at 30 kg once you bench 100.
+
+**YouTube demos play right in the app** (#613, thanks @Space-Hermes). A YouTube link on an exercise
+you added, or in a routine's notes, becomes a "Watch video" card. Nothing talks to YouTube until you
+tap it; then it plays in place from youtube-nocookie.com, YouTube's privacy-enhanced player, with
+Close and Open link underneath. On the iPhone the tap opens YouTube instead, because Apple's web view
+and YouTube's player don't get along there yet. Self-hosting with your own `CONTENT_SECURITY_POLICY`?
+Add `frame-src https://www.youtube-nocookie.com` to it, or the card can only open the link.
+
+**Swap suggestions** (#674, thanks @Space-Hermes). Swapping an exercise now leads with up to three
+suggested substitutes that fit your equipment, right under your planned backups: the same movement
+when there's a close match, else the same muscle and type, and it tells you when a pick is a
+different kind of exercise. The list still opens on the same muscle. Got more than one gym set up?
+A Gym row at the top filters the list for another one, just for this swap: your gym in Settings
+stays put. A dead hang now needs a pull-up bar, as it always did in real life.
+
+**AirPods Pro 3 count your heart rate, no Apple Watch needed** (#818, iPhone on iOS 26). With Apple
+Health on and no Apple Watch taking the workout, the iPhone now runs the workout session itself, so
+AirPods Pro 3 and Powerbeats Pro 2 measure along. Every set and rest gets its heart rate just like
+with the watch, a little ♥ in the workout header shows the latest beat, and the workout lands in
+Apple Health once, with its heart rate. Take the buds out and the readings simply pause; pop them
+back in and they carry on. Wearing the watch? It keeps the job, so there's never a second workout.
+No new switch: the Apple Health one covers it.
+- **Self-hosting: containers report healthy in half a minute**, not after five. TrueNAS and friends
+  wait for that before they call openGym running (#844, thanks @andi242 for spotting it).
+
+**Tap your phone on a sticker** (NFC, phone app and Chrome on Android). Settings → Look & Home → Set
+up an NFC sticker writes a cheap blank NTAG sticker for your locker, bag or the gym door: tap it and
+today's workout starts (or the one already running opens), or have it just show your membership code
+at the turnstile. Stick one on a machine too (an exercise's details → Write NFC sticker): tapped during
+a workout it jumps to that exercise, or offers to add it; outside a workout it opens the exercise. On
+iPhone (XS and newer) a tap shows a banner that leads into the app. openGym only writes and reads its
+own stickers: it never reads, copies or imitates your gym's access card.
+
+**Hey Siri, log my weight.** On the iPhone (iOS 16 and up) say "Start my workout in openGym" and
+today's plan starts (or the workout already running opens, never a second one), or "Log my weight
+in openGym": Siri asks for the number, in your kg or lb, and logs it without opening the app. It
+lands in openGym the next time you open it, with a small "logged by Siri" note, and syncs like any
+weigh-in. "What's my workout today in openGym" and "How's my streak in openGym" get an answer
+right there. All four are in the Shortcuts app and Spotlight too, ready for an automation or the
+Action button, and Siri understands them in the app's languages. On Android, touch and hold the
+openGym icon for Start workout, Log weight and Stats, and Google Assistant can open them by voice.
+Settings → Look & Home → Siri & Shortcuts lists what to say.
+
+**Fixes**
+
+- The rest timer starts after the last set of an exercise again, also when the next exercise opens with warm-ups (#853).
+- A per-side set with its own "Rest after this set" now takes that break between its sides too (#853).
+- Ask the Coach for more core (or arms, legs, glutes...) and its review gets a real choice of those exercises, not the same four, plus room for new ones beside your plan (#829).
+- iPhone app: the rest sound no longer pauses your music. It turns it down for a moment and lets it play on, also with Play even on silent.
+- **Searching a muscle shows the lifts people do**: "chest" opens on the bench press, flyes and dips, "back" on rows and pulldowns. Stretches only lead when you search for a stretch.
+
+**Bring your history from more apps** (#862, thanks @Gitoffomalawn). Import from another app now
+reads Liftosaur (the history CSV, or the JSON export, whose programs arrive as routines with their
+Liftoscript progression as a note), Liftoff (the JSON from the unofficial liftoff-export-cli),
+StrongLifts 5×5, Fitbod and JEFIT. Warm-ups, RPE, notes, cardio and timed sets come along, each in
+its own unit, on the day you trained, and importing a file twice still adds nothing twice. A file that
+looks like one of these but doesn't read right is turned away with a message instead of half
+imported. How to export from each app is in docs/DATA_IMPORTS.md.
+- **Done is right under the numbers** when a workout ends, no scrolling past the body map and the photo corner to leave.
+
+## v1.4.3 (2026-10-26)
+
+The community release. Most of what's below was asked for on GitHub and Discord or sent in as a
+pull request, the Apple Watch learned a whole bag of tricks, and openGym starts again on iPhones
+that 1.4.2 left staring at the logo. Sorry about that one.
+
+**openGym starts again on iOS 15.5 to 16.3** (P1). 1.4.2 and the web demo sat on the splash
+forever there, because one tiny link check used regex syntax Safari only learned in 16.4.
+Rewritten, the build now targets Safari 15 like the app does, and a test reads every built file
+for syntax older iPhones can't handle. Should a browser still choke, openGym says so on screen
+with the error and a Reload button instead of lifting the logo forever. Thanks h097327 for the
+excellent report. Once it starts, iOS 15.5 to 16.1 also gets its missing tints back (the Coach's
+header and error bubbles, the admin pills, the focus card's badges, the tinted buttons, the body
+map's shades): plain stand-ins close enough that you'd need a colour picker to tell, and a test
+makes sure every new tint brings one.
+
 **Gym reminder** (#614, phone app). Walk into your gym and openGym nudges you to hit Start. Add
 your gyms in Settings → Reminders → Gym reminder: "I'm at the gym right now" or a pin on an
 OpenStreetMap map, each with its own radius and text. Once a day at most, never after you trained,
@@ -18,208 +345,12 @@ workout on your laptop that your phone hasn't synced yet, the phone asks your se
 seconds at most) instead of nagging you anyway.
 
 **See what a session hits before you start it.** Every routine on the Plan page (the week, the
-rotation and the routine list) and today's session on Home now carry a tiny body, front and back,
-with the muscles it works lit up. No more opening Leg Day to remember it is, in fact, legs.
-And it keeps going once you start: the exercise chips at the top of a workout end in the same
-tiny body, faint where the session is headed and lit up where you've already ticked sets, in every
-layout and without moving a single set row (#670). Tap it for the big map and done/planned sets
-per muscle. Settings → Workout → Fine-tuning turns it off.
-
-- **Machine taken? One tap to your backup** (#649). A routine exercise with planned backups
-  now lists each one in its ⋯ menu during a workout. Tap it and the backup takes over with the
-  slot's own sets, reps, rest and warm-ups, and the exercise it replaced becomes its backup, so
-  going back when the bench frees up is one tap too. Your routine stays exactly as it was.
-- **Lock Screen: Next exercise and Skip rest** (iPhone, Discord). The workout's Live Activity
-  and the Dynamic Island get a small button next to the big one: Skip rest while you rest, Next
-  exercise the rest of the time, so a machine somebody grabbed no longer means unlocking the
-  phone. Nothing gets ticked, and it works with openGym asleep. The big button now says Log set,
-  because "Done" sounded a lot like "I'm going home".
-- **Machines with odd weight steps** (#688). A machine or cable exercise now has a Weight stack
-  under Plate loading: type in the weights its pin really picks (5, 11.3, 18.1, the LifeFitness
-  special) or fill an even stack and fix the odd ones. Progression, deloads, warm-ups, drops and
-  the + and − buttons then land only on those, and at the top of the stack it holds and says so.
-- **Lifts against your body weight** (#729, thanks @radu781). Exercise progress in Stats and an
-  exercise's History have a Bodyweight view: your estimated 1RM or heaviest set as a % of what
-  you weighed then, so the line only climbs when you got stronger for your size. Pull-ups and
-  dips count you plus the belt, assisted machines you minus the help.
-- **Log a workout by telling your AI about it** (#739, thanks @matthewjablack). The optional MCP
-  server gets `log_workout`: "curls, 12 kg, 12/12/10" lands in your history on every device,
-  saved through your own server like a paired phone. It asks back when a name could mean two
-  exercises, never logs the same thing twice, and takes 20 workouts an hour at most.
-- **The AI Coach is one tap away for admins** (#683, thanks TheBlackSide243). On a server that
-  offers the Coach, admins now find an AI Coach row in Settings, right next to Look, that opens
-  the admin dashboard straight at the Coach card.
-- **Call an exercise what you call it** (#624, thanks Space-Hermes). "Add another name" under an
-  exercise's tags (or in your own exercise's form) gives it other names, like OHP for the overhead
-  press, and the search finds it by those too. They sync between your devices and travel with
-  your own exercises in shared plans.
-- **Discard means discard, on the Apple Watch too** (#776). Discarding a workout on the phone
-  while the watch follows it used to save it to Apple Health anyway, calories and all. Now the
-  watch drops it and Apple Health never hears about it.
-- **The Coach remembers both devices** (#779, thanks @Klein225). With the Coach open on two
-  devices, the one that synced last could wipe the other's chat, log and Undo history. Now they
-  merge message by message, and a plan you already applied on your phone no longer gets a
-  "nothing I would change" reply on your laptop.
-- **A Coach plan goes into your rotation** (#778, thanks @Klein225). Training on a rotation, a
-  plan from the Coach used to land in the weekly schedule, which a rotation ignores, so Home kept
-  showing your old sessions. Now the rotation switches to the Coach's routines and starts over
-  with the first one, and Undo puts your old rotation back.
-- **Your watch's heart rate and other apps' weigh-ins come in** (#544, #127). Two new switches
-  next to Write to Apple Health / Health Connect: Heart rate from your watch fills in the heart
-  rate of every set from workouts of the last day, whatever watch recorded it, and Weigh-ins from
-  other apps brings in your scale's or another app's weigh-ins from the last 30 days. Both are
-  off until you turn them on, read only while openGym is open, and never overwrite a heart rate
-  the Apple Watch already logged or a weigh-in you typed.
-- **A year of weigh-ins from Health Connect** (Android, idea from #801, thanks @antoni-heredia).
-  Turning on Weigh-ins from other apps now also asks for Health Connect's history permission,
-  where your phone has it, so your scale's weigh-ins from the last year come in, not just the
-  last 30 days. Say no and it reads the 30 days as before.
-- **Imported weigh-ins stay put.** Weigh-ins you import (an Apple Health export, a Google Health
-  or Health Connect CSV, Strong, Hevy) are no longer written back to Apple Health or Health
-  Connect, where they landed a second time. Only weigh-ins you enter in openGym go out.
-- **Heart rate for sets you tick on the phone.** With the Apple Watch running the session, a set
-  ticked on the phone now gets its heart rate from the watch too, not just the ones ticked on
-  the wrist.
-- **RPE and RIR on the Apple Watch.** If you rate your sets, the watch's set page now has a
-  little effort disc next to Done. Tap it, turn the crown (RPE 6 to 10 in halves, or RIR 5 down
-  to 0) and it goes into the set with the weight and reps. Leave it alone and nothing is logged.
-- **Discard on the watch** (#783, thanks @cubetes). Finish workout? on the wrist now also offers
-  Discard workout: gone on the watch, gone on the phone, nothing in Apple Health.
-- **A 3-2-1 before a watch workout** (#789, thanks @cubetes). With Apple Health on, a workout
-  you start on the wrist counts down first while the heart-rate sensor warms up, so set 1 has a
-  heart rate too. Tap to skip the wait.
-- **Forgot to hit Finish?** (#790, thanks @cubetes). After 20 minutes without a set the watch
-  taps you and asks "All done?". No answer by 45 minutes and the workout ends on its own, at your
-  last set, so Apple Health doesn't count your drive home as a workout.
-- **No more ghost sets in supersets** (#791, thanks @cubetes). When the watch flips to the
-  partner exercise by itself, taps are ignored for a second, so a slow double tap on Done no
-  longer logs a set you never did.
-- **Lock the watch mid-workout.** The rest, hold and finish screens have a Lock button (Water
-  Lock, like Apple's Workout): a sleeve or a bent wrist can't press the crown out of your workout.
-  Turn the crown to unlock.
-- **A calmer weigh-in crown.** The watch's weigh-in turns whole kilos (or pounds) now; tap the
-  digit after the point for the tenth. No more chasing 80.0 past 79.3.
-- **Bigger numbers on the watch.** Weight and reps are larger, Done is easier to spot, and with
-  the wrist down the set page dims properly.
-- **A run is a run in Apple Health** (#799, thanks @svillar). A workout that was only running
-  used to land in Apple Health as strength training, from the watch every time. Now runs, walks,
-  rows, rides, jump rope, HIIT, yoga and stretching each get their own type, on the iPhone, the
-  Apple Watch and in Health Connect. Lift anything at all and it's strength training, as before.
-- **Back means back.** A page's own back button now brings you back where you were scrolled,
-  just like the edge swipe, and Body measurements goes back to Stats instead of Home. The titles
-  beside those back buttons all sit the same distance from them now (#704, #763, #764, thanks
-  @kurktchiev and @lajawi).
-- **Android back stops touring your tabs.** Hopping between Home, Plan, Stats and Exercises no
-  longer piles up history that Back then replays: on a tab, Back goes straight to "press again
-  to exit" (#705, thanks @chang0022).
-- **One "Rest's over" on iOS.** The end of a rest could leave two identical banners stacked
-  (#728, thanks @2baek2).
-- **Discard workout is harder to hit by accident.** It lived at the bottom of the workout's ⋯
-  menu as a red trash, exactly where an exercise's ⋯ keeps Remove exercise. Now it's only in the
-  Finish sheet, next to Finish and save, still with its "are you sure" (#751).
-- **Apple Watch keeps up.** The watch could miss the phone right after launch and then hear
-  nothing until you reopened the app, a freshly installed watch app could wait for your next change
-  before it got your routines, and one odd routine could hide all of them. All fixed. Until the
-  phone has sent anything the watch now says "Not synced yet" and what to do about it, and
-  Settings → Apple Watch on the phone tells you when it last heard from the watch.
-- **Faster on long histories.** Home and Stats do far less work per open (Stats about a third
-  less on 800 workouts), the main script a start parses is a quarter smaller, the installed web app stops asking
-  the server about every file on each launch, and other languages load their words in one go
-  instead of three trips.
-- **Muscle balance**: tap a muscle you haven't trained right on the map and its row offers the
-  exercises for it, the same way the "Not trained" chips do (#553).
-- Stats' Week rows lose a stray line over each done/planned figure, which also sat a little
-  low next to its bar.
-- **Exercises start the way you do them.** Add a plank, a wall sit or a dead hang and it starts
-  as a timed hold (#694, thanks @lodepav). A one-arm row or a single-leg press starts per side
-  (#736, thanks @lodepav). Jumping jacks, burpees, star jumps and tuck jumps start as sets × reps
-  instead of minutes and speed (#717, thanks @zykll18), and so does jump rope, double unders
-  included (#796, thanks @sc962). Only fresh picks: what's already in your routines and history
-  stays exactly as you set it up.
-- **"No timer" for a single exercise.** Rest for this exercise now has the same three choices as
-  the warm-ups: your default, No timer, or a time of its own. Stretches and carries can finally
-  skip the countdown while your squats keep theirs. Saved in routines, shared plans and backups.
-- **The rest wheel starts where your rest is.** Pick a time opens on the rest that applies right
-  now (the exercise's, the warm-ups', or your default) instead of sitting at 0:00 (#735, thanks
-  @lodepav).
-- **Volume while you lift.** The progress bar at the top of a workout now ends in the session's
-  volume, adding up every set you tick, in all four layouts. Handy for deciding whether today was
-  enough or you've got one more in you (#774).
-- **Rate your cardio** (Discord). A cardio set's menu (tap the set number) now has How hard it
-  felt, in RPE whatever your sets use, worded for a run instead of reps left. An easy walk then
-  loads your fatigue map less than a hard run; unrated cardio counts as it always did. The incline
-  keeps its column.
-- **"I own no dumbbells"** (Discord). Settings → Equipment → Dumbbells has a switch for it now,
-  since an empty list only ever meant "any weight". On, dumbbell lifts leave the library, the
-  picker and the Coach's plans, with or without an equipment profile, and even if the Coach was
-  once told you have some. Your list of bells waits for the day you buy a pair.
-- **Count warm-ups in volume**, if you like (#719). A new switch in Settings → Units & language
-  adds your done warm-ups to every volume the app shows: the workout, the summary, history,
-  Stats, the report and the coach. Off by default, and records ignore warm-ups either way. The
-  warm-up line in Exercise settings tells it like it is, whichever way the switch is set.
-- **Lifted in total.** Stats has a new tile with everything you've ever lifted, imports included.
-  Spoiler: it's a lot.
-- **"No automatic progression" remembers what you did** (#217, thanks @iggaM23). With Settings →
-  Workout → Fine-tuning → Planned sessions start from → Your last session, an exercise with
-  progression off now opens at last time's weight and reps, the way Strong does it, and the card
-  says so. "Your plan" (the default) still opens at the routine's own numbers, and deload
-  routines keep theirs.
-- **"Last time" can mean any workout** (#770). Bench on Monday and Thursday? Settings → Workout →
-  Fine-tuning → Last time means → Any workout lets Thursday start from Monday, for the rows, the
-  "last time" line and progression alike. The default stays per routine, so a heavy day and a
-  light day keep their own numbers.
-- **Deleted a weigh-in by mistake? Undo.** Deleting one now shows a toast with Undo, on the log
-  sheet and in All weigh-ins, and the weigh-in comes back as if nothing happened (#756).
-- **Custom measurements get their own unit** (#699, #718, thanks @zykll18). Muscle ratio in %,
-  lean mass in kg or lb, a calf in cm or in, or no unit at all for a visceral fat score. The chart,
-  the history and backups keep it, and your old custom fields stay in cm like before. The body
-  CSV export says each field's unit in its column, and importing that file now brings the
-  measurements back too, not just the weigh-ins.
-- **Your weekly rate, with a corridor** (#759). Under the body-weight chart on Home and in Stats:
-  the trend through the last three weeks of weigh-ins, in kg or lb and in % of body weight a
-  week, so one salty dinner can't fool it. Tap it to set what you aim for (lose, gain or hold,
-  in % or in your unit) and the card tells you whether you're on pace, too fast or too slow.
-- **The plate hint says plates, not reps** in Chinese and Korean: "20 per side" read as twenty
-  reps a side (#689, #698, thanks @xueyang-dev).
-- **Increase Contrast and Reduce Transparency are honoured** (#707, #708, thanks @olestrr). With
-  Increase Contrast on, colours, secondary text and hairlines get firmer (every button label at
-  4.5:1 or better). With Reduce Transparency on, the tab bar, timer, toast, workout and Coach bars
-  go solid instead of frosted.
-- **Hej, Sverige!** openGym speaks Swedish now, picked in Settings → Units & language or straight
-  from a Swedish phone (#721, thanks @Grizzly163). Exercise names and instructions stay in English
-  for now.
-- **Spanish that sounds like Spain** (#786, thanks @cubetes). Over 60 strings reworded: Objetivo
-  instead of Meta, Entrenador instead of Coach, and holds that no longer say "sostén".
-- **Arabic exercise names wrap the right way round** (#780, thanks @kurktchiev). When a long
-  name breaks onto a second line, the English part in brackets keeps its brackets the right way
-  round.
-- **"Where's my code?"** (#551, thanks @Maximrabd). Signing a computer in with a code from your
-  phone only works while the phone is connected to your server. A phone app that keeps everything
-  to itself now says so under Settings → Account, and so does the sign-in screen's code sheet.
-- **The Android update actually installs.** Switch to another app while the new APK comes down
-  and Android quietly refused to open the installer, so the download finished and nothing
-  happened. Now the installer waits until you're back in openGym. Tap the update again after a
-  hiccup and it reuses the APK it already has instead of fetching 300 MB twice, and the leftover
-  APK is cleaned up once you're on the new version. (The fix lives in the updater itself, so it
-  helps from the update after 1.4.3 on: for this one, keep openGym open while it downloads.)
-- **Which APK is this?** Settings → About now tells you whether your Android app is the Standard
-  (180 px), Plus (240 px) or HD (360 px) one, no guessing from the file size.
-
-**Security.** Follow-ups to v1.4.2's audit.
-- **Pairing the phone app asks you to confirm it's you** (passkey, or your password where that
-  counts), like adding another device does. A copied browser session can no longer mint a phone
-  sign-in that renews itself.
-- Deleting your account from a paired phone only skips the passkey for a real phone sign-in, not
-  for a browser session sent along as one.
-- On iPhone the paired server's sign-in is no longer part of iCloud or computer backups. A
-  restored iPhone pairs again.
-- The Android updater (direct APK only) installs nothing without its checksum and only its own
-  download, and the backup folder is only written to while the app still has your permission.
-- Push addresses that hide a private IPv4 address inside an IPv6 one are refused like the plain
-  ones.
-- Self-hosted images run on this month's patched Node (22.23.4) and nginx (1.30.6), and the
-  server and the MCP bridge pick up a fixed `ip-address`. Thanks to MohamedAfrash and lodepav
-  (#766, #769).
+rotation and the routine list) and today's session on Home carry a tiny body, front and back,
+with the muscles it works lit up. No more opening Leg Day to remember it is, in fact, legs. It
+keeps going once you start: the exercise chips at the top of a workout end in the same tiny body,
+faint where the session is headed and lit where you've already ticked sets, in every layout and
+without moving a single set row (#670). Tap it for the big map and done/planned sets per muscle.
+Settings → Workout → Fine-tuning turns it off.
 
 **Export as a spreadsheet** (#647). Settings → Data & backup → Export as spreadsheet (CSV): your
 workouts with one row per set (date, workout, exercise, set, weight, reps, RPE or RIR, warm-ups,
@@ -231,134 +362,306 @@ reads it straight back in without losing a set. The importer also learned GymMan
 summary lists it under "New in this workout" with one button to add it to the routine, sets, reps
 and weight as you did them. Ignore it and the routine stays exactly as it was.
 
-**Support openGym.** Settings → About & updates has the coffee jar: Buy Me a Coffee, Ko-fi and
-GitHub Sponsors, and on the iPhone a straight line to writing an App Store review. No pop-ups
-asking for anything, promise.
+**Halloween.** Until the end of October a small spider drops in whenever you open openGym (tap
+it and it runs), bats cross the header now and then, cobwebs gather in a few corners and a shy
+pumpkin hides somewhere on Home. Find it for a little surprise, once a day. Stats gets a skeleton
+hanging off the activity card, spiders on threads, a moon with a tiny witch and two pumpkins
+peeking out. Rarely, a bigger witch. Workouts get a quiet version that never sits on a set, a
+button or a timer: a cobweb and a spider in the header's corner, two bats along the rest bar and
+pumpkins on the finish screen (Also during workouts turns that off). Gone on 1 November by
+itself, and Settings → Look & Home → Seasonal themes has Auto, On (all year, we won't judge) and
+Off, plus Spooky colors for a pumpkin orange accent. Reduce motion gets a still version, and with
+the theme off nothing of it is even loaded.
 
-**Settings slides like Settings.** Tap into a settings page and it slides in from the right; go
-back and the page before slides back in. The tabs keep their soft fade.
+**Pick your own app icon** (iPhone). Settings → Look & Home → App icon swaps the icon on your
+home screen: the original, Light, Mono, one in green, blue, orange, pink or purple, or Halloween,
+a pumpkin orange dumbbell with jack-o'-lantern faces under a moon, with a spider in the corner. The
+Halloween one stays all year, and while the theme is on, Seasonal themes has a shortcut to it. It's
+per phone and iOS asks you to confirm. Android gets the picker in the next version.
 
-**iPhone first start.** The permission screens have one Continue that leads straight to the
-iPhone's own question, so the yes or no is yours to give there, once.
-
-**Fatigue, in numbers.** Tap a muscle on Stats → Fatigue and you get its fatigue in percent on a
-little Ready / Recovering / Fatigued bar, plus when it drops back to Recovering and to Ready if
-you leave it alone. Handy for deciding whether those legs are really ready (thanks @sg41).
-
-**Fixes**
-- **openGym starts again on iPhones with iOS 15.5 to 16.3** (P1). 1.4.2 and the web demo sat on
-  the splash forever there, because one tiny link check used regex syntax Safari only learned in
-  16.4. Rewritten, the build now targets Safari 15 like the app does, and a test reads every built
-  file for syntax older iPhones can't handle. Should a browser still choke, openGym now says so
-  on screen with the error and a Reload button instead of lifting the logo forever. Thanks
-  h097327 for the excellent report.
-- **Colours on iOS 15.5 to 16.1.** Once openGym started there, a few tints were still missing:
-  the Coach's header and error bubbles, the admin pills, the focus card's badges, the tinted
-  buttons and the body map's shades. Those older Safaris now get plain stand-ins (close enough
-  that you'd need a colour picker to tell), and a test makes sure every new tint brings one.
-- Deadlift variants that forgot your lower back remember it now: the kettlebell suitcase
-  deadlift and the plate deadlift lunge press (#693, #700, thanks @JeromeTDev and @choksi2212).
-- Equipment profiles know more about what an exercise needs. An inverted row needs a bar (unless
-  it's the under-the-table kind), a dumbbell fly or a pullover needs a bench, and the massage
-  ball is no longer filed as a foam roller. Own no dumbbells at all? The Dumbbells sheet now says
-  how to keep them out of the library and the Coach's plans. Profiles you already had keep
-  showing what they did.
-- The knee-to-chest push-up lives with the chest exercises, not in cardio.
+**In the workout**
+- **Machine taken? One tap to your backup** (#649). A routine exercise with planned backups lists
+  each one in its ⋯ menu during a workout. Tap it and the backup takes over with the slot's own
+  sets, reps, rest and warm-ups, and the exercise it replaced becomes its backup, so going back
+  when the bench frees up is one tap too. Your routine stays exactly as it was.
+- **Machines with odd weight steps** (#688). A machine or cable exercise has a Weight stack under
+  Plate loading: type in the weights its pin really picks (5, 11.3, 18.1, the LifeFitness special)
+  or fill an even stack and fix the odd ones. Progression, deloads, warm-ups, drops and the + and −
+  buttons then land only on those, and at the top of the stack it holds and says so.
+- **Volume while you lift.** The progress bar at the top of a workout ends in the session's volume,
+  adding up every set you tick, in all four layouts. Handy for deciding whether today was enough
+  or you've got one more in you (#774).
+- **"No timer" for a single exercise.** Rest for this exercise has the same three choices as the
+  warm-ups: your default, No timer, or a time of its own. Stretches and carries can finally skip
+  the countdown while your squats keep theirs. Saved in routines, shared plans and backups.
+- **Rest after this set**: tap a set's number and give just that set its own rest for today, a
+  long one before the top set or none after a light one (#609, thanks @Space-Hermes).
+- **The rest wheel starts where your rest is.** Pick a time opens on the rest that applies right
+  now (the exercise's, the warm-ups', or your default) instead of sitting at 0:00 (#735, thanks
+  @lodepav).
+- A timed per-side hold can drop its 10 second switch-sides pause without losing the set's rest
+  (Rest between sides → No timer), and changing an exercise's settings mid-set no longer forgets
+  a side you already ticked (#636, thanks @Space-Hermes).
+- **Rate your cardio** (Discord). A cardio set's menu (tap the set number) has How hard it felt,
+  in RPE whatever your sets use, worded for a run instead of reps left. An easy walk then loads
+  your fatigue map less than a hard run; unrated cardio counts as it always did.
+- **Exercises start the way you do them.** A plank, a wall sit or a dead hang starts as a timed
+  hold (#694, thanks @lodepav), a one-arm row or a single-leg press per side (#736, thanks
+  @lodepav). Jumping jacks, burpees, star jumps and tuck jumps start as sets × reps instead of
+  minutes and speed (#717, thanks @zykll18), and so does jump rope, double unders included (#796,
+  thanks @sc962). Only fresh picks: what's already in your routines and history stays as it is.
+  Those cardio moves can also be switched between Cardio, Reps and Time in their settings (#678).
+- **"No automatic progression" remembers what you did** (#217, thanks @iggaM23). With Settings →
+  Workout → Fine-tuning → Planned sessions start from → Your last session, an exercise with
+  progression off opens at last time's weight and reps, the way Strong does it, and the card says
+  so. "Your plan" (the default) still opens at the routine's own numbers, and deload routines keep
+  theirs.
+- **"Last time" can mean any workout** (#770). Bench on Monday and Thursday? Settings → Workout →
+  Fine-tuning → Last time means → Any workout lets Thursday start from Monday, for the rows, the
+  "last time" line and progression alike. The default stays per routine, so a heavy day and a
+  light day keep their own numbers.
+- **Count warm-ups in volume**, if you like (#719). A switch in Settings → Units & language adds
+  your done warm-ups to every volume the app shows: the workout, the summary, history, Stats, the
+  report and the Coach. Off by default, and records ignore warm-ups either way.
+- **Discard workout is harder to hit by accident.** It lived at the bottom of the workout's ⋯ menu
+  as a red trash, exactly where an exercise's ⋯ keeps Remove exercise. Now it's only in the Finish
+  sheet, next to Finish and save, still with its "are you sure" (#751).
 - **Rest days in the rotation**, and the same routine more than once (A → B → C → B → D): Add
   offers a rest day and every routine, including the ones already in the loop (#536).
-- Your lats show up: the upper back is "Lats & upper back" in Stats, on the body map and in the
-  custom exercise muscle picker (#607, thanks @Parth-Vasave).
-- Coach questionnaire: the weekdays picked for you follow the number of training days, and days
-  you picked yourself stay put (#620, thanks @Jul11us).
-- German: the three lever leg curls say Beinbeugen now, not Beinstrecken like the leg extension
-  (#631, thanks @AkashBhat14 and @choksi2212).
-- Collapse completed exercises: a finished exercise folds up and the ones after it move up with
-  it, no more black gap (#642, thanks @dpatrongomez). That goes for the last exercise in the
-  list too when you're scrolled all the way down: the page settles instead of keeping a blank
-  strip under it.
-- Cardio the Coach prescribes on a non-cardio exercise (kettlebell swings for 15 minutes) stays
-  15 minutes instead of turning into sets with no target, in new plans, in review additions and
-  in shared plan files (#640, thanks @rudycelekli for spotting the review side).
-- A Coach review that adds a routine with an empty slot in it gets a second try instead of
-  failing outright (thanks @rudycelekli).
-- The MCP server stops showing a profile whose data was deleted, also where the system can't
-  watch files (thanks @rudycelekli).
-- Coach on Gemini works with a fresh AI Studio key again: the default is Gemini 3.8 Flash (free
-  tier included), and a model your key can't use any more is swapped once for one it lists,
-  on the server and on a phone with its own key. If nothing fits, the error names the model (#758).
-- Coach through OpenRouter (and other hosts that insist on strict JSON schemas) stops failing
-  with "additionalProperties must be explicitly set to false": the request is sent once more in
-  the strict shape they want (#701, thanks @choksi2212).
-- MCP: `sets_planned` counts per-side sets the way `sets_done` does, so a finished unilateral
-  session reads 102/102 instead of 102/54 (#691, thanks @davidjorgensen).
-- Jumping jacks, burpees and the other cardio moves can be counted in sets x reps (or timed):
-  their settings now offer Cardio, Reps and Time, Cardio still the default (#678).
+- A treadmill's incline can be set in the routine, not only mid-workout. The session opens at it
+  unless last time had a grade of its own, and it travels in shared plans.
+- Focus mode: the exercise's ⋯ menu has Add set and Add warm-up set, and Focus stays on the screen
+  with lots of sets or a long exercise name (#655).
+- In the Compact and List layouts the exercise chips at the top follow along: the one you tap lights
+  up, and so does the one you scroll to (#323, thanks @Space-Hermes).
+- Collapse completed exercises: a finished exercise folds up and the ones after it move up with it,
+  no more black gap, the last one in the list included (#642, thanks @dpatrongomez).
 - Add exercise → By muscle has the Favourites chip too, for the muscle you picked (#669).
-- A treadmill's incline can be set in its settings in the routine, not only mid-workout. The
-  session opens at it unless last time had a grade of its own, and it travels in shared plans.
-- Exercise names on the Lock Screen, in the Dynamic Island, on the Apple Watch and in the widgets
-  are title-cased like in the app (Focus mode's exercise menu too), instead of whispering
-  "barbell bench press".
+
+**Apple Watch and the Lock Screen**
+- **Next exercise and Skip rest on the Lock Screen** (iPhone, Discord). The Live Activity and the
+  Dynamic Island get a small button next to the big one: Skip rest while you rest, Next exercise
+  the rest of the time, so a machine somebody grabbed no longer means unlocking the phone. Works
+  with openGym asleep. The big button now says Log set, because "Done" sounded a lot like "I'm
+  going home".
+- **RPE and RIR on the watch.** If you rate your sets, the set page has a little effort disc next
+  to Done. Tap it, turn the crown, and it goes in with the weight and reps. Leave it alone and
+  nothing is logged.
+- **A 3-2-1 before a watch workout** (#789, thanks @cubetes) while the heart-rate sensor warms up,
+  so set 1 has a heart rate too. Tap to skip the wait.
+- **Forgot to hit Finish?** (#790, thanks @cubetes). After 20 minutes without a set the watch taps
+  you and asks "All done?". No answer by 45 minutes and the workout ends on its own, at your last
+  set, so Apple Health doesn't count your drive home as a workout.
+- **Discard, properly** (#776, #783, thanks @cubetes). Finish workout? on the wrist offers Discard
+  workout, and discarding on the phone while the watch follows no longer saves it to Apple Health
+  anyway. Gone on both, nothing in Apple Health.
+- **No more ghost sets in supersets** (#791, thanks @cubetes). When the watch flips to the partner
+  exercise by itself, taps are ignored for a second, so a slow double tap on Done no longer logs a
+  set you never did.
+- **Lock the watch mid-workout** (Water Lock, like Apple's Workout), so a sleeve or a bent wrist
+  can't press the crown out of your workout. Turn the crown to unlock.
+- **Bigger numbers and a calmer crown.** Weight and reps are larger, Done is easier to spot, the
+  page dims properly with the wrist down, and the weigh-in crown turns whole kilos (or pounds):
+  tap the digit after the point for the tenth.
+- **The watch keeps up.** It could miss the phone right after launch, a fresh install could wait
+  for your next change before it got your routines, and one odd routine could hide all of them.
+  All fixed. Until the phone has sent anything the watch says "Not synced yet" and what to do, and
+  Settings → Apple Watch on the phone tells you when it last heard from the watch.
+- A set ticked on the phone while the watch runs the session gets its heart rate from the watch too.
+- Exercise names on the Lock Screen, in the Dynamic Island, on the watch and in the widgets are
+  title-cased like in the app, instead of whispering "barbell bench press".
 - After a long run of Lock Screen taps with the app asleep, the Live Activity said "All sets done"
   with sets still to go. It now says "Open openGym for the next set".
-- Focus mode: the exercise's ⋯ menu has Add set and Add warm-up set, so one more set no longer
-  means a trip to the Cards layout.
-- A weight change too small to show (say 0.03 kg) reads 0 instead of a lonely "-0".
-- Admin → AI Coach: the Remove button for the stored key is red now, like every other button
-  that deletes something for good.
-- Focus mode stays on the screen with lots of sets or a long exercise name (#655).
-- Chart dates under the graph say each day once over a short span, and months get their year
-  once a chart covers more than twelve of them (thanks @lodepav).
-- Hevy import: 55 of Hevy's built-in exercises (Seated Leg Curl, Plank, Air Bike, Triceps Dip and
-  friends) land on the right openGym exercise instead of a cousin or a custom one, and the import
-  summary counts an exercise once even when it's in your workouts and your routines (thanks @lodepav).
-  A seated leg curl from any app stays a seated leg curl, Side Plank, Squat (Machine) and the cable
-  rear delt fly no longer land on a different lift when you import with your Hevy API key, and 12
-  more Hevy titles find their exercise, from Lu Raises to the Bayesian curl (#784, #785, #793,
-  thanks @cubetes and @theatosam).
-- Imports that convert pounds and kilos keep the weight to the hundredth: 45 lb comes in as
-  20.41 kg and reads back as 45, not 44.97. Hevy notes keep their line breaks instead of a
-  literal `\n` (thanks @lodepav).
-- German step-by-step instructions for 1,213 more exercises, so all the exercises from before
-  v1.4 explain themselves in German now (#645, thanks @junkerderprovinz).
-- In the Compact and List layouts the exercise chips at the top follow along: the one you tap
-  lights up, and so does the one you scroll to (#323, thanks @Space-Hermes).
-- **Rest after this set**: tap a set's number and give just that set its own rest for today,
-  a long one before the top set or none after a light one. Default, No timer or Pick a time
-  (#609, thanks @Space-Hermes).
-- A timed per-side hold can drop its 10 second switch-sides pause without losing the set's rest:
-  Rest between sides → No timer. And changing an exercise's settings mid-set no longer forgets a
-  side you already ticked (#636, thanks @Space-Hermes).
-- The install tip in About on a Windows or Linux browser points at Chrome's install icon,
-  not at an iPhone's Share menu you don't have.
-- The Coach answers questions now. Type "how many sets of dips is that?" in the chat and you get
-  an answer in words instead of a whole revised plan, and a suggestion you were asking about is
-  still there afterwards (#660, thanks @TheBlackSide243).
-- Automatic Coach reviews on a phone with its own API key finally happen. The setting saved and
-  then nothing ever ran them, because only a server ran them. Now the phone does it while the app
-  is open: right after the workout that completes the count, or the first time you open it after
-  your weekly slot. It only speaks up when it has something to suggest.
-- A phone app connected to your server now hears about a suggestion the server's automatic
-  review left. The server only knew how to say it by web push, which the app doesn't have, so the
-  review ran and the phone stayed quiet. Now the app tells you when you next open it.
-- Self-hosting docs for the questions Discord asked this week: getting from zero to a working
-  AI Coach (it starts with making yourself admin), nginx under `/gym` in both flavours with the
-  three mistakes that break it, passkeys without a fingerprint reader or on plain http, the
-  iPhone web app, and moving your phone's data onto your own server. All in the FAQ too.
-- Coach on a phone with your own key: Advanced lets you set the daily runs (0 for no limit,
-  handy with a model on your own network), the output-token ceiling a reasoning model needs
-  raised, and how long a message may be. You're the admin there, after all (#527, thanks
-  @xueyang-dev).
-- **Wrong address, clear answer.** When your api service's ORIGIN isn't the address in your
-  browser, the app now says which address the server expects and what to change, instead of a
-  bare "cross-origin request refused". The server log names the exact `ORIGIN=` and `RP_ID=`
-  to set (thanks tcmac, who lost a morning to this one).
-- Self-hosting on a NAS has its own section now: Synology, QNAP, Unraid and TrueNAS, with a
-  two-service compose to paste, absolute paths, ports, permissions and HTTPS. The FAQ explains
-  password sign-in (`PASSWORD_LOGIN`) and guest mode (`ALLOW_GUEST`), including why a stack
-  without its api quietly turns you into a guest.
-- Self-hosting on a Mac at home has its own guide: Colima instead of Docker Desktop and Tailscale
-  Serve for HTTPS (#787, thanks @cubetes).
+- One "Rest's over" on iOS: the end of a rest could leave two identical banners stacked (#728,
+  thanks @2baek2).
+
+**Apple Health and Health Connect**
+- **Your watch's heart rate and other apps' weigh-ins come in** (#544, #127). Two new switches next
+  to Write to Apple Health / Health Connect: Heart rate from your watch fills in the heart rate of
+  every set from workouts of the last day, whatever watch recorded it, and Weigh-ins from other
+  apps brings in your scale's weigh-ins from the last 30 days. Both off until you turn them on,
+  read only while openGym is open, and they never overwrite a heart rate the Apple Watch already
+  logged or a weigh-in you typed.
+- **A year of weigh-ins from Health Connect** (Android, idea from #801, thanks @antoni-heredia).
+  Turning on Weigh-ins from other apps also asks for Health Connect's history permission where
+  your phone has it, so the last year comes in. Say no and it reads the 30 days as before.
+- **A run is a run** (#799, thanks @svillar). A workout that was only running used to land as
+  strength training. Now runs, walks, rows, rides, jump rope, HIIT, yoga and stretching each get
+  their own type, on the iPhone, the Apple Watch and in Health Connect. Lift anything at all and
+  it's strength training, as before.
+- **Imported weigh-ins stay put.** Weigh-ins you import (an Apple Health export, a Google Health or
+  Health Connect CSV, Strong, Hevy) are no longer written back to Apple Health or Health Connect,
+  where they landed a second time. Only weigh-ins you enter in openGym go out.
+
+**Your body and your stats**
+- **Lifts against your body weight** (#729, thanks @radu781). Exercise progress in Stats and an
+  exercise's History have a Bodyweight view: your estimated 1RM or heaviest set as a % of what you
+  weighed then, so the line only climbs when you got stronger for your size. Pull-ups and dips count
+  you plus the belt, assisted machines you minus the help.
+- **Your weekly rate, with a corridor** (#759). Under the body-weight chart on Home and in Stats:
+  the trend through the last three weeks of weigh-ins, in kg or lb and in % of body weight a week,
+  so one salty dinner can't fool it. Tap it to set what you aim for and the card tells you whether
+  you're on pace, too fast or too slow.
+- **Fatigue, in numbers.** Tap a muscle on Stats → Fatigue for its fatigue in percent on a little
+  Ready / Recovering / Fatigued bar, plus when it drops back to Recovering and to Ready if you
+  leave it alone (thanks @sg41).
+- **Custom measurements get their own unit** (#699, #718, thanks @zykll18): %, kg or lb, cm or in,
+  or none at all for a visceral fat score. The body CSV export names each field's unit, and
+  importing that file brings the measurements back too, not just the weigh-ins.
+- **Lifted in total.** A new Stats tile with everything you've ever lifted, imports included.
+  Spoiler: it's a lot.
+- **Deleted a weigh-in by mistake? Undo**, on the log sheet and in All weigh-ins (#756).
+- **Muscle balance**: tap a muscle you haven't trained right on the map and its row offers the
+  exercises for it (#553). Stats' Week rows lose a stray line over each done/planned figure.
+- Chart dates say each day once over a short span, and months get their year once a chart covers
+  more than twelve of them (thanks @lodepav). A weight change too small to show reads 0, not "-0".
+
+**The Coach**
+- **It answers questions.** "How many sets of dips is that?" in the chat gets an answer in words
+  instead of a whole revised plan (#660, thanks @TheBlackSide243).
+- **It remembers both devices** (#779, thanks @Klein225). With the Coach open on two devices the
+  one that synced last could wipe the other's chat, log and Undo. Now they merge message by
+  message, and a plan applied on your phone no longer gets "nothing I would change" on your laptop.
+- **A Coach plan goes into your rotation** (#778, thanks @Klein225) instead of the weekly schedule
+  a rotation ignores. The rotation starts over with the Coach's routines, and Undo puts yours back.
+- **Automatic reviews on a phone with its own key finally happen**, while the app is open: right
+  after the workout that completes the count, or the first time you open it after your weekly
+  slot. And a phone connected to your server now hears about a suggestion the server's review left.
+- **One tap away for admins** (#683, thanks TheBlackSide243): an AI Coach row in Settings opens
+  the admin dashboard straight at the Coach card.
+- Gemini works with a fresh AI Studio key again: the default is Gemini 3.8 Flash, and a model your
+  key can't use any more is swapped once for one it lists. If nothing fits, the error names the
+  model (#758).
+- OpenRouter and other hosts that insist on strict JSON schemas stop failing with
+  "additionalProperties must be explicitly set to false" (#701, thanks @choksi2212; #577, thanks
+  @funkypenguin).
+- A phone with your own key gets Advanced: the daily runs (0 for no limit, handy with a model on
+  your own network), the output-token ceiling a reasoning model needs raised, and the message
+  length (#527, thanks @xueyang-dev).
+- Cardio the Coach prescribes on a non-cardio exercise (kettlebell swings for 15 minutes) stays 15
+  minutes (#640), and a review that adds a routine with an empty slot gets a second try instead of
+  failing (thanks @rudycelekli for both).
+- The questionnaire's weekdays follow the number of training days, and days you picked yourself
+  stay put (#620, thanks @Jul11us).
+
+**Exercises and equipment**
+- **Call an exercise what you call it** (#624, thanks Space-Hermes). "Add another name" gives it
+  other names, like OHP for the overhead press, and the search finds it by those too. They sync and
+  travel with your own exercises in shared plans.
+- **"I own no dumbbells"** (Discord). Settings → Equipment → Dumbbells has a switch for it, since
+  an empty list only ever meant "any weight". On, dumbbell lifts leave the library, the picker and
+  the Coach's plans, even if the Coach was once told you have some. Your list waits for the day
+  you buy a pair.
+- Equipment profiles know more: an inverted row needs a bar (unless it's the under-the-table kind),
+  a dumbbell fly or a pullover needs a bench, and the massage ball is no longer a foam roller.
+  Profiles you already had keep showing what they did.
+- Your lats show up as "Lats & upper back" in Stats, on the body map and in the muscle picker (#607,
+  thanks @Parth-Vasave). The kettlebell suitcase deadlift and the plate deadlift lunge press remember
+  your lower back (#693, #700, thanks @JeromeTDev and @choksi2212), and the knee-to-chest push-up
+  moved from cardio to chest.
+- German step-by-step instructions for 1,213 more exercises, so everything from before v1.4 explains
+  itself in German (#645, thanks @junkerderprovinz), and the lever leg curls say Beinbeugen, not
+  Beinstrecken (#631, thanks @AkashBhat14 and @choksi2212).
+
+**Getting around**
+- **Back means back.** A page's own back button returns you where you were scrolled, like the edge
+  swipe, Body measurements goes back to Stats, and the titles all sit the same distance from their
+  back buttons (#704, #763, #764, thanks @kurktchiev and @lajawi).
+- **Android back stops touring your tabs.** On a tab, Back goes straight to "press again to exit"
+  (#705, thanks @chang0022).
+- **Settings slides like Settings**: in from the right, back from the left. The tabs keep their fade.
+- **iPhone first start**: the permission screens have one Continue that leads straight to the
+  iPhone's own question, so the yes or no is yours to give there, once.
+- **Faster on long histories.** Home and Stats do far less work per open (Stats about a third less
+  on 800 workouts), the main script is a quarter smaller, the installed web app stops asking the
+  server about every file on each launch, and other languages load their words in one go.
+- **Increase Contrast and Reduce Transparency are honoured** (#707, #708, thanks @olestrr): firmer
+  colours and hairlines (every button label at 4.5:1 or better), and solid bars instead of frosted.
+- **"Where's my code?"** (#551, thanks @Maximrabd). Signing a computer in with a code from your
+  phone needs the phone connected to your server. A phone app that keeps everything to itself now
+  says so under Settings → Account and on the sign-in screen.
+- **Support openGym.** Settings → About & updates has the coffee jar: Buy Me a Coffee, Ko-fi and
+  GitHub Sponsors, and on the iPhone a straight line to writing an App Store review. No pop-ups
+  asking for anything, promise.
+- The install tip in About on a Windows or Linux browser points at Chrome's install icon, not at an
+  iPhone's Share menu you don't have. Admin → AI Coach: the Remove button for the stored key is red,
+  like every other button that deletes something for good.
+
+**Languages**
+- **Hej, Sverige!** openGym speaks Swedish, from Settings → Units & language or straight from a
+  Swedish phone (#721, thanks @Grizzly163). Exercise names and instructions stay English for now.
+- **Spanish that sounds like Spain** (#786, thanks @cubetes): over 60 strings reworded, Objetivo
+  instead of Meta, Entrenador instead of Coach, and holds that no longer say "sostén".
+- Arabic exercise names keep their English brackets the right way round when they wrap (#780,
+  thanks @kurktchiev).
+- The plate hint says plates, not reps, in Chinese and Korean (#689, #698, thanks @xueyang-dev),
+  and the Korean exercise names got a native speaker's review (#500, thanks @ianlyoo).
+
+**Import and the MCP server**
+- **Log a workout by telling your AI about it** (#739, thanks @matthewjablack). The MCP server gets
+  `log_workout`: "curls, 12 kg, 12/12/10" lands in your history on every device, saved through your
+  own server like a paired phone. It asks back when a name could mean two exercises, never logs the
+  same thing twice, and takes 20 workouts an hour at most.
+- MCP: `sets_planned` counts per-side sets like `sets_done` (102/102, not 102/54; #691, thanks
+  @davidjorgensen), and a profile whose data was deleted stops showing, also where the system can't
+  watch files (thanks @rudycelekli).
+- Hevy import: 55 built-in exercises (Seated Leg Curl, Plank, Air Bike, Triceps Dip and friends)
+  land on the right openGym exercise, 12 more titles find theirs (from Lu Raises to the Bayesian
+  curl), and Side Plank, Squat (Machine) and the cable rear delt fly stay themselves with your Hevy
+  API key too. The summary counts an exercise once (thanks @lodepav, and #784, #785, #793, thanks
+  @cubetes and @theatosam).
+- Imports keep converted weights to the hundredth (45 lb comes in as 20.41 kg and reads back as 45),
+  Hevy notes keep their line breaks (thanks @lodepav), and Strong's measurements export comes in as
+  body weight (#591, thanks @ConalMullan).
+
+**Android**
+- **The update actually installs.** Switch apps while the new APK comes down and Android quietly
+  refused to open the installer. Now the installer waits until you're back in openGym, a second tap
+  after a hiccup reuses the APK it already has instead of fetching 300 MB twice, and the leftover is
+  cleaned up once you're on the new version. (The fix lives in the updater itself, so it helps from
+  the update after 1.4.3 on: for this one, keep openGym open while it downloads.)
+- **Which APK is this?** Settings → About tells you whether you have Standard (180 px), Plus (240
+  px) or HD (360 px), no guessing from the file size.
+
+**From the community** (thanks!)
+- A superset in List and Compact scrolls to its next member, one-sided exercises included (#574,
+  @sgoendoer).
+- The workout summary uses the width of the phone and has a close button at the top (#597,
+  @dpatrongomez).
+- Pairing the app with a server under a sub-path such as `/gym` keeps the sub-path (#601,
+  @phaninderg).
+- One builder for an exercise added to or swapped into a running session (#608, @bbolinger).
+- Tailscale Serve as an HTTPS option in the self-hosting docs (#615, @tanishvbuk).
+- German exercise names and steps (#619, #623, @junkerderprovinz).
+- Tests that pass east of UTC+6 (#732, @NaufalDzz).
+
+**Self-hosting**
+- **Wrong address, clear answer.** When your api service's ORIGIN isn't the address in your browser,
+  the app says which address the server expects and what to change, instead of a bare "cross-origin
+  request refused". The server log names the exact `ORIGIN=` and `RP_ID=` to set (thanks tcmac, who
+  lost a morning to this one).
+- **Set your own `CONTENT_SECURITY_POLICY`?** The inline start script changed (it now shows an error
+  instead of an endless splash), so its hash did too. If you copied the old hash, take the new one
+  from `web/Dockerfile`; with the old one the app still runs, but loses that message and the
+  first-paint right-to-left layout.
+- New docs for what Discord asked: from zero to a working AI Coach (it starts with making yourself
+  admin), nginx under `/gym` in both flavours with the three mistakes that break it, passkeys without
+  a fingerprint reader or on plain http, the iPhone web app, and moving your phone's data onto your
+  own server. A NAS section (Synology, QNAP, Unraid, TrueNAS, with a two-service compose to paste),
+  password sign-in (`PASSWORD_LOGIN`) and guest mode (`ALLOW_GUEST`) explained, including why a stack
+  without its api quietly turns you into a guest, and a Mac at home with Colima and Tailscale Serve
+  (#787, thanks @cubetes).
+
+**Security.** Follow-ups to v1.4.2's audit. Self-hosters: please update.
+- **Pairing the phone app asks you to confirm it's you** (passkey, or your password where that
+  counts), like adding another device does. A copied browser session can no longer mint a phone
+  sign-in that renews itself.
+- On iPhone the paired server's sign-in is no longer part of iCloud or computer backups. A restored
+  iPhone pairs again.
+- The Android updater (direct APK only) installs nothing without its checksum and only its own
+  download, and the backup folder is only written to while the app still has your permission.
+- Self-hosted images run on this month's patched Node (22.23.4) and nginx (1.30.6), and the server
+  and the MCP bridge pick up a fixed `ip-address`. Thanks to MohamedAfrash and lodepav (#766, #769).
 
 ## v1.4.2 (2026-10-23)
 

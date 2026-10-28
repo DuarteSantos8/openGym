@@ -85,6 +85,8 @@ if you want to try it before installing anything.
   list view. Switches in Settings bring the old button rows back if you liked them.
 - Optional effort column as RIR or RPE, colour-coded, with a plain-language line per level.
 - Plate math for barbell, EZ bar, trap bar and Smith machine, worked out from the plates you own.
+  Train in more than one place? Each gym keeps its own plates, dumbbells, bars and machine stacks,
+  and the phone can switch to the gym you just walked into.
 - Bodyweight exercises know they carry no load: log reps, add a dip belt if you use one.
 - Per-side reps for lunges and single-arm work, the screen stays awake while you train, and a
   rest-timer alert can flash the screen for loud gyms.
@@ -125,7 +127,8 @@ if you want to try it before installing anything.
 - A gym reminder, off by default: walk into one of your gyms and the phone nudges you to hit
   Start. Once a day at most, never after you trained, and your gyms stay on the phone.
 - An Apple Watch app: tick off sets with the Digital Crown, a full-screen rest countdown, heart
-  rate per set, and complications. Widgets and a Live Activity on the iPhone.
+  rate per set, and complications. No watch? AirPods Pro 3 do the heart rate on iOS 26. Widgets and
+  a Live Activity on the iPhone.
 
 **Optional extras, off by default**
 
@@ -285,18 +288,19 @@ The [documentation index](docs/README.md) sorts every guide by who it's for. The
 
 ## Roadmap
 
-A release roughly every two weeks, each small and themed. The full plan is in
-[ROADMAP.md](ROADMAP.md), and the issues sit in the
+A release roughly every one to two weeks, each one whatever has passed testing by then. The full
+plan is in [ROADMAP.md](ROADMAP.md), and the issues sit in the
 [GitHub milestones](https://github.com/DuarteSantos8/openGym/milestones).
 
 | Release | When | Theme |
 |---|---|---|
 | v1.4.0 | released Oct 2026 | A new exercise database with 5,632 exercises, plus two rounds of community work |
 | v1.4.1 | released Oct 2026 | Bug fixes for v1.4.0 |
-| v1.4.2 | Oct 2026 | The App Store, the Apple Watch, widgets, a Google Play build |
-| v1.4.3 | Nov 2026 | The gym reminder, health data read back, community features |
-| next | Nov 2026 to Apr 2027 | Programmes, the progression engine, cardio, sharing, accounts, Android and health, looks |
-| later | | Database storage |
+| v1.4.2 | released Oct 2026 | The App Store, the Apple Watch, widgets, three APK sizes |
+| v1.4.3 | released Oct 2026 | The Halloween and community release: gym reminder, health data read back, watch upgrades, CSV export |
+| v1.4.4 | in progress | Programmes with %1RM and RPE targets, custom app icons, kg or lb per exercise, the Coach fix |
+| v1.4.5 | Nov 2026 | Remote MCP over HTTPS, Google Play, a gym reminder that also notices you leaving |
+| later | dates are guesses | Circuits and EMOM, a trainer role, OIDC, F-Droid, an on-device Coach, Strava and Garmin, database storage |
 
 ## Community
 

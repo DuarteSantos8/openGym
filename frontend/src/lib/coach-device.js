@@ -4,7 +4,8 @@
 // the JSON export, and is what "back up your data" means. Which provider this phone talks to,
 // the pseudonym it uses, today's run count and a proposal waiting to be looked at are device
 // facts, so they live in their own file next to the remote-pairing one. So is when it last ran a
-// review (`reviewedAt`): the marker its automatic reviews are timed from (coach-local.js). The API key itself is
+// review (`reviewedAt`): the marker its automatic reviews are timed from (coach-local.js). So is the request
+// shape an OpenAI-compatible gateway turned out to accept (`compat`, #804). The API key itself is
 // not even here: see coach-secrets.js.
 //
 // This module is intentionally light. The setup screen imports it before the user has chosen
@@ -15,7 +16,7 @@ const FILE = 'opengym-coach.json'
 
 export const COACH_MODES = ['off', 'server', 'byok']
 
-const DEFAULTS = { mode: 'off', provider: null, model: null, baseUrl: null, handle: null, daily: null, pending: null, reviewedAt: null, limits: null }
+const DEFAULTS = { mode: 'off', provider: null, model: null, baseUrl: null, handle: null, daily: null, pending: null, reviewedAt: null, limits: null, compat: null }
 
 /* The three dials the BYOK setup screen's "Advanced" exposes, with the same ranges the server's
    admin card clamps to (api/coach/config.js). That file is node-only — it reads ./data and

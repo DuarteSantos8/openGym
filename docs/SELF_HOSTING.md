@@ -508,7 +508,9 @@ time, so only a phone left unopened for longer than `SESSION_DAYS` has to be pai
 
 The web container sends a Content-Security-Policy that lets scripts run only from your instance
 (plus the app's one inline script, by its hash), so a script that found its way into a page does
-not run. Requests the app makes itself stay open: the Coach on a device talks to whatever provider
+not run. The only frame it allows is YouTube's privacy-enhanced player (`www.youtube-nocookie.com`),
+for an exercise's video link once someone taps play; leave that in a policy of your own if you want
+those videos to play in the app. Requests the app makes itself stay open: the Coach on a device talks to whatever provider
 you chose, a LAN Ollama included. If your reverse proxy injects a script of its own (analytics,
 say), it gets blocked; give the `web` service a policy that allows it in `environment:`, or
 `CONTENT_SECURITY_POLICY=frame-ancestors 'none'` for the old, minimal header. The default is in
@@ -702,11 +704,16 @@ goes wrong, so you can spot them:
 ### Photos and videos of custom exercises
 
 Anyone signed in can give an exercise they made one photo, GIF or short video (and, separately,
-a link, which the server never fetches), and attach up to six photos or videos to a logged
-workout — a progress photo, a form-check clip. Both kinds share one quota and one set of limits.
+a link, which the server never fetches), attach up to six photos or videos to a logged
+workout (a progress photo, a form-check clip), and film a set during a workout: one video per
+set, up to 24 per workout, shown beside the set and lined up per exercise to compare two dates.
+All of them share one quota and one set of limits. A set video filmed with **Keep videos on this
+phone only** on (or for a server from before v1.4.4, whose `/api/config` does not say
+`media.sets`) never reaches the server at all.
 The file is uploaded to this server and stored under
 `./data/uploads/<profile id>/`, named by its SHA-256. Only its owner can download it again — no
-admin route, no Coach and no shared plan reads it. It is on by default, with these limits, all
+admin route, no Coach, no MCP tool (it is told how many sets were filmed, nothing more), no
+share card, PDF or shared plan reads it. It is on by default, with these limits, all
 set in `.env`:
 
 | Variable | Default | Meaning |

@@ -3,9 +3,8 @@
   "name": "dumbbell straight leg russian twist",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "hip flexors",
     "core"
   ],

@@ -10,6 +10,8 @@ import { useUI } from './store/useUI.js'
 import { workoutDateSheet, workoutDetailSheet, workoutDurationSheet } from './sheets.jsx'
 import { backfillStart } from './lib/backfill.js'
 import { startTimeOf } from './lib/workout-date.js'
+import { pickDate } from './components/DateField.test-util.js'
+import { workoutOption } from './lib/workout-options.test-util.js'
 
 const mounted = []
 function render(open) {
@@ -51,17 +53,17 @@ describe('changing the date of a saved workout', () => {
 
   it('is offered from the workout detail sheet and opens prefilled', () => {
     const host = render(() => workoutDetailSheet(history()[1]))
-    const open = button(host, 'Change date & time')
+    const open = workoutOption(host, 'Change date & time')
     expect(open).toBeTruthy()
     const edit = render(() => open.click())
     expect(edit.querySelector('h3').textContent).toBe('Change date & time')
-    expect(edit.querySelector('input[type=date]').value).toBe('2026-08-25')
+    expect(edit.querySelector('[data-datefield]').value).toBe('2026-08-25')
     expect(edit.querySelector('input[type=time]').value).toBe('07:30')
   })
 
   it('moves the session, keeps the length it had and re-files it in date order', () => {
     const host = render(() => workoutDateSheet(history()[1]))
-    act(() => { type(host.querySelector('input[type=date]'), '2026-08-18') })
+    pickDate(host.querySelector('[data-datefield]'), '2026-08-18')
     act(() => { type(host.querySelector('input[type=time]'), '06:15') })
     act(() => { button(host, 'Save').click() })
 
@@ -78,28 +80,19 @@ describe('changing the date of a saved workout', () => {
     // 90 kg was logged second, so 80 kg held the badge too. Moved first, the 80 kg session
     // is no longer a record and the 90 kg one is.
     const host = render(() => workoutDateSheet(history()[1]))
-    act(() => { type(host.querySelector('input[type=date]'), '2026-08-18') })
+    pickDate(host.querySelector('[data-datefield]'), '2026-08-18')
     act(() => { button(host, 'Save').click() })
     expect(history().map(w => [w.id, w.prs])).toEqual([['late', ['bench']], ['early', []]])
   })
 
-  it('refuses a day in the future and leaves history alone', () => {
+  it('does not offer a day in the future and leaves history alone', () => {
     const before = history()
     const host = render(() => workoutDateSheet(before[1]))
-    act(() => { type(host.querySelector('input[type=date]'), '2099-01-01') })
+    // The picker greys out every day after today, so the future cannot even be picked (#809).
+    expect(pickDate(host.querySelector('[data-datefield]'), '2099-01-01')).toBe(false)
+    expect(host.querySelector('[data-datefield]').value).toBe('2026-08-25')
     act(() => { button(host, 'Save').click() })
     expect(history()).toEqual(before)
-    expect(useUI.getState().toast).toHaveBeenCalledWith('Pick a day up to today')
-    expect(useUI.getState().sheets).toHaveLength(1)   // still open to correct the date
-  })
-
-  it('an empty date is refused rather than moving the workout to nowhere', () => {
-    const before = history()
-    const host = render(() => workoutDateSheet(before[1]))
-    act(() => { type(host.querySelector('input[type=date]'), '') })
-    act(() => { button(host, 'Save').click() })
-    expect(history()).toEqual(before)
-    expect(useUI.getState().toast).toHaveBeenCalledWith('Pick a day up to today')
   })
 
   // At 01:42, today at 23:30 passed the date check and filed the session 22 hours ahead.
@@ -109,7 +102,7 @@ describe('changing the date of a saved workout', () => {
     try {
       const before = history()
       const host = render(() => workoutDateSheet(before[1]))   // 47 minutes long
-      act(() => { type(host.querySelector('input[type=date]'), '2026-08-26') })
+      pickDate(host.querySelector('[data-datefield]'), '2026-08-26')
       for (const time of ['23:30', '01:00']) {
         act(() => { type(host.querySelector('input[type=time]'), time) })
         act(() => { button(host, 'Save').click() })
@@ -133,7 +126,7 @@ describe('changing the date of a saved workout', () => {
 
   it('leaves a second workout on the same day in start-time order', () => {
     const host = render(() => workoutDateSheet(history()[1]))
-    act(() => { type(host.querySelector('input[type=date]'), '2026-08-20') })
+    pickDate(host.querySelector('[data-datefield]'), '2026-08-20')
     act(() => { type(host.querySelector('input[type=time]'), '21:00') })
     act(() => { button(host, 'Save').click() })
     expect(history().map(w => w.id)).toEqual(['early', 'late'])
@@ -145,8 +138,8 @@ describe('changing the date of a saved workout', () => {
   it('keeps a note typed but never blurred', () => {
     const host = render(() => workoutDetailSheet(history()[1]))
     act(() => { type(host.querySelector('textarea'), 'felt strong') })
-    const edit = render(() => button(host, 'Change date & time').click())
-    act(() => { type(edit.querySelector('input[type=date]'), '2026-08-18') })
+    const edit = render(() => workoutOption(host, 'Change date & time').click())
+    pickDate(edit.querySelector('[data-datefield]'), '2026-08-18')
     act(() => { button(edit, 'Save').click() })
     unmountAll()
     expect(history().find(w => w.id === 'late').note).toBe('felt strong')
@@ -156,7 +149,7 @@ describe('changing the date of a saved workout', () => {
     const legacy = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'Old', vol: 0, entries: [], prs: [] }
     setHistory([legacy])
     const host = render(() => workoutDateSheet(legacy))
-    act(() => { type(host.querySelector('input[type=date]'), '2026-08-18') })
+    pickDate(host.querySelector('[data-datefield]'), '2026-08-18')
     act(() => { button(host, 'Save').click() })
     expect(history()).toHaveLength(1)
     expect(history()[0].id).toBe('2026-08-25|1767636000000')
@@ -182,7 +175,7 @@ describe('changing the date of a saved workout', () => {
     const b = { d: '2026-08-25', start: 1767636000000, end: 1767639600000, name: 'B', vol: 0, entries: [], prs: [] }
     setHistory([a, b, history()[1]])
     const host = render(() => workoutDetailSheet(b))
-    const confirm = render(() => button(host, 'Delete workout').click())
+    const confirm = render(() => workoutOption(host, 'Delete workout').click())
     act(() => { button(confirm, 'Delete').click() })
     expect(history().map(w => w.name)).toEqual(['A', 'late'])
   })
@@ -190,7 +183,7 @@ describe('changing the date of a saved workout', () => {
   it('does nothing when the workout was deleted from another sheet meanwhile', () => {
     const host = render(() => workoutDateSheet(history()[1]))
     setHistory([history()[0]])
-    act(() => { type(host.querySelector('input[type=date]'), '2026-08-18') })
+    pickDate(host.querySelector('[data-datefield]'), '2026-08-18')
     act(() => { button(host, 'Save').click() })
     expect(history().map(w => w.id)).toEqual(['early'])
     expect(useUI.getState().toast).not.toHaveBeenCalledWith('Workout moved')
@@ -213,7 +206,7 @@ describe('changing the duration of a saved workout', () => {
 
   it('is offered from the workout detail sheet and opens at the length it has', () => {
     const host = render(() => workoutDetailSheet(history()[1]))
-    const open = button(host, 'Change duration')
+    const open = workoutOption(host, 'Change duration')
     expect(open).toBeTruthy()
     const edit = render(() => open.click())
     expect(edit.querySelector('h3').textContent).toBe('Change duration')
@@ -302,7 +295,7 @@ describe('changing the duration of a saved workout', () => {
   it('keeps a note typed in the detail sheet but never blurred', () => {
     const host = render(() => workoutDetailSheet(history()[1]))
     act(() => { type(host.querySelector('textarea'), 'forgot to stop') })
-    const edit = render(() => button(host, 'Change duration').click())
+    const edit = render(() => workoutOption(host, 'Change duration').click())
     act(() => { type(edit.querySelector('input.num'), '60') })
     act(() => { button(edit, 'Save').click() })
     unmountAll()

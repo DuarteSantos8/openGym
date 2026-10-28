@@ -8,5 +8,6 @@ import { chatCompletionsSpec } from './openai.js';
 // temperature 0: a plan diff wants determinism, and greedy decoding is also what grammar-
 // constrained sampling on a local server handles fastest. A gateway that mounts the API under a
 // path without a version (Open WebUI's /openai) is reached by the 404 fallback in http.js (#508).
-export const compatibleSpec = chatCompletionsSpec('compatible', { maxTokensField: 'max_tokens', temperature: 0, versionlessFallback: true });
+// A gateway that refuses with a 400 that names nothing gets the compatibility ladder (#804).
+export const compatibleSpec = chatCompletionsSpec('compatible', { maxTokensField: 'max_tokens', temperature: 0, versionlessFallback: true, compatLadder: true });
 export default httpAdapter(compatibleSpec);

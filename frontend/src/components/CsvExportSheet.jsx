@@ -10,6 +10,7 @@ import { reportRange } from '../lib/report.js'
 import { workoutsCSV, bodyCSV, csvCounts } from '../lib/export-csv.js'
 import { MOBILE, shareExport } from '../lib/mobile.js'
 import { Button, Segmented, Row } from './ui.jsx'
+import DateField from './DateField.jsx'
 
 /** Save a text file: the share sheet on the phone (WKWebView can't download a blob), a download on the web. */
 export async function saveCSV(text, name) {
@@ -49,9 +50,9 @@ export function CsvExportSheet({ close }) {
     ]} />
     {range === 'custom' && <div style={{ marginTop: 10 }}>
       <Row icon="calendar" title={t('From')}>
-        <input type="date" className="timef" value={from} max={to || today} onChange={e => setFrom(e.target.value)} /></Row>
+        <DateField compact value={from} max={to || today} onChange={setFrom} label={t('From')} /></Row>
       <Row icon="calendar" title={t('To')}>
-        <input type="date" className="timef" value={to} min={from} max={today} onChange={e => setTo(e.target.value)} /></Row>
+        <DateField compact value={to} min={from} max={today} onChange={setTo} label={t('To')} /></Row>
     </div>}
     <div className="small dim" style={{ margin: '10px 2px 14px' }} data-csv-summary>
       {range === 'all' ? t('All') : r.from === r.to ? fmtDate(r.from, true, true) : fmtDate(r.from, false, true) + ' – ' + fmtDate(r.to, false, true)}

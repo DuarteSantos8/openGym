@@ -3,10 +3,10 @@
   "name": "elevated inverted underhand grip row between 3 chairs",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
+    "lats",
     "biceps",
-    "upper back",
     "rhomboids",
     "forearms"
   ],

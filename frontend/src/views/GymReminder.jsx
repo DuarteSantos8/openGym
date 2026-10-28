@@ -1,38 +1,32 @@
 // Settings → Reminders → Gym reminder (#614), phone app only: the gyms that get you a nudge when
-// you walk in, and the editor for one of them (a pin on an OpenStreetMap map, a radius, a text).
+// you walk in, the search that adds one and the editor for one of them. Redrawn twice in 1.4.4;
+// the second time (after the owner tried build 45 on an iPhone) to work like Apple Maps: adding a
+// gym is a search first (type, the results come as you type, tap one), and only then a small map
+// to fine-tune it, where you drag the map under a pin that stays in the middle. Everything else is
+// plain Settings rows. On the iPhone the search is Apple's (lib/gym-places.js findPlaces), on
+// Android OpenStreetMap's; the map is OpenStreetMap on both (components/GymMap.jsx).
 // What is kept and how the phone watches it: lib/gym-reminder.js.
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { t, getLang } from '../lib/i18n.js'
+import { t } from '../lib/i18n.js'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
-import { Section, Row, Switch, Slider, TextField, Button } from '../components/ui.jsx'
+import { Section, Row, Switch, SearchField, Segmented, Button, SelectRow } from '../components/ui.jsx'
+import { gymsOf, gymLabel } from '../lib/gym-inventory.js'
 import Icon from '../components/Icon.jsx'
-import { confirmSheet, menuSheet } from '../sheets.jsx'
+import GymMap from '../components/GymMap.jsx'
+import { confirmSheet } from '../sheets.jsx'
 import { platformNow } from '../lib/platform-now.js'
-import { nativeFetch } from '../lib/capacitor-fetch.js'
+import { findPlaces, placeOfPick, addressAt, searchSource, fmtDistance, googleMapsUrl, appleMapsUrl } from '../lib/gym-places.js'
 import {
-  RADIUS, MAX_GYMS, DEFAULT_WINDOW, normConfig, normGym, statusOf,
+  RADIUS_PRESETS, MAX_GYMS, DEFAULT_WINDOW, normConfig, normGym, statusOf,
   loadGymConfig, saveGymConfig, gymPermissions, askForegroundLocation, askBackgroundLocation,
   currentPosition, openAppSettings,
 } from '../lib/gym-reminder.js'
 
-// Asked only on an explicit tap of Search, never while typing (Nominatim's usage policy), with a
-// User-Agent that says who is asking.
-const NOMINATIM = 'https://nominatim.openstreetmap.org/search'
-const USER_AGENT = 'openGym/' + (typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev') + ' (gym reminder; +https://opengym.ch)'
-export async function searchAddress(q, fetcher = nativeFetch) {
-  const query = String(q || '').trim()
-  if (!query) return []
-  const url = NOMINATIM + '?format=jsonv2&limit=5&q=' + encodeURIComponent(query) + '&accept-language=' + encodeURIComponent(getLang() || 'en')
-  const res = await fetcher(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } })
-  if (!res.ok) throw new Error('search failed: ' + res.status)
-  const rows = await res.json()
-  return (Array.isArray(rows) ? rows : []).map(r => ({ lat: Number(r.lat), lng: Number(r.lon), label: String(r.display_name || '') }))
-    .filter(r => Number.isFinite(r.lat) && Number.isFinite(r.lng))
-}
-
 const ios = () => platformNow() === 'ios'
+// How long the search waits after the last key before it asks.
+export const TYPE_PAUSE_MS = 350
 
 // The one place a permission is explained before the system asks for it.
 const explainAlways = () => new Promise(resolve => confirmSheet({
@@ -42,14 +36,36 @@ const explainAlways = () => new Promise(resolve => confirmSheet({
     <p style={{ marginTop: 8 }}>{t('The phone itself watches the gyms you added and only wakes openGym when you arrive. No tracking in between, and your locations never leave this phone.')}</p>
     {!ios() && <p style={{ marginTop: 8 }}>{t('On the next screen, pick “Allow all the time”.')}</p>}
   </>,
+  // One button that always leads to the phone's own dialog, where the no belongs (App Review
+  // 5.1.1(iv), the same rule as the first-start permission screens).
   confirmText: t('Continue'),
-  cancelText: t('Not now'),
+  noCancel: true,
+  locked: true,
   onConfirm: () => resolve(true),
-  onCancel: () => resolve(false),
 }))
 
 const permLabel = p => !p ? '' : p.background === 'granted' ? (ios() ? t('Always') : t('All the time'))
   : p.location === 'granted' ? t('Only while using the app') : p.location === 'denied' ? t('Not allowed') : t('Not asked yet')
+
+const noLocation = () => t('Location isn’t allowed for openGym. You can change that in the phone’s settings.')
+
+// While-using location, asked for if it has not been yet. True when the phone may locate.
+async function mayLocate() {
+  let p = await gymPermissions()
+  if (p?.location !== 'granted') p = await askForegroundLocation()
+  return p?.location === 'granted'
+}
+
+// Where the phone is, without asking: only when location is already allowed (for "near me" in
+// the search and the distances), else null.
+async function whereQuietly() {
+  const p = await gymPermissions()
+  if (p?.location !== 'granted') return null
+  const h = await currentPosition()
+  return h ? { lat: h.lat, lng: h.lng } : null
+}
+
+const validPos = g => (Number.isFinite(g?.lat) && Number.isFinite(g?.lng) ? { lat: g.lat, lng: g.lng } : null)
 
 export default function GymReminderPage() {
   const nav = useNavigate()
@@ -86,7 +102,7 @@ export default function GymReminderPage() {
       if (p?.background !== 'granted') {
         if (!(await explainAlways())) return
         p = await askForegroundLocation()
-        if (p?.location !== 'granted') { setPerm(p); toast(t('Location isn’t allowed for openGym. You can change that in the phone’s settings.')); return }
+        if (p?.location !== 'granted') { setPerm(p); toast(noLocation()); return }
         p = await askBackgroundLocation()
         setPerm(p)
         if (p?.background !== 'granted') { toast(t('Without background location the phone can’t spot your gym while openGym is closed.')); return }
@@ -103,22 +119,8 @@ export default function GymReminderPage() {
   const toggle = v => (v ? turnOn() : save({ ...config, on: false }))
 
   const full = config.gyms.length >= MAX_GYMS
-  const addHere = async () => {
-    let p = await gymPermissions()
-    if (p?.location !== 'granted') p = await askForegroundLocation()
-    if (p?.location !== 'granted') { toast(t('Location isn’t allowed for openGym. You can change that in the phone’s settings.')); return }
-    toast(t('Finding you…'))
-    const here = await currentPosition()
-    if (!here) { toast(t('Couldn’t find where you are. Try the map instead.')); return }
-    nav('/settings/gym-edit', { state: { draft: { lat: here.lat, lng: here.lng } } })
-  }
-  const add = () => menuSheet({
-    title: t('Add a gym'),
-    items: [
-      { icon: 'mapPin', label: t('I’m at the gym right now'), sub: t('Uses where your phone is'), onClick: addHere },
-      { icon: 'globe', label: t('Pick it on the map'), sub: t('Search an address or drag the pin'), onClick: () => nav('/settings/gym-edit', { state: { draft: {} } }) },
-    ],
-  })
+  const edit = g => nav('/settings/gym-edit', { state: { id: g.id } })
+  const add = () => nav('/settings/gym-find')
 
   const win = config.window
   const setWin = patch => save({ ...config, window: { ...(win || DEFAULT_WINDOW), ...patch } })
@@ -129,13 +131,13 @@ export default function GymReminderPage() {
         <Switch checked={config.on} disabled={busy} onChange={toggle} aria-label={t('Gym reminder')} />
       </Row>
     </Section>
-    <Section title={t('Your gyms')} footer={full ? t('That’s 20 gyms, the most a phone can watch.') : null}>
-      {config.gyms.map(g => (
-        <Row key={g.id} icon="mapPin" iconTint="var(--orange)" title={g.name || t('My gym')}
-          subtitle={t('{0} m around the pin', g.radius) + (g.text ? ' · ' + g.text : '')} accessory="chevron"
-          onClick={() => nav('/settings/gym-edit', { state: { id: g.id } })} />
-      ))}
-      {!full && <Row icon="plusCircle" iconTint="var(--green)" title={t('Add a gym')} accessory="chevron" onClick={add} />}
+    {/* A plain grouped list like the rest of Settings: tap a gym to change it, the last row adds one. */}
+    <Section title={t('Your gyms')} className="gym-list" footer={full ? t('That’s 20 gyms, the most a phone can watch.')
+      : config.gyms.length ? null : t('No gyms yet.') + ' ' + t('Add the one you keep meaning to go to.')}>
+      {config.gyms.map(g => <Row key={g.id} icon="mapPin" iconTint="var(--orange)" className={'gym-row' + (g.off ? ' off' : '')}
+        title={g.name || t('My gym')} subtitle={[g.address, t('{0} m', g.radius)].filter(Boolean).join(' · ')}
+        value={g.off ? t('Off') : null} accessory="chevron" onClick={() => edit(g)} />)}
+      {!full && <Row icon="plusCircle" iconTint="var(--acc)" className="gym-add-row" title={t('Add a gym')} onClick={add} />}
     </Section>
     <Section footer={win ? t('Outside these hours the phone stays quiet, even at the gym.') : null}>
       <Row icon="clock" iconTint="var(--purple)" title={t('Only between certain hours')}>
@@ -165,53 +167,98 @@ export default function GymReminderPage() {
   </>
 }
 
-/* ---------------- one gym ---------------- */
+/* ---------------- adding one: the search ---------------- */
 
-// The map: OpenStreetMap tiles through Leaflet, loaded only when this page opens (and only in the
-// phone app; the web build never has the page). Tap the map or drag the pin; the circle is the radius.
-function GymMap({ pos, radius, onPick, label }) {
-  const host = useRef(null)
-  const live = useRef(null)
-  const pick = useRef(onPick)
-  pick.current = onPick
+// The little grey word on a result: what kind of place it is.
+const hintOf = kind => kind === 'gym' ? t('Gym') : kind === 'sport' ? t('Sports centre')
+  : kind === 'address' ? t('Address') : kind === 'area' ? t('Area') : ''
+
+/**
+ * Search first, like Apple Maps: the app's search field at the top, "Current location" as the
+ * first row, then the results as you type (after a short pause, the newest question wins). A
+ * tap opens the editor with the place filled in. `find` is for tests.
+ */
+export function GymFindPage({ find = findPlaces }) {
+  const nav = useNavigate()
+  const toast = useUI(s => s.toast)
+  const [q, setQ] = useState('')
+  const [hits, setHits] = useState(null)
+  const [status, setStatus] = useState('idle')
+  const [near, setNear] = useState(null)
+  const [source, setSource] = useState(null)
+  const [locating, setLocating] = useState(false)
+  const [picking, setPicking] = useState(null)
+  const asked = useRef(0)
   useEffect(() => {
     let gone = false
-    Promise.all([import('leaflet'), import('leaflet/dist/leaflet.css')]).then(([mod]) => {
-      const L = mod.default || mod
-      if (gone || !host.current) return
-      const start = pos || { lat: 20, lng: 0 }
-      const map = L.map(host.current, { zoomControl: true, attributionControl: true }).setView([start.lat, start.lng], pos ? 17 : 2)
-      map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>')
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
-      }).addTo(map)
-      const icon = L.divIcon({ className: 'gym-pin', html: '<span></span>', iconSize: [30, 30], iconAnchor: [15, 30] })
-      const marker = L.marker([start.lat, start.lng], { draggable: true, icon, title: label, alt: label, opacity: pos ? 1 : 0 }).addTo(map)
-      const circle = L.circle([start.lat, start.lng], { radius, className: 'gym-radius', interactive: false, opacity: pos ? 1 : 0, fillOpacity: pos ? 0.15 : 0 }).addTo(map)
-      const moveTo = ll => { marker.setLatLng(ll); circle.setLatLng(ll); marker.setOpacity(1); circle.setStyle({ opacity: 1, fillOpacity: 0.15 }); pick.current({ lat: ll.lat, lng: ll.lng }) }
-      marker.on('drag', e => circle.setLatLng(e.target.getLatLng()))
-      marker.on('dragend', e => moveTo(e.target.getLatLng()))
-      map.on('click', e => moveTo(e.latlng))
-      live.current = { map, marker, circle }
-      // The page may still be sliding in: measure once it sits.
-      setTimeout(() => { if (!gone) map.invalidateSize() }, 350)
-    }).catch(() => {})
-    return () => { gone = true; live.current?.map.remove(); live.current = null }
+    searchSource().then(s => { if (!gone) setSource(s) })
+    whereQuietly().then(p => { if (!gone && p) setNear(p) })
+    return () => { gone = true }
   }, [])
-  // A new place from outside (a search result, "use my location"): the pin and the view follow.
+  const query = q.trim()
   useEffect(() => {
-    const m = live.current
-    if (!m || !pos) return
-    const cur = m.marker.getLatLng()
-    if (Math.abs(cur.lat - pos.lat) < 1e-7 && Math.abs(cur.lng - pos.lng) < 1e-7 && m.marker.options.opacity === 1) return
-    m.marker.setLatLng([pos.lat, pos.lng]); m.circle.setLatLng([pos.lat, pos.lng])
-    m.marker.setOpacity(1); m.circle.setStyle({ opacity: 1, fillOpacity: 0.15 })
-    m.map.setView([pos.lat, pos.lng], Math.max(m.map.getZoom(), 16))
-  }, [pos?.lat, pos?.lng])
-  useEffect(() => { live.current?.circle.setRadius(radius) }, [radius])
-  return <div className="gym-map" ref={host} role="application" aria-label={label} />
+    const n = ++asked.current
+    if (query.length < 2) { setHits(null); setStatus('idle'); return }
+    setStatus('busy')
+    const timer = setTimeout(async () => {
+      try {
+        const r = await find(query, { near })
+        if (n !== asked.current || r === null) return
+        setHits(r); setStatus('idle')
+      } catch { if (n === asked.current) setStatus('error') }
+    }, TYPE_PAUSE_MS)
+    return () => clearTimeout(timer)
+  }, [query, near?.lat, near?.lng])
+
+  const open = draft => nav('/settings/gym-edit', { state: { draft, from: 'find' } })
+  const pick = async h => {
+    if (picking) return
+    setPicking(h.id)
+    let p = null
+    try { p = await placeOfPick(h) } catch { /* answered below */ }
+    setPicking(null)
+    if (!p) { toast(t('The search didn’t answer. Try again in a moment.')); return }
+    open({ name: p.name || '', address: p.address || '', lat: p.lat, lng: p.lng })
+  }
+  const here = async () => {
+    if (locating) return
+    if (!(await mayLocate())) { toast(noLocation()); return }
+    setLocating(true)
+    const h = await currentPosition()
+    setLocating(false)
+    if (h) open({ name: '', address: '', lat: h.lat, lng: h.lng })
+    else toast(t('Couldn’t find where you are. Try the search instead.'))
+  }
+
+  const results = query.length < 2 ? null
+    : status === 'error' && !hits?.length ? <Row className="gym-hit-none" title={t('The search didn’t answer. Try again in a moment.')} />
+      : hits === null ? <Row className="gym-hit-none" title={t('Searching…')} />
+        : !hits.length ? (status === 'busy' ? <Row className="gym-hit-none" title={t('Searching…')} /> : <Row className="gym-hit-none" title={t('Nothing found. Try a street and a town.')} />)
+          : hits.map(h => <Row key={h.id} className={'gym-hit' + (picking === h.id ? ' busy' : '')}
+            icon={h.fitness ? 'dumbbell' : 'mapPin'} iconTint={h.fitness ? 'var(--acc)' : 'var(--grey)'}
+            title={h.name} subtitle={[fmtDistance(h.distance), hintOf(h.kind), h.address].filter(Boolean).join(' · ')}
+            onClick={() => pick(h)} />)
+
+  return <>
+    <div className="gym-find-bar" role="search">
+      <SearchField value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} autoFocus
+        placeholder={t('Find your gym…')} aria-label={t('Find your gym…')} inputMode="search" enterKeyHint="search"
+        autoComplete="off" autoCorrect="off" spellCheck={false} />
+    </div>
+    <p className="gym-find-note">{source === 'apple' ? t('Searches go to Apple Maps. Your gyms stay on this phone.') : t('Searches go to OpenStreetMap. Your gyms stay on this phone.')}</p>
+    <Section>
+      <Row icon="location" iconTint="var(--blue)" className="gym-here" title={t('Current location')}
+        subtitle={locating ? t('Finding you…') : null} onClick={here} />
+    </Section>
+    {results && <Section className="gym-hits" footer={source === 'osm' && hits?.length ? '© OpenStreetMap' : null}>
+      <div aria-live="polite" aria-busy={status === 'busy'}>{results}</div>
+    </Section>}
+  </>
 }
+
+/* ---------------- one gym: confirm or change it ---------------- */
+
+const PRESETS = [RADIUS_PRESETS.small, RADIUS_PRESETS.medium, RADIUS_PRESETS.large]
 
 export function GymEditPage() {
   const nav = useNavigate()
@@ -220,10 +267,9 @@ export function GymEditPage() {
   const S = useStore(s => s.S)
   const [config, setConfig] = useState(null)
   const [gym, setGym] = useState(null)
-  const [q, setQ] = useState('')
-  const [hits, setHits] = useState(null)
-  const [searching, setSearching] = useState(false)
+  const [locating, setLocating] = useState(false)
   const editId = loc.state?.id || null
+  const fromFind = loc.state?.from === 'find'
   useEffect(() => {
     let gone = false
     loadGymConfig().then(({ config: c }) => {
@@ -231,39 +277,51 @@ export function GymEditPage() {
       setConfig(c)
       const have = editId && c.gyms.find(g => g.id === editId)
       const d = loc.state?.draft || {}
-      setGym(have ? { ...have } : { id: null, name: '', lat: d.lat ?? null, lng: d.lng ?? null, radius: RADIUS.def, text: '' })
+      setGym(have ? { ...have } : validPos(d)
+        ? { id: null, name: String(d.name || '').slice(0, 60), address: d.address || '', lat: d.lat, lng: d.lng, radius: d.radius || RADIUS_PRESETS.medium, text: '' }
+        : false)
     })
     return () => { gone = true }
   }, [])
-  // Opened with nothing to show (no draft, a gym that is gone): back to the list.
-  useEffect(() => { if (config && !gym) nav('/settings/gym', { replace: true }) }, [config, gym])
+  // Opened with nothing to show (no place yet, a gym that is gone): the search, or the list.
+  useEffect(() => {
+    if (config && gym === false) nav(editId ? '/settings/gym' : '/settings/gym-find', { replace: true })
+  }, [config, gym])
+  // A spot without an address (Current location, a pin moved by hand): look it up once the map
+  // has been still for a moment, for the list's second line.
+  const pos = validPos(gym)
+  useEffect(() => {
+    if (!pos || gym.address) return
+    let gone = false
+    const at = pos
+    const timer = setTimeout(() => {
+      addressAt(at).then(a => { if (!gone && a) setGym(g => (g && g.lat === at.lat && g.lng === at.lng && !g.address ? { ...g, address: a } : g)) })
+    }, 900)
+    return () => { gone = true; clearTimeout(timer) }
+  }, [pos?.lat, pos?.lng, gym?.address])
   if (!config || !gym) return null
 
-  const pos = Number.isFinite(gym.lat) && Number.isFinite(gym.lng) ? { lat: gym.lat, lng: gym.lng } : null
   const set = patch => setGym(g => ({ ...g, ...patch }))
-  const close = () => { if ((window.history.state?.idx || 0) > 0) nav(-1); else nav('/settings/gym', { replace: true }) }
-
-  const search = async () => {
-    if (!q.trim()) return
-    setSearching(true)
-    try {
-      const r = await searchAddress(q)
-      setHits(r)
-      if (r.length === 1) { set({ lat: r[0].lat, lng: r[0].lng }); setHits(null) }
-    } catch { toast(t('The address search didn’t answer. Try again in a moment.')) }
-    setSearching(false)
+  // Back to the list: past the search too when the gym came from it.
+  const close = () => {
+    const idx = window.history.state?.idx || 0
+    if (fromFind && idx > 1) nav(-2)
+    else if (!fromFind && idx > 0) nav(-1)
+    else nav('/settings/gym', { replace: true })
   }
-  const here = async () => {
-    let p = await gymPermissions()
-    if (p?.location !== 'granted') p = await askForegroundLocation()
-    if (p?.location !== 'granted') { toast(t('Location isn’t allowed for openGym. You can change that in the phone’s settings.')); return }
+  // The map came to rest somewhere else: the address the search found no longer says where it is.
+  const moved = p => set({ lat: p.lat, lng: p.lng, address: '' })
+  const locate = async () => {
+    if (!(await mayLocate())) { toast(noLocation()); return }
+    setLocating(true)
     const h = await currentPosition()
-    if (h) set({ lat: h.lat, lng: h.lng })
-    else toast(t('Couldn’t find where you are. Try the map instead.'))
+    setLocating(false)
+    if (h) moved(h)
+    else toast(t('Couldn’t find where you are. Try the search instead.'))
   }
   const save = async () => {
     const g = normGym({ ...gym, id: gym.id || undefined })
-    if (!g) { toast(t('Tap the map to put the pin on your gym first.')); return }
+    if (!g) return
     const gyms = gym.id ? config.gyms.map(x => (x.id === gym.id ? g : x)) : [...config.gyms, g]
     await saveGymConfig({ ...config, gyms }, S)
     close()
@@ -274,41 +332,58 @@ export function GymEditPage() {
     confirmText: t('Remove'), danger: true,
     onConfirm: async () => { await saveGymConfig({ ...config, gyms: config.gyms.filter(x => x.id !== gym.id) }, S); close() },
   })
-  const fallback = statusOf(null).body
+  const radii = PRESETS.includes(gym.radius) ? PRESETS : [...PRESETS, gym.radius].sort((a, b) => a - b)
+  const sizeName = r => r === RADIUS_PRESETS.small ? t('Small') : r === RADIUS_PRESETS.medium ? t('Medium') : r === RADIUS_PRESETS.large ? t('Large') : t('Custom')
+  const mapsLink = () => window.open(ios() ? appleMapsUrl(pos, gym.name) : googleMapsUrl(pos), '_blank', 'noopener')
 
   return <>
-    <Section>
-      <div className="gym-search">
-        <TextField value={q} onChange={e => setQ(e.target.value)} placeholder={t('Search an address')} aria-label={t('Search an address')}
-          inputMode="search" enterKeyHint="search" autoComplete="off" onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); search() } }} />
-        <Button variant="tinted" onClick={search} disabled={searching || !q.trim()}>{searching ? t('Searching…') : t('Search')}</Button>
-      </div>
-      {hits && (hits.length
-        ? hits.map((h, i) => <Row key={i} icon="mapPin" iconTint="var(--grey)" title={h.label} onClick={() => { set({ lat: h.lat, lng: h.lng }); setHits(null) }} />)
-        : <Row icon="info" iconTint="var(--grey)" title={t('Nothing found. Try a street and a town.')} />)}
-    </Section>
-    <div className="gym-map-wrap">
-      <GymMap pos={pos} radius={gym.radius} onPick={p => set(p)} label={t('Tap the map or drag the pin onto your gym.')} />
-      <p className="sect-f">{t('Tap the map or drag the pin onto your gym.')} {t('The address search asks OpenStreetMap (Nominatim), and only when you tap Search.')}</p>
+    <div className="gmap">
+      <GymMap pos={pos} radius={gym.radius} onMove={moved} label={t('Drag the map to put the pin on your gym.')} />
+      <span className="gmap-pin" aria-hidden="true"><span /></span>
+      <button type="button" className="gmap-locate" onClick={locate} disabled={locating} aria-label={t('Show where I am')}><Icon name="location" /></button>
     </div>
+    <p className="sect-f gmap-hint">
+      {gym.address && <span className="gmap-addr">{gym.address}</span>}
+      <span>{t('Drag the map to put the pin on your gym.')}</span>
+    </p>
     <Section>
-      <Row icon="mapPin" iconTint="var(--blue)" title={t('Use my location')} accessory="chevron" onClick={here} />
+      <label className="lrow gym-in-row">
+        <span className="lrow-i" style={{ '--tint': 'var(--orange)' }}><Icon name="pencil" /></span>
+        <span className="lrow-m"><span className="lrow-t">{t('Name')}</span></span>
+        <input className="lrow-in" value={gym.name} maxLength={60} placeholder={t('My gym')} aria-label={t('Name')}
+          enterKeyHint="done" autoComplete="off" onChange={e => set({ name: e.target.value })} />
+      </label>
+      <Row icon="bell" iconTint="var(--red)" title={t('Remind me here')}>
+        <Switch checked={!gym.off} onChange={v => set({ off: !v })} aria-label={t('Remind me here')} />
+      </Row>
     </Section>
-    <Section title={t('Radius')} footer={t('About 100 m fits most gyms. Bigger if the phone notices you late, smaller if it pings you on the street outside.')}>
-      <div className="gym-radius-row">
-        <Slider value={gym.radius} min={RADIUS.min} max={RADIUS.max} step={RADIUS.step} onChange={v => set({ radius: v })} />
-        <span className="gym-radius-val">{t('{0} m', gym.radius)}</span>
+    {/* Which equipment profile this place means (#808): arriving, a check-in sticker or a workout
+        started here makes it the active gym, with a toast. "Don't switch" leaves this place out. */}
+    {gymsOf(S).length > 0 && <Section footer={t('Arrive here, tap a check-in sticker or start a workout here, and openGym uses this gym’s plates, dumbbells and bars.')}>
+      <SelectRow icon="house" iconTint="var(--blue)" title={t('Equipment here')} value={gymsOf(S).some(p => p.id === gym.equip) ? gym.equip : ''}
+        onChange={v => set({ equip: v || '' })}
+        options={[{ value: '', label: t('Don’t switch') }, ...gymsOf(S).map(p => ({ value: p.id, label: gymLabel(p) }))]} />
+    </Section>}
+    <Section title={t('Radius')} footer={t('Medium fits most gyms. Go bigger if the nudge comes late, smaller if it pings you on the street.')}>
+      <div className="lrow gym-radius" role="group" aria-label={t('Radius')}>
+        <Segmented value={gym.radius} onChange={v => set({ radius: v })}
+          options={radii.map(r => ({ value: r, label: <span className="gym-size"><b>{sizeName(r)}</b><small>{t('{0} m', r)}</small></span> }))} />
       </div>
-    </Section>
-    <Section title={t('Name')}>
-      <div className="gym-field"><TextField value={gym.name} maxLength={60} onChange={e => set({ name: e.target.value })} placeholder={t('My gym')} aria-label={t('Name')} /></div>
     </Section>
     <Section title={t('Notification text')} footer={t('Leave it empty for the default.')}>
-      <div className="gym-field"><TextField value={gym.text} maxLength={120} onChange={e => set({ text: e.target.value })} placeholder={fallback} aria-label={t('Notification text')} /></div>
+      <div className="lrow gym-in-row">
+        <input className="lrow-in full" value={gym.text} maxLength={120} placeholder={statusOf(null).body} aria-label={t('Notification text')}
+          enterKeyHint="done" onChange={e => set({ text: e.target.value })} />
+      </div>
     </Section>
     <div className="gym-actions">
       <Button variant="primary" onClick={save} disabled={!pos}>{t('Save')}</Button>
-      {gym.id && <Button variant="danger" icon="trash" onClick={remove}>{t('Remove')}</Button>}
     </div>
+    <Section>
+      <Row icon="map" iconTint="var(--blue)" title={ios() ? t('Open in Apple Maps') : t('Open in Google Maps')} accessory="chevron" onClick={mapsLink} />
+    </Section>
+    {gym.id && <Section>
+      <Row className="gym-remove" danger title={t('Remove')} onClick={remove} />
+    </Section>}
   </>
 }

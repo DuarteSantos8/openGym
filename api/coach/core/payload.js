@@ -18,6 +18,9 @@ export const CONTRACT = 1;
 // makes the payload bigger and the reading vaguer, not better.
 export const MAX_WEEKS = 12;
 export const MAX_SESSIONS = 60;
+// A review reads from the last review on, but never fewer than this many sessions: a review a
+// day after the last one still needs enough training to judge a trend.
+export const MIN_REVIEW_SESSIONS = 12;
 // The most a session note can be: the app's own cap (frontend/src/lib/history.js NOTE_MAX, pinned
 // by api/test/payload-parity.test.js), so a note the athlete wrote arrives whole and the bound only
 // holds for a document edited outside the app. It was 300 here, and a 500-character note reached
@@ -287,12 +290,22 @@ const effortOf = S => {
 /* ---------- window + aggregates ---------- */
 const iso = d => d.toISOString().slice(0, 10);
 
+// `since` is the last review's time: epoch ms (how lib/coach.js stores it) or an ISO string.
+export function sinceDay(at) {
+  if (at == null || at === '') return null;
+  const t = typeof at === 'number' || /^\d+$/.test(String(at)) ? Number(at) : Date.parse(at);
+  return Number.isFinite(t) ? iso(new Date(t)) : null;
+}
+
 export function reviewWindow(S, since) {
   const all = (S.workouts || []).filter(w => w && w.d);
   const cutoffDate = new Date(); cutoffDate.setDate(cutoffDate.getDate() - MAX_WEEKS * 7);
   const cutoff = iso(cutoffDate);
-  const from = since && since > cutoff ? since : cutoff;
-  return all.filter(w => w.d >= from).slice(-MAX_SESSIONS);
+  const recent = all.filter(w => w.d >= cutoff);
+  const day = sinceDay(since);
+  if (!day || day <= cutoff) return recent.slice(-MAX_SESSIONS);
+  const fresh = recent.filter(w => w.d >= day);
+  return (fresh.length >= MIN_REVIEW_SESSIONS ? fresh : recent.slice(-MIN_REVIEW_SESSIONS)).slice(-MAX_SESSIONS);
 }
 
 function aggregates(S, workouts) {
@@ -341,6 +354,10 @@ function aggregates(S, workouts) {
 
 /** Every exercise id the plan names or the given workouts logged — the ones a proposal has to
  *  be able to refer to, so they ride in the library slice whatever the cap or the filter. */
+// What a person said they want more of: the note or refine text and the profile's free fields.
+export const REVIEW_FRESH = 24;
+const focusTexts = (profile, said) => [said, profile?.goal, profile?.likes, profile?.notes].filter(x => typeof x === 'string' && x);
+
 function trainedIds(S, workouts) {
   const ids = new Set();
   (S.routines || []).forEach(r => (r.ex || []).forEach(e => ids.add(e.id)));
@@ -578,7 +595,7 @@ export function build(S, opts = {}) {
     const today = cleanToday(opts.today);
     if (today) p.today = today;
   } else if (opts.kind === 'review') {
-    const workouts = reviewWindow(S, coach.lastReview?.at ? String(coach.lastReview.at).slice(0, 10) : null);
+    const workouts = reviewWindow(S, coach.lastReview?.at);
     const detailFrom = Math.max(0, workouts.length - FULL_DETAIL_SESSIONS);
     p.window = {
       from: day(workouts[0]?.d),
@@ -589,10 +606,12 @@ export function build(S, opts = {}) {
     p.bodyweight = { goal: num(S.targetW) ?? null, series: weighIns(S, p.window.from, null) };
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     if (opts.cohort) p.cohort = cleanCohort(opts.cohort);
-    // A review names mostly what is already trained; 60 candidates is plenty for a swap.
-    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, workouts), max: 60 });
+    // A review names mostly what is already trained; 60 candidates is plenty for a swap. But
+    // REVIEW_FRESH of them are always new to the plan, and the body parts the note or the
+    // profile names get the bigger share (#829: "more core" offered four ab exercises).
+    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, workouts), max: 60, fresh: REVIEW_FRESH, focus: focusTexts(p.coachProfile, opts.note) });
   } else {
-    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, S.workouts || []) });
+    p.library = librarySlice(S, p.coachProfile?.equipment, { keep: trainedIds(S, S.workouts || []), focus: focusTexts(p.coachProfile, opts.refine) });
     // Creation for a returning user: what they have actually handled, so proposed baselines
     // start from evidence rather than optimism (B2/FR-20).
     const best = {};
@@ -625,10 +644,12 @@ export function build(S, opts = {}) {
 // The last few lines of the chat, so "shorter, like last time" has something to point at.
 // The user's own lines (data, never instruction — common.md rule 3) and the Coach's earlier
 // verdicts; never proposals, errors or the intake card, which travel in their own fields or
-// are noise. Six lines, cut short: enough to resolve a reference, not a transcript to argue
+// are noise. Six bounded lines: a verdict often puts its suggested replacement after the
+// training summary, so 240 characters lost what "swap it for what you suggested" referred to.
+// Keep enough of that answer to resolve the reference, not a transcript to argue
 // with. The message being sent right now rides in userNote/refine, so it is left out here.
 export const CONVERSATION_LINES = 6;
-export const CONVERSATION_CHARS = 240;
+export const CONVERSATION_CHARS = 1200;
 function conversation(coach, current) {
   const now = new Set((current || []).filter(Boolean).map(x => String(x).trim()));
   return (coach.chat || [])

@@ -368,6 +368,8 @@ final class GymReminderCenter: NSObject, CLLocationManagerDelegate {
         let gyms = (config?["gyms"] as? [[String: Any]]) ?? []
         var out: [CLCircularRegion] = []
         for g in gyms.prefix(GymReminderCenter.maxGyms) {
+            // Switched off on the list (1.4.4): kept, not watched.
+            if (g["off"] as? Bool) == true { continue }
             guard let id = g["id"] as? String,
                   let lat = (g["lat"] as? NSNumber)?.doubleValue, let lng = (g["lng"] as? NSNumber)?.doubleValue else { continue }
             let radius = min(max((g["radius"] as? NSNumber)?.doubleValue ?? 100, 50), min(500, manager.maximumRegionMonitoringDistance))

@@ -87,3 +87,27 @@ describe('Settings: count warm-ups in volume', () => {
     expect(mocks.S.volumeWarmups).toBe(false)
   })
 })
+
+// Its neighbour, "Count body weight in bodyweight lifts" (#794): same shape, its own key.
+describe('Settings: count body weight in bodyweight lifts', () => {
+  const bwToggle = () => host.querySelector('[aria-label="Count body weight in bodyweight lifts"]')
+  it('is off for a profile that never chose', () => {
+    mount()
+    expect(bwToggle()).not.toBeNull()
+    expect(bwToggle().getAttribute('aria-checked')).toBe('false')
+  })
+
+  it('stores the choice and leaves the workouts and the warm-up switch alone', () => {
+    mocks.S.workouts = [{ id: 'a', d: '2026-10-01', vol: 0, entries: [{ id: '0652', sets: [{ w: 0, r: 8, done: true }] }] }]
+    mocks.S.bodyweight = [{ d: '2026-10-01', w: 80 }]
+    const before = structuredClone(mocks.S)
+    mount()
+    act(() => { bwToggle().click() })
+    expect(mocks.S.volumeBodyweight).toBe(true)
+    expect(mocks.S.volumeWarmups).toBeUndefined()
+    expect({ ...mocks.S, volumeBodyweight: undefined }).toEqual({ ...before, volumeBodyweight: undefined })
+    mount()
+    act(() => { bwToggle().click() })
+    expect(mocks.S.volumeBodyweight).toBe(false)
+  })
+})

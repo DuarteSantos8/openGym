@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by scripts/app-icons.mjs: behind each alternate launcher icon. -->
+<resources>
+    <color name="ic_launcher_light_background">#ffffff</color>
+    <color name="ic_launcher_mono_background">#0c0e12</color>
+    <color name="ic_launcher_neon_background">#a3e635</color>
+    <color name="ic_launcher_sky_background">#0a84ff</color>
+    <color name="ic_launcher_orange_background">#ff9f0a</color>
+    <color name="ic_launcher_pink_background">#ff375f</color>
+    <color name="ic_launcher_violet_background">#bf5af2</color>
+    <color name="ic_launcher_halloween_background">#0d0517</color>
+    <color name="ic_launcher_christmas_background">#070b16</color>
+</resources>

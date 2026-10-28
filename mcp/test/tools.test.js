@@ -186,6 +186,16 @@ describe('get_routine', () => {
     expect(r.exercises[0].policy_override).toBeNull()
   })
 
+  test('a routine with no prog reports the profile’s default rule when there is one', () => {
+    delete S.routines[0].prog
+    delete S.routines[0].ex[0].prog
+    S.progDefault = 'off'
+    const r = call('get_routine', { routine_id: S.routines[0].id })
+    expect(r.policy).toBe('off')
+    expect(r.exercises[0].policy).toBe('off')
+    expect(call('list_routines').routines[0].policy).toBe('off')
+  })
+
   test('a policy the mode cannot run is clamped, not echoed back raw', () => {
     S.routines[0].prog = 'greyskull'                       // reps-only policy
     S.customEx = [{ id: 'cx-plank', n: 'Plank', bp: 'waist' }]
@@ -446,6 +456,17 @@ describe('list_workouts', () => {
     expect(call('get_workout', { workout_id: 'w1' }).sets_planned).toBe(6)
   })
 
+  // Equipment per gym (#808): a workout says which gym it was done at, one from before says nothing.
+  test('a workout names the gym it was done at', () => {
+    const at = d => ({ id: 'g' + d, d, start: Date.parse(d + 'T10:00:00'), end: Date.parse(d + 'T11:00:00'), name: 'S', entries: [] })
+    S.workouts = [{ ...at('2026-07-06'), gym: { id: 'eqhome', name: 'Home gym' } }, at('2026-07-03')]
+    _seedStateForTests(S)
+    const listed = call('list_workouts').workouts
+    expect(listed.find(w => w.id === 'g2026-07-06').gym).toBe('Home gym')
+    expect(listed.find(w => w.id === 'g2026-07-03').gym).toBe(null)
+    expect(call('get_workout', { workout_id: 'g2026-07-06' }).gym).toBe('Home gym')
+  })
+
   test('date range filter narrows results (closed interval, both endpoints inclusive)', () => {
     const all = call('list_workouts')
     expect(all.workouts.length).toBeGreaterThan(2)
@@ -622,6 +643,18 @@ describe('get_bodyweight', () => {
     expect(r.goal).toBeNull()
     r.entries.forEach(e => expect(e.delta_vs_goal).toBeNull())
     expect(r.latest.delta_vs_goal).toBeNull()
+  })
+
+  // #859: a day with several weigh-ins lists them with their times; its weight is the profile's daily value.
+  test('lists a day\'s weigh-ins with their times, and names the daily value', () => {
+    S.bodyweight.push({ d: '2099-01-02', w: 80.8, t: 3, ins: [{ id: 'a', at: '07:05', w: 80.2, t: 1 }, { id: 'b', at: '21:40', w: 81.4, t: 3, src: 'hc' }] })
+    S.bwDaily = 'avg'
+    const r = call('get_bodyweight', { from: '2099-01-02', to: '2099-01-02' })
+    expect(r.daily_value).toBe('avg')
+    expect(r.entries).toEqual([{ date: '2099-01-02', weight: 80.8, delta_vs_goal: expect.any(Number), readings: [{ time: '07:05', weight: 80.2 }, { time: '21:40', weight: 81.4, source: 'hc' }] }])
+    const old = call('get_bodyweight').entries[0]
+    expect(old.readings).toHaveLength(1)
+    expect(old.readings[0].weight).toBe(old.weight)
   })
 })
 
@@ -1350,5 +1383,68 @@ describe('date arguments must be dates the calendar has', () => {
       expect(r.rejected).toBeUndefined()
       expect(r.ok).toBe(true)
     }
+  })
+})
+
+/* ---------- get_programme (#159) ---------- */
+
+describe('get_programme', () => {
+  const block = () => ({ id: 'P', name: 'Block', at: 1, days: { 1: [S.routines[0].id] }, weeks: [{ rpe: 7, t: { '0025': { pct: 75 } } }, { deload: true }] })
+
+  test('lists the programmes and nothing running by default', () => {
+    S.programmes = { P: block() }
+    _seedStateForTests(S)
+    const r = call('get_programme')
+    expect(r.running).toBeNull()
+    expect(r.programmes).toHaveLength(1)
+    expect(r.programmes[0]).toMatchObject({ id: 'P', weeks: 2, schedule: { kind: 'weekdays', days: { Monday: ['Push Day'] } } })
+    expect(r.programmes[0].week_targets[0]).toEqual({ deload: false, rpe: 7, targets: [{ exercise_id: '0025', exercise_name: 'barbell bench press', routine_id: null, pct_1rm: 75, rpe: null }] })
+  })
+
+  test('the running one: its week and this week\'s targets, and preview_session opens at them', () => {
+    S.programmes = { P: block() }
+    S.week = { 1: [S.routines[0].id] }
+    S.programme = { id: 'P', startedOn: FAKE_TODAY_ISO, cycle: 1, bump: 0, saved: { week: {} } }
+    _seedStateForTests(S)
+    const r = call('get_programme')
+    expect(r.running).toMatchObject({ id: 'P', week: 1, weeks: 2, paused: false, done: false })
+    expect(r.running.this_week.rpe).toBe(7)
+    const bench = call('preview_session').exercises.find(e => e.id === '0025')
+    expect(bench.prescription).toMatchObject({ kind: 'programme', programme: { week: 1, weeks: 2, pct_1rm: 75, target_rpe: 7 } })
+    expect(bench.weight_source).toBe('programme')
+    expect(bench.reps_source).toBe('routine_plan')
+  })
+
+  test('a profile without programmes answers empty', () => {
+    const r = call('get_programme')
+    expect(r).toMatchObject({ running: null, programmes: [] })
+  })
+})
+
+/* ---------- form videos (v1.4.4): a count, never the videos ---------- */
+
+describe('get_workout and form videos', () => {
+  const HASH = 'ab'.repeat(32)
+  const POSTER = 'cd'.repeat(32)
+  const ref = { kind: 'video', hash: HASH, mime: 'video/mp4', size: 4000000, width: 720, height: 1280, dur: 9, poster: { hash: POSTER, mime: 'image/webp', size: 9000, width: 270, height: 480 }, at: 1 }
+  test('says how many sets were filmed, and nothing else about them', () => {
+    const w = S.workouts.find(x => x.d === NEWEST_WORKOUT.date)
+    w.entries[0].sets[0].media = [ref]
+    w.entries[1].sets[1].media = [{ ...ref, hash: 'ef'.repeat(32), local: true }]
+    _seedStateForTests(S)
+    const out = call('get_workout', { workout_id: w.id })
+    expect(out.form_videos).toBe(2)
+    expect(out.entries[0].form_videos).toBe(1)
+    expect(out.entries[1].form_videos).toBe(1)
+    const text = JSON.stringify(out)
+    for (const leak of [HASH, POSTER, 'ef'.repeat(32), 'video/mp4', '"media"']) expect(text).not.toContain(leak)
+    // And the summaries do not mention them at all.
+    expect(JSON.stringify(call('list_workouts', {}))).not.toContain(HASH)
+  })
+  test('a workout without any has no form_videos field', () => {
+    const w = S.workouts.find(x => x.d === NEWEST_WORKOUT.date)
+    const out = call('get_workout', { workout_id: w.id })
+    expect('form_videos' in out).toBe(false)
+    expect(out.entries.every(e => !('form_videos' in e))).toBe(true)
   })
 })
