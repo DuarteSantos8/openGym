@@ -69,6 +69,8 @@ const LABELS = {
   'admin.invite.create': 'Created an invite code',
   'admin.invite.revoke': 'Revoked an invite code',
   'admin.audit.clear': 'Cleared the activity log',
+  // An instance feature switched on or off (`msg`: qr=off, …).
+  'admin.features': 'Changed the instance features',
   // FIRST_USER_ADMIN=1: the first profile on a fresh instance is made admin as it signs up.
   'admin.first-user': 'Became admin as the first profile',
   'admin.denied': 'Blocked from an admin action',

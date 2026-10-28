@@ -4,6 +4,34 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased
+
+- **QR codes on the machines.** An exercise's page has a **QR codes** section: scan the code the
+  gym put on the machine, or print a new one on a page about the exercise (picture, description,
+  steps, and the code at 3 × 3 cm to cut out), which the exercise has at once. In a running
+  workout the header's QR button scans it and opens that exercise; one the workout doesn't hold
+  is offered for the routine and the workout, or the workout alone, and an unknown code can be
+  given to an exercise on the spot. A code may stand for several exercises; **Unassociate** takes
+  it off one, and the last one deletes it. Codes sync per exercise like notes. Browser, Android
+  and iPhone, with the scanner the gym check-in already uses: no new dependency.
+- **Several codes per exercise**, and an unknown code scanned in a workout is offered to the
+  exercise you are on first. The camera on a Pro iPhone stays on one lens instead of zooming
+  between them. In the app on an iPhone's home screen, where a web page cannot print at all, the
+  code page comes as an A4 PDF through the share sheet ("Print" keeps the code at 3 × 3 cm).
+- **Life Fitness cardio consoles.** The QR code a Life Fitness bike, treadmill or cross trainer
+  shows at the end of a workout (when no app was connected) carries the whole summary. Scanned
+  with the workout's QR button, it becomes a cardio set (minutes, average speed, a treadmill's
+  incline) on the machine's exercise, with distance, kcal, heart rate, watts, cadence and level
+  in the set's note. The exercise you are on takes it without a question; another one in the
+  workout, or one to add, is offered first. The same code twice is recognised. Works in the
+  browser too, with no Bluetooth and no new dependency. The code from the console's connect
+  menu (live Bluetooth link) explains that it isn't available here and points at the
+  end-of-workout code. Groundwork for the live link: `lib/lfopen/protocol.js`
+  (docs/LIFE_FITNESS_CARDIO_CONNECT.md).
+- **Admin → Features: one switch per kind of code** for the whole instance: exercise QR codes and
+  Life Fitness consoles, each on its own. The workout's scan stays while either is on ("Scan code"
+  once the exercise codes are off), and a code whose switch is off says so. Codes already saved stay.
+
 ## v1.4.3 (2026-10-26)
 
 The community release. Most of what's below was asked for on GitHub and Discord or sent in as a

@@ -536,3 +536,30 @@ export function planPrintHTML(S, owner, { routineId, probe = false } = {}) {
 export function printPlan(S, owner, opts) {
   return printDocument(planPrintHTML(S, owner, opts), opts?.routineId ? (S.routines || []).find(r => r.id === opts.routineId)?.name : t('Weekly Training Plan'))
 }
+
+/**
+ * Open the browser's print dialog for a page of printable HTML (a plan, an exercise's QR sheet)
+ * through a hidden iframe. Pictures in it are waited for, so none prints as an empty box.
+ */
+export function printHtmlInFrame(html) {
+  const ifr = document.createElement('iframe')
+  ifr.setAttribute('aria-hidden', 'true')
+  ifr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;'
+  document.body.appendChild(ifr)
+  const cleanup = () => { try { ifr.remove() } catch (e) { /* */ } }
+  const run = () => {
+    const w = ifr.contentWindow
+    if (!w) { cleanup(); return }
+    w.onafterprint = cleanup
+    setTimeout(cleanup, 60000)   // safety net if afterprint never fires
+    w.focus()
+    try { w.print() } catch (e) { cleanup() }
+  }
+  const doc = ifr.contentWindow.document
+  doc.open(); doc.write(html); doc.close()
+  // Give the iframe a tick to lay out (and its pictures to decode) before printing.
+  const images = () => Promise.all([...(doc.images || [])].map(img => (img.complete ? null : new Promise(r => { img.onload = img.onerror = r }))))
+  const go = () => images().then(() => setTimeout(run, 120))
+  if (doc.readyState === 'complete') go()
+  else ifr.onload = go
+}

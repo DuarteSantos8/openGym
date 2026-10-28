@@ -149,6 +149,13 @@ db.creds = db.creds || [];
 db.subs = db.subs || [];
 db.invites = db.invites || [];
 db.deviceLinks = db.deviceLinks || [];   // unused one-time device links, hashed (device-link.js)
+// Features an admin switched off for the whole instance, as { qr: false }: `qr` the exercise QR
+// codes, `lifeFitness` the Life Fitness consoles.
+// Absent means on, so an instance that never touched a switch answers exactly as before.
+db.features = db.features && typeof db.features === 'object' && !Array.isArray(db.features) ? db.features : {};
+const FEATURES = ['qr', 'lifeFitness'];
+const featuresOf = () => Object.fromEntries(FEATURES.map(k => [k, db.features[k] !== false]));
+const featuresOff = () => Object.fromEntries(FEATURES.filter(k => db.features[k] === false).map(k => [k, false]));
 const isAdmin = user => !!user && (user.admin === true || ADMIN_UIDS.includes(user.id));
 // One owner per instance, any number of admins. Admins run the place day to day (users, invites,
 // the Coach); the owner is the one admin the others cannot act on: only the owner appoints or
@@ -2144,6 +2151,8 @@ const routes = {
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
+      // Public like the media block: only what an admin switched off, and only once something is.
+      ...(Object.keys(featuresOff()).length ? { features: featuresOff() } : {}),
       ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {})
     });
   },
@@ -2833,6 +2842,28 @@ const routes = {
     saveDb();
     audit(req, 'admin.owner.transfer', { user: owner, target: u });
     json(res, 200, { ok: true, id: u.id });
+  },
+
+  /* ---------- instance features ---------- */
+  // Switches for the whole instance. Every profile on it follows them; a phone without a server
+  // has none and keeps everything on.
+  'GET /api/admin/features': async (req, res) => {
+    if (!requireAdmin(req, res)) return;
+    json(res, 200, { features: featuresOf() });
+  },
+
+  'POST /api/admin/features': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const changed = FEATURES.filter(k => typeof body[k] === 'boolean');
+    if (!changed.length) return json(res, 400, { error: 'no known feature given' });
+    for (const k of changed) {
+      if (body[k]) delete db.features[k];
+      else db.features[k] = false;
+    }
+    saveDb();
+    audit(req, 'admin.features', { user: admin, msg: changed.map(k => `${k}=${body[k] ? 'on' : 'off'}`).join(' ') });
+    json(res, 200, { features: featuresOf() });
   },
 
   'GET /api/admin/invites': async (req, res) => {
