@@ -14,13 +14,17 @@ const list = s => s.split(',').map(x => x.trim()).filter(Boolean)
 // The words the app filters, maps and translates. A new value needs app support first (a muscle
 // the body map can draw, an equipment chip with a translation), so it is added here on purpose.
 export const BODY_PARTS = list('back, cardio, chest, lower arms, lower legs, neck, shoulders, upper arms, upper legs, waist, full body')
-export const EQUIPMENT = list('body weight, dumbbell, cable, barbell, leverage machine, band, smith machine, kettlebell, weighted, stability ball, ez barbell, assisted, sled machine, medicine ball, rope, roller, resistance band, bosu ball, olympic barbell, wheel roller, upper body ergometer, skierg machine, hammer, stationary bike, tire, trap bar, elliptical machine, stepmill machine, suspension trainer, sandbag, landmine, weight plate, clubbell, macebell')
+export const EQUIPMENT = list('body weight, dumbbell, cable, barbell, leverage machine, band, smith machine, kettlebell, weighted, stability ball, ez barbell, assisted, sled machine, medicine ball, rope, roller, massage ball, resistance band, bosu ball, olympic barbell, wheel roller, upper body ergometer, skierg machine, hammer, stationary bike, tire, trap bar, elliptical machine, stepmill machine, suspension trainer, sandbag, landmine, weight plate, clubbell, macebell')
 export const TARGETS = list('abs, pectorals, biceps, glutes, delts, triceps, upper back, lats, calves, quads, forearms, cardiovascular system, hamstrings, spine, traps, adductors, serratus anterior, abductors, levator scapulae')
 export const SECONDARY = list('shoulders, deltoids, rear deltoids, rotator cuff, chest, upper chest, triceps, biceps, brachialis, forearms, wrists, wrist flexors, wrist extensors, grip muscles, back, upper back, lats, latissimus dorsi, rhomboids, trapezius, traps, lower back, core, abdominals, obliques, lower abs, hip flexors, glutes, quadriceps, hamstrings, adductors, inner thighs, groin, calves, soleus, shins, ankles, ankle stabilizers, feet, hands, sternocleidomastoid')
 export const CATEGORIES = list('strength, stretching, mobility, plyometrics, cardio, olympic, calisthenics, pilates, yoga, combat, isometric, rehab')
 export const MUSCLES = list('trapezius, deltoids, chest, upper-back, serratus, biceps, triceps, forearm, abs, obliques, lower-back, gluteal, quadriceps, hamstring, adductors, hip-flexors, calves, tibialis')
+// Kit the equipment field cannot name because the exercise's own equipment is something else: a
+// dumbbell fly also needs a bench, an inverted row a bar. The app's profile checklist has these
+// two (frontend/src/lib/equipment.js ACCESSORIES), and reads most of them off the name.
+export const NEEDS = list('bench, pull-up bar')
 export const LANGS = list('ar, bn, de, es, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, th, tr, uk, zh, zh-TW')
-const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'target', 'secondaryMuscles', 'category', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
+const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'target', 'secondaryMuscles', 'category', 'hold', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
 const I18N_KEYS = ['name', 'description', 'instructions']
 
 export function validateCatalogue(dir) {
@@ -45,6 +49,9 @@ export function validateCatalogue(dir) {
     if (!Array.isArray(e.secondaryMuscles) || e.secondaryMuscles.some(m => !SECONDARY.includes(m)))
       say(file, `"secondaryMuscles" must be a list of: ${SECONDARY.join(', ')}`)
     if (e.category != null && !CATEGORIES.includes(e.category)) say(file, `"category" must be one of: ${CATEGORIES.join(', ')}`)
+    if (e.hold != null && e.hold !== true) say(file, '"hold" is true (an exercise only ever held, logged by time) or left out')
+    if (e.needs != null && (!Array.isArray(e.needs) || !e.needs.length || e.needs.some(x => !NEEDS.includes(x)) || new Set(e.needs).size !== e.needs.length))
+      say(file, `"needs" is a list of: ${NEEDS.join(', ')} (kit the name does not mention), or left out`)
     if (typeof e.description !== 'string') say(file, '"description" must be text (may be empty)')
     if (!Array.isArray(e.instructions) || e.instructions.some(s => !isText(s))) say(file, '"instructions" must be a list of steps (text)')
     if (e.textSource !== 'exercisedb') {

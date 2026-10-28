@@ -233,3 +233,20 @@ describe('sync and sharing', () => {
     expect(back.routines[0].ex[0].dbLoad).toBe('each')
   })
 })
+
+// "I own no dumbbells" (Discord, deamondo) rides in the same stamped map, under `none`.
+describe('the no-dumbbells switch', () => {
+  it('is its own key, beside the per-unit lists, and the later flip wins a sync', async () => {
+    const { ownsNoDumbbells, withNoDumbbells } = await import('./dumbbells.js')
+    const { mergeStates } = await import('./sync-merge.js')
+    const S = { unit: 'kg', dumbbells: { kg: { weights: [10], _ts: 1 } } }
+    expect(ownsNoDumbbells(S)).toBe(false)
+    const on = { ...S, dumbbells: withNoDumbbells(S, true, 5), _ts: 5 }
+    expect(on.dumbbells).toEqual({ kg: { weights: [10], _ts: 1 }, none: { on: true, _ts: 5 } })
+    expect(ownsNoDumbbells(on)).toBe(true)
+    const off = { ...S, dumbbells: withNoDumbbells(S, false, 9), _ts: 9 }
+    expect(ownsNoDumbbells(mergeStates(on, off))).toBe(false)
+    expect(ownsNoDumbbells(mergeStates(off, on))).toBe(false)
+    expect(mergeStates(on, off).dumbbells.kg.weights).toEqual([10])
+  })
+})

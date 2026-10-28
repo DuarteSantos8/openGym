@@ -10,6 +10,9 @@
     "core"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A pullover with straight arms that stretches and works the lats and chest.",
   "instructions": [
     "Lie on a bench with your upper back supported and hold a dumbbell over your chest.",

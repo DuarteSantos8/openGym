@@ -1,4 +1,4 @@
-# CLA check on every pull request (draft for .github/workflows/cla.yml).
+# CLA check on every pull request. Its job `cla` is the required check of the CLA ruleset.
 # A first-time contributor is asked once to comment the sign phrase; the signature is stored in
 # the repository (signatures/cla.json on the cla-signatures branch), no third-party service.
 name: CLA
@@ -15,14 +15,19 @@ permissions:
   pull-requests: write
   statuses: write
 
+# pull_request_target runs with a write token, which is safe here only because nothing from the
+# pull request is checked out or executed: the action reads the PR's commit authors through the
+# API and writes to the cla-signatures branch. Keep it that way (no actions/checkout of the head).
 jobs:
   cla:
+    # Every other comment (most of them) skips the job instead of starting a runner for nothing.
+    # Comments on plain issues (the pinned CLA issue #554) are not pull requests: the action
+    # would look for a PR with that number and fail. Those are recorded by cla-issue.yml.
+    if: (github.event_name == 'issue_comment' && github.event.issue.pull_request && (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA')) || github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      # Comments on plain issues (the pinned CLA issue #554) are not pull requests: the action
-      # would look for a PR with that number and fail. Those are recorded by cla-issue.yml.
-      - if: (github.event_name == 'issue_comment' && github.event.issue.pull_request && (github.event.comment.body == 'recheck' || github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA')) || github.event_name == 'pull_request_target'
-        uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08 # v2.6.1, pinned: this job holds a write token
+      - uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08 # v2.6.1, pinned: this job holds a write token
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

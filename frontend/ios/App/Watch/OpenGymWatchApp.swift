@@ -9,8 +9,10 @@ import WidgetKit
  * the obvious value control, black background, the accent colour only on the primary action.
  *
  *   start   today's workout as one big Start, the other routines in a short list below
+ *   3-2-1   with Apple Health on, a countdown before it starts (the heart-rate sensor warms up)
  *   set     weight × reps in big rounded numerals, the round Done, the set dots; the crown turns
  *           the reps (or the weight, after a tap on it), marked by the crown symbol under it
+ *           and, when the profile rates effort, RPE or RIR in a small disc beside Done
  *   rest    a full-screen ring around a huge countdown, +15 s and Skip as small round buttons
  *   hold    a timed set: the seconds on the crown, Start, then a ring counting down, Stop
  *   finish  after the last exercise, one round button
@@ -44,7 +46,7 @@ final class WatchAppDelegate: NSObject, WKApplicationDelegate {
     let store = SessionStore()
 
     func handle(_ workoutConfiguration: HKWorkoutConfiguration) {
-        store.openedForWorkout()
+        store.openedForWorkout(workoutConfiguration.activityType)
     }
 
     /// Relaunched after being killed mid-workout: the Apple Health session watchOS kept running.
@@ -89,6 +91,8 @@ struct RootView: View {
                 WeighInView()
             } else if let summary = store.summary {
                 SummaryView(summary: summary)
+            } else if store.workout == nil, let from = store.countdownFrom {
+                CountdownView(from: from)
             } else if store.workout == nil {
                 IdleView()
             } else if let end = store.holdEndsAt {
@@ -102,6 +106,14 @@ struct RootView: View {
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
         // Text's words up by this locale).
         .environment(\.locale, store.locale)
+        // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Finish page.
+        .alert(Text("All done?"), isPresented: $store.askDone) {
+            Button("Continue workout", role: .cancel) { store.keepGoing() }
+            Button("Finish workout") {
+                store.keepGoing()
+                store.show(entry: store.workout?.entries.count ?? 0)
+            }
+        }
         // Any touch: the rest-over alarm was noticed (it would tap once more otherwise).
         .simultaneousGesture(TapGesture().onEnded { store.ackRestOver() })
         // The complication's Start: today's workout, when none runs yet.
@@ -163,7 +175,7 @@ struct RoundButton: View {
         VStack(spacing: 3) {
             Button(action: action) {
                 Image(systemName: systemImage)
-                    .font(.system(size: size * 0.42, weight: .bold))
+                    .font(.system(size: size * 0.44, weight: .heavy))
                     .foregroundStyle(dimmed ? Theme.accent : Color.black)
                     .frame(width: size, height: size)
                     .background(Circle().fill(dimmed ? Color.clear : Theme.accent))
@@ -171,7 +183,8 @@ struct RoundButton: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(label)
-            if caption { label.font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1) }
+            // The word under it in the accent too, so Done reads as the one thing to press.
+            if caption { label.font(.caption2.weight(.bold)).foregroundStyle(dimmed ? Color.secondary : Theme.accent).lineLimit(1) }
         }
     }
 }
@@ -192,6 +205,53 @@ struct EdgeButton: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
+    }
+}
+
+/// Water Lock, as Apple's Workout has it: the screen and the crown's press stop doing anything
+/// (a sleeve or a bent wrist no longer leaves the workout or taps Done); turning the crown unlocks.
+/// watchOS allows it only while a workout session runs, so without Apple Health there is none.
+struct LockButton: View {
+    @ObservedObject var health: WorkoutManager
+
+    var body: some View {
+        if health.running {
+            EdgeButton(systemImage: "drop.fill", label: Text("Lock")) { WKInterfaceDevice.current().enableWaterLock() }
+        }
+    }
+}
+
+/// The 3-2-1 before a workout started here: big numbers in a ring that empties once. A tap
+/// starts at once; the small button cancels (nothing starts, nothing is logged).
+struct CountdownView: View {
+    @EnvironmentObject var store: SessionStore
+    let from: Date
+
+    var body: some View {
+        VStack(spacing: 2) {
+            TimelineView(.periodic(from: from, by: 1)) { ctx in
+                let n = max(1, Countdown.number(at: ctx.date.timeIntervalSince(from)))
+                Button { store.startNow() } label: {
+                    ZStack {
+                        CountdownRing(start: from, end: from.addingTimeInterval(Double(Countdown.seconds)))
+                        Text(verbatim: "\(n)")
+                            .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
+                            .foregroundStyle(Theme.accent)
+                    }
+                    .aspectRatio(1, contentMode: .fit)
+                    .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Start workout"))
+                .accessibilityValue(Text(verbatim: "\(n)"))
+            }
+            .padding(.horizontal, 6)
+            HStack {
+                EdgeButton(systemImage: "xmark", label: Text("Cancel")) { store.cancelCountdown() }
+                Spacer()
+            }
+        }
+        .ignoresSafeArea(edges: .bottom)
     }
 }
 
@@ -242,15 +302,19 @@ struct IdleView: View {
                 .padding(.horizontal, 4)
             }
         } else {
+            // Nothing from the phone yet (it sends only while openGym runs there): say so, rather
+            // than a "no workout" that reads as if the two were in touch.
+            let fresh = !store.heardFromPhone && store.ready == nil
             VStack(spacing: 10) {
                 OpenGymLogo()
                     .fill(Theme.accent)
                     .frame(width: 60, height: 30)
                     .accessibilityHidden(true)
-                Text("No workout running")
+                Text(fresh ? LocalizedStringKey("Not synced yet") : LocalizedStringKey("No workout running"))
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                Text("Start one on your iPhone and it shows up here.")
+                Text(fresh ? LocalizedStringKey("Open openGym on your iPhone once and your routines show up here.")
+                     : LocalizedStringKey("Start one on your iPhone and it shows up here."))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -279,7 +343,7 @@ struct ExercisePager: View {
 
 /// What a tap on a number opens for editing.
 enum EditField: String, Identifiable {
-    case weight, reps, seconds
+    case weight, reps, seconds, effort
     var id: String { rawValue }
 }
 
@@ -392,7 +456,7 @@ struct ExercisePage: View {
                 .accessibilityHint(Text("Tap to change it."))
             }
         } else {
-            HStack(spacing: 5) {
+            HStack(spacing: 6) {
                 ValueTile(value: formatNumber(weight), unit: unit, label: Text("Weight"), tint: tint) { if current { editing = .weight } }
                 ValueTile(value: formatNumber(reps), unit: nil, label: Text("Reps"), tint: tint) { if current { editing = .reps } }
             }
@@ -436,7 +500,22 @@ struct ExercisePage: View {
         }
     }
 
+    /// Done in the middle; with a profile that rates effort, the RPE / RIR button at its left (the
+    /// same room again on the right keeps Done centred under the numbers).
     @ViewBuilder private func primaryButton(_ entry: Entry, current: Bool) -> some View {
+        if let kind = store.effortKind, !entry.isCardio, let si = store.setIndex(in: index), !entry.sets[si].warmup {
+            HStack(spacing: 6) {
+                EffortButton(kind: kind, value: current ? store.effort : nil) { if current { editing = .effort } }
+                    .disabled(!current)
+                doneButton(entry, current: current)
+                Color.clear.frame(width: Theme.tap, height: Theme.tap).accessibilityHidden(true)
+            }
+        } else {
+            doneButton(entry, current: current)
+        }
+    }
+
+    @ViewBuilder private func doneButton(_ entry: Entry, current: Bool) -> some View {
         Group {
             if entry.isTimed {
                 RoundButton(systemImage: "play.fill", label: Text("Start hold"), size: doneSize,
@@ -476,6 +555,43 @@ struct WorkoutExtras: View {
     }
 }
 
+/// The set's effort as a small disc beside Done: the scale's name over the number, in the phone's
+/// colour for it (lib/effort.js), or a dash while it is not rated. A tap opens it on the crown.
+struct EffortButton: View {
+    let kind: String
+    let value: Double?
+    let tap: () -> Void
+
+    var body: some View {
+        let color = value.map { Effort.color(kind, $0) } ?? Color.white
+        Button(action: tap) {
+            VStack(spacing: -1) {
+                Text(verbatim: Effort.name(kind)).font(.system(size: 9, weight: .bold, design: .rounded)).foregroundStyle(.secondary)
+                Text(verbatim: value.map(formatNumber) ?? "–")
+                    .font(.system(size: 16, weight: .semibold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(color)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
+            .frame(width: Theme.tap, height: Theme.tap)
+            .background(Circle().fill(value == nil ? Theme.dim : color.opacity(0.22)))
+            .overlay(Circle().stroke(color.opacity(value == nil ? 0 : 0.9), lineWidth: 1.5))
+        }
+        .buttonStyle(.plain)
+        .dynamicTypeSize(...DynamicTypeSize.large)
+        .accessibilityLabel(Text("Effort"))
+        .accessibilityValue(value.map { Text(verbatim: "\(Effort.name(kind)) \(formatNumber($0))") } ?? Text("None"))
+        .accessibilityHint(Text("Tap to change it."))
+    }
+}
+
+extension Effort {
+    /// The phone's band colours (index.css --purple … --green, then the accent's soft tone).
+    static func color(_ kind: String, _ value: Double) -> Color {
+        [Color.purple, .red, .orange, .yellow, Theme.accent, .teal][band(kind, value)]
+    }
+}
+
 /// The workout's active calories so far, redrawn only when they change (WorkoutManager throttles).
 struct CaloriesText: View {
     @ObservedObject var health: WorkoutManager
@@ -494,8 +610,10 @@ struct ValueTile: View {
     var tint: Color = .white
     var large = false
     let tap: () -> Void
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 30
-    @ScaledMetric(relativeTo: .largeTitle) private var largeSize: CGFloat = 38
+    // The numbers are what a glance between sets is for: as big as the tile lets them be.
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 34
+    @ScaledMetric(relativeTo: .largeTitle) private var largeSize: CGFloat = 42
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         Button(action: tap) {
@@ -512,10 +630,12 @@ struct ValueTile: View {
                 label.font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary).lineLimit(1)
                     .dynamicTypeSize(...DynamicTypeSize.large)
             }
-            .foregroundStyle(tint)
+            .foregroundStyle(tint.opacity(dimmed ? 0.7 : 1))
             .frame(maxWidth: .infinity, minHeight: Theme.tap)
             .padding(.vertical, 3)
-            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.dim))
+            // Always On: no lit tiles, only their outline (less light, the numbers still read).
+            .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(dimmed ? Color.clear : Theme.dim))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Theme.dim, lineWidth: dimmed ? 1 : 0))
         }
         .buttonStyle(.plain)
         // VoiceOver: "Weight, 62.5 kg, button: tap to change it".
@@ -539,13 +659,17 @@ struct ValueEditor: View {
     let entry: Entry
     let unit: String
     @State private var value: Double = 0
+    /// Effort: where the crown was when the editor opened (left untouched, nothing is rated).
+    @State private var opened: Double = 0
     @FocusState private var focused: Bool
     @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 54
 
+    /// The profile's effort scale; the effort editor turns a crown position (Effort.value).
+    private var kind: String { store.effortKind ?? "rpe" }
     private var step: Double {
         switch field {
         case .weight: return entry.step.flatMap { $0 > 0 ? $0 : nil } ?? store.weightStep
-        case .reps: return 1
+        case .reps, .effort: return 1
         case .seconds: return 5
         }
     }
@@ -554,6 +678,7 @@ struct ValueEditor: View {
         case .weight: return 0...(unit == "lb" ? 1500 : 700)
         case .reps: return 0...200
         case .seconds: return 5...3600
+        case .effort: return 0...Double(Effort.notches(kind)?.count ?? 0)
         }
     }
     private var title: Text {
@@ -561,14 +686,24 @@ struct ValueEditor: View {
         case .weight: return entry.isBodyweight ? Text("Added weight") : Text("Weight")
         case .reps: return Text("Reps")
         case .seconds: return Text("Hold")
+        case .effort: return Text(verbatim: Effort.name(kind))
         }
     }
     private var suffix: String? {
         switch field {
         case .weight: return unit
-        case .reps: return nil
+        case .reps, .effort: return nil
         case .seconds: return "s"
         }
+    }
+    /// What the big number says: the value, or for effort the rating at the crown (a dash: none).
+    private var shown: String {
+        guard field == .effort else { return formatNumber(value) }
+        return Effort.value(kind, at: Int(value.rounded())).map(formatNumber) ?? "–"
+    }
+    private var shownColor: Color {
+        guard field == .effort else { return Theme.accent }
+        return Effort.value(kind, at: Int(value.rounded())).map { Effort.color(kind, $0) } ?? .secondary
     }
 
     var body: some View {
@@ -578,9 +713,9 @@ struct ValueEditor: View {
                 stepButton("minus", Text("Less")) { nudge(-step) }
                 VStack(spacing: 0) {
                     HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text(verbatim: formatNumber(value))
+                        Text(verbatim: shown)
                             .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
-                            .foregroundStyle(Theme.accent)
+                            .foregroundStyle(shownColor)
                             .contentTransition(.numericText())
                         if let s = suffix { Text(verbatim: s).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(.secondary) }
                     }
@@ -596,7 +731,7 @@ struct ValueEditor: View {
                                       sensitivity: field == .weight ? DigitalCrownRotationalSensitivity.medium : DigitalCrownRotationalSensitivity.low, isContinuous: false, isHapticFeedbackEnabled: true)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(title)
-                .accessibilityValue(Text(verbatim: suffix.map { "\(formatNumber(value)) \($0)" } ?? formatNumber(value)))
+                .accessibilityValue(field == .effort && shown == "–" ? Text("None") : Text(verbatim: suffix.map { "\(shown) \($0)" } ?? shown))
                 .accessibilityAdjustableAction { d in
                     switch d {
                     case .increment: nudge(step)
@@ -622,10 +757,14 @@ struct ValueEditor: View {
             case .weight: value = store.weight
             case .reps: value = store.reps
             case .seconds: value = store.seconds
+            // a set not rated yet opens on a hard working set; turned down to the dash it is none again
+            case .effort: value = Double(Effort.position(kind, of: store.effort ?? Effort.start(kind)))
             }
+            opened = value
             focused = true
         }
-        .onDisappear { save() }
+        // Effort: swiped away untouched, the set stays unrated (Done rates it as shown).
+        .onDisappear { if field != .effort || value != opened || store.effort != nil { save() } }
     }
 
     private func nudge(_ d: Double) {
@@ -640,6 +779,7 @@ struct ValueEditor: View {
         case .weight: store.weight = max(0, value)
         case .reps: store.reps = max(0, value.rounded())
         case .seconds: store.seconds = max(5, value)
+        case .effort: store.rate(Effort.value(kind, at: Int(value.rounded())))
         }
     }
 
@@ -657,34 +797,46 @@ struct ValueEditor: View {
 }
 
 /// The weigh-in before a workout started here, as the phone asks for it: the body weight on the
-/// crown (in tenths), Save and start, or start without.
+/// crown in two parts (whole units, then a tap on the tenth for the tenth), Save and start, or
+/// start without. One crown in tenths ran a whole kilo away in a flick.
 struct WeighInView: View {
     @EnvironmentObject var store: SessionStore
-    @FocusState private var focused: Bool
+    enum Part: Hashable { case whole, tenth }
+    @FocusState private var part: Part?
     @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
 
+    private var whole: Binding<Double> {
+        Binding(get: { WeighIn.parts(store.bodyWeight).whole },
+                set: { store.bodyWeight = WeighIn.join(whole: $0, tenth: WeighIn.parts(store.bodyWeight).tenth) })
+    }
+    private var tenth: Binding<Double> {
+        Binding(get: { WeighIn.parts(store.bodyWeight).tenth },
+                set: { store.bodyWeight = WeighIn.join(whole: WeighIn.parts(store.bodyWeight).whole, tenth: $0) })
+    }
+
     var body: some View {
+        let p = WeighIn.parts(store.bodyWeight)
         ScrollView {
             VStack(spacing: 6) {
                 Text("Quick check-in").font(.system(.headline, design: .rounded))
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text(verbatim: String(format: "%.1f", store.bodyWeight))
-                        .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(Theme.accent)
-                        .contentTransition(.numericText())
-                    Text(verbatim: store.unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
+                    digits(String(Int(p.whole)), .whole, whole, 20...(store.unit == "lb" ? 700 : 320))
+                    Text(verbatim: ".").font(.system(size: size, weight: .semibold, design: .rounded)).foregroundStyle(.secondary)
+                    digits(String(Int(p.tenth)), .tenth, tenth, 0...9)
+                    Text(verbatim: " " + store.unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
                 }
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
                 .frame(maxWidth: .infinity, minHeight: Theme.tap)
-                .focusable()
-                .focused($focused)
-                .digitalCrownRotation($store.bodyWeight, from: 20, through: store.unit == "lb" ? 700 : 320, by: 0.1,
-                                      sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text("Body weight"))
                 .accessibilityValue(Text(verbatim: String(format: "%.1f %@", store.bodyWeight, store.unit)))
                 .accessibilityHint(Text("Turn the Digital Crown to change it."))
+                .accessibilityAdjustableAction { d in
+                    let v = store.bodyWeight + (d == .increment ? 0.1 : -0.1)
+                    let q = WeighIn.parts(v)
+                    store.bodyWeight = WeighIn.join(whole: q.whole, tenth: q.tenth)
+                }
                 Button { store.finishWeighIn(save: true) } label: {
                     Text("Save & start workout").font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: Theme.tap)
                 }
@@ -702,7 +854,26 @@ struct WeighInView: View {
             }
             .padding(.horizontal, 4)
         }
-        .onAppear { focused = true }
+        .onAppear { part = .whole }
+    }
+
+    /// One part of the number: the one the crown turns is in the accent colour on a soft tile,
+    /// a tap on the other one hands the crown to it.
+    private func digits(_ text: String, _ which: Part, _ value: Binding<Double>, _ range: ClosedRange<Double>) -> some View {
+        let on = part == which
+        return Text(verbatim: text)
+            .font(.system(size: which == .whole ? size : size * 0.8, weight: .semibold, design: .rounded).monospacedDigit())
+            .foregroundStyle(on ? Theme.accent : Color.white)
+            .contentTransition(.numericText())
+            .padding(.horizontal, 4)
+            .frame(minWidth: Theme.tap * 0.7, minHeight: Theme.tap)
+            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(on ? Theme.dim : Color.clear))
+            .contentShape(Rectangle())
+            .focusable()
+            .focused($part, equals: which)
+            .digitalCrownRotation(value, from: range.lowerBound, through: range.upperBound, by: 1,
+                                  sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+            .onTapGesture { part = which }
     }
 }
 
@@ -713,6 +884,7 @@ struct SetDots: View {
     let current: Int?
     let skipped: (Int) -> Bool
     let pick: (Int) -> Void
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         HStack(spacing: 4) {
@@ -731,6 +903,7 @@ struct SetDots: View {
                     .onTapGesture { if !s.done { pick(pair.offset) } }
             }
         }
+        .opacity(dimmed ? 0.6 : 1)
         // VoiceOver: "Set 2 of 4, 1 done", swipe up or down to pick another set.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Set \((current ?? 0) + 1) of \(entry.sets.count)"))
@@ -766,11 +939,13 @@ struct FinishPage: View {
             if store.offline {
                 Text("Saved on the watch, syncs later").font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
+            LockButton(health: store.health)
         }
         .padding(.horizontal, 6)
         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .confirmationDialog("Finish workout?", isPresented: $confirming) {
             Button("Finish and save") { store.finish() }
+            Button("Discard workout", role: .destructive) { store.discard() }
             Button("Cancel", role: .cancel) {}
         }
     }
@@ -853,6 +1028,8 @@ struct RestView: View {
             HStack {
                 EdgeButton(systemImage: "goforward.15", label: Text("+15s")) { store.addRest(15) }
                 Spacer()
+                LockButton(health: store.health)
+                Spacer()
                 EdgeButton(systemImage: "forward.end.fill", label: Text("Skip")) { store.skipRest() }
             }
             .opacity(dimmed ? 0 : 1)
@@ -887,6 +1064,7 @@ struct HoldView: View {
             .aspectRatio(1, contentMode: .fit)
             .padding(.horizontal, 6)
             HStack {
+                LockButton(health: store.health)
                 Spacer()
                 EdgeButton(systemImage: "stop.fill", label: Text("Stop")) { store.endHold(early: true) }
             }

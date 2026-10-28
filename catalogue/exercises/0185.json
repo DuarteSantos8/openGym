@@ -9,6 +9,9 @@
     "triceps"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A cable fly done lying on a flat bench. The arms open in a wide arc and close again, working the chest through a deep stretch.",
   "instructions": [
     "Attach the handles to the cables and lie flat on a bench with your feet flat on the ground.",

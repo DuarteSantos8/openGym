@@ -104,6 +104,32 @@ describe('Focus workout view', () => {
     expect(container.querySelector('.noprog')).toBeNull()
   })
 
+  // Discord: "In Focus mode, how do I add an extra set?" The ⋯ menu has it now, with the warm-up,
+  // like the Cards layout's buttons; the new set is the one on screen when the others are done.
+  it('adds a set and a warm-up set from the exercise menu', () => {
+    mount({ id: SQUAT, target: { sets: 2, reps: 5, weight: 95 }, sets: [{ w: 95, r: 5, done: true }, { w: 95, r: 5, done: true }] })
+    const pick = label => {
+      const item = [...openMenu().querySelectorAll('.menu-item')].find(el => el.querySelector('.tt')?.textContent === label)
+      expect(item, label).toBeTruthy()
+      act(() => item.click())
+      act(() => sheetRoot.unmount()); sheetContainer.remove(); sheetRoot = sheetContainer = null
+    }
+    pick('Add set')
+    const sets = () => useStore.getState().S.active.entries[0].sets
+    expect(sets()).toHaveLength(3)
+    expect(sets()[2]).toMatchObject({ w: 95, r: 5, done: false })
+    expect(container.querySelectorAll('.focus-dots button')).toHaveLength(3)
+    expect(container.querySelector('.focus-dots button.active').getAttribute('aria-label')).toBe('Set 3')
+    pick('Add warm-up set')
+    expect(sets()).toHaveLength(4)
+    expect(sets().filter(row => row.phase === 'warmup' || row.warmup)).toHaveLength(1)
+  })
+
+  it('title-cases the exercise menu\'s heading like the Cards layout does', () => {
+    mount({ id: SQUAT, target: { sets: 1, reps: 5, weight: 95 }, sets: [{ w: 95, r: 5, done: false }] })
+    expect(openMenu().querySelector('h3').className).toBe('capitalize')
+  })
+
   it('uses the exercise rest-pause duration for a new burst', () => {
     mount({
       id: SQUAT,

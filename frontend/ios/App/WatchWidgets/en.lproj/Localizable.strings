@@ -10,6 +10,8 @@
 "Finish workout" = "Finish workout";
 "Finish workout?" = "Finish workout?";
 "Finish and save" = "Finish and save";
+"Discard workout" = "Discard workout";
+"Continue workout" = "Continue workout";
 "Cancel" = "Cancel";
 "Rest’s over. Next set!" = "Rest’s over. Next set!";
 "Left" = "Left";
@@ -28,8 +30,12 @@
 "Body weight" = "Body weight";
 "Less" = "Less";
 "More" = "More";
+"Effort" = "Effort";
+"None" = "None";
 "Last time: %@" = "Last time: %@";
 "No workout running" = "No workout running";
+"Not synced yet" = "Not synced yet";
+"Open openGym on your iPhone once and your routines show up here." = "Open openGym on your iPhone once and your routines show up here.";
 "Start one on your iPhone and it shows up here." = "Start one on your iPhone and it shows up here.";
 "All sets done" = "All sets done";
 "measuring" = "measuring";
@@ -45,6 +51,8 @@
 "Tap a dot to do a skipped set." = "Tap a dot to do a skipped set.";
 "Log this one on your iPhone." = "Log this one on your iPhone.";
 "Saved on the watch, syncs later" = "Saved on the watch, syncs later";
+"All done?" = "All done?";
+"Lock" = "Lock";
 "Skip this set?" = "Skip this set?";
 "Turn the Digital Crown to change it." = "Turn the Digital Crown to change it.";
 "%lld done" = "%lld done";

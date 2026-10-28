@@ -8,7 +8,7 @@ const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'defaul
 // The verbs the remove-meaning translations used, per pack. None may come back in the drop label.
 const removeWords = {
   de: /streich|entfern/i, es: /quitar/i, fr: /retirer/i, it: /togli/i, pt: /retirar|tirar|remover/i,
-  pl: /usuń/i, tr: /çıkar/i, ru: /убрать/i, uk: /прибрати/i, hi: /हटा/, ko: /제외|제거|빼기/, zh: /移除/, 'zh-TW': /移除/,
+  pl: /usuń/i, sv: /ta bort/i, tr: /çıkar/i, ru: /убрать/i, uk: /прибрати/i, hi: /हटा/, ko: /제외|제거|빼기/, zh: /移除/, 'zh-TW': /移除/,
 }
 
 describe('the drop-set sub-row label', () => {

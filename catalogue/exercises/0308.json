@@ -8,6 +8,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "The classic flat bench dumbbell fly. The arms open in an arc to stretch and squeeze the chest.",
   "instructions": [
     "Lie flat on a bench with a dumbbell in each hand, palms facing each other.",

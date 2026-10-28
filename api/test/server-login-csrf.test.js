@@ -104,7 +104,7 @@ test('a cross-site form cannot sign the victim into the attacker\'s account', as
   });
   assert.equal(sessionUid(r), null, 'no session cookie for the attacker\'s account');
   assert.equal(r.status, 403);
-  assert.deepEqual(await r.json(), { error: 'cross-origin request refused' });
+  assert.deepEqual(await r.json(), { error: 'cross-origin request refused', code: 'origin-mismatch', expected: 'https://gym.test' });
 });
 
 test('the passkey routes are origin-checked, even with a JSON body', async t => {

@@ -15,7 +15,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { DAYN } from '../lib/format.js'
 import { EXDB } from '../lib/exercises.js'
-import { emptyCoach, coachAvailable, hasConsent, CONSENT_VERSION, CATEGORY_TEXT, appendChat } from '../lib/coach.js'
+import { emptyCoach, coachAvailable, hasConsent, CONSENT_VERSION, CATEGORY_TEXT, appendChat, defaultTrainingDays } from '../lib/coach.js'
 import { requestPlan, disclosure, JOB_ERRORS, isDeclined, coachVia } from '../lib/coach-api.js'
 import { consentTarget, allowAi } from '../lib/coach-consent.js'
 import { DEMO } from '../lib/demo.js'
@@ -53,6 +53,7 @@ const EQUIPMENT = (() => {
 })()
 
 const QUICK_MIN = [30, 45, 60, 90]
+const sameDays = (a, b) => a.length === b.length && b.every(d => a.includes(d))
 const toHHMM = min => Math.floor(min / 60) + ':' + String(min % 60).padStart(2, '0')
 
 export default function CoachIntake() {
@@ -74,7 +75,7 @@ export default function CoachIntake() {
   const [step, setStep] = useState(0)
   const [busy, setBusy] = useState(false)
   const [p, setP] = useState(() => ({
-    goal: null, experience: null, daysPerWeek: 3, preferredDays: [1, 3, 5],
+    goal: null, experience: null, daysPerWeek: 3, preferredDays: defaultTrainingDays(3),
     // A home gym already set up under Settings → Equipment is the best first guess here.
     sessionMin: 60, equipment: (activeProfile(S)?.equipment || []).filter(e => EQUIPMENT.includes(e)), limitations: '', likes: '', dislikes: '', notes: '',
     ...(S.coach?.profile || {})
@@ -131,6 +132,14 @@ export default function CoachIntake() {
     }
   }
 
+  // The weekdays start as the usual spread for the count and follow it until somebody picks their
+  // own. Mon/Wed/Fri left standing under a count of four saved a profile asking for four days
+  // that preferred three nobody had chosen (#620). Fewer picked days than the count stay a valid
+  // answer: the Coach fills the rest.
+  const setDays = n => {
+    const untouched = sameDays(p.preferredDays, defaultTrainingDays(p.daysPerWeek))
+    set({ daysPerWeek: n, preferredDays: untouched ? defaultTrainingDays(n) : p.preferredDays })
+  }
   const toggleDay = d => set({
     preferredDays: p.preferredDays.includes(d) ? p.preferredDays.filter(x => x !== d) : [...p.preferredDays, d].sort()
   })
@@ -180,7 +189,7 @@ export default function CoachIntake() {
         <div className="ob-group" role="group" aria-labelledby="ob-days-l">
           <div className="ob-sub ob-sub-first" id="ob-days-l">{t('Days per week')}</div>
           <div className="ob-days">
-            {[1, 2, 3, 4, 5, 6, 7].map(n => <button key={n} className={'ob-day' + (p.daysPerWeek === n ? ' on' : '')} aria-pressed={p.daysPerWeek === n} onClick={() => set({ daysPerWeek: n })}>{n}</button>)}
+            {[1, 2, 3, 4, 5, 6, 7].map(n => <button key={n} className={'ob-day' + (p.daysPerWeek === n ? ' on' : '')} aria-pressed={p.daysPerWeek === n} onClick={() => setDays(n)}>{n}</button>)}
           </div>
         </div>
         <div className="ob-group" role="group" aria-labelledby="ob-week-l">

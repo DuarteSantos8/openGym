@@ -11,6 +11,7 @@
     "shoulders"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A side plank held on one forearm. It strengthens the sides of your trunk.",
   "instructions": [
     "Lie on your side with legs stacked.",
