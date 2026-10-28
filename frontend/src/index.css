@@ -1961,6 +1961,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    routine editor's label and bar. */
 .wd-ex{margin-bottom:12px;cursor:pointer;border-radius:10px}
 .wd-ex>.grow{flex:1;min-width:0}
+.wd-thumb{background:none;border:none;padding:0;cursor:pointer;display:block;flex:none}
 .wd-ex:active{background:var(--surface-2)}
 .wd-ss{box-shadow:inset 3px 0 0 var(--acc);padding-inline-start:11px;margin-bottom:12px}
 .wd-ss .ss-label{margin:0 0 8px}

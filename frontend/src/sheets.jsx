@@ -2802,7 +2802,7 @@ function WorkoutDetail({ w, close }) {
   const entryRow = (e, i) => {
     const ex = EXIDX[e.id]
     return <div key={i} className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
-      {ex && <Thumb ex={ex} />}
+      {ex && <button type="button" className="wd-thumb" aria-label={t('Details')} onClick={ev => { ev.stopPropagation(); exerciseDetailSheet(ex) }}><Thumb ex={ex} /></button>}
       <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
         <div className="ss">{e.sets.filter(hasCompletedWork).map(s => setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)).join('  ·  ') || t('no sets')}</div>
         {e.note && <div className="small dim" style={{ marginTop: 3 }}>
