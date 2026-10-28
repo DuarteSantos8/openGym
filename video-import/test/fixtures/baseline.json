@@ -1,0 +1,182 @@
+{
+  "8jZvQT6LqTM": {
+    "frames": 0.962,
+    "sequence": 0.933,
+    "boundaries": 0.992,
+    "startError": 0
+  },
+  "B7-F2UcHmqk": {
+    "frames": 0.997,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0.098,
+    "sections": 1
+  },
+  "IEJMnNGAGY4": {
+    "frames": 0.946,
+    "sequence": 0.911,
+    "boundaries": 0.955,
+    "startError": 0.067
+  },
+  "J3Wv3Els3fk": {
+    "frames": 0.759,
+    "sequence": 0.66,
+    "boundaries": 0.98,
+    "startError": 0,
+    "sections": 1
+  },
+  "OfV5kHgRpmM": {
+    "frames": 0.973,
+    "sequence": 0.983,
+    "boundaries": 0.992,
+    "startError": 0.492,
+    "sections": 1
+  },
+  "PgREJOesbdE": {
+    "frames": 0.557,
+    "sequence": 0.417,
+    "boundaries": 0.93,
+    "startError": 0.197,
+    "sections": 0.526
+  },
+  "ScInpT_5dIQ": {
+    "frames": 0.877,
+    "sequence": 0.84,
+    "boundaries": 0.98,
+    "startError": 0
+  },
+  "UIPvIYsjfpo": {
+    "frames": 0.961,
+    "sequence": 0.972,
+    "boundaries": 0.972,
+    "startError": 0.4,
+    "sections": 1
+  },
+  "UoYLPbPi938": {
+    "frames": 0.994,
+    "sequence": 1,
+    "boundaries": 0.983,
+    "startError": 0.051,
+    "sections": 1
+  },
+  "Y2eOW7XYWxc": {
+    "frames": 0.952,
+    "sequence": 0.95,
+    "boundaries": 1,
+    "startError": 0
+  },
+  "_41Sj0UWsj4": {
+    "frames": 0.963,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0
+  },
+  "_G5wIxplwB8": {
+    "frames": 0.975,
+    "sequence": 0.971,
+    "boundaries": 1,
+    "startError": 0.129,
+    "sections": 1
+  },
+  "cDq-nFmD0rI": {
+    "frames": 0.961,
+    "sequence": 0.962,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "nMKZ3v0IFXI": {
+    "frames": 0.853,
+    "sequence": 0.816,
+    "boundaries": 0.827,
+    "startError": 0.839,
+    "sections": 1
+  },
+  "nOOZ4gJuPcs": {
+    "frames": 0.784,
+    "sequence": 0.667,
+    "boundaries": 0.706,
+    "startError": 0.167
+  },
+  "pnd-jkJh-ls": {
+    "frames": 0.935,
+    "sequence": 0.848,
+    "boundaries": 0.957,
+    "startError": 0.341,
+    "sections": 0.333
+  },
+  "synthetic-30-30-bare-rest": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-30-30-named-rest": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0
+  },
+  "synthetic-captions-only": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-hiit-countdown": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-hiit-countup": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-next-screens": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "synthetic-nonstop": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0
+  },
+  "synthetic-sides": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0
+  },
+  "synthetic-tabata": {
+    "frames": 1,
+    "sequence": 1,
+    "boundaries": 1,
+    "startError": 0,
+    "sections": 1
+  },
+  "t-3H2KnjH6E": {
+    "frames": 0.949,
+    "sequence": 0.944,
+    "boundaries": 1,
+    "startError": 0.333,
+    "sections": 1
+  },
+  "zBTz636KeMA": {
+    "frames": 0.88,
+    "sequence": 0.84,
+    "boundaries": 0.98,
+    "startError": 0.333,
+    "sections": 0.444
+  }
+}

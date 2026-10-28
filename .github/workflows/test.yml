@@ -45,6 +45,7 @@ jobs:
       images: ${{ steps.f.outputs.images == 'true' || github.event_name == 'workflow_dispatch' }}
       android: ${{ steps.f.outputs.android == 'true' || github.event_name == 'workflow_dispatch' }}
       catalogue: ${{ steps.f.outputs.catalogue == 'true' || github.event_name == 'workflow_dispatch' }}
+      videoimport: ${{ steps.f.outputs.videoimport == 'true' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -57,6 +58,9 @@ jobs:
           # every job ran on every push. Pull requests compare with their base, as always.
           base: ${{ github.event_name == 'push' && github.ref_name || '' }}
           filters: |
+            videoimport:
+              - '.github/workflows/test.yml'
+              - 'video-import/**'
             frontend:
               - '.github/workflows/test.yml'
               - 'scripts/ci/**'
@@ -493,8 +497,36 @@ jobs:
 
   # The single required check. Green when every job that ran passed and the others were
   # skipped because nothing they check changed.
+  # The optional video-import worker: its unit tests need nothing but node, and its end-to-end
+  # test needs ffmpeg with drawtext, Tesseract and a font, so it runs inside the worker's own
+  # `test` image, which is the runtime image plus a font. REQUIRE_E2E=1 is set there, so a broken
+  # image fails the job instead of quietly skipping the one test that reads real frames.
+  video-import:
+    needs: changes
+    if: needs.changes.outputs.videoimport == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: npm test
+        working-directory: video-import
+      - run: docker build --target test -t opengym-video-import:test ./video-import
+      - run: docker run --rm opengym-video-import:test
+      - run: docker build -t opengym-video-import:default ./video-import
+      - name: the default image boots and reports its tools
+        run: |
+          docker run -d --name vi -p 3100:3100 -e VIDEO_IMPORT_TOKEN=ci-token-0123456789 opengym-video-import:default
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:3100/health && break; sleep 1; done
+          curl -sf http://127.0.0.1:3100/health | grep -q '"ok":true'
+          docker rm -f vi
+
   tests-ok:
-    needs: [changes, frontend, api, mcp, catalogue, images, android]
+    needs: [changes, frontend, api, mcp, catalogue, images, android, video-import]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2

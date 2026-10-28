@@ -35,7 +35,7 @@ async function startServer(t, env = {}) {
   // and the Coach block. The public media block has its own tests in server-media.test.js.
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', INVITE_ONLY: '1', ALLOW_GUEST: '0', COACH_DISABLED: '', MEDIA_UPLOADS: '0', ...env }
+    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', INVITE_ONLY: '1', ALLOW_GUEST: '0', COACH_DISABLED: '', MEDIA_UPLOADS: '0', VIDEO_IMPORT_URL: '', ...env }
   });
   t.after(() => { child.kill('SIGKILL'); fs.rmSync(dataDir, { recursive: true, force: true }); });
   let log = '';
@@ -97,4 +97,20 @@ test('GET /api/config: DEFAULT_LANG is public when set, absent when unset or mal
 
   const unset = await startServer(t, { DEFAULT_LANG: '' });
   assert.equal('default_lang' in await fetch(`${unset.api}/api/config`).then(r => r.json()), false);
+});
+
+test('GET /api/config: video_import only for a session, only when the worker is configured', async t => {
+  const on = await startServer(t, { VIDEO_IMPORT_URL: 'http://127.0.0.1:9' });
+  assert.equal('video_import' in await fetch(`${on.api}/api/config`).then(r => r.json()), false, 'not for a stranger');
+  const signedIn = await fetch(`${on.api}/api/config`, { headers: { Cookie: `gymsid=${mint(UID)}` } }).then(r => r.json());
+  assert.equal(signedIn.video_import, true);
+  // The worker is down (port 9): starting an import says so instead of failing obscurely.
+  const r = await fetch(`${on.api}/api/video-import`, { method: 'POST', headers: { Cookie: `gymsid=${mint(UID)}`, 'Content-Type': 'application/json', Origin: 'http://localhost:8080' }, body: JSON.stringify({ url: 'https://youtu.be/dQw4w9WgXcQ' }) });
+  assert.equal(r.status, 503);
+  assert.equal((await r.json()).code, 'worker-down');
+
+  const off = await startServer(t);
+  const plain = await fetch(`${off.api}/api/config`, { headers: { Cookie: `gymsid=${mint(UID)}` } }).then(r => r.json());
+  assert.equal('video_import' in plain, false);
+  assert.equal((await fetch(`${off.api}/api/video-import/job?id=${'a'.repeat(24)}`, { headers: { Cookie: `gymsid=${mint(UID)}` } })).status, 404, 'no routes without the worker');
 });

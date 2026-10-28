@@ -48,3 +48,6 @@ assets/tee/
 assets/bmc-cover*
 # scripts/pdf/render-samples.mjs output (npm run pdf:check)
 frontend/pdf-samples/
+
+# video-import fixture recording: stills and raw results (test/harness/record.mjs)
+video-import/test/.record/

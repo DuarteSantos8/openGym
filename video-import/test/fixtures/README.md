@@ -1,0 +1,96 @@
+# Regression fixtures
+
+One file per video: the worker's per-second OCR readings plus what a person saw when watching
+it. `test/regression.test.js` runs the readings through `draftFromFrames` (the same code a real
+import uses after OCR) and checks that no metric falls below `baseline.json`. No video, OCR or
+network is involved, so it runs in CI in about a second.
+
+## Adding videos
+
+`test/corpus.json` lists the videos to record: the ones the heuristics were calibrated on
+(`calibrated`, record these first) and ones found by searching for more of the same channels and
+for new ones (`candidate`). Each says what it adds to the set (`look`). To record every video
+that has no fixture yet, in the worker image (it needs YouTube, ffmpeg and the OCR):
+
+```sh
+docker compose --profile video-import run --rm --user "$(id -u)" \
+  -v "$PWD/video-import/test:/app/test" video-import \
+  node test/harness/record.mjs [--status calibrated] [--channel "Rowan Row"] [<videoId>…]
+```
+
+or one video by hand:
+
+```sh
+docker compose --profile video-import run --rm -v "$PWD/video-import/test/fixtures:/out" video-import \
+  node src/cli.js <youtube-url> --video --out /tmp/vi --fixture /out/<videoId>.json
+```
+
+Pass `--rois data/video-import/<user id>.json` (and mount `./data`) to use the boxes you drew
+for each channel in the app; that file is where the API keeps them. Otherwise the suggested
+name/timer boxes are used, unless the corpus entry has `"roi": { "name": "x,y,w,h",
+"timer": "x,y,w,h" }` (fractions of the frame, as `--name`/`--timer` take them). The stills
+in `test/.record/<id>` (gitignored) show whether the boxes were right. With new boxes, record
+again with `record.mjs --again <id>`: a reviewed `expected` and its notes are kept.
+
+1. The fixture comes out with `expected` pre-filled **from the current draft** and
+   `reviewed: false`. Unreviewed fixtures are skipped by the test.
+2. Watch the video and correct `expected.timeline` (and `sections`). Don't trust the pre-fill:
+   it's only there to save typing.
+3. Set `reviewed: true`, run `npm run score -- <videoId>`, then `npm run score -- --update-baseline`.
+4. Write in `notes` what makes this video different (font, timer style, layout, language).
+5. A candidate that turns out to be from another channel, to have no names on screen, or to
+   be unusable: `"status": "skip"` and a note in corpus.json, so it isn't recorded again.
+
+## Format (`version: 1`)
+
+| Field | Content |
+|---|---|
+| `source` | `videoId`, `url`, `title`, `channel`, `channelId`, `duration` |
+| `capture` | `engine` (`tesseract`/`paddle`), `engineVersion`, `roi`, `date`. Readings depend on these; re-record when the OCR changes |
+| `inputs` | `hints` and `parts` from the video's metadata, as the worker passed them to `classify`; `gapNames` (`[{ at, text, conf }]`, `at` the second a timed run starts): names read from the move before it for runs no caption named, which need the video and so are recorded here (`src/gap-names.js`) |
+| `frames` | One reading per second, `t` = 0, 1, 2… with no gaps: `{ t, name, nameConf, timer, timers, scene }` |
+| `expected.reviewed` | `true` once a person has checked it against the video |
+| `expected.timeline` | `[label, seconds]` from t = 0, adding up to `frames.length`. Label = exercise name, `"rest"`, or `null` (intro, talk, outro, ads; not scored) |
+| `expected.sections` | Optional. Per section: `kind`, and for intervals `rounds`, `work`, `rest`. Omitted fields aren't scored |
+| `notes` | Free text |
+
+A warm-up or stretch has no rests: the moves follow one another, and the name of the next one shows in the last seconds of the one before it (often in a small preview), or on a label while it is being done. Write those moves out too, with their sides (`Hip flexor (R)`, `Hip flexor (L)`); `null` is for what is not an exercise (intro, talk, ads, a water break, an outro) and for moves a video never names.
+
+Labels are matched like the worker matches names (`sameName`, left/right removed), so spelling
+doesn't have to be exact. Two left/right sides are written as two steps:
+`["Quad stretch left", 30], ["Quad stretch right", 30]`.
+
+## Metrics (0–1, higher is better)
+
+| Metric | Measures |
+|---|---|
+| `frames` | Share of scored seconds labelled correctly (exercise by name, rest as rest) |
+| `sequence` | 1 − edit distance between the expected and predicted order of moves |
+| `boundaries` | F1 of move starts matched within ±1 s |
+| `sections` | Share of section fields correct (count, kind, rounds, work, rest) |
+| `startError` | Mean offset in seconds of matched starts. Informational only, never fails |
+
+`baseline.json` only ever goes up (`--update-baseline` takes the max per metric; `--force`
+overwrites, e.g. after fixing a wrong `expected`). A change that helps one video and hurts
+another fails the test for the one it hurt.
+
+## Data in the repo
+
+Fixtures hold OCR text and timings, not images or video. A one-hour video is around 150–250 kB.
+
+## Synthetic fixtures
+
+`synthetic-*.json` are generated by `node test/harness/make-synthetic.mjs` from
+`test/synthetic.mjs`: known shapes with an exact answer, so a rule tuned on one real video can't
+quietly break a layout no recorded video has yet. They are not a substitute for real readings
+(no OCR noise beyond the few slips written into them).
+
+| Fixture | Shape |
+|---|---|
+| `hiit-countdown`, `hiit-countup` | warm-up of three moves with no rests, 3 × 4 at 40/20, a stretch; the timer both ways |
+| `tabata` | 20/10, two moves alternating |
+| `next-screens` | names only on the NEXT screen in the rest, bare work |
+| `30-30-bare-rest`, `30-30-named-rest` | equal work and rest, the name over the work or over the rest before it |
+| `nonstop` | ten moves back to back, no rests |
+| `sides` | per-side moves marked (R)/(L) |
+| `captions-only` | no timer at all |
