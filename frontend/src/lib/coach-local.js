@@ -25,6 +25,7 @@ import { HTTP_PROVIDERS, baseUrlFor } from '../../../api/coach/core/providers.js
 import anthropic from '../../../api/coach/core/adapters/anthropic.js'
 import openai from '../../../api/coach/core/adapters/openai.js'
 import gemini from '../../../api/coach/core/adapters/gemini.js'
+import minimax from '../../../api/coach/core/adapters/minimax.js'
 import compatible from '../../../api/coach/core/adapters/compatible.js'
 import { modelSubstitute } from '../../../api/coach/core/adapters/http.js'
 import { nativeFetch } from './capacitor-fetch.js'
@@ -34,7 +35,7 @@ import { planHash } from './coach.js'
 import { todayISO } from './format.js'
 import { t, getLang } from './i18n.js'
 
-export const ADAPTERS = { anthropic, openai, gemini, compatible }
+export const ADAPTERS = { anthropic, openai, gemini, minimax, compatible }
 // Five minutes is right for a cloud API and wrong for a model on somebody's laptop; the
 // OpenAI-compatible endpoint is the one that may be local, so it gets the long budget.
 export const TIMEOUT_MS = 5 * 60000
