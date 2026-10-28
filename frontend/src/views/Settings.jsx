@@ -63,6 +63,8 @@ import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
 import { readGymConfig } from '../lib/gym-reminder.js'
 import { THEMES, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
+import { adventOf, adventOpenable } from '../lib/advent.js'
+import { openSeasonal } from '../components/Seasonal.jsx'
 import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
@@ -939,9 +941,15 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           </Row>}
         </Section>
       })}
-      {/* While Halloween shows, a way to the matching icon in Look & Home (it is there all year). */}
-      {MOBILE && platformNow() && activeSeason(S) === 'halloween' && <Section>
-        <Row icon="pumpkin" iconTint="var(--orange)" title={t('Try the Halloween app icon')} accessory="chevron"
+      {/* Christmas: the advent calendar, for all of December (lib/advent.js), from the theme's chunk. */}
+      {activeSeason(S) === 'christmas' && adventOpenable() && <Section>
+        <Row icon="calendar" iconTint="var(--green)" title={'🎄 ' + t('Advent calendar')}
+          subtitle={t('{0} of 24 doors open', adventOf(S).opened.length)} accessory="chevron"
+          onClick={() => openSeasonal('christmas', 'advent')} />
+      </Section>}
+      {/* While a theme with its own icon shows, a way to it in Look & Home (it is there all year). */}
+      {MOBILE && platformNow() && seasonWithIcon(S) && <Section>
+        <Row icon={seasonWithIcon(S).icon} iconTint={seasonWithIcon(S).tint} title={t(seasonWithIcon(S).appIconTitle)} accessory="chevron"
           onClick={() => nav('/settings/look', { state: { find: 'App icon' } })} />
       </Section>}
     </>,
@@ -1442,6 +1450,12 @@ function activeSeasonTitle(S) {
   const id = activeSeason(S)
   const th = id && THEMES.find(x => x.id === id)
   return th ? t(th.title) : null
+}
+
+// The showing theme, when it has a home-screen icon of its own to suggest.
+function seasonWithIcon(S) {
+  const th = THEMES.find(x => x.id === activeSeason(S))
+  return th?.appIcon ? th : null
 }
 
 function accentLabel(S) {

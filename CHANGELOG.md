@@ -6,6 +6,20 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Christmas, with an advent calendar.** From 1 December to the end of the year the app gets
+cosy: a little snow drifting behind the cards when you open it, fairy lights along the top of Home
+and Stats, a Santa hat on your streak flame, holly in a corner, a snowman and a gingerbread person
+peeking around Stats, and once a day a sleigh flying past. There is a present hiding on the streak
+card, tap it. On Home, from the 1st to the 24th, the advent calendar: 24 doors, today's one glows,
+a door you missed waits for you, and the ones still to come stay shut (no peeking). Behind them: fun
+facts, small challenges you tick off for a badge, training tips, a joke or two, a cosy stretch
+routine to add, a number from your own year, and something special on the 24th. Opened doors sync
+between your devices. It all works like Halloween: Settings → Look & Home → Seasonal themes has
+Auto, On and Off, optional berry red colors, a switch for the workout screen (never on your sets),
+and the calendar for all of December. Nothing moves with reduced motion, nothing shows during the
+app tour, and none of it is downloaded outside the season. On the phones there is a festive app
+icon too, the barbell in a Santa hat, and Home asks once whether you fancy it.
+
 **Your year in openGym.** From 1 December to the end of January, Home has a card: your year is ready.
 Tap it and your year plays as full-screen stories, tap or swipe through: how many workouts, the hours,
 the tonnes you moved (in blue whales, pianos or house cats, whatever fits), your longest streak, your

@@ -444,7 +444,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Light AppIcon-Mono AppIcon-Neon AppIcon-Sky AppIcon-Orange AppIcon-Pink AppIcon-Violet AppIcon-Halloween";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Light AppIcon-Mono AppIcon-Neon AppIcon-Sky AppIcon-Orange AppIcon-Pink AppIcon-Violet AppIcon-Halloween AppIcon-Christmas";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
@@ -473,7 +473,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Light AppIcon-Mono AppIcon-Neon AppIcon-Sky AppIcon-Orange AppIcon-Pink AppIcon-Violet AppIcon-Halloween";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Light AppIcon-Mono AppIcon-Neon AppIcon-Sky AppIcon-Orange AppIcon-Pink AppIcon-Violet AppIcon-Halloween AppIcon-Christmas";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;

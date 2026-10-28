@@ -131,11 +131,13 @@ export const SEARCH = [
   { page: 'look', title: 'Gym check-in', icon: 'qr', tint: 'var(--blue)', kw: 'qr code membership card check in barcode' },
   { page: 'look', title: 'Set up an NFC sticker', icon: 'nfc', tint: 'var(--blue)', kw: 'nfc sticker tag tap check in start workout locker machine', when: c => !!c.nfc },
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', kw: 'weight card home' },
-  { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', kw: 'seasonal season holiday halloween theme decoration' },
+  { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', kw: 'seasonal season holiday halloween christmas advent calendar snow theme decoration' },
   // Seasonal themes
   { page: 'themes', title: 'Halloween', icon: 'pumpkin', tint: 'var(--orange)', kw: 'halloween seasonal theme spooky spider pumpkin bats witch october decoration', opts: ['Auto', 'On', 'Off'] },
   { page: 'themes', title: 'Also during workouts', icon: 'play', tint: 'var(--green)', kw: 'halloween seasonal workout training decoration' },
   { page: 'themes', title: 'Spooky colors', icon: 'palette', tint: 'var(--purple)', kw: 'halloween orange purple accent color colour seasonal' },
+  { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh advent calendar december decoration', opts: ['Auto', 'On', 'Off'] },
+  { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal' },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },
