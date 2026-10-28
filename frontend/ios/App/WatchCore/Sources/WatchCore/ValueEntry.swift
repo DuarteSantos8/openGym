@@ -75,6 +75,7 @@ struct CrownArm: Equatable {
     private(set) var field: ValueField?
     private var key: String?
     private var last = Date.distantPast
+    init(idle: TimeInterval = 4) { self.idle = idle }        // spelled out: older Swift keeps the memberwise one private
 
     enum Tap { case armed, keypad }
     mutating func tap(_ f: ValueField, key k: String, at t: Date) -> Tap {
