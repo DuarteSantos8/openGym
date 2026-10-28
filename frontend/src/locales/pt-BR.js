@@ -2176,6 +2176,25 @@ export const PT_BR_OVERRIDES = {
   "Arrive here, tap a check-in sticker or start a workout here, and openGym uses this gym’s plates, dumbbells and bars.": "Chegue aqui, toque em um adesivo de check-in ou comece um treino aqui, e o openGym usa as anilhas, halteres e barras desta academia.",
   "Equipment here": "Equipamento aqui",
   "Don’t switch": "Não trocar",
+  // --- A set's own form video (components/SetVideo.jsx, lib/set-videos.js) ---
+  "Check your form later": "Confira a técnica depois",
+  "Choose from your videos": "Escolher dos seus vídeos",
+  "Film again": "Filmar de novo",
+  "Film from the side with your whole body in the frame. Up to {0} seconds.": "Filme de lado, com o corpo todo no enquadramento. Até {0} segundos.",
+  "Full screen": "Tela cheia",
+  "Keep videos on this phone only": "Manter os vídeos só neste celular",
+  "New set videos are not uploaded to your server.": "Os novos vídeos de séries não são enviados para o seu servidor.",
+  "On the phone that filmed it": "No celular que filmou",
+  "Only for you. Your videos never go to the Coach, MCP, share cards, Wrapped or PDFs.": "Só para você. Seus vídeos nunca vão para o Treinador, o MCP, os cards para compartilhar, o seu ano no openGym nem os PDFs.",
+  "Pick two dates": "Escolha duas datas",
+  "Set videos go to your server like your photos.": "Os vídeos de séries vão para o seu servidor como as suas fotos.",
+  "Set videos only on this phone: {0}": "Vídeos de séries só neste celular: {0}",
+  "That set is gone.": "Essa série não existe mais.",
+  "That’s a photo. Pick a video for a set.": "Isso é uma foto. Escolha um vídeo para a série.",
+  "Video saved with this set": "Vídeo salvo com esta série",
+  "Watch your video": "Ver o seu vídeo",
+  "Your form videos": "Seus vídeos da técnica",
+  "Your server doesn’t keep set videos, so this one stays on this phone.": "Seu servidor não guarda vídeos de séries, então este fica neste celular.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

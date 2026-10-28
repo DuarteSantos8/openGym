@@ -371,5 +371,12 @@
     <!-- Whether the Health Connect app is there, on Android 13 and lower. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
+        <!-- "Film this set" (components/SetVideo.jsx): a file input with capture="environment"
+             opens the camera app straight into video. Capacitor's file chooser asks the package
+             manager for one first, and since Android 11 that answer is empty without this, so
+             the button fell back to the plain file picker. -->
+        <intent>
+            <action android:name="android.media.action.VIDEO_CAPTURE" />
+        </intent>
     </queries>
 </manifest>

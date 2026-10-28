@@ -182,8 +182,38 @@ never stored.
   app's whole backup past 25 MB, and a few videos would take the state file down with them. A
   device-to-device transfer keeps it. iOS includes Library in iCloud and computer backups.
 - **Permissions:** Android already has the camera. iOS asks for the camera
-  (`NSCameraUsageDescription`, now also for photos and videos of exercises) and, to record a
-  video with sound from the picker, the microphone (`NSMicrophoneUsageDescription`).
+  (`NSCameraUsageDescription`, now also for photos and videos of exercises and for filming a
+  set) and, to record a video with sound from the picker, the microphone
+  (`NSMicrophoneUsageDescription`).
+
+### Filming a set
+
+During a workout, **Film this set** in a set's menu (and **Film a set** under More in the
+exercise's ⋯ menu) records a short video for that set, or picks one from the phone's videos. It
+uses the same file input, ingest, folder and sync as the photos above; what is particular:
+
+- **Recording:** a file input with `accept="video/*" capture="environment"`. iOS opens its camera
+  in video mode; Android's WebView (Capacitor's `BridgeWebChromeClient`) sends
+  `MediaStore.ACTION_VIDEO_CAPTURE` to the camera app, which needs the `<queries>` entry for that
+  action in the manifest since Android 11 (without it the button opens the file picker). On
+  Android the camera app may also keep its own copy in the gallery; that copy is the camera
+  app's, not openGym's.
+- **Length and size:** the server's `videoSec` and `videoMB` from `/api/config`, or 60 s and
+  40 MB in local mode. A longer or bigger video is refused before it is kept. There is no
+  transcoding or compression: neither platform offers it to the WebView without a native plugin,
+  and the app does not add one, so the camera's own file is what is kept. A long clip filmed in
+  4K can hit the size cap; 1080p is plenty to judge depth.
+- **Where it lives:** on the set, `set.media = [ref]`, one per set and at most 24 per workout. In
+  local mode only in `opengym-media/`. Paired, it goes up with the workout once it is saved,
+  unless **Keep videos on this phone only** was on when it was filmed (the ref then says
+  `local: true`): the sync never sends it, Settings counts it as kept on this phone, and other
+  devices show "On the phone that filmed it". A sign-out still treats it as owed and keeps it
+  aside with the stash, since it is the only copy.
+- **Deleting:** a removed set, a deleted workout or Remove on the video takes the reference away;
+  the file goes with the local clean-up (after its one-hour grace) and the server's GC, like any
+  removed photo. A copied set does not take the video along.
+- **Privacy:** never in a Coach request, an MCP answer (only a count), a share card, Wrapped, a
+  PDF, a CSV or a plan file. The zip backup carries the files, as it does every photo.
 
 Worth checking on a real device after changes here, since no test runs a WebView: a short
 video autoplays muted in the Android WebView; a long video seeks from its `_capacitor_file_`

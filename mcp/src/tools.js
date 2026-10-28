@@ -20,6 +20,7 @@ import { policyFor, profileRule } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
+import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
 
 /* ---------- helpers ---------- */
 
@@ -76,9 +77,13 @@ export function entryView(e, S) {
       sec: Number(s.sec) || 0,
       min: Number(s.min) || 0,
       speed: Number(s.speed) || 0
-    }))
+    })),
+    // How many of its sets have a form video (frontend lib/set-videos.js) — the count only. The
+    // videos themselves, their files and their refs never reach a client of this server.
+    ...(formVideos(e) ? { form_videos: formVideos(e) } : {})
   }
 }
+const formVideos = e => (Array.isArray(e?.sets) ? e.sets.reduce((n, s) => n + setVideosOf(s).length, 0) : 0)
 
 // Best estimate per exercise, mirroring the UI's PR table: every eligible set across history, biggest wins.
 // It asks bestSetOf() rather than scanning the rows here, so this table and the per-exercise answer of
@@ -320,7 +325,7 @@ const gymOf = w => (w && w.gym && typeof w.gym === 'object' && String(w.gym.name
 /** get_workout — full entry/set breakdown for one date. */
 export const getWorkout = {
   name: 'get_workout',
-  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
+  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"), and form_videos: how many sets the user filmed (a count only; the videos are never shared). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
   schema: {
     date: isoDate().optional().describe('The workout date as YYYY-MM-DD. If two sessions share that date, the answer lists them instead and asks for a workout_id.'),
     workout_id: z.string().min(1).optional().describe('The id from list_workouts. Preferred: it names one session even on a day with two.')
@@ -372,7 +377,9 @@ export const getWorkout = {
         const ex = exerciseOf(id, S)
         return ex.missing ? id : ex.n
       }),
-      entries: (w.entries || []).map(e => entryView(e, S))
+      entries: (w.entries || []).map(e => entryView(e, S)),
+      // The number of sets filmed that day (form videos), nothing about the videos themselves.
+      ...(setVideoCount(w) ? { form_videos: setVideoCount(w) } : {})
     }
   }
 }

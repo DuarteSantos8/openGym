@@ -114,6 +114,17 @@ vi.mock('../sheets.jsx', () => ({
   addRoutineToSessionSheet: vi.fn(),
 }))
 vi.mock('../components/Media.jsx', () => ({ default: () => null }))
+// A set's own form video: the sheet that films it is its own test's (components/SetVideo.test.jsx);
+// here only what the workout screen does with it.
+const filmMocks = vi.hoisted(() => ({ filmSetSheet: vi.fn() }))
+vi.mock('../components/SetVideo.jsx', async () => {
+  const React = await import('react')
+  return {
+    filmSetSheet: filmMocks.filmSetSheet,
+    SetVideoBadge: ({ open, onToggle }) => React.createElement('button', { className: 'fv-badge', 'aria-expanded': open, onClick: onToggle }, 'Form video'),
+    ActiveSetVideo: ({ m, at }) => React.createElement('div', { className: 'fv-inline', 'data-hash': m.hash, 'data-at': at.entry + ':' + at.set }),
+  }
+})
 vi.mock('../components/WorkoutThumb.jsx', () => ({
   default: ({ onExpand }) => React.createElement('button', { className: 'wthumb', 'aria-label': 'Expand', onClick: onExpand }),
   hasWorkoutMedia: () => true,
@@ -3003,7 +3014,7 @@ describe('workout controls: the more menu and the set menu', () => {
   it('opens a per-set menu from the set number with drop, burst and remove', async () => {
     await mount([exercise('plain-bench', [false, false])])
     await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Make it a warm-up set', 'Rest after this set', 'Remove this set'])
+    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Make it a warm-up set', 'Rest after this set', 'Remove this set'])
     expect(item('Make it a warm-up set').icon).toBe('sunrise')
 
     await act(async () => { item('Drop set').onClick() })
@@ -3639,7 +3650,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
       ['More', [
         ['Exercise', ['Exercise settings', 'Plate loading', 'How to do it']],
         ['Order and supersets', ['Make superset with next', 'Move up', 'Move down']],
-        ['This session', ['Don’t count for progression']],
+        ['This session', ['Film a set', 'Don’t count for progression']],
       ]],
       [undefined, ['Remove exercise']],
     ])
@@ -3699,7 +3710,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await mount([exercise('plain-bench', [false, false])])
     await click(container.querySelector('button[aria-label="Set 1"]'))
     expect(lastMenu().sections.map(g => g.more ? ['More', menuItemsOf({ sections: g.more }).map(it => it.label)] : g.items.filter(Boolean).map(it => it.label))).toEqual([
-      ['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set'],
+      ['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set'],
       ['More', ['Make it a warm-up set', 'Rest after this set']],
       ['Remove this set'],
     ])
@@ -3763,3 +3774,50 @@ describe('the Lock Screen\'s Done (Live Activity)', () => {
     expect(mocks.timer).toBeNull()
   })
 })
+
+describe('a set\'s own form video (v1.4.4)', () => {
+  const lastMenuOf = () => mocks.menuSheet.mock.calls.at(-1)[0]
+  const label = (txt) => menuItemsOf(lastMenuOf()).find(it => it.label === txt)
+  const HASH = 'ab'.repeat(32)
+  const ref = { kind: 'video', hash: HASH, mime: 'video/mp4', size: 3000000, width: 720, height: 1280, dur: 7.2, at: 1 }
+  afterEach(() => { filmMocks.filmSetSheet.mockClear() })
+
+  it('the set menu films the set, from the visible rows', async () => {
+    await mount([exercise('plain-bench', [true, false])])
+    await click(container.querySelector('button[aria-label="Set 2"]'))
+    const film = label('Film this set')
+    expect(film.sub).toBe('Check your form later')
+    expect(lastMenuOf().sections[0].items.filter(Boolean).map(it => it.label)).toContain('Film this set')
+    film.onClick()
+    expect(filmMocks.filmSetSheet).toHaveBeenCalledWith({ entry: 0, set: 1 }, 'Film Set 2')
+  })
+
+  it('the exercise menu films the next open set, under More', async () => {
+    await mount([exercise('plain-bench', [true, false, false])])
+    await click(container.querySelector('button[aria-label="More"]'))
+    const film = label('Film a set')
+    expect(film.sub).toBe('Set 2')
+    film.onClick()
+    expect(filmMocks.filmSetSheet).toHaveBeenCalledWith({ entry: 0, set: 1 }, 'Film Set 2')
+  })
+
+  it('a filmed set wears a badge that opens its player right there, and its menu plays it', async () => {
+    const bench = exercise('plain-bench', [true, false])
+    bench.sets[0].media = [ref]
+    await mount([bench])
+    const badges = container.querySelectorAll('.fv-badge')
+    expect(badges).toHaveLength(1)
+    expect(container.querySelector('.fv-inline')).toBeNull()
+    await click(badges[0])
+    expect(container.querySelector('.fv-inline').getAttribute('data-at')).toBe('0:0')
+    await click(container.querySelector('.fv-badge'))
+    expect(container.querySelector('.fv-inline')).toBeNull()
+    await click(container.querySelector('button[aria-label="Set 1"]'))
+    expect(label('Film this set')).toBeUndefined()
+    const watch = label('Watch your video')
+    expect(watch.sub).toBe('0:07')
+    await act(async () => { watch.onClick() })
+    expect(container.querySelector('.fv-inline').getAttribute('data-hash')).toBe(HASH)
+  })
+})
+

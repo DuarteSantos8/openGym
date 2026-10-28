@@ -1,5 +1,5 @@
-/* The photo, GIF or video of a custom exercise, and the photos and videos of a logged workout,
- * as the state holds them — and an exercise's link.
+/* The photo, GIF or video of a custom exercise, the photos and videos of a logged workout and the
+ * form video of one set (lib/set-videos.js), as the state holds them — and an exercise's link.
  *
  * The state never carries the bytes, only a MediaRef of a few hundred bytes (see the shape
  * below). The bytes live in the device's local media store (lib/media-store.js) and, signed in,
@@ -7,7 +7,11 @@
  * pure and has no imports, so the store, the sync, the editor and the tests can all use it.
  *
  *   MediaRef = { kind: 'image'|'gif'|'video', hash, mime, size, width, height,
- *                dur?, codec?, poster?: { hash, mime, size, width, height }, at }
+ *                dur?, codec?, poster?: { hash, mime, size, width, height }, at, local? }
+
+ * `local: true` marks a set's form video kept on the phone that filmed it ("Keep videos on this
+ * phone only", or a server that does not keep set videos): the sync never uploads it and no
+ * other device asks the server for it (uploadableFiles below).
  *
  * A ref comes from outside whenever a state does: another device, a backup file, a plan file, a
  * hand-edited profile. So nothing trusts one as it stands. normalizeMediaRef() is the gate every
@@ -74,6 +78,7 @@ export function normalizeMediaRef(ref) {
   const poster = cleanPoster(ref.poster)
   if (poster) out.poster = poster
   out.at = typeof ref.at === 'number' && Number.isFinite(ref.at) && ref.at > 0 ? Math.round(ref.at) : 0
+  if (ref.local === true) out.local = true
   return out
 }
 
@@ -112,11 +117,11 @@ export function workoutMediaOf(w, max = WORKOUT_MEDIA_MAX) {
 
 /**
  * Every MediaRef-like object a state holds, as it stands (not normalised): each custom
- * exercise's `media` and each entry of each logged workout's `media` list. The one walk behind
- * referencedHashes, referencedFiles and the owed count, so they can never disagree about where
- * media live. The session in progress is not walked: it never syncs (the server drops `active`),
- * media are only ever attached to a saved workout, and the history editor's copy of one leaves
- * them on the saved record (lib/session-edit.js).
+ * exercise's `media`, each entry of each logged workout's `media` list and of each of its sets'
+ * `media` list (a form video, lib/set-videos.js). The one walk behind referencedHashes,
+ * referencedFiles and the owed count, so they can never disagree about where media live. The
+ * session in progress is not walked: it never syncs (the server drops `active`), so its set
+ * videos are uploaded once the workout is saved; until then keptHashes keeps their files here.
  */
 export function stateMediaRefs(state) {
   const out = []
@@ -129,15 +134,28 @@ export function stateMediaRefs(state) {
     if (!isObj(w) || !Array.isArray(w.media)) continue
     for (const m of w.media) if (isObj(m)) out.push(m)
   }
+  for (const w of Array.isArray(state.workouts) ? state.workouts : []) out.push(...setRefsOf(w))
   // Progress photos filed under a day rather than a workout (lib/day-photos.js, #557).
   if (isObj(state.dayPhotos)) for (const e of Object.values(state.dayPhotos)) if (isObj(e) && isObj(e.m)) out.push(e.m)
+  return out
+}
+
+// The refs on the sets of one workout (saved or in progress), as they stand.
+function setRefsOf(w) {
+  const out = []
+  const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
+  if (!isObj(w) || !Array.isArray(w.entries)) return out
+  for (const e of w.entries) {
+    if (!isObj(e) || !Array.isArray(e.sets)) continue
+    for (const s of e.sets) if (isObj(s) && Array.isArray(s.media)) for (const m of s.media) if (isObj(m)) out.push(m)
+  }
   return out
 }
 
 /**
  * Every blob hash a state refers to, the same answer as api/media.js referencedHashes (the shared
  * fixture api/test/fixtures/media-refs.json pins both): customEx[].media and every entry of
- * workouts[].media. Deliberately looser than normalizeMediaRef and workoutMediaOf: each hash and
+ * workouts[].media and of every set's media. Deliberately looser than normalizeMediaRef and workoutMediaOf: each hash and
  * poster hash counts on its own as long as it is well-formed, and a workout's list counts past
  * its cap, because this set decides what is KEPT, and keeping too much is the safe side.
  */
@@ -152,6 +170,19 @@ export function referencedHashes(state) {
 }
 
 /**
+ * What this device must not delete: referencedHashes, plus the form videos filmed during the
+ * session in progress (`active`, which never syncs and so is not a source for the server). The
+ * local clean-up, a sign-out's wipe and the stash go by this, so a set filmed an hour into a long
+ * workout is still there when it is saved.
+ */
+export function keptHashes(state) {
+  const out = referencedHashes(state)
+  const add = r => { if (r && typeof r === 'object' && typeof r.hash === 'string' && HASH_RE.test(r.hash)) out.add(r.hash) }
+  if (state && typeof state === 'object') for (const m of setRefsOf(state.active)) { add(m); add(m.poster) }
+  return out
+}
+
+/**
  * The same hashes in the order the sync wants them, posters first: a poster is what every list
  * shows, so it is the file another device most wants soon, and it is small. Each hash comes with
  * what the state says about it — { hash, mime, size, poster } — which is what a download is
@@ -159,10 +190,10 @@ export function referencedHashes(state) {
  * describe it the same way unless someone edited one by hand (an exercise's picture added to a
  * workout too is one file).
  */
-export function referencedFiles(state) {
+export function referencedFiles(state, { refs = stateMediaRefs(state) } = {}) {
   const posters = new Map()
   const mains = new Map()
-  for (const m of stateMediaRefs(state)) {
+  for (const m of refs) {
     const p = m.poster
     if (p && typeof p === 'object' && typeof p.hash === 'string' && HASH_RE.test(p.hash) && !posters.has(p.hash)) {
       posters.set(p.hash, { hash: p.hash, mime: p.mime, size: p.size, poster: true })
@@ -173,6 +204,19 @@ export function referencedFiles(state) {
   }
   for (const h of posters.keys()) mains.delete(h)
   return [...posters.values(), ...mains.values()]
+}
+
+/**
+ * referencedFiles for the sync: what may go to the server and come down from it. Left out are a
+ * set video kept on the phone that filmed it (`local: true`), and every set video while the
+ * server does not say it keeps them (`sets` false: GET /api/config without media.sets, whose GC
+ * would sweep them). A file another ref names without those reasons still goes.
+ */
+export function uploadableFiles(state, { sets = true } = {}) {
+  const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
+  const setRefs = new Set(state && typeof state === 'object' && Array.isArray(state.workouts) ? state.workouts.flatMap(setRefsOf) : [])
+  const refs = stateMediaRefs(state).filter(m => isObj(m) && m.local !== true && (sets || !setRefs.has(m)))
+  return referencedFiles(state, { refs })
 }
 
 /**

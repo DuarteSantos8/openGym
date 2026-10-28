@@ -15,7 +15,7 @@ import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
-import { referencedHashes } from '../lib/media-refs.js'
+import { keptHashes } from '../lib/media-refs.js'
 import { mediaStore, mediaStoreInUse } from '../lib/media-store.js'
 import { countChanges, syncFingerprint } from '../lib/sync-changes.js'
 import { saveWorkoutEdit, deleteEditedWorkout } from '../lib/session-edit.js'
@@ -1024,7 +1024,7 @@ export const useStore = create((set, get) => {
   // goes before the wiped copy is written: another tab must learn that the copy is nobody's before
   // it sees the new copy, or it joins its own copy of the account into it (QA 2026-10-06).
   const clearLocalSession = () => {
-    const hadMedia = referencedHashes(get().S).size > 0
+    const hadMedia = keptHashes(get().S).size > 0
     get().setUser(null)
     localStorage.removeItem('gym_guest')
     forgetSync()
@@ -1053,7 +1053,7 @@ export const useStore = create((set, get) => {
     if (hadMedia || mediaStoreInUse()) {
       const since = Date.now()
       Promise.resolve(wiped).then(() => readStashes())
-        .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...referencedHashes(e?.state)])), { keepPutAfter: since }))
+        .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)])), { keepPutAfter: since }))
         .catch(() => {})
     }
     return wiped
@@ -1382,7 +1382,7 @@ export const useStore = create((set, get) => {
   registerExerciseAliases(S0.exAliases)
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
-  if (referencedHashes(S0).size) loadPending()
+  if (keptHashes(S0).size) loadPending()
   meta.set(S0, { base: readStoredSync(), owed: storedOwed() })
   const user0 = (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })()
   adoptHold = !!user0 && readAdopt()?.uid === user0.id
@@ -1855,7 +1855,7 @@ export const useStore = create((set, get) => {
     // as the stash is (lib/media-sync.js localMediaGc, Reset everything).
     async stashedMediaHashes() {
       const all = await readStashes()
-      return new Set(Object.values(all).flatMap(e => [...referencedHashes(e?.state)]))
+      return new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)]))
     },
 
     // Sign-in (and pairing a phone) takes the server's profile as this device's copy — the

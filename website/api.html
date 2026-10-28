@@ -4164,6 +4164,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">always true</span>
     <span class="p-desc">This instance also keeps the files of progress photos filed under a day (<code>dayPhotos</code>, a photo for a day without a workout). Absent on an instance from before; the app then only adds photos to logged workouts there.</span>
   </div>
+  <div class="prow">
+    <span class="p-name">sets</span>
+    <span class="p-type">always true</span>
+    <span class="p-desc">This instance also keeps the files of a form video filmed for one set (<code>workouts[].entries[].sets[].media</code>, v1.4.4). Absent on an instance from before; the app then keeps a set's video on the phone that filmed it and never uploads it.</span>
+  </div>
 </div>
   </div>
 </details>

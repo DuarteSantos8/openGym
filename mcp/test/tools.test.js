@@ -1420,3 +1420,31 @@ describe('get_programme', () => {
     expect(r).toMatchObject({ running: null, programmes: [] })
   })
 })
+
+/* ---------- form videos (v1.4.4): a count, never the videos ---------- */
+
+describe('get_workout and form videos', () => {
+  const HASH = 'ab'.repeat(32)
+  const POSTER = 'cd'.repeat(32)
+  const ref = { kind: 'video', hash: HASH, mime: 'video/mp4', size: 4000000, width: 720, height: 1280, dur: 9, poster: { hash: POSTER, mime: 'image/webp', size: 9000, width: 270, height: 480 }, at: 1 }
+  test('says how many sets were filmed, and nothing else about them', () => {
+    const w = S.workouts.find(x => x.d === NEWEST_WORKOUT.date)
+    w.entries[0].sets[0].media = [ref]
+    w.entries[1].sets[1].media = [{ ...ref, hash: 'ef'.repeat(32), local: true }]
+    _seedStateForTests(S)
+    const out = call('get_workout', { workout_id: w.id })
+    expect(out.form_videos).toBe(2)
+    expect(out.entries[0].form_videos).toBe(1)
+    expect(out.entries[1].form_videos).toBe(1)
+    const text = JSON.stringify(out)
+    for (const leak of [HASH, POSTER, 'ef'.repeat(32), 'video/mp4', '"media"']) expect(text).not.toContain(leak)
+    // And the summaries do not mention them at all.
+    expect(JSON.stringify(call('list_workouts', {}))).not.toContain(HASH)
+  })
+  test('a workout without any has no form_videos field', () => {
+    const w = S.workouts.find(x => x.d === NEWEST_WORKOUT.date)
+    const out = call('get_workout', { workout_id: w.id })
+    expect('form_videos' in out).toBe(false)
+    expect(out.entries.every(e => !('form_videos' in e))).toBe(true)
+  })
+})

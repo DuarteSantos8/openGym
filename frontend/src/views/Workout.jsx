@@ -23,6 +23,9 @@ import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWate
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
+import { filmSetSheet, SetVideoBadge, ActiveSetVideo } from '../components/SetVideo.jsx'
+import { setVideoOf, filmTarget } from '../lib/set-videos.js'
+import { fmtClip } from '../lib/media-refs.js'
 import { supersetMeta } from '../lib/superset-meta.js'
 import WorkoutThumb, { hasWorkoutMedia } from '../components/WorkoutThumb.jsx'
 import { workoutSettingsSheet } from '../components/WorkoutSettingsSheet.jsx'
@@ -129,6 +132,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const setFlash = useUI(s => (s.setFlash?.idx === entryIdx ? s.setFlash : null))
   const optsId = useId()
   const entry = S.active.entries[entryIdx]
+  // The set whose form video plays under its row (SetVideo.jsx), by index; one at a time.
+  const [videoAt, setVideoAt] = useState(null)
+  // Rows are keyed by index: one added or removed above would put the player under another set.
+  const rowCount = entry?.sets?.length
+  useEffect(() => { setVideoAt(null) }, [rowCount])
   // Drops/bursts mutate the row in place — same card, not a new set with its own long rest.
   // A planned exercise (see the exercise's "Intensifier" config) arrives with these already
   // filled in by applyIntensifierPlan; these only add/edit/remove entries live from here on.
@@ -432,6 +440,13 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const ownRest = ownExerciseRest(entry.target)
   const restSub = ownRest === 0 ? t('No timer') : ownRest ? fmtRest(ownRest) : t('Default ({0})', fmtRest(S.restSec))
   const backups = (entry.target?.subs || []).map(id => EXIDX[id]).filter(b => b && b.id !== entry.id)
+  const filmAt = filmTarget(entry)
+  const setTitle = (s, i) => isWarmupRow(s) ? t('Warm-up') : sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))
+  // A timed per-side hold is one set over two rows; its video sits on the first of them.
+  const filmSet = i => {
+    const at = setSpanAt(entry.sets, i)[0]
+    filmSetSheet({ entry: entryIdx, set: at }, t('Film {0}', setTitle(entry.sets[at], at)))
+  }
   const openMore = () => menuSheet({
     title: exerciseNameFor(ex),
     titleClass: exerciseNameClass(ex),
@@ -460,6 +475,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           onMoveDown && { icon: 'chevronDown', label: t('Move down'), onClick: onMoveDown, disabled: busy || !canMoveDown },
         ] },
         { title: t('This session'), items: [
+          // Your own form video of the set about to be done (lib/set-videos.js filmTarget). Under
+          // More here: the set's own menu has it on show, one tap from the set number.
+          filmAt >= 0 && { icon: 'camera', label: t('Film a set'), sub: setTitle(entry.sets[filmAt], filmAt), onClick: () => filmSet(filmAt) },
           onNoProg && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
         ] },
       ] },
@@ -503,6 +521,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const warm = isWarmupRow(s)
     const sideTag = sideTagOf(s)
     const ownRestHere = ownSetRest(entry.sets[setSpanAt(entry.sets, i)[0]])
+    const spanStart = setSpanAt(entry.sets, i)[0]
+    const video = setVideoOf(entry.sets[spanStart])
     menuSheet({
       title: warm ? t('Warm-up') : sideTag ? t('Set {0} ({1})', setNumOf(s, i), sideTag) : t('Set {0}', setNumOf(s, i)),
       subtitle: setLabel(entry.id, s, entry.target, speedUnit),
@@ -521,6 +541,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) },
           !warm && mode === 'reps' && !isDropSet(s) && { icon: 'bolt', label: t('Rest-pause burst'), sub: t('+ Burst'), onClick: () => addBurstRow(i) },
           onCopySetAt && { icon: 'copy', label: t('Copy this set'), onClick: () => onCopySetAt(i) },
+          // Your own form video (v1.4.4). Up here rather than under More: it is filmed while the
+          // set happens, one tap from the number; once there is one, the same row plays it.
+          video
+            ? { icon: 'play', label: t('Watch your video'), sub: video.dur != null ? fmtClip(video.dur) : undefined, onClick: () => setVideoAt(spanStart) }
+            : { icon: 'camera', label: t('Film this set'), sub: t('Check your form later'), onClick: () => filmSet(i) },
         ] },
         { more: [{ items: [
           // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
@@ -807,6 +832,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             </button>
           </div>}
           {loadLine(String(i))}
+          {/* The set's own form video: a badge, and the player right under the row on a tap. */}
+          {!pairTail && setVideoOf(s) && <>
+            <SetVideoBadge m={setVideoOf(s)} open={videoAt === i} onToggle={() => setVideoAt(videoAt === i ? null : i)} />
+            {videoAt === i && <ActiveSetVideo m={setVideoOf(s)} at={{ entry: entryIdx, set: i }} label={setTitle(s, i)} refilmTitle={t('Film {0}', setTitle(s, i))} />}
+          </>}
           {/* Drop-sets and rest-pause bursts extend this same row — no long rest, no new set.
               A planned exercise arrives with these already filled in (applyIntensifierPlan);
               every value here is just as editable as the main row's own weight/reps. */}

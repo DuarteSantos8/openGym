@@ -31,7 +31,7 @@ import { NUDGE_COPY, NUDGE_TONES, toneOf } from '../lib/nudge.js'
 import { referencedFiles } from '../lib/media-refs.js'
 import { mediaStore } from '../lib/media-store.js'
 import { syncMedia, fetchToStore } from '../lib/media-sync.js'
-import { getMediaStatus, subscribeMediaStatus, pendingRefCount } from '../lib/media-owed.js'
+import { getMediaStatus, subscribeMediaStatus, pendingRefCount, localOnlyRefCount } from '../lib/media-owed.js'
 import { limitsFrom, fmtMB, MB } from '../lib/media-limits.js'
 import { setRestAccent } from '../lib/rest-alert.js'
 import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } from '../lib/accent.js'
@@ -1670,13 +1670,15 @@ function MediaRow() {
   // local-only as a guest's files are.
   const remote = !!user && (config == null || !!config.media)
   useEffect(() => { if (remote) syncMedia() }, [remote])
-  const pending = remote ? pendingRefCount(S) : 0
+  // Set videos kept on this phone (lib/set-videos.js) are pending for good: not waiting, kept.
+  const phoneOnly = remote ? localOnlyRefCount(S) : 0
+  const pending = remote ? Math.max(0, pendingRefCount(S) - phoneOnly) : 0
   const u = status.usage
   const usage = remote && u && u.quotaBytes > 0
     ? t('{0} of {1} MB used on your server', fmtMB((u.bytes || 0) / MB), fmtMB(Math.round(u.quotaBytes / MB)))
     : null
   const sub = remote
-    ? [usage, pending ? t('{0} waiting to upload', pending) : null].filter(Boolean).join(' · ') || undefined
+    ? [usage, pending ? t('{0} waiting to upload', pending) : null, phoneOnly ? t('Set videos only on this phone: {0}', phoneOnly) : null].filter(Boolean).join(' · ') || undefined
     : t('Kept on this device only. Export with photos & videos keeps a copy.')
   return <Row icon="image" iconTint="var(--teal)" title={t('Photos & videos')} subtitle={sub}
     onClick={remote ? () => syncMedia({ force: true, retryRejected: true }) : undefined} />

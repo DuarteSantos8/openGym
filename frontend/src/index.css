@@ -1072,6 +1072,49 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 .wmedia-add:disabled{opacity:.5;cursor:default}
 .wmedia-note{margin:6px 2px 0;line-height:1.35}
 .wrow-media{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--label-2);flex:none}
+/* A set's own form video (SetVideo.jsx): the film sheet, the badge under a set row, the player
+   (inline under the row, or in a sheet), an exercise's strip of videos and two dates side by side. */
+.fv-film{display:flex;flex-direction:column;gap:8px}
+.fv-note{margin:10px 2px 0;line-height:1.35}
+.fv-private{display:flex;gap:6px;align-items:flex-start}
+.fv-private .icn{flex:none;margin-top:2px}
+.fv-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-block:2px 4px;margin-inline-start:32px;
+  border:0;border-radius:99px;padding:3px 10px;font:inherit;font-size:12px;font-weight:500;cursor:pointer;
+  background:var(--surface-2);background:color-mix(in srgb,var(--acc) 14%,var(--surface-2));color:var(--acc);
+}
+.fv-badge .icn{font-size:12px}
+.fv-badge.on{background:var(--acc);color:var(--on-acc)}
+.fv-badge.on .dim{color:inherit;opacity:.75}
+.fv-inline{margin:2px 0 8px}
+.fv-player{display:flex;flex-direction:column;gap:6px}
+.fv-stage{--fv-h:62vh;position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:3/4;
+  width:min(100%,calc(var(--fv-h) * var(--fv-r,.75)));align-self:center;margin-inline:auto;display:flex;align-items:center;justify-content:center}
+.fv-player.compact .fv-stage{--fv-h:46vh}
+.fv-stage video,.fv-stage img{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+.fv-x{color:#fff;opacity:.5;font-size:28px}
+.fv-msg{position:absolute;inset-inline:12px;bottom:12px;text-align:center;color:#fff;font-size:13px;
+  background:rgba(0,0,0,.55);border-radius:10px;padding:6px 10px}
+.fv-msg:empty{display:none}
+.fv-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fv-speed{display:inline-flex;gap:4px}
+.fv-speed .chip{padding:4px 10px;font-variant-numeric:tabular-nums}
+.fv-ask{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}
+.fv-ask>span{flex:1;min-width:140px;font-weight:600}
+.fv-section{margin-top:4px}
+.fv-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.fv-strip::-webkit-scrollbar{display:none}
+.fv-tile{flex:none;width:92px;border:0;padding:0;background:none;font:inherit;color:inherit;text-align:start;cursor:pointer;scroll-snap-align:start;border-radius:10px}
+.fv-thumb{position:relative;display:block;width:92px;height:122px;border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.fv-thumb .thumb{width:100%;height:100%;border-radius:0;display:block;object-fit:cover}
+.fv-date{display:block;font-size:12px;font-weight:600;margin-top:4px}
+.fv-set{display:block;font-size:11px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fv-pick{gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.fv-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.fv-side{margin:0;min-width:0}
+.fv-side .fv-stage{--fv-h:52vh}
+.fv-side figcaption{display:flex;flex-direction:column;font-size:12px;margin-top:4px;min-width:0}
+.fv-side figcaption .dim{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .pp-selected{outline:3px solid var(--acc);outline-offset:-3px}
 .pp-check{

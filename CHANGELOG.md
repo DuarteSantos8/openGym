@@ -6,6 +6,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Film a set and check your form.** Tap a set's number and pick Film this set (or Film a set under
+More in the exercise's ⋯ menu) to record a short video with the phone's camera or pick one from
+your videos. It sticks to that set: a little camera badge under the row plays it right there, muted
+and looping, at 0.5x if you want to see the bottom of your squat, or full screen. Every exercise's
+history and details now have Your form videos, newest first, and Compare two dates puts two
+side by side (so, deeper than in August?). In local mode the videos stay on the phone. Signed in,
+they go to your server like your workout photos, inside the same size, length and space limits,
+unless you switch on Keep videos on this phone only. They are yours alone: never sent to the Coach
+or MCP (it only learns how many), never in share cards, Wrapped or PDFs. Remove the set or the
+workout and the video goes with it.
+
 **Each gym keeps its own equipment** (#808, thanks @hoechstleistungshaartrockner). Plates, dumbbells,
 your bars and machine weight stacks now belong to an equipment profile instead of being one list
 for everywhere, so the home setup with one pair of 20s and the big gym down the street each get the
