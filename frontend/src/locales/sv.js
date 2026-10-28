@@ -171,6 +171,8 @@ export default {
   'That\'s the whole workout!': 'Det var hela passet!',
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': 'Alla övningar klara. Bra jobbat! Avsluta, eller lägg till en till om du orkar mer.',
   'Continue workout': 'Fortsätt passet',
+  'All done?': 'Är du klar?',
+  'Nothing logged for {0}.': 'Inget loggat på {0}.',
   'Keep going: tap “+ Add exercise” below': 'Fortsätt: tryck på ”+ Lägg till övning” nedan',
   'Workout complete!': 'Passet klart!',
   'Duration': 'Tid',

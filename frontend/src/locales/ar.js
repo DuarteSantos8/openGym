@@ -168,6 +168,8 @@ export default {
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': 'أنجزت جميع التمارين. عمل رائع! أنهِ التمرين، أو أضف تمرينًا آخر إن كان لديك المزيد من الطاقة.',
   'Finish workout': 'إنهاء التمرين',
   'Continue workout': 'متابعة التمرين',
+  'All done?': 'هل انتهيت؟',
+  'Nothing logged for {0}.': 'لم يُسجَّل شيء منذ {0}.',
   'Keep going: tap “+ Add exercise” below': 'واصل: اضغط على «+ إضافة تمرين» بالأسفل',
   'Workout complete!': 'اكتمل التمرين!',
   'Duration': 'المدة',

@@ -160,6 +160,8 @@ export default {
   "That's the whole workout!": '完成整趟訓練！',
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': '所有動作都完成了，太棒了！可以結束訓練，如果還有力氣就再加一個。',
   'Continue workout': '繼續訓練',
+  'All done?': '練完了嗎？',
+  'Nothing logged for {0}.': '已有 {0} 沒有記錄。',
   'Keep going: tap “+ Add exercise” below': '繼續加油：點擊下方「+ 新增動作」',
   'Workout complete!': '訓練完成！',
   'Duration': '時間',

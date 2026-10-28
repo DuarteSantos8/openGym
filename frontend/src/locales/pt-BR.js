@@ -2211,6 +2211,8 @@ export const PT_BR_OVERRIDES = {
   "Gold month. Take a bow.": "Mês de ouro. Pode agradecer os aplausos.",
   "Every challenge you finish puts a badge here, one shelf per month.": "Cada desafio concluído deixa uma medalha aqui, uma prateleira por mês.",
   "Three goals a month on Home, sized to how you train.": "Três metas por mês no Início, sob medida para você.",
+  'All done?': 'Terminou?',
+  'Nothing logged for {0}.': 'Nada registrado há {0}.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -164,6 +164,8 @@ export default {
   "That's the whole workout!": 'Allenamento completato!',
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': 'Tutti gli esercizi fatti. Ottimo lavoro! Concludi, o aggiungine un altro se ne hai ancora.',
   'Continue workout': 'Continua allenamento',
+  'All done?': 'Hai finito?',
+  'Nothing logged for {0}.': 'Niente registrato da {0}.',
   'Keep going: tap “+ Add exercise” below': 'Continua così: tocca «+ Aggiungi esercizio» in basso',
   'Workout complete!': 'Allenamento completato!',
   'Duration': 'Durata',

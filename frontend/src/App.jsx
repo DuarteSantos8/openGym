@@ -50,6 +50,7 @@ import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
 import { useAnimPacksBoot } from './components/Animations.jsx'
 import { useNfcTagLinks } from './components/Nfc.jsx'
 import { useRoutineLinks } from './components/RoutineShare.jsx'
+import ForgottenWorkout from './components/ForgottenWorkout.jsx'
 import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import PermissionSteps from './views/PermissionSteps.jsx'
@@ -388,6 +389,8 @@ function Shell() {
       {authed && !needsMobileOnboarding && !permSteps && <SeasonalLayer hidden={inWorkout || loc.pathname === '/workout'} />}
       {/* Your year in openGym (components/WrappedEntry.jsx): nothing loaded until it is opened. */}
       {authed && <WrappedLayer ready={setupDone} />}
+      {/* "All done?" for a workout left running (components/ForgottenWorkout.jsx). */}
+      {authed && <ForgottenWorkout />}
     </>
   )
 }

@@ -164,6 +164,8 @@ export default {
   "That's the whole workout!": 'पूरा वर्कआउट हो गया!',
   'All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.': 'सारे व्यायाम पूरे। बढ़िया काम! अब समाप्त करें, या दम बचा है तो एक और जोड़ लें।',
   'Continue workout': 'वर्कआउट जारी रखें',
+  'All done?': 'हो गया?',
+  'Nothing logged for {0}.': '{0} से कुछ दर्ज नहीं हुआ।',
   'Keep going: tap “+ Add exercise” below': 'जारी रखें: नीचे "+ व्यायाम जोड़ें" पर टैप करें',
   'Workout complete!': 'वर्कआउट पूरा!',
   'Duration': 'अवधि',
