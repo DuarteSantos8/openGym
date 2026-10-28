@@ -64,6 +64,9 @@
      the bars does not count them twice. */
   --sab:max(env(safe-area-inset-bottom,0px),var(--native-sab,0px));
   --sat:max(env(safe-area-inset-top,0px),var(--native-sat,0px));
+  /* The right edge, read only by the tab bar when it stands there (body.tabbar-side, at the end of
+     this file): an iPhone on its side has the camera on one edge. Android passes no bar for it. */
+  --sar:env(safe-area-inset-right,0px);
   /* height of the connection indicator under the status bar, 0 while there is none — set by
      components/SyncBanner.jsx. Whatever starts at the top of the screen starts below it. */
   --conn:0px;
@@ -2341,3 +2344,33 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gym-radius-row>:first-child{flex:1}
 .gym-radius-val{min-width:64px;text-align:end;font-variant-numeric:tabular-nums;color:var(--label-2)}
 .gym-actions{display:flex;flex-direction:column;gap:10px;margin:4px 0 30px}
+
+/* ------------------------------------------------ tab bar on the right -- */
+/* A screen wider than it is tall (a phone on its side, a foldable opened), or Settings → Look &
+   Home → Tab bar → Right (lib/tabbar-side.js, body.tabbar-side from App.jsx): the tabs stand in
+   a column on the right edge, and the page keeps its whole height. The right edge whatever the
+   language's direction: it is where the thumb holding the phone is. Last in the file, so it wins
+   over the bottom bar and the computer's floating one alike. */
+body.tabbar-side{--rail:calc(76px + var(--sar));padding-right:var(--rail)}
+body.tabbar-side #tabbar{
+  left:auto;right:0;top:0;bottom:0;width:var(--rail);transform:none;
+  flex-direction:column;justify-content:center;align-items:stretch;gap:4px;
+  padding:calc(var(--sat) + 8px) calc(var(--sar) + 4px) calc(var(--sab) + 8px) 4px;
+  border:none;border-left:var(--hair) solid var(--sep-op);border-radius:0;box-shadow:none;
+}
+body.tabbar-side #tabbar button{flex:0 1 auto;padding:6px 0}
+body.tabbar-side #tabbar button.start{margin:6px 0}
+body.tabbar-side #app{padding-bottom:calc(24px + var(--sab))}
+body.tabbar-side.resting #app{padding-bottom:calc(96px + var(--sab))}
+body.tabbar-side #timer{bottom:calc(12px + var(--sab))}
+body.tabbar-side #toast{left:calc(50% - var(--rail) / 2);bottom:calc(24px + var(--sab))}
+body.tabbar-side.resting #toast{bottom:calc(100px + var(--sab))}
+@media (max-width:999px){
+  body.tabbar-side #timer{left:12px;right:calc(var(--rail) + 12px)}
+}
+/* A phone on its side is short: the icons alone, so every tab fits the height. */
+@media (max-height:480px){
+  body.tabbar-side #tabbar{gap:0}
+  body.tabbar-side #tabbar button > span:not(.tab-ic):not(.cir){display:none}
+  body.tabbar-side #tabbar button.start .cir{width:44px;height:44px}
+}
