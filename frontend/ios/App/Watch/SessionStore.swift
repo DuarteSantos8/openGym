@@ -333,13 +333,20 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let before = self.state
             let next = SessionCore.applySnapshot(before, snap)
             self.state = next
+            // Discarded there (#776): nothing of it is saved, and there is nothing to sum up. Also
+            // when the phone already runs the next workout (no snapshot without one in between):
+            // the session ends unsaved instead of carrying on as the next one. Remembered as run
+            // here, so its sync id stays on the list of copies to take out of Apple Health should
+            // one turn up after all (the phone names discarded workouts in healthGone).
+            let droppedThere = before.workout.map { $0.id != next.workout?.id && SessionCore.discarded($0.id, in: snap) } ?? false
+            if droppedThere {
+                self.health.end(save: false)
+                self.ran(before.workout?.id)
+            }
             if let ended = before.workout, next.workout == nil {
                 // Ended on the phone: the session here ends too. Finished there, it is saved to Apple
                 // Health and the watch says so instead of quietly going back to the start screen.
-                // Discarded there (#776), nothing of it is saved, and there is nothing to sum up.
-                if SessionCore.discarded(ended.id, in: snap) {
-                    self.health.end(save: false)
-                } else {
+                if !droppedThere {
                     if !self.isDemo {
                         self.summary = SessionCore.summary(ended, end: Date().timeIntervalSince1970 * 1000,
                                                            startedAt: self.workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }, endedOnPhone: true)
@@ -445,12 +452,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             Haptics.done()
         }
         let restFor = e.restSec ?? w.restSec
+        var rested = false
         if rest && restFor > 0 && to < (workout?.entries.count ?? 0) {
             startRest(until: now.addingTimeInterval(restFor), notify: true)
             restAfter = (e.id, ei, si, w.id ?? "", now)
+            rested = true
         }
         if to != ei { state.entryIndex = to }
         loadTargets()
+        // A hold with no rest after it (the other side, or the rest timer off): the next one counts in.
+        if heldFor != nil && !rested { autoHoldIfDue() }
     }
 
     /// A set ticked on the phone while this watch runs the session: the watch has the sensor, so
@@ -492,9 +503,52 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /* ---------- holds (timed sets) ---------- */
 
+    /* ---------- holds that start by themselves (the phone's setting) ---------- */
+
+    /// The 3-2-1 before a hold that starts by itself: when it began (HoldCountView).
+    @Published private(set) var holdCountFrom: Date?
+    private var holdCountTimer: Timer?
+
+    /// The rest is over (or a hold ended with none after it): with the phone's "Timed holds start
+    /// by themselves" on and a timed set up next, a 3-2-1 with a tap each second, then the hold.
+    func autoHoldIfDue() {
+        guard state.settings.autoHolds == true, workout != nil, entry?.isTimed == true, setIndex != nil,
+              holdEndsAt == nil, restEndsAt == nil, holdCountFrom == nil, seconds > 0 else { return }
+        let from = Date()
+        holdCountFrom = from
+        Haptics.count()
+        holdCountTimer?.invalidate()
+        holdCountTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self = self, self.holdCountFrom == from else { return }
+                if Countdown.number(at: Date().timeIntervalSince(from) + 0.05) == 0 {
+                    self.stopHoldCount()
+                    self.startHold(auto: true)
+                } else {
+                    Haptics.count()
+                }
+            }
+        }
+    }
+
+    /// Cancel on the count-in: no hold starts, the set waits for its Start as it always did.
+    func stopHoldCount() {
+        holdCountTimer?.invalidate()
+        holdCountTimer = nil
+        holdCountFrom = nil
+    }
+
+    /// Skip on the rest: the rest ends, and a hold that starts by itself counts in.
+    func skipRestAndGo() {
+        skipRest()
+        autoHoldIfDue()
+    }
+
     /// The hold starts: a countdown from the seconds on the screen; at zero it is done by itself.
-    func startHold() {
-        guard touchAllowed, entry?.isTimed == true, setIndex != nil, seconds > 0 else { return }
+    /// `auto`: the count-in started it, so the touch lock after a rest does not hold it back.
+    func startHold(auto: Bool = false) {
+        guard auto || touchAllowed, entry?.isTimed == true, setIndex != nil, seconds > 0 else { return }
+        stopHoldCount()
         ackRestOver()
         skipRest()
         noteActivity()
@@ -743,6 +797,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
         ran(ended?.id)
         health.end(save: true, at: end) { [weak self] totals in self?.addTotals(totals) }
+        stopHoldCount()
         stopHold()
         skipRest()
         dropClips()
@@ -757,6 +812,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let (next, event) = SessionCore.finish(state, at: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString, discard: true)
         guard let ev = event else { return }
         health.end(save: false)
+        stopHoldCount()
         stopHold()
         skipRest()
         dropClips()
@@ -801,6 +857,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self?.closeRest(at: Date())
                 self?.restEndsAt = nil
                 self?.restStartedAt = nil
+                self?.autoHoldIfDue()
             }
         }
         guard notify, !isDemo else { return }

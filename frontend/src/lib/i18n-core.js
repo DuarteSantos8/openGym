@@ -127,6 +127,19 @@ export function tn(one, other, n, ...rest) {
   return t(n === 1 ? one : other, n, ...rest)
 }
 
+/**
+ * tn() with the count shown as `shown` (the number formatted for the language: "1,234", "3,5")
+ * while `n` still picks the form. The rest of the arguments are {1}, {2}… as in tn().
+ */
+export function tnf(one, other, n, shown, ...rest) {
+  const forms = dict[other]
+  let v = forms && typeof forms === 'object' ? (forms[pluralCategory(n)] || forms.other || forms.many || forms.one) : null
+  if (!v) v = (n === 1 ? dict[one] : (typeof forms === 'string' ? forms : null)) || (n === 1 ? one : other)
+  const args = [shown, ...rest]
+  for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
+  return v
+}
+
 // The English steps and descriptions of 5,000+ exercises are too big to sit in the bundle every
 // screen loads, so they come in their own chunk the first time an exercise's details are shown.
 // Until it lands the readers return nothing, and the loader's notify re-renders whoever asked.

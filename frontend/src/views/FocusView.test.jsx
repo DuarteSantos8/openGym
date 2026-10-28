@@ -31,6 +31,8 @@ function mount(entry, over = {}) {
   act(() => root.render(<MemoryRouter><Workout /></MemoryRouter>))
 }
 
+// The rarely used rows sit folded under More (MenuSheet's `more`, v1.4.4): open it like a user would.
+const unfold = c => { const m = c.querySelector('.menu-more'); if (m) act(() => m.click()); return c }
 function openMenu() {
   act(() => container.querySelector('button[aria-label="More"]').click())
   const sheet = useUI.getState().sheets.at(-1)
@@ -38,7 +40,7 @@ function openMenu() {
   document.body.appendChild(sheetContainer)
   sheetRoot = createRoot(sheetContainer)
   act(() => sheetRoot.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
-  return sheetContainer
+  return unfold(sheetContainer)
 }
 
 beforeEach(() => {

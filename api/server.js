@@ -37,6 +37,7 @@ import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
+import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -556,11 +557,24 @@ function stateSummary(uid) {
     rem: r && typeof r === 'object' ? { on: !!r.on, tz: r.tz, time: r.time, nudge: !!r.nudge } : { on: false },
     consent: !!S?.coach?.consent?.agreedAt,
     settled: '',   // a local date the reminder was found to owe nothing on, for this file
+    wrapped: wrappedSummary(S),   // the December push (wrapped.js): a flag, a year, a few years
   };
   stateSummaries.set(uid, sum);
   return sum;
 }
+// "Your year in openGym" (wrapped.js): once per user and year, on Dec 1 from 18:00 server time.
+// The year it went out for is written to db.json before the send, so a crash after it, a restart
+// or the next tick cannot send it twice. Read from the summary only: no state is parsed for it.
+function wrappedTick(user, sum, year) {
+  if (!wrappedPushOwed(user, sum.wrapped, year)) return;
+  console.log('wrapped push firing', user.id, year);
+  user.wrappedPush = year;
+  saveDb();
+  sendPush(user.id, wrappedPush(sum.wrapped.lang, year));
+}
 setInterval(() => {
+  // Server time, read through Date.now() so the tests' clock moves it too.
+  const wrappedYear = wrappedPushYear(new Date(Date.now()));
   for (const user of db.users) {
     if (user.disabled) continue;            // locked out everywhere, reminders included
     if (!db.subs.some(s => s.userId === user.id)) continue;
@@ -569,6 +583,7 @@ setInterval(() => {
     // PUT /api/data refuses the obvious shapes, but a file already on disk answers to nobody.
     try {
       const sum = stateSummary(user.id);
+      if (wrappedYear && sum && user.wrappedPush !== wrappedYear) wrappedTick(user, sum, wrappedYear);
       if (!sum?.rem.on) continue;
       const now = userNow(sum.rem.tz || 'UTC');
       if (!now) continue;

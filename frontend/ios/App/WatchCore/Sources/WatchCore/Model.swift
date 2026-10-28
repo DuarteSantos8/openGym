@@ -151,6 +151,8 @@ struct WatchSettings: Codable, Equatable {
     var show: WatchShow?
     /// The effort the profile logs per set, "rpe" or "rir"; nil: none (no effort tile).
     var effort: String?
+    /// Timed holds start by themselves (the phone's Settings → Workout): rest over, 3-2-1, hold.
+    var autoHolds: Bool?
 }
 
 /// What a workout screen shows. Each nil means its default.

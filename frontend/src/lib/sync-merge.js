@@ -40,6 +40,8 @@
  *     have, the entry set last by its own `_ts`, a clear included (mergeStampedMap), the newer
  *     copy's on a tie. For plates and dumbbells the key is the unit, so the inventory of one unit
  *     is kept whole, as last edited; for dayNotes the key is the date, so each day's note is its own
+ *   - advent: of the same year, the union of the doors opened and the challenges done (mergeAdvent)
+ *   - challenges: per month, the picks made first and the union of the ones done (mergeChallenges)
  *   - `_ts`: the later of the two; `_rev` dropped (the server sets it); `active` left to the caller
  *
  * Two rules come before all of these:
@@ -78,6 +80,9 @@ import { bestWeightForEntry } from './history.js'
 import { convertStateUnit, convertBodyWeight } from './units.js'
 import { sanitizeAccent } from './accent.js'
 import { readDayNote as readNote } from './day-notes.js'
+import { mergeAdvent } from './advent.js'
+import { mergeChallenges } from './challenges.js'
+import { mergeDay, dailyModeOf, settleAll } from './weigh-ins.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
@@ -163,15 +168,24 @@ export function mergeWorkoutMedia(kept, other) {
 }
 const byDayStart = (a, b) => (a.d === b.d ? (a.start || 0) - (b.start || 0) : a.d < b.d ? -1 : 1)
 
-/** One entry per day; where both have a day, the one edited later (`t`); sorted by day. */
-export function mergeBodyweight(a = [], b = []) {
+/**
+ * One entry per day; where both have a day, the one edited later (`t`); sorted by day. A day with
+ * several weigh-ins (`ins`, lib/weigh-ins.js) joins both copies' readings instead, each reading
+ * as edited last, and leaves out the ones either copy removed; `mode` (S.bwDaily) picks the day's
+ * value from them.
+ */
+export function mergeBodyweight(a = [], b = [], mode = 'first') {
   const byDay = new Map()
   for (const e of [...list(a), ...list(b)]) {
     if (!e || e.d == null) continue
     const cur = byDay.get(e.d)
     // A weigh-in typed into openGym beats one read from the phone's health hub (`src`, lib/health-read.js)
     // whichever is newer: the scale's reading is the fallback, never a correction of the user's own.
-    if (!cur || (!!cur.src !== !!e.src ? !e.src : (e.t || 0) > (cur.t || 0))) byDay.set(e.d, e)
+    if (!cur) byDay.set(e.d, e)
+    else {
+      const m = mergeDay(cur, e, mode)
+      if (m) byDay.set(e.d, m); else byDay.delete(e.d)
+    }
   }
   return [...byDay.values()].sort((x, y) => (x.d < y.d ? -1 : 1))
 }
@@ -906,7 +920,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
       })
     }
   }
-  out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
+  out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight, dailyModeOf(out)).map(clone)
   // A day's body measurements are one check-in, kept and merged the way a weigh-in is.
   if (list(n.measurements).length || list(o.measurements).length) out.measurements = mergeBodyweight(n.measurements, o.measurements).map(clone)
   if (list(n.favEx).length || list(o.favEx).length) out.favEx = [...new Set([...list(n.favEx), ...list(o.favEx)])]
@@ -962,6 +976,13 @@ export function mergeStates(a0, b0, { prefer } = {}) {
       if (isMap(other)) out.coach = mergeCoach(out.coach, other)
     }
   }
+  // The advent calendar (lib/advent.js): a door opened on either device stays open, and so does a
+  // ticked challenge, whichever copy changed the field last. A calendar of a later year wins.
+  const advent = mergeAdvent(n.advent, o.advent)
+  if (advent) out.advent = advent
+  // The monthly challenges (lib/challenges.js): a badge earned on either device stays earned.
+  const challenges = mergeChallenges(n.challenges, o.challenges)
+  if (challenges) out.challenges = challenges
   if (deleted) out.deleted = deleted; else delete out.deleted
   out._ts = Math.max(a._ts || 0, b._ts || 0)
   if (resetAt) out.resetAt = resetAt
@@ -974,6 +995,8 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   delete out._prior
   // The accent fields end up in CSS: whatever either copy brought, only a clean value goes on.
   sanitizeAccent(out)
+  // The day's value of a day with several weigh-ins follows the daily-value setting as merged.
+  settleAll(out)
   return out
 }
 
@@ -1138,7 +1161,19 @@ export function stampChange(prev, next, wall = Date.now()) {
     for (const e of list(next[f])) {
       if (!e || typeof e !== 'object' || e.d == null || e.t == null) continue
       const old = before.get(e.d)
-      if (!old || old.t !== e.t) e.t = Math.max(Number(e.t) || 0, now)
+      if (old && old.t === e.t) continue
+      const was = Number(e.t) || 0
+      e.t = Math.max(was, now)
+      // A day with several weigh-ins (lib/weigh-ins.js): the readings and removals this change
+      // made take the same time, so the day's `t` stays the one its readings explain (an older
+      // app's edit is told apart by exactly that, absorbLegacyEdit).
+      if (f !== 'bodyweight' || !Array.isArray(e.ins) || e.t === was) continue
+      const prior = new Map(list(old?.ins).filter(r => r && r.id != null).map(r => [String(r.id), r]))
+      for (const r of e.ins) {
+        const p = r && prior.get(String(r.id))
+        if (r && (!p || p.t !== r.t || p.w !== r.w || p.at !== r.at)) r.t = e.t
+      }
+      if (isMap(e.gone)) for (const k of Object.keys(e.gone)) if (Number(e.gone[k]) !== Number(old?.gone?.[k])) e.gone[k] = e.t
     }
   }
   // A routine put back by an Undo keeps the edit time it had: what puts it back is the add-back

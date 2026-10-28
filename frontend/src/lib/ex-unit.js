@@ -166,7 +166,11 @@ export function exView(S, exId) {
     V.routines = S.routines.map(r => (Array.isArray(r?.ex) && r.ex.some(x => x?.id === exId)
       ? { ...r, ex: r.ex.map(x => (x?.id === exId ? viewTarget(S, exId, x) : x)) } : r))
   }
-  if (Array.isArray(S.bodyweight)) V.bodyweight = S.bodyweight.map(b => (b && b.w != null ? { ...b, w: convertExact(b.w, from, to, EXACT_VIEW) } : b))
+  if (Array.isArray(S.bodyweight)) {
+    const cw = w => convertExact(w, from, to, EXACT_VIEW)
+    V.bodyweight = S.bodyweight.map(b => (b && b.w != null
+      ? { ...b, w: cw(b.w), ...(Array.isArray(b.ins) ? { ins: b.ins.map(r => (r && r.w != null ? { ...r, w: cw(r.w) } : r)) } : {}) } : b))
+  }
   const kept = S.exWeights?.[exId]
   if (kept != null) V.exWeights = { ...S.exWeights, [exId]: isMap(kept) ? { ...kept, w: c(kept.w) } : c(kept) }
   // A bar of the exercise's own: 0 is "no bar" in both units. Without one the bar type's default

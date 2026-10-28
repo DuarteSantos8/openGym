@@ -97,6 +97,8 @@ struct RootView: View {
                 CountdownView(from: from).transition(reduceMotion || dimmed ? .opacity : .countdownExit)
             } else if store.workout == nil {
                 IdleView()
+            } else if let from = store.holdCountFrom {
+                CountdownView(from: from, label: Text("Start hold"), start: { store.startHold(auto: true) }, cancel: { store.stopHoldCount() })
             } else if let end = store.holdEndsAt {
                 HoldView(end: end)
             } else if let end = store.restEndsAt, end > Date() {
@@ -233,15 +235,19 @@ struct CountdownView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isLuminanceReduced) private var dimmed
     let from: Date
+    /// The same 3-2-1 before a hold that starts by itself (the phone's setting): its own words and actions.
+    var label: Text? = nil
+    var start: (() -> Void)? = nil
+    var cancel: (() -> Void)? = nil
 
     var body: some View {
-        let going = store.goAt != nil
+        let going = start == nil && store.goAt != nil   // GO! is the workout's; a hold's count-in just ends in the hold
         VStack(spacing: 2) {
             TimelineView(.periodic(from: from, by: 1)) { ctx in
                 let face = Countdown.face(at: ctx.date.timeIntervalSince(from), going: going)
                 // Reduce Motion: the ring cross-fades with GO!'s; otherwise the swap is instant (same track).
                 let swap: AnyTransition = reduceMotion ? .opacity : .identity
-                Button { store.startNow() } label: {
+                Button { if let start = start { start() } else { store.startNow() } } label: {
                     ZStack {
                         if case .number = face {
                             CountdownRing(start: from, end: from.addingTimeInterval(Double(Countdown.seconds)), gradient: true).transition(swap)
@@ -260,14 +266,14 @@ struct CountdownView: View {
                     .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(face == .go ? Text("Go!") : Text("Start workout"))
+                .accessibilityLabel(face == .go ? Text("Go!") : label ?? Text("Start workout"))
                 .accessibilityValue(Text(verbatim: { if case .number(let n) = face { return "\(n)" } else { return "" } }()))
                 .accessibilityRemoveTraits(face == .go ? .isButton : [])   // GO! is not a control
             }
             .padding(.horizontal, 6)
             HStack {
                 // Keeps its slot on GO! so the ring does not grow.
-                EdgeButton(systemImage: "xmark", label: Text("Cancel")) { store.cancelCountdown() }
+                EdgeButton(systemImage: "xmark", label: Text("Cancel")) { if let cancel = cancel { cancel() } else { store.cancelCountdown() } }
                     .opacity(going ? 0 : 1)
                     .disabled(going)
                     .accessibilityHidden(going)
@@ -277,7 +283,7 @@ struct CountdownView: View {
         }
         .ignoresSafeArea(edges: .bottom)
         .onChange(of: store.goAt != nil) { going in
-            if going { AccessibilityNotification.Announcement(store.L("Go!")).post() }
+            if going && start == nil { AccessibilityNotification.Announcement(store.L("Go!")).post() }
         }
     }
 
@@ -1136,7 +1142,7 @@ struct RestView: View {
                 Spacer()
                 LockButton(health: store.health)
                 Spacer()
-                EdgeButton(systemImage: "forward.end.fill", label: Text("Skip")) { store.skipRest() }
+                EdgeButton(systemImage: "forward.end.fill", label: Text("Skip")) { store.skipRestAndGo() }
             }
             .opacity(dimmed ? 0 : 1)
         }

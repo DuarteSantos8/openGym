@@ -241,3 +241,8 @@
 @media (prefers-reduced-motion: reduce){
   .hw-spider:not(.hw-still),.hw-witch,.hw-burst{display:none}
 }
+/* Home's streak party: the two pumpkins at its end, clear of the words. */
+.streak-party .hw-finish .hw-pk{right:10px;left:auto;bottom:6px;width:24px}
+.streak-party .hw-finish .hw-pk-r{right:38px;width:18px}
+[dir="rtl"] .streak-party .hw-finish .hw-pk{right:auto;left:10px}
+[dir="rtl"] .streak-party .hw-finish .hw-pk-r{left:38px}

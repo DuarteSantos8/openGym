@@ -1,0 +1,9 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start my workout in ${applicationName}" = "Starte mein Training in ${applicationName}";
+"Start a workout with ${applicationName}" = "Training starten mit ${applicationName}";
+"Log my weight in ${applicationName}" = "Trag mein Gewicht in ${applicationName} ein";
+"Log a weigh-in in ${applicationName}" = "Gewicht eintragen in ${applicationName}";
+"What's my workout today in ${applicationName}" = "Was ist mein Training heute in ${applicationName}";
+"What's planned today in ${applicationName}" = "Was steht heute an in ${applicationName}";
+"How's my streak in ${applicationName}" = "Wie steht meine Serie in ${applicationName}";
+"What's my ${applicationName} streak" = "Wie lang ist meine ${applicationName} Serie";

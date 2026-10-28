@@ -9,6 +9,7 @@ import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { workoutDetailSheet } from './sheets.jsx'
 import { EXDB } from './lib/exercises-data.js'
+import { workoutOption } from './lib/workout-options.test-util.js'
 
 const lifts = EXDB.filter(e => e.bp !== 'cardio' && e.eq === 'barbell').slice(0, 3).map(e => e.id)
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -124,7 +125,8 @@ describe('workout detail', () => {
       Object.getOwnPropertyDescriptor(note.constructor.prototype, 'value').set.call(note, 'Good day')
       note.dispatchEvent(new Event('input', { bubbles: true }))
     })
-    await act(async () => { button(host, 'Copy as text').click() })
+    const option = workoutOption(host, 'Copy as text')
+    await act(async () => { option.click() })
     expect(writeText).toHaveBeenCalledTimes(1)
     const text = writeText.mock.calls[0][0]
     expect(text.split('\n')[0]).toMatch(/^Push · /)
@@ -149,7 +151,8 @@ describe('workout detail', () => {
     const host = mountTopSheet()
     expect(host.querySelector('.wd-ss')).toBeNull()
     expect(host.querySelectorAll('.wd-ex')).toHaveLength(3)
-    await act(async () => { button(host, 'Copy as text').click() })
+    const option = workoutOption(host, 'Copy as text')
+    await act(async () => { option.click() })
     expect(writeText.mock.calls[0][0]).not.toContain('Superset')
   })
 
@@ -158,7 +161,8 @@ describe('workout detail', () => {
     document.execCommand = () => false
     workoutDetailSheet(workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(60, 5)] }]))
     const host = mountTopSheet()
-    await act(async () => { button(host, 'Copy as text').click() })
+    const option = workoutOption(host, 'Copy as text')
+    await act(async () => { option.click() })
     expect(toast).toHaveBeenCalledWith('Could not copy')
     delete document.execCommand
   })
@@ -176,7 +180,8 @@ describe('export as .fit', () => {
     useStore.setState(s => ({ S: { ...s.S, workouts: [w] } }))
     workoutDetailSheet(w)
     const host = mountTopSheet()
-    await act(async () => { button(host, 'Export as .fit file').click() })
+    const option = workoutOption(host, 'Export as .fit file')
+    await act(async () => { option.click() })
     expect(clicked).toHaveLength(1)
     expect(clicked[0]).toMatch(/^opengym-2026-09-15-\d{4}\.fit$/)
     const bytes = new Uint8Array(await blobs[0].arrayBuffer())
@@ -188,7 +193,8 @@ describe('export as .fit', () => {
   it('says so when the workout cannot be written', async () => {
     workoutDetailSheet({ id: 'x', name: 'Nowhen', entries: [], prs: [] })
     const host = mountTopSheet()
-    await act(async () => { button(host, 'Export as .fit file').click() })
+    const option = workoutOption(host, 'Export as .fit file')
+    await act(async () => { option.click() })
     expect(toast).toHaveBeenCalledWith('Could not create the file')
   })
 })
@@ -209,5 +215,43 @@ describe('workout detail: time per exercise', () => {
   it('shows none for a workout without tick times', () => {
     workoutDetailSheet(workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(100, 5)] }]))
     expect(mountTopSheet().querySelector('.wd-ex .grow').textContent).not.toContain('min')
+  })
+})
+
+// v1.4.4 (Discord, seals: "a lot of buttons and options, a huge list"): the sheet shows the
+// workout, the note, Edit and Repeat; the rest is one "Workout options" row away, each once.
+describe('workout detail: one options row instead of a column of buttons', () => {
+  it('shows Edit workout, Repeat today and Workout options, and the tour anchors it points at', () => {
+    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(80, 5)] }])
+    useStore.setState(s => ({ S: { ...s.S, workouts: [w] } }))
+    workoutDetailSheet(w)
+    const host = mountTopSheet()
+    const buttons = [...host.querySelectorAll('button')].map(b => b.textContent.trim())
+    expect(buttons).toContain('Edit workout')
+    expect(buttons).toContain('Repeat today')
+    for (const label of ['Change date & time', 'Change duration', 'Save as routine', 'Copy as text', 'Share with a friend', 'Share as image', 'Save as PDF', 'Export as .fit file', 'Delete workout'])
+      expect(host.textContent, label).not.toContain(label)
+    for (const anchor of ['wd-edit', 'wd-note', 'wd-options']) expect(host.querySelector(`[data-tour="${anchor}"]`), anchor).toBeTruthy()
+    const row = host.querySelector('[data-tour="wd-options"]')
+    expect(row.getAttribute('role')).toBe('button')
+    expect(row.getAttribute('tabindex')).toBe('0')
+    expect(row.textContent).toContain('Workout options')
+  })
+
+  it('opens the options as one menu over the sheet: when, keep, share, and Delete last on its own', () => {
+    const w = workout([{ id: lifts[0], target: { mode: 'reps' }, sets: [done(80, 5)] }])
+    useStore.setState(s => ({ S: { ...s.S, workouts: [w] } }))
+    workoutDetailSheet(w)
+    const host = mountTopSheet()
+    act(() => host.querySelector('[data-tour="wd-options"]').click())
+    expect(useUI.getState().sheets.length).toBe(2)
+    const menu = mountTopSheet()
+    const groups = [...menu.querySelectorAll('.menu-group')].map(g => [...g.querySelectorAll('.menu-item .tt')].map(e => e.textContent))
+    expect(groups).toEqual([
+      ['Change date & time', 'Change duration', 'Save as routine'],
+      ['Share with a friend', 'Share as image', 'Copy as text', 'Save as PDF', 'Export as .fit file'],
+      ['Delete workout'],
+    ])
+    expect(menu.querySelector('.menu-item.danger .tt').textContent).toBe('Delete workout')
   })
 })

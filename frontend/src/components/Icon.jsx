@@ -31,6 +31,8 @@ const P = {
   figureStrength: <><circle cx="12" cy="5.2" r="2" /><path d="M12 8.4v5.6M12 14 9.2 20.5M12 14l2.8 6.5M8 10.6h8M5.4 9.1v3M18.6 9.1v3" /></>,
   scale: <><rect x="3.4" y="4.4" width="17.2" height="16.2" rx="3.4" /><path d="M8.3 9.2a3.9 3.9 0 0 1 7.4 0" /><path d="M12 9.2v2.5M8.9 16.2h6.2" /></>,
   flame: <path d="M12 20.4c3.2 0 5.4-2.1 5.4-5.1 0-3.9-3.4-5.6-2.6-9.8-2.5.8-4 2.9-4 5.1 0 1-.5 1.6-1.2 1.6-.8 0-1.2-.7-1.2-1.8-1.1 1.2-1.8 2.9-1.8 4.9 0 3 2.2 5.1 5.4 5.1Z" />,
+  // a streak freeze (lib/streak.js): a week off that did not break the streak
+  snowflake: <path d="M12 3.4v17.2M4.6 7.7l14.8 8.6M4.6 16.3l14.8-8.6M9.8 4.8 12 6.6l2.2-1.8M9.8 19.2l2.2-1.8 2.2 1.8M4.2 10.5l2.7-.9-.5-2.8M19.8 13.5l-2.7.9.5 2.8M4.2 13.5l2.7.9-.5 2.8M19.8 10.5l-2.7-.9.5-2.8" />,
   timer: <><circle cx="12" cy="13.4" r="7.2" /><path d="M12 9.6v3.8h2.8M9.6 3.4h4.8" /></>,
   clock: <><circle cx="12" cy="12" r="8.2" /><path d="M12 7.4V12l3.1 1.9" /></>,
 
@@ -104,6 +106,8 @@ const P = {
   globe: <><circle cx="12" cy="12" r="8.2" /><path d="M3.8 12h16.4M12 3.8c2.1 2.2 3.2 5.1 3.2 8.2s-1.1 6-3.2 8.2c-2.1-2.2-3.2-5.1-3.2-8.2s1.1-6 3.2-8.2Z" /></>,
   // Seasonal themes (lib/seasonal.js): two halves of a pumpkin and its stem.
   pumpkin: <><path d="M12 7.4c-1.6-1.2-4.9-1.4-6.8.6-2.4 2.6-2.4 8.4 0 11 1.9 2 5.2 1.8 6.8.6 1.6 1.2 4.9 1.4 6.8-.6 2.4-2.6 2.4-8.4 0-11-1.9-2-5.2-1.8-6.8-.6Z" /><path d="M12 7.4c-1.4 2.2-1.4 10 0 12.2M12 7.4c.1-1.6.6-2.9 1.8-3.8" /></>,
+  // ... and a present with its bow, for Christmas.
+  gift: <><rect x="4.4" y="9.6" width="15.2" height="10.4" rx="1.8" /><path d="M3.8 9.6h16.4M12 9.6V20M12 9.6C10.9 6.8 7.6 5.4 6.8 7.3c-.6 1.6 1.9 2.3 5.2 2.3Zm0 0c1.1-2.8 4.4-4.2 5.2-2.3.6 1.6-1.9 2.3-5.2 2.3Z" /></>,
   moon: <path d="M19.4 14.2A7.8 7.8 0 0 1 9.8 4.6a8.2 8.2 0 1 0 9.6 9.6Z" />,
   sun: <><circle cx="12" cy="12" r="4.4" /><path d="M12 3.6v2M12 18.4v2M20.4 12h-2M5.6 12h-2M17.94 6.06l-1.42 1.42M7.48 16.52l-1.42 1.42M17.94 17.94l-1.42-1.42M7.48 7.48 6.06 6.06" /></>,
   key: <><circle cx="8.2" cy="15.8" r="3.8" /><path d="m10.9 13.1 8-8M16.6 7.4l2 2M14.6 9.4l2 2" /></>,
@@ -136,6 +140,8 @@ const P = {
   // Three position-detection squares plus a scatter of modules — reads as "QR / scan this"
   // at tab-bar size without trying to draw a real (unscannable) code.
   qr: <><rect x="3.6" y="3.6" width="6" height="6" rx="1.2" /><rect x="14.4" y="3.6" width="6" height="6" rx="1.2" /><rect x="3.6" y="14.4" width="6" height="6" rx="1.2" /><path d="M14.4 14.4h2.4v2.4M20.4 14.4v.01M14.4 20.4h.01M17.4 17.4h3M17.4 20.4h3" /></>,
+  // NFC sticker: a rounded tag with the contactless waves
+  nfc: <><rect x="3.6" y="3.6" width="16.8" height="16.8" rx="3.4" /><path d="M9 9.2a4 4 0 0 1 0 5.6M11.8 7.4a6.6 6.6 0 0 1 0 9.2M14.6 5.8a9 9 0 0 1 0 12.4" /></>,
   camera: <><path d="M3.6 8.8a2 2 0 0 1 2-2h1.9l1.3-2.1h6.4l1.3 2.1h1.9a2 2 0 0 1 2 2v8.4a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2Z" /><circle cx="12" cy="12.8" r="3.3" /></>,
   image: <><rect x="3.6" y="4.8" width="16.8" height="14.4" rx="2.6" /><circle cx="8.6" cy="9.6" r="1.7" /><path d="m4.4 17.4 4.8-4.6 3.3 3 3-2.6 4.1 4" /></>,
   warning: <><path d="M12 3.4 21.2 19.4H2.8Z" /><path d="M12 9.6v4.4" /><circle cx="12" cy="16.6" r=".9" fill="currentColor" stroke="none" /></>,
