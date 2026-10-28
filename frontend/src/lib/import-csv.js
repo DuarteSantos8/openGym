@@ -689,11 +689,13 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
     // A "failure" set type (Hevy's CSV writes one) is the app's set taken to failure; not on
     // cardio, which has no effort to read it as.
     if (!warmup && !isCardio && /^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim())) set.failure = true
-    // Effort rides along only where the app can show it again: a weighted rep set. A treadmill
-    // row with an RPE would have nowhere to put it. A set is kept on one scale, so a file
-    // carrying both columns is read as RIR — the same precedence setLabel reads them back with.
-    if (!isCardio && !timed) {
-      const rir = effortNum(cell(r, 'rir'), true)
+    // Timed holds have no effort field. Weighted reps can carry RIR or RPE; cardio can carry
+    // RPE (not RIR) so the fatigue estimate can use the exported session effort. A set is kept
+    // on one scale, so a file carrying both columns is read as RIR for reps work.
+    if (!timed) {
+      // Cardio has no reps-in-reserve, but an exported RPE is useful to weight its
+      // duration-based fatigue estimate. Keep RIR reserved for reps-mode exercises.
+      const rir = isCardio ? null : effortNum(cell(r, 'rir'), true)
       const rpe = rir == null ? effortNum(cell(r, 'rpe'), false) : null
       if (rir != null) { set.rir = rir; rirSets++ }
       else if (rpe != null) { set.rpe = rpe; rpeSets++ }
