@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, insertionIntoUnit, supersetOrder, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -315,5 +315,78 @@ describe('an exercise on "No timer"', () => {
   it('its last warm-up goes into the first work set without a timer too', () => {
     const e = { target: { restOff: true }, sets: [{ phase: 'warmup', done: true }, { done: false }] }
     expect(warmupRestSecFor(e, 0, restSecFor([e], [0], 90), undefined)).toBe(0)
+  })
+})
+
+describe('supersetOrder', () => {
+  // A: 2 warm-ups + 2 work sets; B: 1 warm-up + 2 work sets; C: no warm-ups, 2 work sets.
+  const row = (warm, done = false) => (warm ? { phase: 'warmup', done } : { done })
+  const entries = [
+    { sets: [row(true), row(true), row(false), row(false)] },
+    { sets: [row(true), row(false), row(false)] },
+    { sets: [row(false), row(false)] },
+  ]
+  const label = order => order.map(s => 'ABC'[s.entryIdx] + (s.warmup ? 'w' : '') + s.setIdx).join(' ')
+
+  it('all first: every member warms up, then the work rounds', () => {
+    expect(label(supersetOrder(entries, [0, 1, 2], 'all'))).toBe('Aw0 Aw1 Bw0 A2 B1 C0 A3 B2 C1')
+  })
+  it('is the default', () => {
+    expect(supersetOrder(entries, [0, 1, 2])).toEqual(supersetOrder(entries, [0, 1, 2], 'all'))
+  })
+  it('per exercise: a member warms up just before its own first work set', () => {
+    expect(label(supersetOrder(entries, [0, 1, 2], 'each'))).toBe('Aw0 Aw1 A2 Bw0 B1 C0 A3 B2 C1')
+  })
+  it('without warm-ups both modes are plain rounds', () => {
+    const plain = [entry([false, false]), entry([false, false])]
+    expect(label(supersetOrder(plain, [0, 1], 'all'))).toBe('A0 B0 A1 B1')
+    expect(label(supersetOrder(plain, [0, 1], 'each'))).toBe('A0 B0 A1 B1')
+  })
+  it('keeps a member that is only warm-ups, in both modes', () => {
+    const odd = [{ sets: [row(true)] }, { sets: [row(false)] }]
+    expect(supersetOrder(odd, [0, 1], 'all')).toHaveLength(2)
+    expect(supersetOrder(odd, [0, 1], 'each')).toHaveLength(2)
+  })
+  it('is empty for bad input', () => {
+    expect(supersetOrder(null, [0, 1])).toEqual([])
+    expect(supersetOrder([], undefined)).toEqual([])
+  })
+})
+
+describe('supersetFlowStep with the set just ticked', () => {
+  const row = (warm, done) => (warm ? { phase: 'warmup', done } : { done })
+  const mk = (a, b) => [{ sets: a.map(([w, d]) => row(w, d)) }, { sets: b.map(([w, d]) => row(w, d)) }]
+  it('all first: a warm-up stays on its exercise, and each ramp set rests', () => {
+    // A: warm-up ticked, one more warm-up and a work set to go; B: a warm-up and a work set.
+    const e = mk([[true, true], [true, false], [false, false]], [[true, false], [false, false]])
+    expect(supersetFlowStep(e, [0, 1], 0, { setIdx: 0 })).toEqual({ unitDone: false, roundDone: true, nextIdx: 0 })
+  })
+  it('all first: the last warm-up of the last member goes back to the first member\'s work set', () => {
+    const e = mk([[true, true], [false, false]], [[true, true], [false, false]])
+    expect(supersetFlowStep(e, [0, 1], 1, { setIdx: 0 })).toEqual({ unitDone: false, roundDone: true, nextIdx: 0 })
+  })
+  it('per exercise: A\'s first work set leads to B\'s warm-up, and the round is not over yet', () => {
+    const e = mk([[true, true], [false, true], [false, false]], [[true, false], [false, false]])
+    expect(supersetFlowStep(e, [0, 1], 0, { setIdx: 1, warmups: 'each' })).toEqual({ unitDone: false, roundDone: false, nextIdx: 1 })
+  })
+  it('a work round ends on its last member and wraps to the first', () => {
+    const e = mk([[false, true], [false, false]], [[false, true], [false, false]])
+    expect(supersetFlowStep(e, [0, 1], 1, { setIdx: 0 })).toEqual({ unitDone: false, roundDone: true, nextIdx: 0 })
+  })
+  it('without setIdx the old member-by-member rule is used', () => {
+    const e = mk([[false, true], [false, false]], [[false, false], [false, false]])
+    expect(supersetFlowStep(e, [0, 1], 0)).toEqual({ unitDone: false, roundDone: false, nextIdx: 1 })
+  })
+})
+
+describe('insertionIntoUnit', () => {
+  const e = [{ sg: 'a' }, { sg: 'a' }, {}]
+  it('lands after the last member with the group id', () => {
+    expect(insertionIntoUnit(e, [0, 1])).toEqual({ index: 2, sg: 'a' })
+  })
+  it('is null for a lone exercise or members without a shared id', () => {
+    expect(insertionIntoUnit(e, [2])).toBeNull()
+    expect(insertionIntoUnit([{ sg: 'a' }, { sg: 'b' }], [0, 1])).toBeNull()
+    expect(insertionIntoUnit(null, [0, 1])).toBeNull()
   })
 })

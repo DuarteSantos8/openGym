@@ -40,6 +40,16 @@ export function insertionIndexAfterCurrentUnit(units, currentIndex, entryCount) 
   return Math.min(length, Math.max(...unit) + 1)
 }
 
+// Adding an exercise to a superset from its own header: it goes right after the group's last
+// member and carries the group's id, so it joins the superset instead of landing behind it.
+// null when `unit` is not a real group (fewer than two members, or no shared id).
+export function insertionIntoUnit(entries, unit) {
+  if (!Array.isArray(entries) || !Array.isArray(unit) || unit.length < 2) return null
+  const sg = entries[unit[0]]?.sg
+  if (!sg || !unit.every(idx => entries[idx]?.sg === sg)) return null
+  return { index: Math.min(entries.length, Math.max(...unit) + 1), sg }
+}
+
 // A completion is new progress only when it takes this exercise beyond the largest number of
 // simultaneously completed sets seen in this mounted session. Uncheck/re-check therefore does
 // not repeat navigation or rest side effects, while completing an added set still can.
@@ -177,10 +187,47 @@ export function sideRestFor(target, { timed, restAfter, switchSec }) {
   return null
 }
 
+/**
+ * The order a superset's sets are done in, as `{ entryIdx, setIdx, warmup, round }` steps.
+ *
+ * Work sets always go round by round: set 1 of every member, then set 2 of every member. What
+ * differs is where the warm-ups sit (Settings → Workout → Superset warm-ups, `S.supersetWarmups`):
+ *  - 'all' (the default): every member's warm-ups first, member by member, then the work rounds.
+ *  - 'each': a member's warm-ups come just before its own first work set, so the first round
+ *    reads A's warm-ups, A's set 1, B's warm-ups, B's set 1, and later rounds are plain.
+ * A member with no warm-ups simply has none to place. Warm-up rows have `round` -1 in 'all' and 0
+ * in 'each'; work rows carry their position among the member's work sets.
+ */
+export function supersetOrder(entries, unit, warmups = 'all') {
+  if (!Array.isArray(entries) || !Array.isArray(unit)) return []
+  const split = unit.map(idx => {
+    const warm = [], work = []
+    ;(entries[idx]?.sets || []).forEach((set, i) => (isWarmupRow(set) ? warm : work).push(i))
+    return { idx, warm, work }
+  })
+  const each = warmups === 'each'
+  const out = []
+  if (!each) for (const m of split) for (const i of m.warm) out.push({ entryIdx: m.idx, setIdx: i, warmup: true, round: -1 })
+  const rounds = Math.max(each ? 1 : 0, ...split.map(m => m.work.length))
+  for (let r = 0; r < rounds; r++) {
+    for (const m of split) {
+      if (each && r === 0) for (const i of m.warm) out.push({ entryIdx: m.idx, setIdx: i, warmup: true, round: 0 })
+      if (m.work[r] != null) out.push({ entryIdx: m.idx, setIdx: m.work[r], warmup: false, round: r })
+    }
+  }
+  return out
+}
+
 // Decide where a newly completed superset set goes next. Spent members are skipped, including
 // across the wrap. A round ends when no later member in display order has work left; this makes
 // the last *active* member the boundary rather than blindly using the group's last array index.
-export function supersetFlowStep(entries, unit, fromIdx) {
+//
+// With `opts.setIdx` (the set just ticked) a warm-up row follows the superset warm-up setting
+// (`opts.warmups`, see supersetOrder) and always ends its own "round", so every ramp set gets its
+// rest. 'all' stays on warm-ups until no member has any left, then starts the work from the first
+// member; 'each' stays on the exercise until its warm-ups are done and its first work set follows.
+// A work set keeps the member-by-member rule, which copes with members at different points.
+export function supersetFlowStep(entries, unit, fromIdx, opts = {}) {
   if (!Array.isArray(entries) || !Array.isArray(unit) || unit.length <= 1) return null
   const pos = unit.indexOf(fromIdx)
   if (pos < 0) return null
@@ -189,10 +236,19 @@ export function supersetFlowStep(entries, unit, fromIdx) {
   if (unitDone) return { unitDone: true, roundDone: false, nextIdx: null }
 
   const wrapped = [...unit.slice(pos + 1), ...unit.slice(0, pos + 1)]
+  if (Number.isInteger(opts.setIdx) && isWarmupRow(entries[fromIdx]?.sets?.[opts.setIdx])) {
+    const warmLeft = idx => !!entries[idx]?.sets?.some(s => isWarmupRow(s) && !s.done)
+    let nextIdx
+    if (opts.warmups === 'each') nextIdx = hasWork(entries, fromIdx) ? fromIdx : wrapped.find(idx => hasWork(entries, idx))
+    else nextIdx = [...unit.slice(pos), ...unit.slice(0, pos)].find(warmLeft) ?? unit.find(idx => hasWork(entries, idx))
+    return { unitDone: false, roundDone: true, nextIdx: nextIdx ?? null }
+  }
+
   const nextIdx = wrapped.find(idx => hasWork(entries, idx)) ?? null
   const roundDone = !unit.slice(pos + 1).some(idx => hasWork(entries, idx))
   return { unitDone: false, roundDone, nextIdx }
 }
+
 
 /**
  * Where Cards and Focus move on their own once the rest after a timed exercise's last set has run

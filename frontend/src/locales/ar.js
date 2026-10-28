@@ -2344,6 +2344,10 @@ export default {
   // --- #523 skip completed ---
   'In Cards and Focus, Prev and Next hop over a finished exercise.': 'في البطاقات والتركيز، يتخطى «السابق» و«التالي» التمرين المنتهي.',
   'Skip completed exercises': 'تخطّي التمارين المكتملة',
+  'Superset warm-ups': 'الإحماء في السوبر سيت',
+  'All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.': 'الكل أولاً: كل تمارين الإحماء ثم مجموعات العمل. لكل تمرين: يُحمّى كل تمرين قبل مجموعته الأولى مباشرة.',
+  'All first': 'الكل أولاً',
+  'Per exercise': 'لكل تمرين',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': 'لا يستطيع هذا التطبيق التأكيد بمفتاح مرور. أنشئ الرمز في متصفح مسجّل الدخول إلى هذا الملف الشخصي، أو أضف كلمة مرور هناك أولًا.',
   // --- Settings → Apple Watch ---

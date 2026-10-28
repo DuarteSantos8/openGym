@@ -2286,6 +2286,10 @@ export default {
   // --- #523 skip completed ---
   'In Cards and Focus, Prev and Next hop over a finished exercise.': 'У Картках і Фокусі «Назад» і «Далі» перестрибують готові вправи.',
   'Skip completed exercises': 'Пропускати виконані вправи',
+  'Superset warm-ups': 'Розминка в суперсетах',
+  'All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.': 'Спочатку всі: усі розминкові підходи, потім робочі. По вправах: кожна вправа розминається саме перед своїм першим робочим підходом.',
+  'All first': 'Спочатку всі',
+  'Per exercise': 'По вправах',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': 'Цей застосунок не може підтвердити ключем доступу. Створіть код у браузері, де ви ввійшли в цей профіль, або спершу задайте там пароль.',
   // --- Settings → Apple Watch ---

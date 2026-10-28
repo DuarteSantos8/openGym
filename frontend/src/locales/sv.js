@@ -2323,6 +2323,10 @@ export default {
   'In Cards and Focus, Prev and Next hop over a finished exercise.': 'I Kort och Fokus hoppar Föreg. och Nästa över en klar övning.',
   'Skip completed exercises': 'Hoppa över klara övningar',
 
+  'Superset warm-ups': 'Uppvärmning i supersets',
+  'All first: every warm-up, then the work sets. Per exercise: each exercise warms up just before its first work set.': 'Alla först: alla uppvärmningsset, sedan arbetssetten. Per övning: varje övning värms upp precis före sitt första arbetsset.',
+  'All first': 'Alla först',
+  'Per exercise': 'Per övning',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': 'Den här appen kan inte bekräfta med en passkey. Skapa koden i en webbläsare som är inloggad på den här profilen, eller lägg till ett lösenord där först.',
 

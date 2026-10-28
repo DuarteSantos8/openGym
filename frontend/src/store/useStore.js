@@ -123,6 +123,10 @@ export const DEF = {
   // List and Compact fold a finished exercise into one line (Settings → Workout; #241). The
   // workout's Layout menu can flip it for the running session (s.active.collapseCompleted).
   collapseCompleted: false,
+  // Where the warm-ups of a superset go (Settings → Workout): 'all' does every member's warm-ups
+  // first, then the work rounds; 'each' warms a member up just before its first work set
+  // (lib/supersetFlow.js supersetOrder). Anything else reads as 'all'.
+  supersetWarmups: 'all',
   // How the Library, the exercise picker and the muscle explorer show exercises — 'list' (rows
   // with a small thumbnail) or 'cards' (a grid of pictures with the name underneath). Switched
   // by the button in those headers (ExerciseViewToggle); older profiles overlay onto the list.

@@ -2275,7 +2275,7 @@ it('slides a superset in exactly as it lands, Unpair and all', async () => {
   await mount([exercise('plain-bench', [false]), exercise('plain-row', [false, false], { sg: 'g' }), exercise('plain-press', [false, false], { sg: 'g' })])
   const { preview, slidIn, landed } = await swipeToNext()
   expect(preview.querySelector('.ss-card')).toBeTruthy()
-  expect(preview.querySelector('.ss-hd button')?.textContent).toBe('Unpair')
+  expect([...preview.querySelectorAll('.ss-hd button')].map(b => b.textContent)).toEqual(['Add', 'Unpair'])
   expect(mocks.S.active.cur).toBe(1)
   expect(landed).toBe(slidIn)
 })
