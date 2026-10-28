@@ -10,6 +10,9 @@
     "core"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Arc a dumbbell from overhead to your chest while lying on a bench. Works the chest and lats with a deep stretch.",
   "instructions": [
     "Lie across or along a bench holding one dumbbell with both hands over your chest.",

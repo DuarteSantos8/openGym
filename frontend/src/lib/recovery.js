@@ -120,18 +120,26 @@ function numeric(value) {
 // comes through opts. The anchor compares loads across sessions (and mixed-unit
 // imports alternate kg/lb rows), so every load is canonicalised to kg first -
 // 176 lb must anchor like 80 kg, not like 176 kg.
+// Stats reads every set of the whole history through these (estimated effort), so they stay
+// plain loops over a fixed key list.
+const UNIT_KEYS = ['unit', 'u', 'weightUnit', 'weight_unit', 'loadUnit']
+const stamped = value => value !== undefined && value !== null && String(value).trim() !== ''
+
 function unitOf(...records) {
-  for (const record of records) {
+  for (let i = 0; i < records.length; i += 1) {
+    const record = records[i]
     if (!record || typeof record !== 'object') continue
-    for (const key of ['unit', 'u', 'weightUnit', 'weight_unit', 'loadUnit']) {
-      if (record[key] !== undefined && record[key] !== null && String(record[key]).trim() !== '') return record[key]
+    for (let k = 0; k < UNIT_KEYS.length; k += 1) {
+      if (stamped(record[UNIT_KEYS[k]])) return record[UNIT_KEYS[k]]
     }
   }
   return 'kg'
 }
 
 function isPounds(unit) {
-  return /^(?:lb|lbs|pound|pounds)$/i.test(String(unit ?? '').trim())
+  if (unit === 'kg' || unit === undefined || unit === null) return false
+  if (unit === 'lb') return true
+  return /^(?:lb|lbs|pound|pounds)$/i.test(String(unit).trim())
 }
 
 function kgOf(value, unit) {
@@ -171,13 +179,15 @@ function bodyweightTarget(entry) {
 
 function hasUnitStamp(...records) {
   return records.some(record => record && typeof record === 'object'
-    && ['unit', 'u', 'weightUnit', 'weight_unit', 'loadUnit'].some(key => Object.prototype.hasOwnProperty.call(record, key)
-      && record[key] !== undefined && record[key] !== null && String(record[key]).trim() !== ''))
+    && UNIT_KEYS.some(key => Object.prototype.hasOwnProperty.call(record, key) && stamped(record[key])))
 }
 
 function bodyweightConfigured(ex, entry, set, workout, opts = {}) {
   const configured = bodyweightTarget(entry)
   if (configured !== null) return configured
+  // Only a catalogue bodyweight exercise can count body mass by default; nothing below matters
+  // for the rest, and Stats asks this for every set in the history.
+  if (ex?.eq !== 'body weight') return false
   // Before target.bodyweight was persisted, a positive `w` on a catalogue bodyweight exercise
   // already meant an explicitly entered load. Keep those rows compatible when no body-mass
   // context is available; a stamped workout or a profile bodyweight makes the intended total-load
@@ -199,10 +209,9 @@ function bodyweightConfigured(ex, entry, set, workout, opts = {}) {
 function loadKgFor(ex, entry, set, workout, opts = {}, row = set) {
   const rowUnit = unitOf(row, set, entry?.target, entry, workout, opts)
   const addedKg = kgOf(row?.w, rowUnit)
+  if (!bodyweightConfigured(ex, entry, set, workout, opts)) return addedKg
   const loadUnit = hasUnitStamp(row, set, entry?.target, entry) ? rowUnit : undefined
-  return bodyweightConfigured(ex, entry, set, workout, opts)
-    ? bodyweightKgFor(workout, opts, loadUnit) + addedKg
-    : addedKg
+  return bodyweightKgFor(workout, opts, loadUnit) + addedKg
 }
 
 /**

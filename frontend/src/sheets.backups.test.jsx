@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { EXDB, EXIDX } from './lib/exercises.js'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { exConfigSheet, exercisePicker } from './sheets.jsx'
+import { exConfigSheet, exercisePicker, swapActiveWorkoutToBackup } from './sheets.jsx'
 import { exerciseNameFor } from './lib/i18n.js'
 import { exerciseNameText } from './lib/format.js'
 
@@ -97,5 +97,35 @@ describe('the swap picker', () => {
     exercisePicker(() => {}, { title: 'Swap exercise', like: '0025' })
     const host = render(useUI.getState().sheets.at(-1))
     expect([...host.querySelectorAll('h4.sec')].map(h => h.textContent)).not.toContain('Your backups')
+  })
+})
+
+describe('one tap from the exercise menu (#649)', () => {
+  const slot = { id: '0025', mode: 'reps', sets: 4, reps: 6, weight: 80, restSec: 150, subs: ['0047', '0289'] }
+  const install = (done = false) => useStore.setState(s => ({ S: { ...s.S, workouts: [], routines: [{ id: 'r', name: 'Push', ex: [slot] }],
+    active: { id: 'a', d: '2026-10-24', start: Date.now(), routineId: 'r', name: 'Push', cur: 0,
+      entries: [{ id: '0025', rid: 'r', target: { ...slot }, plan: null, sets: [{ w: 80, r: 6, done }] }] } } }))
+
+  it('puts the backup in the slot with the slot\'s plan, and swapping back is one tap too', () => {
+    install()
+    swapActiveWorkoutToBackup(0, '0047')
+    let entry = useStore.getState().S.active.entries[0]
+    expect(entry.id).toBe('0047')
+    expect(entry.rid).toBe('r')
+    expect(entry.target).toMatchObject({ sets: 4, reps: 6, restSec: 150, subs: ['0025', '0289'] })
+    expect(entry.sets.filter(x => !x.warm)).toHaveLength(4)
+    swapActiveWorkoutToBackup(0, '0025')
+    entry = useStore.getState().S.active.entries[0]
+    expect(entry.id).toBe('0025')
+    expect(entry.target.subs).toEqual(['0047', '0289'])
+    // The routine itself is untouched: the swap is today's.
+    expect(useStore.getState().S.routines[0].ex[0]).toEqual(slot)
+  })
+
+  it('asks first when sets are logged, the same as any swap', () => {
+    install(true)
+    swapActiveWorkoutToBackup(0, '0047')
+    expect(useStore.getState().S.active.entries[0].id).toBe('0025')
+    expect(useUI.getState().sheets.length).toBe(1)
   })
 })

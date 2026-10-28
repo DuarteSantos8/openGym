@@ -5,7 +5,8 @@ import WidgetKit
 /*
  * The running workout on the Lock Screen and in the Dynamic Island (and, through the compact
  * views, in an Apple Watch's Smart Stack). The app starts and updates it (LiveActivityPlugin.swift);
- * its Done button is WorkoutActivity.swift's DoneSetIntent. The views are App/WidgetViews.swift's.
+ * its buttons are WorkoutActivity.swift's DoneSetIntent, NextExerciseIntent and SkipRestIntent.
+ * The views are App/WidgetViews.swift's.
  */
 struct WorkoutLiveActivity: Widget {
     var body: some WidgetConfiguration {
@@ -17,8 +18,8 @@ struct WorkoutLiveActivity: Widget {
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(context.state.cur?.exName ?? context.attributes.labels.allDone)
-                            .font(.headline).lineLimit(1)
+                        Text(context.state.cur?.exName ?? context.attributes.noSetText(context.state))
+                            .font(.headline).lineLimit(1).minimumScaleFactor(0.75)
                         if let c = context.state.cur {
                             Text(c.setLine).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                         }
@@ -38,6 +39,7 @@ struct WorkoutLiveActivity: Widget {
                     HStack(spacing: 10) {
                         ProgressBar(value: Double(context.state.done) / Double(max(1, context.state.total)), accent: accent)
                         Text("\(context.state.done)/\(context.state.total)").font(.caption.weight(.semibold)).monospacedDigit()
+                        LiveSecondaryButton(attributes: context.attributes, state: context.state)
                         if let c = context.state.cur { LiveDoneButton(attributes: context.attributes, cur: c) }
                     }
                 }

@@ -23,6 +23,7 @@ import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
+import { scheduleModeOf } from '../lib/rotation.js'
 import ChatInput from '../components/ChatInput.jsx'
 import {
   coachAvailable, hasConsent, emptyCoach, appendChat, recordTiming, estimateMs, profileLines,
@@ -30,7 +31,7 @@ import {
   changeTitle, changeValues, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
-import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
+import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
@@ -90,7 +91,10 @@ export default function CoachChat() {
     update(s => {
       // A run that ended unseen has no duration worth learning from.
       if (was) recordTiming(s, ms)
-      if (!pending) {
+      // A proposal already applied or discarded was settled on another device (#779): its reply is
+      // in that device's thread, which syncs here. "Nothing I would change" would be wrong.
+      const settled = last?.outcome === 'applied' || last?.outcome === 'dismissed' || last?.outcome === 'ready'
+      if (!pending && !settled) {
         const cls = lastError?.errorClass || (last?.outcome === 'failed' ? (last.errorClass || 'internal') : null)
         appendChat(s, cls
           ? { role: 'coach', kind: 'error', text: jobErrorText(cls, lastError?.detail) }
@@ -100,6 +104,18 @@ export default function CoachChat() {
       }
     })
   }, [job, pending, loading, last?.id])
+
+  // An answer to a question (an `ask` job) has nothing to decide: it goes into the thread as the
+  // Coach's reply, once — `pid` names the job it answers, so a second render or a poll that still
+  // shows it pending cannot write it twice — and the server is told it was read.
+  useEffect(() => {
+    if (!pending || pending.kind !== 'ask' || job) return
+    update(s => {
+      if ((s.coach?.chat || []).some(m => m.pid === pending.id)) return
+      appendChat(s, { role: 'coach', kind: 'text', text: String(pending.answer || ''), pid: pending.id })
+    })
+    resolvePending({ accepted: ['ask'] }).catch(() => {}).finally(() => refresh())
+  }, [pending?.id, !!job])
 
   useEffect(() => { if (typeof endRef.current?.scrollIntoView === 'function') endRef.current.scrollIntoView({ block: 'end' }) }, [S.coach?.chat?.length, !!job, !!pending])
 
@@ -114,9 +130,11 @@ export default function CoachChat() {
     try {
       // A message about a proposed plan refines it. With no plan at all — the first attempt
       // failed, or nothing was ever built — the message asks for one; a review would only
-      // answer that there is no workout to look at, which is how people got stuck.
+      // answer that there is no workout to look at, which is how people got stuck. Anything else
+      // is a question, answered in words (`ask`): "how long should I rest?" is not a request to
+      // review the whole plan. A review is the chip and the menu's, as it always was.
       if (pending?.kind === 'create' || !(S.routines || []).length) await refinePlan(msg)
-      else await requestReview(msg)
+      else await askCoach(msg)
       update(s => appendChat(s, { role: 'user', kind: 'text', text: msg }))
       setText('')
       setExpanded(false)
@@ -190,7 +208,7 @@ export default function CoachChat() {
     }
   })
 
-  const status = job ? t('thinking…') : pending ? t('has a suggestion for you') : t('here when you need it')
+  const status = job || pending?.kind === 'ask' ? t('thinking…') : pending ? t('has a suggestion for you') : t('here when you need it')
   const placeholder = pending?.kind === 'create'
     ? t('What should change?')
     : job ? t('Coach is thinking…') : t('Message the Coach…')
@@ -213,7 +231,7 @@ export default function CoachChat() {
 
       {job && <Typing S={S} kind={job.kind} coachLocal={coachLocal} config={config} />}
 
-      {pending && !job && (pending.kind === 'create'
+      {pending && !job && pending.kind !== 'ask' && (pending.kind === 'create'
         ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
         : pending.kind === 'debrief'
           ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
@@ -292,7 +310,7 @@ function Typing({ S, kind, coachLocal, config }) {
     // local model rather than something wrong; the next line already warns it takes longer.
     eta = local ? '' : t('This usually takes a minute or two.')
   }
-  const doing = kind === 'create' ? t('Building your plan…') : kind === 'debrief' ? t('Looking at that session…') : t('Reading your training…')
+  const doing = kind === 'create' ? t('Building your plan…') : kind === 'debrief' ? t('Looking at that session…') : kind === 'ask' ? t('Thinking about your question…') : t('Reading your training…')
   return <div className="msg coach">
     <div className="bub typing"><i /><i /><i /></div>
     <div className="typing-eta">
@@ -318,7 +336,9 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
       update(s => {
         const res = applyCreatedPlan(s, p, { schedule })
         n = res?.routines?.length || b.routines.length
-        appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: schedule
+        appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: res.rotation
+          ? t('Imported! {0} routines are in your plan and your rotation starts over with them. See you at the next session.', n)
+          : schedule
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
       })
@@ -355,7 +375,10 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
 
       <div className="pcard-row">
-        <span className="lrow-m"><span className="lrow-t">{t('Use this weekly schedule')}</span><span className="lrow-s">{t('Replaces your current week. Days this plan leaves empty become rest days.')}</span></span>
+        {/* In rotation mode the plan goes into the loop, which is what Home reads (#778). */}
+        {scheduleModeOf(S) === 'rotation'
+          ? <span className="lrow-m"><span className="lrow-t">{t('Use this plan in your rotation')}</span><span className="lrow-s">{t('Replaces the sessions in your rotation and starts it over with the first one.')}</span></span>
+          : <span className="lrow-m"><span className="lrow-t">{t('Use this weekly schedule')}</span><span className="lrow-s">{t('Replaces your current week. Days this plan leaves empty become rest days.')}</span></span>}
         <Switch checked={schedule} onChange={setSchedule} />
       </div>
       <div className="pcard-note">{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
@@ -652,7 +675,7 @@ function ProposalDetail({ entry, S }) {
         {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}><Icon name={glyphOf(x.emoji)} />{x.name}</button>)}
       </div>}
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
-      <p className="pcard-sum" style={{ fontSize: 13 }}>{entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
+      <p className="pcard-sum" style={{ fontSize: 13 }}>{entry.rotation ? t('Your rotation was set to this plan.') : entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
     </>}
     {kind === 'create' && !b && <p className="pcard-sum">{t('This plan was imported before the app kept proposals; only its summary is left.')}</p>}
 
@@ -758,6 +781,9 @@ function CadenceSheet({ update }) {
   const coach = useStore(s => s.S.coach) || emptyCoach()
   const cadence = coach.cadence && coach.cadence !== 'off' ? coach.cadence : null
   const mode = !cadence ? 'off' : cadence.weekly ? 'weekly' : 'every'
+  // A phone with its own key runs them itself, and only while the app is open (lib/coach-schedule.js).
+  const deviceMode = useStore(s => s.coachLocal?.mode)
+  const onPhone = MOBILE && deviceMode === 'byok'
   // Automatic reviews send your training while nobody is looking, so switching them on is where
   // the data-sharing question is asked for them. "Not now" leaves them off.
   const setMode = async m => {
@@ -772,7 +798,8 @@ function CadenceSheet({ update }) {
   const patch = fn => update(s => { const c = (s.coach = s.coach || emptyCoach()); fn(c) })
   return <>
     <h3>{t('Automatic reviews')}</h3>
-    <Section footer={mode === 'off' ? t('Off. The Coach only looks when you ask.') : t('You are only notified when the Coach actually has something to suggest.')}>
+    <Section footer={mode === 'off' ? t('Off. The Coach only looks when you ask.') : t('You are only notified when the Coach actually has something to suggest.')
+      + (onPhone ? ' ' + t('On this phone the Coach can only look while the app is open: right after a workout, or the next time you open it.') : '')}>
       <SelectRow icon="clock" iconTint="var(--purple)" title={t('When')} value={mode} onChange={setMode}
         options={[
           { value: 'off', label: t('Off') },

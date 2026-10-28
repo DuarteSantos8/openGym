@@ -407,6 +407,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "sv": {
+    "friendly": {
+      "title": "Är allt okej?",
+      "lines": [
+        "{0} väntar fortfarande. Hur är läget?",
+        "Inget {0} idag? Även ett kort pass i morgon räknas.",
+        "Tuff dag? {0} kan vänta. I morgon är en ny dag.",
+        "Hej, {0} blev inte av idag. Allt bra?"
+      ]
+    },
+    "guilt": {
+      "title": "Jag saknar dig",
+      "lines": [
+        "{0} väntade vid dörren hela kvällen. På dig.",
+        "Skivstången frågade efter dig idag. Jag visste inte vad jag skulle säga.",
+        "Var det något jag sa? {0} saknar dig.",
+        "Jag höll en plats på bänken åt dig. Den är fortfarande tom."
+      ]
+    },
+    "drill": {
+      "title": "Givakt, rekryt!",
+      "lines": [
+        "Dina gains packar väskorna. {0} i morgon, inga ursäkter!",
+        "{0} gör inte sig självt, rekryt. Sätt fart!",
+        "Ursäkter lyfter inga vikter. Anmäl dig till {0} i morgon!",
+        "Dina muskler har anmält dig försvunnen. Infinn dig till {0}!"
+      ]
+    }
+  },
   "th": {
     "friendly": {
       "title": "ทุกอย่างโอเคไหม?",

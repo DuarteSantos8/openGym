@@ -8,6 +8,9 @@
     "forearms"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Biceps curl performed lying on a bench with a close grip on a low-pulley bar. Lying down keeps the tension on the biceps through the whole curl.",
   "instructions": [
     "Attach a straight bar to a low pulley cable machine.",

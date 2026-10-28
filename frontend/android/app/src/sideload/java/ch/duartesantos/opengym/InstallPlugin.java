@@ -21,8 +21,10 @@ import java.security.MessageDigest;
  *   const Install = registerPlugin('Install');
  *   await Install.installApk({ fileName: 'opengym-update.apk', sha256: '<64 hex>' });
  *
- * With `sha256` the file is streamed through SHA-256 first and a mismatch is refused (and the
- * file deleted) before the installer opens: the APK is ~300 MB, too big to hash in the WebView.
+ * The file is streamed through SHA-256 first and a mismatch is refused (and the file deleted)
+ * before the installer opens: the APK is ~300 MB, too big to hash in the WebView. Both arguments
+ * are required and checked (UpdateFile): only the update's own name in the cache directory, and
+ * only with a hash. A call without one used to install unchecked.
  */
 @CapacitorPlugin(name = "Install")
 public class InstallPlugin extends Plugin {
@@ -30,8 +32,13 @@ public class InstallPlugin extends Plugin {
     @PluginMethod
     public void installApk(PluginCall call) {
         String fileName = call.getString("fileName");
-        if (fileName == null || fileName.isEmpty()) {
-            call.reject("fileName is required");
+        if (!UpdateFile.nameOk(fileName)) {
+            call.reject("not an update file name");
+            return;
+        }
+        String expected = call.getString("sha256");
+        if (!UpdateFile.hashOk(expected)) {
+            call.reject("sha256 is required");
             return;
         }
 
@@ -41,18 +48,15 @@ public class InstallPlugin extends Plugin {
             return;
         }
 
-        String expected = call.getString("sha256");
-        if (expected != null && !expected.isEmpty()) {
-            try {
-                if (!expected.equalsIgnoreCase(sha256(file))) {
-                    file.delete();
-                    call.reject("SHA-256 mismatch: the download may be corrupted or tampered with");
-                    return;
-                }
-            } catch (Exception e) {
-                call.reject("Could not check the download: " + e.getMessage());
+        try {
+            if (!expected.equalsIgnoreCase(sha256(file))) {
+                file.delete();
+                call.reject("SHA-256 mismatch: the download may be corrupted or tampered with");
                 return;
             }
+        } catch (Exception e) {
+            call.reject("Could not check the download: " + e.getMessage());
+            return;
         }
 
         Uri uri = FileProvider.getUriForFile(

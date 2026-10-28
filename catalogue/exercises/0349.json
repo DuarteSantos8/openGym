@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A lying forearm rotation with a dumbbell, turning the palm up. It trains the muscles that rotate the forearm and supports elbow and wrist control.",
   "instructions": [
     "Lie flat on a bench with your feet flat on the ground.",

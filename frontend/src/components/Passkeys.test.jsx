@@ -2,7 +2,7 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { passkeyError, PasskeysRow, PasskeysSheet, DeviceLinkSheet, DeviceLinkRedeemSheet } from './Passkeys.jsx'
+import { passkeyError, PasskeysRow, PasskeysSheet, DeviceLinkSheet, DeviceLinkRedeemSheet, PairSheet } from './Passkeys.jsx'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -96,7 +96,7 @@ function openPrompt() {
 
 const LIST = {
   passkeys: [
-    { id: 'k/1+', name: 'Laptop', created: '2025-09-01T10:00:00.000Z', lastUsed: new Date().toISOString(), transports: ['internal'] },
+    { id: 'k/1+', name: 'Laptop', created: new Date(2025, 8, 1, 12).toISOString(), lastUsed: new Date().toISOString(), transports: ['internal'] },
     { id: 'k2', name: null, created: null, lastUsed: null, transports: [] }
   ],
   password: false, lastWayIn: false
@@ -394,6 +394,53 @@ describe('a code for another device, from the paired phone app', () => {
     mocks.MOBILE = true
     mocks.answers['GET /api/account/passkeys'] = { ...LIST, password: false }
     const host = mount(<DeviceLinkSheet close={() => {}} />)
+    await settle()
+    expect(host.textContent).toContain('Make the code in a browser signed in to this profile')
+    expect(mocks.calls.filter(c => c.method !== 'GET')).toEqual([])
+  })
+})
+
+// Pairing the phone app: the code becomes a token the server keeps renewing, so it is minted only
+// after the same proof as a device link (api/server.js POST /api/pair/create).
+describe('Settings: pairing the mobile app', () => {
+  afterEach(() => { mocks.MOBILE = false })
+  it('asks for the proof first, and only then shows the code', async () => {
+    mocks.answers['GET /api/account/passkeys'] = LIST
+    mocks.answers['POST /api/pair/create'] = { code: 'K7WQ2MZP' }
+    const host = mount(<PairSheet close={() => {}} />)
+    await settle()
+    expect(host.textContent).not.toContain('K7WQ2MZP')
+    expect(mocks.calls.filter(c => c.method !== 'GET')).toEqual([])
+    await click(host, 'Confirm with a passkey')
+    expect(mocks.calls.at(-1)).toEqual({ path: '/api/pair/create', method: 'POST', body: { cid: 'login-cid', credential: { id: 'k1' } } })
+    expect(host.textContent).toContain('K7WQ2MZP')
+    expect(host.textContent).toMatch(/expires in 5 minutes/)
+  })
+  it('takes the password where that is the proof, and words a refusal', async () => {
+    mocks.answers['GET /api/account/passkeys'] = { passkeys: [], password: true, lastWayIn: true }
+    mocks.answers['POST /api/pair/create'] = fail(403, { error: 'your current password is not right', code: 'current-wrong' })
+    const host = mount(<PairSheet close={() => {}} />)
+    await settle()
+    expect(button(host, 'Confirm with a passkey')).toBeUndefined()
+    type(byPlaceholder(host, 'Current password'), 'nope')
+    await submit(host)
+    expect(mocks.calls.at(-1)).toEqual({ path: '/api/pair/create', method: 'POST', body: { current: 'nope' } })
+    expect(alertText(host)).toBeTruthy()
+    expect(host.querySelector('.card')).toBeNull()
+  })
+  it('a closed passkey prompt is no error and makes no code', async () => {
+    mocks.answers['GET /api/account/passkeys'] = LIST
+    const host = mount(<PairSheet close={() => {}} />)
+    await settle()
+    mocks.passkeyAssertion.mockRejectedValueOnce(named('NotAllowedError'))
+    await click(host, 'Confirm with a passkey')
+    expect(alertText(host)).toBeNull()
+    expect(mocks.calls.filter(c => c.method !== 'GET')).toEqual([])
+  })
+  it('on the paired phone without a password says where to do it, and sends nothing', async () => {
+    mocks.MOBILE = true
+    mocks.answers['GET /api/account/passkeys'] = { ...LIST, password: false }
+    const host = mount(<PairSheet close={() => {}} />)
     await settle()
     expect(host.textContent).toContain('Make the code in a browser signed in to this profile')
     expect(mocks.calls.filter(c => c.method !== 'GET')).toEqual([])

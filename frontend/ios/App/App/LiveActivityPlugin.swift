@@ -5,8 +5,8 @@ import Foundation
 /**
  * The running workout's Live Activity, for the page (lib/live-activity.js). The page sends the
  * whole activity whenever it changes; this starts it for a new workout, updates it for the same
- * one, and ends it with the workout. The Done button's taps (WorkoutActivity.swift DoneSetIntent)
- * wait in LiveActivityQueue until the page drains and acknowledges them; a "liveActivityEvent"
+ * one, and ends it with the workout. Its buttons' taps (WorkoutActivity.swift: Log set, Next
+ * exercise, Skip rest) wait in LiveActivityQueue until the page drains and acknowledges them; a "liveActivityEvent"
  * tells a page that is awake that one came in.
  *
  * iOS 17 and later (the interactive Done button); earlier, status says unsupported and the page

@@ -51,6 +51,17 @@ describe('Settings → Apple Watch', () => {
     expect(el.textContent).toContain('Allow it in the Health app on your iPhone.')
   })
 
+  // TestFlight "the watch is not syncing": the page shows whether the watch app ever checked in
+  // (it does each time it starts), so "installed" alone no longer reads as "in touch".
+  it('says whether the watch has checked in, and when it last did', async () => {
+    let el = await mount()
+    expect(el.textContent).toContain('The watch hasn’t checked in yet. Open openGym on it once.')
+    writeWatchStatus({ health: 'on', at: Date.now() - 5 * 60e3 })
+    el = await mount()
+    expect(el.textContent).toContain('Last heard from the watch: 5 minutes ago')
+    expect(el.textContent).not.toContain('checked in yet')
+  })
+
   it('has the switch for opening on the watch, on to begin with', async () => {
     const el = await mount()
     const sw = row(el, 'Open on the watch').querySelector('[role="switch"]')

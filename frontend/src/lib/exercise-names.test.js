@@ -4,7 +4,7 @@ import { EXDB } from './exercises-data.js'
 import V13_IDS from './catalogue-v13-ids.json' with { type: 'json' }
 import { checkName, stagedExercises } from '../../../scripts/de-name-rules.mjs'
 import {
-  EXERCISE_NAME_LANGS, _setLangState, derivePack, exerciseNameFor, exerciseNameSearchText
+  EXERCISE_NAME_LANGS, RTL_LANGS, _setLangState, derivePack, exerciseNameFor, exerciseNameSearchText
 } from './i18n-core.js'
 
 // Every translated-name pack, checked the same way. The packs are generated from
@@ -168,6 +168,21 @@ test('every curated language still ships a name pack, and every pack is enabled'
   }
 })
 
+// The movement rule, pinned on both of its directions. The catalogue slipped on the curl side
+// (issue #631); the mirror guards the reverse slip in a future batch: an extension translated as
+// \"Beinbeugen\". Real catalogue entries both ways, so the rule is tested exactly as the
+// translator will meet it.
+test('the movement rule fires in both directions', () => {
+  const extension = EXIDX.get('0585')   // lever leg extension
+  expect(checkName(extension, 'Beinstrecken an der Hebelmaschine')).toEqual([])
+  expect(checkName(extension, 'Beinbeugen an der Hebelmaschine'))
+    .toContainEqual({ rule: 'movement', fix: 'Write \"Beinstrecken\" in \"Beinbeugen an der Hebelmaschine\": a leg extension straightens the knee, and \"Beinbeugen\" is the leg curl.' })
+  const curl = EXIDX.get('0586')        // lever lying leg curl
+  expect(checkName(curl, 'Liegendes Beinbeugen an der Hebelmaschine')).toEqual([])
+  expect(checkName(curl, 'Liegendes Beinstrecken an der Hebelmaschine'))
+    .toContainEqual({ rule: 'movement', fix: 'Write \"Beinbeugen\" in \"Liegendes Beinstrecken an der Hebelmaschine\": a leg curl bends the knee, and \"Beinstrecken\" is the leg extension.' })
+})
+
 for (const lang of EXERCISE_NAME_LANGS) {
   describe(`${lang} exercise names`, () => {
     const pack = packs[`../exercise-names/${lang}.js`]
@@ -239,7 +254,9 @@ for (const lang of EXERCISE_NAME_LANGS) {
       const exercise = EXDB.find(e => pack[e.id] && pack[e.id].toLocaleLowerCase(lang) !== e.n.toLocaleLowerCase('en'))
       const name = pack[exercise.id]
       _setLangState(lang, {}, null, pack)
-      expect(exerciseNameFor(exercise)).toBe(`${name} (${exercise.n})`)
+      // A right-to-left language isolates the English part, brackets included (i18n-core exerciseNameFor).
+      const english = RTL_LANGS.has(lang) ? `\u2068(${exercise.n})\u2069` : `(${exercise.n})`
+      expect(exerciseNameFor(exercise)).toBe(`${name} ${english}`)
       expect(exerciseNameSearchText(exercise)).toContain(name)
       expect(exerciseNameSearchText(exercise)).toContain(exercise.n)
       _setLangState(lang, {}, null, pack, false)

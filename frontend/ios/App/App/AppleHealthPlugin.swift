@@ -15,6 +15,12 @@ import UIKit
  * watch as its source) is left as it is: it has the heart rate in it, and a second copy would count
  * the session twice. Removing takes that copy out too, and says which ids Apple Health still holds
  * afterwards, so lib/health-sync.js keeps them and tries again rather than forgetting them.
+ *
+ * Reading back (v1.4.3), each behind its own switch in Settings: the heart rate during a finished
+ * workout (readHeartRate, for any watch that saves to Apple Health, Garmin and Polar included) and
+ * weigh-ins other apps saved (readWeights). Foreground only, through HKSampleQuery; what to take is
+ * decided in JS (lib/health-read.js). Apple Health never says whether reading was allowed, so a
+ * refusal simply reads nothing.
  */
 @objc(AppleHealthPlugin)
 public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -27,6 +33,8 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "remove", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setEnabled", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readHeartRate", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readWeights", returnType: CAPPluginReturnPromise),
     ]
 
     static let enabledKey = "healthEnabled"
@@ -53,6 +61,15 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc override public func requestPermissions(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else { call.resolve(["granted": false]); return }
+        // { read: ['heartRate' | 'weight'], write: [...] } asks for just those reads (the switches
+        // added in v1.4.3); without them, everything, as before.
+        if let read = call.getArray("read") as? [String] {
+            var types: Set<HKObjectType> = []
+            if read.contains("heartRate"), let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
+            if read.contains("weight") { types.insert(bodyMass) }
+            store.requestAuthorization(toShare: [], read: types) { _, _ in call.resolve(["granted": self.granted]) }
+            return
+        }
         store.requestAuthorization(toShare: shareTypes, read: readTypes) { _, _ in
             call.resolve(["granted": self.granted])
         }
@@ -103,6 +120,47 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
+    @objc func readHeartRate(_ call: CAPPluginCall) {
+        guard let from = call.getDouble("from"), let to = call.getDouble("to"), to > from,
+              let type = HKObjectType.quantityType(forIdentifier: .heartRate) else {
+            call.reject("from and to are needed", "failed")
+            return
+        }
+        let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: from / 1000), end: Date(timeIntervalSince1970: to / 1000))
+        let perMinute = HKUnit.count().unitDivided(by: .minute())
+        query(type, predicate) { found in
+            let all = found.compactMap { $0 as? HKQuantitySample }.map {
+                HealthReadCore.HeartSample(ms: $0.startDate.timeIntervalSince1970 * 1000, bpm: $0.quantity.doubleValue(for: perMinute))
+            }
+            let origins = Array(Set(found.map { $0.sourceRevision.source.bundleIdentifier }))
+            call.resolve(["samples": HealthReadCore.samples(all, from: from, to: to), "origins": origins])
+        } failed: { self.fail(call, $0) }
+    }
+
+    @objc func readWeights(_ call: CAPPluginCall) {
+        guard let since = call.getDouble("since") else { call.reject("since is needed", "failed"); return }
+        let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: since / 1000), end: nil)
+        query(bodyMass, predicate) { found in
+            let all = found.compactMap { $0 as? HKQuantitySample }.map {
+                HealthReadCore.WeighIn(ms: $0.startDate.timeIntervalSince1970 * 1000, kg: $0.quantity.doubleValue(for: .gramUnit(with: .kilo)),
+                                       id: $0.uuid.uuidString, source: $0.sourceRevision.source.bundleIdentifier,
+                                       syncId: $0.metadata?[HKMetadataKeySyncIdentifier] as? String)
+            }
+            call.resolve(["records": HealthReadCore.weights(all)])
+        } failed: { self.fail(call, $0) }
+    }
+
+    /// Every sample of `type` matching `predicate`, oldest first.
+    private func query(_ type: HKSampleType, _ predicate: NSPredicate, done: @escaping ([HKSample]) -> Void, failed: @escaping (Error) -> Void) {
+        guard HKHealthStore.isHealthDataAvailable() else { failed(HKError(.errorHealthDataUnavailable)); return }
+        let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+        let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: HealthReadCore.maxSamples, sortDescriptors: [sort]) { _, found, error in
+            // Reading not allowed answers with no samples rather than an error; a real error is passed on.
+            if let error = error, (error as? HKError)?.code != .errorAuthorizationDenied { failed(error) } else { done(found ?? []) }
+        }
+        store.execute(q)
+    }
+
     private func fail(_ call: CAPPluginCall, _ error: Error) {
         if let hk = error as? HKError, hk.code == .errorAuthorizationDenied || hk.code == .errorAuthorizationNotDetermined {
             call.reject("Apple Health permission not granted", "permission")
@@ -118,10 +176,12 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         [HKMetadataKeySyncIdentifier: id, HKMetadataKeySyncVersion: NSNumber(value: Int64(Date().timeIntervalSince1970 * 1000))]
     }
 
-    private static let activityTypes: [String: HKWorkoutActivityType] = [
+    /// lib/health-connect.js SESSION_TYPES; also the watch's workout type (WatchBridgePlugin).
+    static let activityTypes: [String: HKWorkoutActivityType] = [
         "strength_training": .traditionalStrengthTraining, "walking": .walking, "running": .running,
-        "biking_stationary": .cycling, "elliptical": .elliptical, "stair_climbing_machine": .stairClimbing,
-        "other_workout": .other,
+        "biking_stationary": .cycling, "biking": .cycling, "elliptical": .elliptical, "stair_climbing_machine": .stairClimbing,
+        "rowing": .rowing, "jump_rope": .jumpRope, "hiit": .highIntensityIntervalTraining, "mixed_cardio": .mixedCardio,
+        "yoga": .yoga, "flexibility": .flexibility, "other_workout": .other,
     ]
 
     private func saveSession(_ s: [String: Any]) async throws {

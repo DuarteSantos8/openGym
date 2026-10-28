@@ -86,6 +86,30 @@
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="false" />
 
+        <!-- Gym reminder (#614): the platform's proximity alert for a gym fires this (GymReminder).
+             Explicit, not exported: nothing but that alert's own PendingIntent reaches it. -->
+        <receiver
+            android:name=".GymReminderReceiver"
+            android:exported="false" />
+        <!-- Gym reminder: the short check with live location after the phone entered a gym's wide
+             approach zone (GymScanService). At most 15 minutes, at most 3 a day; its notification
+             is a silent one. Started by the approach alert's broadcast (Android 12+: only with
+             unrestricted battery or exact alarms allowed, see GymReminder.launchCheck), never exported. -->
+        <service
+            android:name=".GymScanService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+        <!-- Proximity alerts are gone after a restart or an app update: registered again here.
+             Only the system sends these two broadcasts. -->
+        <receiver
+            android:name=".GymReminderBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Gym check-in scanner (@capacitor-mlkit/barcode-scanning): pre-fetch the ML Kit
              barcode model at install time so the first scan doesn't wait on a download. -->
         <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />
@@ -120,10 +144,35 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Gym check-in: scanning a membership QR/barcode with the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Health Connect (#200): write-only, asked for only when the user turns it on in Settings.
-         openGym writes finished workouts and weigh-ins and reads nothing back. -->
+    <!-- Health Connect (#200): each asked for only when the user turns its switch on in Settings.
+         openGym writes finished workouts and weigh-ins, and since v1.4.3 can read back the heart
+         rate during a workout and weigh-ins from other apps (#544). Foreground only: no
+         background read permission. The history one (v1.4.4, idea from #801) is asked for
+         together with reading weigh-ins, where Health Connect has it, so the first read can go
+         further back than the 30 days before the grant; the read works without it too. -->
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+
+    <!-- Gym reminder (#614), off until switched on in Settings: where the phone is, for "I'm at
+         the gym right now" and to watch the gyms the user added with the platform's proximity
+         alerts (no Google Play Services). Background location ("Allow all the time") is asked for
+         separately, after an explanation in the app, because the alert has to fire with openGym
+         closed. The places never leave the phone. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!-- The approach check above runs as a location foreground service (Android 14+ names the
+         type), and asks the paired server about today only when there is a network. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Location is optional: a phone without GPS still installs the app (the permissions above
+         would otherwise make Google Play require the hardware). -->
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+    <uses-feature android:name="android.hardware.location.network" android:required="false" />
 
     <!-- Whether the Health Connect app is there, on Android 13 and lower. -->
     <queries>

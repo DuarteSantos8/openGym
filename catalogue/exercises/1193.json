@@ -10,6 +10,7 @@
     "glutes"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A plank variation with arms and legs spread wide to challenge the core.",
   "instructions": [
     "Start in a plank position with hands under your shoulders.",

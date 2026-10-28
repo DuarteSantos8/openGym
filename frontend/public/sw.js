@@ -252,6 +252,17 @@ const API = (() => { try { return new URL('api/', location.href).pathname } catc
 // How long a request for the app itself waits on the network before a cached copy answers it.
 const NET_WAIT_MS = 3000
 
+// The build's own chunks and stylesheets (assets/<name>-<hash>.js|css): the name changes whenever
+// the content does, so a copy in this build's cache is the file, and a start serves them from
+// here instead of asking the network about each of them again (40-odd round trips before Home).
+const isHashedAsset = p => /\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.(?:js|css)$/.test(p)
+const cacheFirst = e => caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
+  // Only a real answer is kept: an auth proxy's login page would otherwise stand in for the chunk
+  // for the rest of this build.
+  if (res.ok && !res.redirected) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}) }
+  return res
+}))
+
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url)
   if (e.request.method !== 'GET' || url.origin !== location.origin) return
@@ -259,6 +270,10 @@ self.addEventListener('fetch', e => {
 
   if (isMediaPath(url.pathname)) {
     e.respondWith(media(e))
+    return
+  }
+  if (isHashedAsset(url.pathname)) {
+    e.respondWith(cacheFirst(e))
     return
   }
   // Network first; the copy for the cache is cloned before the response is handed to the page —

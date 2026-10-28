@@ -3,7 +3,7 @@ import {
   canonicalPlan, planHash, hashPlan, markStale, applicable, currentValue, ROUTINE_NAME_SEEN,
   pushSnapshot, revertLast, canRevert, appendLog, applyChangeSet, applyCreatedPlan,
   recordDismissal, validateProposal, coachAvailable, hasConsent,
-  recordDebrief, logEntry, lightBundle, changeValues,
+  recordDebrief, logEntry, lightBundle, changeValues, defaultTrainingDays,
   CHANGE_TYPES, SNAPSHOT_MAX, LOG_MAX, CONSENT_VERSION
 } from './coach.js'
 import { registerCustom } from './exercises.js'
@@ -299,6 +299,17 @@ describe('applying changes', () => {
     expect(out.routines[0].ex[1].sg).toBeUndefined()
   })
 
+  it('an added routine keeps a cardio exercise as minutes and pace, not reps (#640)', () => {
+    const out = apply(state(), proposal([change({
+      type: 'add-routine', target: {}, before: null,
+      after: { name: 'Finisher', ex: [{ id: '0001', sets: 2, mode: 'cardio', min: 15, speed: 10 }, { id: '0007', sets: 1, mode: 'cardio' }] }
+    })]), ['c1'])
+    const [swings, other] = out.routines[2].ex
+    expect(swings).toMatchObject({ mode: 'cardio', min: 15, speed: 10 })
+    expect(swings.reps).toBeUndefined()
+    expect(other).toMatchObject({ mode: 'cardio', min: 20, speed: 8 })
+  })
+
   it('adds, renames and removes routines, clearing any day that pointed at one', () => {
     const added = apply(state(), proposal([change({
       type: 'add-routine', target: {}, before: null,
@@ -572,6 +583,87 @@ describe('created plans', () => {
   })
 })
 
+// #778: in rotation mode Home reads the loop, not the week, so a created plan that only set the
+// week never showed up until the rotation was edited by hand.
+describe('created plans in rotation mode', () => {
+  const bundle = {
+    opengym_plan: 1, name: 'Coach plan', summary: 'three days',
+    week: { 1: 'x1', 3: 'x2', 5: 'x3' },
+    routines: [
+      { id: 'x1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 10, mode: 'reps' }] },
+      { id: 'x2', name: 'B', ex: [{ id: '0002', sets: 3, reps: 8, mode: 'reps' }] },
+      { id: 'x3', name: 'C', ex: [{ id: '0009', sets: 3, reps: 12, mode: 'reps' }] }
+    ],
+    customEx: []
+  }
+  const inRotation = () => {
+    const s = JSON.parse(JSON.stringify(state({ scheduleMode: 'rotation' })))
+    s.rotation = { id: 'rot', sequence: ['r1', 'rest', 'r2'], label: 'Starter', at: 2 }
+    s.queue = { ids: ['r2'], since: 1, startsOn: '2026-01-01', label: 'Starter', rotationId: 'rot' }
+    return s
+  }
+  const made = s => s.routines.slice(2).map(r => r.id)
+
+  it('puts the new routines in the rotation, in the Coach\u2019s order, from the first one', () => {
+    const s = inRotation()
+    const res = applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle }, { schedule: true })
+    expect(res.rotation).toBe(true)
+    expect(s.rotation.sequence).toEqual(made(s))            // no rest days: the Coach planned none
+    expect(s.rotation.id).toBe('rot')
+    expect(s.rotation.at).toBe(0)
+    expect(s.queue).toMatchObject({ ids: made(s), rotationId: 'rot' })
+    expect(s.coach.log.at(-1)).toMatchObject({ kind: 'create', scheduled: true, rotation: true })
+  })
+
+  it('leaves the rotation alone when the schedule switch is off', () => {
+    const s = inRotation()
+    const before = JSON.parse(JSON.stringify({ rotation: s.rotation, queue: s.queue }))
+    expect(applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle }, { schedule: false }).rotation).toBe(false)
+    expect({ rotation: s.rotation, queue: s.queue }).toEqual(before)
+  })
+
+  it('leaves a planner\u2019s queue alone', () => {
+    const s = inRotation()
+    s.queue = { ids: ['r1'], since: 1, startsOn: '2026-01-01', label: 'From my planner' }
+    applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle }, { schedule: true })
+    expect(s.queue.ids).toEqual(['r1'])
+    expect(s.rotation.sequence).toEqual(['r1', 'rest', 'r2'])
+  })
+
+  it('starts a rotation chosen with nothing built yet', () => {
+    const s = JSON.parse(JSON.stringify(state({ scheduleMode: 'rotation' })))
+    applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle }, { schedule: true })
+    expect(s.rotation.sequence).toEqual(made(s))
+    expect(s.queue.ids).toEqual(made(s))
+  })
+
+  it('a fixed week keeps its rotation untouched', () => {
+    const s = inRotation()
+    s.scheduleMode = 'week'
+    s.queue = null
+    applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle }, { schedule: true })
+    expect(s.rotation.sequence).toEqual(['r1', 'rest', 'r2'])
+    expect(s.queue).toBeNull()
+  })
+
+  it('Undo gives the old rotation and its pass back', () => {
+    const s = inRotation()
+    const before = JSON.parse(JSON.stringify({ rotation: s.rotation, queue: s.queue }))
+    applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle }, { schedule: true })
+    expect(revertLast(s)).toBe(true)
+    expect({ rotation: s.rotation, queue: s.queue }).toEqual(before)
+    expect(s.routines.map(r => r.id)).toEqual(['r1', 'r2'])
+  })
+
+  it('Undo of a rotation started from nothing ends it again', () => {
+    const s = JSON.parse(JSON.stringify(state({ scheduleMode: 'rotation' })))
+    applyCreatedPlan(s, { id: 'p1', kind: 'create', bundle }, { schedule: true })
+    revertLast(s)
+    expect(s.rotation).toBeNull()
+    expect(s.queue).toBeNull()
+  })
+})
+
 describe('validation', () => {
   it('rejects an unreadable proposal rather than half-applying it', () => {
     expect(() => validateProposal(null)).toThrow()
@@ -694,5 +786,26 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
     expect(b.basedOn).toBeUndefined()
     expect(Object.keys(b.routines[0].ex[0])).not.toContain('secret')
     expect(lightBundle(null)).toBeNull()
+  })
+})
+
+describe('defaultTrainingDays (the intake pre-selection, #620)', () => {
+  it('pre-selects as many weekdays as the count asks for', () => {
+    for (let n = 1; n <= 7; n++) expect(defaultTrainingDays(n)).toHaveLength(n)
+    expect(defaultTrainingDays(3)).toEqual([1, 3, 5])
+    expect(defaultTrainingDays(4)).toEqual([1, 2, 4, 5])
+    expect(defaultTrainingDays(7)).toEqual([0, 1, 2, 3, 4, 5, 6])
+  })
+
+  it('clamps a count the screen never offers, and reads a missing one as three', () => {
+    expect(defaultTrainingDays(99)).toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(defaultTrainingDays(0)).toEqual([1])
+    expect(defaultTrainingDays(null)).toEqual([1, 3, 5])
+    expect(defaultTrainingDays('many')).toEqual([1, 3, 5])
+  })
+
+  it('hands out a copy, so editing one selection never changes the next default', () => {
+    defaultTrainingDays(3).push(0)
+    expect(defaultTrainingDays(3)).toEqual([1, 3, 5])
   })
 })

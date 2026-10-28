@@ -81,9 +81,10 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
     }
 
     /// A workout started on the phone: the watch app opens with it (Settings → Apple Watch, "Open on
-    /// the watch"). HealthKit wakes the watch app with a strength-training configuration, and the
-    /// watch starts its workout session (OpenGymWatchApp's delegate). Only with a paired watch that
-    /// has the app; anything else resolves { ok: false } and nothing happens.
+    /// the watch"). HealthKit wakes the watch app with the workout's planned type (the page's
+    /// `type`, else strength training), and the watch starts its workout session (OpenGymWatchApp's
+    /// delegate). Only with a paired watch that has the app; anything else resolves { ok: false }
+    /// and nothing happens.
     @objc func openOnWatch(_ call: CAPPluginCall) {
         guard WCSession.isSupported(), WCSession.default.activationState == .activated,
               WCSession.default.isPaired, WCSession.default.isWatchAppInstalled,
@@ -92,7 +93,8 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
             return
         }
         let config = HKWorkoutConfiguration()
-        config.activityType = .traditionalStrengthTraining
+        // The type the page planned (lib/health-connect.js plannedType, #799): a run opens as a run.
+        config.activityType = AppleHealthPlugin.activityTypes[call.getString("type") ?? ""] ?? .traditionalStrengthTraining
         config.locationType = .indoor
         WatchBridgePlugin.health.startWatchApp(with: config) { ok, _ in
             call.resolve(["ok": ok])
@@ -112,7 +114,10 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
             call.resolve(["sent": false])
             return
         }
-        let payload: [String: Any] = ["snapshot": json]
+        // Stamped: iOS does not deliver an application context equal to the last one, and the page
+        // sends the same snapshot again on purpose when the watch app was (re)installed. The watch
+        // reads only "snapshot".
+        let payload: [String: Any] = ["snapshot": json, "at": Date().timeIntervalSince1970]
         do {
             try s.updateApplicationContext(payload)
         } catch {

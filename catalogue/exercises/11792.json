@@ -9,6 +9,7 @@
     "forearms"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A static curl hold that builds biceps endurance.",
   "instructions": [
     "Kneel upright with your elbows bent at about 90 degrees.",

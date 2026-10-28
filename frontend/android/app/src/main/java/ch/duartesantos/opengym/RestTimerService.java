@@ -2,7 +2,10 @@ package ch.duartesantos.opengym;
 
 import android.app.Notification;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Handler;
@@ -11,8 +14,9 @@ import android.os.Looper;
 import android.os.PowerManager;
 
 /**
- * Foreground while a rest is running. Reposts one clock and one bar every second, and
- * applies the same controls as the in-app timer: pause, −15s, +15s, skip.
+ * Foreground while a rest is running. Shows one clock and one bar, and applies the same controls
+ * as the in-app timer: pause, −15s, +15s, skip. The clock is a Chronometer the system runs; the
+ * card is reposted every second only while the screen is on (for the bar), see RestCountdownPlan.
  */
 public class RestTimerService extends Service {
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -29,6 +33,8 @@ public class RestTimerService extends Service {
     private int accent = 0xFF30D158;
     private int ink = 0xFF000000;
     private PowerManager.WakeLock cpu;
+    private PowerManager power;
+    private BroadcastReceiver screenOn;
     private final Runnable tick = new Runnable() {
         @Override
         public void run() {
@@ -38,11 +44,42 @@ public class RestTimerService extends Service {
                 reachEnd();
                 return;
             }
-            show();
-            // Next on the clock's next whole second, so the last run lands on the end itself.
-            handler.postDelayed(this, ((left - 1) % 1000) + 1);
+            // Screen off: nobody sees the card, and the Chronometer keeps the clock right anyway.
+            // Turning the screen on runs this loop at once (screenOn), so the bar catches up.
+            boolean interactive = interactive();
+            if (interactive) show();
+            handler.postDelayed(this, RestCountdownPlan.nextTickMs(left, interactive));
         }
     };
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        power = (PowerManager) getSystemService(POWER_SERVICE);
+        screenOn = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (!running || paused) return;
+                handler.removeCallbacks(tick);
+                tick.run();
+            }
+        };
+        try {
+            IntentFilter f = new IntentFilter(Intent.ACTION_SCREEN_ON);
+            if (Build.VERSION.SDK_INT >= 33) registerReceiver(screenOn, f, Context.RECEIVER_NOT_EXPORTED);
+            else registerReceiver(screenOn, f);
+        } catch (Exception e) {
+            screenOn = null;
+        }
+    }
+
+    private boolean interactive() {
+        try {
+            return power == null || power.isInteractive();
+        } catch (Exception e) {
+            return true;
+        }
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -106,6 +143,8 @@ public class RestTimerService extends Service {
         if (intent != null && intent.hasExtra("ink")) ink = intent.getIntExtra("ink", ink);
         handler.removeCallbacks(tick);
         tick.run();
+        // A foreground service must post its card now, whether or not the screen is on.
+        if (running && !interactive()) show();
         return START_NOT_STICKY;
     }
 
@@ -114,6 +153,10 @@ public class RestTimerService extends Service {
         running = false;
         handler.removeCallbacks(tick);
         releaseCpu();
+        if (screenOn != null) {
+            try { unregisterReceiver(screenOn); } catch (Exception ignored) { /* not registered */ }
+            screenOn = null;
+        }
         endsAt = 0;
         stopForegroundCompat();
         super.onDestroy();
@@ -178,29 +221,49 @@ public class RestTimerService extends Service {
 
     /**
      * The end, reached by this countdown. The alert (or, with the app on screen, just the end of
-     * this card) comes from RestAlert, which stops this service once it is up. The CPU stays held
-     * until then: letting go here could let the phone sleep before that alert holds its own.
+     * this card) comes from RestAlert, which stops this service once it is up. The CPU is held
+     * until then (a short lock when the rest itself held none): letting go here could let the
+     * phone sleep before that alert holds its own, with the alarm already called off.
      */
     private void reachEnd() {
         running = false;
+        holdCpuBriefly();
         RestAlert.fireFromCountdown(getApplicationContext(), endsAt);
     }
 
     /**
-     * Keeps the CPU running until the end, and ten seconds past it. With the screen off a phone
-     * otherwise sleeps through this countdown's last second, and the only thing left to wake it
-     * is the alarm, which without the exact-alarm permission comes late. Released on pause,
-     * on skip and when the service stops after the end, so a held rest costs nothing.
+     * With exact alarms allowed, the alarm wakes the phone at the end (also in Doze) and
+     * RestAlert.fire holds the CPU for the alert, so the rest itself holds nothing. Without
+     * them the alarm may come most of a rest late: then the CPU is kept running until the end,
+     * and ten seconds past it, so this countdown sounds the end on time with the screen off.
+     * Released on pause, on skip and when the service stops after the end.
      */
     private void holdCpuUntilEnd() {
+        long hold = RestCountdownPlan.cpuHoldMs(
+                RestAlert.exactAllowed(this), endsAt - System.currentTimeMillis());
+        if (hold <= 0) {
+            releaseCpu();
+            return;
+        }
         try {
             if (cpu == null) {
                 PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
                 cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opengym:rest-countdown");
                 cpu.setReferenceCounted(false);
             }
-            cpu.acquire(Math.max(0, endsAt - System.currentTimeMillis()) + 10_000);
+            cpu.acquire(hold);
         } catch (Exception ignored) { /* the alarm is still set */ }
+    }
+
+    private void holdCpuBriefly() {
+        try {
+            if (cpu == null) {
+                PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+                cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opengym:rest-countdown");
+                cpu.setReferenceCounted(false);
+            }
+            if (!cpu.isHeld()) cpu.acquire(RestCountdownPlan.END_GRACE_MS);
+        } catch (Exception ignored) { /* the alert takes its own */ }
     }
 
     private void releaseCpu() {
