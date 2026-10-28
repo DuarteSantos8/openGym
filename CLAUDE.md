@@ -136,7 +136,9 @@ and per field, so the newest edit of each wins and deletions stay deleted.
 The API image cannot import the frontend, so some rules are hand-copied. Change both sides
 together: `lib/sync-merge.js` and `api/sync-stamps.js` (parity test), `lib/glyphs.js` and
 `api/coach/core/glyphs.js` (parity test), `lib/nudge.js` and `api/nudge.js`, `lib/queue.js` and
-`api/queue.js` (mirrored test cases only, nothing compares the code). The other way round,
+`api/queue.js` (mirrored test cases only, nothing compares the code). On the phones, the workout
+card's Log set rule is in both `ios/App/App/WorkoutActivity.swift` (`LiveActivityTick.tick`) and
+`android/.../WorkoutCard.java` (docs/dev/WORKOUT_CARD.md). The other way round,
 `lib/coach-local.js` imports `api/coach/core/` directly so the phones run the same coach pipeline.
 
 ### MCP server (`mcp/src`)

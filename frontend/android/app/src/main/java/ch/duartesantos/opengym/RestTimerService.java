@@ -1,6 +1,7 @@
 package ch.duartesantos.opengym;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,8 +18,14 @@ import android.os.PowerManager;
  * Foreground while a rest is running. Shows one clock and one bar, and applies the same controls
  * as the in-app timer: pause, −15s, +15s, skip. The clock is a Chronometer the system runs; the
  * card is reposted every second only while the screen is on (for the bar), see RestCountdownPlan.
+ *
+ * While a workout runs (LiveActivityPlugin has its card) it stays in the foreground between rests
+ * too, and the same notification shows the workout card with Log set instead (#760).
  */
 public class RestTimerService extends Service {
+    static final String ACTION_CARD = "ch.duartesantos.opengym.live.CARD";
+    static final String ACTION_LOG_SET = "ch.duartesantos.opengym.live.LOG_SET";
+    static final String ACTION_REST_END = "ch.duartesantos.opengym.rest.END";
     private final Handler handler = new Handler(Looper.getMainLooper());
     private long endsAt;
     private long totalMs;
@@ -89,8 +96,17 @@ public class RestTimerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent == null ? null : intent.getAction();
+        if (ACTION_CARD.equals(action) || ACTION_REST_END.equals(action)) {
+            if (ACTION_REST_END.equals(action)) endRest();
+            else show();
+            return START_NOT_STICKY;
+        }
+        if (ACTION_LOG_SET.equals(action)) {
+            logSet(intent);
+            return START_NOT_STICKY;
+        }
         if (RestAlert.ACTION_ACCENT.equals(action)) {
-            if (!running) {
+            if (!running && LiveActivityPlugin.card(this) == null) {
                 // Only this start: a countdown asked for right behind it must still come up.
                 stopSelf(startId);
                 return START_NOT_STICKY;
@@ -103,7 +119,7 @@ public class RestTimerService extends Service {
         }
         if (RestAlert.ACTION_HOLD.equals(action)) {
             if (running) hold(intent.getLongExtra("leftMs", 0), intent.getLongExtra("totalMs", 0));
-            else stopSelf(startId);
+            else if (LiveActivityPlugin.card(this) == null) stopSelf(startId);
             return START_NOT_STICKY;
         }
         if (RestAlert.ACTION_SKIP.equals(action)) {
@@ -124,8 +140,7 @@ public class RestTimerService extends Service {
         }
         long nextEnd = intent == null ? 0 : intent.getLongExtra("endsAt", 0);
         if (nextEnd <= System.currentTimeMillis()) {
-            stopForegroundCompat();
-            stopSelf();
+            endRest();
             return START_NOT_STICKY;
         }
         endsAt = nextEnd;
@@ -278,8 +293,60 @@ public class RestTimerService extends Service {
         releaseCpu();
         RestAlert.cancelAlarmOnly(this, RestAlert.NOTIFICATION_ID);
         RestAlertPlugin.emit("skip", 0, 0, 0, false);
-        stopForegroundCompat();
-        stopSelf();
+        // Also queued for the page: a frozen page can miss the event above (lib/live-activity.js).
+        if (LiveActivityPlugin.card(this) != null) {
+            LiveActivityPlugin.queue(this, LiveActivityPlugin.event("restSkip", LiveActivityPlugin.cardWid(this)));
+            LiveActivityPlugin.changed();
+        }
+        endRest();
+    }
+
+    /** No rest any more: the workout card while a workout runs, otherwise the service stops. */
+    private void endRest() {
+        running = false;
+        paused = false;
+        endsAt = 0;
+        handler.removeCallbacks(tick);
+        releaseCpu();
+        show();
+    }
+
+    /**
+     * Log set on the card: LiveActivityPlugin ticks and queues it, and the rest that follows starts
+     * here as the page would start it, with the page's last rest settings. A tap on a set the card
+     * no longer shows (a second quick tap) only redraws the card.
+     */
+    private void logSet(Intent intent) {
+        long now = System.currentTimeMillis();
+        long rest = LiveActivityPlugin.logSet(this, intent.getStringExtra("exId"),
+                intent.getIntExtra("entryIdx", -1), intent.getIntExtra("setIdx", -1), now);
+        if (rest > 0) {
+            org.json.JSONObject labels = LiveActivityPlugin.attributes(this);
+            labels = labels == null ? null : labels.optJSONObject("labels");
+            RestAlertPlugin.scheduleLike(getApplicationContext(), now + rest, rest,
+                    labels == null ? null : labels.optString("restOver", null));
+        } else if (!running) {
+            show();
+        }
+        if (rest >= 0) LiveActivityPlugin.changed();
+    }
+
+    /**
+     * The page added, changed or ended the workout card. `show`: a card to show, so the service may
+     * have to come up in the foreground for it.
+     */
+    static void refresh(Context ctx, boolean show) {
+        Intent i = new Intent(ctx, RestTimerService.class).setAction(ACTION_CARD);
+        try {
+            // Notifications off: no card, and no foreground service kept up for one nobody sees.
+            if (show && Build.VERSION.SDK_INT >= 24
+                    && !((NotificationManager) ctx.getSystemService(NOTIFICATION_SERVICE)).areNotificationsEnabled()) return;
+            if (show && Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(i);
+            else ctx.startService(i);
+        } catch (Exception e) {
+            // In the background Android 12+ refuses a foreground start; the next change retries.
+            android.util.Log.w("openGym", "workout card not shown", e);
+        }
     }
 
     private void emit(String type) {
@@ -290,8 +357,22 @@ public class RestTimerService extends Service {
     private void show() {
         try {
             long left = paused ? pausedLeft : Math.max(0, endsAt - System.currentTimeMillis());
-            Notification n = RestAlert.countdownNotification(
-                    this, left, totalMs, paused, pauseLabel, resumeLabel, minusLabel, plusLabel, skipLabel, accent, ink);
+            WorkoutCard card = LiveActivityPlugin.card(this);
+            Notification n;
+            if (!running) {
+                if (card == null) {
+                    stopForegroundCompat();
+                    stopSelf();
+                    return;
+                }
+                n = RestAlert.cardNotification(this, card, LiveActivityPlugin.attributes(this));
+            } else if (Build.VERSION.SDK_INT >= 36) {
+                n = RestAlert.restProgressNotification(this, left, totalMs, paused, resumeLabel, minusLabel,
+                        plusLabel, skipLabel, accent, card, LiveActivityPlugin.attributes(this));
+            } else {
+                n = RestAlert.countdownNotification(
+                        this, left, totalMs, paused, pauseLabel, resumeLabel, minusLabel, plusLabel, skipLabel, accent, ink);
+            }
             if (Build.VERSION.SDK_INT >= 34) {
                 startForeground(RestAlert.COUNTDOWN_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
             } else {

@@ -22,7 +22,7 @@ import { startWatchSync, bindWatchAppActions, patchSetIn } from './lib/watch-syn
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
-import { startLiveActivitySync } from './lib/live-activity.js'
+import { startLiveActivitySync, bindLiveAppActions } from './lib/live-activity.js'
 import { useWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
@@ -409,13 +409,15 @@ export default function App() {
     })
     return () => { gone = true; stop?.(); unbind() }
   }, [])
-  // iPhone app: the Home Screen widgets and the workout's Live Activity (lib/widgets.js,
-  // lib/live-activity.js). Nothing at all on the web or on Android.
+  // Phone apps: the workout's Live Activity on iPhone, its ongoing notification on Android
+  // (lib/live-activity.js); the Home Screen widgets on iPhone only (lib/widgets.js). Nothing on the web.
   useEffect(() => {
     if (!MOBILE) return
     const stops = [], gone = { v: false }
     const keep = fn => { if (gone.v) fn(); else stops.push(fn) }
     startWidgetSync({ useStore }).then(keep).catch(() => {})
+    // A tap on the card opens the workout, which drains the taps waiting for it.
+    stops.push(bindLiveAppActions({ openWorkout: () => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() } }))
     startLiveActivitySync({ useStore, useUI }).then(keep).catch(() => {})
     return () => { gone.v = true; stops.forEach(fn => fn()) }
   }, [])

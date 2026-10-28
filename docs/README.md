@@ -52,6 +52,7 @@ Design notes for specific features, kept next to the code they describe:
 | [Workout views](dev/LIST_VIEW.md) | The cards, list and compact layouts of the workout screen |
 | [Combine routines](dev/COMBINE_ROUTINES.md) | Spec for running more than one routine in a session |
 | [Fatigue and sets](dev/FATIGUE_SETS_MODEL.md) | How hard sets feed the fatigue map and its recovery time per muscle |
+| [Workout card](dev/WORKOUT_CARD.md) | The running workout on the lock screen: iPhone Live Activity and Android notification |
 
 ## Still stuck?
 

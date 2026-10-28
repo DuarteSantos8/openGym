@@ -15,6 +15,7 @@ import android.media.AudioManager;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.view.View;
@@ -23,6 +24,8 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.util.Log;
+import java.util.Collections;
+import org.json.JSONObject;
 
 /**
  * Alarm for the rest between sets. The WebView timer does not run with the screen locked.
@@ -310,6 +313,8 @@ public final class RestAlert {
     private static PendingIntent openApp(Context ctx) {
         Intent open = new Intent(ctx, MainActivity.class);
         open.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        // Every rest and card notification belongs to the running workout: a tap opens it (#760).
+        open.putExtra(LiveActivityPlugin.EXTRA_OPEN, true);
         return PendingIntent.getActivity(ctx, NOTIFICATION_ID + 1, open, FLAGS);
     }
 
@@ -420,7 +425,14 @@ public final class RestAlert {
         }
     }
 
+    /** The rest is over: the notification goes back to the workout card (#760), or away without one. */
     static void stopCountdown(Context ctx) {
+        try {
+            if (LiveActivityPlugin.card(ctx) != null) {
+                ctx.startService(new Intent(ctx, RestTimerService.class).setAction(RestTimerService.ACTION_REST_END));
+                return;
+            }
+        } catch (Exception ignored) { /* no card to go back to: the countdown just stops */ }
         try {
             ctx.stopService(new Intent(ctx, RestTimerService.class));
         } catch (Exception ignored) { /* already gone */ }
@@ -518,6 +530,111 @@ public final class RestAlert {
         Intent i = new Intent(ctx, RestTimerService.class);
         i.setAction(action);
         return PendingIntent.getService(ctx, code, i, FLAGS);
+    }
+
+    /**
+     * The workout card between sets (#760): the set to do now, the time since the workout started
+     * and Log set. Standard slots only, so Android 16 can show it as a Live Update (a chip in the
+     * status bar with the elapsed time).
+     */
+    static Notification cardNotification(Context ctx, WorkoutCard c, JSONObject attributes) {
+        JSONObject labels = attributes == null ? null : attributes.optJSONObject("labels");
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        ensureCountdownChannel(ctx, nm);
+        Notification.Builder b = ongoing(ctx);
+        if (c.cur != null) {
+            b.setContentTitle(c.cur.exName);
+            b.setContentText(c.cur.target.isEmpty() ? c.cur.setLine : c.cur.setLine + " · " + c.cur.target);
+            Intent log = new Intent(ctx, RestTimerService.class).setAction(RestTimerService.ACTION_LOG_SET)
+                    .putExtra("exId", c.cur.exId).putExtra("entryIdx", c.cur.entryIdx).putExtra("setIdx", c.cur.setIdx);
+            b.addAction(new Notification.Action.Builder(null, label(labels, "done", "Log set"),
+                    PendingIntent.getService(ctx, 55, log, FLAGS)).build());
+        } else {
+            b.setContentTitle(c.done >= c.total
+                    ? label(labels, "allDone", "All sets done")
+                    : label(labels, "openApp", "Open openGym for the next set"));
+        }
+        if (!c.name.isEmpty()) b.setSubText(c.name);
+        if (c.total > 0) b.setProgress(c.total, c.done, false);
+        long start = attributes == null ? 0 : attributes.optLong("start", 0);
+        if (start > 0) b.setWhen(start).setShowWhen(true).setUsesChronometer(true);
+        promote(b, null);
+        return b.build();
+    }
+
+    /**
+     * The rest countdown on Android 16+ (#760): Live Updates take standard styles only, so the
+     * custom card of countdownNotification becomes a ProgressStyle with the controls as actions.
+     * The system shows three actions at most: -15s (Resume while paused), +15s and Skip; Pause is
+     * in the app.
+     */
+    static Notification restProgressNotification(Context ctx, long leftMs, long totalMs, boolean paused,
+                                                  String resume, String minus, String plus, String skip,
+                                                  int accent, WorkoutCard c, JSONObject attributes) {
+        JSONObject labels = attributes == null ? null : attributes.optJSONObject("labels");
+        int max = (int) Math.max(1, Math.round(totalMs / 1000.0));
+        int left = (int) Math.min(max, (Math.max(0, leftMs) + 999) / 1000);
+        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+        ensureCountdownChannel(ctx, nm);
+        Notification.Builder b = ongoing(ctx);
+        String rest = label(labels, "rest", "Rest");
+        String clock = clock(left);
+        if (c != null && c.cur != null) {
+            b.setContentText(label(labels, "next", "Up next") + ": " + c.cur.exName + " · " + c.cur.setLine);
+        }
+        if (c != null && !c.name.isEmpty()) b.setSubText(c.name);
+        if (paused) {
+            b.setContentTitle(rest + " " + clock).setShowWhen(false);
+        } else {
+            // The system counts down the clock and the status-bar chip itself: no repost for those.
+            b.setContentTitle(rest).setWhen(System.currentTimeMillis() + Math.max(0, leftMs)).setShowWhen(true)
+                    .setUsesChronometer(true).setChronometerCountDown(true);
+        }
+        b.setStyle(new Notification.ProgressStyle()
+                .setProgressSegments(Collections.singletonList(new Notification.ProgressStyle.Segment(max).setColor(accent)))
+                .setProgress(max - left));
+        b.addAction(new Notification.Action.Builder(null, paused ? resume : minus,
+                control(ctx, paused ? ACTION_PAUSE : ACTION_MINUS, paused ? 51 : 52)).build());
+        b.addAction(new Notification.Action.Builder(null, plus, control(ctx, ACTION_PLUS, 53)).build());
+        b.addAction(new Notification.Action.Builder(null, skip, control(ctx, ACTION_SKIP, 54)).build());
+        promote(b, paused ? clock : null);
+        return b.build();
+    }
+
+    @SuppressWarnings("deprecation")
+    private static Notification.Builder ongoing(Context ctx) {
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26
+                ? new Notification.Builder(ctx, COUNTDOWN_CHANNEL_ID)
+                : new Notification.Builder(ctx);
+        b.setSmallIcon(R.drawable.ic_stat_dumbbell)
+                .setOngoing(true)
+                .setCategory(Notification.CATEGORY_PROGRESS)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setColor(lastAccent)
+                .setContentIntent(openApp(ctx))
+                .setLocalOnly(true);
+        if (Build.VERSION.SDK_INT >= 26) b.setOnlyAlertOnce(true);
+        else b.setPriority(Notification.PRIORITY_DEFAULT);
+        if (Build.VERSION.SDK_INT >= 31) b.setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE);
+        return b;
+    }
+
+    /**
+     * Asks Android 16+ to show the notification as a Live Update: promoted, with a status-bar chip.
+     * The extra is what Notification.Builder.setRequestPromotedOngoing sets; that method is only in
+     * the 36.1 SDK, the extra works from 36 on. The user can turn it off in the app's settings.
+     */
+    private static void promote(Notification.Builder b, String chip) {
+        if (Build.VERSION.SDK_INT < 36) return;
+        Bundle extras = new Bundle();
+        extras.putBoolean("android.requestPromotedOngoing", true);
+        b.addExtras(extras);
+        if (chip != null) b.setShortCriticalText(chip);
+    }
+
+    private static String label(JSONObject labels, String key, String fallback) {
+        String v = labels == null ? null : labels.optString(key, "");
+        return v == null || v.isEmpty() ? fallback : v;
     }
 
     static String clock(int sec) {

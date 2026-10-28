@@ -123,6 +123,11 @@ imported. When you change one side, change the other in the same pull request:
 The last two have no test that compares the code itself, so a change on one side only is not
 caught automatically.
 
+The phones have one such pair too: what the workout card's Log set does while the page sleeps
+(the next set, the rest that follows) is `LiveActivityTick.tick` in
+`ios/App/App/WorkoutActivity.swift` and `WorkoutCard.java` on Android, each with its own tests
+(`WorkoutCardTest.java`), nothing comparing the two.
+
 The Coach goes the other way: `frontend/src/lib/coach-local.js` imports `api/coach/core/` directly,
 so the phone apps run the same prompts and validation as the server. That is why the web image
 copies `api/coach/core/` into its build stage.

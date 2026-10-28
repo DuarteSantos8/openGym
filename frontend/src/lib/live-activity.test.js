@@ -144,6 +144,28 @@ describe('the Done taps', () => {
     expect(await L.drainLiveEvents()).toEqual(['e1'])
     expect(order).toEqual(['applied', 'saved', 'ack:e1'])
   })
+  it('opens the workout for a tap on the card, even with taps before it waiting for the workout screen', () => {
+    const openWorkout = vi.fn()
+    const off = L.bindLiveAppActions({ openWorkout })
+    expect(L.applyLiveEvents([ev('e1'), ev('o1', { type: 'open' })], getState)).toEqual([])
+    expect(openWorkout).toHaveBeenCalledTimes(1)
+    bind()
+    expect(L.applyLiveEvents([ev('e1'), ev('o1', { type: 'open' })], getState)).toEqual(['e1', 'o1'])
+    expect(calls).toHaveLength(1)
+    // Applied once: the same open drained again does not open the screen a third time.
+    expect(L.applyLiveEvents([ev('o1', { type: 'open' })], getState)).toEqual(['o1'])
+    expect(openWorkout).toHaveBeenCalledTimes(2)
+    off()
+  })
+  it('acknowledges a tap on the card of a workout that ended without opening anything', () => {
+    const openWorkout = vi.fn()
+    const off = L.bindLiveAppActions({ openWorkout })
+    bind()
+    state.active = null
+    expect(L.applyLiveEvents([ev('o1', { type: 'open' })], getState)).toEqual(['o1'])
+    expect(openWorkout).not.toHaveBeenCalled()
+    off()
+  })
   it('drains the native queue and acknowledges what it applied', async () => {
     const acked = []
     const queue = [ev('e1')]
@@ -277,14 +299,14 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
-  it('sends nothing where iOS has no Live Activities, and nothing off the iPhone app', async () => {
+  it('sends nothing where iOS has no Live Activities, and nothing off the phone apps', async () => {
     L._setLivePluginForTest(plugin(false))
     const stop = await L.startLiveActivitySync({ useStore, useUI })
     await vi.runAllTimersAsync()
     expect(calls).toEqual([])
     stop()
     L._resetLiveActivity()
-    h.platform = 'android'
+    h.platform = 'web'
     const stop2 = await L.startLiveActivitySync({ useStore, useUI })
     await vi.runAllTimersAsync()
     expect(calls).toEqual([])

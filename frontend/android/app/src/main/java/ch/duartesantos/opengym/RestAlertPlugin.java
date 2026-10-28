@@ -22,6 +22,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  */
 @CapacitorPlugin(name = "RestAlert")
 public class RestAlertPlugin extends Plugin {
+    private static final String PREFS = "opengym.rest";
     private static RestAlertPlugin instance;
     // Started to stopped is when the page is visible (document.hidden flips with it), so it is
     // when the page's own countdown plays the end of a rest.
@@ -65,37 +66,57 @@ public class RestAlertPlugin extends Plugin {
             call.reject("no context");
             return;
         }
-        long at = number(call, "at", -1);
+        JSObject data = call.getData();
+        long at = number(data, "at", -1);
         if (at <= System.currentTimeMillis()) {
             call.reject("at must be in the future");
             return;
         }
-        RestAlert.setAccentColor((int) number(call, "accent", 0xFF30D158L), (int) number(call, "ink", 0xFF000000L));
+        Context app = ctx.getApplicationContext();
+        scheduleFrom(app, data, at, number(data, "totalMs", 0));
+        // The workout card's Log set starts the next rest without the page (#760): with these.
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString("last", data.toString()).apply();
+        call.resolve();
+    }
+
+    /** A rest the workout card started, with the settings of the page's last one (defaults before any). */
+    static void scheduleLike(Context ctx, long at, long totalMs, String title) {
+        JSObject data;
+        try {
+            data = new JSObject(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString("last", "{}"));
+        } catch (Exception e) {
+            data = new JSObject();
+        }
+        if (!data.has("title") && title != null && !title.isEmpty()) data.put("title", title);
+        scheduleFrom(ctx, data, at, totalMs);
+    }
+
+    private static void scheduleFrom(Context ctx, JSObject data, long at, long totalMs) {
+        RestAlert.setAccentColor((int) number(data, "accent", 0xFF30D158L), (int) number(data, "ink", 0xFF000000L));
         RestAlert.setLabels(
-                call.getString("pause", "Pause"),
-                call.getString("resume", "Resume"),
-                call.getString("minus", "\u2212 15s"),
-                call.getString("plus", "+ 15s"),
-                call.getString("skip", "Skip")
+                data.getString("pause", "Pause"),
+                data.getString("resume", "Resume"),
+                data.getString("minus", "− 15s"),
+                data.getString("plus", "+ 15s"),
+                data.getString("skip", "Skip")
         );
         RestAlert.schedule(
-                ctx.getApplicationContext(),
+                ctx,
                 at,
-                (int) number(call, "id", RestAlert.NOTIFICATION_ID),
-                call.getString("title", "Rest over"),
-                !Boolean.FALSE.equals(call.getBoolean("sound", Boolean.TRUE)),
+                (int) number(data, "id", RestAlert.NOTIFICATION_ID),
+                data.getString("title", "Rest over"),
+                !Boolean.FALSE.equals(data.getBoolean("sound", Boolean.TRUE)),
                 // Settings → Sound (#306): the sound by name; a page from before it sends only `classic`.
-                call.getString("tone", Boolean.TRUE.equals(call.getBoolean("classic", Boolean.FALSE)) ? "classic" : "chime"),
-                !Boolean.FALSE.equals(call.getBoolean("vibrate", Boolean.TRUE)),
-                Boolean.TRUE.equals(call.getBoolean("alarmBuzz", Boolean.FALSE)),
-                call.getString("channelId", RestAlert.CHANNEL_ID),
-                call.getString("visibility", "public"),
-                call.getString("importance", "high"),
-                Boolean.TRUE.equals(call.getBoolean("localOnly", Boolean.FALSE)),
-                call.getString("countdownTitle", "Rest"),
-                number(call, "totalMs", 0)
+                data.getString("tone", Boolean.TRUE.equals(data.getBoolean("classic", Boolean.FALSE)) ? "classic" : "chime"),
+                !Boolean.FALSE.equals(data.getBoolean("vibrate", Boolean.TRUE)),
+                Boolean.TRUE.equals(data.getBoolean("alarmBuzz", Boolean.FALSE)),
+                data.getString("channelId", RestAlert.CHANNEL_ID),
+                data.getString("visibility", "public"),
+                data.getString("importance", "high"),
+                Boolean.TRUE.equals(data.getBoolean("localOnly", Boolean.FALSE)),
+                data.getString("countdownTitle", "Rest"),
+                totalMs
         );
-        call.resolve();
     }
 
     /**
@@ -190,7 +211,10 @@ public class RestAlertPlugin extends Plugin {
     // PluginCall.getLong only accepts a Long, and a JS timestamp often arrives as a Double
     // (or a Long when it no longer fits in an int). Number covers all three.
     private static long number(PluginCall call, String name, long fallback) {
-        JSObject data = call.getData();
+        return number(call.getData(), name, fallback);
+    }
+
+    private static long number(JSObject data, String name, long fallback) {
         if (data == null) return fallback;
         Object value = data.opt(name);
         if (value instanceof Number) return ((Number) value).longValue();

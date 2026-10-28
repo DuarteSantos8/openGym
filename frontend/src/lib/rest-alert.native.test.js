@@ -202,7 +202,7 @@ describe('the Android side of Vibrate off', () => {
   const alert = src('RestAlert')
 
   it('reads the flag from the page, defaulting to on for an older page', () => {
-    expect(src('RestAlertPlugin')).toMatch(/call\.getBoolean\("vibrate", Boolean\.TRUE\)/)
+    expect(src('RestAlertPlugin')).toMatch(/data\.getBoolean\("vibrate", Boolean\.TRUE\)/)
   })
 
   it('posts on a channel created without vibration, and only buzzes by hand when allowed to', () => {
@@ -227,7 +227,7 @@ describe('the Android side of the alarm buzz (#375)', () => {
   const plugin = src('RestAlertPlugin')
 
   it('reads the flag from the page, off for an older page, and offers buzz()', () => {
-    expect(plugin).toMatch(/call\.getBoolean\("alarmBuzz", Boolean\.FALSE\)/)
+    expect(plugin).toMatch(/data\.getBoolean\("alarmBuzz", Boolean\.FALSE\)/)
     expect(plugin).toMatch(/@PluginMethod\s+public void buzz\(PluginCall call\)/)
   })
 

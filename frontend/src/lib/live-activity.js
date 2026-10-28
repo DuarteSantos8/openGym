@@ -19,7 +19,14 @@
 // exercise without ticking anything (Discord: Done read like "finish", and there was no way to
 // leave a machine somebody else took). The native side moves the activity on by itself for both.
 //
-// Text only: no exercise animations or pictures (Gym visual licence). iPhone app only.
+// A tap on the card itself ({ type: 'open', wid, at }, Android) opens the workout screen, which
+// then applies whatever waits in the queue.
+//
+// Android (#760) shows the same card as one ongoing notification, with the same plugin methods
+// (android/.../LiveActivityPlugin.java): Log set between sets, the rest countdown during a rest, a
+// Live Update chip on Android 16+. Its Log set moves on as iOS's does (WorkoutCard.java).
+//
+// Text only: no exercise animations or pictures (Gym visual licence). Phone apps only.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX } from './exercises.js'
 import { t } from './i18n.js'
@@ -163,6 +170,7 @@ export function buildLiveActivity (S, timer = null) {
 /* ---------- applying the activity's events ---------- */
 
 let handlers = null   // the workout screen's: setDone, next, restSkip, timer
+let appActions = null // the app's: openWorkout
 const readApplied = () => { try { return JSON.parse(localStorage.getItem(APPLIED_KEY)) || [] } catch { return [] } }
 const writeApplied = ids => { try { localStorage.setItem(APPLIED_KEY, JSON.stringify(ids.slice(-APPLIED_MAX))) } catch { /* the queue's ack is what counts */ } }
 
@@ -203,6 +211,8 @@ export function applyLiveEvents (events, getState) {
   if (!Array.isArray(events)) return []
   const applied = readApplied()
   const done = []
+  // A tap on the card opens the workout screen even while taps before it wait for that screen.
+  if (!handlers && events.some(ev => ev?.type === 'open' && !applied.includes(ev.id))) appActions?.openWorkout?.()
   for (const ev of events) {
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
@@ -220,6 +230,8 @@ export function applyLiveEvents (events, getState) {
     } else if (ev.type === 'restSkip' && ours) {
       if (!handlers) break
       if (restSkipApplies(handlers.timer?.(), num(ev.at))) handlers.restSkip?.()
+    } else if (ev.type === 'open' && ours) {
+      appActions?.openWorkout?.()
     }
     // Applied, or meaningless now (another workout, a set that is gone or already ticked).
     applied.push(ev.id)
@@ -234,7 +246,8 @@ export function applyLiveEvents (events, getState) {
 let pluginP = null
 // Inside an object: a Capacitor plugin proxy answers `then` (lib/rest-alert.js, the Coach hang #42).
 const livePlugin = () => pluginP || (pluginP = (async () => {
-  if (!MOBILE || (await nativePlatform()) !== 'ios') return null
+  const platform = MOBILE ? await nativePlatform() : null
+  if (platform !== 'ios' && platform !== 'android') return null
   const { registerPlugin } = await import('@capacitor/core')
   return { LiveActivity: registerPlugin('LiveActivity') }
 })().catch(() => null))
@@ -270,6 +283,12 @@ export function bindLiveActions (h) {
   handlers = h
   drainLiveEvents()
   return () => { if (handlers === h) handlers = null }
+}
+
+/** The app hands over what a tap on the card needs: openWorkout. Returns the unbind. */
+export function bindLiveAppActions (h) {
+  appActions = h
+  return () => { if (appActions === h) appActions = null }
 }
 
 /**
@@ -321,4 +340,4 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
 
 // Test seams.
 export function _setLivePluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { LiveActivity: plugin } : null); getStateRef = getState || null }
-export function _resetLiveActivity () { handlers = null; pluginP = null; getStateRef = null; draining = null }
+export function _resetLiveActivity () { handlers = null; appActions = null; pluginP = null; getStateRef = null; draining = null }

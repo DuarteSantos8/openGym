@@ -565,4 +565,13 @@ web assets; `scripts/ios/finish-ipa.sh` adds them and signs it on the release ma
   The rest countdown does not depend on
   it: a foreground service (`specialUse`) keeps the countdown in the notification and holds a
   wake lock until the end, so the end of a rest sounds on time with the screen locked; the
-  rest-over alarm is only its fallback.
+  rest-over alarm is only its fallback. While a workout runs, the same service keeps one
+  **workout card** in the notification between rests too (#760, the Android side of the
+  iPhone's Live Activity, `lib/live-activity.js` → `LiveActivityPlugin`): the set to do now,
+  the time since the start and **Log set**, which ticks the set without opening the app and
+  starts the rest that follows; the card then shows the next set. A tap on it opens the
+  workout. On Android 16+ the card and the rest are a **Live Update**, a chip in the status
+  bar (`POST_PROMOTED_NOTIFICATIONS`, a normal permission the user can turn off per app);
+  there the rest's buttons are −15s, +15s and Skip, as the system shows three at most. The
+  service and the rest-over receiver are guarded by a signature permission, so only this app
+  can start them. See [dev/WORKOUT_CARD.md](dev/WORKOUT_CARD.md).
