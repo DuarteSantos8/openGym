@@ -13,7 +13,11 @@
 // make look identical, from counting. Only finished workouts (`S.workouts`) count; an in-progress
 // session never does. Missed sets are the planner's business, not the queue's. A queue with
 // `strict: true` (the app's "Start new pass") drops the dated name clause: only a workout started
-// at/after `since` counts, so a session logged earlier that day stays the old pass's.
+// at/after `since` counts, so a session logged earlier that day stays the old pass's. `since` is
+// a clock only while it is positive: 0 is no apply time at all, and every workout ever logged
+// would start after it. The name clause stops at today: a workout dated later has not happened
+// yet (one an API client wrote, or the one that closed the previous rotation pass on a device
+// whose calendar runs ahead). Here today is the date the reminder asks about (`iso`).
 //
 // NEXT RULE (shared with the frontend): once `startsOn` is reached, the day's session is the
 // first not-done one in slot order — unless pins say otherwise.
@@ -26,11 +30,19 @@
 // skips it. A pin on a past day is stale (the session floats again), and a pin on a done session
 // is fulfilled (`pinState === 'done'`) and reads as no override at all. Pins change which session
 // is NEXT, never what counts as DONE, so the tally a planner reads is untouched.
+//
+// The `?.` on each workout is this copy's own, like the one on each routine below: a state file
+// written before PUT /api/data dropped null entries can still hold one, and a throw here is
+// caught by the tick and logged, so that profile's day reminders stop with nothing to say why.
 function routineIdsOf(w) {
-  return Array.isArray(w.routineIds) ? w.routineIds : (w.routineId ? [w.routineId] : []);
+  return Array.isArray(w?.routineIds) ? w.routineIds : (w?.routineId ? [w.routineId] : []);
 }
-function nameParts(w) {
-  return String(w.name || '').split(' + ');
+// Does this workout's name name this routine? The frontend's namesRoutine: a routine can itself
+// be named 'Push + Pull', so the name is looked for at a ' + ' boundary, never split out.
+function namesRoutine(w, name) {
+  if (!name) return false;
+  const n = String(w.name || '');
+  return n === name || n.startsWith(name + ' + ') || n.endsWith(' + ' + name) || n.includes(' + ' + name + ' + ');
 }
 // The reminder tick runs everything below every ten seconds for each profile with a reminder on,
 // over whatever its state file holds: a queue, routines and workouts of any length a 5 MB PUT
@@ -39,22 +51,21 @@ function nameParts(w) {
 // session, the routines once per weekday entry) held the event loop for minutes on a crafted
 // file, and every other user's requests and reminders waited behind it.
 //
-// The sessions of `q` that count as done under the DONE RULE, in one pass over the workouts. A
-// session's name is that of the first routine with its id, as the rule reads it. The pass stops
-// once every session is done.
-function doneIds(S, q) {
+// The sessions of `q` that count as done under the DONE RULE as of `today`, in one pass over the
+// workouts. A session's name is that of the first routine with its id, as the rule reads it. The
+// pass stops once every session is done.
+function doneIds(S, q, today) {
   const want = new Set(q.ids), names = new Map(), done = new Set();
   for (const r of S.routines || []) if (want.has(r?.id) && !names.has(r.id)) names.set(r.id, r.name);
   for (const w of S.workouts || []) {
     if (done.size === want.size) break;
     const ids = routineIdsOf(w);
-    const byClock = (w.start ?? 0) >= S.queue.since;
-    const byName = S.queue.strict !== true && String(w.d || '') >= q.startsOn;
+    const byClock = S.queue.since > 0 && (w?.start ?? 0) >= S.queue.since;
+    const byName = S.queue.strict !== true && String(w?.d || '') >= q.startsOn && String(w?.d || '') <= today;
     if (!byClock && !byName) continue;
-    let parts;
     for (const id of ids) {
       if (!want.has(id) || done.has(id)) continue;
-      if (byClock || (parts ??= nameParts(w)).includes(names.get(id))) done.add(id);
+      if (byClock || namesRoutine(w, names.get(id))) done.add(id);
     }
   }
   return done;
@@ -71,13 +82,16 @@ function dayIn(ms, tz) {
   } catch { return new Date(ms).toISOString().slice(0, 10); }
 }
 // Tolerant reader, as in the frontend: a missing or malformed queue reads as none. A missing
-// startsOn means active since the day of the apply (dayIn above); a session whose routine was
-// deleted is dropped from the week (the frontend's queue.js does the same — it could never be
-// started or logged).
+// startsOn means active since the day of the apply (dayIn above), and one with no apply time
+// either is none, as in the frontend: dated from 0 the week began in 1970 and read as finished.
+// A session whose routine was deleted is dropped from the week (the frontend's queue.js does the
+// same — it could never be started or logged).
 function queueOf(S) {
   const q = S.queue;
   if (!q || typeof q !== 'object' || !Array.isArray(q.ids)) return null;
-  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : dayIn(q.since || 0, S.reminder?.tz);
+  if (q.strict === true && !(q.since > 0)) return null; // a strict pass with no clock, as in the frontend
+  const startsOn = typeof q.startsOn === 'string' ? q.startsOn : (q.since > 0 ? dayIn(q.since, S.reminder?.tz) : null);
+  if (!startsOn) return null;
   // First valid occurrence of each id — the same normalization as the frontend's queueOf.
   const known = new Set((S.routines || []).map(r => r?.id));
   const ids = [...new Set(q.ids)].filter(id => known.has(id));
@@ -87,11 +101,12 @@ function queueOf(S) {
 // The reminder tick only ever asks "what's next right now" — there is no separate "today" to
 // preview a different date against, so `today` in the spec's `next(iso, today)` is just `iso`.
 // That collapses `iso === max(today, startsOn)` to the equivalent, simpler `iso >= startsOn`, and
-// "pins dated today or later" to "pins dated `iso` or later".
+// "pins dated today or later" to "pins dated `iso` or later", and the DONE RULE's "up to today"
+// to "up to `iso`".
 function queueNext(S, iso) {
   const q = queueOf(S);
   if (!q || iso < q.startsOn) return null;
-  const done = doneIds(S, q);
+  const done = doneIds(S, q, iso);
   const remaining = q.ids.filter(id => !done.has(id));
   const open = new Set(remaining);
   const pins = Object.entries(S.dayPlan || {}).filter(([d, id]) => d >= iso && open.has(id));
@@ -104,11 +119,12 @@ function queueNext(S, iso) {
 // What a per-date override pointing at `id` means for the queue: 'open' — a pin on a session
 // still to do (its day's session, skipped elsewhere); 'done' — a fulfilled pin, to be read as no
 // override; null — not a queue session (no queue, a malformed one, a routine override, 'rest', a
-// deleted routine), so the plain override rules apply.
-export function pinState(S, id) {
+// deleted routine), so the plain override rules apply. As of `today`: by default the user's
+// date in the zone the reminder fires by, as the frontend's copy defaults to the device's.
+export function pinState(S, id, today = dayIn(Date.now(), S.reminder?.tz)) {
   const q = queueOf(S);
   if (!q || !id || !q.ids.includes(id)) return null;
-  return doneIds(S, q).has(id) ? 'done' : 'open';
+  return doneIds(S, q, today).has(id) ? 'done' : 'open';
 }
 
 // A weekday can hold a routine-id list (combine routines); the reminder only needs the first.
@@ -121,7 +137,7 @@ export function pinState(S, id) {
 export function effectiveRoutineId(S, iso) {
   const ov = S.dayPlan?.[iso];
   if (ov === 'rest') return null;
-  const pin = pinState(S, ov);
+  const pin = pinState(S, ov, iso);
   if (pin === 'open') return ov;
   if (!pin && ov && S.routines?.some(r => r?.id === ov)) return ov;
   const q = queueNext(S, iso);
@@ -142,6 +158,6 @@ export function effectiveRoutineId(S, iso) {
 export function queueLiveOn(S, iso) {
   const q = queueOf(S);
   if (!q || iso < q.startsOn) return false;
-  const done = doneIds(S, q);
+  const done = doneIds(S, q, iso);
   return q.ids.some(id => !done.has(id));
 }
