@@ -44,7 +44,8 @@ everything as one file at any time under **Settings → Data & backup**.
 Your instance has no telemetry and phones home to nobody. The exercise pictures and animations ship
 inside the web image, so not even those are downloaded. The AI coach, if an admin turns it on, sends
 the training data it needs to the provider you configured; [AI_COACH.md](AI_COACH.md) lists exactly
-what. Push notifications go through your browser's push service, as all web push does.
+what. Push notifications go through your browser's push service, as all web push does. The music bar,
+if you choose Spotify for it, talks to Spotify (from your instance, or from your device), nothing else.
 
 ### Was openGym written with AI?
 
@@ -104,6 +105,28 @@ No. They are © Aliaksandr Makatserchyk, Gym visual, licensed for use in openGym
 by openGym's license. Anything outside openGym needs your own licence from
 [gymvisual.com](https://gymvisual.com/). Details in [NOTICE.md](../NOTICE.md). The exercise text in
 [catalogue/](../catalogue/README.md) is a different story: that's openGym's, and fixes are welcome.
+
+### Can I control my music during a workout?
+
+Yes: Settings → Features → Music player puts what is playing at the top of the workout, with
+previous, pause and next.
+
+- **Spotify, on your openGym account**, when your instance offers it (its operator set
+  `SPOTIFY_CLIENT_ID`, see [SELF_HOSTING.md](SELF_HOSTING.md#spotify-in-the-workout-optional)):
+  **Connect** once, sign in to Spotify, and every device you sign in to openGym on, the phone
+  app included, shows and steers your music. The tokens stay on the server, encrypted.
+- **Spotify, on one device**, anywhere else (an instance without it, a guest, the phone app with
+  no server): make an app on [developer.spotify.com](https://developer.spotify.com/dashboard)
+  yourself, add the redirect URI the settings page shows you (`opengym://spotify` in the phone
+  apps, the page's own address in a browser, which Spotify accepts on https only) and paste its
+  Client ID into openGym. Each device signs in once; the tokens stay on it.
+
+  Either way, pausing and skipping need Spotify Premium, as for any app.
+- **Apple Music**, in the iPhone app: the Music app's player, nothing to set up beyond allowing
+  access the first time.
+
+The **Music bar** switch on the same page hides the bar everywhere and keeps the rest: the player
+you chose and Spotify's connection are still there when you turn it back on.
 
 ### Where do I ask something that isn't here?
 

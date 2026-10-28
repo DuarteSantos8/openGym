@@ -160,6 +160,10 @@ a{color:var(--acc);text-decoration:none}
 :focus-visible{outline:2.5px solid var(--acc);outline-offset:2px;border-radius:6px}
 button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
 {-webkit-user-select:none;user-select:none}
+/* A text field anywhere, one inside those included (a settings row's Spotify Client ID), takes its text again:
+   iOS WebKit carries -webkit-user-select:none down to the field, which then never gets the
+   keyboard or a paste. */
+input,textarea{-webkit-user-select:text;user-select:text}
 
 /* icons inherit colour and optical size from their context */
 .icn{
@@ -462,6 +466,10 @@ h4.sec{
 /* A connection problem while the banner is switched off (Settings → Show connection status):
    a dot on the Home tab and on the Settings gear. */
 #tabbar .tab-ic{position:relative;display:inline-flex}
+/* Six tabs since Health joined them: on a narrow phone a long word (Thai "Exercises", Russian
+   "Resume") is cut with an ellipsis rather than spilling into the tab beside it. */
+#tabbar button{min-width:0}
+#tabbar button>span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tab-dot{
   position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;
   background:var(--orange);box-shadow:0 0 0 2px var(--bg-el);pointer-events:none;
@@ -515,6 +523,8 @@ h4.sec{
   #timer{background:var(--surface)}
   #toast{background:var(--surface-2)}
   .conn-bar,.whdr.stick{background:var(--bg)}
+  /* The music bar docked above the tab bar (components/MusicDock.jsx). */
+  .music-dock .musicbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--surface)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -710,6 +720,13 @@ body.chips-dragging *{cursor:inherit}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
 .measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:12px;color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
+/* Health area (views/Health.jsx): a metric per card, two to a row; a card and a measurement open on tap. */
+.health-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.health-grid .card{margin:0}
+.health-card,button.measure-history{display:block;width:100%;text-align:start;color:inherit;font:inherit;border:0;cursor:pointer;min-width:0}
+.health-card .l{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--label-2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.health-card .v{font-size:22px;font-weight:600;letter-spacing:-.02em;margin:6px 0 2px;line-height:1.15}
+.health-spark{margin-top:6px;pointer-events:none}
 .exnote{
   background:var(--surface);border-radius:var(--r);padding:13px 15px;
   line-height:1.45;white-space:pre-wrap;font-size:15px;margin-bottom:10px;color:var(--label-2);
@@ -949,6 +966,22 @@ body.chips-dragging *{cursor:inherit}
 .wprog-row .wprog,.whdr.stick .wprog-row .wprog{flex:1;min-width:0;margin-bottom:0}
 .whdr.stick .wprog-row{margin-bottom:2px}
 .wvol{flex:none;font-size:12px;line-height:12px;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+/* The music bar (components/MusicBar.jsx): what plays under the progress line, one compact row. */
+.musicbar{display:flex;align-items:center;gap:10px;margin:-6px 0 14px;padding:6px 6px 6px 8px;border-radius:14px;background:var(--surface)}
+.whdr.stick .musicbar{margin:0 0 10px}
+.mb-art{flex:none;width:36px;height:36px;border-radius:8px;object-fit:cover;display:grid;place-items:center;background:var(--surface-2);color:var(--pink)}
+.mb-art svg{width:20px;height:20px}
+.mb-txt{flex:1;min-width:0}
+.mb-title{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-sub{font-size:12px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-sub.warn{color:var(--orange);white-space:normal}
+.mb-acts{flex:none;display:flex;align-items:center;gap:2px}
+.mb-acts .iconbtn{width:36px;height:36px;background:transparent}
+.mb-acts .mb-play{background:var(--surface-2);border-radius:99px}
+/* Docked above the tab bar on every other screen (components/MusicDock.jsx). */
+.music-dock{position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:calc(84px + var(--sab));z-index:45;animation:slideup var(--med) var(--ease)}
+.music-dock .musicbar{margin:0;background:var(--surface);background:color-mix(in srgb,var(--surface) 97%,transparent);-webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);box-shadow:0 10px 30px -10px rgba(0,0,0,.55)}
+body.has-music-dock #app{padding-bottom:calc(150px + var(--sab))}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{
@@ -2113,6 +2146,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
   .hm-wrap{display:flex;flex-direction:column;align-items:center}
+  /* The docked music bar, beside the rest bar's place. */
+  .music-dock{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
+  body.has-music-dock #app{padding-bottom:calc(200px + var(--sab))}
 }
 
 /* ------------------------------------------------------- gym check-in -- */

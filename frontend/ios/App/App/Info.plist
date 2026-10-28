@@ -62,6 +62,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Used to show the song the Music app is playing at the top of a workout, with buttons to pause it or skip to the next one.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSAppTransportSecurity</key>
@@ -78,6 +80,17 @@
 	<string>Used to scan your gym membership QR code, and to take a photo or video of an exercise you add yourself.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Used to record the sound of a video you take of an exercise you add yourself.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>openGym</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>opengym</string>
+			</array>
+		</dict>
+	</array>
 	<key>BAAppGroupID</key>
 	<string>group.ch.opengym.app</string>
 	<key>BAHasManagedAssetPacks</key>
@@ -95,7 +108,7 @@
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Used to show your heart rate on your Apple Watch while you train, and, when you switch it on, to add the heart rate your watch saved and weigh-ins from other apps to your log.</string>
+	<string>Used to show your heart rate on your Apple Watch while you train, next to each set, to add the heart rate your watch saved and weigh-ins from other apps to your log when you switch it on, and to show the Health data you choose (body measurements, activity, heart, vitals, sleep, mobility, hearing, nutrition, cycle tracking, symptoms, mindfulness and workouts) in openGym's Health section.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Used to save your finished workouts and weigh-ins to Apple Health, when you switch it on.</string>
 	<!-- Gym reminder (#614): off until switched on in Settings. Region monitoring needs Always,

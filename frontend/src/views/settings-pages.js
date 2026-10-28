@@ -1,6 +1,6 @@
 // Settings (v1.3.11): which page each row lives on, and the index the search field reads.
 //
-// The root holds eleven rows in four groups plus the account card; each opens a page at
+// The root holds its rows in four groups plus the account card; each opens a page at
 // /settings/<page>. Rare things hang one level further down (Workout → Fine-tuning). Titles here
 // are the English keys the pages render with t(), so a search hit can find its row on the page
 // by the same text and flash it (views/Settings.jsx). settings-pages.test.jsx renders every page
@@ -16,7 +16,9 @@ export const PAGES = {
   units: { title: 'Units & language', icon: 'ruler', tint: 'var(--teal)' },
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
+  features: { title: 'Features', icon: 'slider', tint: 'var(--pink)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)' },
+  health: { title: 'Health', icon: 'heart', tint: 'var(--red)' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
@@ -31,7 +33,7 @@ export const PAGES = {
 export const PAGE_IDS = Object.keys(PAGES)
 
 // The root, top to bottom. Whether a row shows is pageVisible's call.
-export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch'], ['data', 'about']]
+export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'features', 'health', 'coach', 'watch'], ['data', 'about']]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -133,7 +135,11 @@ export const SEARCH = [
   { page: 'themes', title: 'Also during workouts', icon: 'play', tint: 'var(--green)', kw: 'halloween seasonal workout training decoration' },
   { page: 'themes', title: 'Spooky colors', icon: 'palette', tint: 'var(--purple)', kw: 'halloween orange purple accent color colour seasonal' },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
+  // Features
+  { page: 'features', title: 'Music bar', icon: 'music', tint: 'var(--pink)', kw: 'music bar spotify apple music show hide turn on off enable disable' },
+  { page: 'features', title: 'Music player', icon: 'music', tint: 'var(--pink)', kw: 'music spotify apple music song songs playlist player track skip next pause', when: c => c.musicBar },
   // Data & backup
+  { page: 'health', title: 'Open Health', icon: 'heart', tint: 'var(--red)', kw: 'health body composition bia scale fat muscle water steps heart rate sleep apple health healthkit' },
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },
   { page: 'data', title: 'Export with photos & videos (.zip)', icon: 'share', tint: 'var(--blue)', kw: 'zip media export backup', when: c => c.hasMedia },
   { page: 'data', title: 'Performance report (PDF)', icon: 'note', tint: 'var(--green)', kw: 'pdf print report performance progress summary charts export paper' },

@@ -80,6 +80,9 @@ const P = {
   play: <path d="M8.4 5.6 18 12l-9.6 6.4Z" />,
   pause: <path d="M9.4 5.8v12.4M14.6 5.8v12.4" />,
   skipForward: <><path d="M6.4 5.8 15.2 12l-8.8 6.2Z" /><path d="M18.2 5.8v12.4" /></>,
+  skipBack: <><path d="M17.6 5.8 8.8 12l8.8 6.2Z" /><path d="M5.8 5.8v12.4" /></>,
+  // music: a pair of eighth notes
+  music: <><path d="M9 17.6V6.4l10-2v11.2" /><circle cx="6.8" cy="17.6" r="2.2" /><circle cx="16.8" cy="15.6" r="2.2" /></>,
   reset: <><path d="M4.4 12a7.6 7.6 0 1 0 2.3-5.4" /><path d="M4 4.4v4.4h4.4" /></>,
   // undo: an arrow curling back to the start
   undo: <><path d="M8.6 14.4 4.2 10l4.4-4.4" /><path d="M4.6 10h9.6a5.4 5.4 0 0 1 0 10.8h-3" /></>,

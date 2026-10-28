@@ -28,6 +28,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- The way back from Spotify's sign-in (lib/music/spotify.js, opengym://spotify). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="opengym" android:host="spotify" />
+            </intent-filter>
         </activity>
 
         <!-- Health Connect (#200) opens the app from its permission screen to say why the
