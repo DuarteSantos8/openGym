@@ -20,7 +20,7 @@ const S = (over = {}) => ({
 describe('buildWidgetSnapshot', () => {
   it('has the plan for today and the week after it, today with its exercises', () => {
     const snap = buildWidgetSnapshot(S(), { today: TODAY })
-    expect(snap.v).toBe(1)
+    expect(snap.v).toBe(2)
     expect(snap.today).toBe(TODAY)
     expect(snap.days).toHaveLength(WIDGET_DAYS)
     expect(snap.days.map(d => d.iso)).toEqual(['2026-10-14', '2026-10-15', '2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20', '2026-10-21'])
@@ -83,6 +83,60 @@ describe('buildWidgetSnapshot', () => {
   })
 })
 
+describe('buildWidgetSnapshot: the configurable widget\'s blocks', () => {
+  const wk = (d, extra = {}) => ({ id: 'w' + d, d, end: 1, entries: [], ...extra })
+  it('carries the streak with its best run, freezes and whether this week is done', () => {
+    // Mondays: 09-14, 09-21, 09-28, 10-05 trained (a freeze), 10-12 trained (this week)
+    const ws = ['2026-09-16', '2026-09-23', '2026-09-30', '2026-10-07', '2026-10-13'].map(d => wk(d))
+    const snap = buildWidgetSnapshot(S({ workouts: ws }), { today: TODAY })
+    expect(snap.streak).toBe(5)
+    expect(snap.streakInfo).toMatchObject({ current: 5, best: 5, freezes: 1, weekDone: true, next: 12 })
+    expect(snap.streakInfo.line).toMatch(/5/)
+  })
+
+  it('has the weight goal: current, goal, how far, the last 7 weigh-ins', () => {
+    const bodyweight = Array.from({ length: 9 }, (_, i) => ({ d: `2026-10-0${i + 1}`, w: 90 - i * 0.5 }))
+    const snap = buildWidgetSnapshot(S({ bodyweight, targetW: 80 }), { today: TODAY })
+    expect(snap.weight).toMatchObject({ current: 86, goal: 80, toGo: 6, unit: 'kg' })
+    expect(snap.weight.trend).toEqual([89, 88.5, 88, 87.5, 87, 86.5, 86])
+    expect(snap.weight.line).toMatch(/6 kg/)
+    expect(buildWidgetSnapshot(S({ bodyweight, targetW: 86 }), { today: TODAY }).weight.toGo).toBe(0)
+    expect(buildWidgetSnapshot(S({ bodyweight, unit: 'lb' }), { today: TODAY }).weight).toMatchObject({ goal: null, toGo: null, unit: 'lb' })
+    expect(buildWidgetSnapshot(S(), { today: TODAY }).weight).toBeNull()
+  })
+
+  it('names the next workout with its routines: today until done, then the next planned day', () => {
+    expect(buildWidgetSnapshot(S(), { today: TODAY }).next).toMatchObject({ name: 'Push', iso: TODAY, today: true, ids: ['r1'] })
+    const done = wk(TODAY, { routineIds: ['r1'] })
+    expect(buildWidgetSnapshot(S({ workouts: [done] }), { today: TODAY }).next).toMatchObject({ name: 'Legs', iso: '2026-10-16', today: false, ids: ['r2'] })
+    expect(buildWidgetSnapshot(S({ week: {} }), { today: TODAY }).next).toBeNull()
+  })
+
+  it('counts the PRs of this month and the volume of this week against last week', () => {
+    const set = (w, r) => ({ w, r, done: true })
+    const ws = [
+      wk('2026-09-30', { prs: ['0025'] }),
+      wk('2026-10-02', { prs: ['0025', '0043'] }),
+      wk('2026-10-07', { entries: [{ id: '0025', target: { mode: 'reps' }, sets: [set(100, 10)] }] }),
+      wk('2026-10-13', { prs: ['0043'], entries: [{ id: '0043', target: { mode: 'reps' }, sets: [set(100, 5), set(100, 5), set(100, 2)] }] }),
+    ]
+    const snap = buildWidgetSnapshot(S({ workouts: ws }), { today: TODAY })
+    expect(snap.records.month).toBe(3)
+    expect(snap.records.last).toMatchObject({ d: '2026-10-13' })
+    expect(snap.volume).toMatchObject({ now: 1200, prev: 1000, pct: 20, unit: 'kg' })
+    expect(snap.volume.line).toMatch(/\+20%/)
+    expect(buildWidgetSnapshot(S(), { today: TODAY }).volume).toMatchObject({ now: 0, prev: 0, pct: null })
+  })
+
+  it('leaves the level hook empty until points exist, and has every block\'s words', () => {
+    const snap = buildWidgetSnapshot(S(), { today: TODAY })
+    expect(snap.level).toBeNull()
+    for (const k of ['weightGoal', 'nextWorkout', 'records', 'volume', 'freezes', 'nothingPlanned', 'noWeighIn', 'startNow']) {
+      expect(typeof snap.labels[k], k).toBe('string')
+    }
+  })
+})
+
 describe('startWidgetSync', () => {
   let state, subs, writes
   const useStore = {
@@ -113,13 +167,31 @@ describe('startWidgetSync', () => {
     stop()
   })
 
-  it('does nothing off the iPhone app', async () => {
-    _resetWidgets()
-    h.platform = 'android'
+  it('writes on Android too, and nothing on any other platform', async () => {
+    for (const [platform, n] of [['android', 1], ['web', 0]]) {
+      _resetWidgets()
+      writes = []
+      h.platform = platform
+      if (n) _setWidgetPluginForTest({ write: async ({ json }) => { writes.push(JSON.parse(json)) } })
+      const stop = await startWidgetSync({ useStore })
+      await vi.runAllTimersAsync()
+      expect(writes, platform).toHaveLength(n)
+      stop()
+    }
+    h.platform = 'ios'
+  })
+
+  it('debounces a burst of changes into one write', async () => {
     const stop = await startWidgetSync({ useStore })
     await vi.runAllTimersAsync()
-    expect(writes).toEqual([])
+    for (let i = 0; i < 5; i++) {
+      const prev = state; state = { ...state, bodyweight: [...state.bodyweight, { d: '2026-10-1' + i, w: 80 - i }] }
+      subs.forEach(fn => fn({ S: state }, { S: prev }))
+      await vi.advanceTimersByTimeAsync(200)
+    }
+    await vi.runAllTimersAsync()
+    expect(writes).toHaveLength(2)
+    expect(writes[1].weight.current).toBe(76)
     stop()
-    h.platform = 'ios'
   })
 })

@@ -22,6 +22,7 @@ import { referencedFiles, normalizeMediaRef, workoutMediaOf, cleanUrl, MEDIA_MIM
 import { sniffKind } from './media-sniff.js'
 import { sha256Hex } from './sha256.js'
 import { mediaStore } from './media-store.js'
+import { setVideosOf } from './set-videos.js'
 import { DEFAULT_LIMITS, MB } from './media-limits.js'
 import { t } from './i18n-core.js'
 
@@ -41,7 +42,7 @@ Do not unpack and re-zip it: the app reads zips that are stored, not compressed.
 `
 
 /** The media refs and links of an imported state — each custom exercise's picture and link, each
- *  logged workout's photos and videos — kept only where they pass the same checks as anywhere
+ *  logged workout's photos and videos, each set's form video — kept only where they pass the same checks as anywhere
  *  else (a workout's list also deduplicated, but not capped: workoutMediaOf caps what shows);
  *  the rest of the state is left as it is. Mutates and returns it. */
 export function sanitizeCustomMedia(state) {
@@ -51,7 +52,16 @@ export function sanitizeCustomMedia(state) {
     if ('url' in c) { const u = cleanUrl(c.url); if (u) c.url = u; else delete c.url }
   }
   for (const w of Array.isArray(state?.workouts) ? state.workouts : []) {
-    if (!w || typeof w !== 'object' || !('media' in w)) continue
+    if (!w || typeof w !== 'object') continue
+    // A set's form video (lib/set-videos.js): the same checks, one video per set.
+    for (const e of Array.isArray(w.entries) ? w.entries : []) {
+      for (const st of Array.isArray(e?.sets) ? e.sets : []) {
+        if (!st || typeof st !== 'object' || !('media' in st)) continue
+        const v = setVideosOf(st)
+        if (v.length) st.media = v; else delete st.media
+      }
+    }
+    if (!('media' in w)) continue
     // Every ref that passes, not only the ones shown: a file with more than the cap keeps them
     // all, and the workout shows the first WORKOUT_MEDIA_MAX as it would anywhere else.
     const list = workoutMediaOf(w, Infinity)

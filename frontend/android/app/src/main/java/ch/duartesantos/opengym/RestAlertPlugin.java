@@ -93,7 +93,11 @@ public class RestAlertPlugin extends Plugin {
                 call.getString("importance", "high"),
                 Boolean.TRUE.equals(call.getBoolean("localOnly", Boolean.FALSE)),
                 call.getString("countdownTitle", "Rest"),
-                number(call, "totalMs", 0)
+                number(call, "totalMs", 0),
+                // Timed holds that run themselves: the alerts after this one, and whether this one
+                // shows the rest's countdown card (a count-in or a hold does not).
+                cuesOf(call),
+                !Boolean.FALSE.equals(call.getBoolean("countdown", Boolean.TRUE))
         );
         call.resolve();
     }
@@ -185,6 +189,13 @@ public class RestAlertPlugin extends Plugin {
             try { ctx.startService(i); } catch (Exception ignored) { /* no rest running */ }
         }
         call.resolve();
+    }
+
+    /** The `cues` array ({ dt, title }) as JSON for the alarm's intent, or "" for none. */
+    private static String cuesOf(PluginCall call) {
+        JSArray cues = call.getArray("cues");
+        if (cues == null || cues.length() == 0) return "";
+        return cues.toString();
     }
 
     // PluginCall.getLong only accepts a Long, and a JS timestamp often arrives as a Double

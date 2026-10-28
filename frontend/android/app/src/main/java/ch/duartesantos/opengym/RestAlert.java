@@ -23,6 +23,8 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.util.Log;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Alarm for the rest between sets. The WebView timer does not run with the screen locked.
@@ -56,6 +58,9 @@ public final class RestAlert {
     private static String labMinus = "\u2212 15s";
     private static String labPlus = "+ 15s";
     private static String labSkip = "Skip";
+    // Timed holds that run themselves (lib/auto-holds.js): the alerts after this one, as JSON
+    // [{ dt, title }], each dt in ms after this alert's own time. Empty: a plain rest.
+    private static String lastCues = "";
     private static int lastAccent = 0xFF30D158;
     private static int lastInk = 0xFF000000;
     static final int COUNTDOWN_ID = 41;
@@ -78,6 +83,20 @@ public final class RestAlert {
     public static void schedule(Context ctx, long at, int id, String title, boolean sound, String tone, boolean vibrate,
                                 boolean alarmBuzz, String channelId, String visibility, String importance,
                                 boolean localOnly, String countdownTitle, long totalMs) {
+        schedule(ctx, at, id, title, sound, tone, vibrate, alarmBuzz, channelId, visibility, importance, localOnly,
+                countdownTitle, totalMs, "", true);
+    }
+
+    /**
+     * `cues` (JSON [{ dt, title }], may be empty): the alerts that follow this one by themselves, for
+     * timed holds that run themselves (lib/auto-holds.js): the count-in, the go and the end of each
+     * hold. Each is booked when the one before it rang (chainNext), at its time after that one, so a
+     * paused or lengthened rest moves them all. `countdown` false: no countdown card (a count-in or
+     * a hold has none, the card's buttons are the rest's), and a rest card still up goes.
+     */
+    public static void schedule(Context ctx, long at, int id, String title, boolean sound, String tone, boolean vibrate,
+                                boolean alarmBuzz, String channelId, String visibility, String importance,
+                                boolean localOnly, String countdownTitle, long totalMs, String cues, boolean countdown) {
         alarmBuzz = vibrate && alarmBuzz;
         channelId = channelFor(channelId, vibrate);
         Intent intent = alarmIntent(ctx);
@@ -92,6 +111,7 @@ public final class RestAlert {
         intent.putExtra("importance", importance == null ? "high" : importance);
         intent.putExtra("localOnly", localOnly);
         intent.putExtra("at", at);
+        intent.putExtra("cues", cues == null ? "" : cues);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, intent, FLAGS);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         boolean exact = canExact(am);
@@ -114,7 +134,66 @@ public final class RestAlert {
         lastVibrate = vibrate;
         lastAlarmBuzz = alarmBuzz;
         lastChannel = channelId;
-        startCountdown(ctx, at, totalMs, countdownTitle);
+        lastCues = cues == null ? "" : cues;
+        if (countdown) startCountdown(ctx, at, totalMs, countdownTitle);
+        else stopCountdown(ctx);
+    }
+
+    /** Whether the alert booked now has more after it (a chain of holds that run themselves). */
+    static boolean hasCues() {
+        return lastCues != null && lastCues.length() > 2;
+    }
+
+    /**
+     * The next alert of a chain (see schedule), booked as this one rings: at its time after this
+     * one's, with the ones after it carried along. Alarm only, no countdown card. Nothing when the
+     * chain is over or the page called it off.
+     */
+    static void chainNext(Context ctx, Intent fired) {
+        String cues = fired.getStringExtra("cues");
+        if (cues == null || cues.length() <= 2) return;
+        try {
+            JSONArray list = new JSONArray(cues);
+            if (list.length() == 0) return;
+            long base = fired.getLongExtra("at", System.currentTimeMillis());
+            JSONObject first = list.getJSONObject(0);
+            long dt = Math.max(0, first.optLong("dt", 0));
+            long at = Math.max(base + dt, System.currentTimeMillis() + 250);
+            JSONArray rest = new JSONArray();
+            for (int i = 1; i < list.length(); i++) {
+                JSONObject c = list.getJSONObject(i);
+                JSONObject r = new JSONObject();
+                r.put("dt", Math.max(0, c.optLong("dt", 0) - dt));
+                r.put("title", c.optString("title", ""));
+                rest.put(r);
+            }
+            String title = first.optString("title", "");
+            Intent next = alarmIntent(ctx);
+            next.putExtra("id", NOTIFICATION_ID);
+            next.putExtra("title", title);
+            next.putExtra("sound", fired.getBooleanExtra("sound", lastSound));
+            next.putExtra("tone", fired.getStringExtra("tone") == null ? lastTone : fired.getStringExtra("tone"));
+            next.putExtra("vibrate", fired.getBooleanExtra("vibrate", lastVibrate));
+            next.putExtra("alarmBuzz", fired.getBooleanExtra("alarmBuzz", lastAlarmBuzz));
+            next.putExtra("channelId", fired.getStringExtra("channelId") == null ? lastChannel : fired.getStringExtra("channelId"));
+            next.putExtra("visibility", "public");
+            next.putExtra("importance", "high");
+            next.putExtra("localOnly", false);
+            next.putExtra("at", at);
+            next.putExtra("cues", rest.toString());
+            lastAlertTitle = title;
+            lastCues = rest.toString();
+            PendingIntent pi = PendingIntent.getBroadcast(ctx, NOTIFICATION_ID, next, FLAGS);
+            AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+            try {
+                if (canExact(am)) am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+                else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+            } catch (SecurityException e) {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+            }
+        } catch (Exception e) {
+            Log.w("openGym", "hold chain: next alert not booked", e);
+        }
     }
 
     public static void setAccentColor(int accent, int ink) {
@@ -131,6 +210,7 @@ public final class RestAlert {
     }
 
     public static void cancel(Context ctx, int id) {
+        lastCues = "";
         stopCountdown(ctx);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, alarmIntent(ctx), FLAGS);
@@ -157,6 +237,7 @@ public final class RestAlert {
         intent.putExtra("alarmBuzz", lastAlarmBuzz);
         intent.putExtra("channelId", lastChannel);
         intent.putExtra("at", at);
+        intent.putExtra("cues", lastCues);
         new Thread(() -> fire(ctx, intent), "opengym-rest").start();
     }
 
@@ -198,6 +279,8 @@ public final class RestAlert {
             // the same sound as Settings → Sound picks for the page (RestTone.render).
             boolean play = intent.getBooleanExtra("sound", true);
             if (play) playSound(ctx, toneOf(intent));
+            // A chain of holds that run themselves goes on with the page asleep: its next alert.
+            chainNext(ctx, intent);
             // The countdown card is the foreground-service notification. Drop it once the
             // "rest over" alert is up and the tone has played, including when the WebView is
             // frozen. Not before the tone: the service is what keeps this process in the
@@ -384,6 +467,9 @@ public final class RestAlert {
         intent.putExtra("importance", "high");
         intent.putExtra("localOnly", false);
         intent.putExtra("at", at);
+        // The chain's alerts are relative to this end, so a rest paused or lengthened on the card
+        // moves them with it.
+        intent.putExtra("cues", lastCues);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, NOTIFICATION_ID, intent, FLAGS);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         try {

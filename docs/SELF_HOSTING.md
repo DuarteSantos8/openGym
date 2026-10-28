@@ -704,11 +704,16 @@ goes wrong, so you can spot them:
 ### Photos and videos of custom exercises
 
 Anyone signed in can give an exercise they made one photo, GIF or short video (and, separately,
-a link, which the server never fetches), and attach up to six photos or videos to a logged
-workout — a progress photo, a form-check clip. Both kinds share one quota and one set of limits.
+a link, which the server never fetches), attach up to six photos or videos to a logged
+workout (a progress photo, a form-check clip), and film a set during a workout: one video per
+set, up to 24 per workout, shown beside the set and lined up per exercise to compare two dates.
+All of them share one quota and one set of limits. A set video filmed with **Keep videos on this
+phone only** on (or for a server from before v1.4.4, whose `/api/config` does not say
+`media.sets`) never reaches the server at all.
 The file is uploaded to this server and stored under
 `./data/uploads/<profile id>/`, named by its SHA-256. Only its owner can download it again — no
-admin route, no Coach and no shared plan reads it. It is on by default, with these limits, all
+admin route, no Coach, no MCP tool (it is told how many sets were filmed, nothing more), no
+share card, PDF or shared plan reads it. It is on by default, with these limits, all
 set in `.env`:
 
 | Variable | Default | Meaning |

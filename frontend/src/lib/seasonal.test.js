@@ -101,3 +101,67 @@ describe('once a day', () => {
     } finally { vi.unstubAllGlobals() }
   })
 })
+
+describe('the Christmas window', () => {
+  it('runs from 1 December 00:00 to the end of 31 December, local time, and is gone on 1 January', () => {
+    expect(inSeason('christmas', local(2026, 11, 30, 23, 59))).toBe(false)
+    expect(inSeason('christmas', local(2026, 12, 1, 0, 0))).toBe(true)
+    expect(inSeason('christmas', local(2026, 12, 24, 18))).toBe(true)
+    expect(inSeason('christmas', local(2026, 12, 31, 23, 59))).toBe(true)
+    expect(inSeason('christmas', local(2027, 1, 1, 0, 0))).toBe(false)
+    // and back the next year
+    expect(inSeason('christmas', local(2027, 12, 1, 0, 0))).toBe(true)
+  })
+
+  it('follows the clock on the wall: the same instant is December in one place and not in another', () => {
+    const was = process.env.TZ
+    try {
+      const start = new Date(Date.UTC(2026, 10, 30, 12, 30))   // 30 Nov 12:30 UTC
+      process.env.TZ = 'Pacific/Kiritimati'                     // UTC+14: 1 Dec, 02:30
+      expect(inSeason('christmas', new Date(start))).toBe(true)
+      process.env.TZ = 'Europe/Zurich'                          // 30 Nov, 13:30
+      expect(inSeason('christmas', new Date(start))).toBe(false)
+      const end = new Date(Date.UTC(2026, 11, 31, 23, 30))      // 31 Dec 23:30 UTC
+      process.env.TZ = 'America/New_York'                       // 31 Dec, 18:30: still on
+      expect(inSeason('christmas', new Date(end))).toBe(true)
+      process.env.TZ = 'Asia/Tokyo'                             // 1 Jan 2027, 08:30: over
+      expect(inSeason('christmas', new Date(end))).toBe(false)
+    } finally {
+      if (was === undefined) delete process.env.TZ; else process.env.TZ = was
+    }
+  })
+
+  it('takes over from Halloween with nothing in between, and the two never overlap', () => {
+    for (let m = 1; m <= 12; m++) for (const d of [1, 15, 28]) {
+      const on = THEMES.filter(th => inSeason(th, local(2026, m, d)))
+      expect(on.length, `${m}/${d}`).toBeLessThanOrEqual(1)
+    }
+    expect(activeSeason({}, local(2026, 10, 31, 23, 59))).toBe('halloween')
+    expect(activeSeason({}, local(2026, 11, 15))).toBe(null)
+    expect(activeSeason({}, local(2026, 12, 1, 0, 0))).toBe('christmas')
+    expect(activeSeason({}, local(2027, 1, 1, 0, 0))).toBe(null)
+  })
+
+  it('Auto, On and Off, and the festive colours only when chosen', () => {
+    const dec = local(2026, 12, 5), jul = local(2027, 7, 4)
+    expect(themeOn({}, 'christmas', dec)).toBe(true)
+    expect(themeOn({ seasonal: { christmas: 'off' } }, 'christmas', dec)).toBe(false)
+    expect(activeSeason({ seasonal: { christmas: 'off' } }, dec)).toBe(null)
+    expect(themeOn({ seasonal: { christmas: 'on' } }, 'christmas', jul)).toBe(true)
+    expect(seasonAccent({}, dec)).toBe(null)
+    expect(seasonAccent({ seasonal: { christmasColors: true } }, dec)).toBe('red')
+    expect(seasonAccent({ seasonal: { christmasColors: true } }, jul)).toBe(null)
+    // Halloween's colours chosen in October do not leak into December
+    expect(seasonAccent({ seasonal: { halloweenColors: true } }, dec)).toBe(null)
+    expect(seasonInWorkout({}, dec)).toBe(true)
+    expect(seasonInWorkout({ seasonal: { christmasWorkout: false } }, dec)).toBe(false)
+  })
+
+  it('names an app icon the picker really has', async () => {
+    const { APP_ICON_IDS } = await import('./app-icon-variants.js')
+    for (const th of THEMES.filter(x => x.appIcon)) {
+      expect(APP_ICON_IDS, th.id).toContain(th.appIcon)
+      expect(th.appIconTitle, th.id).toBeTruthy()
+    }
+  })
+})

@@ -8,6 +8,7 @@
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
+import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
 
 const LB_PER_KG = 2.2046226218
@@ -116,18 +117,25 @@ export function sessionRecord(w, { unit, nameOf, speedUnit }) {
 }
 
 /**
- * One weight record per weigh-in day. `t` is when it was typed, which for a weigh-in added to an
- * earlier day is not on that day; then it is put at 08:00 local time on the day it belongs to.
+ * One weight record per weigh-in. A day from before has one, without a time: `t` is when it was
+ * typed, which for a weigh-in added to an earlier day is not on that day; then it is put at 08:00
+ * local time on the day it belongs to. A weigh-in with a time (#859, lib/weigh-ins.js) goes in at
+ * that time. The record of a day's reading '0' (every day from before) keeps the day's old id, so
+ * nothing written earlier is written twice; the others are named by day and reading.
  */
-export function weightRecord(b, unit) {
-  const w = Number(b?.w)
+export function weightRecord(b, unit, r = null) {
+  const w = Number(r ? r.w : b?.w)
   if (!b?.d || !(w > 0)) return null
-  const typed = Number(b.t)
-  const time = typed > 0 && isoOf(new Date(typed)) === b.d ? typed : localMorning(b.d)
+  const typed = Number(r ? r.t : b.t)
+  const at = r && cleanTime(r.at)
+  const time = at ? readingAt(b.d, at) : typed > 0 && isoOf(new Date(typed)) === b.d ? typed : localMorning(b.d)
   if (!(time > 0)) return null
   const kg = unit === 'lb' ? w / LB_PER_KG : w
-  return { id: 'opengym-bw-' + b.d, time, kg: Math.round(kg * 1000) / 1000 }
+  return { id: weightRecordId(b.d, r?.id), time, kg: Math.round(kg * 1000) / 1000 }
 }
+
+/** The hub's id of one weigh-in openGym wrote: its day, and its reading unless that is '0'. */
+export const weightRecordId = (d, rid) => 'opengym-bw-' + d + (rid != null && String(rid) !== '0' ? '-' + rid : '')
 
 function localMorning(iso) {
   const [y, m, d] = String(iso).split('-').map(Number)
@@ -141,7 +149,10 @@ export function healthRecords(S, { nameOf, speedUnit }) {
   return {
     sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
     // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
-    weights: (S?.bodyweight || []).filter(b => !b?.src).map(b => weightRecord(b, unit)).filter(Boolean),
+    // Every weigh-in of a day with several (lib/weigh-ins.js), each at its own time.
+    weights: (S?.bodyweight || []).flatMap(b => (Array.isArray(b?.ins)
+      ? readingsOf(b).filter(r => !r.src).map(r => weightRecord(b, unit, r))
+      : b?.src ? [] : [weightRecord(b, unit)])).filter(Boolean),
   }
 }
 
@@ -173,11 +184,17 @@ export function goneIds(S) {
   const out = new Set()
   const del = S?.deleted && typeof S.deleted === 'object' ? S.deleted : {}
   for (const [k, at] of Object.entries(del.workouts || {})) if (Number(at) > 0) out.add('opengym-w-' + k)
-  for (const [k, at] of Object.entries(del.bodyweight || {})) if (Number(at) > 0) out.add('opengym-bw-' + k)
+  // A removed day takes all its weigh-ins with it (planSync matches the `*`); one weigh-in
+  // removed from a day that keeps others is on record in that day's `gone`.
+  for (const [k, at] of Object.entries(del.bodyweight || {})) if (Number(at) > 0) { out.add('opengym-bw-' + k); out.add('opengym-bw-' + k + '-*') }
+  for (const b of S?.bodyweight || []) {
+    if (!b?.d || !b.gone || typeof b.gone !== 'object') continue
+    for (const [rid, at] of Object.entries(b.gone)) if (Number(at) > 0) out.add(weightRecordId(b.d, rid))
+  }
   const reset = S?.resetIds && typeof S.resetIds === 'object' ? S.resetIds : {}
   for (const k of Array.isArray(reset.workouts) ? reset.workouts : []) out.add('opengym-w-' + k)
   // A weigh-in is named by its day and time there ("2026-09-17|1758…"); Health knows it by day.
-  for (const k of Array.isArray(reset.bodyweight) ? reset.bodyweight : []) out.add('opengym-bw-' + String(k).split('|')[0])
+  for (const k of Array.isArray(reset.bodyweight) ? reset.bodyweight : []) { const d = String(k).split('|')[0]; out.add('opengym-bw-' + d); out.add('opengym-bw-' + d + '-*') }
   return out
 }
 
@@ -205,13 +222,17 @@ export function planSync({ sessions, weights }, written = {}, gone = null) {
   take(weights, 'weight', out.weights)
   for (const [id, was] of Object.entries(written || {})) {
     if (next[id]) continue
-    if (gone && !gone.has(id)) { next[id] = was; continue }
+    if (gone && !isGone(gone, id)) { next[id] = was; continue }
     if (was?.k === 'session') out.remove.sessions.push(id)
     else if (was?.k === 'weight') out.remove.weights.push(id)
   }
   out.written = next
   return out
 }
+
+// Whether a written record is on record as deleted: by its own id, or as a weigh-in of a removed
+// day ('opengym-bw-<day>-<reading>' under that day's 'opengym-bw-<day>-*').
+const isGone = (gone, id) => gone.has(id) || (/^opengym-bw-\d{4}-\d{2}-\d{2}-/.test(id) && gone.has(id.slice(0, 21) + '-*'))
 
 /** Every record this phone wrote, by type — what "remove what openGym wrote" takes away. */
 export function writtenIds(written = {}) {

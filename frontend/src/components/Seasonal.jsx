@@ -10,6 +10,7 @@ import { useTourRunning } from '../lib/tour.js'
    and only through import(). */
 const LOADERS = {
   halloween: () => import('../seasonal/halloween.jsx'),
+  christmas: () => import('../seasonal/christmas.jsx'),
 }
 const mods = {}
 const modOf = id => (mods[id] ||= {
@@ -27,9 +28,11 @@ const useSeason = () => {
 // "first open of the day" is an app start, so a start straight into a running workout skips it.
 let firstVisible = null
 
-/** The screen-wide layer (the spider, the witch). `hidden` on the workout screen: no theme there. */
+/** The screen-wide layer (the spider, the witch, the snow). `hidden` on the workout screen, where a
+    theme draws only what its "Also during workouts" switch allows (`workout`), if anything. */
 export function SeasonalLayer({ hidden = false }) {
   const id = useSeason()
+  const inWorkout = useStore(s => seasonInWorkout(s.S))
   if (id && firstVisible === null) firstVisible = !hidden
   // The CSS of a theme is scoped to html[data-season], so a theme switched off mid-session
   // leaves nothing styled behind even though its stylesheet stays loaded.
@@ -40,7 +43,7 @@ export function SeasonalLayer({ hidden = false }) {
   }, [id])
   if (!id || !LOADERS[id]) return null
   const { Layer } = modOf(id)
-  return <Suspense fallback={null}><Layer hidden={hidden} fresh={firstVisible} /></Suspense>
+  return <Suspense fallback={null}><Layer hidden={hidden} fresh={firstVisible} workout={hidden && inWorkout} /></Suspense>
 }
 
 /** One piece of decoration in a view: `spot` names where ('home-hero', 'home-streak', ...).
@@ -53,4 +56,11 @@ export function SeasonDeco({ spot, workout = false }) {
   if (!id || !LOADERS[id]) return null
   const { Deco } = modOf(id)
   return <Suspense fallback={null}><Deco spot={spot} /></Suspense>
+}
+
+/** Opens something of a theme's from outside it (Settings → Seasonal themes → Advent calendar):
+    fetches the theme's module first. Only offered while that theme shows. */
+export function openSeasonal(id, what) {
+  if (!LOADERS[id]) return Promise.resolve(false)
+  return LOADERS[id]().then(m => (m.open ? m.open(what) : false))
 }
