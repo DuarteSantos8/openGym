@@ -32,12 +32,8 @@
 		AA0500000000000000000010 /* WidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000009 /* WidgetViews.swift */; };
 		AA0500000000000000000012 /* WidgetPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000011 /* WidgetPreview.swift */; };
 		AA0700000000000000000002 /* WatchBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0700000000000000000001 /* WatchBridgePlugin.swift */; };
-<<<<<<< HEAD
-		AA0800000000000000000002 /* HealthKitPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0800000000000000000001 /* HealthKitPlugin.swift */; };
 		AAF200000000000000000002 /* MusicPlayerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF200000000000000000001 /* MusicPlayerPlugin.swift */; };
-=======
 		AAF100000000000000000002 /* HealthKitPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAF100000000000000000001 /* HealthKitPlugin.swift */; };
->>>>>>> feat/health
 		AA0600000000000000000002 /* ClipCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000001 /* ClipCodec.swift */; };
 		AA0600000000000000000004 /* HealthReadCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0600000000000000000003 /* HealthReadCore.swift */; };
 		AA0800000000000000000002 /* GymReminderPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0800000000000000000001 /* GymReminderPlugin.swift */; };
@@ -75,12 +71,8 @@
 		AA0500000000000000000009 /* WidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetViews.swift; sourceTree = "<group>"; };
 		AA0500000000000000000011 /* WidgetPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetPreview.swift; sourceTree = "<group>"; };
 		AA0700000000000000000001 /* WatchBridgePlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBridgePlugin.swift; sourceTree = "<group>"; };
-<<<<<<< HEAD
-		AA0800000000000000000001 /* HealthKitPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitPlugin.swift; sourceTree = "<group>"; };
 		AAF200000000000000000001 /* MusicPlayerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicPlayerPlugin.swift; sourceTree = "<group>"; };
-=======
 		AAF100000000000000000001 /* HealthKitPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitPlugin.swift; sourceTree = "<group>"; };
->>>>>>> feat/health
 		AA0600000000000000000001 /* ClipCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ClipCodec.swift; path = ../WatchCore/Sources/WatchCore/ClipCodec.swift; sourceTree = "<group>"; };
 		AA0600000000000000000003 /* HealthReadCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthReadCore.swift; path = ../WatchCore/Sources/WatchCore/HealthReadCore.swift; sourceTree = "<group>"; };
 		AA0800000000000000000001 /* GymReminderPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GymReminderPlugin.swift; sourceTree = "<group>"; };
@@ -147,12 +139,8 @@
 				AA0500000000000000000009 /* WidgetViews.swift */,
 				AA0500000000000000000011 /* WidgetPreview.swift */,
 				AA0700000000000000000001 /* WatchBridgePlugin.swift */,
-<<<<<<< HEAD
-				AA0800000000000000000001 /* HealthKitPlugin.swift */,
 				AAF200000000000000000001 /* MusicPlayerPlugin.swift */,
-=======
 				AAF100000000000000000001 /* HealthKitPlugin.swift */,
->>>>>>> feat/health
 				AA0600000000000000000001 /* ClipCodec.swift */,
 				AA0600000000000000000003 /* HealthReadCore.swift */,
 				AA0800000000000000000001 /* GymReminderPlugin.swift */,
@@ -310,12 +298,8 @@
 				AA0500000000000000000010 /* WidgetViews.swift in Sources */,
 				AA0500000000000000000012 /* WidgetPreview.swift in Sources */,
 				AA0700000000000000000002 /* WatchBridgePlugin.swift in Sources */,
-<<<<<<< HEAD
-				AA0800000000000000000002 /* HealthKitPlugin.swift in Sources */,
 				AAF200000000000000000002 /* MusicPlayerPlugin.swift in Sources */,
-=======
 				AAF100000000000000000002 /* HealthKitPlugin.swift in Sources */,
->>>>>>> feat/health
 				AA0600000000000000000002 /* ClipCodec.swift in Sources */,
 				AA0600000000000000000004 /* HealthReadCore.swift in Sources */,
 				AA0800000000000000000002 /* GymReminderPlugin.swift in Sources */,
