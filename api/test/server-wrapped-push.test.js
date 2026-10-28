@@ -30,7 +30,9 @@ const PEOPLE = {
 };
 const at = iso => Date.parse(iso);
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const firings = (log, uid) => (log.match(new RegExp(`wrapped push firing ${uid} 2026`, 'g')) || []).length;
+// CI sets FORCE_COLOR, so console.log paints the year: strip the colour codes before counting.
+const plain = log => log.replace(/\x1b\[[0-9;]*m/g, '');
+const firings = (log, uid) => (plain(log).match(new RegExp(`wrapped push firing ${uid} 2026`, 'g')) || []).length;
 
 function seed() {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-wrapped-'));
