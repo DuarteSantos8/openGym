@@ -175,6 +175,9 @@ export default function Home() {
       <SeasonDeco spot="home-hero" />
     </div>
 
+    {/* Christmas (lib/seasonal.js): the advent calendar's card, 1 to 24 December, from the theme's chunk. */}
+    <SeasonDeco spot="home-advent" />
+
     {/* December and January: the year in openGym is ready (lib/wrapped.js homeCardYear). */}
     <WrappedHomeCard S={S} />
 
@@ -250,7 +253,8 @@ export default function Home() {
       <div className="row between">
         <div>
           <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
-            <Icon name="flame" style={{ color: 'var(--orange)' }} />
+            {/* in season, a Santa hat on the flame (components/Seasonal.jsx) */}
+            <span style={{ position: 'relative', display: 'inline-flex' }}><Icon name="flame" style={{ color: 'var(--orange)' }} /><SeasonDeco spot="streak-flame" /></span>
             {t('{0} week streak', streak.current)}
           </div>
           <div className="muted small" style={{ marginTop: 2 }}>{doneThisWeek}{plannedPerWeek ? ' / ' + plannedPerWeek : ''} {t('this week')} · {tn('{0} workout total', '{0} workouts total', S.workouts.length)}</div>
