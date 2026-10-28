@@ -201,7 +201,9 @@ that.
   as the title, the exercises and sets as "Copy as text" writes them as the notes, and a type
   (strength training as soon as one exercise is not cardio; walking, running, stationary bike,
   elliptical or stair machine for a cardio-only workout on a catalogue machine; "other" otherwise).
-  Each weigh-in as a weight record, in kilograms. A workout without a real start and end is left
+  Each weigh-in as a weight record, in kilograms, at its own time: a day from before (one weigh-in,
+  no time) keeps the id `opengym-bw-<day>`, every other weigh-in is `opengym-bw-<day>-<id>`. Removing
+  one weigh-in removes its record; removing a day removes all of them. A workout without a real start and end is left
   out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
   pin it.
 - **Permissions.** The manifest declares `WRITE_EXERCISE`, `WRITE_WEIGHT` and, since v1.4.3,
@@ -254,16 +256,17 @@ default, each independent of writing and of the other:
 - **Weigh-ins from other apps.** `HC.readWeights({ since })` → `{ records: [{ t, kg, id, origin,
   clientId }] }`: 30 days back the first time (what Health Connect gives without the history
   permission), afterwards from the newest seen minus two days. `lib/health-read.js` `mergeWeighIns`
-  takes the latest of each day, skips openGym's own records (`clientRecordId` `opengym-*`, origin
-  `ch.duartesantos.opengym*`), keeps a day that has a weigh-in typed into openGym, does not bring
-  back one deleted in openGym after it was measured, and converts to lb for an lb profile. Imported
-  entries carry `src` and are never written back (`healthRecords` leaves them out), and in a sync
-  merge a typed weigh-in beats an imported one of the same day whichever is newer
-  (`mergeBodyweight`); typing over an imported one makes it a typed one.
+  keeps every sample with its time as a weigh-in of its day (#859, `lib/weigh-ins.js`), under an id
+  made from the hub's own record id, so two phones reading the same sample add it once. It skips
+  openGym's own records (`clientRecordId` `opengym-*`, origin `ch.duartesantos.opengym*`), a sample
+  at a minute the day already has a weigh-in for (typed in, or read before), one removed in openGym
+  (the day's `gone`), and a whole day deleted in openGym after it was measured, and converts to lb
+  for an lb profile. Imported weigh-ins carry `src` and are never written back (`healthRecords`
+  leaves them out); typed ones stand beside them, and the daily-value setting picks the day's number.
 - **Foreground only.** Reads run at launch, on resume and after saves, never in the background.
   No `READ_HEALTH_DATA_IN_BACKGROUND`, no `READ_HEALTH_DATA_HISTORY`; old workouts are not filled in.
 - **Device-local state** in `opengym-health.json`: `readHr`, `readWeight`, `wCursor`, `seen` (what
-  was imported per day), `hrTried` (when each recent workout was last read), `readError`.
+  was imported, per hub sample), `hrTried` (when each recent workout was last read), `readError`.
 - **iPhone:** `AppleHealthPlugin.swift` `readHeartRate` / `readWeights` through `HKSampleQuery`;
   the plain-value conversion is `WatchCore/Sources/WatchCore/HealthReadCore.swift` (compiled into
   the app, tested by `swift test`). Apple Health never says whether reading was allowed, so a

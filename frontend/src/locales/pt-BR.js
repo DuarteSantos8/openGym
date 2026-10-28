@@ -1036,7 +1036,6 @@ export const PT_BR_OVERRIDES = {
   'Clear': 'Limpar',
   'QR code': 'QR code',
   'Delete weigh-in': 'Excluir pesagem',
-  'That date already has a weigh-in. Delete it first.': 'Essa data já tem uma pesagem — exclua-a primeiro.',
   'Green': 'Verde',
   'Blue': 'Azul',
   'Orange': 'Laranja',
@@ -2129,6 +2128,20 @@ export const PT_BR_OVERRIDES = {
   "Story 9:16": "Story 9:16",
   "Square 1:1": "Quadrado 1:1",
   "One notification on 1 December when your year is ready.": "Uma notificação em 1º de dezembro quando seu ano estiver pronto.",
+  // --- weigh-ins with a time (#859), recovery hint ---
+  "A few sets today would be nice.": "Umas séries hoje cairiam bem.",
+  "A small hint on Home about what has rested and what is still recovering.": "Uma dica rápida no Início: o que já descansou e o que ainda está se recuperando.",
+  "Before breakfast is the one to compare.": "Antes do café da manhã é a que vale comparar.",
+  "Go a bit lighter today, or swap the session.": "Pegue mais leve hoje, ou troque a sessão.",
+  "Rest day, good timing.": "Dia de descanso, na hora certa.",
+  "Your back hasn’t had any work in {0} days.": "Suas costas não treinam há {0} dias.",
+  "Your chest hasn’t had any work in {0} days.": "Seu peito não treina há {0} dias.",
+  "Your legs are still recovering from {0}.": "Suas pernas ainda estão se recuperando (sessão: {0}).",
+  "Your legs haven’t had any work in {0} days.": "Suas pernas não treinam há {0} dias.",
+  "Your shoulders haven’t had any work in {0} days.": "Seus ombros não treinam há {0} dias.",
+  "Your upper body is still recovering from {0}.": "A parte de cima ainda está se recuperando (sessão: {0}).",
+  "The most recent one of the day.": "A mais recente do dia.",
+  "Today’s plan takes care of that.": "O plano de hoje resolve isso.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

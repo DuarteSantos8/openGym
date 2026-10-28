@@ -66,6 +66,7 @@ import { THEMES, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js
 import { adventOf, adventOpenable } from '../lib/advent.js'
 import { openSeasonal } from '../components/Seasonal.jsx'
 import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
+import { dailyModeOf, settleAll } from '../lib/weigh-ins.js'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -837,6 +838,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Count body weight in bodyweight lifts')} checked={S.volumeBodyweight === true}
             onChange={v => update(s => { s.volumeBodyweight = v })} />
         </Row>
+        {/* #859: a day can hold several weigh-ins. Which one is the day's number for the chart, the
+            trend, the goal line, widgets, Wrapped and the Coach (lib/weigh-ins.js). Morning is the
+            default: it is the weight worth comparing from one day to the next. */}
+        <SelectRow icon="scale" iconTint="var(--teal)" title={t('Daily weigh-in value')}
+          value={dailyModeOf(S)} onChange={v => update(s => { s.bwDaily = v; settleAll(s, v) })}
+          options={[
+            { value: 'first', label: t('Morning (first)'), subtitle: t('Before breakfast is the one to compare.') },
+            { value: 'avg', label: t('Average'), subtitle: t('Every weigh-in of the day counts the same.') },
+            { value: 'last', label: t('Last'), subtitle: t('The most recent one of the day.') },
+          ]} />
       </Section>
     </>,
 
@@ -904,6 +915,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>
           <Switch checked={S.showWeightCard !== false} onChange={v => update(s => { s.showWeightCard = v })} />
+        </Row>
+        {/* A small card when a muscle is still recovering or has been left out a while
+            (lib/recovery-hint.js). One at a time, and it can be put away for the day. */}
+        <Row icon="figureStrength" iconTint="var(--green)" title={t('Recovery tips')}
+          subtitle={t('A small hint on Home about what has rested and what is still recovering.')}>
+          <Switch aria-label={t('Recovery tips')} checked={S.recoveryHint !== false} onChange={v => update(s => { s.recoveryHint = v })} />
         </Row>
         {/* The bar at the top that says the app is offline, kept local, or not synced (#369, #330).
             Here and not under Server & sync, which a phone kept local never shows. Switching it on

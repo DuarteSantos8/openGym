@@ -633,6 +633,18 @@ describe('get_bodyweight', () => {
     r.entries.forEach(e => expect(e.delta_vs_goal).toBeNull())
     expect(r.latest.delta_vs_goal).toBeNull()
   })
+
+  // #859: a day with several weigh-ins lists them with their times; its weight is the profile's daily value.
+  test('lists a day\'s weigh-ins with their times, and names the daily value', () => {
+    S.bodyweight.push({ d: '2099-01-02', w: 80.8, t: 3, ins: [{ id: 'a', at: '07:05', w: 80.2, t: 1 }, { id: 'b', at: '21:40', w: 81.4, t: 3, src: 'hc' }] })
+    S.bwDaily = 'avg'
+    const r = call('get_bodyweight', { from: '2099-01-02', to: '2099-01-02' })
+    expect(r.daily_value).toBe('avg')
+    expect(r.entries).toEqual([{ date: '2099-01-02', weight: 80.8, delta_vs_goal: expect.any(Number), readings: [{ time: '07:05', weight: 80.2 }, { time: '21:40', weight: 81.4, source: 'hc' }] }])
+    const old = call('get_bodyweight').entries[0]
+    expect(old.readings).toHaveLength(1)
+    expect(old.readings[0].weight).toBe(old.weight)
+  })
 })
 
 /* ---------- estimate_1rm ---------- */

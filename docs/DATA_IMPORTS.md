@@ -123,9 +123,15 @@ Routines always arrive as new plans; nothing you already have is overwritten.
 In the Health app on your iPhone, tap your profile picture, then **Export All Health Data**. Unzip
 the result and pick `export.xml` under **Import from another app**. The file is often hundreds of
 megabytes; openGym reads only the body-weight records from it, in whatever unit each one was saved
-in, and keeps one weigh-in per day. Days that already have a weigh-in are left alone.
+in, and keeps every one with its time, so a morning and an evening weigh-in are both there (#859).
+A record at a time the day already has is skipped, so importing the same file twice adds nothing.
+Charts and the trend use one value per day, the one **Settings → Units & language → Daily weigh-in
+value** picks: the morning (first) one, which is the default, the day's average, or the last one.
 
-A CSV with a date column and a weight column works the same way, and so does Strong's
+A CSV with a date column and a weight column works the same way: a date with a time
+(`2026-10-28 07:12`) keeps the time, and a date alone keeps one weigh-in for that day (the file's
+last), added only to a day that has none yet. The body CSV openGym exports itself writes one row per
+weigh-in that way and reads back the same. So does Strong's
 measurements export (Settings → Export Data, the file with *Measurement Type* and *Value*
 columns): only its weight rows are read, each in the unit it was logged in.
 
