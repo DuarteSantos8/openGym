@@ -5897,4 +5897,12 @@ export default {
   "Preview on": "미리 볼 화면",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "조금 짧게",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "프리 웨이트",
+  "Barbells": "바벨",
+  "Cables": "케이블",
+  "Balls & rollers": "볼과 롤러",
+  "Bench & bar": "벤치와 바",
+  "Show {0}": "{0} 펼치기",
+  "Hide {0}": "{0} 접기",
 }

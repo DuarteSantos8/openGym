@@ -5900,4 +5900,12 @@ export default {
   "Preview on": "Előnézet itt",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kicsit rövidebben",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Szabadsúlyok",
+  "Barbells": "Rudak",
+  "Cables": "Kábelek",
+  "Balls & rollers": "Labdák és hengerek",
+  "Bench & bar": "Pad és rúd",
+  "Show {0}": "{0} megjelenítése",
+  "Hide {0}": "{0} elrejtése",
 }

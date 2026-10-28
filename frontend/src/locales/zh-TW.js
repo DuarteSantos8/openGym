@@ -5890,4 +5890,12 @@ export default {
   "Preview on": "預覽位置",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "縮短一點",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "自由重量",
+  "Barbells": "槓鈴",
+  "Cables": "滑輪",
+  "Balls & rollers": "球與滾筒",
+  "Bench & bar": "臥推凳與單槓",
+  "Show {0}": "展開{0}",
+  "Hide {0}": "收合{0}",
 }

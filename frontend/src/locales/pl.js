@@ -5897,4 +5897,12 @@ export default {
   "Preview on": "Podgląd na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "trochę krócej",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Wolne ciężary",
+  "Barbells": "Sztangi",
+  "Cables": "Wyciągi",
+  "Balls & rollers": "Piłki i wałki",
+  "Bench & bar": "Ławka i drążek",
+  "Show {0}": "Pokaż: {0}",
+  "Hide {0}": "Ukryj: {0}",
 }

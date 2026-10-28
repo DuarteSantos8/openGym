@@ -5863,4 +5863,12 @@ export default {
   "Preview on": "پیش‌نمایش روی",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "کمی کوتاه‌تر",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "وزنه‌های آزاد",
+  "Barbells": "هالترها",
+  "Cables": "کابل‌ها",
+  "Balls & rollers": "توپ‌ها و فوم‌رولرها",
+  "Bench & bar": "نیمکت و میله",
+  "Show {0}": "نمایش {0}",
+  "Hide {0}": "پنهان کردن {0}",
 }

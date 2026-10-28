@@ -4326,6 +4326,14 @@ export const PT_BR_OVERRIDES = {
   "iOS ends it after 8 hours, and a swipe removes it. It comes back with your next set.": "O iOS encerra depois de 8 horas, e um deslize remove. Volta com sua próxima série.",
   "Android Settings, Apps, openGym, Notifications.": "Configurações do Android, Apps, openGym, Notificações.",
   "Follows the main page. Switch this on to pick the details and buttons for this type yourself.": "Segue a página principal. Ative isto para escolher você mesmo os detalhes e os botões deste tipo.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Peso livre",
+  "Barbells": "Barras",
+  "Cables": "Polias",
+  "Balls & rollers": "Bolas e rolos",
+  "Bench & bar": "Banco e barra",
+  "Show {0}": "Mostrar {0}",
+  "Hide {0}": "Ocultar {0}",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

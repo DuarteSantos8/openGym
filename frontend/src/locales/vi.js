@@ -5863,4 +5863,12 @@ export default {
   "Preview on": "Xem trước trên",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "ngắn hơn",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Tạ tự do",
+  "Barbells": "Tạ đòn",
+  "Cables": "Cáp",
+  "Balls & rollers": "Bóng & con lăn",
+  "Bench & bar": "Ghế & xà",
+  "Show {0}": "Hiện {0}",
+  "Hide {0}": "Ẩn {0}",
 };

@@ -5863,4 +5863,12 @@ export default {
   "Preview on": "Náhled na",
   // 1.4.5 UX round, P2: timed holds in the finish summary (next hold is shorter)
   "shorter": "kratší",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Volné váhy",
+  "Barbells": "Velké činky",
+  "Cables": "Kladky",
+  "Balls & rollers": "Míče a válce",
+  "Bench & bar": "Lavice a hrazda",
+  "Show {0}": "Zobrazit {0}",
+  "Hide {0}": "Skrýt {0}",
 }
