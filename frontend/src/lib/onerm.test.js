@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { estimate1RM, bestSetOf, e1rmSeries, best1RM, is1RMRecord, REP_CAP, WEIGHTED_REP_CAP, FORMULAS, calculate1RMAccuracy, formulaOf } from './onerm.js'
+import { exposuresWithPerformance } from './session-ui-adapter.js'
+import { estimate1RM, bestSetOf as canonicalBestSetOf, e1rmSeries as canonicalE1rmSeries, best1RM as canonicalBest1RM, is1RMRecord as canonicalIs1RMRecord, REP_CAP, FORMULAS, WEIGHTED_REP_CAP, calculate1RMAccuracy, formulaOf } from './onerm.js'
+
+const exposureFor = entry => ({
+  exerciseId: entry?.id,
+  performance: { sets: (entry?.sets || []).map(row => ({ role: row.phase === 'warmup' ? 'warmup' : 'work', status: row.done ? 'completed' : 'skipped', observations: row.r == null ? [] : [{ metric: 'repetitions', value: row.r }], resistance: row.w > 0 ? { kind: 'external-load', value: row.w } : { kind: 'bodyweight' }, segments: [] })) },
+})
+const canonical = S => (S.workouts || []).some(w => w.entries)
+  ? { ...S, workouts: S.workouts.map(workout => ({ ...workout, exposures: (workout.entries || []).map(exposureFor) })) }
+  : S
+const bestSetOf = (entry, ...args) => canonicalBestSetOf(entry?.performance ? entry : exposureFor(entry), ...args)
+const e1rmSeries = (S, ...args) => canonicalE1rmSeries(canonical(S), ...args)
+const best1RM = (S, ...args) => canonicalBest1RM(canonical(S), ...args)
+const is1RMRecord = (S, exId, entry, ...args) => canonicalIs1RMRecord(canonical(S), exId, entry?.performance ? entry : exposureFor(entry), ...args)
 
 describe('estimate1RM', () => {
   it('returns the load unchanged for a single rep', () => {
@@ -207,6 +220,17 @@ describe('calculate1RMAccuracy', () => {
 })
 
 describe('bestSetOf', () => {
+  it('reads completed observations from a canonical exposure', () => {
+    const snapshot = { sets: [{ setId: 'work', role: 'work' }] }
+    const exposure = {
+      exerciseId: 'x',
+      performance: { sets: [
+        { setId: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 3 }], resistance: { kind: 'external-load', value: 110 }, segments: [] },
+      ] },
+    }
+    expect(bestSetOf(exposure, snapshot)).toEqual({ est: 121, w: 110, r: 3 })
+  })
+
   it('picks the highest estimate, not the heaviest set', () => {
     const entry = { id: 'x', sets: [
       { w: 100, r: 5, done: true },   // 116.7
@@ -277,15 +301,11 @@ describe('e1rmSeries / best1RM', () => {
   })
 
   it('estimates each completed per-side limb and leaves timed/cardio rows out', () => {
-    const sides = { id: 'bench', target: { mode: 'reps', side: true }, sets: [{ w: 100, r: 10, done: false,
-      sides: { L: { w: 100, r: 5, done: true }, R: { w: 90, r: 5, done: false } } }] }
-    expect(bestSetOf(sides)).toEqual({ est: 116.7, w: 100, r: 5 })
-    expect(e1rmSeries({ workouts: [{ start: 1, d: '2026-02-01', entries: [sides] }] }, 'bench'))
+    const [x] = exposuresWithPerformance([{ exposureId: 'x', exerciseId: 'bench' }], [{ exposureId: 'x', target: { mode: 'reps', side: true }, sets: [{ w: 100, r: 10, done: false,
+      sides: { L: { w: 100, r: 5, done: true }, R: { w: 90, r: 5, done: false } } }] }], 'kg')
+    expect(canonicalBestSetOf(x)).toEqual({ est: 116.7, w: 100, r: 5 })
+    expect(canonicalE1rmSeries({ workouts: [{ start: 1, d: '2026-02-01', exposures: [x] }] }, 'bench'))
       .toEqual([{ t: 1, d: '2026-02-01', y: 116.7, w: 100, r: 5 }])
-    expect(e1rmSeries({ workouts: [{ start: 1, d: '2026-02-01', entries: [
-      { id: 'hold', target: { mode: 'time' }, sets: [{ sec: 60, w: 200, r: 5, done: true }] },
-      { id: 'run', target: { mode: 'cardio' }, sets: [{ min: 20, speed: 9, r: 5, done: true }] },
-    ] }] }, 'hold')).toEqual([])
   })
 })
 

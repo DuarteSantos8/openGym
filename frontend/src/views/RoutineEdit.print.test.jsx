@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const env = vi.hoisted(() => ({ mobile: false, printHtml: null }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
-vi.mock('../sheets.jsx', () => ({ exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn() }))
+vi.mock('../sheets.jsx', () => ({ exConfigSheet: vi.fn(), exercisePicker: vi.fn(), glyphPicker: vi.fn(), confirmSheet: vi.fn(), occurrenceSummary: vi.fn(() => ''), quickOccurrence: vi.fn() }))
 vi.mock('../components/Media.jsx', () => ({ Thumb: () => null }))
 vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))
 vi.mock('../lib/plan-share.js', async importOriginal => ({ ...await importOriginal(), printPlan: vi.fn() }))
@@ -21,6 +21,7 @@ vi.mock('../lib/mobile.js', async importOriginal => {
 import RoutineEdit from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { printPlan } from '../lib/plan-share.js'
+import { ruleOccurrence } from '../lib/test-fixtures.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 let root, host
@@ -47,7 +48,7 @@ afterEach(() => {
 
 describe('RoutineEdit — print this routine (#282)', () => {
   it('opens the print dialog with this routine alone on the web', () => {
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }])
+    mount([ruleOccurrence('0025')])
     act(() => printButton().click())
     expect(printPlan).toHaveBeenCalledOnce()
     const [S, owner, opts] = printPlan.mock.calls[0]
@@ -59,7 +60,7 @@ describe('RoutineEdit — print this routine (#282)', () => {
 
   it('hands the page to the native print flow in the app, named after the routine', () => {
     env.mobile = true
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }])
+    mount([ruleOccurrence('0025')])
     act(() => printButton().click())
     expect(printPlan).not.toHaveBeenCalled()
     expect(env.printHtml).toHaveBeenCalledOnce()
@@ -71,7 +72,7 @@ describe('RoutineEdit — print this routine (#282)', () => {
 
   it('names the print job even when the routine has no name, which Android refuses', () => {
     env.mobile = true
-    mount([{ id: '0025', sets: 3, mode: 'reps', reps: 5, weight: 80 }], '')
+    mount([ruleOccurrence('0025')], '')
     act(() => printButton().click())
     expect(env.printHtml.mock.calls[0][1]).toBe('Routine')
   })

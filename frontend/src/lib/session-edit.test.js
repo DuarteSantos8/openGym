@@ -1,17 +1,47 @@
 import { describe, expect, it } from 'vitest'
 import { editCompletedSession, saveWorkoutEdit, editLeftEmpty, deleteEditedWorkout, editChangesNothing } from './session-edit.js'
 import { mergeStates } from './sync-merge.js'
-import { entryExcluded, lastEntryFor } from './history.js'
+import { lastEntryFor } from './history.js'
+import { exposuresWithPerformance, rowsOfPerformance } from './session-ui-adapter.js'
+import { buildSessionExposures } from './session-start.js'
+import { buildCompletedSession } from './finish-session.js'
+import { makeSideSet, toggleSide } from './workout-model.js'
+import { ruleOccurrence } from './test-fixtures.js'
+import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
-const entry = (w, id = '0025') => ({ id, sets: [{ w, r: 5, done: true }], target: { mode: 'reps' } })
+let n = 0
+// One saved exposure of `id`, written by the live finish's own writer from these rows.
+const exposure = (w, id = '0025', more = {}, sets = [{ w, r: 5, done: true }]) => {
+  const exposureId = more.exposureId || 'x' + ++n
+  return exposuresWithPerformance([{ exposureId, exerciseId: id, ...more }], [{ exposureId, target: { mode: 'reps' }, sets }], 'kg')[0]
+}
 const fixture = () => ({
   active: null,
+  unit: 'kg',
   exWeights: {},
   routines: [{ id: 'routine', ex: [] }],
-  workouts: [{ id: 'workout', d: '2026-09-01', start: 1000, end: 2000, entries: [entry(40)], note: 'old', prs: ['0025'] }],
+  workouts: [{ id: 'workout', d: '2026-09-01', start: 1000, end: 2000, exposures: [exposure(40)], note: 'old', prs: ['0025'] }],
 })
+// A saved exposure's rows, the way the workout screen edits them.
+const rows = (w, i = 0) => rowsOfPerformance(w.exposures[i].performance.sets, w.exposures[i].mode)
 
 describe('saved workout editing', () => {
+  it('A4: saving a reordered migrated draft replaces history and replays its track', () => {
+    const bench = { id: '0025', rid: 'r', target: { sets: 1, reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: true }] }
+    const workout = { id: 'w', d: '2026-01-05', start: 1, end: 2, routineIds: ['r'], entries: [bench] }
+    const { profile, activeSession } = migrateProfileV1ToV2({ unit: 'kg', routines: [{ id: 'r', ex: [{ id: '0025', sets: 1, reps: 5, weight: 60 }] }], workouts: [workout],
+      active: { ...workout, editingWorkoutId: 'w', entries: [
+        { id: '0001', target: { sets: 1, reps: 10 }, sets: [{ r: 10, done: true }] },
+        { ...bench, sets: [{ w: 60, r: 2, done: true }] }
+      ] } }, LIB_BY_ID)
+    profile.active = activeSession
+    const saved = saveWorkoutEdit(profile, 3)
+    expect(saved.exposures.map(x => x.exerciseId)).toEqual(['0001', '0025'])
+    expect(profile.progression['r:o0'].values.load.value).toBe(60)   // 2 of 5 reps: held, no step
+    expect(profile.progression['r:o0'].lastCompletedLogId).toBe(saved.exposures[1].exposureId)
+    expect(profile.active).toBeNull()
+  })
   it('keeps history unchanged until Save, survives reload and preserves its identity, clock and templates', () => {
     const state = fixture(), history = structuredClone(state.workouts), routines = structuredClone(state.routines)
     editCompletedSession(state, 'workout')
@@ -31,16 +61,17 @@ describe('saved workout editing', () => {
     const state = fixture()
     editCompletedSession(state, 'workout')
     state.active.entries[0].sets.push({ w: 42.5, r: 4, done: true })
-    state.active.entries.push({ ...entry(25, 'added'), rid: 'routine', plan: { kind: 'up' } })
+    state.active.exposures.push({ exposureId: 'added-x', exerciseId: 'added', routineId: 'routine', performance: { sets: [] } })
+    state.active.entries.push({ id: 'added', exposureId: 'added-x', rid: 'routine', plan: { kind: 'up' }, target: { mode: 'reps' }, sets: [{ w: 25, r: 5, done: true }] })
     const saved = saveWorkoutEdit(state)
-    expect(saved.entries[0].sets).toHaveLength(2)
-    expect(saved.entries[1]).toMatchObject({ id: 'added', rid: 'routine' })
-    expect(saved.entries[1]).not.toHaveProperty('plan')
+    expect(rows(saved)).toHaveLength(2)
+    expect(saved.exposures[1]).toMatchObject({ exerciseId: 'added', routineId: 'routine' })
+    expect(JSON.stringify(saved)).not.toMatch(/"plan"/)
   })
 
   it('rebuilds best weights and PR flags after lowering record work', () => {
     const state = fixture()
-    state.workouts.push({ id: 'later', d: '2026-09-02', start: 3000, end: 4000, entries: [entry(30)], prs: [] })
+    state.workouts.push({ id: 'later', d: '2026-09-02', start: 3000, end: 4000, exposures: [exposure(30)], prs: [] })
     state.exWeights['0025'] = { w: 40, d: '2026-09-01' }
     editCompletedSession(state, 'workout')
     state.active.entries[0].sets[0].w = 20
@@ -56,7 +87,7 @@ describe('saved workout editing', () => {
   it('takes a badge from a later session the edit raised the bar above, and leaves a kept load from elsewhere', () => {
     const state = fixture()
     state.workouts[0].prs = []
-    state.workouts.push({ id: 'later', d: '2026-09-02', start: 3000, end: 4000, entries: [entry(50)], prs: ['0025'] })
+    state.workouts.push({ id: 'later', d: '2026-09-02', start: 3000, end: 4000, exposures: [exposure(50)], prs: ['0025'] })
     state.exWeights['0025'] = { w: 55, d: '2026-09-03' }   // confirmed in the top-weight sheet
     editCompletedSession(state, 'workout')
     state.active.entries[0].sets[0].w = 60
@@ -67,9 +98,9 @@ describe('saved workout editing', () => {
 
   it('keeps assisted-machine records ordered by less help after an edit', () => {
     const state = fixture()
-    state.workouts[0].entries = [entry(30, '0017')]
+    state.workouts[0].exposures = [exposure(30, '0017')]
     state.workouts[0].prs = ['0017']
-    state.workouts.push({ id: 'later', d: '2026-09-02', start: 3000, end: 4000, entries: [entry(25, '0017')], prs: ['0017'] })
+    state.workouts.push({ id: 'later', d: '2026-09-02', start: 3000, end: 4000, exposures: [exposure(25, '0017')], prs: ['0017'] })
     state.exWeights['0017'] = { w: 25, d: '2026-09-02' }
     editCompletedSession(state, 'workout')
     state.active.entries[0].sets[0].w = 20
@@ -82,33 +113,29 @@ describe('saved workout editing', () => {
 
   it('preserves repeated occurrences, combined-routine ownership and per-side fields', () => {
     const state = fixture(), workout = state.workouts[0]
+    const sided = toggleSide(toggleSide(makeSideSet({ w: 12, r: 8 }), 'L'), 'R')
     workout.routineIds = ['a', 'b']
-    workout.entries = [
-      { ...entry(40), rid: 'a', occurrenceId: 'first', opaque: { retained: true } },
-      { ...entry(20), rid: 'b', occurrenceId: 'second', sets: [{ w: 20, r: 8, done: true, sides: { L: { w: 12, r: 4, done: true }, R: { w: 8, r: 4, done: true } } }] },
+    workout.exposures = [
+      exposure(40, '0025', { routineId: 'a', occurrenceId: 'first', opaque: { retained: true } }),
+      exposure(20, '0025', { routineId: 'b', occurrenceId: 'second' }, [sided]),
     ]
     editCompletedSession(state, 'workout')
     state.active.entries[1].sets[0].sides.L.w = 14
     const saved = saveWorkoutEdit(state)
-    expect(saved.entries.map(item => [item.occurrenceId, item.rid])).toEqual([['first', 'a'], ['second', 'b']])
-    expect(saved.entries[0].opaque).toEqual({ retained: true })
-    expect(saved.entries[1].sets[0].sides.L.w).toBe(14)
+    expect(saved.exposures.map(x => [x.occurrenceId, x.routineId])).toEqual([['first', 'a'], ['second', 'b']])
+    expect(saved.exposures[0].opaque).toEqual({ retained: true })
+    expect(rows(saved, 1)[0].sides.L.w).toBe(14)
   })
 
   it('keeps a partially completed per-side occurrence and its opaque ownership', () => {
     const state = fixture()
-    state.workouts[0].entries = [{
-      ...entry(20), rid: 'routine', occurrenceId: 'partial',
-      sets: [{ w: 20, r: 8, done: false, sides: {
-        L: { w: 20, r: 4, done: true }, R: { w: 17.5, r: 4, done: false },
-      } }],
-    }]
+    const half = toggleSide({ ...makeSideSet({ w: 20, r: 8 }), sides: { L: { w: 20, r: 4, done: false }, R: { w: 17.5, r: 4, done: false } } }, 'L')
+    state.workouts[0].exposures = [exposure(20, '0025', { routineId: 'routine', occurrenceId: 'partial' }, [half])]
     editCompletedSession(state, 'workout')
+    state.active.note = 'edited'
     const saved = saveWorkoutEdit(state)
-    expect(saved.entries[0]).toMatchObject({ rid: 'routine', occurrenceId: 'partial' })
-    expect(saved.entries[0].sets[0].sides).toEqual({
-      L: { w: 20, r: 4, done: true }, R: { w: 17.5, r: 4, done: false },
-    })
+    expect(saved.exposures[0]).toMatchObject({ routineId: 'routine', occurrenceId: 'partial' })
+    expect(rows(saved)[0].sides).toEqual({ L: { w: 20, r: 4, done: true }, R: { w: 17.5, r: 4, done: false } })
     expect(saved.vol).toBe(80)
   })
 
@@ -132,7 +159,7 @@ describe('saved workout editing', () => {
     Object.assign(state.workouts[0], { d: '2026-08-20', start: 500, end: 1500, note: 'from phone' })
     const saved = saveWorkoutEdit(state)
     expect(saved).toMatchObject({ id: 'workout', d: '2026-08-20', start: 500, end: 1500, note: 'from phone' })
-    expect(saved.entries[0].sets[0].w).toBe(50)
+    expect(rows(saved)[0].w).toBe(50)
     expect(saved).not.toHaveProperty('editBase')
   })
 
@@ -170,32 +197,22 @@ describe('saved workout editing', () => {
     expect(saveWorkoutEdit(removedElsewhere)).not.toHaveProperty('note')
   })
 
-  // A workout logged before exclusion moved onto the entries (ENG-11) carries only the whole-
-  // workout flag. Editing it must not turn it into a regular session that the next one of the
-  // exercise reads as its last time.
-  it('keeps a workout saved with the old exclude-from-progression flag out of progression after an edit', () => {
-    const state = fixture()
-    state.workouts[0] = { ...state.workouts[0], routineId: 'main', routineIds: ['main'], entries: [entry(80)] }
-    state.workouts.push({ id: 'rehab', d: '2026-09-02', start: 3000, end: 4000, routineId: 'rehab', routineIds: ['rehab'], excludeFromProgression: true, entries: [entry(10)], prs: [] })
-    expect(lastEntryFor(state, '0025').sets[0].w).toBe(80)
-    editCompletedSession(state, 'rehab')
-    state.active.entries[0].sets[0].r = 6
-    const saved = saveWorkoutEdit(state)
-    expect(saved.entries.every(e => entryExcluded(saved, e) && e.noProg === true)).toBe(true)
-    expect(saved.excludeFromProgression).toBe(true)
-    expect(saved.entries[0].sets[0].r).toBe(6)
-    expect(lastEntryFor(state, '0025').sets[0].w).toBe(80)
-  })
-
   // The header ⋮'s "Don't count for progression" for the whole workout (lib/session-noprog.js)
-  // opens on for a workout saved out as a whole, and off for one that counts.
-  it('opens a workout kept out as a whole with the whole-workout switch on, and a counting one with it off', () => {
+  // opens on for a workout kept out as a whole, and off for one that counts. Editing it must not
+  // turn it into a regular session that the next one of the exercise reads as its last time.
+  it('keeps a workout kept out of progression out after an edit, with the whole-workout switch on', () => {
     const state = fixture()
-    state.workouts.push({ id: 'rehab', d: '2026-09-02', start: 3000, end: 4000, excludeFromProgression: true, entries: [{ ...entry(10), noProg: true }], prs: [] })
+    state.workouts[0].exposures = [exposure(80, '0025', { routineId: 'main' })]
+    state.workouts.push({ id: 'rehab', d: '2026-09-02', start: 3000, end: 4000, exposures: [exposure(10, '0025', { routineId: 'rehab', excludedFromProgression: true })], prs: [] })
+    expect(lastEntryFor(state, '0025').sets[0].w).toBe(80)
     editCompletedSession(state, 'rehab')
     expect(state.active.noProg).toBe(true)
+    state.active.entries[0].sets[0].r = 6
     const saved = saveWorkoutEdit(state)
+    expect(saved.exposures.every(x => x.excludedFromProgression)).toBe(true)
     expect(saved).not.toHaveProperty('noProg')
+    expect(rows(saved)[0].r).toBe(6)
+    expect(lastEntryFor(state, '0025').sets[0].w).toBe(80)
 
     editCompletedSession(state, 'workout')
     expect(state.active).not.toHaveProperty('noProg')
@@ -205,7 +222,7 @@ describe('saved workout editing', () => {
   // change must not give the record one, or it beats sets added on the phone that have not synced.
   it('leaves the record and its stamp alone when Save changed nothing', () => {
     const state = fixture()
-    state.workouts[0] = { ...state.workouts[0], name: 'Legs', routineIds: [], routineId: null, entries: [{ ...entry(40), topW: 40 }], vol: 200, _ts: 7 }
+    state.workouts[0] = { ...state.workouts[0], name: 'Legs', routineIds: [], vol: 200, _ts: 7 }
     const before = structuredClone(state.workouts)
     editCompletedSession(state, 'workout')
     expect(saveWorkoutEdit(state, 1234)).toEqual(before[0])
@@ -219,30 +236,31 @@ describe('saved workout editing', () => {
 
   it('stamps the edit, and the edit replaces the old copy by id in a merge whichever copy is newer', () => {
     const state = fixture()
+    const phone = { ...structuredClone(state), _ts: 9999 }
     editCompletedSession(state, 'workout')
     state.active.entries[0].sets[0].w = 50
     const saved = saveWorkoutEdit(state, 1234)
     expect(saved._ts).toBe(1234)
-    const phone = { ...fixture(), _ts: 9999 }
     for (const merged of [mergeStates({ ...state, _ts: 1234 }, phone), mergeStates(phone, { ...state, _ts: 1234 })]) {
       expect(merged.workouts).toHaveLength(1)
-      expect(merged.workouts[0].entries[0].sets[0].w).toBe(50)
+      expect(rows(merged.workouts[0])[0].w).toBe(50)
     }
   })
 
   it('opens and saves a workout logged before ids, freezing its old key as its id', () => {
     const state = fixture()
     delete state.workouts[0].id
-    state.workouts.push({ d: '2026-09-02', start: 3000, end: 4000, entries: [entry(30)], prs: [] })
+    const old = { d: '2026-09-02', start: 3000, end: 4000, exposures: [exposure(30)], prs: [] }
+    state.workouts.push(structuredClone(old))
     editCompletedSession(state, state.workouts[1])
     expect(state.active.editingWorkoutId).toBe('2026-09-02|3000')
     state.active.entries[0].sets[0].w = 35
     const saved = saveWorkoutEdit(state)
     expect(saved).toMatchObject({ id: '2026-09-02|3000', d: '2026-09-02', start: 3000 })
     expect(state.workouts[0]).not.toHaveProperty('id')
-    expect(state.workouts[0].entries[0].sets[0].w).toBe(40)
-    const other = { ...fixture(), _ts: 9999, workouts: [state.workouts[0], { d: '2026-09-02', start: 3000, end: 4000, entries: [entry(30)], prs: [] }] }
-    expect(mergeStates(other, { ...state, _ts: 1 }).workouts.map(w => w.entries[0].sets[0].w)).toEqual([40, 35])
+    expect(rows(state.workouts[0])[0].w).toBe(40)
+    const other = { ...fixture(), _ts: 9999, workouts: [state.workouts[0], old] }
+    expect(mergeStates(other, { ...state, _ts: 1 }).workouts.map(w => rows(w)[0].w)).toEqual([40, 35])
   })
 
   it('keeps only the loads, not the marks the live session used, and no prescription explanation', () => {
@@ -253,6 +271,44 @@ describe('saved workout editing', () => {
     state.active.entries[0].carried = true
     const saved = saveWorkoutEdit(state)
     expect(JSON.stringify(saved)).not.toMatch(/weightOrigin|"plan"|carried|editingWorkoutId/)
+  })
+})
+
+// The engine's side of a saved workout: the summary a track moves on from, and the estimated 1RM
+// its sets produced. A typo corrected in the editor takes both with it.
+describe('an edit of a workout the engine counted', () => {
+  const NOW = Date.parse('2026-09-01T18:00:00Z')
+  function counted(weight) {
+    const occ = ruleOccurrence('0025', { routineId: 'A' })
+    const state = { active: null, unit: 'kg', exWeights: {}, routines: [{ id: 'A', ex: [occ] }], workouts: [], prescriptions: {}, progression: {}, oneRepMaxes: {} }
+    const exposures = buildSessionExposures(state, state.routines[0], { now: NOW, newId: seed => seed })
+    const p = state.prescriptions[exposures[0].prescriptionId]
+    const entries = [{ exposureId: exposures[0].exposureId, id: '0025', target: { mode: 'reps' }, sets: p.rows.map((_, i) => ({ setId: 'r' + i, w: weight, r: p.prefill.reps, done: true })) }]
+    const { session, oneRepMaxes, progression } = buildCompletedSession({ id: 'w', d: '2026-09-01', start: NOW, routineIds: ['A'], exposures, entries }, state, { end: NOW + 3600e3, newId: seed => seed, unit: 'kg' })
+    state.workouts.push(session)
+    for (const r of oneRepMaxes) state.oneRepMaxes[r.id] = r
+    Object.assign(state.progression, progression)
+    return { state, trackId: exposures[0].trackId }
+  }
+
+  it('moves the track on from the corrected log, and replaces the typo\'s estimated 1RM', () => {
+    const { state, trackId } = counted(1000)
+    expect(Object.values(state.oneRepMaxes).map(r => r.value)[0]).toBeGreaterThan(1000)
+    editCompletedSession(state, 'w')
+    for (const s of state.active.entries[0].sets) s.w = 100
+    saveWorkoutEdit(state)
+    expect(state.progression[trackId].lastActual.load.value).toBe(100)
+    expect(Object.values(state.oneRepMaxes).map(r => r.value)).toEqual([expect.any(Number)])
+    expect(Object.values(state.oneRepMaxes)[0].value).toBeLessThan(200)
+  })
+
+  it('leaves the track to the log before when the edit keeps the exercise out of progression', () => {
+    const { state, trackId } = counted(100)
+    editCompletedSession(state, 'w')
+    state.active.entries[0].noProg = true
+    state.active.exposures[0].excludedFromProgression = true
+    saveWorkoutEdit(state)
+    expect(state.progression).not.toHaveProperty(trackId)
   })
 })
 
@@ -284,7 +340,7 @@ describe('an edit that leaves no set', () => {
 
   it('deletes the workout and closes the editor, leaving the other workouts alone', () => {
     const state = fixture()
-    state.workouts.push({ id: 'other', d: '2026-09-02', start: 3000, end: 4000, entries: [entry(30)], prs: [] })
+    state.workouts.push({ id: 'other', d: '2026-09-02', start: 3000, end: 4000, exposures: [exposure(30)], prs: [] })
     editCompletedSession(state, 'workout')
     state.active.entries = []
     expect(deleteEditedWorkout(state)).toBe(true)
@@ -295,7 +351,7 @@ describe('an edit that leaves no set', () => {
   it('deletes a workout from before ids by the key the editor opened it with', () => {
     const state = fixture()
     delete state.workouts[0].id
-    state.workouts.push({ d: '2026-09-02', start: 3000, end: 4000, entries: [entry(30)], prs: [] })
+    state.workouts.push({ d: '2026-09-02', start: 3000, end: 4000, exposures: [exposure(30)], prs: [] })
     editCompletedSession(state, state.workouts[1])
     expect(deleteEditedWorkout(state)).toBe(true)
     expect(state.workouts).toHaveLength(1)
@@ -314,8 +370,8 @@ describe('an edit that leaves no set', () => {
   // session starts from; one confirmed elsewhere stays.
   it('lowers a kept working weight that came from the deleted workout, and only that one', () => {
     const state = fixture()
-    state.workouts[0].entries = [entry(1000), entry(50, '0027')]
-    state.workouts.push({ id: 'earlier', d: '2026-08-20', start: 0, end: 1, entries: [entry(95)], prs: [] })
+    state.workouts[0].exposures = [exposure(1000), exposure(50, '0027')]
+    state.workouts.push({ id: 'earlier', d: '2026-08-20', start: 0, end: 1, exposures: [exposure(95)], prs: [] })
     state.exWeights = { '0025': { w: 1000, d: '2026-09-01' }, '0027': { w: 70, d: '2026-08-01' } }
     editCompletedSession(state, 'workout')
     state.active.entries = []
@@ -337,7 +393,7 @@ describe('editChangesNothing', () => {
     for (const change of [
       s => { s.active.entries[0].sets[0].w = 45 },
       s => { s.active.note = 'new' },
-      s => { s.active.entries.push(entry(20, 'added')) },
+      s => { s.active.entries.push({ id: 'added', target: { mode: 'reps' }, sets: [{ w: 20, r: 5, done: true }] }) },
     ]) {
       const state = fixture()
       editCompletedSession(state, 'workout')

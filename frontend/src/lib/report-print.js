@@ -3,6 +3,7 @@
 // The numbers come from lib/report.js; the page shell, the page-break rules and the printing from
 // lib/print-doc.js. Charts are inline SVG drawn here, so they stay sharp at any zoom and print the
 // same on every platform. No exercise media is ever put on paper.
+import { legacyEntriesOf } from './prescription/index.js'
 import { EXIDX } from './exercises.js'
 import { setLabel, sessionSections, workoutVolume, sessionVolume, countsWarmups, workoutDuration, workoutDay } from './history.js'
 import { isWarmupRow, hasCompletedWork } from './workout-model.js'
@@ -269,7 +270,7 @@ const REPORT_CSS = `
 /* ------------------------------- one workout ------------------------------- */
 
 function workoutUnits(w) {
-  const entries = w.entries || []
+  const entries = legacyEntriesOf(w)
   return sessionSections(entries).flatMap(s => s.units).map(u => u.map(i => entries[i]).filter(Boolean)).filter(u => u.length)
 }
 
@@ -287,7 +288,7 @@ function setsHTML(e, speedUnit) {
   return rows.length ? `<div class="sets">${rows.join('')}</div>` : ''
 }
 
-function entryVolume(e, S) { return workoutVolume({ entries: [e] }, { warmups: countsWarmups(S) }) }
+function entryVolume(e, S) { return workoutVolume(S, { entries: [e] }, { warmups: countsWarmups(S) }) }
 
 /**
  * One finished workout on paper: what it was, when, how long and how heavy, then every exercise
@@ -308,7 +309,7 @@ export function workoutPrintHTML(S, w, { owner = '', probe = false } = {}) {
     card(t('Volume'), esc(fmtVol(vol, unit))),
     card(t('New bests'), esc(fmtNum(prs.size))),
     w.bw ? card(t('Body weight'), esc(fmtNum(w.bw) + ' ' + unit)) : '',
-    card(t('Exercises'), esc(fmtNum((w.entries || []).length))),
+    card(t('Exercises'), esc(fmtNum(legacyEntriesOf(w).length))),
   ].filter(Boolean).slice(0, 6)
   let num = 0
   const exHTML = e => {

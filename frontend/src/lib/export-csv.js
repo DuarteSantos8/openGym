@@ -11,6 +11,7 @@
 // Body weight and measurements are a second file. They are one row per day, not per set, and a
 // mixed file would leave every workout row with twenty empty measurement columns.
 
+import { legacyEntriesOf } from './prescription/index.js'
 import { EXIDX } from './exercises.js'
 import { capWords } from './format.js'
 import { MEASUREMENT_FIELDS, builtinCsvColumn, customCsvColumn, customDisplayValue } from './measurements.js'
@@ -89,7 +90,7 @@ export function workoutRows(S, { from = null, to = null } = {}) {
     // Superset tags are random ids; in a spreadsheet 1, 2, 3 per workout reads better and says the same.
     const groups = new Map()
     const head = [day, stamp(w.start), w.end > w.start ? stamp(w.end) : '', w.name || '', w.note || '']
-    for (const e of w.entries || []) {
+    for (const e of legacyEntriesOf(w, S.prescriptions)) {
       const { ex, name } = exerciseFor(S, e.id)
       if (e.sg && !groups.has(e.sg)) groups.set(e.sg, groups.size + 1)
       const exCells = [name, e.id, ex?.bp || '', e.sg ? groups.get(e.sg) : '']

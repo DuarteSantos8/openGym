@@ -6,8 +6,10 @@
  * per-side set is one set, and a drop set or rest-pause set is plotted at its main set. The same
  * exercise twice in one workout keeps counting across both entries. Pure, so the chart and the
  * tests read the same thing. */
-import { entriesForExercise, completedRepsOf, workoutAt } from './history.js'
+import { workoutAt } from './history.js'
 import { phaseForSet, modeForSet, hasCompletedWork, isSideSet } from './workout-model.js'
+import { rowsOfPerformance } from './session-ui-adapter.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { estimate1RM } from './onerm.js'
 
 export const PER_SET_MAX = 5
@@ -26,13 +28,14 @@ export function perSetSessions(workouts, exId, { metric = 'weight', formula } = 
   for (const w of workouts || []) {
     let n = 0
     const sets = []
-    for (const entry of entriesForExercise(w, exId)) {
+    const entries = w.exposures ? w.exposures.map(x => ({ id: x.exerciseId, target: { mode: x.mode }, sets: rowsOfPerformance(x.performance?.sets || [], x.mode) })) : legacyEntriesOf(w)
+    for (const entry of entries.filter(entry => entry.id === exId)) {
       const target = entry.target || entry
       for (const set of Array.isArray(entry.sets) ? entry.sets : []) {
         if (phaseForSet(set) !== 'work' || modeForSet(set, target) !== 'reps') continue
         n++
         if (!hasCompletedWork(set)) continue
-        const wt = weightOf(set), r = completedRepsOf(set)
+        const wt = weightOf(set), r = (isSideSet(set) ? doneSides(set).reduce((n, side) => n + (Number(side.r) || 0), 0) : Number(set.r) || 0)
         const perSide = isSideSet(set) ? r / doneSides(set).length : r
         const y = metric === 'reps' ? r : metric === 'e1rm' ? estimate1RM(wt, perSide, formula, set.rir ?? null) || 0 : wt
         if (y > 0) sets.push({ n, y, w: wt, r })

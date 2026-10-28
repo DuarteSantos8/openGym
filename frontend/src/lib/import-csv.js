@@ -23,12 +23,14 @@
 
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
+import { modeOf } from './history.js'
 import {
   MEASUREMENT_FIELDS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
 } from './measurements.js'
 import { isWarmupRow, completedVolumeOf, syncSideAggregate } from './workout-model.js'
 import { HEVY_TITLE_MAP } from './hevy-id-map.js'
+import { exposuresWithPerformance } from './session-ui-adapter.js'
 import { clampIncline, inclineFrom } from './incline.js'
 
 /* ----------------------------------------------------------------- CSV ---- */
@@ -1005,11 +1007,11 @@ export function parseImport(text, opts) {
 
 /* --------------------------------------------------------------- merge ---- */
 
-/**
- * Merge into state. Existing days win — importing twice never duplicates a workout. A day the
- * file has two sessions on brings both (they are checked against the state before the merge,
- * not against each other); a day already in the history brings neither.
- */
+/** Merge into state. Existing days win — importing twice never duplicates a workout. A day the
+ *  file has two sessions on brings both; a day already in the history brings neither.
+ *  Each imported session becomes a canonical workout: one exposure per exercise with no
+ *  prescription (nothing was prescribed) and `excludedFromProgression: true` (an import is
+ *  history, never a track a progression decision can be made against). */
 export function mergeImport(S, parsed) {
   if (parsed.kind === 'bodyweight') {
     const have = new Set(S.bodyweight.map(b => b.d))
@@ -1034,18 +1036,35 @@ export function mergeImport(S, parsed) {
     const same = S.customEx.find(x => x.id !== c.id && nameKey(x.n) === nameKey(c.n))
     if (same) exIdMap[c.id] = same.id
   })
-  const fresh = parsed.workouts.filter(w => !have.has(w.d))
-    .map(w => ({ ...w, entries: w.entries.map(e => (exIdMap[e.id] ? { ...e, id: exIdMap[e.id] } : e)) }))
-  const used = new Set(fresh.flatMap(w => w.entries.map(e => e.id)))
+  const unit = S.unit || 'kg'
+  const built = parsed.workouts.filter(w => !have.has(w.d)).map(w => {
+    const entries = w.entries.map(e => (exIdMap[e.id] ? { ...e, id: exIdMap[e.id] } : e))
+    const skeletons = entries.map(e => ({
+      exposureId: 'ie' + uid(),
+      exerciseId: e.id,
+      exerciseNameSnapshot: EXIDX[e.id]?.n || e.id,
+      // v1 rows say how they were logged: { min, speed } is cardio, { sec } without reps a hold.
+      mode: modeOf({ id: e.id, ...(e.sets?.some(s => s.min != null) ? { mode: 'cardio' } : e.sets?.some(s => s.sec != null && s.r == null) ? { mode: 'time' } : {}) }),
+      trackId: 'import:' + e.id,
+      excludedFromProgression: true,
+      ...(e.sg ? { sg: e.sg } : {}),
+    }))
+    // Through the workout screen's own adapter, so drops, sides, failure and effort survive.
+    const exposures = exposuresWithPerformance(skeletons, entries.map((e, i) => ({ ...e, exposureId: skeletons[i].exposureId })), unit)
+    const { entries: _entries, ...rest } = w
+    return { workout: { ...rest, exposures }, entries }
+  })
+  const fresh = built.map(b => b.workout)
+  const used = new Set(fresh.flatMap(w => w.exposures.map(x => x.exerciseId)))
   // (one an earlier import of the same name already made has the same id now: kept once)
   const known = new Set(S.customEx.map(c => c?.id))
   const customs = parsed.customEx.filter(c => used.has(c.id) && !EXIDX[c.id] && !known.has(c.id))
   S.customEx = [...S.customEx, ...customs]
   S.workouts = [...S.workouts, ...fresh].sort((a, b) => (a.d === b.d ? (a.start || 0) - (b.start || 0) : a.d < b.d ? -1 : 1))
   // seed the weight suggestions from the newest imported set of each lift
-  fresh.forEach(w => w.entries.forEach(e => {
+  built.forEach(({ workout, entries }) => entries.forEach(e => {
     const mx = Math.max(0, ...e.sets.map(s => s.w || 0), e.topW || 0)
-    if (mx > 0) { const cur = S.exWeights[e.id]; if (!cur || w.d >= cur.d) S.exWeights[e.id] = { w: mx, d: w.d } }
+    if (mx > 0) { const cur = S.exWeights[e.id]; if (!cur || workout.d >= cur.d) S.exWeights[e.id] = { w: mx, d: workout.d } }
   }))
   return { added: fresh.length, skipped: parsed.workouts.length - fresh.length }
 }

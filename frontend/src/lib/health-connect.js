@@ -5,6 +5,7 @@
 // Write-only, and only on request: the user turns it on in Settings, on each phone. Every record
 // carries a client id of its own (a workout's id, a weigh-in's day), so writing it again replaces
 // it instead of adding a second one, and anything openGym wrote can be found and removed again.
+import { legacyEntriesOf } from './prescription/index.js'
 import { workoutText } from './workout-text.js'
 import { modeForEntry, hasCompletedWork } from './workout-model.js'
 import { isoOf } from './format.js'
@@ -78,7 +79,7 @@ function typeOf(entries) {
 
 /** The type of a finished workout, from the exercises with something done in them. */
 export function sessionType(w) {
-  return typeOf((w?.entries || []).filter(e => (e.sets || []).some(hasCompletedWork)))
+  return typeOf(legacyEntriesOf(w).filter(e => (e.sets || []).some(hasCompletedWork)))
 }
 
 /**

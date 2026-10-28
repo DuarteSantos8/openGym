@@ -27,9 +27,13 @@ const EX = Object.keys(EXIDX).find(id => (EXIDX[id].bp || '') !== 'cardio' && !E
 const DAY = 86400000
 const T0 = Date.UTC(2026, 2, 2, 9)
 const iso = i => new Date(T0 + i * DAY).toISOString().slice(0, 10)
-const session = (i, rows) => ({
+const set = (setId, weight, reps, status = 'completed') => ({ setId, status, observations: [{ metric: 'repetitions', value: reps }], resistance: { kind: 'external-load', value: weight }, segments: [] })
+const session = (i, sets) => ({
   id: 'w' + i, d: iso(i), start: T0 + i * DAY, end: T0 + i * DAY + 3600000, name: 'Push', vol: 0,
-  entries: [{ id: EX, target: { mode: 'reps', bodyweight: false }, sets: rows }],
+  exposures: [{ exerciseId: EX, performance: { sets } }],
+})
+const historyState = workouts => ({
+  workouts: workouts.map(workout => ({ ...workout, exposures: workout.exposures.map(exposure => ({ ...exposure, mode: 'reps', performance: { sets: exposure.performance.sets.map(row => ({ ...row, role: row.setId === 'warmup' ? 'warmup' : 'work' })) } })) })),
 })
 
 beforeEach(() => {
@@ -52,18 +56,18 @@ describe('exercise history sheet', () => {
   })
 
   it('lists sessions newest first with labelled sets, volume and one PR marker', () => {
-    useStore.setState(s => ({ S: { ...s.S, workouts: [
-      session(0, [{ w: 40, r: 8, done: true, phase: 'warmup' }, { w: 60, r: 5, done: true }, { w: 60, r: 5, done: true }]),
-      session(2, [{ w: 70, r: 5, done: true }]),
-      session(4, [{ w: 70, r: 3, done: true }, { w: 90, r: 1, done: false }]),
-    ] } }))
+    useStore.setState(s => ({ S: { ...s.S, ...historyState([
+      session(0, [set('warmup', 40, 8), set('work1', 60, 5), set('work2', 60, 5)]),
+      session(2, [set('work', 70, 5)]),
+      session(4, [set('work', 70, 3), set('skipped', 90, 1, 'skipped')]),
+    ]) } }))
     exerciseHistorySheet(EX)
     const host = renderTop()
     const rows = [...host.querySelectorAll('.list .item')]
     expect(rows).toHaveLength(3)
     // newest first, oldest last; the warm-up and the unfinished set never show up
-    expect(rows[0].querySelector('.ss').textContent).toBe('70×3')
-    expect(rows[2].querySelector('.ss').textContent).toBe('60×5  ·  60×5')
+    expect(rows[0].querySelector('.ss').textContent).toBe('+70 × 3')
+    expect(rows[2].querySelector('.ss').textContent).toBe('+60 × 5  ·  +60 × 5')
     expect(rows[2].textContent).toContain('Volume 600 kg')
     // the record was set in the middle session and only that one carries the badge
     expect(rows.map(r => !!r.querySelector('.pr'))).toEqual([false, true, false])
@@ -73,14 +77,14 @@ describe('exercise history sheet', () => {
   })
 
   it('offers a Bodyweight curve only with two sessions that have a body weight, and Best becomes a percentage', () => {
-    const rel = (i, w, bw) => ({ ...session(i, [{ w, r: 5, done: true }]), bw })
-    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [session(0, [{ w: 60, r: 5, done: true }]), session(2, [{ w: 70, r: 5, done: true }])] } }))
+    const rel = (i, w, bw) => ({ ...session(i, [set('work', w, 5)]), bw })
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], ...historyState([session(0, [set('work', 60, 5)]), session(2, [set('work', 70, 5)])]) } }))
     exerciseHistorySheet(EX)
     const none = renderTop()
     expect([...none.querySelectorAll('.seg button')].map(b => b.textContent)).not.toContain('Bodyweight')
 
     useUI.setState({ sheets: [] })
-    useStore.setState(s => ({ S: { ...s.S, workouts: [rel(0, 60, 80), rel(2, 80, 80)] } }))
+    useStore.setState(s => ({ S: { ...s.S, ...historyState([rel(0, 60, 80), rel(2, 80, 80)]) } }))
     exerciseHistorySheet(EX)
     const host = renderTop()
     const btn = [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Bodyweight')
@@ -91,9 +95,8 @@ describe('exercise history sheet', () => {
   })
 
   it('gives a bare bodyweight exercise a Max reps / Bodyweight toggle, counting body weight as the load', () => {
-    const bare = (i, r) => ({ ...session(i, [{ w: 0, r, done: true }]), bw: 80,
-      entries: [{ id: EX, target: { mode: 'reps', bodyweight: true }, sets: [{ w: 0, r, done: true }] }] })
-    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [bare(0, 5), bare(2, 10)] } }))
+    const bare = (i, r) => { const w = session(i, [{ ...set('work', 0, r), resistance: { kind: 'bodyweight' } }]); w.exposures[0].bodyweight = true; return { ...w, bw: 80 } }
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], ...historyState([bare(0, 5), bare(2, 10)]) } }))
     exerciseHistorySheet(EX)
     const host = renderTop()
     expect([...host.querySelectorAll('.seg button')].map(b => b.textContent)).toEqual(['Max reps', 'Bodyweight'])
@@ -105,8 +108,8 @@ describe('exercise history sheet', () => {
 
   it('on an assisted machine, less help reads as a higher percentage of body weight', () => {
     const AS = '1431'
-    const at = (i, help) => ({ ...session(i, []), bw: 80, entries: [{ id: AS, target: { mode: 'reps' }, sets: [{ w: help, r: 5, done: true }] }] })
-    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [at(0, 30), at(2, 10)] } }))
+    const at = (i, help) => { const w = session(i, [set('work', help, 5)]); w.exposures[0].exerciseId = AS; return { ...w, bw: 80 } }
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], ...historyState([at(0, 30), at(2, 10)]) } }))
     exerciseHistorySheet(AS)
     const host = renderTop()
     act(() => { [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Bodyweight').click() })
@@ -118,8 +121,8 @@ describe('exercise history sheet', () => {
 
   it('keeps a Bodyweight curve for high-rep work the 1RM estimate refuses, following the heaviest set', () => {
     // 20 reps is above the estimate's cap, so there is no Est. 1RM; leg press and calf raises live here.
-    const high = (i, w) => ({ ...session(i, [{ w, r: 20, done: true }]), bw: 80 })
-    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], workouts: [high(0, 100), high(2, 120)] } }))
+    const high = (i, w) => { const x = session(i, [set('work', w, 20)]); x.exposures[0].bodyweight = false; return { ...x, bw: 80 } }   // loaded work, as leg press is
+    useStore.setState(s => ({ S: { ...s.S, bodyweight: [], ...historyState([high(0, 100), high(2, 120)]) } }))
     exerciseHistorySheet(EX)
     const host = renderTop()
     expect([...host.querySelectorAll('.seg button')].map(b => b.textContent)).toEqual(['Top set', 'Bodyweight'])
@@ -133,7 +136,7 @@ describe('exercise history sheet', () => {
     const before = renderTop()
     expect([...before.querySelectorAll('button')].some(b => b.textContent === 'History')).toBe(false)
 
-    useStore.setState(s => ({ S: { ...s.S, workouts: [session(0, [{ w: 60, r: 5, done: true }])] } }))
+    useStore.setState(s => ({ S: { ...s.S, ...historyState([session(0, [set('work', 60, 5)])]) } }))
     useUI.setState({ sheets: [] })
     exerciseDetailSheet(EXIDX[EX])
     const host = renderTop()

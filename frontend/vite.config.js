@@ -106,8 +106,9 @@ export default defineConfig({
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core
-    // and is imported by the phone build. vite build and vitest already reach it; the dev
-    // server needs to be told the workspace is wider than frontend/.
+    // and the training engine in ../api/engine; the phone build imports both. vite build and
+    // vitest already reach them; the dev server needs to be told the workspace is wider than
+    // frontend/.
     fs: { allow: ['..'] },
     proxy: {
       '/api': { target: backend, changeOrigin: true, headers: { Origin: apiOrigin } },
@@ -121,6 +122,7 @@ export default defineConfig({
   // unlowered and one regex lookbehind kept 1.4.2 on its splash there. What the transpiler cannot
   // lower, scripts/check-bundle-syntax.mjs catches (its test builds the bundle).
   build: { chunkSizeWarningLimit: 1500, target: ['safari15', 'chrome100', 'firefox100', 'edge100'] },
-  // Gives happy-dom tests a working localStorage on Node 24+ (#733).
-  test: { setupFiles: ['./src/test-setup.js'] }
+  // setupFiles gives happy-dom tests a working localStorage on Node 24+ (#733). A few tests import
+  // the whole app (Workout, the store) inside the test; with every core busy that outruns vitest's 5 s.
+  test: { setupFiles: ['./src/test-setup.js'], testTimeout: 20000 }
 })
