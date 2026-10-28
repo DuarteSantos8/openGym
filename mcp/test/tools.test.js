@@ -456,6 +456,17 @@ describe('list_workouts', () => {
     expect(call('get_workout', { workout_id: 'w1' }).sets_planned).toBe(6)
   })
 
+  // Equipment per gym (#808): a workout says which gym it was done at, one from before says nothing.
+  test('a workout names the gym it was done at', () => {
+    const at = d => ({ id: 'g' + d, d, start: Date.parse(d + 'T10:00:00'), end: Date.parse(d + 'T11:00:00'), name: 'S', entries: [] })
+    S.workouts = [{ ...at('2026-07-06'), gym: { id: 'eqhome', name: 'Home gym' } }, at('2026-07-03')]
+    _seedStateForTests(S)
+    const listed = call('list_workouts').workouts
+    expect(listed.find(w => w.id === 'g2026-07-06').gym).toBe('Home gym')
+    expect(listed.find(w => w.id === 'g2026-07-03').gym).toBe(null)
+    expect(call('get_workout', { workout_id: 'g2026-07-06' }).gym).toBe('Home gym')
+  })
+
   test('date range filter narrows results (closed interval, both endpoints inclusive)', () => {
     const all = call('list_workouts')
     expect(all.workouts.length).toBeGreaterThan(2)

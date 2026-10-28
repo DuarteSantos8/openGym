@@ -11,7 +11,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { t } from '../lib/i18n.js'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
-import { Section, Row, Switch, SearchField, Segmented, Button } from '../components/ui.jsx'
+import { Section, Row, Switch, SearchField, Segmented, Button, SelectRow } from '../components/ui.jsx'
+import { gymsOf, gymLabel } from '../lib/gym-inventory.js'
 import Icon from '../components/Icon.jsx'
 import GymMap from '../components/GymMap.jsx'
 import { confirmSheet } from '../sheets.jsx'
@@ -356,6 +357,13 @@ export function GymEditPage() {
         <Switch checked={!gym.off} onChange={v => set({ off: !v })} aria-label={t('Remind me here')} />
       </Row>
     </Section>
+    {/* Which equipment profile this place means (#808): arriving, a check-in sticker or a workout
+        started here makes it the active gym, with a toast. "Don't switch" leaves this place out. */}
+    {gymsOf(S).length > 0 && <Section footer={t('Arrive here, tap a check-in sticker or start a workout here, and openGym uses this gym’s plates, dumbbells and bars.')}>
+      <SelectRow icon="house" iconTint="var(--blue)" title={t('Equipment here')} value={gymsOf(S).some(p => p.id === gym.equip) ? gym.equip : ''}
+        onChange={v => set({ equip: v || '' })}
+        options={[{ value: '', label: t('Don’t switch') }, ...gymsOf(S).map(p => ({ value: p.id, label: gymLabel(p) }))]} />
+    </Section>}
     <Section title={t('Radius')} footer={t('Medium fits most gyms. Go bigger if the nudge comes late, smaller if it pings you on the street.')}>
       <div className="lrow gym-radius" role="group" aria-label={t('Radius')}>
         <Segmented value={gym.radius} onChange={v => set({ radius: v })}

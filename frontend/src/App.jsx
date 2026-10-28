@@ -13,6 +13,7 @@ import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './
 import { buzzAsAlarm } from './lib/rest-alert.js'
 import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen } from './lib/gym-reminder.js'
+import { autoGymHere } from './lib/gym-auto.js'
 import { workoutVolume } from './lib/history.js'
 import { setSystemBarsLight } from './lib/system-bars.js'
 import { initBackButton } from './lib/back.js'
@@ -487,10 +488,14 @@ export default function App() {
     return () => { gone = true; stop?.() }
   }, [])
   // Phone app: a tap on the gym reminder (lib/gym-reminder.js) opens the Start screen, or the
-  // workout already running. Nothing on the web.
+  // workout already running. Nothing on the web. A place linked to an equipment profile makes that
+  // gym the active one on the way (lib/gym-auto.js, #808).
   useEffect(() => {
     if (!MOBILE) return
-    return onGymReminderOpen(() => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() })
+    return onGymReminderOpen(() => {
+      if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout()
+      autoGymHere()
+    })
   }, [])
   return <HashRouter><Shell /></HashRouter>
 }

@@ -62,6 +62,10 @@ export function normGym(g) {
   const id = str(g.id, 40) || 'g' + Math.random().toString(36).slice(2, 10)
   const out = { id, name: str(g.name, 60), address: str(g.address, 160), lat: round6(lat), lng: round6(lng), radius: clampRadius(g.radius ?? RADIUS.def), text: str(g.text, 120) }
   if (g.off === true) out.off = true
+  // The equipment profile to use here (#808, lib/gym-inventory.js): arriving, a check-in sticker or
+  // a workout started inside the radius makes it the active gym. Absent: this place switches nothing.
+  const equip = str(g.equip, 40)
+  if (equip) out.equip = equip
   return out
 }
 
@@ -147,6 +151,25 @@ export function distanceM(a, b) {
   const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng)
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)))
+}
+
+/**
+ * The equipment profile of the place the phone is at (`pos`, { lat, lng, accuracy }): of the places
+ * linked to one that still exists, the nearest whose radius holds the spot. A rough fix counts for
+ * up to 50 m more, the way a gym door is found indoors. Null when none, or no place is linked.
+ * A place whose reminder is off still counts: its "Equipment here" is a choice of its own.
+ */
+export function equipAt(config, pos, S) {
+  if (!pos || !validLatLng(Number(pos.lat), Number(pos.lng))) return null
+  const ids = new Set((Array.isArray(S?.equipProfiles) ? S.equipProfiles : []).filter(p => p && p.id != null).map(p => p.id))
+  const slack = Math.min(50, Math.max(0, Number(pos.accuracy) || 0))
+  let best = null
+  for (const g of normConfig(config).gyms) {
+    if (!g.equip || !ids.has(g.equip)) continue
+    const d = distanceM(pos, g)
+    if (d <= g.radius + slack && (!best || d < best.d)) best = { d, equip: g.equip }
+  }
+  return best ? best.equip : null
 }
 
 /* ---------------- this device's copy ---------------- */

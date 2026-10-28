@@ -413,6 +413,15 @@ the list, not watched: both native sides skip it when they arm the regions). Up 
 most 20 regions per app). Walking into one posts "Gym spotted. Ready for your workout? 💪"; a tap
 opens the Start screen (or the running workout).
 
+- **Equipment here (#808).** With equipment profiles set up, the editor has an "Equipment here"
+  row: a profile (each one is a gym with its own plates, dumbbells, bars and machine stacks,
+  `lib/gym-inventory.js`) or "Don't switch". Kept on the place as `equip` (native storage only,
+  like the rest). A tap on the arrival notification, a check-in sticker, or a workout started
+  while the phone is inside that place's radius makes it the active gym, with a toast "Using Home
+  gym equipment" (`lib/gym-auto.js`). Only when location is already allowed: nothing here asks for
+  it. A session with a set done already is not switched from here; the workout header's gym chip
+  does that, after a question.
+
 - **No nagging** (`src/lib/gym-reminder.js` `skipReason`, the same rule in
   `GymReminderRules.java` and `ios/App/GymReminderCore`): at most once a day, not after a workout
   logged today, not on a day note that excuses today, not while a session started in the last

@@ -123,6 +123,13 @@ imported. When you change one side, change the other in the same pull request:
 The last two have no test that compares the code itself, so a change on one side only is not
 caught automatically.
 
+Equipment per gym (#808) needed no new rule on either side, on purpose. Each equipment profile
+carries its gym's `plates`, `dumbbells`, `barDefaults` and `stackWeights` as ordinary entry fields
+(merged field by field like any other, and put back by the server when an older app leaves them
+out), and the top-level fields of the same names stay the active gym's copy, which every reader and
+every older app keeps using. `frontend/src/lib/gym-inventory.js` keeps the two in step on each
+change; its header says how and why.
+
 The Coach goes the other way: `frontend/src/lib/coach-local.js` imports `api/coach/core/` directly,
 so the phone apps run the same prompts and validation as the server. That is why the web image
 copies `api/coach/core/` into its build stage.

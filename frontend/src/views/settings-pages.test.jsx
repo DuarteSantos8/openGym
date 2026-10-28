@@ -508,3 +508,33 @@ describe('translations', () => {
     for (const g of ROOT_GROUPS) for (const id of g) expect(PAGES[id], id).toBeTruthy()
   })
 })
+
+// Equipment per gym (#808): the active gym at the top, its switcher swaps the lists below.
+describe('the equipment page with two gyms', () => {
+  it('shows the active gym first and switching it loads that gym’s plates, with a toast', () => {
+    bindUI(useUI)
+    const homePlates = { kg: { 20: 1, _ts: 5 } }
+    mocks.S = {
+      ...mocks.S, invGym: 'p1', plates: homePlates,
+      equipProfiles: [
+        { id: 'p1', name: 'Home', equipment: [], plates: homePlates, dumbbells: {}, barDefaults: {}, stackWeights: {} },
+        { id: 'p2', name: 'Big gym', equipment: [], plates: { kg: { 25: 3, _ts: 6 } }, dumbbells: {}, barDefaults: {}, stackWeights: {} },
+      ],
+    }
+    mount('equipment')
+    expect(titles().slice(0, 2)).toEqual(['Active gym', 'Plates'])
+    expect(rowTitled('Active gym').querySelector('.lrow-v').textContent).toBe('Home')
+    expect([...host.querySelectorAll('.sect-h, h2, .sect-t')].map(e => e.textContent)).toContain('Equipment at Home')
+    act(() => rowTitled('Active gym').click())
+    const h = document.createElement('div'); document.body.appendChild(h)
+    const r = createRoot(h)
+    act(() => r.render(mocks.sheets.at(-1)(vi.fn())))
+    const big = [...h.querySelectorAll('button, [role="button"], .lrow')].find(e => e.textContent.startsWith('Big gym'))
+    act(() => big.click())
+    expect(mocks.S.activeEquipId).toBe('p2')
+    expect(mocks.S.plates.kg[25]).toBe(3)
+    expect(mocks.S.equipProfiles[0].plates).toEqual(homePlates)
+    expect(mocks.toast).toHaveBeenCalledWith('Using Big gym equipment')
+    act(() => r.unmount()); h.remove()
+  })
+})

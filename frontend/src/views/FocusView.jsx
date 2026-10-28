@@ -19,6 +19,7 @@ import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { effortPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet, barWeightSheet } from '../sheets.jsx'
 import { baseWeightFor, inventoryFor, loadKindFor, rowLoad } from '../lib/plates.js'
 import { ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
+import { sessionGymView } from '../lib/gym-inventory.js'
 import { exView } from '../lib/ex-unit.js'
 import Icon from '../components/Icon.jsx'
 import { Button, Stepper } from '../components/ui.jsx'
@@ -118,7 +119,7 @@ export default function FocusView({
 }) {
   // In the exercise's own weight unit when it has one (#657); the parent stores every change back.
   const live = useStore(state => state.S)
-  const S = exView(live, live.active.entries[entryIdx]?.id)
+  const S = exView(sessionGymView(live), live.active.entries[entryIdx]?.id)
   const speedUnit = speedUnitOf(S)
   const entry = S.active.entries[entryIdx]
   const ex = exOr(entry.id)
