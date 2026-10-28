@@ -1119,7 +1119,7 @@ export const PT_BR_OVERRIDES = {
   'A fuller dot means less left in the tank. The same weight at a lower {0} is progress the line alone doesn’t show.': 'Um ponto mais cheio significa menos sobrando no tanque. O mesmo peso com um {0} mais baixo é um progresso que a linha sozinha não mostra.',
   '{0} sets of {1}. Time to add weight or try a harder variation.': '{0} séries de {1}. Hora de colocar mais peso ou partir para uma variação mais difícil.',
   'Test sent! Should pop up any second': 'Teste enviado! Deve aparecer a qualquer momento',
-  'That\'s not a QR code. Only QR cards can be shown here': 'Isso não é um código QR. Aqui só dá para mostrar cartões QR',
+  'That code type is not supported. Use a QR code or a barcode': 'Esse tipo de código não é compatível. Use um código QR ou um código de barras',
   '{1} animated exercises + 1 of your own': '{1} exercícios animados + 1 seu',
   '{1} animated exercises + {0} of your own': '{1} exercícios animados + {0} seus',
   'That address answers, but it isn’t an openGym server. Check the URL.': 'Esse endereço responde, mas não é um servidor openGym. Verifique a URL.',
