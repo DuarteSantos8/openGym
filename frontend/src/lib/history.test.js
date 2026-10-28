@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, lastLoggedShape, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 import { EXDB } from './exercises.js'
 import { todayISO, isoOf } from './format.js'
@@ -358,6 +358,29 @@ describe('pickedExerciseConfig', () => {
   })
   it('keeps defaultConfig flat, so a saved target without the flag stays one row a set', () => {
     expect('side' in defaultConfig('4837')).toBe(false)
+  })
+  it('starts the way the exercise was logged last time: a timed hold, per side, or both', () => {
+    const last = sets => ({ workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets }] }] })
+    const held = last([{ sec: 40, done: true }, { sec: 30, done: true }])
+    expect(lastLoggedShape(held, LIFT)).toEqual({ time: true, side: false })
+    expect(pickedExerciseConfig(LIFT, undefined, held)).toEqual(defaultConfig(LIFT, 'time'))
+    const sided = last([1, 2].map(() => ({ ...makeSideSet({ w: 10, r: 16 }), done: true })))
+    expect(pickedExerciseConfig(LIFT, undefined, sided)).toMatchObject({ mode: 'reps', side: true, reps: 20 })
+    const both = last([{ sec: 30, done: true, sides: { L: { sec: 30 }, R: { sec: 30 } } }])
+    expect(pickedExerciseConfig(LIFT, undefined, both)).toMatchObject({ mode: 'time', side: true, sec: 45 })
+  })
+  it('reads only the work sets, and lets a named mode win', () => {
+    const S = { workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 20, r: 10, phase: 'warmup', warmup: true, done: true }, { sec: 40, done: true }] }] }] }
+    expect(lastLoggedShape(S, LIFT).time).toBe(true)
+    expect(pickedExerciseConfig(LIFT, 'reps', S)).toEqual(defaultConfig(LIFT, 'reps'))
+  })
+  it('changes nothing with no history, a rep history, or for cardio', () => {
+    expect(lastLoggedShape({ workouts: [] }, LIFT)).toEqual({ time: false, side: false })
+    const reps = { workouts: [{ d: '2026-01-01', entries: [{ id: LIFT, sets: [{ w: 60, r: 8, done: true }] }] }] }
+    expect(pickedExerciseConfig(LIFT, undefined, reps)).toEqual(defaultConfig(LIFT))
+    const run = { workouts: [{ d: '2026-01-01', entries: [{ id: CARDIO, sets: [{ sec: 600, done: true }] }] }] }
+    expect(pickedExerciseConfig(CARDIO, undefined, run)).toEqual(defaultConfig(CARDIO))
+    expect(pickedExerciseConfig('4837', undefined, reps)).toMatchObject({ side: true })   // one arm still per side
   })
 })
 

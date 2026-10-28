@@ -121,7 +121,7 @@ export function addExerciseToSession(id) {
     const curRid = curEntry?.rid
     const routine = curRid ? (s.routines || []).find(r => r.id === curRid) : null
     const noProg = !!routine && builtOutOfProgression(curEntry, routine)
-    const cfg = routine ? pickedExerciseConfig(id) : freestyleConfig(sessionHistory(s), { id, ...pickedExerciseConfig(id) })
+    const cfg = routine ? pickedExerciseConfig(id, undefined, s) : freestyleConfig(sessionHistory(s), { id, ...pickedExerciseConfig(id, undefined, s) })
     const built = buildSessionEntry(s, id, cfg, routine, curEntry)
     const at = insertionIndexAfterCurrentUnit(supersetUnits(A.entries), A.cur, A.entries.length)
     A.entries.splice(at, 0, joinSessionNoProg(A, { id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}) }))

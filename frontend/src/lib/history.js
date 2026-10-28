@@ -217,13 +217,28 @@ export function defaultConfig(id, mode) {
   if (m === 'time') return { sets: 3, sec: 45, weight: 0, mode: 'time', ...bw }
   return { sets: 3, reps: 10, weight: 0, mode: 'reps', ...bw }
 }
+// How `id` was logged last time, for the next time it is picked: `time` when its work sets were
+// all timed holds (no reps, a time), `side` when they were all per side. Read from the sets, not
+// the settings, so an imported history counts too. Both false with no history, or for cardio.
+export function lastLoggedShape(S, id) {
+  // lastEntryFor keeps the done work sets only.
+  const work = (S && id && !isCardio(id) ? lastEntryFor(S, id)?.sets : null) || []
+  if (!work.length) return { time: false, side: false }
+  return {
+    time: work.every(s => !(s.r > 0)) && work.some(s => s.sec > 0),
+    side: work.every(isSideSet),
+  }
+}
 // What an exercise picked from the library starts with: `defaultConfig`, and per side for a
 // one-arm or one-leg exercise, at ten reps a side (per-side reps are both sides' total). Kept out
 // of `defaultConfig` itself, which is also spread under saved targets: a lift switched off per
-// side is stored without the flag, and must not get it back.
-export function pickedExerciseConfig(id, mode) {
-  const cfg = defaultConfig(id, mode)
-  if (!isOneLimb(id) || !('mode' in cfg)) return cfg
+// side is stored without the flag, and must not get it back. With the profile's state `S`, an
+// exercise also starts the way it was logged last time (`lastLoggedShape`): a timed hold, per
+// side, or both, unless `mode` names the mode.
+export function pickedExerciseConfig(id, mode, S) {
+  const last = lastLoggedShape(S, id)
+  const cfg = defaultConfig(id, mode || (last.time ? 'time' : undefined))
+  if (!(isOneLimb(id) || last.side) || !('mode' in cfg)) return cfg
   return { ...cfg, side: true, ...(cfg.mode === 'reps' ? { reps: 20 } : {}) }
 }
 // A double-progression range is stored as its top (`reps`) and its bottom (`repsMin`), and
