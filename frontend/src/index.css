@@ -689,6 +689,20 @@ h4.sec{
    each; a row wider than the sheet scrolls sideways like every .chips strip. */
 .chip.ichip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .chip .qstate{text-transform:none}
+/* A group chip (components/GroupChips.jsx): its name filters by the whole group, the chevron
+   after a hairline opens the group's kinds in a second strip, indented under it. The chip itself
+   has no padding so each half is its own tap target; a group whose kind is chosen is outlined.
+   A group of one kind is a plain .chip. */
+.chip.gchip{display:inline-flex;align-items:stretch;padding:0;overflow:hidden}
+.chip.gchip::before{display:none}
+.chip.gchip.some{box-shadow:inset 0 0 0 1.5px var(--acc)}
+.gchip-t{padding:6px 4px 6px 13px;color:inherit;font:inherit;text-transform:inherit}
+.gchip-x{display:flex;align-items:center;padding:0 10px 0 6px;color:inherit;font-size:13px;opacity:.75;
+  border-inline-start:1px solid var(--sep)}
+.chip.on .gchip-x{border-inline-start-color:color-mix(in srgb,var(--on-acc) 30%,transparent)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.chip.on .gchip-x{border-inline-start-color:var(--on-acc)}}
+.gchip-strip{padding-inline-start:14px}
+.gchip-strip .chip{font-size:13px;padding:5px 11px}
 /* On a phone these rows scroll by swipe. On a pointer device lib/hchips.js lets you
    click-drag anywhere on the row to pull it along; a grab cursor on rows that actually
    overflow (data-xscroll, set by hchips.js on hover) is the hint. */

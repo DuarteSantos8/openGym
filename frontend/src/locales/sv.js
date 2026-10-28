@@ -3327,4 +3327,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Varje utmaning du klarar ställer ett märke här, en hylla per månad.",
   "Monthly challenges": "Månadsutmaningar",
   "Three goals a month on Home, sized to how you train.": "Tre mål i månaden på Hem, efter hur du tränar.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Fria vikter",
+  "Barbells": "Skivstänger",
+  "Machines": "Maskiner",
+  "Cables": "Kablar",
+  "Bands": "Band",
+  "Balls & rollers": "Bollar och rullar",
+  "Cardio machines": "Konditionsmaskiner",
+  "Bench & bar": "Bänk och stång",
+  "Show {0}": "Visa {0}",
+  "Hide {0}": "Dölj {0}",
 }

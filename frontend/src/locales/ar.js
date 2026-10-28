@@ -3335,4 +3335,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "كل تحدٍ تنجزه يضع شارة هنا، رف لكل شهر.",
   "Monthly challenges": "تحديات شهرية",
   "Three goals a month on Home, sized to how you train.": "ثلاثة أهداف شهريًا في الرئيسية، على قدر تمرينك.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "أوزان حرة",
+  "Barbells": "بارات",
+  "Machines": "أجهزة",
+  "Cables": "كيبلات",
+  "Bands": "أشرطة",
+  "Balls & rollers": "كرات وأسطوانات",
+  "Cardio machines": "أجهزة كارديو",
+  "Bench & bar": "مقعد وبار",
+  "Show {0}": "إظهار {0}",
+  "Hide {0}": "إخفاء {0}",
 }

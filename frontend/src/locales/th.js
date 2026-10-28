@@ -3291,4 +3291,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "ทุกชาเลนจ์ที่ทำสำเร็จจะได้เหรียญมาวางที่นี่ เดือนละหนึ่งชั้น",
   "Monthly challenges": "ชาเลนจ์รายเดือน",
   "Three goals a month on Home, sized to how you train.": "เป้าหมายเดือนละสามข้อบนหน้าหลัก ปรับตามการฝึกของคุณ",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "ฟรีเวท",
+  "Barbells": "บาร์เบล",
+  "Machines": "เครื่อง",
+  "Cables": "เคเบิล",
+  "Bands": "ยางยืด",
+  "Balls & rollers": "บอลและโรลเลอร์",
+  "Cardio machines": "เครื่องคาร์ดิโอ",
+  "Bench & bar": "ม้านั่งและบาร์",
+  "Show {0}": "แสดง {0}",
+  "Hide {0}": "ซ่อน {0}",
 }

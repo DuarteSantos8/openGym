@@ -3273,4 +3273,15 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "每完成一個挑戰，這裡就多一枚徽章，每月一層。",
   "Monthly challenges": "每月挑戰",
   "Three goals a month on Home, sized to how you train.": "首頁每月三個目標，依你的訓練量量身打造。",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "自由重量",
+  "Barbells": "槓鈴",
+  "Machines": "器械",
+  "Cables": "滑輪",
+  "Bands": "彈力帶",
+  "Balls & rollers": "球與滾筒",
+  "Cardio machines": "有氧器材",
+  "Bench & bar": "臥推凳與單槓",
+  "Show {0}": "展開{0}",
+  "Hide {0}": "收合{0}",
 }
