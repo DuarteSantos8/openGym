@@ -17,7 +17,7 @@ import { exerciseNameFor } from './i18n-core.js'
 const round1 = value => Math.round(value * 10) / 10
 
 // Same retained-strength curve the muscle map uses, applied to one exercise's age.
-function strengthFromAge(ageMs) {
+export function strengthFromAge(ageMs) {
   if (!Number.isFinite(ageMs) || ageMs < 0) return STRENGTH_FLOOR
   if (ageMs <= STRENGTH_FULL_MS) return 1
   return Math.max(STRENGTH_FLOOR, halfLifeDecay(ageMs - STRENGTH_FULL_MS, STRENGTH_HALF_LIFE_MS))

@@ -15,7 +15,7 @@ import { fmtNum } from '../lib/format.js'
 
 const mocks = vi.hoisted(() => ({ charts: [], S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useSearchParams: () => [new URLSearchParams(), () => {}], useNavigate: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {},
   exerciseHistorySheet: () => {}, weighInsSheet: () => {}, WorkoutRow: () => null, bwDeltaColor: () => 'inherit',

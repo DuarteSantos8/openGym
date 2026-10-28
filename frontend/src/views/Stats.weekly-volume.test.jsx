@@ -10,7 +10,10 @@ const press = { id: 'press', n: 'Press', primaries: ['chest'], secondaries: ['tr
 const mocks = vi.hoisted(() => ({ S: null, bodyMaps: [], nav: null }))
 
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => (...a) => mocks.nav?.(...a) }))
+vi.mock('react-router-dom', () => ({
+  useSearchParams: () => [new URLSearchParams(), () => {}],
+  useNavigate: () => (...a) => mocks.nav?.(...a),
+}))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: vi.fn(), goalSheet: vi.fn(), calendarSheet: vi.fn(), workoutDetailSheet: vi.fn(),
   exerciseHistorySheet: vi.fn(), WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => '', weighInsSheet: vi.fn(),

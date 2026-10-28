@@ -37,7 +37,7 @@ vi.mock('../lib/recovery.js', async importOriginal => {
 vi.mock('../store/useStore.js', () => ({
   useStore: selector => selector({ S: mocks.S }),
 }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useSearchParams: () => [new URLSearchParams(), () => {}], useNavigate: () => () => {} }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: () => {}, goalSheet: () => {}, calendarSheet: () => {}, workoutDetailSheet: () => {},
   exerciseHistorySheet: mocks.exerciseHistorySheet,
