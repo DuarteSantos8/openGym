@@ -8,6 +8,9 @@ import { EXDB, exOr } from '../../frontend/src/lib/exercises.js'
 import { _seedStateForTests } from '../src/state.js'
 import { TOOLS } from '../src/tools.js'
 import { bestSetOf } from '../../frontend/src/lib/onerm.js'
+import { SECTION_PRESETS, addSection, assignSection } from '../../frontend/src/lib/workout-sections.js'
+import { buildRoutineSession as buildSessionEntries } from '../../frontend/src/lib/session-start.js'
+import { buildCompletedWorkout } from '../../frontend/src/lib/finish-workout.js'
 
 // Re-stated here so the assertions stand alone without reaching into lib internals to learn
 // the demo state's exact values.
@@ -22,6 +25,22 @@ const LEG_PRESS_ID = '0739'                                 // sled 45° leg pre
 const LEG_PRESS_BEST = { w: 152.5, r: 12, epley: 213.5, brzycki: 219.6 }
 
 const byName = Object.fromEntries(TOOLS.map(t => [t.name, t.handler]))
+
+test('exposes optional phases in routine and workout reads without counting preparation volume', () => {
+  const r = S.routines[0], phase = addSection(r, SECTION_PRESETS[0])
+  assignSection(r, r.ex[0].occurrenceId, phase)
+  const detail = call('get_routine', { routine_id: r.id })
+  expect(detail.sections).toEqual(r.sections)
+  expect(detail.exercises.at(-1).section.countsAsWork).toBe(false)
+  const session = buildSessionEntries(S, r)
+  session.entries = session.entries.filter(e => e.sectionId === phase)
+  session.entries.forEach(e => e.sets.forEach(s => { s.done = true; s.w = 500; s.r = 5 }))
+  const saved = buildCompletedWorkout({ ...session, id: 'phased', start: 1, d: FAKE_TODAY_ISO }, { end: 2 })
+  S.workouts.push(saved)
+  const logged = call('get_workout', { workout_id: 'phased' })
+  expect(logged.entries[0].sectionId).toBe(phase)
+  expect(logged.volume).toBe(0)
+})
 
 let S = null
 

@@ -1,3 +1,4 @@
+import { cleanSections, remapSections, sectionOf, sameSection, sectionLabel, validOccurrenceId } from './workout-sections.js'
 // Share a weekly plan.
 //
 // Two jobs:
@@ -129,6 +130,7 @@ function cleanEx(e) {
   if (e.restSec > 0) o.restSec = e.restSec
   else if (e.restOff === true) o.restOff = true   // "No timer" for this exercise
   if (e.warmupRestSec > 0) o.warmupRestSec = e.warmupRestSec   // the ramp's own rest travels with the work rest
+  if (e.sectionId) { o.sectionId = e.sectionId; o.occurrenceId = e.occurrenceId }
   // The warm-ups' "no timer" and the break between sides travel the same way, only when set.
   // Planned substitutes (lib/routine-backups.js): the catalogue's only, since the other end may
   // not have someone's own exercises.
@@ -229,6 +231,7 @@ export function buildPlanBundle(S, name) {
     id: r.id, name: r.name, emoji: r.emoji,
     ...(r.prog ? { prog: r.prog } : {}),
     ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
+    ...(r.sections?.length ? { sections: cleanSections(r.sections) } : {}),
     ex: (r.ex || []).map(cleanEx)
   }))
   const usedIds = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
@@ -240,7 +243,7 @@ export function buildPlanBundle(S, name) {
   // written after are read the same way at the other end.
   const week = {}
   WEEK_DAYS.forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]) })
-  return { opengym_plan: PLAN_FMT, exported: todayISO(), name: name || '', unit, week, routines, customEx }
+  return { opengym_plan: routines.some(r => r.sections?.length) ? 2 : PLAN_FMT, exported: todayISO(), name: name || '', unit, week, routines, customEx }
 }
 
 /**
@@ -257,7 +260,7 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   let data = raw
   if (typeof raw === 'string') { try { data = JSON.parse(raw) } catch { throw notPlan() } }
   const destination = planUnit(destinationUnit)
-  if (!data || typeof data !== 'object' || Array.isArray(data) || !data.opengym_plan || !Array.isArray(data.routines) || !destination) {
+  if (!data || typeof data !== 'object' || Array.isArray(data) || ![PLAN_FMT, 2].includes(data.opengym_plan) || !Array.isArray(data.routines) || !destination) {
     throw notPlan()
   }
   const sourceUnit = declaredPlanUnit(data)
@@ -296,7 +299,25 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}) }, sourceUnit || destination, destination)
     })
   }))
+  routines.forEach(routine => {
+    const sections = routine.sections == null ? [] : cleanSections(routine.sections)
+    if (sections.length && data.opengym_plan !== 2) throw new Error(t('Workout phases require plan format 2.'))
+    const occurrences = new Set(), groups = new Map()
+    for (const entry of routine.ex) {
+      delete entry.section
+      if (sections.length) {
+        if (!sections.some(section => section.id === entry.sectionId)) throw new Error(t('Exercise has no valid workout phase.'))
+        if (!validOccurrenceId(entry.occurrenceId) || occurrences.has(entry.occurrenceId)) throw new Error(t('Invalid or duplicate exercise occurrence.'))
+        occurrences.add(entry.occurrenceId)
+        if (entry.sg && groups.has(entry.sg) && groups.get(entry.sg) !== entry.sectionId) throw new Error(t('Superset spans workout phases.'))
+        if (entry.sg) groups.set(entry.sg, entry.sectionId)
+      } else if (entry.sectionId != null) throw new Error(t('Exercise phase has no section definitions.'))
+    }
+    if (sections.length) routine.sections = sections
+    else delete routine.sections
+  })
   return {
+    opengym_plan: data.opengym_plan,
     name: (data.name || '').trim(),
     routines,
     week: data.week || {},
@@ -340,14 +361,15 @@ export function mergePlan(s, bundle, { schedule } = {}) {
   source.routines.forEach(r => {
     const nid = uid()
     ridMap[r.id] = nid
-    s.routines.push({
+    s.routines.push(remapSections({
       id: nid,
       name: r.name || t('Shared routine'),
       emoji: r.emoji,
       ...(r.prog ? { prog: r.prog } : {}),
       ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}),
+      ...(r.sections?.length ? { sections: cleanSections(r.sections) } : {}),
       ex: (r.ex || []).map(e => ({ ...e, id: exIdMap[e.id] || canonicalExId(e.id) }))
-    })
+    }))
   })
   if (schedule) {
     WEEK_DAYS.forEach(d => { delete s.week[d] })
@@ -402,7 +424,7 @@ function units(ex) {
   const out = []
   ex.forEach((e, i) => {
     const prev = ex[i - 1]
-    if (i > 0 && e.sg && prev?.sg === e.sg) out[out.length - 1].push(e)
+    if (i > 0 && e.sg && prev?.sg === e.sg && sameSection(prev, e)) out[out.length - 1].push(e)
     else out.push([e])
   })
   return out
@@ -442,9 +464,12 @@ function exerciseHTML(e, n, unit, { speedUnit, ticks }) {
 // the first block, so it can never be stranded at the bottom of a page with its exercises overleaf.
 // The routine itself may run over a page: holding all of it together left whole pages blank.
 function routineHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '', m, key }) {
-  let n = 0
+  let n = 0, previousSection
   const list = units(r.ex)
   const blocks = list.map((u, bi) => {
+    const section = sectionOf(u[0], r)
+    const heading = section && section.id !== previousSection ? `<h3 class="phase">${esc(sectionLabel(section, t))}</h3>` : ''
+    previousSection = section?.id
     const items = u.map(e => exerciseHTML(e, ++n, unit, { speedUnit, ticks })).join('')
     const body = u.length > 1
       ? `<div class="ss"><div class="ss-tag">${esc(t('Superset'))}</div>${items}</div>`
@@ -453,7 +478,7 @@ function routineHTML(r, unit, { bare = false, speedUnit, ticks = false, lead = '
     const head = bi === 0
       ? lead + (bare ? '' : `${m.h(id)}<div class="r-head"><h2>${esc(r.name)}</h2><span class="r-count">${esc(exCount(r.ex.length))}</span></div>`)
       : ''
-    return `<div class="keep">${m.s(id)}${head}${body}${m.e(id)}</div>`
+    return `<div class="keep">${m.s(id)}${head}${heading}${body}${m.e(id)}</div>`
   })
   if (!blocks.length) blocks.push(`<div class="keep">${lead}${bare ? '' : `<div class="r-head"><h2>${esc(r.name)}</h2></div>`}<div class="none">${esc(t('No exercises yet.'))}</div></div>`)
   return `<section class="routine">${blocks.join('')}</section>`
@@ -472,6 +497,7 @@ function weekHTML(S, m) {
 }
 
 const PLAN_CSS = `
+  .phase { margin: 12pt 0 6pt; break-after: avoid; font-size: 11pt; }
   .routine { margin-bottom: 8pt; }
   .r-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10pt; margin: 14pt 0 2pt; padding-bottom: 4pt; border-bottom: 1.5px solid var(--ink); }
   .r-head h2 { font-size: 13pt; letter-spacing: -.01em; margin: 0; overflow-wrap: anywhere; }

@@ -1,3 +1,4 @@
+import { cleanSections, sectionFields, countsAsWork } from './workout-sections.js'
 /* What actually leaves this server.
  *
  * The consent screen makes a promise about which categories of data reach the provider, and
@@ -195,7 +196,7 @@ export function stallCount(sessions) {
 }
 
 /* ---------- plan cleaning (mirrors plan-share.js cleanEx) ---------- */
-function cleanEx(e) {
+function cleanEx(e, routine) {
   const o = { id: ident(e.id), name: LIB_BY_ID.get(e.id)?.n || null, sets: num(e.sets) };
   const mode = modeOf(e, LIB_BY_ID.get(e.id));
   o.mode = mode;
@@ -217,6 +218,7 @@ function cleanEx(e) {
   if (e.side) o.side = true;
   // A superset tag is an id the app mints (sg-0-1, hs + uid()), so it is bounded like one.
   if (e.sg) o.sg = ident(e.sg);
+  if (e.sectionId) Object.assign(o, sectionFields(e, routine));
   return o;
 }
 /**
@@ -234,6 +236,7 @@ export function canonicalPlan(S) {
   return {
     routines: (S.routines || []).map(r => ({
       id: r.id, name: r.name || '', prog: r.prog || '',
+      ...(r.sections?.length ? { sections: cleanSections(r.sections) } : {}),
       ex: (r.ex || []).map(e => {
         const mode = modeOf(e, exOf(e.id));
         return {
@@ -248,7 +251,8 @@ export function canonicalPlan(S) {
           // disagreeing with the catalogue, and `bodyweight: undefined` and an exercise the
           // dataset already calls bodyweight are the same plan and must hash the same.
           bodyweight: isBw(e, exOf(e.id)), side: isPerSide(e),
-          sg: e.sg || ''
+          sg: e.sg || '',
+          ...(r.sections?.length ? { sectionId: e.sectionId || '', occurrenceId: e.occurrenceId || '' } : {})
         };
       })
     })),
@@ -266,8 +270,9 @@ export function cleanPlan(S) {
   const routines = list(S.routines).filter(r => r && typeof r === 'object').map(r => ({
     id: ident(r.id), name: r.name == null ? r.name : text(String(r.name), NAME_MAX),
     emoji: r.emoji == null ? r.emoji : glyphStr(String(r.emoji)),
+    ...(r.sections?.length ? { sections: cleanSections(r.sections) } : {}),
     ...(policy(r.prog) ? { prog: r.prog } : {}),
-    ex: list(r.ex).filter(e => e && typeof e === 'object').map(cleanEx)
+    ex: list(r.ex).filter(e => e && typeof e === 'object').map(e => cleanEx(e, r))
   }));
   // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
@@ -301,7 +306,7 @@ function aggregates(S, workouts) {
   const planCfg = new Map();
   (S.routines || []).forEach(r => (r.ex || []).forEach(e => planCfg.set(e.id, e)));
   (S.workouts || []).forEach(w => (w.entries || []).forEach(en => {
-    if (!en.sets?.some(s => s.done)) return;
+    if (!countsAsWork(en, w) || !en.sets?.some(s => s.done && !isWarmupSet(s))) return;
     if (!byEx.has(en.id)) byEx.set(en.id, []);
     byEx.get(en.id).push(readSession(en, planCfg.get(en.id)));
   }));
@@ -322,7 +327,7 @@ function aggregates(S, workouts) {
   // Muscle coverage in the window, by body part — the "not trained" gap the Stats screen shows.
   const hit = {};
   workouts.forEach(w => (w.entries || []).forEach(en => {
-    const work = (en.sets || []).filter(s => s.done && !isWarmupSet(s));
+    const work = (countsAsWork(en, w) ? (en.sets || []) : []).filter(s => s.done && !isWarmupSet(s));
     if (!work.length) return;
     const bp = LIB_BY_ID.get(en.id)?.bp;
     if (bp) hit[bp] = (hit[bp] || 0) + work.length;
@@ -396,6 +401,7 @@ function compactWorkout(w) {
       const target = targetOf(en);
       return {
         id: ident(en.id),
+        ...sectionFields(en, w),
         name: libraryName(en.id),
         done: done.length + '/' + sets.length,
         ...(target ? { target: fmtSet({ w: target.weight, r: target.reps, sec: target.sec }) } : {}),
@@ -416,6 +422,7 @@ function cleanWorkout(w) {
     prs: list(w.prs).length,
     entries: entriesOf(w).map(en => ({
       id: ident(en.id),
+      ...sectionFields(en, w),
       name: libraryName(en.id),
       target: targetOf(en),
       sets: setsOf(en).slice(0, MAX_SETS_PER_ENTRY).map(cleanSet)
@@ -472,7 +479,7 @@ export function workoutMeta(S, workoutId) {
   let vol = 0;
   let sets = 0;
   (w.entries || []).forEach(en => (en.sets || []).forEach(s => {
-    if (!s.done || isWarmupSet(s)) return;
+    if (!countsAsWork(en, w) || !s.done || isWarmupSet(s)) return;
     sets++;
     vol += (s.w || 0) * (s.r || 0);
   }));
@@ -597,7 +604,7 @@ export function build(S, opts = {}) {
     // start from evidence rather than optimism (B2/FR-20).
     const best = {};
     (S.workouts || []).forEach(w => (w.entries || []).forEach(en => en.sets?.forEach(s => {
-      if (s.done && s.w > 0 && !isWarmupSet(s)) best[en.id] = Math.max(best[en.id] || 0, s.w);
+      if (countsAsWork(en, w) && s.done && s.w > 0 && !isWarmupSet(s)) best[en.id] = Math.max(best[en.id] || 0, s.w);
     })));
     if (Object.keys(best).length) {
       p.history = {

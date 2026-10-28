@@ -1,3 +1,4 @@
+import { countsAsWork, sameSection } from './workout-sections.js'
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { syncSupersetMeta } from './superset-meta.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
@@ -304,6 +305,7 @@ export function pairAdjacent(items, first, second, groupId) {
   }
   if (Math.abs(first - second) !== 1) throw new RangeError('Superset entries must be adjacent')
 
+  if (!sameSection(items[first], items[second])) return items.slice()
   const next = items.map(e => ({ ...e }))
   const left = Math.min(first, second)
   const right = Math.max(first, second)
@@ -376,19 +378,41 @@ export const lastAcrossRoutines = S => S?.lastFrom === 'any'
  * or copied routine starts from what you actually lift rather than from nothing. With "Last time
  * means → Any workout" (lastAcrossRoutines) the routine is ignored and the newest session wins.
  */
-export function lastEntryFor(S, exId, rid) {
-  if (rid && !lastAcrossRoutines(S)) {
-    const own = lastEntryIn(S, exId, rid)
-    if (own) return own
-  }
-  return lastEntryIn(S, exId, null)
+export function lastEntryFor(S, exId, selector = null, cfg = null) {
+  return lastEntryForMode(S, exId, selector, cfg, false)
 }
 
-function lastEntryIn(S, exId, rid) {
+// UI readback for an exact exercise occurrence, including preparation/cooldown phases. Training
+// analytics keep using lastEntryFor, whose eligibility filter is intentionally unchanged.
+export function lastDisplayEntryFor(S, exId, selector = null, cfg = null) {
+  return lastEntryForMode(S, exId, selector, cfg, true)
+}
+
+function lastEntryForMode(S, exId, selector, cfg, includeNonTraining) {
+  const rid = typeof selector === 'string' ? selector : null
+  cfg = selector && typeof selector === 'object' ? selector : cfg
+  if (!includeNonTraining && cfg && !countsAsWork(cfg)) return null
+  if (rid && !lastAcrossRoutines(S)) {
+    const own = lastEntryIn(S, exId, rid, cfg, includeNonTraining)
+    if (own) return own
+  }
+  // A new or copied routine has fresh occurrence ids. With no history in its own routine slot,
+  // fall back to the exercise's history rather than requiring an occurrence that cannot exist.
+  return lastEntryIn(S, exId, null, rid && !includeNonTraining ? null : cfg, includeNonTraining)
+}
+
+function lastEntryIn(S, exId, rid, cfg, includeNonTraining = false) {
   const workouts = S.workouts || []
   for (let i = workouts.length - 1; i >= 0; i--) {
     const w = workouts[i]
-    const en = entryIn(w, exId, rid)
+    const candidates = (w.entries || []).filter(e => e?.id === exId && (includeNonTraining || countsAsWork(e, w))
+      && (!includeNonTraining || !cfg?.sectionId || countsAsWork(e, w) === countsAsWork(cfg))
+      && !entryExcluded(w, e) && (!rid || entryRoutineId(w, e) === rid))
+    const en = includeNonTraining && cfg?.occurrenceId
+      ? candidates.find(e => e.occurrenceId === cfg.occurrenceId)
+      : cfg?.occurrenceId && candidates.some(e => e.occurrenceId)
+      ? candidates.find(e => e.occurrenceId === cfg.occurrenceId)
+      : candidates[0]
     if (!en) continue
     // A session that does not count — a planned deload, or a rehab block merged into a real
     // session — is not "last time" for the next regular prescription: its reps and durations
@@ -450,7 +474,8 @@ export const exNoteFor = (S, exId) => ((S?.exNotes || {})[exId] || '').trim() ||
 // built by buildSets(), which copies each completed set by position; only the target shape and
 // number of rows need to be seeded here so the config sheet and the rows agree.
 export function freestyleConfig(S, cfg) {
-  const last = lastEntryFor(S, cfg.id)
+  if (!countsAsWork(cfg)) return { ...cfg }
+  const last = lastEntryFor(S, cfg.id, cfg)
   if (!last) return { ...cfg }
   // What a dumbbell weight meant last time is that session's stamp, not a choice to copy: a
   // freestyle add follows the exercise's own setting as it is now (lib/dumbbells.js).
@@ -571,13 +596,14 @@ export const MAX_PLANNED_WARMUPS = 5
 export const barFloor = (S, exId) => barWeightFor(S, exId) || 0
 
 function buildWorkSets(S, cfg, options = {}) {
+  if (!countsAsWork(cfg)) S = { ...S, workouts: [], exWeights: {} }
   const preferLast = !!options.preferLast
   const useTarget = !!options.useTarget
   // `lastEntryFor` now skips any entry that does not count — a planned deload, or a rehab
   // block merged into a real session (entryExcluded) — so the rows seed from the last
   // *counting* session without this function pre-filtering the history itself. `options.rid`
   // is the routine the rows are for: its own last session of the exercise comes first (#216).
-  const last = lastEntryFor(S, cfg.id, options.rid)
+  const last = lastEntryFor(S, cfg.id, options.rid || cfg, cfg)
   const n = Math.max(1, cfg.sets || 1)
   const mode = modeOf(cfg)
   const sets = []
@@ -768,7 +794,7 @@ export function workoutVolume(w, { warmups = false } = {}) {
   ;(Array.isArray(w?.entries) ? w.entries : []).forEach(e => {
     const f = volumeFactor(e)
     ;(Array.isArray(e?.sets) ? e.sets : []).forEach(s => {
-      if (warmups || !isWarmupRow(s)) v += completedVolumeOf(s) * f
+      if (countsAsWork(e, w) && (warmups || !isWarmupRow(s))) v += completedVolumeOf(s) * f
     })
   })
   return v
@@ -824,7 +850,7 @@ export const setUnits = s => (isSideSet(s) ? 2 : 1)
 // How many of a row's units are done: both sides independently for a per-side row, else 0/1.
 export const doneUnits = s => (isSideSet(s) ? (s.sides.L.done ? 1 : 0) + (s.sides.R.done ? 1 : 0) : (s.done ? 1 : 0))
 // Total completion-units across a session's rows (both sides of every unilateral set counted).
-export const setUnitsTotal = entries => (entries || []).reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + setUnits(s), 0), 0)
+export const setUnitsTotal = entries => (entries || []).reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + (e.skipped === true ? doneUnits(s) : setUnits(s)), 0), 0)
 
 export function setsDone(w) {
   let n = 0
@@ -844,7 +870,7 @@ export function supersetUnits(items) {
   const units = []
   items.forEach((e, i) => {
     const prev = items[i - 1]
-    if (i > 0 && e.sg && prev && prev.sg && e.sg === prev.sg) units[units.length - 1].push(i)
+    if (i > 0 && e.sg && prev && prev.sg && e.sg === prev.sg && sameSection(e, prev)) units[units.length - 1].push(i)
     else units.push([i])
   })
   return units
@@ -879,6 +905,7 @@ export function moveSupersetUnit(items, index, direction) {
   const source = units.findIndex(unit => unit.includes(index))
   const target = source + direction
   if (source < 0 || target < 0 || target >= units.length) return null
+  if (!sameSection(items[units[source][0]], items[units[target][0]])) return null
   const reordered = [...units]
   const selected = reordered[source]
   reordered[source] = reordered[target]
@@ -1214,7 +1241,7 @@ export const removeLastSet = rows => rows.length ? removeRowAt(rows, rows.length
  *  warm-ups on a workout that had none. */
 export function workSetsDone(w) {
   return (w?.entries || []).reduce(
-    (n, e) => n + (e.sets || []).reduce((m, s) => m + (isWarmupRow(s) ? 0 : doneUnits(s)), 0), 0,
+    (n, e) => n + (countsAsWork(e, w) ? (e.sets || []) : []).reduce((m, s) => m + (isWarmupRow(s) ? 0 : doneUnits(s)), 0), 0,
   )
 }
 
@@ -1222,6 +1249,7 @@ const METRIC_MODES = ['reps', 'time', 'cardio']
 const completedRowsForMode = (entry, mode) => workRowsForMode(entry, mode).filter(s => hasCompletedWork(s) && !isWarmupRow(s))
 
 export function metricRowsForEntry(entry, mode) {
+  if (!countsAsWork(entry)) return []
   const requested = typeof mode === 'string' ? mode.trim().toLowerCase() : ''
   const resolved = METRIC_MODES.includes(requested) ? requested : metricModeForEntry(entry)
   return resolved ? completedRowsForMode(entry, resolved) : []
@@ -1263,6 +1291,7 @@ export function completedRepsOf(set = {}) {
 /** Best load from completed work rows, with a guarded reps-only legacy topW fallback. */
 
 export function bestWeightForEntry(entry = {}) {
+  if (!countsAsWork(entry)) return 0
   const target = entry.target || entry
   const workRows = Array.isArray(entry.sets)
     ? entry.sets.filter(s => phaseForSet(s) === 'work')

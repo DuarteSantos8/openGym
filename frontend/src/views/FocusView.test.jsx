@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
+import { fmtDate } from '../lib/format.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), unlock: vi.fn() }))
 vi.mock('../lib/api.js', () => ({ api: vi.fn(() => Promise.resolve({})) }))
@@ -55,6 +56,24 @@ afterEach(() => {
 })
 
 describe('Focus workout view', () => {
+  it('uses the selected non-training occurrence for last-time readback', () => {
+    const preparation = { id: 'prep', type: 'preparation', label: 'Preparation', countsAsWork: false }
+    mount({
+      id: SQUAT, rid: 'A', occurrenceId: 'prep-slot', sectionId: preparation.id, section: preparation,
+      target: { sets: 1, reps: 8, weight: 20 }, sets: [{ w: 20, r: 8, done: false }],
+    }, { workouts: [{
+      d: '2026-09-20', routineIds: ['A'], sections: [preparation], entries: [{
+        id: SQUAT, rid: 'A', occurrenceId: 'prep-slot', sectionId: preparation.id, section: preparation,
+        target: { reps: 8, weight: 20 }, sets: [{ w: 20, r: 8, done: true }],
+      }, {
+        id: SQUAT, rid: 'A', occurrenceId: 'work-slot',
+        target: { reps: 5, weight: 60 }, sets: [{ w: 60, r: 5, done: true }],
+      }],
+    }] })
+
+    expect(container.querySelector('.focus-last').textContent).toBe(`Last time · ${fmtDate('2026-09-20')}`)
+  })
+
   it('omits a plan that repeats the prescription and keeps plate guidance in the badge row', () => {
     mount({
       id: SQUAT,

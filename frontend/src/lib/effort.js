@@ -1,3 +1,4 @@
+import { countsAsWork } from './workout-sections.js'
 // Effort as a statistic: one internal scale, both display scales.
 //
 // A set carries either `rir` or `rpe` and is never rewritten — switching the setting changes
@@ -50,7 +51,7 @@ export const scaleName = kind => EFFORT[kind].hd
 function eachDoneSet(S, fn) {
   ;(S.workouts || []).forEach(w =>
     (w.entries || []).forEach(e =>
-      (e.sets || []).forEach(s => { if (s.done && !isWarmupRow(s)) fn(s, w, e) })))
+      (e.sets || []).forEach(s => { if (countsAsWork(e, w) && s.done && !isWarmupRow(s)) fn(s, w, e) })))
 }
 
 // A window in days, counted back from now. 0 = everything, which is also what an empty

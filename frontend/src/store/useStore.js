@@ -1,3 +1,4 @@
+import { syncSections, cleanSections } from '../lib/workout-sections.js'
 import { create } from 'zustand'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
@@ -326,12 +327,24 @@ export function restartedState(cur) {
   return s
 }
 
+function syncStateSections(state) {
+  for (const routine of state.routines || []) syncSections(routine)
+  syncSections(state.active)
+  if (state.sectionPresets != null) state.sectionPresets = cleanSections(state.sectionPresets)
+  return state
+}
+
+export function normalizeState(value) {
+  const saved = value && typeof value === 'object' && !Array.isArray(value) ? clone(value) : {}
+  return syncStateSections(sanitizeAccent(Object.assign(clone(DEF), saved)))
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const saved = JSON.parse(raw)
-      const s = sanitizeAccent(Object.assign(clone(DEF), saved))
+      const s = normalizeState(saved)
       if (!saved.lang) s.lang = detectedLang()
       return s
     }
@@ -350,7 +363,7 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
 // session belongs to the device that is currently running it.
 export function restoredStateFor(local, remote, dirty = false) {
   if (!remote || (hasData(local) && (dirty || (remote._ts || 0) < (local._ts || 0)))) return null
-  const next = sanitizeAccent(Object.assign(clone(DEF), remote))
+  const next = normalizeState(remote)
   if (local.active) next.active = local.active
   return next
 }
@@ -617,6 +630,7 @@ export const useStore = create((set, get) => {
   }
   const persist = (S, push = true, stamp = true) => {
     if (refuseStale(S)) return
+    syncStateSections(S)
     const { base, owed } = metaOf()   // the copy being replaced; the new one stands where it stood
     const joined = joinSaved(S, get()?.S)
     if (joined) S = joined
@@ -2016,7 +2030,7 @@ export const useStore = create((set, get) => {
         const saved = await nativeLoad()
         const S = get().S
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
-          persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
+          persist(normalizeState(saved), false, false)
         } else if (hasData(S)) {
           nativePersist(true)   // first run after an update from a file-less version: seed the mirror
         }

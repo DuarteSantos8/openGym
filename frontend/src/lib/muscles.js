@@ -1,3 +1,4 @@
+import { countsAsWork } from './workout-sections.js'
 // Which muscles an exercise trains, and how hard — the data behind every muscle map.
 //
 // The exercise dataset names muscles in free text and is not consistent about it:
@@ -293,7 +294,7 @@ export function loadOf(items) {
  */
 export const loadOfWorkouts = (workouts, pick) =>
   loadOf((workouts || []).flatMap(w =>
-    (w.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
+    (w.entries || []).filter(e => countsAsWork(e, w)).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s) && (!pick || pick(s))).length }))))
 
 /**
  * Workouts in one existing Muscle balance range, with time injected for deterministic tests.
@@ -311,7 +312,7 @@ export function muscleBalanceWindow(workouts, win, now = Date.now(), today = tod
 
 /** Load a routine *would* produce, from its planned set counts. */
 export const loadOfRoutine = (routine, exercises = {}) =>
-  loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
+  loadOf((routine?.ex || []).filter(c => countsAsWork(c, routine)).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
 
 /**
  * A running session's muscles (#670): `done` from the sets ticked so far, `planned` from every
@@ -319,7 +320,7 @@ export const loadOfRoutine = (routine, exercises = {}) =>
  * workout's map, so a session that is all ticked shades exactly like its summary.
  */
 export function sessionLoad(entries) {
-  const of = pick => loadOf((entries || []).map(e => ({
+  const of = pick => loadOf((entries || []).filter(e => countsAsWork(e)).map(e => ({
     id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => !isWarmupRow(s) && pick(s)).length,
   })))
   return { done: of(s => s.done), planned: of(() => true) }

@@ -1,3 +1,4 @@
+import { countsAsWork } from './workout-sections.js'
 // Automatic progression (issue #17).
 //
 // Everything here is a pure function of the workout history. Nothing writes back into a
@@ -97,7 +98,7 @@ export const MAX_BW_SETS = 6
 // the mode's default. Reps keeps behaving the way the app always did (all reps → add a step).
 export function policyFor(cfg, routine, mode) {
   // Pyramid sets are never progressed: the lifter picks every set's weight (CONTEXT.md).
-  if (isPyramid(cfg)) return 'off'
+  if (isPyramid(cfg) || !countsAsWork(cfg, routine)) return 'off'
   const m = mode || modeOf(cfg || {})
   const allowed = POLICIES_FOR[m] || ['off']
   const pick = (cfg && cfg.prog) || (routine && routine.prog) || (m === 'reps' ? 'linear' : 'off')
@@ -332,16 +333,20 @@ export function readSession(entry, fallback) {
  */
 export function sessionsFor(S, exId, fallback, rid) {
   if (rid && !lastAcrossRoutines(S)) {
-    const own = sessionsIn(S, exId, fallback, rid)
+    const own = sessionsIn(S, exId, fallback, rid, true)
     if (own.length) return own
   }
-  return sessionsIn(S, exId, fallback, null)
+  return sessionsIn(S, exId, fallback, null, !rid)
 }
 
-function sessionsIn(S, exId, fallback, rid) {
+function sessionsIn(S, exId, fallback, rid, matchOccurrence) {
   const out = []
   ;(S.workouts || []).forEach(w => {
-    const entry = (w.entries || []).find(e => e && e.id === exId && (!rid || entryRoutineId(w, e) === rid))
+    const candidates = (w.entries || []).filter(e => e && e.id === exId && countsAsWork(e, w)
+      && (!rid || entryRoutineId(w, e) === rid) && !entryExcluded(w, e))
+    const entry = matchOccurrence && fallback?.occurrenceId && candidates.some(e => e.occurrenceId)
+      ? candidates.find(e => e.occurrenceId === fallback.occurrenceId)
+      : candidates[0]
     if (!entry) return
     // A session that does not count for this exercise cannot become the baseline for its next
     // prescription. Exclusion is per-entry now (ENG-11): a legacy whole-workout

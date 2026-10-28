@@ -30,6 +30,12 @@ describe('sessionLoad', () => {
     expect(planned).toEqual(done)
   })
 
+  it('excludes preparation phases from both live map totals', () => {
+    const work = { id: BENCH, section: { countsAsWork: true }, sets: [set(true), set(false)] }
+    const prep = { id: SQUAT, section: { countsAsWork: false }, sets: [set(true), set(false)] }
+    expect(sessionLoad([work, prep])).toEqual(sessionLoad([work]))
+  })
+
   it('copes with no session at all', () => {
     expect(sessionLoad(undefined)).toEqual({ done: {}, planned: {} })
   })

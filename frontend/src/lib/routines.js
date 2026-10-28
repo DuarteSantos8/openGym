@@ -1,3 +1,4 @@
+import { remapSections } from './workout-sections.js'
 import { uid } from './format.js'
 import { defaultConfig, isBw, modeOf, MAX_PLANNED_WARMUPS, NOTE_MAX } from './history.js'
 import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
@@ -16,7 +17,7 @@ export function copyRoutine(routine, suffix = 'Copy') {
   const esc = suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const m = new RegExp('^(.*) \\(' + esc + '(?: (\\d+))?\\)$').exec(routine.name || '')
   copy.name = m ? m[1] + ' (' + suffix + ' ' + ((Number(m[2]) || 1) + 1) + ')' : routine.name + ' (' + suffix + ')'
-  return copy
+  return remapSections(copy)
 }
 
 /**
@@ -144,7 +145,7 @@ export function replaceSlotExercise(slot, id, S, rid) {
   const old = slot || {}
   if (old.id === id) return { ...old }
   if ((modeOf(old) === 'cardio') !== isCardio(id)) {
-    const kept = ['sg', 'note', 'restSec', 'restOff', 'subs'].filter(key => old[key] != null)
+    const kept = ['sg', 'note', 'restSec', 'restOff', 'subs', 'sectionId', 'section', 'occurrenceId'].filter(key => old[key] != null)
     return dropSelfBackup({ id, ...defaultConfig(id), ...Object.fromEntries(kept.map(key => [key, old[key]])) })
   }
   const { id: _replaced, bodyweight: _flag, assisted: _assisted, side: _side, ...carried } = old
@@ -178,6 +179,9 @@ export function replaceSlotExercise(slot, id, S, rid) {
 export function routineSlotIndex(routine, entries, idx) {
   const entry = entries?.[idx]
   if (!entry || !routine || !Array.isArray(routine.ex) || entry.rid !== routine.id) return -1
+  if (entry.occurrenceId) {
+    return routine.ex.findIndex(slot => slot?.id === entry.id && slot.occurrenceId === entry.occurrenceId)
+  }
   const twinsBefore = entries.slice(0, idx).filter(e => e && e.rid === routine.id && e.id === entry.id).length
   let seen = 0
   for (let i = 0; i < routine.ex.length; i++) {

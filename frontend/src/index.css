@@ -2042,6 +2042,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--sep);
 }
 .wchip .icn{width:12px;height:12px}
+.chips.wchips.has-phases{padding-bottom:13px}
+.wchip-phase{position:absolute;inset-inline:0;bottom:-8px;height:2px;background:var(--phase-color);pointer-events:none}
+.wchip-phase.continues{inset-inline-end:-6px}
 .wchip.partial{background:linear-gradient(to top,rgba(255,159,10,0.45) 50%,var(--surface) 50%);background:linear-gradient(to top,color-mix(in srgb,var(--orange) 45%,var(--surface)) 50%,var(--surface) 50%);box-shadow:inset 0 0 0 1.5px var(--orange);color:var(--label)}
 .wchip.done{background:var(--green);background:color-mix(in srgb,var(--green) 70%,var(--surface));box-shadow:none;color:var(--label)}
 .wchip.cur{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--acc);color:var(--label)}
@@ -2314,6 +2317,106 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
 .list .similar-label{margin:16px 2px 6px;grid-column:1/-1}
 
+/* Whole-workout phases use the existing workout palette and controls. */
+.workout-section-toolbar { display: flex; align-items: center; justify-content: space-between; margin: 0 0 8px; }
+.workout-section-toolbar .btn { width: auto; min-height: 44px; }
+.workout-section-heading { margin: 20px 0 10px; padding-top: 12px; border-top: 1px solid var(--sep); font-size: 17px; overflow-wrap: anywhere; }
+.workout-section-heading { color: var(--label); display: flex; align-items: center; gap: 10px; }
+.phase-color-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--phase-color); flex: none; }
+.section-move-choices .phase-color-dot, .section-presets .phase-color-dot { margin-right: 8px; }
+/* Phase boundaries must stay in reading order even in the desktop exercise grid. */
+#app .routine-list:has(.workout-section-heading) { display: flex; flex-direction: column; }
+.section-manager fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.section-manager h4 { margin: 24px 0 12px; }
+.section-manager .btn { min-height: 44px; }
+.section-order { margin-bottom: 16px; }
+.section-order-row { display: flex; align-items: center; border-bottom: 1px solid var(--sep); gap: 4px; }
+.section-order-row .section-name { flex: 1; min-width: 0; justify-content: space-between; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.section-order-row .iconbtn, .section-preset-row .iconbtn { flex: 0 0 44px; width: 44px; height: 44px; }
+.section-presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.section-presets .btn { white-space: normal; }
+.section-preset-row { display: flex; gap: 8px; margin-top: 8px; }
+.section-preset-row > .btn { flex: 1; min-width: 0; white-space: normal; overflow-wrap: anywhere; text-align: left; justify-content: flex-start; }
+.section-preset-row > .btn > span { min-width: 0; }
+.section-custom { margin: 16px 0; }
+.section-custom summary { padding: 12px 0; cursor: pointer; }
+.section-form { display: grid; gap: 12px; margin: 12px 0; }
+.section-form p { margin: 0; }
+.section-form label .input { margin-top: 6px; }
+.section-training-option { display: flex; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; }
+.section-training-option input { width: 20px; height: 20px; accent-color: var(--acc); }
+.workout-section-toolbar { flex-wrap: wrap; gap: 4px; }
+.workout-phase { min-width: 0; margin-bottom: 16px; }
+.workout-phase-header { display: flex; align-items: center; gap: 8px; background: var(--surface); background: color-mix(in srgb, var(--phase-color) 15%, var(--bg)); border-radius: 8px; padding: 2px 4px 2px 12px; margin-bottom: 8px; }
+.workout-phase.is-collapsed .workout-phase-header { margin-bottom: 0; }
+.phase-count { color: var(--label-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.workout-phase-toggle { min-width: 0; min-height: 44px; flex: 1; display: flex; align-items: center; gap: 8px; padding: 0; color: inherit; text-align: left; }
+.workout-phase-toggle .workout-section-heading { flex: 1; min-width: 0; border: 0; margin: 0; padding: 0; }
+.workout-phase-toggle > .icn { width: 18px; height: 18px; flex: none; color: var(--label-2); }
+.phase-drag-handle { width: 44px; height: 44px; flex: none; display: grid; place-items: center; margin-left: -8px; color: var(--label-2); cursor: grab; touch-action: none; }
+.phase-drag-handle:active { cursor: grabbing; }
+.workout-phase-header > .iconbtn { width: 44px; height: 44px; flex: none; }
+.section-exercise-actions { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 2px; }
+.section-exercise-actions .btn { width: auto; min-height: 44px; white-space: normal; text-align: left; }
+.section-exercise-actions .btn + .btn { color: var(--label-2); }
+.section-empty { margin: 10px 12px; }
+.phase-content { border: 0; padding: 0; margin: 0; min-width: 0; }
+.workout-phase-header > .btn { width: auto; max-width: 35%; min-height: 44px; flex: none; white-space: normal; }
+.wchip.skipped { color: var(--label-2); text-decoration: line-through; }
+.section-move { margin: 0 4px 8px; }
+.section-move summary { width: fit-content; min-height: 44px; display: flex; align-items: center; gap: 8px; color: var(--acc); font-size: 13px; cursor: pointer; }
+.section-move summary::after { content: ''; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin-top: -4px; }
+.section-move[open] summary::after { transform: rotate(225deg); margin-top: 4px; }
+.section-move-choices { display: flex; flex-wrap: wrap; gap: 4px 8px; padding-bottom: 8px; }
+.section-move-choices .btn { width: auto; min-height: 44px; white-space: normal; overflow-wrap: anywhere; }
+.section-row-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.section-row-actions .btn { width: auto; min-height: 44px; }
+.section-row-actions + .small { margin: 8px 12px 0; }
+.section-remove-choices { display: grid; gap: 8px; }
+.section-remove-choices .btn { min-height: 56px; justify-content: flex-start; white-space: normal; text-align: left; }
+.section-remove-choices small { display: block; color: var(--label-2); margin-top: 4px; }
+.routine-list.is-phased .routine-drag-handle { width: 44px; height: 44px; flex: none; cursor: grab; touch-action: none; }
+.routine-list.is-phased .routine-drag-handle:active { cursor: grabbing; }
+.routine-list.is-phased .item .iconbtn { min-width: 44px; min-height: 44px; }
+.routine-list.is-phased .item > div:last-child:empty { display: none; }
+.routine-list.is-phased .is-dragging { z-index: 2; pointer-events: none; }
+.routine-phase-exercise { position: relative; }
+.routine-list.is-phased .routine-phase-exercise > .item { padding: 8px 48px 8px 4px; gap: 8px; }
+.routine-list.is-phased .routine-drag-row { margin-top: 6px; }
+.routine-list.is-phased .ss-label { margin: 4px 0; }
+.routine-list.is-phased .ss-label .btn { min-height: 44px; padding: 4px 12px; justify-content: flex-start; }
+.compact-actions { margin: 0; }
+.compact-actions > summary { position: absolute; right: 2px; top: 8px; width: 44px; height: 44px; justify-content: center; color: var(--label-2); border-radius: 8px; }
+.compact-actions > summary::after { display: none; }
+.compact-actions[open] > summary { background: var(--surface-2); color: var(--label); }
+.compact-actions .section-move-panel { padding: 4px; margin: 4px 0 8px; background: var(--surface); border-radius: 8px; }
+.compact-actions .section-move-choices { padding: 0; }
+.phase-inline-settings { margin: 0 0 12px; padding: 4px 12px 12px; border-bottom: 1px solid var(--sep); }
+.section-manager .phase-color-field { border: 0; min-width: 0; }
+.phase-color-field legend { padding: 0; }
+.phase-color-options { display: grid; grid-template-columns: repeat(4, minmax(44px, 1fr)); gap: 4px; margin-top: 4px; }
+.phase-color-option { min-width: 44px; height: 44px; display: grid; place-items: center; border-radius: 8px; }
+.phase-color-option > span { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #000; }
+.phase-color-option[aria-pressed=true] > span { outline: 2px solid var(--label); outline-offset: 3px; }
+.phase-color-option .icn { width: 18px; height: 18px; }
+.compact-actions > summary .icn { width: 20px; height: 20px; }
+.phase-custom-color { display: flex; align-items: flex-end; gap: 8px; margin-top: 10px; }
+.phase-custom-color label { flex: 1; min-width: 0; font-size: 13px; }
+.section-form .phase-color-help { margin-top: 8px; }
+.phase-color-help.invalid { color: var(--red); }
+.phase-custom-color input[type=color] { width: 44px; height: 44px; flex: none; padding: 4px; border: 1px solid var(--sep); border-radius: 8px; background: var(--surface); }
+.phase-training-settings > summary, .routine-phase-settings > summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; color: var(--label-2); font-size: 15px; }
+.phase-training-settings > summary::after { content: ''; width: 6px; height: 6px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg); margin-right: 4px; }
+.phase-training-settings[open] > summary::after { transform: rotate(225deg); }
+.routine-phase-settings { margin: -8px 0 8px; }
+.routine-phase-settings > summary { padding: 0 8px; }
+.routine-phase-settings > summary .icn { width: 14px; height: 14px; }
+.routine-phase-settings[open] > summary .icn { transform: rotate(180deg); }
+.routine-phase-settings[open] > summary { margin-bottom: 8px; }
+.workout-phase.is-drop-target { outline: 2px dashed var(--phase-color); outline-offset: 4px; }
+.workout-phase.is-phase-dragging { opacity: .72; }
+.workout-phase.is-phase-drop-target { outline: 2px dashed var(--phase-color); outline-offset: 4px; }
+@media (min-width: 600px) { .phase-color-options { grid-template-columns: repeat(8, minmax(44px, 1fr)); } }
 /* The edge swipe back (lib/edge-swipe-back.js): the page follows the finger, the one it goes
    back to slides in underneath with a shade over it. The sliding page's own ground reaches the
    screen's edges (--eb-*: how far #app's padding and margins leave it short of them). */

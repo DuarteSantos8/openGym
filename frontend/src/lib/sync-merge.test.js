@@ -77,6 +77,17 @@ describe('mergeStates', () => {
     expect(m2.routines.find(r => r.id === 'shared').name).toBe('from B')
   })
 
+  it('keeps section presets and routine phase membership through the ordinary state merge', () => {
+    const phase = { id: 'prep', type: 'warmup', label: 'Preparation', countsAsWork: false }
+    const phased = { id: 'phased', name: 'Phased', sections: [phase], ex: [{ id: 'bench', sectionId: phase.id, occurrenceId: 'bench-1' }] }
+    const newer = base({ _ts: 200, sectionPresets: [phase], routines: [phased] })
+    const older = base({ _ts: 100, routines: [] })
+    for (const merged of [mergeStates(newer, older), mergeStates(older, newer)]) {
+      expect(merged.sectionPresets).toEqual([phase])
+      expect(merged.routines[0]).toEqual(phased)
+    }
+  })
+
   it('bodyweight keeps the later-edited entry of a day, exWeights the larger weight, notes union', () => {
     const m = mergeStates(A(), B())
     expect(m.bodyweight.find(b => b.d === '2026-09-01')).toEqual({ d: '2026-09-01', w: 79, t: 20 })

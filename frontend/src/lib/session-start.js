@@ -1,3 +1,4 @@
+import { countsAsWork, sectionFields } from './workout-sections.js'
 // How a session's exercise entries are built from a routine. Shared by the live start and by
 // "log a past workout", which is the same screen pointed at another day — both must walk up
 // to identical entries, or the two paths drift apart the first time a prescription rule changes.
@@ -145,7 +146,12 @@ export function buildSessionEntries(st, r) {
   // right weight already on the screen instead of being told about it afterwards.
   const noProg = r?.excludeFromProgression === true
   return (r ? r.ex : []).map(cfg => {
-    const built = buildPlannedEntry(st, cfg, r, { noProg })
-    return { id: cfg.id, sg: cfg.sg, ...built, ...(noProg ? { noProg: true } : {}) }
+    const fields = sectionFields(cfg, r)
+    const planned = { ...cfg, ...fields }
+    const built = buildPlannedEntry(st, planned, r, { noProg })
+    return { id: cfg.id, sg: cfg.sg, ...fields, ...built,
+      target: { ...built.target, ...fields }, ...(noProg ? { noProg: true } : {}) }
   })
 }
+
+export function buildRoutineSession(st, routine) { return { entries: buildSessionEntries(st, routine), ...(routine?.sections?.length ? { sections: structuredClone(routine.sections) } : {}) } }

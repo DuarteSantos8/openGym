@@ -80,6 +80,12 @@ describe('replaceSlotExercise', () => {
       .toEqual({ id: BENCH, sets: 3, reps: 10, weight: 0, mode: 'reps', note: 'easy' })
   })
 
+  it('keeps phase membership and occurrence identity when replacing across cardio modes', () => {
+    const section = { id: 'prep', type: 'warmup', label: 'Preparation', countsAsWork: false }
+    expect(replaceSlotExercise({ id: BENCH, sets: 3, sectionId: 'prep', section, occurrenceId: 'first' }, BIKE))
+      .toMatchObject({ id: BIKE, sectionId: 'prep', section, occurrenceId: 'first' })
+  })
+
   it('keeps a cardio slot\'s minutes and speed on another cardio exercise', () => {
     expect(replaceSlotExercise({ id: BIKE, sets: 2, min: 30, speed: 12 }, '3666'))
       .toEqual({ id: '3666', sets: 2, min: 30, speed: 12 })

@@ -31,7 +31,7 @@ const keyOf = w => (w?.id != null ? w.id : legacySyncKey(w))
 // another device wrote. Save takes the draft's value only where the editor changed it, so an
 // editor opened on an old note does not write that old note back over a newer one, or delete a
 // note written meanwhile. The note is compared as the finish writes it, trimmed.
-const SESSION_FIELDS = ['note', 'name', 'bw']
+const SESSION_FIELDS = ['note', 'name', 'bw', 'sections']
 const sessionField = (w, k) => (k === 'note' ? (w?.note || '').trim() : (w?.[k] ?? null))
 
 // The same data whatever order its keys were written in. A key holding undefined is no key, as it
@@ -103,6 +103,7 @@ export function editCompletedSession(state, ref) {
   const original = key == null ? null : list(state.workouts).find(w => keyOf(w) === key)
   if (!original) throw new Error('Workout deleted')
   const active = clone(original)
+  if (original.resumeEntries?.some(entry => entry.skipped === true)) active.entries = clone(original.resumeEntries)
   active.cur = 0
   active.editingWorkoutId = key
   active.editBase = Object.fromEntries(SESSION_FIELDS.map(k => [k, sessionField(original, k)]))
@@ -112,7 +113,7 @@ export function editCompletedSession(state, ref) {
   // progression, and a swap in the editor keeps its replacement out too. A workout out as a whole
   // opens with the header's "Don't count for progression" on (lib/session-noprog.js), so it can
   // be switched off there, and an exercise added in the editor stays out with the rest.
-  if (original.excludeFromProgression === true) {
+  if (original.excludeFromProgression === true && !original.resumeEntries?.some(entry => entry.skipped === true)) {
     for (const entry of list(active.entries)) if (entry && entry.noProg !== true) entry.noProg = true
     active.noProg = true
   }
@@ -201,11 +202,12 @@ function draftRecord(active, current, key) {
     return merged
   })
   const record = { ...current, ...updated, id: key, d: current.d, start: current.start, end: current.end }
+  if (!('resumeEntries' in updated) && current.resumeEntries?.some(entry => entry.skipped === true)) delete record.resumeEntries
   if (!('excludeFromProgression' in updated)) delete record.excludeFromProgression
   const base = active.editBase
   for (const k of SESSION_FIELDS) {
     // A draft from before `editBase` existed has nothing to compare with, and keeps the editor's.
-    const edited = !base || sessionField(updated, k) !== base[k]
+    const edited = !base || !sameData(sessionField(updated, k), base[k])
     const value = edited ? sessionField(updated, k) : current[k]
     if (value == null || value === '') delete record[k]
     else record[k] = value

@@ -1,3 +1,4 @@
+import { sectionFields } from './workout-sections.js'
 // The persisted boundary for a finished session. Keep this pure so compatibility tests can
 // exercise the exact shape the UI writes without mounting React or mutating store state.
 import { bestWeightForEntry, cleanupSg } from './history.js'
@@ -70,6 +71,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
   const entries = (active?.entries || []).map(entry => {
     const completed = {
       id: entry.id,
+      ...sectionFields(entry, active),
       // Only what was logged — the live-session bookkeeping on a row stays behind (finishedRow).
       sets: (entry.sets || []).map(finishedRow),
       topW: bestWeightForEntry(entry) || null,
@@ -79,6 +81,7 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
       // shape it always was. Without this the whitelist drops both at finish.
       ...(entry.rid ? { rid: entry.rid } : {}),
       ...(entry.noProg === true ? { noProg: true } : {}),
+      ...(entry.skipped === true ? { skipped: true, noProg: true } : {}),
       // What the routine asked for when the session was built (session-start.js), next to the
       // target the prescription moved — how the next session tells an edited plan (#275).
       ...(entry.planned ? { planned: entry.planned } : {}),
@@ -123,6 +126,8 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     name: active.name,
     bw: active.bw,
     entries,
+    ...(active.entries.some(entry => entry.skipped === true) ? { resumeEntries: structuredClone(active.entries) } : {}),
+    ...(active.sections?.length ? { sections: structuredClone(active.sections) } : {}),
     prs,
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),

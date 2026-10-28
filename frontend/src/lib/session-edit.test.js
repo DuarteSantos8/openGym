@@ -95,6 +95,28 @@ describe('saved workout editing', () => {
     expect(saved.entries[1].sets[0].sides.L.w).toBe(14)
   })
 
+  it('preserves phase snapshots and does not resurrect phases removed in the editor', () => {
+    const state = fixture()
+    const phase = { id: 'prep', type: 'warmup', label: 'Preparation', countsAsWork: false }
+    state.workouts[0].sections = [phase]
+    Object.assign(state.workouts[0].entries[0], { sectionId: phase.id, section: { ...phase }, occurrenceId: 'first' })
+    Object.assign(state.workouts[0].entries[0].target, { sectionId: phase.id, section: { ...phase }, occurrenceId: 'first' })
+    editCompletedSession(state, 'workout')
+    state.active.entries[0].sets[0].w = 45
+    expect(saveWorkoutEdit(state).sections).toEqual([phase])
+
+    editCompletedSession(state, 'workout')
+    delete state.active.sections
+    for (const entry of state.active.entries) {
+      delete entry.sectionId; delete entry.section; delete entry.occurrenceId
+      delete entry.target.sectionId; delete entry.target.section; delete entry.target.occurrenceId
+    }
+    state.active.entries[0].sets[0].w = 50
+    const saved = saveWorkoutEdit(state)
+    expect(saved).not.toHaveProperty('sections')
+    expect(saved.entries[0]).not.toHaveProperty('section')
+  })
+
   it('keeps a partially completed per-side occurrence and its opaque ownership', () => {
     const state = fixture()
     state.workouts[0].entries = [{
