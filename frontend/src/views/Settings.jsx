@@ -2,6 +2,9 @@ import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'r
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
 import { healthStatus, loadHealth, enableHealth, disableHealth, openHealthConnect, onHealthChange, enableRead, disableRead } from '../lib/health-sync.js'
+import HealthSources from '../components/HealthSources.jsx'
+import RenphoSource from '../components/RenphoSource.jsx'
+import AppleHealthWeb from '../components/AppleHealthWeb.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { formulaOf, FORMULA_NAMES } from '../lib/onerm.js'
@@ -451,6 +454,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     look: () => themeLabel + ' · ' + accentLabel(S),
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
+    health: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
   }
@@ -945,6 +949,17 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* Reset after reading so picking the same file twice still fires onChange. */}
       <input ref={importRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
         onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
+    </>,
+
+    // Health: the area itself, and on the iPhone app the sources it can read from (Apple Health).
+    health: () => <>
+      <Section>
+        <Row icon="heart" iconTint="var(--red)" title={t('Open Health')}
+          subtitle={t('Body composition, activity, heart and sleep')} accessory="chevron" onClick={() => nav('/health')} />
+      </Section>
+      {MOBILE && <HealthSources />}
+      <RenphoSource />
+      {!MOBILE && <AppleHealthWeb />}
     </>,
 
     about: () => <>

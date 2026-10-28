@@ -95,7 +95,7 @@
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Used to show your heart rate on your Apple Watch while you train, and, when you switch it on, to add the heart rate your watch saved and weigh-ins from other apps to your log.</string>
+	<string>Used to show your heart rate on your Apple Watch while you train, next to each set, to add the heart rate your watch saved and weigh-ins from other apps to your log when you switch it on, and to show the Health data you choose (body measurements, activity, heart, vitals, sleep, mobility, hearing, nutrition, cycle tracking, symptoms, mindfulness and workouts) in openGym's Health section.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Used to save your finished workouts and weigh-ins to Apple Health, when you switch it on.</string>
 	<!-- Gym reminder (#614): off until switched on in Settings. Region monitoring needs Always,

@@ -167,6 +167,10 @@ tags:
       attached to a logged workout. Stored per profile (one quota for both) and named
       by the SHA-256 of its bytes; the state only carries a `MediaRef`. Every route here is a
       404 when the instance runs with `MEDIA_UPLOADS=0`.
+  - name: health
+    description: >-
+      Health readings an iPhone Shortcut read from Apple Health, which no website can read
+      itself. The Shortcut signs in with a key of its own, made in Settings → Health.
   - name: coach
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
@@ -2858,6 +2862,244 @@ paths:
         '409': { $ref: '#/components/responses/CoachRefused' }
         '429': { $ref: '#/components/responses/CoachRefused' }
         '503': { $ref: '#/components/responses/CoachOff' }
+
+  /api/renpho:
+    get:
+      tags: [health]
+      operationId: getRenpho
+      summary: The profile's RENPHO Health connection
+      description: |
+        `connected` false and nothing else when there is none. Otherwise the RENPHO e-mail, when it
+        was connected and last synced (ms), what the last sync did, its error if it failed (`code`:
+        `auth` when RENPHO no longer accepts the sign-in, `rejected`, `network`, `format`,
+        `failed`), whether one is running, the openGym types the readings carried (`fields`), the
+        RENPHO fields this version does not know (`unknown`, kept in the raw copy all the same) and
+        whether any segmental values came. Never the password or RENPHO's session.
+      responses:
+        '200':
+          description: The connection.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connected: { type: boolean }
+                  email: { type: string }
+                  connectedAt: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  lastSync: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  lastResult:
+                    oneOf:
+                      - type: 'null'
+                      - type: object
+                        properties:
+                          measurements: { type: integer }
+                          added: { type: integer }
+                          updated: { type: integer }
+                          complete: { type: boolean }
+                  error:
+                    oneOf:
+                      - type: 'null'
+                      - type: object
+                        properties:
+                          code: { type: string }
+                          message: { type: string }
+                          at: { type: integer }
+                  syncing: { type: boolean }
+                  fields: { type: array, items: { type: string } }
+                  unknown: { type: array, items: { type: string } }
+                  segmental: { type: boolean }
+                  mode: { type: string, enum: [account, friend], description: 'friend: a second account reads the main one through RENPHO friends.' }
+                  friend: { oneOf: [{ type: string }, { type: 'null' }], description: 'In friend mode, the e-mail (or name) of the friend whose readings come in.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [health]
+      operationId: deleteRenpho
+      summary: Disconnect RENPHO Health
+      description: Forgets the sign-in and the raw copy. The readings already imported stay in the profile.
+      responses:
+        '200': { description: Disconnected. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/renpho/connect:
+    post:
+      tags: [health]
+      operationId: connectRenpho
+      summary: Connect a RENPHO Health account
+      description: |
+        Signs in to RENPHO with the account's e-mail and password (sealed on the server with the
+        instance's encryption, used again only when RENPHO's session has expired). The first sync,
+        of the whole history, starts at once; the answer does not wait for it. RENPHO publishes no
+        API: this uses the one the RENPHO Health app uses. RENPHO keeps one session per account, so
+        signing in with the account the app uses signs the app out; with `mode: friend` the e-mail
+        and password are those of a second account, a RENPHO friend of the main one, and the
+        friend's daily values come in instead (one per day, no segmental values).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+                areaCode: { type: string, description: 'Two letters, US by default.' }
+                mode: { type: string, enum: [account, friend], description: 'account by default.' }
+                friendEmail: { type: string, description: 'In friend mode, whose readings: needed when the account has more than one friend.' }
+                zone: { type: string, description: 'The profile time zone (an IANA name), which RENPHO groups readings into days by.' }
+      responses:
+        '200': { description: 'Connected; the same body as `GET /api/renpho`.' }
+        '400': { description: 'E-mail or password missing, or an area code that is not two letters (`code: missing`).' }
+        '401': { description: 'RENPHO did not accept the sign-in (`code: auth`).' }
+        '409': { description: 'Friend mode: the account has no friends (`code: no-friend`), or several and none matches `friendEmail` (`code: friend-choice`).' }
+        '429': { description: 'Too many sign-ins (`code: busy`).' }
+        '502': { description: 'RENPHO could not be reached or answered unexpectedly (`code: network`, `format`).' }
+
+  /api/renpho/sync:
+    post:
+      tags: [health]
+      operationId: syncRenpho
+      summary: Sync RENPHO Health now
+      description: |
+        Starts a sync and answers at once (`GET /api/renpho` says when it is done). Idempotent:
+        readings are matched by RENPHO's own id, so running it again adds nothing twice.
+      responses:
+        '200': { description: 'Started; the same body as `GET /api/renpho`.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: 'Not connected (`code: not-connected`).' }
+        '429': { description: 'Too many syncs (`code: busy`).' }
+
+  /api/renpho/raw:
+    get:
+      tags: [health]
+      operationId: getRenphoRaw
+      summary: RENPHO's readings as RENPHO sent them
+      description: |
+        The profile's raw copy: per reading, `provider`, `external_id`, `external_timestamp` (ms),
+        `synced_at` (ms) and `raw_provider_data`, every field RENPHO sent, unknown ones included.
+      responses:
+        '200':
+          description: The raw copy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provider: { type: string }
+                  measurements: { type: object, additionalProperties: { type: object } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/health/key:
+    get:
+      tags: [health]
+      operationId: getHealthKey
+      summary: Whether the profile has a Shortcut key
+      description: |
+        The state of the key an iPhone Shortcut uses for `POST /api/health/samples`, never the key
+        itself: whether there is one, when it was made and when it was last used (ms), and the
+        instance's ready-made Shortcut (`HEALTH_SHORTCUT_URL`, an iCloud link) or null.
+      responses:
+        '200':
+          description: The key's state.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists: { type: boolean }
+                  created: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  used: { oneOf: [{ type: integer }, { type: 'null' }] }
+                  shortcut: { oneOf: [{ type: string, format: uri }, { type: 'null' }] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [health]
+      operationId: postHealthKey
+      summary: Make a new Shortcut key
+      description: |
+        A new key for `POST /api/health/samples`, replacing any earlier one. This answer is the only
+        time the key is sent; the server keeps its SHA-256 hash. The key opens no other route.
+      responses:
+        '200':
+          description: The new key.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key: { type: string, description: '`ogh_` and 32 base64url characters.' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [health]
+      operationId: deleteHealthKey
+      summary: Revoke the Shortcut key
+      responses:
+        '200': { description: Revoked. }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/health/samples:
+    post:
+      tags: [health]
+      operationId: postHealthSamples
+      summary: Readings an iPhone Shortcut or Health Auto Export read from Apple Health
+      description: |
+        Authenticated by the profile's Shortcut key (`Authorization: Bearer ogh_…`), not by a
+        session. The readings are folded into the profile the way the app's own Apple Health import
+        folds them (one reading per sample, one per day for a day's total, heart rate as the day's
+        mean, lowest and highest, sleep as the night's asleep time) and written as a new revision,
+        which the app's revision check picks up. A second send of the same readings changes
+        nothing; a reading the user deleted is not brought back; nothing the user typed is
+        touched. At most 60 requests an hour and 20,000 values a request.
+
+        Two bodies are taken, told apart by their shape: a Shortcut's `metrics` object, or what
+        the Health Auto Export app's REST API automation posts (JSON, Health Metrics) under
+        `data.metrics`. Both give the same readings the same ids, so a day sent both ways is one.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Either `metrics` (a Shortcut) or `data.metrics` (Health Auto Export).
+              properties:
+                metrics:
+                  type: object
+                  description: |
+                    By type — any measurement or day's total of `api/health/catalogue.js` (`weight`,
+                    `bodyFat`, `steps`, `heartRate`, `spo2`, `dietWater`, …): `values` and
+                    `dates`, parallel lists or the same as text with one item per line, and an
+                    optional `unit` (kg, lb, st, %, cm, m, in, ft, km, mi, kcal, kJ), once or once per value. Dates are ISO 8601
+                    with their offset; a day's total takes the day. `sleep` takes `starts`, `ends`
+                    and `values` (the stage of each span; in-bed and awake spans are left out).
+                    Unknown metrics are skipped.
+                data:
+                  type: object
+                  description: |
+                    Health Auto Export's body: `metrics` is a list of `{ name, units, data }`, each
+                    point `{ qty, date }` with `date` as `yyyy-MM-dd HH:mm:ss Z`; `heart_rate` points
+                    are `{ Min, Avg, Max, date }`; `blood_pressure` points `{ systolic, diastolic,
+                    date }`; `sleep_analysis` is a night `{ date, totalSleep, sleepEnd }` in hours,
+                    or single stages `{ startDate, endDate, value }`. `workouts` are `{ name, start,
+                    end, duration, activeEnergyBurned, distance }`. Every type of
+                    `api/health/catalogue.js` is read, by Health Auto Export's name or its label;
+                    a symptom's or a test's answer, and anything unknown, is skipped.
+      responses:
+        '200':
+          description: Folded in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  added: { type: integer }
+                  updated: { type: integer }
+                  skipped: { type: integer }
+        '400': { description: Neither `metrics` nor `data.metrics`, or more than 20,000 values. }
+        '401': { description: No key, or not this server's. }
+        '409': { description: The profile has never synced; open the app once, signed in. }
+        '429': { description: Too many requests this hour; `Retry-After` says when to try again. }
+        '503': { description: The profile's file cannot be read. }
 
   /api/coach/ask:
     post:

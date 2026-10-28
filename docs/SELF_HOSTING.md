@@ -755,6 +755,24 @@ carries such a track is refused rather than uploaded with it). WebM videos are u
 recorded. The server never decodes or changes a file. Like everything else in `./data`, the files
 are not encrypted at rest — whoever can read that folder can see them.
 
+### RENPHO Health (optional)
+
+Anyone signed in can connect a RENPHO Health account in **Settings → Health → RENPHO Health**. The
+server then imports every reading of the scale into the health area (weight, BMI, body fat, fat
+and lean mass, muscle and skeletal muscle, water, bone, protein, visceral and subcutaneous fat, BMR,
+metabolic age, and the segmental values and impedances when the scale and RENPHO's cloud give them),
+next to the readings typed by hand, every `RENPHO_SYNC_HOURS` (6 by default; `0` keeps only the
+"Sync now" button).
+
+- The RENPHO password is kept on the user's row in `db.json`, encrypted with the instance's
+  `secret` like the Coach's credentials, and used only when RENPHO's session has expired. It never
+  reaches a log, an answer or the app.
+- RENPHO's own readings, every field, are kept per profile in `data/providers/renpho-<id>.json`
+  (downloadable from the same card). They are part of a backup of `./data`.
+- RENPHO publishes no API. openGym speaks the protocol the RENPHO Health app uses
+  (`api/providers/renpho/client.js`, the one file to change if RENPHO changes it).
+  `RENPHO_BASE_URL` points it elsewhere if RENPHO moves its cloud.
+
 ## 6. Backups
 
 Everything is in `./data`:

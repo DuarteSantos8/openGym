@@ -160,6 +160,10 @@ a{color:var(--acc);text-decoration:none}
 :focus-visible{outline:2.5px solid var(--acc);outline-offset:2px;border-radius:6px}
 button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
 {-webkit-user-select:none;user-select:none}
+/* A text field anywhere, one inside those included (RENPHO's e-mail and password), takes its text again:
+   iOS WebKit carries -webkit-user-select:none down to the field, which then never gets the
+   keyboard or a paste. */
+input,textarea{-webkit-user-select:text;user-select:text}
 
 /* icons inherit colour and optical size from their context */
 .icn{
@@ -462,6 +466,10 @@ h4.sec{
 /* A connection problem while the banner is switched off (Settings → Show connection status):
    a dot on the Home tab and on the Settings gear. */
 #tabbar .tab-ic{position:relative;display:inline-flex}
+/* Six tabs since Health joined them: on a narrow phone a long word (Thai "Exercises", Russian
+   "Resume") is cut with an ellipsis rather than spilling into the tab beside it. */
+#tabbar button{min-width:0}
+#tabbar button>span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tab-dot{
   position:absolute;top:-1px;right:-3px;width:8px;height:8px;border-radius:50%;
   background:var(--orange);box-shadow:0 0 0 2px var(--bg-el);pointer-events:none;
@@ -710,6 +718,13 @@ body.chips-dragging *{cursor:inherit}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
 .measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:12px;color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
+/* Health area (views/Health.jsx): a metric per card, two to a row; a card and a measurement open on tap. */
+.health-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.health-grid .card{margin:0}
+.health-card,button.measure-history{display:block;width:100%;text-align:start;color:inherit;font:inherit;border:0;cursor:pointer;min-width:0}
+.health-card .l{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--label-2);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.health-card .v{font-size:22px;font-weight:600;letter-spacing:-.02em;margin:6px 0 2px;line-height:1.15}
+.health-spark{margin-top:6px;pointer-events:none}
 .exnote{
   background:var(--surface);border-radius:var(--r);padding:13px 15px;
   line-height:1.45;white-space:pre-wrap;font-size:15px;margin-bottom:10px;color:var(--label-2);
@@ -2313,6 +2328,18 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
 .list .similar-label{margin:16px 2px 6px;grid-column:1/-1}
+
+/* Segmental analysis (components/SegmentalAnalysis.jsx): left against right, per limb. */
+.seg-card{padding:12px 14px;margin-bottom:10px}
+.seg-h{font-weight:600;margin-bottom:8px}
+.seg-pair{margin-bottom:10px}
+.seg-bar{display:grid;grid-template-columns:44px 1fr 48px;align-items:center;gap:8px;margin-top:4px}
+.seg-track{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.seg-track i{display:block;height:100%;border-radius:99px;background:var(--seg,var(--acc))}
+.seg-val{text-align:end;font-variant-numeric:tabular-nums}
+.seg-trunk{padding-top:6px;border-top:var(--hair) solid var(--sep)}
+.seg-imp{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;font-variant-numeric:tabular-nums}
+.seg-imp b{text-align:end}
 
 /* The edge swipe back (lib/edge-swipe-back.js): the page follows the finger, the one it goes
    back to slides in underneath with a shade over it. The sliding page's own ground reaches the
