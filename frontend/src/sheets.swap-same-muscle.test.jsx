@@ -1,7 +1,5 @@
 // @vitest-environment happy-dom
-// #473: a swap opens on what trains the same muscle. Mid-workout (Swap exercise) and in the
-// routine editor (Replace exercise) the picker starts on the exercises sharing the swapped one's
-// target muscle, same equipment first, and "All" is one tap back to the whole list.
+// Suggestions lead the complete picker; the same-muscle chip remains optional.
 import React, { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createRoot } from 'react-dom/client'
@@ -9,6 +7,7 @@ import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB } from './lib/exercises.js'
 import { exercisePicker, swapActiveWorkoutExercise } from './sheets.jsx'
+import { bindUI } from './components/ui.jsx'
 import { sameMuscleFirst } from './lib/similar-exercises.js'
 
 const mounted = []
@@ -32,6 +31,7 @@ const CABLE_TRI = EXDB.find(e => e.tg === 'triceps' && e.eq === 'cable')
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
+  bindUI(useUI)
   useUI.setState({ sheets: [], toastMsg: '' })
   useStore.setState({ S: structuredClone(DEF), user: null })
   document.body.innerHTML = ''
@@ -56,8 +56,8 @@ describe('sameMuscleFirst', () => {
   })
 })
 
-describe('swap picker opens on the same muscle', () => {
-  it('mid-workout: Swap exercise starts on the target muscle, same equipment first, All goes back', () => {
+describe('swap suggestions and optional muscle filter', () => {
+  it('mid-workout: starts on All and still supports the same-muscle filter', () => {
     expect(CABLE_TRI).toBeTruthy()
     const S = structuredClone(DEF)
     S.active = {
@@ -70,8 +70,9 @@ describe('swap picker opens on the same muscle', () => {
 
     const chip = sameChip(host)
     expect(chip.textContent).toContain('Triceps')
-    expect(isOn(chip)).toBe(true)
-    expect(isOn(chipByText(host, 'All'))).toBe(false)
+    expect(isOn(chip)).toBe(false)
+    expect(isOn(chipByText(host, 'All'))).toBe(true)
+    act(() => chip.click())
 
     const listed = rows(host)
     expect(listed.length).toBeGreaterThan(1)
@@ -92,11 +93,13 @@ describe('swap picker opens on the same muscle', () => {
   })
 
   // The routine editor hands its slot's exercise in (views/RoutineEdit.replace.test.jsx).
-  it('routine editor: a picker told what it replaces opens on that muscle', () => {
+  it('routine editor: starts on All with the same-muscle filter available', () => {
     const pick = vi.fn()
     exercisePicker(pick, { title: 'Replace exercise', like: CABLE_TRI.id })
     const host = renderTop()
-    expect(isOn(sameChip(host))).toBe(true)
+    expect(isOn(sameChip(host))).toBe(false)
+    expect(isOn(chipByText(host, 'All'))).toBe(true)
+    act(() => sameChip(host).click())
     expect(rows(host).every(s => s.startsWith('Triceps'))).toBe(true)
   })
 
@@ -117,5 +120,78 @@ describe('swap picker opens on the same muscle', () => {
     const host = renderTop()
     expect(isOn(chipByText(host, 'All'))).toBe(true)
     expect(sameChip(host)).toBeUndefined()
+    expect(host.textContent).toContain('No suitable suggestions with these filters.')
+  })
+})
+
+it('shows a labelled suggestions section for Dead Hang Stretch with a gym profile', () => {
+  const S = structuredClone(DEF)
+  S.equipProfiles = [{ id: 'gm', name: 'gm', equipment: ['pull-up bar'], accV: 1 }]
+  S.activeEquipId = 'gm'; S.equipFilterOn = true
+  useStore.setState({ S, user: null })
+  exercisePicker(vi.fn(), { like: '5055', title: 'Swap exercise' })
+  const host = renderTop()
+  const section = host.querySelector('section[aria-label="Suggested substitutes"]')
+  expect(section).not.toBeNull()
+  expect(section.textContent).toContain('Same muscle and exercise type. The movement may differ.')
+  expect(section.querySelectorAll('.item')).toHaveLength(3)
+  expect(section.textContent).not.toContain('dead hang stretch')
+  expect(host.textContent).toContain('All other exercises')
+})
+
+describe('gym selection in a swap', () => {
+  function openSwap() {
+    const S = structuredClone(DEF)
+    S.equipProfiles = [
+      { id: 'home', name: 'Home gym', equipment: ['dumbbell', 'bench'], accV: 1 },
+      { id: 'travel', name: 'Travel', equipment: [], accV: 1 },
+    ]
+    S.activeEquipId = 'home'; S.equipFilterOn = true
+    useStore.setState({ S, user: null })
+    exercisePicker(vi.fn(), { like: '0025', title: 'Swap exercise' })
+    return renderTop()
+  }
+  const suggestedNames = host => [...host.querySelectorAll('section[aria-label="Suggested substitutes"] .tt')].map(e => e.textContent)
+  function chooseGym(host, label) {
+    act(() => [...host.querySelectorAll('.lrow')].find(e => e.textContent.includes('Gym')).click())
+    const selector = renderTop()
+    act(() => [...selector.querySelectorAll('button')].find(e => e.textContent.trim() === label).click())
+  }
+  it('suggests available presses first without duplicates, and switching gym refreshes both lists', () => {
+    const host = openSwap()
+    const baseline = structuredClone(useStore.getState().S)
+    expect(suggestedNames(host)).toContain('dumbbell bench press')
+    expect(suggestedNames(host)).toContain('push-up')
+    const names = [...host.querySelectorAll('.list .tt')].map(e => e.textContent)
+    expect(names.filter(n => n === 'dumbbell bench press')).toHaveLength(1)
+    expect(host.textContent).toContain('All other exercises')
+    expect(names).not.toContain('barbell bench press')
+    chooseGym(host, 'Travel')
+    expect(suggestedNames(host)).toEqual(['push-up'])
+    expect(rows(host).every(s => s.endsWith('body weight'))).toBe(true)
+    const changed = structuredClone(useStore.getState().S)
+    expect(changed.activeEquipId).toBe('travel')
+    expect(changed.equipFilterOn).toBe(true)
+    changed.activeEquipId = baseline.activeEquipId
+    expect(Object.keys(changed.edited)).toEqual(['activeEquipId'])
+    delete changed.edited
+    delete changed._ts
+    expect(changed).toEqual(baseline)
+    chooseGym(host, 'All equipment')
+    expect(useStore.getState().S.equipFilterOn).toBe(false)
+    expect(suggestedNames(host)).toContain('band bench press')
+  })
+  it('searches the entire available library, not just suggested movements', () => {
+    const host = openSwap()
+    const input = host.querySelector('.search input')
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+      setter.call(input, 'dumbbell curl')
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(suggestedNames(host)).toEqual([])
+    expect(host.textContent).toContain('Search results')
+    expect(rows(host).length).toBeGreaterThan(0)
+    expect(rows(host).some(s => s.startsWith('Biceps'))).toBe(true)
   })
 })

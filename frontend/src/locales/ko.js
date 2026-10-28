@@ -1,5 +1,18 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Same muscle and exercise type. The movement may differ.": "같은 근육과 운동 유형입니다. 동작은 다를 수 있습니다.",
+  "Related muscles and exercise type. The movement may differ.": "관련 근육과 같은 운동 유형입니다. 동작은 다를 수 있습니다.",
+  "Same muscle, different exercise type. Check suitability.": "같은 근육이지만 운동 유형이 다릅니다. 적합한지 확인하세요.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "현재 필터에 맞는 추천이 없습니다. 아래 목록을 보거나 헬스장을 변경하세요.",
+  "Gym": "헬스장",
+  "All equipment": "모든 장비",
+  "Search results": "검색 결과",
+  "All exercises": "모든 운동",
+  "Replacing {0}": "{0} 교체",
+  "Suggested substitutes": "추천 대체 운동",
+  "Same movement and muscle": "같은 동작과 근육",
+  "All other exercises": "그 외 모든 운동",
+  "No matches. Try another search or equipment profile.": "검색 결과가 없습니다. 다른 검색어나 장비 프로필을 사용해 보세요.",
   'Confirm': '확인',
   'Cancel': '취소',
   'Press back again to exit': '뒤로를 한 번 더 누르면 종료됩니다',

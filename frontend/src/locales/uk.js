@@ -1,5 +1,18 @@
 // Ukrainian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Same muscle and exercise type. The movement may differ.": "Той самий м’яз і тип вправи. Рух може відрізнятися.",
+  "Related muscles and exercise type. The movement may differ.": "Пов’язані м’язи й той самий тип вправи. Рух може відрізнятися.",
+  "Same muscle, different exercise type. Check suitability.": "Той самий м’яз, інший тип вправи. Перевірте, чи вона підходить.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "Немає відповідних варіантів із цими фільтрами. Перегляньте список або змініть зал.",
+  "Gym": "Зал",
+  "All equipment": "Усе обладнання",
+  "Search results": "Результати пошуку",
+  "All exercises": "Усі вправи",
+  "Replacing {0}": "Заміна: {0}",
+  "Suggested substitutes": "Запропоновані заміни",
+  "Same movement and muscle": "Той самий рух і м’яз",
+  "All other exercises": "Усі інші вправи",
+  "No matches. Try another search or equipment profile.": "Нічого не знайдено. Спробуйте інший запит або профіль обладнання.",
   'Confirm': 'Підтвердити',
   'Cancel': 'Скасувати',
   'Press back again to exit': 'Натисни «Назад» ще раз, щоб вийти',

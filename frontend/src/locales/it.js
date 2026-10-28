@@ -1,5 +1,18 @@
 // Italian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Same muscle and exercise type. The movement may differ.": "Stesso muscolo e tipo di esercizio. Il movimento può variare.",
+  "Related muscles and exercise type. The movement may differ.": "Muscoli correlati e stesso tipo di esercizio. Il movimento può variare.",
+  "Same muscle, different exercise type. Check suitability.": "Stesso muscolo, tipo di esercizio diverso. Verifica che sia adatto.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "Nessun suggerimento adatto a questi filtri. Sfoglia la lista o cambia palestra.",
+  "Gym": "Palestra",
+  "All equipment": "Tutte le attrezzature",
+  "Search results": "Risultati di ricerca",
+  "All exercises": "Tutti gli esercizi",
+  "Replacing {0}": "Sostituisci {0}",
+  "Suggested substitutes": "Alternative suggerite",
+  "Same movement and muscle": "Stesso movimento e muscolo",
+  "All other exercises": "Tutti gli altri esercizi",
+  "No matches. Try another search or equipment profile.": "Nessun risultato. Prova un’altra ricerca o un altro profilo attrezzature.",
   'Confirm': 'Conferma',
   'Cancel': 'Annulla',
   'Press back again to exit': 'Premi di nuovo indietro per uscire',

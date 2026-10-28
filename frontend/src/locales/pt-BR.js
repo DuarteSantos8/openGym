@@ -4,6 +4,20 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Same muscle and exercise type. The movement may differ.": "Mesmo músculo e tipo de exercício. O movimento pode variar.",
+  "Related muscles and exercise type. The movement may differ.": "Músculos relacionados e mesmo tipo de exercício. O movimento pode variar.",
+  "Same muscle, different exercise type. Check suitability.": "Mesmo músculo, tipo de exercício diferente. Confira se é adequado.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "Nenhuma sugestão adequada a estes filtros. Explore a lista ou mude de academia.",
+  "Gym": "Academia",
+  "All equipment": "Todos os equipamentos",
+  "Search results": "Resultados da busca",
+  "All exercises": "Todos os exercícios",
+  "Replacing {0}": "Substituir {0}",
+  "Suggested substitutes": "Alternativas sugeridas",
+  "Same movement and muscle": "Mesmo movimento e músculo",
+  "All other exercises": "Todos os outros exercícios",
+  "No matches. Try another search or equipment profile.": "Nenhum resultado. Tente outra busca ou perfil de equipamentos.",
+
   'The search finds it by these too. Separate them with commas.': 'A busca também encontra o exercício por estes. Separe com vírgulas.',
   'Save names': 'Salvar nomes',
   'Handy when you compare with another app. Records ignore warm-ups either way.': 'Ajuda quando você compara com outro app. Os recordes ignoram o aquecimento de qualquer jeito.',

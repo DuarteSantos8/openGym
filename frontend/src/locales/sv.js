@@ -1,5 +1,18 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Same muscle and exercise type. The movement may differ.": "Samma muskel och träningstyp. Rörelsen kan skilja sig.",
+  "Related muscles and exercise type. The movement may differ.": "Relaterade muskler och samma träningstyp. Rörelsen kan skilja sig.",
+  "Same muscle, different exercise type. Check suitability.": "Samma muskel, annan träningstyp. Kontrollera att övningen passar.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "Inga lämpliga förslag med dessa filter. Bläddra nedan eller byt gym.",
+  "Gym": "Gym",
+  "All equipment": "All utrustning",
+  "Search results": "Sökresultat",
+  "All exercises": "Alla övningar",
+  "Replacing {0}": "Ersätter {0}",
+  "Suggested substitutes": "Föreslagna alternativ",
+  "Same movement and muscle": "Samma rörelse och muskel",
+  "All other exercises": "Alla andra övningar",
+  "No matches. Try another search or equipment profile.": "Inga träffar. Prova en annan sökning eller utrustningsprofil.",
   // --- generic ---
   'Confirm': 'Bekräfta',
   'Cancel': 'Avbryt',

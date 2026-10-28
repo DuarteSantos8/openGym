@@ -1,5 +1,18 @@
 // Hungarian UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Same muscle and exercise type. The movement may differ.": "Azonos izom és gyakorlattípus. A mozgás eltérhet.",
+  "Related muscles and exercise type. The movement may differ.": "Kapcsolódó izmok és azonos gyakorlattípus. A mozgás eltérhet.",
+  "Same muscle, different exercise type. Check suitability.": "Azonos izom, más gyakorlattípus. Ellenőrizd a megfelelőségét.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "Ezekkel a szűrőkkel nincs megfelelő javaslat. Böngéssz a listában vagy válts edzőtermet.",
+  "Gym": "Edzőterem",
+  "All equipment": "Minden eszköz",
+  "Search results": "Keresési eredmények",
+  "All exercises": "Minden gyakorlat",
+  "Replacing {0}": "{0} cseréje",
+  "Suggested substitutes": "Javasolt alternatívák",
+  "Same movement and muscle": "Azonos mozgás és izom",
+  "All other exercises": "Minden más gyakorlat",
+  "No matches. Try another search or equipment profile.": "Nincs találat. Próbálj más keresést vagy eszközprofilt.",
   // --- generic ---
   'Confirm': 'Megerősítés',
   'Cancel': 'Mégse',

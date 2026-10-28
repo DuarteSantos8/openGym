@@ -1,5 +1,18 @@
 // Arabic UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Same muscle and exercise type. The movement may differ.": "نفس العضلة ونوع التمرين. قد تختلف الحركة.",
+  "Related muscles and exercise type. The movement may differ.": "عضلات مرتبطة ونفس نوع التمرين. قد تختلف الحركة.",
+  "Same muscle, different exercise type. Check suitability.": "نفس العضلة ونوع تمرين مختلف. تحقق من الملاءمة.",
+  "No suitable suggestions with these filters. Browse below or change gym.": "لا توجد اقتراحات مناسبة بهذه المرشحات. تصفح القائمة أو غيّر الصالة.",
+  "Gym": "الصالة الرياضية",
+  "All equipment": "كل المعدات",
+  "Search results": "نتائج البحث",
+  "All exercises": "كل التمارين",
+  "Replacing {0}": "استبدال {0}",
+  "Suggested substitutes": "بدائل مقترحة",
+  "Same movement and muscle": "نفس الحركة والعضلة",
+  "All other exercises": "كل التمارين الأخرى",
+  "No matches. Try another search or equipment profile.": "لا توجد نتائج. جرّب بحثًا آخر أو ملف معدات آخر.",
   'Confirm': 'تأكيد',
   'Cancel': 'إلغاء',
   'Press back again to exit': 'اضغط زر الرجوع مرة أخرى للخروج',
