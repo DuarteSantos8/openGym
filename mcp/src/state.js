@@ -1,8 +1,14 @@
 /* opengym-mcp state — reads ./data/state-<uid>.json + db.json (read-only). Cached with an
    fs.watch + mtime fallback so a session the api server just wrote is visible on the next
-   tool call without a restart. */
+   tool call without a restart.
+
+   Or, with OPENGYM_URL and OPENGYM_TOKEN set and no OPENGYM_DATA, reads through the api the way a
+   device does: GET /api/me for whose profile it is, GET /api/data for the document, and the cheap
+   GET /api/data/rev before each tool call to skip the download when nothing moved. Then nothing
+   here touches the disk, and the MCP needs no access to the folder that holds every profile. */
 import fs from 'node:fs'
 import path from 'node:path'
+import { apiConfig, apiFetch } from './api-client.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
 // Whether a data directory was asked for, as opposed to the ./data guess.
@@ -15,6 +21,13 @@ let _uid = null
 let _watcher = null
 let _loadedMtime = 0    // mtimeMs we last read at — used to catch watcher omissions
 let _seeded = false     // a test's in-memory state, never compared with the disk
+let _apiUser = null     // { id, name, created } from GET /api/me, in api mode
+let _apiRev = null      // the { rev, wid } the cached document was downloaded at, in api mode
+
+/** Whether reads go through the api: a URL and token given, and no data directory asked for. */
+export function apiMode(env = process.env) {
+  return !(env.OPENGYM_DATA || '').trim() && !!(env.OPENGYM_URL || '').trim() && !!(env.OPENGYM_TOKEN || '').trim()
+}
 
 // null means one thing only: the file is not there (an account that never synced from a device).
 // Every other failure — no permission on the mount, a truncated or corrupt file — is a real fault,
@@ -86,7 +99,7 @@ function ambiguousUid(ids) {
 
 // Idempotent. Picks the uid, loads db.json, attaches the watcher, primes state.
 export function init() {
-  if (_uid !== null) return
+  if (_uid !== null || apiMode()) return
   if (!fs.existsSync(DATA_DIR)) throw new Error(`OPENGYM_DATA dir does not exist: ${DATA_DIR}`)
   _uid = resolveUid()
   reloadDb()
@@ -117,6 +130,10 @@ export function init() {
 
 // Returns the state object, or null for a fresh account that never signed in on a device.
 export function getState() {
+  if (apiMode() && !_seeded) {
+    if (_state === undefined) throw notRefreshed()
+    return _state
+  }
   init()
   const file = stateFile(_uid)
   // Re-read if the file's mtime changed since our last load — covers watcher omissions and
@@ -147,6 +164,10 @@ export function getState() {
 
 // Returns the user record (id + name). No passkey material, no VAPID keys, no push subs.
 export function getUser() {
+  if (apiMode() && !_seeded) {
+    if (!_apiUser) throw notRefreshed()
+    return { ..._apiUser }
+  }
   init()
   const u = _db.users.find(x => x.id === _uid) || { id: _uid, name: 'Profile', created: null }
   return { id: u.id, name: u.name, created: u.created || null }
@@ -161,6 +182,8 @@ export const dataDir = () => DATA_DIR
 // several profiles, throws: a broken mount is no licence to write to whichever profile the token is.
 export function localUid() {
   if (_uid !== null) return _uid
+  // Reading through the api, the profile read is the token's own: nothing to compare it with.
+  if (apiMode()) return null
   const envUid = (process.env.OPENGYM_UID || '').trim()
   if (envUid) return envUid
   if (!DATA_SET && !fs.existsSync(DATA_DIR)) return null
@@ -173,6 +196,44 @@ export function localUid() {
 export function invalidate() {
   _state = undefined
   _loadedMtime = 0
+  _apiRev = null
+}
+
+function notRefreshed() {
+  const err = new Error('the profile was not loaded from the openGym server (refresh() first)')
+  err.code = 'EIO'
+  return err
+}
+
+/**
+ * In api mode, bring the cached profile up to date before a tool reads it: GET /api/data/rev, and
+ * the whole document only when the revision moved (or was never read). A no-op otherwise, so
+ * index.js can await it before every read tool. `fetchImpl` and `env` are for tests.
+ */
+export async function refresh({ env = process.env, fetchImpl } = {}) {
+  if (_seeded || !apiMode(env)) return
+  const cfg = apiConfig(env)
+  const opts = fetchImpl ? { fetchImpl } : {}
+  if (!_apiUser) {
+    const me = await apiFetch(cfg, '/api/me', opts)
+    const u = me.body?.user
+    if (!u || typeof u.id !== 'string' || !u.id) {
+      const err = new Error('the openGym server did not say which profile OPENGYM_TOKEN belongs to (GET /api/me)')
+      err.code = 'EAPI'
+      throw err
+    }
+    _apiUser = { id: u.id, name: typeof u.name === 'string' ? u.name : 'Profile', created: u.created || null }
+  }
+  if (_state !== undefined && _apiRev) {
+    const now = await apiFetch(cfg, '/api/data/rev', opts)
+    // The write id too: a restored backup can come back at a revision already seen.
+    if (now.body?.rev === _apiRev.rev && (now.body?.wid ?? null) === _apiRev.wid) return
+  }
+  const got = await apiFetch(cfg, '/api/data', opts)
+  const doc = got.body?.state
+  // The same defaults the file read merges in; null is a profile that never synced from a device.
+  _state = doc && typeof doc === 'object' && !Array.isArray(doc) ? Object.assign({}, defaultsShape(), doc) : null
+  _apiRev = { rev: got.body?.rev ?? 0, wid: typeof doc?._wid === 'string' ? doc._wid : null }
 }
 
 // Test-only: work against a passed-in state, not the disk.
