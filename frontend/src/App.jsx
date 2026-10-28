@@ -6,9 +6,11 @@ import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
 import { setWeightDecimals } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
+import { useWideScreen } from './lib/tabbar-side.js'
 import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
+import { statusColumn, useRightInset } from './lib/tabbar-side.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
 import { setNav, notePath, keyBefore, navToWorkout } from './lib/nav.js'
@@ -278,6 +280,21 @@ function Shell() {
   const noTabs = inWorkout || loc.pathname === '/coach' || needsMobileOnboarding || permSteps
 
   const authed = user || isGuest
+  // The tab bar in a column on the right edge of a wide screen (lib/tabbar-side.js): a class on the
+  // body, so the page, the rest bar and the toast make room for it there instead of at the bottom.
+  const wide = useWideScreen()
+  const sideTabs = !!authed && !noTabs && wide
+  useEffect(() => {
+    document.body.classList.toggle('tabbar-side', sideTabs)
+    return () => document.body.classList.remove('tabbar-side')
+  }, [sideTabs])
+  // On a screen whose right edge is the system's status column, the bar is that column.
+  const rightInset = useRightInset()
+  const inStatusColumn = sideTabs && statusColumn(rightInset)
+  useEffect(() => {
+    document.body.classList.toggle('tabbar-status', inStatusColumn)
+    return () => document.body.classList.remove('tabbar-status')
+  }, [inStatusColumn])
   // The boot screen in index.html covers the start; it goes once there is something to show.
   useEffect(() => { if (ready || authed) hideBoot() }, [ready, authed])
   if (!ready && !authed) return (

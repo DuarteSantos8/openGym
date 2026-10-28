@@ -64,6 +64,9 @@
      the bars does not count them twice. */
   --sab:max(env(safe-area-inset-bottom,0px),var(--native-sab,0px));
   --sat:max(env(safe-area-inset-top,0px),var(--native-sat,0px));
+  /* The right edge, read only by the tab bar when it stands there (body.tabbar-side, at the end of
+     this file): an iPhone on its side has the camera on one edge. Android passes no bar for it. */
+  --sar:env(safe-area-inset-right,0px);
   /* height of the connection indicator under the status bar, 0 while there is none — set by
      components/SyncBanner.jsx. Whatever starts at the top of the screen starts below it. */
   --conn:0px;
@@ -2341,3 +2344,46 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gym-radius-row>:first-child{flex:1}
 .gym-radius-val{min-width:64px;text-align:end;font-variant-numeric:tabular-nums;color:var(--label-2)}
 .gym-actions{display:flex;flex-direction:column;gap:10px;margin:4px 0 30px}
+
+/* ------------------------------------------------ tab bar on the right -- */
+/* A screen wider than it is tall (a phone on its side, a foldable opened; lib/tabbar-side.js,
+   body.tabbar-side from App.jsx): the tabs stand in a column on the right edge, and the page keeps
+   its whole height. The right edge whatever the language's direction: it is where the thumb
+   holding the phone is. Last in the file, so it wins over the bottom bar. */
+body.tabbar-side{--rail:calc(76px + var(--sar));padding-right:var(--rail)}
+body.tabbar-side #tabbar{
+  left:auto;right:0;top:0;bottom:0;width:var(--rail);transform:none;
+  flex-direction:column;justify-content:center;align-items:stretch;gap:4px;
+  padding:calc(var(--sat) + 8px) calc(var(--sar) + 4px) calc(var(--sab) + 8px) 4px;
+  border:none;border-left:var(--hair) solid var(--sep-op);border-radius:0;box-shadow:none;
+}
+body.tabbar-side #tabbar button{flex:0 1 auto;padding:6px 0}
+body.tabbar-side #tabbar button.start{margin:6px 0}
+body.tabbar-side #app{padding-bottom:calc(24px + var(--sab))}
+body.tabbar-side.resting #app{padding-bottom:calc(96px + var(--sab))}
+body.tabbar-side #timer{bottom:calc(12px + var(--sab));left:12px;right:calc(var(--rail) + 12px)}
+body.tabbar-side #toast{left:calc(50% - var(--rail) / 2);bottom:calc(24px + var(--sab))}
+body.tabbar-side.resting #toast{bottom:calc(100px + var(--sab))}
+/* A phone on its side is short: the icons alone, so every tab fits the height. */
+@media (max-height:480px){
+  body.tabbar-side #tabbar{gap:0}
+  body.tabbar-side #tabbar button > span:not(.tab-ic):not(.cir){display:none}
+  body.tabbar-side #tabbar button.start .cir{width:44px;height:44px}
+}
+
+/* The right edge is the system's own column, the time and the battery at its top (the iPhone Duo
+   closed, body.tabbar-status from App.jsx): the bar is that column, as wide as it, with the tabs
+   below the status block instead of beside it, and the page gets the width back. */
+body.tabbar-side.tabbar-status{--rail:max(84px,var(--sar))}
+body.tabbar-side.tabbar-status #tabbar{
+  justify-content:flex-start;
+  padding:max(calc(var(--sat) + 8px),160px) 4px calc(var(--sab) + 8px) 4px;
+  transition:padding-top .3s ease;
+}
+/* While the screen records or a call goes on, the island is taller and the time and the battery
+   move down to about 250px (ios MainViewController puts island-tall on the root): the icons go
+   below them, close together so all of them still fit. What another app shows in the island iOS
+   does not tell, and the icons stay up then. */
+html.island-tall body.tabbar-side.tabbar-status #tabbar{gap:0;padding-top:max(calc(var(--sat) + 8px),264px)}
+html.island-tall body.tabbar-side.tabbar-status #tabbar button{padding:3px 0}
+html.island-tall body.tabbar-side.tabbar-status #tabbar button.start{margin:4px 0}
