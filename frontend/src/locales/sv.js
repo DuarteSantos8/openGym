@@ -5851,4 +5851,12 @@ export default {
   "Your workout": "Ditt pass",
   "“2 more reps for a record”, in the detailed look.": "“2 reps till för rekord”, i den detaljerade looken.",
   "− and + on the set, so you can fix it without unlocking.": "− och + på setet, så att du kan rätta det utan att låsa upp.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Fria vikter",
+  "Barbells": "Skivstänger",
+  "Cables": "Kablar",
+  "Balls & rollers": "Bollar och rullar",
+  "Bench & bar": "Bänk och stång",
+  "Show {0}": "Visa {0}",
+  "Hide {0}": "Dölj {0}",
 }

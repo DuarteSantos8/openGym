@@ -5770,4 +5770,12 @@ export default {
   "Your workout": "تمرین تو",
   "“2 more reps for a record”, in the detailed look.": "«۲ تکرار دیگر تا رکورد»، در ظاهر مفصل.",
   "− and + on the set, so you can fix it without unlocking.": "− و + روی ست، تا بدون باز کردن قفل درستش کنی.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "وزنه‌های آزاد",
+  "Barbells": "هالترها",
+  "Cables": "کابل‌ها",
+  "Balls & rollers": "توپ‌ها و فوم‌رولرها",
+  "Bench & bar": "نیمکت و میله",
+  "Show {0}": "نمایش {0}",
+  "Hide {0}": "پنهان کردن {0}",
 }

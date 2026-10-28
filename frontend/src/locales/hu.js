@@ -5807,4 +5807,12 @@ export default {
   "Your workout": "Az edzésed",
   "“2 more reps for a record”, in the detailed look.": "„Még 2 ism. a rekordhoz”, a részletes nézetben.",
   "− and + on the set, so you can fix it without unlocking.": "− és + a sorozaton, hogy feloldás nélkül javíthasd.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Szabadsúlyok",
+  "Barbells": "Rudak",
+  "Cables": "Kábelek",
+  "Balls & rollers": "Labdák és hengerek",
+  "Bench & bar": "Pad és rúd",
+  "Show {0}": "{0} megjelenítése",
+  "Hide {0}": "{0} elrejtése",
 }

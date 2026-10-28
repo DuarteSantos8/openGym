@@ -5815,4 +5815,12 @@ export default {
   "Your workout": "การฝึกของคุณ",
   "“2 more reps for a record”, in the detailed look.": "“อีก 2 ครั้งเป็นสถิติ” ในแบบละเอียด",
   "− and + on the set, so you can fix it without unlocking.": "− และ + บนเซ็ต แก้ได้โดยไม่ต้องปลดล็อก",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "ฟรีเวท",
+  "Barbells": "บาร์เบล",
+  "Cables": "เคเบิล",
+  "Balls & rollers": "บอลและโรลเลอร์",
+  "Bench & bar": "ม้านั่งและบาร์",
+  "Show {0}": "แสดง {0}",
+  "Hide {0}": "ซ่อน {0}",
 }

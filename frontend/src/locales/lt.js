@@ -5800,4 +5800,12 @@ export default {
   "Your workout": "Tavo treniruotė",
   "“2 more reps for a record”, in the detailed look.": "„Dar 2 kartojimai iki rekordo“, išsamioje išvaizdoje.",
   "− and + on the set, so you can fix it without unlocking.": "− ir + prie serijos, kad pataisytum be atrakinimo.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Laisvieji svoriai",
+  "Barbells": "Štangos",
+  "Cables": "Lynai",
+  "Balls & rollers": "Kamuoliai ir voleliai",
+  "Bench & bar": "Suolas ir skersinis",
+  "Show {0}": "Rodyti {0}",
+  "Hide {0}": "Slėpti {0}",
 }

@@ -5744,4 +5744,12 @@ export default {
   "Your workout": "Din træning",
   "“2 more reps for a record”, in the detailed look.": "„2 gentagelser mere til en rekord“, i det detaljerede look.",
   "− and + on the set, so you can fix it without unlocking.": "− og + på sættet, så du kan rette det uden at låse op.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Frie vægte",
+  "Barbells": "Vægtstænger",
+  "Cables": "Kabler",
+  "Balls & rollers": "Bolde og ruller",
+  "Bench & bar": "Bænk og stang",
+  "Show {0}": "Vis {0}",
+  "Hide {0}": "Skjul {0}",
 }

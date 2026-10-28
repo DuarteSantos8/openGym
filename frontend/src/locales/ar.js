@@ -5859,4 +5859,12 @@ export default {
   "Your workout": "تمرينك",
   "“2 more reps for a record”, in the detailed look.": "«تكراران إضافيان لرقم قياسي»، في الشكل المفصّل.",
   "− and + on the set, so you can fix it without unlocking.": "− و+ على المجموعة، لتصحّحها دون فتح القفل.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "أوزان حرة",
+  "Barbells": "بارات",
+  "Cables": "كيبلات",
+  "Balls & rollers": "كرات وأسطوانات",
+  "Bench & bar": "مقعد وبار",
+  "Show {0}": "إظهار {0}",
+  "Hide {0}": "إخفاء {0}",
 }

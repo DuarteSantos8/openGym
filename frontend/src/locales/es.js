@@ -5804,4 +5804,12 @@ export default {
   "Your workout": "Tu entreno",
   "“2 more reps for a record”, in the detailed look.": "«2 reps más para un récord», en el estilo detallado.",
   "− and + on the set, so you can fix it without unlocking.": "− y + en la serie, para corregirla sin desbloquear.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Peso libre",
+  "Barbells": "Barras",
+  "Cables": "Poleas",
+  "Balls & rollers": "Balones y rodillos",
+  "Bench & bar": "Banco y barra",
+  "Show {0}": "Mostrar {0}",
+  "Hide {0}": "Ocultar {0}",
 }

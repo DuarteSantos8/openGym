@@ -5770,4 +5770,12 @@ export default {
   "Your workout": "Buổi tập của bạn",
   "“2 more reps for a record”, in the detailed look.": "“Thêm 2 lần nữa là kỷ lục”, ở kiểu chi tiết.",
   "− and + on the set, so you can fix it without unlocking.": "− và + trên hiệp, để sửa mà không cần mở khóa.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Tạ tự do",
+  "Barbells": "Tạ đòn",
+  "Cables": "Cáp",
+  "Balls & rollers": "Bóng & con lăn",
+  "Bench & bar": "Ghế & xà",
+  "Show {0}": "Hiện {0}",
+  "Hide {0}": "Ẩn {0}",
 };

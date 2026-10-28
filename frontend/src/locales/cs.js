@@ -5770,4 +5770,12 @@ export default {
   "Your workout": "Tvůj trénink",
   "“2 more reps for a record”, in the detailed look.": "„Ještě 2 opak. k rekordu“, v podrobném vzhledu.",
   "− and + on the set, so you can fix it without unlocking.": "− a + u série, ať ji opravíš i bez odemčení.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Volné váhy",
+  "Barbells": "Velké činky",
+  "Cables": "Kladky",
+  "Balls & rollers": "Míče a válce",
+  "Bench & bar": "Lavice a hrazda",
+  "Show {0}": "Zobrazit {0}",
+  "Hide {0}": "Skrýt {0}",
 }

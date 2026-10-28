@@ -4125,6 +4125,14 @@ export const PT_BR_OVERRIDES = {
   "Your workout": "Seu treino",
   "“2 more reps for a record”, in the detailed look.": "“Mais 2 reps para um recorde”, no visual detalhado.",
   "− and + on the set, so you can fix it without unlocking.": "− e + na série, para você corrigir sem desbloquear.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Peso livre",
+  "Barbells": "Barras",
+  "Cables": "Polias",
+  "Balls & rollers": "Bolas e rolos",
+  "Bench & bar": "Banco e barra",
+  "Show {0}": "Mostrar {0}",
+  "Hide {0}": "Ocultar {0}",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

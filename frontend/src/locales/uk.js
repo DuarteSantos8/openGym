@@ -5801,4 +5801,12 @@ export default {
   "Your workout": "Твоє тренування",
   "“2 more reps for a record”, in the detailed look.": "«Ще 2 повторення до рекорду», у детальному вигляді.",
   "− and + on the set, so you can fix it without unlocking.": "− і + біля підходу, щоб виправити без розблокування.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Вільні ваги",
+  "Barbells": "Штанги",
+  "Cables": "Блоки",
+  "Balls & rollers": "М'ячі та ролики",
+  "Bench & bar": "Лава й турнік",
+  "Show {0}": "Показати: {0}",
+  "Hide {0}": "Сховати: {0}",
 }

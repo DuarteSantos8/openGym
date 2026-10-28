@@ -5804,4 +5804,12 @@ export default {
   "Your workout": "तुम्हारा वर्कआउट",
   "“2 more reps for a record”, in the detailed look.": "“रिकॉर्ड के लिए 2 रेप्स और”, विस्तृत लुक में।",
   "− and + on the set, so you can fix it without unlocking.": "सेट पर − और +, ताकि बिना अनलॉक किए ठीक कर सको।",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "फ़्री वेट",
+  "Barbells": "बारबेल",
+  "Cables": "केबल",
+  "Balls & rollers": "बॉल और रोलर",
+  "Bench & bar": "बेंच और बार",
+  "Show {0}": "{0} दिखाएँ",
+  "Hide {0}": "{0} छिपाएँ",
 }

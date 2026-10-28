@@ -5769,4 +5769,12 @@ export default {
   "Your workout": "Latihanmu",
   "“2 more reps for a record”, in the detailed look.": "“2 repetisi lagi untuk rekor”, di tampilan detail.",
   "− and + on the set, so you can fix it without unlocking.": "− dan + di set, jadi kamu bisa memperbaikinya tanpa membuka kunci.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Beban bebas",
+  "Barbells": "Barbel",
+  "Cables": "Kabel",
+  "Balls & rollers": "Bola & roller",
+  "Bench & bar": "Bangku & palang",
+  "Show {0}": "Tampilkan {0}",
+  "Hide {0}": "Sembunyikan {0}",
 };

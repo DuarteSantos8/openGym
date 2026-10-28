@@ -5804,4 +5804,12 @@ export default {
   "Your workout": "내 운동",
   "“2 more reps for a record”, in the detailed look.": "“2회 더 하면 기록”, 자세히 보기에서.",
   "− and + on the set, so you can fix it without unlocking.": "세트에 −와 +, 잠금 해제 없이 고칠 수 있게.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "프리 웨이트",
+  "Barbells": "바벨",
+  "Cables": "케이블",
+  "Balls & rollers": "볼과 롤러",
+  "Bench & bar": "벤치와 바",
+  "Show {0}": "{0} 펼치기",
+  "Hide {0}": "{0} 접기",
 }

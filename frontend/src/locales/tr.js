@@ -5804,4 +5804,12 @@ export default {
   "Your workout": "Antrenmanın",
   "“2 more reps for a record”, in the detailed look.": "“Rekor için 2 tekrar daha”, ayrıntılı görünümde.",
   "− and + on the set, so you can fix it without unlocking.": "Sette − ve +, kilidi açmadan düzeltebilmen için.",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "Serbest ağırlıklar",
+  "Barbells": "Barlar",
+  "Cables": "Kablolar",
+  "Balls & rollers": "Toplar ve rulolar",
+  "Bench & bar": "Sehpa ve bar",
+  "Show {0}": "{0} göster",
+  "Hide {0}": "{0} gizle",
 }

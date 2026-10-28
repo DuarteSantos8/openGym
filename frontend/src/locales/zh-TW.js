@@ -5797,4 +5797,12 @@ export default {
   "Your workout": "你的訓練",
   "“2 more reps for a record”, in the detailed look.": "「再多 2 次就是紀錄」，在詳細樣式中。",
   "− and + on the set, so you can fix it without unlocking.": "組上的 − 和 +，不用解鎖就能改。",
+  // --- equipment groups: the muscle explorer's equipment strip ---
+  "Free weights": "自由重量",
+  "Barbells": "槓鈴",
+  "Cables": "滑輪",
+  "Balls & rollers": "球與滾筒",
+  "Bench & bar": "臥推凳與單槓",
+  "Show {0}": "展開{0}",
+  "Hide {0}": "收合{0}",
 }
