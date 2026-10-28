@@ -6,6 +6,18 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Each gym keeps its own equipment** (#808, thanks @hoechstleistungshaartrockner). Plates, dumbbells,
+your bars and machine weight stacks now belong to an equipment profile instead of being one list
+for everywhere, so the home setup with one pair of 20s and the big gym down the street each get the
+plate math, dumbbell steps, warm-ups and progression that fit. Settings → Equipment shows the active
+gym at the top with a switcher, the Plates, Dumbbells and Your bars pages say which gym they are
+for and can copy another gym's list. During a workout the gym sits small next to the clock: tap it
+to switch, and the sets you have not done yet move onto that gym's plates and dumbbells. Saved
+workouts remember where they were done. On the phone, a gym reminder place can say "Equipment
+here": arrive, tap a check-in sticker or start a workout there and openGym switches by itself, with
+a little "Using Home gym equipment" so you know (only with location already allowed, it never asks).
+Nothing changes when you update: every profile starts with the lists you have today.
+
 **Christmas, with an advent calendar.** From 1 December to the end of the year the app gets
 cosy: a little snow drifting behind the cards when you open it, fairy lights along the top of Home
 and Stats, a Santa hat on your streak flame, holly in a corner, a snowman and a gingerbread person

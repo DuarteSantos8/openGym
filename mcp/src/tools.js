@@ -306,11 +306,16 @@ export const listWorkouts = {
         duration_ms: w.end && w.start ? (w.end - w.start) : null,
         duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
         prs: (w.prs || []).length,
-        bodyweight_at_workout: w.bw || null
+        bodyweight_at_workout: w.bw || null,
+        // The gym (equipment profile) it was done at, since 1.4.4; null before, or with no gyms.
+        gym: gymOf(w)
       }))
     }
   }
 }
+
+// Where a workout was done: the name of the gym (equipment profile) the app recorded (#808).
+const gymOf = w => (w && w.gym && typeof w.gym === 'object' && String(w.gym.name || '').trim()) || null
 
 /** get_workout — full entry/set breakdown for one date. */
 export const getWorkout = {
@@ -358,6 +363,7 @@ export const getWorkout = {
       routine_name: w.name || null,
       unit: S.unit || 'kg',
       bodyweight_at_workout: w.bw || null,
+      gym: gymOf(w),
       volume: workoutVolume(w),
       sets_done: setsDone(w),
       sets_planned: setUnitsTotal(w.entries),

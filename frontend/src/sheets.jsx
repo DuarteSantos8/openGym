@@ -4,6 +4,8 @@ import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTa
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
+import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
+import { autoGymHere } from './lib/gym-auto.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
@@ -1025,6 +1027,7 @@ function StackEditor({ ex }) {
     save(ws)
   }
   return <>
+    <GymOfList kind="stackWeights" exId={ex.id} />
     <div className="small dim" style={{ marginBottom: 10 }}>
       {t('The weights this machine really has, odd steps and all. Progression, deloads, warm-ups and the + and − buttons land only on these.')}
     </div>
@@ -1082,6 +1085,28 @@ function useListUnit() {
   return [unit === home ? live : { ...live, unit }, unit, switcher]
 }
 
+// Which gym a list belongs to (#808, lib/gym-inventory.js), and "Copy from" another gym's. Shown
+// only with gyms set up; without them the lists are simply yours. `exId` narrows the copy to that
+// exercise's machine stack, offered only from a gym that has one.
+function GymOfList({ kind, exId = null }) {
+  const S = useStore(s => s.S)
+  const gym = activeGym(S)
+  if (!gym) return null
+  const others = gymsOf(S).filter(p => p.id !== gym.id && (exId == null || gymHasStack(S, p.id, exId)))
+  const copy = from => confirmSheet({
+    title: t('Copy from {0}?', gymLabel(from)), message: t('This replaces the list at {0}.', gymLabel(gym)), confirmText: t('Copy'),
+    onConfirm: () => { update(s => { copyInventory(s, from.id, kind, { exId }) }); toast(t('Copied from {0}', gymLabel(from))) },
+  })
+  const pick = () => (others.length === 1 ? copy(others[0]) : menuSheet({
+    title: t('Copy from'), items: others.map(o => ({ icon: 'house', label: gymLabel(o), onClick: () => copy(o) })),
+  }))
+  return <div className="row between gym-of-list" style={{ gap: 8, marginBottom: 10 }}>
+    <span className="small muted"><Icon name="house" /> {t('At {0}', gymLabel(gym))}</span>
+    {others.length > 0 && <button type="button" className="chip nocap" onClick={pick}>
+      {others.length === 1 ? t('Copy from {0}', gymLabel(others[0])) : t('Copy from')}</button>}
+  </div>
+}
+
 // The plates you own, as pairs per size, for the profile's unit (Settings → Equipment → Plates).
 // The first edit copies the standard set into S.plates[unit] and changes one count in it, so the
 // list you see is always the list the set rows load from. "Back to the standard set" empties the
@@ -1093,6 +1118,7 @@ function PlateInventorySheet({ close }) {
   const reset = () => update(s => { s.plates = withStandardPlates({ unit, plates: s.plates }) })
   return <>
     <h3>{t('Plates')}</h3>
+    <GymOfList kind="plates" />
     {switcher}
     <div className="muted small" style={{ marginBottom: 14 }}>
       {t('Pairs of each size you own. Every set row loads from this list, so a home gym with one pair of 45s is never told to use two.')}
@@ -1132,6 +1158,7 @@ function DumbbellInventorySheet({ close }) {
   }
   return <>
     <h3>{t('Dumbbells')}</h3>
+    <GymOfList kind="dumbbells" />
     {switcher}
     <div className="muted small" style={{ marginBottom: 14 }}>
       {t('The weights you own, one bell each. Progression, deloads, warm-ups and the + and − buttons of dumbbell lifts land only on these.')}
@@ -1176,6 +1203,7 @@ function BarDefaultsSheet({ close }) {
   const name = eq => { const n = t(eq); return n.charAt(0).toLocaleUpperCase() + n.slice(1) }
   return <>
     <h3>{t('Your bars')}</h3>
+    <GymOfList kind="barDefaults" />
     {switcher}
     <div className="muted small" style={{ marginBottom: 14 }}>
       {t('What the bars at your gym weigh. Every exercise with that bar counts plates from it, unless you gave the exercise its own. Logged weights stay totals.')}
@@ -1918,6 +1946,9 @@ function EquipmentProfileSheet({ profile, close }) {
     <div className="dim small" style={{ marginTop: 10 }}>
       {t('Body-weight exercises are always available, unless they need a pull-up bar or a bench.')}
     </div>
+    {!profile && <div className="dim small" style={{ marginTop: 6 }}>
+      {t('It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.')}
+    </div>}
     <div style={{ height: 14 }} /><Button variant="primary" onClick={save}>{t('Save')}</Button>
   </>
 }
@@ -3344,6 +3375,8 @@ export function beginWorkout(routineIds, bw, { id = null, start = null } = {}) {
   })
   useUI.getState().stopRest()
   navToWorkout()
+  // Started inside a gym reminder place linked to an equipment profile: that gym's (#808).
+  autoGymHere()
 }
 
 // "Repeat today" (#58): a saved workout's exercises as a new freestyle session dated today, each
@@ -3365,6 +3398,7 @@ export function repeatWorkout(w, close) {
     })
     useUI.getState().stopRest()
     if (close) closeThenNav(close, '/workout'); else navToWorkout()
+    autoGymHere()
     if (skipped) toast(tn('{0} exercise no longer exists and was left out.', '{0} exercises no longer exist and were left out.', skipped))
   }
   if (st.weighIn === false) { go(null); return }

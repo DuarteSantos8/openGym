@@ -11,6 +11,7 @@ import { nav, navToWorkout } from '../lib/nav.js'
 import { platformNow } from '../lib/platform-now.js'
 import { tagUrl, parseTagUrl, routeTag, tagDebouncer } from '../lib/nfc-tags.js'
 import { nfcSupport, writeTag, cancelWrite, onTagLink } from '../lib/nfc.js'
+import { autoGymHere } from '../lib/gym-auto.js'
 import { freestyleConfig, pickedExerciseConfig, supersetUnits } from '../lib/history.js'
 import { insertionIndexAfterCurrentUnit } from '../lib/supersetFlow.js'
 import { buildSessionEntry, builtOutOfProgression } from '../lib/session-start.js'
@@ -147,6 +148,9 @@ export function handleTagLink(url, now = Date.now()) {
   if (now < quietUntil || !fresh(url, now)) return true
   const S = useStore.getState().S
   const r = routeTag(S, tag, { today: todayISO(), hasExercise: id => !!EXIDX[id] })
+  // A check-in sticker at a place linked to an equipment profile switches to that gym (#808). A
+  // start sticker gets there through beginWorkout, which does the same.
+  if (tag.kind === 'checkin' && r.do !== 'start') autoGymHere()
   switch (r.do) {
     case 'start': startFlow(r.ids); break
     case 'open-workout':

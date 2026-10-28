@@ -56,6 +56,7 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
+import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
 import { exView, viewEntry, inEntryUnit } from '../lib/ex-unit.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -120,7 +121,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
   // onField (mutEntry), which store it back in the profile's unit.
   const live = useStore(s => s.S)
-  const S = exView(live, live.active.entries[entryIdx]?.id)
+  const S = exView(sessionGymView(live), live.active.entries[entryIdx]?.id)
   const update = useStore(s => s.update)
   const working = useUI(s => s.work)
   const restEnds = useUI(s => s.timer?.endsAt)
@@ -1595,6 +1596,29 @@ function ActiveWorkout() {
     title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
     onConfirm: discardNow,
   })
+  // Which gym this session is at (#808): small in the header, one tap to switch, only with two gyms
+  // or more. A saved workout being edited shows where it was done and does not switch. Switching
+  // mid-session asks first, then moves the sets not done yet onto that gym's plates and dumbbells.
+  const gyms = gymsOf(S)
+  const gymNow = activeGym(S)
+  const gymSwitchable = !editing && !A.backfill && gyms.length > 1
+  const gymShown = editing ? (A.gym?.name || null) : gymSwitchable && gymNow ? gymLabel(gymNow) : null
+  const askSwitchGym = g => {
+    if (!g || g.id === gymNow?.id) return
+    confirmSheet({
+      title: t('Switch to {0}?', gymLabel(g)),
+      message: t('Sets you haven’t done yet move onto the plates, dumbbells and stacks there.'),
+      confirmText: t('Switch'),
+      onConfirm: () => {
+        update(s => { if (switchGym(s, g.id)) reRoundOpenSets(s) })
+        useUI.getState().toast(t('Using {0} equipment', gymLabel(g)))
+      },
+    })
+  }
+  const openGymMenu = () => menuSheet({
+    title: t('Gym'),
+    items: gyms.map(g => ({ icon: 'house', label: gymLabel(g), on: g.id === gymNow?.id, onClick: () => askSwitchGym(g) })),
+  })
   // The header ⋯, in groups: the settings you change at the gym first (their own sheet, the same
   // values as Settings), then what you do to this workout most: add an exercise, write the
   // session note, switch the layout. Adding a whole routine, renaming and keeping the session out
@@ -1618,6 +1642,7 @@ function ActiveWorkout() {
       { more: [{ items: [
         !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
         { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
+        gymSwitchable && { icon: 'house', label: t('Gym'), sub: gymNow ? gymLabel(gymNow) : t('Pick a gym'), onClick: openGymMenu },
         noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
       ] }] },
     ],
@@ -2266,7 +2291,9 @@ function ActiveWorkout() {
       {editing
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && <LiveHeartRate />}</div></div>
+      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
+        ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
+        : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
       <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}

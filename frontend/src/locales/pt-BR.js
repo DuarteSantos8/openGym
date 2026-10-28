@@ -2154,6 +2154,28 @@ export const PT_BR_OVERRIDES = {
   "“Log my weight in openGym”": "“Registrar meu peso no openGym”",
   "“What’s my workout today in openGym”": "“Qual é meu treino de hoje no openGym”",
   "“How’s my streak in openGym”": "“Como está minha sequência no openGym”",
+  // --- equipment per gym (#808) ---
+  "Using {0} equipment": "Usando o equipamento de {0}",
+  "Copy from {0}?": "Copiar de {0}?",
+  "This replaces the list at {0}.": "Isso substitui a lista de {0}.",
+  "Copied from {0}": "Copiado de {0}",
+  "Copy from": "Copiar de",
+  "At {0}": "Em {0}",
+  "Copy from {0}": "Copiar de {0}",
+  "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Começa com as anilhas, halteres e barras que você tem agora. Mude quando for a academia ativa.",
+  "Your gym": "Sua academia",
+  "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Anilhas, halteres, barras e placas de máquina ficam salvos por academia. Troque de academia e tudo troca junto.",
+  "Active gym": "Academia ativa",
+  "Pick a gym": "Escolha uma academia",
+  "Equipment at {0}": "Equipamento em {0}",
+  "Train in more than one place? Add a profile for each gym and each keeps its own plates, dumbbells and bars.": "Treina em mais de um lugar? Adicione um perfil por academia e cada uma fica com suas anilhas, halteres e barras.",
+  "Switch to {0}?": "Trocar para {0}?",
+  "Sets you haven’t done yet move onto the plates, dumbbells and stacks there.": "As séries que você ainda não fez passam para as anilhas, halteres e placas de lá.",
+  "Switch": "Trocar",
+  "Gym: {0}": "Academia: {0}",
+  "Arrive here, tap a check-in sticker or start a workout here, and openGym uses this gym’s plates, dumbbells and bars.": "Chegue aqui, toque em um adesivo de check-in ou comece um treino aqui, e o openGym usa as anilhas, halteres e barras desta academia.",
+  "Equipment here": "Equipamento aqui",
+  "Don’t switch": "Não trocar",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
