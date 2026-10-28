@@ -4,6 +4,38 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased
+
+- **QR codes on the machines.** An exercise's page has a **QR codes** section: scan the code the
+  gym put on the machine, or print a new one on a page about the exercise (picture, description,
+  steps, and the code at 3 × 3 cm to cut out), which the exercise has at once. In a running
+  workout the header's QR button scans it and opens that exercise; one the workout doesn't hold
+  is offered for the routine and the workout, or the workout alone, and an unknown code can be
+  given to an exercise on the spot. A code may stand for several exercises; **Unassociate** takes
+  it off one, and the last one deletes it. Codes sync per exercise like notes. Browser, Android
+  and iPhone, with the scanner the gym check-in already uses: no new dependency.
+- **Several codes per exercise**, and an unknown code scanned in a workout is offered to the
+  exercise you are on first. The camera on a Pro iPhone stays on one lens instead of zooming
+  between them. In the app on an iPhone's home screen, where a web page cannot print at all, the
+  code page comes as an A4 PDF through the share sheet ("Print" keeps the code at 3 × 3 cm).
+- **Body-composition scales.** The QR code a segmental BIA scale (the eGym/InBody kind found in
+  gyms) shows after a measurement can be scanned from **Body measurements** — or with the
+  workout's QR button. You see what it measured before anything is saved: weight, body fat,
+  skeletal muscle mass, fat and lean mass, water, protein, BMI, basal metabolic rate, biological
+  age, and lean and fat mass per arm, leg and the trunk. Saved, the scan joins the day's
+  check-in, its body fat fills the Body fat measurement, the weight is that day's weigh-in unless
+  you switch it off, and muscle mass, fat mass, water and the rest become lines on the chart. The
+  code holds only numbers, read offline; the 64-value layout is known, a 63- or 95-value scale's
+  scan is kept and shows once its layout is (docs/BODY_SCALE_QR_IMPORT.md).
+  **Stats** has a **Body data** tab for it: the latest scan (or any earlier one) as tiles with
+  how each value moved since the scan before, and the segment analysis — the body from the
+  front with the trunk, each arm and each leg around it, lean mass or fat at a tap. The Home
+  screen's Body weight card has the scan button too.
+- **Admin → Features: one switch per kind of code** for the whole instance: exercise QR codes and
+  body-composition scales, each on its own. The workout's scan stays while either is on ("Scan
+  code" once the exercise codes are off), and a code whose switch is off says so. Codes and scans
+  already saved stay; the Body data tab stays while there are scans to show.
+
 ## v1.4.3 (2026-10-26)
 
 The community release. Most of what's below was asked for on GitHub and Discord or sent in as a

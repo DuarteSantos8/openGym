@@ -263,6 +263,15 @@ paths:
                     description: >-
                       When false, the client hides "continue without account".
                       Guest mode is purely client-side and never calls this API.
+                  features:
+                    description: >-
+                      Present only when an admin switched a feature off for this instance,
+                      naming just those (`qr: false` hides the exercise QR codes). Absent means
+                      everything is on.
+                    type: object
+                    properties:
+                      qr: { type: boolean, const: false }
+                      bodyScale: { type: boolean, const: false }
                   coach:
                     description: >-
                       Present for a signed-in caller and absent otherwise; `null` when this
@@ -2604,6 +2613,67 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/admin/features:
+    get:
+      tags: [admin]
+      operationId: adminFeatures
+      summary: 'Admin: the instance features and whether each is on'
+      description: >-
+        Features an admin can switch off for the whole instance, each on its own: `qr` the
+        exercise QR codes (scanning the code on a machine, giving codes to exercises),
+        `bodyScale` the body-composition scales' codes.
+      responses:
+        '200':
+          description: Every known feature, on or off.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  features:
+                    type: object
+                    properties:
+                      qr: { type: boolean }
+                      bodyScale: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [admin]
+      operationId: adminFeaturesSet
+      summary: 'Admin: switch instance features on or off'
+      description: >-
+        Takes any of the known features as booleans; the others stay as they are. A feature
+        switched off appears in `GET /api/config` as `features: { <name>: false }`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                qr: { type: boolean }
+                bodyScale: { type: boolean }
+      responses:
+        '200':
+          description: Saved; every known feature, on or off.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  features:
+                    type: object
+                    properties:
+                      qr: { type: boolean }
+                      bodyScale: { type: boolean }
+        '400':
+          description: No known feature in the body.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+              example: { error: "no known feature given" }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
   /api/admin/invites/revoke:
     post:
       tags: [admin]

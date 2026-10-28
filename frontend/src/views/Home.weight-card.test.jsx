@@ -20,10 +20,10 @@ beforeEach(() => {
 })
 afterEach(() => { act(() => root.unmount()); host.remove() })
 
-const mountWith = showWeightCard => {
+const mountWith = (showWeightCard, config = null) => {
   useStore.setState(s => ({
     S: { ...s.S, routines: [], workouts: [], bodyweight: [], dayPlan: {}, week: {}, active: null, showWeightCard },
-    user: null,
+    user: null, config,
   }))
   act(() => root.render(<Home />))
 }
@@ -38,6 +38,18 @@ describe('Home body-weight card preference', () => {
   it('shows the card when enabled', () => {
     mountWith(true)
     expect(weightHeading()).toBeTruthy()
+  })
+
+  it('has the body-scale scan button next to Goal and Log', () => {
+    mountWith(true)
+    const card = weightHeading().closest('.card')
+    expect(card.querySelector('button[aria-label="Scan body scan code"]')).toBeTruthy()
+  })
+
+  it('has no scan button when an admin switched the body scales off', () => {
+    mountWith(true, { features: { bodyScale: false } })
+    const card = weightHeading().closest('.card')
+    expect(card.querySelector('button[aria-label="Scan body scan code"]')).toBeNull()
   })
 
   it('hides only the Home card when disabled', () => {

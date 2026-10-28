@@ -81,3 +81,24 @@ export async function importCodeFromImageWeb(file) {
   }
   try { return await decodeSource(bmp) } finally { if (bmp.close) bmp.close() }
 }
+
+// A Pro iPhone hands `facingMode: environment` its virtual multi-lens camera ("Back Triple
+// Camera"), which swaps lenses — wide, ultra wide for macro, telephoto — as the distance changes:
+// the picture zooms back and forth while you aim. Its plain wide camera ("Back Camera") keeps
+// still. Device names only show once the camera is allowed, and they are in the phone's language.
+const BACK_CAM = /\b(back|rear)\b|rück|arrière|trasera|posterior|traseira|задн|後|背面|후면/i
+const MULTI_LENS = /dual|triple|dreifach|zweifach|ultra|tele|wide|weitwinkel|double|doble|tripl|grand.?angle|gran.?angular|grandangolo|двой|трой|широк|теле|广角|雙|双|三|長焦|长焦|광각|망원|듀얼|트리플/i
+
+/**
+ * The deviceId of the one plain rear camera to switch to, or null to keep the camera there is:
+ * only when the current one is a multi-lens rear camera and exactly one plain rear camera sits
+ * next to it (an iPhone). Android names its cameras "camera2 0, facing back" without saying which
+ * lens is which, and a laptop has one camera: both keep theirs.
+ */
+export function steadyBackCamera(devices, currentLabel = '') {
+  if (!MULTI_LENS.test(currentLabel) || !BACK_CAM.test(currentLabel)) return null
+  const back = (Array.isArray(devices) ? devices : [])
+    .filter(d => d && d.kind === 'videoinput' && d.deviceId && BACK_CAM.test(d.label || ''))
+  const plain = back.filter(d => !MULTI_LENS.test(d.label))
+  return plain.length === 1 && back.some(d => MULTI_LENS.test(d.label)) ? plain[0].deviceId : null
+}

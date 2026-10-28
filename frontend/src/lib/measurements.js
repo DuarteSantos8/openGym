@@ -1,6 +1,9 @@
 // Canonical storage: lengths in cm, masses in kg, percentages and plain numbers as-is. A custom
 // field's unit selects its display unit ('none' is a score or a count with no unit at all).
 // Legacy fields without one still follow the profile's cm/in choice.
+// A day's entry can also carry a body-composition scan (`scan`, lib/bodyscan.js), read through the
+// `scan:<field>` keys below.
+import { cleanScan, scanDisplay, scanUnit, scanValue } from './bodyscan.js'
 
 export const MEASUREMENT_FIELDS = [
   { key: 'neck', label: 'Neck', group: 'Torso' },
@@ -52,6 +55,18 @@ export const fromMeasurementDisplay = (value, unit, field) => {
   return valid(display === 'in' && value != null ? +value * 2.54 : display === 'lb' && value != null ? +value / LB_PER_KG : value, display)
 }
 
+/** The unit a measurement key shows in: a scan field's own (lib/bodyscan.js), else measurementUnit's. */
+export function measurementUnitFor(key, unit, field = { key }) {
+  if (String(key).startsWith('scan:')) return scanUnit(key.slice(5), unit)
+  return measurementUnit(unit, field)
+}
+/** A stored value as that key shows it (measurementUnitFor). */
+export function measurementDisplay(key, value, unit, field = { key }) {
+  if (value == null) return value
+  if (String(key).startsWith('scan:')) return scanDisplay(key.slice(5), value, unit)
+  return toMeasurementDisplay(value, unit, field)
+}
+
 // A unit change can convert cm/in or kg/lb, but cannot turn recorded lengths into percentages.
 // An empty custom field may still choose any type. Readings keep a unit for orphaned backups.
 export function customMeasurementUnits(field, entries = []) {
@@ -74,6 +89,8 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
   const entry = emptyMeasurement(raw.d || '', custom)
   entry.t = Number.isFinite(+raw.t) ? +raw.t : entry.t
   for (const key of MEASUREMENT_KEYS) entry[key] = valid(raw[key], key === 'bodyFat' ? '%' : null)
+  const scan = cleanScan(raw.scan)
+  if (scan) entry.scan = scan
 
   const known = new Map(custom.map(c => [c.id, c]))
   const seen = new Set()
@@ -94,6 +111,7 @@ export function normalizeMeasurementEntry(raw = {}, custom = []) {
 function mergeMeasurementEntries(a, b) {
   const entry = { ...a, t: b.t }
   for (const key of MEASUREMENT_KEYS) entry[key] = b[key] ?? a[key]
+  if (b.scan) entry.scan = b.scan
   const other = new Map(a.other.map(o => [o.id, o]))
   for (const o of b.other) {
     const prev = other.get(o.id)
@@ -136,6 +154,7 @@ export function normalizeMeasurementsState(state) {
 
 export function measurementValue(entry, key) {
   if (!entry) return null
+  if (key.startsWith('scan:')) return scanValue(entry.scan, key.slice(5))
   if (!key.startsWith('other:')) return valid(entry[key], key === 'bodyFat' ? '%' : null)
   const row = (entry.other || []).find(o => o.id === key.slice(6))
   return valid(row?.value, unitOf(row))
@@ -162,6 +181,7 @@ export function measurementSeries(state, key, range = 0, now = Date.now()) {
     const raw = measurementValue(entry, key)
     const at = new Date(entry.d + 'T12:00:00').getTime()
     if (raw == null || at < cutoff) return null
+    if (key.startsWith('scan:')) return { t: at, d: entry.d, y: measurementDisplay(key, raw, unit) }
     const stored = key.startsWith('other:') ? entry.other?.find(o => o.id === key.slice(6)) : null
     // An incomplete backup may retain a reading without its custom definition.
     const displayField = unitOf(field) ? field : { ...field, ...withUnit(stored) }
@@ -179,7 +199,7 @@ export function latestMeasurement(state, key) {
 }
 
 export function measurementEntryHasValues(entry) {
-  return MEASUREMENT_KEYS.some(k => valid(entry?.[k], k === 'bodyFat' ? '%' : null) != null) ||
+  return !!cleanScan(entry?.scan) || MEASUREMENT_KEYS.some(k => valid(entry?.[k], k === 'bodyFat' ? '%' : null) != null) ||
     (entry?.other || []).some(o => valid(o?.value, unitOf(o)) != null)
 }
 
