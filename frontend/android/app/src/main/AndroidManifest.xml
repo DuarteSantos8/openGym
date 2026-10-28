@@ -53,7 +53,8 @@
 
         <!-- The home-screen icon (Settings → Look & Home → App icon, AppIconPlugin): the launcher
              entry is one of these aliases of MainActivity, each with its own icon, and exactly one
-             is enabled. IconDefault, the original, is the one a new install starts with. -->
+             is enabled. IconDefault, the original, is the one a new install starts with. Each one
+             carries the long-press shortcuts (res/xml/shortcuts.xml): a new alias needs them too. -->
         <activity-alias
             android:name=".IconDefault"
             android:enabled="true"
@@ -66,6 +67,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconLight"
@@ -79,6 +81,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconMono"
@@ -92,6 +95,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconNeon"
@@ -105,6 +109,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconSky"
@@ -118,6 +123,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconOrange"
@@ -131,6 +137,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconPink"
@@ -144,6 +151,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconViolet"
@@ -157,6 +165,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconHalloween"
@@ -170,6 +179,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
 
         <!-- Health Connect (#200) opens the app from its permission screen to say why the

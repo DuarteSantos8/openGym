@@ -64,6 +64,7 @@ import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
 import { readGymConfig } from '../lib/gym-reminder.js'
 import { THEMES, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
 import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
+import { voiceShortcutsSheet, voiceRowTitle } from '../components/VoiceShortcuts.jsx'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -898,6 +899,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* NFC stickers (components/Nfc.jsx): only where the phone or the browser can write one. */}
         {nfcOK && <Row icon="nfc" iconTint="var(--blue)" title={t('Set up an NFC sticker')}
           subtitle={t('Tap it at the gym to start your workout or show your code.')} accessory="chevron" onClick={nfcStickerSheet} />}
+        {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
+        {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
+          subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
         <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>

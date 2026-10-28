@@ -340,11 +340,12 @@ function WeightInput({ value, setValue, unit }) {
 }
 
 /* ============================ body weight ============================ */
-function BwSheet({ required, onDone, close }) {
+function BwSheet({ required, onDone, close, initial }) {
   const st = useStore(s => s.S)
   const unit = st.unit
   const bw = lastBW(st)
-  const [v, setV] = useState(bw ? bw.w : 70)
+  // `initial`: a weight an assistant heard (Google Assistant's "log my weight", lib/voice.js).
+  const [v, setV] = useState(Number(initial) > 0 ? Math.round(Number(initial) * 10) / 10 : bw ? bw.w : 70)
   const [date, setDate] = useState(todayISO())
   const save = () => {
     const n = Math.round((v || 0) * 10) / 10
