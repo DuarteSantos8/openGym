@@ -9,6 +9,7 @@ import { accentValue, applyAccent } from './lib/accent.js'
 import { seasonAccent } from './lib/seasonal.js'
 import { setLang, useLang, baseLang } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
+import { DEMO } from './lib/demo.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
 import { setNav, notePath, keyBefore, navToWorkout } from './lib/nav.js'
@@ -162,6 +163,18 @@ function Shell() {
   const config = useStore(s => s.config)
   const lang = effectiveLang(S, config)
   useEffect(() => { setLang(lang, S.enParens?.[baseLang(lang)] ?? true, S.enOnly?.[baseLang(lang)] === true) }, [lang, S.enParens, S.enOnly])
+  useEffect(() => {
+    if (!DEMO || !ready) return
+    let cancelled = false
+    import('./lib/demoSeed.js').then(({ localizeDemoRoutineNames }) => {
+      if (cancelled) return
+      const state = structuredClone(useStore.getState().S)
+      if (localizeDemoRoutineNames(state, lang)) {
+        useStore.getState().update(s => { localizeDemoRoutineNames(s, lang) })
+      }
+    })
+    return () => { cancelled = true }
+  }, [lang, ready, S.routines])
   // Same shape as the language: a module-level display setting, pushed when it changes (#139).
   useEffect(() => { setWeightDecimals(S.wdec) }, [S.wdec])
   useEffect(() => { document.documentElement.lang = lang }, [langV, lang])

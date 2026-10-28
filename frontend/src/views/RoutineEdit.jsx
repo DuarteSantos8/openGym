@@ -18,9 +18,9 @@ import SwipeRow from '../components/SwipeRow.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
 import { planPrintHTML, printPlan } from '../lib/plan-share.js'
-import { printOptions } from '../lib/print-doc.js'
+import { printDocument } from '../lib/print-doc.js'
 import { markEntryUndone } from '../lib/sync-merge.js'
-import { MOBILE, printHtml } from '../lib/mobile.js'
+import { MOBILE } from '../lib/mobile.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC } from '../lib/progression.js'
 import BodyMap from '../components/BodyMap.jsx'
@@ -426,7 +426,7 @@ export default function RoutineEdit() {
     const owner = useStore.getState().user?.name || ''
     // Android's print manager refuses a job without a name. The editor never leaves a name blank,
     // but a routine that arrived from an import or another client may have none.
-    if (MOBILE) printHtml(planPrintHTML(S, owner, { routineId: id }), r.name || t('Routine'), printOptions()).catch(() => { /* dismissed */ })
+    if (MOBILE) printDocument(planPrintHTML(S, owner, { routineId: id }), r.name || t('Routine'))
     else printPlan(S, owner, { routineId: id })
   }
   const toggleLink = i => edit(ex => {

@@ -30,11 +30,11 @@ const ok = body => ({ ok: true, status: 200, redirected: false, text: async () =
 
 describe('the worker keeps the on-demand code too', () => {
   it('fetches every listed chunk at install', async () => {
-    const sw = stampSw(source, { stamp: 'abc', lazy: ['./assets/index-new.js', './assets/media-ingest-x.js', './assets/jsQR-y.js'] })
+    const sw = stampSw(source, { stamp: 'abc', lazy: ['./assets/index-new.js', './assets/media-ingest-x.js', './assets/jsQR-y.js', './assets/Vazirmatn-x.woff2'] })
     const asked = []
     const cache = await install(sw, async u => { asked.push(String(u)); return String(u) === 'index.html' ? ok(shell) : ok('') })
     expect(asked.filter(u => u === './assets/index-new.js')).toHaveLength(1)
-    expect([...cache.keys()]).toEqual(expect.arrayContaining(['./assets/media-ingest-x.js', './assets/jsQR-y.js', 'index.html']))
+    expect([...cache.keys()]).toEqual(expect.arrayContaining(['./assets/media-ingest-x.js', './assets/jsQR-y.js', './assets/Vazirmatn-x.woff2', 'index.html']))
   })
 
   it('a chunk that will not come is no reason to fail the install', async () => {
@@ -64,13 +64,14 @@ describe('the worker keeps the on-demand code too', () => {
       'assets/de-d.js': chunk('/app/frontend/src/instr/de.js'),
       'assets/ru-e.js': chunk('/app/frontend/src/exercise-names/ru.js'),
       'assets/index-f.css': { type: 'asset' },
+      'assets/Vazirmatn-j.woff2': { type: 'asset' },
       'icon-512.png': { type: 'asset' },
       // the English steps and descriptions every language falls back to: offline as well
       'assets/en-g.js': chunk('/app/frontend/src/instr/en.js'),
       'assets/en-h.js': chunk('/app/frontend/src/exercise-desc/en.js'),
       'assets/de-i.js': chunk('/app/frontend/src/exercise-desc/de.js'),
     }
-    expect(lazyAssets(bundle)).toEqual(['./assets/de-i.js', './assets/en-g.js', './assets/en-h.js', './assets/index-a.js', './assets/index-f.css', './assets/media-ingest-b.js'])
+    expect(lazyAssets(bundle)).toEqual(['./assets/Vazirmatn-j.woff2', './assets/de-i.js', './assets/en-g.js', './assets/en-h.js', './assets/index-a.js', './assets/index-f.css', './assets/media-ingest-b.js'])
   })
 
   it('the build stamps the worker with both', () => {

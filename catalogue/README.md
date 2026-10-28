@@ -75,7 +75,7 @@ partial work is welcome. Translate the name and as much of the steps as you like
 }
 ```
 
-Languages: `ar bn de es fr hi hu it ko pl pt pt-BR ru th tr uk zh zh-TW` (the app's languages).
+Languages: `ar bn de es fa fr hi hu it ko pl pt pt-BR ru th tr uk zh zh-TW` (the catalogue's languages).
 Names follow the language's own conventions. German capitalises nouns; the others are stored
 lowercase like English.
 

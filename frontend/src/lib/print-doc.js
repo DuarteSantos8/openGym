@@ -192,8 +192,8 @@ function printInFrame(html) {
   }
   const doc = ifr.contentWindow.document
   doc.open(); doc.write(html); doc.close()
-  // Give the iframe a tick to lay out (and its fonts to load) before printing.
-  const go = () => setTimeout(run, 150)
+  // Let an embedded font settle before the browser captures the printed page.
+  const go = () => Promise.resolve(doc.fonts?.ready).then(() => setTimeout(run, 150))
   if (doc.readyState === 'complete') go()
   else ifr.onload = go
 }
@@ -203,7 +203,11 @@ function printInFrame(html) {
  * sheet in the app (Android's WebView has no window.print()). `name` names the print job and the
  * suggested PDF file; Android refuses a job without one.
  */
-export function printDocument(html, name) {
+export async function printDocument(html, name) {
+  if (/<html\b[^>]*\blang="fa(?:-[^"]*)?"/i.test(html)) {
+    const { withPersianPrintFont } = await import('./persian-print-font.js')
+    html = withPersianPrintFont(html)
+  }
   if (MOBILE) return printHtml(html, name || 'openGym', printOptions()).catch(() => { /* dismissed */ })
   printInFrame(html)
   return Promise.resolve()

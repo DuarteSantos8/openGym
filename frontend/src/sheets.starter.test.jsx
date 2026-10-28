@@ -7,6 +7,8 @@ import { createRoot } from 'react-dom/client'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { loadStarterPlan, starterPlanSheet } from './sheets.jsx'
+import { _setLangState } from './lib/i18n-core.js'
+import fa from './locales/fa.js'
 
 const mounted = []
 
@@ -46,9 +48,21 @@ beforeEach(() => {
 
 afterEach(() => {
   act(() => { mounted.splice(0).forEach(root => root.unmount()) })
+  _setLangState('en', {}, null, null)
 })
 
 describe('starter plan chooser', () => {
+  it('loads Persian built-in names and keeps a custom routine name', () => {
+    _setLangState('fa', fa, null, null)
+    expect(loadStarterPlan('ppl')).toBe(true)
+    expect(nameOn(1)).toBe('روز پوش (فشاری)')
+    expect(nameOn(3)).toBe('روز پول (کششی)')
+    expect(nameOn(5)).toBe('روز پا')
+    expect(S().routines[0].name).toBe('My routine')
+    const ids = S().routines.map(r => r.id)
+    loadStarterPlan('ppl')
+    expect(S().routines.map(r => r.id)).toEqual(ids)
+  })
   it('lists every plan with its day count', () => {
     starterPlanSheet()
     const host = renderTop()

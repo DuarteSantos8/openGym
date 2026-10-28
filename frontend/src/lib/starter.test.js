@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import { EXIDX } from './exercises.js'
 import { ALL_EQUIPMENT, eqAvailable } from './equipment.js'
-import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines } from './starter.js'
+import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines, starterRoutineName } from './starter.js'
+
+it('creates Persian built-in routine names without changing the prescription or English defaults', () => {
+  const en = buildStarterPlan('ppl'), fa = buildStarterPlan('ppl', undefined, 'fa')
+  expect(fa.routines.map(r => r.name)).toEqual(['روز پوش (فشاری)', 'روز پول (کششی)', 'روز پا'])
+  expect(fa.routines.map(r => r.ex)).toEqual(en.routines.map(r => r.ex))
+  expect(en.routines.map(r => r.name)).toEqual(['Push Day', 'Pull Day', 'Leg Day'])
+  expect(starterRoutineName('My custom workout', 'fa')).toBe('My custom workout')
+  expect(buildStarterPlan('upper-lower', undefined, 'fa').routines[0].name).toBe('بالاتنه A')
+})
 
 // The approved prescription, written out again rather than imported: a test that reads the
 // same table as the code would pass no matter what that table said. [weekday, name, sets].

@@ -12,6 +12,14 @@ with the AGPL, provided the corresponding source code remains available under th
 the project repository. This permission applies to the distribution channel only and does
 not otherwise limit the license.
 
+## Vazirmatn font
+
+The Persian interface and printouts bundle unmodified Vazirmatn v33.003 from
+[rastikerdar/vazirmatn](https://github.com/rastikerdar/vazirmatn/tree/v33.003).
+Copyright 2015 The Vazirmatn Project Authors. The font is licensed under the
+SIL Open Font License, Version 1.1; the full notice and license ship in
+[`frontend/public/fonts/OFL-Vazirmatn.txt`](frontend/public/fonts/OFL-Vazirmatn.txt).
+
 ## Body diagram geometry
 
 The muscle outlines the body maps are drawn from (`frontend/src/lib/body-paths.js`) are derived
