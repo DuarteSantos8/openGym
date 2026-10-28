@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "开始训练";
+"Starts today’s planned workout, or opens the one already running." = "开始今天计划的训练，或打开正在进行的训练。";
+"Log weight" = "记录体重";
+"Logs your body weight without opening openGym." = "不打开 openGym 就记录你的体重。";
+"Weight" = "体重";
+"What’s your weight?" = "你的体重是多少？";
+"Today’s workout" = "今日训练";
+"Tells you what’s planned for today." = "告诉你今天的计划。";
+"Week streak" = "每周连续纪录";
+"Tells you how many weeks in a row you trained." = "告诉你连续训练了几周。";
+"Open openGym once, then ask me again." = "先打开一次 openGym，再来问我。";
+"You’re in the middle of %@." = "你正在进行 %@。";
+"You’re in the middle of a workout." = "你正在训练中。";
+"Your workout" = "你的训练";
+"%@ is done for today. Nice work." = "今天的 %@ 完成了，干得好。";
+"Today: %@." = "今天：%@。";
+"Rest day today. Next up: %@ on %@." = "今天休息。下一次：%@，%@。";
+"Nothing planned today." = "今天没有计划。";
+"No streak yet. One workout this week starts one." = "还没有连续纪录。本周练一次就开始了。";
+"Week streak: %d. This week already counts." = "每周连续纪录：%d。本周已经算上了。";
+"Week streak: %d. One workout this week keeps it going." = "每周连续纪录：%d。本周练一次就能保持。";
+"That doesn’t sound like a weight. Try again?" = "这听起来不像体重。再试一次？";
+"Logged %@." = "已记录 %@。";

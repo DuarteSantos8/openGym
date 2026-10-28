@@ -6,6 +6,7 @@ import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { workoutDetailSheet } from './sheets.jsx'
 import { setNav } from './lib/nav.js'
+import { workoutOption } from './lib/workout-options.test-util.js'
 
 const mounted = []
 const workout = () => ({
@@ -46,9 +47,11 @@ describe('WorkoutDetail — save as routine', () => {
     const saved = workout()
     useStore.setState(s => ({ S: { ...s.S, workouts: [saved] } }))
     const host = (workoutDetailSheet(saved), renderTop())
-    expect(button(host, 'Save as routine')).toBeTruthy()
+    expect(workoutOption(host, 'Save as routine')).toBeTruthy()
 
-    act(() => { button(host, 'Save as routine').click() })
+    const option = workoutOption(host, 'Save as routine')
+
+    act(() => { option.click() })
     const confirm = renderTop()
     expect(confirm.textContent).toContain('Create an independent routine')
     expect(useStore.getState().S.routines).toHaveLength(0)

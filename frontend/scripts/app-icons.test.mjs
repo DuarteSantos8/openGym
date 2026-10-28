@@ -93,6 +93,35 @@ describe('the Halloween icon', () => {
   })
 })
 
+describe('the Christmas icon', () => {
+  const v = APP_ICON_VARIANTS.find(x => x.id === 'christmas')
+
+  it('is a hand-made SVG the renderer knows every piece of', () => {
+    expect(v).toMatchObject({ name: 'Christmas', ios: 'AppIcon-Christmas', android: 'IconChristmas', art: 'resources/icons/christmas.svg' })
+    expect(scene(read(v.art)).length).toBeGreaterThan(20)
+  })
+
+  it('a lime dumbbell in a Santa hat, wrapped with a red ribbon, on a dark winter night', () => {
+    const shapes = scene(read(v.art))
+    const at = (x, y) => shapes.find(s => s.hit(x, y)).color(x, y).map(Math.round)
+    expect(at(256, 256)).toEqual([163, 230, 53])    // the bar, openGym lime
+    expect(at(165, 140)).toEqual([230, 57, 70])     // the hat
+    expect(at(357, 300)).toEqual([230, 57, 70])     // the ribbon
+    expect(at(150, 164)).toEqual([248, 249, 250])   // the hat's brim
+    expect(Math.max(...at(10, 500))).toBeLessThan(40)
+  })
+
+  it('keeps everything inside the safe zone Android promises', () => {
+    const shapes = scene(read(v.art))
+    let lit = 0
+    for (let y = 0; y < 512; y += 2) for (let x = 0; x < 512; x += 2) {
+      const d = Math.hypot(x - 256, y - 256)
+      if (d >= 234 && d <= 256 && Math.max(...shapes.find(s => s.hit(x, y)).color(x, y)) > 120) lit++
+    }
+    expect(lit).toBe(0)
+  })
+})
+
 describe('Android launcher aliases', () => {
   const manifest = read('android/app/src/main/AndroidManifest.xml')
   const main = manifest.match(/<activity\b[\s\S]*?android:name="\.MainActivity"[\s\S]*?(\/>|<\/activity>)/)[0]
@@ -137,6 +166,7 @@ describe('iOS alternate icons', () => {
     expect(names.length).toBe((pbx.match(/ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;/g) || []).length)
     for (const n of names) expect(n).toEqual(ALT.map(v => v.ios))
     expect(names[0]).toContain('AppIcon-Halloween')
+    expect(names[0]).toContain('AppIcon-Christmas')
   })
 
   it('the plugin is compiled, registered and knows the same sets', () => {

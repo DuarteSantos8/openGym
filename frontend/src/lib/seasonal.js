@@ -1,18 +1,21 @@
-// Seasonal themes (v1.4.3): a little decoration for a few weeks a year, Halloween first.
+// Seasonal themes (v1.4.3): a little decoration for a few weeks a year. Halloween first, then
+// Christmas (v1.4.4) with its advent calendar (lib/advent.js).
 //
 // This file is all the main bundle carries of them: the list, the date windows and the choice.
 // The art, its CSS and its timers live in seasonal/<id>.jsx, fetched only while a theme is on
 // (components/Seasonal.jsx), so a profile with themes off, or a day out of season, pays nothing.
 //
 // The choice is a Look setting like Theme and Accent color, so it syncs with the profile:
-// S.seasonal = { halloween: 'auto' | 'on' | 'off', halloweenColors: true, halloweenWorkout: false }.
+// S.seasonal = { halloween: 'auto' | 'on' | 'off', halloweenColors: true, halloweenWorkout: false,
+//               christmas: 'auto', christmasColors: false, christmasWorkout: true }.
 // Absent reads as Auto, without the colours, and with the workout screen decorated.
 // What happens once a day (the pumpkin's surprise) is per device, in localStorage below.
 
 /* One entry per theme. `from` and `to` are [month, day], 1-based and inclusive, in local time:
    Halloween is on from 1 October to the end of 31 October and gone on 1 November. The strings
    are English keys, translated where they are shown. A theme with `colors` offers an accent
-   override, which is only ever opt-in. */
+   override, which is only ever opt-in. `appIcon` names its icon in lib/app-icon-variants.js, which
+   the settings page then suggests while the theme shows. */
 export const THEMES = [
   {
     id: 'halloween', title: 'Halloween', icon: 'pumpkin', tint: 'var(--orange)',
@@ -21,6 +24,16 @@ export const THEMES = [
     workoutTitle: 'Also during workouts', workoutNote: 'A cobweb in the header, bats behind the rest timer, pumpkins on the finish screen. Never on your sets.',
     during: 'Spiders, bats and one shy pumpkin until the end of October. Never during a workout.',
     back: 'Back next October. The spiders are on holiday.',
+    appIcon: 'halloween', appIconTitle: 'Try the Halloween app icon',
+  },
+  {
+    id: 'christmas', title: 'Christmas', icon: 'gift', tint: 'var(--red)',
+    from: [12, 1], to: [12, 31],
+    colors: 'red', colorsTitle: 'Festive colors', colorsNote: 'A berry red accent while Christmas shows. Your own color comes back after.',
+    workoutTitle: 'Also during workouts', workoutNote: 'A few snowflakes behind the cards, a bauble in the header, presents on the finish screen. Never on your sets.',
+    during: 'Snow, fairy lights, a sleigh and an advent calendar until the end of December. Never on your sets.',
+    back: 'Back next December. The elves are on a tea break.',
+    appIcon: 'christmas', appIconTitle: 'Try the Christmas app icon',
   },
 ]
 export const THEME_IDS = THEMES.map(th => th.id)

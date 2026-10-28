@@ -229,6 +229,8 @@ export function Deco({ spot }) {
     // flank the finish screen's trophy.
     case 'workout-hdr': return <span className="hw-wcorner" aria-hidden="true"><Web className="hw-web-tl" /><HangingSpider len={22} className="hw-hang-w" /></span>
     case 'rest-timer': return <RestBats />
+    // Home's streak party (components/Streak.jsx): the finish screen's two hopping pumpkins.
+    case 'streak-party': return <span className="hw-finish" aria-hidden="true"><span className="hw-pk"><Pumpkin /></span><span className="hw-pk hw-pk-r"><Pumpkin /></span></span>
     case 'finish': return <span className="hw-finish" aria-hidden="true"><span className="hw-pk"><Pumpkin /></span><span className="hw-pk hw-pk-r"><Pumpkin /></span></span>
     default: return null
   }

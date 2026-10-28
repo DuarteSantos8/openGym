@@ -111,15 +111,22 @@ function fitLive (live) {
 
 /**
  * The activity's fixed part (`attributes`: what stays the same for the workout) and its state, or
- * null when no workout is running here. `timer` is the rest as useUI holds it.
+ * null when no workout is running here. `timer` is the rest as useUI holds it; `hold` the hold
+ * (`work`) and the count-in before one that starts by itself (`countIn`), also from useUI.
  */
-export function buildLiveActivity (S, timer = null) {
+export function buildLiveActivity (S, timer = null, hold = {}) {
   const A = S && S.active
   if (!A || !Array.isArray(A.entries) || !A.entries.length || A.editingWorkoutId) return null
   const next = upcomingSets(S)
   let done = 0, total = 0
   for (const e of A.entries) for (const s of e?.sets || []) { total++; if (s?.done) done++ }
   const rest = timer && !timer.ready && timer.kind !== 'switch' ? timer : null
+  // A hold counting down, or the 3-2-1 before one (lib/auto-holds.js): the Lock Screen counts it
+  // down like the rest, under its own word, and offers Stop auto beside Log set while a chain runs.
+  const ci = hold && hold.countIn
+  const wk = !ci && hold && hold.work ? hold.work : null
+  const clock = ci || wk
+  const auto = !!(ci || (wk && wk.auto) || (timer && !timer.ready && hold && hold.autoNext))
   const pair = accentPair(accentValue(S))
   // The first open set of each exercise after the current one, in the order the sets come.
   const starts = []
@@ -146,6 +153,9 @@ export function buildLiveActivity (S, timer = null) {
         skipRest: t('Skip rest'),
         // Sets are left, but the activity ran past the ones it carries (many taps, page asleep).
         openApp: t('Open openGym for the next set'),
+        hold: t('Hold'),
+        getReady: t('Get ready'),
+        stopAuto: t('Stop auto'),
       },
     },
     state: {
@@ -156,6 +166,11 @@ export function buildLiveActivity (S, timer = null) {
       restEndsAt: rest && !rest.paused ? num(rest.endsAt) : null,
       restLeft: rest && rest.paused ? num(rest.left) : null,
       restTotal: rest ? num(rest.total) : null,
+      holdEndsAt: clock && !clock.paused ? num(clock.endsAt) : null,
+      holdLeft: clock && clock.paused ? num(clock.left) : null,
+      holdTotal: clock ? num(clock.total) : null,
+      holdKind: ci ? 'countin' : wk ? 'hold' : null,
+      auto,
       done,
       total,
     },
@@ -219,6 +234,9 @@ export function applyLiveEvents (events, getState) {
       if (!handlers) break
       const to = nextExerciseTarget(A, ev.fromEntryIdx)
       if (to != null) handlers.next?.(to)
+    } else if (ev.type === 'autoStop' && ours) {
+      if (!handlers) break
+      handlers.autoStop?.()
     } else if (ev.type === 'restSkip' && ours) {
       if (!handlers) break
       if (restSkipApplies(handlers.timer?.(), num(ev.at))) handlers.restSkip?.()
@@ -292,7 +310,8 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
     // An empty, not yet restored copy would end the activity of a workout that is still running.
     if (!storeReady()) return
     try {
-      const live = buildLiveActivity(useStore.getState().S, useUI.getState().timer)
+      const ui = useUI.getState()
+      const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext })
       const json = live ? JSON.stringify(live) : ''
       if (json === last) return
       if (live) await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) })
@@ -307,7 +326,10 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
     else if (s.S !== prev.S) schedule()
   })
   const restOf = x => (x ? `${x.endsAt}|${!!x.paused}|${!!x.ready}|${x.left}|${x.kind || ''}` : '')
+  const holdOf = x => (x ? `${x.endsAt}|${!!x.paused}|${!!x.auto}` : '')
   const offUI = useUI.subscribe((s, prev) => {
+    // A hold or a count-in starting, pausing or ending (not its every second).
+    if (holdOf(s.work) !== holdOf(prev.work) || holdOf(s.countIn) !== holdOf(prev.countIn)) { schedule(); return }
     if (s.timer === prev.timer) return
     // A running rest changes `left` every second; only a start, a stop or a pause matters here.
     const a = s.timer, b = prev.timer
