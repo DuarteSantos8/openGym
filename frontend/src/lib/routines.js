@@ -3,6 +3,7 @@ import { defaultConfig, isBw, modeOf, MAX_PLANNED_WARMUPS, NOTE_MAX } from './hi
 import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
 import { sessionsFor } from './progression.js'
 import { isWarmupRow } from './workout-model.js'
+import { ownExerciseRest } from './supersetFlow.js'
 
 /**
  * Create a deep copy of a routine with a new id and a "(Copy)" suffix.
@@ -143,7 +144,7 @@ export function replaceSlotExercise(slot, id, S, rid) {
   const old = slot || {}
   if (old.id === id) return { ...old }
   if ((modeOf(old) === 'cardio') !== isCardio(id)) {
-    const kept = ['sg', 'note', 'restSec', 'subs'].filter(key => old[key] != null)
+    const kept = ['sg', 'note', 'restSec', 'restOff', 'subs'].filter(key => old[key] != null)
     return dropSelfBackup({ id, ...defaultConfig(id), ...Object.fromEntries(kept.map(key => [key, old[key]])) })
   }
   const { id: _replaced, bodyweight: _flag, assisted: _assisted, side: _side, ...carried } = old
@@ -190,13 +191,16 @@ export function routineSlotIndex(routine, entries, idx) {
 // A key that does not apply to the exercise is left out, so it can never overwrite the slot's own:
 // a cardio interval has no warm-ups, and rest-pause builds its own warm-up row (ExConfig hides
 // the stepper for both).
+// A rest reads as one number: its own seconds, 0 for the default, and -1 for "No timer" (restOff).
+const restOf = x => { const own = ownExerciseRest(x); return own === 0 ? -1 : own || 0 }
+
 function setupOf(entry) {
   const target = entry.target || {}
   const out = {
-    restSec: Math.max(0, Math.round(Number(target.restSec)) || 0),
+    restSec: restOf(target),
     note: String(target.note || '').trim().slice(0, NOTE_MAX),
   }
-  if (!isCardio(entry.id) && target.intensifier?.type !== 'restpause') {
+  if (modeOf({ ...target, id: entry.id }) !== 'cardio' && target.intensifier?.type !== 'restpause') {
     out.warmupSets = Math.min(MAX_PLANNED_WARMUPS, (entry.sets || []).filter(isWarmupRow).length)
   }
   return out
@@ -220,7 +224,7 @@ export function routineChangesFromEntry(routine, entries, idx) {
   const changes = []
   for (const key of ['warmupSets', 'restSec', 'note']) {
     if (now[key] === undefined) continue
-    const from = key === 'note' ? String(slot.note || '').trim() : Math.max(0, Math.round(Number(slot[key])) || 0)
+    const from = key === 'note' ? String(slot.note || '').trim() : key === 'restSec' ? restOf(slot) : Math.max(0, Math.round(Number(slot[key])) || 0)
     if (from !== now[key]) changes.push({ key, from, to: now[key] })
   }
   return changes.length ? { at, changes } : null
@@ -236,7 +240,10 @@ export function updateRoutineFromEntry(routine, entries, idx) {
   if (!found) return null
   const slot = routine.ex[found.at]
   for (const { key, to } of found.changes) {
-    if (to) slot[key] = to
+    // "No timer" is stored as restOff, never as a negative rest an older app would misread.
+    if (key === 'restSec') delete slot.restOff
+    if (key === 'restSec' && to < 0) { delete slot.restSec; slot.restOff = true }
+    else if (to) slot[key] = to
     else delete slot[key]
   }
   return found.changes

@@ -397,6 +397,16 @@ struct LiveRest: View {
     }
 }
 
+@available(iOS 16.1, *)
+extension WorkoutActivityAttributes {
+    /// The line with no set to show: all done, or sets left that the activity does not carry
+    /// (many taps with the page asleep), where "All sets done" was simply wrong (Discord).
+    func noSetText(_ state: ContentState) -> String {
+        state.done < state.total ? (labels.openApp ?? "Open openGym for the next set") : labels.allDone
+    }
+}
+
+/// Log set: ticks the set shown (the label from LIVE_VERSION 2 says so; "Done" read like "finish").
 @available(iOS 17.0, *)
 struct LiveDoneButton: View {
     let attributes: WorkoutActivityAttributes
@@ -407,9 +417,38 @@ struct LiveDoneButton: View {
             Label(attributes.labels.done, systemImage: "checkmark")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Color(hex: attributes.ink) ?? .black)
+                .lineLimit(1)
         }
         .buttonStyle(.borderedProminent)
         .tint(Color(hex: attributes.accent) ?? .green)
+        .accessibilityHint(Text([cur.exName, cur.setLine].filter { !$0.isEmpty }.joined(separator: ", ")))
+    }
+}
+
+/// The smaller button beside Log set: Skip rest while resting, else Next exercise, and nothing
+/// when no other exercise has sets open.
+@available(iOS 17.0, *)
+struct LiveSecondaryButton: View {
+    let attributes: WorkoutActivityAttributes
+    let state: WorkoutActivityAttributes.ContentState
+
+    var body: some View {
+        let accent = Color(hex: attributes.accent) ?? .green
+        if state.resting {
+            Button(intent: SkipRestIntent(wid: attributes.wid)) {
+                Image(systemName: "forward.fill").font(.subheadline.weight(.semibold))
+            }
+            .buttonStyle(.bordered)
+            .tint(accent)
+            .accessibilityLabel(Text(attributes.labels.skipRest ?? "Skip rest"))
+        } else if let c = state.cur, state.nextUnitStart != nil {
+            Button(intent: NextExerciseIntent(wid: attributes.wid, entryIdx: c.entryIdx)) {
+                Image(systemName: "forward.end.fill").font(.subheadline.weight(.semibold))
+            }
+            .buttonStyle(.bordered)
+            .tint(accent)
+            .accessibilityLabel(Text(attributes.labels.nextExercise ?? "Next exercise"))
+        }
     }
 }
 
@@ -424,7 +463,7 @@ struct LiveLockView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top, spacing: 10) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(state.cur?.exName ?? attributes.labels.allDone).font(.headline).lineLimit(1)
+                    Text(state.cur?.exName ?? attributes.noSetText(state)).font(.headline).lineLimit(1)
                     if let c = state.cur {
                         Text([c.setLine, c.target].filter { !$0.isEmpty }.joined(separator: " · "))
                             .font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
@@ -443,6 +482,7 @@ struct LiveLockView: View {
             HStack(spacing: 10) {
                 ProgressBar(value: Double(state.done) / Double(max(1, state.total)), accent: accent)
                 Text("\(state.done)/\(state.total)").font(.caption.weight(.semibold)).monospacedDigit().foregroundStyle(.secondary)
+                LiveSecondaryButton(attributes: attributes, state: state)
                 if let c = state.cur { LiveDoneButton(attributes: attributes, cur: c) }
             }
         }

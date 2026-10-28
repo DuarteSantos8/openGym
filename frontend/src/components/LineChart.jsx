@@ -85,10 +85,21 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
     let m = new Date(d0.getFullYear(), d0.getMonth() + 1, 1)
     while (m <= d1) { ticks.push({ t: +m, txt: t(MONTHS[m.getMonth()]) }); m = new Date(m.getFullYear(), m.getMonth() + 1, 1) }
     if (ticks.length === 0 && !single) {
+      // Start, middle and end. A span of a day or two gives the same date twice ("16 Oct | 17 Oct |
+      // 17 Oct"), so each date is written once: the end kept over a middle that reads the same,
+      // and a span inside one day gets one date, in the middle.
       for (let i = 0; i <= 2; i++) {
         const tv = t0 + (t1 - t0) * i / 2, dd = new Date(tv)
-        ticks.push({ t: tv, txt: dd.getDate() + ' ' + t(MONTHS[dd.getMonth()]), anchor: i === 0 ? 'start' : i === 2 ? 'end' : 'middle' })
+        const tk = { t: tv, txt: dd.getDate() + ' ' + t(MONTHS[dd.getMonth()]), anchor: i === 0 ? 'start' : i === 2 ? 'end' : 'middle' }
+        if (ticks.length && ticks[ticks.length - 1].txt === tk.txt) { if (i === 2) ticks[ticks.length - 1] = tk; continue }
+        ticks.push(tk)
       }
+      if (ticks.length === 1) ticks[0] = { ...ticks[0], t: (t0 + t1) / 2, anchor: 'middle' }
+    } else if (ticks.length >= 13) {
+      // Twelve month names come round again from the thirteenth month on ("Apr | … | Mar | Apr"),
+      // so each month then says its year: "Apr '25". Counted in months, not milliseconds, so a span
+      // of exactly a year and a day, or one across a clock change, is caught as well.
+      for (const tk of ticks) tk.txt += " '" + String(new Date(tk.t).getFullYear()).slice(2)
     }
     const every = Math.max(1, Math.ceil(ticks.length / 7))
     ticks.forEach((tk, i) => {

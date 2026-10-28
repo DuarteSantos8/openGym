@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { isoOf } from '../format.js'
 import {
   makeRecord, normalizeHealthState, importRecords, withoutSource, compositionMeasurements, saveComposition,
-  deleteComposition, bridgeWeights, weighInsWithoutSource, dailyValues, derivedBmi, latestOf, seriesOf, historyOf, importId,
+  deleteComposition, distinctWorkouts, bridgeWeights, weighInsWithoutSource, dailyValues, derivedBmi, latestOf, seriesOf, historyOf, importId,
 } from './records.js'
 import { readingsFromSamples, readingsFromDays, readingsFromHours, readingsFromSleep, APPLE_HEALTH } from './apple-health.js'
 import { applyReadings, readSince, FIRST_DAYS, OVERLAP_DAYS } from './sync.js'
@@ -266,5 +266,29 @@ describe('measurements taken by hand', () => {
     const day = dailyValues(S, 'systolic').at(-1)
     expect([day.v, day.lo, day.hi, day.n]).toEqual([130, 120, 140, 2])
     expect(historyOf(S, 'systolic').map(x => x.v)).toEqual([120, 140])
+  })
+})
+
+describe('distinctWorkouts', () => {
+  const at = (h, m, s = 0) => new Date(2026, 9, 27, h, m, s).getTime()
+  const wo = (id, t, v, more = {}) => ({ id, type: 'workout', t, v, d: '2026-10-27', src: 'apple-health', ...more })
+
+  it('takes two workouts written seconds apart for the same session as one, the richer one with what the other adds', () => {
+    const watch = wo('w', at(19, 47, 17), 139.8, { a: 'other', kc: 1164 })
+    const phone = wo('p', at(19, 47, 19), 133.7, { a: 'strength' })
+    const [one, ...rest] = distinctWorkouts([phone, watch])
+    expect(rest).toEqual([])
+    expect(one).toMatchObject({ id: 'w', kc: 1164, a: 'strength', dups: ['p'] })
+  })
+
+  it('keeps workouts that only touch, or one short one beside a long one it barely shares', () => {
+    const rows = [wo('a', at(8, 0), 60), wo('b', at(9, 0), 30), wo('c', at(9, 25), 40)]
+    expect(distinctWorkouts(rows).map(r => r.id)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('counts a day with a doubled workout once', () => {
+    const S = { health: [wo('w', at(19, 47, 17), 139.8, { kc: 1164 }), wo('p', at(19, 47, 19), 133.7)] }
+    expect(historyOf(S, 'workout').map(r => r.id)).toEqual(['w'])
+    expect(dailyValues(S, 'workout')[0].n).toBe(1)
   })
 })

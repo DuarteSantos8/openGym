@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying on a bench with a low cable, extending the arms. It isolates the triceps.",
   "instructions": [
     "Lie on a bench with a low pulley behind your head.",

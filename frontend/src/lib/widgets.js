@@ -11,11 +11,11 @@
 // iPhone app only. Nothing here runs on the web or on Android.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX } from './exercises.js'
-import { exerciseNameFor, t, dateLocale } from './i18n.js'
+import { t, dateLocale } from './i18n.js'
 import { effectiveRoutines, streakWeeks, exLine, bestWeightForEntry } from './history.js'
 import { deriveSessionName } from './session-merge.js'
 import { queueOf, weekTally } from './queue.js'
-import { todayISO, isoOf, fmtNum, weekStartOf, startOfWeek } from './format.js'
+import { todayISO, isoOf, fmtNum, weekStartOf, startOfWeek, exerciseNameText } from './format.js'
 import { accentPair, accentValue } from './accent.js'
 import { speedUnitOf } from './speed.js'
 
@@ -26,7 +26,8 @@ export const WIDGET_DAYS = 8
 export const WIDGET_EXERCISES_MAX = 8
 const WRITE_DEBOUNCE_MS = 1000
 
-const nameOfCfg = cfg => (EXIDX[cfg?.id] ? exerciseNameFor(EXIDX[cfg.id]) : String(cfg?.name || cfg?.n || cfg?.id || ''))
+// Title-cased as the app shows it; a widget has no CSS to do it (lib/format.js exerciseNameText).
+const nameOfCfg = cfg => (EXIDX[cfg?.id] ? exerciseNameText(EXIDX[cfg.id]) : String(cfg?.name || cfg?.n || cfg?.id || ''))
 const routineIdsOf = w => (Array.isArray(w?.routineIds) ? w.routineIds : w?.routineId ? [w.routineId] : [])
 const shift = (iso, days) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + days); return isoOf(d) }
 
@@ -67,7 +68,7 @@ function lastPrOf (S) {
   const w = ws.reduce((a, b) => ((b.d || '') > (a.d || '') || ((b.d || '') === (a.d || '') && (b.end || 0) > (a.end || 0)) ? b : a))
   const id = w.prs[0]
   const entry = (w.entries || []).find(e => e && e.id === id)
-  const name = EXIDX[id] ? exerciseNameFor(EXIDX[id]) : String(entry?.target?.name || entry?.name || id)
+  const name = EXIDX[id] ? exerciseNameText(EXIDX[id]) : String(entry?.target?.name || entry?.name || id)
   let best = 0
   try { best = entry ? bestWeightForEntry(entry) : 0 } catch { best = 0 }
   const unit = S.unit === 'lb' ? 'lb' : 'kg'

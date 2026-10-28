@@ -133,6 +133,19 @@ server {
         return 302 ${BASE_PATH}/$is_args$args;
     }
 
+    # The build's chunks and stylesheets carry a hash of their content in the name (Vite's
+    # assets/<name>-<hash>.js), so a new build is new names: cache them hard, no revalidation.
+    # Before the shell rule below, since the first matching regex location wins. (No {8} for the
+    # hash: a brace in an unquoted nginx regex opens a block.)
+    location ~* /assets/[^/]+-[A-Za-z0-9_-]+\.(js|css)$ {
+        rewrite ^\Q${BASE_PATH}\E/(.*)$ /$1 break;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header X-Frame-Options "DENY" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "same-origin" always;
+        add_header Content-Security-Policy "${CONTENT_SECURITY_POLICY}" always;
+    }
+
     # App shell: always revalidate so updates show up immediately
     location ~* \.(js|css|json|html)$ {
         # A regex location wins over the prefix block above, so it never saw its rewrite and

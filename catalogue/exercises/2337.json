@@ -10,6 +10,9 @@
     "biceps"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A chest fly form check that shows how to keep a soft elbow bend and a wide, smooth arc through the movement.",
   "instructions": [
     "Lie on a bench with a dumbbell in each hand above your chest.",

@@ -10,6 +10,8 @@
 "Finish workout" = "จบการออกกำลังกาย";
 "Finish workout?" = "จบการออกกำลังกายไหม?";
 "Finish and save" = "จบและบันทึก";
+"Discard workout" = "ทิ้งการออกกำลังกายนี้";
+"Continue workout" = "ออกกำลังกายต่อ";
 "Cancel" = "ยกเลิก";
 "Rest’s over. Next set!" = "หมดเวลาพักแล้ว เซ็ตถัดไป!";
 "Left" = "ซ้าย";
@@ -28,8 +30,12 @@
 "Body weight" = "น้ำหนักตัว";
 "Less" = "น้อย";
 "More" = "มาก";
+"Effort" = "ความหนัก";
+"None" = "ไม่มี";
 "Last time: %@" = "ครั้งก่อน: %@";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
+"Not synced yet" = "ยังไม่ได้ซิงค์";
+"Open openGym on your iPhone once and your routines show up here." = "เปิด openGym บน iPhone สักครั้ง แล้วรูทีนของคุณจะแสดงที่นี่";
 "Start one on your iPhone and it shows up here." = "เริ่มบน iPhone แล้วจะแสดงที่นี่";
 "All sets done" = "ครบทุกเซ็ตแล้ว";
 "measuring" = "กำลังวัด …";
@@ -45,6 +51,8 @@
 "Tap a dot to do a skipped set." = "แตะจุดเพื่อทำเซ็ตที่ข้ามไป";
 "Log this one on your iPhone." = "อันนี้บันทึกบน iPhone";
 "Saved on the watch, syncs later" = "บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง";
+"All done?" = "เสร็จแล้วหรือยัง";
+"Lock" = "ล็อก";
 "Skip this set?" = "ข้ามเซ็ตนี้ไหม";
 "Turn the Digital Crown to change it." = "หมุน Digital Crown เพื่อเปลี่ยน";
 "%lld done" = "เสร็จ %lld";

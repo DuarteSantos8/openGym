@@ -10,6 +10,8 @@
 "Finish workout" = "Antrenmanı bitir";
 "Finish workout?" = "Antrenman bitirilsin mi?";
 "Finish and save" = "Bitir ve kaydet";
+"Discard workout" = "Antrenmanı iptal et";
+"Continue workout" = "Antrenmana devam et";
 "Cancel" = "İptal";
 "Rest’s over. Next set!" = "Dinlenme bitti. Sıradaki set!";
 "Left" = "Sol";
@@ -28,8 +30,12 @@
 "Body weight" = "Vücut ağırlığı";
 "Less" = "Az";
 "More" = "Çok";
+"Effort" = "Zorluk";
+"None" = "Yok";
 "Last time: %@" = "Geçen sefer: %@";
 "No workout running" = "Devam eden antrenman yok";
+"Not synced yet" = "Henüz eşitlenmedi";
+"Open openGym on your iPhone once and your routines show up here." = "openGym’i iPhone’unda bir kez aç, rutinlerin burada görünür.";
 "Start one on your iPhone and it shows up here." = "iPhone’unda bir tane başlat, burada görünür.";
 "All sets done" = "Tüm setler tamam";
 "measuring" = "ölçülüyor …";
@@ -45,6 +51,8 @@
 "Tap a dot to do a skipped set." = "Atlanan bir set için bir noktaya dokun.";
 "Log this one on your iPhone." = "Bunu iPhone’da kaydet.";
 "Saved on the watch, syncs later" = "Saatte kaydedildi, sonra eşitlenir";
+"All done?" = "Bitirdin mi?";
+"Lock" = "Kilitle";
 "Skip this set?" = "Bu set atlansın mı?";
 "Turn the Digital Crown to change it." = "Değiştirmek için Digital Crown’u çevir.";
 "%lld done" = "%lld tamam";

@@ -364,19 +364,40 @@ describe('a save this device refuses', () => {
   // localStorage throwing (a device genuinely full, a private window with next to no quota) used
   // to take the change with it: persist wrote before it told the store, so Finish just did
   // nothing at all and said nothing either.
-  const refusingStorage = () => {
+  const refusingStorage = (limit = 0) => {
     const real = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')
     const store = globalThis.localStorage
     const guard = new Proxy(store, {
       get(target, prop) {
         const value = Reflect.get(target, prop)
-        if (prop === 'setItem') return (key, v) => { if (key === 'gym_state_v1') throw new DOMException('quota', 'QuotaExceededError'); return store.setItem(key, v) }
+        if (prop === 'setItem') return (key, v) => { if (key === 'gym_state_v1' && String(v).length > limit) throw new DOMException('quota', 'QuotaExceededError'); return store.setItem(key, v) }
         return typeof value === 'function' ? value.bind(target) : value
       }
     })
     Object.defineProperty(globalThis, 'localStorage', { value: guard, configurable: true })
     return () => Object.defineProperty(globalThis, 'localStorage', real)
   }
+
+  it('a profile past the quota because of its health readings keeps the recent ones on the device, and says nothing', async () => {
+    toast.mockClear()
+    const day = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10) }
+    // Two years of a day's steps: the readings are what does not fit, as on a phone with Apple Health.
+    const health = Array.from({ length: 730 }, (_, n) => ({ id: 'apple-health:steps:' + day(n), type: 'steps', v: 8000, u: 'count', t: Date.now() - n * 864e5, d: day(n), src: 'apple-health', sid: 'steps:' + day(n), c: 1, _ts: 1 }))
+    useStore.setState({ S: { ...clone(DEF), health }, user: { id: 'user-1' }, ready: true })
+    api.mockResolvedValue({})
+    const whole = JSON.stringify({ ...clone(DEF), health }).length
+    const undo = refusingStorage(Math.floor(whole / 2))
+    try {
+      useStore.getState().update(s => { s.workouts.push(workout('logged-on-a-full-phone')) }, false)
+      const saved = JSON.parse(localStorage.getItem('gym_state_v1'))
+      expect(saved.workouts.map(w => w.id)).toEqual(['logged-on-a-full-phone'])
+      expect(saved.health.length).toBe(90)
+      expect(saved.health.every(r => r.d >= day(89))).toBe(true)
+      expect(useStore.getState().S.health).toHaveLength(730)   // all of them still in hand, and on the server
+      await new Promise(r => setTimeout(r, 0))
+      expect(toast).not.toHaveBeenCalled()
+    } finally { undo() }
+  })
 
   it('keeps the change, marks it owed to the server, and says so once', async () => {
     toast.mockClear()

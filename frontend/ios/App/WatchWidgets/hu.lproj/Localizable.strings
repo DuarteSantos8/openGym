@@ -10,6 +10,8 @@
 "Finish workout" = "Edzés befejezése";
 "Finish workout?" = "Befejezed az edzést?";
 "Finish and save" = "Befejezés és mentés";
+"Discard workout" = "Edzés elvetése";
+"Continue workout" = "Edzés folytatása";
 "Cancel" = "Mégse";
 "Rest’s over. Next set!" = "Vége a pihenőnek. Jöhet a következő sorozat!";
 "Left" = "Bal";
@@ -28,8 +30,12 @@
 "Body weight" = "Testsúly";
 "Less" = "Kevesebb";
 "More" = "Több";
+"Effort" = "Megerőltetés";
+"None" = "Nincs";
 "Last time: %@" = "Legutóbb: %@";
 "No workout running" = "Nincs folyamatban edzés";
+"Not synced yet" = "Még nincs szinkronizálva";
+"Open openGym on your iPhone once and your routines show up here." = "Nyisd meg egyszer az openGymet az iPhone-on, és itt lesznek a rutinjaid.";
 "Start one on your iPhone and it shows up here." = "Indíts egyet az iPhone-on, és itt megjelenik.";
 "All sets done" = "Minden sorozat kész";
 "measuring" = "mérés …";
@@ -45,6 +51,8 @@
 "Tap a dot to do a skipped set." = "Koppints egy pöttyre egy kihagyott sorozathoz.";
 "Log this one on your iPhone." = "Ezt az iPhone-on rögzítsd.";
 "Saved on the watch, syncs later" = "Az órán mentve, később szinkronizál";
+"All done?" = "Végeztél?";
+"Lock" = "Zárolás";
 "Skip this set?" = "Kihagyod ezt a sorozatot?";
 "Turn the Digital Crown to change it." = "Forgasd a Digital Crownt a módosításhoz.";
 "%lld done" = "%lld kész";

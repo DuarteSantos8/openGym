@@ -221,15 +221,22 @@ describe('the superset card after a rating', () => {
   })
   // The marker moved while the List was up, where this scroll never runs; the switch back to
   // Cards is not that move. The marker's position is remembered on every run, early return or not.
-  it('a marker moved in the List does not scroll once Cards comes back', async () => {
+  // Ticking a set in the list now brings the next member into view there (a superset is one unit,
+  // so scrolling to `.wl-unit.cur` would not), but switching back to Cards is not itself a move
+  // and must not scroll again.
+  it('a marker moved in the List does not scroll again once Cards comes back', async () => {
     await mount(superset(), 0, {}, () => rowsAt(400))
     const seen = watchScrolls()
     mocks.storeSnapshot().update(s => { s.active.workoutView = 'list' }); await rerender()
     await press(container.querySelector('[role="checkbox"]'))
     await rerender()
     expect(mocks.S.active.cur).toBe(1)
+    // The tick in the list brought the partner's row into view once.
+    expect(seen).toHaveLength(1)
+    const afterListTick = seen.length
     mocks.storeSnapshot().update(s => { s.active.workoutView = 'cards' }); await rerender()
-    expect(seen).toEqual([])
+    // The switch back to Cards is not a marker move: no further scroll.
+    expect(seen).toHaveLength(afterListTick)
   })
   // A session started through the weigh-in sheet, its first block tall enough to push the first
   // row partly under the tab bar: off screen by the rule above, but the sheet's restore is still

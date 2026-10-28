@@ -69,6 +69,11 @@ describe('what survives a shared plan', () => {
     expect(cardio.side).toBeUndefined()
   })
 
+  it('carries cardio set on a non-cardio exercise, mode and all (#640)', () => {
+    expect(roundTrip({ mode: 'cardio', min: 15, speed: 10, sets: 2, reps: undefined, weight: undefined }))
+      .toMatchObject({ mode: 'cardio', min: 15, speed: 10, sets: 2 })
+  })
+
   it('carries a drop-set prescription', () => {
     expect(roundTrip({ intensifier: { type: 'dropset', count: 2, pct: 20 } }).intensifier)
       .toEqual({ type: 'dropset', count: 2, pct: 20 })
@@ -105,6 +110,15 @@ describe('what survives a shared plan', () => {
     expect(roundTrip({ restSec: 180 }).restSec).toBe(180)
   })
 
+  // Discord (lajawi): an exercise's own "No timer" is part of the prescription too.
+  it('carries an exercise’s "No timer", and only a real one', () => {
+    expect(roundTrip({ restOff: true })).toMatchObject({ restOff: true })
+    expect('restSec' in roundTrip({ restOff: true })).toBe(false)
+    expect(roundTrip({ restOff: true, restSec: 120 })).toMatchObject({ restSec: 120 })
+    expect('restOff' in roundTrip({ restOff: true, restSec: 120 })).toBe(false)
+    for (const e of [{}, { restOff: false }, { restOff: 'yes' }]) expect('restOff' in roundTrip(e), JSON.stringify(e)).toBe(false)
+  })
+
   // The ramp's own rest is the same kind of prescription: a shared plan whose warm-up sets
   // arrive resting the full working rest is not the plan that was written.
   it('carries a per-exercise warm-up rest, and leaves it out when unset', () => {
@@ -122,6 +136,13 @@ describe('what survives a shared plan', () => {
       const out = roundTrip(e)
       expect('warmupRestOff' in out || 'sideRestSec' in out, JSON.stringify(e)).toBe(false)
     }
+  })
+
+  it('carries a hold\'s "no timer" between sides, over a time, and only on a per-side exercise (#636)', () => {
+    const out = roundTrip({ side: true, mode: 'time', sec: 30, sideRestOff: true, sideRestSec: 20 })
+    expect(out.sideRestOff).toBe(true)
+    expect('sideRestSec' in out).toBe(false)
+    for (const e of [{ sideRestOff: true }, { side: true, sideRestOff: 'yes' }]) expect('sideRestOff' in roundTrip(e), JSON.stringify(e)).toBe(false)
   })
 
   // The absence has to survive too: writing a 0 would pin the recipient's timer to "off"
