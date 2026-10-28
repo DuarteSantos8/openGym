@@ -58,7 +58,7 @@ export async function apiFetch(cfg, path, { method = 'GET', body, timeoutMs = TI
   try {
     res = await fetchImpl(cfg.base + path, {
       method,
-      headers: { authorization: 'Bearer ' + cfg.token, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      headers: { authorization: 'Bearer ' + cfg.token, 'x-opengym-engine-schema': '2', ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(timeoutMs),
       // Never followed: a redirect to http:// or to another host would replay the profile (or,

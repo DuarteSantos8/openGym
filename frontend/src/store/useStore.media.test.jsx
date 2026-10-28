@@ -8,7 +8,7 @@
    reads what is pending — except in the test that registers a runner of its own. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 const { toast } = vi.hoisted(() => ({ toast: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
 
@@ -80,11 +80,10 @@ describe('owed photos and videos', () => {
     const stash = JSON.parse(localStorage.getItem('gym_stash'))
     expect(Object.values(stash)[0].state.customEx[0].media.hash).toBe(A)
     expect(await useStore.getState().stashedMediaHashes()).toEqual(new Set([A, P]))
-    // The purge runs after the wiped copy is written; waited for, not slept on, so a slow CI
-    // runner cannot look before it has happened.
-    await vi.waitFor(async () => expect(await media.has('c'.repeat(64))).toBe(false), { timeout: 3000 })
+    await new Promise(r => setTimeout(r, 20))   // the purge runs after the wiped copy is written
     expect(await media.has(A)).toBe(true)
     expect(await media.has(P)).toBe(true)
+    expect(await media.has('c'.repeat(64))).toBe(false)
   })
 
   it('a sign-out takes the account\'s files even when its copy no longer refers to any (a photo removed a moment ago)', async () => {
@@ -94,7 +93,8 @@ describe('owed photos and videos', () => {
     localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
     api.mockImplementation(async (path, o) => (o?.method === 'PUT' ? { ok: true, rev: 2 } : { ok: true }))
     expect(await useStore.getState().signOut()).toEqual({ owed: false })
-    await vi.waitFor(async () => expect(await media.has(A)).toBe(false), { timeout: 3000 })   // the purge runs after the wiped copy is written
+    await new Promise(r => setTimeout(r, 20))   // the purge runs after the wiped copy is written
+    expect(await media.has(A)).toBe(false)
   })
 
   it('a different account signing in keeps the previous one\'s waiting photo aside, even with no workouts', async () => {

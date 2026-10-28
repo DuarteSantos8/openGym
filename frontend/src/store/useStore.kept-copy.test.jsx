@@ -8,7 +8,7 @@
    saved as a backup file. (QA 2026-10-06, also in v1.3.9.) */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn(), stopRest: vi.fn(), abandonWork: vi.fn() }) } }))
 
 import { api } from '../lib/api.js'
@@ -22,11 +22,11 @@ beforeEach(() => { localStorage.clear(); api.mockReset() })
 afterEach(() => { localStorage.clear(); useStore.setState({ S: clone(DEF), user: null, ready: false }) })
 
 // Olga's copy, in step with her server, whose session has ended (boot's 401 leaves it so)
-const olgasCopy = (extra = {}) => {
+const olgasCopy = ({ active = null, ...extra } = {}) => {
   localStorage.setItem('gym_owner', 'olga')
   localStorage.setItem('gym_owner_name', 'Olga')
   localStorage.setItem('gym_sync', JSON.stringify({ rev: 9, ts: 500 }))
-  useStore.setState({ S: { ...clone(DEF), _ts: 500, workouts: [w('o1'), w('o2', '2026-09-02')], routines: [{ id: 'r1', name: 'Push', ex: [] }], ...extra }, user: null, ready: true })
+  useStore.setState({ S: { ...clone(DEF), _ts: 500, workouts: [w('o1'), w('o2', '2026-09-02')], routines: [{ id: 'r1', name: 'Push', ex: [] }], ...extra }, A: active, user: null, ready: true })
 }
 
 describe('another account on a copy whose session ended', () => {
@@ -42,9 +42,9 @@ describe('another account on a copy whose session ended', () => {
   })
 
   it('a running workout comes back when that account signs in here again', async () => {
-    olgasCopy({ active: { id: 'run', start: 1, entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] } })
+    olgasCopy({ active: { id: 'run', start: 1, exposures: [], entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true }] }] } })
     useStore.getState().setUser({ id: 'yuri', name: 'Yuri' })
-    expect(useStore.getState().S.active).toBe(null)
+    expect(useStore.getState().A).toBe(null)
     // Yuri signs out; Olga signs in again
     useStore.setState({ user: null })
     localStorage.removeItem('gym_owner')
@@ -52,7 +52,7 @@ describe('another account on a copy whose session ended', () => {
     api.mockImplementation(async (p, o) => (o?.method === 'PUT' ? { ok: true, rev: 10 } : { state: clone(server), rev: 9 }))
     useStore.getState().setUser({ id: 'olga', name: 'Olga' }, { adopt: true })
     await useStore.getState().adoptProfile(async () => false)
-    expect(useStore.getState().S.active?.id).toBe('run')
+    expect(useStore.getState().A?.id).toBe('run')
   })
 
   it('a proper sign-out still leaves nothing behind for the next account', async () => {

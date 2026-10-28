@@ -93,7 +93,7 @@ const _requestDebrief = async workoutId => DEMO ? (await demo()).demoDebrief(S()
 export const requestDebrief = (...a) => asked(_requestDebrief)(...a).then(track)
 // A question in the chat, answered in words (the `ask` job). The session running here goes along
 // (lib/coach-context.js): the server never holds it.
-const _askCoach = async text => DEMO ? (await demo()).demoAsk(S(), text) : LOCAL() ? (await local()).localAsk(S(), text, todayForCoach(S())) : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(S()), lang: getLang() }) })
+const _askCoach = async text => DEMO ? (await demo()).demoAsk(S(), text) : LOCAL() ? (await local()).localAsk(S(), text, todayForCoach(S(), Date.now(), useStore.getState().A)) : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(S(), Date.now(), useStore.getState().A), lang: getLang() }) })
 export const askCoach = (...a) => asked(_askCoach)(...a).then(track)
 // An automatic review, if one is due (lib/coach-schedule.js asks while the app is open). Only a
 // phone with its own key runs them here; a server runs its own on its tick. The data-sharing

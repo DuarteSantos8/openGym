@@ -1,10 +1,12 @@
 import { useLayoutEffect, useRef, useState } from 'react'
-import { fmtNum, fmtDate, MONTHS, isoOf } from '../lib/format.js'
+import { fmtNum, fmtSpread, fmtDate, MONTHS, isoOf } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 
 const W = 340   // viewBox width; the svg stretches to its container, height comes from `h`
 
-// points: [{ t: ms, y: num, d?: iso, m?: 0..1, note?: str }] sorted by t.
+// points: [{ t: ms, y: num, d?: iso, m?: 0..1, note?: str, low?: num, high?: num }] sorted by t.
+//   low/high draw a band behind the line (an estimate and how far the models disagree about it)
+//   and ride in the tooltip; a point where they are equal has no band.
 //   m    marks the point — a second reading carried by the same dot (bigger and more solid =
 //        more of it). Used for effort on the weight curve, where the two belong on one line:
 //        the same weight with less left in the tank is not the same session.
@@ -52,7 +54,7 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
   const single = points.length === 1
   const pts = single ? [points[0], points[0]] : points
   const multi = Array.isArray(series) && series.length > 0
-  const ys = multi ? series.flatMap(s => s.points.map(p => p.y)) : pts.map(p => p.y)
+  const ys = multi ? series.flatMap(s => s.points.map(p => p.y)) : pts.flatMap(p => (p.high > p.low ? [p.y, p.low, p.high] : [p.y]))
   let ymin = Math.min(...ys), ymax = Math.max(...ys)
   if (goal != null && isFinite(goal)) { ymin = Math.min(ymin, goal); ymax = Math.max(ymax, goal) }
   if (ymin === ymax) { ymin -= 1; ymax += 1 }
@@ -118,8 +120,9 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
   const hoverSource = single ? [points[0]] : points
   const hoverDates = hoverSource.map(p => p.d || isoOf(new Date(p.t)))
   const showYear = new Set(hoverDates.map(iso => new Date(iso + 'T12:00:00').getFullYear())).size > 1
-  const hoverPts = hoverSource.map((p, i) => ({ x: X(p.t), y: Y(p.y), t: p.t, iso: hoverDates[i], v: p.y, note: p.note }))
+  const hoverPts = hoverSource.map((p, i) => ({ x: X(p.t), y: Y(p.y), t: p.t, iso: hoverDates[i], v: p.y, low: p.low, high: p.high, note: p.note }))
   const marked = points.some(p => p.m != null)
+  const banded = !multi && pts.some(p => p.high > p.low)
 
   const onMove = e => {
     const c = e.touches ? e.touches[0] : e
@@ -157,6 +160,9 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
             {s.points.map((p, i) => <circle key={i} cx={X(p.t)} cy={Y(p.y)} r={sw / 2 + 1.2} fill={s.color} />)}
           </g>
         }) : <>
+          {banded && <polygon fill={color} opacity=".16" points={[
+            ...pts.map(p => X(p.t).toFixed(1) + ',' + Y(p.high ?? p.y).toFixed(1)),
+            ...pts.map(p => X(p.t).toFixed(1) + ',' + Y(p.low ?? p.y).toFixed(1)).reverse()].join(' ')} />}
           <polygon points={`${P.l},${H - P.b} ${poly} ${X(last.t).toFixed(1)},${H - P.b}`} fill={`url(#${gid})`} />
           <polyline points={poly} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
           {marked && pts.map((p, i) => (p.m == null ? null :
@@ -177,7 +183,7 @@ export default function LineChart({ points, h = 150, unit = '', color = 'var(--a
       {hover && <div className="ctip" ref={tipRef}>
         {multi
           ? <>{fmtDate(hover.iso, true, showYear)}{hover.note ? ' · ' + hover.note : ''}</>
-          : <>{fmtDate(hover.iso, true, showYear)} · {fmtNum(hover.v)}{unit ? ' ' + unit : ''}{hover.note ? ' · ' + hover.note : ''}</>}
+          : <>{fmtDate(hover.iso, true, showYear)} · {fmtNum(hover.v)}{fmtSpread(hover.low, hover.high)}{unit ? ' ' + unit : ''}{hover.note ? ' · ' + hover.note : ''}</>}
       </div>}
     </div>
   )

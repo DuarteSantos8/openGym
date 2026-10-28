@@ -6,6 +6,7 @@ import { EXIDX } from './lib/exercises.js'
 import { exConfigSheet } from './sheets.jsx'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 
 const mounted = []
 function open(existing) {
@@ -18,7 +19,7 @@ function open(existing) {
   mounted.push([root, host])
   act(() => root.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
   const labels = [...host.querySelectorAll('.stp-l')].map(el => el.textContent)
-  const save = () => act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save').click())
+  const save = () => act(() => [...host.querySelectorAll('button')].find(b => ['Save', 'Add to routine'].includes(b.textContent.trim())).click())
   return { host, labels, save, onSave }
 }
 
@@ -32,19 +33,19 @@ describe('jumping-jack exercise settings', () => {
 
   it('offers sets and reps for a newly added jumping jack', () => {
     const { labels } = open()
-    expect(labels).toContain('Sets')
-    expect(labels).toContain('Reps')
+    expect(labels.some(l => /^Sets/.test(l))).toBe(true)
+    expect(labels.some(l => /^Reps/.test(l))).toBe(true)
     expect(labels).not.toContain('Minutes')
     expect(labels).not.toContain('Intervals')
   })
 
   it('keeps the cardio form and values when editing a plan saved before the catalogue fix', () => {
-    const { labels, save, onSave } = open({ sets: 2, min: 5, speed: 8 })
+    // The migration keeps such a plan as a cardio slot (api/migration), whatever the catalogue says now.
+    const { labels, save, onSave } = open({ ...ruleOccurrence('3094'), mode: 'cardio', cardio: { sets: 2, min: 5, speed: 8 } })
     expect(labels).toContain('Intervals')
     expect(labels).toContain('Minutes')
-    expect(labels).not.toContain('Reps')
+    expect(labels.some(l => /^Reps/.test(l))).toBe(false)
     save()
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ sets: 2, min: 5, speed: 8 }))
-    expect(onSave.mock.calls[0][0]).not.toHaveProperty('reps')
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ mode: 'cardio', cardio: { sets: 2, min: 5, speed: 8 } }))
   })
 })

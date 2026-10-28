@@ -4,6 +4,7 @@
 // exercise sheet or in the routine's exercise settings, and its thumbnail went through the
 // built-in renderer. Every one of those now asks where the exercise lives, not for the flag.
 import React, { act } from 'react'
+import { ruleOccurrence } from './lib/test-fixtures.js'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createRoot } from 'react-dom/client'
 
@@ -82,22 +83,24 @@ describe('a custom exercise stored without the flag', () => {
   it('Delete takes it out of the routines and keeps the name in history', () => {
     const ex = legacy()
     seed(ex, {
-      routines: [{ id: 'r1', name: 'A', ex: [{ id: 'cx1', sets: 3, reps: 8, w: 40 }, { id: '0027', sets: 3, reps: 8, w: 40 }] }],
-      workouts: [{ d: '2026-09-01', entries: [{ id: 'cx1', sets: [{ r: 8, w: 40, done: true }] }] }],
+      routines: [{ id: 'r1', name: 'A', ex: [ruleOccurrence('cx1'), ruleOccurrence('0027')] }],
+      workouts: [{ d: '2026-09-01', exposures: [{ exposureId: 'x1', exerciseId: 'cx1', mode: 'reps', performance: { sets: [] } }] }],
     })
     exerciseDetailSheet(ex)
     click(renderTop(), 'button', 'Delete')
     click(renderTop(), 'button', 'Delete')   // the confirmation
     expect(S().customEx).toEqual([])
-    expect(S().routines[0].ex.map(e => e.id)).toEqual(['0027'])
-    expect(S().workouts[0].entries[0].n).toBe('My row')
+    expect(S().routines[0].ex.map(e => e.exerciseId)).toEqual(['0027'])
+    expect(S().workouts[0].exposures[0].exerciseNameSnapshot).toBe('My row')
   })
 
   it('the routine exercise settings offer "Edit or delete this exercise"', () => {
     const ex = legacy()
     seed(ex)
-    exConfigSheet(ex, { id: 'cx1', sets: 3, reps: 8, w: 40 }, () => {})
-    expect(buttons(renderTop())).toContain('Edit or delete this exercise')
+    exConfigSheet(ex, ruleOccurrence('cx1'), () => {})
+    const sheet = renderTop()
+    act(() => sheet.querySelector('button[aria-label="More"]').click())   // the ⋯ menu over the sheet
+    expect([...renderTop().querySelectorAll('.menu-item')].map(item => item.textContent.trim())).toContain('Edit or delete this exercise')
   })
 
   it('its thumbnail is the custom one, never a dataset image', () => {
@@ -132,5 +135,30 @@ describe('the store heals it', () => {
     useStore.getState().update(s => { s.restDefault = 90 })
     expect(S().customEx[0]._ts).toBe(7)   // healing twice changes nothing
     expect(S().customEx[0]).toEqual(healed[0])
+  })
+})
+
+describe('a custom exercise that is assisted', () => {
+  it('saves the choice, and Automatic removes it', () => {
+    const ex = { id: 'cx2', n: 'Band pull-up', bp: 'back', eq: 'band', custom: true }
+    seed(ex)
+    customExSheet(ex)
+    let host = renderTop()
+    expect(host.querySelector('[data-field="Assistance"]').textContent).toContain('Automatic: not assisted')
+    click(host, '[data-field="Assistance"] button', 'Assisted')
+    click(host, 'button', 'Save')
+    expect(S().customEx[0].assisted).toBe(true)
+    customExSheet(S().customEx[0])
+    host = renderTop()
+    click(host, '[data-field="Assistance"] button', 'Automatic')
+    click(host, 'button', 'Save')
+    expect(S().customEx[0]).not.toHaveProperty('assisted')
+  })
+
+  it('reads the automatic answer from the form\'s name and equipment', () => {
+    const ex = { id: 'cx3', n: 'Gym assisted dip', bp: 'chest', eq: 'leverage machine', custom: true }
+    seed(ex)
+    customExSheet(ex)
+    expect(renderTop().querySelector('[data-field="Assistance"]').textContent).toContain('Automatic: assisted')
   })
 })

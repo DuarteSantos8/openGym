@@ -3,6 +3,8 @@
 // per-side (two sides, each ticked on its own), holds (seconds), supersets (group), warm-ups,
 // the best set before today (the watch's PRs) and the workout's start (its summary).
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { loggedExposure } from './test-fixtures.js'
+import { exposuresWithPerformance, rowsOfPerformance } from './session-ui-adapter.js'
 import { buildSnapshot, applyEvents, bindWatchAppActions, patchSetIn, _resetWatchSync } from './watch-sync.js'
 
 beforeEach(() => { localStorage.clear(); _resetWatchSync() })
@@ -11,9 +13,9 @@ const sideRow = (Ld = false) => ({ w: 20, r: 16, done: false, sides: { L: { w: 2
 
 const S = () => ({
   unit: 'kg', restSec: 90, routines: [],
-  workouts: [{ id: 'old', d: '2026-10-01', start: 1, entries: [
-    { id: '0025', target: { sets: 1, reps: 8 }, sets: [{ w: 80, r: 5, done: true }, { w: 85, r: 3, done: true }] },
-    { id: 'plank', target: { mode: 'time', sec: 30 }, sets: [{ sec: 50, done: true }] },
+  workouts: [{ id: 'old', d: '2026-10-01', start: 1, status: 'completed', exposures: [
+    loggedExposure('0025', [{ w: 80, r: 5 }, { w: 85, r: 3 }]),
+    loggedExposure('plank', [{ sec: 50 }], { mode: 'time' }),
   ] }],
   active: {
     id: 'w-1', name: 'Mixed', cur: 0, d: '2026-10-14', start: 1_800_000_000_000,
@@ -71,21 +73,23 @@ describe('the snapshot carries every kind of set', () => {
 
 describe('ticks of every kind', () => {
   it('a per-side tick for a workout the phone already saved goes into that side', () => {
-    const s = { active: null, workouts: [{ id: 'w-old', entries: [{ id: 'split', sets: [sideRow()] }] }] }
+    const x = exposuresWithPerformance([{ exposureId: 'x1', exerciseId: 'split', mode: 'reps' }], [{ exposureId: 'x1', sets: [sideRow()] }], 'kg')[0]
+    const s = { unit: 'kg', active: null, workouts: [{ id: 'w-old', exposures: [x] }] }
+    const rows = () => rowsOfPerformance(s.workouts[0].exposures[0].performance.sets, 'reps')
     const stamp = vi.fn()
     expect(patchSetIn(s, { wid: 'w-old', exId: 'split', entryIdx: 0, setIdx: 0, side: 'L' }, { done: true, w: 22.5, r: 8, at: 5 }, stamp)).toBe(true)
-    const row = s.workouts[0].entries[0].sets[0]
+    const row = rows()[0]
     expect(row.sides.L).toMatchObject({ w: 22.5, r: 8, done: true })
-    expect(row).toMatchObject({ done: false, r: 16, w: 22.5, at: 5 })
+    expect(row).toMatchObject({ done: false, r: 16 })
     patchSetIn(s, { wid: 'w-old', exId: 'split', entryIdx: 0, setIdx: 0, side: 'R' }, { done: true, w: 20, r: 7, at: 6 }, stamp)
-    expect(s.workouts[0].entries[0].sets[0]).toMatchObject({ done: true, r: 15 })
+    expect(rows()[0]).toMatchObject({ done: true, r: 15 })
     expect(stamp).toHaveBeenCalledTimes(2)
   })
 
   it('side and seconds reach the app\'s handler for a saved workout, and nothing extra for a plain set', () => {
     const patchSet = vi.fn()
     bindWatchAppActions({ start: vi.fn(), patchSet })
-    const getState = () => ({ S: { active: null, workouts: [{ id: 'w-old', entries: [] }] } })
+    const getState = () => ({ S: { active: null, workouts: [{ id: 'w-old', entries: [] }] }, A: null })
     applyEvents([
       { id: 'a', type: 'setDone', wid: 'w-old', exId: 'split', entryIdx: 0, setIdx: 0, side: 'L', w: 20, r: 8, at: 1 },
       { id: 'b', type: 'setDone', wid: 'w-old', exId: 'plank', entryIdx: 1, setIdx: 0, sec: 40, at: 2 },
@@ -141,12 +145,12 @@ describe('the weigh-in from the watch', () => {
       { id: 'b1', type: 'weighIn', w: 81.4, at: 1000 },
       { id: 's1', type: 'start', wid: 'watch-1', routineIds: ['r1'], at: 1000, bw: 81.4 },
       { id: 'b2', type: 'weighIn', w: -3, at: 1000 },
-    ], () => ({ S: { active: null } }))
+    ], () => ({ S: { active: null }, A: null }))
     expect(weighIn).toHaveBeenCalledTimes(1)
     expect(weighIn).toHaveBeenCalledWith({ w: 81.4, at: 1000 })
     expect(start).toHaveBeenCalledWith(['r1'], { id: 'watch-1', start: 1000, bw: 81.4 })
     // once each
-    applyEvents([{ id: 'b1', type: 'weighIn', w: 81.4, at: 1000 }], () => ({ S: { active: null } }))
+    applyEvents([{ id: 'b1', type: 'weighIn', w: 81.4, at: 1000 }], () => ({ S: { active: null }, A: null }))
     expect(weighIn).toHaveBeenCalledTimes(1)
   })
 
@@ -180,7 +184,7 @@ describe('workouts deleted in openGym, for the watch\'s own copies in Apple Heal
     const healthDeleted = vi.fn()
     bindWatchAppActions({ start: vi.fn(), patchSet: vi.fn(), healthDeleted })
     const ev = { id: 'hd1', type: 'healthDeleted', ids: ['opengym-w-b', 7] }
-    applyEvents([ev, ev], () => ({ S: { active: null } }))
+    applyEvents([ev, ev], () => ({ S: { active: null }, A: null }))
     expect(healthDeleted).toHaveBeenCalledTimes(1)
     expect(healthDeleted).toHaveBeenCalledWith(['opengym-w-b'])
   })

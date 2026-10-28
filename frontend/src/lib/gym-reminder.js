@@ -85,11 +85,11 @@ export function inWindow(win, date) {
  * trained, a day note that excuses today, when the running session started (0: none), and the
  * notification's words in the app's language.
  */
-export function statusOf(S, now = new Date()) {
+export function statusOf(S, now = new Date(), active = S?.active) {
   let trainedOn = ''
   for (const w of S?.workouts || []) if (typeof w?.d === 'string' && w.d > trainedOn) trainedOn = w.d
   const today = isoOf(now)
-  const a = S?.active
+  const a = active
   const activeSince = a && !a.editingWorkoutId && !a.backfill && Number(a.start) > 0 ? Number(a.start) : 0
   return {
     trainedOn,
@@ -222,13 +222,13 @@ async function pushGymServer(p) {
  * Tells the native side how today stands (statusOf). Cheap and deduplicated: run after every
  * save of the profile; does nothing with the reminder off on this device.
  */
-export async function pushGymStatus(S, force = false) {
+export async function pushGymStatus(S, force = false, active = S?.active) {
   if (!MOBILE) return false
   if (!force && !readGymConfig().on) return false
   const p = await gymPlugin()
   if (!p) return false
   await pushGymServer(p)
-  const status = statusOf(S)
+  const status = statusOf(S, new Date(), active)
   const key = JSON.stringify(status)
   if (!force && key === lastStatus) return false
   try { await p.GymReminder.status(status); lastStatus = key; return true } catch { return false }

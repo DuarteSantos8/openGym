@@ -6,9 +6,8 @@
 // window it names, which is why an old proposal in the thread still draws its chart months
 // later, against the data as it was then.
 import { EXIDX } from './exercises.js'
-import { sessionVolume, workoutAt } from './history.js'
-import { isWarmupRow } from './workout-model.js'
-import { bestSetOf } from './onerm.js'
+import { workoutAt, sessionVolume } from './history.js'
+import { bestSetOf, formulaOf } from './onerm.js'
 import { weighInAt } from './bodyweight.js'
 
 const median = arr => {
@@ -17,6 +16,9 @@ const median = arr => {
 }
 const bpOf = (S, id) => EXIDX[id]?.bp || (S.customEx || []).find(c => c.id === id)?.bp || null
 const nameOf = (S, id) => EXIDX[id]?.n || (S.customEx || []).find(c => c.id === id)?.n || id
+const tsOf = workoutAt
+const exposuresOf = workout => workout?.exposures || []
+const workRowsOf = exposure => (exposure.performance?.sets || []).filter(row => row.status === 'completed' && row.role !== 'warmup')
 
 /** Workouts inside an inclusive ISO-date window; either bound may be missing. */
 export function windowWorkouts(S, { from, to } = {}) {
@@ -36,11 +38,11 @@ export function insightsFor(S, win = {}, { topN = 3 } = {}) {
 
   const byBp = {}
   let setsTotal = 0
-  ws.forEach(w => (w.entries || []).forEach(en => {
-    const n = (en.sets || []).filter(s => s.done && !isWarmupRow(s)).length
+  ws.forEach(w => exposuresOf(w).forEach(exposure => {
+    const n = workRowsOf(exposure).length
     if (!n) return
     setsTotal += n
-    const bp = bpOf(S, en.id) || 'other'
+    const bp = bpOf(S, exposure.exerciseId) || 'other'
     byBp[bp] = (byBp[bp] || 0) + n
   }))
   const bodyParts = Object.entries(byBp).map(([bp, sets]) => ({ bp, sets, share: setsTotal ? sets / setsTotal : 0 }))
@@ -58,11 +60,11 @@ export function insightsFor(S, win = {}, { topN = 3 } = {}) {
   }
 
   const series = new Map()
-  ws.forEach(w => (w.entries || []).forEach(en => {
-    const best = bestSetOf(en)
+  ws.forEach(w => exposuresOf(w).forEach(exposure => {
+    const best = bestSetOf(exposure, formulaOf(S))
     if (!best) return
-    if (!series.has(en.id)) series.set(en.id, [])
-    series.get(en.id).push({ t: workoutAt(w), d: w.d, y: Math.round(best.est * 10) / 10 })
+    if (!series.has(exposure.exerciseId)) series.set(exposure.exerciseId, [])
+    series.get(exposure.exerciseId).push({ t: workoutAt(w), d: w.d, y: Math.round(best.est * 10) / 10 })
   }))
   const strength = [...series.entries()]
     .filter(([, pts]) => pts.length >= 2)
@@ -91,17 +93,17 @@ export function sessionInsights(S, workout) {
   const prev = before[before.length - 1] || null
   const stat = w => ({
     volume: Math.round(sessionVolume(w, S)),
-    sets: (w.entries || []).reduce((n, en) => n + (en.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0),
+    sets: exposuresOf(w).reduce((n, exposure) => n + workRowsOf(exposure).length, 0),
     minutes: w.end && w.start ? Math.round((w.end - w.start) / 60000) : null,
     prs: (w.prs || []).length
   })
   const now = stat(workout)
   const then = prev ? stat(prev) : null
-  const lifts = (workout.entries || []).map(en => {
-    const best = bestSetOf(en)
-    const pe = prev?.entries?.find(x => x.id === en.id)
-    const pb = pe ? bestSetOf(pe) : null
-    return best ? { id: en.id, name: nameOf(S, en.id), est: Math.round(best.est * 10) / 10, w: best.w, r: best.r, prev: pb ? Math.round(pb.est * 10) / 10 : null } : null
+  const lifts = exposuresOf(workout).map(exposure => {
+    const best = bestSetOf(exposure, formulaOf(S))
+    const previous = exposuresOf(prev).find(x => x.exerciseId === exposure.exerciseId)
+    const pb = previous ? bestSetOf(previous, formulaOf(S)) : null
+    return best ? { id: exposure.exerciseId, name: nameOf(S, exposure.exerciseId), est: Math.round(best.est * 10) / 10, w: best.w, r: best.r, prev: pb ? Math.round(pb.est * 10) / 10 : null } : null
   }).filter(Boolean)
   return { now, then, prevDate: prev?.d || null, lifts }
 }
