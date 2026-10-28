@@ -1781,6 +1781,15 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .share-card{margin:0 auto 14px;max-width:420px}
 .share-card img{display:block;width:100%;max-height:56vh;object-fit:contain;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.28)}
 .share-card-ph{aspect-ratio:4/5;max-height:56vh;margin:0 auto;border-radius:16px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;text-align:center;padding:16px}
+.share-card.share-story .share-card-ph{aspect-ratio:9/16;max-height:52vh}
+.share-card.share-square .share-card-ph{aspect-ratio:1/1;max-height:52vh}
+.share-card img{max-height:52vh}
+.share-opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.share-opts .seg{flex:1 1 140px;min-width:0}
+/* The finish summary's way out and its Share, side by side right under the numbers. */
+.fin-actions{display:flex;gap:10px}
+.fin-actions .btn{width:auto;flex:none}
+.fin-actions .btn:first-child{flex:1 1 auto;min-width:0}
 /* --- muscle map --- */
 /* Reuses the .hm-c level ramp above, so one accent scale means one thing app-wide. */
 /* An untrained muscle is derived from the text colour rather than a fixed surface, so
@@ -2534,3 +2543,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .youtube-video iframe{display:block;width:100%;min-height:200px;aspect-ratio:16/9;border:0;border-radius:12px;background:#000}
 .youtube-actions{display:flex;justify-content:space-between;gap:8px;margin-top:8px}
 .youtube-actions .btn{min-height:44px}
+
+/* Your year in openGym: Home's December card (components/WrappedEntry.jsx). The stories' own
+   styles load with them (components/Wrapped.css). */
+.wr-home{position:relative;overflow:hidden;background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 24%,var(--surface)),var(--surface) 72%)}
+.wr-home .ttl{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
+.wr-home .wr-x{position:absolute;top:8px;inset-inline-end:8px}

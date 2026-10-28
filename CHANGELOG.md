@@ -6,6 +6,23 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Your year in openGym.** From 1 December to the end of January, Home has a card: your year is ready.
+Tap it and your year plays as full-screen stories, tap or swipe through: how many workouts, the hours,
+the tonnes you moved (in blue whales, pianos or house cats, whatever fits), your longest streak, your
+signature move and the muscle it built, your records and the biggest one, your favourite day and time,
+your best month, your body weight if you logged it (one tap leaves it out for good, and it never
+judges), a training personality from your habits (Early bird, Leg-day loyalist, Night owl and friends)
+and a summary. Every card shares as a picture, 9:16 for Stories or 1:1, dark or light, with a small
+openGym logo. It is all worked out on your phone from your own data and nothing is sent anywhere.
+Stats → Your year plays it for any year with workouts, the current one too. On 1 December there is
+one notification at 18:00: the phone plans it for itself when you open the app in November (only if
+notifications are already allowed, it never asks), and your server sends a web push to the browsers
+that get notifications. Once per year, and Settings → Notifications has a switch for it.
+
+**Share a workout as a picture, right after it.** The "Workout complete!" summary has Share next to
+the way out: a card with the routine, date, duration, volume, sets, records, the muscle map and your
+week streak, as a Story (9:16) or a square, dark or light. History's Share as image makes the same card.
+
 **Widgets you set up yourself, and a streak with backup.** Long press the Home Screen, add the
 openGym widget and pick what it shows: your week streak, the weight goal (how many kg or lb to go,
 with a little curve of your last weigh-ins), this week, the next workout, records this month or this

@@ -82,6 +82,10 @@ import { hrLabel } from './lib/heart-rate.js'
 import { weeklyWeights } from './lib/bodyweight.js'
 import { workoutText } from './lib/workout-text.js'
 import { workoutCardModel, layoutWorkoutCard, drawWorkoutCard, viewAspect, CARD_FONT } from './lib/workout-card.js'
+import { cardPalette } from './lib/card-draw.js'
+import { makeCanvas, toPng, currentAccent, isRtl } from './lib/share-image.js'
+import ShareCardSheet from './components/ShareCard.jsx'
+import { streakInfo } from './lib/streak.js'
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
@@ -3028,10 +3032,7 @@ function WorkoutDetail({ w, close }) {
     const rec = { ...(st.workouts.find(x => sameWorkout(x, w)) || w), note: note.trim() }
     printWorkout(st, rec, { owner: useStore.getState().user?.name || '' })
   }
-  const shareAsImage = () => {
-    const rec = st.workouts.find(x => sameWorkout(x, w)) || w
-    ui().openSheet(c2 => <ShareWorkoutImage w={rec} nameOf={nameOf} close={c2} />)
-  }
+  const shareAsImage = () => shareWorkoutSheet(st.workouts.find(x => sameWorkout(x, w)) || w)
   // A combined session's entries carry a `rid`; group them into per-routine sections in merge
   // order, with each section's supersets paired inside it (sessionSections, which "Copy as text"
   // reads the workout through too). A legacy single-routine workout (one routineIds, or no rid
@@ -3146,72 +3147,43 @@ function WorkoutDetail({ w, close }) {
     </div>
   </>
 }
-// "Share as image" (#453): the card lib/workout-card.js lays out, painted in the theme and accent
-// the app is showing right now, previewed before it goes anywhere. The muscle map is the finish
-// summary's, for this one session; whether the card carries it is remembered with the profile.
-function ShareWorkoutImage({ w, nameOf, close }) {
+// The workout as a picture (#453): "Share" on the finish summary and "Share as image" in a past
+// workout's options open this same sheet (components/ShareCard.jsx) with the card
+// lib/workout-card.js lays out: 9:16 or 1:1, dark or light, in the app's accent. The muscle map is
+// the finish summary's, for this one session; whether the card carries it is remembered with the
+// profile. The streak is the one as of that workout's week.
+function ShareWorkoutImage({ w, close }) {
   const st = useStore(s => s.S)
   const update = useStore(s => s.update)
   const withMap = st.shareMap !== false
   const warmups = countsWarmups(st)
-  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf, warmups }), [w, st.unit, warmups])
-  // The last picture stays up while the next one is drawn, so the toggle never blanks the sheet.
-  const [img, setImg] = useState(null)
-  const [busy, setBusy] = useState(false)
-  const shown = useRef(null)
-  useEffect(() => {
-    let alive = true
-    workoutCardImage(model, { map: withMap, body: st.body })
-      .then(blob => {
-        if (!alive) return
-        if (!blob) { setImg(prev => ({ ...prev, failed: true })); return }
-        if (shown.current) URL.revokeObjectURL(shown.current)
-        shown.current = URL.createObjectURL(blob)
-        setImg({ blob, url: shown.current })
-      })
-      .catch(() => { if (alive) setImg(prev => ({ ...prev, failed: true })) })
-    return () => { alive = false }
-  }, [model, withMap, st.body])
-  useEffect(() => () => { if (shown.current) URL.revokeObjectURL(shown.current) }, [])
-  const name = 'opengym-workout-' + (workoutDay(w) || todayISO()) + '.png'
-  const share = async () => {
-    setBusy(true)
-    await shareImage(img.blob, name, w.name || 'openGym')
-    setBusy(false)
-    close()
-  }
-  return <>
-    <h3>{t('Share workout')}</h3>
-    <div className="share-card">
-      {img?.url
-        ? <img src={img.url} alt={t('Preview of the image to share')} />
-        : img?.failed ? <div className="share-card-ph small muted">{t('Could not create the image')}</div>
-          : <div className="share-card-ph" aria-hidden="true" />}
-    </div>
+  const day = workoutDay(w) || todayISO()
+  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf: shareNameOf, warmups, streak: streakInfo(st, day).current }), [w, st.unit, warmups, st.workouts, st.weekStart, day]) // eslint-disable-line react-hooks/exhaustive-deps
+  return <ShareCardSheet title={t('Share workout')} close={close} toast={toast}
+    name={'opengym-workout-' + day + '.png'} shareTitle={w.name || 'openGym'}
+    deps={[model, withMap, st.body]}
+    render={pref => workoutCardImage(model, { ...pref, map: withMap, body: st.body })}>
     {model.levels && <div className="sect-b" style={{ marginBottom: 12 }}>
       <Row icon="figureStrength" iconTint="var(--acc)" title={t('Muscle map')} subtitle={t('Show which muscles this workout trained.')}>
         <Switch checked={withMap} aria-label={t('Muscle map')} onChange={v => update(s => { s.shareMap = v })} />
       </Row>
     </div>}
-    <Button variant="primary" icon="share" disabled={!img?.blob || busy} onClick={share}>{t('Share')}</Button>
-  </>
+  </ShareCardSheet>
 }
-async function workoutCardImage(model, { map, body }) {
-  const root = getComputedStyle(document.documentElement)
-  const css = (name, fallback) => root.getPropertyValue(name).trim() || fallback
-  const colors = { bg: css('--bg', '#000'), surface: css('--surface', '#1c1c1e'), tile: css('--surface-2', '#2c2c2e'), label: css('--label', '#fff'), label2: css('--label-2', '#999'), acc: css('--acc', '#30d158') }
+const shareNameOf = e => (EXIDX[e.id] ? exerciseNameFor(EXIDX[e.id]) : (e.n || e.id))
+export const shareWorkoutSheet = w => ui().openSheet(close => <ShareWorkoutImage w={w} close={close} />)
+async function workoutCardImage(model, { map, body, format, style }) {
+  const colors = cardPalette(style, currentAccent())
   // The body geometry is ~90 KB and lazy everywhere else too (components/BodyMap.jsx).
   const geometry = map && model.levels ? (await import('./lib/body-paths.js')).default : null
   const shape = geometry && (geometry[body] || geometry.male)
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return null
-  const measure = (text, weight, size) => { ctx.font = `${weight} ${size}px ${CARD_FONT}`; return ctx.measureText(text).width }
-  const layout = layoutWorkoutCard(model, { measure, rtl: document.documentElement.dir === 'rtl', map: shape ? { aspect: viewAspect(shape.front) } : null })
-  canvas.width = layout.width
-  canvas.height = layout.height
-  drawWorkoutCard(ctx, layout, colors, shape ? { body: shape, levels: model.levels } : null)
-  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+  const probe = makeCanvas(1, 1, CARD_FONT)
+  if (!probe) return null
+  const layout = layoutWorkoutCard(model, { measure: probe.measure, rtl: isRtl(), format, map: shape ? { aspect: viewAspect(shape.front) } : null })
+  const c = makeCanvas(layout.width, layout.height, CARD_FONT)
+  if (!c) return null
+  drawWorkoutCard(c.ctx, layout, colors, shape ? { body: shape, levels: model.levels } : null)
+  return toPng(c.canvas)
 }
 // The .fit file goes out the way a backup does: the share sheet in the phone app (Files, Drive,
 // Garmin Connect itself), a download in the browser.
@@ -3219,18 +3191,6 @@ async function saveFitFile(blob, name) {
   if (MOBILE) { try { await shareExportBlob(blob, name) } catch (e) { /* share sheet dismissed */ } return }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
   toast(t('Saved. Garmin Connect can take it from here.'))
-}
-// The phone app goes through the OS share sheet the way a backup does; a browser that can share
-// files (most phones) opens its own; anything else saves the picture as a download.
-async function shareImage(blob, name, title) {
-  if (MOBILE) { try { await shareExportBlob(blob, name) } catch (e) { /* share sheet dismissed */ } return }
-  const file = typeof File === 'function' ? new File([blob], name, { type: 'image/png' }) : null
-  if (file && navigator.canShare?.({ files: [file] })) {
-    try { await navigator.share({ files: [file], title }) } catch (e) { /* dismissed */ }
-    return
-  }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
-  toast(t('Image saved'))
 }
 // The sentence a workout's Delete adds when its photos and videos go with it — every file the
 // record lists, shown or not. Empty when it has none.
@@ -3907,7 +3867,12 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
     </div>}
     {/* Done is one tap away right under the numbers: the body map, what's next and the photo
         corner sit below it for whoever wants them, nobody has to scroll to leave (Discord). */}
-    <Button variant="primary" onClick={() => closeThenNav(close, '/home')}>{t('Nice!')}</Button>
+    <div className="fin-actions">
+      <Button variant="primary" onClick={() => closeThenNav(close, '/home')}>{t('Nice!')}</Button>
+      {/* The workout as a picture for a Story or a chat (components/ShareCard.jsx), the same
+          card History's Share as image makes. */}
+      <Button variant="tinted" icon="share" data-fin-share onClick={() => shareWorkoutSheet(S().workouts.find(x => x.id === w.id) || w)}>{t('Share')}</Button>
+    </div>
     <div style={{ height: 14 }} />
     <h4 className="sec" style={{ textAlign: 'start' }}>{t('What you just trained')}</h4>
     <BodyMap load={loadOfWorkouts([w])} body={st.body} />
