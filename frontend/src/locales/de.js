@@ -2608,4 +2608,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Nur für dieses Handy. Manche Startbildschirme brauchen einen Moment, bis sie mitkommen.',
   'The icon could not be changed.': 'Das Icon ließ sich nicht ändern.',
   'Try the Halloween app icon': 'Probier das Halloween-App-Icon',
+  // --- cloud sync (passkey) ---
+  'Account created': 'Konto erstellt',
+  'Add a passkey on this device': 'Einen Passkey auf diesem Gerät hinzufügen',
+  'Cloud sync (passkey)': 'Cloud-Sync (Passkey)',
+  'Create account with passkey': 'Konto mit Passkey erstellen',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': 'Melde dich mit {0} an, ganz ohne Passwort. Bist du zum ersten Mal hier, erstelle das Konto mit deinem ersten Passkey.',
+  'Signed in as {0}.': 'Angemeldet als {0}.',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': 'Angemeldet als {0}. Dein Plan, deine Workouts und deine Gewichtseinträge werden auf allen deinen Geräten synchronisiert.',
+  'Signed out': 'Abgemeldet',
+  'Username': 'Benutzername',
+  'Welcome back': 'Willkommen zurück',
+  'Your workouts. Your weights. Every device.': 'Deine Workouts. Deine Gewichte. Auf jedem Gerät.',
+  'you': 'du',
 }

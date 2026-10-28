@@ -2667,4 +2667,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'শুধু এই ফোনের জন্য। কিছু হোম স্ক্রিন বুঝতে একটু সময় নেয়।',
   'The icon could not be changed.': 'আইকন বদলানো গেল না।',
   'Try the Halloween app icon': 'হ্যালোইন অ্যাপ আইকন চেষ্টা করুন',
+  // --- cloud sync (passkey) ---
+  'Account created': 'অ্যাকাউন্ট তৈরি হয়েছে',
+  'Add a passkey on this device': 'এই ডিভাইসে একটি পাসকি যোগ করুন',
+  'Cloud sync (passkey)': 'ক্লাউড সিঙ্ক (পাসকি)',
+  'Create account with passkey': 'পাসকি দিয়ে অ্যাকাউন্ট তৈরি করুন',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': '{0} দিয়ে সাইন ইন করুন, কোনো পাসওয়ার্ড নেই। প্রথমবার এখানে এলে, আপনার প্রথম পাসকি দিয়ে অ্যাকাউন্টটি তৈরি করুন।',
+  'Signed in as {0}.': '{0} হিসেবে সাইন ইন করেছেন।',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': '{0} হিসেবে সাইন ইন করেছেন। আপনার পরিকল্পনা, ওয়ার্কআউট এবং ওজন মাপা আপনার সব ডিভাইসে সিঙ্ক হয়।',
+  'Signed out': 'সাইন আউট হয়েছে',
+  'Username': 'ব্যবহারকারীর নাম',
+  'Welcome back': 'আবার স্বাগতম',
+  'Your workouts. Your weights. Every device.': 'আপনার ওয়ার্কআউট। আপনার ওজন। প্রতিটি ডিভাইসে।',
+  'you': 'আপনি',
 }

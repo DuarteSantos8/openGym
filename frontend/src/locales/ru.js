@@ -2592,4 +2592,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Только для этого телефона. Некоторым рабочим столам нужна минутка, чтобы заметить.',
   'The icon could not be changed.': 'Не удалось сменить значок.',
   'Try the Halloween app icon': 'Попробуй хеллоуинский значок приложения',
+  // --- cloud sync (passkey) ---
+  'Account created': 'Аккаунт создан',
+  'Add a passkey on this device': 'Добавить ключ доступа на этом устройстве',
+  'Cloud sync (passkey)': 'Облачная синхронизация (ключ доступа)',
+  'Create account with passkey': 'Создать аккаунт по ключу доступа',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': 'Войдите с помощью {0}, без пароля. Если вы здесь впервые, создайте аккаунт со своим первым ключом доступа.',
+  'Signed in as {0}.': 'Вы вошли как {0}.',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': 'Вы вошли как {0}. Ваш план, тренировки и записи веса синхронизируются на всех ваших устройствах.',
+  'Signed out': 'Вы вышли',
+  'Username': 'Имя пользователя',
+  'Welcome back': 'С возвращением',
+  'Your workouts. Your weights. Every device.': 'Ваши тренировки. Ваши веса. На каждом устройстве.',
+  'you': 'вы',
 }

@@ -2588,4 +2588,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Yalnızca bu telefon için. Bazı ana ekranların fark etmesi biraz sürer.',
   'The icon could not be changed.': 'Simge değiştirilemedi.',
   'Try the Halloween app icon': 'Cadılar Bayramı uygulama simgesini dene',
+  // --- cloud sync (passkey) ---
+  'Account created': 'Hesap oluşturuldu',
+  'Add a passkey on this device': 'Bu cihaza bir geçiş anahtarı ekle',
+  'Cloud sync (passkey)': 'Bulut senkronizasyonu (geçiş anahtarı)',
+  'Create account with passkey': 'Geçiş anahtarıyla hesap oluştur',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': 'Parola olmadan {0} ile giriş yap. Buraya ilk kez geliyorsan hesabını ilk geçiş anahtarınla oluştur.',
+  'Signed in as {0}.': '{0} olarak giriş yapıldı.',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': '{0} olarak giriş yapıldı. Planın, antrenmanların ve kilo kayıtların tüm cihazlarında senkronize edilir.',
+  'Signed out': 'Çıkış yapıldı',
+  'Username': 'Kullanıcı adı',
+  'Welcome back': 'Tekrar hoş geldin',
+  'Your workouts. Your weights. Every device.': 'Antrenmanların. Kiloların. Her cihazda.',
+  'you': 'sen',
 }

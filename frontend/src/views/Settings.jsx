@@ -23,6 +23,8 @@ import { wakeLockSupported } from '../lib/wakelock.js'
 import { t, tn, LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, baseLang, dateLocale } from '../lib/i18n.js'
 import { effectiveLang } from '../lib/default-lang.js'
 import { DEMO, REPO } from '../lib/demo.js'
+import { FIREBASE_MODE } from '../lib/firebase-config.js'
+import FirebaseAccount from '../components/FirebaseAccount.jsx'
 import { MOBILE, isAndroid, shareExport, shareExportBlob, syncReminder } from '../lib/mobile.js'
 import { NUDGE_COPY, NUDGE_TONES, toneOf } from '../lib/nudge.js'
 import { referencedFiles } from '../lib/media-refs.js'
@@ -1000,6 +1002,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     </>,
 
     account: () => <>
+      {/* Firebase mode (Phase 2): the passkey + Firestore sync block. The upstream server
+          sections below stay as they are; in a Firebase build this is the live one. */}
+      {FIREBASE_MODE && <FirebaseAccount />}
       {/* The server: which one, which account, how that stands, "Sync now". A paired phone's
           Admin and Disconnect sit in the same block; a browser's account rows follow in their own. */}
       {user && !DEMO && <ServerSyncSection>

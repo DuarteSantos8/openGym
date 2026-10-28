@@ -1670,6 +1670,19 @@ export const PT_BR_OVERRIDES = {
   'App icon': 'Ícone do app',
   'Just for this phone. Some home screens take a moment to catch up.': 'Só para este celular. Algumas telas iniciais demoram um pouco para perceber.',
   'Try the Halloween app icon': 'Experimente o ícone de Halloween do app',
+  // --- cloud sync (passkey) ---
+  'Account created': 'Conta criada',
+  'Add a passkey on this device': 'Adicionar uma chave de acesso neste dispositivo',
+  'Cloud sync (passkey)': 'Sincronização em nuvem (chave de acesso)',
+  'Create account with passkey': 'Criar conta com chave de acesso',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': 'Entre com {0}, sem senha. Se é sua primeira vez aqui, crie a conta com sua primeira chave de acesso.',
+  'Signed in as {0}.': 'Conectado como {0}.',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': 'Conectado como {0}. Seu plano, seus treinos e suas pesagens sincronizam em todos os seus dispositivos.',
+  'Signed out': 'Desconectado',
+  'Username': 'Nome de usuário',
+  'Welcome back': 'Bem-vindo de volta',
+  'Your workouts. Your weights. Every device.': 'Seus treinos. Seus pesos. Em cada dispositivo.',
+  'you': 'você',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

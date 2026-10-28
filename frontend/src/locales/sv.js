@@ -2635,4 +2635,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Bara för den här telefonen. Vissa hemskärmar behöver en stund på sig att hänga med.',
   'The icon could not be changed.': 'Ikonen gick inte att byta.',
   'Try the Halloween app icon': 'Testa Halloween-appikonen',
+  // --- cloud sync (passkey) ---
+  'Account created': 'Konto skapat',
+  'Add a passkey on this device': 'Lägg till en passkey på den här enheten',
+  'Cloud sync (passkey)': 'Molnsynk (passkey)',
+  'Create account with passkey': 'Skapa konto med passkey',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': 'Logga in med {0}, inget lösenord. Första gången här? Skapa kontot med din första passkey.',
+  'Signed in as {0}.': 'Inloggad som {0}.',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': 'Inloggad som {0}. Ditt program, dina träningspass och dina invägningar synkroniseras på alla dina enheter.',
+  'Signed out': 'Utloggad',
+  'Username': 'Användarnamn',
+  'Welcome back': 'Välkommen tillbaka',
+  'Your workouts. Your weights. Every device.': 'Dina träningspass. Dina vikter. Alla enheter.',
+  'you': 'du',
 }

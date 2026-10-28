@@ -2643,4 +2643,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'لهذا الهاتف فقط. بعض الشاشات الرئيسية تحتاج لحظة لتلحق.',
   'The icon could not be changed.': 'تعذّر تغيير الأيقونة.',
   'Try the Halloween app icon': 'جرّب أيقونة التطبيق الخاصة بالهالوين',
+  // --- cloud sync (passkey) ---
+  'Account created': 'تم إنشاء الحساب',
+  'Add a passkey on this device': 'إضافة مفتاح مرور على هذا الجهاز',
+  'Cloud sync (passkey)': 'المزامنة السحابية (مفتاح المرور)',
+  'Create account with passkey': 'إنشاء حساب بمفتاح المرور',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': 'سجل الدخول باستخدام {0}، بدون كلمة مرور. إذا كانت هذه أول مرة لك هنا، أنشئ الحساب بأول مفتاح مرور لك.',
+  'Signed in as {0}.': 'تم تسجيل الدخول باسم {0}.',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': 'تم تسجيل الدخول باسم {0}. تتم مزامنة خطتك وتمارينك وقياسات وزنك عبر جميع أجهزتك.',
+  'Signed out': 'تم تسجيل الخروج',
+  'Username': 'اسم المستخدم',
+  'Welcome back': 'مرحبا بعودتك',
+  'Your workouts. Your weights. Every device.': 'تمارينك. أوزانك. على كل جهاز.',
+  'you': 'أنت',
 }

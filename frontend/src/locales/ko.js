@@ -2588,4 +2588,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': '이 휴대폰에만 적용돼요. 홈 화면에 따라 바뀌는 데 잠깐 걸릴 수 있어요.',
   'The icon could not be changed.': '아이콘을 바꾸지 못했어요.',
   'Try the Halloween app icon': '핼러윈 앱 아이콘 써 보기',
+  // --- cloud sync (passkey) ---
+  'Account created': '계정이 만들어졌습니다',
+  'Add a passkey on this device': '이 기기에 패스키 추가',
+  'Cloud sync (passkey)': '클라우드 동기화 (패스키)',
+  'Create account with passkey': '패스키로 계정 만들기',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': '비밀번호 없이 {0}(으)로 로그인하세요. 처음이라면 첫 패스키로 계정을 만드세요.',
+  'Signed in as {0}.': '{0}(으)로 로그인됨.',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': '{0}(으)로 로그인됨. 계획, 운동 기록, 체중 기록이 모든 기기에 동기화됩니다.',
+  'Signed out': '로그아웃됨',
+  'Username': '사용자 이름',
+  'Welcome back': '다시 오신 것을 환영합니다',
+  'Your workouts. Your weights. Every device.': '내 운동. 내 무게. 모든 기기에서.',
+  'you': '나',
 }

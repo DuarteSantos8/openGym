@@ -2588,4 +2588,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'सिर्फ़ इस फ़ोन के लिए। कुछ होम स्क्रीन को समझने में थोड़ा समय लगता है।',
   'The icon could not be changed.': 'आइकन बदला नहीं जा सका।',
   'Try the Halloween app icon': 'हैलोवीन ऐप आइकन आज़माएँ',
+  // --- cloud sync (passkey) ---
+  'Account created': 'खाता बन गया',
+  'Add a passkey on this device': 'इस डिवाइस पर एक पासकी जोड़ें',
+  'Cloud sync (passkey)': 'क्लाउड सिंक (पासकी)',
+  'Create account with passkey': 'पासकी से खाता बनाएँ',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': '{0} से साइन इन करें, कोई पासवर्ड नहीं। पहली बार आए हैं, तो अपनी पहली पासकी से खाता बनाएँ।',
+  'Signed in as {0}.': '{0} के रूप में साइन इन हैं।',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': '{0} के रूप में साइन इन हैं। आपकी योजना, वर्कआउट और वज़न के रिकॉर्ड आपके सभी डिवाइस पर सिंक होते हैं।',
+  'Signed out': 'साइन आउट हो गए',
+  'Username': 'उपयोगकर्ता नाम',
+  'Welcome back': 'वापस स्वागत है',
+  'Your workouts. Your weights. Every device.': 'आपके वर्कआउट। आपके वज़न। हर डिवाइस पर।',
+  'you': 'आप',
 }

@@ -2591,4 +2591,17 @@ export default {
   'Just for this phone. Some home screens take a moment to catch up.': 'Csak ezen a telefonon. Néhány kezdőképernyőnek kell egy pillanat, mire észreveszi.',
   'The icon could not be changed.': 'Nem sikerült megváltoztatni az ikont.',
   'Try the Halloween app icon': 'Próbáld ki a halloweeni alkalmazásikont',
+  // --- cloud sync (passkey) ---
+  'Account created': 'Fiók létrehozva',
+  'Add a passkey on this device': 'Jelszókulcs hozzáadása ezen az eszközön',
+  'Cloud sync (passkey)': 'Felhőszinkron (jelszókulcs)',
+  'Create account with passkey': 'Fiók létrehozása jelszókulccsal',
+  'Sign in with {0}, no password. First time here, create the account with your first passkey.': 'Jelentkezz be {0} használatával, jelszó nélkül. Ha először jársz itt, hozd létre a fiókot az első jelszókulcsoddal.',
+  'Signed in as {0}.': 'Bejelentkezve mint {0}.',
+  'Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.': 'Bejelentkezve mint {0}. A terved, az edzéseid és a súlyméréseid minden eszközödön szinkronizálódnak.',
+  'Signed out': 'Kijelentkezve',
+  'Username': 'Felhasználónév',
+  'Welcome back': 'Üdv újra itt',
+  'Your workouts. Your weights. Every device.': 'Az edzéseid. A súlyméréseid. Minden eszközödön.',
+  'you': 'te',
 }
