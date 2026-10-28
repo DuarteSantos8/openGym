@@ -14,12 +14,18 @@
 // words ready to draw, and `level`, kept null until points and levels exist (a later version):
 // a widget that finds it null shows nothing of it.
 //
+// Since the monthly challenges (lib/challenges.js) the snapshot also has `challenges`: the month's
+// three with their progress, as words, and "challenges" is one more thing a widget can show. Null
+// when they are switched off.
+//
 // Phone app only. Nothing here runs on the web.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX } from './exercises.js'
 import { t, tn, dateLocale } from './i18n.js'
 import { effectiveRoutines, exLine, bestWeightForEntry, sessionVolume, lastBW } from './history.js'
 import { streakInfo } from './streak.js'
+import { challengesOn, monthChallenges, progressOf } from './challenges.js'
+import { challengeTitle, challengeCount, doneLine } from './challenge-copy.js'
 import { deriveSessionName } from './session-merge.js'
 import { queueOf, weekTally } from './queue.js'
 import { todayISO, isoOf, fmtNum, weekStartOf, startOfWeek, weekKey, exerciseNameText } from './format.js'
@@ -31,7 +37,7 @@ export const WIDGET_SNAPSHOT_VERSION = 2
 // What the weight goal's little curve draws: the last weigh-ins.
 export const WIDGET_TREND_POINTS = 7
 // What a configurable widget can show, in the order its menu lists them.
-export const WIDGET_KINDS = ['streak', 'weight', 'week', 'next', 'records', 'volume']
+export const WIDGET_KINDS = ['streak', 'weight', 'week', 'next', 'records', 'volume', 'challenges']
 // Today and the week after it: enough for "next workout" to still be right a few days on.
 export const WIDGET_DAYS = 8
 // What the large widget lists of today's plan.
@@ -175,6 +181,28 @@ function volumeOf (S, today) {
   }
 }
 
+// The month's challenges: how many are done, each with its words and how far, and the first one
+// still open as the line a small widget has room for.
+function challengesOfWidget (S, today) {
+  if (!challengesOn(S) || !(S.workouts || []).length) return null
+  try {
+    const month = monthChallenges(S, today.slice(0, 7))
+    const unit = S.unit === 'lb' ? 'lb' : 'kg'
+    const items = progressOf(S, month).map(p => ({ id: p.id, title: challengeTitle(p, unit), count: challengeCount(p, unit), pct: Math.round(p.pct * 100), done: p.done }))
+    if (!items.length) return null
+    const done = items.filter(i => i.done).length
+    const open = items.find(i => !i.done)
+    return {
+      month: month.key,
+      done,
+      total: items.length,
+      items,
+      line: doneLine(done, items.length),
+      next: open ? `${open.title} · ${open.count}` : t('Gold month. Take a bow.'),
+    }
+  } catch { return null }
+}
+
 /** Everything the widgets show, as plain JSON (the `today` argument pins the clock for tests). */
 export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
   const st = { ...S, routines: S?.routines || [], week: S?.week || {}, dayPlan: S?.dayPlan || {}, workouts: S?.workouts || [], bodyweight: Array.isArray(S?.bodyweight) ? S.bodyweight : [] }
@@ -206,6 +234,7 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
     next: nextOf(days, today),
     records: recordsOf(st, today),
     volume: volumeOf(st, today),
+    challenges: challengesOfWidget(st, today),
     // Points to the next level: not built yet. Stays null until it is; the widgets skip it then.
     level: null,
     labels: {
@@ -222,6 +251,7 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
       nextWorkout: t('Next workout'),
       records: t('Records'),
       volume: t('Volume'),
+      challenges: t('Challenges'),
       freezes: t('Streak freezes'),
       nothingPlanned: t('Nothing planned'),
       noWeighIn: t('No weigh-ins yet'),
@@ -229,7 +259,7 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
       // Android's "What to show" screen, in the app's language (OpenGymWidgetConfigure.java).
       whatToShow: t('What to show'),
       secondThing: t('And beside it'),
-      kinds: { streak: t('Week streak'), weight: t('Weight goal'), week: t('This week'), next: t('Next workout'), records: t('Records'), volume: t('Volume') },
+      kinds: { streak: t('Week streak'), weight: t('Weight goal'), week: t('This week'), next: t('Next workout'), records: t('Records'), volume: t('Volume'), challenges: t('Challenges') },
     },
   }
 }

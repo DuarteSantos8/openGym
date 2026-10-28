@@ -13,11 +13,11 @@ import org.json.JSONObject;
  * start?r=<routine ids>. Keep the three in step.
  */
 final class WidgetContent {
-    static final String[] KINDS = {"streak", "weight", "week", "next", "records", "volume"};
+    static final String[] KINDS = {"streak", "weight", "week", "next", "records", "volume", "challenges"};
     static final String DEFAULT_KIND = "streak";
 
     /** The drawable each kind shows (res/drawable/ic_widget_*). */
-    enum Icon { FLAME, SCALE, CALENDAR, DUMBBELL, TROPHY, CHART }
+    enum Icon { FLAME, SCALE, CALENDAR, DUMBBELL, TROPHY, CHART, MEDAL }
 
     final String kind;
     final Icon icon;
@@ -115,6 +115,13 @@ final class WidgetContent {
             case "volume": {
                 JSONObject v = snap.optJSONObject("volume");
                 return new WidgetContent(kind, Icon.CHART, label(labels, "volume", "Volume"), v == null ? "0" : str(v, "nowText"), v == null ? null : str(v, "line"), "opengym://stats", null, 0);
+            }
+            case "challenges": {
+                // The month's challenges (lib/widgets.js challengesOfWidget): "2 / 3" and the first one still open.
+                JSONObject c = snap.optJSONObject("challenges");
+                String value = c == null ? "–" : c.optInt("done", 0) + " / " + c.optInt("total", 0);
+                String caption = c == null ? null : (str(c, "next") != null ? str(c, "next") : str(c, "line"));
+                return new WidgetContent(kind, Icon.MEDAL, label(labels, "challenges", "Challenges"), value, caption, "opengym://home", null, 0);
             }
             default: {
                 JSONObject st = snap.optJSONObject("streakInfo");

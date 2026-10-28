@@ -255,6 +255,27 @@ export const STRINGS = {
     'zh-Hans': "选择小组件显示的内容。",
     'zh-Hant': "選擇小工具顯示的內容。",
   },
+  // The monthly challenges (lib/challenges.js) as one more thing to show.
+  "Challenges": {
+    de: "Herausforderungen",
+    fr: "Défis",
+    es: "Retos",
+    it: "Sfide",
+    'pt-PT': "Desafios",
+    'pt-BR': "Desafios",
+    pl: "Wyzwania",
+    hu: "Kihívások",
+    tr: "Görevler",
+    ru: "Челленджи",
+    uk: "Челенджі",
+    ar: "التحديات",
+    hi: "चैलेंज",
+    bn: "চ্যালেঞ্জ",
+    th: "ชาเลนจ์",
+    ko: "챌린지",
+    'zh-Hans': "挑战",
+    'zh-Hant': "挑戰",
+  },
 }
 
 const esc = s => s.replaceAll('\\', '\\\\').replaceAll('"', '\\"')

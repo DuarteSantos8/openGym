@@ -19,6 +19,7 @@ public class WidgetContentTest {
                 + "\"weight\":{\"currentText\":\"86 kg\",\"line\":\"6 kg to go\",\"trend\":[88,87,86]},"
                 + "\"records\":{\"month\":3,\"monthLine\":\"3 PRs this month\",\"last\":{\"name\":\"Squat\",\"value\":\"120 kg\"}},"
                 + "\"volume\":{\"nowText\":\"12.4k kg\",\"line\":\"+20% vs last week\"},\"level\":null,"
+                + "\"challenges\":{\"month\":\"2026-10\",\"done\":1,\"total\":3,\"line\":\"1 of 3 done\",\"next\":\"14 workouts this month · 7 / 14\"},"
                 + "\"labels\":{\"weekStreak\":\"Wochen-Serie\",\"nextWorkout\":\"Nächstes Training\",\"today\":\"Heute\"}}");
     }
 
@@ -57,6 +58,20 @@ public class WidgetContentTest {
         assertEquals("3", r.value);
         assertEquals("Squat · 120 kg", r.caption);
         assertEquals("12.4k kg", WidgetContent.of("volume", snap(), TODAY, "").value);
+    }
+
+    @Test
+    public void challengesDoneAndTheNextOpenOne() throws Exception {
+        WidgetContent c = WidgetContent.of("challenges", snap(), TODAY, "");
+        assertEquals("challenges", c.kind);
+        assertEquals("1 / 3", c.value);
+        assertEquals("14 workouts this month · 7 / 14", c.caption);
+        assertEquals("Challenges", c.title);
+        assertEquals("opengym://home", c.link);
+        // Switched off in the app (no block): a dash, never a crash.
+        JSONObject off = snap();
+        off.remove("challenges");
+        assertEquals("–", WidgetContent.of("challenges", off, TODAY, "").value);
     }
 
     @Test

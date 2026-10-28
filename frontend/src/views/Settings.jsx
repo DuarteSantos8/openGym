@@ -927,6 +927,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('A small hint on Home about what has rested and what is still recovering.')}>
           <Switch aria-label={t('Recovery tips')} checked={S.recoveryHint !== false} onChange={v => update(s => { s.recoveryHint = v })} />
         </Row>
+        {/* Three goals a month on Home, sized to how you train (lib/challenges.js). Off: no card,
+            no Stats progress; badges already earned stay on the shelf. */}
+        <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
+          subtitle={t('Three goals a month on Home, sized to how you train.')}>
+          <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v })} />
+        </Row>
         {/* The bar at the top that says the app is offline, kept local, or not synced (#369, #330).
             Here and not under Server & sync, which a phone kept local never shows. Switching it on
             also brings back the no-server line its × hid (#454). */}

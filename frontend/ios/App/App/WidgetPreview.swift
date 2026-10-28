@@ -41,10 +41,11 @@ enum WidgetPreview {
          "weight":{"current":82.4,"goal":78,"toGo":4.4,"unit":"kg","trend":[84.1,83.8,83.9,83.2,82.9,82.7,82.4],"currentText":"82.4 kg","goalText":"78 kg","line":"4.4 kg to go"},
          "records":{"month":3,"monthLine":"3 PRs this month","last":{"name":"Barbell Squat","value":"120 kg","d":"\(today)"}},
          "volume":{"now":12400,"prev":10300,"unit":"kg","pct":20,"nowText":"12.4k kg","prevText":"10.3k kg","line":"+20% vs last week"},"level":null,
+         "challenges":{"month":"9999-12","done":1,"total":3,"line":"1 of 3 done","next":"14 workouts this month · 9 / 14"},
          "active":\(active),
          "labels":{"today":"Today","restDay":"Rest day","upNext":"Up next","thisWeek":"This week","weekStreak":"Week streak",
            "streak":"7 week streak","lastPR":"Last PR","done":"Done","running":"Workout running",
-           "weightGoal":"Weight goal","nextWorkout":"Next workout","records":"Records","volume":"Volume","nothingPlanned":"Nothing planned","noWeighIn":"No weigh-ins yet"}}
+           "weightGoal":"Weight goal","nextWorkout":"Next workout","records":"Records","volume":"Volume","challenges":"Challenges","nothingPlanned":"Nothing planned","noWeighIn":"No weigh-ins yet"}}
         """)
     }
 

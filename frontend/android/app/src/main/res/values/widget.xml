@@ -21,6 +21,7 @@
     <string name="widget_kind_next">Next workout</string>
     <string name="widget_kind_records">Records</string>
     <string name="widget_kind_volume">Volume</string>
+    <string name="widget_kind_challenges">Challenges</string>
     <string name="widget_empty">Open openGym once to fill this in.</string>
 
     <style name="WidgetConfigTheme" parent="@android:style/Theme.Material.Light.Dialog.NoActionBar" />

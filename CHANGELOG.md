@@ -53,6 +53,18 @@ Apple Health and Health Connect bring in every reading with its time, an Apple H
 all of its records instead of one a day, and the body CSV has a row per weigh-in. Your old weigh-ins
 stay exactly as they were, and an older app on another device keeps the extra ones when it syncs.
 
+**Monthly challenges.** Every month Home has three small goals for you, picked from how you have
+trained the last few months and set a little above your usual: 14 workouts this month, lift 50 t,
+train every week, hit 3 new PRs, 100 pull-ups (only if you do pull-ups), 60 minutes of cardio (only
+if you do cardio), log your weight on 10 days, try 3 exercises you have never done, or every muscle
+group at least once. The bars move as soon as you finish a workout, and each challenge you make
+earns a badge with a small party (it stays put with reduced motion). All three is a gold month.
+Stats → Challenges shows this month and a trophy shelf of every badge so far, and the widgets can
+show them too. A challenge you do not make simply ends with its month: new month, new challenges.
+The card folds away, its × hides it until next month, and Settings → Look & Home → Monthly
+challenges turns it off. It is all worked out on your device from your own workouts, phone-only or
+with a server, and nothing new is sent anywhere; the badges sync with your profile.
+
 **A kind word about recovery on Home.** Now and then a small card tells you what has rested and what
 has not, from the same recovery data as the muscle map: "Your legs are still recovering from
 yesterday. Upper body today?", or that your back has had a week off. If today's plan leans on

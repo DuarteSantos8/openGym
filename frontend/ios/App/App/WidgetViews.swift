@@ -43,6 +43,7 @@ struct WidgetSnapshot: Codable {
         var nextWorkout: String?
         var records: String?
         var volume: String?
+        var challenges: String?
         var freezes: String?
         var nothingPlanned: String?
         var noWeighIn: String?
@@ -53,6 +54,9 @@ struct WidgetSnapshot: Codable {
     struct Weight: Codable { var current: Double; var goal: Double?; var toGo: Double?; var unit: String?; var trend: [Double]?; var currentText: String?; var goalText: String?; var line: String? }
     struct Records: Codable { var month: Int; var monthLine: String?; var last: PR? }
     struct Volume: Codable { var now: Double; var prev: Double; var unit: String?; var pct: Int?; var nowText: String?; var prevText: String?; var line: String? }
+    // The monthly challenges (lib/widgets.js challengesOfWidget): how many of the month's are done.
+    struct ChallengeItem: Codable { var id: String; var title: String?; var count: String?; var pct: Int?; var done: Bool? }
+    struct Challenges: Codable { var month: String?; var done: Int; var total: Int; var items: [ChallengeItem]?; var line: String?; var next: String? }
 
     var v: Int
     var today: String
@@ -70,6 +74,7 @@ struct WidgetSnapshot: Codable {
     var weight: Weight?
     var records: Records?
     var volume: Volume?
+    var challenges: Challenges?
 
     static func load() -> WidgetSnapshot? {
         guard let url = OpenGymGroup.container?.appendingPathComponent("widget.json"),
@@ -397,7 +402,7 @@ struct NextInlineView: View {
 
 /// What the configurable widget can show. The menu's words are in OpenGymWidgets.swift (AppEnum).
 enum GymWidgetKind: String, CaseIterable, Codable {
-    case streak, weight, week, next, records, volume
+    case streak, weight, week, next, records, volume, challenges
 }
 
 /// The links a tap opens (lib/widget-links.js reads them; Android builds the same ones).
@@ -480,6 +485,11 @@ extension WidgetModel {
             let short = v?.pct.map { ($0 > 0 ? "+" : "") + "\($0)%" } ?? (v?.nowText ?? "0")
             return KindContent(kind: kind, symbol: "chart.bar.fill", title: l.volume ?? "Volume", value: v?.nowText ?? "0", short: short,
                                caption: v?.line ?? "", url: GymLink.stats)
+        case .challenges:
+            let c = snap?.challenges
+            let v = c.map { "\($0.done)/\($0.total)" } ?? "–"
+            return KindContent(kind: kind, symbol: "rosette", title: l.challenges ?? "Challenges", value: v, short: v,
+                               caption: c?.next ?? c?.line ?? "", url: GymLink.home)
         }
     }
 }

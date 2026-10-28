@@ -2011,6 +2011,36 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .streak-party .sparks i:nth-child(4){--dx:20px;--dy:6px}
 .streak-party .sparks i:nth-child(5){--dx:-20px;--dy:6px}
 .streak-party .sparks i:nth-child(6){--dx:0;--dy:18px}
+/* Monthly challenges (components/Challenges.jsx): Home's card, Stats' trophy shelf. */
+.challenges .lbl2,.challenges-stats .lbl2{display:block;font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
+.ch-head{display:flex;align-items:center;gap:9px;flex:1;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.ch-head-t{display:flex;flex-direction:column;min-width:0;flex:1}
+.ch-head .ttl{font-size:16px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ch-list{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.ch-row{display:flex;align-items:center;gap:10px}
+.ch-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;border-radius:9px;background:var(--surface-2);color:var(--label-2);font-size:16px}
+.ch-row.done .ch-ic{background:rgba(48,209,88,0.18);background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+.ch-body{flex:1;min-width:0}
+.ch-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;font-weight:500}
+.ch-name{min-width:0}
+.ch-n{flex:none;font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums}
+.ch-bar{height:6px;margin-top:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.ch-bar i{display:block;height:100%;border-radius:3px;background:var(--orange);transition:width .5s ease}
+.ch-row.done .ch-bar i{background:var(--green)}
+.ch-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.ch-mini span{height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.ch-mini i{display:block;height:100%;background:var(--orange)}
+.ch-mini span.done i{background:var(--green)}
+.ch-note{display:flex;align-items:center;gap:6px;margin-top:12px}
+.challenges.gold .ch-note .icn{color:var(--yellow)}
+.ch-party.gold .streak-party-icon{color:var(--yellow)}
+.ch-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px;margin-top:8px}
+.ch-month{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px 7px;border-radius:12px;background:var(--surface-2)}
+.ch-medals{display:inline-flex;gap:1px;font-size:17px;color:var(--orange);min-height:20px;align-items:center}
+.ch-month.gold{background:linear-gradient(rgba(255,214,10,0.22),rgba(255,214,10,0.22)),var(--surface-2);background:color-mix(in srgb,var(--yellow) 22%,var(--surface-2))}
+.ch-month.gold .ch-medals{color:var(--yellow);font-size:20px}
+.ch-m{font-size:12px;font-weight:600;color:var(--label-2);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){.ch-bar i{transition:none}}
 @keyframes streak-pop{from{transform:scale(.3)}to{transform:none}}
 @keyframes streak-spark{0%{opacity:1;transform:none}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
 /* the workout summary: time and volume share the first row, sets get the wider cell of the second

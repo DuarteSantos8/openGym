@@ -2195,6 +2195,22 @@ export const PT_BR_OVERRIDES = {
   "Watch your video": "Ver o seu vídeo",
   "Your form videos": "Seus vídeos da técnica",
   "Your server doesn’t keep set videos, so this one stays on this phone.": "Seu servidor não guarda vídeos de séries, então este fica neste celular.",
+  // --- monthly challenges ---
+  "Train every week this month": "Treine todas as semanas este mês",
+  "Lift {0} this month": "Levante {0} este mês",
+  "Hit {0} new PR": "Bata {0} novo recorde",
+  "Hit {0} new PRs": "Bata {0} novos recordes",
+  "{0} pull-up this month": "{0} barra fixa este mês",
+  "{0} pull-ups this month": "{0} barras fixas este mês",
+  "Try {0} exercise you have never done": "Experimente {0} exercício que você nunca fez",
+  "Try {0} exercises you have never done": "Experimente {0} exercícios que você nunca fez",
+  "Log your weight on {0} day": "Pese-se em {0} dia",
+  "Log your weight on {0} days": "Pese-se em {0} dias",
+  "Challenge done: {0}. New badge!": "Desafio concluído: {0}. Nova medalha!",
+  "Hide until next month": "Ocultar até o próximo mês",
+  "Gold month. Take a bow.": "Mês de ouro. Pode agradecer os aplausos.",
+  "Every challenge you finish puts a badge here, one shelf per month.": "Cada desafio concluído deixa uma medalha aqui, uma prateleira por mês.",
+  "Three goals a month on Home, sized to how you train.": "Três metas por mês no Início, sob medida para você.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

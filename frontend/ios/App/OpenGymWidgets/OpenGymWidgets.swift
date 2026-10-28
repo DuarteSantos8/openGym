@@ -113,6 +113,7 @@ extension GymWidgetKind: AppEnum {
         .next: DisplayRepresentation(title: "Next workout", image: .init(systemName: "dumbbell.fill")),
         .records: DisplayRepresentation(title: "Records", image: .init(systemName: "trophy.fill")),
         .volume: DisplayRepresentation(title: "Volume", image: .init(systemName: "chart.bar.fill")),
+        .challenges: DisplayRepresentation(title: "Challenges", image: .init(systemName: "rosette")),
     ]
 }
 

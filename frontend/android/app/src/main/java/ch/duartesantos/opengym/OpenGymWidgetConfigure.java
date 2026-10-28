@@ -85,6 +85,7 @@ public class OpenGymWidgetConfigure extends Activity {
     private static final int[] KIND_WORDS = {
         R.string.widget_kind_streak, R.string.widget_kind_weight, R.string.widget_kind_week,
         R.string.widget_kind_next, R.string.widget_kind_records, R.string.widget_kind_volume,
+        R.string.widget_kind_challenges,
     };
 
     private RadioGroup group(JSONObject kinds, String selected) {

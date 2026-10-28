@@ -15,6 +15,7 @@ import Heatmap from '../components/Heatmap.jsx'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import Icon from '../components/Icon.jsx'
 import { StreakCard, Freezes } from '../components/Streak.jsx'
+import { ChallengesStatsCard } from '../components/Challenges.jsx'
 import { WrappedStatsCard } from '../components/WrappedEntry.jsx'
 import { streakInfo } from '../lib/streak.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
@@ -779,6 +780,8 @@ export default function Stats() {
     </div>
 
     {workouts.length > 0 && <StreakCard info={streak} />}
+    {/* The month's challenges and the trophy shelf (lib/challenges.js). */}
+    {workouts.length > 0 && <ChallengesStatsCard S={S} />}
     {/* Your year in openGym, for any year with workouts (components/WrappedEntry.jsx). */}
     <WrappedStatsCard S={S} />
 
