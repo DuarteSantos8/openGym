@@ -158,6 +158,13 @@ class SetView extends WatchUi.View {
             forKey = k;
             editW = Core.toF(row["w"]);
             editR = Core.isTimed(e) ? Core.toF(row["sec"]) : Core.toF(row["r"]);
+            // A per-side set: the numbers of the side up now, not the row's total.
+            var sd = Core.dictOf(row["sides"]);
+            var one = sd == null ? null : Core.dictOf(sd[Core.sideUp(row)]);
+            if (one != null) {
+                if (Core.toF(one["w"]) != null) { editW = Core.toF(one["w"]); }
+                if (Core.toF(one["r"]) != null) { editR = Core.toF(one["r"]); }
+            }
             var st = Core.dictOf(s["set"]);
             focus = (st != null && Core.same(st["crown"], "weight") && hasWeight(e)) ? :w : :r;
             if (!hasWeight(e)) {

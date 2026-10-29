@@ -165,7 +165,7 @@ module Core {
         // The exercise on screen, to find it again in the new window.
         var onScreen = entryAt(s, s["pos"]);
         var onId = onScreen == null ? null : onScreen["id"];
-        var atEnd = cur != null && s["pos"] >= entries(s).size();
+        var atEnd = cur != null && entries(s).size() > 0 && s["pos"] >= entries(s).size();
         if (!sameOne) { s["p"] = {}; s["sk"] = []; s["rest"] = null; }
 
         var p = s["p"];
@@ -210,6 +210,17 @@ module Core {
             }
         }
         s["w"] = nx;
+        // Ticks of exercises the window has moved past: the phone has them (it moved the window).
+        var inWindow = {};
+        for (var k1 = 0; k1 < es.size(); k1 += 1) {
+            var e1 = dictOf(es[k1]);
+            if (e1 != null) { inWindow[strOf(e1["id"])] = true; }
+        }
+        var pk = p.keys();
+        for (var k4 = 0; k4 < pk.size(); k4 += 1) {
+            var cut = pk[k4].find("#");
+            if (cut == null || !inWindow.hasKey(pk[k4].substring(0, cut))) { p.remove(pk[k4]); }
+        }
 
         // Where the watch is now: the same exercise when it is still in the window, else where
         // the phone is (its window starts with the exercise up now).

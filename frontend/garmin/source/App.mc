@@ -281,6 +281,10 @@ module Workout {
         return out;
     }
 
+    function newSet() {
+        setSum = 0; setN = 0; setMax = 0;
+    }
+
     function hrTotals() {
         var out = allN > 0 ? [(allSum / allN).toNumber(), allMax] : null;
         allSum = 0; allN = 0; allMax = 0;
@@ -313,6 +317,8 @@ module Rest {
     function stop() {
         G.state["rest"] = null;
         G.save();
+        // The next set's heart rate counts from here, not from the rest.
+        Workout.newSet();
     }
 
     //! Seconds left, or null without a rest.
