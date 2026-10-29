@@ -49,7 +49,10 @@ export const TIERS = ['bronze', 'silver', 'gold', 'platinum', 'legend']
     Decorative: the row it sits in says what it is. */
 export function Medal ({ tier = 'gold', className = '' }) {
   return <svg className={'medal medal-' + tier + (className ? ' ' + className : '')} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">
-    <path className="medal-rib" d="M7 2.4h3.7l2.5 6.4-3.4 1.7ZM17 2.4h-3.7l-1.4 3.6 2 4.5 3.1-1.6Z" />
+    {/* Two straps crossing into a V: the right one is the left one mirrored, drawn first and a shade
+        darker so it reads as the strap behind (it used to be a lopsided five-cornered patch). */}
+    <path className="medal-rib medal-rib-back" d="M17 2.4h-3.7l-2.5 6.4 3.4 1.7Z" />
+    <path className="medal-rib" d="M7 2.4h3.7l2.5 6.4-3.4 1.7Z" />
     <circle className="medal-disc" cx="12" cy="15.2" r="6.3" />
     <circle className="medal-ring" cx="12" cy="15.2" r="4.3" />
     <path className="medal-star" d="m12 12.6.8 1.6 1.8.3-1.3 1.2.3 1.8-1.6-.8-1.6.8.3-1.8-1.3-1.2 1.8-.3Z" />

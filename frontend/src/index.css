@@ -2227,6 +2227,8 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .medal-gold .medal-rib{fill:#b06f12} .medal-gold .medal-disc{fill:#f2b81c} .medal-gold .medal-ring{stroke:#ffe58a} .medal-gold .medal-star{fill:#fff1b8}
 .medal-platinum .medal-rib{fill:#2f6f86} .medal-platinum .medal-disc{fill:#78c9df} .medal-platinum .medal-ring{stroke:#dff6ff} .medal-platinum .medal-star{fill:#effbff}
 .medal-legend .medal-rib{fill:#a82a0b} .medal-legend .medal-disc{fill:#ff6a2b} .medal-legend .medal-ring{stroke:#ffd36b} .medal-legend .medal-star{fill:#ffe9a8}
+.medal-bronze .medal-rib-back{fill:#7a3c17} .medal-silver .medal-rib-back{fill:#566070} .medal-gold .medal-rib-back{fill:#8a560b}
+.medal-platinum .medal-rib-back{fill:#235668} .medal-legend .medal-rib-back{fill:#821f07} .medal-locked .medal-rib-back{fill:var(--label-4);opacity:.7}
 .medal-locked .medal-rib{fill:var(--label-4)}
 .medal-locked .medal-disc{fill:none;stroke:var(--label-3);stroke-width:1.3;stroke-dasharray:2.4 2}
 .medal-locked .medal-ring,.medal-locked .medal-star{display:none}
