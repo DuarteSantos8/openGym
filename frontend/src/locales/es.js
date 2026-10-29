@@ -3401,4 +3401,13 @@ export default {
   "Slow": "Lenta",
   "Normal": "Normal",
   "Fast": "Rápida",
+  "Merge into…": "Fusionar con…",
+  "Merge into “{0}”?": "¿Fusionar con «{0}»?",
+  "{0} move to “{1}”, with every set, note and record.": "{0} pasan a «{1}», con cada serie, nota y récord.",
+  "Nothing is logged or planned with it yet.": "Aún no hay nada registrado ni planificado con él.",
+  "Then “{0}” is deleted.": "Después se elimina «{0}».",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "Después «{0}» se oculta de tus listas, y al buscarlo aparece «{1}».",
+  "Merge": "Fusionar",
+  "Merged into “{0}”": "Fusionado con «{0}»",
+  "Pick a different exercise.": "Elige otro ejercicio.",
 }

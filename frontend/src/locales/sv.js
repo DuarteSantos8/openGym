@@ -3448,4 +3448,13 @@ export default {
   "Slow": "Långsamt",
   "Normal": "Normalt",
   "Fast": "Snabbt",
+  "Merge into…": "Slå ihop med…",
+  "Merge into “{0}”?": "Slå ihop med ”{0}”?",
+  "{0} move to “{1}”, with every set, note and record.": "{0} flyttas till ”{1}”, med varje set, anteckning och rekord.",
+  "Nothing is logged or planned with it yet.": "Inget är loggat eller planerat med den än.",
+  "Then “{0}” is deleted.": "Sedan tas ”{0}” bort.",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "Sedan döljs ”{0}” i dina listor, och söker du efter den hittar du ”{1}”.",
+  "Merge": "Slå ihop",
+  "Merged into “{0}”": "Ihopslagen med ”{0}”",
+  "Pick a different exercise.": "Välj en annan övning.",
 }

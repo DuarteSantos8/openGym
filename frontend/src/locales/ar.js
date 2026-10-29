@@ -3456,4 +3456,13 @@ export default {
   "Slow": "بطيء",
   "Normal": "عادي",
   "Fast": "سريع",
+  "Merge into…": "دمج في…",
+  "Merge into “{0}”?": "دمج في «{0}»؟",
+  "{0} move to “{1}”, with every set, note and record.": "{0} تنتقل إلى «{1}»، مع كل مجموعة وملاحظة ورقم قياسي.",
+  "Nothing is logged or planned with it yet.": "لا شيء مسجّل أو مخطط له بعد.",
+  "Then “{0}” is deleted.": "ثم يُحذف «{0}».",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "ثم يُخفى «{0}» من قوائمك، والبحث عنه يجد «{1}».",
+  "Merge": "دمج",
+  "Merged into “{0}”": "تم الدمج في «{0}»",
+  "Pick a different exercise.": "اختر تمرينًا مختلفًا.",
 }

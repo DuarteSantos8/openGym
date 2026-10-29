@@ -133,3 +133,20 @@ describe('the "which profile?" error is a config message, not a roster', () => {
     })
   }
 })
+
+// #656: an exercise merged into another in the app. A workout still logged against the source (a
+// device that synced it before it heard of the merge) reads as the exercise it went into.
+describe('merged exercises', () => {
+  test('anything still named by a merged-away exercise reads as its target', async () => {
+    const state = {
+      workouts: [{ id: 'w1', d: '2026-10-01', entries: [{ id: 'cfn', sets: [{ w: 70, r: 8, done: true }] }] }],
+      routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'cfn', sets: 3 }] }],
+      customEx: [],
+      exMerged: { cfn: { into: '0025', _ts: 5 }, gone: { into: null, _ts: 6 } },
+    }
+    const s = await load(mk({ 'db.json': DB, 'state-alex.json': JSON.stringify(state) }))
+    const st = s.getState()
+    expect(st.workouts[0].entries[0].id).toBe('0025')
+    expect(st.routines[0].ex[0].id).toBe('0025')
+  })
+})

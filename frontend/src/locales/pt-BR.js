@@ -2283,6 +2283,15 @@ export const PT_BR_OVERRIDES = {
   "Slow": "Lenta",
   "Normal": "Normal",
   "Fast": "Rápida",
+  "Merge into…": "Juntar com…",
+  "Merge into “{0}”?": "Juntar com “{0}”?",
+  "{0} move to “{1}”, with every set, note and record.": "{0} vão para “{1}”, com cada série, nota e recorde.",
+  "Nothing is logged or planned with it yet.": "Ainda não tem nada registrado nem planejado com ele.",
+  "Then “{0}” is deleted.": "Depois “{0}” é excluído.",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "Depois “{0}” fica escondido das suas listas, e buscar por ele encontra “{1}”.",
+  "Merge": "Juntar",
+  "Merged into “{0}”": "Juntado com “{0}”",
+  "Pick a different exercise.": "Escolha outro exercício.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

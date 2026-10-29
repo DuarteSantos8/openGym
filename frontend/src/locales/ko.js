@@ -3401,4 +3401,13 @@ export default {
   "Slow": "느리게",
   "Normal": "보통",
   "Fast": "빠르게",
+  "Merge into…": "다른 운동으로 합치기…",
+  "Merge into “{0}”?": "“{0}”(으)로 합칠까요?",
+  "{0} move to “{1}”, with every set, note and record.": "{0}이(가) 모든 세트, 메모, 기록과 함께 “{1}”(으)로 옮겨져요.",
+  "Nothing is logged or planned with it yet.": "아직 이 운동으로 기록하거나 계획한 게 없어요.",
+  "Then “{0}” is deleted.": "그다음 “{0}”은(는) 삭제돼요.",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "그다음 “{0}”은(는) 목록에서 숨겨지고, 검색하면 “{1}”이(가) 나와요.",
+  "Merge": "합치기",
+  "Merged into “{0}”": "“{0}”(으)로 합쳤어요",
+  "Pick a different exercise.": "다른 운동을 골라 주세요.",
 }

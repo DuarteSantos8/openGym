@@ -3394,4 +3394,13 @@ export default {
   "Slow": "慢",
   "Normal": "正常",
   "Fast": "快",
+  "Merge into…": "合併到…",
+  "Merge into “{0}”?": "合併到「{0}」？",
+  "{0} move to “{1}”, with every set, note and record.": "{0}將移到「{1}」，每組、備註和紀錄都會一起過去。",
+  "Nothing is logged or planned with it yet.": "還沒有用它記錄或計畫過任何內容。",
+  "Then “{0}” is deleted.": "然後「{0}」會被刪除。",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "然後「{0}」會從清單中隱藏，搜尋它會找到「{1}」。",
+  "Merge": "合併",
+  "Merged into “{0}”": "已合併到「{0}」",
+  "Pick a different exercise.": "請選一個不同的動作。",
 }

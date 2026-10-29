@@ -51,6 +51,7 @@ import PrintPlanSheet from './components/PrintPlanSheet.jsx'
 import { printWorkout } from './lib/report-print.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
 import { setTrendOn, setTrendsFor, lastTimeBefore, trendGlyph, trendLabel } from './lib/set-trend.js'
+import { mergeExercise, undoMerge, mergePreview, mergeBlocked } from './lib/exercise-merge.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep } from './lib/dumbbells.js'
@@ -1331,6 +1332,10 @@ function ExerciseDetail({ ex, close }) {
       <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>
       <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{t('Delete')}</Button>
     </div>}
+    {/* Merge into… (#656, lib/exercise-merge.js): this exercise's history and plans onto another,
+        for an import that made "Bench Press (Barbell)" next to the catalogue's bench press. */}
+    {!ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })()) &&
+      <Button icon="merge" style={{ marginTop: 8 }} onClick={() => mergeExerciseFlow(ex, close)}>{t('Merge into…')}</Button>}
     {modeOf({ id: ex.id }) === 'reps' && <>
       <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
       <ExUnitRow ex={ex} /></div>
@@ -1630,6 +1635,40 @@ export function deleteCustomEx(ex, afterDelete) {
       afterDelete && afterDelete()
     }
   })
+}
+
+// Merge into… (#656): pick the exercise this one's history goes to, see what moves, confirm; the
+// toast's Undo puts it all back (lib/exercise-merge.js).
+export function mergeExerciseFlow(ex, afterMerge) {
+  if (S().active?.entries.some(e => e.id === ex.id)) { toast(t('Finish your current workout first')); return }
+  const name = exerciseNameText(ex)
+  const picker = exercisePicker(target => {
+    picker.close()
+    const live = S()
+    const why = mergeBlocked(live, ex.id, target.id)
+    if (why) { toast(t(why)); return }
+    const p = mergePreview(live, ex.id, target.id)
+    const into = exerciseNameText(target)
+    const moves = [
+      p.workouts && tn('{0} workout', '{0} workouts', p.workouts),
+      p.routines && tn('{0} routine', '{0} routines', p.routines),
+      p.programmes && tn('{0} programme', '{0} programmes', p.programmes),
+    ].filter(Boolean)
+    confirmSheet({
+      title: t('Merge into “{0}”?', into),
+      message: [
+        moves.length ? t('{0} move to “{1}”, with every set, note and record.', moves.join(', '), into) : t('Nothing is logged or planned with it yet.'),
+        p.custom ? t('Then “{0}” is deleted.', name) : t('Then “{0}” is hidden from your lists, and searching for it finds “{1}”.', name, into),
+      ].join(' '),
+      confirmText: t('Merge'),
+      onConfirm: () => {
+        let undo = null
+        try { update(s => { undo = mergeExercise(s, ex.id, target.id, { names: [name] }).undo }) } catch (e) { toast(t(e.message)); return }
+        afterMerge && afterMerge()
+        ui().toast(t('Merged into “{0}”', into), { action: t('Undo'), onAction: () => { if (undo) update(s => undoMerge(s, undo)) } })
+      },
+    })
+  }, { title: t('Merge into…'), actionIcon: 'merge' })
 }
 
 /* ============================ exercise picker ============================ */

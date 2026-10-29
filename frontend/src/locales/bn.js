@@ -3480,4 +3480,13 @@ export default {
   "Slow": "ধীরে",
   "Normal": "স্বাভাবিক",
   "Fast": "দ্রুত",
+  "Merge into…": "এর সাথে মেলান…",
+  "Merge into “{0}”?": "“{0}”-এর সাথে মেলাবেন?",
+  "{0} move to “{1}”, with every set, note and record.": "{0} “{1}”-এ চলে যাবে, প্রতিটি সেট, নোট আর রেকর্ডসহ।",
+  "Nothing is logged or planned with it yet.": "এটা দিয়ে এখনো কিছু লগ বা পরিকল্পনা করা হয়নি।",
+  "Then “{0}” is deleted.": "তারপর “{0}” মুছে যাবে।",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "তারপর “{0}” আপনার তালিকা থেকে লুকানো থাকবে, আর এটা খুঁজলে “{1}” পাওয়া যাবে।",
+  "Merge": "মেলান",
+  "Merged into “{0}”": "“{0}”-এর সাথে মেলানো হয়েছে",
+  "Pick a different exercise.": "অন্য একটা ব্যায়াম বেছে নিন।",
 }

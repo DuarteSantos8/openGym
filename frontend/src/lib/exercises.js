@@ -122,7 +122,15 @@ export function healCustomEx(list) {
   return changed ? out : list
 }
 // Full searchable catalogue — customs first so your own exercises are easy to find.
-export const allExercises = st => [...(st.customEx || []), ...CATALOGUE]
+// Every exercise you can pick: yours, then the catalogue's, less any merged into another (#656,
+// lib/exercise-merge.js): a catalogue exercise cannot be removed, so a merge hides it instead.
+export const allExercises = st => {
+  const all = [...(st?.customEx || []), ...CATALOGUE]
+  const m = st?.exMerged
+  if (!m || typeof m !== 'object') return all
+  const away = new Set(Object.keys(m).filter(k => m[k] && m[k].into))
+  return away.size ? all.filter(e => !away.has(e.id)) : all
+}
 
 function searchableText(value) {
   if (Array.isArray(value)) return value.map(searchableText).join(' ')

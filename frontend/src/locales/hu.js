@@ -3404,4 +3404,13 @@ export default {
   "Slow": "Lassú",
   "Normal": "Normál",
   "Fast": "Gyors",
+  "Merge into…": "Összevonás ezzel…",
+  "Merge into “{0}”?": "Összevonod ezzel: „{0}”?",
+  "{0} move to “{1}”, with every set, note and record.": "{0} átkerül ide: „{1}”, minden sorozattal, jegyzettel és rekorddal.",
+  "Nothing is logged or planned with it yet.": "Még semmi nincs vele rögzítve vagy betervezve.",
+  "Then “{0}” is deleted.": "Utána a(z) „{0}” törlődik.",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "Utána a(z) „{0}” eltűnik a listáidból, és ha rákeresel, a(z) „{1}” jön fel.",
+  "Merge": "Összevonás",
+  "Merged into “{0}”": "Összevonva ezzel: „{0}”",
+  "Pick a different exercise.": "Válassz egy másik gyakorlatot.",
 }

@@ -91,6 +91,9 @@ session. The routine's own weight is the last fallback the session builder consu
 first; its reps hold unless a policy that moves reps moved them, or the profile starts planned
 sessions from the last session (`starts_from`). Ask `preview_session` before naming a weight.
 
+An exercise merged into another in the app (an exercise's details → Merge into…) reads as the one
+it went into everywhere, also in a workout another device logged against it before it synced.
+
 Each tool returns JSON the LLM can format as it likes; structured fields (sets, dates, levels)
 are pre-formatted into human-readable labels in `src/labels.js` so the LLM doesn't need to
 re-interpret them.

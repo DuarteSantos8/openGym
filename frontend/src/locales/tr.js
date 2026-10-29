@@ -3401,4 +3401,13 @@ export default {
   "Slow": "Yavaş",
   "Normal": "Normal",
   "Fast": "Hızlı",
+  "Merge into…": "Şununla birleştir…",
+  "Merge into “{0}”?": "“{0}” ile birleştirilsin mi?",
+  "{0} move to “{1}”, with every set, note and record.": "{0}, her set, not ve rekorla birlikte “{1}” egzersizine taşınır.",
+  "Nothing is logged or planned with it yet.": "Bununla henüz kayıtlı ya da planlı bir şey yok.",
+  "Then “{0}” is deleted.": "Ardından “{0}” silinir.",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "Ardından “{0}” listelerinden gizlenir, onu aramak “{1}” egzersizini bulur.",
+  "Merge": "Birleştir",
+  "Merged into “{0}”": "“{0}” ile birleştirildi",
+  "Pick a different exercise.": "Başka bir egzersiz seç.",
 }

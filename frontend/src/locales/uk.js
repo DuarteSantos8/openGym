@@ -3398,4 +3398,13 @@ export default {
   "Slow": "Повільно",
   "Normal": "Звичайно",
   "Fast": "Швидко",
+  "Merge into…": "Об’єднати з…",
+  "Merge into “{0}”?": "Об’єднати з «{0}»?",
+  "{0} move to “{1}”, with every set, note and record.": "{0} переходять до «{1}» з усіма підходами, нотатками й рекордами.",
+  "Nothing is logged or planned with it yet.": "З ним поки нічого не записано й не заплановано.",
+  "Then “{0}” is deleted.": "Потім «{0}» буде видалено.",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "Потім «{0}» зникне з ваших списків, а пошук за ним знайде «{1}».",
+  "Merge": "Об’єднати",
+  "Merged into “{0}”": "Об’єднано з «{0}»",
+  "Pick a different exercise.": "Виберіть іншу вправу.",
 }

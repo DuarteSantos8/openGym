@@ -3412,4 +3412,13 @@ export default {
   "Slow": "ช้า",
   "Normal": "ปกติ",
   "Fast": "เร็ว",
+  "Merge into…": "รวมเข้ากับ…",
+  "Merge into “{0}”?": "รวมเข้ากับ “{0}” ไหม",
+  "{0} move to “{1}”, with every set, note and record.": "{0} จะย้ายไปที่ “{1}” พร้อมทุกเซ็ต โน้ต และสถิติ",
+  "Nothing is logged or planned with it yet.": "ยังไม่มีอะไรบันทึกหรือวางแผนไว้กับท่านี้",
+  "Then “{0}” is deleted.": "จากนั้น “{0}” จะถูกลบ",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "จากนั้น “{0}” จะถูกซ่อนจากรายการของคุณ และค้นหาชื่อนี้จะเจอ “{1}”",
+  "Merge": "รวม",
+  "Merged into “{0}”": "รวมเข้ากับ “{0}” แล้ว",
+  "Pick a different exercise.": "เลือกท่าอื่น",
 }

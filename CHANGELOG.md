@@ -28,6 +28,16 @@ app's language, slow, normal or fast, with a Try it button. The apps use the pho
 and your music only turns down for a moment, it never stops; a browser uses its built-in voice.
 Only while the app is on screen: a locked phone still gets the end tone and the notification.
 
+**Merge two exercises into one** (#656, thanks @dbanno). Imported "Bench Press (Barbell)" from
+FitNotes and now have two bench presses? An exercise's details have Merge into…: pick the one it
+should be, see what moves ("38 workouts, 3 routines move"), confirm. Every logged set, note, form
+video and record goes over, and so do routine slots (with their warm-ups and backups), programme
+targets, the kept working weight, the standing note, aliases, the favourite star and its bar and
+plate settings. Your own exercise is then deleted; a catalogue one is hidden from your lists, and
+searching for its name finds the one you merged it into. Undo on the toast puts everything back.
+Another device that still logged against the old one is brought in line when it syncs, and the
+MCP bridge reads it the same way.
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic

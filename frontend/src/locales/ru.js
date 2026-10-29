@@ -3405,4 +3405,13 @@ export default {
   "Slow": "Медленно",
   "Normal": "Обычно",
   "Fast": "Быстро",
+  "Merge into…": "Объединить с…",
+  "Merge into “{0}”?": "Объединить с «{0}»?",
+  "{0} move to “{1}”, with every set, note and record.": "{0} переходят в «{1}» со всеми подходами, заметками и рекордами.",
+  "Nothing is logged or planned with it yet.": "С ним пока ничего не записано и не запланировано.",
+  "Then “{0}” is deleted.": "Затем «{0}» удаляется.",
+  "Then “{0}” is hidden from your lists, and searching for it finds “{1}”.": "Затем «{0}» скрывается из ваших списков, а поиск по нему находит «{1}».",
+  "Merge": "Объединить",
+  "Merged into “{0}”": "Объединено с «{0}»",
+  "Pick a different exercise.": "Выберите другое упражнение.",
 }
