@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
@@ -50,6 +50,10 @@ import { buildPlanBundle, buildProgrammeBundle, parsePlan, mergePlan } from './l
 import PrintPlanSheet from './components/PrintPlanSheet.jsx'
 import { printWorkout } from './lib/report-print.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
+import { setTrendOn, setTrendsFor, lastTimeBefore, trendGlyph, trendLabel } from './lib/set-trend.js'
+import { mergeExercise, undoMerge, mergePreview, mergeBlocked } from './lib/exercise-merge.js'
+import { setNoteOf, withSetNote, SET_NOTE_MAX } from './lib/set-notes.js'
+import { StrengthLevelBlock } from './components/StrengthLevel.jsx'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep } from './lib/dumbbells.js'
@@ -455,7 +459,7 @@ function WeighInRow({ d, r, unit, confirm = false, dayShown = true }) {
       {when}{r.src && r.src !== 'import' && <Icon name="heart" className="bw-src" />}
     </button>
     <span className="row" style={{ gap: 12 }}><b>{fmtNum(r.w)} {unit}</b>
-      <button className="iconbtn" data-tour="weighin-del" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 15, color: 'var(--red)' }} onClick={confirm ? ask : delEntry} aria-label={t('Delete weigh-in')}><Icon name="trash" /></button></span>
+      <button className="iconbtn" data-tour="weighin-del" style={{ width: 32, height: 30, borderRadius: 8, fontSize: 'var(--fs-subhead)', color: 'var(--red)' }} onClick={confirm ? ask : delEntry} aria-label={t('Delete weigh-in')}><Icon name="trash" /></button></span>
   </div>
 }
 
@@ -491,7 +495,7 @@ function WeighIns() {
           <span className="small" style={{ fontWeight: 600 }}>{t('Week of {0}', fmtDate(w.key))}</span>
           <span className="small row" style={{ gap: 8 }}>
             {moved && <span className="row" style={{ gap: 2, fontWeight: 500, color: bwDeltaColor(w.delta, w.avg) }}>
-              <Icon name={w.delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 12 }} />{fmtNum(Math.abs(w.delta))}
+              <Icon name={w.delta > 0 ? 'arrowUp' : 'arrowDown'} style={{ fontSize: 'var(--fs-caption)' }} />{fmtNum(Math.abs(w.delta))}
             </span>}
             <span className="muted" style={{ whiteSpace: 'nowrap' }}>{t('Average {0}', fmtNum(w.avg) + ' ' + st.unit)}</span>
           </span>
@@ -563,23 +567,23 @@ function ImportSummary({ parsed, close }) {
 
     <div className="tiles" style={{ textAlign: 'start' }}>
       {isBW ? <>
-        <div className="tile"><div className="l">{t('Weigh-ins')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.bodyweight.length}</div></div>
-        {checkIns.length > 0 && <div className="tile"><div className="l">{t('Body measurements')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{checkIns.length}</div></div>}
-        <div className="tile"><div className="l">{t('New')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{fresh}</div></div>
+        <div className="tile"><div className="l">{t('Weigh-ins')}</div><div className="v v-sm">{parsed.bodyweight.length}</div></div>
+        {checkIns.length > 0 && <div className="tile"><div className="l">{t('Body measurements')}</div><div className="v v-sm">{checkIns.length}</div></div>}
+        <div className="tile"><div className="l">{t('New')}</div><div className="v v-sm">{fresh}</div></div>
       </> : <>
         {hasWorkouts && <>
-          <div className="tile"><div className="l">{t('Workouts')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.workouts.length}</div></div>
-          <div className="tile"><div className="l">{t('Sets')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{parsed.sets}</div></div>
+          <div className="tile"><div className="l">{t('Workouts')}</div><div className="v v-sm">{parsed.workouts.length}</div></div>
+          <div className="tile"><div className="l">{t('Sets')}</div><div className="v v-sm">{parsed.sets}</div></div>
         </>}
-        {plans && <div className="tile"><div className="l">{t('Routines')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{plans.routines.length}</div></div>}
-        <div className="tile"><div className="l">{t('Exercises matched')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{plans ? new Set([...(parsed.matchedIds || []), ...plans.matchedIds]).size : parsed.matched}</div></div>
-        <div className="tile"><div className="l">{t('Added as your own')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{plans ? unmatched.length : parsed.created}</div></div>
+        {plans && <div className="tile"><div className="l">{t('Routines')}</div><div className="v v-sm">{plans.routines.length}</div></div>}
+        <div className="tile"><div className="l">{t('Exercises matched')}</div><div className="v v-sm">{plans ? new Set([...(parsed.matchedIds || []), ...plans.matchedIds]).size : parsed.matched}</div></div>
+        <div className="tile"><div className="l">{t('Added as your own')}</div><div className="v v-sm">{plans ? unmatched.length : parsed.created}</div></div>
       </>}
     </div>
 
-    {parsed.mixedUnits ? <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
+    {parsed.mixedUnits ? <div className="small" style={{ color: 'var(--gold-ink)', marginBottom: 10 }}>
       {t('The file mixes kg and lb, so each set is converted to {0}.', st.unit)}
-    </div> : parsed.converted ? <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
+    </div> : parsed.converted ? <div className="small" style={{ color: 'var(--gold-ink)', marginBottom: 10 }}>
       {t('The file is in {0} and your profile is in {1}, so weights get converted.', parsed.fileUnit, st.unit)}
     </div> : null}
     {hasWorkouts && !isBW && !parsed.fileUnit && !parsed.mixedUnits && <div className="small dim" style={{ marginBottom: 10 }}>
@@ -788,36 +792,36 @@ function HevyImportSheet({ close }) {
     </div>
 
     <div className="tiles" style={{ textAlign: 'start' }}>
-      <div className="tile"><div className="l">{t('Workouts')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{w.workouts.length}</div></div>
-      <div className="tile"><div className="l">{t('Routines')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{r.routines.length}</div></div>
-      <div className="tile"><div className="l">{t('Exercises matched')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{counts.matched}</div></div>
-      <div className="tile"><div className="l">{t('Added as your own')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{counts.created}</div></div>
+      <div className="tile"><div className="l">{t('Workouts')}</div><div className="v v-sm">{w.workouts.length}</div></div>
+      <div className="tile"><div className="l">{t('Routines')}</div><div className="v v-sm">{r.routines.length}</div></div>
+      <div className="tile"><div className="l">{t('Exercises matched')}</div><div className="v v-sm">{counts.matched}</div></div>
+      <div className="tile"><div className="l">{t('Added as your own')}</div><div className="v v-sm">{counts.created}</div></div>
     </div>
 
     {w.workouts.length > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', gap: 12 }}>
       <div>
-        <div className="tt" style={{ fontSize: 15 }}>{t('Import workouts')}</div>
+        <div className="tt" style={{ fontSize: 'var(--fs-subhead)' }}>{t('Import workouts')}</div>
         <div className="small dim">{t('{0} new · {1} days already here', freshW, haveW)}</div>
       </div>
       <Switch checked={wantWorkouts} onChange={setWantWorkouts} />
     </div>}
     {r.routines.length > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', gap: 12 }}>
       <div>
-        <div className="tt" style={{ fontSize: 15 }}>{t('Import routines')}</div>
+        <div className="tt" style={{ fontSize: 'var(--fs-subhead)' }}>{t('Import routines')}</div>
         <div className="small dim">{t('{0} routines · {1} exercises, added as new plans', freshR, r.exerciseCount)}</div>
       </div>
       <Switch checked={wantRoutines} onChange={setWantRoutines} />
     </div>}
     {b.bodyweight.length > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', borderBottom: '1px solid var(--sep)', gap: 12, marginBottom: 8 }}>
       <div>
-        <div className="tt" style={{ fontSize: 15 }}>{t('Import weigh-ins')}</div>
+        <div className="tt" style={{ fontSize: 'var(--fs-subhead)' }}>{t('Import weigh-ins')}</div>
         <div className="small dim">{t('{0} new · {1} days already here', freshB, haveB)}</div>
       </div>
       <Switch checked={wantBody} onChange={setWantBody} />
     </div>}
     {!b.bodyweight.length && <div style={{ borderBottom: '1px solid var(--sep)', marginBottom: 8 }} />}
 
-    {(w.converted || r.converted) && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 10 }}>
+    {(w.converted || r.converted) && <div className="small" style={{ color: 'var(--gold-ink)', marginBottom: 10 }}>
       {t('Hevy stores weights in kg, so they’ll be converted to {0}.', st.unit)}
     </div>}
     {wantWorkouts && (w.rirSets + w.rpeSets) > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
@@ -1255,7 +1259,7 @@ function OneRM({ ex }) {
     </div>
     <div className="row between" style={{ marginBottom: 4 }}>
       <span className="muted small">{t('Estimate')}</span>
-      <b className="accent" style={{ fontSize: 20 }}>{est === null ? '–' : fmtNum(est) + ' ' + st.unit}</b>
+      <b className="accent" style={{ fontSize: 'var(--fs-title3)' }}>{est === null ? '–' : fmtNum(est) + ' ' + st.unit}</b>
     </div>
     <div className="small dim">{est === null
       ? t('Enter a weight and 1–{0} reps. Beyond that it’s basically guesswork.', REP_CAP)
@@ -1320,16 +1324,20 @@ function ExerciseDetail({ ex, close }) {
     </div>
     <ExerciseAliasesEditor key={ex.id} ex={ex} />
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
-    {best > 0 && <div className="small row" style={{ marginBottom: 6, gap: 5 }}><Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? ` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}` : ''}</div>}
+    {/* One line of text that wraps as a sentence: as a flex row, the last session became a
+        separate column beside "Best: 105 kg" once it wrapped (design review 1.4.5). */}
+    {best > 0 && <div className="small ex-best"><Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />{t('Best:')} <b className="accent" style={{ whiteSpace: 'nowrap' }}>{fmtNum(best)} {st.unit}</b>{last ? <span className="muted">{` · ${t('last')} ${fmtDate(last.d)}: ${last.sets.map(s => setLabel(ex.id, s, last.target, speedUnitOf(st))).join(', ')}`}</span> : ''}</div>}
     <Button variant="primary" icon="plus" style={{ margin: '10px 0 4px' }} onClick={() => addToRoutineSheet(ex)}>{t('Add to my plan')}</Button>
     {last && <Button icon="history" style={{ marginTop: 4 }} onClick={() => exerciseHistorySheet(ex.id)}>{t('History')}</Button>}
     <FormVideosSection exId={ex.id} />
     {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
-    {isCustomEx(ex) && <div className="row" style={{ gap: 8, marginTop: 8 }}>
-      <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>
-      <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{t('Delete')}</Button>
-    </div>}
+    {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
+    {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
+    {/* Merge into… (#656, lib/exercise-merge.js): this exercise's history and plans onto another,
+        for an import that made "Bench Press (Barbell)" next to the catalogue's bench press. */}
+    {!ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })()) &&
+      <Button icon="merge" style={{ marginTop: 8 }} onClick={() => mergeExerciseFlow(ex, close)}>{t('Merge into…')}</Button>}
     {modeOf({ id: ex.id }) === 'reps' && <>
       <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
       <ExUnitRow ex={ex} /></div>
@@ -1344,6 +1352,9 @@ function ExerciseDetail({ ex, close }) {
       <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
         onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
     </>}
+    {/* Beginner to Elite for the main lifts, from the best estimated 1RM against body weight
+        (lib/strength-level.js). Hidden without a weigh-in. */}
+    <StrengthLevelBlock exId={ex.id} />
     {/* No one-rep max on an assistance machine: the load is the help you were given, so the
         calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
         stronger (issue #232). Cardio has none for the same kind of reason. */}
@@ -1357,6 +1368,13 @@ function ExerciseDetail({ ex, close }) {
     {!isCustomEx(ex) && !ex.missing && <a className="small dim exfix-link" target="_blank" rel="noopener"
       href={'https://github.com/DuarteSantos8/openGym/issues/new?template=exercise.yml&exercise=' + encodeURIComponent(ex.id + ', ' + ex.n)}>
       <Icon name="pencil" /> {t('Suggest a fix for this exercise')}</a>}
+    {/* The one destructive action, last and on its own: a red row, not a filled red button next
+        to Edit, which made deleting the louder of the two (redesign 1.4.5, P6). It still asks. */}
+    {isCustomEx(ex) && <div className="sect-b ex-del">
+      <button type="button" className="lrow tap danger" onClick={() => deleteCustomEx(ex, close)}>
+        <Icon name="trash" className="ex-del-i" /><span className="lrow-m"><span className="lrow-t">{t('Delete exercise')}</span></span>
+      </button>
+    </div>}
   </>
 }
 export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail ex={ex} close={close} />)
@@ -1419,7 +1437,7 @@ function ExerciseHistory({ exId }) {
       <LineChart points={onRel ? rel : onE1 ? h.e1rmPoints : h.points} h={140} unit={onRel ? '% BW' : onE1 ? st.unit : unit} color="var(--blue)" />
     </div>
     <div className="small row" style={{ margin: '6px 0 4px', gap: 5 }}>
-      <Icon name="trophy" style={{ fontSize: 14, color: 'var(--yellow)' }} />
+      <Icon name="trophy" style={{ fontSize: 14, color: 'var(--gold-ink)' }} />
       {t('Best:')} <b className="accent">{onRel ? fmtNum(relBest) + ' % BW' : fmtNum(onE1 ? e1Best : h.best) + ' ' + (onE1 ? st.unit : unit)}</b>
     </div>
     {onRel && <div className="small dim">{relTop ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')}</div>}
@@ -1594,7 +1612,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
         options={MUSCLES.filter(m => !primaries.includes(m)).map(m => ({ value: m, label: t(MUSCLE_NAME[m]) }))}
         onToggle={toggleSecondary} noneLabel={t('No explicit muscle group')} doneLabel={t('Done')} />
     </>}
-    {bp === 'cardio' && <div className="small dim row" style={{ marginBottom: 10, gap: 5 }}><Icon name="figureRun" style={{ fontSize: 13 }} />{t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
+    {bp === 'cardio' && <div className="small dim row" style={{ marginBottom: 10, gap: 5 }}><Icon name="figureRun" style={{ fontSize: 'var(--fs-footnote)' }} />{t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
     <textarea className="input" rows={4} maxLength={1000} placeholder={t('Description (optional): setup, cues, anything you want to remember')}
       value={desc} onChange={e => setDesc(e.target.value)} />
     <div data-tour="cx-media"><CustomMediaField media={media} url={url} onChange={onMedia} /></div>
@@ -1629,6 +1647,40 @@ export function deleteCustomEx(ex, afterDelete) {
       afterDelete && afterDelete()
     }
   })
+}
+
+// Merge into… (#656): pick the exercise this one's history goes to, see what moves, confirm; the
+// toast's Undo puts it all back (lib/exercise-merge.js).
+export function mergeExerciseFlow(ex, afterMerge) {
+  if (S().active?.entries.some(e => e.id === ex.id)) { toast(t('Finish your current workout first')); return }
+  const name = exerciseNameText(ex)
+  const picker = exercisePicker(target => {
+    picker.close()
+    const live = S()
+    const why = mergeBlocked(live, ex.id, target.id)
+    if (why) { toast(t(why)); return }
+    const p = mergePreview(live, ex.id, target.id)
+    const into = exerciseNameText(target)
+    const moves = [
+      p.workouts && tn('{0} workout', '{0} workouts', p.workouts),
+      p.routines && tn('{0} routine', '{0} routines', p.routines),
+      p.programmes && tn('{0} programme', '{0} programmes', p.programmes),
+    ].filter(Boolean)
+    confirmSheet({
+      title: t('Merge into “{0}”?', into),
+      message: [
+        moves.length ? t('{0} move to “{1}”, with every set, note and record.', moves.join(', '), into) : t('Nothing is logged or planned with it yet.'),
+        p.custom ? t('Then “{0}” is deleted.', name) : t('Then “{0}” is hidden from your lists, and searching for it finds “{1}”.', name, into),
+      ].join(' '),
+      confirmText: t('Merge'),
+      onConfirm: () => {
+        let undo = null
+        try { update(s => { undo = mergeExercise(s, ex.id, target.id, { names: [name] }).undo }) } catch (e) { toast(t(e.message)); return }
+        afterMerge && afterMerge()
+        ui().toast(t('Merged into “{0}”', into), { action: t('Undo'), onAction: () => { if (undo) update(s => undoMerge(s, undo)) } })
+      },
+    })
+  }, { title: t('Merge into…'), actionIcon: 'merge' })
 }
 
 /* ============================ exercise picker ============================ */
@@ -1757,9 +1809,9 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups }) {
       {q && <button className="clear" onClick={() => { setQ(''); setShown(50) }} aria-label={t('Clear')}><Icon name="xmark" /></button>}</div>
       <ExerciseViewToggle /></div></div>
     {profile && !(like && profiles.length) && <div className="small dim row" style={{ margin: '8px 0 2px', gap: 6, alignItems: 'center' }}>
-      <Icon name="kettlebell" style={{ fontSize: 13 }} />
+      <Icon name="kettlebell" style={{ fontSize: 'var(--fs-footnote)' }} />
       {showAll ? t('Showing all equipment') : t('Showing what you have in "{0}"', profile.name)}
-      <button className="chip nocap" style={{ marginInlineStart: 'auto', padding: '3px 10px', fontSize: 12 }} onClick={() => setShowAll(v => !v)}>
+      <button className="chip nocap" style={{ marginInlineStart: 'auto', padding: '3px 10px', fontSize: 'var(--fs-caption)' }} onClick={() => setShowAll(v => !v)}>
         {showAll ? t('Filter by "{0}"', profile.name) : t('Show all equipment')}
       </button>
     </div>}
@@ -1768,9 +1820,9 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups }) {
         without forgetting the choice (issue #71). The favourites/chosen chips still clear it —
         those are cross-body-part views where a stale equipment filter would be confusing. */}
     <div className="chips" ref={bpStrip} style={{ margin: eqOpts.length > 1 || catOpts.length > 1 ? '10px 0 6px' : '10px 0' }}>
-      {likeTg && <button className={'chip nocap' + (bp === SAME ? ' on' : '')} onClick={() => { setBp(SAME); setShown(50) }}><Icon name="figureStrength" style={{ fontSize: 12, display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Same muscle: {0}', t(MUSCLE_NAME[likeTg] || likeTg))}</button>}
+      {likeTg && <button className={'chip nocap' + (bp === SAME ? ' on' : '')} onClick={() => { setBp(SAME); setShown(50) }}><Icon name="figureStrength" style={{ fontSize: 'var(--fs-caption)', display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Same muscle: {0}', t(MUSCLE_NAME[likeTg] || likeTg))}</button>}
       {favCount > 0 && <button className={'chip' + (bp === '☆' ? ' on' : '')} onClick={() => { setBp('☆'); setEq(''); setShown(50) }}><Icon name="starFill" className="fav-star" />{t('Favourites')} ({favCount})</button>}
-      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} onClick={() => { setBp('★'); setEq(''); setShown(50) }}><Icon name="starFill" style={{ fontSize: 12, display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
+      {chosenCount > 0 && <button className={'chip' + (bp === '★' ? ' on' : '')} onClick={() => { setBp('★'); setEq(''); setShown(50) }}><Icon name="starFill" style={{ fontSize: 'var(--fs-caption)', display: 'inline-block', marginInlineEnd: 4, verticalAlign: '-1px' }} />{t('Chosen')} ({chosenCount})</button>}
       <button className={'chip nocap' + (!bp ? ' on' : '')} onClick={() => { setBp(''); setShown(50) }}>{t('All')}</button>
       {BODYPARTS.map(b => <button key={b} className={'chip' + (bp === b ? ' on' : '')} onClick={() => { setBp(b); setShown(50) }}>{t(b)}</button>)}
     </div>
@@ -2790,13 +2842,13 @@ function PlanImport({ bundle, close }) {
       {bundle.programmes?.length > 0 ? ' · ' + tn('{0} programme', '{0} programmes', bundle.programmes.length) : ''}
     </div>
     <div className="dim small" style={{ marginBottom: 14, lineHeight: 1.4 }}>{t('These are added as new routines. Nothing you already have is touched.')}</div>
-    {bundle.dropped > 0 && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 14, lineHeight: 1.4 }}>
+    {bundle.dropped > 0 && <div className="small" style={{ color: 'var(--gold-ink)', marginBottom: 14, lineHeight: 1.4 }}>
       {t(bundle.dropped === 1
         ? '{0} exercise in the file isn’t in your library and was left out.'
         : '{0} exercises in the file aren’t in your library and were left out.', bundle.dropped)}
     </div>}
     {bundle.scheduledDays > 0 && <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', borderBottom: '1px solid var(--sep)', marginBottom: 16, gap: 12 }}>
-      <div><div className="tt" style={{ fontSize: 15 }}>{t('Use this weekly schedule')}</div><div className="small dim">{t('Replaces your current Mon–Sun assignments.')}</div></div>
+      <div><div className="tt" style={{ fontSize: 'var(--fs-subhead)' }}>{t('Use this weekly schedule')}</div><div className="small dim">{t('Replaces your current Mon–Sun assignments.')}</div></div>
       <Switch checked={schedule} onChange={setSchedule} />
     </div>}
     <Button variant="primary" onClick={apply}>{t('Add to my plan')}</Button>
@@ -3061,19 +3113,42 @@ function WorkoutDetail({ w, close }) {
   const times = entryTimes(w)
   // Tapping an exercise opens its history (Discord 'Improvement ideas'): from one session to the
   // curve it sits on, which is the question a past workout raises most often.
+  // Each set as logged, with its arrow against the same set last time (#907, lib/set-trend.js):
+  // last time as the log stood before this workout, so an old one is never held against a later.
+  const trendsOn = setTrendOn(st)
+  const detailSets = e => {
+    const ve = viewEntry(st, e)
+    const last = trendsOn ? lastTimeBefore(st, w, e) : null
+    const trends = last ? setTrendsFor(ve, viewEntry(st, { ...last, id: e.id }), { formula: formulaOf(st) }) : []
+    const unit = exUnitOf(st, e.id)
+    const shown = ve.sets.map((s, j) => [s, j]).filter(([s]) => hasCompletedWork(s))
+    if (!shown.length) return t('no sets')
+    return shown.map(([s, j], k) => <Fragment key={j}>
+      {k > 0 && '  ·  '}
+      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}</span>
+    </Fragment>)
+  }
+  // Every set's note of an entry, numbered the way the workout numbers its rows (warm-ups apart).
+  const setNotesOf = e => (e.sets || []).map((s, i) => ({ i, s })).filter(x => setNoteOf(x.s) && hasCompletedWork(x.s)).map(({ i, s }) => {
+    const warm = isWarmupRow(s)
+    const n = e.sets.slice(0, i + 1).filter(x => isWarmupRow(x) === warm).length
+    return { i, label: warm ? t('Warm-up') + ' ' + n : t('Set {0}', s.side ? Math.ceil(n / 2) : n), note: setNoteOf(s) }
+  })
   const entryRow = (e, i) => {
     const ex = EXIDX[e.id]
     return <div key={i} className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
       {ex && <button type="button" className="wd-thumb" aria-label={t('Details')} onClick={ev => { ev.stopPropagation(); exerciseDetailSheet(ex) }}><Thumb ex={ex} /></button>}
       <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
         {/* An exercise in a unit of its own (#657) reads in it, and says which. */}
-        <div className="ss">{viewEntry(st, e).sets.filter(hasCompletedWork).map(s => setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)).join('  ·  ') || t('no sets')}{exUnitTag(st, e.id)}</div>
+        <div className="ss">{detailSets(e)}{exUnitTag(st, e.id)}</div>
         {times[i] > 0 && <div className="small dim" style={{ marginTop: 3 }}>
-          <Icon name="timer" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px' }} />{fmtDur(Math.max(times[i], 60000))}
+          <Icon name="timer" style={{ fontSize: 'var(--fs-caption)', marginInlineEnd: 4, verticalAlign: '-1px' }} />{fmtDur(Math.max(times[i], 60000))}
         </div>}
         {e.note && <div className="small dim" style={{ marginTop: 3 }}>
-          {e.notePin && <Icon name="pin" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px', color: 'var(--yellow)' }} />}{e.note}
-        </div>}</div>
+          {e.notePin && <Icon name="pin" style={{ fontSize: 'var(--fs-caption)', marginInlineEnd: 4, verticalAlign: '-1px', color: 'var(--gold-ink)' }} />}{e.note}
+        </div>}
+        {/* Each set's own note (lib/set-notes.js), under the sets: "Set 2: grip slipped". */}
+        {setNotesOf(e).map(n => <div key={n.i} className="small dim setnote-hist"><Icon name="note" />{n.label}: {n.note}</div>)}</div>
       <Icon name="chevronRight" className="chev" style={{ alignSelf: 'center' }} />
     </div>
   }
@@ -3640,39 +3715,41 @@ function ExerciseNote({ entryIdx, close }) {
 }
 export const exerciseNoteSheet = entryIdx => ui().openSheet(close => <ExerciseNote entryIdx={entryIdx} close={close} />)
 
-function SetNote({ entryIdx, setIdx, close }) {
+// A note on one set (lib/set-notes.js): the set menu's Note, or a tap on the note under the row.
+// Saved on the row, so it goes with the workout when it is finished, and with the set when the
+// set is removed.
+function SetNote({ entryIdx, setIdx, title, close }) {
   const noteRef = useRef(null)
   const onNoteFocus = useSheetKeyboard(noteRef)
   const row = useStore(s => s.S.active?.entries?.[entryIdx]?.sets?.[setIdx])
   const update = useStore(s => s.update)
-  const [note, setNote] = useState(row?.note || '')
+  const [had] = useState(() => setNoteOf(row))
+  const [note, setNote] = useState(had)
 
   useEffect(() => { if (!row) close() }, [!row])
   if (!row) return null
 
-  const save = () => {
-    const text = note.trim().slice(0, NOTE_MAX)
+  const save = text => {
     update(s => {
-      const set = s.active?.entries?.[entryIdx]?.sets?.[setIdx]
-      if (!set) return
-      if (text) set.note = text
-      else delete set.note
+      const rows = s.active?.entries?.[entryIdx]?.sets
+      if (rows?.[setIdx]) rows[setIdx] = withSetNote(rows[setIdx], text)
     }, true)
     close()
   }
 
   return <>
-    <h3>{t('Set note')}</h3>
-    <textarea ref={noteRef} className="input" rows={4} maxLength={NOTE_MAX} value={note}
-      placeholder={t('Anything specific to remember about this set.')}
+    <h3>{title || t('Set note')}</h3>
+    <textarea ref={noteRef} className="input" rows={2} maxLength={SET_NOTE_MAX} value={note}
+      placeholder={t('Grip slipped, a little twinge, felt easy…')} aria-label={t('Set note')}
       onFocus={onNoteFocus} onChange={event => setNote(event.target.value)} />
     <div style={{ height: 18 }} />
-    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+    <Button variant="primary" onClick={() => save(note)}>{t('Save')}</Button>
+    {had && <><div style={{ height: 8 }} /><Button variant="ghost" className="dim" icon="trash" onClick={() => save('')}>{t('Remove note')}</Button></>}
   </>
 }
 
-export const setNoteSheet = (entryIdx, setIdx) =>
-  ui().openSheet(close => <SetNote entryIdx={entryIdx} setIdx={setIdx} close={close} />)
+export const setNoteSheet = (entryIdx, setIdx, title) =>
+  ui().openSheet(close => <SetNote entryIdx={entryIdx} setIdx={setIdx} title={title} close={close} />)
 
 /* The session note: how the whole workout went, as opposed to how one exercise went. It lives
    on the active session, so buildCompletedWorkout carries it onto the finished workout and it
@@ -3774,7 +3851,7 @@ export const supersetSheet = (meta, onSave) => ui().openSheet(close => <Superset
 // Shown when the last exercise's last set is checked — finish, or keep going.
 function WorkoutComplete({ close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name="checkCircle" /></div>
+    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="checkCircle" /></div>
     <h3 style={{ margin: '8px 0' }}>{t("That's the whole workout!")}</h3>
     <div className="muted small" style={{ marginBottom: 16 }}>{t('All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.')}</div>
     <Button variant="primary" icon="flag" onClick={() => { close(); finishWorkout() }}>{t('Finish workout')}</Button>
@@ -3930,17 +4007,17 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     {/* Sticky, so the summary can be left from the top however far it has been scrolled. */}
     <div className="fin-x"><button type="button" className="iconbtn" aria-label={t('Close')} onClick={() => closeThenNav(close, '/home')}><Icon name="xmark" /></button></div>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc)', position: 'relative' }}><Icon name="trophy" /><SeasonDeco spot="finish" workout /></div>
+    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)', position: 'relative' }}><Icon name="trophy" /><SeasonDeco spot="finish" workout /></div>
     <h3 style={{ margin: '8px 0' }}>{t('Workout complete!')}</h3>
     <div className="tiles fin" style={{ textAlign: 'start' }}>
-      <div className="tile"><div className="l">{t('Duration')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{fmtDur(w.end - w.start)}</div></div>
-      <div className="tile"><div className="l">{t('Volume')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{fmtVol(sessionVolume(w, st), st.unit)}</div></div>
-      <div className="tile wide"><div className="l">{t('Sets')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{setsWorkCount(setsDone(w), workSetsDone(w))}</div></div>
-      <div className="tile narrow"><div className="l">{t('PRs')}</div><div className="v" style={{ fontSize: '1.1rem' }}>{prs.length || '–'}</div></div>
+      <div className="tile"><div className="l">{t('Duration')}</div><div className="v v-sm">{fmtDur(w.end - w.start)}</div></div>
+      <div className="tile"><div className="l">{t('Volume')}</div><div className="v v-sm">{fmtVol(sessionVolume(w, st), st.unit)}</div></div>
+      <div className="tile wide"><div className="l">{t('Sets')}</div><div className="v v-sm">{setsWorkCount(setsDone(w), workSetsDone(w))}</div></div>
+      <div className="tile narrow"><div className="l">{t('PRs')}</div><div className="v v-sm">{prs.length || '–'}</div></div>
     </div>
     {(prs.length > 0 || e1prs.length > 0) && <div style={{ textAlign: 'start', marginBottom: 12 }}>
-      {prs.map(id => <div key={id} className="small accent row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="trophy" style={{ fontSize: 13, marginTop: 2, flex: 'none' }} /><span>{t('New PR:')} <span className={exerciseNameClass(EXIDX[id])}>{EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id}</span></span></div>)}
-      {e1prs.map(p => <div key={p.id} className="small accent row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="chartLine" style={{ fontSize: 13, marginTop: 2, flex: 'none' }} /><span>{t('Best estimated 1RM:')} <span className={exerciseNameClass(EXIDX[p.id])}>{EXIDX[p.id] ? exerciseNameFor(EXIDX[p.id]) : p.id}</span> · {fmtNum(p.est)} {st.unit}</span></div>)}
+      {prs.map(id => <div key={id} className="small accent row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="trophy" style={{ fontSize: 'var(--fs-footnote)', marginTop: 2, flex: 'none' }} /><span>{t('New PR:')} <span className={exerciseNameClass(EXIDX[id])}>{EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id}</span></span></div>)}
+      {e1prs.map(p => <div key={p.id} className="small accent row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="chartLine" style={{ fontSize: 'var(--fs-footnote)', marginTop: 2, flex: 'none' }} /><span>{t('Best estimated 1RM:')} <span className={exerciseNameClass(EXIDX[p.id])}>{EXIDX[p.id] ? exerciseNameFor(EXIDX[p.id]) : p.id}</span> · {fmtNum(p.est)} {st.unit}</span></div>)}
     </div>}
     {/* Done is one tap away right under the numbers: the body map, what's next and the photo
         corner sit below it for whoever wants them, nobody has to scroll to leave (Discord). */}

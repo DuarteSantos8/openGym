@@ -17,7 +17,9 @@ describe('the toast', () => {
   it('rounds its corners like a pill on one line, not like a circle on four', () => {
     const radius = px(rule.match(/border-radius:([^;]+);/)[1].trim())
     const pad = parseFloat(rule.match(/padding:(\d+)px/)[1])
-    const size = parseFloat(rule.match(/font-size:(\d+)px/)[1])
+    // the type scale is in rem (redesign 1.4.5, P1): 1rem is 16 CSS px at the default text size
+    const fs = px(rule.match(/font-size:([^;]+);/)[1].trim())
+    const size = /font-size:var\(--fs-/.test(rule) ? fs * 16 : fs
     const oneLine = 2 * pad + size * 1.29   // body line-height
     expect(radius).toBeGreaterThanOrEqual(oneLine / 2)   // one line: fully rounded ends
     expect(radius).toBeLessThanOrEqual(oneLine / 2 + 4)  // four lines: a box with round corners

@@ -113,6 +113,10 @@ describe('the root', () => {
     expect(rule).toMatch(/white-space:normal/)
     expect(rule).toMatch(/line-clamp:3/)
     expect(rule).toMatch(/min-width:min-content/)
+    // P10 (redesign 1.4.5): on every phone width the preview is the row's subtitle, under the title
+    const phone = css.match(/@media \(max-width:430px\)\{\n  \.lrow\.sp-root-row:has\(\.lrow-v\)\{([^}]*)\}/)?.[1] || ''
+    expect(phone).toMatch(/display:grid/)
+    expect(css).toMatch(/\.lrow\.sp-root-row \.lrow-v\{grid-column:2;grid-row:2;[^}]*text-align:start/)
     // the sub-page title takes a second line rather than an ellipsis ("Alertas do temporizador")
     const title = css.match(/^\.sp-title\{([^}]*)\}/m)?.[1] || ''
     expect(title).not.toMatch(/nowrap/)
@@ -315,7 +319,7 @@ describe('the pages', () => {
   it('every old row has a home: the Workout page holds the warm-ups, rest, logging and the before/during rows', () => {
     mount('workout')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
-    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Layout',
+    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Layout',
       'Collapse completed exercises', 'Skip completed exercises', 'Weigh in before workouts', 'Keep screen awake', 'Exercise animations', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.

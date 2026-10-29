@@ -361,7 +361,8 @@ describe('iPhone: the rest tone never stops the music', () => {
 
   it('sets the mixing .ambient session at load and after every tone', () => {
     expect(swift).toMatch(/static func mixWithMusic\(\)\s*\{\s*try\? AVAudioSession\.sharedInstance\(\)\.setCategory\(\.ambient/)
-    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(2)
+    // at load, after a tone, and after a spoken cue (v1.4.5)
+    expect(swift.match(/RestAlertPlugin\.mixWithMusic\(\)/g)).toHaveLength(3)
   })
 
   it('takes .playback only mixed and ducking, and reads the onSilent flag', () => {
@@ -369,5 +370,37 @@ describe('iPhone: the rest tone never stops the music', () => {
     for (const m of swift.matchAll(/setCategory\(\.playback[^)]*\)/g)) expect(m[0]).toMatch(/\.mixWithOthers/)
     expect(swift).not.toMatch(/setCategory\(\.soloAmbient/)
     expect(swift).toMatch(/setActive\(false, options: \[\.notifyOthersOnDeactivation\]\)/)
+  })
+})
+
+// Spoken cues (v1.4.5, lib/spoken-cues.js): the phone's own voice, ducking the music like the tone.
+describe('spoken cues through the phone', () => {
+  it('hands the line to the plugin and answers true, false in a browser shell', async () => {
+    h.platform = 'android'
+    let alert = await import('./rest-alert.js')
+    await expect(alert.speakNative('Set 2, 80 kilos, 8 reps', { lang: 'en-GB', rate: 1.25, flush: true })).resolves.toBe(true)
+    await expect(alert.hushNative()).resolves.toBe(true)
+    expect(h.calls).toEqual(expect.arrayContaining(['speak', 'hush']))
+    vi.resetModules()
+    h.platform = 'web'
+    alert = await import('./rest-alert.js')
+    await expect(alert.speakNative('Rest is over')).resolves.toBe(false)
+    expect(unhandled).toEqual([])
+  })
+
+  it('Android ducks for a line and lets go when nothing is left to say', () => {
+    const java = readFileSync(new URL('../../android/app/src/main/java/ch/duartesantos/opengym/SpeechCue.java', import.meta.url), 'utf8')
+    expect(java).toMatch(/AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK|RestAlert\.duck\(/)
+    expect(java).toMatch(/RestAlert\.unduck\(/)
+    expect(java).not.toMatch(/AUDIOFOCUS_GAIN\b(?!_TRANSIENT)/)
+    const manifest = readFileSync(new URL('../../android/app/src/main/AndroidManifest.xml', import.meta.url), 'utf8')
+    expect(manifest).toMatch(/android\.intent\.action\.TTS_SERVICE/)
+  })
+
+  it('the iPhone speaks in the mixing, ducking session and offers speak and hush', () => {
+    const swift = readFileSync(new URL('../../ios/App/App/RestAlertPlugin.swift', import.meta.url), 'utf8')
+    expect(swift).toMatch(/CAPPluginMethod\(name: "speak"/)
+    expect(swift).toMatch(/CAPPluginMethod\(name: "hush"/)
+    expect(swift).toMatch(/AVSpeechSynthesizer/)
   })
 })

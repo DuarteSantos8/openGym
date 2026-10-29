@@ -234,7 +234,7 @@
   background:var(--surface);
   background:linear-gradient(135deg,color-mix(in srgb,var(--xm-red) 20%,var(--surface)),var(--surface) 55%,color-mix(in srgb,var(--xm-green) 16%,var(--surface)));
 }
-.xm-advent .lbl2{font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
+.xm-advent .lbl2{font-size:13px;color:var(--label-2);letter-spacing:-.004em}
 .xm-advent .ttl{font-size:17px;font-weight:600;letter-spacing:-.016em}
 .xm-advent-i{background:var(--surface-2);background:color-mix(in srgb,var(--xm-green) 26%,var(--surface-2));font-size:16px}
 .xm-dots{display:grid;grid-template-columns:repeat(24,1fr);gap:3px;margin-top:12px}
@@ -306,7 +306,7 @@
 .xm-reveal-text{font-size:17px;line-height:1.38;margin:0 auto 14px;max-width:32ch}
 .xm-reveal-text.small{font-size:14px}
 .xm-stat{margin:4px 0 6px}
-.xm-stat-big{font-size:38px;font-weight:700;letter-spacing:-.03em;margin:4px 0;color:var(--acc)}
+.xm-stat-big{font-size:38px;font-weight:700;letter-spacing:-.03em;margin:4px 0;color:var(--acc-ink)}
 .xm-stretch{list-style:none;margin:0 auto 14px;padding:0;max-width:30ch;text-align:start;font-size:15px;color:var(--label-2)}
 .xm-stretch li{padding:5px 0;border-bottom:var(--hair, 1px) solid var(--sep, rgba(128,128,128,.2))}
 .xm-stretch li:last-child{border-bottom:0}

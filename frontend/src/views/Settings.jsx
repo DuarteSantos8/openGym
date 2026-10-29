@@ -20,6 +20,11 @@ import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevic
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
+import { weekTargetOf } from '../lib/week-left.js'
+import { speak, speechSupported, SPEECH_RATES, speechRateOf } from '../lib/speech.js'
+import { sampleCue } from '../lib/spoken-cues.js'
+import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
+import { aboutYouSheet } from '../components/StrengthLevel.jsx'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -449,6 +454,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     nfc: nfcOK,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
+    rotation: scheduleModeOf(S) === 'rotation' && !externalQ,
+    spokenCues: S.spokenCues === true,
   }
   const mode = scheduleModeOf(S)
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
@@ -559,6 +566,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             { value: 'last', label: t('Last time'), subtitle: t('What you did the last time, in that routine.') },
             { value: 'best', label: t('Best set'), subtitle: t('Your heaviest set of the exercise, from any workout.') },
           ]} />
+        {/* Each finished set against the same set last time (#907, lib/set-trend.js), in the
+            workout and in History. On unless switched off. */}
+        <Row icon="arrowUp" iconTint="var(--green)" title={t('Compare sets with last time')}
+          subtitle={t('A small ↑, = or ↓ on each set you finish, in the workout and in History.')}>
+          <Switch aria-label={t('Compare sets with last time')} checked={S.setTrend !== false} onChange={v => update(s => { s.setTrend = v })} />
+        </Row>
         {/* One exercise at a time (cards with Prev/Next), the whole session stacked as a
             scrollable list, or that list stripped to just names and set rows (compact). Legacy or
             unknown values read as cards. The workout's ⋯ menu can override it for one session. */}
@@ -741,6 +754,25 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
         </Section>
+        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
+            over" and the count of a hold, in the app's language. The phone's own voice in the
+            apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
+        <Section title={t('Spoken cues')} footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
+          <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
+            subtitle={t('Says your next set, “10 seconds” and “Rest is over”, and counts holds down.')}>
+            <Switch aria-label={t('Spoken cues')} checked={S.spokenCues === true} disabled={!speechSupported()}
+              onChange={v => { update(s => { s.spokenCues = v }); if (v) speak(sampleCue(S.unit), { rate: SPEECH_RATES[speechRateOf(S)] }) }} />
+          </Row>
+          {S.spokenCues === true && <>
+            <Row icon="speaker" iconTint="var(--teal)" title={t('Speaking rate')}>
+              <Segmented className="seg-inline"
+                options={[{ value: 'slow', label: t('Slow') }, { value: 'normal', label: t('Normal') }, { value: 'fast', label: t('Fast') }]}
+                value={speechRateOf(S)} onChange={v => { update(s => { s.speechRate = v }); speak(sampleCue(S.unit), { rate: SPEECH_RATES[v], queue: false }) }} />
+            </Row>
+            <Row icon="play" iconTint="var(--green)" title={t('Try it')} accessory="chevron"
+              onClick={() => speak(sampleCue(S.unit), { rate: SPEECH_RATES[speechRateOf(S)], queue: false })} />
+          </>}
+        </Section>
       </>
     },
 
@@ -765,6 +797,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Rotation chosen with no loop running yet: the loop is built on Plan. */}
         {mode === 'rotation' && !liveQ && <Row icon="calendar" iconTint="var(--orange)" title={t('Build your loop in Plan')}
           accessory="chevron" onClick={() => nav('/plan')} />}
+        {/* A loop has no week of its own: this is the count Home's "2 of 4 left this week" uses
+            for it (#753, lib/week-left.js). Off says nothing. */}
+        {mode === 'rotation' && !externalQ && <SelectRow icon="target" iconTint="var(--green)" title={t('Workouts per week')}
+          value={weekTargetOf(S) || 0} onChange={v => update(s => { s.weekTarget = v || null })}
+          options={[{ value: 0, label: t('Off'), subtitle: t('No weekly countdown on Home.') },
+            ...[1, 2, 3, 4, 5, 6, 7].map(n => ({ value: n, label: String(n) }))]} />}
         {/* Monday or Sunday: the Plan list, the Home strip, the calendar grid and every "this
             week" total follow it. Stored as a getDay() index (see lib/format.js). */}
         <Row icon="calendar" iconTint="var(--orange)" title={t('Week starts on')}>
@@ -774,6 +812,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
       </Section>
       <Section>
+        {/* The target range of weekly sets for each main muscle (lib/muscle-targets.js). */}
+        <Row icon="slider" iconTint="var(--teal)" title={t('Weekly sets per muscle')} subtitle={t('The range each muscle aims for')} accessory="chevron" onClick={muscleTargetsSheet} />
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
       </Section>
     </>,
@@ -853,6 +893,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Count body weight in bodyweight lifts')} checked={S.volumeBodyweight === true}
             onChange={v => update(s => { s.volumeBodyweight = v })} />
         </Row>
+        {/* Sex and year of birth, read only by the strength levels (lib/strength-level.js). */}
+        <Row icon="person" iconTint="var(--teal)" title={t('About you')} subtitle={t('For your strength levels')} accessory="chevron" onClick={aboutYouSheet} />
         {/* #859: a day can hold several weigh-ins. Which one is the day's number for the chart, the
             trend, the goal line, widgets, Wrapped and the Coach (lib/weigh-ins.js). Morning is the
             default: it is the weight worth comparing from one day to the next. */}
@@ -942,6 +984,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
         {/* Three goals a month on Home, sized to how you train (lib/challenges.js). Off: no card,
             no Stats progress; badges already earned stay on the shelf. */}
+        {/* Monday's Your week and the 1st's Your month (lib/recap.js). On unless switched off. */}
+        <Row icon="chart" iconTint="var(--purple)" title={t('Week and month recap')}
+          subtitle={t('A small card when a new week or month starts: what the last one added up to.')}>
+          <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v })} />
+        </Row>
+        {/* This week's sets for the muscle with the most room, under the streak (components/WeeklySets.jsx). */}
+        <Row icon="figureStrength" iconTint="var(--teal)" title={t('Weekly sets on Home')}
+          subtitle={t('The muscle with the most room left this week, under your streak.')}>
+          <Switch aria-label={t('Weekly sets on Home')} checked={S.homeMuscleSets === true} onChange={v => update(s => { s.homeMuscleSets = v })} />
+        </Row>
         <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
           subtitle={t('Three goals a month on Home, sized to how you train.')}>
           <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v })} />

@@ -3,6 +3,7 @@
    ISO dates are validated on the way in; the handlers never see 'yesterday'. */
 import { z } from 'zod'
 import { getState, getUser } from './state.js'
+import { setNoteOf } from '../../frontend/src/lib/set-notes.js'
 import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
@@ -76,7 +77,9 @@ export function entryView(e, S) {
       r: Number(s.r) || 0,
       sec: Number(s.sec) || 0,
       min: Number(s.min) || 0,
-      speed: Number(s.speed) || 0
+      speed: Number(s.speed) || 0,
+      // The set's own note (set menu → Note in the app), when it has one.
+      ...(setNoteOf(s) ? { note: setNoteOf(s) } : {})
     })),
     // How many of its sets have a form video (frontend lib/set-videos.js) — the count only. The
     // videos themselves, their files and their refs never reach a client of this server.

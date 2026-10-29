@@ -27,7 +27,7 @@ const mountWith = showWeightCard => {
   }))
   act(() => root.render(<Home />))
 }
-const weightHeading = () => [...host.querySelectorAll('h2')].find(el => el.textContent === 'Body weight')
+const weightHeading = () => [...host.querySelectorAll('.card-head-title')].find(el => el.textContent === 'Body weight')
 
 describe('Home body-weight card preference', () => {
   it('shows the card for legacy profiles without the preference', () => {

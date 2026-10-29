@@ -41,7 +41,8 @@ function mount(workouts) {
 const exCard = () => [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Exercise progress')
 const press = (scope, label) => act(() => [...scope.querySelectorAll('.seg button')].find(b => b.textContent === label).click())
 const labels = scope => [...scope.querySelectorAll('.seg button')].map(b => b.textContent)
-const lastChart = () => mocks.charts.at(-1)
+// the exercise progress chart (h 150): since 1.4.5 (P5) the Effort part's own chart renders after it
+const lastChart = () => mocks.charts.filter(c => c.h === 150).at(-1)
 
 describe('Stats: Bodyweight view of exercise progress', () => {
   it('is not offered without a body weight to compare with, or with a single workout', () => {

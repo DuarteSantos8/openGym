@@ -367,7 +367,7 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
         <div className="pcard-eyebrow">{p.iteration > 1 ? t('Revision {0}', p.iteration) : t('Your plan')}</div>
         <h2 className="pcard-h">{b.name || t('Coach plan')}</h2>
         {!!b.summary && <p className="pcard-sum">{b.summary}</p>}
-        {!!b.basedOn && <p className="pcard-sum" style={{ fontSize: 13 }}>{b.basedOn}</p>}
+        {!!b.basedOn && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>{b.basedOn}</p>}
       </div>
 
       <WeekStrip days={weekDays} ws={weekStartOf(S)} />
@@ -446,10 +446,10 @@ function ReviewCard({ p, S, update, toast, refresh }) {
         <div className="pcard-eyebrow">{t('Suggestions')}</div>
         <h2 className="pcard-h">{tn('{0} suggestion', '{0} suggestions', marked.changes.length)}</h2>
         {!!marked.summary && <p className="pcard-sum">{marked.summary}</p>}
-        {!!marked.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 13 }}>
+        {!!marked.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>
           {t('Based on your last {0} sessions', marked.evidence.sessions)}{marked.evidence.from ? ` · ${fmtDate(marked.evidence.from)} – ${fmtDate(marked.evidence.to)}` : ''}
         </p>}
-        {marked.planMoved && <p className="pcard-sum" style={{ fontSize: 13, color: 'var(--yellow)' }}>
+        {marked.planMoved && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)', color: 'var(--yellow)' }}>
           {t('Your plan changed since the Coach looked at it. Suggestions that no longer match are greyed out. Ask for a fresh review to see them again.')}
         </p>}
       </div>
@@ -481,7 +481,7 @@ function ChangeRow({ c, S, stale, badge, children }) {
   return <div className={'pcard-chg' + (stale ? ' stale' : '') + (c.status === 'rejected' ? ' declined' : '')}>
     <div className="grow">
       <div className="pcard-chg-t">{changeTitle(c, S)}{c.routineName ? <span className="dim" style={{ fontWeight: 400 }}> · {c.routineName}</span> : null}</div>
-      {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 12, color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
+      {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 'var(--fs-caption)', color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
       <div className="pcard-chg-w">{c.why}</div>
       {/* What the change means at the gym, in the app's own words (lib/coach.js changeMeaning). */}
       {changeMeaning(c) && <div className="pcard-chg-m small dim">{changeMeaning(c)}</div>}
@@ -663,7 +663,7 @@ function ProposalDetail({ entry, S }) {
       <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : tn('{0} suggestion', '{0} suggestions', entry.decisions?.length || 0)}</h2>
       {!!entry.summary && <p className="pcard-sum">{entry.summary}</p>}
       {entry.dismissed && <p className="pcard-sum" style={{ color: 'var(--red)' }}>{t('You declined this.')}</p>}
-      {!!entry.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 13 }}>
+      {!!entry.evidence?.sessions && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>
         {t('Based on your last {0} sessions', entry.evidence.sessions)}{entry.evidence.from ? ` · ${fmtDate(entry.evidence.from)} – ${fmtDate(entry.evidence.to)}` : ''}
       </p>}
     </div>
@@ -681,7 +681,7 @@ function ProposalDetail({ entry, S }) {
         {b.routines.map((x, i) => <button key={x.id || i} className={'pcard-tab' + (i === tab ? ' on' : '')} onClick={() => setTab(i)}><Icon name={glyphOf(x.emoji)} />{x.name}</button>)}
       </div>}
       {r && <RoutineBlock r={r} unit={S.unit} speedUnit={speedUnitOf(S)} />}
-      <p className="pcard-sum" style={{ fontSize: 13 }}>{entry.rotation ? t('Your rotation was set to this plan.') : entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
+      <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)' }}>{entry.rotation ? t('Your rotation was set to this plan.') : entry.scheduled ? t('Your week was set to this schedule.') : t('Imported without changing your week.')}</p>
     </>}
     {kind === 'create' && !b && <p className="pcard-sum">{t('This plan was imported before the app kept proposals; only its summary is left.')}</p>}
 

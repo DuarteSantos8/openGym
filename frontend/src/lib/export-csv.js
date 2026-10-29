@@ -17,11 +17,12 @@ import { capWords } from './format.js'
 import { MEASUREMENT_FIELDS, builtinCsvColumn, customCsvColumn, customDisplayValue } from './measurements.js'
 import { hasCompletedWork, isWarmupRow, isFailureSet, isSideSet, dropsOf } from './workout-model.js'
 import { workoutDay } from './history.js'
+import { setNoteOf } from './set-notes.js'
 
 export const WORKOUT_COLUMNS = [
   'date', 'start_time', 'end_time', 'workout', 'workout_note', 'exercise', 'exercise_id', 'body_part',
   'superset_id', 'set', 'set_type', 'side', 'weight', 'unit', 'reps', 'rpe', 'rir', 'distance_km',
-  'seconds', 'incline', 'note',
+  'seconds', 'incline', 'note', 'set_note',
 ]
 
 /** One CSV field, RFC 4180: quoted when it holds a comma, a quote or a line break. */
@@ -96,20 +97,23 @@ export function workoutRows(S, { from = null, to = null } = {}) {
       const exCells = [name, e.id, ex?.bp || '', e.sg ? groups.get(e.sg) : '']
       let no = 0, noteLeft = e.note || ''
       // The entry's note rides on its first row only: the importer keeps one note per exercise.
-      const push = cells => { rows.push([...head, ...exCells, ...cells, noteLeft]); noteLeft = '' }
+      // A set's own note (lib/set-notes.js) on that set's row, its first one for a per-side set.
+      const push = (cells, setNote = '') => { rows.push([...head, ...exCells, ...cells, noteLeft, setNote]); noteLeft = '' }
       const cardio = s => !(s.r > 0) && (s.min > 0 || s.speed > 0)
       for (const s of e.sets || []) {
         if (!hasCompletedWork(s)) continue
         no++
         const type = isWarmupRow(s) ? 'warmup' : isFailureSet(s) ? 'failure' : 'normal'
+        let setNote = setNoteOf(s)
         if (cardio(s)) {
-          push([no, type, '', '', unit, '', '', '', distanceKm(s), n(Math.round((Number(s.min) || 0) * 60)), s.incline != null ? n(s.incline) : ''])
+          push([no, type, '', '', unit, '', '', '', distanceKm(s), n(Math.round((Number(s.min) || 0) * 60)), s.incline != null ? n(s.incline) : ''], setNote)
           continue
         }
         const effort = x => [x.rpe != null ? n(x.rpe) : '', x.rir != null ? n(x.rir) : '']
         const one = (x, side) => {
           if (side && !x.done) return
-          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', ''])
+          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', ''], setNote)
+          setNote = ''
           // A drop-set's drops follow as rows of their own under the same set number.
           for (const d of dropsOf(x)) push([no, 'drop', side, n(d.w || 0), unit, n(d.r || 0), '', '', '', '', ''])
         }

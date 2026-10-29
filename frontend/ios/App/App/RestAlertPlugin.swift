@@ -20,7 +20,7 @@ import UserNotifications
  * navigator.vibrate, which iOS does not have.
  */
 @objc(RestAlertPlugin)
-public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
+public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDelegate {
     public let identifier = "RestAlertPlugin"
     public let jsName = "RestAlert"
     public let pluginMethods: [CAPPluginMethod] = [
@@ -30,6 +30,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "tone", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "buzz", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setAccent", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "speak", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "hush", returnType: CAPPluginReturnPromise),
     ]
 
     static let requestId = "opengym.rest"
@@ -54,6 +56,16 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
     }
     private var pending: Pending?
     private var player: AVAudioPlayer?
+    /// Whether a spoken cue is talking, without making the synthesizer just to ask.
+    private var speechMade = false
+    private var isSpeakingCue: Bool { speechMade && speech.isSpeaking }
+    /// Spoken cues (lib/spoken-cues.js): made the first time something is said.
+    private lazy var speech: AVSpeechSynthesizer = {
+        let synth = AVSpeechSynthesizer()
+        synth.delegate = self
+        speechMade = true
+        return synth
+    }()
 
     override public func load() {
         let nc = NotificationCenter.default
@@ -183,6 +195,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
                     DispatchQueue.main.asyncAfter(deadline: .now() + p.duration + 0.1) {
                         guard self.player === p else { return }   // a newer tone owns the session now
                         self.player = nil
+                        // A spoken cue still talking keeps the music down; it lets go when it ends.
+                        if self.isSpeakingCue { return }
                         // Music back up, and the session back to the mixing kind for the page's beeps.
                         try? session.setActive(false, options: [.notifyOthersOnDeactivation])
                         RestAlertPlugin.mixWithMusic()
@@ -192,6 +206,74 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin {
                     call.reject("could not play the tone")
                 }
             }
+        }
+    }
+
+    /**
+     * A spoken cue (Settings → Timer alerts → Spoken cues): { text, lang, rate, onSilent, flush }.
+     * The same audio session as the end tone: other audio ducks for the line and never stops,
+     * and comes back up once nothing is left to say. `flush` cuts off what is still being said
+     * (a countdown number).
+     */
+    @objc func speak(_ call: CAPPluginCall) {
+        guard let text = call.getString("text"), !text.isEmpty else {
+            call.reject("nothing to say")
+            return
+        }
+        let lang = call.getString("lang") ?? ""
+        let rate = Float(call.getDouble("rate") ?? 1)
+        let onSilent = call.getBool("onSilent") ?? false
+        let flush = call.getBool("flush") ?? false
+        DispatchQueue.main.async {
+            let session = AVAudioSession.sharedInstance()
+            do {
+                if onSilent {
+                    try session.setCategory(.playback, mode: .voicePrompt, options: [.mixWithOthers, .duckOthers])
+                } else {
+                    try session.setCategory(.ambient, mode: .default, options: [.duckOthers])
+                }
+                try session.setActive(true)
+            } catch {
+                // Said anyway, without the duck.
+            }
+            if flush && self.speech.isSpeaking {
+                self.speech.stopSpeaking(at: .immediate)
+            }
+            let utterance = AVSpeechUtterance(string: text)
+            if !lang.isEmpty {
+                let base = String(lang.split(separator: "-").first ?? "")
+                if let voice = AVSpeechSynthesisVoice(language: lang) ?? AVSpeechSynthesisVoice(language: base) {
+                    utterance.voice = voice
+                }
+            }
+            let wanted = AVSpeechUtteranceDefaultSpeechRate * max(0.5, min(2, rate))
+            utterance.rate = max(AVSpeechUtteranceMinimumSpeechRate, min(AVSpeechUtteranceMaximumSpeechRate, wanted))
+            self.speech.speak(utterance)
+            call.resolve()
+        }
+    }
+
+    @objc func hush(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            self.speech.stopSpeaking(at: .immediate)
+            call.resolve()
+        }
+    }
+
+    public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        speechEnded()
+    }
+
+    public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        speechEnded()
+    }
+
+    /// Music back up once nothing is left to say and no tone is playing.
+    private func speechEnded() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            guard !self.speech.isSpeaking, self.player == nil else { return }
+            try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+            RestAlertPlugin.mixWithMusic()
         }
     }
 

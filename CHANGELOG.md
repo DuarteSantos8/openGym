@@ -6,6 +6,83 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**A fresh coat of paint.** The whole app got a proper look-and-feel pass, the kind where nobody
+can point at what changed but everything sits better. Home's cards all introduce themselves the
+same way now (a small line, a title, one button), so the screen stops sounding like five apps
+talking at once. Stats is in four parts, Overview, Body, Lifts and Effort, with an index that
+sticks to the top and jumps you there; `#/stats?section=lifts` links straight to one. The Library
+keeps its filters in one row: Filters opens a sheet with the type and the equipment, and tapping
+the chosen body part again shows them all. The end of a workout is one tidy list (Add exercise,
+the session note) with Finish under it, the routine editor's Copy, Share and Print sit together
+with Delete on its own and saying what it removes, and an exercise's Delete waits at the bottom
+of its sheet instead of shouting next to Edit. Empty screens put their first button right where
+your stuff will appear. Under the hood: one type scale in rem (your browser's text size and zoom
+now grow the layout too), pinch zoom in the browser and the installed web app (the phone apps
+stay as they were), lifted surfaces for things that float, a readable text shade for your own
+accent colour, and one press feel per kind of control. Same app, better posture.
+
+**Every set against last time** (#907, thanks @lodepav for the idea and the first version). A
+finished set now wears a small ↑, = or ↓ on its number: the same set last time, weight first and
+then reps, and when those pull apart (heavier but fewer) the estimated 1RM settles it. On an
+assisted machine less help counts as more, holds go by seconds and cardio by minutes. Saved
+workouts in History get the arrows too, held against the workout before them, never a later one.
+Screen readers hear it in words ("2.5 kg more than last time"). Settings → Workout → Compare sets
+with last time switches it off.
+
+**Workouts left this week** (#753, thanks @unabomberlive). Home now counts the week down under the
+week strip: "2 of 4 left this week", and "All done this week. Nice." once it is. A fixed week
+counts its planned days, the same numbers as the streak card. A rotation has no week of its own,
+so Settings → Plan & schedule → Workouts per week gives it a target to count against (off says
+nothing). The widget snapshot carries it too, for the widgets to pick up.
+
+**Spoken cues.** Settings → Timer alerts → Spoken cues (off until you want it) gives the timer a
+voice, so the phone can stay on the bench: it says your next set as the rest starts ("Set 3, 80
+kilos, 8 reps", with the exercise's name when it changes), "10 seconds" before a rest ends, "Rest
+is over", and counts holds down, 3, 2, 1, go, the ones that start by themselves included. In the
+app's language, slow, normal or fast, with a Try it button. The apps use the phone's own voice
+and your music only turns down for a moment, it never stops; a browser uses its built-in voice.
+Only while the app is on screen: a locked phone still gets the end tone and the notification.
+
+**Merge two exercises into one** (#656, thanks @dbanno). Imported "Bench Press (Barbell)" from
+FitNotes and now have two bench presses? An exercise's details have Merge into…: pick the one it
+should be, see what moves ("38 workouts, 3 routines move"), confirm. Every logged set, note, form
+video and record goes over, and so do routine slots (with their warm-ups and backups), programme
+targets, the kept working weight, the standing note, aliases, the favourite star and its bar and
+plate settings. Your own exercise is then deleted; a catalogue one is hidden from your lists, and
+searching for its name finds the one you merged it into. Undo on the toast puts everything back.
+Another device that still logged against the old one is brought in line when it syncs, and the
+MCP bridge reads it the same way.
+
+**A note on any set.** Tap a set's number and pick Note: "grip slipped", "a little twinge", "felt
+easy". It shows as a quiet line under the row (tap it to change it), sticks with the set when the
+workout is saved, and appears in History under that exercise's sets. It goes into the CSV export
+(a new set_note column) and the MCP bridge's get_workout, and it reaches the Coach the way your
+workout notes already do.
+
+**Weekly sets per muscle, against a target range.** A new Stats card lists this week's working
+sets for each main muscle next to the range it aims for, "Chest 14 / 10–20", with a bar that shows
+the range: room for more, in range or above range, never a telling-off. A set counts fully for the
+muscles it mainly trains and a bit under half for the ones that help (the same weights as the
+muscle map and the fatigue model), warm-ups don't count. The ranges start from hypertrophy
+research (roughly the minimum that grows a muscle to the most you can recover from) and each one
+is yours to change under Settings → Plan & schedule → Weekly sets per muscle. Settings → Look &
+Home → Weekly sets on Home adds one line under your streak: the muscle with the most room left.
+
+**Strength level per lift.** Bench, squat, deadlift, overhead press, rows, curls and a few more
+now say where you stand: Beginner, Novice, Intermediate, Advanced or Elite, from your best
+estimated 1RM against your latest weigh-in, graded on published strength standards (bodyweight
+ratios, dumbbells per bell). It sits in the exercise's details with what the next level takes,
+and a Stats card lists every lift you have one for. Add your sex and year of birth under Settings
+→ Units & language → About you for a fairer read (from 40 on, the masters age coefficients ease
+the lines). Worked out on your device, and hidden until you have weighed in.
+
+**Your week, your month.** When a new week starts (your first weekday) Home shows a small "Your
+week" card about the one that just ended, and on the 1st a "Your month": workouts, volume, new
+bests, the streak and the muscle that did the most work. Tap it for the numbers, share them as a
+picture (story or square, dark or light) or save that stretch as the performance report PDF. A week
+off gets no card, nobody needs a recap of the sofa. The × puts it away, and Settings → Look & Home →
+Week and month recap switches it off.
+
 **openGym on your Wear OS watch, as a beta** (thanks @vampireJSV for the idea and the first take in #673).
 Galaxy Watch, Pixel Watch, TicWatch, OnePlus and friends now get what the Apple Watch has: the
 workout follows you to the wrist, big numbers you turn with the crown, Done, a rest ring that buzzes
