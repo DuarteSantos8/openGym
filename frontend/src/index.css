@@ -687,6 +687,30 @@ h4.sec{
 }
 .item:active{background:var(--press-fill)}
 .routine-list{position:relative}
+/* The routine editor's rail (P4): the superset link beside Move up over Move down. Each button is
+   40px wide; up and down reach into the row's padding, so each is a 40x40 target and the link a
+   40px square, where they were 28x24 and 32x28 in three separate places. */
+.re-rail{flex:none;display:grid;grid-template-columns:40px 40px;grid-template-rows:30px 30px;column-gap:4px;align-items:stretch;margin-block:-4px}
+.re-rail .iconbtn{width:auto;height:auto;border-radius:9px;font-size:var(--fs-subhead);position:relative;background:var(--surface-2)}
+.re-rail .re-link{grid-column:1;grid-row:1 / span 2;align-self:center;height:40px}
+.re-rail .re-up{grid-column:2;grid-row:1;border-end-start-radius:4px;border-end-end-radius:4px}
+.re-rail .re-down{grid-column:2;grid-row:2;margin-top:2px;border-start-start-radius:4px;border-start-end-radius:4px}
+.re-rail .re-up::before{inset:-10px -2px 0}
+.re-rail .re-down::before{inset:0 -2px -10px}
+.re-rail .re-link::before{inset:-2px}
+.re-rail span.re-link{display:block}
+.re-rail .iconbtn.on-ss{background:var(--acc-soft);color:var(--acc-ink)}
+/* the routine's actions (P4): a grouped list, then Delete apart, red, saying what it removes */
+.re-acts{margin-top:14px}
+.re-acts+.re-acts{margin-top:22px}
+.re-act-i{flex:none;font-size:var(--fs-title3);color:var(--acc-ink)}
+.re-danger .re-act-i{color:var(--red)}
+.re-acts .lrow+.lrow::before{inset-inline-start:46px}
+.lrow:disabled{opacity:.45;cursor:default}
+/* the exercise sheet's Delete (P6): its own group at the end of the sheet */
+.ex-del{margin-top:24px}
+.ex-del-i{flex:none;font-size:var(--fs-title3)}
+.lrow:disabled:active{background:none}
 /* One column at every width (#277), whatever page it is on. The desktop layout puts the #app
    lists outside a .narrow page in two columns, and before the .narrow rule below won on
    specificity this list sat in that grid on a computer, while the reorder measures its rows top
