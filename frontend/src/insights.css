@@ -14,7 +14,7 @@
 .setnote-line{display:flex;align-items:center;gap:5px;width:100%;margin:2px 0 4px;padding:2px 4px;padding-inline-start:34px;border:0;background:none;color:var(--label-2);font:inherit;font-size:12px;text-align:start;cursor:pointer;min-width:0}
 .setnote-line .icn{flex:none;font-size:12px;color:var(--yellow)}
 .setnote-line span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.setnote-mark{margin-inline-start:3px;font-size:11px;color:var(--yellow);vertical-align:-1px}
+.setnote-mark{display:inline-block;margin-inline-start:3px;font-size:11px;color:var(--yellow);vertical-align:-1px}
 .setnote-hist{margin-top:3px;display:flex;gap:4px;align-items:baseline}
 .setnote-hist .icn{flex:none;font-size:11px;color:var(--yellow);transform:translateY(1px)}
 
@@ -52,3 +52,5 @@
 .recap-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
 .recap-tile{padding:12px;border-radius:14px;background:var(--surface-2);min-width:0}
 .recap-v{font-size:24px;font-weight:700;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* A saved set and its marks stay on one line in History. */
+.wd-set{white-space:nowrap}
