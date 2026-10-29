@@ -3327,4 +3327,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Varje utmaning du klarar ställer ett märke här, en hylla per månad.",
   "Monthly challenges": "Månadsutmaningar",
   "Three goals a month on Home, sized to how you train.": "Tre mål i månaden på Hem, efter hur du tränar.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "Okrypterad http:// fungerar bara för en adress i ditt hemnätverk, som 192.168.x.x, ett .local-namn eller en Tailscale-adress 100.x. Allt på internet behöver https://.",
+  "Plain http only on your home network": "Okrypterad http bara i hemnätverket",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "Fritt pass upprepar det du gjorde förra gången, utan progressionsregel. Reglerna gäller övningar i en rutin.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "Klockan trodde att passet var bortglömt. Här fortsätter det.",
 }

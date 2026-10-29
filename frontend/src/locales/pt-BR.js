@@ -2211,6 +2211,11 @@ export const PT_BR_OVERRIDES = {
   "Gold month. Take a bow.": "Mês de ouro. Pode agradecer os aplausos.",
   "Every challenge you finish puts a badge here, one shelf per month.": "Cada desafio concluído deixa uma medalha aqui, uma prateleira por mês.",
   "Three goals a month on Home, sized to how you train.": "Três metas por mês no Início, sob medida para você.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "O http:// sem criptografia só funciona para um endereço da sua rede de casa, como 192.168.x.x, um nome .local ou um endereço 100.x do Tailscale. Tudo o que está na internet precisa de https://.",
+  "Plain http only on your home network": "http sem criptografia só na rede de casa",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "O treino livre repete o que você fez da última vez, sem regra de progressão. As regras valem para os exercícios de uma rotina.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "Seu relógio achou que este treino tinha sido esquecido. Aqui ele continua.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

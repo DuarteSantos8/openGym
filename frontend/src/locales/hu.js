@@ -3283,4 +3283,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Minden teljesített kihívás ide tesz egy jelvényt, havonta egy polcot.",
   "Monthly challenges": "Havi kihívások",
   "Three goals a month on Home, sized to how you train.": "Havonta három cél a Kezdőlapon, az edzésedhez igazítva.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "Titkosítatlan http:// csak az otthoni hálózatod egy címére megy, például 192.168.x.x, egy .local név vagy egy 100.x Tailscale-cím. Ami az interneten van, annak https:// kell.",
+  "Plain http only on your home network": "Titkosítatlan http csak az otthoni hálózaton",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "A szabad edzés azt ismétli, amit legutóbb csináltál, progressziós szabály nélkül. A szabályok a rutinok gyakorlataira vonatkoznak.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "Az órád elfelejtettnek hitte ezt az edzést. Itt folytatódik.",
 }

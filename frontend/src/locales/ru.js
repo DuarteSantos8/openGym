@@ -3284,4 +3284,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Каждый выполненный челлендж оставляет здесь значок, по полке на месяц.",
   "Monthly challenges": "Ежемесячные челленджи",
   "Three goals a month on Home, sized to how you train.": "Три цели на месяц на Главной, под твой уровень.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "Незашифрованный http:// работает только с адресом в вашей домашней сети, например 192.168.x.x, именем .local или адресом Tailscale 100.x. Всё в интернете требует https://.",
+  "Plain http only on your home network": "Незашифрованный http только в домашней сети",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "Свободная тренировка повторяет то, что вы делали в прошлый раз, без правила прогрессии. Правила действуют для упражнений в программе.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "Часы решили, что эта тренировка забыта. Здесь она продолжается.",
 }

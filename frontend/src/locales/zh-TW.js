@@ -3273,4 +3273,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "每完成一個挑戰，這裡就多一枚徽章，每月一層。",
   "Monthly challenges": "每月挑戰",
   "Three goals a month on Home, sized to how you train.": "首頁每月三個目標，依你的訓練量量身打造。",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "未加密的 http:// 只能用於家用網路中的位址，例如 192.168.x.x、.local 名稱或 Tailscale 的 100.x 位址。網際網路上的位址都需要 https://。",
+  "Plain http only on your home network": "未加密的 http 僅限家用網路",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "自由訓練會重複你上次的內容，不套用進階規則。規則只適用於課表中的動作。",
+  "Your watch thought this workout was forgotten. It keeps going here.": "手錶以為這次訓練被遺忘了。這裡會繼續進行。",
 }

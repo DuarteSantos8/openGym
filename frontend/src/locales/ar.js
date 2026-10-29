@@ -3335,4 +3335,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "كل تحدٍ تنجزه يضع شارة هنا، رف لكل شهر.",
   "Monthly challenges": "تحديات شهرية",
   "Three goals a month on Home, sized to how you train.": "ثلاثة أهداف شهريًا في الرئيسية، على قدر تمرينك.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "لا يعمل http:// غير المشفر إلا مع عنوان على شبكتك المنزلية، مثل 192.168.x.x أو اسم ‎.local أو عنوان Tailscale بالشكل 100.x. أي شيء على الإنترنت يحتاج إلى https://.",
+  "Plain http only on your home network": "http غير المشفر على شبكتك المنزلية فقط",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "التمرين الحر يكرر ما فعلته في المرة السابقة، بلا قاعدة تقدّم. القواعد تنطبق على تمارين الروتين.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "ظنّت ساعتك أن هذا التمرين منسيّ. سيستمر هنا.",
 }

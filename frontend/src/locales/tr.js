@@ -3280,4 +3280,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Bitirdiğin her görev buraya bir rozet koyar, her ay için bir raf.",
   "Monthly challenges": "Aylık görevler",
   "Three goals a month on Home, sized to how you train.": "Ana sayfada ayda üç hedef, antrenmanına göre.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "Şifresiz http:// yalnızca ev ağındaki bir adres için çalışır, örneğin 192.168.x.x, bir .local adı ya da 100.x biçiminde bir Tailscale adresi. İnternetteki her şey için https:// gerekir.",
+  "Plain http only on your home network": "Şifresiz http yalnızca ev ağında",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "Serbest antrenman geçen sefer yaptığını tekrarlar, ilerleme kuralı yoktur. Kurallar bir rutindeki egzersizler için geçerlidir.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "Saatin bu antrenmanın unutulduğunu sandı. Burada devam ediyor.",
 }

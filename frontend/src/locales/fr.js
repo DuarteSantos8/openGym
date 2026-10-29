@@ -3280,4 +3280,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Chaque défi réussi pose un badge ici, une étagère par mois.",
   "Monthly challenges": "Défis mensuels",
   "Three goals a month on Home, sized to how you train.": "Trois objectifs par mois sur l’Accueil, à ta mesure.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "Le http:// non chiffré ne marche que pour une adresse de ton réseau domestique, comme 192.168.x.x, un nom en .local ou une adresse Tailscale en 100.x. Tout ce qui est sur Internet demande https://.",
+  "Plain http only on your home network": "http non chiffré seulement sur ton réseau domestique",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "La séance libre reprend ce que tu as fait la dernière fois, sans règle de progression. Les règles s’appliquent aux exercices d’une routine.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "Ta montre a cru que cette séance était oubliée. Elle continue ici.",
 }

@@ -3280,4 +3280,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Cada desafio cumprido deixa aqui uma medalha, uma prateleira por mês.",
   "Monthly challenges": "Desafios mensais",
   "Three goals a month on Home, sized to how you train.": "Três metas por mês no Início, à tua medida.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "O http:// sem cifra só funciona para um endereço da tua rede de casa, como 192.168.x.x, um nome .local ou um endereço 100.x do Tailscale. Tudo o que está na internet precisa de https://.",
+  "Plain http only on your home network": "http sem cifra só na rede de casa",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "O treino livre repete o que fizeste da última vez, sem regra de progressão. As regras aplicam-se aos exercícios de uma rotina.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "O teu relógio achou que este treino estava esquecido. Aqui continua.",
 }

@@ -3280,4 +3280,9 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "완료한 챌린지마다 여기에 배지가 놓여요. 한 달에 한 칸씩.",
   "Monthly challenges": "월간 챌린지",
   "Three goals a month on Home, sized to how you train.": "홈 화면에 매달 세 가지 목표, 내 운동에 맞춰서.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "암호화되지 않은 http://는 집 네트워크의 주소에서만 됩니다. 예: 192.168.x.x, .local 이름, Tailscale의 100.x 주소. 인터넷에 있는 주소는 https://가 필요합니다.",
+  "Plain http only on your home network": "암호화되지 않은 http는 집 네트워크에서만",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "자유 운동은 지난번에 한 그대로 반복하며 진행 규칙이 없습니다. 규칙은 루틴의 운동에 적용됩니다.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "시계가 이 운동을 잊힌 운동으로 생각했어요. 여기서는 계속 진행됩니다.",
 }
