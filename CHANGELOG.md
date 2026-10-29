@@ -53,6 +53,14 @@ research (roughly the minimum that grows a muscle to the most you can recover fr
 is yours to change under Settings → Plan & schedule → Weekly sets per muscle. Settings → Look &
 Home → Weekly sets on Home adds one line under your streak: the muscle with the most room left.
 
+**Strength level per lift.** Bench, squat, deadlift, overhead press, rows, curls and a few more
+now say where you stand: Beginner, Novice, Intermediate, Advanced or Elite, from your best
+estimated 1RM against your latest weigh-in, graded on published strength standards (bodyweight
+ratios, dumbbells per bell). It sits in the exercise's details with what the next level takes,
+and a Stats card lists every lift you have one for. Add your sex and year of birth under Settings
+→ Units & language → About you for a fairer read (from 40 on, the masters age coefficients ease
+the lines). Worked out on your device, and hidden until you have weighed in.
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic

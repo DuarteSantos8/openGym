@@ -36,3 +36,14 @@
 .wsets-edit{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--sep)}
 .wsets-edit-n{flex:1;min-width:0;font-weight:500}
 .wsets-edit .stp{flex:none;width:118px}
+
+/* Strength level per lift (components/StrengthLevel.jsx): five steps, the reached ones filled. */
+.slevel-name{font-size:20px;font-weight:600;letter-spacing:-.02em}
+.slevel-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:6px 0}
+.slevel-bar span{height:6px;border-radius:3px;background:var(--surface-2)}
+.slevel-bar span.on{background:var(--acc)}
+.slevel-row{padding:7px 0;border-top:1px solid var(--sep)}
+.slevel-row:first-of-type{border-top:0}
+.slevel-ex{font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slevel-src{margin-top:6px}
+.slevel-about{padding:0;border:0;background:none;color:var(--acc);font:inherit;cursor:pointer;text-decoration:underline}

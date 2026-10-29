@@ -24,6 +24,7 @@ import { weekTargetOf } from '../lib/week-left.js'
 import { speak, speechSupported, SPEECH_RATES, speechRateOf } from '../lib/speech.js'
 import { sampleCue } from '../lib/spoken-cues.js'
 import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
+import { aboutYouSheet } from '../components/StrengthLevel.jsx'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -892,6 +893,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Count body weight in bodyweight lifts')} checked={S.volumeBodyweight === true}
             onChange={v => update(s => { s.volumeBodyweight = v })} />
         </Row>
+        {/* Sex and year of birth, read only by the strength levels (lib/strength-level.js). */}
+        <Row icon="person" iconTint="var(--teal)" title={t('About you')} subtitle={t('For your strength levels')} accessory="chevron" onClick={aboutYouSheet} />
         {/* #859: a day can hold several weigh-ins. Which one is the day's number for the chart, the
             trend, the goal line, widgets, Wrapped and the Coach (lib/weigh-ins.js). Morning is the
             default: it is the weight worth comparing from one day to the next. */}

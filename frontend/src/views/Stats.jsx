@@ -20,6 +20,7 @@ import { WrappedStatsCard } from '../components/WrappedEntry.jsx'
 import { streakInfo } from '../lib/streak.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { WeeklySetsCard } from '../components/WeeklySets.jsx'
+import { StrengthLevelsCard } from '../components/StrengthLevel.jsx'
 import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
 import { loadOfWeeklyPlan, loadOfWorkouts, muscleBalanceWindow, rankOf, MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { fatigueOf, strengthOf, STRENGTH_FLOOR, LB_TO_KG } from '../lib/recovery.js'
@@ -800,6 +801,8 @@ export default function Stats() {
     {(workouts.length > 0 || Object.keys(loadOfWeeklyPlan(S)).length > 0) && <MuscleBalance S={S} />}
     {/* This week's working sets per main muscle against a target range (lib/muscle-targets.js). */}
     {workouts.length > 0 && <WeeklySetsCard S={S} />}
+    {/* Beginner to Elite for the main lifts (lib/strength-level.js); hidden without a weigh-in. */}
+    {workouts.length > 0 && <StrengthLevelsCard S={S} />}
     {S.routines.length > 0 && <WeeklyPlanVolume S={S} />}
     {workouts.length > 0 && <div className="card row between" style={{ alignItems: 'center', gap: 12 }}>
       <div style={{ minWidth: 0 }}><h2 style={{ margin: 0 }}>{t('Structural balance')}</h2>
