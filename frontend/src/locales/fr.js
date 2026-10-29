@@ -3410,4 +3410,7 @@ export default {
   "Merge": "Fusionner",
   "Merged into “{0}”": "Fusionné avec « {0} »",
   "Pick a different exercise.": "Choisis un autre exercice.",
+  "A word about this set": "Un mot sur cette série",
+  "Grip slipped, a little twinge, felt easy…": "Prise qui glisse, petite gêne, c’était facile…",
+  "Note: {0}": "Note : {0}",
 }

@@ -3421,4 +3421,7 @@ export default {
   "Merge": "รวม",
   "Merged into “{0}”": "รวมเข้ากับ “{0}” แล้ว",
   "Pick a different exercise.": "เลือกท่าอื่น",
+  "A word about this set": "โน้ตสั้น ๆ ของเซ็ตนี้",
+  "Grip slipped, a little twinge, felt easy…": "มือลื่น เจ็บนิดหน่อย รู้สึกง่าย…",
+  "Note: {0}": "โน้ต: {0}",
 }

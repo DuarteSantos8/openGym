@@ -3413,4 +3413,7 @@ export default {
   "Merge": "Összevonás",
   "Merged into “{0}”": "Összevonva ezzel: „{0}”",
   "Pick a different exercise.": "Válassz egy másik gyakorlatot.",
+  "A word about this set": "Pár szó erről a sorozatról",
+  "Grip slipped, a little twinge, felt easy…": "Megcsúszott a fogás, kis nyilallás, könnyűnek tűnt…",
+  "Note: {0}": "Jegyzet: {0}",
 }

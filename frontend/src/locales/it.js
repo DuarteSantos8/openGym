@@ -3410,4 +3410,7 @@ export default {
   "Merge": "Unisci",
   "Merged into “{0}”": "Unito a «{0}»",
   "Pick a different exercise.": "Scegli un altro esercizio.",
+  "A word about this set": "Due parole su questa serie",
+  "Grip slipped, a little twinge, felt easy…": "Presa scivolata, una fitta, sembrava facile…",
+  "Note: {0}": "Nota: {0}",
 }

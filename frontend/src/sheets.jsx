@@ -52,6 +52,7 @@ import { printWorkout } from './lib/report-print.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
 import { setTrendOn, setTrendsFor, lastTimeBefore, trendGlyph, trendLabel } from './lib/set-trend.js'
 import { mergeExercise, undoMerge, mergePreview, mergeBlocked } from './lib/exercise-merge.js'
+import { setNoteOf, withSetNote, SET_NOTE_MAX } from './lib/set-notes.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep } from './lib/dumbbells.js'
@@ -3113,9 +3114,15 @@ function WorkoutDetail({ w, close }) {
     if (!shown.length) return t('no sets')
     return shown.map(([s, j], k) => <Fragment key={j}>
       {k > 0 && '  ·  '}
-      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}</span>
+      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}</span>
     </Fragment>)
   }
+  // Every set's note of an entry, numbered the way the workout numbers its rows (warm-ups apart).
+  const setNotesOf = e => (e.sets || []).map((s, i) => ({ i, s })).filter(x => setNoteOf(x.s) && hasCompletedWork(x.s)).map(({ i, s }) => {
+    const warm = isWarmupRow(s)
+    const n = e.sets.slice(0, i + 1).filter(x => isWarmupRow(x) === warm).length
+    return { i, label: warm ? t('Warm-up') + ' ' + n : t('Set {0}', s.side ? Math.ceil(n / 2) : n), note: setNoteOf(s) }
+  })
   const entryRow = (e, i) => {
     const ex = EXIDX[e.id]
     return <div key={i} className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
@@ -3128,7 +3135,9 @@ function WorkoutDetail({ w, close }) {
         </div>}
         {e.note && <div className="small dim" style={{ marginTop: 3 }}>
           {e.notePin && <Icon name="pin" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px', color: 'var(--yellow)' }} />}{e.note}
-        </div>}</div>
+        </div>}
+        {/* Each set's own note (lib/set-notes.js), under the sets: "Set 2: grip slipped". */}
+        {setNotesOf(e).map(n => <div key={n.i} className="small dim setnote-hist"><Icon name="note" />{n.label}: {n.note}</div>)}</div>
       <Icon name="chevronRight" className="chev" style={{ alignSelf: 'center' }} />
     </div>
   }
@@ -3695,39 +3704,41 @@ function ExerciseNote({ entryIdx, close }) {
 }
 export const exerciseNoteSheet = entryIdx => ui().openSheet(close => <ExerciseNote entryIdx={entryIdx} close={close} />)
 
-function SetNote({ entryIdx, setIdx, close }) {
+// A note on one set (lib/set-notes.js): the set menu's Note, or a tap on the note under the row.
+// Saved on the row, so it goes with the workout when it is finished, and with the set when the
+// set is removed.
+function SetNote({ entryIdx, setIdx, title, close }) {
   const noteRef = useRef(null)
   const onNoteFocus = useSheetKeyboard(noteRef)
   const row = useStore(s => s.S.active?.entries?.[entryIdx]?.sets?.[setIdx])
   const update = useStore(s => s.update)
-  const [note, setNote] = useState(row?.note || '')
+  const [had] = useState(() => setNoteOf(row))
+  const [note, setNote] = useState(had)
 
   useEffect(() => { if (!row) close() }, [!row])
   if (!row) return null
 
-  const save = () => {
-    const text = note.trim().slice(0, NOTE_MAX)
+  const save = text => {
     update(s => {
-      const set = s.active?.entries?.[entryIdx]?.sets?.[setIdx]
-      if (!set) return
-      if (text) set.note = text
-      else delete set.note
+      const rows = s.active?.entries?.[entryIdx]?.sets
+      if (rows?.[setIdx]) rows[setIdx] = withSetNote(rows[setIdx], text)
     }, true)
     close()
   }
 
   return <>
-    <h3>{t('Set note')}</h3>
-    <textarea ref={noteRef} className="input" rows={4} maxLength={NOTE_MAX} value={note}
-      placeholder={t('Anything specific to remember about this set.')}
+    <h3>{title || t('Set note')}</h3>
+    <textarea ref={noteRef} className="input" rows={2} maxLength={SET_NOTE_MAX} value={note}
+      placeholder={t('Grip slipped, a little twinge, felt easy…')} aria-label={t('Set note')}
       onFocus={onNoteFocus} onChange={event => setNote(event.target.value)} />
     <div style={{ height: 18 }} />
-    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+    <Button variant="primary" onClick={() => save(note)}>{t('Save')}</Button>
+    {had && <><div style={{ height: 8 }} /><Button variant="ghost" className="dim" icon="trash" onClick={() => save('')}>{t('Remove note')}</Button></>}
   </>
 }
 
-export const setNoteSheet = (entryIdx, setIdx) =>
-  ui().openSheet(close => <SetNote entryIdx={entryIdx} setIdx={setIdx} close={close} />)
+export const setNoteSheet = (entryIdx, setIdx, title) =>
+  ui().openSheet(close => <SetNote entryIdx={entryIdx} setIdx={setIdx} title={title} close={close} />)
 
 /* The session note: how the whole workout went, as opposed to how one exercise went. It lives
    on the active session, so buildCompletedWorkout carries it onto the finished workout and it

@@ -3407,4 +3407,7 @@ export default {
   "Merge": "Об’єднати",
   "Merged into “{0}”": "Об’єднано з «{0}»",
   "Pick a different exercise.": "Виберіть іншу вправу.",
+  "A word about this set": "Кілька слів про цей підхід",
+  "Grip slipped, a little twinge, felt easy…": "Хват зісковзнув, легке поколювання, було легко…",
+  "Note: {0}": "Нотатка: {0}",
 }

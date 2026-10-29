@@ -60,3 +60,13 @@ describe('set vs last time in a saved workout (#907)', () => {
     expect(mountTopSheet().querySelectorAll('.settrend')).toHaveLength(0)
   })
 })
+
+describe('set notes in a saved workout', () => {
+  it('marks the set and lists the note under the sets', () => {
+    const noted = { ...today, entries: [{ ...today.entries[0], sets: today.entries[0].sets.map((s, i) => (i === 2 ? { ...s, note: 'grip slipped' } : s)) }] }
+    workoutDetailSheet(noted)
+    const host = mountTopSheet()
+    expect(host.querySelector('.setnote-mark').getAttribute('aria-label')).toBe('Note: grip slipped')
+    expect(host.querySelector('.setnote-hist').textContent).toBe('Set 2: grip slipped')
+  })
+})

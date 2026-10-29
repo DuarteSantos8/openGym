@@ -3489,4 +3489,7 @@ export default {
   "Merge": "মেলান",
   "Merged into “{0}”": "“{0}”-এর সাথে মেলানো হয়েছে",
   "Pick a different exercise.": "অন্য একটা ব্যায়াম বেছে নিন।",
+  "A word about this set": "এই সেট নিয়ে একটা কথা",
+  "Grip slipped, a little twinge, felt easy…": "গ্রিপ পিছলে গেছে, একটু টান, সহজ লাগল…",
+  "Note: {0}": "নোট: {0}",
 }

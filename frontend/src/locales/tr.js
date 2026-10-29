@@ -3410,4 +3410,7 @@ export default {
   "Merge": "Birleştir",
   "Merged into “{0}”": "“{0}” ile birleştirildi",
   "Pick a different exercise.": "Başka bir egzersiz seç.",
+  "A word about this set": "Bu set hakkında bir not",
+  "Grip slipped, a little twinge, felt easy…": "Kavrama kaydı, hafif bir sızı, kolay geldi…",
+  "Note: {0}": "Not: {0}",
 }

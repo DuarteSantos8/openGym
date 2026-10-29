@@ -3457,4 +3457,7 @@ export default {
   "Merge": "Slå ihop",
   "Merged into “{0}”": "Ihopslagen med ”{0}”",
   "Pick a different exercise.": "Välj en annan övning.",
+  "A word about this set": "Ett ord om det här setet",
+  "Grip slipped, a little twinge, felt easy…": "Greppet gled, ett litet hugg, kändes lätt…",
+  "Note: {0}": "Anteckning: {0}",
 }

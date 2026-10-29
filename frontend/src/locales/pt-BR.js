@@ -2292,6 +2292,9 @@ export const PT_BR_OVERRIDES = {
   "Merge": "Juntar",
   "Merged into “{0}”": "Juntado com “{0}”",
   "Pick a different exercise.": "Escolha outro exercício.",
+  "A word about this set": "Uma palavra sobre esta série",
+  "Grip slipped, a little twinge, felt easy…": "A pegada escorregou, uma fisgada, pareceu fácil…",
+  "Note: {0}": "Nota: {0}",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

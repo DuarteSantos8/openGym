@@ -3414,4 +3414,7 @@ export default {
   "Merge": "Объединить",
   "Merged into “{0}”": "Объединено с «{0}»",
   "Pick a different exercise.": "Выберите другое упражнение.",
+  "A word about this set": "Пара слов об этом подходе",
+  "Grip slipped, a little twinge, felt easy…": "Хват соскользнул, лёгкий прострел, было легко…",
+  "Note: {0}": "Заметка: {0}",
 }

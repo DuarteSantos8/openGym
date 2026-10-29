@@ -3410,4 +3410,7 @@ export default {
   "Merge": "मिलाएँ",
   "Merged into “{0}”": "“{0}” में मिला दिया",
   "Pick a different exercise.": "कोई दूसरी एक्सरसाइज़ चुनें।",
+  "A word about this set": "इस सेट के बारे में एक बात",
+  "Grip slipped, a little twinge, felt easy…": "ग्रिप फिसली, हल्का खिंचाव, आसान लगा…",
+  "Note: {0}": "नोट: {0}",
 }

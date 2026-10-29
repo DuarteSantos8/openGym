@@ -507,10 +507,16 @@ function cleanWorkout(w) {
       id: ident(en.id),
       name: libraryName(en.id),
       target: targetOf(en),
-      sets: setsOf(en).slice(0, MAX_SETS_PER_ENTRY).map(cleanSet)
+      // A set's own note rides along like the workout's note above (the app's set menu → Note).
+      sets: setsOf(en).slice(0, MAX_SETS_PER_ENTRY).map(s => {
+        const o = cleanSet(s);
+        if (typeof s.note === 'string' && s.note.trim()) o.note = s.note.trim().slice(0, SET_NOTE_MAX);
+        return o;
+      })
     }))
   };
 }
+const SET_NOTE_MAX = 140;
 
 // The most sets of one exercise a payload carries — far past any real session, and a bound on a
 // running session the client sends along with a question (`today`).

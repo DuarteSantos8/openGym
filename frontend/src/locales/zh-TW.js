@@ -3403,4 +3403,7 @@ export default {
   "Merge": "合併",
   "Merged into “{0}”": "已合併到「{0}」",
   "Pick a different exercise.": "請選一個不同的動作。",
+  "A word about this set": "給這一組寫一句",
+  "Grip slipped, a little twinge, felt easy…": "握把打滑、有點刺痛、感覺輕鬆…",
+  "Note: {0}": "備註：{0}",
 }

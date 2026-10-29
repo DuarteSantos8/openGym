@@ -3410,4 +3410,7 @@ export default {
   "Merge": "합치기",
   "Merged into “{0}”": "“{0}”(으)로 합쳤어요",
   "Pick a different exercise.": "다른 운동을 골라 주세요.",
+  "A word about this set": "이 세트에 대한 한마디",
+  "Grip slipped, a little twinge, felt easy…": "그립이 미끄러짐, 살짝 찌릿함, 쉬웠음…",
+  "Note: {0}": "메모: {0}",
 }

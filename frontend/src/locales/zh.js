@@ -3410,4 +3410,7 @@ export default {
   "Merge": "合并",
   "Merged into “{0}”": "已合并到“{0}”",
   "Pick a different exercise.": "请选一个不同的动作。",
+  "A word about this set": "给这一组写一句",
+  "Grip slipped, a little twinge, felt easy…": "握把打滑、有点刺痛、感觉轻松…",
+  "Note: {0}": "备注：{0}",
 }

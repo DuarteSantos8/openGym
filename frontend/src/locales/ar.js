@@ -3465,4 +3465,7 @@ export default {
   "Merge": "دمج",
   "Merged into “{0}”": "تم الدمج في «{0}»",
   "Pick a different exercise.": "اختر تمرينًا مختلفًا.",
+  "A word about this set": "كلمة عن هذه المجموعة",
+  "Grip slipped, a little twinge, felt easy…": "انزلقت القبضة، وخزة خفيفة، كانت سهلة…",
+  "Note: {0}": "ملاحظة: {0}",
 }

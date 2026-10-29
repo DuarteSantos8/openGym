@@ -38,6 +38,12 @@ searching for its name finds the one you merged it into. Undo on the toast puts 
 Another device that still logged against the old one is brought in line when it syncs, and the
 MCP bridge reads it the same way.
 
+**A note on any set.** Tap a set's number and pick Note: "grip slipped", "a little twinge", "felt
+easy". It shows as a quiet line under the row (tap it to change it), sticks with the set when the
+workout is saved, and appears in History under that exercise's sets. It goes into the CSV export
+(a new set_note column) and the MCP bridge's get_workout, and it reaches the Coach the way your
+workout notes already do.
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic

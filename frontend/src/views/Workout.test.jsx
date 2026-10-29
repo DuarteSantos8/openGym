@@ -3014,7 +3014,7 @@ describe('workout controls: the more menu and the set menu', () => {
   it('opens a per-set menu from the set number with drop, burst and remove', async () => {
     await mount([exercise('plain-bench', [false, false])])
     await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Make it a warm-up set', 'Rest after this set', 'Remove this set'])
+    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Note', 'Make it a warm-up set', 'Rest after this set', 'Remove this set'])
     expect(item('Make it a warm-up set').icon).toBe('sunrise')
 
     await act(async () => { item('Drop set').onClick() })
@@ -3710,7 +3710,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await mount([exercise('plain-bench', [false, false])])
     await click(container.querySelector('button[aria-label="Set 1"]'))
     expect(lastMenu().sections.map(g => g.more ? ['More', menuItemsOf({ sections: g.more }).map(it => it.label)] : g.items.filter(Boolean).map(it => it.label))).toEqual([
-      ['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set'],
+      ['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Note'],
       ['More', ['Make it a warm-up set', 'Rest after this set']],
       ['Remove this set'],
     ])

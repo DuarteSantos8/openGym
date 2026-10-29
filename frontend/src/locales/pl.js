@@ -3410,4 +3410,7 @@ export default {
   "Merge": "Scal",
   "Merged into “{0}”": "Scalono z „{0}”",
   "Pick a different exercise.": "Wybierz inne ćwiczenie.",
+  "A word about this set": "Słowo o tej serii",
+  "Grip slipped, a little twinge, felt easy…": "Chwyt się ześlizgnął, lekkie ukłucie, poszło łatwo…",
+  "Note: {0}": "Notatka: {0}",
 }
