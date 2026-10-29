@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
@@ -50,6 +50,10 @@ import { buildPlanBundle, buildProgrammeBundle, parsePlan, mergePlan } from './l
 import PrintPlanSheet from './components/PrintPlanSheet.jsx'
 import { printWorkout } from './lib/report-print.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
+import { setTrendOn, setTrendsFor, lastTimeBefore, trendGlyph, trendLabel } from './lib/set-trend.js'
+import { mergeExercise, undoMerge, mergePreview, mergeBlocked } from './lib/exercise-merge.js'
+import { setNoteOf, withSetNote, SET_NOTE_MAX } from './lib/set-notes.js'
+import { StrengthLevelBlock } from './components/StrengthLevel.jsx'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep } from './lib/dumbbells.js'
@@ -1332,6 +1336,10 @@ function ExerciseDetail({ ex, close }) {
       <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>
       <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{t('Delete')}</Button>
     </div>}
+    {/* Merge into… (#656, lib/exercise-merge.js): this exercise's history and plans onto another,
+        for an import that made "Bench Press (Barbell)" next to the catalogue's bench press. */}
+    {!ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })()) &&
+      <Button icon="merge" style={{ marginTop: 8 }} onClick={() => mergeExerciseFlow(ex, close)}>{t('Merge into…')}</Button>}
     {modeOf({ id: ex.id }) === 'reps' && <>
       <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
       <ExUnitRow ex={ex} /></div>
@@ -1346,6 +1354,9 @@ function ExerciseDetail({ ex, close }) {
       <DbLoadPicker ex={ex} value={dbLoadFor(st, ex.id)}
         onChange={v => update(s => { s.dbLoad = withDbLoad(s.dbLoad, ex.id, v) })} />
     </>}
+    {/* Beginner to Elite for the main lifts, from the best estimated 1RM against body weight
+        (lib/strength-level.js). Hidden without a weigh-in. */}
+    <StrengthLevelBlock exId={ex.id} />
     {/* No one-rep max on an assistance machine: the load is the help you were given, so the
         calculator would answer "your 1RM is 23 kg" about a number that gets smaller as you get
         stronger (issue #232). Cardio has none for the same kind of reason. */}
@@ -1631,6 +1642,40 @@ export function deleteCustomEx(ex, afterDelete) {
       afterDelete && afterDelete()
     }
   })
+}
+
+// Merge into… (#656): pick the exercise this one's history goes to, see what moves, confirm; the
+// toast's Undo puts it all back (lib/exercise-merge.js).
+export function mergeExerciseFlow(ex, afterMerge) {
+  if (S().active?.entries.some(e => e.id === ex.id)) { toast(t('Finish your current workout first')); return }
+  const name = exerciseNameText(ex)
+  const picker = exercisePicker(target => {
+    picker.close()
+    const live = S()
+    const why = mergeBlocked(live, ex.id, target.id)
+    if (why) { toast(t(why)); return }
+    const p = mergePreview(live, ex.id, target.id)
+    const into = exerciseNameText(target)
+    const moves = [
+      p.workouts && tn('{0} workout', '{0} workouts', p.workouts),
+      p.routines && tn('{0} routine', '{0} routines', p.routines),
+      p.programmes && tn('{0} programme', '{0} programmes', p.programmes),
+    ].filter(Boolean)
+    confirmSheet({
+      title: t('Merge into “{0}”?', into),
+      message: [
+        moves.length ? t('{0} move to “{1}”, with every set, note and record.', moves.join(', '), into) : t('Nothing is logged or planned with it yet.'),
+        p.custom ? t('Then “{0}” is deleted.', name) : t('Then “{0}” is hidden from your lists, and searching for it finds “{1}”.', name, into),
+      ].join(' '),
+      confirmText: t('Merge'),
+      onConfirm: () => {
+        let undo = null
+        try { update(s => { undo = mergeExercise(s, ex.id, target.id, { names: [name] }).undo }) } catch (e) { toast(t(e.message)); return }
+        afterMerge && afterMerge()
+        ui().toast(t('Merged into “{0}”', into), { action: t('Undo'), onAction: () => { if (undo) update(s => undoMerge(s, undo)) } })
+      },
+    })
+  }, { title: t('Merge into…'), actionIcon: 'merge' })
 }
 
 /* ============================ exercise picker ============================ */
@@ -3063,19 +3108,42 @@ function WorkoutDetail({ w, close }) {
   const times = entryTimes(w)
   // Tapping an exercise opens its history (Discord 'Improvement ideas'): from one session to the
   // curve it sits on, which is the question a past workout raises most often.
+  // Each set as logged, with its arrow against the same set last time (#907, lib/set-trend.js):
+  // last time as the log stood before this workout, so an old one is never held against a later.
+  const trendsOn = setTrendOn(st)
+  const detailSets = e => {
+    const ve = viewEntry(st, e)
+    const last = trendsOn ? lastTimeBefore(st, w, e) : null
+    const trends = last ? setTrendsFor(ve, viewEntry(st, { ...last, id: e.id }), { formula: formulaOf(st) }) : []
+    const unit = exUnitOf(st, e.id)
+    const shown = ve.sets.map((s, j) => [s, j]).filter(([s]) => hasCompletedWork(s))
+    if (!shown.length) return t('no sets')
+    return shown.map(([s, j], k) => <Fragment key={j}>
+      {k > 0 && '  ·  '}
+      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}</span>
+    </Fragment>)
+  }
+  // Every set's note of an entry, numbered the way the workout numbers its rows (warm-ups apart).
+  const setNotesOf = e => (e.sets || []).map((s, i) => ({ i, s })).filter(x => setNoteOf(x.s) && hasCompletedWork(x.s)).map(({ i, s }) => {
+    const warm = isWarmupRow(s)
+    const n = e.sets.slice(0, i + 1).filter(x => isWarmupRow(x) === warm).length
+    return { i, label: warm ? t('Warm-up') + ' ' + n : t('Set {0}', s.side ? Math.ceil(n / 2) : n), note: setNoteOf(s) }
+  })
   const entryRow = (e, i) => {
     const ex = EXIDX[e.id]
     return <div key={i} className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
       {ex && <button type="button" className="wd-thumb" aria-label={t('Details')} onClick={ev => { ev.stopPropagation(); exerciseDetailSheet(ex) }}><Thumb ex={ex} /></button>}
       <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
         {/* An exercise in a unit of its own (#657) reads in it, and says which. */}
-        <div className="ss">{viewEntry(st, e).sets.filter(hasCompletedWork).map(s => setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)).join('  ·  ') || t('no sets')}{exUnitTag(st, e.id)}</div>
+        <div className="ss">{detailSets(e)}{exUnitTag(st, e.id)}</div>
         {times[i] > 0 && <div className="small dim" style={{ marginTop: 3 }}>
           <Icon name="timer" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px' }} />{fmtDur(Math.max(times[i], 60000))}
         </div>}
         {e.note && <div className="small dim" style={{ marginTop: 3 }}>
           {e.notePin && <Icon name="pin" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px', color: 'var(--gold-ink)' }} />}{e.note}
-        </div>}</div>
+        </div>}
+        {/* Each set's own note (lib/set-notes.js), under the sets: "Set 2: grip slipped". */}
+        {setNotesOf(e).map(n => <div key={n.i} className="small dim setnote-hist"><Icon name="note" />{n.label}: {n.note}</div>)}</div>
       <Icon name="chevronRight" className="chev" style={{ alignSelf: 'center' }} />
     </div>
   }
@@ -3642,39 +3710,41 @@ function ExerciseNote({ entryIdx, close }) {
 }
 export const exerciseNoteSheet = entryIdx => ui().openSheet(close => <ExerciseNote entryIdx={entryIdx} close={close} />)
 
-function SetNote({ entryIdx, setIdx, close }) {
+// A note on one set (lib/set-notes.js): the set menu's Note, or a tap on the note under the row.
+// Saved on the row, so it goes with the workout when it is finished, and with the set when the
+// set is removed.
+function SetNote({ entryIdx, setIdx, title, close }) {
   const noteRef = useRef(null)
   const onNoteFocus = useSheetKeyboard(noteRef)
   const row = useStore(s => s.S.active?.entries?.[entryIdx]?.sets?.[setIdx])
   const update = useStore(s => s.update)
-  const [note, setNote] = useState(row?.note || '')
+  const [had] = useState(() => setNoteOf(row))
+  const [note, setNote] = useState(had)
 
   useEffect(() => { if (!row) close() }, [!row])
   if (!row) return null
 
-  const save = () => {
-    const text = note.trim().slice(0, NOTE_MAX)
+  const save = text => {
     update(s => {
-      const set = s.active?.entries?.[entryIdx]?.sets?.[setIdx]
-      if (!set) return
-      if (text) set.note = text
-      else delete set.note
+      const rows = s.active?.entries?.[entryIdx]?.sets
+      if (rows?.[setIdx]) rows[setIdx] = withSetNote(rows[setIdx], text)
     }, true)
     close()
   }
 
   return <>
-    <h3>{t('Set note')}</h3>
-    <textarea ref={noteRef} className="input" rows={4} maxLength={NOTE_MAX} value={note}
-      placeholder={t('Anything specific to remember about this set.')}
+    <h3>{title || t('Set note')}</h3>
+    <textarea ref={noteRef} className="input" rows={2} maxLength={SET_NOTE_MAX} value={note}
+      placeholder={t('Grip slipped, a little twinge, felt easy…')} aria-label={t('Set note')}
       onFocus={onNoteFocus} onChange={event => setNote(event.target.value)} />
     <div style={{ height: 18 }} />
-    <Button variant="primary" onClick={save}>{t('Save')}</Button>
+    <Button variant="primary" onClick={() => save(note)}>{t('Save')}</Button>
+    {had && <><div style={{ height: 8 }} /><Button variant="ghost" className="dim" icon="trash" onClick={() => save('')}>{t('Remove note')}</Button></>}
   </>
 }
 
-export const setNoteSheet = (entryIdx, setIdx) =>
-  ui().openSheet(close => <SetNote entryIdx={entryIdx} setIdx={setIdx} close={close} />)
+export const setNoteSheet = (entryIdx, setIdx, title) =>
+  ui().openSheet(close => <SetNote entryIdx={entryIdx} setIdx={setIdx} title={title} close={close} />)
 
 /* The session note: how the whole workout went, as opposed to how one exercise went. It lives
    on the active session, so buildCompletedWorkout carries it onto the finished workout and it

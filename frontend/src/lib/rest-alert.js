@@ -186,6 +186,27 @@ export function toneNative(kind, { onSilent = false } = {}) {
     .catch(() => false)
 }
 
+// A spoken cue through the phone's own voice (Settings → Timer alerts → Spoken cues): Android's
+// TextToSpeech and the iPhone's AVSpeechSynthesizer, both asking other audio to turn down for it
+// and never to stop, like the end tone above. Resolves true once the phone took it, false
+// anywhere it cannot (the web, an app from before v1.4.5, a failed call), for lib/speech.js to
+// use the page's own speechSynthesis instead. Never resolves with the plugin itself.
+// `flush`: cut off what is still being said first (a countdown number).
+export function speakNative(text, { lang = '', rate = 1, onSilent = false, flush = false } = {}) {
+  if (!MOBILE || !text) return Promise.resolve(false)
+  return restPlugin()
+    .then(plugin => (plugin ? plugin.RestAlert.speak({ text: String(text), lang: String(lang || ''), rate: Number(rate) || 1, onSilent: onSilent === true, flush: flush === true }).then(() => true) : false))
+    .catch(() => false)
+}
+
+/** Stops whatever the phone is saying. */
+export function hushNative() {
+  if (!MOBILE) return Promise.resolve(false)
+  return restPlugin()
+    .then(plugin => (plugin ? plugin.RestAlert.hush().then(() => true) : false))
+    .catch(() => false)
+}
+
 // The running countdown repaints with this swatch. No-op when no rest is on screen.
 export function setRestAccent(key) {
   if (!MOBILE) return
