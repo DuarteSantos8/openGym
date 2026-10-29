@@ -61,6 +61,13 @@ and a Stats card lists every lift you have one for. Add your sex and year of bir
 → Units & language → About you for a fairer read (from 40 on, the masters age coefficients ease
 the lines). Worked out on your device, and hidden until you have weighed in.
 
+**Your week, your month.** When a new week starts (your first weekday) Home shows a small "Your
+week" card about the one that just ended, and on the 1st a "Your month": workouts, volume, new
+bests, the streak and the muscle that did the most work. Tap it for the numbers, share them as a
+picture (story or square, dark or light) or save that stretch as the performance report PDF. A week
+off gets no card, nobody needs a recap of the sofa. The × puts it away, and Settings → Look & Home →
+Week and month recap switches it off.
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic

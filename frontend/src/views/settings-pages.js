@@ -139,6 +139,7 @@ export const SEARCH = [
   { page: 'look', title: 'Set up an NFC sticker', icon: 'nfc', tint: 'var(--blue)', kw: 'nfc sticker tag tap check in start workout locker machine', when: c => !!c.nfc },
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', kw: 'weight card home' },
   { page: 'look', title: 'Recovery tips', icon: 'figureStrength', tint: 'var(--green)', kw: 'recovery recovering rest muscle fatigue hint tip card home sore' },
+  { page: 'look', title: 'Week and month recap', icon: 'chart', tint: 'var(--purple)', kw: 'recap summary weekly monthly report your week your month card home share' },
   { page: 'look', title: 'Weekly sets on Home', icon: 'figureStrength', tint: 'var(--teal)', kw: 'weekly sets muscle volume range home card line' },
   { page: 'look', title: 'Monthly challenges', icon: 'target', tint: 'var(--orange)', kw: 'challenge challenges monthly month goal goals badge badges trophy motivation' },
   { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', kw: 'seasonal season holiday halloween christmas advent calendar snow theme decoration' },

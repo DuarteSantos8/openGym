@@ -47,3 +47,8 @@
 .slevel-ex{font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .slevel-src{margin-top:6px}
 .slevel-about{padding:0;border:0;background:none;color:var(--acc);font:inherit;cursor:pointer;text-decoration:underline}
+
+/* Your week / Your month (components/Recap.jsx): four tiles in the sheet. */
+.recap-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.recap-tile{padding:12px;border-radius:14px;background:var(--surface-2);min-width:0}
+.recap-v{font-size:24px;font-weight:700;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

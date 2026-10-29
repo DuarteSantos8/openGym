@@ -2330,6 +2330,20 @@ export const PT_BR_OVERRIDES = {
   "Not set": "Não definido",
   "Year of birth": "Ano de nascimento",
   "For your strength levels": "Para seus níveis de força",
+  "workout": "treino",
+  "workouts": "treinos",
+  "new best": "novo recorde",
+  "new bests": "novos recordes",
+  "week in a row": "semana seguida",
+  "weeks in a row": "semanas seguidas",
+  "Most work: {0}, {1} sets": "Mais trabalho: {0}, {1} séries",
+  "{0} new best": "{0} novo recorde",
+  "{0} new bests": "{0} novos recordes",
+  "Put it away": "Guardar",
+  "Your week": "Sua semana",
+  "Your month": "Seu mês",
+  "Week and month recap": "Resumo da semana e do mês",
+  "A small card when a new week or month starts: what the last one added up to.": "Um cartãozinho quando começa uma semana ou um mês: como foi o anterior.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

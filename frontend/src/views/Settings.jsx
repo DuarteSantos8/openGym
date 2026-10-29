@@ -984,6 +984,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
         {/* Three goals a month on Home, sized to how you train (lib/challenges.js). Off: no card,
             no Stats progress; badges already earned stay on the shelf. */}
+        {/* Monday's Your week and the 1st's Your month (lib/recap.js). On unless switched off. */}
+        <Row icon="chart" iconTint="var(--purple)" title={t('Week and month recap')}
+          subtitle={t('A small card when a new week or month starts: what the last one added up to.')}>
+          <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v })} />
+        </Row>
         {/* This week's sets for the muscle with the most room, under the streak (components/WeeklySets.jsx). */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Weekly sets on Home')}
           subtitle={t('The muscle with the most room left this week, under your streak.')}>

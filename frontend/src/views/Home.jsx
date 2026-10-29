@@ -14,6 +14,7 @@ import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { queueOf, queueView, weekTally, pinState } from '../lib/queue.js'
 import { workoutsLeft } from '../lib/week-left.js'
 import { WeeklySetsHomeLine } from '../components/WeeklySets.jsx'
+import { RecapHomeCard } from '../components/Recap.jsx'
 import { scheduleModeOf } from '../lib/rotation.js'
 import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
@@ -183,6 +184,9 @@ export default function Home() {
       </div>}
       <SeasonDeco spot="home-hero" />
     </div>
+
+    {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
+    <RecapHomeCard S={S} />
 
     {/* Christmas (lib/seasonal.js): the advent calendar's card, 1 to 24 December, from the theme's chunk. */}
     <SeasonDeco spot="home-advent" />
