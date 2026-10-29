@@ -11,7 +11,7 @@ import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, 
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
-import { effortOf } from '../lib/history.js'
+import { effortOf, partialsModeOf, PARTIALS_MODES } from '../lib/history.js'
 import { PARTIAL_REP_WEIGHT } from '../lib/workout-model.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
@@ -505,6 +505,17 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       ],
     })} />
 
+  // Partial reps: the stored choice is what the control shows; what applies is partialsModeOf,
+  // which reads as Off while Effort per set is Off.
+  const effortOn = effortOf(S) !== 'none'
+  const partialsMode = partialsModeOf(S)
+  const partialsChoice = PARTIALS_MODES.includes(S.partials) ? S.partials : 'off'
+  const partialsSubtitle = {
+    off: t('No partial reps button, and none are counted.'),
+    fold: t('Counted in volume. The exercise folds as usual when its last set is done.'),
+    open: t('Counted in volume. The exercise stays open after its last set, and the finish sheet waits for you.'),
+  }
+
   const pages = {
     watch: () => <WatchSettingsPage />,
     gym: () => <GymReminderPage />,
@@ -523,6 +534,18 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Segmented className="seg-inline"
             options={[{ value: 'none', label: t('Off') }, { value: 'rir', label: t('RIR') }, { value: 'rpe', label: t('RPE') }]}
             value={effortOf(S)} onChange={v => update(s => { s.effort = v; delete s.showRir })} />
+        </Row>
+        {/* Lengthened partials, which only follow a set taken to failure, so they need an effort
+            scale: with Effort per set Off the row is greyed and the choice kept for when it is on
+            again (lib/history.js partialsModeOf). Off: no button, nothing counted. Fold: counted,
+            and a finished exercise folds as usual. Keep open: counted, and the exercise, the page
+            and the finish sheet all wait, so a late partial needs no reopening. */}
+        <Row icon="arrowDown" iconTint="var(--orange)" title={t('Partial reps')} className={effortOn ? '' : 'dis'}
+          subtitle={effortOn ? partialsSubtitle[partialsMode] : t('Needs Effort per set (RIR or RPE) to be on.')}>
+          <button className="helpbtn" aria-label={t('What are partial reps?')} onClick={partialsHelpSheet}><Icon name="info" /></button>
+          <Segmented className="seg-inline"
+            options={[{ value: 'off', label: t('Off') }, { value: 'fold', label: t('Fold') }, { value: 'open', label: t('Keep open') }]}
+            value={partialsChoice} onChange={v => { if (effortOn) update(s => { s.partials = v }) }} />
         </Row>
         {/* The line under each exercise that the rows are held against (#173). Tapping the line in
             a workout switches it too; this is where the choice can be found without knowing that. */}
@@ -628,9 +651,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           </Row>
           <Row icon="bolt" iconTint="var(--orange)" title={t('Drop and burst shortcuts on every set')}>
             <Switch checked={wc.setShortcuts} onChange={v => setWc('setShortcuts', v)} />
-          </Row>
-          <Row icon="minimize" iconTint="var(--teal)" title={t('Keep the last exercise open')} subtitle={t('With folding on, the exercise you just finished stays open until you move on again. Handy for adding partials.')}>
-            <Switch aria-label={t('Keep the last exercise open')} checked={wc.keepLastOpen} onChange={v => setWc('keepLastOpen', v)} />
           </Row>
           {/* Swipe actions (v1.3.11): not a button, but the same question of what a set row does. The
               one switch covers Plan's lists too; the stored key keeps its old name, swipeSets. */}
@@ -806,15 +826,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('Handy when you compare with another app. Records ignore warm-ups either way.')}>
           <Switch aria-label={t('Count warm-ups in volume')} checked={S.volumeWarmups === true}
             onChange={v => update(s => { s.volumeWarmups = v })} />
-        </Row>
-        {/* Lengthened partials in the volume: each partial rep counts a fifth of a rep at the set's
-            load (workout-model partialVolumeOf), so 10 x 100 kg and 3 partials reads 1,060 kg.
-            Off by default, so the figure matches other apps; the recovery map counts the extra
-            effort either way. */}
-        <Row icon="arrowDown" iconTint="var(--orange)" title={t('Count partials in volume')}
-          subtitle={t('Each partial counts {0}% of a rep at the set’s weight. Records and progression ignore them either way.', Math.round(PARTIAL_REP_WEIGHT * 100))}>
-          <Switch aria-label={t('Count partials in volume')} checked={S.volumePartials === true}
-            onChange={v => update(s => { s.volumePartials = v })} />
         </Row>
       </Section>
     </>,
@@ -1252,6 +1263,21 @@ function effortHelpSheet() {
     <div className="dim small" style={{ lineHeight: 1.5, display: 'grid', gap: 8 }}>
       <div>{t('RIR counts the reps you left in the tank; RPE reads the same effort off a 10-point scale, so RPE ≈ 10 − RIR. Pick whichever you already think in.')}</div>
       <div>{t('The highlighted row is where most working sets land. Sets you have already logged keep their own scale, and nothing else reads the value, so progression and estimated 1RM are unaffected.')}</div>
+    </div>
+    <div style={{ height: 8 }} />
+  </>)
+}
+
+// The (i) beside Partial reps: what they are, when a set takes them, and what they change.
+function partialsHelpSheet() {
+  useUI.getState().openSheet(close => <>
+    <h3>{t('Partial reps')}</h3>
+    <div className="muted small" style={{ lineHeight: 1.5 }}>
+      {t('Extra short reps in the stretched part of the range, done straight after a set taken to failure, with no rest.')}
+    </div>
+    <div className="dim small" style={{ lineHeight: 1.5, display: 'grid', gap: 8, marginTop: 10 }}>
+      <div>{t('They stay on the same set and show as F+4 (four partials). A set only takes them once it is at failure: marked F, or rated RIR 0 (RPE 10).')}</div>
+      <div>{t('Each one counts {0}% of a rep in the volume. Records, estimated 1RM and progression ignore them, and the recovery map counts the extra effort.', Math.round(PARTIAL_REP_WEIGHT * 100))}</div>
     </div>
     <div style={{ height: 8 }} />
   </>)

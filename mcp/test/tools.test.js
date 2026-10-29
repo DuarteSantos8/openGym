@@ -596,7 +596,8 @@ describe('get_workout', () => {
     expect(r.volume).toBe(1000)
     expect(r.volume_counts.partials).toBe('excluded')
     expect('partials_note' in r).toBe(false)   // 3 < 10 / 2
-    S.volumePartials = true
+    S.effort = 'rir'
+    S.partials = 'fold'
     r = call('get_workout', { date: '2026-07-25' })
     expect(r.volume).toBe(1060)
     expect(r.volume_counts.partials).toMatch(/included/)

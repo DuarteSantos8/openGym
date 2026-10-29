@@ -4,7 +4,7 @@ import { exOr } from '../lib/exercises.js'
 import { clampIncline, hasIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
 import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
 import { fmtDate, fmtNum, fmtPlate } from '../lib/format.js'
-import { EFFORT, effortOf, modeOf } from '../lib/history.js'
+import { EFFORT, effortOf, modeOf, partialsModeOf } from '../lib/history.js'
 import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
 import { effortColor, rirOf } from '../lib/effort.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
@@ -252,7 +252,7 @@ export default function FocusView({
       { icon: 'arrowDown', label: t('Add drop set'), onClick: () => onMutateSet(setIdx, row => addDropTo(row, entry.target)) },
       { icon: 'bolt', label: t('Add burst'), onClick: () => onMutateSet(setIdx, row => addBurstTo(row, entry.target?.intensifier?.type === 'restpause' ? entry.target.intensifier.restSec : (S.restPauseSec || 15))) },
       !isWarmupRow(set) && mode !== 'cardio' && { icon: 'gauge', label: t('Taken to failure'), sub: t('Nothing left in the tank'), on: isFailureSet(set), onClick: () => onMutateSet(setIdx, row => settlePartials(toggleFailure(row))) },
-      !isWarmupRow(set) && mode === 'reps' && !isSideSet(set) && set.done && { icon: 'arrowDown', label: t('Lengthened partials'),
+      partialsModeOf(S) !== 'off' && !isWarmupRow(set) && mode === 'reps' && !isSideSet(set) && set.done && { icon: 'arrowDown', label: t('Lengthened partials'),
         sub: !partialsAllowed(set) ? t('Needs a set taken to failure') : partialsOf(set) ? t('Partials: {0}', partialsOf(set)) : t('After failure, no rest'),
         onClick: () => !partialsAllowed(set)
           ? useUI.getState().toast(t('Partials only follow a set taken to failure. Mark it as failure, or rate it RIR 0 (RPE 10), first.'))

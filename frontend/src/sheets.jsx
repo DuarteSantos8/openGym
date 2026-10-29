@@ -1193,7 +1193,7 @@ export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail
 function ExerciseHistory({ exId }) {
   const st = useStore(s => s.S)
   const ex = exOr(exId)
-  const h = useMemo(() => exerciseHistory(st, exId), [st.workouts, exId, st.volumeWarmups])
+  const h = useMemo(() => exerciseHistory(st, exId), [st.workouts, exId, st.volumeWarmups, st.partials, st.effort])
   const [curve, setCurve] = useState('top')
   // Against body weight, as in Stats: the estimated 1RM (body weight included for bodyweight and
   // assisted work) as a % of the body weight then. Only for rep work, and only once two sessions
@@ -2486,7 +2486,7 @@ function PartialsPicker({ value, onPick, close }) {
   const commit = n => { close(); onPick(Math.max(0, Math.min(99, Math.floor(Number(n) || 0)))) }
   return <>
     <h3 style={{ marginBottom: 2 }}>{t('Lengthened partials')}</h3>
-    <div className="muted small" style={{ marginBottom: 10 }}>{t('Only after the last full rep, with no rest. Counted as {0}% of a rep each, and not as volume.', Math.round(PARTIAL_REP_WEIGHT * 100))}</div>
+    <div className="muted small" style={{ marginBottom: 10 }}>{t('Only after the last full rep, with no rest. Each one counts {0}% of a rep in the volume.', Math.round(PARTIAL_REP_WEIGHT * 100))}</div>
     <div className="list menu-list effpick">
       <div className="item menu-item effpick-free">
         <div className="grow"><div className="tt">{t('Partial reps')}</div></div>

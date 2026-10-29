@@ -8,10 +8,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **Lengthened partials.** After a set taken to failure, add the partial reps you squeezed out with
 "+ Partials" under the set (or from the set number's menu). They show as F+4 on the set, in the
-history and in the exports of the text and the Coach, they never count as volume, records or
-progression, and the recovery map counts them as a little extra effort. The AI assistant can log
-them too. Switch on "Keep the last exercise open" in Settings, Workout, Fine-tuning to keep the
-exercise you just finished unfolded for them.
+history and in the exports of the text and the Coach, they never count as records or progression,
+and the recovery map counts them as a little extra effort. The AI assistant can log them too. It is
+off until you pick Fold or Keep open under "Partial reps" in Settings, Workout (it needs Effort per
+set on): both count the partials in the volume, and Keep open leaves the exercise you just finished
+unfolded and skips the finish sheet, so a late partial needs no reopening.
 
 ## v1.4.3 (2026-10-26)
 

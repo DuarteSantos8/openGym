@@ -36,6 +36,7 @@ const mocks = vi.hoisted(() => {
     swapActiveWorkoutToBackup: vi.fn(),
     menuSheet: vi.fn(),
     effortPickerSheet: vi.fn(),
+    partialsPickerSheet: vi.fn(),
     exerciseHistorySheet: vi.fn(),
     renameWorkoutSheet: vi.fn(),
     durationSheet: vi.fn(),
@@ -110,6 +111,7 @@ vi.mock('../sheets.jsx', () => ({
   sessionNoteSheet: vi.fn(),
   renameWorkoutSheet: mocks.renameWorkoutSheet,
   effortPickerSheet: mocks.effortPickerSheet,
+  partialsPickerSheet: mocks.partialsPickerSheet,
   exerciseHistorySheet: mocks.exerciseHistorySheet,
   addRoutineToSessionSheet: vi.fn(),
 }))
@@ -561,6 +563,63 @@ describe('Workout set completion flow', () => {
     expect(mocks.workoutCompleteSheet).toHaveBeenCalledOnce()
     expect(mocks.S.active.cur).toBe(1)
     expect(mocks.startRest).not.toHaveBeenCalled()
+  })
+})
+
+describe('Settings → Workout → Partial reps', () => {
+  const chips = () => [...container.querySelectorAll('button.chip')].filter(b => /Partials/.test(b.textContent))
+  const sets = () => [{ w: 60, r: 5, done: true }, { w: 60, r: 5, done: true, failure: true }]
+  const on = (partials, effort = 'rir') => ({ effort, partials })
+
+  it('has no chip while it is Off, which is the default, nor while Effort per set is Off', async () => {
+    await mount([exercise('pr-a', [], { sets: sets() })], 0, on('off'))
+    expect(chips()).toHaveLength(0)
+    await unmount()
+    await mount([exercise('pr-b', [], { sets: sets() })], 0, { effort: 'rir' })
+    expect(chips()).toHaveLength(0)
+    await unmount()
+    await mount([exercise('pr-c', [], { sets: sets() })], 0, on('open', 'none'))
+    expect(chips()).toHaveLength(0)
+  })
+
+  it.each(['fold', 'open'])('%s: a chip under each done set, greyed until the set is at failure', async mode => {
+    await mount([exercise('pr-d', [], { sets: sets() })], 0, on(mode))
+    const [plain, failed] = chips()
+    expect(plain.getAttribute('aria-disabled')).toBe('true')
+    expect(failed.getAttribute('aria-disabled')).toBeNull()
+    await click(plain)
+    expect(mocks.toast).toHaveBeenCalledWith(expect.stringMatching(/^Partials only follow a set taken to failure/))
+    expect(mocks.partialsPickerSheet).not.toHaveBeenCalled()
+    await click(failed)
+    expect(mocks.partialsPickerSheet).toHaveBeenCalledWith(0, expect.any(Function))
+  })
+
+  it('needs no "Drop and burst shortcuts" switch for its chip, and does not bring those back', async () => {
+    await mount([exercise('pr-e', [], { sets: sets() })], 0, on('fold'))
+    expect(chips()).toHaveLength(2)
+    expect([...container.querySelectorAll('button')].some(b => b.textContent.trim() === '+ Drop')).toBe(false)
+  })
+
+  it('a set that is not done has no chip yet', async () => {
+    await mount([exercise('pr-f', [false, true])], 0, on('fold'))
+    expect(chips()).toHaveLength(1)
+  })
+
+  it('the finish sheet still comes up after the last set on Off and Fold, and Keep open holds it back', async () => {
+    const last = () => [exercise('pr-g', [false])]
+    const finishOpens = async state => {
+      mocks.workoutCompleteSheet.mockClear()
+      await mount(last(), 0, state)
+      await toggleSet(0)
+      const opened = mocks.workoutCompleteSheet.mock.calls.length
+      await unmount()
+      return opened
+    }
+    expect(await finishOpens(on('off'))).toBe(1)
+    expect(await finishOpens(on('fold'))).toBe(1)
+    // Effort per set Off reads as Off, so a stored Keep open does not hold anything back
+    expect(await finishOpens(on('open', 'none'))).toBe(1)
+    expect(await finishOpens(on('open'))).toBe(0)
   })
 })
 
@@ -2674,6 +2733,23 @@ describe('list layout: only what is left to do (Discord request, #241)', () => {
     await rerender()
     expect(mocks.S.active.cur).toBe(1)
     expect(mocks.scrollCalls).toEqual([])
+  })
+
+  it('Partial reps on Keep open leaves a finished exercise unfolded and the page where it is; Fold does neither', async () => {
+    const run = async partials => {
+      await mount(session(), 0, { effort: 'rir', partials, active: { workoutView: 'list', collapseCompleted: true } })
+      await flushFrame()
+      layout('1-2', 700)   // left low on the screen: the page would be brought up to it
+      mocks.scrollCalls.length = 0
+      await toggleSet(0)
+      await toggleSet(1)
+      await rerender()
+      const result = { folded: !!units()[0].querySelector('.wl-summary'), scrolls: mocks.scrollCalls.length, cur: mocks.S.active.cur }
+      await unmount()
+      return result
+    }
+    expect(await run('fold')).toEqual({ folded: true, scrolls: 1, cur: 1 })
+    expect(await run('open')).toEqual({ folded: false, scrolls: 0, cur: 1 })
   })
 
   it('is one switch in Settings for every session, and the Layout menu still flips it for this one', async () => {

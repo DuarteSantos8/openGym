@@ -1,8 +1,9 @@
-// "Count partials in volume": off is the app's own rule, full reps only; on, every number that
-// says "volume" adds each lengthened partial at a fifth of a rep at the set's weight. The saved
-// `vol` never changes, so the switch can go back and forth without touching history.
+// Settings → Workout → Partial reps: Off is the app's own rule, full reps only; Fold or Keep open
+// (with an effort scale on) and every number that says "volume" adds each lengthened partial at
+// PARTIAL_REP_WEIGHT of a rep at the set's weight. The saved `vol` never changes, so the
+// setting can go back and forth without touching history.
 import { describe, expect, it } from 'vitest'
-import { workoutVolume, sessionVolume, lifetimeVolume, countsPartials } from './history.js'
+import { workoutVolume, sessionVolume, lifetimeVolume, countsPartials, partialsModeOf, PARTIALS_MODES } from './history.js'
 import { completedVolumeOf, partialVolumeOf, PARTIAL_REP_WEIGHT } from './workout-model.js'
 import { workoutText } from './workout-text.js'
 import { workoutCardModel } from './workout-card.js'
@@ -17,7 +18,7 @@ const session = (d, extra = {}) => ({
   vol: 1800, prs: [], ...extra,
 })
 const profile = (on, workouts = [session('2026-10-01'), session('2026-10-08')]) =>
-  ({ unit: 'kg', volumePartials: on, workouts, bodyweight: [], routines: [], exWeights: {} })
+  ({ unit: 'kg', effort: 'rir', partials: on ? 'fold' : 'off', workouts, bodyweight: [], routines: [], exWeights: {} })
 
 describe('the partials in a set\'s volume', () => {
   it('PARTIAL_REP_WEIGHT of a rep at the set\'s weight, only when asked', () => {
@@ -47,12 +48,27 @@ describe('workoutVolume and the partials switch', () => {
     expect(workoutVolume(w, { partials: true })).toBeCloseTo(1800 + EXTRA, 10)
   })
 
-  it('reads the profile: off unless switched on, and the saved vol never changes', () => {
+  it('reads the profile: off unless Partial reps is Fold or Keep open, and the saved vol never changes', () => {
     expect(countsPartials({})).toBe(false)
-    expect(countsPartials({ volumePartials: true })).toBe(true)
+    expect(countsPartials({ effort: 'rir', partials: 'fold' })).toBe(true)
+    expect(countsPartials({ effort: 'rpe', partials: 'open' })).toBe(true)
     expect(sessionVolume(session('2026-10-01'), profile(false))).toBe(1800)
     expect(sessionVolume(session('2026-10-01'), profile(true))).toBeCloseTo(1800 + EXTRA, 10)
     expect(session('2026-10-01').vol).toBe(1800)
+  })
+
+  it('needs an effort scale: with Effort per set Off the choice is kept but reads as Off', () => {
+    expect(partialsModeOf({ effort: 'none', partials: 'open' })).toBe('off')
+    expect(countsPartials({ effort: 'none', partials: 'fold' })).toBe(false)
+    expect(sessionVolume(session('2026-10-01'), { ...profile(true), effort: 'none' })).toBe(1800)
+    expect(partialsModeOf({ effort: 'rir', partials: 'open' })).toBe('open')
+  })
+
+  it('an absent or unknown choice reads as Off', () => {
+    for (const partials of [undefined, null, '', 'on', true, 'OPEN']) {
+      expect(partialsModeOf({ effort: 'rir', partials })).toBe('off')
+    }
+    expect(PARTIALS_MODES).toEqual(['off', 'fold', 'open'])
   })
 
   it('counts both bells of a dumbbell entry, like the full reps', () => {

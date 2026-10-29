@@ -779,10 +779,20 @@ export function workoutVolume(w, { warmups = false, partials = false } = {}) {
 // work sets only whatever it says, so the switch only changes what screens show and can be
 // flipped back without rewriting a single workout.
 export const countsWarmups = S => S?.volumeWarmups === true
-// Settings → Units → "Count partials in volume", off by default: lengthened partials add load x
-// partial reps x 0.2 (workout-model partialVolumeOf). Like the warm-up switch it only changes what
-// screens show; the saved `vol` never includes them, so it can be flipped back freely.
-export const countsPartials = S => S?.volumePartials === true
+// Settings → Workout → "Partial reps" (lengthened partials): off / fold / open. Off is the
+// default and also what an Effort per set of Off reads as, since partials only follow a set taken
+// to failure and that is judged by the effort scale. 'fold' counts them and lets a finished
+// exercise fold as usual; 'open' counts them and keeps the last exercise open (no fold, no
+// scroll on, no finish sheet) so a late addition is easy. Anything else reads as off.
+export const PARTIALS_MODES = Object.freeze(['off', 'fold', 'open'])
+export const partialsModeOf = S => {
+  if (effortOf(S) === 'none') return 'off'
+  return S?.partials === 'fold' || S?.partials === 'open' ? S.partials : 'off'
+}
+// Partials add load x partial reps x 0.2 (workout-model partialVolumeOf) to the volume screens
+// show whenever the feature is on. The saved `vol` never includes them, so switching it off again
+// loses nothing; the recovery map reads the rows' own partials either way.
+export const countsPartials = S => partialsModeOf(S) !== 'off'
 // The volume a screen shows for one session: counted from its sets, so units and the warm-up
 // switch always apply. A legacy record without entries only has its cached number.
 export function sessionVolume(w, S) {

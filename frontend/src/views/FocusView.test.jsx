@@ -187,3 +187,37 @@ describe('Focus view cardio speed', () => {
     expect(stored()).toBe(8.5)
   })
 })
+
+// Settings → Workout → Partial reps: the set menu only offers lengthened partials on Fold or Keep
+// open, and Effort per set Off reads as Off. A set that is not at failure shows it greyed out in
+// words, as in the Cards layout.
+describe('Focus workout view: the Partial reps setting', () => {
+  const entry = set => ({ id: SQUAT, target: { sets: 1, reps: 5, weight: 95 }, sets: [{ w: 95, r: 5, done: true, ...set }] })
+  const partialsItem = () => {
+    act(() => container.querySelector('button[aria-label="Set menu"]').click())
+    const sheet = useUI.getState().sheets.at(-1)
+    sheetContainer = document.createElement('div')
+    document.body.appendChild(sheetContainer)
+    sheetRoot = createRoot(sheetContainer)
+    act(() => sheetRoot.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
+    return [...sheetContainer.querySelectorAll('.menu-item')].find(el => el.querySelector('.tt')?.textContent === 'Lengthened partials')
+  }
+
+  it('has no entry while it is Off (the default), or while Effort per set is Off', () => {
+    mount(entry({ failure: true }), { effort: 'rir' })
+    expect(partialsItem()).toBeUndefined()
+    act(() => sheetRoot.unmount()); sheetContainer.remove(); sheetRoot = sheetContainer = null
+    act(() => root.unmount()); container.remove()
+    mount(entry({ failure: true }), { effort: 'none', partials: 'open' })
+    expect(partialsItem()).toBeUndefined()
+  })
+
+  it.each(['fold', 'open'])('%s: offers it on a done set, saying what a set still needs', mode => {
+    mount(entry({ failure: true }), { effort: 'rir', partials: mode })
+    expect(partialsItem().textContent).toMatch(/After failure, no rest/)
+    act(() => sheetRoot.unmount()); sheetContainer.remove(); sheetRoot = sheetContainer = null
+    act(() => root.unmount()); container.remove()
+    mount(entry({ rir: 2 }), { effort: 'rir', partials: mode })
+    expect(partialsItem().textContent).toMatch(/Needs a set taken to failure/)
+  })
+})

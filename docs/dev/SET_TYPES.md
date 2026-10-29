@@ -227,9 +227,17 @@ written only when above zero, like `drops` and `clusters`.
 - Coach: `lp` is passed through on a set (`coach-context.js`, `api/coach/core/payload.js`).
 - CSV: the export has a `partials` column (after `incline`); the importer reads it back, only on a
   failure set (`partialsAllowed`). Hevy has no such field, so a Hevy import never carries them.
-- Volume: off by default. Settings → Units → "Count partials in volume" (`S.volumePartials`) adds
-  load x partials x 0.2 (`partialVolumeOf`) wherever a volume is shown (`sessionVolume`,
-  `workoutVolume({ partials })`, exercise history, the print report, copy as text, the share card).
-  The saved `vol` never includes them, like the warm-up switch (#719). Sets counts stay whole
-  sets: a set is a set, and the recovery map already carries the extra effort.
+- Setting: Settings → Workout → "Partial reps", right under Effort per set, with an (i) that
+  explains them. Tri-state in `S.partials`: `off` (default; no chip, no menu entry, nothing counted),
+  `fold` (on; a finished exercise folds as usual) and `open` (on; the exercise you just left stays
+  open, the screen does not scroll on, and the finish sheet does not come up after the last set).
+  `partialsModeOf(S)` is the one reader: it reads `off` for an absent or unknown value and while
+  Effort per set is Off, since partials follow a set judged to be at failure. The row is greyed out
+  then and the choice is kept for when an effort scale is back. This replaced the two switches
+  "Count partials in volume" and "Keep the last exercise open".
+- Volume: with the setting on (`countsPartials`), load x partials x 0.2 (`partialVolumeOf`) is added
+  wherever a volume is shown (`sessionVolume`, `workoutVolume({ partials })`, exercise history, the
+  print report, copy as text, the share card, the MCP). The saved `vol` never includes them, like the
+  warm-up switch (#719). Set counts stay whole sets: a set is a set. The recovery map reads the
+  rows' own partials whatever the setting says: it is real effort, and `off` only hides the feature.
 
