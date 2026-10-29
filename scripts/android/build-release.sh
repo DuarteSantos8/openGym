@@ -15,7 +15,7 @@
 # Signing uses this key too (docs/APP_STORES.md).
 #
 # Usage: scripts/android/build-release.sh <keystore> <password-file> <alias-file> [out-dir]
-#   QUALITY_ROOT  the private quality folders, default /mnt/backup-hdd/opengym-media/quality
+#   QUALITY_ROOT  the private quality folders, default /mnt/build-fast/from-hdd/opengym-media/quality
 #   APK_PX        the Standard APK's built-in size, default 180;  PLAY_PX  the bundle's, default 180
 #   PLUS_PX       the Plus APK's built-in size, default 240; PLUS_PX=0 builds no Plus APK
 #   HD_PX         the HD APK's built-in size, default 360; HD_PX=0 builds no HD APK
@@ -30,7 +30,7 @@ set -euo pipefail
 KS=${1:?keystore}; PASS=${2:?file with the keystore password}; ALIAS=$(cat "${3:?file with the key alias}")
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 OUT=${4:-$PWD}
-QUALITY_ROOT=${QUALITY_ROOT:-/mnt/backup-hdd/opengym-media/quality}
+QUALITY_ROOT=${QUALITY_ROOT:-/mnt/build-fast/from-hdd/opengym-media/quality}
 APK_PX=${APK_PX:-180}
 PLUS_PX=${PLUS_PX:-240}
 HD_PX=${HD_PX:-360}
