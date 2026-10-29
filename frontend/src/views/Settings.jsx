@@ -53,6 +53,7 @@ import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkey
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
+import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
@@ -524,6 +525,18 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
     workout: () => <>
+      {/* Warm-ups that build themselves from the work weight (#156, lib/warmup-ramp.js). Off by
+          default, so nothing changes until someone asks; an exercise can still pick Auto, its own
+          rows or none in its settings, and one with its own number of ramp sets keeps them. */}
+      <Section title={t('Warm-ups')} footer={t('Built from your work weight and rounded to this gym’s plates and dumbbells. An exercise can pick its own in its settings.')}>
+        <SelectRow icon="sunrise" iconTint="var(--orange)" title={t('Automatic warm-ups')}
+          value={warmupAutoOf(S)} onChange={v => update(s => { s.warmupAuto = v })}
+          options={[
+            { value: 'off', label: t('Off'), subtitle: t('Only the warm-ups you plan yourself.') },
+            { value: 'compounds', label: t('Compound lifts'), subtitle: t('Squats, presses, rows and friends get a ramp. Curls and raises start cold.') },
+            { value: 'all', label: t('Every loaded lift'), subtitle: t('Heavy lifts get more rungs, light ones one or none.') },
+          ]} />
+      </Section>
       <Section title={t('Rest')} footer={t('Each exercise can have its own rest too. Set it in the exercise settings of a routine.')}>
         {restRow}
         {warmupRestRow}

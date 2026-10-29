@@ -71,6 +71,8 @@ import { youtubeSearchUrl } from './lib/youtube.js'
 import { openExternal } from './components/CustomMedia.jsx'
 import { repeatSessionEntries } from './lib/session-repeat.js'
 import { swapActiveExercise } from './lib/active-exercise-swap.js'
+import WarmupConfig from './components/WarmupConfig.jsx'
+import { warmupModeOf, ownRowsOf } from './lib/warmup-ramp.js'
 import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet-keyboard.js'
 import { useAutoMore } from './lib/use-auto-more.js'
 import { isFav, toggleFav, sortFavouritesFirst, sortYoursFirst } from './lib/favourites.js'
@@ -2196,8 +2198,12 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     const withNote = note ? { note } : {}
     // Only written when there are any, so a plan that never asked for warm-ups keeps the exact
     // shape it had — and reads back as 0 either way (buildSets).
-    const warmupSets = Math.max(0, Math.min(MAX_PLANNED_WARMUPS, Math.round(c.warmupSets) || 0))
-    const withWarmups = warmupSets ? { warmupSets } : {}
+    // The slot's own warm-up choice (lib/warmup-ramp.js): Auto, a block of its own or none, written
+    // only when picked; otherwise the older count, or nothing and the slot follows Settings.
+    const warmChoice = warmupModeOf(c)
+    const ownRows = warmChoice === 'own' ? ownRowsOf(c) : []
+    const warmupSets = warmChoice ? 0 : Math.max(0, Math.min(MAX_PLANNED_WARMUPS, Math.round(c.warmupSets) || 0))
+    const withWarmups = warmChoice ? { warmup: warmChoice, ...(ownRows.length ? { warmupRows: ownRows } : {}) } : warmupSets ? { warmupSets } : {}
     // Per-exercise rest (issue #10): written only when a positive value was set, so 0 keeps
     // inheriting the global rest timer and a config that never touched it stays the shape it
     // was. Mode-independent — a heavy triple, a plank and a cardio interval all rest.
@@ -2365,20 +2371,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {/* Planned warm-ups: the session used to start at the work weight and you added every
         warm-up by hand, every time. Rest-pause is excluded because it builds its own warm-up
         row, and cardio because an interval plan has no load to ramp. */}
-    {!cardio && c.intensifier?.type !== 'restpause' && <>
-      <div className="row cfgrow" style={{ marginBottom: 6 }}>
-        <Stepper label={t('Warm-up sets')} value={c.warmupSets || 0} step={1} decimal={false}
-          onChange={v => setC(x => ({ ...x, warmupSets: Math.max(0, Math.min(MAX_PLANNED_WARMUPS, Math.round(v) || 0)) }))} />
-      </div>
-      <div className="small dim" style={{ marginBottom: 18 }}>
-        {/* Settings > Units can count warm-ups in volume (#719); records and progression never do. */}
-        {(c.warmupSets || 0) > 0
-          ? st.volumeWarmups === true
-            ? t('Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
-            : t('Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
-          : t('Ramp-up sets added before the work sets, so you do not have to add them by hand each session.')}
-      </div>
-    </>}
+    {!cardio && c.intensifier?.type !== 'restpause' && <WarmupConfig st={st} ex={ex} c={c} setC={setC} />}
     {mode === 'time' && !bw && <div className="small dim" style={{ marginBottom: 18 }}>
       {t('A timer runs while you hold the set. Leave the weight at 0 for bodyweight holds.')}
     </div>}

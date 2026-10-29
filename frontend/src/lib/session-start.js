@@ -14,6 +14,7 @@ import { sessionHistory } from './backfill.js'
 import { programmeSlot, pctWeight } from './programmes.js'
 import { todayISO } from './format.js'
 import { exConverted, exView, viewTarget, storedTarget, storedRow } from './ex-unit.js'
+import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
 
 /**
  * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
@@ -71,6 +72,9 @@ function withCarriedWarmups(rows, carry, mode, cfg, step, floor) {
  */
 function carriedWarmups(st, cfg, routine, noProg) {
   if (!startsFromLast(st) || noProg || cfg.intensifier?.type === 'restpause') return null
+  // A slot that chose its warm-ups (auto, its own saved rows, none) keeps that choice: today's
+  // tweaks are today's, and the saved block is not overwritten by them (#525).
+  if (warmupModeOf(cfg)) return null
   const mode = modeOf(cfg)
   // Progression switched off (its own choice, or a pyramid's) builds warm-ups from the
   // routine as before. A timed exercise's only policy is 'off', so the gate is reps-only.
@@ -121,10 +125,15 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // Warm-ups carried from the last session ("Your last session") are final: they go in front
   // AFTER the prescription, back-off and intensifier steps, none of which may rewrite them.
   const warmCarry = carriedWarmups(st, cfg, routine, noProg)
-  const built = applyPrescription(buildSets(st, warmCarry ? { ...cfg, warmupSets: 0 } : cfg, { step: ramp, rid: routine?.id, useTarget: policyKind === 'off' && !fromLast, planReps }), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
+  // A generated or saved warm-up block (lib/warmup-ramp.js) is built last too, from the weight the
+  // first work set really opens at, on the active gym's plates and dumbbells.
+  const block = !warmCarry && ['auto', 'own'].includes(warmupSource(st, cfg).kind)
+  const built = applyPrescription(buildSets(st, warmCarry || block ? { ...cfg, warmupSets: 0 } : cfg, { step: ramp, rid: routine?.id, useTarget: policyKind === 'off' && !fromLast, planReps }), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
   const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
-  const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id)) : shaped
+  const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id))
+    : block ? withWarmupBlock(st, cfg, shaped, { grid: dropGrid(st, cfg), floor: barFloor(st, cfg.id), unit: st.unit })
+      : shaped
   const target = { ...cfg }
   // Stamped on the session, so the meaning it was logged with stays with it (dumbbells.js).
   if (meaning !== 'as') target.dbLoad = meaning
@@ -247,7 +256,10 @@ function freestyleEntry(st, id, cfg) {
   // Freestyle stamps the meaning of a dumbbell weight and reads last time in it, the way
   // buildPlannedEntry does for a planned exercise (lib/dumbbells.js).
   const step = modeOf(full) === 'reps' ? (ownedWeightsFor(st, full) || weightIncrement(full, st.unit)) : defaultIncrement(id, st.unit)
-  return { target: withMeaning(st, cfg, id), plan: null, sets: applyIntensifierPlan(buildSets(historyAs(past, id, dbLoadFor(st, full)), full, { step, preferLast: true }), full, dropGrid(st, full)) }
+  const block = ['auto', 'own'].includes(warmupSource(st, full).kind)
+  const rows = applyIntensifierPlan(buildSets(historyAs(past, id, dbLoadFor(st, full)), block ? { ...full, warmupSets: 0 } : full, { step, preferLast: true }), full, dropGrid(st, full))
+  const sets = block ? withWarmupBlock(st, full, rows, { grid: dropGrid(st, full), floor: barFloor(st, id), unit: st.unit }) : rows
+  return { target: withMeaning(st, cfg, id), plan: null, sets }
 }
 
 // Returns a bare array of session entries. "Excluded from progression" is per-entry now

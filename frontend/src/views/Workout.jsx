@@ -10,7 +10,7 @@ import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
 import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { clampIncline, hasIncline, inclineFits, inclineFrom, INCLINE_STEP } from '../lib/incline.js'
@@ -45,7 +45,8 @@ import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progressio
 import { progressionGuidance } from '../lib/progression-copy.js'
 import { rpeAs } from '../lib/programmes.js'
 import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
-import { routineChangesFromEntry, updateRoutineFromEntry } from '../lib/routines.js'
+import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotIndex, ownWarmupsChange, keepOwnWarmups } from '../lib/routines.js'
+import { ownRowsLine } from '../lib/warmup-ramp.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
@@ -99,6 +100,17 @@ function StartChooser() {
 }
 
 
+// The open warm-ups follow the first work set when its weight changes mid-workout (#156,
+// lib/history.js liveReramp): 100 → 110 and the rungs not done yet move with it, on this gym's
+// plates. A rung you typed yourself or already did stays. `e` is the entry in its own unit.
+function rerampOpen(s, e, i) {
+  if (!e?.sets || isWarmupRow(e.sets[i]) || e.sets.findIndex(x => !isWarmupRow(x)) !== i) return
+  const cfg = { ...(e.target || {}), id: e.id }
+  if (modeOf(cfg) !== 'reps') return
+  const V = exView(s, e.id)
+  e.sets = liveReramp(e.sets, dropGrid(V, cfg), barFloor(V, e.id), isAssisted(cfg))
+}
+
 // A set-row column's number as it is shown. Most columns show what is stored; one with a `view`
 // (cardio speed, stored in km/h) converts it for the screen.
 const viewOf = (col, value) => (col.view && value != null && value !== '' ? col.view(value) : value)
@@ -118,7 +130,7 @@ const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 // enough to turn over, far shorter than the rest the set earns once both sides are held.
 const SWITCH_SIDES_SEC = 10
 
-function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   // The block reads the state as its exercise sees it (lib/ex-unit.js): in the exercise's own
   // weight unit when it has one (#657), so its rows, steppers, plates, owned weights, "last time"
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
@@ -203,6 +215,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       row.sides[side].weightOrigin = WEIGHT_ORIGIN_MANUAL
       e.sets[i] = markWarmupEdited(row, field)
       e.sets = cascadeWeight(e.sets, i, v, side, e.target?.backoffStep)
+      rerampOpen(s, e, i)
     }), true)
   }
   // Drop/burst edits accept an optional `side` ('L'|'R'): present for a per-side row (edits that
@@ -457,6 +470,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         // The slot's planned backups (#649), one tap each: the machine is taken, the plan says what next.
         ...(onSwapBackup ? backups.map(b => ({ icon: 'swap', label: t('Swap to {0}', exerciseNameText(b)), sub: t('Planned backup, same sets and reps'), onClick: () => onSwapBackup(b.id), disabled: busy })) : []),
         { icon: 'sunrise', label: t('Add warm-up set'), onClick: onAddWarmup },
+        // Today's warm-ups as the routine's own from now on (#525, lib/warmup-ramp.js).
+        onKeepWarmups && { icon: 'sunrise', label: t('Keep these warm-ups'), sub: t('Saved in the routine, scaled to your work weight'), onClick: onKeepWarmups },
         onRest && { icon: 'timer', label: t('Rest timer'), sub: restSub, onClick: onRest },
         { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
       ] },
@@ -1338,6 +1353,7 @@ function ActiveWorkout() {
     if (field === 'w') {
       e.sets[i].weightOrigin = WEIGHT_ORIGIN_MANUAL
       e.sets = cascadeWeight(e.sets, i, v, undefined, e.target?.backoffStep)
+      rerampOpen(useStore.getState().S, e, i)
     }
     // A warm-up you changed is yours from now on ("Your last session" carries it, #525).
     e.sets[i] = markWarmupEdited(e.sets[i], field)
@@ -1445,13 +1461,14 @@ function ActiveWorkout() {
   const routineUpdateFor = idx => {
     const entry = A.entries[idx]
     const routine = !editing && entry?.rid ? S.routines.find(r => r.id === entry.rid) : null
-    const found = routine ? routineChangesFromEntry(routine, A.entries, idx) : null
+    const found = routine ? routineChangesFromEntry(routine, A.entries, idx, barFloor(S, entry.id)) : null
     if (!found) return null
     const activeId = A.id
     const entryId = entry.id
     return {
       // A rest reads as the wheel shows it: "3:00", and 0 (no rest of its own) as the default.
       sub: found.changes.map(c => c.key === 'note' ? t('Note')
+        : c.key === 'warmupRows' ? t('Warm-ups') + ' → ' + ownRowsLine(c.to, t('Bar'))
         : c.key === 'warmupSets' ? t('Warm-up sets') + ' ' + c.from + ' → ' + c.to
         : t('Rest') + ' ' + restWord(c.from) + ' → ' + restWord(c.to)).join(' · '),
       run: () => confirmSheet({
@@ -1464,11 +1481,36 @@ function ActiveWorkout() {
             // The sheet can outlive the workout, or the exercise at this index: fail closed.
             const target = s.routines.find(r => r.id === routine.id)
             if (!target || s.active?.id !== activeId || s.active.entries?.[idx]?.id !== entryId) return
-            applied = updateRoutineFromEntry(target, s.active.entries, idx)
+            applied = updateRoutineFromEntry(target, s.active.entries, idx, barFloor(s, entryId))
           })
           if (applied) useUI.getState().toast(t('Routine updated'))
         },
       }),
+    }
+  }
+
+  // "Keep these warm-ups" (#525): the rows on screen become the routine slot's own block, as a
+  // share of today's first work weight. Only on a planned exercise with warm-ups to keep.
+  const keepWarmupsFor = idx => {
+    const entry = A.entries[idx]
+    const routine = !editing && entry?.rid ? S.routines.find(r => r.id === entry.rid) : null
+    if (!routine || !(entry.sets || []).some(isWarmupRow)) return null
+    const at = routineSlotIndex(routine, A.entries, idx)
+    if (at < 0) return null
+    const rows = ownWarmupsChange(routine.ex[at], entry, barFloor(S, entry.id), { force: true })
+    if (!rows) return null
+    const activeId = A.id, entryId = entry.id
+    return () => {
+      let kept = false
+      update(s => {
+        const target = s.routines.find(r => r.id === routine.id)
+        if (!target || s.active?.id !== activeId || s.active.entries?.[idx]?.id !== entryId) return
+        const slot = target.ex[routineSlotIndex(target, s.active.entries, idx)]
+        if (!slot) return
+        keepOwnWarmups(slot, rows)
+        kept = true
+      })
+      if (kept) useUI.getState().toast(t('Kept. Same warm-ups next time, scaled to the bar you load.'))
     }
   }
 
@@ -1499,6 +1541,7 @@ function ActiveWorkout() {
     onAddSet: () => addSet(idx),
     onRemoveSet: () => removeSet(idx),
     onAddWarmup: () => addWarmup(idx),
+    onKeepWarmups: keepWarmupsFor(idx),
     onRemoveSetAt: i => removeSetAt(idx, i),
     onCopySetAt: i => copyActiveSet(idx, i),
     onStartTimed: (i, onFocusProgress) => startTimed(idx, i, onFocusProgress),
