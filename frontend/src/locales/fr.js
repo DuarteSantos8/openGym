@@ -3468,4 +3468,13 @@ export default {
   "Clear filters": "Effacer les filtres",
   "Overview": "Aperçu",
   "Lifts": "Exercices",
+  // Settings → Zepp OS watch
+  "Zepp OS watch": "Montre Zepp OS",
+  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Les montres Amazfit et autres Zepp OS parlent à openGym via ce serveur. Associe-en une et tes séances arrivent à ton poignet.",
+  "Pair a watch": "Associer une montre",
+  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "Dans l’app Zepp, ouvre les réglages de l’app openGym de la montre et saisis cette adresse et ce code. Le code est valable dix minutes.",
+  "Server address": "Adresse du serveur",
+  "Paired watches": "Montres associées",
+  "Not heard from yet": "Pas encore de nouvelles",
+  "Couldn’t reach your server. Try again in a moment.": "Impossible de joindre ton serveur. Réessaie dans un instant.",
 }

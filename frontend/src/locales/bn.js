@@ -3547,4 +3547,13 @@ export default {
   "Clear filters": "ফিল্টার মুছুন",
   "Overview": "সংক্ষেপে",
   "Lifts": "লিফট",
+  // Settings → Zepp OS watch
+  "Zepp OS watch": "Zepp OS ঘড়ি",
+  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Amazfit ও অন্যান্য Zepp OS ঘড়ি এই সার্ভারের মাধ্যমে openGym-এর সাথে কথা বলে। একটি যুক্ত করুন, আপনার ওয়ার্কআউট কবজিতে দেখা যাবে।",
+  "Pair a watch": "ঘড়ি যুক্ত করুন",
+  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "Zepp অ্যাপে openGym ঘড়ি অ্যাপের সেটিংস খুলুন এবং এই ঠিকানা ও কোড লিখুন। কোডটি দশ মিনিট চলবে।",
+  "Server address": "সার্ভারের ঠিকানা",
+  "Paired watches": "যুক্ত ঘড়ি",
+  "Not heard from yet": "এখনও কোনো খবর নেই",
+  "Couldn’t reach your server. Try again in a moment.": "আপনার সার্ভারে পৌঁছানো যায়নি। একটু পরে আবার চেষ্টা করুন।",
 }

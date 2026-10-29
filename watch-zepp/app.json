@@ -1,0 +1,130 @@
+{
+  "configVersion": "v3",
+  "app": {
+    "appId": 9990145,
+    "appName": "openGym",
+    "appType": "app",
+    "version": {
+      "code": 10405,
+      "name": "1.4.5"
+    },
+    "icon": "icon.png",
+    "vender": "openGym",
+    "description": "openGym on your wrist: start a routine, log sets with the crown, rest with a ring. Pairs with your own openGym server."
+  },
+  "permissions": [
+    "data:os.device.info",
+    "device:os.local_storage",
+    "data:user.hd.heart_rate"
+  ],
+  "runtime": {
+    "apiVersion": {
+      "compatible": "3.0",
+      "target": "3.0",
+      "minVersion": "3.0"
+    }
+  },
+  "debug": false,
+  "targets": {
+    "common": {
+      "module": {
+        "page": {
+          "pages": [
+            "page/index"
+          ]
+        },
+        "app-widget": {
+          "widgets": [
+            {
+              "path": "app-widget/index",
+              "icon": "icon.png",
+              "name": "openGym",
+              "runtime": {
+                "type": "js"
+              }
+            }
+          ]
+        },
+        "app-side": {
+          "path": "app-side/index"
+        },
+        "setting": {
+          "path": "setting/index"
+        }
+      },
+      "platforms": [
+        {
+          "st": "r",
+          "dw": 480
+        },
+        {
+          "st": "s",
+          "dw": 390
+        }
+      ]
+    }
+  },
+  "i18n": {
+    "en-US": {
+      "appName": "openGym"
+    },
+    "de-DE": {
+      "appName": "openGym"
+    },
+    "fr-FR": {
+      "appName": "openGym"
+    },
+    "es-ES": {
+      "appName": "openGym"
+    },
+    "it-IT": {
+      "appName": "openGym"
+    },
+    "pt-PT": {
+      "appName": "openGym"
+    },
+    "pt-BR": {
+      "appName": "openGym"
+    },
+    "pl-PL": {
+      "appName": "openGym"
+    },
+    "hu-HU": {
+      "appName": "openGym"
+    },
+    "tr-TR": {
+      "appName": "openGym"
+    },
+    "ru-RU": {
+      "appName": "openGym"
+    },
+    "uk-UA": {
+      "appName": "openGym"
+    },
+    "ar-EG": {
+      "appName": "openGym"
+    },
+    "hi-IN": {
+      "appName": "openGym"
+    },
+    "bn-BD": {
+      "appName": "openGym"
+    },
+    "th-TH": {
+      "appName": "openGym"
+    },
+    "ko-KR": {
+      "appName": "openGym"
+    },
+    "sv-SE": {
+      "appName": "openGym"
+    },
+    "zh-CN": {
+      "appName": "openGym"
+    },
+    "zh-TW": {
+      "appName": "openGym"
+    }
+  },
+  "defaultLanguage": "en-US"
+}

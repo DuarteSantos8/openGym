@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Serveradresse"
+
+msgid "code"
+msgstr "Kopplungscode"
+
+msgid "how"
+msgstr "Öffne in openGym Einstellungen, Zepp-OS-Uhr, Uhr koppeln, und tippe Adresse und Code hier ein."
+
+msgid "pair"
+msgstr "Koppeln"
+
+msgid "pairing"
+msgstr "Kopple…"
+
+msgid "paired"
+msgstr "Gekoppelt mit {0}. Öffne openGym auf der Uhr."
+
+msgid "failed"
+msgstr "Hat nicht geklappt. Prüf Adresse und Code, ein Code gilt zehn Minuten."
+
+msgid "unpair"
+msgstr "Entkoppeln"
+
+msgid "not_paired_yet"
+msgstr "Noch nicht gekoppelt."

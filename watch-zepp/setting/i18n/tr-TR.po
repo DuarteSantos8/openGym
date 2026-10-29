@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Sunucu adresi"
+
+msgid "code"
+msgstr "Eşleme kodu"
+
+msgid "how"
+msgstr "openGym’de Ayarlar, Zepp OS saat, Saat eşle’yi aç ve gösterilen adresi ve kodu buraya yaz."
+
+msgid "pair"
+msgstr "Eşle"
+
+msgid "pairing"
+msgstr "Eşleniyor…"
+
+msgid "paired"
+msgstr "{0} ile eşlendi. Saatinde openGym’i aç."
+
+msgid "failed"
+msgstr "Olmadı. Adresi ve kodu kontrol et, bir kod on dakika geçerli."
+
+msgid "unpair"
+msgstr "Eşlemeyi kaldır"
+
+msgid "not_paired_yet"
+msgstr "Henüz eşlenmedi."

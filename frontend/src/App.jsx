@@ -21,6 +21,7 @@ import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.
 import { pageMotion } from './lib/page-motion.js'
 import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim } from './lib/watch-sync.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
+import { startWatchRelay } from './lib/watch-relay.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
@@ -432,12 +433,13 @@ export default function App() {
   }, [])
   // iOS: swipe from the left edge for the page's own back button (lib/edge-swipe-back.js)
   useEffect(() => installEdgeSwipeBack(), [])
-  // iPhone app with an Apple Watch: the running workout goes to the watch, its ticks come back
-  // (lib/watch-sync.js). Nothing at all on the web, on Android, or without a paired watch.
+  // iPhone app with an Apple Watch, Android with Wear OS: the running workout goes to the watch,
+  // its ticks come back (lib/watch-sync.js). A Zepp OS watch the same way over the user's own
+  // server (lib/watch-relay.js), from the web app too. Without a paired watch, nothing is sent.
   useEffect(() => {
-    if (!MOBILE) return
-    let stop = null, gone = false
-    startWatchSync({ useStore, useUI }).then(fn => { if (gone) fn(); else stop = fn })
+    let stop = null, gone = false, stopRelay = null
+    if (MOBILE) startWatchSync({ useStore, useUI }).then(fn => { if (gone) fn(); else stop = fn })
+    startWatchRelay({ useStore, useUI }).then(fn => { if (gone) fn(); else stopRelay = fn }).catch(() => {})
     // A session started on the watch starts here as the phone's Start does, with the watch's id
     // and start time, and no weigh-in question (the lifter is at the watch, not here).
     const unbind = bindWatchAppActions({
@@ -453,7 +455,7 @@ export default function App() {
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
       openWorkout: () => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() },
     })
-    return () => { gone = true; stop?.(); unbind() }
+    return () => { gone = true; stop?.(); stopRelay?.(); unbind() }
   }, [])
   // iPhone app on iOS 26+: the phone's own workout session when no Apple Watch app takes the
   // workout, so AirPods that measure the heart rate fill each set's, as the watch does (#818,

@@ -3471,4 +3471,13 @@ export default {
   "Clear filters": "Szűrők törlése",
   "Overview": "Áttekintés",
   "Lifts": "Gyakorlatok",
+  // Settings → Zepp OS watch
+  "Zepp OS watch": "Zepp OS óra",
+  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Az Amazfit és más Zepp OS órák ezen a szerveren át beszélnek az openGymmel. Párosíts egyet, és az edzéseid a csuklódon lesznek.",
+  "Pair a watch": "Óra párosítása",
+  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "A Zepp appban nyisd meg az openGym óraapp beállításait, és írd be ezt a címet és kódot. A kód tíz percig érvényes.",
+  "Server address": "Szervercím",
+  "Paired watches": "Párosított órák",
+  "Not heard from yet": "Még nem jelentkezett",
+  "Couldn’t reach your server. Try again in a moment.": "Nem érem el a szervered. Próbáld újra egy perc múlva.",
 }

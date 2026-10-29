@@ -2350,6 +2350,12 @@ export const PT_BR_OVERRIDES = {
   "Clear filters": "Limpar filtros",
   "Overview": "Visão geral",
   "Lifts": "Exercícios",
+  // Settings → Zepp OS watch
+  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Os Amazfit e outros relógios Zepp OS falam com o openGym por este servidor. Pareie um e seus treinos aparecem no pulso.",
+  "Pair a watch": "Parear um relógio",
+  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "No aplicativo Zepp, abra as configurações do app openGym do relógio e digite este endereço e este código. O código vale por dez minutos.",
+  "Paired watches": "Relógios pareados",
+  "Couldn’t reach your server. Try again in a moment.": "Não foi possível acessar seu servidor. Tente de novo daqui a pouco.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

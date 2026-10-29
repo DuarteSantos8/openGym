@@ -1,0 +1,21 @@
+{
+  "name": "opengym-zepp",
+  "version": "1.4.5",
+  "private": true,
+  "description": "openGym for Zepp OS (Amazfit) watches",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "build": "zeus build",
+    "test": "node --test test/",
+    "strings": "node zepp-strings.mjs"
+  },
+  "devDependencies": {
+    "@zeppos/device-types": "4.0.0",
+    "@zeppos/zeus-cli": "1.9.3",
+    "@zeppos/zml": "0.0.27"
+  },
+  "_moduleAliases": {
+    "zeppos-app-utils": "node_modules/@zeppos/zeus-cli/private-modules/zeppos-app-utils"
+  }
+}
