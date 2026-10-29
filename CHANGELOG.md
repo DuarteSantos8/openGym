@@ -13,6 +13,14 @@ you back to the bar, heart rate on every set, a summary at the end, and a Tile w
 today's plan. Start today's routine right from the watch. Your phone stays in charge, the watch just
 saves you the walk to the bench where you left it.
 
+**openGym on Garmin, almost.** A Connect IQ app for Garmin watches is built and waiting for its
+store listing: Forerunner, fēnix, epix, Venu, vívoactive, Instinct and friends, round or square,
+colour or the sunlight-proof black and white. The same deal as the other watches: today's routine
+with one press, big numbers you nudge with the buttons or a swipe, Done, a rest that buzzes, heart
+rate on every set and a summary at the end. It can also save the workout to Garmin Connect as
+strength training, so Garmin's own training load counts it too. It reaches the Connect IQ Store
+and talks to the phone app in a later update; docs/GARMIN.md has the plan.
+
 **Every set against last time** (#907, thanks @lodepav for the idea and the first version). A
 finished set now wears a small ↑, = or ↓ on its number: the same set last time, weight first and
 then reps, and when those pull apart (heavier but fewer) the estimated 1RM settles it. On an

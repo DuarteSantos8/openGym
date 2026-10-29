@@ -247,7 +247,8 @@ class SetView extends WatchUi.View {
         var ny = h * 0.47;
         var ly = ny + dc.getFontHeight(numFont) / 2 + 2;
         var label2 = Core.isTimed(e) ? Ui.t(Rez.Strings.hold) : Ui.t(Rez.Strings.reps);
-        var v2 = Core.isTimed(e) ? Ui.fmtN(editR) + "s" : Ui.fmtN(editR);
+        // number fonts have digits, ":" and "." only: a hold shows as 0:45
+        var v2 = Core.isTimed(e) ? Ui.clock(editR == null ? 0 : editR.toNumber()) : Ui.fmtN(editR);
         if (hasWeight(e)) {
             var unit = Core.unitOf(s, e);
             rBox = value(dc, w * 0.70, ny, ly, numFont, v2, label2, focus == :r);
