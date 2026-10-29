@@ -212,6 +212,15 @@ Extra reps in the stretched half of the range, done straight after the last full
 set, with no rest. They are part of that set, not a set of their own: `lp: <count>` on the row,
 written only when above zero, like `drops` and `clusters`.
 
+- Full sets only. Never on a warm-up set (`partialsAllowed` and `sidePartialsAllowed` both refuse one,
+  and the UI does not offer the chip or the menu entry there).
+- Per-side rows: each side carries its own `lp` in `sides.L` / `sides.R` (`setSidePartials`,
+  `sidePartialsOf`), with its own "+ Partials" under the side's row. The side's partials follow the
+  row's failure, or that side's own RIR 0 / RPE 10, and are dropped when that side is rated short
+  (`settlePartials`). Volume and recovery add both sides (`partialsTotalOf`, `sidePartialVolumeOf`).
+- Drop sets: the partials count at the weight of the last drop reached (`partialLoadOf`), since the
+  partials follow the last full rep of the failure. The drops themselves never carry `lp`, and the
+  chip sits under the drops. The UI does not say this; it is documented here and in the changelog.
 - Never planned. Added live, from the set menu or the "+ Partials" chip under a done set
   (`PartialsPicker`, `withPartials`). In the app a set must already be a failure set (F, or rated
   RIR 0 / RPE 10) and not rated short of it (`partialsAllowed`); otherwise the chip is greyed out

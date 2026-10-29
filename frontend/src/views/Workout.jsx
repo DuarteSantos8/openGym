@@ -58,7 +58,7 @@ import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
-import { isWarmupRow, isFailureSet, toggleFailure, withPartials, partialsOf, partialsRefused, partialsAllowed, settlePartials, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
+import { isWarmupRow, isFailureSet, toggleFailure, withPartials, partialsOf, partialsRefused, partialsAllowed, settlePartials, hasStoredPartials, sidePartialsAllowed, sidePartialsOf, setSidePartials, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
@@ -178,9 +178,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       for (let j = start; j < start + count; j++) {
         if (isFailureSet(e.sets[j]) !== on) e.sets[j] = toggleFailure(e.sets[j])
         // Switching F off ends the partials too, unless a RIR 0 / RPE 10 rating still holds the failure.
-        const had = Number(e.sets[j].lp) > 0
+        const had = hasStoredPartials(e.sets[j])
         e.sets[j] = settlePartials(e.sets[j])
-        if (had && !(Number(e.sets[j].lp) > 0)) lost = true
+        if (had && !hasStoredPartials(e.sets[j])) lost = true
       }
     }, true)
     if (lost) useUI.getState().toast(t('Partials removed: the set is no longer taken to failure.'))
@@ -188,6 +188,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // Lengthened partials ride on the set's row (workout-model withPartials), which also marks it
   // as taken to failure. A timed or side set has no single rep count to count them against.
   const setPartialsAt = (i, n) => mutSet(i, row => withPartials(row, n))
+  // A per-side row logs its partials on the side they were done on (workout-model sidePartialsOf),
+  // so each limb's chip opens its own count.
+  const openSidePartials = (s, i, side) => {
+    if (!sidePartialsAllowed(s, side)) return useUI.getState().toast(t('Partials only follow a set taken to failure. Mark it as failure, or rate it RIR 0 (RPE 10), first.'))
+    partialsPickerSheet(sidePartialsOf(s, side), n => mutSet(i, row => setSidePartials(row, side, n)))
+  }
   // Partials only follow a set taken to failure: a set rated RIR > 0 / RPE < 10 refuses them.
   const openPartials = (s, i) => {
     if (!partialsAllowed(s)) return useUI.getState().toast(t('Partials only follow a set taken to failure. Mark it as failure, or rate it RIR 0 (RPE 10), first.'))
@@ -236,7 +242,18 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // stays right. The done tick goes through onToggleSide → toggle() instead, so ticking a side
   // still fires the rest timer / auto-advance / workout-complete flow.
   const setSide = (i, side, field, v) => {
-    if (field !== 'w') return mutSet(i, row => markWarmupEdited(setSideField(row, side, field, v), field))
+    if (field !== 'w') {
+      // A rating that ends the failure ends this side's partials (setSideField settles them).
+      let lost = false
+      mutSet(i, row => {
+        const had = hasStoredPartials(row)
+        const out = markWarmupEdited(setSideField(row, side, field, v), field)
+        lost = had && !hasStoredPartials(out)
+        return out
+      })
+      if (lost) useUI.getState().toast(t('Partials removed: the set is no longer taken to failure.'))
+      return
+    }
     update(s => inEntryUnit(s, entryIdx, e => {
       const row = setSideField(e.sets[i], side, field, v)
       row.sides[side].weightOrigin = WEIGHT_ORIGIN_MANUAL
@@ -736,6 +753,17 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       ))}
     </>
   }
+  // A side's "+ Partials" button, under that side's row once the side is done (openSidePartials).
+  // Never on a warm-up side: partials are a work set's, the way the set-menu entry reads it.
+  const sidePartialChip = (s, i, side) => {
+    if (!partialsOn || isWarmupRow(s) || !s.sides?.[side]?.done) return null
+    const ok = sidePartialsAllowed(s, side)
+    const n = sidePartialsOf(s, side)
+    return <div className="setextra">
+      <button className="chip add" aria-disabled={!ok || undefined} style={!ok ? { opacity: 0.45 } : undefined}
+        onClick={() => openSidePartials(s, i, side)}><Icon name="arrowDown" />{n ? t('Partials: {0}', n) : t('+ Partials')}</button>
+    </div>
+  }
   // A smaller stepper for a drop's weight/reps or a burst's reps — editing what the plan (or a
   // live "+ Drop"/"+ Burst" tap) already put on the row, not typing into a fresh field.
   const miniStepper = (value, step, dec, onChange, snapWeightStep = false) => (
@@ -884,8 +912,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
               <div className="side-rows">
                 {sideRow(s, i, 'L', col1, col2, col3)}
                 {sideExtras(s, i, 'L')}
+                {sidePartialChip(s, i, 'L')}
                 {sideRow(s, i, 'R', col1, col2, col3)}
                 {sideExtras(s, i, 'R')}
+                {sidePartialChip(s, i, 'R')}
               </div>
             </div>
           ) : pairHead ? <>{plainRow(s, i)}{plainRow(entry.sets[i + 1], i + 1)}</> : plainRow(s, i))}
@@ -2151,7 +2181,9 @@ function ActiveWorkout() {
       if (step.unitDone) {
         if (nextUnit?.length) startRest(restAfter, idx, { forSet: i })
       } else {
-        if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
+        // Keep open: the marker stays on this member, so the partner's row is not scrolled to
+        // (the rest still runs, and Next moves on when you are ready).
+        if (step.nextIdx != null && !keepLast) update(s => { if (s.active) s.active.cur = step.nextIdx })
         if (step.roundDone) startRest(restAfter, idx, { forSet: i })
       }
       onFocusProgress?.({ unitDone: freshUnitDone })
