@@ -88,12 +88,16 @@
   /* Pressed states (P13), one rule per tier, so a press feels the same wherever it lands:
      - rows (.item, .lrow.tap, .menu-item) fill with --press-fill and do not move: the iPhone's
        highlight for a table cell;
-     - controls (.btn, .chip, .iconbtn, a segment) scale to --press-scale;
+     - controls (.btn, .chip, a segment, a stepper) scale to --press-scale, and the small round
+       ones (.iconbtn, a set's tick, a swatch) to --press-scale-sm, which reads at 30 px;
      - cards (.card.tappable) scale less, --press-scale-card, because they are larger.
      All of them answer on pointer-down within --fast, on --ease (EMIL: 100-160 ms press feedback,
      scale .95-.98; APPLE §1: feedback on touch-down, never on release). */
-  --press-scale:.97; --press-scale-card:.985;
+  --press-scale:.97; --press-scale-sm:.92; --press-scale-card:.985;
   --press-fill:var(--surface-2);
+  /* Kept apart on purpose: a switch stretches its knob (the iPhone's own press), the tab bar's
+     start button scales its disc, and a control that already sits on --surface-2 (the timer's
+     buttons, a set's go button, the today row) fills one step further, to --surface-3. */
 
   /* The system bars the page is drawn under. env() is all a browser and the iOS app give; the
      Android WebView reports only the camera cutout there, and on Android 15, which draws the app
@@ -381,7 +385,7 @@ button.conn:active{filter:brightness(1.12)}
   display:flex;align-items:center;justify-content:center;font-size:18px;
   transition:background var(--fast),transform var(--fast);
 }
-.iconbtn:active{background:var(--surface-2);transform:scale(.92)}
+.iconbtn:active{transform:scale(var(--press-scale-sm))}
 /* invisible hit-area extension: these look right at their size but fall short of a
    finger-sized target, so the pseudo element widens what the tap lands on without
    changing the painted box. Segmented buttons sit flush against each other, so they
@@ -424,7 +428,7 @@ h4.sec{
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
-.card.tappable:active{transform:scale(.985)}
+.card.tappable:active{transform:scale(var(--press-scale-card))}
 
 /* ------------------------------------------------------ inset group list -- */
 .sect{margin-bottom:22px}
@@ -448,7 +452,7 @@ h4.sec{
   content:'';position:absolute;inset-inline-start:14px;inset-inline-end:0;top:0;height:var(--hair);background:var(--sep);
 }
 .lrow:has(.lrow-i)+.lrow:has(.lrow-i)::before{inset-inline-start:55px}
-.lrow.tap:active{background:var(--surface-2)}
+.lrow.tap:active{background:var(--press-fill)}
 .lrow-i{
   width:29px;height:29px;border-radius:7px;flex:none;font-size:18px;
   display:flex;align-items:center;justify-content:center;
@@ -517,13 +521,13 @@ h4.sec{
   transition:transform var(--fast) var(--ease),background var(--fast),opacity var(--fast);
 }
 .btn .icn{font-size:19px}
-.btn:active{transform:scale(.975)}
+.btn:active{transform:scale(var(--press-scale))}
 .btn.primary{background:var(--acc);color:var(--on-acc)}
 .btn.primary:active{background:var(--acc-2)}
 .btn.tinted{background:var(--acc-soft);color:var(--acc-ink)}
 .btn.danger{background:rgba(255,69,58,0.15);background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
 .btn.ghost,.btn.plain{background:none;color:var(--acc-ink);font-weight:400}
-.btn.ghost:active,.btn.plain:active{background:var(--surface-2)}
+/* a ghost or plain button is a control: it scales like the others, no fill flash (P13) */
 /* The quiet text button: Cancel and Done under a sheet's main button, "Lost access?" and "Continue
    without account" under sign-in, "Finish workout early". Every one of them is written ghost + dim,
    but .btn.ghost outranked .dim, so they all came out in the accent, as loud as the action above
@@ -644,7 +648,7 @@ h4.sec{
 .wday .dot.done{background:var(--acc)}
 /* a day off with a note on it (#261, lib/day-notes.js): the same colour on every calendar */
 .wday .dot.noted{background:var(--indigo)}
-.wday:active{background:var(--surface-2)}
+.wday:active{background:var(--press-fill)}
 .wday.today .num{
   background:var(--acc);color:var(--on-acc);font-weight:600;
   width:31px;height:31px;border-radius:50%;display:flex;align-items:center;
@@ -658,7 +662,7 @@ h4.sec{
   border-radius:var(--r-card);padding:10px 12px;min-height:60px;
   transition:background var(--fast);text-align: start;width:100%;
 }
-.item:active{background:var(--surface-2)}
+.item:active{background:var(--press-fill)}
 .routine-list{position:relative}
 /* One column at every width (#277), whatever page it is on. The desktop layout puts the #app
    lists outside a .narrow page in two columns, and before the .narrow rule below won on
@@ -777,9 +781,9 @@ h4.sec{
 .chip{
   flex:none;padding:6px 13px;border-radius:99px;background:var(--surface);
   font-size:14px;font-weight:400;color:var(--label);text-transform:capitalize;
-  letter-spacing:-.006em;transition:background var(--fast),color var(--fast);
+  letter-spacing:-.006em;transition:background var(--fast),color var(--fast),transform var(--fast) var(--ease);
 }
-.chip:active{background:var(--surface-2)}
+.chip:active{transform:scale(var(--press-scale))}
 .chip.on{background:var(--acc);color:var(--on-acc);font-weight:500}
 .chip.on .dim{color:color-mix(in srgb,var(--on-acc) 62%,transparent)}
 @supports not (color: color-mix(in srgb, red 50%, blue)){.chip.on .dim{color:var(--on-acc)}}
@@ -929,11 +933,11 @@ body.chips-dragging *{cursor:inherit}
 .seg button{
   position:relative;z-index:1;padding:6px 8px;font-size:14px;font-weight:500;
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
-  justify-content:center;gap:5px;min-height:32px;transition:opacity var(--fast);
+  justify-content:center;gap:5px;min-height:32px;transition:opacity var(--fast),transform var(--fast) var(--ease);
 }
 .seg button .icn{font-size:var(--fs-callout)}
 .seg button:not(.on){color:var(--label-2);font-weight:400}
-.seg button:active{opacity:.5}
+.seg button:active{transform:scale(var(--press-scale))}
 /* sitting in a list row: shrink to content instead of filling the row. The control never
    shrinks below its labels, so a row whose title and control do not both fit — most translated
    packs at 390px: "Übungs-Animationen" against "Voll · Klein · Aus" — wraps the control onto its
@@ -989,9 +993,9 @@ body.chips-dragging *{cursor:inherit}
 .stp button{
   width:40px;height:44px;flex:none;color:var(--label);font-size:var(--fs-callout);
   display:flex;align-items:center;justify-content:center;
-  transition:background var(--fast);--icon-stroke:2.2;
+  transition:background var(--fast),transform var(--fast) var(--ease);--icon-stroke:2.2;
 }
-.stp button:active{background:var(--surface-3)}
+.stp button:active{transform:scale(var(--press-scale-sm))}
 .stp .val{
   flex:1;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:3px;padding:0 2px;
   align-self:stretch;
@@ -1037,7 +1041,7 @@ body.chips-dragging *{cursor:inherit}
    without painting it; the left side stays shorter so the stepper's + button keeps its edge */
 .chk::before,.ck::before{content:'';position:absolute;inset:-7px -7px -7px -4px}
 .chk.on{background:var(--acc);box-shadow:none;color:var(--on-acc)}
-.chk:active,.ck:active{transform:scale(.9)}
+.chk:active,.ck:active{transform:scale(var(--press-scale-sm))}
 .ck svg{
   width:16px;height:16px;stroke:transparent;fill:none;stroke-width:2.6;
   stroke-linecap:round;stroke-linejoin:round;transition:stroke var(--fast);
@@ -1135,7 +1139,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   transition:background var(--fast),transform var(--fast);
   user-select:none;-webkit-user-select:none;
 }
-.exlink-card:active{background:var(--surface-2);transform:scale(.98)}
+.exlink-card:active{background:var(--press-fill)}
 .exlink-icon{
   width:34px;height:34px;border-radius:9px;
   display:flex;align-items:center;justify-content:center;
@@ -1348,7 +1352,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   display:flex;align-items:center;justify-content:center;
   transition:background var(--fast),transform var(--fast),border-color var(--fast);
 }
-.effcell:active{transform:scale(.94)}
+.effcell:active{transform:scale(var(--press-scale-sm))}
 .effcell.is-empty{color:var(--label-2);font-weight:500;font-size:var(--fs-caption);letter-spacing:.02em}
 /* a logged rating becomes a −/value/+ stepper, tinted by its effort band: the band colour
    fills the cell at low opacity (set inline via color-mix), borders it, and colours the value.
@@ -1893,7 +1897,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   display:flex;align-items:center;justify-content:center;font-size:24px;
   color:var(--label);transition:background var(--fast),color var(--fast),transform var(--fast);
 }
-.glyph-cell:active{transform:scale(.92)}
+.glyph-cell:active{transform:scale(var(--press-scale-sm))}
 .glyph-cell.on{background:var(--acc);color:var(--on-acc)}
 
 /* --- big weight readout --- */
@@ -1903,7 +1907,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   color:var(--label);display:flex;align-items:center;justify-content:center;font-size:19px;
   transition:background var(--fast),transform var(--fast);--icon-stroke:2.2;
 }
-.bw-pm:active{background:var(--surface-2);transform:scale(.92)}
+.bw-pm:active{transform:scale(var(--press-scale-sm))}
 .bw-read{
   font-size:52px;font-weight:600;letter-spacing:-.035em;min-width:158px;text-align:center;
   font-variant-numeric:tabular-nums;line-height:1;
@@ -2103,7 +2107,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .tile .v{font-size:26px;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
 /* a tile that holds a count beside other counts (import summaries, the finish sheet, admin): the body size, not the headline figure */
 .tile .v.v-sm{font-size:var(--fs-body);letter-spacing:var(--ls-body)}
-.tile.tappable:active{background:var(--surface-2)}
+.tile.tappable:active{background:var(--press-fill)}
 /* The week streak (components/Streak.jsx): the flame, best + freezes, the medals, the parties.
    Colours that carry meaning get a darker ink in the light theme, so a bar or a snowflake keeps
    3:1 against white where the system orange, green and cyan do not. --gold-ink is also every
@@ -2181,7 +2185,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   animation:party-in .42s cubic-bezier(.23,1,.32,1) both;touch-action:manipulation}
 [dir="rtl"] .streak-party{padding:8px 8px 8px 14px}
 @media (hover:hover) and (pointer:fine){.streak-party:hover{background:rgba(255,159,10,.2)}.streak-party.gold:hover{background:rgba(255,214,10,.24)}}
-.streak-party:active{transform:scale(.98);transition:transform .12s ease-out}
+.streak-party:active{transform:scale(var(--press-scale-card));transition:transform var(--fast) var(--ease)}
 .streak-party.gold{background:rgba(255,214,10,.18)}
 .streak-party-icon{position:relative;flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--surface);font-size:30px}
 .streak-party-art{display:inline-flex;animation:party-pop .55s cubic-bezier(.34,1.56,.64,1) .08s both}
@@ -2309,7 +2313,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   transition:opacity var(--fast),transform 380ms cubic-bezier(.3,1.5,.5,1),visibility 0s;
 }
 :root[data-theme="light"] #totop{background:var(--surface)}
-#totop:active{transform:scale(.92)}
+#totop:active{transform:scale(var(--press-scale-sm))}
 #totop:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
 #totop .icn{font-size:21px;--icon-stroke:2.1}
 body.resting #totop{bottom:calc(172px + var(--sab))}
@@ -2335,7 +2339,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   font-weight:400;font-size:var(--fs-subhead);color:var(--label);transition:background var(--fast);
 }
-.cal-d:active{background:var(--surface-2)}
+.cal-d:active{background:var(--press-fill)}
 .cal-d.has{background:var(--acc-soft);color:var(--acc-ink)}
 .cal-d.today{box-shadow:inset 0 0 0 1.8px var(--acc)}
 .cal-d i{width:5px;height:5px;border-radius:50%;background:transparent}
@@ -2373,7 +2377,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 /* --- accent swatches --- */
 .swatches{display:flex;gap:12px;flex-wrap:wrap}
 .swatch{width:32px;height:32px;border-radius:50%;flex:none;position:relative;transition:transform var(--fast)}
-.swatch:active{transform:scale(.9)}
+.swatch:active{transform:scale(var(--press-scale-sm))}
 /* The ring takes no taps: over the own colour it lay on the colour input, so the picker never opened. */
 .swatch.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 0 2px var(--label);pointer-events:none}
 /* The user's own colour (Settings → Accent color): a rainbow ring until there is one, then filled
@@ -2390,7 +2394,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .app-icons{flex-basis:100%;padding-inline-start:41px;display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:12px}
 .app-icon{position:relative;aspect-ratio:1;max-width:60px;border-radius:23%;padding:0;transition:transform var(--fast)}
 .app-icon img{width:100%;height:100%;display:block;border-radius:inherit;box-shadow:0 0 0 .5px var(--sep)}
-.app-icon:active{transform:scale(.92)}
+.app-icon:active{transform:scale(var(--press-scale-sm))}
 .app-icon:disabled{opacity:1}
 .app-icon.on::after{content:'';position:absolute;inset:-4px;border-radius:27%;box-shadow:0 0 0 2px var(--acc);pointer-events:none}
 
@@ -2402,7 +2406,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .ss-label .icn{font-size:var(--fs-footnote)}
 /* The routine editor's label opens the superset's name and rest (#292). */
 .ss-label-btn{background:none;border:0;padding:4px 6px;margin-inline-start:-2px;border-radius:8px;cursor:pointer;font:inherit;font-size:var(--fs-caption);font-weight:600;min-height:28px;max-width:100%}
-.ss-label-btn:active{background:var(--surface-2)}
+.ss-label-btn:active{background:var(--press-fill)}
 .ss-label-btn .ss-label-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ss-label-btn .dim{font-weight:500;white-space:nowrap}
 /* A1, A2…: a member's place in the round (#293). */
@@ -2416,7 +2420,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
    out at 17px in full ink, as loud as the name above them (design review 1.4.5). */
 .wd-ex .ss{font-size:var(--fs-subhead);line-height:1.35;color:var(--label-2);margin-top:2px}
 .wd-thumb{background:none;border:none;padding:0;cursor:pointer;display:block;flex:none}
-.wd-ex:active{background:var(--surface-2)}
+.wd-ex:active{background:var(--press-fill)}
 .wd-ss{box-shadow:inset 3px 0 0 var(--acc);padding-inline-start:11px;margin-bottom:12px}
 .wd-ss .ss-label{margin:0 0 8px}
 .wd-ss .wd-ex:last-child{margin-bottom:0}
@@ -2619,7 +2623,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   border:2px dashed var(--surface-3);background:none;color:var(--label-2);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
 }
-.ci-add:active{background:var(--surface);transform:scale(.99)}
+.ci-add:active{transform:scale(var(--press-scale-card))}
 .ci-add .icn{font-size:40px;--icon-stroke:1.8}
 .ci-add .ci-add-t{font-size:var(--fs-callout);font-weight:500}
 /* dots under the rail — which card you're on. Purely a hint; the rail itself is the control. */
