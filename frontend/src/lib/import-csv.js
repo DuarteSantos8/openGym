@@ -742,7 +742,7 @@ export function parseWorkoutCSV(text, { unit = 'kg', customEx = [] } = {}) {
       continue
     }
     if (own && (side === 'L' || side === 'R') && !isCardio && !timed) {
-      const half = { w, r: reps || 0, done: true, ...(set.rir != null ? { rir: set.rir } : {}), ...(set.rpe != null ? { rpe: set.rpe } : {}) }
+      const half = { w, r: reps || 0, done: true, ...(set.rir != null ? { rir: set.rir } : {}), ...(set.rpe != null ? { rpe: set.rpe } : {}), ...(set.lp ? { lp: set.lp } : {}) }
       // The other side of the set the previous row started: same set number, side not yet filled.
       if (prev && prev._sides && prev._no === setNo && !prev._sides.includes(side)) {
         prev.sides[side] = half

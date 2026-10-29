@@ -5,7 +5,7 @@ import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
 import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
 import { barWeightFor } from './bar.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, partialsOf, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, partialsOf, sidePartialsOf, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
 import { dbLoadOf, bellsIn, volumeFactor, historyAs, ownedFloor } from './dumbbells.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
@@ -200,7 +200,9 @@ export function setLabel(id, s, cfg, speedUnit) {
     const partial = s.sides.L.done !== s.sides.R.done
     return ['L', 'R'].map(key => {
       const side = s.sides[key]
-      return `${t(key)} ${partial && !side.done ? '–' : oneSide(side) + effortTail(side)}`
+      // A side's partials ride on its own numbers ("L 38×6 F+2 (RIR 0)"), counted on that side.
+      const lp = sidePartialsOf(s, key)
+      return `${t(key)} ${partial && !side.done ? '–' : oneSide(side) + (lp ? ' ' + t('F') + '+' + lp : '') + effortTail(side)}`
     }).join(' · ') + fail
   }
   // Bodyweight reads as what you did — "12", or "+10 × 12" once there is a belt involved —

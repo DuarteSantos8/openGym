@@ -95,7 +95,7 @@ export function partialsAllowed(set) {
  * Timed rows and rows without reps have no rep to compare against and add nothing.
  */
 export function partialSetsOf(set) {
-  const lp = partialsOf(set)
+  const lp = partialsTotalOf(set)
   const reps = Number(objectOf(set).r)
   if (!lp || !(reps >= 1)) return 0
   return Math.min(PARTIAL_MAX_EXTRA_SETS, (lp * PARTIAL_REP_WEIGHT) / reps)
@@ -126,6 +126,15 @@ export function withPartials(set, count) {
  */
 export function settlePartials(set) {
   const row = objectOf(set)
+  if (isSideSet(row)) {
+    if (!hasStoredPartials(row)) return set
+    // Each side that may no longer carry partials gives them up; the other keeps its own.
+    let next = row
+    for (const side of ['L', 'R']) {
+      if (Number(next.sides[side].lp) > 0 && !sidePartialsAllowed(next, side)) next = setSidePartials(next, side, 0)
+    }
+    return next
+  }
   if (!(Number(row.lp) > 0)) return set
   if (partialsAllowed(row)) return set
   const { lp, ...rest } = row
@@ -282,17 +291,68 @@ export const hasCompletedWork = set => isSideSet(set)
 /**
  * The volume the partials of a done set are worth when the profile counts them: load x partial
  * reps x PARTIAL_REP_WEIGHT, the same fifth of a rep the recovery engine uses. 0 for a set that
- * is not done, a warm-up, a set not allowed partials (partialsOf) and a per-side set.
+ * is not done, a warm-up, or a set not allowed partials (partialsOf). A per-side set adds each side's own partials.
  */
 export function partialVolumeOf(set) {
-  if (!set?.done || isSideSet(set)) return 0
-  return (Number(set.w) || 0) * partialsOf(set) * PARTIAL_REP_WEIGHT
+  if (isSideSet(set)) return sidePartialVolumeOf(set, 'L') + sidePartialVolumeOf(set, 'R')
+  if (!set?.done) return 0
+  return partialLoadOf(set) * partialsOf(set) * PARTIAL_REP_WEIGHT
+}
+
+// The load the partials are counted at. They follow the set's last full rep, so after drops that
+// is the last drop's weight (the lowest one reached); without drops, the set's own weight.
+export function partialLoadOf(set) {
+  const drops = dropsOf(set)
+  return drops.length ? Number(drops[drops.length - 1].w) || 0 : Number(objectOf(set).w) || 0
+}
+
+// --- per-side partials ------------------------------------------------------------------------
+//
+// A per-side row keeps its partials on the side they were done on (`sides.L.lp`, `sides.R.lp`),
+// since each limb can fail at a different count. They follow failure exactly as a straight row's
+// do: the row is taken to failure, or that side was rated RIR 0 / RPE 10, and the side is not
+// rated short of it.
+export function sidePartialsAllowed(row, side) {
+  const base = objectOf(row)
+  if (!isSideSet(base) || isWarmupRow(base) || (side !== 'L' && side !== 'R')) return false
+  const sd = sideOf(base.sides[side])
+  return !partialsRefused(sd) && (isFailureSet(base) || sd.rir === 0 || sd.rpe === 10)
+}
+/** Partial reps logged on one side of a per-side row; 0 when that side may not carry them. */
+export function sidePartialsOf(row, side) {
+  if (!sidePartialsAllowed(row, side)) return 0
+  const n = Number(sideOf(objectOf(row).sides[side]).lp)
+  return Number.isInteger(n) && n > 0 ? n : 0
+}
+/** Partial reps on a row, both sides of a per-side row added up; otherwise partialsOf. */
+export function partialsTotalOf(row) {
+  return isSideSet(row) ? sidePartialsOf(row, 'L') + sidePartialsOf(row, 'R') : partialsOf(row)
+}
+/** Whether a row holds any logged partials, allowed or not: what an edit has to settle. */
+export function hasStoredPartials(row) {
+  const s = objectOf(row)
+  return isSideSet(s) ? Number(s.sides.L.lp) > 0 || Number(s.sides.R.lp) > 0 : Number(s.lp) > 0
+}
+/** Sets one side's partial count (0 or less clears it). Like withPartials, the row is not marked. */
+export function setSidePartials(row, side, count) {
+  const n = Math.floor(Number(count))
+  return patchSide(row, side, sd => {
+    const { lp, ...rest } = sd
+    return n > 0 ? { ...rest, lp: n } : rest
+  })
+}
+// A side's partials count at its own load, once that side is done.
+export function sidePartialVolumeOf(row, side) {
+  const sd = objectOf(objectOf(row).sides?.[side])
+  if (sd.done !== true) return 0
+  return partialLoadOf(sd) * sidePartialsOf(row, side) * PARTIAL_REP_WEIGHT
 }
 
 /** Actual completed load x reps; the scalar maximum weight is only a summary. `partials` adds
  *  the set's lengthened partials at PARTIAL_REP_WEIGHT of a rep (Settings → Units), off by default. */
 export function completedVolumeOf(set, { partials = false } = {}) {
-  if (isSideSet(set)) return completedVolumeOf(set.sides.L, { partials }) + completedVolumeOf(set.sides.R, { partials })
+  if (isSideSet(set)) return completedVolumeOf(set.sides.L) + completedVolumeOf(set.sides.R)
+    + (partials ? sidePartialVolumeOf(set, 'L') + sidePartialVolumeOf(set, 'R') : 0)
   if (!set?.done) return 0
   return (Number(set.w) || 0) * (Number(set.r) || 0) + extraVolumeOf(set) + (partials ? partialVolumeOf(set) : 0)
 }
@@ -302,6 +362,8 @@ const sideOf = value => {
   const out = { w: Number(v.w) || 0, r: Number(v.r) || 0, done: v.done === true }
   if (v.rir != null) out.rir = v.rir
   if (v.rpe != null) out.rpe = v.rpe
+  // Lengthened partials are per limb: each side can fail at a different count (see sidePartialsOf).
+  if (Number.isInteger(Number(v.lp)) && Number(v.lp) > 0) out.lp = Number(v.lp)
   if (v.weightOrigin === WEIGHT_ORIGIN_MANUAL) out.weightOrigin = WEIGHT_ORIGIN_MANUAL
   // A side can carry its own intensifier (issue #60): drop-sets and rest-pause bursts are logged
   // per limb, exactly like the main set, so the same {type, drops, clusters} shape rides on the
@@ -357,7 +419,8 @@ export function setSideField(row, side, field, value) {
   const cur = { ...sideOf(base.sides[side]) }
   if (value == null && (field === 'rir' || field === 'rpe')) delete cur[field]
   else cur[field] = value
-  return syncSideAggregate({ ...base, sides: { ...base.sides, [side]: cur } })
+  // A rating that ends the failure ends that side's partials with it (settlePartials).
+  return settlePartials(syncSideAggregate({ ...base, sides: { ...base.sides, [side]: cur } }))
 }
 
 // Flip one side's done tick, resyncing the row's own done (true only when both sides are).

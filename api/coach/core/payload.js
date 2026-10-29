@@ -370,6 +370,16 @@ function cleanSet(s) {
   if (isWarmupSet(s)) o.warmup = true;
   else if (s.failure === true) o.failure = true;
   for (const k of ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe', 'lp']) if (num(s[k]) !== undefined) o[k] = s[k];
+  // A unilateral set carries each side's own numbers, partials included (a side's `lp` is its own).
+  if (s.sides && typeof s.sides === 'object') {
+    o.sides = {};
+    for (const k of ['L', 'R']) if (s.sides[k] && typeof s.sides[k] === 'object') o.sides[k] = cleanSide(s.sides[k]);
+  }
+  return o;
+}
+function cleanSide(x) {
+  const o = { done: !!x.done };
+  for (const k of ['w', 'r', 'rir', 'rpe', 'lp']) if (num(x[k]) !== undefined) o[k] = x[k];
   return o;
 }
 const entriesOf = w => list(w.entries).filter(en => en && typeof en === 'object');
