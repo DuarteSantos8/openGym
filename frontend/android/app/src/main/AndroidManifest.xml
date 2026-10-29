@@ -235,6 +235,16 @@
              clock and a shrinking bar after the WebView is frozen. The lock screen shows
              it only when the user allows notifications there. specialUse: this is a timer,
              not media playback. -->
+        <!-- The Wear OS watch app's events (WatchBridgePlugin): each one stored even with the app
+             closed, then let go of in the Data Layer. Only our own watch app's paths. -->
+        <service
+            android:name=".WatchListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/event/" />
+            </intent-filter>
+        </service>
         <service
             android:name=".RestTimerService"
             android:exported="false"

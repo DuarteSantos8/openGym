@@ -39,6 +39,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(AppIconPlugin.class);
         registerPlugin(NfcTagsPlugin.class);
         registerPlugin(WidgetBridgePlugin.class);
+        registerPlugin(WatchBridgePlugin.class);
         super.onCreate(savedInstanceState);
         passSystemBarsToPage();
     }

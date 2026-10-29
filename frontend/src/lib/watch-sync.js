@@ -1,5 +1,10 @@
-// The Apple Watch link, the page's side (native: ios/App/App/WatchBridgePlugin.swift, the watch
-// app: ios/App/Watch).
+// The watch link, the page's side. Two transports, one protocol:
+//   iPhone + Apple Watch   native ios/App/App/WatchBridgePlugin.swift (WatchConnectivity), the
+//                          watch app ios/App/Watch
+//   Android + Wear OS      native android/app/.../WatchBridgePlugin.java (the Wearable Data
+//                          Layer), the watch app android/wear (docs/WEAR_OS.md)
+// Both plugins are called WatchBridge and answer the same calls, and both watches read the same
+// snapshot and send the same events, so everything below is the same for either.
 //
 // Phone → watch: while a workout runs, a snapshot of it (each exercise by name, its sets with
 // weight, reps and done, the rest, where you are) goes to the watch whenever it changes. The watch
@@ -12,7 +17,7 @@
 // id, and only then acknowledged, which takes it out of the native queue; until the workout screen
 // is there to apply it, it waits in that queue.
 //
-// The iPhone app only. Without a paired watch with the app on it, nothing is sent and nothing
+// The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
@@ -30,6 +35,7 @@ import { sanitizeHr } from './heart-rate.js'
 import { readWatchPrefs, settingsForWatch, writeWatchStatus, readWatchStatus, onWatchPrefs } from './watch-settings.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
+import { streakInfo } from './streak.js'
 
 export const SNAPSHOT_VERSION = 1
 const APPLIED_KEY = 'gym_watch_applied'
@@ -423,8 +429,10 @@ export function bindWatchAppActions (h) {
 let pluginP = null
 // Inside an object: a Capacitor plugin proxy answers `then`, so a promise must never resolve with
 // the bare proxy (lib/rest-alert.js, the Coach hang #42).
+// The iPhone's (Apple Watch) or the Android phone's (Wear OS); the web has none.
+export const WATCH_PLATFORMS = ['ios', 'android']
 const watchPlugin = () => pluginP || (pluginP = (async () => {
-  if (!MOBILE || (await nativePlatform()) !== 'ios') return null
+  if (!MOBILE || !WATCH_PLATFORMS.includes(await nativePlatform())) return null
   const { registerPlugin } = await import('@capacitor/core')
   return { WatchBridge: registerPlugin('WatchBridge') }
 })().catch(() => null))
@@ -597,6 +605,17 @@ export function watchExtras (S) {
   }
 }
 
+/**
+ * The week streak for the watch's Tile and complication (Wear OS; the Apple Watch ignores it):
+ * weeks in a row, and whether this week has a workout yet (lib/streak.js).
+ */
+export function streakFor (S, today = todayISO()) {
+  try {
+    const st = streakInfo(S, today)
+    return { weeks: st.current, thisWeekDone: !!st.thisWeekDone }
+  } catch { return { weeks: 0, thisWeekDone: false } }
+}
+
 export async function startWatchSync ({ useStore, useUI }) {
   const p = await watchPlugin()
   if (!p) return () => {}
@@ -644,6 +663,7 @@ export async function startWatchSync ({ useStore, useUI }) {
         ? buildSnapshot(S, { timer: useUI.getState().timer, ready: readyFor(S), activeAt: phoneActiveAt(S.active) })
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       snap.settings = { ...settingsForWatch(prefs, healthOn), ...watchExtras(S) }
+      if (prefs.enabled) snap.streak = streakFor(S)
       // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
       const discarded = discardedFor(Date.now(), S)
       if (discarded.length) snap.discarded = discarded
