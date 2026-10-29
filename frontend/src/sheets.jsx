@@ -1332,10 +1332,8 @@ function ExerciseDetail({ ex, close }) {
     <FormVideosSection exId={ex.id} />
     {/* A sticker on the machine that jumps to this exercise in a workout (components/Nfc.jsx). */}
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
-    {isCustomEx(ex) && <div className="row" style={{ gap: 8, marginTop: 8 }}>
-      <Button icon="pencil" style={{ flex: 1 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>
-      <Button variant="danger" icon="trash" style={{ flex: 1 }} onClick={() => deleteCustomEx(ex, close)}>{t('Delete')}</Button>
-    </div>}
+    {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
+    {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
     {/* Merge into… (#656, lib/exercise-merge.js): this exercise's history and plans onto another,
         for an import that made "Bench Press (Barbell)" next to the catalogue's bench press. */}
     {!ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })()) &&
@@ -1370,6 +1368,13 @@ function ExerciseDetail({ ex, close }) {
     {!isCustomEx(ex) && !ex.missing && <a className="small dim exfix-link" target="_blank" rel="noopener"
       href={'https://github.com/DuarteSantos8/openGym/issues/new?template=exercise.yml&exercise=' + encodeURIComponent(ex.id + ', ' + ex.n)}>
       <Icon name="pencil" /> {t('Suggest a fix for this exercise')}</a>}
+    {/* The one destructive action, last and on its own: a red row, not a filled red button next
+        to Edit, which made deleting the louder of the two (redesign 1.4.5, P6). It still asks. */}
+    {isCustomEx(ex) && <div className="sect-b ex-del">
+      <button type="button" className="lrow tap danger" onClick={() => deleteCustomEx(ex, close)}>
+        <Icon name="trash" className="ex-del-i" /><span className="lrow-m"><span className="lrow-t">{t('Delete exercise')}</span></span>
+      </button>
+    </div>}
   </>
 }
 export const exerciseDetailSheet = ex => ui().openSheet(close => <ExerciseDetail ex={ex} close={close} />)
