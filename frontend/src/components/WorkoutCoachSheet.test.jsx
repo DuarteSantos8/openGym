@@ -34,9 +34,9 @@ vi.mock('../coach.css', () => ({}))
 const api = await import('../lib/coach-api.js')
 const { default: WorkoutCoachSheet, AdaptProposal } = await import('./WorkoutCoachSheet.jsx')
 
-const BENCH = '0025', CURL = '0294'
+const BENCH = '0025', CURL = '0294', ROW = '0027'
 const state = () => ({
-  unit: 'kg', exWeights: {}, workouts: [], routines: [{ id: 'push', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 80 }, { id: CURL, sets: 3, reps: 10, weight: 14 }] }],
+  unit: 'kg', exWeights: {}, workouts: [], week: {}, dayPlan: {}, routines: [{ id: 'push', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 80 }, { id: CURL, sets: 3, reps: 10, weight: 14 }] }],
   coach: { log: [], snapshots: [] },
   active: { id: 'act-1', cur: 0, entries: [
     { id: BENCH, rid: 'push', target: { sets: 3, reps: 5, weight: 80 }, sets: [{ w: 80, r: 5, done: true }, { w: 80, r: 5, done: false }, { w: 80, r: 5, done: false }] },
@@ -85,6 +85,35 @@ describe('Ask the Coach mid-workout', () => {
     expect(mocks.S.active.entries[0].target.restSec).toBeUndefined()
     expect(mocks.S.coach.log[0]).toMatchObject({ kind: 'adapt', proposalId: 'p1' })
     expect(api.resolvePending).toHaveBeenCalledWith({ accepted: ['a0'], rejected: ['a1'] })
+    expect(close).toHaveBeenCalled()
+  })
+
+  it('offers what a swap would mean for the routine, and puts it through the Coach’s Undo', () => {
+    const close = vi.fn()
+    mocks.pending = adapt({ changes: [{ id: 'a0', type: 'swap', entry: 1, exId: CURL, to: ROW, why: 'The curl station is taken.' }] })
+    mocks.S.coach.lastReview = { at: 1 }
+    render(<WorkoutCoachSheet entryIdx={1} close={close} />)
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent.includes('Apply 1 change')).click() })
+    expect(mocks.S.active.entries[1].id).toBe(ROW)
+    expect(mocks.S.routines[0].ex[1].id).toBe(CURL)
+    expect(close).not.toHaveBeenCalled()
+    expect(host.textContent).toContain('Update your routine too?')
+    const update = [...host.querySelectorAll('button')].find(b => b.textContent.includes('Update routine'))
+    expect(update.disabled).toBe(true)
+    act(() => { host.querySelector('.pcard-chg [role="checkbox"]').click() })
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent.includes('Update routine')).click() })
+    expect(mocks.S.routines[0].ex.map(e => [e.id, e.sets, e.reps])).toEqual([[BENCH, 3, 5], [ROW, 3, 10]])
+    expect(mocks.S.coach.snapshots).toHaveLength(1)
+    expect(mocks.S.coach.lastReview).toEqual({ at: 1 })   // not a review
+    expect(mocks.toast).toHaveBeenLastCalledWith('Routine updated')
+    expect(close).toHaveBeenCalled()
+  })
+
+  it('closes as before when the changes mean nothing for the routine', () => {
+    const close = vi.fn()
+    mocks.pending = adapt({ changes: [{ id: 'a0', type: 'sets', entry: 1, exId: CURL, sets: 1, before: 2, why: 'One set is enough.' }] })
+    render(<WorkoutCoachSheet entryIdx={1} close={close} />)
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent.includes('Apply 1 change')).click() })
     expect(close).toHaveBeenCalled()
   })
 

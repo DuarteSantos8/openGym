@@ -4,6 +4,14 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased
+
+**Update your routine too?** Once Ask the Coach's changes to a workout are applied, the sheet
+offers what they would mean for the routine: a swap kept, the order kept, an added exercise kept,
+as cards you tick. Each goes through the Coach's own change set, so Undo in the Coach puts the
+routine back. Sets, reps, weight and rest stay with today: a session never edits the plan's
+numbers.
+
 ## v1.4.5 (2026-11-14)
 
 **Apple Watch, redesigned and in step with the phone**
