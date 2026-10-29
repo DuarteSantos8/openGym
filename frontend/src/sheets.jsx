@@ -1827,7 +1827,7 @@ export function swapActiveWorkoutExercise(index) {
   // The "+" on a picker row commits with the default config, exactly as it does in the add
   // flows; tapping the row still opens the config sheet first.
   // Worded for the session, not the routine: a swap changes today's workout only.
-  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, pickedExerciseConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, null, null, t('Use in this workout')), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
+  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, pickedExerciseConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, null, null, t('Use in this workout'), { freestyle: !(S().routines || []).some(r => r.id === active.entries[index].rid) }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
   function swapTo(ex, cfg) {
     // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
     // the workout. (The add flow deliberately leaves it open.)
@@ -1982,14 +1982,17 @@ const climbsRange = policy => policy === 'double' || policy === 'triple'
 // Triple progression's set ceiling while it is being edited: never below the starting sets.
 const setsMaxOf = c => Math.max(Math.max(1, Math.round(c.sets) || 1), Math.min(MAX_TRIPLE_SETS, Math.round(c.setsMax) || 0))
 
-function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fallback }) {
+function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fallback, freestyle }) {
   // Triple progression adds sets and then load. Bodyweight work with nothing added already climbs
   // reps and then sets on its own (the rep ceiling below), and has no load to finish the cycle
   // with, so it is not offered there.
   const options = (POLICIES_FOR[mode] || ['off']).filter(p => p !== 'triple' || !bw || c.weight > 0 || c.prog === 'triple')
   if (options.length < 2) return null
   const inherited = policyFor({ id: ex.id }, routine, mode, fallback)
-  const active = policyFor({ ...c, id: ex.id }, routine, mode, fallback)
+  // Freestyle has no routine and no rule: an exercise added there opens at what you did last time
+  // (#50, lib/session-start.js buildSessionEntry), whatever rule it says. The sheet said "Follow
+  // the routine (Linear progression)" and offered rules that were kept but never applied (#910).
+  const active = freestyle ? 'off' : policyFor({ ...c, id: ex.id }, routine, mode, fallback)
   const inc = progressionStepOf(c, mode, ex, unit)
   const canBackoff = backoffOffered(c, mode, ex, bw)
   const backoff = canBackoff && c.backoff === true
@@ -2020,12 +2023,16 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
   })
   return <>
     <h4 className="sec">{t('Progression')}</h4>
-    <div className="sect-b" style={{ marginBottom: 8 }}>
-      <SelectRow title={t('Rule')} sheetTitle={t('Progression')} value={c.prog || ''} onChange={setRule}
-        options={[{ value: '', label: t('Follow the routine ({0})', t(POLICY_NAME[inherited])) },
-          ...options.map(p => ({ value: p, label: t(POLICY_NAME[p]) }))]} />
-    </div>
-    <div className="small dim" style={{ marginBottom: active === 'off' ? 18 : 10 }}>{t(POLICY_DESC[active])}</div>
+    {freestyle
+      ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.')}</div>
+      : <>
+        <div className="sect-b" style={{ marginBottom: 8 }}>
+          <SelectRow title={t('Rule')} sheetTitle={t('Progression')} value={c.prog || ''} onChange={setRule}
+            options={[{ value: '', label: t('Follow the routine ({0})', t(POLICY_NAME[inherited])) },
+              ...options.map(p => ({ value: p, label: t(POLICY_NAME[p]) }))]} />
+        </div>
+        <div className="small dim" style={{ marginBottom: active === 'off' ? 18 : 10 }}>{t(POLICY_DESC[active])}</div>
+      </>}
     {/* Double progression on a weighted exercise fills this row with four steppers; `cfgrow-4`
         lets it wrap into two pairs on phones, where four abreast left the inputs a few px wide. */}
     {weightless && active !== 'off' && <div className="small dim" style={{ marginBottom: 12 }}>{t('Nothing to add in weight here: it goes up in reps, then sets.')}</div>}
@@ -2104,7 +2111,7 @@ function BackupsSheet({ ex, subs: initial, onChange, close }) {
   </>
 }
 
-function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable }) {
+function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable, freestyle }) {
   // Shown and typed in the exercise's own weight unit when it has one (#657, lib/ex-unit.js); the
   // config it opened with and the one it saves are in the profile's.
   const live = useStore(s => s.S)
@@ -2600,7 +2607,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     </>}
     {pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
-      : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} fallback={profileRule(st)} />}
+      : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} fallback={profileRule(st)} freestyle={freestyle && !routine} />}
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}
       placeholder={t('Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering')}
       value={c.note || ''} onChange={e => setC(x => ({ ...x, note: e.target.value }))} />
@@ -2617,7 +2624,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   </>
 }
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.
-export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} close={close} />)
+export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={!!opts.freestyle} close={close} />)
 
 /* ============================ glyph picker ============================ */
 // Grouped by what the glyph means for a training day, so picking one is a scan
