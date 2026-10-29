@@ -224,6 +224,68 @@ score out of ten, what went well, what to watch, and what to do next time, each 
 session's own numbers. A debrief cannot carry a change; an answer that tries is refused by the
 validator rather than trimmed. The card is kept in the Coach's history like everything else.
 
+### During a workout
+
+**Ask the Coach** sits in every exercise's ⋯ menu while a workout runs (once the Coach is set up
+and agreed to). Pick what is going on (*It hurts*, *Machine's taken*, *Short on time*, *Feeling
+great*, *Running on empty*, *Something else*), add a word if you like, and the Coach answers with
+up to six changes to the **unfinished part of that session**, as cards you tick:
+
+| Change | What it does |
+| --- | --- |
+| `swap` | the sets left of the exercise go to another one (like for like: the same muscle first) |
+| `sets` | how many sets are left of it: fewer drops the trailing open sets, more copies the last |
+| `reps` | the target reps of its open sets |
+| `weight` | its open sets −50 % to +10 %, rounded down to the active gym's plates or dumbbells, warm-ups re-aimed |
+| `add` | another exercise, built the way an exercise added by hand is built |
+| `skip` | drops what is left of it |
+| `move` | do it next, or last (only one not started) |
+| `rest` | its rest between sets, today |
+
+It is a job kind of its own (`adapt`, `POST /api/coach/adapt`, `api/coach/prompts/adapt.md`) with
+its own closed list, checked by `validateAdapt` against the session it was asked about: a change
+that names a logged set, an exercise whose sets are all done, an id outside the library slice or
+already in the session is refused and goes back for the one repair round. Nothing changes until
+you apply; applying (`frontend/src/lib/coach-adapt.js`) touches only rows not yet done, never the
+routine, and finds each exercise again first, so a change for an exercise the session has moved
+past is greyed out instead of landing on whatever now sits at its index. The proposal names the
+session it belongs to; once that workout is finished it can only be dismissed. Every answer keeps
+a line in the Coach's history. Changes are flat scalar fields rather than one `after` of many
+shapes, so a provider that closes every object for a strict schema (#804) can still write them.
+
+The running session is sent the way a question sends it (`today`): exercise ids, targets and the
+sets' numbers, no notes, no media, and never the form videos of a set.
+
+### Warm-ups and programmes
+
+A review can now also:
+
+- set how an exercise warms up (`warmup`: Auto, the app ramping from the work weight by load; a
+  block of its own as shares of the work weight; or none), which the app rounds to the gym's
+  plates itself;
+- write a multi-week **programme** over the plan's routines, or revise the one you have
+  (`programme`: per week a deload, a week-wide RPE, or %1RM and RPE targets per exercise). A new
+  programme is saved under Plan → Programmes and starts when you start it.
+
+Both are undone by **Undo the Coach's changes** like everything else.
+
+Every `why` on a change to progression or volume is asked for in plain words ("you will add a
+rep each session until 12, then the weight goes up"), and the card shows the app's own line for a
+progression rule under it, so "double progression" is never the whole explanation.
+
+### What the Coach reads, besides the plan and the log
+
+All built in `api/coach/core/context.js` and `payload.js`, by name, bounded, and small:
+
+- `muscles`: work sets per target muscle over the last 7 days, the 4-week weekly average, the
+  last 72 hours and days since it was trained (weekly volume and recovery);
+- `gym`: the active gym's equipment, plate sizes and dumbbells (sizes, never the gym's name);
+- `challenges`: this month's three goals and which are done;
+- the warm-up choice of every exercise and the warm-up setting (`meta.warmups`);
+- `plan.programmes`: the six most recent programmes and which one runs, in which week;
+- body weight as one value per day, as Settings → Daily weigh-in value picks it, with how many
+  weigh-ins the day had.
+
 ### Comparing with others on the instance
 
 Off unless the admin turns it on (**Settings → Account → Admin dashboard**, the **AI Coach** card →
@@ -336,7 +398,7 @@ The prompt asks for a shape and the model usually obliges. `api/coach/validate.j
 "usually" stops mattering, and it — not the prompt — is the security boundary. Nothing reaches
 you that has not:
 
-- **matched the closed list of change types.** Eighteen of them, each with an apply
+- **matched the closed list of change types.** Twenty of them, each with an apply
   implementation on the client to match. A hostile note in your own free text can talk a model
   into saying anything at all; it cannot invent a change type, and a change type that is not on
   the list does nothing. There is no default case anywhere.
@@ -361,7 +423,8 @@ HTTP client waits as long as the job, and the chat says "this can take a while" 
 promising minutes when the endpoint is a local one. The phone's BYOK mode does the same on
 its own: a local endpoint gets 25 minutes there.
 
-The Coach may only touch **routines and the week**. Your training log, your weigh-ins and your
+The Coach may only touch **routines, the week and programmes** (and, during a workout, the
+unfinished part of that one session, when you apply it). Your training log, your weigh-ins and your
 settings are not reachable from any change type that exists.
 
 Applying happens **on the client**, not the server — ordinary local editing, so it works

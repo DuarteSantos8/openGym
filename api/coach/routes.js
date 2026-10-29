@@ -129,6 +129,30 @@ export function coachRoutes({ json, readBody, readSession, requireAdmin }) {
       } catch (e) { failEnqueue(res, e); }
     },
 
+    // "Ask the Coach" on an exercise mid-workout (the `adapt` job): up to six changes to the
+    // unfinished part of the session, ticked on the phone and applied there. The running session
+    // rides along, as with a question; the server never holds it.
+    'POST /api/coach/adapt': async (req, res) => {
+      const user = guard(req, res); if (!user) return;
+      const body = await readBody(req);
+      const today = body.today && typeof body.today === 'object' && !Array.isArray(body.today) ? body.today : null;
+      const entry = Number.isInteger(body.entry) ? body.entry : -1;
+      if (!today || !Array.isArray(today.entries) || entry < 0 || entry >= today.entries.length) {
+        return json(res, 400, { error: 'a running workout and one of its exercises are required', code: 'invalid' });
+      }
+      try {
+        const job = jobs.enqueue(user.id, {
+          kind: 'adapt',
+          lang: body.lang,
+          note: typeof body.text === 'string' && body.text.trim() ? body.text.trim().slice(0, cfgStore.MAX_MESSAGE_LEN_CEILING) : null,
+          today,
+          focus: { entry, reason: typeof body.reason === 'string' ? body.reason.slice(0, 16) : 'other' },
+          activeId: typeof body.activeId === 'string' ? body.activeId.slice(0, 64) : null
+        });
+        json(res, 202, { job });
+      } catch (e) { failEnqueue(res, e); }
+    },
+
     /* How this profile sits against everyone else on the instance who opted in: medians only,
        at least three people, and nothing for a profile that does not share itself. */
     'GET /api/coach/cohort': async (req, res) => {

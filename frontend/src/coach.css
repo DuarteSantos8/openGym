@@ -297,3 +297,15 @@
 .cmp-bar i{display:block;height:100%;border-radius:7px;background:var(--label-3);opacity:.55}
 .cmp-bar.you i{background:var(--acc);opacity:1}
 .cmp-bar span{position:absolute;left:8px;top:0;line-height:22px;font-size:11.5px;font-weight:600;color:var(--label);font-variant-numeric:tabular-nums;text-shadow:0 0 6px var(--bg)}
+
+/* "Ask the Coach" mid-workout (components/WorkoutCoachSheet.jsx) */
+.workout-coach{padding:4px 16px 16px}
+.workout-coach .pcard-eyebrow{display:flex;align-items:center;gap:6px}
+.workout-coach > .pcard{margin:0}
+.adapt-reasons{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.adapt-reasons .chip{display:inline-flex;align-items:center;gap:6px}
+.adapt-text{width:100%;margin-bottom:8px}
+.adapt-wait{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:8px 0}
+.adapt-ended{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.pcard-chg-m{margin-top:4px;line-height:1.4}
+.adapt-reasons .chip{text-transform:none}

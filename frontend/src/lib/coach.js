@@ -17,7 +17,9 @@ import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
 import { uid, todayISO, DAYN } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
-import { POLICIES } from './progression.js'
+import { POLICIES, POLICY_NAME, POLICY_DESC } from './progression.js'
+import { newProgramme, programmeById, saveProgramme, normalizeProgramme } from './programmes.js'
+import { ownRowsOf, cleanOwnRow, ownRowsLine } from './warmup-ramp.js'
 import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
@@ -71,7 +73,7 @@ export const coachAvailable = (config, user, { demo, mobile, coachMode } = {}) =
 // check-source-strings sees every key. When the screens passed these to t() as variables the
 // checker could not see them, and eight of the ten had no translation in any pack.
 export const CATEGORY_TEXT = {
-  plan: () => [t('Your plan'), t('Routines, exercises, sets and reps, your weekly schedule and progression settings.')],
+  plan: () => [t('Your plan'), t('Routines, exercises, sets and reps, warm-ups, programmes, your weekly schedule, progression settings and what your gym can load.')],
   training: () => [t('Your logged training'), t('Sets you logged in the review window: weights, reps, times, effort ratings, how long sessions took, and your session notes.')],
   bodyweight: () => [t('Body weight'), t('Weigh-ins from the same window, and your goal weight if you set one.')],
   profile: () => [t('What you tell the Coach'), t('Your intake answers, including any limitations or injuries you describe.')],
@@ -164,6 +166,7 @@ export function currentValue(S, change) {
     case 'routine-prog': return r?.prog ?? null
     case 'rename-routine': return r?.name == null ? null : String(r.name).slice(0, ROUTINE_NAME_SEEN)
     case 'week': return [].concat(S.week?.[change.target?.weekday] ?? [])   // routine-id list; [] = rest
+    case 'warmup': return e?.warmup ?? null
     default: return undefined            // structural changes have no single scalar to compare
   }
 }
@@ -182,7 +185,9 @@ export function markStale(proposal, S) {
   const changes = (proposal.changes || []).map(c => {
     const r = c.target?.routineId ? findRoutine(S, c.target.routineId) : null
     let stale = false
-    if (c.type !== 'add-routine' && c.type !== 'week' && !r) stale = true
+    // A programme names no routine: a revision is stale once the programme it revises is gone.
+    if (c.type === 'programme') stale = !!c.target?.programmeId && !programmeById(S, c.target.programmeId)
+    else if (c.type !== 'add-routine' && c.type !== 'week' && !r) stale = true
     else if (c.target?.exId && !findEx(r, c.target.exId)) stale = true
     else if (c.type === 'week') {
       // The day's value is a routine-id list; `before` may be a list (a combined day) or a
@@ -286,6 +291,14 @@ export function revertLast(s) {
   if (snap.rotationRestore) {
     s.rotation = clone(snap.rotationRestore.rotation)
     s.queue = clone(snap.rotationRestore.queue)
+  }
+  // A programme the Coach wrote goes away again, one it revised gets its weeks back.
+  if (snap.programmeRestore?.id) {
+    const { id, prev } = snap.programmeRestore
+    const all = { ...(s.programmes && typeof s.programmes === 'object' ? s.programmes : {}) }
+    if (prev) all[id] = clone(prev)
+    else if (s.programme?.id !== id) delete all[id]
+    s.programmes = all
   }
   // Which snapshot this used (`snap`): the sync merge keeps it off the ring when another device's
   // copy still holds it, so the same Undo is not offered twice (lib/sync-merge.js mergeCoach).
@@ -571,6 +584,35 @@ const CHANGE_APPLY = {
     recordDayPlanDrops(s, deleteRoutine(s, c.target.routineId))
   },
   'rename-routine': (s, c) => { need(findRoutine(s, c.target.routineId)).name = c.after },
+  // How an exercise warms up (lib/warmup-ramp.js): Auto, a block of its own, or none. The older
+  // ramp-set count goes, since the choice now says it.
+  warmup: (s, c) => {
+    const e = need(findExIn(s, c))
+    const mode = c.after?.mode
+    if (!['auto', 'own', 'none'].includes(mode)) throw new Error('bad warm-up')
+    const rows = mode === 'own' ? (c.after.rows || []).map(cleanOwnRow).filter(Boolean).slice(0, 5) : []
+    if (mode === 'own' && !rows.length) throw new Error('bad warm-up')
+    delete e.warmupSets
+    e.warmup = mode
+    if (rows.length) e.warmupRows = rows
+    else delete e.warmupRows
+  },
+  // A programme (lib/programmes.js): a new one over the schedule you train by now, or the weeks
+  // of one you have replaced. Never started here: running it stays your call, on Plan.
+  programme: (s, c) => {
+    const weeks = Array.isArray(c.after?.weeks) ? c.after.weeks : []
+    if (!weeks.length) throw new Error('bad programme')
+    const id = c.target?.programmeId
+    const was = id ? programmeById(s, id) : null
+    if (id && !was) throw new Error('missing programme')
+    const base = was || newProgramme(s, String(c.after.name || t('Coach programme')).slice(0, 60), weeks.length)
+    const next = normalizeProgramme({ ...base, ...(c.after.name ? { name: String(c.after.name).slice(0, 60) } : {}), weeks })
+    if (!next) throw new Error('bad programme')
+    const snaps = coachOf(s).snapshots || []
+    const snap = snaps[snaps.length - 1]
+    if (snap && !snap.programmeRestore) snap.programmeRestore = { id: next.id, prev: was ? clone(s.programmes[next.id]) : null }
+    saveProgramme(s, next)
+  },
   week: (s, c) => {
     // A single-routine op: the slot is a list, but the Coach only ever names one routine (or
     // rest), and it replaces the day. This collapses a combined day to one routine — the same
@@ -673,6 +715,8 @@ export function changeTitle(c, S) {
     case 'remove-routine': return t('Remove a routine')
     case 'rename-routine': return t('Rename routine to “{0}”', c.after)
     case 'week': return Number.isInteger(c.target?.weekday) ? t('{0}: what’s planned', t(DAYN[c.target.weekday])) : t('Change what’s planned on one day')
+    case 'warmup': return t('{0}: warm-ups', ex)
+    case 'programme': return c.target?.programmeId ? t('Revise programme “{0}”', c.after?.name || '') : t('New programme “{0}”', c.after?.name || '')
     default: return c.type
   }
 }
@@ -693,7 +737,42 @@ export function changeValues(c, S) {
     if (Array.isArray(v)) return v.length + ''
     return String(v)
   }
+  if (c.type === 'warmup') return { before: warmupWord(c.before), after: warmupWord(c.after?.mode, c.after?.rows) }
+  if (c.type === 'programme') {
+    const weeks = c.after?.weeks || []
+    return { before: c.before ? tn('{0} week', '{0} weeks', c.before.weeks || 0) : '–', after: tn('{0} week', '{0} weeks', weeks.length) + (weeks.some(w => w.deload) ? ' · ' + t('deload included') : '') }
+  }
   if (['add-exercise', 'add-routine', 'reorder'].includes(c.type)) return null
   if (['remove-exercise', 'remove-routine'].includes(c.type)) return null
   return { before: fmt(c.before), after: fmt(c.after) }
+}
+
+/** A warm-up choice as a short word, the rows of a block of your own spelled out. */
+export function warmupWord(mode, rows) {
+  if (mode === 'auto') return t('Auto')
+  if (mode === 'none') return t('None')
+  if (mode === 'own') return rows?.length ? ownRowsLine(rows, t('Bar')) : t('My own')
+  return t('Default')
+}
+
+/**
+ * What a change to how an exercise progresses means at the gym, in the app's own words: the same
+ * line the exercise settings show under each rule. Next to the Coach's `why`, so "double
+ * progression" is never the whole explanation. Null for changes that need none.
+ */
+export function changeMeaning(c) {
+  if ((c.type === 'exercise-prog' || c.type === 'routine-prog') && POLICY_DESC[c.after]) return t(POLICY_NAME[c.after]) + ': ' + t(POLICY_DESC[c.after])
+  if (c.type === 'warmup') {
+    return c.after?.mode === 'auto' ? t('The app ramps up from your work weight: more warm-up sets when it is heavy, fewer when it is light, on your gym’s plates.')
+      : c.after?.mode === 'own' ? t('These warm-ups come before the work sets every session, as a share of the work weight, so they grow with it.')
+        : c.after?.mode === 'none' ? t('Straight into the work sets.') : null
+  }
+  if (c.type === 'programme') {
+    const weeks = c.after?.weeks || []
+    return t('Saved under Plan → Programmes. It starts when you start it.') + ' ' + weeks.map((w, i) => {
+      const bits = Object.values(w.t || {}).map(x => (x.pct != null ? x.pct + '%' : 'RPE ' + x.rpe))
+      return t('Week {0}', i + 1) + ': ' + (w.deload ? t('deload') : bits.length ? [...new Set(bits)].join(', ') : w.rpe != null ? 'RPE ' + w.rpe : '–')
+    }).join(' · ')
+  }
+  return null
 }

@@ -6,6 +6,35 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic
+warm-ups: Off (the default, nothing changes), Compound lifts or Every loaded lift. The ramp comes
+from your work weight, the way a coach would scribble it: a heavy squat gets the bar for ten and
+then 40, 60 and 80 percent, a medium press two sets, a light curl one, a 6 kg raise none, and a
+pull-up none until you hang weight on it. Every rung is rounded down to what this gym can load
+(its plates, its dumbbells, the machine's stack), never under the bar. Bump the first work set
+from 100 to 110 mid-workout and the warm-ups you have not done yet follow it. Rest between
+warm-ups and per-side sets work as before.
+
+**Your own warm-ups, kept** (#525, thanks @inchigor). Each exercise's settings have Warm-ups:
+Default, Auto, My own, A number of ramp sets (the old stepper) or None. My own is a few rows as a
+share of the work weight (or the bare bar), so 20 × 12, 30 × 8, 40 × 5 on a 60 kg bench stays
+yours and grows when the bench does. Did them your way today? The exercise's ⋯ menu has Keep these
+warm-ups, and Update routine offers it too. A routine's own warm-ups win over Your last session.
+
+**Ask the Coach mid-workout.** The exercise's ⋯ menu has Ask the Coach: say it hurts, the machine
+is taken, you are short on time, feeling great or running on empty, and the Coach suggests up to
+six changes to what is left of the workout (swap, fewer or more sets, reps, a lighter or slightly
+heavier weight, add, skip, do it next or last, rest), as cards you tick. Logged sets and your
+routine are never touched, and the suggestion only applies to the workout you asked in. Works with
+your server's Coach and with your own key on the phone.
+
+**The Coach does more.** A review can now set an exercise's warm-ups and write or revise a
+multi-week programme (saved under Plan → Programmes, it starts when you start it), and Undo takes
+both back. It reads more of you too: weekly sets and recovery per muscle, the plates and dumbbells
+of the gym you are at, this month's challenges and the weigh-in that stands for each day. Every
+change to how something progresses now says what you will notice at the gym, in plain words,
+next to the Coach's reason.
+
 **Film a set and check your form.** Tap a set's number and pick Film this set (or Film a set under
 More in the exercise's ⋯ menu) to record a short video with the phone's camera or pick one from
 your videos. It sticks to that set: a little camera badge under the row plays it right there, muted

@@ -212,3 +212,37 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY, focus
   }
   return [...customs, ...out].map(slim);
 }
+
+/* ---------- candidates for a swap in the middle of a workout (the `adapt` job) ----------
+   A sore shoulder on the barbell bench wants another chest press, not a row. So the slice is
+   built around the exercise asked about: the same target muscle first, then the same body
+   part, each walked in the deterministic stride above and across every kind of equipment the
+   person has, then the exercises already in the session (`keep`, so a change can name them).
+   Small on purpose: a swap picks one of a few dozen, and the answer has to arrive mid-set. */
+export function swapSlice(S, equipment, exId, { keep = [], max = 36 } = {}) {
+  const focus = LIB_BY_ID.get(exId);
+  const wanted = (equipment || []).map(x => String(x).toLowerCase());
+  const noDumbbells = ownsNoDumbbells(S);
+  const fits = e => equipmentAllows(wanted, e.id) && !(noDumbbells && isDumbbellLift(e.id)) && !isStretch(e) && e.id !== exId;
+  const out = [];
+  const taken = new Set();
+  const add = e => { if (e && !taken.has(e.id) && out.length < max) { taken.add(e.id); out.push(e); } };
+  for (const id of keep) add(LIB_BY_ID.get(id));
+  if (focus) {
+    const same = LIBRARY.filter(e => e.tg === focus.tg && fits(e));
+    // Spread over the kinds of equipment, so the slice is not twelve cable variations of one press.
+    const byEq = new Map();
+    for (const e of laneOrder(same, new Set())) { if (!byEq.has(e.eq)) byEq.set(e.eq, []); byEq.get(e.eq).push(e); }
+    const lanes = [...byEq.keys()].sort().map(k => byEq.get(k));
+    const room = Math.max(0, Math.floor(max * 0.7) - out.length);
+    for (let i = 0, added = 0; added < room && lanes.some(l => l.length > i); i++) {
+      for (const lane of lanes) { if (lane[i] && added < room) { const before = out.length; add(lane[i]); added += out.length - before; } }
+    }
+    for (const e of laneOrder(LIBRARY.filter(x => x.bp === focus.bp && x.tg !== focus.tg && fits(x)), new Set())) add(e);
+  }
+  const customs = (Array.isArray(S?.customEx) ? S.customEx : [])
+    .filter(c => c && typeof c === 'object' && typeof c.id === 'string' && c.id)
+    .slice(0, 10)
+    .map(c => ({ id: c.id.slice(0, 64), n: typeof c.n === 'string' ? c.n.slice(0, 80) : undefined, bp: typeof c.bp === 'string' ? c.bp.slice(0, 40) : undefined, custom: true }));
+  return [...customs, ...out.map(slim)];
+}

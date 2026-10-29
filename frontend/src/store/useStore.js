@@ -248,6 +248,9 @@ export const DEF = {
   // and the weight too for an exercise with progression off (nothing else decides it).
   // Absent reads as 'plan' too, which is what the MCP bridge sees on a raw state file.
   startFrom: 'plan',
+  // Warm-ups that build themselves from the work weight (Settings → Workout, lib/warmup-ramp.js):
+  // 'off', 'compounds' or 'all'. Absent reads as off, the way every plan worked before.
+  warmupAuto: 'off',
   // Where "last time" is read from (Settings → During a workout, lib/history.js lastAcrossRoutines,
   // #770): 'routine' is the routine's own last session of the exercise, as it has been since #216;
   // 'any' is its newest session in any workout. Absent reads as 'routine'.

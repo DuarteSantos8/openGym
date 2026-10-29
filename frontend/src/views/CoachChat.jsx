@@ -28,8 +28,9 @@ import ChatInput from '../components/ChatInput.jsx'
 import {
   coachAvailable, hasConsent, emptyCoach, appendChat, recordTiming, estimateMs, profileLines,
   markStale, applicable, applyChangeSet, applyCreatedPlan, recordDismissal, recordDebrief, logEntry,
-  changeTitle, changeValues, exName, canRevert, revertLast
+  changeTitle, changeValues, changeMeaning, exName, canRevert, revertLast
 } from '../lib/coach.js'
+import { AdaptProposal, adaptTitle } from '../components/WorkoutCoachSheet.jsx'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
 import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
@@ -231,7 +232,10 @@ export default function CoachChat() {
 
       {job && <Typing S={S} kind={job.kind} coachLocal={coachLocal} config={config} />}
 
-      {pending && !job && pending.kind !== 'ask' && (pending.kind === 'create'
+      {pending && !job && pending.kind === 'adapt' && <div className="msg coach" style={{ maxWidth: '100%', width: '100%' }}>
+        <AdaptProposal p={pending} onDone={refresh} />
+      </div>}
+      {pending && !job && pending.kind !== 'ask' && pending.kind !== 'adapt' && (pending.kind === 'create'
         ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
         : pending.kind === 'debrief'
           ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
@@ -310,7 +314,7 @@ function Typing({ S, kind, coachLocal, config }) {
     // local model rather than something wrong; the next line already warns it takes longer.
     eta = local ? '' : t('This usually takes a minute or two.')
   }
-  const doing = kind === 'create' ? t('Building your plan…') : kind === 'debrief' ? t('Looking at that session…') : kind === 'ask' ? t('Thinking about your question…') : t('Reading your training…')
+  const doing = kind === 'create' ? t('Building your plan…') : kind === 'debrief' ? t('Looking at that session…') : kind === 'ask' ? t('Thinking about your question…') : kind === 'adapt' ? t('Looking at your workout…') : t('Reading your training…')
   return <div className="msg coach">
     <div className="bub typing"><i /><i /><i /></div>
     <div className="typing-eta">
@@ -479,6 +483,8 @@ function ChangeRow({ c, S, stale, badge, children }) {
       <div className="pcard-chg-t">{changeTitle(c, S)}{c.routineName ? <span className="dim" style={{ fontWeight: 400 }}> · {c.routineName}</span> : null}</div>
       {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 12, color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
       <div className="pcard-chg-w">{c.why}</div>
+      {/* What the change means at the gym, in the app's own words (lib/coach.js changeMeaning). */}
+      {changeMeaning(c) && <div className="pcard-chg-m small dim">{changeMeaning(c)}</div>}
       {stale && <div className="pcard-chg-stale">{t('Doesn’t match your plan any more, so it can’t be applied.')}</div>}
     </div>
     {badge}
@@ -621,7 +627,7 @@ function Recap({ entry, S, openSheet }) {
   const acc = decisions.filter(d => d.status === 'accepted').length
   const rej = decisions.length - acc
   const kind = entry.kind
-  const eyebrow = kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')
+  const eyebrow = kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : kind === 'adapt' ? t('For this workout') : t('Suggestions')
   const state = kind === 'debrief' ? null
     : entry.dismissed ? { cls: 'no', text: t('Declined') }
       : kind === 'create' ? { cls: 'yes', text: t('Imported') }
@@ -653,7 +659,7 @@ function ProposalDetail({ entry, S }) {
   const weekDays = useMemo(() => new Set(Object.keys(b?.week || {}).map(Number)), [b])
   return <div className="pdetail">
     <div className="pcard-hd" style={{ paddingInline: 0 }}>
-      <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : t('Suggestions')} · {fmtDate(isoOf(new Date(entry.at)))}</div>
+      <div className="pcard-eyebrow">{kind === 'create' ? t('Plan') : kind === 'debrief' ? t('Workout debrief') : kind === 'adapt' ? t('For this workout') : t('Suggestions')} · {fmtDate(isoOf(new Date(entry.at)))}</div>
       <h2 className="pcard-h">{kind === 'create' ? (b?.name || t('Coach plan')) : kind === 'debrief' ? (entry.workout?.name || t('Workout')) : tn('{0} suggestion', '{0} suggestions', entry.decisions?.length || 0)}</h2>
       {!!entry.summary && <p className="pcard-sum">{entry.summary}</p>}
       {entry.dismissed && <p className="pcard-sum" style={{ color: 'var(--red)' }}>{t('You declined this.')}</p>}
@@ -679,6 +685,13 @@ function ProposalDetail({ entry, S }) {
     </>}
     {kind === 'create' && !b && <p className="pcard-sum">{t('This plan was imported before the app kept proposals; only its summary is left.')}</p>}
 
+    {kind === 'adapt' && (entry.decisions || []).map(d => <div key={d.id} className="pcard-chg">
+      <div className="grow">
+        <div className="pcard-chg-t">{adaptTitle(d)}</div>
+        <div className="pcard-chg-w">{d.why}</div>
+      </div>
+      <span className={'recap-state ' + (d.status === 'accepted' ? 'yes' : 'no')}>{d.status === 'accepted' ? t('Accepted') : t('Declined')}</span>
+    </div>)}
     {kind === 'debrief' && <DebriefBody p={entry} S={S} />}
     {kind === 'revert' && <p className="pcard-sum">{t('Reverted the last Coach changes.')}</p>}
     <div style={{ height: 10 }} />
@@ -688,7 +701,7 @@ function ProposalDetail({ entry, S }) {
 /** Every proposal ever made, newest first. Nothing the Coach said is gone after a decision. */
 function HistorySheet({ S, close, openSheet }) {
   const log = [...(S.coach?.log || [])].reverse()
-  const icon = { create: ['clipboard', 'var(--indigo)'], review: ['sparkles', 'var(--acc)'], debrief: ['checkCircle', 'var(--green)'], revert: ['reset', 'var(--blue)'] }
+  const icon = { create: ['clipboard', 'var(--indigo)'], review: ['sparkles', 'var(--acc)'], debrief: ['checkCircle', 'var(--green)'], revert: ['reset', 'var(--blue)'], adapt: ['dumbbell', 'var(--orange)'] }
   return <div className="chat-menu">
     <h3>{t('Everything the Coach proposed')}</h3>
     {!log.length && <div className="chat-empty">{t('Nothing yet. Every plan, suggestion and debrief will be kept here, whether you said yes or no.')}</div>}
