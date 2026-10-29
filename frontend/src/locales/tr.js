@@ -3285,4 +3285,6 @@ export default {
   "Plain http only on your home network": "Şifresiz http yalnızca ev ağında",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "Serbest antrenman geçen sefer yaptığını tekrarlar, ilerleme kuralı yoktur. Kurallar bir rutindeki egzersizler için geçerlidir.",
   "Your watch thought this workout was forgotten. It keeps going here.": "Saatin bu antrenmanın unutulduğunu sandı. Burada devam ediyor.",
+  "No rule (freestyle)": "Kural yok (serbest)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "Serbest antrenman ayarladığın sayıları korur. Burada seçilen kural yalnızca bu antrenman için geçerlidir.",
 }

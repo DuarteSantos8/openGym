@@ -3288,4 +3288,6 @@ export default {
   "Plain http only on your home network": "Titkosítatlan http csak az otthoni hálózaton",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "A szabad edzés azt ismétli, amit legutóbb csináltál, progressziós szabály nélkül. A szabályok a rutinok gyakorlataira vonatkoznak.",
   "Your watch thought this workout was forgotten. It keeps going here.": "Az órád elfelejtettnek hitte ezt az edzést. Itt folytatódik.",
+  "No rule (freestyle)": "Nincs szabály (szabad edzés)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "A szabad edzés a beállított számokat tartja meg. Az itt választott szabály csak erre az edzésre vonatkozik.",
 }

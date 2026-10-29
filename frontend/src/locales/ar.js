@@ -3340,4 +3340,6 @@ export default {
   "Plain http only on your home network": "http غير المشفر على شبكتك المنزلية فقط",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "التمرين الحر يكرر ما فعلته في المرة السابقة، بلا قاعدة تقدّم. القواعد تنطبق على تمارين الروتين.",
   "Your watch thought this workout was forgotten. It keeps going here.": "ظنّت ساعتك أن هذا التمرين منسيّ. سيستمر هنا.",
+  "No rule (freestyle)": "بلا قاعدة (تمرين حر)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "التمرين الحر يحتفظ بالأرقام التي حددتها. القاعدة التي تختارها هنا تنطبق على هذا التمرين فقط.",
 }

@@ -3285,4 +3285,6 @@ export default {
   "Plain http only on your home network": "未加密的 http 仅限家庭网络",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "自由训练会重复你上次的内容，不使用进阶规则。规则只适用于计划中的动作。",
   "Your watch thought this workout was forgotten. It keeps going here.": "手表以为这次训练被忘记了。这里会继续进行。",
+  "No rule (freestyle)": "无规则（自由训练）",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "自由训练会保留你设定的数字。在这里选择的规则只适用于本次训练。",
 }

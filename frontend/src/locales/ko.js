@@ -3285,4 +3285,6 @@ export default {
   "Plain http only on your home network": "암호화되지 않은 http는 집 네트워크에서만",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "자유 운동은 지난번에 한 그대로 반복하며 진행 규칙이 없습니다. 규칙은 루틴의 운동에 적용됩니다.",
   "Your watch thought this workout was forgotten. It keeps going here.": "시계가 이 운동을 잊힌 운동으로 생각했어요. 여기서는 계속 진행됩니다.",
+  "No rule (freestyle)": "규칙 없음 (자유 운동)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "자유 운동은 설정한 숫자를 그대로 유지합니다. 여기서 고른 규칙은 이번 운동에만 적용됩니다.",
 }

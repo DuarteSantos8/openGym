@@ -3285,4 +3285,6 @@ export default {
   "Plain http only on your home network": "Nieszyfrowane http tylko w sieci domowej",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "Trening dowolny powtarza to, co zrobiłeś ostatnio, bez reguły progresji. Reguły działają dla ćwiczeń w planie.",
   "Your watch thought this workout was forgotten. It keeps going here.": "Zegarek uznał ten trening za zapomniany. Tutaj trwa dalej.",
+  "No rule (freestyle)": "Bez reguły (dowolny)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "Trening dowolny zostawia liczby, które ustawisz. Reguła wybrana tutaj działa tylko w tym treningu.",
 }

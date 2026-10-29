@@ -42,11 +42,22 @@ describe('the exercise sheet in a freestyle workout', () => {
   })
   afterEach(() => { act(() => { mounted.splice(0).forEach(([root, host]) => { root.unmount(); host.remove() }) }) })
 
-  it('says freestyle repeats last time instead of following a routine it does not have', () => {
-    const host = open({ prog: 'double', repsMin: 6 }, { freestyle: true })
+  it('adding one: says freestyle repeats last time, and offers no rule it would not apply', () => {
+    const host = open({ prog: 'double', repsMin: 6 }, { freestyle: 'add' })
     expect(host.textContent).not.toMatch(/Follow the routine/)
     expect(host.textContent).toMatch(/Freestyle repeats what you did last time/)
     expect(host.textContent).not.toMatch(/Double progression/)
+    expect(host.textContent).not.toMatch(/Reps from/)
+  })
+
+  it('its settings mid-workout: no rule unless one is picked, never "Follow the routine (Linear progression)"', () => {
+    const host = open({}, { freestyle: 'edit' })
+    expect(host.textContent).not.toMatch(/Follow the routine/)
+    expect(host.textContent).toMatch(/No rule \(freestyle\)/)
+    expect(host.textContent).toMatch(/Freestyle keeps the numbers you set/)
+    const picked = open({ prog: 'double', repsMin: 6 }, { freestyle: 'edit' })
+    expect(picked.textContent).toMatch(/Double progression/)
+    expect(picked.textContent).toMatch(/Reps from/)
   })
 
   it('keeps the rule picker everywhere else', () => {

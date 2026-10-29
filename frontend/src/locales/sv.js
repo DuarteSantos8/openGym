@@ -3332,4 +3332,6 @@ export default {
   "Plain http only on your home network": "Okrypterad http bara i hemnätverket",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "Fritt pass upprepar det du gjorde förra gången, utan progressionsregel. Reglerna gäller övningar i en rutin.",
   "Your watch thought this workout was forgotten. It keeps going here.": "Klockan trodde att passet var bortglömt. Här fortsätter det.",
+  "No rule (freestyle)": "Ingen regel (fritt pass)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "Fritt pass behåller siffrorna du ställer in. En regel som väljs här gäller bara det här passet.",
 }

@@ -3296,4 +3296,6 @@ export default {
   "Plain http only on your home network": "http ที่ไม่เข้ารหัสใช้ได้เฉพาะในเครือข่ายที่บ้าน",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "ฟรีสไตล์จะทำซ้ำสิ่งที่คุณทำครั้งก่อน โดยไม่มีกฎการเพิ่มน้ำหนัก กฎใช้กับท่าในรูทีน",
   "Your watch thought this workout was forgotten. It keeps going here.": "นาฬิกาของคุณคิดว่าการออกกำลังกายนี้ถูกลืม ที่นี่ยังดำเนินต่อไป",
+  "No rule (freestyle)": "ไม่มีกฎ (ฟรีสไตล์)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "ฟรีสไตล์จะใช้ตัวเลขที่คุณตั้งไว้ กฎที่เลือกตรงนี้ใช้กับการออกกำลังกายครั้งนี้เท่านั้น",
 }

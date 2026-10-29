@@ -3364,4 +3364,6 @@ export default {
   "Plain http only on your home network": "এনক্রিপ্ট না করা http শুধু বাড়ির নেটওয়ার্কে",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "ফ্রিস্টাইল আগেরবার যা করেছিলেন তা-ই আবার দেয়, কোনো প্রগ্রেশন নিয়ম ছাড়া। নিয়মগুলো রুটিনের ব্যায়ামে কাজ করে।",
   "Your watch thought this workout was forgotten. It keeps going here.": "আপনার ঘড়ি ভেবেছিল এই ওয়ার্কআউটটা ভুলে যাওয়া হয়েছে। এখানে এটা চলতে থাকবে।",
+  "No rule (freestyle)": "কোনো নিয়ম নেই (ফ্রিস্টাইল)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "ফ্রিস্টাইল আপনার দেওয়া সংখ্যাগুলোই রাখে। এখানে বেছে নেওয়া নিয়ম শুধু এই ওয়ার্কআউটে কাজ করে।",
 }

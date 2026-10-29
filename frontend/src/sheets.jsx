@@ -1827,7 +1827,7 @@ export function swapActiveWorkoutExercise(index) {
   // The "+" on a picker row commits with the default config, exactly as it does in the add
   // flows; tapping the row still opens the config sheet first.
   // Worded for the session, not the routine: a swap changes today's workout only.
-  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, pickedExerciseConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, null, null, t('Use in this workout'), { freestyle: !(S().routines || []).some(r => r.id === active.entries[index].rid) }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
+  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, pickedExerciseConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, null, null, t('Use in this workout'), { freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
   function swapTo(ex, cfg) {
     // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
     // the workout. (The add flow deliberately leaves it open.)
@@ -1989,10 +1989,12 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
   const options = (POLICIES_FOR[mode] || ['off']).filter(p => p !== 'triple' || !bw || c.weight > 0 || c.prog === 'triple')
   if (options.length < 2) return null
   const inherited = policyFor({ id: ex.id }, routine, mode, fallback)
-  // Freestyle has no routine and no rule: an exercise added there opens at what you did last time
-  // (#50, lib/session-start.js buildSessionEntry), whatever rule it says. The sheet said "Follow
-  // the routine (Linear progression)" and offered rules that were kept but never applied (#910).
-  const active = freestyle ? 'off' : policyFor({ ...c, id: ex.id }, routine, mode, fallback)
+  // Freestyle has no routine to follow (#910). An exercise added there opens at what you did last
+  // time (#50, lib/session-start.js buildSessionEntry) whatever rule it says, so the add and swap
+  // sheets (`freestyle: 'add'`) offer no rule. A freestyle exercise's own settings mid-workout
+  // (`'edit'`) rebuild its rows: with no rule at the numbers saved, with one picked by that rule
+  // (Workout.jsx openProgressionSettings). It said "Follow the routine (Linear progression)".
+  const active = freestyle === 'add' || (freestyle && !c.prog) ? 'off' : policyFor({ ...c, id: ex.id }, routine, mode, fallback)
   const inc = progressionStepOf(c, mode, ex, unit)
   const canBackoff = backoffOffered(c, mode, ex, bw)
   const backoff = canBackoff && c.backoff === true
@@ -2023,15 +2025,17 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
   })
   return <>
     <h4 className="sec">{t('Progression')}</h4>
-    {freestyle
+    {freestyle === 'add'
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.')}</div>
       : <>
         <div className="sect-b" style={{ marginBottom: 8 }}>
           <SelectRow title={t('Rule')} sheetTitle={t('Progression')} value={c.prog || ''} onChange={setRule}
-            options={[{ value: '', label: t('Follow the routine ({0})', t(POLICY_NAME[inherited])) },
+            options={[{ value: '', label: freestyle ? t('No rule (freestyle)') : t('Follow the routine ({0})', t(POLICY_NAME[inherited])) },
               ...options.map(p => ({ value: p, label: t(POLICY_NAME[p]) }))]} />
         </div>
-        <div className="small dim" style={{ marginBottom: active === 'off' ? 18 : 10 }}>{t(POLICY_DESC[active])}</div>
+        <div className="small dim" style={{ marginBottom: active === 'off' ? 18 : 10 }}>
+          {freestyle && !c.prog ? t('Freestyle keeps the numbers you set. A rule picked here applies to this workout only.') : t(POLICY_DESC[active])}
+        </div>
       </>}
     {/* Double progression on a weighted exercise fills this row with four steppers; `cfgrow-4`
         lets it wrap into two pairs on phones, where four abreast left the inputs a few px wide. */}
@@ -2154,9 +2158,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // Pyramid sets: one rep target per set, in place of the flat Sets × Reps (CONTEXT.md).
   const pyramid = mode === 'reps' && isPyramid({ ...c, mode })
   const setPyramidAt = (i, v) => setC(x => ({ ...x, pyramid: x.pyramid.map((p, j) => (j === i ? v : p)) }))
-  const progressionPolicy =policyFor({ ...c, id: ex.id }, routine, mode, profileRule(st))
+  // Freestyle follows no rule unless one is picked on the exercise mid-workout (ProgressionFields, #910).
+  const ruleless = !routine && (freestyle === 'add' || (freestyle === 'edit' && !c.prog))
+  const progressionPolicy = ruleless ? 'off' : policyFor({ ...c, id: ex.id }, routine, mode, profileRule(st))
   const progressionStepInvalid = !progressionStepIsValid(progressionStepOf(c, mode, ex, st.unit), progressionPolicy, c.backoff === true && backoffOffered(c, mode, ex, bw), weightlessOf(c, mode, bw))
-  const activePolicy = policyFor({ ...c, id: ex.id }, routine, mode, profileRule(st))
+  const activePolicy = progressionPolicy
   // Both climb a range: the flat Reps stepper gives way to "Reps from" / "Reps up to".
   const ranged = mode === 'reps' && climbsRange(activePolicy)
   const triple = mode === 'reps' && activePolicy === 'triple'
@@ -2607,7 +2613,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     </>}
     {pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
-      : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} fallback={profileRule(st)} freestyle={freestyle && !routine} />}
+      : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} fallback={profileRule(st)} freestyle={routine ? false : freestyle} />}
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}
       placeholder={t('Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering')}
       value={c.note || ''} onChange={e => setC(x => ({ ...x, note: e.target.value }))} />
@@ -2624,7 +2630,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   </>
 }
 // `opts.backups`: the routine editor's sheet, where the slot's planned substitutes are picked.
-export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={!!opts.freestyle} close={close} />)
+export const exConfigSheet = (ex, existing, onSave, onDelete, routine, initial, onReplace, saveLabel, opts = {}) => ui().openSheet(close => <ExConfig ex={ex} existing={existing} initial={initial} onSave={onSave} onDelete={onDelete} onReplace={onReplace} routine={routine} saveLabel={saveLabel} backupsEditable={!!opts.backups} freestyle={opts.freestyle === 'add' || opts.freestyle === 'edit' ? opts.freestyle : false} close={close} />)
 
 /* ============================ glyph picker ============================ */
 // Grouped by what the glyph means for a training day, so picking one is a scan

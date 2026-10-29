@@ -2216,6 +2216,8 @@ export const PT_BR_OVERRIDES = {
   "Plain http only on your home network": "http sem criptografia só na rede de casa",
   "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "O treino livre repete o que você fez da última vez, sem regra de progressão. As regras valem para os exercícios de uma rotina.",
   "Your watch thought this workout was forgotten. It keeps going here.": "Seu relógio achou que este treino tinha sido esquecido. Aqui ele continua.",
+  "No rule (freestyle)": "Sem regra (livre)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "O treino livre mantém os números que você definir. Uma regra escolhida aqui só vale para este treino.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
