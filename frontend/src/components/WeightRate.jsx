@@ -15,10 +15,10 @@ const signed = v => new Intl.NumberFormat(dateLocale(), { maximumFractionDigits:
 const size = v => new Intl.NumberFormat(dateLocale(), { maximumFractionDigits: 2 }).format(v)
 
 const STATUS = {
-  in: { text: () => t('On pace'), color: 'var(--acc)' },
-  slow: { text: () => t('Slower than planned'), color: 'var(--yellow)' },
-  fast: { text: dir => t(dir === 'gain' ? 'Gaining faster than planned' : 'Losing faster than planned'), color: 'var(--yellow)' },
-  off: { text: () => t('Outside your range'), color: 'var(--yellow)' },
+  in: { text: () => t('On pace'), color: 'var(--acc-ink)' },
+  slow: { text: () => t('Slower than planned'), color: 'var(--gold-ink)' },
+  fast: { text: dir => t(dir === 'gain' ? 'Gaining faster than planned' : 'Losing faster than planned'), color: 'var(--gold-ink)' },
+  off: { text: () => t('Outside your range'), color: 'var(--gold-ink)' },
 }
 
 export const rateText = (rate, unit) => t('Trend {0} a week ({1})', signed(rate.perWeek) + ' ' + unit, signed(rate.pct) + ' %')

@@ -60,7 +60,7 @@ export function WriteSticker({ url, close }) {
       })
   }
   if (step === 'done') return <>
-    <div className="row" style={{ gap: 8, margin: '14px 0 6px' }}><Icon name="checkCircle" style={{ color: 'var(--acc)' }} /><b>{t('Sticker ready. Tap it with your phone to try it.')}</b></div>
+    <div className="row" style={{ gap: 8, margin: '14px 0 6px' }}><Icon name="checkCircle" style={{ color: 'var(--acc-ink)' }} /><b>{t('Sticker ready. Tap it with your phone to try it.')}</b></div>
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>
   return <>

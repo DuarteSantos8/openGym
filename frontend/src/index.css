@@ -47,6 +47,11 @@
   --on-acc:#000000;
   --acc-soft: color-mix(in srgb, var(--acc) 16%, transparent);
   --acc-line: color-mix(in srgb, var(--acc) 38%, transparent);
+  /* The accent as text, an icon or a focus ring: the accent itself in the dark theme. In the light
+     theme the presets' fills (#34c759 green, #ff9500 orange, #ffcc00 yellow) are 2:1 on the page,
+     so every accent-coloured word (Add set, Next, the progression line, links) takes a darker
+     shade of the same hue that reaches 4.5:1 (design review 1.4.5). Fills keep --acc. */
+  --acc-ink: var(--acc);
 
   /* geometry */
   --r-sm:8px; --r:12px; --r-lg:16px; --r-xl:22px; --r-card:14px;
@@ -77,7 +82,10 @@
   --surface-3: #e3e3e8;
 
   --label:     #000000;
-  --label-2:   rgba(60,60,67,.60);
+  /* .75, not the system's .60: at .60 the secondary text was 3.5:1 on a white card and 3.2:1 on
+     the grey page, under the 4.5:1 that 13-15px text needs. .75 is 5.2:1 and 4.9:1, still
+     plainly the second voice next to the black (design review 1.4.5). */
+  --label-2:   rgba(60,60,67,.75);
   --label-3:   rgba(60,60,67,.30);
   --label-4:   rgba(60,60,67,.16);
 
@@ -100,6 +108,16 @@
 :root[data-accent="red"]   { --acc:var(--red);    --acc-2:#d70015; --on-acc:#fff }
 :root[data-accent="teal"]  { --acc:var(--teal);   --acc-2:#0071a4; --on-acc:#000 }
 :root[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#b25000; --on-acc:#000; --knob-ring:rgba(0,0,0,.28) }
+/* --acc-ink in the light theme, per preset: 4.5:1 or better on both --bg (#f2f2f7) and white. A
+   colour of the user's own keeps its --acc (lib/accent.js already darkens it to 3:1 there). */
+:root[data-theme="light"][data-accent="lime"]  { --acc-ink:#1a7f37 }
+:root[data-theme="light"][data-accent="sky"]   { --acc-ink:#0062cc }
+:root[data-theme="light"][data-accent="orange"]{ --acc-ink:#a85200 }
+:root[data-theme="light"][data-accent="violet"]{ --acc-ink:#8944ab }
+:root[data-theme="light"][data-accent="pink"]  { --acc-ink:#d70036 }
+:root[data-theme="light"][data-accent="red"]   { --acc-ink:#d70015 }
+:root[data-theme="light"][data-accent="teal"]  { --acc-ink:#0071a4 }
+:root[data-theme="light"][data-accent="gold"]  { --acc-ink:#8f5e00 }
 /* Label colour on a filled accent button is picked per accent by measured contrast,
    not by taste. Button text is 17px/600, so the AA bar is 3:1 (large text). White on
    the light-theme green is 2.22:1 and on teal 2.57:1 — both fail, and green is the
@@ -165,9 +183,9 @@ body{
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;letter-spacing:inherit}
 input,select,textarea{font:inherit;color:var(--label);letter-spacing:inherit}
 img{max-width:100%}
-a{color:var(--acc);text-decoration:none}
+a{color:var(--acc-ink);text-decoration:none}
 :focus{outline:none}
-:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px;border-radius:6px}
+:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:2px;border-radius:6px}
 button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp button,.sld
 {-webkit-user-select:none;user-select:none}
 
@@ -188,7 +206,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 
 .muted{color:var(--label-2)} .dim{color:var(--label-3)}
 .small{font-size:13px;line-height:1.38}
-.accent{color:var(--acc)}
+.accent{color:var(--acc-ink)}
 .capitalize{text-transform:capitalize}
 /* exercise names and body-part/equipment terms arrive lowercase from the dataset,
    so tags and chips capitalise by default. Anything that is a unit or a sentence opts
@@ -266,7 +284,7 @@ button.conn:active{filter:brightness(1.12)}
 .conn-bar.quiet .conn-row{padding:2px 0 4px}
 .conn-bar.quiet .conn{min-height:26px;padding-block:2px;padding-inline:4px 2px;background:none;color:var(--label-2);font-size:12px;gap:6px}
 .conn-bar.quiet .conn .icn{font-size:13px;color:var(--label-3)}
-.conn-bar.quiet .conn-a{padding:2px 9px;font-size:12px;color:var(--acc);background:var(--acc-soft)}
+.conn-bar.quiet .conn-a{padding:2px 9px;font-size:12px;color:var(--acc-ink);background:var(--acc-soft)}
 /* its × (#454): beside the line, not inside its button, so hiding it never also connects */
 .conn-bar.quiet .conn-row{display:flex;align-items:center;gap:2px}
 .conn-x{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:99px;color:var(--label-3);font-size:12px}
@@ -316,7 +334,7 @@ button.conn:active{filter:brightness(1.12)}
 .iconbtn,.chip,.seg button,.helpbtn{position:relative}
 .iconbtn::before,.chip::before,.seg button::before,.helpbtn::before{content:'';position:absolute;inset:-6px}
 .seg button::before{inset:-6px 0}
-.iconbtn.on-ss{background:var(--acc-soft);color:var(--acc)}
+.iconbtn.on-ss{background:var(--acc-soft);color:var(--acc-ink)}
 .iconbtn:disabled{opacity:.32}
 
 h4.sec{
@@ -334,7 +352,9 @@ h4.sec{
    55px, so the button pair may drop to a second line — still flush right, hence the auto margin. */
 .bw-head{flex-wrap:wrap;row-gap:8px}
 .bw-head>.row{margin-inline-start:auto}
-.bw-rate{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;width:100%;margin-top:6px;padding:6px 2px;background:none;border:0;color:var(--label-2);font:inherit;text-align:start;cursor:pointer}
+.bw-rate{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;width:100%;margin-top:6px;padding:6px 2px;background:none;border:0;color:var(--label-2);font:inherit;font-size:15px;line-height:1.3;text-align:start;cursor:pointer}
+/* font:inherit above undid the .small on the button, so the trend line came out at the card's 17px
+   and, on a 320px phone, broke into icon / two lines / a lone chevron (design review 1.4.5). */
 .bw-rate-t{min-width:0}
 .rate-range{display:grid;gap:8px;margin:14px 0 8px}
 
@@ -344,6 +364,10 @@ h4.sec{
   padding:16px;margin-bottom:12px;
 }
 .card .big{font-size:30px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
+/* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
+   press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
+.card.tappable{transition:transform var(--fast) var(--ease)}
+.card.tappable:active{transform:scale(.985)}
 
 /* ------------------------------------------------------ inset group list -- */
 .sect{margin-bottom:22px}
@@ -353,6 +377,9 @@ h4.sec{
 }
 .sect-b{background:var(--surface);border-radius:var(--r-card);overflow:hidden}
 .sect-f{font-size:13px;color:var(--label-2);padding:7px 4px 0;line-height:1.38}
+/* A full-width button straight above a grouped list (Programmes: "New programme", then "Starter
+   programmes") kept 4px from the list's heading, which made the two read as one block. */
+.btn+.sect{margin-top:22px}
 
 .lrow{
   display:flex;align-items:center;gap:12px;width:100%;text-align: start;
@@ -394,8 +421,13 @@ h4.sec{
    141px on the rows that need it most. A cap does neither. */
 .lrow-v{color:var(--label-2);font-size:17px;letter-spacing:-.012em;flex:0 1 auto;max-width:55%;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align: end}
+/* A row with a subtitle as well as a value (Settings → Workout → "Rest between warm-ups") is already
+   two lines tall, so the value may take two lines too instead of holding 55% of the row on one: the
+   title column was left its longest word and stacked "Rest / between / warm-ups" one word a line
+   (design review 1.4.5). */
+.lrow:has(.lrow-s)>.lrow-v{max-width:44%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;text-wrap:balance}
 .lrow-c{color:var(--label);font-size:15px;flex:none;--icon-stroke:2.4}
-.lrow-k{color:var(--acc);font-size:17px;flex:none;--icon-stroke:2.4}
+.lrow-k{color:var(--acc-ink);font-size:17px;flex:none;--icon-stroke:2.4}
 .lrow.danger,.lrow.danger .lrow-t{color:var(--red)}
 /* A warning under a settings row reads at subtitle size: a sentence, not a row title. */
 .lrow.backup-lost .lrow-t{font-size:13px;line-height:1.3;color:var(--label-2);letter-spacing:0}
@@ -431,10 +463,15 @@ h4.sec{
 .btn:active{transform:scale(.975)}
 .btn.primary{background:var(--acc);color:var(--on-acc)}
 .btn.primary:active{background:var(--acc-2)}
-.btn.tinted{background:var(--acc-soft);color:var(--acc)}
+.btn.tinted{background:var(--acc-soft);color:var(--acc-ink)}
 .btn.danger{background:rgba(255,69,58,0.15);background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
-.btn.ghost,.btn.plain{background:none;color:var(--acc);font-weight:400}
+.btn.ghost,.btn.plain{background:none;color:var(--acc-ink);font-weight:400}
 .btn.ghost:active,.btn.plain:active{background:var(--surface-2)}
+/* The quiet text button: Cancel and Done under a sheet's main button, "Lost access?" and "Continue
+   without account" under sign-in, "Finish workout early". Every one of them is written ghost + dim,
+   but .btn.ghost outranked .dim, so they all came out in the accent, as loud as the action above
+   them. Secondary grey, not the tertiary .dim: these are still words to read (design review 1.4.5). */
+.btn.ghost.dim,.btn.plain.dim{color:var(--label-2)}
 .btn.sm{padding:8px 14px;width:auto;font-size:15px;border-radius:var(--r-sm);gap:5px}
 .btn.sm .icn{font-size:16px}
 .btn.xs{padding:5px 10px;width:auto;font-size:13px;border-radius:7px;gap:4px}
@@ -461,7 +498,7 @@ h4.sec{
 :root[data-theme="light"] #tabbar{background:rgba(249,249,251,.94)}
 #tabbar button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  color:var(--label-3);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
+  color:var(--label-2);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
   transition:color var(--fast);
 }
 /* The inactive tint is semi-transparent, so wherever two strokes cross inside an
@@ -470,7 +507,7 @@ h4.sec{
    fade on the <svg> instead of in the stroke colour flattens the icon first and
    fades it as one shape — and it does that for every icon, not just this one. */
 #tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
-#tabbar button.on{color:var(--acc)}
+#tabbar button.on{color:var(--acc-ink)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
 /* A connection problem while the banner is switched off (Settings → Show connection status):
    a dot on the Home tab and on the Settings gear. */
@@ -489,7 +526,7 @@ h4.sec{
 }
 #tabbar button.start:active .cir{transform:scale(.93)}
 #tabbar button.start .cir .icn{font-size:26px;--icon-stroke:2;color:inherit;opacity:1}
-#tabbar button.start span{color:var(--acc);font-weight:600}
+#tabbar button.start span{color:var(--acc-ink);font-weight:600}
 #tabbar button.start .tab-time{font-variant-numeric:tabular-nums}
 /* `.cir` is itself a <span>, so the label rules above and below reach it too and
    outrank the `.cir` block — which is how the running state ended up painting an
@@ -540,7 +577,9 @@ h4.sec{
   flex:1;text-align:center;padding:8px 2px 9px;border-radius:10px;
   background:none;border:none;transition:background var(--fast);
 }
-.wday .lbl{font-size:11px;color:var(--label-3);font-weight:500;text-transform:uppercase;letter-spacing:.03em}
+/* The weekday initials in the readable grey and in their own case (Mo, Tu), as the Plan list writes
+   them: the tiny tracked capitals in the faint grey were 2.6:1 (design review 1.4.5). */
+.wday .lbl{font-size:12px;color:var(--label-2);font-weight:500;letter-spacing:0}
 .wday .num{font-size:17px;font-weight:400;margin:4px 0;letter-spacing:-.012em}
 .wday .dot{width:5px;height:5px;border-radius:50%;background:transparent;margin:0 auto}
 .wday .dot.plan{background:var(--label-3)}
@@ -613,7 +652,7 @@ h4.sec{
   color:var(--label-2);border-radius:6px;padding:3px 7px;font-size:12px;
   font-weight:500;text-transform:capitalize;
 }
-.tag.acc{background:var(--acc-soft);color:var(--acc)}
+.tag.acc{background:var(--acc-soft);color:var(--acc-ink)}
 /* Left / Right on a per-side row: one width for both (#322). The two hidden words share the
    visible one's grid cell, so the pill is as wide as the longer word. */
 .tag.sidepill{display:inline-grid;justify-items:center;flex:none}
@@ -622,11 +661,11 @@ h4.sec{
 .tag.sidepill::after{content:attr(data-r);visibility:hidden}
 /* favourite marker (issue #6): a small yellow star glued to the exercise name — distinct from
    the accent "chosen" tag at the row's end, which means "already in a routine or the log" */
-.fav-star{color:var(--yellow);font-size:12px;display:inline-block;margin-inline-end:5px;vertical-align:-1px}
+.fav-star{color:var(--gold-ink);font-size:12px;display:inline-block;margin-inline-end:5px;vertical-align:-1px}
 .fav-btn{margin-top:-4px;flex:none}
 /* One long word (a German custom name) wraps instead of pushing the star off the screen. */
 .exdetail-name{min-width:0;overflow-wrap:anywhere}
-.fav-btn.on{color:var(--yellow)}
+.fav-btn.on{color:var(--gold-ink)}
 /* Exercise cards (S.exerciseView 'cards', ExerciseViewToggle): the Library, the picker and the
    muscle explorer as a grid of pictures with the name underneath — two across on a phone, more
    as the page or sheet widens. The id-prefixed selectors outrank the desktop rules further down
@@ -653,7 +692,7 @@ h4.sec{
 .search-row>.search{flex:1;min-width:0}
 .search-row>.ex-view-btn{width:46px;height:auto;border-radius:10px;background:var(--surface-2);font-size:20px}
 :root[data-theme="light"] .search-row>.ex-view-btn{background:rgba(118,118,128,.12)}
-.search-row>.ex-view-btn.on,:root[data-theme="light"] .search-row>.ex-view-btn.on{background:var(--acc-soft);color:var(--acc)}
+.search-row>.ex-view-btn.on,:root[data-theme="light"] .search-row>.ex-view-btn.on{background:var(--acc-soft);color:var(--acc-ink)}
 
 /* ---------------------------------------------------------------- chips -- */
 .chips{
@@ -822,6 +861,11 @@ body.chips-dragging *{cursor:inherit}
   transition:transform var(--med) var(--ease);
 }
 :root[data-theme="light"] .seg-sel{background:#fff}
+/* Dark: the chosen segment is raised, a step lighter than its track, as on the iPhone. It used to
+   be --surface on a --surface-3 track, darker than the track, so the choice read as a dent pressed
+   into the control rather than the piece standing on it (design review 1.4.5). */
+:root:not([data-theme="light"]) .seg{background:rgba(118,118,128,.24)}
+:root:not([data-theme="light"]) .seg-sel{background:#636366;box-shadow:0 3px 8px rgba(0,0,0,.24),0 1px 1px rgba(0,0,0,.12)}
 .seg button{
   position:relative;z-index:1;padding:6px 8px;font-size:14px;font-weight:500;
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
@@ -838,6 +882,17 @@ body.chips-dragging *{cursor:inherit}
 .lrow:has(.seg-inline){flex-wrap:wrap}
 .lrow:has(.seg-inline) .lrow-m{min-width:min(150px,100%)}
 .seg-range{margin-bottom:10px}
+/* More choices than a phone row holds (Stats → Exercise progress can offer five): each segment as
+   wide as its label, the row scrolling sideways inside its track, the chosen one lifted in place.
+   Squeezed into fifths, "Top set" broke onto two lines and "Bodyweight" ran out of the track.
+   Where the row does fit, the segments still share it out evenly (design review 1.4.5). */
+.seg.seg-scroll{overflow-x:auto;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain}
+.seg.seg-scroll::-webkit-scrollbar{display:none}
+.seg.seg-scroll>button{flex:1 0 auto;padding-inline:12px;white-space:nowrap;border-radius:7px;transition:background var(--fast),opacity var(--fast)}
+.seg.seg-scroll>.seg-sel{display:none}
+.seg.seg-scroll>button.on{background:var(--surface);box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.06)}
+:root[data-theme="light"] .seg.seg-scroll>button.on{background:#fff}
+:root:not([data-theme="light"]) .seg.seg-scroll>button.on{background:#636366}
 /* Every segment as wide as the widest label (QA 10-05: with flex:1 1 0 the track was sized by the
    labels' sum but split evenly, so "Compact" / "Versteckt" got less than its own width and
    touched the segment's edge). A grid of equal 1fr columns sizes each to the widest one, so the
@@ -912,7 +967,9 @@ body.chips-dragging *{cursor:inherit}
 .chk,.ck{
   width:30px;height:30px;border-radius:50%;flex:none;position:relative;
   display:flex;align-items:center;justify-content:center;
-  background:none;box-shadow:inset 0 0 0 1.8px var(--label-4);color:transparent;
+  /* The ring is the screen's main control, so it gets the 3:1 a control needs: --label-4 was 1.5:1
+     and vanished in a bright gym (design review 1.4.5). */
+  background:none;box-shadow:inset 0 0 0 1.8px var(--grey);color:transparent;
   transition:background var(--fast),box-shadow var(--fast),color var(--fast),transform var(--fast);
 }
 .chk .icn{font-size:16px;--icon-stroke:2.6}
@@ -956,7 +1013,7 @@ body.chips-dragging *{cursor:inherit}
 .whdr-mid .sub{font-size:13px;margin-top:1px;font-variant-numeric:tabular-nums;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-wrap:balance}
 /* The gym the session is at (#808): small, in the clock line, a tap switches it. */
 .whdr-gym{display:inline-flex;align-items:center;gap:3px;font-size:12px;line-height:1.3;color:var(--label-2);background:none;border:0;padding:0;margin-top:1px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-button.whdr-gym{color:var(--acc);cursor:pointer}
+button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .whdr-gym .icon,.whdr-gym svg{width:13px;height:13px;flex:none}
 .gym-of-list .icon,.gym-of-list svg{width:13px;height:13px;vertical-align:-2px}
 .btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:15px;max-width:40%}
@@ -1066,7 +1123,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
   display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);color:#fff;font-size:12px;
 }
 .wmedia-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  color:var(--acc);font-size:11px;line-height:1.2;text-align:center;padding:6px;
+  color:var(--acc-ink);font-size:11px;line-height:1.2;text-align:center;padding:6px;
   border:1.5px dashed var(--sep)}
 .wmedia-add .icn{font-size:20px}
 .wmedia-add:disabled{opacity:.5;cursor:default}
@@ -1081,7 +1138,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 .fv-badge{
   display:inline-flex;align-items:center;gap:5px;margin-block:2px 4px;margin-inline-start:32px;
   border:0;border-radius:99px;padding:3px 10px;font:inherit;font-size:12px;font-weight:500;cursor:pointer;
-  background:var(--surface-2);background:color-mix(in srgb,var(--acc) 14%,var(--surface-2));color:var(--acc);
+  background:var(--surface-2);background:color-mix(in srgb,var(--acc) 14%,var(--surface-2));color:var(--acc-ink);
 }
 .fv-badge .icn{font-size:12px}
 .fv-badge.on{background:var(--acc);color:var(--on-acc)}
@@ -1160,7 +1217,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 
 .sethead{
   display:flex;align-items:center;gap:8px;padding:0 0 6px;
-  font-size:11px;color:var(--label-3);font-weight:500;text-transform:uppercase;letter-spacing:.045em;
+  font-size:12px;color:var(--label-2);font-weight:500;letter-spacing:0;
 }
 .sethead .n-sp{width:24px;flex:none}
 .sethead .w-sp{flex:1.4;text-align:center}
@@ -1171,7 +1228,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 .setrow+.setrow::before{
   content:'';position:absolute;inset-inline-start:32px;inset-inline-end:0;top:0;height:var(--hair);background:var(--sep);
 }
-.setph{margin:8px 0 2px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px}
+.setph{margin:8px 0 2px;font-size:12px;font-weight:500;color:var(--label-2);display:flex;align-items:center;gap:10px}
 .setph::after{content:'';flex:1;height:1px;background:var(--sep)}
 .setsep{height:1px;background:var(--sep);margin:9px 0}
 /* the per-side wrapper carries its own .n (the set number in front of the L/R rows) */
@@ -1319,7 +1376,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 @keyframes swflashr{0%,35%{background:linear-gradient(rgba(255,69,58,0.22),rgba(255,69,58,0.22)),var(--surface);background:color-mix(in srgb,var(--red) 22%,var(--surface))}100%{background:var(--surface)}}
 /* The first-use hint under the row it nudged. */
 .swhint{display:flex;justify-content:center;padding:4px 0 6px}
-.swhint button{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);color:var(--acc);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;animation:swhintin .3s var(--ease);text-align:start}
+.swhint button{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);color:var(--acc-ink);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;animation:swhintin .3s var(--ease);text-align:start}
 .swhint .icn{font-size:15px;flex:none}
 .swhint .icn:last-child{opacity:.7}
 @keyframes swhintin{from{opacity:0;transform:translateY(-4px)}}
@@ -1461,7 +1518,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 }
 /* Plate line under a set row (Workout.jsx loadLine): the stack for this row's weight, what is
    missing from the inventory, and what to strip/add from the row above. */
-.plateline{display:flex;align-items:center;gap:6px;padding-block:0 5px;padding-inline:32px 0;font-size:12px;color:var(--dim);line-height:1.3}
+.plateline{display:flex;align-items:center;gap:6px;padding-block:0 5px;padding-inline:32px 0;font-size:12px;color:var(--label-2);line-height:1.3}
 .plateline .icn{font-size:12px;flex:none;opacity:.8}
 .plateline .short{color:var(--orange)}
 .plateline .moves{margin-inline-start:auto;color:var(--label-3);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -1480,7 +1537,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 .menu-list .menu-item.danger .tt,.menu-list .menu-item.danger .lrow-i{color:var(--red)}
 .menu-list .menu-item.disabled{opacity:.4;pointer-events:none}
 .menu-on{color:transparent;font-size:16px;flex:none}
-.menu-on.is-on{color:var(--acc)}
+.menu-on.is-on{color:var(--acc-ink)}
 /* A grouped menu (menuSheet's `sections`): groups sit apart, each with a small header, so a long
    list reads as four short ones. */
 .menu-group.grouped+.menu-group.grouped{margin-top:14px}
@@ -1498,27 +1555,26 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 .menu-list .menu-more .ss{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 [dir="rtl"] .menu-more .menu-chev{transform:none}
 .setextra{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px 32px}
-.setextra .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc)}
+.setextra .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
 .setextra .chip.add svg{width:13px;height:13px}
 .setextra .chip.add:disabled{opacity:.35}
 /* why the next target is what it is (issue #17) */
 .progline{
   width:100%;display:flex;align-items:flex-start;gap:7px;margin:6px 0 2px;padding:0;
-  text-align: start;font-size:13px;line-height:1.38;color:var(--acc);
+  text-align: start;font-size:13px;line-height:1.38;color:var(--acc-ink);
 }
-.progline.warn{color:var(--yellow)}
+.progline.warn{color:var(--gold-ink)}
 .progline svg{flex:none;margin-top:2px}
 /* Programmes (#159, views/Programmes.jsx): the running one on Home, in Plan and on its own screen.
    Every row keeps to one line on a 320px phone: the name gives way, the chip never does. */
-.prog-chip{max-width:100%;margin:0 0 8px;color:var(--acc)}
+.prog-chip{max-width:100%;margin:0 0 8px;color:var(--acc-ink)}
 .prog-chip span{overflow:hidden;text-overflow:ellipsis}
 .prog-strip{width:100%;display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:10px 12px;
   border-radius:12px;background:var(--surface);color:var(--label);text-align:start;font-size:15px}
 .prog-strip .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prog-strip .tag{flex:none}
-.prog-strip svg{flex:none;color:var(--acc)}
+.prog-strip svg{flex:none;color:var(--acc-ink)}
 .prog-run{margin-bottom:16px}
-.prog-run .lbl2{font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
 .prog-run .prog-name{font-weight:500;font-size:17px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prog-run .tag{flex:none;white-space:nowrap}
 .prog-bar{height:4px;border-radius:2px;background:var(--surface-3);margin-top:10px;overflow:hidden}
@@ -1529,11 +1585,14 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 .prog-pct{flex:none;display:flex;align-items:baseline;gap:3px;background:var(--surface-2);border-radius:10px;padding:0 10px}
 .prog-pct .num{width:4ch;min-height:40px;text-align:end;background:none;border:none;outline:none;font-size:17px;font-weight:500}
 .prog-pct i{font-style:normal;font-size:13px;color:var(--label-2)}
-.lrow.prog-now .lrow-t{color:var(--acc);font-weight:600}
+.lrow.prog-now .lrow-t{color:var(--acc-ink);font-weight:600}
 .prog-weeks .stp{flex:none;width:136px}
 /* "Last time" / "Best set" under the plan line (#173): a button that switches between the two,
    looking like the plain line it replaced, with a small icon to say it can be tapped. */
 .refline{width:100%;display:flex;align-items:flex-start;gap:6px;margin-bottom:4px;padding:0;text-align:start}
+/* The plan and the last time are what you read between sets, so they sit in the secondary grey, not
+   the tertiary one (2.5:1, which the gym's light washed out). .dim stays on them for the markup. */
+.planline.dim,.refline.dim{color:var(--label-2)}
 .refline svg{flex:none;margin-top:2px;font-size:12px}
 /* an exercise kept out of progression for this session, with its undo */
 .noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:13px;line-height:1.38;color:var(--orange)}
@@ -1544,7 +1603,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 .setrow .setgo{
   width:30px;height:30px;border-radius:50%;flex:none;
   display:flex;align-items:center;justify-content:center;
-  background:var(--surface-2);color:var(--acc);font-size:14px;
+  background:var(--surface-2);color:var(--acc-ink);font-size:14px;
   transition:background var(--fast),opacity var(--fast);
 }
 .setrow .setgo:disabled{opacity:.3;cursor:default}
@@ -1622,7 +1681,7 @@ button.whdr-gym{color:var(--acc);cursor:pointer}
 /* work timer (issue #16): the same bar doing the opposite job — outlined and tinted so a
    glance tells "you are holding this" apart from "you are recovering". */
 #timer.working{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
-#timer.working .t{color:var(--acc)}
+#timer.working .t{color:var(--acc-ink)}
 /* The label is the exercise name, handed in already cased (exerciseNameText): a capitalize here
    would title-case German's own casing too. */
 #timer.working .lbl{display:block}
@@ -1664,7 +1723,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 #timer.countin{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
 body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
 #timer.countin .tclock{flex:1 1 0;min-width:0}
-#timer.countin .t{font-size:40px;color:var(--acc);animation:countpop .35s var(--ease)}
+#timer.countin .t{font-size:40px;color:var(--acc-ink);animation:countpop .35s var(--ease)}
 #timer.countin .lbl{display:block}
 #timer.countin.paused .t,#timer.countin.paused .bar,#timer.working.paused .t,#timer.working.paused .bar{opacity:.5}
 #timer.countin.paused .t{animation:none}
@@ -1764,7 +1823,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 }
 /* the row a working set usually lands on — the anchor the others are read against */
 .efftbl .r.on{background:var(--acc-soft)}
-.efftbl .r.on .n{color:var(--acc)}
+.efftbl .r.on .n{color:var(--acc-ink)}
 .efftbl .r.on .f{color:var(--label)}
 
 /* --- glyph picker (replaces the emoji grid) --- */
@@ -1985,7 +2044,10 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .tile.tappable:active{background:var(--surface-2)}
 /* The week streak (components/Streak.jsx): the flame, best + freezes, the medals, the parties.
    Colours that carry meaning get a darker ink in the light theme, so a bar or a snowflake keeps
-   3:1 against white where the system orange, green and cyan do not. */
+   3:1 against white where the system orange, green and cyan do not. --gold-ink is also every
+   yellow that is text or a thin line elsewhere (the weight goal, effort, PR badges, warnings,
+   favourites): the system yellow is 1.6:1 on white, so in the light theme those read as blank
+   space (design review 1.4.5). Fills and tints keep --yellow. */
 :root{
   --streak-ink:var(--orange); --win-ink:var(--green); --frost:#64d2ff; --frost-soft:rgba(100,210,255,.16);
   --gold-ink:var(--yellow);
@@ -2081,7 +2143,8 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 /* Monthly challenges (components/Challenges.jsx): Home's card, Stats' trophy shelf. */
 .ch-head{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
 .ch-head-t{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
-.ch-head .ttl{font-size:16px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* wraps rather than cut: on a 320px phone the fold and × left "This month's chall…" */
+.ch-head .ttl{font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.25;overflow-wrap:break-word;text-wrap:balance}
 .ch-sub{display:block;font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums}
 .challenges-stats .ch-sub{margin:-4px 0 2px}
 .ch-list{display:flex;flex-direction:column;gap:14px;margin-top:14px}
@@ -2120,10 +2183,17 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .tiles.fin .tile.wide{grid-column:span 4}
 .tiles.fin .tile.narrow{grid-column:span 2}
 
+/* Stats → exercise progress, one row per workout: the date on one line in its own column, the sets
+   flush to the end. With both spans free to wrap, "Fri 16 / Oct" broke in two and every set column
+   started at a different x (design review 1.4.5, app-screen rule: figures line up). */
+.ex-hist{align-items:baseline;gap:12px;padding:6px 0;border-bottom:var(--hair) solid var(--sep)}
+.ex-hist-d{flex:none;white-space:nowrap}
+.ex-hist-s{min-width:0;text-align:end;text-wrap:pretty}
+
 /* --- PR badge --- */
 .pr{
   display:inline-flex;align-items:center;gap:4px;
-  background:rgba(255,214,10,0.18);background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--yellow);
+  background:rgba(255,214,10,0.18);background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--gold-ink);
   border-radius:6px;padding:3px 8px;font-size:12px;font-weight:500;
 }
 .pr .icn{font-size:13px}
@@ -2147,7 +2217,7 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 /* With an action (Undo): the message, then the button at the end, and the toast takes taps. */
 #toast.has-action{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 6px 4px 6px;text-align:start}
 #toast.has-action .toast-msg{flex:1;min-width:0;padding:7px 0}
-#toast .toast-act{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--acc);font-weight:700;padding:8px 12px;border-radius:14px;min-height:36px}
+#toast .toast-act{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--acc-ink);font-weight:700;padding:8px 12px;border-radius:14px;min-height:36px}
 #toast .toast-act:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
 #toast .toast-act .icn{font-size:16px}
 #toast .toast-x{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;color:var(--label-2)}
@@ -2164,7 +2234,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 #totop{
   position:fixed;inset-inline-end:max(16px,calc(50vw - 264px));bottom:calc(80px + var(--sab));z-index:45;
   width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
-  background:var(--surface-2);color:var(--acc);border:var(--hair) solid var(--sep-op);
+  background:var(--surface-2);color:var(--acc-ink);border:var(--hair) solid var(--sep-op);
   box-shadow:0 8px 22px -8px rgba(0,0,0,.5);
   opacity:0;transform:translateY(10px) scale(.6);visibility:hidden;pointer-events:none;
   transition:opacity var(--fast),transform var(--med) var(--ease),visibility 0s linear var(--med);
@@ -2175,7 +2245,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 }
 :root[data-theme="light"] #totop{background:var(--surface)}
 #totop:active{transform:scale(.92)}
-#totop:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#totop:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
 #totop .icn{font-size:21px;--icon-stroke:2.1}
 body.resting #totop{bottom:calc(172px + var(--sab))}
 /* While it shows, the page ends a button's height further up, so the last row's controls scroll
@@ -2194,14 +2264,14 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 
 /* --- month calendar --- */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
-.cal-h{text-align:center;font-size:11px;color:var(--label-3);font-weight:500;text-transform:uppercase;padding:2px 0}
+.cal-h{text-align:center;font-size:12px;color:var(--label-2);font-weight:500;padding:2px 0}
 .cal-d{
   aspect-ratio:1;border-radius:10px;background:var(--surface);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   font-weight:400;font-size:15px;color:var(--label);transition:background var(--fast);
 }
 .cal-d:active{background:var(--surface-2)}
-.cal-d.has{background:var(--acc-soft);color:var(--acc)}
+.cal-d.has{background:var(--acc-soft);color:var(--acc-ink)}
 .cal-d.today{box-shadow:inset 0 0 0 1.8px var(--acc)}
 .cal-d i{width:5px;height:5px;border-radius:50%;background:transparent}
 .cal-d i.done{background:var(--acc)}
@@ -2262,7 +2332,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 /* --- supersets --- */
 .ss-label{
   font-size:12px;font-weight:600;letter-spacing:-.004em;text-transform:none;
-  color:var(--acc);margin-block:8px 5px;margin-inline-start:4px;display:flex;align-items:center;gap:5px;
+  color:var(--acc-ink);margin-block:8px 5px;margin-inline-start:4px;display:flex;align-items:center;gap:5px;
 }
 .ss-label .icn{font-size:13px}
 /* The routine editor's label opens the superset's name and rest (#292). */
@@ -2271,7 +2341,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .ss-label-btn .ss-label-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ss-label-btn .dim{font-weight:500;white-space:nowrap}
 /* A1, A2…: a member's place in the round (#293). */
-.ss-pos{flex:none;min-width:26px;height:22px;padding:0 5px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:var(--acc);background:var(--acc-soft, var(--surface-2))}
+.ss-pos{flex:none;min-width:26px;height:22px;padding:0 5px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:var(--acc-ink);background:var(--acc-soft, var(--surface-2))}
 .item.in-ss{box-shadow:inset 3px 0 0 var(--acc)}
 /* A past workout's detail: each exercise opens its history, and a superset's exercises share the
    routine editor's label and bar. */
@@ -2315,11 +2385,11 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
   .wl-unit .ss-card{padding-inline:0}
 }
 .ss-hd{
-  font-size:12px;font-weight:600;color:var(--acc);margin-bottom:12px;
+  font-size:12px;font-weight:600;color:var(--acc-ink);margin-bottom:12px;
   text-align:center;display:flex;align-items:center;justify-content:center;gap:5px;
 }
 .ss-ex{position:relative}
-.ss-amp{text-align:center;font-size:15px;font-weight:600;color:var(--acc);margin:14px 0 8px}
+.ss-amp{text-align:center;font-size:15px;font-weight:600;color:var(--acc-ink);margin:14px 0 8px}
 
 /* --- workout list view: every unit stacked, the current one outlined --- */
 /* minmax(0, …): a grid's default `auto` track is at least as wide as its widest content, so a set
@@ -2375,7 +2445,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   transition:background var(--fast);width:100%;text-align: start;cursor:pointer;
 }
 .today-row:active{background:var(--surface-3)}
-.today-row .lbl2{font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
+/* The small line over a card's or row's title ("Today", "At the gym", "Recovery", "Running now") in
+   sentence case and the readable grey, one rule for all of them: the check-in and recovery cards
+   never had one, so "At the gym" / "Check in" rendered as two equal 17px titles. The rest-day line under the title is a subtitle, not a second title. */
+.lbl2{font-size:13px;color:var(--label-2);letter-spacing:-.004em}
+.today-row .ss{font-size:13px;line-height:1.3;color:var(--label-2);margin-top:2px}
+.checkin-card .ttl{font-weight:500;font-size:17px;line-height:1.25;letter-spacing:-.012em;margin-top:1px}
 .today-row .ttl{
   font-weight:500;font-size:17px;line-height:1.25;text-transform:capitalize;
   letter-spacing:-.012em;margin-top:2px;
@@ -2504,13 +2579,13 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-sec-h>.plan-sec-acts{margin-inline-start:auto}
 .plan-sec-h h4.sec{margin:0}
 .plan-routines-bar{margin-top:0}
-.plan-textbtn{color:var(--acc);font-size:16px;padding:6px 4px;position:relative}
+.plan-textbtn{color:var(--acc-ink);font-size:16px;padding:6px 4px;position:relative}
 .plan-textbtn::before{content:'';position:absolute;inset:-6px}
 .plan .sect-f{margin:0 0 4px}
 .plan .list+.sect-f{padding-top:8px}
 /* a weekday: short day name, the routine's glyph (a moon on a rest day), what is on it */
 .plan-day-n{min-width:30px;flex:none;white-space:nowrap;font-size:15px;font-weight:600;color:var(--label-2)}
-.plan-day-n.today{color:var(--acc)}
+.plan-day-n.today{color:var(--acc-ink)}
 /* Arabic names the whole day: one column wide enough for the longest keeps the glyphs aligned */
 [dir="rtl"] .plan-day-n{min-width:88px}
 .item .lrow-i.rest{background:var(--surface-3);color:var(--label-2)}
@@ -2573,7 +2648,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    over when the label needs the room. Only a label past half the screen is cut. */
 .sp-nav{display:grid;grid-template-columns:minmax(max-content,1fr) minmax(0,max-content) minmax(0,1fr);align-items:center;column-gap:6px;
   min-height:44px;margin:4px -6px 10px}
-.sp-back{display:inline-flex;align-items:center;gap:2px;color:var(--acc);font-size:17px;padding:6px;border-radius:10px;
+.sp-back{display:inline-flex;align-items:center;gap:2px;color:var(--acc-ink);font-size:17px;padding:6px;border-radius:10px;
   min-width:0;max-width:50vw;justify-self:start}
 .sp-back span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sp-back .icn{font-size:22px;--icon-stroke:2.2;flex:none}
@@ -2589,7 +2664,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .sp-avatar{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:30px;
   background:linear-gradient(160deg,var(--surface-3),var(--surface-2));color:var(--label-2)}
 .sp-acct .lrow-t{font-size:19px;font-weight:600}
-.sp-avatar.on{background:var(--acc-soft);color:var(--acc);font-size:24px;font-weight:700}
+.sp-avatar.on{background:var(--acc-soft);color:var(--acc-ink);font-size:24px;font-weight:700}
 .sp-version{text-align:center;margin-top:4px;line-height:1.6}
 /* The root rows' previews ("2:00 de descanso · Tarjetas", "Som · Vibração") are two or three facts, and a
    one-line ellipsis cut all but the first. They wrap instead, up to three lines, and never below
@@ -2653,7 +2728,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gym-row .lrow-s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gym-row .lrow-m{min-width:0}
 .gym-row.off .lrow-i,.gym-row.off .lrow-m{opacity:.5}
-.gym-add-row .lrow-t{color:var(--acc)}
+.gym-add-row .lrow-t{color:var(--acc-ink)}
 /* The search: the app's own search field (.searchf, as in Settings and the Library). */
 .gym-find-bar{margin:0 0 6px}
 .gym-find-note{font-size:12px;color:var(--label-2);line-height:1.35;margin:0 4px 14px}
@@ -2678,7 +2753,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gmap.moving .gmap-pin{transform:translateY(-8px)}
 .gmap.moving .gmap-pin::after{transform:translateY(8px) scale(1.4)}
 @media (prefers-reduced-motion:reduce){.gmap-pin,.gmap-pin::after{transition:none}}
-.gmap-locate{position:absolute;z-index:1000;top:10px;inset-inline-end:10px;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:var(--surface);color:var(--acc);font-size:19px;box-shadow:0 1px 6px rgba(0,0,0,.25);cursor:pointer}
+.gmap-locate{position:absolute;z-index:1000;top:10px;inset-inline-end:10px;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:var(--surface);color:var(--acc-ink);font-size:19px;box-shadow:0 1px 6px rgba(0,0,0,.25);cursor:pointer}
 .gmap-locate:active{background:var(--surface-2)}
 .gmap-locate:disabled{opacity:.6}
 .gmap-hint{display:flex;flex-direction:column;gap:2px;margin:0 4px 20px}
