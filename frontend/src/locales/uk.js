@@ -3459,4 +3459,10 @@ export default {
   "Your month": "Ваш місяць",
   "Week and month recap": "Підсумки тижня й місяця",
   "A small card when a new week or month starts: what the last one added up to.": "Невелика картка на початку тижня чи місяця: підсумки попереднього.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Фільтри",
+  "Exercise type": "Тип вправи",
+  "Clear filters": "Скинути фільтри",
+  "Overview": "Огляд",
+  "Lifts": "Вправи",
 }

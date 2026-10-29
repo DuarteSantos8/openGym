@@ -3541,4 +3541,10 @@ export default {
   "Your month": "আপনার মাস",
   "Week and month recap": "সপ্তাহ ও মাসের সারসংক্ষেপ",
   "A small card when a new week or month starts: what the last one added up to.": "নতুন সপ্তাহ বা মাস শুরু হলে ছোট একটা কার্ড: আগেরটায় কী হলো।",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "ফিল্টার",
+  "Exercise type": "ব্যায়ামের ধরন",
+  "Clear filters": "ফিল্টার মুছুন",
+  "Overview": "সংক্ষেপে",
+  "Lifts": "লিফট",
 }

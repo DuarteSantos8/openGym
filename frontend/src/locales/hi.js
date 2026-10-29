@@ -3462,4 +3462,10 @@ export default {
   "Your month": "आपका महीना",
   "Week and month recap": "हफ़्ते और महीने का सार",
   "A small card when a new week or month starts: what the last one added up to.": "नया हफ़्ता या महीना शुरू होने पर एक छोटा कार्ड: पिछले का हिसाब।",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "फ़िल्टर",
+  "Exercise type": "व्यायाम का प्रकार",
+  "Clear filters": "फ़िल्टर हटाएँ",
+  "Overview": "सारांश",
+  "Lifts": "लिफ़्ट",
 }

@@ -3462,4 +3462,10 @@ export default {
   "Your month": "이번 달 정리",
   "Week and month recap": "주간·월간 정리",
   "A small card when a new week or month starts: what the last one added up to.": "새 주나 새 달이 시작되면 지난 기간을 정리한 작은 카드를 보여줘요.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "필터",
+  "Exercise type": "운동 유형",
+  "Clear filters": "필터 지우기",
+  "Overview": "개요",
+  "Lifts": "리프트",
 }

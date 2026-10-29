@@ -2344,6 +2344,12 @@ export const PT_BR_OVERRIDES = {
   "Your month": "Seu mês",
   "Week and month recap": "Resumo da semana e do mês",
   "A small card when a new week or month starts: what the last one added up to.": "Um cartãozinho quando começa uma semana ou um mês: como foi o anterior.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Filtros",
+  "Exercise type": "Tipo de exercício",
+  "Clear filters": "Limpar filtros",
+  "Overview": "Visão geral",
+  "Lifts": "Exercícios",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

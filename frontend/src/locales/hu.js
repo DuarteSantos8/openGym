@@ -3465,4 +3465,10 @@ export default {
   "Your month": "A hónapod",
   "Week and month recap": "Heti és havi összefoglaló",
   "A small card when a new week or month starts: what the last one added up to.": "Egy kis kártya, amikor új hét vagy hónap kezdődik: mit hozott az előző.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Szűrők",
+  "Exercise type": "Gyakorlattípus",
+  "Clear filters": "Szűrők törlése",
+  "Overview": "Áttekintés",
+  "Lifts": "Gyakorlatok",
 }

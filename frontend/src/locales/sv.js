@@ -3509,4 +3509,10 @@ export default {
   "Your month": "Din månad",
   "Week and month recap": "Vecko- och månadssammanfattning",
   "A small card when a new week or month starts: what the last one added up to.": "Ett litet kort när en ny vecka eller månad börjar: vad den förra blev.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Filter",
+  "Exercise type": "Övningstyp",
+  "Clear filters": "Rensa filter",
+  "Overview": "Översikt",
+  "Lifts": "Lyft",
 }

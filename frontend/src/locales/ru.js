@@ -3466,4 +3466,10 @@ export default {
   "Your month": "Ваш месяц",
   "Week and month recap": "Итоги недели и месяца",
   "A small card when a new week or month starts: what the last one added up to.": "Небольшая карточка в начале недели или месяца: итоги прошедших.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Фильтры",
+  "Exercise type": "Тип упражнения",
+  "Clear filters": "Сбросить фильтры",
+  "Overview": "Обзор",
+  "Lifts": "Упражнения",
 }

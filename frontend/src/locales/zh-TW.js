@@ -3455,4 +3455,10 @@ export default {
   "Your month": "你的一個月",
   "Week and month recap": "每週和每月回顧",
   "A small card when a new week or month starts: what the last one added up to.": "新的一週或一個月開始時顯示一張小卡片：上一段的成果。",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "篩選",
+  "Exercise type": "運動類型",
+  "Clear filters": "清除篩選",
+  "Overview": "總覽",
+  "Lifts": "重量動作",
 }

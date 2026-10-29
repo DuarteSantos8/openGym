@@ -3517,4 +3517,10 @@ export default {
   "Your month": "شهرك",
   "Week and month recap": "ملخص الأسبوع والشهر",
   "A small card when a new week or month starts: what the last one added up to.": "بطاقة صغيرة عند بداية أسبوع أو شهر جديد: حصيلة السابق.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "الفلاتر",
+  "Exercise type": "نوع التمرين",
+  "Clear filters": "مسح الفلاتر",
+  "Overview": "نظرة عامة",
+  "Lifts": "الرفعات",
 }

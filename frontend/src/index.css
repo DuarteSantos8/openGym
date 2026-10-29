@@ -838,6 +838,18 @@ h4.sec{
    without this the label wrapped under it and every chip became a two-line button. One line
    each; a row wider than the sheet scrolls sideways like every .chips strip. */
 .chip.ichip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+/* The Library's one filter row (P7): a chosen chip is a neutral fill, --label on --surface-3, so
+   the accent is not spent on chrome three times before the first exercise. */
+.lib-filters{margin-bottom:10px}
+.lib-filters .chip.on{background:var(--surface-3);color:var(--label)}
+.lib-filters .chip.ichip .icn{font-size:var(--fs-caption);--icon-stroke:2.2}
+.lib-filters .chip.on .icn{color:var(--label-2)}
+.lib-fbtn .icn{font-size:var(--fs-subhead)!important;--icon-stroke:1.9!important}
+.lib-fn{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--label);color:var(--bg);font-size:var(--fs-caption);font-weight:600;display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
+.chips.wrap{flex-wrap:wrap;overflow:visible;touch-action:auto}
+.lib-fsheet .chip.on{background:var(--surface-3);color:var(--label)}
+/* the row's "add to my plan": a quiet trailing icon button instead of a tinted "+ Plan" on every row */
+.item .lib-add{width:32px;height:32px;font-size:var(--fs-subhead);background:var(--surface-2);color:var(--label-2)}
 .chip .qstate{text-transform:none}
 /* On a phone these rows scroll by swipe. On a pointer device lib/hchips.js lets you
    click-drag anywhere on the row to pull it along; a grab cursor on rows that actually

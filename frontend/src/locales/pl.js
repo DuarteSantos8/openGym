@@ -3462,4 +3462,10 @@ export default {
   "Your month": "Twój miesiąc",
   "Week and month recap": "Podsumowanie tygodnia i miesiąca",
   "A small card when a new week or month starts: what the last one added up to.": "Mała karta, gdy zaczyna się nowy tydzień lub miesiąc: co dał poprzedni.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Filtry",
+  "Exercise type": "Rodzaj ćwiczenia",
+  "Clear filters": "Wyczyść filtry",
+  "Overview": "Przegląd",
+  "Lifts": "Ćwiczenia",
 }

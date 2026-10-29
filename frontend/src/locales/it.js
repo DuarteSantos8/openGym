@@ -3462,4 +3462,10 @@ export default {
   "Your month": "Il tuo mese",
   "Week and month recap": "Riepilogo della settimana e del mese",
   "A small card when a new week or month starts: what the last one added up to.": "Una piccola scheda quando inizia una nuova settimana o un nuovo mese: com’è andato il precedente.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Filtri",
+  "Exercise type": "Tipo di esercizio",
+  "Clear filters": "Azzera i filtri",
+  "Overview": "Panoramica",
+  "Lifts": "Esercizi",
 }

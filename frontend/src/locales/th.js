@@ -3473,4 +3473,10 @@ export default {
   "Your month": "เดือนของคุณ",
   "Week and month recap": "สรุปรายสัปดาห์และรายเดือน",
   "A small card when a new week or month starts: what the last one added up to.": "การ์ดเล็ก ๆ เมื่อเริ่มสัปดาห์หรือเดือนใหม่ สรุปช่วงที่แล้ว",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "ตัวกรอง",
+  "Exercise type": "ประเภทการออกกำลังกาย",
+  "Clear filters": "ล้างตัวกรอง",
+  "Overview": "ภาพรวม",
+  "Lifts": "ท่ายก",
 }

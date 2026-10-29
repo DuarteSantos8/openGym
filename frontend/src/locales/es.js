@@ -3462,4 +3462,10 @@ export default {
   "Your month": "Tu mes",
   "Week and month recap": "Resumen de la semana y el mes",
   "A small card when a new week or month starts: what the last one added up to.": "Una tarjetita cuando empieza una semana o un mes: lo que dio de sí el anterior.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Filtros",
+  "Exercise type": "Tipo de ejercicio",
+  "Clear filters": "Quitar filtros",
+  "Overview": "Resumen",
+  "Lifts": "Levantamientos",
 }

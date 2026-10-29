@@ -3462,4 +3462,10 @@ export default {
   "Your month": "Ayın",
   "Week and month recap": "Hafta ve ay özeti",
   "A small card when a new week or month starts: what the last one added up to.": "Yeni bir hafta ya da ay başladığında küçük bir kart: öncekinin özeti.",
+  // --- redesign 1.4.5: the Library's Filters sheet, the Stats index ---
+  "Filters": "Filtreler",
+  "Exercise type": "Egzersiz türü",
+  "Clear filters": "Filtreleri temizle",
+  "Overview": "Genel bakış",
+  "Lifts": "Kaldırışlar",
 }
