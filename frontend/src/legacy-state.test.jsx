@@ -3,8 +3,8 @@
  * build. Their phone still holds the state exactly as v1.0.0 saved it: a smaller DEF, the week as
  * one routine id per weekday (not a list), workouts with `routineId` instead of `routineIds`, sets
  * with no mode, cardio as minutes and speed, `exWeights` as { w, d }. The app overlays that on
- * today's DEF and every reader copes with the old shapes on its own; nothing migrates it in one
- * place. So this file holds a v1.0.0 state built from that release's own writers
+ * today's DEF; the update converts it once to the engine's data model (the migration gate, backed up
+ * first) and then every reader sees the canonical shape. So this file holds a v1.0.0 state built from that release's own writers
  * (sheets.jsx doFinishWorkout, Plan.jsx, RoutineEdit.jsx at the tag) and checks what the user
  * would notice: the history is there and readable, the numbers are the same, the plan still
  * starts the right routine, and the next save, a sync and a backup keep all of it.
@@ -59,6 +59,8 @@ beforeAll(async () => {
   localStorage.clear()
   localStorage.setItem('gym_state_v1', JSON.stringify(V1_STATE))
   ;({ useStore, DEF } = await import('./store/useStore.js'))
+  await useStore.getState().boot()
+  await useStore.getState().confirmMigration()
   H = await import('./lib/history.js')
   views = {
     History: (await import('./views/History.jsx')).default,
@@ -83,11 +85,11 @@ describe('a phone that has kept its v1.0.0 data updates to this build', () => {
 
   it('counts the same: volume, sets done, best weight and the last sets of each lift', () => {
     const S = useStore.getState().S
-    expect(H.workoutVolume(S.workouts[0])).toBe(60 * 8 + 62.5 * 8 + 65 * 6)   // the unchecked set left out
-    expect(H.workoutVolume(S.workouts[1])).toBe(100 * 10 + 105 * 14)
+    expect(H.workoutVolume(S, S.workouts[0])).toBe(60 * 8 + 62.5 * 8 + 65 * 6)   // the unchecked set left out
+    expect(H.workoutVolume(S, S.workouts[1])).toBe(100 * 10 + 105 * 14)
     expect(H.bestWeightFor(S, SQUAT)).toBe(105)
     expect(H.bestWeightFor(S, BENCH)).toBe(65)
-    expect(H.lastEntryFor(S, BENCH)?.sets?.filter(s => s.done).length).toBe(3)
+    expect(S.workouts[0].exposures[0].performance.sets.filter(r => r.status === 'completed')).toHaveLength(3)
   })
 
   it('still starts Monday\'s routine from the old one-id-per-day week, and keeps the rest day', () => {
@@ -111,15 +113,17 @@ describe('a phone that has kept its v1.0.0 data updates to this build', () => {
   // Last: it saves a change.
   it('keeps all of it through the next save, a sync with a server and a backup', async () => {
     const { mergeStates } = await import('./lib/sync-merge.js')
+    const { parseState } = await import('./lib/state-codec.js')
     act(() => useStore.getState().update(s => { s.restSec = 90 }))
-    const saved = JSON.parse(localStorage.getItem('gym_state_v1'))
-    const server = { ...clone(DEF), _ts: 1, workouts: [{ id: 'new1', d: '2026-10-01', start: 1, end: 2, entries: [] }] }
+    const saved = parseState(localStorage.getItem('gym_state_v1'))
+    const server = { ...clone(DEF), _ts: 1, workouts: [{ id: 'new1', d: '2026-10-01', start: 1, end: 2, exposures: [] }] }
     for (const S of [saved, mergeStates(saved, server), mergeStates(server, saved), JSON.parse(JSON.stringify(saved))]) {
       expect(S.workouts.map(w => w.id)).toEqual(expect.arrayContaining(['old1', 'old2']))
       const old1 = S.workouts.find(w => w.id === 'old1')
-      expect(old1.entries[0].sets).toEqual(V1_STATE.workouts[0].entries[0].sets)
-      expect(old1.entries[1].sets).toEqual([{ min: 15, speed: 6, done: true }])
-      expect(S.routines.find(r => r.id === 'rA').ex).toEqual(V1_STATE.routines[0].ex)
+      const sets = old1.exposures[0].performance.sets
+      expect(sets.map(r => [r.resistance.value, r.observations[0].value, r.status])).toEqual([[60, 8, 'completed'], [62.5, 8, 'completed'], [65, 6, 'completed'], [65, 4, 'skipped']])
+      expect(old1.exposures[1].performance.sets[0].observations.find(o => o.metric === 'duration').value).toBe(15 * 60)
+      expect(S.routines.find(r => r.id === 'rA').ex.map(o => o.exerciseId)).toEqual(V1_STATE.routines[0].ex.map(e => e.id))
       expect(S.bodyweight.map(b => b.w)).toEqual([81.2, 80.4, 79.9])
     }
   })

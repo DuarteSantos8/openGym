@@ -23,10 +23,11 @@ beforeEach(() => {
   window.scrollTo = vi.fn()
   const S = structuredClone(DEF)
   S.sound = false
-  S.active = { id: 'test', name: 'Test', start: Date.now(), cur: 0, entries: [
+  // The running workout is the store's own `A`, not part of the profile.
+  const A = { id: 'test', name: 'Test', start: Date.now(), cur: 0, entries: [
     { id: '1001', target: { mode: 'reps' }, sets: [{ w: 10, r: 5, done: false }, { w: 10, r: 5, done: false }] },
   ] }
-  useStore.setState({ S, user: null, ready: true, boot: vi.fn() })
+  useStore.setState({ S, A, user: null, ready: true, boot: vi.fn() })
   useUI.setState({ sheets: [], work: null, timer: null })
   host = document.createElement('div')
   document.body.appendChild(host)
@@ -53,11 +54,11 @@ it('a running workout has no tab bar and no bottom action; minimized, the tabs a
   expect(host.querySelector('#tabbar .start').getAttribute('aria-label')).toBe('Resume')
   await act(async () => host.querySelector('#tabbar .start').click())
   expect(host.querySelector('#tabbar')).toBeNull()
-  expect(useStore.getState().S.active.entries[0].sets.map(s => s.done)).toEqual([false, false])
+  expect(useStore.getState().A.entries[0].sets.map(s => s.done)).toEqual([false, false])
 })
 
 it.each([{ editingWorkoutId: 'saved' }, { backfill: true }])('past workouts have no tab bar either: %j', async flags => {
-  useStore.getState().update(s => Object.assign(s.active, flags), false)
+  useStore.getState().updateActive(a => Object.assign(a, flags))
   await act(async () => root.render(<App />))
   expect(host.querySelector('#tabbar')).toBeNull()
   expect(document.body.classList.contains('no-tabbar')).toBe(true)

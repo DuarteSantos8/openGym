@@ -58,6 +58,8 @@ export const capWords = s => String(s || '').replace(/(^|[\s(\-\/])(\p{Ll})/gu, 
 // (exerciseNameClass): for a toast, a dialog title or a picker label, which have no element of
 // their own to put the class on.
 export const exerciseNameText = ex => (exerciseNameClass(ex) ? capWords(exerciseNameFor(ex)) : exerciseNameFor(ex))
+// The range of a 1RM estimate, written " (135–150)" after it; nothing when the models agree (a single to failure has no spread).
+export const fmtSpread = (low, high) => (high > low ? ` (${fmtNum(low)}–${fmtNum(high)})` : '')
 /* How many decimals a weight is shown with. One is enough for plate-loadable numbers, but a
  * per-side figure from kg plates lands on .25 and .75 and reading those as .3 and .8 is the
  * complaint in issue #139 — as is microplate work. The setting is read here rather than passed

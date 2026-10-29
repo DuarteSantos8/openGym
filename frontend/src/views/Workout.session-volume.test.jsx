@@ -34,8 +34,8 @@ function mount(entries, patch = {}) {
   const S = clone(DEF)
   S.unit = 'kg'
   Object.assign(S, patch)
-  S.active = { id: 'vol-test', d: '2026-10-23', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0, entries, workoutView: S.workoutView }
-  useStore.setState({ S, user: null })
+  const A = { id: 'vol-test', d: '2026-10-23', start: Date.now(), routineId: null, name: 'Push', bw: null, cur: 0, entries, workoutView: S.workoutView }
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -54,7 +54,7 @@ describe('session volume in the workout header', () => {
   it('is there before the first set, and follows each tick', () => {
     mount([entry(BENCH, [work(60, 5, false), work(60, 5, false)])])
     expect(shown()).toBe('0 kg')
-    act(() => useStore.getState().update(s => { s.active.entries[0].sets[0].done = true }))
+    act(() => useStore.getState().updateActive(a => { a.entries[0].sets[0].done = true }))
     expect(shown()).toBe('300 kg')
   })
 

@@ -12,6 +12,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { boundPort } from './helpers.mjs';
+import { ENGINE_SCHEMA_HEADER } from '../migration/profile-version.js';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -86,4 +87,20 @@ test('a website on another origin gets no private-network access', async t => {
   const r = await send(port, 'OPTIONS', '/api/pair/redeem', preflight('https://evil.example', { 'Access-Control-Request-Private-Network': 'true' }));
   assert.equal(r.status, 204);
   assert.equal(r.headers['access-control-allow-private-network'], undefined);
+});
+
+// Every header frontend lib/api.js puts on a request (api(): Content-Type and the engine schema;
+// remoteHeaders(): the Bearer token and the Cloudflare Access pair). A header missing from the
+// preflight's answer fails the request in the WebView before the server sees it: the paired
+// phone could then reach no route at all, while the same-origin web app noticed nothing.
+test('the preflight allows every header the paired app sends', async t => {
+  const port = await startServer(t);
+  const sent = ['Content-Type', ENGINE_SCHEMA_HEADER, 'Authorization', 'CF-Access-Client-Id', 'CF-Access-Client-Secret'];
+  const r = await send(port, 'OPTIONS', '/api/data', preflight('capacitor://localhost', {
+    'Access-Control-Request-Method': 'GET',
+    'Access-Control-Request-Headers': sent.map(h => h.toLowerCase()).join(', ')
+  }));
+  assert.equal(r.status, 204);
+  const allowed = r.headers['access-control-allow-headers'].toLowerCase().split(/\s*,\s*/);
+  for (const h of sent) assert.ok(allowed.includes(h.toLowerCase()), `${h} missing from: ${allowed.join()}`);
 });

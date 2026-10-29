@@ -33,25 +33,29 @@ describe('the rating on a watch event', () => {
     const setDone = vi.fn()
     bindWatchActions({ setDone, finish: vi.fn() })
     const S = { active: { id: 'w', entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: false }] }] } }
-    applyEvents([{ id: 'e1', type: 'setDone', wid: 'w', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: 5, rpe: 9 }], () => ({ S }))
+    applyEvents([{ id: 'e1', type: 'setDone', wid: 'w', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: 5, rpe: 9 }], () => ({ S, A: S.active }))
     expect(setDone).toHaveBeenCalledWith(0, 0, expect.objectContaining({ w: 60, r: 8, rpe: 9 }))
-    applyEvents([{ id: 'e2', type: 'setDone', wid: 'w', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: 6 }], () => ({ S }))
+    applyEvents([{ id: 'e2', type: 'setDone', wid: 'w', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: 6 }], () => ({ S, A: S.active }))
     expect(setDone.mock.calls[1][2]).not.toHaveProperty('rpe')
   })
 
   it('lands in a workout already saved, and on a set rated on the phone only when it has none', () => {
     const patchSet = vi.fn()
     bindWatchAppActions({ start: vi.fn(), patchSet })
-    const S = { active: null, workouts: [{ id: 'w-old', entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: false }] }] }] }
+    const S = { active: null, workouts: [{ id: 'w-old', exposures: [{ exerciseId: '0025', mode: 'reps', performance: { sets: [{ role: 'work', status: 'skipped', observations: [], resistance: { kind: 'bodyweight' }, segments: [] }] } }] }] }
     applyEvents([{ id: 'late', type: 'setDone', wid: 'w-old', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: 900, rir: 1 }], () => ({ S }))
     expect(patchSet.mock.calls[0][1]).toMatchObject({ done: true, rir: 1 })
 
-    const s = { active: null, workouts: [{ id: 'w', entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: true, at: 2000 }, { w: 60, r: 8, done: true, at: 2000, rpe: 7 }] }] }] }
-    // the phone's edit is later: its numbers stay, the watch's rating fills the empty set
+    // A saved workout keeps its rows as the exposure's performance: a ticked row carries no time of
+    // its own, so the watch's numbers never overwrite it, only its rating and heart rate land.
+    const row = (extra = {}) => ({ role: 'work', status: 'completed', prescribed: false, observations: [{ metric: 'repetitions', unit: 'reps', value: 8 }], resistance: { kind: 'external-load', value: 60, unit: 'kg' }, segments: [], ...extra })
+    const s = { active: null, unit: 'kg', workouts: [{ id: 'w', exposures: [{ exposureId: 'x', exerciseId: '0025', mode: 'reps', performance: { sets: [row(), row({ rpeEntered: 7 })] } }] }] }
     patchSetIn(s, { wid: 'w', exId: '0025', entryIdx: 0, setIdx: 0 }, { done: true, w: 50, r: 5, at: 1000, rpe: 9 }, vi.fn(), { ifNewer: 1000 })
-    expect(s.workouts[0].entries[0].sets[0]).toEqual({ w: 60, r: 8, done: true, at: 2000, rpe: 9 })
+    const sets = s.workouts[0].exposures[0].performance.sets
+    expect(sets[0].resistance.value).toBe(60)
+    expect(sets[0].rpeEntered).toBe(9)
     patchSetIn(s, { wid: 'w', exId: '0025', entryIdx: 0, setIdx: 1 }, { done: true, w: 50, r: 5, at: 1000, rpe: 9 }, vi.fn(), { ifNewer: 1000 })
-    expect(s.workouts[0].entries[0].sets[1].rpe).toBe(7)
+    expect(s.workouts[0].exposures[0].performance.sets[1].rpeEntered).toBe(7)
   })
 
   it('a per-side set keeps the rating on its side', () => {

@@ -19,6 +19,9 @@ frontend/   React 19 + Vite app (src/views, src/components, src/store, src/lib, 
             app (Watch, WatchCore, WatchWidgets), the widgets and the animation-pack downloader.
 api/        Backend: server.js (plain node:http) plus small testable modules beside it.
             coach/ is the optional AI coach; coach/core/ is shared with the phone apps.
+            engine/ (the v2 training engine) and migration/ (the v1 → v2 profile conversion)
+            are runtime-neutral: the server imports them under bare node, the web and phone
+            builds import the same files under Vite, like coach/core.
             openapi.yaml documents every route.
 web/        Multi-stage Dockerfile (builds frontend, adds catalogue/media, serves with nginx) and
             nginx.conf.template (serves the app, proxies /api).
@@ -41,20 +44,21 @@ docker compose up -d --build
 # Frontend dev server (hot reload), proxies /api to :3000
 cd frontend && npm install && npm run dev
 
-# Tests (Node 22, the version CI and the Dockerfiles use)
-cd frontend && npm test                          # vitest run, the whole suite
-cd frontend && npx vitest run src/lib/progression.test.js   # one file
-cd frontend && npx vitest run -t "some test name"           # one test by name
-cd api && npm test                               # node --test
+# Frontend tests (engine, prescriptions, 1RM, session read-back)
+cd frontend && npm test            # vitest run
+cd frontend && npm run test:watch
+npx vitest run src/lib/prescription/advance.test.js   # single file
+npx vitest run -t "some test name"           # single test by name
+
+# API and MCP server tests
+cd api && npm test
 cd mcp && npm test
 
-# Checks CI runs besides the suites (run `npm ci` in the repo root once, for js-yaml)
-cd frontend && node scripts/check-locales.mjs && node scripts/check-source-strings.mjs --strict
-node scripts/catalogue/build.mjs --check
-node scripts/build-coach-assets.mjs --check
-node scripts/build-api-docs.mjs --check
+# API tests (node:test; the engine and migration suites live here and in frontend/src/lib/prescription)
+cd api && npm test
+node api/scripts/check-core-loadable.mjs   # api/coach/core, api/engine, api/migration must load under bare node
 
-# Builds
+# Production build
 cd frontend && npm run build
 cd frontend && npm run build:mobile   # VITE_MOBILE build + 180 px media from catalogue/media + cap sync
 ```
@@ -73,15 +77,22 @@ machine, never in CI (see "Exercise media" below and docs/APP_STORES.md).
 
 - **`store/useStore.js`**: a single Zustand store holding the client-side app state (`S`),
   persisted to `localStorage` (`gym_state_v1`) and debounce-pushed to the server when signed in
-  (`pushState`, see `lib/api.js`). On the phones it is also mirrored to a file via `lib/mobile.js`
+  (`pushState`, see `lib/api.js`, which sends `X-OpenGym-Engine-Schema: 2`). On the phones it is also mirrored to a file via `lib/mobile.js`
   (`nativeSave`), since WebView storage can be evicted. `store/useUI.js` holds ephemeral UI state
-  (modals, active sheet, rest timer) separately from persisted data.
+  (modals, active sheet, rest timer) separately from persisted data. The workout in progress is not part of `S`: it has its own key
+  (`gym_active_v1`, mirrored by `nativeActiveSave`) and is never synced. The store also runs the one-off
+  v1 → v2 conversion (`openMigration` / `confirmMigration`, behind `views/MigrationGate.jsx`).
 - **`lib/`**: pure, framework-free helpers, each paired with a same-directory `*.test.js`. The
   domain logic lives here, most importantly:
-  - `progression.js`: the progression-rule engine (linear, Greyskull LP, double and triple
-    progression, time-based). Rules implement a shared policy interface.
-  - `onerm.js`: estimated 1RM from logged sets (several formulas).
-  - `finish-workout.js`: reduces a completed session back into state (weights advance, PRs).
+  - `prescription/` — the client's import path for the training engine (`export * from
+    ../../../../api/engine/index.js`); the engine itself lives in `api/engine` (see below). The
+    engine's unit tests sit beside this re-export: `prescription/*.test.js`.
+  - `session-start.js` — gathers a routine occurrence's inputs (rule, progression state, newest
+    log, current 1RM) and stores the engine's frozen prescription; `session-ui-adapter.js` turns a
+    prescription into the rows the workout screen edits and the rows back into persisted performance.
+  - `finish-session.js` — reduces a completed session back into state (each exposure becomes a log
+    with its audit, each track advances once, PRs and 1RMs are recorded).
+  - `onerm.js`: estimated 1RM from logged sets (the formulas live in the engine).
   - `recovery.js` / `recovery-view.js`: the fatigue and muscle-recovery model.
   - `workout-model.js`, `supersetFlow.js`: the in-session workout state machine.
   - `sync-merge.js`: the field-by-field merge behind the 409 retry (see "Sync" below).
@@ -93,7 +104,8 @@ machine, never in CI (see "Exercise media" below and docs/APP_STORES.md).
     `channel.js` (APK or store build), `watch-sync.js`, `widgets.js`, `health-sync.js`,
     `anim-quality.js` / `anim-packs.js` (animation sizes in the store apps).
   - CONTRIBUTING.md is explicit: **anything that decides what you lift next, or reads a logged
-    session back, is a pure helper here with a unit test beside it.**
+    session back, is a pure helper with a unit test beside it** (`api/engine`, tested in `lib/prescription/`, or a helper here). There is no v1
+    progression code left: `lib/no-legacy-progression.test.js` fails if `progression.js` / `finish-workout.js` come back.
 - **Body measurements (`lib/measurements.js`, `views/Measurements.jsx`)**: one check-in per day.
   Built-in circumferences and legacy custom fields store cm and follow the profile's cm/in
   display. Custom definitions may specify `unit: 'cm' | 'in' | '%' | 'kg' | 'lb' | 'none'`; that
@@ -111,38 +123,56 @@ machine, never in CI (see "Exercise media" below and docs/APP_STORES.md).
   `i18n-core.js`). A new `t()` string goes into every pack; pt-BR inherits from pt and has a
   fingerprint test (`scripts/pt-br-inheritance-fingerprint.mjs`).
 
+### Training engine and data model v2 (`api/engine`, `api/migration`)
+
+A profile carries `engineSchemaVersion: 2`. Unlike v1, which re-derived the next load from history
+on every read, v2 **stores what the engine decided**:
+
+- a routine slot is an *occurrence* `{ occurrenceId, exerciseId, rule, … }` whose `PlanRule` carries a
+  `program` — phases of set groups, operators that step load/reps/sets/seconds/rest/rung, a back-off,
+  exits — built by one of 15 templates (`preset`: the 10 v1-era ones plus `top_set_backoff`,
+  `accumulation_intensification`, `density`, `double_controlled`, `undulating`); the engine reads
+  the program, never the name;
+- starting a session generates one **frozen, content-hashed `Prescription`** per occurrence
+  (`prescriptions{}`); a logged exercise is an *exposure* `{ exposureId, prescriptionId,
+  performance.sets[], actual, audit }` in `workout.exposures[]`, so history never changes when a
+  rule is edited;
+- a `ProgressionState` per track (`progression{}`) is advanced by `advanceProgression` when a
+  session finishes, and rebuilt by replaying history when the plan changes;
+- 1RMs are an append-only dictionary (`oneRepMaxes{}`).
+
+`api/engine` is pure and catalogue-free (no storage, no exercise library, no Coach imports): same
+inputs, same prescription. `api/migration` (`migrateProfileV1ToV2(state, catalogue)`) is the one-way,
+deterministic v1 → v2 conversion shared by the API, the browser and the Capacitor shells; it takes
+the exercise catalogue (`LIB_BY_ID` from `api/coach/core/library.js`) as an argument, so every caller
+must pass the same one. Both folders must load under bare node — no `?raw`, `import.meta.glob` or
+frontend imports — which `api/scripts/check-core-loadable.mjs` checks outside vitest.
+`docs/MIGRATION_TO_ENGINE_NOTE.md` is the reference for both data models and for what the migration
+can and cannot carry over; when it and the code disagree, the code wins.
+
 ### API (`api/server.js`)
 
-Plain `node:http`, no framework. Requests are dispatched through a `routes` object keyed by
-`'METHOD /path'` (e.g. `routes['GET /api/health']`); add an endpoint by adding a key and its entry
-in `openapi.yaml` (`openapi-routes.test.js` compares them). State is JSON under `DATA_DIR`:
-`db.json` (users, credentials, push subscriptions, invites) and `state-<uid>.json` per user,
-written temp-then-rename (`durable.js`). Custom-exercise photos and videos live in
-`DATA_DIR/uploads` (`media.js`). Auth is WebAuthn passkeys (`@simplewebauthn/server`), an optional
-password, and a signed session cookie (HMAC with `DATA_DIR/secret`); paired phones get the same
-session as a bearer token. Optional pieces are gated by env vars: `ADMIN_UIDS`, `INVITE_ONLY`,
-`ALLOW_GUEST`, `PASSWORD_LOGIN`, `AUDIT_*`. Web Push (`web-push`, VAPID keys in `data/vapid.json`)
-drives rest-timer and reminder notifications.
-
-### Sync
-
-Each profile is one document with a server revision. A device PUTs with the revision it last saw;
-if another device wrote in between, the server answers 409 with the current document and the
-client merges (`lib/sync-merge.js`) and retries. Every change carries its own stamp, per setting
-and per field, so the newest edit of each wins and deletions stay deleted.
-
-### Code that exists twice on purpose
-
-The API image cannot import the frontend, so some rules are hand-copied. Change both sides
-together: `lib/sync-merge.js` and `api/sync-stamps.js` (parity test), `lib/glyphs.js` and
-`api/coach/core/glyphs.js` (parity test), `lib/nudge.js` and `api/nudge.js`, `lib/queue.js` and
-`api/queue.js` (mirrored test cases only, nothing compares the code). The other way round,
-`lib/coach-local.js` imports `api/coach/core/` directly so the phones run the same coach pipeline.
+Single file, no framework, plain `node:http`. Requests are dispatched through a `routes` object
+keyed by `'METHOD /path'` (e.g. `routes['GET /api/health']`) matched against `req.method + ' ' +
+url.pathname` — add a new endpoint by adding a key here. State is two flat JSON files under
+`DATA_DIR` (`db.json`: users/credentials/subscriptions/invites; `state-<uid>.json`: per-user
+workout data), written with a write-temp-then-rename atomic pattern (`atomicWrite`).
+`engineGate` guards `GET /api/data`, `GET /api/data/rev` and `PUT /api/data` on the client's
+`X-OpenGym-Engine-Schema` header: a v1 file answers an engine-aware client `409 migration-required`,
+a v2 file answers an old client `409 upgrade-required`. The conversion itself is
+`POST /api/data/migrate-engine-v2`, which the app calls by itself at launch once its own v1 copies are backed up; it
+keeps the untouched v1 file once as `state-<uid>.pre-engine-v1.json` and never replaces it. Auth is
+WebAuthn passkeys (`@simplewebauthn/server`) plus a signed session cookie (HMAC'd with a
+`DATA_DIR/secret` generated on first boot) — no JWT/session-store dependency. Optional pieces
+gated by env vars: `ADMIN_UIDS` (admin dashboard), `INVITE_ONLY` (signup needs a code),
+`ALLOW_GUEST` (client-only guest mode never hits the server at all), plus a rotating
+`data/audit.log` (JSONL) for sign-in/admin events. Web Push (`web-push`, VAPID keys
+auto-generated into `data/vapid.json`) drives rest-timer-over and day-reminder notifications.
 
 ### MCP server (`mcp/src`)
 
 Stdio MCP bridge (`@modelcontextprotocol/sdk`) that reads one user's data straight from
-`DATA_DIR`. `state.js` loads and derives the data, `tools.js` defines the read tools (zod schemas),
+`DATA_DIR` (the v2 shape; a profile still on v1 is refused with an "upgrade from the app first" message). `state.js` loads and derives the data, `tools.js` defines the read tools (zod schemas),
 `labels.js` maps keys to readable labels, `index.js` wires it together. The one write tool,
 `log_workout` (`write-tools.js`), never writes the file: it builds the workout with
 `frontend/src/lib/log-workout.js` and saves it with `PUT /api/data` over a paired-session token
@@ -157,6 +187,10 @@ env-var contract (`RP_ID`, `ORIGIN`, `PORT`, `WEB_PORT`, `NGINX_PORT`, `BACKEND`
 depend on.
 
 ### Docker / deploy
+
+The web image is built from the repository root because the frontend imports `api/coach/core`, `api/engine` and `api/migration`;
+`web/Dockerfile` and `api/Dockerfile` copy each by hand, so a new shared folder under `api/` is added to both, to
+`build:web-check` and to `check-core-loadable.mjs`.
 
 `docker-compose.yml` has two services, `api` and `web`. The web image builds `frontend/`, copies
 `catalogue/media` into it as `/exercise-media/`, and nginx proxies `/api` to the api (one origin,
@@ -177,5 +211,7 @@ never feed the media to an AI tool.
   plugins). `api/`: three dependencies. New dependencies are a hard sell either side.
 - Don't commit `data/`. Don't add or replace anything in `catalogue/media/`.
 - Training-logic changes (progression, 1RM, session read-back) need a unit test in `src/lib`
-  beside the code.
+  beside the code (for `api/engine` / `api/migration`: `frontend/src/lib/prescription/*.test.js` or `api/test/*.test.js`).
 - User-facing text: plain and human, no em dashes. CHANGELOG.md is written at release time.
+- Keep `api/engine` and `api/migration` runtime-neutral and dependency-free; anything that needs the
+  exercise catalogue, the clock or a random source takes it as an argument.

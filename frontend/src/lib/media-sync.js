@@ -28,6 +28,7 @@ import { MB, BG_UPLOAD_METERED_MAX_MB, LOCAL_CACHE_MAX_MB, LOCAL_GC_GRACE_MS, li
 import { MOBILE, nativeLoad } from './mobile.js'
 import { registerMediaRunner, publishMediaStatus, pendingRefCount, loadPending } from './media-owed.js'
 import { t } from './i18n-core.js'
+import { parseState } from './state-codec.js'
 
 const MIN = 60000
 const DEDUPE_MS = 10 * MIN
@@ -288,7 +289,7 @@ export function createMediaSync(deps = {}) {
       const live = referencedHashes(st.S)
       try {
         const raw = d.storage?.getItem(PERSISTED_KEY)
-        if (raw) for (const h of referencedHashes(JSON.parse(raw))) live.add(h)
+        if (raw) for (const h of referencedHashes(parseState(raw))) live.add(h)
       } catch { /* an unreadable copy keeps nothing extra */ }
       try {
         if (typeof st.stashedMediaHashes === 'function') for (const h of await st.stashedMediaHashes()) live.add(h)

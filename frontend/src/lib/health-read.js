@@ -13,6 +13,7 @@
 //   - openGym's own records in the hub (what it wrote there itself) are never read back as new;
 //   - an imported weigh-in carries `src` and is never written back to the hub (no ping-pong:
 //     lib/health-connect.js healthRecords leaves it out).
+import { legacyEntriesOf } from './prescription/index.js'
 import { hrFromSamples, sanitizeHr } from './heart-rate.js'
 import { stampWorkout } from './sync-merge.js'
 import { isoOf } from './format.js'
@@ -45,7 +46,7 @@ export function mergeHeartRate(S, wid, samples, src, now = Date.now()) {
   let changed = false
   for (const [key, got] of res.sets) {
     const [ei, si] = key.split(':').map(Number)
-    const set = w.entries?.[ei]?.sets?.[si]
+    const set = legacyEntriesOf(w)[ei]?.sets?.[si]
     if (!set) continue
     if (got.hr && !sanitizeHr(set.hr)) { set.hr = got.hr; changed = true }
     if (got.restHr && !sanitizeHr(set.restHr)) { set.restHr = got.restHr; changed = true }
@@ -66,7 +67,7 @@ export function mergeHeartRate(S, wid, samples, src, now = Date.now()) {
 export function lacksHeartRate(w) {
   if (!w || typeof w !== 'object') return false
   if (!w.hr) return true
-  return (w.entries || []).some(e => (e?.sets || []).some(s => s && (s.done === true || s.sides) && !sanitizeHr(s.hr)))
+  return legacyEntriesOf(w).some(e => (e?.sets || []).some(s => s && (s.done === true || s.sides) && !sanitizeHr(s.hr)))
 }
 
 /**

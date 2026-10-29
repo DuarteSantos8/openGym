@@ -3,6 +3,7 @@
 // the CSV side — a bad item is skipped, and nothing reaches the store the app cannot render — and
 // the merge rule that routines are added or replace their own earlier copy, never anything else.
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { planPhase } from './prescription/index.js'
 import { parseHevyWorkouts, parseHevyRoutines, parseHevyBodyweight, mergeHevyRoutines, fetchHevyPages, importHevyData } from './import-hevy.js'
 
 const BODY_PARTS = new Set(['chest', 'back', 'shoulders', 'upper arms', 'lower arms', 'upper legs', 'lower legs', 'waist', 'cardio', 'neck'])
@@ -201,12 +202,12 @@ describe('mergeHevyRoutines adds and only replaces its own', () => {
     expect(S.routines.map(r => r.name)).toEqual(['Mine', 'Push', 'Pull'])
     expect(S.routines[0]).toEqual({ id: 'mine', name: 'Mine', ex: [{ id: '0025', sets: 3 }] })
     expect(S.routines[1].id).toBe('old')                   // replaced in place, id kept
-    expect(S.routines[1].ex[0].id).toBe('cu1')             // "zorb" / waist already existed
+    expect(S.routines[1].ex[0].exerciseId).toBe('cu1')             // "zorb" / waist already existed
     expect(S.customEx).toHaveLength(1)
     for (const r of S.routines.slice(1)) {
       expect(Array.isArray(r.ex)).toBe(true)
       expect(r.ex.length).toBeGreaterThan(0)
-      for (const e of r.ex) { expect(typeof e.id).toBe('string'); expect(e.sets).toBeGreaterThan(0) }
+      for (const e of r.ex) { expect(typeof e.exerciseId).toBe('string'); expect(planPhase(e.rule).parameters.sets.min).toBeGreaterThan(0) }
     }
   })
 })
