@@ -1477,8 +1477,12 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .effpick .effpick-free .stp{flex:none;width:148px}
 .effpick .effpick-free .stp .num{font-size:var(--fs-body);font-weight:600}
 .effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500}
-.setrow.done .n{background:var(--acc);color:var(--on-acc)}
-.setrow.done{opacity:.45}
+/* A ticked set fades back. Its parts fade, not the row: the number keeps full opacity and is drawn
+   in the faded colours instead, so the set-vs-last arrow and the failure mark on it stay readable
+   (at .45 the light theme's arrow was 2:1). The look is the same as the old row opacity. */
+.setrow.done>*:not(.n){opacity:.45}
+.setrow.done .n{background:var(--acc);color:var(--on-acc);
+  background:color-mix(in srgb,var(--acc) 45%,var(--surface));color:color-mix(in srgb,var(--on-acc) 45%,var(--surface))}
 
 /* Swipe on sets (v1.3.11, components/SwipeRow.jsx). The row slides over two panes: Copy at the
    start of the line, Delete at its end, each as wide as the swipe has gone and zero wide at rest.
@@ -3034,8 +3038,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .recap-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
 .recap-tile{padding:12px;border-radius:var(--r-card);background:var(--surface-2);min-width:0}
 .recap-v{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.recap-top{display:flex;align-items:center;gap:6px;margin:4px 0 16px}
-.recap-top .icn{flex:none}
+.recap-most{display:flex;align-items:center;gap:6px;margin:4px 0 16px}
+.recap-most .icn{flex:none}
 
 /* Home's week countdown under the strip (#753) */
 .wkleft{margin:6px 0 2px;text-align:center}
