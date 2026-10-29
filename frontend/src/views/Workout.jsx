@@ -2538,7 +2538,24 @@ function ActiveWorkout() {
     </div>}
     {!listMode && <div style={{ height: 10 }} />}
     {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small" style={{ marginBottom: 6 }}>{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}
-    <Button onClick={addExercise} icon="plus">{t('Add exercise')}</Button>
+    {/* The end of the workout (redesign 1.4.5, P3): adding an exercise and the session's note are
+        one inset list of two rows, not two centred text buttons 40px apart, so the finish button
+        under them is the one thing that stands out. Wrapping up is when you know how the session
+        went, so the note sits here with the finish rather than in the header. */}
+    <div className="sect-b wk-end">
+      <button type="button" className="lrow tap wk-end-row acc" onClick={addExercise}>
+        <Icon name="plusCircle" className="wk-end-i" />
+        <span className="lrow-m"><span className="lrow-t">{t('Add exercise')}</span></span>
+      </button>
+      <button type="button" className={'lrow tap wk-end-row' + (A.note ? ' has-note' : '')} onClick={sessionNoteSheet}>
+        <Icon name="note" className="wk-end-i" />
+        <span className="lrow-m">
+          <span className="lrow-t">{A.note ? t('Edit session note') : t('Add session note')}</span>
+          {A.note && <span className="lrow-s wk-end-note">{A.note}</span>}
+        </span>
+        <Icon name="chevronRight" className="lrow-c" />
+      </button>
+    </div>
     {wc.exerciseButtons && A.entries.length > 0 && <>
       <div style={{ height: 6 }} />
       <div className="row">
@@ -2557,14 +2574,9 @@ function ActiveWorkout() {
         <Button size="sm" icon="minus" style={{ color: 'var(--red)' }} disabled={working} onClick={removeExerciseSheet}>{t('Remove exercise')}</Button>
       </div>
     </>}
-    <div style={{ height: 10 }} />
-    {/* Wrapping up is when you know how the session went, so the note sits with the finish
-        button rather than somewhere in the header. */}
-    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-      <Button size="sm" icon="note" variant={A.note ? 'tinted' : undefined} onClick={sessionNoteSheet}>
-        {A.note ? t('Edit session note') : t('Add session note')}
-      </Button>
-    </div>
+    <div style={{ height: 16 }} />
+    {/* Finish is a full-width primary button once every set is done; before that it is the quiet
+        "Finish workout early" line, since the header's Finish already covers the early way out. */}
     {(() => {
       const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
       const allDone = A.entries.length > 0 && exDone === A.entries.length

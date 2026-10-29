@@ -288,6 +288,14 @@ body.resting #app{padding-bottom:calc(166px + var(--sab))}
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
+/* The end of a workout (Workout.jsx, P3): Add exercise and the session note as one inset list. */
+.wk-end{margin-top:2px}
+.wk-end-row{min-height:46px}
+.wk-end-i{flex:none;font-size:var(--fs-title3);color:var(--label-2)}
+.wk-end-row.acc,.wk-end-row.acc .wk-end-i{color:var(--acc-ink)}
+.wk-end-row.has-note .wk-end-i{color:var(--gold-ink)}
+.wk-end-note{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.wk-end .lrow+.lrow::before{inset-inline-start:46px}
 @keyframes viewfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 #app > .page.vfade{animation:viewfade var(--med) var(--ease)}
 /* Drilling into a settings page and back (App.jsx pageMotion): the iPhone's own push and pop.
