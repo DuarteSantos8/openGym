@@ -519,6 +519,11 @@ export default {
   'Fetching routines… ({0}/{1})': 'Завантаження програм… ({0}/{1})',
   'Routines': 'Програми',
   'Import weigh-ins': 'Імпортувати зважування',
+  'Import body measurements': 'Імпортувати виміри тіла',
+  'Workouts to link to their routine: {0}': 'Тренування, які буде прив’язано до своєї програми: {0}',
+  'Workouts linked to their routine: {0}': 'Тренування прив’язано до своєї програми: {0}',
+  'Body measurements imported: {0}': 'Імпортовано вимірів тіла: {0}',
+  'Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.': 'Ваш акаунт Hevy показує вагу в {0}, цей застосунок — у {1}: вона надійде в {1}.',
   '{0} new · {1} days already here': '{0} нових · {1} днів уже є',
   'Hevy stores weights in kg, so they’ll be converted to {0}.': 'Hevy зберігає вагу в кг, тож її буде переведено в {0}.',
   // --- mobile build ---

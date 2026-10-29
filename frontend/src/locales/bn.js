@@ -777,6 +777,11 @@ export default {
   'Fetching routines… ({0}/{1})': 'রুটিন আনা হচ্ছে… ({0}/{1})',
   'Routines': 'রুটিন',
   'Import weigh-ins': 'ওজন মাপা ইমপোর্ট করুন',
+  'Import body measurements': 'শরীরের মাপ ইমপোর্ট করুন',
+  'Workouts to link to their routine: {0}': 'রুটিনের সাথে যুক্ত হবে এমন ওয়ার্কআউট: {0}',
+  'Workouts linked to their routine: {0}': 'রুটিনের সাথে যুক্ত হওয়া ওয়ার্কআউট: {0}',
+  'Body measurements imported: {0}': 'ইমপোর্ট হওয়া শরীরের মাপ: {0}',
+  'Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.': 'আপনার Hevy অ্যাকাউন্ট ওজন দেখায় {0}-এ, এই অ্যাপ {1}-এ: সেগুলো {1}-এ আসবে।',
   '{0} new · {1} days already here': '{0}টি নতুন · {1} দিন ইতিমধ্যে আছে',
   'Hevy stores weights in kg, so they’ll be converted to {0}.': 'Hevy ওজন kg-তে রাখে, তাই সেগুলো {0}-এ রূপান্তর করা হবে।',
   // --- mobile build ---

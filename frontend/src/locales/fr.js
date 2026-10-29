@@ -691,6 +691,11 @@ export default {
   'Fetching routines… ({0}/{1})': 'Chargement des routines… ({0}/{1})',
   'Routines': 'Routines',
   'Import weigh-ins': 'Importer les pesées',
+  'Import body measurements': 'Importer les mensurations',
+  'Workouts to link to their routine: {0}': 'Séances à rattacher à leur routine : {0}',
+  'Workouts linked to their routine: {0}': 'Séances rattachées à leur routine : {0}',
+  'Body measurements imported: {0}': 'Mensurations importées : {0}',
+  'Your Hevy account shows weights in {0}, this app in {1}: they come in as {1}.': 'Votre compte Hevy affiche les poids en {0}, cette appli en {1} : ils arrivent en {1}.',
   '{0} new · {1} days already here': '{0} nouveaux · {1} jours déjà présents',
   'Hevy stores weights in kg, so they’ll be converted to {0}.': 'Hevy enregistre les poids en kg, ils seront donc convertis en {0}.',
   // --- mobile build ---
