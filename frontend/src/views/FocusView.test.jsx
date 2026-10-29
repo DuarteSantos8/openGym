@@ -57,6 +57,14 @@ afterEach(() => {
 })
 
 describe('Focus workout view', () => {
+  // FocusView.css spaces the steppers and greys a finished set's numbers through .focus-set,
+  // which the set's wrapper had lost: the label sat closer to the stepper above it than to its own.
+  it('gives the set its focus-set class, with complete once it is done', () => {
+    mount({ id: SQUAT, target: { sets: 2, reps: 5 }, sets: [{ w: 95, r: 5, done: true }, { w: 95, r: 5, done: false }] })
+    const set = container.querySelector('[data-testid="focus-set"]')
+    expect(set.classList.contains('focus-set')).toBe(true)
+  })
+
   it('omits a plan that repeats the prescription and keeps plate guidance in the badge row', () => {
     mount({
       id: SQUAT,

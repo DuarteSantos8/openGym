@@ -61,6 +61,7 @@
 .focus-timed{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:12px;border-radius:var(--r);background:var(--surface-2)}
 .focus-timed .btn{width:auto;min-width:120px}
 .focus-extras{display:grid;gap:8px;margin-top:12px}
+.focus-extras:empty{display:none}
 .focus-extra{display:grid;grid-template-columns:minmax(56px,auto) 1fr 1fr;align-items:end;gap:8px;padding:8px;border-radius:var(--r-sm);background:var(--surface-2)}
 .focus-extra .stp-l{font-size:11px}
 @media (max-width:400px){

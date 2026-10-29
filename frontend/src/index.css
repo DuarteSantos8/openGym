@@ -30,6 +30,7 @@
   --label-2:   rgba(235,235,245,.60);
   --label-3:   rgba(235,235,245,.32);
   --label-4:   rgba(235,235,245,.18);
+  --label-dim: rgba(235,235,245,.50);
 
   /* lines */
   --sep:       rgba(84,84,88,.60);
@@ -88,6 +89,7 @@
   --label-2:   rgba(60,60,67,.75);
   --label-3:   rgba(60,60,67,.30);
   --label-4:   rgba(60,60,67,.16);
+  --label-dim: var(--label-2);
 
   --sep:       rgba(60,60,67,.29);
   --sep-op:    rgba(60,60,67,.20);
@@ -143,6 +145,7 @@
     --yellow:#fedf43; --teal:#3bddec; --indigo:#a7aaff; --pink:#ff8ac4;
     --purple:#ea8dff; --mint:#54dfcb; --brown:#dba679; --grey:#aeaeb2;
     --label-2:rgba(235,235,245,.78); --label-3:rgba(235,235,245,.55); --label-4:rgba(235,235,245,.36);
+    --label-dim:rgba(235,235,245,.66);
     --sep:rgba(84,84,88,.95); --sep-op:rgba(84,84,88,.8);
   }
   :root:not([data-theme="light"]){ --on-acc:#000 }
@@ -151,12 +154,16 @@
     --yellow:#a16a00; --teal:#008198; --indigo:#564ade; --pink:#e7124d;
     --purple:#b02fc2; --mint:#008575; --brown:#956d51; --grey:#6c6c70;
     --label-2:rgba(60,60,67,.82); --label-3:rgba(60,60,67,.6); --label-4:rgba(60,60,67,.4);
+    --label-dim:var(--label-2);
     --sep:rgba(60,60,67,.6); --sep-op:rgba(60,60,67,.5);
   }
 }
 
 /* ---------------------------------------------------------------- reset -- */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* Native controls (date and time pickers, scrollbars) follow the theme instead of drawing light on dark. */
+:root{color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
 html{
   font-size:16px;background:var(--bg);overscroll-behavior:none;overflow-x:clip;
   -webkit-text-size-adjust:100%;
@@ -204,7 +211,12 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
    2026-09-22 rather than adopted, because adopting a scale means changing what four screens
    render, which is a design call and not a cleanup. `git log -- src/index.css` has them. */
 
-.muted{color:var(--label-2)} .dim{color:var(--label-3)}
+/* .dim is the quiet text (footnotes, "average effort", dates in a list): --label-dim, which holds
+   4.5:1 on a card. It was --label-3, the system's tertiary grey, 2.4:1 to 2.7:1, and over 200 lines
+   of real text used it (design review 1.4.5). The light theme has no room for a third grey that
+   reads, so there it is the secondary one; --label-3 stays for placeholders, disabled things and
+   hairline icons, which are not text to read. */
+.muted{color:var(--label-2)} .dim{color:var(--label-dim)}
 .small{font-size:13px;line-height:1.38}
 .accent{color:var(--acc-ink)}
 .capitalize{text-transform:capitalize}
@@ -355,6 +367,8 @@ h4.sec{
 .bw-rate{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;width:100%;margin-top:6px;padding:6px 2px;background:none;border:0;color:var(--label-2);font:inherit;font-size:15px;line-height:1.3;text-align:start;cursor:pointer}
 /* font:inherit above undid the .small on the button, so the trend line came out at the card's 17px
    and, on a 320px phone, broke into icon / two lines / a lone chevron (design review 1.4.5). */
+/* one line of icon, words and chevron: the words wrap inside their own box, the chevron stays at the end */
+.bw-rate{flex-wrap:nowrap}
 .bw-rate-t{min-width:0}
 .rate-range{display:grid;gap:8px;margin:14px 0 8px}
 
@@ -640,6 +654,9 @@ h4.sec{
   background:var(--surface-2);color:var(--label-2);
 }
 .item .tt{font-size:16px;font-weight:400;line-height:1.25;letter-spacing:-.009em}
+/* A row's subtitle wherever it sits: outside an .item it had no rule and came out as a second
+   17px title (Home's rest day, a past workout's sets, the exercise history). */
+.ss{color:var(--label-2);font-size:13px;margin-top:2px}
 .item .ss{color:var(--label-2);font-size:13px;margin-top:2px}
 .item .grow{flex:1;min-width:0}
 /* A row's opener as a real button (the routine editor's exercise name), so a row holding other
@@ -2054,7 +2071,7 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 }
 :root[data-theme="light"]{
   --streak-ink:#e06a00; --win-ink:#1e9e47; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
-  --gold-ink:#a26b00;
+  --gold-ink:#8f5e00;
 }
 /* The flame: a warm gradient with a light core; three gentle flickers when it appears, then still. */
 .flame{display:inline-block;flex:none;overflow:visible;vertical-align:-.12em}
@@ -2189,6 +2206,9 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .ex-hist{align-items:baseline;gap:12px;padding:6px 0;border-bottom:var(--hair) solid var(--sep)}
 .ex-hist-d{flex:none;white-space:nowrap}
 .ex-hist-s{min-width:0;text-align:end;text-wrap:pretty}
+
+.ex-best{margin-bottom:6px;line-height:1.4}
+.ex-best>.icn{display:inline-block;vertical-align:-2px;margin-inline-end:5px}
 
 /* --- PR badge --- */
 .pr{
@@ -2347,6 +2367,9 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
    routine editor's label and bar. */
 .wd-ex{margin-bottom:12px;cursor:pointer;border-radius:10px}
 .wd-ex>.grow{flex:1;min-width:0}
+/* the sets under each exercise name: the second voice. .ss had no rule outside .item, so they came
+   out at 17px in full ink, as loud as the name above them (design review 1.4.5). */
+.wd-ex .ss{font-size:15px;line-height:1.35;color:var(--label-2);margin-top:2px}
 .wd-thumb{background:none;border:none;padding:0;cursor:pointer;display:block;flex:none}
 .wd-ex:active{background:var(--surface-2)}
 .wd-ss{box-shadow:inset 3px 0 0 var(--acc);padding-inline-start:11px;margin-bottom:12px}
