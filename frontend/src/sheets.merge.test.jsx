@@ -70,4 +70,16 @@ describe('Merge into… (#656)', () => {
     exerciseDetailSheet(EXIDX['0043'])
     expect(button(renderTop(), 'Merge into…')).toBeUndefined()
   })
+
+  it('sits at the end of the sheet with Delete, Delete last (1.4.5 features pass)', () => {
+    exerciseDetailSheet(custom)
+    const detail = renderTop()
+    const all = [...detail.querySelectorAll('button')]
+    const merge = button(detail, 'Merge into…'), del = button(detail, 'Delete exercise')
+    expect(merge.closest('.ex-del')).not.toBeNull()
+    expect(all.indexOf(merge)).toBeGreaterThan(all.indexOf(button(detail, 'Edit')))
+    expect(all.indexOf(del)).toBe(all.length - 1)
+    expect(all.indexOf(merge)).toBe(all.length - 2)
+    expect(merge.classList.contains('danger')).toBe(false)
+  })
 })

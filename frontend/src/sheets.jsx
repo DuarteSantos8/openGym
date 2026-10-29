@@ -1305,6 +1305,9 @@ function ExerciseDetail({ ex, close }) {
   const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
   const fav = isFav(st, ex.id)
   const nfcOK = useNfcSupported()
+  // Merge into… is offered for your own exercise, or a catalogue one with something logged or
+  // planned to move.
+  const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
   const flipFav = () => {
     let on = false
     update(s => { on = toggleFav(s, ex.id) })
@@ -1334,10 +1337,6 @@ function ExerciseDetail({ ex, close }) {
     {nfcOK && !ex.missing && <Button icon="nfc" style={{ marginTop: 4 }} onClick={() => nfcExerciseSheet(ex)}>{t('Write NFC sticker for this exercise')}</Button>}
     {/* Edit is an ordinary button with the others; Delete waits at the very end, apart (P6). */}
     {isCustomEx(ex) && <Button icon="pencil" style={{ marginTop: 8 }} onClick={() => { close(); customExSheet(ex) }}>{t('Edit')}</Button>}
-    {/* Merge into… (#656, lib/exercise-merge.js): this exercise's history and plans onto another,
-        for an import that made "Bench Press (Barbell)" next to the catalogue's bench press. */}
-    {!ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })()) &&
-      <Button icon="merge" style={{ marginTop: 8 }} onClick={() => mergeExerciseFlow(ex, close)}>{t('Merge into…')}</Button>}
     {modeOf({ id: ex.id }) === 'reps' && <>
       <div data-tour="ex-unit"><h4 className="sec">{t('Weight unit')}</h4>
       <ExUnitRow ex={ex} /></div>
@@ -1368,8 +1367,15 @@ function ExerciseDetail({ ex, close }) {
     {!isCustomEx(ex) && !ex.missing && <a className="small dim exfix-link" target="_blank" rel="noopener"
       href={'https://github.com/DuarteSantos8/openGym/issues/new?template=exercise.yml&exercise=' + encodeURIComponent(ex.id + ', ' + ex.n)}>
       <Icon name="pencil" /> {t('Suggest a fix for this exercise')}</a>}
-    {/* The one destructive action, last and on its own: a red row, not a filled red button next
-        to Edit, which made deleting the louder of the two (redesign 1.4.5, P6). It still asks. */}
+    {/* The end of the sheet: what makes this exercise go away. Merge into… (#656,
+        lib/exercise-merge.js) moves its history and plans onto another and then deletes or hides
+        it, so it sits here with Delete, above it, rather than between History and the settings
+        (1.4.5 features pass). Delete stays the last row, red and on its own (P6). Both ask. */}
+    {canMerge && <div className="sect-b ex-del">
+      <button type="button" className="lrow tap" onClick={() => mergeExerciseFlow(ex, close)}>
+        <Icon name="merge" className="ex-del-i ex-merge-i" /><span className="lrow-m"><span className="lrow-t">{t('Merge into…')}</span></span>
+      </button>
+    </div>}
     {isCustomEx(ex) && <div className="sect-b ex-del">
       <button type="button" className="lrow tap danger" onClick={() => deleteCustomEx(ex, close)}>
         <Icon name="trash" className="ex-del-i" /><span className="lrow-m"><span className="lrow-t">{t('Delete exercise')}</span></span>
