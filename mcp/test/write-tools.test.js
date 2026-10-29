@@ -72,6 +72,31 @@ describe('log_workout writes through the server', () => {
     expect(r.revision).toBe(8)
   })
 
+  test('lengthened partials mark the set as failure, ride on the row, and are never volume', async () => {
+    const r = await call({ exercises: [{ exercise: 'dumbbell curl', sets: [{ reps: 10, weight: 12, lengthened_partials: 4 }] }] })
+    expect(r.logged).toBe(true)
+    expect(r.exercises[0].sets[0]).toMatchObject({ reps: 10, weight: 12, failure: true, lengthened_partials: 4 })
+    expect(r.exercises[0].sets[0].label).toBe('12×10 F+4')
+    expect(api.puts[0].state.workouts[0].entries[0].sets[0]).toMatchObject({ w: 12, r: 10, failure: true, lp: 4 })
+    expect(api.puts[0].state.workouts[0].vol).toBe(120)
+  })
+
+  test('partials on a set rated short of failure, on a warm-up or on a hold are refused, and nothing is written', async () => {
+    for (const set of [{ reps: 10, weight: 12, rir: 2, lengthened_partials: 3 }, { reps: 10, weight: 12, warmup: true, lengthened_partials: 3 }]) {
+      const r = await call({ exercises: [{ exercise: 'dumbbell curl', sets: [set] }] })
+      expect(r.logged).toBe(false)
+      expect(r.problems).toBeDefined()
+    }
+    expect(api.puts).toHaveLength(0)
+  })
+
+  test('the same sets with and without partials are different workouts', async () => {
+    const sets = lp => ({ exercises: [{ exercise: 'dumbbell curl', sets: [{ reps: 10, weight: 12, failure: true, ...(lp ? { lengthened_partials: lp } : {}) }] }] })
+    expect((await call(sets(0))).logged).toBe(true)
+    expect((await call(sets(4))).logged).toBe(true)
+    expect(api.puts).toHaveLength(2)
+  })
+
   test('dry_run builds the preview and writes nothing', async () => {
     const r = await call({ ...CURLS, dry_run: true })
     expect(r).toMatchObject({ logged: false, dry_run: true })

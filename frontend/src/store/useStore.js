@@ -113,6 +113,8 @@ export const DEF = {
   heatmapMetric: 'time',
   // Settings → Units → "Count warm-ups in volume" (#719): off keeps volume to work sets.
   volumeWarmups: false,
+  // Settings → Workout → "Partial reps": 'off' | 'fold' | 'open' (lib/history.js partialsModeOf).
+  partials: 'off',
   // How the active workout is laid out — 'cards' (one exercise at a time with Prev/Next),
   // 'list' (every exercise stacked and scrollable) or 'compact' (that stack stripped to just
   // names and set rows — no media, tags, notes, last-time or progression line). Purely

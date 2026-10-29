@@ -244,6 +244,17 @@ test('a set taken to failure reaches the coach as failure, a warm-up never does'
   assert.equal(sets[2].failure, true);
 });
 
+test('lengthened partials reach the coach as a count on the set', () => {
+  const S = debriefState();
+  const w2 = S.workouts.find(w => w.id === 'w2');
+  w2.entries[0].sets[2].failure = true;
+  w2.entries[0].sets[2].lp = 4;
+  const p = payload.build(S, { handle: handleFor('u'), kind: 'debrief', workoutId: 'w2' });
+  const sets = p.session.entries[0].sets;
+  assert.equal(sets[2].lp, 4);
+  assert.equal('lp' in sets[1], false);
+});
+
 test('an unknown workout id falls back to the latest session', () => {
   const p = payload.build(debriefState(), { handle: handleFor('u'), kind: 'debrief', workoutId: 'nope' });
   assert.equal(p.session.id, 'w2');

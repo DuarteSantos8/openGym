@@ -313,7 +313,7 @@ describe('the pages', () => {
   it('every old row has a home: the Workout page holds the rest, logging and the before/during rows', () => {
     mount('workout')
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Rest', 'Logging', 'Before and during'])
-    expect(titles()).toEqual(['Rest timer', 'Rest between warm-ups', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Layout',
+    expect(titles()).toEqual(['Rest timer', 'Rest between warm-ups', 'Rest-pause rest', 'Effort per set', 'Partial reps', 'Shown under each exercise', 'Layout',
       'Collapse completed exercises', 'Skip completed exercises', 'Weigh in before workouts', 'Keep screen awake', 'Exercise animations', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
@@ -333,6 +333,55 @@ describe('the pages', () => {
     act(() => sw.click())
     expect(mocks.S.collapseCompleted).toBe(true)
     expect('collapseCompleted' in mocks.S.active).toBe(false)
+  })
+
+  it('Partial reps sits under Effort per set, greyed out and unchangeable while effort is Off', () => {
+    mount('workout')
+    const row = rowTitled('Partial reps')
+    expect(titles().indexOf('Partial reps')).toBe(titles().indexOf('Effort per set') + 1)
+    expect(row.classList.contains('dis')).toBe(true)
+    expect(row.querySelector('.lrow-s').textContent).toBe('Needs Effort per set (RIR or RPE) to be on.')
+    expect([...row.querySelectorAll('.seg button')].map(b => b.textContent)).toEqual(['Off', 'Fold', 'Keep open'])
+    act(() => [...row.querySelectorAll('.seg button')].find(b => b.textContent === 'Keep open').click())
+    expect(mocks.S.partials).toBeUndefined()
+  })
+
+  it('Partial reps is a tri-state with a line for each, kept when effort goes Off', () => {
+    mocks.S.effort = 'rir'
+    mount('workout')
+    const pick = label => act(() => [...rowTitled('Partial reps').querySelectorAll('.seg button')].find(b => b.textContent === label).click())
+    const sub = () => rowTitled('Partial reps').querySelector('.lrow-s').textContent
+    expect(rowTitled('Partial reps').classList.contains('dis')).toBe(false)
+    expect(sub()).toBe('No partial reps button, and none are counted.')
+    pick('Fold')
+    expect(mocks.S.partials).toBe('fold')
+    mount('workout')
+    expect(sub()).toBe('Counted in volume. The exercise folds as usual when its last set is done.')
+    pick('Keep open')
+    expect(mocks.S.partials).toBe('open')
+    mount('workout')
+    expect(sub()).toMatch(/^Counted in volume\. The exercise stays open after its last set/)
+    pick('Off')
+    expect(mocks.S.partials).toBe('off')
+    // the choice survives Effort per set going Off, and shows again when it comes back
+    mocks.S.partials = 'open'
+    mocks.S.effort = 'none'
+    mount('workout')
+    expect([...rowTitled('Partial reps').querySelectorAll('.seg button')].find(b => b.getAttribute('aria-pressed') === 'true').textContent).toBe('Keep open')
+    expect(mocks.S.partials).toBe('open')
+  })
+
+  it('the (i) beside Partial reps opens its own explanation', () => {
+    mount('workout')
+    act(() => rowTitled('Partial reps').querySelector('.helpbtn').click())
+    expect(mocks.sheets.length).toBe(1)
+    const sheet = document.createElement('div')
+    document.body.appendChild(sheet)
+    const r = createRoot(sheet)
+    act(() => r.render(mocks.sheets[0](() => {})))
+    expect(sheet.querySelector('h3').textContent).toBe('Partial reps')
+    expect(sheet.textContent).toMatch(/Each one counts 20% of a rep in the volume/)
+    act(() => r.unmount()); sheet.remove()
   })
 
   it('the Fine-tuning switches write S.wc as the old Workout controls sheet did', () => {

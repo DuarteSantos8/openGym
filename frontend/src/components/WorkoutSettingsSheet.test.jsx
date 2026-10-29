@@ -54,7 +54,7 @@ describe('the in-workout settings sheet', () => {
   it('has the rows people change at the gym, then All settings', () => {
     expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual([
       'Rest timer', 'Play a sound', 'Vibrate', 'Flash the screen', 'Keep screen awake',
-      'Layout', 'Effort per set', 'Swipe actions', 'Exercise animations', 'All settings',
+      'Layout', 'Effort per set', 'Partial reps', 'Swipe actions', 'Exercise animations', 'All settings',
     ])
     expect(row('Rest timer').querySelector('.lrow-v').textContent).toBe('1:30')
     expect(row('Keep screen awake').querySelector('.lrow-s').textContent).toMatch(/^The screen stays on/)
@@ -69,6 +69,18 @@ describe('the in-workout settings sheet', () => {
     act(() => [...row('Effort per set').querySelectorAll('button')].find(b => b.textContent === 'RIR').click())
     act(() => [...row('Exercise animations').querySelectorAll('button')].find(b => b.textContent === 'Small').click())
     expect(S()).toMatchObject({ sound: true, vibrate: false, timerFlash: true, keepAwake: false, effort: 'rir', gifSize: 'mini' })
+  })
+
+  it('Partial reps is greyed out while Effort per set is Off, and writes S.partials once it is on', () => {
+    expect(row('Partial reps').classList.contains('dis')).toBe(true)
+    expect(row('Partial reps').querySelector('.lrow-s').textContent).toBe('Needs Effort per set (RIR or RPE) to be on.')
+    act(() => [...row('Partial reps').querySelectorAll('button')].find(b => b.textContent === 'Fold').click())
+    expect(S().partials).toBe('off')
+    act(() => [...row('Effort per set').querySelectorAll('button')].find(b => b.textContent === 'RPE').click())
+    expect(row('Partial reps').classList.contains('dis')).toBe(false)
+    act(() => [...row('Partial reps').querySelectorAll('button')].find(b => b.textContent === 'Keep open').click())
+    expect(S().partials).toBe('open')
+    expect(row('Partial reps').querySelector('button.on').textContent).toBe('Keep open')
   })
 
   it('shows this session’s layout, and a pick here is saved and replaces it', () => {

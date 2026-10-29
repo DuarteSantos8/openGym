@@ -9,7 +9,13 @@
 // planned or extra, targets and logged sets — no notes, media or device bookkeeping.
 import { isWarmupRow } from './workout-model.js'
 
-const SET_KEYS = ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe']
+const SET_KEYS = ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe', 'lp']
+const SIDE_KEYS = ['w', 'r', 'rir', 'rpe', 'lp']
+const sideOut = x => {
+  const o = { done: !!x?.done }
+  for (const k of SIDE_KEYS) if (Number.isFinite(x?.[k])) o[k] = x[k]
+  return o
+}
 
 /** The running session as the Coach reads it, or null when there is none (or it is a history edit). */
 export function todayForCoach(S, now = Date.now()) {
@@ -29,6 +35,8 @@ export function todayForCoach(S, now = Date.now()) {
         if (isWarmupRow(s)) o.warmup = true
         else if (s.failure === true) o.failure = true
         for (const k of SET_KEYS) if (Number.isFinite(s[k])) o[k] = s[k]
+        // A unilateral set's sides, each with its own numbers and partials.
+        if (s.sides && typeof s.sides === 'object') o.sides = { L: sideOut(s.sides.L), R: sideOut(s.sides.R) }
         return o
       }),
     })),

@@ -1,7 +1,7 @@
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { effortOf } from '../lib/history.js'
+import { effortOf, PARTIALS_MODES } from '../lib/history.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { unlock, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -25,6 +25,7 @@ export function WorkoutSettings({ close }) {
   const wakeOK = wakeLockSupported()
   const layout = ['list', 'compact'].includes(S.active?.workoutView || S.workoutView) ? (S.active?.workoutView || S.workoutView) : 'cards'
   const gif = S.gifSize === 'mini' || S.gifSize === 'off' ? S.gifSize : 'full'
+  const effortOn = effortOf(S) !== 'none'
   const allSettings = () => closeThenNav(close, '/settings/workout')
   return <div className="ws-sheet">
     <div className="row between" style={{ marginBottom: 2 }}>
@@ -65,6 +66,13 @@ export function WorkoutSettings({ close }) {
         <Segmented className="seg-inline"
           options={[{ value: 'none', label: t('Off') }, { value: 'rir', label: t('RIR') }, { value: 'rpe', label: t('RPE') }]}
           value={effortOf(S)} onChange={v => update(s => { s.effort = v; delete s.showRir })} />
+      </Row>
+      {/* Same as Settings → Workout → Partial reps: greyed out while Effort per set is Off. */}
+      <Row icon="arrowDown" iconTint="var(--orange)" title={t('Partial reps')} className={effortOn ? '' : 'dis'}
+        subtitle={effortOn ? null : t('Needs Effort per set (RIR or RPE) to be on.')}>
+        <Segmented className="seg-inline"
+          options={[{ value: 'off', label: t('Off') }, { value: 'fold', label: t('Fold') }, { value: 'open', label: t('Keep open') }]}
+          value={PARTIALS_MODES.includes(S.partials) ? S.partials : 'off'} onChange={v => { if (effortOn) update(s => { s.partials = v }) }} />
       </Row>
       <Row icon="swap" iconTint="var(--indigo)" title={t('Swipe actions')} subtitle={t('Sets, routines and the loop: left removes, right copies')}>
         <Switch aria-label={t('Swipe actions')} checked={workoutControls(S).swipeSets}

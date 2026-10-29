@@ -92,6 +92,19 @@ function rowOf(set, mode, toProfile) {
     if (v == null || v < e.min || v > e.max) return { problem: `${e.hd} must be between ${e.min} and ${e.max}` }
     row[kind] = v
   }
+  if (set.lengthenedPartials != null) {
+    const lp = num(set.lengthenedPartials)
+    if (mode === 'time') return { problem: 'lengthened partials are counted on rep sets only' }
+    if (set.warmup === true) return { problem: 'a warm-up set has no lengthened partials' }
+    if (!Number.isInteger(lp) || lp < 1 || lp > LOG_LIMITS.maxReps) return { problem: `lengthened partials must be a whole number 1–${LOG_LIMITS.maxReps}` }
+    // Partials only follow failure. A set rated short of it contradicts them; an unrated one is
+    // taken as a set the user forgot to mark, so it is marked as failure here.
+    if ((row.rir != null && row.rir > 0) || (row.rpe != null && row.rpe < 10)) {
+      return { problem: 'lengthened partials only happen on a set taken to failure (RIR 0 / RPE 10)' }
+    }
+    row.lp = lp
+    if (row.rir !== 0 && row.rpe !== 10) row.failure = true
+  }
   return { row }
 }
 
@@ -100,7 +113,7 @@ function rowOf(set, mode, toProfile) {
  *
  * `input`: { date: 'YYYY-MM-DD', start?: 'HH:MM', durationMin?, name?, note?, unit?: 'kg'|'lb',
  *   exercises: [{ exercise, createCustom?, bodyPart?, note?,
- *     sets: [{ reps? | seconds?, weight?, warmup?, failure?, rir? | rpe? }] }] }
+ *     sets: [{ reps? | seconds?, weight?, warmup?, failure?, rir? | rpe?, lengthenedPartials? }] }] }
  *
  * Returns { workout, past, customEx, resolved } or { problems }: every problem in the whole
  * description at once, so one round trip to the user settles them all.
@@ -239,7 +252,7 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
   const id = importId('mw', JSON.stringify([
     date, input.start ?? null, dur ?? null, input.name ?? null, input.note ?? null, input.unit ?? null,
     exercises.map(ex => [ex.exercise, ex.createCustom === true, ex.note ?? null,
-      ex.sets.map(s => [s.reps ?? null, s.seconds ?? null, s.weight ?? null, s.warmup === true, s.failure === true, s.rir ?? null, s.rpe ?? null])]),
+      ex.sets.map(s => [s.reps ?? null, s.seconds ?? null, s.weight ?? null, s.warmup === true, s.failure === true, s.rir ?? null, s.rpe ?? null, s.lengthenedPartials ?? null])]),
   ]))
   // A custom exercise's muscles go with the entry, as Finish writes them: a device that deletes
   // the exercise without ever having seen this workout would otherwise leave its sets crediting

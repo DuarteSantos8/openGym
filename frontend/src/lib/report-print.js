@@ -4,7 +4,7 @@
 // lib/print-doc.js. Charts are inline SVG drawn here, so they stay sharp at any zoom and print the
 // same on every platform. No exercise media is ever put on paper.
 import { EXIDX } from './exercises.js'
-import { setLabel, sessionSections, workoutVolume, sessionVolume, countsWarmups, workoutDuration, workoutDay } from './history.js'
+import { setLabel, sessionSections, workoutVolume, sessionVolume, countsWarmups, countsPartials, workoutDuration, workoutDay } from './history.js'
 import { isWarmupRow, hasCompletedWork } from './workout-model.js'
 import { fmtNum, fmtVol, fmtDur, fmtDate, todayISO, DAYS, weekOrder, weekDayOffset } from './format.js'
 import { t, tn, dateLocale } from './i18n-core.js'
@@ -287,7 +287,7 @@ function setsHTML(e, speedUnit) {
   return rows.length ? `<div class="sets">${rows.join('')}</div>` : ''
 }
 
-function entryVolume(e, S) { return workoutVolume({ entries: [e] }, { warmups: countsWarmups(S) }) }
+function entryVolume(e, S) { return workoutVolume({ entries: [e] }, { warmups: countsWarmups(S), partials: countsPartials(S) }) }
 
 /**
  * One finished workout on paper: what it was, when, how long and how heavy, then every exercise

@@ -572,6 +572,40 @@ describe('get_workout', () => {
     expect(failed.failure).toBe(true)
   })
 
+  test('lengthened partials show in the label and as their own field, only on a failure set', () => {
+    S.workouts = [{
+      id: 'synth-lp', d: '2026-07-25', start: 0, end: 1800000, routineId: 'x', name: 'Synth',
+      bw: 78, vol: 0, prs: [],
+      entries: [{ id: 'squat', target: { mode: 'reps' }, sets: [{ w: 60, r: 9, done: true, failure: true, lp: 4 }, { w: 60, r: 9, done: true, rir: 2, lp: 4 }] }]
+    }]
+    const [withLp, ignored] = call('get_workout', { date: '2026-07-25' }).entries[0].sets
+    expect(withLp.label).toBe('60×9 F+4')
+    expect(withLp.lengthened_partials).toBe(4)
+    // a set rated short of failure has no partials, whatever the row carries
+    expect('lengthened_partials' in ignored).toBe(false)
+  })
+
+  test('volume follows the app switches; partials are only mentioned when they are many', () => {
+    const w = lp => ({
+      id: 'synth-v', d: '2026-07-25', start: 0, end: 1800000, routineId: 'x', name: 'Synth',
+      bw: 78, vol: 0, prs: [],
+      entries: [{ id: 'squat', target: { mode: 'reps' }, sets: [{ w: 100, r: 10, done: true, failure: true, lp }] }]
+    })
+    S.workouts = [w(3)]
+    let r = call('get_workout', { date: '2026-07-25' })
+    expect(r.volume).toBe(1000)
+    expect(r.volume_counts.partials).toBe('excluded')
+    expect('partials_note' in r).toBe(false)   // 3 < 10 / 2
+    S.effort = 'rir'
+    S.partials = 'fold'
+    r = call('get_workout', { date: '2026-07-25' })
+    expect(r.volume).toBe(1060)
+    expect(r.volume_counts.partials).toMatch(/included/)
+    expect(call('list_workouts', {}).workouts[0].volume).toBe(1060)
+    S.workouts = [w(5)]
+    expect(call('get_workout', { date: '2026-07-25' }).partials_note).toMatch(/at least half/)
+  })
+
   test('infers cardio mode from the exercise id when the target has no mode key', () => {
     // Reproduces the review bug: the sheet saves a cardio target as {sets, min, speed} with
     // no mode and no id. modeOf must fall through to isCardio(id), which needs the id on the

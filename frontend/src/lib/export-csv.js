@@ -14,13 +14,13 @@
 import { EXIDX } from './exercises.js'
 import { capWords } from './format.js'
 import { MEASUREMENT_FIELDS, builtinCsvColumn, customCsvColumn, customDisplayValue } from './measurements.js'
-import { hasCompletedWork, isWarmupRow, isFailureSet, isSideSet, dropsOf } from './workout-model.js'
+import { hasCompletedWork, isWarmupRow, isFailureSet, isSideSet, dropsOf, partialsOf, sidePartialsOf } from './workout-model.js'
 import { workoutDay } from './history.js'
 
 export const WORKOUT_COLUMNS = [
   'date', 'start_time', 'end_time', 'workout', 'workout_note', 'exercise', 'exercise_id', 'body_part',
   'superset_id', 'set', 'set_type', 'side', 'weight', 'unit', 'reps', 'rpe', 'rir', 'distance_km',
-  'seconds', 'incline', 'note',
+  'seconds', 'incline', 'partials', 'note',
 ]
 
 /** One CSV field, RFC 4180: quoted when it holds a comma, a quote or a line break. */
@@ -102,15 +102,17 @@ export function workoutRows(S, { from = null, to = null } = {}) {
         no++
         const type = isWarmupRow(s) ? 'warmup' : isFailureSet(s) ? 'failure' : 'normal'
         if (cardio(s)) {
-          push([no, type, '', '', unit, '', '', '', distanceKm(s), n(Math.round((Number(s.min) || 0) * 60)), s.incline != null ? n(s.incline) : ''])
+          push([no, type, '', '', unit, '', '', '', distanceKm(s), n(Math.round((Number(s.min) || 0) * 60)), s.incline != null ? n(s.incline) : '', ''])
           continue
         }
         const effort = x => [x.rpe != null ? n(x.rpe) : '', x.rir != null ? n(x.rir) : '']
         const one = (x, side) => {
           if (side && !x.done) return
-          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', ''])
+          // A side's partials are counted on that side (sidePartialsOf); a straight set's on the set.
+          const lp = side ? sidePartialsOf(s, side) : partialsOf(x)
+          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', '', lp > 0 ? n(lp) : ''])
           // A drop-set's drops follow as rows of their own under the same set number.
-          for (const d of dropsOf(x)) push([no, 'drop', side, n(d.w || 0), unit, n(d.r || 0), '', '', '', '', ''])
+          for (const d of dropsOf(x)) push([no, 'drop', side, n(d.w || 0), unit, n(d.r || 0), '', '', '', '', '', ''])
         }
         if (isSideSet(s)) { one(s.sides.L, 'L'); one(s.sides.R, 'R') }
         else one(s, '')

@@ -1,7 +1,7 @@
 import { EXIDX, isAssisted } from './exercises.js'
 import { workoutAt } from './history.js'
 import { MUSCLES, musclesOf } from './muscles.js'
-import { isWarmupRow, dropsOf, isSideSet } from './workout-model.js'
+import { isWarmupRow, dropsOf, isSideSet, partialSetsOf } from './workout-model.js'
 import { estimate1RM, REP_CAP } from './onerm.js'
 import { rirOf, HARD_RIR } from './effort.js'
 
@@ -271,8 +271,12 @@ function sessionEffSets(workout, anchors, opts = {}) {
     const count = resolved?.source !== 'logged' && isWarmupRow(set)
       ? FATIGUE_RIR_FLOOR_WEIGHT
       : rirWeightFor(resolved?.rir)
+    // Lengthened partials follow failure in the same set: real extra fatigue even though they
+    // are not counted as volume, at PARTIAL_REP_WEIGHT per partial rep against the set's reps
+    // (workout-model partialSetsOf; drops carry none).
+    const extra = row === set ? partialSetsOf(set) : 0
     for (const [slug, weight] of Object.entries(weights)) {
-      if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += count * weight
+      if (Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug)) sums[slug] += (count + extra) * weight
     }
   }
   for (const entry of workout?.entries || []) {
