@@ -86,7 +86,7 @@ export function AdaptProposal({ p, onDone }) {
       <div className="pcard-eyebrow">{t('For this workout')}</div>
       <h2 className="pcard-h">{tn('{0} suggestion', '{0} suggestions', marked.length)}</h2>
       {!!p.summary && <p className="pcard-sum">{p.summary}</p>}
-      {!live && <p className="pcard-sum" style={{ fontSize: 13, color: 'var(--gold-ink)' }}>{t('That workout is over, so these can’t be applied any more.')}</p>}
+      {!live && <p className="pcard-sum" style={{ fontSize: 'var(--fs-footnote)', color: 'var(--gold-ink)' }}>{t('That workout is over, so these can’t be applied any more.')}</p>}
     </div>
     {marked.map(c => <div key={c.id} className={'pcard-chg' + (c.stale ? ' stale' : '')}>
       <div className="grow">

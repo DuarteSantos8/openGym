@@ -247,7 +247,7 @@ export function ProgrammeEdit() {
     <div className="hdr">
       <button className="iconbtn" data-back="/plan/programmes" onClick={() => nav('/plan/programmes')} aria-label={t('Programmes')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, margin: '0 12px', minWidth: 0 }}>
-        <input className="input" defaultValue={p.name} aria-label={t('Name')} style={{ fontWeight: 600, fontSize: 20, letterSpacing: '-.021em', width: '100%' }}
+        <input className="input" defaultValue={p.name} aria-label={t('Name')} style={{ fontWeight: 600, fontSize: 'var(--fs-title3)', letterSpacing: '-.021em', width: '100%' }}
           onChange={e => { const v = e.target.value.trim(); edit(cur => ({ ...cur, name: v || t('Programme') })) }} />
       </div>
     </div>

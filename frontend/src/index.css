@@ -59,9 +59,35 @@
   --pad:16px;
   --icon-stroke:1.7;
 
+  /* type scale (redesign 1.4.5, P1): the iPhone's text styles, in rem so a browser's text size
+     and zoom scale the words and the layout around them together. Every text size in the sheets
+     and the views is one of these; what stays in px is a glyph (an icon's size) or a display
+     figure inside a fixed box (the timer, a tile's number). Size, leading and tracking move as a
+     set: tighter as the type grows, a hair looser as it shrinks (APPLE §15). */
+  --fs-caption2:.6875rem;  /* 11: tab labels, badges */
+  --fs-caption:.75rem;     /* 12: meta, axis text, small labels */
+  --fs-footnote:.8125rem;  /* 13: subtitles, the small line over a title */
+  --fs-subhead:.9375rem;   /* 15: secondary lines, values */
+  --fs-callout:1rem;       /* 16: titles in dense lists, inputs */
+  --fs-body:1.0625rem;     /* 17: body and row titles */
+  --fs-title3:1.25rem;     /* 20: card titles, an exercise name */
+  --fs-title2:1.375rem;    /* 22: a lead line */
+  --fs-large:2.125rem;     /* 34: the page title (30 on a narrow phone, below) */
+  --lh-tight:1.06; --lh-title:1.2; --lh-body:1.29; --lh-small:1.38;
+  --ls-large:-.028em; --ls-title:-.021em; --ls-body:-.01em; --ls-small:-.004em;
+
   /* motion */
   --ease:cubic-bezier(.32,.72,0,1);
   --fast:140ms; --med:220ms;
+  /* Pressed states (P13), one rule per tier, so a press feels the same wherever it lands:
+     - rows (.item, .lrow.tap, .menu-item) fill with --press-fill and do not move: the iPhone's
+       highlight for a table cell;
+     - controls (.btn, .chip, .iconbtn, a segment) scale to --press-scale;
+     - cards (.card.tappable) scale less, --press-scale-card, because they are larger.
+     All of them answer on pointer-down within --fast, on --ease (EMIL: 100-160 ms press feedback,
+     scale .95-.98; APPLE §1: feedback on touch-down, never on release). */
+  --press-scale:.97; --press-scale-card:.985;
+  --press-fill:var(--surface-2);
 
   /* The system bars the page is drawn under. env() is all a browser and the iOS app give; the
      Android WebView reports only the camera cutout there, and on Android 15, which draws the app
@@ -165,13 +191,14 @@
 :root{color-scheme:dark}
 :root[data-theme="light"]{color-scheme:light}
 html{
-  font-size:16px;background:var(--bg);overscroll-behavior:none;overflow-x:clip;
+  /* 100%, not 16px: the reader's own text size is the root every rem in the type scale grows from (P1). */
+  font-size:100%;background:var(--bg);overscroll-behavior:none;overflow-x:clip;
   -webkit-text-size-adjust:100%;
 }
 body{
   background:var(--bg);color:var(--label);
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Segoe UI',Roboto,system-ui,sans-serif;
-  font-size:17px;line-height:1.29;letter-spacing:-.01em;
+  font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body);
   min-height:100vh;min-height:100dvh;overscroll-behavior-y:none;overflow-x:clip;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
   touch-action:manipulation;
@@ -206,10 +233,16 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
 /* ------------------------------------------------------------ type scale -- */
-/* The nine .t-* classes that used to live here emitted from no JSX in the app, while the views
-   typed their numbers inline (Home.jsx:223 is .t-title2 with a different weight). Deleted
-   2026-09-22 rather than adopted, because adopting a scale means changing what four screens
-   render, which is a design call and not a cleanup. `git log -- src/index.css` has them. */
+/* The roles are the --fs-* tokens at the top. These classes carry a role's size, leading and
+   tracking as one set, for text that has no component rule of its own (P1, redesign 1.4.5: the
+   views used to type 15 different sizes inline). Weight stays with the element. */
+.t-caption{font-size:var(--fs-caption);line-height:1.33;letter-spacing:0}
+.t-footnote{font-size:var(--fs-footnote);line-height:var(--lh-small);letter-spacing:var(--ls-small)}
+.t-subhead{font-size:var(--fs-subhead);line-height:1.33;letter-spacing:var(--ls-body)}
+.t-body{font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body)}
+.t-title3{font-size:var(--fs-title3);line-height:var(--lh-title);letter-spacing:var(--ls-title)}
+.t-title2{font-size:var(--fs-title2);line-height:var(--lh-title);letter-spacing:var(--ls-title)}
+.t-large{font-size:var(--fs-large);line-height:var(--lh-tight);letter-spacing:var(--ls-large)}
 
 /* .dim is the quiet text (footnotes, "average effort", dates in a list): --label-dim, which holds
    4.5:1 on a card. It was --label-3, the system's tertiary grey, 2.4:1 to 2.7:1, and over 200 lines
@@ -217,7 +250,7 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
    reads, so there it is the secondary one; --label-3 stays for placeholders, disabled things and
    hairline icons, which are not text to read. */
 .muted{color:var(--label-2)} .dim{color:var(--label-dim)}
-.small{font-size:13px;line-height:1.38}
+.small{font-size:var(--fs-footnote);line-height:var(--lh-small)}
 .accent{color:var(--acc-ink)}
 .capitalize{text-transform:capitalize}
 /* exercise names and body-part/equipment terms arrive lowercase from the dataset,
@@ -283,9 +316,9 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .conn{
   display:flex;align-items:center;gap:9px;width:100%;text-align:start;min-height:34px;
   padding-block:6px;padding-inline:12px 8px;border-radius:var(--r);
-  background:linear-gradient(rgba(255,214,10,0.16),rgba(255,214,10,0.16)),var(--surface);background:color-mix(in srgb,var(--yellow) 16%,var(--surface));color:var(--label);font-size:13px;line-height:1.3;
+  background:linear-gradient(rgba(255,214,10,0.16),rgba(255,214,10,0.16)),var(--surface);background:color-mix(in srgb,var(--yellow) 16%,var(--surface));color:var(--label);font-size:var(--fs-footnote);line-height:1.3;
 }
-.conn .icn{flex:none;font-size:16px;color:var(--label-2)}
+.conn .icn{flex:none;font-size:var(--fs-callout);color:var(--label-2)}
 .conn-t{flex:1;min-width:0;overflow-wrap:break-word}
 .conn-a{flex:none;padding:4px 10px;border-radius:99px;background:var(--surface-3);font-weight:600;white-space:nowrap}
 button.conn:active{filter:brightness(1.12)}
@@ -294,12 +327,12 @@ button.conn:active{filter:brightness(1.12)}
 .conn-bar.bad .conn .icn{color:var(--red)}
 /* a deliberate local setup: said, not flagged — one small line, no fill */
 .conn-bar.quiet .conn-row{padding:2px 0 4px}
-.conn-bar.quiet .conn{min-height:26px;padding-block:2px;padding-inline:4px 2px;background:none;color:var(--label-2);font-size:12px;gap:6px}
-.conn-bar.quiet .conn .icn{font-size:13px;color:var(--label-3)}
-.conn-bar.quiet .conn-a{padding:2px 9px;font-size:12px;color:var(--acc-ink);background:var(--acc-soft)}
+.conn-bar.quiet .conn{min-height:26px;padding-block:2px;padding-inline:4px 2px;background:none;color:var(--label-2);font-size:var(--fs-caption);gap:6px}
+.conn-bar.quiet .conn .icn{font-size:var(--fs-footnote);color:var(--label-3)}
+.conn-bar.quiet .conn-a{padding:2px 9px;font-size:var(--fs-caption);color:var(--acc-ink);background:var(--acc-soft)}
 /* its × (#454): beside the line, not inside its button, so hiding it never also connects */
 .conn-bar.quiet .conn-row{display:flex;align-items:center;gap:2px}
-.conn-x{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:99px;color:var(--label-3);font-size:12px}
+.conn-x{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:99px;color:var(--label-3);font-size:var(--fs-caption)}
 .conn-x:active{background:var(--surface-2)}
 :root[data-theme="light"] .conn-bar:not(.quiet) .conn-a{background:var(--surface)}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
@@ -321,9 +354,10 @@ button.conn:active{filter:brightness(1.12)}
 .hdr>div{min-width:0}
 .hdr>.btn{flex:none}
 .hdr>.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
-.hdr h1{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em;overflow-wrap:break-word}
-@media (max-width:420px){.hdr h1{font-size:30px}}
-.hdr .sub{color:var(--label-2);font-size:15px;letter-spacing:-.006em;margin-top:4px}
+.hdr h1{font-size:var(--fs-large);line-height:var(--lh-tight);font-weight:700;letter-spacing:var(--ls-large);overflow-wrap:break-word}
+/* the page title drops a step on phone widths (the Library's header leaves it the least room) */
+@media (max-width:420px){:root{--fs-large:1.875rem}}
+.hdr .sub{color:var(--label-2);font-size:var(--fs-subhead);letter-spacing:-.006em;margin-top:4px}
 /* Library: the count line runs under the title row at full width instead of beside the "By muscle"
    button, which left it ~200px on a phone: the catalogue count plus your own exercises stays one
    line in every language. The ellipsis is only the safety net (the strings are kept short), and
@@ -350,11 +384,11 @@ button.conn:active{filter:brightness(1.12)}
 .iconbtn:disabled{opacity:.32}
 
 h4.sec{
-  font-size:13px;font-weight:400;letter-spacing:-.004em;color:var(--label-2);
+  font-size:var(--fs-footnote);font-weight:400;letter-spacing:-.004em;color:var(--label-2);
   text-transform:none;margin:22px 0 8px;padding:0 4px;
 }
 .card h2{
-  font-size:13px;font-weight:400;letter-spacing:-.004em;color:var(--label-2);
+  font-size:var(--fs-footnote);font-weight:400;letter-spacing:-.004em;color:var(--label-2);
   text-transform:none;margin:0 0 12px;
 }
 .row{display:flex;align-items:center;gap:12px}
@@ -364,7 +398,7 @@ h4.sec{
    55px, so the button pair may drop to a second line — still flush right, hence the auto margin. */
 .bw-head{flex-wrap:wrap;row-gap:8px}
 .bw-head>.row{margin-inline-start:auto}
-.bw-rate{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;width:100%;margin-top:6px;padding:6px 2px;background:none;border:0;color:var(--label-2);font:inherit;font-size:15px;line-height:1.3;text-align:start;cursor:pointer}
+.bw-rate{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;width:100%;margin-top:6px;padding:6px 2px;background:none;border:0;color:var(--label-2);font:inherit;font-size:var(--fs-subhead);line-height:1.3;text-align:start;cursor:pointer}
 /* font:inherit above undid the .small on the button, so the trend line came out at the card's 17px
    and, on a 320px phone, broke into icon / two lines / a lone chevron (design review 1.4.5). */
 /* one line of icon, words and chevron: the words wrap inside their own box, the chevron stays at the end */
@@ -386,11 +420,11 @@ h4.sec{
 /* ------------------------------------------------------ inset group list -- */
 .sect{margin-bottom:22px}
 .sect-t{
-  font-size:13px;font-weight:400;color:var(--label-2);
+  font-size:var(--fs-footnote);font-weight:400;color:var(--label-2);
   letter-spacing:-.004em;padding:0 4px 7px;display:block;
 }
 .sect-b{background:var(--surface);border-radius:var(--r-card);overflow:hidden}
-.sect-f{font-size:13px;color:var(--label-2);padding:7px 4px 0;line-height:1.38}
+.sect-f{font-size:var(--fs-footnote);color:var(--label-2);padding:7px 4px 0;line-height:1.38}
 /* A full-width button straight above a grouped list (Programmes: "New programme", then "Starter
    programmes") kept 4px from the list's heading, which made the two read as one block. */
 .btn+.sect{margin-top:22px}
@@ -421,11 +455,11 @@ h4.sec{
    did not already owe the title. .lrow-t does not ellipsise on purpose — long settings titles wrap
    onto a second line — and the value next to it shrinks and ellipsises instead (below). */
 .lrow-m{flex:1;min-width:auto;display:flex;flex-direction:column;gap:1px}
-.lrow-t{font-size:17px;letter-spacing:-.012em;line-height:1.25}
-.lrow-s{font-size:13px;color:var(--label-2);line-height:1.3}
+.lrow-t{font-size:var(--fs-body);letter-spacing:-.012em;line-height:1.25}
+.lrow-s{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.3}
 /* Settings → Account ID: a machine string, so a machine face, small, and free to break anywhere
    rather than push the row past a phone's edge. */
-.acct-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;overflow-wrap:anywhere}
+.acct-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--fs-caption);overflow-wrap:anywhere}
 /* flex:none would let a long value ("Follow the routine (Linear progression)") run straight
    through the title next to it, since the title's column only holds out for its longest word.
    Letting the value shrink and ellipsise instead keeps the two out of each other's way.
@@ -433,18 +467,18 @@ h4.sec{
    none of the shrink — a long value would otherwise take the whole row and squeeze the title
    to 21px. A basis of 45% fixes that but reserves the space even for "3", costing the title
    141px on the rows that need it most. A cap does neither. */
-.lrow-v{color:var(--label-2);font-size:17px;letter-spacing:-.012em;flex:0 1 auto;max-width:55%;min-width:0;
+.lrow-v{color:var(--label-2);font-size:var(--fs-body);letter-spacing:-.012em;flex:0 1 auto;max-width:55%;min-width:0;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align: end}
 /* A row with a subtitle as well as a value (Settings → Workout → "Rest between warm-ups") is already
    two lines tall, so the value may take two lines too instead of holding 55% of the row on one: the
    title column was left its longest word and stacked "Rest / between / warm-ups" one word a line
    (design review 1.4.5). */
 .lrow:has(.lrow-s)>.lrow-v{max-width:44%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;text-wrap:balance}
-.lrow-c{color:var(--label);font-size:15px;flex:none;--icon-stroke:2.4}
-.lrow-k{color:var(--acc-ink);font-size:17px;flex:none;--icon-stroke:2.4}
+.lrow-c{color:var(--label);font-size:var(--fs-subhead);flex:none;--icon-stroke:2.4}
+.lrow-k{color:var(--acc-ink);font-size:var(--fs-body);flex:none;--icon-stroke:2.4}
 .lrow.danger,.lrow.danger .lrow-t{color:var(--red)}
 /* A warning under a settings row reads at subtitle size: a sentence, not a row title. */
-.lrow.backup-lost .lrow-t{font-size:13px;line-height:1.3;color:var(--label-2);letter-spacing:0}
+.lrow.backup-lost .lrow-t{font-size:var(--fs-footnote);line-height:1.3;color:var(--label-2);letter-spacing:0}
 /* The Stats exercise name gets its own line so long names cannot run into the title.
    Two columns only — label/value on the left, chevron on the right — so this is for rows
    WITHOUT an icon. `.lrow-i` is not placed here; on a row that has one it would auto-place
@@ -461,7 +495,7 @@ h4.sec{
    vertical negative margin keeps it from making the row taller. The horizontal ones pull the
    hit area back under the row's own 12px gap instead of adding to it. */
 .helpbtn{
-  color:var(--label-3);font-size:16px;background:none;line-height:0;flex:none;
+  color:var(--label-3);font-size:var(--fs-callout);background:none;line-height:0;flex:none;
   margin-block:-11px;margin-inline:-4px -2px;padding:11px 4px;
 }
 .helpbtn:active{color:var(--label)}
@@ -469,7 +503,7 @@ h4.sec{
 /* -------------------------------------------------------------- buttons -- */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;
-  padding:14px 18px;border-radius:var(--r);font-size:17px;font-weight:600;
+  padding:14px 18px;border-radius:var(--r);font-size:var(--fs-body);font-weight:600;
   letter-spacing:-.012em;background:var(--surface-2);color:var(--label);
   transition:transform var(--fast) var(--ease),background var(--fast),opacity var(--fast);
 }
@@ -486,9 +520,9 @@ h4.sec{
    but .btn.ghost outranked .dim, so they all came out in the accent, as loud as the action above
    them. Secondary grey, not the tertiary .dim: these are still words to read (design review 1.4.5). */
 .btn.ghost.dim,.btn.plain.dim{color:var(--label-2)}
-.btn.sm{padding:8px 14px;width:auto;font-size:15px;border-radius:var(--r-sm);gap:5px}
-.btn.sm .icn{font-size:16px}
-.btn.xs{padding:5px 10px;width:auto;font-size:13px;border-radius:7px;gap:4px}
+.btn.sm{padding:8px 14px;width:auto;font-size:var(--fs-subhead);border-radius:var(--r-sm);gap:5px}
+.btn.sm .icn{font-size:var(--fs-callout)}
+.btn.xs{padding:5px 10px;width:auto;font-size:var(--fs-footnote);border-radius:7px;gap:4px}
 .btn:disabled{opacity:.32;pointer-events:none}
 .weekly-volume-toggle{padding-block:0}
 .weekly-volume-toggle .icn{transition:transform var(--fast) var(--ease)}
@@ -593,8 +627,8 @@ h4.sec{
 }
 /* The weekday initials in the readable grey and in their own case (Mo, Tu), as the Plan list writes
    them: the tiny tracked capitals in the faint grey were 2.6:1 (design review 1.4.5). */
-.wday .lbl{font-size:12px;color:var(--label-2);font-weight:500;letter-spacing:0}
-.wday .num{font-size:17px;font-weight:400;margin:4px 0;letter-spacing:-.012em}
+.wday .lbl{font-size:var(--fs-caption);color:var(--label-2);font-weight:500;letter-spacing:0}
+.wday .num{font-size:var(--fs-body);font-weight:400;margin:4px 0;letter-spacing:-.012em}
 .wday .dot{width:5px;height:5px;border-radius:50%;background:transparent;margin:0 auto}
 .wday .dot.plan{background:var(--label-3)}
 .wday .dot.ovr{background:var(--orange)}
@@ -638,7 +672,7 @@ h4.sec{
    once (RoutineEdit.jsx). A touch screen keeps the long press and the row's full width. */
 .routine-grip{
   display:none;flex:none;align-self:stretch;align-items:center;margin:-10px -6px -10px -4px;padding:0 4px;
-  color:var(--label-3);font-size:16px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+  color:var(--label-3);font-size:var(--fs-callout);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
 }
 @media (hover:hover) and (pointer:fine){
   .routine-grip{display:flex}
@@ -653,20 +687,20 @@ h4.sec{
   display:flex;align-items:center;justify-content:center;font-size:21px;
   background:var(--surface-2);color:var(--label-2);
 }
-.item .tt{font-size:16px;font-weight:400;line-height:1.25;letter-spacing:-.009em}
+.item .tt{font-size:var(--fs-callout);font-weight:400;line-height:1.25;letter-spacing:-.009em}
 /* A row's subtitle wherever it sits: outside an .item it had no rule and came out as a second
    17px title (Home's rest day, a past workout's sets, the exercise history). */
-.ss{color:var(--label-2);font-size:13px;margin-top:2px}
-.item .ss{color:var(--label-2);font-size:13px;margin-top:2px}
+.ss{color:var(--label-2);font-size:var(--fs-footnote);margin-top:2px}
+.item .ss{color:var(--label-2);font-size:var(--fs-footnote);margin-top:2px}
 .item .grow{flex:1;min-width:0}
 /* A row's opener as a real button (the routine editor's exercise name), so a row holding other
    buttons is no button itself. Reads as the plain text it replaced. */
 .item .item-open{display:flex;flex-direction:column;justify-content:center;align-self:stretch;text-align:start}
 .item .item-open>span{display:block}
-.chev{color:var(--label);flex:none;font-size:15px;--icon-stroke:2.4}
+.chev{color:var(--label);flex:none;font-size:var(--fs-subhead);--icon-stroke:2.4}
 .tag{
   display:inline-flex;align-items:center;gap:3px;background:var(--surface-2);
-  color:var(--label-2);border-radius:6px;padding:3px 7px;font-size:12px;
+  color:var(--label-2);border-radius:6px;padding:3px 7px;font-size:var(--fs-caption);
   font-weight:500;text-transform:capitalize;
 }
 .tag.acc{background:var(--acc-soft);color:var(--acc-ink)}
@@ -678,7 +712,7 @@ h4.sec{
 .tag.sidepill::after{content:attr(data-r);visibility:hidden}
 /* favourite marker (issue #6): a small yellow star glued to the exercise name — distinct from
    the accent "chosen" tag at the row's end, which means "already in a routine or the log" */
-.fav-star{color:var(--gold-ink);font-size:12px;display:inline-block;margin-inline-end:5px;vertical-align:-1px}
+.fav-star{color:var(--gold-ink);font-size:var(--fs-caption);display:inline-block;margin-inline-end:5px;vertical-align:-1px}
 .fav-btn{margin-top:-4px;flex:none}
 /* One long word (a German custom name) wraps instead of pushing the star off the screen. */
 .exdetail-name{min-width:0;overflow-wrap:anywhere}
@@ -692,7 +726,7 @@ h4.sec{
 .ex-grid .item{position:relative;flex-direction:column;align-items:stretch;gap:8px;padding:8px}
 .ex-grid .item .thumb{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
 .ex-grid .item .thumb-x{font-size:36px}
-.ex-grid .item .tt{font-size:15px}
+.ex-grid .item .tt{font-size:var(--fs-subhead)}
 /* The badges ride on the picture's top corners and "+ Plan" spans the foot of the card. The
    picker's "+" carries an inline padding/margin that widens its hit area in a row; on a card it
    sits on the picture, so those give way here. */
@@ -707,7 +741,7 @@ h4.sec{
    dressed like it; pressed while the cards are on. */
 .search-row{display:flex;gap:8px}
 .search-row>.search{flex:1;min-width:0}
-.search-row>.ex-view-btn{width:46px;height:auto;border-radius:10px;background:var(--surface-2);font-size:20px}
+.search-row>.ex-view-btn{width:46px;height:auto;border-radius:10px;background:var(--surface-2);font-size:var(--fs-title3)}
 :root[data-theme="light"] .search-row>.ex-view-btn{background:rgba(118,118,128,.12)}
 .search-row>.ex-view-btn.on,:root[data-theme="light"] .search-row>.ex-view-btn.on{background:var(--acc-soft);color:var(--acc-ink)}
 
@@ -761,14 +795,14 @@ body.chips-dragging *{cursor:inherit}
 /* --- text field --- */
 .field,.input{
   width:100%;background:var(--surface);border:none;border-radius:var(--r);
-  padding:13px 15px;font-size:17px;letter-spacing:-.012em;outline:none;
+  padding:13px 15px;font-size:var(--fs-body);letter-spacing:-.012em;outline:none;
   transition:box-shadow var(--fast);
 }
 .field::placeholder,.input::placeholder{color:var(--label-3)}
 .field:focus,.input:focus{box-shadow:inset 0 0 0 2px var(--acc)}
 .field.area,textarea.input{min-height:92px;resize:vertical;line-height:1.42}
 .measure-date{display:block;margin-bottom:14px}
-.measure-date>span,.measure-field>span:first-child{display:block;color:var(--label-2);font-size:13px;margin:0 2px 6px}
+.measure-date>span,.measure-field>span:first-child{display:block;color:var(--label-2);font-size:var(--fs-footnote);margin:0 2px 6px}
 .measure-date .field{background:var(--surface-2)}
 /* The weigh-in sheet's date and time side by side (#859); the list's rows open a weigh-in to edit. */
 .bw-when{gap:10px;align-items:stretch;margin-bottom:14px}
@@ -778,26 +812,26 @@ body.chips-dragging *{cursor:inherit}
 .bw-row{padding:9px 2px;border-bottom:1px solid var(--sep)}
 .bw-row.bw-sub{padding-inline-start:14px}
 .bw-when-btn{background:none;border:0;padding:4px 0;font:inherit;color:inherit;text-align:start;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-width:0}
-.bw-src{font-size:11px;color:var(--pink)}
+.bw-src{font-size:var(--fs-caption2);color:var(--pink)}
 .bw-day{padding:10px 2px 2px}
 .measure-form{display:grid;grid-template-columns:1fr 1fr;gap:11px 10px}
 .measure-field{min-width:0}
 .measure-input{height:47px;background:var(--surface-2);border-radius:var(--r);display:flex;align-items:center;padding:0 12px;gap:6px}
 .measure-input .num{width:100%;min-width:0;background:transparent;border:0;outline:none;font-size:18px;font-weight:500;color:var(--label);padding:0}
-.measure-input i{font-style:normal;color:var(--label-3);font-size:13px}
+.measure-input i{font-style:normal;color:var(--label-3);font-size:var(--fs-footnote)}
 .measure-options{margin:12px 0 16px}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
-.measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:12px;color:var(--label-2)}
+.measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:var(--fs-caption);color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
 .exnote{
   background:var(--surface);border-radius:var(--r);padding:13px 15px;
-  line-height:1.45;white-space:pre-wrap;font-size:15px;margin-bottom:10px;color:var(--label-2);
+  line-height:1.45;white-space:pre-wrap;font-size:var(--fs-subhead);margin-bottom:10px;color:var(--label-2);
 }
 
 /* --- search field --- */
 .searchf{position:relative;display:flex;align-items:center}
 .searchf .lead{
-  position:absolute;inset-inline-start:11px;font-size:16px;color:var(--label-3);
+  position:absolute;inset-inline-start:11px;font-size:var(--fs-callout);color:var(--label-3);
   pointer-events:none;--icon-stroke:2.1;z-index:1;
 }
 .searchf .field{padding-inline-start:35px;padding-inline-end:36px;background:var(--surface-2);border-radius:10px}
@@ -805,7 +839,7 @@ body.chips-dragging *{cursor:inherit}
 .searchf .clear{
   position:absolute;inset-inline-end:8px;width:22px;height:22px;border-radius:50%;
   background:var(--label-3);color:var(--bg);display:flex;align-items:center;
-  justify-content:center;font-size:11px;--icon-stroke:3;
+  justify-content:center;font-size:var(--fs-caption2);--icon-stroke:3;
 }
 /* legacy .search wrapper */
 .search{position:relative}
@@ -821,7 +855,7 @@ body.chips-dragging *{cursor:inherit}
 .search.has-count .input{padding-inline-end:62px}
 .search .search-count{
   position:absolute;inset-inline-end:9px;top:50%;transform:translateY(-50%);
-  font-size:12px;font-weight:600;line-height:1.4;color:var(--label-2);
+  font-size:var(--fs-caption);font-weight:600;line-height:1.4;color:var(--label-2);
   background:var(--surface-3);padding:2px 8px;border-radius:99px;
   font-variant-numeric:tabular-nums;pointer-events:none;user-select:none;
 }
@@ -831,7 +865,7 @@ body.chips-dragging *{cursor:inherit}
   position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);z-index:1;
   width:22px;height:22px;border-radius:50%;
   background:var(--label-3);color:var(--bg);display:flex;align-items:center;
-  justify-content:center;font-size:11px;--icon-stroke:3;
+  justify-content:center;font-size:var(--fs-caption2);--icon-stroke:3;
 }
 .search.has-clear .input{padding-inline-end:36px}
 .search.has-count.has-clear .input{padding-inline-end:90px}
@@ -888,7 +922,7 @@ body.chips-dragging *{cursor:inherit}
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
   justify-content:center;gap:5px;min-height:32px;transition:opacity var(--fast);
 }
-.seg button .icn{font-size:16px}
+.seg button .icn{font-size:var(--fs-callout)}
 .seg button:not(.on){color:var(--label-2);font-weight:400}
 .seg button:active{opacity:.5}
 /* sitting in a list row: shrink to content instead of filling the row. The control never
@@ -916,14 +950,14 @@ body.chips-dragging *{cursor:inherit}
    thumb (100%/n) still lines up; the sliding thumb is absolutely positioned with no grid
    placement, so its box is the track's padding box, as in the flex version. */
 .seg-inline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
-.seg-inline button{padding:5px 12px;font-size:13px;min-height:28px}
+.seg-inline button{padding:5px 12px;font-size:var(--fs-footnote);min-height:28px}
 .seg-inline button span{white-space:nowrap}
 .seg-inline button .icn{font-size:14px}
 
 /* native time input, restyled to sit in a row like a value label */
 .timef{
   background:var(--surface-2);border:none;border-radius:8px;padding:6px 10px;
-  font-size:16px;color:var(--label);outline:none;font-variant-numeric:tabular-nums;
+  font-size:var(--fs-callout);color:var(--label);outline:none;font-variant-numeric:tabular-nums;
   min-width:0;max-width:100%;
 }
 /* A date or time field is as wide as the browser draws it and will not give way, and neither will
@@ -938,13 +972,13 @@ body.chips-dragging *{cursor:inherit}
 
 /* --- stepper --- */
 .stp-w{display:flex;flex-direction:column;gap:6px;min-width:0}
-.stp-l{font-size:13px;color:var(--label-2);text-align:center}
+.stp-l{font-size:var(--fs-footnote);color:var(--label-2);text-align:center}
 .stp{
   display:flex;align-items:center;background:var(--surface-2);
   border-radius:10px;overflow:hidden;min-width:0;
 }
 .stp button{
-  width:40px;height:44px;flex:none;color:var(--label);font-size:16px;
+  width:40px;height:44px;flex:none;color:var(--label);font-size:var(--fs-callout);
   display:flex;align-items:center;justify-content:center;
   transition:background var(--fast);--icon-stroke:2.2;
 }
@@ -953,10 +987,10 @@ body.chips-dragging *{cursor:inherit}
   flex:1;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:3px;padding:0 2px;
   align-self:stretch;
 }
-.stp .val i{font-style:normal;font-size:12px;color:var(--label-2);flex:none}
+.stp .val i{font-style:normal;font-size:var(--fs-caption);color:var(--label-2);flex:none}
 .stp .num{
   width:100%;min-width:0;text-align:center;background:none;border:none;outline:none;
-  font-size:17px;font-weight:500;letter-spacing:-.012em;padding:0;
+  font-size:var(--fs-body);font-weight:500;letter-spacing:-.012em;padding:0;
   -moz-appearance:textfield;appearance:textfield;
   /* the field is the whole height of the stepper, not just its 18px text line, so a tap
      anywhere between the two buttons focuses it */
@@ -989,7 +1023,7 @@ body.chips-dragging *{cursor:inherit}
   background:none;box-shadow:inset 0 0 0 1.8px var(--grey);color:transparent;
   transition:background var(--fast),box-shadow var(--fast),color var(--fast),transform var(--fast);
 }
-.chk .icn{font-size:16px;--icon-stroke:2.6}
+.chk .icn{font-size:var(--fs-callout);--icon-stroke:2.6}
 /* 30px is the right look next to a stepper but a poor target: extend the tap area to 44px
    without painting it; the left side stays shorter so the stepper's + button keeps its edge */
 .chk::before,.ck::before{content:'';position:absolute;inset:-7px -7px -7px -4px}
@@ -1024,16 +1058,16 @@ body.chips-dragging *{cursor:inherit}
    never shrinks. */
 .hdr.whdr-bar{align-items:center;gap:8px;margin:4px 0 12px}
 .whdr-mid{flex:1;min-width:0;text-align:center}
-.whdr-name{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.whdr-name{font-weight:600;font-size:var(--fs-callout);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* The clock and set count may take a second line: in ru/uk the count is the long half and a
    one-line ellipsis cut exactly the 0/19 the line is there for. */
-.whdr-mid .sub{font-size:13px;margin-top:1px;font-variant-numeric:tabular-nums;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-wrap:balance}
+.whdr-mid .sub{font-size:var(--fs-footnote);margin-top:1px;font-variant-numeric:tabular-nums;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-wrap:balance}
 /* The gym the session is at (#808): small, in the clock line, a tap switches it. */
-.whdr-gym{display:inline-flex;align-items:center;gap:3px;font-size:12px;line-height:1.3;color:var(--label-2);background:none;border:0;padding:0;margin-top:1px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.whdr-gym{display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-caption);line-height:1.3;color:var(--label-2);background:none;border:0;padding:0;margin-top:1px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .whdr-gym .icon,.whdr-gym svg{width:13px;height:13px;flex:none}
 .gym-of-list .icon,.gym-of-list svg{width:13px;height:13px;vertical-align:-2px}
-.btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:15px;max-width:40%}
+.btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:var(--fs-subhead);max-width:40%}
 /* Animations set to Small: the picture beside the exercise name, with an expand badge. */
 .wthumb{position:relative;flex:none;width:48px;height:48px;border-radius:10px;overflow:hidden;padding:0}
 .wthumb .thumb{width:48px;height:48px;border-radius:10px}
@@ -1051,18 +1085,18 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .wprog-row{display:flex;align-items:center;gap:8px;height:12px;margin-bottom:8px}
 .wprog-row .wprog,.whdr.stick .wprog-row .wprog{flex:1;min-width:0;margin-bottom:0}
 .whdr.stick .wprog-row{margin-bottom:2px}
-.wvol{flex:none;font-size:12px;line-height:12px;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wvol{flex:none;font-size:var(--fs-caption);line-height:12px;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{
   position:absolute;bottom:9px;display:inline-flex;align-items:center;gap:4px;
   background:rgba(0,0,0,.45);color:#fff;border-radius:99px;padding:5px 11px;
-  font-size:12px;font-weight:500;
+  font-size:var(--fs-caption);font-weight:500;
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
 }
 .exmedia .gifhint{inset-inline-end:9px}
 .exmedia .giftoggle{inset-inline-start:9px}
-.exmedia .gifhint .icn,.exmedia .giftoggle .icn{font-size:13px}
+.exmedia .gifhint .icn,.exmedia .giftoggle .icn{font-size:var(--fs-footnote)}
 /* superset: both exercises are on screen together, so the animations have to give way —
    at 180px you had to scroll a full screen between two exercises done back-to-back */
 .exmedia.compact img{height:120px}
@@ -1100,18 +1134,18 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 .exlink-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .exlink-title{
-  font-size:15px;font-weight:500;color:var(--label);line-height:1.25;
+  font-size:var(--fs-subhead);font-weight:500;color:var(--label);line-height:1.25;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 /* a host name reads left to right in every language; text-align keeps it on the reading side */
 .exlink-sub{
-  font-size:12px;color:var(--label-2);line-height:1.2;text-align:start;unicode-bidi:plaintext;
+  font-size:var(--fs-caption);color:var(--label-2);line-height:1.2;text-align:start;unicode-bidi:plaintext;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .exlink-arr{color:var(--label-3);font-size:14px;flex:none}
 .exlink-card.mini{padding:6px 12px;gap:10px}
-.exlink-card.mini .exlink-icon{width:28px;height:28px;font-size:15px;border-radius:7px}
-.exlink-card.mini .exlink-title{font-size:13px}
+.exlink-card.mini .exlink-icon{width:28px;height:28px;font-size:var(--fs-subhead);border-radius:7px}
+.exlink-card.mini .exlink-title{font-size:var(--fs-footnote)}
 
 /* the editor's field (components/CustomMediaField.jsx): the row, a 36px thumb of the draft, the
    buttons beside it, the notes under it and the link input */
@@ -1119,9 +1153,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .cmf .lrow{padding-inline:4px}
 .cmf-act{display:flex;align-items:center;gap:6px;flex:none}
 .cmf-thumb .thumb{width:36px;height:36px;border-radius:8px}
-.cmf-thumb .thumb-x{font-size:16px}
+.cmf-thumb .thumb-x{font-size:var(--fs-callout)}
 .cmf-sub{display:inline-flex;align-items:center;gap:4px}
-.cmf-sub .icn{font-size:13px}
+.cmf-sub .icn{font-size:var(--fs-footnote)}
 .cmf-note{margin:0 4px 6px;line-height:1.35}
 .cmf-link{margin-top:4px}
 /* A logged workout's photos and videos (WorkoutMedia.jsx): a grid of posters with an Add tile,
@@ -1134,18 +1168,18 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   background:var(--surface-2);color:var(--label-2);cursor:pointer;font:inherit;
 }
 .wmedia-item .thumb{width:100%;height:100%;border-radius:0;display:block}
-.wmedia-item .thumb-x{font-size:22px}
+.wmedia-item .thumb-x{font-size:var(--fs-title2)}
 .wmedia-kind{
   position:absolute;inset-inline-end:5px;bottom:5px;width:22px;height:22px;border-radius:99px;
-  display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);color:#fff;font-size:12px;
+  display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);color:#fff;font-size:var(--fs-caption);
 }
 .wmedia-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  color:var(--acc-ink);font-size:11px;line-height:1.2;text-align:center;padding:6px;
+  color:var(--acc-ink);font-size:var(--fs-caption2);line-height:1.2;text-align:center;padding:6px;
   border:1.5px dashed var(--sep)}
-.wmedia-add .icn{font-size:20px}
+.wmedia-add .icn{font-size:var(--fs-title3)}
 .wmedia-add:disabled{opacity:.5;cursor:default}
 .wmedia-note{margin:6px 2px 0;line-height:1.35}
-.wrow-media{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--label-2);flex:none}
+.wrow-media{display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-caption);color:var(--label-2);flex:none}
 /* A set's own form video (SetVideo.jsx): the film sheet, the badge under a set row, the player
    (inline under the row, or in a sheet), an exercise's strip of videos and two dates side by side. */
 .fv-film{display:flex;flex-direction:column;gap:8px}
@@ -1154,10 +1188,10 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .fv-private .icn{flex:none;margin-top:2px}
 .fv-badge{
   display:inline-flex;align-items:center;gap:5px;margin-block:2px 4px;margin-inline-start:32px;
-  border:0;border-radius:99px;padding:3px 10px;font:inherit;font-size:12px;font-weight:500;cursor:pointer;
+  border:0;border-radius:99px;padding:3px 10px;font:inherit;font-size:var(--fs-caption);font-weight:500;cursor:pointer;
   background:var(--surface-2);background:color-mix(in srgb,var(--acc) 14%,var(--surface-2));color:var(--acc-ink);
 }
-.fv-badge .icn{font-size:12px}
+.fv-badge .icn{font-size:var(--fs-caption)}
 .fv-badge.on{background:var(--acc);color:var(--on-acc)}
 .fv-badge.on .dim{color:inherit;opacity:.75}
 .fv-inline{margin:2px 0 8px}
@@ -1167,7 +1201,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .fv-player.compact .fv-stage{--fv-h:46vh}
 .fv-stage video,.fv-stage img{width:100%;height:100%;object-fit:contain;display:block;background:#000}
 .fv-x{color:#fff;opacity:.5;font-size:28px}
-.fv-msg{position:absolute;inset-inline:12px;bottom:12px;text-align:center;color:#fff;font-size:13px;
+.fv-msg{position:absolute;inset-inline:12px;bottom:12px;text-align:center;color:#fff;font-size:var(--fs-footnote);
   background:rgba(0,0,0,.55);border-radius:10px;padding:6px 10px}
 .fv-msg:empty{display:none}
 .fv-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -1181,19 +1215,19 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .fv-tile{flex:none;width:92px;border:0;padding:0;background:none;font:inherit;color:inherit;text-align:start;cursor:pointer;scroll-snap-align:start;border-radius:10px}
 .fv-thumb{position:relative;display:block;width:92px;height:122px;border-radius:10px;overflow:hidden;background:var(--surface-2)}
 .fv-thumb .thumb{width:100%;height:100%;border-radius:0;display:block;object-fit:cover}
-.fv-date{display:block;font-size:12px;font-weight:600;margin-top:4px}
-.fv-set{display:block;font-size:11px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fv-date{display:block;font-size:var(--fs-caption);font-weight:600;margin-top:4px}
+.fv-set{display:block;font-size:var(--fs-caption2);color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fv-pick{gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
 .fv-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .fv-side{margin:0;min-width:0}
 .fv-side .fv-stage{--fv-h:52vh}
-.fv-side figcaption{display:flex;flex-direction:column;font-size:12px;margin-top:4px;min-width:0}
+.fv-side figcaption{display:flex;flex-direction:column;font-size:var(--fs-caption);margin-top:4px;min-width:0}
 .fv-side figcaption .dim{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .pp-selected{outline:3px solid var(--acc);outline-offset:-3px}
 .pp-check{
   position:absolute;inset-inline-end:5px;top:5px;width:20px;height:20px;border-radius:99px;
-  display:flex;align-items:center;justify-content:center;background:var(--acc);color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;background:var(--acc);color:#fff;font-size:var(--fs-caption2);
 }
 .pp-cta{position:sticky;bottom:calc(var(--sab) + 10px);display:flex;justify-content:center;margin-top:14px}
 .pp-compare{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;touch-action:none}
@@ -1208,12 +1242,12 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .pp-handle::before{content:'';position:absolute;inset-block:0;width:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
 .pp-grip{width:36px;height:36px;border-radius:99px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.4)}
 .pp-label{
-  position:absolute;bottom:14px;font-size:12px;font-weight:600;color:#fff;
+  position:absolute;bottom:14px;font-size:var(--fs-caption);font-weight:600;color:#fff;
   background:rgba(0,0,0,.55);padding:4px 9px;border-radius:99px;pointer-events:none;
 }
 .pp-label-before{inset-inline-start:10px}
 .pp-label-after{inset-inline-end:10px}
-.wrow-media .icn{font-size:13px}
+.wrow-media .icn{font-size:var(--fs-footnote)}
 .mviewer{
   position:absolute;inset:0;background:#000;color:#fff;display:flex;flex-direction:column;
   padding:var(--sat) 0 var(--sab);animation:pop-fade .2s var(--ease);
@@ -1234,7 +1268,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 
 .sethead{
   display:flex;align-items:center;gap:8px;padding:0 0 6px;
-  font-size:12px;color:var(--label-2);font-weight:500;letter-spacing:0;
+  font-size:var(--fs-caption);color:var(--label-2);font-weight:500;letter-spacing:0;
 }
 .sethead .n-sp{width:24px;flex:none}
 .sethead .w-sp{flex:1.4;text-align:center}
@@ -1245,13 +1279,13 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setrow+.setrow::before{
   content:'';position:absolute;inset-inline-start:32px;inset-inline-end:0;top:0;height:var(--hair);background:var(--sep);
 }
-.setph{margin:8px 0 2px;font-size:12px;font-weight:500;color:var(--label-2);display:flex;align-items:center;gap:10px}
+.setph{margin:8px 0 2px;font-size:var(--fs-caption);font-weight:500;color:var(--label-2);display:flex;align-items:center;gap:10px}
 .setph::after{content:'';flex:1;height:1px;background:var(--sep)}
 .setsep{height:1px;background:var(--sep);margin:9px 0}
 /* the per-side wrapper carries its own .n (the set number in front of the L/R rows) */
 .setrow .n,.setrow-side>.n{
   width:24px;height:24px;border-radius:50%;background:var(--surface-2);color:var(--label-2);
-  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:var(--fs-caption);font-weight:500;flex:none;
   position:relative;padding:0;border:0;font-family:inherit;cursor:pointer;
   transition:background var(--fast),color var(--fast);
 }
@@ -1300,13 +1334,13 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .effcell{
   box-sizing:border-box;height:44px;border-radius:10px;
   background:var(--surface-2);border:1.5px solid transparent;
-  color:var(--label);font-size:15px;font-weight:600;letter-spacing:-.01em;
+  color:var(--label);font-size:var(--fs-subhead);font-weight:600;letter-spacing:-.01em;
   font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1;
   display:flex;align-items:center;justify-content:center;
   transition:background var(--fast),transform var(--fast),border-color var(--fast);
 }
 .effcell:active{transform:scale(.94)}
-.effcell.is-empty{color:var(--label-2);font-weight:500;font-size:12px;letter-spacing:.02em}
+.effcell.is-empty{color:var(--label-2);font-weight:500;font-size:var(--fs-caption);letter-spacing:.02em}
 /* a logged rating becomes a −/value/+ stepper, tinted by its effort band: the band colour
    fills the cell at low opacity (set inline via color-mix), borders it, and colours the value.
    the +/− buttons step 0.5 on the profile's scale; the value opens the picker. it carries the
@@ -1317,13 +1351,13 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 .effcell-stp button{color:inherit}
 .effcell-stp>button[aria-label="Decrease"],
-.effcell-stp>button[aria-label="Increase"]{width:26px;height:44px;font-size:15px;opacity:.85;flex:0 1 auto;min-width:16px}
+.effcell-stp>button[aria-label="Increase"]{width:26px;height:44px;font-size:var(--fs-subhead);opacity:.85;flex:0 1 auto;min-width:16px}
 /* the value is the tap target for the picker, so it keeps a 28 px finger's width for "8.5" and
    the −/+ shrink first — on a 368 px phone it had collapsed to 4 px under its own digits, and a
    tap on the number stepped the rating instead of opening the picker (QA C22) */
 .effcell-stp .val{
   flex:1;min-width:28px;display:flex;align-items:center;justify-content:center;
-  font-size:15px;font-weight:600;letter-spacing:-.01em;
+  font-size:var(--fs-subhead);font-weight:600;letter-spacing:-.01em;
   font-variant-numeric:tabular-nums;line-height:1;align-self:stretch;color:inherit;
 }
 .effcell-stp .val:active{background:var(--surface-3)}
@@ -1347,14 +1381,14 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* effort picker: the ⋯-menu list with the value in the icon square, tinted per band; the
    exact-value row carries the same stepper as the logged cell in the set row. */
 .effpick.menu-list .menu-item .effpick-n{
-  background:var(--bc);color:#fff;font-size:13px;font-weight:700;letter-spacing:-.02em;
+  background:var(--bc);color:#fff;font-size:var(--fs-footnote);font-weight:700;letter-spacing:-.02em;
   font-variant-numeric:tabular-nums;
 }
 .effpick .menu-item.on{background:var(--surface);background:color-mix(in srgb,var(--bc) 14%,var(--surface))}
 .effpick .menu-on.is-on{color:var(--bc)}
 .effpick .effpick-free{padding-inline-end:8px}
 .effpick .effpick-free .stp{flex:none;width:148px}
-.effpick .effpick-free .stp .num{font-size:17px;font-weight:600}
+.effpick .effpick-free .stp .num{font-size:var(--fs-body);font-weight:600}
 .effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500}
 .setrow.done .n{background:var(--acc);color:var(--on-acc)}
 .setrow.done{opacity:.45}
@@ -1376,7 +1410,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .swpane.del button{inset-inline-end:0;background:var(--red)}
 .swpane.cp button{inset-inline-start:0;background:var(--acc);color:var(--on-acc)}
 .swpane.armed button{width:100%}
-.swpane .lab{position:absolute;top:0;bottom:0;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px}
+.swpane .lab{position:absolute;top:0;bottom:0;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--fs-caption)}
 .swpane.del .lab{inset-inline-start:0}
 .swpane.cp .lab{inset-inline-end:0}
 .swpane .lab .icn{font-size:21px;transform:scale(.8);transition:transform .16s var(--ease)}
@@ -1393,8 +1427,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 @keyframes swflashr{0%,35%{background:linear-gradient(rgba(255,69,58,0.22),rgba(255,69,58,0.22)),var(--surface);background:color-mix(in srgb,var(--red) 22%,var(--surface))}100%{background:var(--surface)}}
 /* The first-use hint under the row it nudged. */
 .swhint{display:flex;justify-content:center;padding:4px 0 6px}
-.swhint button{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);color:var(--acc-ink);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;animation:swhintin .3s var(--ease);text-align:start}
-.swhint .icn{font-size:15px;flex:none}
+.swhint button{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);color:var(--acc-ink);border-radius:99px;padding:7px 12px;font-size:var(--fs-footnote);font-weight:600;animation:swhintin .3s var(--ease);text-align:start}
+.swhint .icn{font-size:var(--fs-subhead);flex:none}
 .swhint .icn:last-child{opacity:.7}
 @keyframes swhintin{from{opacity:0;transform:translateY(-4px)}}
 .vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -1413,7 +1447,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setrow-side .setrow.side+.setrow.side::before{display:none}
 .sidetag{
   width:24px;height:24px;border-radius:8px;background:var(--surface-2);color:var(--label-3);
-  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:var(--fs-caption2);font-weight:600;flex:none;
 }
 /* A one-sided row with an effort column is the tightest line in the app: set number, L/R badge,
    two steppers, effort, tick. On a narrow phone the reps stepper's two buttons took all of its
@@ -1498,7 +1532,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
      and a 13 px number — and it fits with two pixels to spare. Not with the buttons off (`plain`),
      where the number alone is the floor. */
   .setrow-side .setrow.side.eff3 .stp.w:not(.plain),.setrow-side .setrow.side.eff3 .stp.r:not(.plain),.sethead.per-side.eff3:not(.plain) .w-sp,.sethead.per-side.eff3:not(.plain) .r-sp{--btn-floor:16px}
-  .setrow-side .setrow.side.eff3 .stp .num{font-size:13px}
+  .setrow-side .setrow.side.eff3 .stp .num{font-size:var(--fs-footnote)}
   .setrow-side .setrow.side.eff3 .stp.w,.sethead.per-side.eff3 .w-sp{--num:38px}
   .setrow-side .setrow.side.eff3 .stp.r,.sethead.per-side.eff3 .r-sp{--num:28px}
   /* A weighted timed hold has one control more than a straight row (the play button before the
@@ -1519,15 +1553,15 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    tucks a straight row's drops under its number would be paid twice — at 320 px both number
    fields of a per-side drop collapsed to 0 px (QA C3). The label starts under the badge instead. */
 .setrow-side .side-rows .subrow{padding-inline-start:0}
-.subrow .subn{font-size:11px;color:var(--label-3);flex:none;width:46px}
+.subrow .subn{font-size:var(--fs-caption2);color:var(--label-3);flex:none;width:46px}
 /* the number outranks the buttons here as in the row above: room for "227.5" (a drop's weight)
    or "100" (the second mini is always reps) at 13 px, and the buttons shrink to 16 px first */
 .subrow .stp.mini{flex:1;--num:38px;min-width:calc(var(--num) + 32px)}
 .subrow .stp.mini+.stp.mini{--num:28px}
 .subrow .stp.mini button{width:26px;height:30px;flex:0 1 auto;min-width:16px}
 .subrow .stp.mini .val{min-width:var(--num)}
-.subrow .stp.mini .num{font-size:13px;min-height:30px}
-.subrow .iconbtn{width:26px;height:26px;font-size:11px;flex:none}
+.subrow .stp.mini .num{font-size:var(--fs-footnote);min-height:30px}
+.subrow .iconbtn{width:26px;height:26px;font-size:var(--fs-caption2);flex:none}
 /* label 46, two minis at their floors 70 + 60, the ✕ and three gaps: 252 px with the indent — the
    whole row at 320 px. The label starts under the number circle's inner edge there instead. */
 @media (max-width:359px){
@@ -1535,8 +1569,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 /* Plate line under a set row (Workout.jsx loadLine): the stack for this row's weight, what is
    missing from the inventory, and what to strip/add from the row above. */
-.plateline{display:flex;align-items:center;gap:6px;padding-block:0 5px;padding-inline:32px 0;font-size:12px;color:var(--label-2);line-height:1.3}
-.plateline .icn{font-size:12px;flex:none;opacity:.8}
+.plateline{display:flex;align-items:center;gap:6px;padding-block:0 5px;padding-inline:32px 0;font-size:var(--fs-caption);color:var(--label-2);line-height:1.3}
+.plateline .icn{font-size:var(--fs-caption);flex:none;opacity:.8}
 .plateline .short{color:var(--orange)}
 .plateline .moves{margin-inline-start:auto;color:var(--label-3);font-variant-numeric:tabular-nums;white-space:nowrap}
 /* The number is the set's menu (drop / burst / remove); a 24px circle needs a finger-sized hit area. */
@@ -1550,10 +1584,10 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .stp.plain .num{width:100%;text-align:center}
 /* --- menu sheet (the workout's "more" menus) --- */
 .menu-list .menu-item{min-height:52px;padding:8px 12px}
-.menu-list .menu-item .lrow-i{width:32px;height:32px;font-size:16px;background:var(--surface-2);color:var(--label)}
+.menu-list .menu-item .lrow-i{width:32px;height:32px;font-size:var(--fs-callout);background:var(--surface-2);color:var(--label)}
 .menu-list .menu-item.danger .tt,.menu-list .menu-item.danger .lrow-i{color:var(--red)}
 .menu-list .menu-item.disabled{opacity:.4;pointer-events:none}
-.menu-on{color:transparent;font-size:16px;flex:none}
+.menu-on{color:transparent;font-size:var(--fs-callout);flex:none}
 .menu-on.is-on{color:var(--acc-ink)}
 /* A grouped menu (menuSheet's `sections`): groups sit apart, each with a small header, so a long
    list reads as four short ones. */
@@ -1563,7 +1597,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .menu-group.grouped .menu-item+.menu-item::before{
   content:'';position:absolute;top:0;inset-inline-start:56px;inset-inline-end:0;height:var(--hair);background:var(--sep-op);
 }
-.menu-sec{font-size:13px;font-weight:600;color:var(--label-2);padding:0 6px 6px;letter-spacing:.005em}
+.menu-sec{font-size:var(--fs-footnote);font-weight:600;color:var(--label-2);padding:0 6px 6px;letter-spacing:.005em}
 .menu-list .menu-item.accent .lrow-i{background:var(--acc);color:var(--on-acc)}
 .menu-chev{color:var(--label-3);font-size:14px;flex:none}
 [dir="rtl"] .menu-chev{transform:scaleX(-1)}
@@ -1578,7 +1612,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* why the next target is what it is (issue #17) */
 .progline{
   width:100%;display:flex;align-items:flex-start;gap:7px;margin:6px 0 2px;padding:0;
-  text-align: start;font-size:13px;line-height:1.38;color:var(--acc-ink);
+  text-align: start;font-size:var(--fs-footnote);line-height:1.38;color:var(--acc-ink);
 }
 .progline.warn{color:var(--gold-ink)}
 .progline svg{flex:none;margin-top:2px}
@@ -1587,21 +1621,21 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .prog-chip{max-width:100%;margin:0 0 8px;color:var(--acc-ink)}
 .prog-chip span{overflow:hidden;text-overflow:ellipsis}
 .prog-strip{width:100%;display:flex;align-items:center;gap:8px;margin:0 0 12px;padding:10px 12px;
-  border-radius:12px;background:var(--surface);color:var(--label);text-align:start;font-size:15px}
+  border-radius:12px;background:var(--surface);color:var(--label);text-align:start;font-size:var(--fs-subhead)}
 .prog-strip .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prog-strip .tag{flex:none}
 .prog-strip svg{flex:none;color:var(--acc-ink)}
 .prog-run{margin-bottom:16px}
-.prog-run .prog-name{font-weight:500;font-size:17px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prog-run .prog-name{font-weight:500;font-size:var(--fs-body);line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prog-run .tag{flex:none;white-space:nowrap}
 .prog-bar{height:4px;border-radius:2px;background:var(--surface-3);margin-top:10px;overflow:hidden}
 .prog-bar span{display:block;height:100%;background:var(--acc);border-radius:2px}
 .prog-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .prog-actions.col{flex-direction:column;margin-top:16px}
-.prog-lift .lrow-t{font-size:15px}
+.prog-lift .lrow-t{font-size:var(--fs-subhead)}
 .prog-pct{flex:none;display:flex;align-items:baseline;gap:3px;background:var(--surface-2);border-radius:10px;padding:0 10px}
-.prog-pct .num{width:4ch;min-height:40px;text-align:end;background:none;border:none;outline:none;font-size:17px;font-weight:500}
-.prog-pct i{font-style:normal;font-size:13px;color:var(--label-2)}
+.prog-pct .num{width:4ch;min-height:40px;text-align:end;background:none;border:none;outline:none;font-size:var(--fs-body);font-weight:500}
+.prog-pct i{font-style:normal;font-size:var(--fs-footnote);color:var(--label-2)}
 .lrow.prog-now .lrow-t{color:var(--acc-ink);font-weight:600}
 .prog-weeks .stp{flex:none;width:136px}
 /* "Last time" / "Best set" under the plan line (#173): a button that switches between the two,
@@ -1610,11 +1644,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* The plan and the last time are what you read between sets, so they sit in the secondary grey, not
    the tertiary one (2.5:1, which the gym's light washed out). .dim stays on them for the markup. */
 .planline.dim,.refline.dim{color:var(--label-2)}
-.refline svg{flex:none;margin-top:2px;font-size:12px}
+.refline svg{flex:none;margin-top:2px;font-size:var(--fs-caption)}
 /* an exercise kept out of progression for this session, with its undo */
-.noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:13px;line-height:1.38;color:var(--orange)}
+.noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:var(--fs-footnote);line-height:1.38;color:var(--orange)}
 .noprog svg{flex:none}
-.noprog .chip{margin-inline-start:auto;padding:3px 11px;font-size:13px;color:var(--orange);background:rgba(255,159,10,0.14);background:color-mix(in srgb,var(--orange) 14%,transparent)}
+.noprog .chip{margin-inline-start:auto;padding:3px 11px;font-size:var(--fs-footnote);color:var(--orange);background:rgba(255,159,10,0.14);background:color-mix(in srgb,var(--orange) 14%,transparent)}
 
 /* start a timed set (issue #16) — sits where you'd otherwise reach for the checkbox */
 .setrow .setgo{
@@ -1671,7 +1705,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 #timer.rest .t{display:flex;flex-direction:column}
 #timer.rest .t::after{content:attr(data-alt);height:0;overflow:hidden;visibility:hidden}
 #timer .lbl{
-  font-size:12px;color:var(--label-2);width:0;min-width:100%;margin-top:1px;
+  font-size:var(--fs-caption);color:var(--label-2);width:0;min-width:100%;margin-top:1px;
   display:inline-flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 #timer .lbl .icn{font-size:10px;flex:none;opacity:.8}
@@ -1734,7 +1768,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 #timer .autorow .btn:active{background:var(--surface-3)}
 #timer .autorow .btn > span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #timer .autorow.next{align-items:center}
-#timer .autorow.next .up{flex:1 1 auto;min-width:0;font-size:13px;color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#timer .autorow.next .up{flex:1 1 auto;min-width:0;font-size:var(--fs-footnote);color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #timer .autorow.next .btn{flex:none}
 /* The count-in: a big number in the accent, which pops on each second (still under reduced motion). */
 #timer.countin{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
@@ -1792,7 +1826,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 :root[data-theme="light"] .sheet{background:var(--bg)}
 @keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
 .sheet .grab{width:36px;height:5px;border-radius:99px;background:var(--label-4);margin:6px auto 14px}
-.sheet h3{font-size:20px;font-weight:600;letter-spacing:-.021em;margin-bottom:14px}
+.sheet h3{font-size:var(--fs-title3);font-weight:600;letter-spacing:-.021em;margin-bottom:14px}
 .picker-search{
   position:sticky;top:0;z-index:2;margin-bottom:0;padding-bottom:10px;
   background:var(--bg-el);
@@ -1828,14 +1862,14 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   content:'';position:absolute;inset-inline-start:14px;inset-inline-end:0;top:0;height:var(--hair);background:var(--sep);
 }
 .efftbl .n{
-  width:36px;flex:none;text-align:center;font-size:17px;font-weight:600;
+  width:36px;flex:none;text-align:center;font-size:var(--fs-body);font-weight:600;
   letter-spacing:-.02em;font-variant-numeric:tabular-nums;
 }
-.efftbl .f{flex:1;min-width:0;font-size:15px;color:var(--label-2);line-height:1.3}
+.efftbl .f{flex:1;min-width:0;font-size:var(--fs-subhead);color:var(--label-2);line-height:1.3}
 /* the header names the columns without competing with them */
 .efftbl .hd{background:var(--surface-2);padding-top:8px;padding-bottom:8px}
 .efftbl .hd .n,.efftbl .hd .f{
-  font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  font-size:var(--fs-caption2);font-weight:600;letter-spacing:.05em;text-transform:uppercase;
   color:var(--label-3);
 }
 /* the row a working set usually lands on — the anchor the others are read against */
@@ -1881,7 +1915,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
    pushed under the `.chart` clip at either edge — hence no offset here. */
 .ctip{
   position:absolute;left:0;top:0;background:var(--surface-2);
-  border-radius:8px;padding:4px 10px;font-size:12px;font-weight:500;white-space:nowrap;
+  border-radius:8px;padding:4px 10px;font-size:var(--fs-caption);font-weight:500;white-space:nowrap;
   max-width:calc(100% - 8px);overflow:hidden;text-overflow:ellipsis;
   pointer-events:none;box-shadow:0 6px 18px -4px rgba(0,0,0,.4);
 }
@@ -1890,7 +1924,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
 .hm-wrap::-webkit-scrollbar{display:none}
 .hm-months{display:flex;margin-inline-start:28px;margin-bottom:5px}
-.hm-months span{flex:none;width:14px;font-size:11px;color:var(--label-3);white-space:nowrap;overflow:visible}
+.hm-months span{flex:none;width:14px;font-size:var(--fs-caption2);color:var(--label-3);white-space:nowrap;overflow:visible}
 .hm-body{display:flex}
 .hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px}
 .hm-days span{height:11px;font-size:10px;color:var(--label-2);line-height:11px}
@@ -1906,7 +1940,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-c.noted{box-shadow:inset 0 0 0 1.5px var(--indigo)}
 .hm-legend{
   display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:9px;
-  font-size:11px;color:var(--label-3);
+  font-size:var(--fs-caption2);color:var(--label-3);
 }
 .hm-legend .hm-c{width:10px;height:10px}
 
@@ -2002,7 +2036,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mrow .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mrow .bar{width:74px;height:5px;border-radius:3px;background:var(--surface-2);flex:none;overflow:hidden}
 .mrow .bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
-.mrow .v{font-size:12px;color:var(--label-2);min-width:52px;text-align: end;flex:none}
+.mrow .v{font-size:var(--fs-caption);color:var(--label-2);min-width:52px;text-align: end;flex:none}
 /* The Week view's "done/planned · %" (#573): wider than a set count, and as wide on every row, so
    the bars line up the way they do in 30d, 90d and All. coach.css has a `.cmp` of its own (the
    Coach's comparison rows) with a rule line and padding, loaded on every page: reset both here. */
@@ -2019,7 +2053,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .fbar .zone.recovering{width:25%;background:var(--yellow)}
 .fbar .zone.fatigued{width:50%;background:var(--red)}
 .fbarwrap .knob{position:absolute;top:-3px;bottom:-3px;width:3px;border-radius:2px;background:var(--label);box-shadow:0 0 0 1.5px var(--surface);pointer-events:none}
-.fbarwrap .fval{position:absolute;bottom:100%;margin-bottom:3px;transform:translateX(-50%);font-size:11px;font-weight:600;color:var(--label);white-space:nowrap;pointer-events:none}
+.fbarwrap .fval{position:absolute;bottom:100%;margin-bottom:3px;transform:translateX(-50%);font-size:var(--fs-caption2);font-weight:600;color:var(--label);white-space:nowrap;pointer-events:none}
 [dir="rtl"] .fbarwrap .fval{transform:translateX(50%)}
 .fends{display:flex;justify-content:space-between;font-size:10px;color:var(--label-3);margin-top:3px}
 .fzones{display:flex;font-size:10px;color:var(--label-3);line-height:1.2}
@@ -2035,9 +2069,9 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
    readings at the top of the effort card. */
 .stat-v{font-size:26px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.mchip{font-size:12px;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2)}
+.mchip{font-size:var(--fs-caption);padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2)}
 .mchip.miss{background:rgba(255,159,10,0.16);background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
-button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
+button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer}
 /* "Exercises ›" on an untrained muscle picked on the map (#553), at the end of its row. On a
    narrow phone the row has no room for it (the name shrank to nothing at 320 and 360px, and the
    Russian chip poked out of the card), so it wraps to a line of its own, still at the end; the
@@ -2053,11 +2087,13 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .tile{background:var(--surface);border-radius:var(--r-card);padding:14px}
 .tile .l{
-  color:var(--label-2);font-size:13px;font-weight:400;letter-spacing:-.004em;
+  color:var(--label-2);font-size:var(--fs-footnote);font-weight:400;letter-spacing:-.004em;
   text-transform:none;display:flex;align-items:center;gap:5px;
 }
 .tile .l .icn{font-size:14px;color:var(--label)}
 .tile .v{font-size:26px;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
+/* a tile that holds a count beside other counts (import summaries, the finish sheet, admin): the body size, not the headline figure */
+.tile .v.v-sm{font-size:var(--fs-body);letter-spacing:var(--ls-body)}
 .tile.tappable:active{background:var(--surface-2)}
 /* The week streak (components/Streak.jsx): the flame, best + freezes, the medals, the parties.
    Colours that carry meaning get a darker ink in the light theme, so a bar or a snowflake keeps
@@ -2091,12 +2127,12 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 
 /* Freezes: a snowflake in a round chip, filled when banked, outlined while still to earn. */
 .streak-meta{display:inline-flex;align-items:center;gap:8px}
-.streak-freezes{display:inline-flex;gap:3px;vertical-align:middle;font-size:11px}
+.streak-freezes{display:inline-flex;gap:3px;vertical-align:middle;font-size:var(--fs-caption2)}
 .frz{display:inline-grid;place-items:center;width:1.6em;height:1.6em;border-radius:50%;color:var(--label-3);box-shadow:inset 0 0 0 1px var(--label-4)}
 .frz .icn{font-size:1.05em}
 .frz.on{color:var(--frost);background:var(--frost-soft);box-shadow:none;--icon-stroke:2}
 .streak-freezes.big{font-size:14px;gap:4px}
-.tile-freezes{margin-inline-start:8px;font-size:11px}
+.tile-freezes{margin-inline-start:8px;font-size:var(--fs-caption2)}
 
 /* The medals: one per milestone, tiers bronze to legend; one still to earn is a dashed outline. */
 .medal{display:inline-block;flex:none;overflow:visible}
@@ -2113,7 +2149,7 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .streak-badge{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:10px 0 8px;border-radius:12px;background:var(--surface-2);color:var(--label-2)}
 .streak-badge-art{position:relative;display:inline-flex;font-size:28px}
 .streak-badge .lk{position:absolute;inset-inline-end:-4px;bottom:-1px;font-size:14px;padding:2px;border-radius:50%;background:var(--surface-2);color:var(--label-2);--icon-stroke:2}
-.streak-badge .n{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.streak-badge .n{font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums}
 .streak-badge.got{color:var(--label)}
 .streak-next{margin-top:14px}
 .streak-hint{margin-top:10px}
@@ -2132,7 +2168,7 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 
 /* The party: a warm banner in the card, its icon popping in on a burst of confetti (under 1.2 s). */
 .streak-party{position:relative;display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:8px 14px 8px 8px;border:0;border-radius:16px;
-  background:rgba(255,159,10,.14);color:var(--label);font:inherit;font-size:15px;font-weight:600;line-height:1.3;letter-spacing:-.01em;text-align:start;cursor:pointer;
+  background:rgba(255,159,10,.14);color:var(--label);font:inherit;font-size:var(--fs-subhead);font-weight:600;line-height:1.3;letter-spacing:-.01em;text-align:start;cursor:pointer;
   animation:party-in .42s cubic-bezier(.23,1,.32,1) both;touch-action:manipulation}
 [dir="rtl"] .streak-party{padding:8px 8px 8px 14px}
 @media (hover:hover) and (pointer:fine){.streak-party:hover{background:rgba(255,159,10,.2)}.streak-party.gold:hover{background:rgba(255,214,10,.24)}}
@@ -2161,19 +2197,19 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .ch-head{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
 .ch-head-t{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
 /* wraps rather than cut: on a 320px phone the fold and × left "This month's chall…" */
-.ch-head .ttl{font-size:16px;font-weight:600;letter-spacing:-.01em;line-height:1.25;overflow-wrap:break-word;text-wrap:balance}
-.ch-sub{display:block;font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums}
+.ch-head .ttl{font-size:var(--fs-callout);font-weight:600;letter-spacing:-.01em;line-height:1.25;overflow-wrap:break-word;text-wrap:balance}
+.ch-sub{display:block;font-size:var(--fs-footnote);color:var(--label-2);font-variant-numeric:tabular-nums}
 .challenges-stats .ch-sub{margin:-4px 0 2px}
 .ch-list{display:flex;flex-direction:column;gap:14px;margin-top:14px}
 .ch-row{display:flex;align-items:center;gap:12px}
-.ch-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:10px;background:var(--surface-2);color:var(--label-2);font-size:17px}
+.ch-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:10px;background:var(--surface-2);color:var(--label-2);font-size:var(--fs-body)}
 .ch-row.done .ch-ic{background:rgba(48,209,88,0.18);background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--win-ink)}
 .ch-body{flex:1;min-width:0}
-.ch-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:15px;font-weight:500;letter-spacing:-.01em;line-height:1.3}
+.ch-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:var(--fs-subhead);font-weight:500;letter-spacing:-.01em;line-height:1.3}
 .ch-name{min-width:0;text-wrap:pretty}
-.ch-n{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:500;color:var(--label-2)}
+.ch-n{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:var(--fs-footnote);font-weight:500;color:var(--label-2)}
 .ch-row.done .ch-n{color:var(--win-ink)}
-.ch-ok{font-size:12px;--icon-stroke:2.6}
+.ch-ok{font-size:var(--fs-caption);--icon-stroke:2.6}
 .ch-bar{margin-top:7px}
 .ch-row.done .pbar i,.ch-mini .done i{background:var(--win-ink)}
 .ch-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
@@ -2182,17 +2218,17 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .ch-crown{color:var(--gold-ink)}
 .challenges.gold{background:rgba(255,214,10,.08);background:color-mix(in srgb,var(--yellow) 8%,var(--surface))}
 .ch-party .streak-party-icon .ch-crown{font-size:24px;--icon-stroke:2}
-.ch-shelf-h{margin:20px 0 8px;font-size:13px;font-weight:600;letter-spacing:-.004em;color:var(--label)}
+.ch-shelf-h{margin:20px 0 8px;font-size:var(--fs-footnote);font-weight:600;letter-spacing:-.004em;color:var(--label)}
 .ch-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;padding-top:6px}
 .ch-month{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 4px 9px;border-radius:12px;background:var(--surface-2)}
 .ch-medals{display:inline-flex;align-items:center;gap:1px;min-height:22px;font-size:21px}
 .ch-slot{width:11px;height:11px;margin:0 4px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3)}
-.ch-m{font-size:12px;font-weight:600;color:var(--label-2);white-space:nowrap}
+.ch-m{font-size:var(--fs-caption);font-weight:600;color:var(--label-2);white-space:nowrap}
 .ch-month.gold{background:rgba(255,214,10,0.12);background:color-mix(in srgb,var(--yellow) 12%,var(--surface-2))}
 .ch-month.gold .ch-m{color:var(--label)}
-.ch-month.gold>.ch-crown{position:absolute;top:-9px;left:50%;transform:translateX(-50%);padding:2px 5px;border-radius:9px;background:var(--surface);font-size:17px;box-sizing:content-box;--icon-stroke:2}
+.ch-month.gold>.ch-crown{position:absolute;top:-9px;left:50%;transform:translateX(-50%);padding:2px 5px;border-radius:9px;background:var(--surface);font-size:var(--fs-body);box-sizing:content-box;--icon-stroke:2}
 .ch-shelf-empty{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--surface-2)}
-.ch-shelf-empty .ch-medals{font-size:22px;gap:2px}
+.ch-shelf-empty .ch-medals{font-size:var(--fs-title2);gap:2px}
 /* the workout summary: time and volume share the first row, sets get the wider cell of the second
    because "15 sets · 15 work" does not fit a half */
 .center .tiles.fin{grid-template-columns:repeat(6,1fr)}
@@ -2214,9 +2250,9 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .pr{
   display:inline-flex;align-items:center;gap:4px;
   background:rgba(255,214,10,0.18);background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--gold-ink);
-  border-radius:6px;padding:3px 8px;font-size:12px;font-weight:500;
+  border-radius:6px;padding:3px 8px;font-size:var(--fs-caption);font-weight:500;
 }
-.pr .icn{font-size:13px}
+.pr .icn{font-size:var(--fs-footnote)}
 
 /* --- toast --- */
 #toast{
@@ -2226,7 +2262,7 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
   /* 22px, not a pill radius: one line (about 41px high) still reads as a pill, and a toast that
      wraps to four lines is a rounded box instead of a circle over the page. */
-  border-radius:var(--r-xl);padding:11px 20px;font-size:15px;font-weight:500;
+  border-radius:var(--r-xl);padding:11px 20px;font-size:var(--fs-subhead);font-weight:500;
   box-shadow:0 10px 30px -6px rgba(0,0,0,.5);
   opacity:0;pointer-events:none;transition:opacity var(--med),transform var(--med) var(--ease);
   /* As wide as its text up to 88vw. Without a width, left:50% left it half the screen to wrap
@@ -2239,10 +2275,10 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 #toast.has-action .toast-msg{flex:1;min-width:0;padding:7px 0}
 #toast .toast-act{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--acc-ink);font-weight:700;padding:8px 12px;border-radius:14px;min-height:36px}
 #toast .toast-act:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
-#toast .toast-act .icn{font-size:16px}
+#toast .toast-act .icn{font-size:var(--fs-callout)}
 #toast .toast-x{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;color:var(--label-2)}
 #toast .toast-x:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
-#toast .toast-x .icn{font-size:15px}
+#toast .toast-x .icn{font-size:var(--fs-subhead)}
 body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 
@@ -2274,21 +2310,21 @@ body.totop-on #app{padding-bottom:calc(144px + var(--sab))}
 body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 
 /* ---------------------------------------------------------------- misc --- */
-.empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:15px;line-height:1.45}
+.empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
 .empty .ico{font-size:34px;color:var(--label-2);margin-bottom:12px;display:flex;justify-content:center}
 .steps-list{
-  padding-inline-start:18px;color:var(--label-2);font-size:15px;line-height:1.5;
+  padding-inline-start:18px;color:var(--label-2);font-size:var(--fs-subhead);line-height:1.5;
   display:flex;flex-direction:column;gap:9px;
 }
 .steps-list::marker{color:var(--label-3)}
 
 /* --- month calendar --- */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
-.cal-h{text-align:center;font-size:12px;color:var(--label-2);font-weight:500;padding:2px 0}
+.cal-h{text-align:center;font-size:var(--fs-caption);color:var(--label-2);font-weight:500;padding:2px 0}
 .cal-d{
   aspect-ratio:1;border-radius:10px;background:var(--surface);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  font-weight:400;font-size:15px;color:var(--label);transition:background var(--fast);
+  font-weight:400;font-size:var(--fs-subhead);color:var(--label);transition:background var(--fast);
 }
 .cal-d:active{background:var(--surface-2)}
 .cal-d.has{background:var(--acc-soft);color:var(--acc-ink)}
@@ -2298,7 +2334,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .cal-d i.plan{background:var(--label-3)}
 .cal-d i.ovr{background:var(--orange)}
 .cal-d i.noted{background:var(--indigo)}
-.cal-legend{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:12px;color:var(--label-3)}
+.cal-legend{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:var(--fs-caption);color:var(--label-3)}
 .cal-legend i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-inline-end:5px}
 /* --- openGym date field + picker (#809, components/DateField.jsx) ---
    The field is a button dressed as the field or row value it replaces; the picker reuses the
@@ -2314,7 +2350,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .datep-label{text-align:center;margin-bottom:2px}
 .datep-head{margin-bottom:2px;gap:6px}
 .datep-title{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 8px;border-radius:10px;min-width:0}
-.datep-title .datep-t{font-size:20px;font-weight:600;letter-spacing:-.021em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datep-title .datep-t{font-size:var(--fs-title3);font-weight:600;letter-spacing:-.021em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .datep-title>.icn{flex:none;font-size:14px;color:var(--label-3)}
 .datep-title:active{background:var(--surface)}
 .datep-grid{gap:4px}
@@ -2322,7 +2358,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .datep .cal-d.sel{background:var(--acc);color:var(--on-acc);font-weight:600}
 .datep .cal-d:disabled{opacity:.3;cursor:default}
 .datep-months{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.datep-m{min-height:52px;font-size:16px}
+.datep-m{min-height:52px;font-size:var(--fs-callout)}
 .datep-today{margin-top:12px;width:100%}
 
 /* --- accent swatches --- */
@@ -2333,7 +2369,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .swatch.on::after{content:'';position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 0 2px var(--label);pointer-events:none}
 /* The user's own colour (Settings → Accent color): a rainbow ring until there is one, then filled
    with it. The native colour input lies over it, invisible, so the tap lands on the input itself. */
-.swatch-own{display:inline-flex;align-items:center;justify-content:center;font-size:15px;--icon-stroke:2.4}
+.swatch-own{display:inline-flex;align-items:center;justify-content:center;font-size:var(--fs-subhead);--icon-stroke:2.4}
 .swatch-own.unset{
   background:radial-gradient(circle,var(--surface) 0 52%,transparent 54%),
     conic-gradient(#ff453a,#ff9f0a,#ffd60a,#30d158,#40c8e0,#0a84ff,#bf5af2,#ff375f,#ff453a);
@@ -2351,12 +2387,12 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 
 /* --- supersets --- */
 .ss-label{
-  font-size:12px;font-weight:600;letter-spacing:-.004em;text-transform:none;
+  font-size:var(--fs-caption);font-weight:600;letter-spacing:-.004em;text-transform:none;
   color:var(--acc-ink);margin-block:8px 5px;margin-inline-start:4px;display:flex;align-items:center;gap:5px;
 }
-.ss-label .icn{font-size:13px}
+.ss-label .icn{font-size:var(--fs-footnote)}
 /* The routine editor's label opens the superset's name and rest (#292). */
-.ss-label-btn{background:none;border:0;padding:4px 6px;margin-inline-start:-2px;border-radius:8px;cursor:pointer;font:inherit;font-size:12px;font-weight:600;min-height:28px;max-width:100%}
+.ss-label-btn{background:none;border:0;padding:4px 6px;margin-inline-start:-2px;border-radius:8px;cursor:pointer;font:inherit;font-size:var(--fs-caption);font-weight:600;min-height:28px;max-width:100%}
 .ss-label-btn:active{background:var(--surface-2)}
 .ss-label-btn .ss-label-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ss-label-btn .dim{font-weight:500;white-space:nowrap}
@@ -2369,7 +2405,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .wd-ex>.grow{flex:1;min-width:0}
 /* the sets under each exercise name: the second voice. .ss had no rule outside .item, so they came
    out at 17px in full ink, as loud as the name above them (design review 1.4.5). */
-.wd-ex .ss{font-size:15px;line-height:1.35;color:var(--label-2);margin-top:2px}
+.wd-ex .ss{font-size:var(--fs-subhead);line-height:1.35;color:var(--label-2);margin-top:2px}
 .wd-thumb{background:none;border:none;padding:0;cursor:pointer;display:block;flex:none}
 .wd-ex:active{background:var(--surface-2)}
 .wd-ss{box-shadow:inset 3px 0 0 var(--acc);padding-inline-start:11px;margin-bottom:12px}
@@ -2408,11 +2444,11 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
   .wl-unit .ss-card{padding-inline:0}
 }
 .ss-hd{
-  font-size:12px;font-weight:600;color:var(--acc-ink);margin-bottom:12px;
+  font-size:var(--fs-caption);font-weight:600;color:var(--acc-ink);margin-bottom:12px;
   text-align:center;display:flex;align-items:center;justify-content:center;gap:5px;
 }
 .ss-ex{position:relative}
-.ss-amp{text-align:center;font-size:15px;font-weight:600;color:var(--acc-ink);margin:14px 0 8px}
+.ss-amp{text-align:center;font-size:var(--fs-subhead);font-weight:600;color:var(--acc-ink);margin:14px 0 8px}
 
 /* --- workout list view: every unit stacked, the current one outlined --- */
 /* minmax(0, …): a grid's default `auto` track is at least as wide as its widest content, so a set
@@ -2448,7 +2484,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .wchip{
   flex:none;position:relative;display:inline-flex;align-items:center;justify-content:center;gap:2px;
   min-width:28px;height:28px;padding:0 8px;border-radius:99px;
-  font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
+  font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label-2);
   background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--sep);
 }
 .wchip .icn{width:12px;height:12px}
@@ -2471,11 +2507,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The small line over a card's or row's title ("Today", "At the gym", "Recovery", "Running now") in
    sentence case and the readable grey, one rule for all of them: the check-in and recovery cards
    never had one, so "At the gym" / "Check in" rendered as two equal 17px titles. The rest-day line under the title is a subtitle, not a second title. */
-.lbl2{font-size:13px;color:var(--label-2);letter-spacing:-.004em}
-.today-row .ss{font-size:13px;line-height:1.3;color:var(--label-2);margin-top:2px}
-.checkin-card .ttl{font-weight:500;font-size:17px;line-height:1.25;letter-spacing:-.012em;margin-top:1px}
+.lbl2{font-size:var(--fs-footnote);color:var(--label-2);letter-spacing:var(--ls-small)}
+.today-row .ss{font-size:var(--fs-footnote);line-height:1.3;color:var(--label-2);margin-top:2px}
+.checkin-card .ttl{font-weight:500;font-size:var(--fs-body);line-height:1.25;letter-spacing:-.012em;margin-top:1px}
 .today-row .ttl{
-  font-weight:500;font-size:17px;line-height:1.25;text-transform:capitalize;
+  font-weight:500;font-size:var(--fs-body);line-height:1.25;text-transform:capitalize;
   letter-spacing:-.012em;margin-top:2px;
   /* two lines before the ellipsis: "Leg Day — in progress" grows past one line in hu/tr/th/pt-BR */
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
@@ -2560,7 +2596,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* reorder row under a card (only shown with >1 card): ◀ position ▶ to nudge the card one slot
    along the rail. A plain, reliable control — no drag gesture to fight the horizontal scroll. */
 .ci-reorder{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:2px}
-.ci-reorder .ci-pos{font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums;min-width:44px;text-align:center}
+.ci-reorder .ci-pos{font-size:var(--fs-footnote);color:var(--label-2);font-variant-numeric:tabular-nums;min-width:44px;text-align:center}
 .ci-reorder .iconbtn:disabled{opacity:.3;pointer-events:none}
 /* The QR itself: lean-qr paints 1 module per pixel, so scale it up with the browser's
    nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
@@ -2576,7 +2612,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 }
 .ci-add:active{background:var(--surface);transform:scale(.99)}
 .ci-add .icn{font-size:40px;--icon-stroke:1.8}
-.ci-add .ci-add-t{font-size:16px;font-weight:500}
+.ci-add .ci-add-t{font-size:var(--fs-callout);font-weight:500}
 /* dots under the rail — which card you're on. Purely a hint; the rail itself is the control. */
 .ci-dots{display:flex;justify-content:center;gap:7px;margin-top:4px}
 .ci-dot{width:7px;height:7px;border-radius:50%;background:var(--surface-3);transition:background var(--fast),transform var(--fast)}
@@ -2589,7 +2625,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* ---------------------------------------------------------------- Plan -- */
 /* Schedule | Routines (views/Plan.jsx). A settings-like page, one column at every width. */
 .plan-views{margin-bottom:18px}
-.plan-views button{min-height:34px;font-size:15px}
+.plan-views button{min-height:34px;font-size:var(--fs-subhead)}
 .plan .plan-mode .lrow-t{white-space:nowrap}
 /* The control takes the rest of the row when it fits, and a full line of its own when it does
    not, rather than squeezing "Fixed Week" onto two lines. */
@@ -2602,12 +2638,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-sec-h>.plan-sec-acts{margin-inline-start:auto}
 .plan-sec-h h4.sec{margin:0}
 .plan-routines-bar{margin-top:0}
-.plan-textbtn{color:var(--acc-ink);font-size:16px;padding:6px 4px;position:relative}
+.plan-textbtn{color:var(--acc-ink);font-size:var(--fs-callout);padding:6px 4px;position:relative}
 .plan-textbtn::before{content:'';position:absolute;inset:-6px}
 .plan .sect-f{margin:0 0 4px}
 .plan .list+.sect-f{padding-top:8px}
 /* a weekday: short day name, the routine's glyph (a moon on a rest day), what is on it */
-.plan-day-n{min-width:30px;flex:none;white-space:nowrap;font-size:15px;font-weight:600;color:var(--label-2)}
+.plan-day-n{min-width:30px;flex:none;white-space:nowrap;font-size:var(--fs-subhead);font-weight:600;color:var(--label-2)}
 .plan-day-n.today{color:var(--acc-ink)}
 /* Arabic names the whole day: one column wide enough for the longest keeps the glyphs aligned */
 [dir="rtl"] .plan-day-n{min-width:88px}
@@ -2615,7 +2651,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* the loop: a numbered position, lit when up next, a tick once done this round */
 .plan-order{
   width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;
-  font-size:13px;font-weight:600;color:var(--label-2);background:var(--surface-3);--icon-stroke:2.6;
+  font-size:var(--fs-footnote);font-weight:600;color:var(--label-2);background:var(--surface-3);--icon-stroke:2.6;
 }
 .plan-order.next{background:var(--acc);color:var(--on-acc)}
 .rotation-row.is-done .tt{color:var(--label-2)}
@@ -2654,12 +2690,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .dw-scroll::-webkit-scrollbar{display:none}
 .dw-pad{height:calc(var(--dw-item) * 2)}
 .dw-it{height:var(--dw-item);scroll-snap-align:center;display:flex;align-items:center;justify-content:flex-end;
-  padding-inline-end:calc(50% + 2px);font-size:22px;font-variant-numeric:tabular-nums;color:var(--label-2);
+  padding-inline-end:calc(50% + 2px);font-size:var(--fs-title2);font-variant-numeric:tabular-nums;color:var(--label-2);
   cursor:pointer;transform-origin:50% 50%;will-change:transform,opacity}
 .dw-it.on{color:var(--label);font-weight:600}
 .dw-it.out{color:var(--label-4)}
 .dw-unit{position:absolute;top:calc(var(--dw-item) * 2);height:var(--dw-item);display:flex;align-items:center;
-  inset-inline-start:calc(50% + 8px);font-size:17px;font-weight:600;color:var(--label);pointer-events:none}
+  inset-inline-start:calc(50% + 8px);font-size:var(--fs-body);font-weight:600;color:var(--label);pointer-events:none}
 .dw-read{text-align:center;font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:-4px 0 2px}
 .dw-foot{text-align:center;margin:-6px 0 14px;line-height:1.4}
 @media (hover:hover){.dw-it:hover{color:var(--label)}}
@@ -2671,16 +2707,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    over when the label needs the room. Only a label past half the screen is cut. */
 .sp-nav{display:grid;grid-template-columns:minmax(max-content,1fr) minmax(0,max-content) minmax(0,1fr);align-items:center;column-gap:6px;
   min-height:44px;margin:4px -6px 10px}
-.sp-back{display:inline-flex;align-items:center;gap:2px;color:var(--acc-ink);font-size:17px;padding:6px;border-radius:10px;
+.sp-back{display:inline-flex;align-items:center;gap:2px;color:var(--acc-ink);font-size:var(--fs-body);padding:6px;border-radius:10px;
   min-width:0;max-width:50vw;justify-self:start}
 .sp-back span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sp-back .icn{font-size:22px;--icon-stroke:2.2;flex:none}
+.sp-back .icn{font-size:var(--fs-title2);--icon-stroke:2.2;flex:none}
 /* A long title ("Alertas do temporizador", "Megjelenés és Kezdőlap") takes a second line rather
    than lose its end to an ellipsis next to a whole back label. */
-.sp-title{text-align:center;font-weight:600;font-size:17px;line-height:1.2;margin:0;overflow:hidden;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto;
+.sp-title{text-align:center;font-weight:600;font-size:var(--fs-body);line-height:1.2;margin:0;overflow:hidden;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto;
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;text-wrap:balance}
-.sp-root-title{font-size:34px;line-height:1.06;font-weight:700;letter-spacing:-.028em;margin:2px 0 10px}
-@media (max-width:420px){.sp-root-title{font-size:30px}}
+.sp-root-title{font-size:var(--fs-large);line-height:var(--lh-tight);font-weight:700;letter-spacing:var(--ls-large);margin:2px 0 10px}
 .sp-search{margin-bottom:18px}
 /* the account card on top of the root: a big round avatar, the name, one line under it */
 .lrow.sp-acct{padding-block:12px;gap:14px}
@@ -2699,7 +2734,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .lrow.sp-root-row:has(.lrow-v){display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:1px}
   .lrow.sp-root-row:has(.lrow-v) .lrow-i{grid-column:1;grid-row:1 / span 2}
   .lrow.sp-root-row:has(.lrow-v) .lrow-m{grid-column:2;grid-row:1}
-  .lrow.sp-root-row .lrow-v{grid-column:2;grid-row:2;min-width:0;max-width:none;text-align:start;font-size:15px;-webkit-line-clamp:2;line-clamp:2}
+  .lrow.sp-root-row .lrow-v{grid-column:2;grid-row:2;min-width:0;max-width:none;text-align:start;font-size:var(--fs-subhead);-webkit-line-clamp:2;line-clamp:2}
   .lrow.sp-root-row:has(.lrow-v) .lrow-c{grid-column:3;grid-row:1 / span 2}
 }
 .lrow.dis .lrow-i,.lrow.dis .lrow-t,.lrow.dis .sw{opacity:.45}
@@ -2754,12 +2789,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gym-add-row .lrow-t{color:var(--acc-ink)}
 /* The search: the app's own search field (.searchf, as in Settings and the Library). */
 .gym-find-bar{margin:0 0 6px}
-.gym-find-note{font-size:12px;color:var(--label-2);line-height:1.35;margin:0 4px 14px}
+.gym-find-note{font-size:var(--fs-caption);color:var(--label-2);line-height:1.35;margin:0 4px 14px}
 .gym-hit .lrow-m{min-width:0}
 .gym-hit .lrow-t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gym-hit .lrow-s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gym-hit.busy{opacity:.55}
-.gym-hit-none .lrow-t{font-size:15px;color:var(--label-2)}
+.gym-hit-none .lrow-t{font-size:var(--fs-subhead);color:var(--label-2)}
 /* The editor's map: a rounded card about 40% of the screen, the pin fixed in the middle while the
    map moves under it. The pin lifts a little while you drag. */
 .gmap{position:relative;height:clamp(200px,40dvh,380px);border-radius:var(--r-card);overflow:hidden;background:var(--surface-2);isolation:isolate}
@@ -2780,17 +2815,17 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gmap-locate:active{background:var(--surface-2)}
 .gmap-locate:disabled{opacity:.6}
 .gmap-hint{display:flex;flex-direction:column;gap:2px;margin:0 4px 20px}
-.gmap-addr{color:var(--label);font-size:15px}
+.gmap-addr{color:var(--label);font-size:var(--fs-subhead)}
 /* Rows with their own text input, like iOS's: the label on the start, the text on the end. */
 .gym-in-row{cursor:text}
-.lrow-in{flex:1 1 60%;min-width:0;background:none;border:0;outline:none;padding:0;font:inherit;font-size:17px;letter-spacing:-.012em;color:var(--label);text-align:end}
+.lrow-in{flex:1 1 60%;min-width:0;background:none;border:0;outline:none;padding:0;font:inherit;font-size:var(--fs-body);letter-spacing:-.012em;color:var(--label);text-align:end}
 .lrow-in::placeholder{color:var(--label-3)}
 .lrow-in.full{text-align:start}
 .gym-radius{padding-block:8px}
 .gym-radius .seg{flex:1}
 .gym-size{display:flex;flex-direction:column;align-items:center;line-height:1.15}
 .gym-size b{font-weight:inherit}
-.gym-size small{font-size:11px;color:var(--label-2);font-variant-numeric:tabular-nums}
+.gym-size small{font-size:var(--fs-caption2);color:var(--label-2);font-variant-numeric:tabular-nums}
 .gym-radius .seg button{min-height:42px}
 .gym-actions{display:flex;flex-direction:column;gap:10px;margin:0 0 22px}
 .gym-remove{justify-content:center}

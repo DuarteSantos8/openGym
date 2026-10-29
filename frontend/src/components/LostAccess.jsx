@@ -24,7 +24,7 @@ export function LostAccessSheet({ close }) {
     <div className="muted small" style={{ marginBottom: 14, lineHeight: 1.5 }}>{t('No panic: your training is safe on the server. One of these gets you back in.')}</div>
     <div style={{ display: 'grid', gap: 14, marginBottom: 18 }}>
       {STEPS().map(([icon, title, body]) => <div key={title} className="row" style={{ gap: 12, alignItems: 'flex-start' }}>
-        <span style={{ color: 'var(--acc-ink)', fontSize: 20, marginTop: 1 }}><Icon name={icon} /></span>
+        <span style={{ color: 'var(--acc-ink)', fontSize: 'var(--fs-title3)', marginTop: 1 }}><Icon name={icon} /></span>
         <div><div style={{ fontWeight: 600, marginBottom: 2 }}>{title}</div><div className="small muted" style={{ lineHeight: 1.45, overflowWrap: 'anywhere' }}>{body}</div></div>
       </div>)}
     </div>
