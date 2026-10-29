@@ -71,6 +71,8 @@ kotlin {
 dependencies {
     implementation "androidx.core:core-ktx:$androidxCoreVersion"
     implementation "androidx.activity:activity-compose:$androidxActivityVersion"
+    // A library below pulls an old Fragment in; the permission request needs 1.3 or later.
+    implementation "androidx.fragment:fragment:$androidxFragmentVersion"
     implementation "androidx.wear.compose:compose-material3:$wearComposeVersion"
     implementation "androidx.wear.compose:compose-foundation:$wearComposeVersion"
     // Heart rate during a workout (WorkoutService).
