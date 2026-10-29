@@ -11,7 +11,8 @@
  * and appearance settings, and every other profile's everything.
  */
 import { glyphStr } from './glyphs.js';
-import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, isStretch, MAX_LIBRARY, ownsNoDumbbells } from './library.js';
+import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells } from './library.js';
+import { muscleLoad, gymOf, challengesOf } from './context.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -220,7 +221,77 @@ function cleanEx(e) {
   if (e.side) o.side = true;
   // A superset tag is an id the app mints (sg-0-1, hs + uid()), so it is bounded like one.
   if (e.sg) o.sg = ident(e.sg);
+  // How the slot warms up (frontend/src/lib/warmup-ramp.js), so the Coach can explain it or
+  // suggest another: its own choice, a block of its own as shares of the work weight, or the
+  // older number of ramp sets. Absent means it follows the app's setting (`prefs.warmups`).
+  if (WARMUP_MODES.includes(e.warmup)) o.warmup = e.warmup;
+  if (e.warmup === 'own') { const rows = warmupRowsOut(e.warmupRows); if (rows.length) o.warmupRows = rows; }
+  else if (!o.warmup && Number(e.warmupSets) > 0) o.warmupSets = Math.min(5, Math.round(Number(e.warmupSets)));
   return o;
+}
+
+export const WARMUP_MODES = ['auto', 'own', 'none'];
+/* A block of your own the way the model reads and writes it: `{ bar: true, reps }` for the bare
+   bar, `{ pct, reps }` for a share of the work weight (0 the body alone). Five rows at most. */
+export function warmupRowsOut(rows) {
+  return list(rows).filter(r => r && typeof r === 'object').slice(0, 5).map(r => {
+    const reps = Math.round(Number(r.r));
+    if (!(reps >= 1 && reps <= 30)) return null;
+    if (r.wb === true) return { bar: true, reps };
+    const pct = Number(r.wp);
+    return Number.isFinite(pct) && pct >= 0 && pct <= 95 ? { pct: Math.round(pct), reps } : null;
+  }).filter(Boolean);
+}
+
+/* ---------- programmes (frontend/src/lib/programmes.js) ----------
+   A block of 1 to 16 weeks over the routines, each week with its own %1RM or RPE per exercise
+   and maybe a deload. The Coach sees them so it can revise one, or write a new one. Bounded:
+   the six most recent, and a week's targets cut at MAX_PROGRAMME_TARGETS. */
+export const MAX_PROGRAMMES = 6;
+export const MAX_PROGRAMME_TARGETS = 24;
+const half = v => Math.round(v * 2) / 2;
+function programmeWeekOut(w) {
+  const out = {};
+  if (!w || typeof w !== 'object') return out;
+  if (w.deload === true) out.deload = true;
+  const rpe = Number(w.rpe);
+  if (rpe >= 6 && rpe <= 10) out.rpe = half(rpe);
+  const targets = [];
+  if (w.t && typeof w.t === 'object' && !Array.isArray(w.t)) {
+    for (const [k, v] of Object.entries(w.t).slice(0, MAX_PROGRAMME_TARGETS)) {
+      if (!v || typeof v !== 'object' || typeof k !== 'string') continue;
+      const at = k.indexOf(':');
+      const exId = ident(at < 0 ? k : k.slice(at + 1));
+      const routineId = at < 0 ? null : ident(k.slice(0, at));
+      const pct = Number(v.pct), r = Number(v.rpe);
+      const t = { exId, ...(routineId ? { routineId } : {}), ...(pct >= 30 && pct <= 110 ? { pct: half(pct) } : {}), ...(r >= 6 && r <= 10 ? { rpe: half(r) } : {}) };
+      if (t.pct != null || t.rpe != null) targets.push(t);
+    }
+  }
+  if (targets.length) out.targets = targets;
+  return out;
+}
+export function programmesOut(S, now) {
+  const all = S?.programmes && typeof S.programmes === 'object' && !Array.isArray(S.programmes) ? Object.values(S.programmes) : [];
+  const run = S?.programme && typeof S.programme === 'object' ? S.programme : null;
+  return all.filter(p => p && typeof p === 'object' && typeof p.id === 'string' && p.id)
+    .sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0))
+    .slice(0, MAX_PROGRAMMES)
+    .map(p => {
+      const weeks = list(p.weeks).slice(0, 16).map(programmeWeekOut);
+      const running = run && run.id === p.id && typeof run.startedOn === 'string';
+      return {
+        id: ident(p.id), name: text(String(p.name ?? ''), NAME_MAX), weeks: weeks.length ? weeks : [{}],
+        ...(running ? { running: { startedOn: day(run.startedOn), week: runWeek(run, now, weeks.length || 1), ...(typeof run.pausedOn === 'string' ? { paused: true } : {}) } } : {})
+      };
+    });
+}
+// The week of the block a running programme is in today, by whole weeks since it started (the
+// app counts calendar weeks from the profile's week start; a week either way is close enough here).
+function runWeek(run, now, weeks) {
+  const start = Date.parse(String(run.startedOn).slice(0, 10) + 'T12:00:00Z');
+  if (!Number.isFinite(start)) return 1;
+  return Math.min(weeks, Math.max(1, Math.floor(((Number.isFinite(now) ? now : Date.now()) - start) / (7 * 86400000)) + 1));
 }
 /**
  * The plan reduced to exactly the fields that decide whether it has *changed* — mode-aware,
@@ -275,7 +346,8 @@ export function cleanPlan(S) {
   // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
   [1, 2, 3, 4, 5, 6, 0].forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]).map(ident); });
-  return { routines, week };
+  const programmes = programmesOut(S);
+  return { routines, week, ...(programmes.length ? { programmes } : {}) };
 }
 
 // The catalogue lives in library.js; re-exported so older imports keep resolving.
@@ -456,10 +528,16 @@ function cleanToday(a) {
 
 /** The body-weight series between two days, each weigh-in a date and a number. */
 function weighIns(S, from, to) {
+  // `w` is the day's one value as Settings → Daily weigh-in value picks it (frontend lib/weigh-ins.js);
+  // a day with several weigh-ins says how many, so a 1 kg jump between two days reads as what it is.
   return list(S.bodyweight)
-    .map(b => ({ d: day(b?.d), w: num(b?.w) }))
+    .map(b => ({ d: day(b?.d), w: num(b?.w), ...(Array.isArray(b?.ins) && b.ins.length > 1 ? { n: Math.min(b.ins.length, 99) } : {}) }))
     .filter(b => b.d && b.w !== undefined && (!from || b.d >= from) && (!to || b.d <= to));
 }
+
+// Which weigh-in stands for a day (Settings → Daily weigh-in value), said only when it is not the
+// default first one of the morning, so a profile that never chose sends what it always sent.
+const dailyOf = S => (S?.bwDaily === 'avg' || S?.bwDaily === 'last' ? { daily: S.bwDaily } : {});
 
 /* The room's medians are computed on this server, but from other people's synced workouts —
    state their own clients wrote. cohort.js keeps only catalogue exercises; this copy bounds
@@ -512,13 +590,20 @@ export function workoutMeta(S, workoutId) {
  * an HMAC on its instance secret (api/coach/handle.js), the phone draws a random one once and
  * keeps it. Either way it is 16 characters and never the uid.
  */
+export const TASKS = ['create', 'review', 'debrief', 'ask', 'adapt'];
+// Why someone asks the Coach about an exercise in the middle of a workout (the `adapt` job).
+export const ADAPT_REASONS = ['pain', 'busy', 'short', 'great', 'tired', 'other'];
+export const ADAPT_RECENT = 3;
+
 export function build(S, opts = {}) {
   if (typeof opts.handle !== 'string' || !opts.handle) throw new Error('payload.build: opts.handle is required');
   const coach = S.coach || {};
   const profile = opts.intake || coach.profile || null;
+  // The one clock the payload reads, so a test can pin it.
+  const now = Number.isFinite(opts.now) ? opts.now : Date.now();
   const p = {
     coach_contract: CONTRACT,
-    task: opts.kind === 'review' ? 'review' : opts.kind === 'debrief' ? 'debrief' : opts.kind === 'ask' ? 'ask' : 'create',
+    task: TASKS.includes(opts.kind) ? opts.kind : 'create',
     meta: {
       profile: opts.handle,
       // Both are short codes in any real state; cut anyway, since the state is the client's.
@@ -527,11 +612,24 @@ export function build(S, opts = {}) {
       lang: langTag(opts.lang) || word(S.lang, 16) || 'en',
       unit: word(S.unit, 8) || 'kg',
       effortScale: effortOf(S),
-      today: iso(new Date())
+      // Settings → Workout → Automatic warm-ups, what a slot without a choice of its own follows.
+      warmups: S.warmupAuto === 'compounds' || S.warmupAuto === 'all' ? S.warmupAuto : 'off',
+      today: iso(new Date(now))
     },
     coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
     plan: cleanPlan(S)
   };
+  // The newer picture (core/context.js): weekly sets and recovery per muscle, the active gym's
+  // loading, this month's challenges. Each only when there is something in it; a debrief reads
+  // one session and gets none of it.
+  if (opts.kind !== 'debrief') {
+    const muscles = muscleLoad(S, now);
+    if (muscles.length && opts.kind !== 'create') p.muscles = muscles;
+    const gym = gymOf(S);
+    if (gym) p.gym = gym;
+    const challenges = opts.kind === 'review' || opts.kind === 'ask' ? challengesOf(S, now) : null;
+    if (challenges) p.challenges = challenges;
+  }
   // Someone who set up a home gym under Settings → Equipment and left the Coach's own equipment
   // question empty was handed the whole catalogue, leverage machines and all. The profile they
   // are filtering the app with is the better answer than "everything".
@@ -574,7 +672,7 @@ export function build(S, opts = {}) {
       const since = new Date(on + 'T12:00:00');
       since.setDate(since.getDate() - 28);
       const dated = !!on && Number.isFinite(since.getTime());
-      p.bodyweight = { goal: num(S.targetW) ?? null, series: dated ? weighIns(S, iso(since), on) : [] };
+      p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: dated ? weighIns(S, iso(since), on) : [] };
     } else {
       p.session = null;
       p.previous = [];
@@ -594,6 +692,27 @@ export function build(S, opts = {}) {
     p.aggregates = aggregates(S, workouts);
     const today = cleanToday(opts.today);
     if (today) p.today = today;
+  } else if (opts.kind === 'adapt') {
+    // An exercise in the workout running now, and why it needs a rethink: pain, a busy rack, a
+    // short day, feeling great. The session as it stands (each entry with its index, so a change
+    // can name exactly which one), the last few sessions for the usual loads, and candidates
+    // like the exercise asked about (same muscle first) to swap to. The server never holds the
+    // running session; the phone sends it, bounded here like a logged one.
+    const today = cleanToday(opts.today);
+    if (today) today.entries = today.entries.map((en, i) => ({ i, ...en }));
+    p.today = today;
+    const at = Number.isInteger(opts.focus?.entry) ? opts.focus.entry : -1;
+    const entry = today && at >= 0 ? today.entries[at] : null;
+    p.focus = entry ? {
+      entry: at, exId: entry.id, name: entry.name,
+      reason: ADAPT_REASONS.includes(opts.focus.reason) ? opts.focus.reason : 'other'
+    } : null;
+    if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
+    const recent = (S.workouts || []).filter(w => w && w.d).slice(-ADAPT_RECENT);
+    p.window = { workouts: recent.map(compactWorkout) };
+    p.library = swapSlice(S, p.coachProfile?.equipment?.length ? p.coachProfile.equipment : (p.gym?.equipment || []), entry?.id, {
+      keep: (today?.entries || []).map(en => en.id), max: 36
+    });
   } else if (opts.kind === 'review') {
     const workouts = reviewWindow(S, coach.lastReview?.at);
     const detailFrom = Math.max(0, workouts.length - FULL_DETAIL_SESSIONS);
@@ -603,7 +722,7 @@ export function build(S, opts = {}) {
       workouts: workouts.map((w, i) => (i >= detailFrom ? cleanWorkout(w) : compactWorkout(w)))
     };
     p.aggregates = aggregates(S, workouts);
-    p.bodyweight = { goal: num(S.targetW) ?? null, series: weighIns(S, p.window.from, null) };
+    p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, p.window.from, null) };
     if (opts.note) p.userNote = String(opts.note).slice(0, MAX_NOTE_CHARS);
     if (opts.cohort) p.cohort = cleanCohort(opts.cohort);
     // A review names mostly what is already trained; 60 candidates is plenty for a swap. But
@@ -634,7 +753,7 @@ export function build(S, opts = {}) {
       p.userNote = String(opts.refine).slice(0, MAX_NOTE_CHARS);
     }
   }
-  if (opts.kind !== 'debrief') {
+  if (opts.kind !== 'debrief' && opts.kind !== 'adapt') {
     const said = conversation(coach, [opts.note, opts.refine]);
     if (said.length) p.conversation = said;
   }

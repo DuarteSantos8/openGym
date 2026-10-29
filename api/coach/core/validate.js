@@ -34,8 +34,14 @@ export const CHANGE_TYPES = [
   'reorder', 'superset',
   'routine-prog', 'exercise-prog', 'inc',
   'add-routine', 'remove-routine', 'rename-routine',
-  'week'
+  'week',
+  // v1.4.5: how an exercise warms up, and a multi-week programme (frontend lib/programmes.js).
+  'warmup', 'programme'
 ];
+export const WARMUP_MODES = ['auto', 'own', 'none'];
+const MAX_PROGRAMME_WEEKS = 16;
+const MAX_WEEK_TARGETS = 24;
+const halfStep = v => Math.round(v * 2) / 2;
 const POLICIES = ['off', 'linear', 'greyskull', 'double', 'triple', 'time'];
 const MODES = ['reps', 'time', 'cardio'];
 const MAX_INC = 50;
@@ -294,12 +300,12 @@ export function validateReview(data, plan, ctx = {}) {
     const target = c.target || {};
     const routine = target.routineId ? routines.get(target.routineId) : null;
 
-    // Targets: everything but add-routine and week must name a routine that exists; anything
-    // touching an exercise must name one that is actually in it.
-    if (!['add-routine', 'week'].includes(c.type)) {
+    // Targets: everything but add-routine, week and programme must name a routine that exists;
+    // anything touching an exercise must name one that is actually in it.
+    if (!['add-routine', 'week', 'programme'].includes(c.type)) {
       if (!routine) { errors.push(`${where}.target.routineId "${target.routineId}" is not one of the routines in the plan`); return; }
     }
-    const needsEx = ['remove-exercise', 'swap-exercise', 'sets', 'reps', 'repsMin', 'repsMax', 'sec', 'cardio', 'exercise-prog', 'inc', 'superset'];
+    const needsEx = ['remove-exercise', 'swap-exercise', 'sets', 'reps', 'repsMin', 'repsMax', 'sec', 'cardio', 'exercise-prog', 'inc', 'superset', 'warmup'];
     let planned = null;
     if (needsEx.includes(c.type)) {
       if (!target.exId) { errors.push(`${where}.target.exId is required for type "${c.type}"`); return; }
@@ -324,7 +330,8 @@ export function validateReview(data, plan, ctx = {}) {
         // and week nothing above ever looks at routineId, so it is otherwise unbounded.
         ...(isStr(target.routineId) ? { routineId: clampStr(target.routineId, 40) } : {}),
         ...(isStr(target.exId) ? { exId: clampStr(target.exId, 40) } : {}),
-        ...(isInt(target.weekday, 0, 6) ? { weekday: target.weekday } : {})
+        ...(isInt(target.weekday, 0, 6) ? { weekday: target.weekday } : {}),
+        ...(c.type === 'programme' && isStr(target.programmeId) ? { programmeId: clampStr(target.programmeId, 64) } : {})
       },
       why: clampStr(c.why, 600),
       // The screen had no way to say WHICH routine: "Remove a routine" was the entire card, and
@@ -490,6 +497,67 @@ export function validateReview(data, plan, ctx = {}) {
         if (!isStr(c.after)) { errors.push(`${where}.after must be the new routine name`); return; }
         out.after = clampStr(c.after, 40);
         break;
+      case 'warmup': {
+        // How this exercise warms up: Auto (the app ramps by load), a block of its own (shares of
+        // the work weight, the bare bar or the body alone), or none. The app does the rounding.
+        const a = c.after || {};
+        if (!WARMUP_MODES.includes(a.mode)) { errors.push(`${where}.after.mode must be one of ${WARMUP_MODES.join(', ')}`); return; }
+        if ((planned.mode || 'reps') !== 'reps') { errors.push(`${where} sets warm-ups on an exercise that is not done in reps — only reps exercises warm up`); return; }
+        if (a.mode !== 'own') { out.after = { mode: a.mode }; break; }
+        const rows = Array.isArray(a.rows) ? a.rows : [];
+        if (!rows.length || rows.length > 5) { errors.push(`${where}.after.rows must list 1-5 warm-up sets when mode is "own"`); return; }
+        const clean = [];
+        for (let k = 0; k < rows.length; k++) {
+          const r = rows[k] || {};
+          if (!isInt(r.reps, 1, 30)) { errors.push(`${where}.after.rows[${k}].reps must be a whole number 1-30`); return; }
+          if (r.bar === true) { clean.push({ wb: true, r: r.reps }); continue; }
+          if (!isNum(r.pct) || r.pct < 0 || r.pct > 95) { errors.push(`${where}.after.rows[${k}].pct must be 0-95 (a share of the work weight; 0 is the body alone) or set "bar": true`); return; }
+          const prev = clean[clean.length - 1];
+          if (prev && !prev.wb && Math.round(r.pct) <= prev.wp) { errors.push(`${where}.after.rows must climb: each warm-up heavier than the one before`); return; }
+          clean.push({ wp: Math.round(r.pct), r: r.reps });
+        }
+        out.after = { mode: 'own', rows: clean };
+        break;
+      }
+      case 'programme': {
+        // A block of weeks over the plan's routines (frontend lib/programmes.js): a new one, or a
+        // revision of one the payload lists. The targets name exercises of the plan.
+        const a = c.after || {};
+        const existing = isStr(target.programmeId) ? (plan?.programmes || []).find(p => p.id === target.programmeId) : null;
+        if (isStr(target.programmeId) && !existing) { errors.push(`${where}.target.programmeId "${target.programmeId}" is not one of plan.programmes — leave it out to write a new programme`); return; }
+        if (!existing && !isStr(a.name)) { errors.push(`${where}.after.name is required for a new programme`); return; }
+        const weeks = Array.isArray(a.weeks) ? a.weeks : [];
+        if (!weeks.length || weeks.length > MAX_PROGRAMME_WEEKS) { errors.push(`${where}.after.weeks must list 1-${MAX_PROGRAMME_WEEKS} weeks`); return; }
+        const inPlan = new Map([...routines.values()].map(r => [r.id, new Set((r.ex || []).map(e => e.id))]));
+        const anywhere = id => [...inPlan.values()].some(set => set.has(id));
+        const outWeeks = [];
+        for (let k = 0; k < weeks.length; k++) {
+          const w = weeks[k] || {};
+          const week = {};
+          if (w.deload === true) week.deload = true;
+          if (w.rpe != null) {
+            if (!isNum(w.rpe) || w.rpe < 6 || w.rpe > 10) { errors.push(`${where}.after.weeks[${k}].rpe must be 6-10`); return; }
+            week.rpe = halfStep(w.rpe);
+          }
+          const targets = Array.isArray(w.targets) ? w.targets.slice(0, MAX_WEEK_TARGETS) : [];
+          const t = {};
+          for (let j = 0; j < targets.length; j++) {
+            const x = targets[j] || {};
+            const at = `${where}.after.weeks[${k}].targets[${j}]`;
+            if (!isStr(x.exId) || !anywhere(x.exId)) { errors.push(`${at}.exId must be an exercise of the plan`); return; }
+            if (isStr(x.routineId) && !inPlan.get(x.routineId)?.has(x.exId)) { errors.push(`${at}.routineId must be a routine of the plan that has exercise "${x.exId}"`); return; }
+            const pct = isNum(x.pct) && x.pct >= 30 && x.pct <= 110 ? halfStep(x.pct) : null;
+            const rpe = isNum(x.rpe) && x.rpe >= 6 && x.rpe <= 10 ? halfStep(x.rpe) : null;
+            if (pct == null && rpe == null) { errors.push(`${at} needs pct (30-110, a share of the best estimated 1RM) or rpe (6-10)`); return; }
+            t[isStr(x.routineId) ? `${x.routineId}:${x.exId}` : x.exId] = { ...(pct != null ? { pct } : {}), ...(rpe != null ? { rpe } : {}) };
+          }
+          if (Object.keys(t).length) week.t = t;
+          outWeeks.push(week);
+        }
+        out.after = { ...(isStr(a.name) ? { name: clampStr(a.name, 60) } : existing ? { name: clampStr(existing.name || '', 60) } : {}), weeks: outWeeks };
+        out.before = existing ? { name: existing.name || '', weeks: existing.weeks.length } : null;
+        break;
+      }
       case 'week': {
         if (!isInt(target.weekday, 0, 6)) { errors.push(`${where}.target.weekday must be 0-6`); return; }
         // null/'rest' clears the day; anything else has to be a routine that exists.
@@ -528,12 +596,15 @@ export function validateReview(data, plan, ctx = {}) {
   const removedRoutines = new Set();
   const addsPerRoutine = new Map();
   let addedRoutines = 0;
+  let programmeChanges = 0;
 
   // A change whose `after` already equals the plan is dropped rather than refused: one
   // redundant entry should not cost the whole review, and as padding around something
   // destructive it is exactly what should not reach the screen. If they all go, the answer was
   // "no change" and is reported as such below.
-  const kept = changes.filter(ch => !(SCALAR.includes(ch.type) && sameValue(ch.before, ch.after)));
+  const kept = changes.filter(ch => !(SCALAR.includes(ch.type) && sameValue(ch.before, ch.after))
+    // Auto or none on a slot that already says so restates the plan the same way.
+    && !(ch.type === 'warmup' && ch.after.mode !== 'own' && ch.before === ch.after.mode));
 
   // Checked per change above against the plan as it stands; two changes that each bring the
   // same exercise into one routine pass that alone and duplicate it together.
@@ -552,6 +623,7 @@ export function validateReview(data, plan, ctx = {}) {
     }
     if (ch.type === 'remove-routine') removedRoutines.add(rid);
     if (ch.type === 'add-routine') addedRoutines++;
+    if (ch.type === 'programme' && ++programmeChanges === 2) errors.push('only one programme change per review — write or revise one programme at a time');
     if (ch.type === 'add-exercise') addsPerRoutine.set(rid, (addsPerRoutine.get(rid) || 0) + 1);
     if (ch.type === 'week') {
       const d = ch.target.weekday;
@@ -641,6 +713,7 @@ function currentOf(type, routine, planned, plan, target) {
     case 'routine-prog': return routine?.prog ?? null;
     case 'rename-routine': return routine?.name ?? null;
     case 'week': return plan?.week?.[target?.weekday] ?? null;
+    case 'warmup': return planned?.warmup ?? null;
     default: return null;
   }
 }
@@ -694,4 +767,118 @@ export function validateDebrief(data) {
   if (!DEBRIEF_LISTS.some(k => lists[k].length)) errors.push('at least one of highlights, watch or nextTime must have an item');
   if (errors.length) return fail(errors);
   return { ok: true, proposal: { summary: clampStr(data.summary.trim(), 600), score, ...lists } };
+}
+
+/* =============================== the workout in progress =============================== */
+
+// What the Coach may do to the unfinished part of today's session (the `adapt` job). Its own
+// closed list, applied by frontend/src/lib/coach-adapt.js one handler per type. None of them can
+// reach a set already logged, the routine behind the session, or anything outside it.
+export const ADAPT_TYPES = ['swap', 'sets', 'reps', 'weight', 'add', 'skip', 'move', 'rest'];
+export const MAX_ADAPT_CHANGES = 6;
+const ADAPT_ON_ENTRY = ['swap', 'sets', 'reps', 'weight', 'skip', 'move', 'rest'];
+
+const isWarmRow = s => s && s.warmup === true;
+const openWork = en => (en?.sets || []).filter(s => !isWarmRow(s) && !s.done);
+const doneWork = en => (en?.sets || []).filter(s => !isWarmRow(s) && s.done);
+
+/**
+ * Validate the answer to "Ask the Coach" on an exercise mid-workout against the session it was
+ * asked about (`today`, the payload's own copy, each entry with its index `i`).
+ * Returns { ok, nochange?, reading?, proposal:{ summary, changes } } | { ok:false, errors }.
+ */
+export function validateAdapt(data, today, ctx = {}) {
+  if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
+  if (data.nochange) return { ok: true, nochange: true, reading: clampStr(data.reading || data.summary || '', 600) };
+  const entries = Array.isArray(today?.entries) ? today.entries : [];
+  if (!entries.length) return fail(['there is no workout running to change']);
+  const list = Array.isArray(data.changes) ? data.changes : null;
+  if (!list) return fail(['changes must be an array (or set "nochange": true with a "reading")']);
+  if (!isStr(data.summary)) return fail(['summary is required: one or two sentences on what you suggest and why']);
+  const known = new Set(ctx.customIds || []);
+  const knownEx = id => libraryHas(id) || known.has(id);
+  const inSession = new Set(entries.map(en => en.id));
+  const errors = [];
+  const changes = [];
+  const touched = new Set();
+  list.slice(0, MAX_ADAPT_CHANGES).forEach((c, k) => {
+    const where = `changes[${k}]`;
+    if (!c || typeof c !== 'object') { errors.push(`${where} is not an object`); return; }
+    if (!ADAPT_TYPES.includes(c.type)) { errors.push(`${where}.type "${c.type}" is not allowed — use one of: ${ADAPT_TYPES.join(', ')}`); return; }
+    if (!isStr(c.why)) { errors.push(`${where}.why is required — say in plain words why this helps today`); return; }
+    const out = { id: 'a' + k, type: c.type, why: clampStr(c.why, 400) };
+    let en = null;
+    if (ADAPT_ON_ENTRY.includes(c.type)) {
+      if (!isInt(c.entry, 0, entries.length - 1)) { errors.push(`${where}.entry must be the index "i" of an exercise in today.entries`); return; }
+      en = entries[c.entry];
+      if (isStr(c.exId) && c.exId !== en.id) { errors.push(`${where}.exId "${c.exId}" is not today.entries[${c.entry}] — that one is "${en.id}"`); return; }
+      if (!openWork(en).length) { errors.push(`${where} changes today.entries[${c.entry}], whose sets are all logged — logged sets are never changed`); return; }
+      if (touched.has(c.entry)) { errors.push(`${where} is a second change to today.entries[${c.entry}] — one change per exercise`); return; }
+      touched.add(c.entry);
+      out.entry = c.entry; out.exId = en.id; out.name = libraryName(en.id);
+    }
+    // Flat fields rather than one `after` of many shapes: a provider that enforces a strict
+    // schema (every object closed) can still write each of them (#804).
+    const repsMode = en ? (en.sets || []).some(s => s.r != null) : true;
+    switch (c.type) {
+      case 'swap': {
+        if (!isStr(c.to) || !knownEx(c.to)) { errors.push(`${where}.to must be an exercise id from the library provided in the payload`); return; }
+        if (c.to === en.id) { errors.push(`${where} swaps an exercise for itself`); return; }
+        if (inSession.has(c.to)) { errors.push(`${where}.to "${c.to}" is already in today's session — pick another`); return; }
+        if (offEquipment(ctx, c.to)) { errors.push(OFF_EQUIPMENT(`${where}.to`, c.to)); return; }
+        out.to = c.to; out.toName = libraryName(c.to);
+        if (isInt(c.reps, 1, 100)) out.reps = c.reps;
+        if (isNum(c.weight) && c.weight >= 0 && c.weight <= MAX_WEIGHT) out.weight = c.weight;
+        inSession.add(c.to);
+        break;
+      }
+      case 'sets': {
+        const left = openWork(en).length;
+        if (!isInt(c.sets, 0, 10)) { errors.push(`${where}.sets must be how many sets are left to do, 0-10`); return; }
+        if (c.sets === left) { errors.push(`${where}.sets is the number of sets already left — that is no change`); return; }
+        out.sets = c.sets; out.before = left;
+        break;
+      }
+      case 'reps':
+        if (!repsMode) { errors.push(`${where} sets reps on an exercise that is not done in reps`); return; }
+        if (!isInt(c.reps, 1, 100)) { errors.push(`${where}.reps must be a whole number of reps (1-100)`); return; }
+        out.reps = c.reps;
+        break;
+      case 'weight': {
+        const pct = isNum(c.pct) ? Math.round(c.pct) : NaN;
+        if (!(pct >= -50 && pct <= 10) || pct === 0) { errors.push(`${where}.pct must change the weight of the open sets by -50 to +10 percent`); return; }
+        if (!openWork(en).some(x => (x.w || 0) > 0)) { errors.push(`${where} changes the weight of sets that carry none`); return; }
+        out.pct = pct;
+        break;
+      }
+      case 'add': {
+        if (!isStr(c.to) || !knownEx(c.to)) { errors.push(`${where}.to must be an exercise id from the library provided in the payload`); return; }
+        if (inSession.has(c.to)) { errors.push(`${where}.to "${c.to}" is already in today's session`); return; }
+        if (offEquipment(ctx, c.to)) { errors.push(OFF_EQUIPMENT(`${where}.to`, c.to)); return; }
+        if (c.entry != null && !isInt(c.entry, 0, entries.length - 1)) { errors.push(`${where}.entry, when given, is the index of the exercise the new one follows`); return; }
+        out.to = c.to; out.toName = libraryName(c.to);
+        out.sets = isInt(c.sets, 1, 6) ? c.sets : 3;
+        if (isInt(c.sec, 5, 600)) out.sec = c.sec; else out.reps = isInt(c.reps, 1, 50) ? c.reps : 10;
+        if (isNum(c.weight) && c.weight > 0 && c.weight <= MAX_WEIGHT) out.weight = c.weight;
+        if (isInt(c.entry, 0, entries.length - 1)) out.entry = c.entry;
+        inSession.add(c.to);
+        break;
+      }
+      case 'skip':
+        break;
+      case 'move':
+        if (c.place !== 'next' && c.place !== 'last') { errors.push(`${where}.place must be "next" (do it now) or "last" (do it at the end)`); return; }
+        if (doneWork(en).length) { errors.push(`${where} moves an exercise that is already under way — only one not started can move`); return; }
+        out.place = c.place;
+        break;
+      case 'rest':
+        if (!isInt(c.rest, 0, 600)) { errors.push(`${where}.rest must be the rest in seconds, 0-600`); return; }
+        out.rest = c.rest;
+        break;
+    }
+    changes.push(out);
+  });
+  if (errors.length) return fail(errors);
+  if (!changes.length) return { ok: true, nochange: true, reading: clampStr(data.summary || data.reading || '', 600) };
+  return { ok: true, proposal: { summary: clampStr(data.summary, 600), changes } };
 }
