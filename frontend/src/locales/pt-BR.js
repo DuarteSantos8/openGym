@@ -2262,6 +2262,9 @@ export const PT_BR_OVERRIDES = {
   "Slower than last time": "Mais lento que da última vez",
   "Compare sets with last time": "Comparar séries com a última vez",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "Um pequeno ↑, = ou ↓ em cada série que você termina, no treino e no histórico.",
+  "{0} of {1} left this week": "Faltam {0} de {1} nesta semana",
+  "All done this week. Nice.": "Tudo feito nesta semana. Mandou bem.",
+  "No weekly countdown on Home.": "Sem contagem semanal no Início.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

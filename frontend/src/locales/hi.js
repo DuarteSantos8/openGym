@@ -3380,4 +3380,7 @@ export default {
   "Slower than last time": "पिछली बार से धीमा",
   "Compare sets with last time": "सेट को पिछली बार से तुलना करें",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "हर पूरे किए सेट पर छोटा ↑, = या ↓, वर्कआउट में और इतिहास में।",
+  "{0} of {1} left this week": "इस हफ़्ते {1} में से {0} बाकी",
+  "All done this week. Nice.": "इस हफ़्ते का सब हो गया। बढ़िया।",
+  "No weekly countdown on Home.": "होम पर हफ़्ते की उलटी गिनती नहीं।",
 }

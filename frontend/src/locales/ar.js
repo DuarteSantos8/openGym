@@ -3435,4 +3435,7 @@ export default {
   "Slower than last time": "أبطأ من المرة الماضية",
   "Compare sets with last time": "قارن المجموعات بالمرة الماضية",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "علامة صغيرة ↑ أو = أو ↓ على كل مجموعة تنهيها، في التمرين وفي السجل.",
+  "{0} of {1} left this week": "تبقّى {0} من {1} هذا الأسبوع",
+  "All done this week. Nice.": "أنجزت كل شيء هذا الأسبوع. رائع.",
+  "No weekly countdown on Home.": "لا عدّ تنازلي أسبوعي في الرئيسية.",
 }

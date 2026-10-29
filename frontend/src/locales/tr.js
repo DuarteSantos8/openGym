@@ -3380,4 +3380,7 @@ export default {
   "Slower than last time": "Geçen seferden yavaş",
   "Compare sets with last time": "Setleri geçen seferle karşılaştır",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "Bitirdiğin her sette küçük bir ↑, = ya da ↓, antrenmanda ve geçmişte.",
+  "{0} of {1} left this week": "Bu hafta {1} antrenmandan {0} kaldı",
+  "All done this week. Nice.": "Bu hafta hepsi tamam. Harika.",
+  "No weekly countdown on Home.": "Ana sayfada haftalık geri sayım yok.",
 }

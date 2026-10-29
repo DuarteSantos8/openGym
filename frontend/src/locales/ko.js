@@ -3380,4 +3380,7 @@ export default {
   "Slower than last time": "지난번보다 느림",
   "Compare sets with last time": "세트를 지난번과 비교",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "끝낸 세트마다 작은 ↑, = 또는 ↓ 표시. 운동 중과 기록에서.",
+  "{0} of {1} left this week": "이번 주 {1}회 중 {0}회 남음",
+  "All done this week. Nice.": "이번 주 다 끝냈어요. 멋져요.",
+  "No weekly countdown on Home.": "홈에 주간 카운트다운 없음.",
 }

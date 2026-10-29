@@ -14,6 +14,12 @@ workouts in History get the arrows too, held against the workout before them, ne
 Screen readers hear it in words ("2.5 kg more than last time"). Settings → Workout → Compare sets
 with last time switches it off.
 
+**Workouts left this week** (#753, thanks @unabomberlive). Home now counts the week down under the
+week strip: "2 of 4 left this week", and "All done this week. Nice." once it is. A fixed week
+counts its planned days, the same numbers as the streak card. A rotation has no week of its own,
+so Settings → Plan & schedule → Workouts per week gives it a target to count against (off says
+nothing). The widget snapshot carries it too, for the widgets to pick up.
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic

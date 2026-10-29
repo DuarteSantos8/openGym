@@ -3400,4 +3400,7 @@ export default {
   "Slower than last time": "Langsamer als beim letzten Mal",
   "Compare sets with last time": "Sätze mit dem letzten Mal vergleichen",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "Ein kleines ↑, = oder ↓ an jedem fertigen Satz, im Training und im Verlauf.",
+  "{0} of {1} left this week": "Noch {0} von {1} diese Woche",
+  "All done this week. Nice.": "Diese Woche alles geschafft. Stark.",
+  "No weekly countdown on Home.": "Kein Wochen-Countdown auf der Startseite.",
 }

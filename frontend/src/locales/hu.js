@@ -3383,4 +3383,7 @@ export default {
   "Slower than last time": "Lassabb, mint legutóbb",
   "Compare sets with last time": "Sorozatok összevetése a legutóbbival",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "Egy kis ↑, = vagy ↓ minden befejezett sorozaton, edzés közben és az előzményekben.",
+  "{0} of {1} left this week": "Ezen a héten még {0} a {1}-ból",
+  "All done this week. Nice.": "Ezen a héten mind megvan. Szép.",
+  "No weekly countdown on Home.": "Nincs heti visszaszámlálás a kezdőlapon.",
 }

@@ -3391,4 +3391,7 @@ export default {
   "Slower than last time": "ช้ากว่าครั้งที่แล้ว",
   "Compare sets with last time": "เทียบเซ็ตกับครั้งที่แล้ว",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "สัญลักษณ์ ↑, = หรือ ↓ เล็ก ๆ บนทุกเซ็ตที่ทำเสร็จ ทั้งระหว่างเวิร์กเอาต์และในประวัติ",
+  "{0} of {1} left this week": "สัปดาห์นี้เหลือ {0} จาก {1}",
+  "All done this week. Nice.": "สัปดาห์นี้ครบแล้ว เยี่ยม",
+  "No weekly countdown on Home.": "ไม่มีการนับถอยหลังรายสัปดาห์ที่หน้าแรก",
 }

@@ -3427,4 +3427,7 @@ export default {
   "Slower than last time": "Långsammare än förra gången",
   "Compare sets with last time": "Jämför set med förra gången",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "En liten ↑, = eller ↓ på varje set du gör klart, i passet och i historiken.",
+  "{0} of {1} left this week": "{0} av {1} kvar den här veckan",
+  "All done this week. Nice.": "Allt klart den här veckan. Snyggt.",
+  "No weekly countdown on Home.": "Ingen veckonedräkning på startsidan.",
 }

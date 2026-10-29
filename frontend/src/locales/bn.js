@@ -3459,4 +3459,7 @@ export default {
   "Slower than last time": "গতবারের চেয়ে ধীরে",
   "Compare sets with last time": "সেটগুলো গতবারের সাথে তুলনা করুন",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "প্রতিটি শেষ করা সেটে ছোট্ট ↑, = বা ↓, ওয়ার্কআউটে আর ইতিহাসে।",
+  "{0} of {1} left this week": "এই সপ্তাহে {1}টির মধ্যে {0}টি বাকি",
+  "All done this week. Nice.": "এই সপ্তাহের সব শেষ। দারুণ।",
+  "No weekly countdown on Home.": "হোমে সাপ্তাহিক কাউন্টডাউন নেই।",
 }

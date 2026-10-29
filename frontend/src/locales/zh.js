@@ -3380,4 +3380,7 @@ export default {
   "Slower than last time": "比上次慢",
   "Compare sets with last time": "与上次逐组对比",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "每完成一组就显示小小的 ↑、= 或 ↓，训练中和历史里都有。",
+  "{0} of {1} left this week": "本周还剩 {0}/{1} 次",
+  "All done this week. Nice.": "本周全部完成，漂亮。",
+  "No weekly countdown on Home.": "首页不显示本周倒数。",
 }

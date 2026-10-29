@@ -3373,4 +3373,7 @@ export default {
   "Slower than last time": "比上次慢",
   "Compare sets with last time": "與上次逐組比較",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "每完成一組就顯示小小的 ↑、= 或 ↓，訓練中和歷史裡都有。",
+  "{0} of {1} left this week": "本週還剩 {0}/{1} 次",
+  "All done this week. Nice.": "本週全部完成，漂亮。",
+  "No weekly countdown on Home.": "首頁不顯示本週倒數。",
 }

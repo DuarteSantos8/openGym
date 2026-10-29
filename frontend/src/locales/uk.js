@@ -3377,4 +3377,7 @@ export default {
   "Slower than last time": "Повільніше, ніж минулого разу",
   "Compare sets with last time": "Порівнювати підходи з минулим разом",
   "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "Маленька ↑, = або ↓ біля кожного завершеного підходу, у тренуванні та в історії.",
+  "{0} of {1} left this week": { one: "Залишилося {0} з {1} цього тижня", few: "Залишилося {0} з {1} цього тижня", many: "Залишилося {0} з {1} цього тижня" },
+  "All done this week. Nice.": "Цього тижня все зроблено. Чудово.",
+  "No weekly countdown on Home.": "Без тижневого відліку на головній.",
 }
