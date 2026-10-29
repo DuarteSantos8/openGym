@@ -20,7 +20,7 @@ import { countChanges, syncFingerprint } from '../lib/sync-changes.js'
 import { saveWorkoutEdit, deleteEditedWorkout } from '../lib/session-edit.js'
 import { appBase } from '../lib/app-base.js'
 import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
-import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, renewToken } from '../lib/remote.js'
+import { loadRemote, chooseLocal, forgetRemote, connect, connectWithGrant, normalizeServerUrl, renewToken } from '../lib/remote.js'
 import { loadCfAccess } from '../lib/cf-access.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
 import { initCoachSchedule } from '../lib/coach-schedule.js'
@@ -1348,6 +1348,24 @@ export const useStore = create((set, get) => {
     markOwed(true)
   }
 
+  // The one tail a pairing redeem and a provider sign-in both end at, once either has a { user }
+  // in hand: adopt the account, keep what a still-owed previous one set aside, learn what this
+  // server offers, and settle the file mirror before anything else can touch it.
+  const finishConnect = async (url, user, ask) => {
+    // The account first, the address after: a copy another account still owed is kept aside
+    // for it under the server it belongs to, not the one being paired.
+    get().setUser(user, { adopt: true })
+    if (keeping) { await keeping; keeping = null }
+    pairedBase = normalizeServerUrl(url)
+    setSync({ server: pairedBase })
+    await get().refreshConfig()   // what this server offers (the Coach, guest mode) - see boot()
+    await get().adoptProfile(ask)
+    await nativePersist(true)   // the file holds this account's copy before anything else can happen
+    // Connected from the first-launch screen: the permission steps come next. From Settings later
+    // on, nothing new is asked here.
+    set(st => ({ needsMobileOnboarding: false, permSteps: st.permSteps || st.needsMobileOnboarding }))
+  }
+
   const S0 = loadState()
   S0.customEx = healCustomEx(S0.customEx)
   registerCustom(S0.customEx)
@@ -1881,18 +1899,16 @@ export const useStore = create((set, get) => {
     // account pairing again merges what the phone kept (adoptProfile).
     async connectToServer(url, code, ask) {
       const user = await connect(url, code)   // throws on a bad URL/expired code — caller shows it
-      // The account first, the address after: a copy another account still owed is kept aside
-      // for it under the server it belongs to, not the one being paired.
-      get().setUser(user, { adopt: true })
-      if (keeping) { await keeping; keeping = null }
-      pairedBase = normalizeServerUrl(url)
-      setSync({ server: pairedBase })
-      await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
-      await get().adoptProfile(ask)
-      await nativePersist(true)   // the file holds this account's copy before anything else can happen
-      // Paired from the first-launch screen: the permission steps come next. From Settings later
-      // on, nothing new is asked here.
-      set(st => ({ needsMobileOnboarding: false, permSteps: st.permSteps || st.needsMobileOnboarding }))
+      await finishConnect(url, user, ask)
+    },
+    // The same connection, made from a provider sign-in through the app's own return address
+    // (components/AppSignIn.jsx) instead of a pairing code: `grant` is the { token, user } a
+    // successful app redeem already answered with. Shares finishConnect's tail with
+    // connectToServer above outright, so nothing downstream of a successful connection differs by
+    // which one produced the token.
+    async connectViaProvider(url, grant, ask) {
+      const user = await connectWithGrant(url, grant)
+      await finishConnect(url, user, ask)
     },
     // Leaves remote mode and drops back to local-only, the way signOut does: never with changes
     // the server has not seen, unless `force` keeps them aside first. Same result as signOut;
@@ -2006,6 +2022,12 @@ export const useStore = create((set, get) => {
             // the account: every change after that "synced" into the app's own files (see
             // lib/api.js) and was gone on the next Disconnect. Now the screens say the server
             // refuses this phone, and pairing it again merges what it kept.
+            //
+            // A refused phone still has to know whether that same server offers its provider, to
+            // offer signing in again with it next to pairing again: GET /api/config is public and
+            // ignores the now-refused Bearer this request still carries, so this read is best
+            // effort and changes nothing else about the already-refused boot.
+            if (e?.status === 401) await get().refreshConfig()
             get().setUser(remote.user || get().user)
             failed(e, { pending: owes() })
           }

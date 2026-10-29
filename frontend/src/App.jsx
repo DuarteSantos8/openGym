@@ -29,6 +29,7 @@ import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { exitWorkoutEdit, startFlow, beginWorkout } from './sheets.jsx'
+import { listenForProviderReturn } from './components/AppSignIn.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
@@ -425,5 +426,8 @@ export default function App() {
     if (!MOBILE) return
     return onGymReminderOpen(() => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() })
   }, [])
+  // The system browser's return from a sign-in through a server's provider - registered once,
+  // for the life of the app, on the mobile build only.
+  useEffect(() => { if (MOBILE) listenForProviderReturn() }, [])
   return <HashRouter><Shell /></HashRouter>
 }

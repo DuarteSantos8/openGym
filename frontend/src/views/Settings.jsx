@@ -49,6 +49,8 @@ import { AnimationQualityRow } from '../components/Animations.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
+import { IdentityRow, IdentityReturn } from '../components/Identity.jsx'
+import { onIdentityChanged } from '../components/AppSignIn.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
@@ -84,6 +86,9 @@ export function SettingsRoute() {
   const ctx = { user: useStore(s => s.user), mobile: MOBILE, ios: MOBILE && platformNow() !== 'android' }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
+  // A link or a proof round trip at the identity provider returns to /settings with its outcome in
+  // the query; the account page is where that outcome is read (IdentityReturn), so carry it there.
+  if (!page && /[?&](link|link-err|proof|proof-err|oidc-err)=/.test(loc.search)) return <Navigate to={'/settings/account' + loc.search} replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
 }
 
@@ -115,10 +120,19 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const lang = effectiveLang(S, config)
   // This profile's passkeys and the code for another device (#95). A change to them is read back
   // here and by the password row, whose "Remove" depends on there being a passkey.
-  // On a paired phone only the code for another device uses it (#551).
+  // A paired phone reads these too: no passkey ceremony against the server can run from its
+  // WebView, but it can still list, rename and remove the passkeys the profile has elsewhere.
   const passkeys = usePasskeys(!!user && !DEMO && (page === 'account'))
   const [credsV, setCredsV] = useState(0)
   const credsChanged = () => { passkeys.load(); setCredsV(v => v + 1) }
+  // An identity linked through the app channel (AppSignIn.jsx's own redeem, never a route this
+  // screen could read back from) tells Settings to read the account state again, the same way a
+  // passkey or password change already does.
+  useEffect(() => {
+    if (!MOBILE) return
+    return onIdentityChanged(credsChanged)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const { update, importConflict, importBackup, setUnit, resetEverything: resetAll, setUser, pullState, pushState, resetDemo } = useStore()
   const toast = useUI(s => s.toast)
   const fileRef = useRef(null)
@@ -1005,8 +1019,14 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {user && !DEMO && <ServerSyncSection>
         {MOBILE && <>
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
+          {/* The same ways in the web lists, minus adding a passkey: no WebAuthn ceremony against
+              the server can succeed from the app's own WebView origin, which never matches the
+              server's RP ID. PasskeysRow and DeviceLinkRow word that dead end on their own sheets. */}
+          <PasskeysRow state={passkeys.st} changed={credsChanged} />
           {/* A code to sign in on a computer (#551), behind the same proof as in a browser. */}
           <DeviceLinkRow state={passkeys.st} />
+          {(config?.oidc || passkeys.st?.identity) && <IdentityRow state={passkeys.st} provider={config?.oidc} changed={credsChanged} />}
+          {pwOn && <PasswordRow version={credsV} />}
           <AccountIdRow id={user.id} />
           <Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={disconnect} />
         </>}
@@ -1031,6 +1051,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
           <PasskeysRow state={passkeys.st} changed={credsChanged} />
           <DeviceLinkRow state={passkeys.st} />
+          {(config?.oidc || passkeys.st?.identity) && <IdentityRow state={passkeys.st} provider={config?.oidc} changed={credsChanged} />}
+          {config && (config.oidc || passkeys.st?.identity) && <IdentityReturn changed={credsChanged} provider={config.oidc} />}
           <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
             onClick={() => useUI.getState().openSheet(close => <PairSheet close={close} />)} />
           {pwOn && <PasswordRow version={credsV} />}
