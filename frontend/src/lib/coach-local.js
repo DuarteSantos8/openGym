@@ -108,6 +108,15 @@ export const localAsk = async (S, text, today) => {
   return start(S, 'ask', { note: String(text || '').slice(0, coachLimits(d).maxMessageLen), today: today || null })
 }
 
+// An exercise of the running session, and why it needs a rethink (the `adapt` job).
+export const localAdapt = async (S, { today, entry, reason, text, activeId } = {}) => {
+  const d = await loadCoachDevice()
+  return start(S, 'adapt', {
+    today: today || null, focus: { entry, reason }, activeId: typeof activeId === 'string' ? activeId : null,
+    note: text ? String(text).slice(0, coachLimits(d).maxMessageLen) : null,
+  })
+}
+
 /* Automatic reviews. On a server the cadence tick runs them (api/coach/cadence.js); a phone with
    its own key has no server, and for a long time nothing ran them at all: the setting saved, the
    reviews never came (Discord, 10-19). So the phone asks the same question, with the same rule
@@ -138,7 +147,7 @@ const deviceZone = () => { try { return Intl.DateTimeFormat().resolvedOptions().
 // A read answer gives back the proposal it was asked beside, as the server does.
 export async function localResolve() {
   const d = await loadCoachDevice()
-  await saveCoachDevice({ pending: d.pending?.kind === 'ask' ? waitingProposal(d.pending.prev) : null })
+  await saveCoachDevice({ pending: d.pending?.kind === 'ask' || d.pending?.kind === 'adapt' ? waitingProposal(d.pending.prev) : null })
   return { ok: true }
 }
 export async function localForget() { job = null; lastError = null; await saveCoachDevice({ pending: null, daily: null, reviewedAt: null }); return { ok: true } }
@@ -187,7 +196,7 @@ async function start(S, kind, opts) {
 async function run(S, kind, opts, d, adapter) {
   const key = await getApiKey()
   const payload = payloadLib.build(S, {
-    handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today,
+    handle: await handle(), kind, intake: opts.intake, note: opts.note, refine: opts.refine, previous: opts.previous, workoutId: opts.workoutId, today: opts.today, focus: opts.focus,
     lang: getLang()   // what the app shows, which a profile that never picked a language does not store (#303)
   })
   const model = d.model || HTTP_PROVIDERS[d.provider].defaultModel
@@ -232,7 +241,8 @@ async function run(S, kind, opts, d, adapter) {
     id: job.id, kind, createdAt: Date.now(), expiresAt: Date.now() + PENDING_DAYS * 86400000,
     planHash: planHash(S), iteration: opts.iteration || 1,
     ...(kind === 'debrief' ? { workout: workoutMetaOf(S, opts.workoutId) } : {}),
-    ...(kind === 'ask' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
+    ...(kind === 'ask' || kind === 'adapt' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
+    ...(kind === 'adapt' ? { activeId: opts.activeId || null, focus: payload.focus } : {}),
     ...attempt.result
   }
   await saveCoachDevice({ pending, ...(kind === 'review' ? { reviewedAt: Date.now() } : {}) })

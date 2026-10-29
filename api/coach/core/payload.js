@@ -645,7 +645,8 @@ export function build(S, opts = {}) {
 
   // What the user already turned down, so the Coach does not re-propose it without new
   // evidence (FR-26). Summaries only — the log's full before/after stays on the device.
-  const declined = (coach.log || [])
+  // A change to one workout in progress (`adapt`) turned down is about that day, not the plan.
+  const declined = (coach.log || []).filter(e => e && e.kind !== 'adapt')
     // `why` was the Coach's own sentence, but it comes back from the synced state, which the
     // client writes; it is cut at the length the intake allows a note.
     .flatMap(e => (e.decisions || []).filter(d => d.status === 'rejected').map(d => ({ type: word(d.type, PROFILE_WORD_MAX), why: text(d.why, PROFILE_TEXT_MAX.notes) })))

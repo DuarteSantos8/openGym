@@ -83,6 +83,9 @@ machine, never in CI (see "Exercise media" below and docs/APP_STORES.md).
   - `onerm.js`: estimated 1RM from logged sets (several formulas).
   - `finish-workout.js`: reduces a completed session back into state (weights advance, PRs).
   - `recovery.js` / `recovery-view.js`: the fatigue and muscle-recovery model.
+  - `warmup-ramp.js` (+ `warmup-snap.js`): automatic warm-ups by load, a slot's own warm-up rows,
+    rounded to the active gym (plates.js dropGrid); history.js rerampWarmups keeps them aimed.
+  - `coach-adapt.js`: applies the Coach's changes to the workout in progress (the `adapt` job).
   - `workout-model.js`, `supersetFlow.js`: the in-session workout state machine.
   - `sync-merge.js`: the field-by-field merge behind the 409 retry (see "Sync" below).
   - `exercises.js` / `exercises-data.js`: the exercise library (5,632 catalogue exercises plus
