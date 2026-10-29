@@ -39,8 +39,8 @@ describe('exports without partials', () => {
     const col = rows[0].indexOf('partials')
     expect(rows.slice(1).every(r => r[col] === '')).toBe(true)
     expect(rows[0].filter(c => c === 'partials').length).toBe(1)
-    // the column sits before `note`, after `incline`: nothing else moved
-    expect(rows[0].slice(col - 1, col + 2)).toEqual(['incline', 'partials', 'note'])
+    // the column sits before `note`, after `resistance_level` (as on main): nothing else moved
+    expect(rows[0].slice(col - 1, col + 2)).toEqual(['resistance_level', 'partials', 'note'])
   })
 })
 
@@ -77,7 +77,7 @@ describe('imports without the partials column', () => {
 })
 
 describe('what the partials cell may hold', () => {
-  const row = lp => `2026-03-02,2026-03-02 18:00,,X,,Barbell Bench Press,0025,chest,,1,failure,,60,kg,5,,,,,,${lp},`
+  const row = lp => `2026-03-02,2026-03-02 18:00,,X,,Barbell Bench Press,0025,chest,,1,failure,,60,kg,5,,,,,,,${lp},`
   const read = cells => sets(parseWorkoutCSV(WORKOUT_COLUMNS.join(',') + '\n' + cells.map(row).join('\n'), { unit: 'kg' }))
 
   it('empty, zero, negative, text and absurd values add nothing; a fraction is floored', () => {
