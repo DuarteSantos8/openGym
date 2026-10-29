@@ -75,6 +75,10 @@ dependencies {
     // The sharper animations as Play asset packs (AnimationPacksPlugin in src/play): the Play
     // build only. The sideloaded APK has no Play Store behind it and keeps its built-in ones.
     playImplementation "com.google.android.play:asset-delivery:$assetDeliveryVersion"
+    // The Wear OS watch app's link (WatchBridgePlugin, WatchListenerService): the Wearable Data
+    // Layer of Google Play services. Both channels have it; on a phone without Play services or
+    // without a watch every call just answers "no watch" and nothing else changes.
+    implementation "com.google.android.gms:play-services-wearable:$playServicesWearableVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     // The real org.json for the JVM tests (WidgetContentTest): android.jar only has stubs of it.

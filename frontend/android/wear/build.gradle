@@ -1,0 +1,92 @@
+// openGym for Wear OS (docs/WEAR_OS.md). The watch follows the workout the phone runs and logs sets
+// on it; the phone stays the source of truth. It speaks the same JSON as the Apple Watch app
+// (frontend/src/lib/watch-sync.js), carried over the Wearable Data Layer instead of WatchConnectivity.
+//
+// The Data Layer links a watch app to a phone app only when both have the same applicationId and
+// the same signing key, and Google Play wants the watch app in the phone app's listing under the
+// same applicationId. So the id is the phone's, and debug builds carry the phone debug build's
+// ".test" suffix: debug watch with debug phone, release with release, never across.
+apply plugin: 'com.android.application'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
+
+// Version: read from the phone app (app/build.gradle), so a release bumps one place.
+//   versionName  the phone's
+//   versionCode  the phone's + 10000
+// Play keeps one versionCode space per app listing, phone and watch bundles together; the offset
+// keeps the two from ever colliding (the phone is at 29 for 1.4.4), and the watch build of a release
+// is always newer than the watch build of the one before. Docs: docs/WEAR_OS.md "Versions".
+def phoneGradle = rootProject.file('app/build.gradle').text
+def phoneCode = (phoneGradle =~ /versionCode\s+(\d+)/)[0][1] as int
+def phoneName = (phoneGradle =~ /versionName\s+"([^"]+)"/)[0][1]
+ext.WEAR_VERSION_OFFSET = 10000
+
+android {
+    namespace = "ch.duartesantos.opengym.wear"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "ch.duartesantos.opengym"
+        minSdkVersion rootProject.ext.wearMinSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode phoneCode + WEAR_VERSION_OFFSET
+        versionName phoneName
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt')
+        }
+        debug {
+            // Pairs with the phone's debug build (app/build.gradle), which has the same suffix.
+            applicationIdSuffix ".test"
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+    lint {
+        // The strings are written by wear-strings.mjs from the app's own translations.
+        disable 'MissingTranslation'
+    }
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+dependencies {
+    implementation "androidx.core:core-ktx:$androidxCoreVersion"
+    implementation "androidx.activity:activity-compose:$androidxActivityVersion"
+    implementation "androidx.wear.compose:compose-material3:$wearComposeVersion"
+    implementation "androidx.wear.compose:compose-foundation:$wearComposeVersion"
+    // Heart rate during a workout (WorkoutService).
+    implementation "androidx.health:health-services-client:$wearHealthServicesVersion"
+    // The workout on the watch face and in the recents while the app is away.
+    implementation "androidx.wear:wear-ongoing:$wearOngoingVersion"
+    // The Tile (streak and today's plan) and the complication.
+    implementation "androidx.wear.tiles:tiles:$wearTilesVersion"
+    implementation "androidx.wear.protolayout:protolayout:$wearProtolayoutVersion"
+    implementation "androidx.wear.protolayout:protolayout-expression:$wearProtolayoutVersion"
+    implementation "androidx.wear.watchface:watchface-complications-data-source:$wearComplicationsVersion"
+    implementation "com.google.guava:guava:33.4.8-android"
+    // The link to the phone (PhoneLink, WearListener).
+    implementation "com.google.android.gms:play-services-wearable:$playServicesWearableVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.10.2"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0"
+
+    testImplementation "junit:junit:$junitVersion"
+}

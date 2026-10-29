@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The app's lime accent and dark look (frontend/src/index.css --green, --bg). -->
+    <color name="accent">#FF30D158</color>
+    <color name="launcher_bg">#FF000000</color>
+</resources>

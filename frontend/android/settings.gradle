@@ -1,4 +1,6 @@
 include ':app'
+// The Wear OS watch app (wear/, docs/WEAR_OS.md): its own APK/AAB, the phone's applicationId.
+include ':wear'
 include ':capacitor-cordova-android-plugins'
 project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
 
