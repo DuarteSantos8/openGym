@@ -80,14 +80,14 @@ describe('importing effort from another app', () => {
     expect(setLabel('0025', s)).toBe('60×10 (RIR 2)')
   })
 
-  it('puts no effort on a cardio row', () => {
-    // a treadmill row has no third stepper to show it in
+  it('keeps an exported RPE on a cardio row', () => {
+    // a treadmill row has no third stepper; this rating is used by the fatigue estimate
     const p = rows('Date,Exercise,Distance,Distance Unit,Time,RPE',
       '2026-01-12,Running,5,km,00:30:00,7')
     const s = setsOf(p)[0]
     expect(s.min).toBe(30)
-    expect('rpe' in s).toBe(false)
-    expect(p.rpeSets).toBe(0)
+    expect(s.rpe).toBe(7)
+    expect(p.rpeSets).toBe(1)
   })
 
   it('leaves a file without any rating column exactly as it was', () => {

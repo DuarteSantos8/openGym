@@ -491,9 +491,28 @@ export function markDiscarded (wid, now = Date.now()) {
   try { localStorage.setItem(DISCARDED_KEY, JSON.stringify(list)) } catch { /* the watch then saves it, as before */ }
 }
 
-/** The ids of the workouts discarded here lately, oldest first. */
-export function discardedFor (now = Date.now()) {
-  return readDiscarded().filter(x => now - Number(x.at) < DISCARDED_FOR_MS).map(x => x.id)
+/**
+ * The ids of the workouts discarded here lately, oldest first. With `S`: never one that runs or is
+ * in the history after all (a workout set aside for the tour and back, then finished).
+ */
+export function discardedFor (now = Date.now(), S = null) {
+  const kept = id => !S || (S.active?.id !== id && !(Array.isArray(S.workouts) && S.workouts.some(w => w && w.id === id)))
+  return readDiscarded().filter(x => now - Number(x.at) < DISCARDED_FOR_MS && kept(x.id)).map(x => x.id)
+}
+
+/**
+ * The running workout left `prev` without being saved (`next` has neither it running nor in its
+ * history): discarded, whichever way that happened. The workout screen's Discard and
+ * ErrorBoundary name it themselves; this catches the rest (a discard on another device that
+ * synced in), so the watch never takes it for finished. Not for the tour's practice workout
+ * (the real one is only set aside), a saved workout's editor, or one logged into the past.
+ */
+export function leftUnsaved (prev, next, { tour = false } = {}) {
+  const A = prev?.active
+  if (tour || !A || !A.id || A.editingWorkoutId || A.backfill) return null
+  if (next?.active?.id === A.id) return null
+  if (Array.isArray(next?.workouts) && next.workouts.some(w => w && w.id === A.id)) return null
+  return A.id
 }
 
 /**
@@ -511,6 +530,8 @@ export function watchExtras (S) {
     ...(bw && num(bw.w) ? { lastBw: num(bw.w) } : {}),
     // the effort scale the profile logs ('rpe' or 'rir'): the watch's set page offers it then
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
+    // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
+    ...(S?.autoHolds === true ? { autoHolds: true } : {}),
   }
 }
 
@@ -561,11 +582,16 @@ export async function startWatchSync ({ useStore, useUI }) {
         ? buildSnapshot(S, { timer: useUI.getState().timer, ready: readyFor(S) })
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       snap.settings = { ...settingsForWatch(prefs, healthOn), ...watchExtras(S) }
-      // With Apple Health on: the deleted workouts, so the watch removes the copies it saved.
-      if (healthOn) { const gone = healthGoneFor(S); if (gone.length) snap.healthGone = gone }
       // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
-      const discarded = discardedFor()
+      const discarded = discardedFor(Date.now(), S)
       if (discarded.length) snap.discarded = discarded
+      // With Apple Health on: the deleted workouts, so the watch removes the copies it saved. The
+      // discarded ones too: a copy saved before the watch heard (it was away, or ended the workout
+      // itself as forgotten) is taken out once it does.
+      if (healthOn) {
+        const gone = [...healthGoneFor(S), ...discarded.map(id => 'opengym-w-' + id).reverse()]
+        if (gone.length) snap.healthGone = [...new Set(gone)]
+      }
       const json = JSON.stringify(fitSnapshot(snap))
       if (json !== lastSent) {
         const r = await p.WatchBridge.sendSnapshot({ json })
@@ -590,6 +616,11 @@ export async function startWatchSync ({ useStore, useUI }) {
     // Boot done: what the watch sent meanwhile is applied now, and the watch hears the real state.
     if (s.ready && !prev.ready) { drainWatchEvents(); schedule() }
     if (s.S === prev.S) return
+    // Not while the store boots (its first copy replaces an empty one).
+    if (s.ready !== false && prev.ready !== false) {
+      const gone = leftUnsaved(prev.S, s.S, { tour: !!(s.tourSandbox || prev.tourSandbox) })
+      if (gone && !discardedFor().includes(gone)) markDiscarded(gone)
+    }
     schedule()
     // A workout started on the phone: the watch app opens with it (HealthKit's startWatchApp).
     if (linked && shouldOpenOnWatch(prev.S?.active, s.S?.active)) Promise.resolve().then(() => p.WatchBridge.openOnWatch({ type: plannedType(s.S.active.entries) || undefined })).catch(() => {})

@@ -145,7 +145,8 @@ export function convertStateUnit(S, to) {
     return out
   }
   const out = { ...S, unit: to }
-  if (Array.isArray(S.bodyweight)) out.bodyweight = S.bodyweight.map(b => ({ ...b, w: bw(b.w) }))
+  // A day's readings (lib/weigh-ins.js) move with it; `w` stays their daily value.
+  if (Array.isArray(S.bodyweight)) out.bodyweight = S.bodyweight.map(b => ({ ...b, w: bw(b.w), ...(Array.isArray(b?.ins) ? { ins: b.ins.map(r => (r && r.w != null ? { ...r, w: bw(r.w) } : r)) } : {}) }))
   if (S.targetW != null) out.targetW = bw(S.targetW)
   // A weekly-rate corridor in the profile's unit (#759) moves with it, to the hundredth: 0.25 kg a
   // week is 0.55 lb, and a tenth would make it 0.6. One in percent of body weight holds no weight.

@@ -22,7 +22,7 @@ import HealthKit
  *   await PhoneWorkout.start({ wid, type })       // { ok, wid, start }
  *   await PhoneWorkout.recover()    // { wid, start } of a session iOS kept, or {}
  *   await PhoneWorkout.samples({ since })         // { samples: [[ms, bpm]] }
- *   await PhoneWorkout.end({ wid, save, at, title })
+ *   await PhoneWorkout.end({ wid, save, at, title, discarded })   // discarded: the workout is gone, never saved
  *   PhoneWorkout.addListener('heartRate', ({ bpm, at }) => ...)   // at most every few seconds
  *
  * Below iOS 26 status says { supported: false } and every other call does nothing.
@@ -101,8 +101,9 @@ public class PhoneWorkoutPlugin: CAPPlugin, CAPBridgedPlugin {
         let at = call.getDouble("at").map { Date(timeIntervalSince1970: $0 / 1000) }
         let wid = call.getString("wid")
         let title = call.getString("title")
+        let discarded = call.getBool("discarded") ?? false
         DispatchQueue.main.async {
-            PhoneWorkoutSession.shared.end(workoutId: wid, save: save, at: at, title: title)
+            PhoneWorkoutSession.shared.end(workoutId: wid, save: save && !discarded, at: at, title: title, discarded: discarded)
             call.resolve()
         }
     }
@@ -182,7 +183,7 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
     /// already running for it is kept; one left over from another workout is dropped unsaved.
     func start(workoutId wid: String, type: String?) -> Bool {
         if session != nil, workoutId == wid { return true }
-        if session != nil { end(workoutId: nil, save: false, at: nil, title: nil) }
+        if session != nil { end(workoutId: nil, save: false, at: nil, title: nil, discarded: false) }
         guard HKHealthStore.isHealthDataAvailable() else { return false }
         let config = HKWorkoutConfiguration()
         config.activityType = type.flatMap { AppleHealthPlugin.activityTypes[$0] } ?? .traditionalStrengthTraining
@@ -274,7 +275,9 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
 
     /// The workout is over: saved to Apple Health (or dropped, `save` false) as it ended at `at`.
     /// `wid` given: only that workout's session ends (a late call for another one changes nothing).
-    func end(workoutId wid: String?, save: Bool, at: Date?, title: String?) {
+    /// `discarded`: the workout itself was discarded in the app. Then a copy of it that reached
+    /// Apple Health anyway is taken out again, a moment later.
+    func end(workoutId wid: String?, save: Bool, at: Date?, title: String?, discarded: Bool = false) {
         guard let s = session, let b = builder else { return }
         if let wid = wid, wid != workoutId { return }
         let sid = workoutId.map(Self.syncId)
@@ -287,9 +290,14 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         readings = []
         toldBpm = nil
         if !save {
-            s.end()
+            // Discarded while the builder still collects, the session ended after: ended first,
+            // HealthKit can take the discard for a finish and save the workout (TestFlight 1.4.4).
             b.discardWorkout()
-            if let sid = sid { PhoneWorkoutLedger.mark(sid, nil) }
+            s.end()
+            if let sid = sid {
+                PhoneWorkoutLedger.mark(sid, nil)
+                if discarded { removeLater(sid) }
+            }
             return
         }
         // As Apple's iPhone sample: the activity stops, and once the session says it has stopped
@@ -310,6 +318,22 @@ final class PhoneWorkoutSession: NSObject, HKWorkoutSessionDelegate, HKLiveWorko
         stopping.append((s, finish))
         s.stopActivity(with: endAt)
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) { self.finishStopped(s) }
+    }
+
+    /// A discarded workout's copy, should one have reached Apple Health all the same: this app's
+    /// own workouts with its sync id are deleted (never the watch app's, never another app's).
+    private func removeLater(_ sid: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            let predicate = HKQuery.predicateForObjects(withMetadataKey: HKMetadataKeySyncIdentifier, allowedValues: [sid])
+            let q = HKSampleQuery(sampleType: HKObjectType.workoutType(), predicate: predicate, limit: 5, sortDescriptors: nil) { [weak self] _, found, _ in
+                guard let self = self else { return }
+                let me = Bundle.main.bundleIdentifier ?? ""
+                let mine = (found ?? []).filter { $0.sourceRevision.source.bundleIdentifier == me }
+                guard !mine.isEmpty else { return }
+                self.store.delete(mine) { _, _ in }
+            }
+            self.store.execute(q)
+        }
     }
 
     /// Sessions told to stop, with what saves each once it has.

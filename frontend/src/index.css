@@ -216,11 +216,14 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 #app > .page.vfade{animation:viewfade var(--med) var(--ease)}
 /* Drilling into a settings page and back (App.jsx pageMotion): the iPhone's own push and pop.
    The page slides, the window never scrolls sideways while it does. */
+/* Only the page moves: no background and no edge shadow, not even during the slide. The page sits
+   inside #app's side padding and is only as tall as its rows, so either one drew a floating, inset
+   box: for as long as the page was open in 1.4.3, and for the length of the slide in build 45. */
 @keyframes viewpush{from{transform:translateX(100%)}to{transform:none}}
 @keyframes viewpop{from{transform:translateX(-28%);opacity:.7}to{transform:none;opacity:1}}
-#app > .page.vpush{animation:viewpush .38s cubic-bezier(.32,.72,0,1);background:var(--bg);box-shadow:-12px 0 28px rgba(0,0,0,.18)}
+#app > .page.vpush{animation:viewpush .38s cubic-bezier(.32,.72,0,1)}
 #app > .page.vpop{animation:viewpop .34s cubic-bezier(.32,.72,0,1)}
-[dir="rtl"] #app > .page.vpush{animation-name:viewpush-rtl;box-shadow:12px 0 28px rgba(0,0,0,.18)}
+[dir="rtl"] #app > .page.vpush{animation-name:viewpush-rtl}
 [dir="rtl"] #app > .page.vpop{animation-name:viewpop-rtl}
 @keyframes viewpush-rtl{from{transform:translateX(-100%)}to{transform:none}}
 @keyframes viewpop-rtl{from{transform:translateX(28%);opacity:.7}to{transform:none;opacity:1}}
@@ -711,6 +714,16 @@ body.chips-dragging *{cursor:inherit}
 .measure-date{display:block;margin-bottom:14px}
 .measure-date>span,.measure-field>span:first-child{display:block;color:var(--label-2);font-size:13px;margin:0 2px 6px}
 .measure-date .field{background:var(--surface-2)}
+/* The weigh-in sheet's date and time side by side (#859); the list's rows open a weigh-in to edit. */
+.bw-when{gap:10px;align-items:stretch;margin-bottom:14px}
+.bw-when>.measure-date{flex:1;min-width:0;margin-bottom:0}
+.bw-when>.bw-time{flex:0 0 auto;display:flex;flex-direction:column}
+.bw-time .timef{display:flex;flex:1;min-height:44px;width:100%;box-sizing:border-box;background:var(--surface-2)}
+.bw-row{padding:9px 2px;border-bottom:1px solid var(--sep)}
+.bw-row.bw-sub{padding-inline-start:14px}
+.bw-when-btn{background:none;border:0;padding:4px 0;font:inherit;color:inherit;text-align:start;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-width:0}
+.bw-src{font-size:11px;color:var(--pink)}
+.bw-day{padding:10px 2px 2px}
 .measure-form{display:grid;grid-template-columns:1fr 1fr;gap:11px 10px}
 .measure-field{min-width:0}
 .measure-input{height:47px;background:var(--surface-2);border-radius:var(--r);display:flex;align-items:center;padding:0 12px;gap:6px}
@@ -941,6 +954,11 @@ body.chips-dragging *{cursor:inherit}
 /* The clock and set count may take a second line: in ru/uk the count is the long half and a
    one-line ellipsis cut exactly the 0/19 the line is there for. */
 .whdr-mid .sub{font-size:13px;margin-top:1px;font-variant-numeric:tabular-nums;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;overflow-wrap:anywhere;text-wrap:balance}
+/* The gym the session is at (#808): small, in the clock line, a tap switches it. */
+.whdr-gym{display:inline-flex;align-items:center;gap:3px;font-size:12px;line-height:1.3;color:var(--label-2);background:none;border:0;padding:0;margin-top:1px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+button.whdr-gym{color:var(--acc);cursor:pointer}
+.whdr-gym .icon,.whdr-gym svg{width:13px;height:13px;flex:none}
+.gym-of-list .icon,.gym-of-list svg{width:13px;height:13px;vertical-align:-2px}
 .btn.pill.whdr-finish{width:auto;flex:none;padding:8px 16px;border-radius:99px;font-size:15px;max-width:40%}
 /* Animations set to Small: the picture beside the exercise name, with an expand badge. */
 .wthumb{position:relative;flex:none;width:48px;height:48px;border-radius:10px;overflow:hidden;padding:0}
@@ -1054,6 +1072,49 @@ body.chips-dragging *{cursor:inherit}
 .wmedia-add:disabled{opacity:.5;cursor:default}
 .wmedia-note{margin:6px 2px 0;line-height:1.35}
 .wrow-media{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--label-2);flex:none}
+/* A set's own form video (SetVideo.jsx): the film sheet, the badge under a set row, the player
+   (inline under the row, or in a sheet), an exercise's strip of videos and two dates side by side. */
+.fv-film{display:flex;flex-direction:column;gap:8px}
+.fv-note{margin:10px 2px 0;line-height:1.35}
+.fv-private{display:flex;gap:6px;align-items:flex-start}
+.fv-private .icn{flex:none;margin-top:2px}
+.fv-badge{
+  display:inline-flex;align-items:center;gap:5px;margin-block:2px 4px;margin-inline-start:32px;
+  border:0;border-radius:99px;padding:3px 10px;font:inherit;font-size:12px;font-weight:500;cursor:pointer;
+  background:var(--surface-2);background:color-mix(in srgb,var(--acc) 14%,var(--surface-2));color:var(--acc);
+}
+.fv-badge .icn{font-size:12px}
+.fv-badge.on{background:var(--acc);color:var(--on-acc)}
+.fv-badge.on .dim{color:inherit;opacity:.75}
+.fv-inline{margin:2px 0 8px}
+.fv-player{display:flex;flex-direction:column;gap:6px}
+.fv-stage{--fv-h:62vh;position:relative;background:#000;border-radius:12px;overflow:hidden;aspect-ratio:3/4;
+  width:min(100%,calc(var(--fv-h) * var(--fv-r,.75)));align-self:center;margin-inline:auto;display:flex;align-items:center;justify-content:center}
+.fv-player.compact .fv-stage{--fv-h:46vh}
+.fv-stage video,.fv-stage img{width:100%;height:100%;object-fit:contain;display:block;background:#000}
+.fv-x{color:#fff;opacity:.5;font-size:28px}
+.fv-msg{position:absolute;inset-inline:12px;bottom:12px;text-align:center;color:#fff;font-size:13px;
+  background:rgba(0,0,0,.55);border-radius:10px;padding:6px 10px}
+.fv-msg:empty{display:none}
+.fv-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fv-speed{display:inline-flex;gap:4px}
+.fv-speed .chip{padding:4px 10px;font-variant-numeric:tabular-nums}
+.fv-ask{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}
+.fv-ask>span{flex:1;min-width:140px;font-weight:600}
+.fv-section{margin-top:4px}
+.fv-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.fv-strip::-webkit-scrollbar{display:none}
+.fv-tile{flex:none;width:92px;border:0;padding:0;background:none;font:inherit;color:inherit;text-align:start;cursor:pointer;scroll-snap-align:start;border-radius:10px}
+.fv-thumb{position:relative;display:block;width:92px;height:122px;border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.fv-thumb .thumb{width:100%;height:100%;border-radius:0;display:block;object-fit:cover}
+.fv-date{display:block;font-size:12px;font-weight:600;margin-top:4px}
+.fv-set{display:block;font-size:11px;color:var(--label-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fv-pick{gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.fv-compare{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.fv-side{margin:0;min-width:0}
+.fv-side .fv-stage{--fv-h:52vh}
+.fv-side figcaption{display:flex;flex-direction:column;font-size:12px;margin-top:4px;min-width:0}
+.fv-side figcaption .dim{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .pp-selected{outline:3px solid var(--acc);outline-offset:-3px}
 .pp-check{
@@ -1432,6 +1493,10 @@ body.chips-dragging *{cursor:inherit}
 .menu-list .menu-item.accent .lrow-i{background:var(--acc);color:var(--on-acc)}
 .menu-chev{color:var(--label-3);font-size:14px;flex:none}
 [dir="rtl"] .menu-chev{transform:scaleX(-1)}
+/* The "More" fold: its sub lists what is inside on one line, cut with an ellipsis. */
+.menu-list .menu-more .grow{min-width:0}
+.menu-list .menu-more .ss{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[dir="rtl"] .menu-more .menu-chev{transform:none}
 .setextra{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px 32px}
 .setextra .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc)}
 .setextra .chip.add svg{width:13px;height:13px}
@@ -1583,6 +1648,31 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   body.no-tabbar #timer,#timer{padding-inline:10px}
   #timer .t{font-size:25px}
   #timer .acts .skip{min-width:0}
+}
+/* Timed holds that run themselves (lib/auto-holds.js): the chain's controls are a second row
+   under the clock (RestTimer.jsx AutoRow), three equal buttons a thumb finds mid-plank. Labels
+   give way before the buttons do, so a long language on a 320 px phone still gets three targets. */
+#timer.auto{flex-wrap:wrap;row-gap:10px}
+#timer .autorow{flex:1 0 100%;display:flex;gap:6px;min-width:0}
+#timer .autorow .btn{flex:1 1 0;min-width:0;min-height:44px;background:var(--surface-2);color:var(--label)}
+#timer .autorow .btn:active{background:var(--surface-3)}
+#timer .autorow .btn > span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#timer .autorow.next{align-items:center}
+#timer .autorow.next .up{flex:1 1 auto;min-width:0;font-size:13px;color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#timer .autorow.next .btn{flex:none}
+/* The count-in: a big number in the accent, which pops on each second (still under reduced motion). */
+#timer.countin{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
+body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
+#timer.countin .tclock{flex:1 1 0;min-width:0}
+#timer.countin .t{font-size:40px;color:var(--acc);animation:countpop .35s var(--ease)}
+#timer.countin .lbl{display:block}
+#timer.countin.paused .t,#timer.countin.paused .bar,#timer.working.paused .t,#timer.working.paused .bar{opacity:.5}
+#timer.countin.paused .t{animation:none}
+@keyframes countpop{from{transform:scale(1.25)}to{transform:none}}
+@media (max-width:359px){
+  #timer .autorow{gap:4px}
+  #timer .autorow .btn{padding-inline:6px;gap:3px}
+  #timer.countin .t{font-size:34px}
 }
 
 /* ---------------------------------------------------------------- modal -- */
@@ -1749,6 +1839,15 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .share-card{margin:0 auto 14px;max-width:420px}
 .share-card img{display:block;width:100%;max-height:56vh;object-fit:contain;border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.28)}
 .share-card-ph{aspect-ratio:4/5;max-height:56vh;margin:0 auto;border-radius:16px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;text-align:center;padding:16px}
+.share-card.share-story .share-card-ph{aspect-ratio:9/16;max-height:52vh}
+.share-card.share-square .share-card-ph{aspect-ratio:1/1;max-height:52vh}
+.share-card img{max-height:52vh}
+.share-opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.share-opts .seg{flex:1 1 140px;min-width:0}
+/* The finish summary's way out and its Share, side by side right under the numbers. */
+.fin-actions{display:flex;gap:10px}
+.fin-actions .btn{width:auto;flex:none}
+.fin-actions .btn:first-child{flex:1 1 auto;min-width:0}
 /* --- muscle map --- */
 /* Reuses the .hm-c level ramp above, so one accent scale means one thing app-wide. */
 /* An untrained muscle is derived from the text colour rather than a fixed surface, so
@@ -1884,6 +1983,66 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .tile .l .icn{font-size:14px;color:var(--label)}
 .tile .v{font-size:26px;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
 .tile.tappable:active{background:var(--surface-2)}
+/* The week streak's extras (components/Streak.jsx): best + freezes, badges, Home's party. */
+.streak-meta{display:inline-flex;align-items:center;gap:8px}
+.streak-freezes{display:inline-flex;gap:2px;vertical-align:middle}
+.streak-freezes .icn{font-size:13px;color:var(--label-3);opacity:.35}
+.streak-freezes .icn.on{color:#64d2ff;opacity:1}
+.streak-freezes.big .icn{font-size:18px}
+.tile-freezes{margin-inline-start:8px}
+.tile-freezes .icn{font-size:15px}
+.streak-badges{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}
+.streak-badge{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;border-radius:12px;background:var(--surface-2);color:var(--label-3)}
+.streak-badge .icn{font-size:20px}
+.streak-badge .n{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.streak-badge.got{background:var(--acc-soft);color:var(--label)}
+.streak-badge.got .icn{color:var(--orange)}
+.streak-party{position:relative;display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:10px 12px;border:0;border-radius:14px;
+  background:var(--acc-soft);color:var(--label);font:inherit;font-weight:600;text-align:start;animation:slideup .45s cubic-bezier(.3,1.4,.5,1) both}
+.streak-party.still{animation:none}
+.streak-party-icon{position:relative;display:inline-flex;font-size:24px;color:var(--orange);animation:streak-pop .7s cubic-bezier(.3,1.8,.5,1) .15s both}
+.streak-party.still .streak-party-icon{animation:none}
+.streak-party .sparks{position:absolute;inset:50% auto auto 50%;pointer-events:none}
+.streak-party .sparks i{position:absolute;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:var(--acc);opacity:0;animation:streak-spark .8s ease-out .3s both}
+.streak-party .sparks i:nth-child(2n){background:var(--orange)}
+.streak-party .sparks i:nth-child(1){--dx:-18px;--dy:-16px}
+.streak-party .sparks i:nth-child(2){--dx:0;--dy:-22px}
+.streak-party .sparks i:nth-child(3){--dx:18px;--dy:-16px}
+.streak-party .sparks i:nth-child(4){--dx:20px;--dy:6px}
+.streak-party .sparks i:nth-child(5){--dx:-20px;--dy:6px}
+.streak-party .sparks i:nth-child(6){--dx:0;--dy:18px}
+/* Monthly challenges (components/Challenges.jsx): Home's card, Stats' trophy shelf. */
+.challenges .lbl2,.challenges-stats .lbl2{display:block;font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
+.ch-head{display:flex;align-items:center;gap:9px;flex:1;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.ch-head-t{display:flex;flex-direction:column;min-width:0;flex:1}
+.ch-head .ttl{font-size:16px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ch-list{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.ch-row{display:flex;align-items:center;gap:10px}
+.ch-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;border-radius:9px;background:var(--surface-2);color:var(--label-2);font-size:16px}
+.ch-row.done .ch-ic{background:rgba(48,209,88,0.18);background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+.ch-body{flex:1;min-width:0}
+.ch-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;font-weight:500}
+.ch-name{min-width:0}
+.ch-n{flex:none;font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums}
+.ch-bar{height:6px;margin-top:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.ch-bar i{display:block;height:100%;border-radius:3px;background:var(--orange);transition:width .5s ease}
+.ch-row.done .ch-bar i{background:var(--green)}
+.ch-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.ch-mini span{height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.ch-mini i{display:block;height:100%;background:var(--orange)}
+.ch-mini span.done i{background:var(--green)}
+.ch-note{display:flex;align-items:center;gap:6px;margin-top:12px}
+.challenges.gold .ch-note .icn{color:var(--yellow)}
+.ch-party.gold .streak-party-icon{color:var(--yellow)}
+.ch-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px;margin-top:8px}
+.ch-month{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px 7px;border-radius:12px;background:var(--surface-2)}
+.ch-medals{display:inline-flex;gap:1px;font-size:17px;color:var(--orange);min-height:20px;align-items:center}
+.ch-month.gold{background:linear-gradient(rgba(255,214,10,0.22),rgba(255,214,10,0.22)),var(--surface-2);background:color-mix(in srgb,var(--yellow) 22%,var(--surface-2))}
+.ch-month.gold .ch-medals{color:var(--yellow);font-size:20px}
+.ch-m{font-size:12px;font-weight:600;color:var(--label-2);white-space:nowrap}
+@media (prefers-reduced-motion: reduce){.ch-bar i{transition:none}}
+@keyframes streak-pop{from{transform:scale(.3)}to{transform:none}}
+@keyframes streak-spark{0%{opacity:1;transform:none}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
 /* the workout summary: time and volume share the first row, sets get the wider cell of the second
    because "15 sets · 15 work" does not fit a half */
 .center .tiles.fin{grid-template-columns:repeat(6,1fr)}
@@ -2419,57 +2578,62 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   box-shadow:0 0 28px rgba(0,0,0,.28);
 }
 
-/* Gym reminder (#614, views/GymReminder.jsx; redrawn in 1.4.4). The list: cards like Plan's
-   routines, a switch and a ⋯ each. A switched-off gym fades but stays readable. */
-.gym-list-t{margin-top:4px}
-.gym-list{margin-bottom:12px}
-.gym-item{padding-block:8px}
-.gym-item .item-open{flex:1;min-width:0;padding:4px 0;background:none;border:0;color:inherit;font:inherit;cursor:pointer}
-.gym-item .item-open .ss{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gym-item.off .lrow-i,.gym-item.off .item-open{opacity:.5}
-.gym-more{flex:none;display:grid;place-items:center;width:36px;height:44px;margin-inline-end:-6px;border:0;background:none;color:var(--label-2);font-size:20px;border-radius:10px;cursor:pointer}
-.gym-more:active{background:var(--surface-2)}
-.gym-empty{padding:30px 20px 22px}
-.gym-add{margin:0 0 26px}
-/* The editor: a big map in a card, the search floating on top of it, the radius in the accent. */
-.gmap{position:relative;height:clamp(360px,calc(100dvh - 300px),640px);border-radius:var(--r-lg);overflow:hidden;background:var(--surface-2);isolation:isolate;box-shadow:0 0 0 .5px var(--sep)}
+/* Gym reminder (#614, views/GymReminder.jsx; redrawn again in 1.4.4 to work like Apple Maps).
+   Plain grouped rows everywhere; a switched-off gym's row fades but stays readable. */
+.gym-row .lrow-s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gym-row .lrow-m{min-width:0}
+.gym-row.off .lrow-i,.gym-row.off .lrow-m{opacity:.5}
+.gym-add-row .lrow-t{color:var(--acc)}
+/* The search: the app's own search field (.searchf, as in Settings and the Library). */
+.gym-find-bar{margin:0 0 6px}
+.gym-find-note{font-size:12px;color:var(--label-2);line-height:1.35;margin:0 4px 14px}
+.gym-hit .lrow-m{min-width:0}
+.gym-hit .lrow-t{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gym-hit .lrow-s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gym-hit.busy{opacity:.55}
+.gym-hit-none .lrow-t{font-size:15px;color:var(--label-2)}
+/* The editor's map: a rounded card about 40% of the screen, the pin fixed in the middle while the
+   map moves under it. The pin lifts a little while you drag. */
+.gmap{position:relative;height:clamp(200px,40dvh,380px);border-radius:var(--r-card);overflow:hidden;background:var(--surface-2);isolation:isolate}
 .gym-map{position:absolute;inset:0;z-index:0;background:var(--surface-2)}
-/* Dark mode: OpenStreetMap's tiles turned to night on the phone, no second tile provider. */
 :root:not([data-theme="light"]) .gym-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.7)}
-/* Attribution stays readable in both themes and clear of the card's rounded corner. */
-.gym-map.leaflet-container .leaflet-control-attribution{font-size:10px;line-height:1.5;background:var(--surface);color:var(--label-2);opacity:.92;border-radius:8px;padding:1px 7px;margin:0 10px 8px 0}
+.gym-map.leaflet-container{font:inherit}
+.gym-map.leaflet-container .leaflet-control-attribution{font-size:10px;line-height:1.5;background:var(--surface);color:var(--label-2);opacity:.9;border-radius:8px 0 0 0;padding:1px 7px}
 .gym-map.leaflet-container .leaflet-control-attribution a{color:var(--label)}
-.gym-map .leaflet-bar{border:0;box-shadow:0 2px 10px rgba(0,0,0,.25);border-radius:12px;overflow:hidden}
-.gym-map .leaflet-bar a{width:38px;height:38px;line-height:38px;font-size:20px;background:var(--surface);color:var(--label);border-color:var(--sep)}
-.gym-map .leaflet-bar a.leaflet-disabled{color:var(--label-3);background:var(--surface)}
-.gym-pin span{position:relative;display:block;width:34px;height:34px;border-radius:50% 50% 50% 0;background:var(--acc);transform:rotate(-45deg);box-shadow:0 3px 8px rgba(0,0,0,.35);border:3px solid #fff}
-.gym-pin span::after{content:'';position:absolute;inset:9px;border-radius:50%;background:#fff}
-.gym-handle span{display:block;width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid var(--acc);box-shadow:0 2px 6px rgba(0,0,0,.35);cursor:ew-resize}
-.gym-radius{stroke:var(--acc);fill:var(--acc);stroke-width:2.5}
-.gmap-top{position:absolute;z-index:1000;inset:10px 10px auto;display:flex;flex-direction:column;gap:6px;pointer-events:none}
-.gmap-top>*{pointer-events:auto}
-.gmap-search{display:flex;gap:8px;align-items:center}
-.gmap-search>.searchf{flex:1;min-width:0}
-.gmap-search .field{height:48px;font-size:17px;background:var(--surface);box-shadow:0 3px 14px rgba(0,0,0,.28)}
-:root[data-theme="light"] .gmap-search .field{background:var(--surface)}
-.gmap-search>.btn{flex:none;width:auto;height:48px;padding-inline:16px;box-shadow:0 3px 14px rgba(0,0,0,.28)}
-.gmap-note{align-self:flex-start;margin:0;padding:3px 9px;border-radius:999px;font-size:11.5px;color:var(--label-2);background:var(--surface);opacity:.94}
-.gmap-hits{max-height:min(330px,calc(100% - 90px));overflow-y:auto;overscroll-behavior:contain;gap:6px;padding:2px;border-radius:var(--r-card)}
-.gmap-hit{box-shadow:0 2px 10px rgba(0,0,0,.22);cursor:pointer;min-height:56px}
-.gmap-hit .ss{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.gmap-hit.none{cursor:default;min-height:0}
-.gmap-chip{position:absolute;z-index:1000;left:50%;transform:translateX(-50%);bottom:24px;white-space:nowrap;padding:6px 11px;border-radius:999px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;background:var(--acc);color:var(--on-acc);box-shadow:0 2px 8px rgba(0,0,0,.3);pointer-events:none}
-.gmap-hint{margin:8px 4px 14px}
-.gmap-btns{display:flex;flex-direction:column;gap:8px;margin:0 0 24px}
-.gmap-btns>.btn.primary{min-height:52px;font-size:17px}
-@media (min-width:700px){.gmap-btns{flex-direction:row}.gmap-btns>.btn{flex:1}}
-.gym-field{padding:8px 12px}
-.gym-field input{width:100%}
-.gym-radius-row{display:flex;align-items:center;gap:12px;padding:12px 14px}
-.gym-radius-row>:first-child{flex:1}
-.gym-radius-val{min-width:64px;text-align:end;font-variant-numeric:tabular-nums;color:var(--label-2)}
-.gym-actions{display:flex;flex-direction:column;gap:10px;margin:4px 0 30px}
+.gym-radius{stroke:var(--acc);fill:var(--acc);fill-opacity:.14;stroke-width:2}
+.gmap-pin{position:absolute;z-index:1000;left:50%;top:50%;width:30px;height:30px;margin:-30px 0 0 -15px;pointer-events:none;transition:transform var(--fast) var(--ease)}
+.gmap-pin>span{position:absolute;inset:0;border-radius:50% 50% 50% 0;background:var(--acc);transform:rotate(-45deg);box-shadow:0 3px 8px rgba(0,0,0,.35);border:3px solid #fff}
+.gmap-pin>span::after{content:'';position:absolute;inset:7px;border-radius:50%;background:#fff}
+.gmap-pin::after{content:'';position:absolute;left:50%;bottom:-3px;width:8px;height:4px;margin-left:-4px;border-radius:50%;background:rgba(0,0,0,.35);transition:transform var(--fast) var(--ease)}
+.gmap.moving .gmap-pin{transform:translateY(-8px)}
+.gmap.moving .gmap-pin::after{transform:translateY(8px) scale(1.4)}
+@media (prefers-reduced-motion:reduce){.gmap-pin,.gmap-pin::after{transition:none}}
+.gmap-locate{position:absolute;z-index:1000;top:10px;inset-inline-end:10px;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:var(--surface);color:var(--acc);font-size:19px;box-shadow:0 1px 6px rgba(0,0,0,.25);cursor:pointer}
+.gmap-locate:active{background:var(--surface-2)}
+.gmap-locate:disabled{opacity:.6}
+.gmap-hint{display:flex;flex-direction:column;gap:2px;margin:0 4px 20px}
+.gmap-addr{color:var(--label);font-size:15px}
+/* Rows with their own text input, like iOS's: the label on the start, the text on the end. */
+.gym-in-row{cursor:text}
+.lrow-in{flex:1 1 60%;min-width:0;background:none;border:0;outline:none;padding:0;font:inherit;font-size:17px;letter-spacing:-.012em;color:var(--label);text-align:end}
+.lrow-in::placeholder{color:var(--label-3)}
+.lrow-in.full{text-align:start}
+.gym-radius{padding-block:8px}
+.gym-radius .seg{flex:1}
+.gym-size{display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.gym-size b{font-weight:inherit}
+.gym-size small{font-size:11px;color:var(--label-2);font-variant-numeric:tabular-nums}
+.gym-radius .seg button{min-height:42px}
+.gym-actions{display:flex;flex-direction:column;gap:10px;margin:0 0 22px}
+.gym-remove{justify-content:center}
+.gym-remove .lrow-m{flex:none;align-items:center}
 .youtube-video{width:100%;min-width:0;margin:8px 0}
 .youtube-video iframe{display:block;width:100%;min-height:200px;aspect-ratio:16/9;border:0;border-radius:12px;background:#000}
 .youtube-actions{display:flex;justify-content:space-between;gap:8px;margin-top:8px}
 .youtube-actions .btn{min-height:44px}
+
+/* Your year in openGym: Home's December card (components/WrappedEntry.jsx). The stories' own
+   styles load with them (components/Wrapped.css). */
+.wr-home{position:relative;overflow:hidden;background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 24%,var(--surface)),var(--surface) 72%)}
+.wr-home .ttl{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
+.wr-home .wr-x{position:absolute;top:8px;inset-inline-end:8px}

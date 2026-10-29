@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "เริ่มการฝึก";
+"Starts today’s planned workout, or opens the one already running." = "เริ่มการฝึกที่วางแผนไว้วันนี้ หรือเปิดการฝึกที่กำลังทำอยู่";
+"Log weight" = "บันทึกน้ำหนัก";
+"Logs your body weight without opening openGym." = "บันทึกน้ำหนักตัวโดยไม่ต้องเปิด openGym";
+"Weight" = "น้ำหนัก";
+"What’s your weight?" = "คุณหนักเท่าไร";
+"Today’s workout" = "การฝึกวันนี้";
+"Tells you what’s planned for today." = "บอกว่าวันนี้มีแผนอะไร";
+"Week streak" = "สัปดาห์ต่อเนื่อง";
+"Tells you how many weeks in a row you trained." = "บอกว่าคุณฝึกติดต่อกันมากี่สัปดาห์";
+"Open openGym once, then ask me again." = "เปิด openGym สักครั้ง แล้วถามฉันอีกครั้ง";
+"You’re in the middle of %@." = "คุณกำลังฝึก %@ อยู่";
+"You’re in the middle of a workout." = "คุณกำลังฝึกอยู่";
+"Your workout" = "การฝึกของคุณ";
+"%@ is done for today. Nice work." = "%@ ของวันนี้เสร็จแล้ว เยี่ยมมาก";
+"Today: %@." = "วันนี้: %@";
+"Rest day today. Next up: %@ on %@." = "วันนี้วันพัก ถัดไป: %@ วัน%@";
+"Nothing planned today." = "วันนี้ไม่มีแผน";
+"No streak yet. One workout this week starts one." = "ยังไม่มีสถิติต่อเนื่อง ฝึกสักครั้งในสัปดาห์นี้เพื่อเริ่ม";
+"Week streak: %d. This week already counts." = "สัปดาห์ต่อเนื่อง: %d สัปดาห์นี้นับแล้ว";
+"Week streak: %d. One workout this week keeps it going." = "สัปดาห์ต่อเนื่อง: %d ฝึกสักครั้งในสัปดาห์นี้เพื่อรักษาไว้";
+"That doesn’t sound like a weight. Try again?" = "ฟังดูไม่เหมือนน้ำหนัก ลองอีกครั้งไหม";
+"Logged %@." = "บันทึก %@ แล้ว";

@@ -191,8 +191,9 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             DispatchQueue.main.async {
                 guard let s = recovered else { return }
                 if let other = self.session, other !== s {
-                    other.end()
+                    // Discarded before it ends, or the discard saves it (see end).
                     self.builder?.discardWorkout()
+                    other.end()
                 }
                 let b = s.associatedWorkoutBuilder()
                 b.dataSource = HKLiveWorkoutDataSource(healthStore: self.store, workoutConfiguration: s.workoutConfiguration)
@@ -309,6 +310,20 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             if let totals = totals { DispatchQueue.main.async { totals(Totals()) } }
             return
         }
+        session = nil
+        builder = nil
+        paused = false
+        if !save {
+            // Dropped while the builder still collects: discarded first, the session ended after,
+            // and no endCollection. With the session and the collection ended first, HealthKit can
+            // take the discard for a finish (its builder has only "finish" left from there), and a
+            // discarded workout still turned up in Apple Health (TestFlight 1.4.4, #776).
+            b.discardWorkout()
+            s.end()
+            if let totals = totals { DispatchQueue.main.async { totals(hr) } }
+            settle()
+            return
+        }
         s.end()
         // Never before the session's own start (a workout picked up from the phone after its last set).
         b.endCollection(withEnd: max(endAt, b.startDate ?? endAt)) { _, _ in
@@ -318,16 +333,16 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
                 out.calories = kcal.rounded()
             }
             if let totals = totals { DispatchQueue.main.async { totals(out) } }
-            if save {
-                b.finishWorkout { _, _ in }
-            } else {
-                b.discardWorkout()
-            }
+            b.finishWorkout { _, _ in }
         }
-        session = nil
-        builder = nil
-        paused = false
+        settle()
+    }
+
+    /// The badge after a session ended, unless a new one started meanwhile (a workout that
+    /// follows straight on the one discarded).
+    private func settle() {
         DispatchQueue.main.async {
+            guard self.session == nil else { return }
             self.running = false
             self.heartRate = nil
             self.heartAt = nil
@@ -352,6 +367,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// Active calories so far, for the workout screen when it shows them (at most every 10 s).
     @Published private(set) var calories: Double?
     private var caloriesAt = Date.distantPast
+    func demoReadings(hr: Double, kcal: Double) { heartRate = hr; calories = kcal }     // CI's screenshots
 
     func workoutBuilder(_ workoutBuilder: HKLiveWorkoutBuilder, didCollectDataOf collectedTypes: Set<HKSampleType>) {
         if let kcalType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned), collectedTypes.contains(kcalType),

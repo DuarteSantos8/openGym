@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Google Assistant's custom "log weight" App Action (res/xml/shortcuts.xml): what people say,
+     $weight being the number. English only, as custom App Actions are. The attribute is declared
+     here so the build knows it (Assistant reads it from the shortcuts file). -->
+<resources>
+    <attr name="queryPatterns" format="reference" />
+    <string-array name="voice_log_weight_queries">
+        <item>log my weight</item>
+        <item>log my weight as $weight</item>
+        <item>log $weight as my weight</item>
+        <item>my weight is $weight</item>
+        <item>I weigh $weight</item>
+        <item>add a weigh-in of $weight</item>
+    </string-array>
+</resources>

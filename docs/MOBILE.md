@@ -182,8 +182,38 @@ never stored.
   app's whole backup past 25 MB, and a few videos would take the state file down with them. A
   device-to-device transfer keeps it. iOS includes Library in iCloud and computer backups.
 - **Permissions:** Android already has the camera. iOS asks for the camera
-  (`NSCameraUsageDescription`, now also for photos and videos of exercises) and, to record a
-  video with sound from the picker, the microphone (`NSMicrophoneUsageDescription`).
+  (`NSCameraUsageDescription`, now also for photos and videos of exercises and for filming a
+  set) and, to record a video with sound from the picker, the microphone
+  (`NSMicrophoneUsageDescription`).
+
+### Filming a set
+
+During a workout, **Film this set** in a set's menu (and **Film a set** under More in the
+exercise's ⋯ menu) records a short video for that set, or picks one from the phone's videos. It
+uses the same file input, ingest, folder and sync as the photos above; what is particular:
+
+- **Recording:** a file input with `accept="video/*" capture="environment"`. iOS opens its camera
+  in video mode; Android's WebView (Capacitor's `BridgeWebChromeClient`) sends
+  `MediaStore.ACTION_VIDEO_CAPTURE` to the camera app, which needs the `<queries>` entry for that
+  action in the manifest since Android 11 (without it the button opens the file picker). On
+  Android the camera app may also keep its own copy in the gallery; that copy is the camera
+  app's, not openGym's.
+- **Length and size:** the server's `videoSec` and `videoMB` from `/api/config`, or 60 s and
+  40 MB in local mode. A longer or bigger video is refused before it is kept. There is no
+  transcoding or compression: neither platform offers it to the WebView without a native plugin,
+  and the app does not add one, so the camera's own file is what is kept. A long clip filmed in
+  4K can hit the size cap; 1080p is plenty to judge depth.
+- **Where it lives:** on the set, `set.media = [ref]`, one per set and at most 24 per workout. In
+  local mode only in `opengym-media/`. Paired, it goes up with the workout once it is saved,
+  unless **Keep videos on this phone only** was on when it was filmed (the ref then says
+  `local: true`): the sync never sends it, Settings counts it as kept on this phone, and other
+  devices show "On the phone that filmed it". A sign-out still treats it as owed and keeps it
+  aside with the stash, since it is the only copy.
+- **Deleting:** a removed set, a deleted workout or Remove on the video takes the reference away;
+  the file goes with the local clean-up (after its one-hour grace) and the server's GC, like any
+  removed photo. A copied set does not take the video along.
+- **Privacy:** never in a Coach request, an MCP answer (only a count), a share card, Wrapped, a
+  PDF, a CSV or a plan file. The zip backup carries the files, as it does every photo.
 
 Worth checking on a real device after changes here, since no test runs a WebView: a short
 video autoplays muted in the Android WebView; a long video seeks from its `_capacitor_file_`
@@ -201,7 +231,9 @@ that.
   as the title, the exercises and sets as "Copy as text" writes them as the notes, and a type
   (strength training as soon as one exercise is not cardio; walking, running, stationary bike,
   elliptical or stair machine for a cardio-only workout on a catalogue machine; "other" otherwise).
-  Each weigh-in as a weight record, in kilograms. A workout without a real start and end is left
+  Each weigh-in as a weight record, in kilograms, at its own time: a day from before (one weigh-in,
+  no time) keeps the id `opengym-bw-<day>`, every other weigh-in is `opengym-bw-<day>-<id>`. Removing
+  one weigh-in removes its record; removing a day removes all of them. A workout without a real start and end is left
   out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
   pin it.
 - **Permissions.** The manifest declares `WRITE_EXERCISE`, `WRITE_WEIGHT` and, since v1.4.3,
@@ -254,16 +286,17 @@ default, each independent of writing and of the other:
 - **Weigh-ins from other apps.** `HC.readWeights({ since })` → `{ records: [{ t, kg, id, origin,
   clientId }] }`: 30 days back the first time (what Health Connect gives without the history
   permission), afterwards from the newest seen minus two days. `lib/health-read.js` `mergeWeighIns`
-  takes the latest of each day, skips openGym's own records (`clientRecordId` `opengym-*`, origin
-  `ch.duartesantos.opengym*`), keeps a day that has a weigh-in typed into openGym, does not bring
-  back one deleted in openGym after it was measured, and converts to lb for an lb profile. Imported
-  entries carry `src` and are never written back (`healthRecords` leaves them out), and in a sync
-  merge a typed weigh-in beats an imported one of the same day whichever is newer
-  (`mergeBodyweight`); typing over an imported one makes it a typed one.
+  keeps every sample with its time as a weigh-in of its day (#859, `lib/weigh-ins.js`), under an id
+  made from the hub's own record id, so two phones reading the same sample add it once. It skips
+  openGym's own records (`clientRecordId` `opengym-*`, origin `ch.duartesantos.opengym*`), a sample
+  at a minute the day already has a weigh-in for (typed in, or read before), one removed in openGym
+  (the day's `gone`), and a whole day deleted in openGym after it was measured, and converts to lb
+  for an lb profile. Imported weigh-ins carry `src` and are never written back (`healthRecords`
+  leaves them out); typed ones stand beside them, and the daily-value setting picks the day's number.
 - **Foreground only.** Reads run at launch, on resume and after saves, never in the background.
   No `READ_HEALTH_DATA_IN_BACKGROUND`, no `READ_HEALTH_DATA_HISTORY`; old workouts are not filled in.
 - **Device-local state** in `opengym-health.json`: `readHr`, `readWeight`, `wCursor`, `seen` (what
-  was imported per day), `hrTried` (when each recent workout was last read), `readError`.
+  was imported, per hub sample), `hrTried` (when each recent workout was last read), `readError`.
 - **iPhone:** `AppleHealthPlugin.swift` `readHeartRate` / `readWeights` through `HKSampleQuery`;
   the plain-value conversion is `WatchCore/Sources/WatchCore/HealthReadCore.swift` (compiled into
   the app, tested by `swift test`). Apple Health never says whether reading was allowed, so a
@@ -379,28 +412,45 @@ cellular with Wi-Fi only on, it waits; Still only shows stills everywhere a work
 ### Gym reminder (#614)
 
 Settings → Reminders → **Gym reminder**, in the phone app only (the web build has no such page:
-a browser cannot watch where you are with the page closed). Off by default. The gyms are cards
-(address, radius, an on/off switch each; swipe or ⋯ to rename or remove). A gym is picked on a map
-with "I'm here right now" (the phone's position), a search or a pin you drag:
+a browser cannot watch where you are with the page closed). Off by default. The gyms are plain
+Settings rows (name, address, radius; "Off" on one that is switched off), the last row adds one.
+Adding is search first, like a maps app (`views/GymReminder.jsx` `GymFindPage`): the app's search
+field, "Current location" as the first row, results as you type (after a 350 ms pause, newest
+question wins) with distance, a kind hint and the address. A pick opens the editor
+(`GymEditPage`): a small map card with the pin fixed in the middle and the map moving under it,
+the radius as a circle, a "show where I am" button; then Name, an on/off switch, the radius as
+Small 75 m / Medium 120 m / Large 200 m (a saved gym with another radius keeps it as a fourth
+choice), the notification text, Save, "Open in Apple Maps / Google Maps" and Remove.
 
-- **iPhone: Apple Maps.** `ios/App/App/GymMapPickerPlugin.swift` (`GymMapPicker.pick`) presents a
-  full-screen MKMapView in the app's tint and theme, MKLocalSearch on top (fitness centres first,
-  then everything else), a draggable pin, the radius circle and slider; it returns
-  `{ name, address, lat, lng, radius }` and keeps nothing. No API key. A build without the plugin
-  (or `UNIMPLEMENTED`) falls back to the web map (`lib/gym-places.js` `pickOnNativeMap`).
-- **Android (and the iPhone fallback): OpenStreetMap** through Leaflet (`components/GymMap.jsx`):
-  standard OSM tiles with attribution (tile usage policy), darkened by a CSS filter in dark mode
-  (no second provider: CARTO's dark basemaps need an API key now); the radius circle in the accent
-  with a handle on its edge to drag. The search asks Nominatim within its usage policy: only on
-  Enter or the Search button (no search-as-you-type), at most one request a second, answers cached
-  for the session, repeats in flight not sent again, a User-Agent naming the app, biased (not
-  bounded) to the map's area, gyms ranked first. "Open in Google Maps" opens a plain
-  `google.com/maps/search/?api=1` link (the Maps app if it is installed), no key, no SDK.
+- **iPhone search: Apple Maps.** `ios/App/App/GymMapPickerPlugin.swift` answers `complete`
+  (two MKLocalSearchCompleters, one filtered to fitness centres, those first), `resolve` (one
+  MKLocalSearch for the row picked) and `reverse` (CLGeocoder, the address of a spot). It keeps
+  nothing and needs no API key. A build without these calls (1.4.4 build 45 had a full-screen
+  picker instead) answers `UNIMPLEMENTED`, and `lib/gym-places.js` uses OpenStreetMap from then on.
+- **Android search (and the iPhone fallback): OpenStreetMap data.** The type-ahead asks Photon
+  (`photon.komoot.io`, built for search-as-you-type; fair use): at least two letters, at most one
+  request every 500 ms, answers cached for the session, repeats in flight not sent again, a
+  User-Agent naming the app, biased to where you are, gyms ranked first, `lang` only where Photon
+  has it (en, de, fr). If Photon fails, Nominatim answers within its policy (one request a second,
+  cached). The address of a moved pin is Photon's reverse lookup, once per spot.
+- **The map, both phones:** Leaflet (`components/GymMap.jsx`) with standard OSM tiles and
+  attribution (tile usage policy), darkened by a CSS filter in dark mode (no second provider:
+  CARTO's dark basemaps need an API key now). "Open in Google Maps" / "Open in Apple Maps" open
+  plain links, no key, no SDK.
 
 Each gym has a radius (100 m by default, 50 to 500), an optional text and an `off` flag (kept on
 the list, not watched: both native sides skip it when they arm the regions). Up to 20 gyms (iOS watches at
 most 20 regions per app). Walking into one posts "Gym spotted. Ready for your workout? 💪"; a tap
 opens the Start screen (or the running workout).
+
+- **Equipment here (#808).** With equipment profiles set up, the editor has an "Equipment here"
+  row: a profile (each one is a gym with its own plates, dumbbells, bars and machine stacks,
+  `lib/gym-inventory.js`) or "Don't switch". Kept on the place as `equip` (native storage only,
+  like the rest). A tap on the arrival notification, a check-in sticker, or a workout started
+  while the phone is inside that place's radius makes it the active gym, with a toast "Using Home
+  gym equipment" (`lib/gym-auto.js`). Only when location is already allowed: nothing here asks for
+  it. A session with a set done already is not switched from here; the workout header's gym chip
+  does that, after a question.
 
 - **No nagging** (`src/lib/gym-reminder.js` `skipReason`, the same rule in
   `GymReminderRules.java` and `ios/App/GymReminderCore`): at most once a day, not after a workout
@@ -475,6 +525,125 @@ waits in the approach zone, the check starts (its location request shows in `dum
 then the phone walks in at 1.4 m/s and the time from crossing the radius to the notification is
 measured; then the server check against a fake paired server on the host (trained elsewhere:
 quiet; a black-holed server: posts after the 3 s bound; no server: posts).
+
+### Routine links: "Share with a friend" (v1.4.4)
+
+A routine (Plan → a routine → **Share with a friend**) or a past workout (History → the workout →
+Workout options → **Share with a friend**, sent as the routine Save as routine would make) goes out
+as `https://opengym.ch/r#<payload>` through the share sheet (`components/RoutineShare.jsx`,
+`src/lib/routine-link.js`). The payload is `1.d.<base64url>`: link format 1, a plan file holding
+that one routine (same `opengym_plan` version, read by the same `parsePlan`/`mergePlan` as an
+imported file), deflate-raw through `CompressionStream` (`j` = plain JSON where there is none).
+It sits in the URL **fragment**, which browsers never send, so opengym.ch only serves the page. The
+sender's weights ride along only with **Include my weights**, their name only with **Your name**
+(both off by default). Over 2000 characters the share falls back to a plan file of that routine.
+
+Opening one shows a preview with **Add to my routines**: always a new routine, never over one
+already there ("Push Day (from Alex)", "Push Day 2" when the name is taken), custom exercises
+created like a plan file's. A newer link format than the app reads asks for an update.
+
+| Where | Link | |
+| --- | --- | --- |
+| Website | `https://opengym.ch/r#P` | `website/r/index.html` (served at /r/): the routine by name and sets, Open in openGym, Get the app, Open in the web app (your server or the demo) |
+| Android | same link | VIEW filter on `MainActivity` (https, opengym.ch, path `/r` and `/r/`, `autoVerify`), so it opens the app directly once opengym.ch serves `/.well-known/assetlinks.json` with the app's signing certificates (Play and sideload). Until then Android may show the page or ask |
+| App | `opengym://r#P` | the website's Open in openGym; the `opengym` scheme is already registered (CFBundleURLTypes, the VIEW filter for `opengym:`). Read through `@capacitor/app`'s `appUrlOpen` and `getLaunchUrl` (`useRoutineLinks`, waits until the app is set up) |
+| Web app | `<server>/#/r/P` | read before the router sends the unknown route to /home, then the address goes back to `#/plan` |
+
+iPhone: without associated domains the https link opens the page in Safari, one more tap to the
+app. Adding `applinks:opengym.ch` (see the NFC notes below) would cover `/r*` too.
+
+### NFC stickers (v1.4.4)
+
+Settings → Look & Home → **Set up an NFC sticker** writes a blank NTAG sticker (NTAG213 or bigger;
+the link is under 110 bytes) with one NDEF URI record. Two kinds, chosen in the sheet
+(`components/Nfc.jsx`); what a sticker says and does is `src/lib/nfc-tags.js`:
+
+| Sticker | Link | A tap |
+| --- | --- | --- |
+| Start | `https://opengym.ch/nfc?do=start` | starts today's planned session through the usual Start (weigh-in first, if on); a running workout opens instead, never a second one; nothing planned: the Start screen |
+| Check in | `https://opengym.ch/nfc?do=checkin&card=<id>` | the membership code screen (`#/checkin`) on that card; offered only when a code is saved |
+| Machine | `https://opengym.ch/nfc?ex=<exercise id>` | during a workout: jumps to the exercise (`active.cur`), or asks before adding it after the current one; outside: the exercise's details. An exercise the profile lacks: a short toast |
+
+The same tap within 4 s, or any tap within 1.2 s of the last, is dropped (`tagDebouncer`). A link
+that opens the app before it is set up (cold start, sign-in) waits until it is (`useNfcTagLinks`).
+`opengym://nfc?...`, `opengym://checkin`, `opengym://start` and `opengym://exercise/<id>` are read
+too. Machine stickers come from an exercise's details → **Write NFC sticker for this exercise**.
+
+- **Why an https link:** that is what a phone reads with the app closed. Android routes it to the
+  app by the `NDEF_DISCOVERED` filter on `MainActivity` (scheme https, host opengym.ch, path
+  `/nfc`), no App Links verification needed; `NfcTagsPlugin.java` passes it on as its `open`
+  event (kept until the page listens). iOS background tag reading (iPhone XS and newer) only routes
+  web links and universal links, never custom schemes. The app has **no associated domains yet**,
+  so on an iPhone the tap shows a banner that opens `opengym.ch/nfc` in Safari, and that page
+  (`website/nfc/index.html`, served at /nfc) hands the query to the app as `opengym://nfc?...` (CFBundleURLTypes in
+  Info.plist, delivered through `@capacitor/app`'s `appUrlOpen`). A phone without openGym lands on
+  the same page. To make it one tap on iPhone later: enable Associated Domains on the app id, add
+  `applinks:opengym.ch` to `App.entitlements`, and serve `/.well-known/apple-app-site-association`
+  for `/nfc*` on opengym.ch.
+- **Writing, Android:** `NfcAdapter.enableReaderMode` while the sheet waits (so the system's tag
+  dispatch stays out of it), `Ndef.writeNdefMessage`, or `NdefFormatable.format` for an
+  unformatted sticker. `android.permission.NFC` (normal, no prompt) and
+  `uses-feature android.hardware.nfc required=false`, so phones without NFC still install it.
+- **Writing, iOS:** `NfcTagsPlugin.swift`, an `NFCNDEFReaderSession` with Core NFC's own sheet
+  (`queryNDEFStatus`, `writeNDEF`). Needs the **NFC Tag Reading** capability on the app id
+  (`com.apple.developer.nfc.readersession.formats` = `TAG`; App Store Connect refuses `NDEF`
+  there, `scripts/ios/finish-ipa.sh` drops it from the profile's entitlements) and
+  `NFCReaderUsageDescription` in Info.plist. There is no permission prompt: the system sheet is
+  the consent, so the app shows no explainer before it.
+- **Web:** Web NFC (`NDEFReader`), which only Chrome on Android has. It writes, and reads while
+  the page is open once the site has the NFC permission (asked at the first write). Every other
+  browser, and phones without NFC, never see the NFC rows (`nfcSupport()`).
+- **Not a card cloner.** No host card emulation, no reading of other tags' contents beyond our own
+  link, nothing that copies or imitates a gym's access card. The membership code stays the QR or
+  barcode the check-in screen draws.
+
+### Siri, Shortcuts and Google Assistant (v1.4.4)
+
+Nothing to switch on: the phrases and shortcuts are there once the app is installed. Settings →
+Look & Home → **Siri & Shortcuts** (Android: **Assistant & shortcuts**) lists them
+(`components/VoiceShortcuts.jsx`). The app side is `src/lib/voice.js`.
+
+**iPhone, iOS 16 and up** (`ios/App/App/VoiceIntents.swift`, App Intents; the deployment target
+stays 15.5 and everything is `@available(iOS 16.0, *)`). One `AppShortcutsProvider`, so the four
+show up in Siri, Spotlight and the Shortcuts app with no setup:
+
+| Phrase | Intent | What happens |
+| --- | --- | --- |
+| "Start my workout in openGym" | `StartWorkoutIntent` (opens the app) | hands `opengym://start?today=1` to Capacitor like any link: today's plan through the widget's Start path (`lib/widget-links.js`, weigh-in step included), the running workout if there is one, Home on a rest day |
+| "Log my weight in openGym" | `LogWeightIntent` (stays closed) | asks for the number, in the profile's unit from the widget snapshot, 20 to 700 kg or 44 to 1500 lb; writes `{ id, w, unit, at, d }` to `voice.pendingWeighIns` in the App Group's defaults and says "Logged 78.2 kg" |
+| "What's my workout today in openGym" | `TodayWorkoutIntent` (stays closed) | answers from `widget.json` (the widget snapshot, `lib/widgets.js`): the running workout, today's plan, done, or the rest day and what's next |
+| "How's my streak in openGym" | `StreakIntent` (stays closed) | the week streak and whether this week counts yet, from the same snapshot |
+
+Before the app has written a snapshot (never opened) the closed ones say "Open openGym once, then
+ask me again" and log nothing: without the profile's unit a number means nothing.
+
+The page brings pending weigh-ins in when it starts and whenever it comes back to the foreground,
+once the store is ready (`startVoice`, through the `VoiceBridge` plugin: `pending()`, `clear({ ids })`).
+`importPendingWeighIns` converts to the profile's unit, keeps the day the phone was on when Siri
+logged it (`d`, so 23:30 stays that evening wherever the phone is now; a day not yet reached here
+becomes today), lets a newer weigh-in of that day win, drops anything that is not a body weight,
+and remembers the ids it brought in (`og_voice_seen`) so one the phone failed to clear never comes
+twice. It goes through the store's `update` like the weigh-in sheet, so it syncs and reaches
+Health like any other weigh-in. A toast says "78.2 kg logged by Siri".
+
+Words: `ios/App/App/<lang>.lproj/AppShortcuts.strings` (the phrases, each keeping
+`${applicationName}`) and `Localizable.strings` (titles and answers), in every language the
+widgets have plus Swedish, written by `node frontend/ios/ci/voice-strings.mjs`. They are real
+localized resources of the App target (variant groups in `project.pbxproj`, `knownRegions`). The
+same phrases appear in Settings from `src/locales`; `src/lib/voice-strings.test.js` keeps the
+Swift source, the generated files and the page's packs in step.
+
+**Android** (`res/xml/shortcuts.xml`, labels in `values*/voice_strings.xml` from the same script).
+Touch and hold the icon: **Start workout** (`opengym://start?today=1`), **Log weight**
+(`opengym://weigh-in`) and **Stats** (`opengym://stats`), plain VIEW intents the app already
+follows. The file is declared with `android.app.shortcuts` on every launcher alias in
+`AndroidManifest.xml` (the launcher reads the enabled one); **a new app icon alias needs that
+meta-data too** (the test checks). The same file holds Google Assistant App Actions:
+`actions.intent.START_EXERCISE` opens today's plan, and the custom
+`custom.actions.intent.LOG_WEIGHT` (English query patterns in `values/voice_actions.xml`) opens
+`opengym://weigh-in?w=<number>`: the weigh-in sheet with the number in, saved by a tap. Assistant
+never logs anything by itself. App Actions only reach users after the app is published on Play
+with them; until then the long-press shortcuts are what Android users get.
 
 ## Prerequisites
 

@@ -19,6 +19,8 @@ import { loadOfWorkouts, rankOf, levelsOf } from '../../frontend/src/lib/muscles
 import { policyFor, profileRule } from '../../frontend/src/lib/progression.js'
 import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/session-start.js'
 import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
+import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
+import { setVideosOf, setVideoCount } from '../../frontend/src/lib/set-videos.js'
 
 /* ---------- helpers ---------- */
 
@@ -75,9 +77,13 @@ export function entryView(e, S) {
       sec: Number(s.sec) || 0,
       min: Number(s.min) || 0,
       speed: Number(s.speed) || 0
-    }))
+    })),
+    // How many of its sets have a form video (frontend lib/set-videos.js) — the count only. The
+    // videos themselves, their files and their refs never reach a client of this server.
+    ...(formVideos(e) ? { form_videos: formVideos(e) } : {})
   }
 }
+const formVideos = e => (Array.isArray(e?.sets) ? e.sets.reduce((n, s) => n + setVideosOf(s).length, 0) : 0)
 
 // Best estimate per exercise, mirroring the UI's PR table: every eligible set across history, biggest wins.
 // It asks bestSetOf() rather than scanning the rows here, so this table and the per-exercise answer of
@@ -305,16 +311,21 @@ export const listWorkouts = {
         duration_ms: w.end && w.start ? (w.end - w.start) : null,
         duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
         prs: (w.prs || []).length,
-        bodyweight_at_workout: w.bw || null
+        bodyweight_at_workout: w.bw || null,
+        // The gym (equipment profile) it was done at, since 1.4.4; null before, or with no gyms.
+        gym: gymOf(w)
       }))
     }
   }
 }
 
+// Where a workout was done: the name of the gym (equipment profile) the app recorded (#808).
+const gymOf = w => (w && w.gym && typeof w.gym === 'object' && String(w.gym.name || '').trim()) || null
+
 /** get_workout — full entry/set breakdown for one date. */
 export const getWorkout = {
   name: 'get_workout',
-  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
+  description: 'Get the full breakdown of one workout: every exercise, its mode (reps/time/cardio), the target, and per-set labels (e.g. "5 @ 60 kg", "1:30 · 20 kg"), and form_videos: how many sets the user filmed (a count only; the videos are never shared). Identify it by workout_id (from list_workouts) or by date. Use list_workouts first if you don\'t know either.',
   schema: {
     date: isoDate().optional().describe('The workout date as YYYY-MM-DD. If two sessions share that date, the answer lists them instead and asks for a workout_id.'),
     workout_id: z.string().min(1).optional().describe('The id from list_workouts. Preferred: it names one session even on a day with two.')
@@ -357,6 +368,7 @@ export const getWorkout = {
       routine_name: w.name || null,
       unit: S.unit || 'kg',
       bodyweight_at_workout: w.bw || null,
+      gym: gymOf(w),
       volume: workoutVolume(w),
       sets_done: setsDone(w),
       sets_planned: setUnitsTotal(w.entries),
@@ -365,7 +377,9 @@ export const getWorkout = {
         const ex = exerciseOf(id, S)
         return ex.missing ? id : ex.n
       }),
-      entries: (w.entries || []).map(e => entryView(e, S))
+      entries: (w.entries || []).map(e => entryView(e, S)),
+      // The number of sets filmed that day (form videos), nothing about the videos themselves.
+      ...(setVideoCount(w) ? { form_videos: setVideoCount(w) } : {})
     }
   }
 }
@@ -373,7 +387,7 @@ export const getWorkout = {
 /** get_bodyweight — recent weigh-ins with the goal line. */
 export const getBodyweight = {
   name: 'get_bodyweight',
-  description: 'Get the body-weight log: chronological weigh-ins with weights, current goal, deltas vs goal (signed positive = above goal), and a latest summary. Useful for "am I trending toward my weight goal?" questions.',
+  description: 'Get the body-weight log: one entry per day, chronological, with the day\'s weight, current goal, deltas vs goal (signed positive = above goal), and a latest summary. A day can hold several weigh-ins: each entry lists them under `readings` with their local time (HH:MM, null when unknown), and the day\'s `weight` is the one the profile\'s daily-value setting picks (`daily_value`: first = morning, avg = average of the day, last). Useful for "am I trending toward my weight goal?" questions.',
   schema: {
     from: isoDate().optional().describe('Inclusive start date YYYY-MM-DD.'),
     to: isoDate().optional().describe('Inclusive end date YYYY-MM-DD. Defaults to today.')
@@ -393,12 +407,14 @@ export const getBodyweight = {
     return {
       unit: S.unit || 'kg',
       goal,
+      daily_value: dailyModeOf(S),
       count: bw.length,
       latest: latest ? { date: latest.d, weight: latest.w, delta_vs_goal: goal != null ? Math.round((latest.w - goal) * 10) / 10 : null } : null,
       entries: bw.map(b => ({
         date: b.d,
         weight: b.w,
-        delta_vs_goal: goal != null ? Math.round((b.w - goal) * 10) / 10 : null
+        delta_vs_goal: goal != null ? Math.round((b.w - goal) * 10) / 10 : null,
+        readings: readingsOf(b).map(r => ({ time: r.at || null, weight: r.w, ...(r.src ? { source: r.src } : {}) }))
       }))
     }
   }

@@ -32,7 +32,7 @@ export function applyRestLeft(v, opened) {
   const ui = useUI.getState()
   const now = ui.timer
   if (!now) { if (v > 0) ui.startRest(v); return }
-  if (v <= 0) { ui.stopRest(); return }
+  if (v <= 0) { ui.skipRest(); return }
   if (now.ready) { ui.startRest(v, now.forIdx); return }
   if (v !== now.left) ui.addRest(v - now.left)
 }
@@ -76,11 +76,29 @@ function useSkipFits(actsRef, deps) {
   return fits
 }
 
+// Timed holds that run themselves (lib/auto-holds.js): the chain's own controls, a second row under
+// the clock of the count-in and of the hold. Pause holds whichever clock runs, Restart takes the
+// hold back to its count-in (nothing logged for the try it drops), Stop auto ends the chain and
+// leaves the rest of the workout as it always was. Big enough for a thumb mid-plank.
+function AutoRow({ paused, restart = true }) {
+  const { pauseAuto, resumeAuto, restartHold, stopAuto } = useUI.getState()
+  return (
+    <div className="autorow" role="group" aria-label={t('Timed holds start by themselves')}>
+      <Button size="sm" icon={paused ? 'play' : 'pause'} aria-pressed={!!paused}
+        onClick={() => (paused ? resumeAuto() : pauseAuto())}>{t(paused ? 'Resume' : 'Pause')}</Button>
+      {restart && <Button size="sm" icon="reset" onClick={() => restartHold()}>{t('Restart')}</Button>}
+      <Button size="sm" icon="xmark" onClick={() => stopAuto()}>{t('Stop auto')}</Button>
+    </div>
+  )
+}
+
 export default function RestTimer() {
   const timer = useUI(s => s.timer)
   const work = useUI(s => s.work)
-  const { addRest, stopRest, pauseRest, resumeRest, finishWorkEarly, stopWork } = useUI()
-  const on = work || timer
+  const countIn = useUI(s => s.countIn)
+  const autoSay = useUI(s => s.autoSay)
+  const { addRest, skipRest, pauseRest, resumeRest, finishWorkEarly, stopWork, goNow, stopAuto } = useUI()
+  const on = countIn || work || timer
   const actsRef = useRef(null)
   const skipFits = useSkipFits(actsRef, [!!timer && !work, t('Skip'), t('Dismiss')])
   // The page keeps room at its bottom for the bar (index.css body.resting), so the last set and
@@ -89,24 +107,48 @@ export default function RestTimer() {
     document.body.classList.toggle('resting', !!on)
     return () => document.body.classList.remove('resting')
   }, [!!on])
-  if (!on) return null
-  const pct = Math.max(0, Math.min(100, (on.left / on.total) * 100))
+  // The count-in's "3", "2", "1", "Go!", read out politely. Always in the page, in the same place,
+  // so it is not a new region each time the bar changes from count-in to hold (a screen reader
+  // reads a region that changes, not one that arrives with its words already in it).
+  const say = <span className="vh" role="status" aria-live="polite">{autoSay}</span>
+  if (!on) return say
+  const pct = Math.max(0, Math.min(100, ((on.left ?? on.total) / on.total) * 100))
+
+  if (countIn) {
+    const n = countIn.left ?? countIn.total
+    const name = countIn.owner?.label || ''
+    return <>{say}
+      <div id="timer" className={'countin auto' + (countIn.paused ? ' paused' : '')}>
+        <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
+        <div className="tclock">
+          <span className="t" key={n} aria-hidden="true">{n}</span>
+          <span className="lbl">{countIn.waiting ? t('Waiting till you close that') : t('Get ready: {0}', name)}</span>
+        </div>
+        <div className="acts">
+          <Button size="sm" variant="primary" icon="play" onClick={goNow}>{t('Go now')}</Button>
+        </div>
+        <AutoRow paused={countIn.paused} />
+      </div>
+    </>
+  }
   // The bar shrinks by transform, not width: a width transition lays the page out again on every
   // frame of every rest (~45 layouts a second), a scaled bar is the compositor's alone.
 
-  if (work) return (
-    <div id="timer" className="working">
+  // A hold that runs itself trades Cancel for the chain's row: Restart and Stop auto cover it.
+  if (work) return <>{say}
+    <div id="timer" className={'working' + (work.auto ? ' auto' : '') + (work.paused ? ' paused' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <div className="tclock">
         <span className="t">{work.left <= 0 && work.overtime ? '+' + clock(-work.left) : clock(work.left)}</span>
-        {work.label && <span className="lbl">{work.label}</span>}
+        {work.label && <span className="lbl">{work.paused ? t('Paused') + ' · ' + work.label : work.label}</span>}
       </div>
       <div className="acts">
-        <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>
-        <Button size="sm" variant="primary" icon="check" onClick={finishWorkEarly}>{t('Done')}</Button>
+        {!work.auto && <Button size="sm" onClick={stopWork}>{t('Cancel')}</Button>}
+        <Button size="sm" variant="primary" icon="check" onClick={() => finishWorkEarly()}>{t('Done')}</Button>
       </div>
+      {work.auto && <AutoRow paused={work.paused} />}
     </div>
-  )
+  </>
   // −15 and +15 sit together in number-line order; Skip is pushed to the far edge, away from the
   // button you tap to buy more time. Pause sits between them as an icon (#193): it holds the
   // time, it neither adds nor ends it. A rest that is over has nothing left to hold, so Ready
@@ -115,8 +157,11 @@ export default function RestTimer() {
   // its two faces (data-alt, a hidden line in index.css): the row never reflows when the rest
   // turns Ready, so a thumb on +15 never lands on −15.
   const label = timer.kind === 'switch' ? t('Switch sides') : timer.paused ? t('Paused') : t('Rest')
-  return (
-    <div id="timer" data-tour="rest" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '')}>
+  // A rest before a hold that starts by itself says which one, and offers Stop auto under the
+  // rest's own buttons (which keep their places: Pause, +15 s and Skip are the chain's for a rest).
+  const autoNext = !timer.ready && timer.autoNext
+  return <>{say}
+    <div id="timer" data-tour="rest" className={'rest' + (timer.paused ? ' paused' : '') + (timer.kind === 'switch' ? ' switch' : '') + (timer.ready ? ' ready' : '') + (autoNext ? ' auto' : '')}>
       <div className="bar" aria-hidden="true"><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
       <SeasonDeco spot="rest-timer" workout />
       <button type="button" className="tclock" onClick={adjustRestSheet}
@@ -132,7 +177,7 @@ export default function RestTimer() {
           : <Button size="sm" className="pause" icon={timer.paused ? 'play' : 'pause'}
             aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
             onClick={timer.paused ? resumeRest : pauseRest} />}
-        <button type="button" className={'btn primary sm skip' + (skipFits ? '' : ' icon-only')} onClick={stopRest}
+        <button type="button" className={'btn primary sm skip' + (skipFits ? '' : ' icon-only')} onClick={() => skipRest()}
           aria-label={skipFits ? undefined : t(timer.ready ? 'Dismiss' : 'Skip')}>
           {skipFits
             ? <span><span className="on">{t(timer.ready ? 'Dismiss' : 'Skip')}</span>
@@ -141,6 +186,12 @@ export default function RestTimer() {
           <span className="skip-probe" aria-hidden="true"><span>{t('Skip')}</span><span>{t('Dismiss')}</span></span>
         </button>
       </div>
+      {autoNext && (
+        <div className="autorow next">
+          <span className="up">{t('Up next: {0}, starts by itself', autoNext)}</span>
+          <Button size="sm" icon="xmark" onClick={stopAuto}>{t('Stop auto')}</Button>
+        </div>
+      )}
     </div>
-  )
+  </>
 }

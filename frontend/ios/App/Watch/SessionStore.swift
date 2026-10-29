@@ -33,7 +33,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 touchLock.lock(at: Date())
                 if SessionCore.atEnd(state) { finishWanted = true }
             }
-            if state.workout?.id != oldValue.workout?.id { watchIdle() }
+            if state.workout?.id != oldValue.workout?.id { fix = nil; watchIdle() }      // a fix belongs to its workout
         }
     }
 
@@ -73,7 +73,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         return bundle.localizedString(forKey: key, value: key, table: nil)
     }
-    var crownStartsOnWeight: Bool { state.settings.crown == "weight" }
 
     /// Apple Health: the workout session, its heart rate, and the switch (WorkoutManager).
     let health = WorkoutManager()
@@ -83,7 +82,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var clipLog: [String] = []
     @Published var weight: Double = 0 { didSet { if weight != oldValue { ackRestOver() } } }
     @Published var reps: Double = 0 { didSet { if reps != oldValue { ackRestOver() } } }
-    /// A hold's seconds, for the set up next (the crown turns it).
+    /// A hold's seconds, for the set up next.
     @Published var seconds: Double = 0 { didSet { if seconds != oldValue { ackRestOver() } } }
     /// The effort rated for the set up next (RPE or RIR, the profile's scale), nil until rated.
     /// It belongs to that one set: another set coming up starts empty again (loadTargets).
@@ -91,6 +90,17 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var effortFor: String?
     /// The scale the phone's profile logs, when it logs one ("rpe" / "rir"): the set page offers it.
     var effortKind: String? { Effort.notches(state.settings.effort) != nil ? state.settings.effort : nil }
+    /// The box the Crown turns (tapped to arm), the direction of the last step (for the number's slide),
+    /// and the Crown's own count. Edits go straight into weight, reps and seconds; only Done sends them.
+    @Published private(set) var arm = CrownArm()
+    @Published private(set) var rising = true
+    private var gate = CrownGate()          // not published: a tick does not redraw the app
+    private var draft = SetDraft()
+    var crownTotal: Double { gate.last }
+    var crownAllowed: Bool { touchLock.allowsCrown(at: Date()) }
+    var armedField: ValueField? { arm.armed(at: Date(), key: editKey) }
+    /// A logged set on the set page to fix it (WatchCore's SetFix): the Crown, the keypad and the effort edit it, not the set up next.
+    @Published private(set) var fix: SetFix?
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
@@ -256,13 +266,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func pick(set si: Int, in ei: Int) {
+        disarm()
         ackRestOver()
         picked[ei] = si
         if ei == entryIndex { loadTargets() }
     }
 
-    /// Paging to another exercise (a vertical swipe).
+    /// Paging to another exercise (a vertical swipe). A set being fixed is let go, unsaved.
     func show(entry ei: Int) {
+        guard ei != fix?.entry else { return }      // the page a fix brought up, not a swipe
+        fix = nil
         guard ei != state.entryIndex else { return }
         ackRestOver()
         state.entryIndex = ei
@@ -354,13 +367,20 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let before = self.state
             let next = SessionCore.applySnapshot(before, snap)
             self.state = next
+            // Discarded there (#776): nothing of it is saved, and there is nothing to sum up. Also
+            // when the phone already runs the next workout (no snapshot without one in between):
+            // the session ends unsaved instead of carrying on as the next one. Remembered as run
+            // here, so its sync id stays on the list of copies to take out of Apple Health should
+            // one turn up after all (the phone names discarded workouts in healthGone).
+            let droppedThere = before.workout.map { $0.id != next.workout?.id && SessionCore.discarded($0.id, in: snap) } ?? false
+            if droppedThere {
+                self.health.end(save: false)
+                self.ran(before.workout?.id)
+            }
             if let ended = before.workout, next.workout == nil {
                 // Ended on the phone: the session here ends too. Finished there, it is saved to Apple
                 // Health and the watch says so instead of quietly going back to the start screen.
-                // Discarded there (#776), nothing of it is saved, and there is nothing to sum up.
-                if SessionCore.discarded(ended.id, in: snap) {
-                    self.health.end(save: false)
-                } else {
+                if !droppedThere {
                     if !self.isDemo {
                         self.summary = SessionCore.summary(ended, end: Date().timeIntervalSince1970 * 1000,
                                                            startedAt: self.workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }, endedOnPhone: true)
@@ -394,33 +414,150 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
-    /// The set up next, as the effort remembers it (exercise, set, side).
-    private var setKey: String? {
+    /// The set up next, as the effort and the draft remember it (exercise, set, side).
+    var setKey: String? {
         guard let e = entry, let si = setIndex else { return nil }
         return SessionCore.key(e.id, si, e.sets[si].sideUp)
     }
 
-    /// The effort for the set up next, from its editor; nil clears it.
+    /// The set the boxes edit: the one being fixed, else the set up next.
+    var editKey: String? { fix?.key ?? setKey }
+    var editEntry: Entry? { fix.flatMap { f in workout?.entries.indices.contains(f.entry) == true ? workout?.entries[f.entry] : nil } ?? entry }
+    var editEffort: Double? { fix == nil ? effort : fix?.effort }
+
+    /// The effort for the set up next (or the one being fixed), from its editor; nil clears it.
     func rate(_ v: Double?) {
+        if fix != nil { fix?.effort = v; return }
         ackRestOver()
         effort = v
         effortFor = v == nil ? nil : setKey
     }
 
-    /// The weight and reps the crown starts from: the set's own target.
+    /// The weight and reps the crown starts from: the set's own target, except the numbers the
+    /// lifter already changed on this set (a snapshot must not take them back).
     func loadTargets() {
         // A rating stays with its set through snapshots; another set starts unrated.
         if effortFor != setKey { effort = nil; effortFor = nil }
+        draft.follow(setKey)
         guard let e = entry else { return }
         let s = setIndex.map { e.sets[$0] } ?? e.sets.last
+        var w = s?.w ?? 0, r = s?.r ?? 0
         if let row = s, let side = row.sideUp, let one = row.sides?[side] {
-            weight = one.w ?? row.w ?? 0
-            reps = one.r ?? 0
-        } else {
-            weight = s?.w ?? 0
-            reps = s?.r ?? 0
+            w = one.w ?? row.w ?? 0
+            r = one.r ?? 0
         }
-        seconds = s?.sec ?? 30
+        if !draft.keeps(.weight) { weight = w }
+        if !draft.keeps(.reps) { reps = r }
+        if !draft.keeps(.seconds) { seconds = s?.sec ?? 30 }
+    }
+
+    /* ---------- editing the numbers: the Crown, the keypad, VoiceOver ---------- */
+
+    func spec(_ f: ValueField) -> ValueSpec? { editEntry.map { .of(f, step: $0.step, unit: $0.weightUnit(unit)) } }
+
+    func current(_ f: ValueField) -> Double {
+        if let fix { return fix.value(f) }
+        switch f { case .weight: return weight; case .reps: return reps; case .seconds: return seconds }
+    }
+
+    private func write(_ f: ValueField, _ v: Double) {
+        if fix != nil { fix?.set(f, v); return }
+        _ = draft.touch(f, key: setKey)
+        switch f { case .weight: weight = v; case .reps: reps = v; case .seconds: seconds = v }
+    }
+
+    /// A tap on a box arms it; a tap on the armed one asks for the keypad (true). A tap in the lock window does nothing.
+    func tapBox(_ f: ValueField) -> Bool {
+        guard touchAllowed, let k = editKey else { return false }
+        ackRestOver()
+        return arm.tap(f, key: k, at: Date()) == .keypad
+    }
+
+    /// The Crown's count changed: whole steps on the armed box; unarmed (or just after the page turned) swallowed.
+    func turn(to total: Double) {
+        let f = armedField
+        let n = gate.steps(to: total, at: Date(), allowed: crownAllowed && f != nil)
+        guard n != 0, let f, let s = spec(f) else { return }
+        rising = n > 0
+        arm.touch(at: Date())
+        write(f, s.turned(current(f), by: n))
+    }
+
+    /// VoiceOver's adjust: one step, then the box is let go.
+    func nudge(_ f: ValueField, by n: Int) {
+        guard let s = spec(f) else { return }
+        rising = n > 0
+        write(f, s.turned(current(f), by: n))
+        arm.disarm()
+    }
+
+    /// The keypad's ✓: the typed value as typed, only if the set is still the one it was opened on.
+    func setValue(_ f: ValueField, _ v: Double, key: String?) {
+        guard key == editKey else { return }
+        write(f, v)
+        arm.disarm()
+    }
+
+    func disarm() { if arm.field != nil { arm.disarm() } }
+
+    /// The idle timer ran out: let go, unless a tap or turn came since.
+    func disarmIfIdle() { if arm.field != nil, armedField == nil { arm.disarm() } }
+
+    /* ---------- the arrows: fixing a logged set, a set ahead ---------- */
+
+    private var resting: Bool { restEndsAt.map { $0 > Date() } ?? false }
+
+    /// The set on exercise `ei`'s page: the one being fixed there, else the one up, else the set count ("All sets done").
+    func shownSet(in ei: Int) -> Int {
+        if let f = fix, f.entry == ei { return f.set }
+        return setIndex(in: ei) ?? workout.map { $0.entries.indices.contains(ei) ? $0.entries[ei].sets.count : 0 } ?? 0
+    }
+
+    private func arrow(_ ei: Int, by d: Int) -> SetNav.Move? {
+        guard let w = workout, w.entries.indices.contains(ei) else { return nil }
+        return SetNav.move(w.entries[ei], from: shownSet(in: ei), by: d, fixing: fix?.entry == ei, live: ei == entryIndex && !resting)
+    }
+
+    func canMove(_ ei: Int, by d: Int) -> Bool { arrow(ei, by: d) != nil }
+
+    /// ‹ or › on a set page. Sends nothing and leaves a rest running as it is; what was changed and not saved is dropped.
+    func move(_ ei: Int, by d: Int) {
+        guard touchAllowed, let m = arrow(ei, by: d) else { return }
+        disarm()
+        switch m {
+        case .fix(let si): fix = SetFix.open(state, entry: ei, set: si)
+        case .pick(let si): fix = nil; pick(set: si, in: ei)
+        case .home: fix = nil
+        }
+    }
+
+    /// The rest's ‹: the set just logged, on its own page, with the rest running on.
+    var canFixLast: Bool { SetNav.last(state) != nil }
+
+    func fixLast() {
+        guard touchAllowed, let l = SetNav.last(state) else { return }
+        disarm()
+        fix = SetFix.open(state, entry: l.entry, set: l.set)
+    }
+
+    /// The other side of a per-side set; what was changed on this one is kept until Save or a move away.
+    func fixSide(_ side: String) { disarm(); fix?.side = side }
+
+    /// Changed on the phone (or gone) since it opened: Save is off.
+    var fixStale: Bool { fix.map { !$0.still(state) } ?? false }
+
+    /// Save: the set's setDone again, later (SetFix.save). The set stays on screen, as saved; no rest starts or stops.
+    func saveFix() {
+        guard let f = fix else { return }
+        let (next, events) = f.save(state, at: Date().timeIntervalSince1970 * 1000, id: { UUID().uuidString }, effort: effortKind)
+        guard !events.isEmpty else { return }
+        for e in events { send(event: e) }       // sent first, saved second, as completeSet
+        state = next
+        Haptics.done()
+        noteActivity()
+        disarm()
+        fix = SetFix.open(state, entry: f.entry, set: f.set)
+        fix?.side = f.side
     }
 
     /* ---------- what the lifter does here ---------- */
@@ -466,12 +603,17 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             Haptics.done()
         }
         let restFor = e.restSec ?? w.restSec
+        var rested = false
         if rest && restFor > 0 && to < (workout?.entries.count ?? 0) {
             startRest(until: now.addingTimeInterval(restFor), notify: true)
             restAfter = (e.id, ei, si, w.id ?? "", now)
+            touchLock.lock(at: now)         // the rest comes up under the thumb that hit Done
+            rested = true
         }
         if to != ei { state.entryIndex = to }
         loadTargets()
+        // A hold with no rest after it (the other side, or the rest timer off): the next one counts in.
+        if heldFor != nil && !rested { autoHoldIfDue() }
     }
 
     /// A set ticked on the phone while this watch runs the session: the watch has the sensor, so
@@ -513,9 +655,53 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /* ---------- holds (timed sets) ---------- */
 
+    /* ---------- holds that start by themselves (the phone's setting) ---------- */
+
+    /// The 3-2-1 before a hold that starts by itself: when it began (HoldCountView).
+    @Published private(set) var holdCountFrom: Date?
+    private var holdCountTimer: Timer?
+
+    /// The rest is over (or a hold ended with none after it): with the phone's "Timed holds start
+    /// by themselves" on and a timed set up next, a 3-2-1 with a tap each second, then the hold.
+    func autoHoldIfDue() {
+        // Not while a logged set is being fixed (the rest's ‹): no count-in takes that page away.
+        guard state.settings.autoHolds == true, workout != nil, fix == nil, entry?.isTimed == true, setIndex != nil,
+              holdEndsAt == nil, restEndsAt == nil, holdCountFrom == nil, seconds > 0 else { return }
+        let from = Date()
+        holdCountFrom = from
+        Haptics.count()
+        holdCountTimer?.invalidate()
+        holdCountTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            DispatchQueue.main.async {
+                guard let self = self, self.holdCountFrom == from else { return }
+                if Countdown.number(at: Date().timeIntervalSince(from) + 0.05) == 0 {
+                    self.stopHoldCount()
+                    self.startHold(auto: true)
+                } else {
+                    Haptics.count()
+                }
+            }
+        }
+    }
+
+    /// Cancel on the count-in: no hold starts, the set waits for its Start as it always did.
+    func stopHoldCount() {
+        holdCountTimer?.invalidate()
+        holdCountTimer = nil
+        holdCountFrom = nil
+    }
+
+    /// Skip on the rest: the rest ends, and a hold that starts by itself counts in.
+    func skipRestAndGo() {
+        skipRest()
+        autoHoldIfDue()
+    }
+
     /// The hold starts: a countdown from the seconds on the screen; at zero it is done by itself.
-    func startHold() {
-        guard touchAllowed, entry?.isTimed == true, setIndex != nil, seconds > 0 else { return }
+    /// `auto`: the count-in started it, so the touch lock after a rest does not hold it back.
+    func startHold(auto: Bool = false) {
+        guard auto || touchAllowed, entry?.isTimed == true, setIndex != nil, seconds > 0 else { return }
+        stopHoldCount()
         ackRestOver()
         skipRest()
         noteActivity()
@@ -748,11 +934,13 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
         ran(ended?.id)
         health.end(save: true, at: end) { [weak self] totals in self?.addTotals(totals) }
+        stopHoldCount()
         stopHold()
         skipRest()
         dropClips()
         send(event: ev)
         state = next
+        draft.follow(nil)        // the next workout starts from its plan, not from an edit of this one
         Haptics.finished()
     }
 
@@ -762,12 +950,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let (next, event) = SessionCore.finish(state, at: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString, discard: true)
         guard let ev = event else { return }
         health.end(save: false)
+        stopHoldCount()
         stopHold()
         skipRest()
         dropClips()
         send(event: ev)
         state = next
         summary = nil
+        draft.follow(nil)
         Haptics.discarded()
     }
 
@@ -806,6 +996,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self?.closeRest(at: Date())
                 self?.restEndsAt = nil
                 self?.restStartedAt = nil
+                self?.autoHoldIfDue()
             }
         }
         guard notify, !isDemo else { return }
@@ -985,6 +1176,20 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
+    /// CI: the screens that open the keypad on a box, with what is typed.
+    static var demoKeypad: (field: ValueField, text: String)? {
+        switch demoScreen {
+        case "keypad-weight": return (.weight, "")
+        case "keypad-typed": return (.weight, "62.5")
+        case "keypad-over": return (.weight, "800")
+        case "keypad-reps": return (.reps, "")
+        case "keypad-hold": return (.seconds, "")
+        case "keypad-lb": return (.weight, "1500.25")
+        case "fix-keypad": return (.reps, "7")
+        default: return nil
+        }
+    }
+
     /// CI: the screens that open on the Overview.
     static var demoOpensOverview: Bool { ["overview", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
 
@@ -1002,8 +1207,24 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
-            case "hold": self.state.entryIndex = 1
+            case "set", "weight", "rest", "offline", "armed-weight", "armed-reps", "keypad-weight", "keypad-reps",
+                 "keypad-typed", "keypad-over", "finish-auto": self.picked[0] = 2
+            case "keypad-lb":
+                self.picked[0] = 2
+                self.state.workout?.entries[0].unit = "lb"
+            case "hold", "hold-set", "armed-hold", "keypad-hold": self.state.entryIndex = 1
+            case "fix", "fix-armed", "fix-changed", "fix-keypad", "fix-effort", "fix-stale", "rest-fix": self.picked[0] = 2
+            case "future": self.picked[0] = 3
+            case "fix-hold":
+                self.state.entryIndex = 1
+                self.state.workout?.entries[1].sets[0].done = true
+                self.state.workout?.entries[1].sets[0].at = 1
+            case "fix-side":
+                self.state.entryIndex = 3
+                self.state.workout?.entries[3].sets[0].sides?.R.done = true
+                self.state.workout?.entries[3].sets[0].done = true
+                self.state.workout?.entries[3].sets[0].at = 1
+            case "all-done": for si in self.state.workout?.entries[0].sets.indices ?? 0..<0 { self.state.workout?.entries[0].sets[si].done = true }
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
@@ -1034,6 +1255,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             }
             // CI: the watch in another language than its own (the app's, as the phone sends it).
             if let lang = SessionStore.argument("-OpenGymWatchLang") { self.state.settings.lang = lang }
+            // CI: the profile rates effort ("rpe" or "rir"), so the disc beside Done shows.
+            if let effort = SessionStore.argument("-OpenGymWatchEffort") { self.state.settings.effort = effort }
             if let show = SessionStore.argument("-OpenGymWatchShow") {
                 // "all": every optional thing on, for a look at the fullest screen.
                 if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
@@ -1041,7 +1264,26 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            // CI: a box armed (it never times out, the shot is taken seconds later).
+            if screen.hasPrefix("armed-"), let k = self.setKey {
+                self.arm = CrownArm(idle: .infinity)
+                _ = self.arm.tap(screen == "armed-weight" ? .weight : screen == "armed-reps" ? .reps : .seconds, key: k, at: Date())
+            }
+            // CI: a logged set on the set page to fix it (Bench Press set 1, the Plank's first hold, the split squat's first set).
+            if screen.hasPrefix("fix") {
+                if screen == "fix-effort" { self.state.settings.effort = "rpe"; self.state.rated = ["0025#1": 8] }
+                self.fix = SetFix.open(self.state, entry: self.state.entryIndex, set: screen == "fix-hold" || screen == "fix-side" ? 0 : 1)
+                if screen == "fix-hold" { self.fix?.set(.seconds, 50) }
+                if screen == "fix-changed" { self.fix?.set(.reps, 7) }
+                if screen == "fix-side" { self.fix?.side = "R"; self.fix?.set(.reps, 7) }
+                if screen == "fix-armed", let k = self.fix?.key {
+                    self.arm = CrownArm(idle: .infinity)
+                    _ = self.arm.tap(.reps, key: k, at: Date())
+                }
+                if screen == "fix-stale" { self.state.workout?.entries[0].sets[1].at = 2 }
+            }
+            if screen == "rest" || screen == "rest-fix" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen == "rest-fix" { self.fixLast() }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3 }
             if screen == "finish-auto" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.showFinish() } }
@@ -1050,8 +1292,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
                                               endedOnPhone: screen == "ended")
             }
+            // The widest band: 1:02:34 on the clock and a heart rate and calories (CI shows no sensor).
+            self.workoutSeenAt = Date(timeIntervalSinceNow: -3754)
+            self.health.demoReadings(hr: 142, kcal: 187)
             if let path = SessionStore.demoClip, let frames = SessionStore.frames(of: URL(fileURLWithPath: path)) {
                 self.clips["0025"] = frames
+                self.clips["split"] = frames        // a two-line name with the animation before it
                 self.log("demo clip: \(frames.images.count) frames")
             }
         }

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
+import { autoHoldsFor, forecastHolds, nextAutoHold } from '../lib/auto-holds.js'
 import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
 import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
@@ -22,12 +23,17 @@ import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWate
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
+import { filmSetSheet, SetVideoBadge, ActiveSetVideo } from '../components/SetVideo.jsx'
+import { setVideoOf, filmTarget } from '../lib/set-videos.js'
+import { fmtClip } from '../lib/media-refs.js'
 import { supersetMeta } from '../lib/superset-meta.js'
 import WorkoutThumb, { hasWorkoutMedia } from '../components/WorkoutThumb.jsx'
 import { workoutSettingsSheet } from '../components/WorkoutSettingsSheet.jsx'
 import { SessionMapButton } from '../components/SessionMuscles.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { REST_MAX, fmtRest, restWheelValue } from '../lib/duration.js'
+import { youtubeSearchUrl } from '../lib/youtube.js'
+import { openExternal } from '../components/CustomMedia.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, swapActiveWorkoutToBackup } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
 import { effortColor } from '../lib/effort.js'
@@ -53,6 +59,7 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
+import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
 import { exView, viewEntry, inEntryUnit } from '../lib/ex-unit.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
@@ -117,7 +124,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // and records all speak that unit. Every change goes through inEntryUnit or the parent's
   // onField (mutEntry), which store it back in the profile's unit.
   const live = useStore(s => s.S)
-  const S = exView(live, live.active.entries[entryIdx]?.id)
+  const S = exView(sessionGymView(live), live.active.entries[entryIdx]?.id)
   const update = useStore(s => s.update)
   const working = useUI(s => s.work)
   const restEnds = useUI(s => s.timer?.endsAt)
@@ -125,6 +132,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const setFlash = useUI(s => (s.setFlash?.idx === entryIdx ? s.setFlash : null))
   const optsId = useId()
   const entry = S.active.entries[entryIdx]
+  // The set whose form video plays under its row (SetVideo.jsx), by index; one at a time.
+  const [videoAt, setVideoAt] = useState(null)
+  // Rows are keyed by index: one added or removed above would put the player under another set.
+  const rowCount = entry?.sets?.length
+  useEffect(() => { setVideoAt(null) }, [rowCount])
   // Drops/bursts mutate the row in place — same card, not a new set with its own long rest.
   // A planned exercise (see the exercise's "Intensifier" config) arrives with these already
   // filled in by applyIntensifierPlan; these only add/edit/remove entries live from here on.
@@ -419,40 +431,55 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   }
   // Everything about this exercise that is not a set you are logging right now lives behind one
   // button. What used to be a row of buttons in the header, a chip under the bar, a strip of
-  // three under the sets and four more below the card is a single list you open once a session,
-  // in groups since v1.3.11: what you change today, what you look up, the exercise's settings,
-  // the order of the session, and Remove on its own at the end.
+  // three under the sets and four more below the card is a single list you open once a session.
+  // Since v1.4.4 it leads with the handful you reach for at the gym (note, swap, warm-up, rest,
+  // history) and folds the rest under one More row (MenuSheet's `more`): the exercise's
+  // settings, the how-to, the order of the session and the progression toggle. Remove stays
+  // last, on its own.
   // The exercise's own rest, or the default it falls back to (lib/supersetFlow.js restSecFor).
   const ownRest = ownExerciseRest(entry.target)
   const restSub = ownRest === 0 ? t('No timer') : ownRest ? fmtRest(ownRest) : t('Default ({0})', fmtRest(S.restSec))
   const backups = (entry.target?.subs || []).map(id => EXIDX[id]).filter(b => b && b.id !== entry.id)
+  const filmAt = filmTarget(entry)
+  const setTitle = (s, i) => isWarmupRow(s) ? t('Warm-up') : sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))
+  // A timed per-side hold is one set over two rows; its video sits on the first of them.
+  const filmSet = i => {
+    const at = setSpanAt(entry.sets, i)[0]
+    filmSetSheet({ entry: entryIdx, set: at }, t('Film {0}', setTitle(entry.sets[at], at)))
+  }
   const openMore = () => menuSheet({
     title: exerciseNameFor(ex),
     titleClass: exerciseNameClass(ex),
     sections: [
-      { title: t('Today'), items: [
+      { items: [
+        { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), sub: entry.note || undefined, onClick: () => exerciseNoteSheet(entryIdx) },
         onSwap && { icon: 'swap', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
         // The slot's planned backups (#649), one tap each: the machine is taken, the plan says what next.
         ...(onSwapBackup ? backups.map(b => ({ icon: 'swap', label: t('Swap to {0}', exerciseNameText(b)), sub: t('Planned backup, same sets and reps'), onClick: () => onSwapBackup(b.id), disabled: busy })) : []),
         { icon: 'sunrise', label: t('Add warm-up set'), onClick: onAddWarmup },
-        { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), sub: entry.note || undefined, onClick: () => exerciseNoteSheet(entryIdx) },
-        onNoProg && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
-      ] },
-      { title: t('Look it up'), items: [
-        { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
-        { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) },
-      ] },
-      { title: t('Settings'), items: [
-        onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
         onRest && { icon: 'timer', label: t('Rest timer'), sub: restSub, onClick: onRest },
-        plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
-        routineUpdate && { icon: 'clipboard', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
+        { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
       ] },
-      { title: t('Order and supersets'), items: [
-        onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
-        onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
-        onMoveUp && { icon: 'chevronUp', label: t('Move up'), onClick: onMoveUp, disabled: busy || !canMoveUp },
-        onMoveDown && { icon: 'chevronDown', label: t('Move down'), onClick: onMoveDown, disabled: busy || !canMoveDown },
+      { more: [
+        { title: t('Exercise'), items: [
+          onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
+          plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
+          { icon: 'info', label: t('How to do it'), onClick: () => exerciseDetailSheet(ex) },
+          youtubeSearchUrl(ex) && { icon: 'play', label: t('Watch on YouTube'), sub: t('Opens a search for good form'), onClick: () => openExternal(youtubeSearchUrl(ex)) },
+          routineUpdate && { icon: 'clipboard', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
+        ] },
+        { title: t('Order and supersets'), items: [
+          onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
+          onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
+          onMoveUp && { icon: 'chevronUp', label: t('Move up'), onClick: onMoveUp, disabled: busy || !canMoveUp },
+          onMoveDown && { icon: 'chevronDown', label: t('Move down'), onClick: onMoveDown, disabled: busy || !canMoveDown },
+        ] },
+        { title: t('This session'), items: [
+          // Your own form video of the set about to be done (lib/set-videos.js filmTarget). Under
+          // More here: the set's own menu has it on show, one tap from the set number.
+          filmAt >= 0 && { icon: 'camera', label: t('Film a set'), sub: setTitle(entry.sets[filmAt], filmAt), onClick: () => filmSet(filmAt) },
+          onNoProg && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
+        ] },
       ] },
       { items: [
         onRemoveExercise && { icon: 'trash', label: t('Remove exercise'), onClick: onRemoveExercise, danger: true, disabled: busy },
@@ -494,16 +521,15 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const warm = isWarmupRow(s)
     const sideTag = sideTagOf(s)
     const ownRestHere = ownSetRest(entry.sets[setSpanAt(entry.sets, i)[0]])
+    const spanStart = setSpanAt(entry.sets, i)[0]
+    const video = setVideoOf(entry.sets[spanStart])
     menuSheet({
       title: warm ? t('Warm-up') : sideTag ? t('Set {0} ({1})', setNumOf(s, i), sideTag) : t('Set {0}', setNumOf(s, i)),
       subtitle: setLabel(entry.id, s, entry.target, speedUnit),
+      // What you do to a set mid-workout comes first (failure, a drop or a burst on top, a copy);
+      // the phase and the set's own rest are rarer and fold under More (v1.4.4). Remove stays last.
       sections: [
-        // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
-        // only, the kind a warm-up is added as; one work set always stays. A per-side set keeps
-        // its two sides either way (#575), so it goes back and forth like any other.
         { items: [
-          !warm && mode === 'reps' && canBeWarmup(s) && entry.sets.some((x, j) => j !== i && !isWarmupRow(x)) && { icon: 'sunrise', label: t('Make it a warm-up set'), onClick: () => setPhaseAt(i, true) },
-          warm && mode === 'reps' && { icon: 'dumbbell', label: t('Count it as a working set'), onClick: () => setPhaseAt(i, false) },
           // Taken to failure: a toggle with its check, like the menu's other on/off rows. It counts
           // as RIR 0 wherever effort is read, unless a rating was logged on the set. A timed
           // per-side pair is one set, so both halves get it.
@@ -512,15 +538,25 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           // whatever the profile logs, since reps in reserve mean nothing on a treadmill. Stored as
           // `rpe` on the set, which the fatigue model already reads (recovery.js via rirOf).
           !warm && cardio && { icon: 'gauge', label: t('How hard it felt'), sub: s.rpe != null ? t(EFFORT.rpe.hd) + ' ' + fmtNum(s.rpe) : t('Not rated yet'), onClick: () => effortPickerSheet('rpe', s.rpe ?? null, nv => onField(i, 'rpe', nv), { cardio: true }) },
-          // Just this set's rest, this session (#609): a long one before the top set, none after a light one.
-          !editing && { icon: 'timer', label: t('Rest after this set'), sub: ownRestHere == null ? t('Default ({0})', fmtRest(setRestDefault(i))) : ownRestHere === 0 ? t('No timer') : fmtRest(ownRestHere), onClick: () => openSetRest(i) },
-        ] },
-        { title: t('Add to this set'), items: [
           !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) },
           !warm && mode === 'reps' && !isDropSet(s) && { icon: 'bolt', label: t('Rest-pause burst'), sub: t('+ Burst'), onClick: () => addBurstRow(i) },
-        ] },
-        { items: [
           onCopySetAt && { icon: 'copy', label: t('Copy this set'), onClick: () => onCopySetAt(i) },
+          // Your own form video (v1.4.4). Up here rather than under More: it is filmed while the
+          // set happens, one tap from the number; once there is one, the same row plays it.
+          video
+            ? { icon: 'play', label: t('Watch your video'), sub: video.dur != null ? fmtClip(video.dur) : undefined, onClick: () => setVideoAt(spanStart) }
+            : { icon: 'camera', label: t('Film this set'), sub: t('Check your form later'), onClick: () => filmSet(i) },
+        ] },
+        { more: [{ items: [
+          // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
+          // only, the kind a warm-up is added as; one work set always stays. A per-side set keeps
+          // its two sides either way (#575), so it goes back and forth like any other.
+          !warm && mode === 'reps' && canBeWarmup(s) && entry.sets.some((x, j) => j !== i && !isWarmupRow(x)) && { icon: 'sunrise', label: t('Make it a warm-up set'), onClick: () => setPhaseAt(i, true) },
+          warm && mode === 'reps' && { icon: 'dumbbell', label: t('Count it as a working set'), onClick: () => setPhaseAt(i, false) },
+          // Just this set's rest, this session (#609): a long one before the top set, none after a light one.
+          !editing && { icon: 'timer', label: t('Rest after this set'), sub: ownRestHere == null ? t('Default ({0})', fmtRest(setRestDefault(i))) : ownRestHere === 0 ? t('No timer') : fmtRest(ownRestHere), onClick: () => openSetRest(i) },
+        ] }] },
+        { items: [
           { icon: 'trash', label: t('Remove this set'), danger: true, disabled: !editing && entry.sets.length <= setSpanAt(entry.sets, i)[1], onClick: () => onRemoveSetAt(i) },
         ] },
       ],
@@ -796,6 +832,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             </button>
           </div>}
           {loadLine(String(i))}
+          {/* The set's own form video: a badge, and the player right under the row on a tap. */}
+          {!pairTail && setVideoOf(s) && <>
+            <SetVideoBadge m={setVideoOf(s)} open={videoAt === i} onToggle={() => setVideoAt(videoAt === i ? null : i)} />
+            {videoAt === i && <ActiveSetVideo m={setVideoOf(s)} at={{ entry: entryIdx, set: i }} label={setTitle(s, i)} refilmTitle={t('Film {0}', setTitle(s, i))} />}
+          </>}
           {/* Drop-sets and rest-pause bursts extend this same row — no long rest, no new set.
               A planned exercise arrives with these already filled in (applyIntensifierPlan);
               every value here is just as editable as the main row's own weight/reps. */}
@@ -1585,9 +1626,34 @@ function ActiveWorkout() {
     title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
     onConfirm: discardNow,
   })
+  // Which gym this session is at (#808): small in the header, one tap to switch, only with two gyms
+  // or more. A saved workout being edited shows where it was done and does not switch. Switching
+  // mid-session asks first, then moves the sets not done yet onto that gym's plates and dumbbells.
+  const gyms = gymsOf(S)
+  const gymNow = activeGym(S)
+  const gymSwitchable = !editing && !A.backfill && gyms.length > 1
+  const gymShown = editing ? (A.gym?.name || null) : gymSwitchable && gymNow ? gymLabel(gymNow) : null
+  const askSwitchGym = g => {
+    if (!g || g.id === gymNow?.id) return
+    confirmSheet({
+      title: t('Switch to {0}?', gymLabel(g)),
+      message: t('Sets you haven’t done yet move onto the plates, dumbbells and stacks there.'),
+      confirmText: t('Switch'),
+      onConfirm: () => {
+        update(s => { if (switchGym(s, g.id)) reRoundOpenSets(s) })
+        useUI.getState().toast(t('Using {0} equipment', gymLabel(g)))
+      },
+    })
+  }
+  const openGymMenu = () => menuSheet({
+    title: t('Gym'),
+    items: gyms.map(g => ({ icon: 'house', label: gymLabel(g), on: g.id === gymNow?.id, onClick: () => askSwitchGym(g) })),
+  })
   // The header ⋯, in groups: the settings you change at the gym first (their own sheet, the same
-  // values as Settings), then what to add and what to change about this workout. Nothing in it
-  // throws the session away: that is the Finish sheet's (#751).
+  // values as Settings), then what you do to this workout most: add an exercise, write the
+  // session note, switch the layout. Adding a whole routine, renaming and keeping the session out
+  // of progression are once-in-a-while and fold under More (v1.4.4). Nothing in it throws the
+  // session away: that is the Finish sheet's (#751).
   // Layout here stays this session's own (s.active.workoutView); the settings sheet's Layout is
   // the saved one.
   const openViewMenu = () => menuSheet({
@@ -1597,17 +1663,18 @@ function ActiveWorkout() {
           sub: [S.restSec > 0 ? t('{0} rest', fmtRest(S.restSec)) : t('No rest timer'), S.sound ? t('Sound') : t('Silent')].join(' · '),
           onClick: workoutSettingsSheet },
       ] },
-      { title: t('Add'), items: [
-        { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
-        !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
-      ] },
-      { title: t('This workout'), items: [
+      { items: [
         A.backfill && A.entries.length > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), onClick: markAllDone },
-        { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
-        { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
+        { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
         { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
-        noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
+        { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
       ] },
+      { more: [{ items: [
+        !editing && { icon: 'clipboard', label: t('Add routine'), sub: t('Bring another routine into this session'), onClick: addRoutineToSessionSheet },
+        { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
+        gymSwitchable && { icon: 'house', label: t('Gym'), sub: gymNow ? gymLabel(gymNow) : t('Pick a gym'), onClick: openGymMenu },
+        noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
+      ] }] },
     ],
   })
   // An exercise's own rest, from its ⋯ menu: the default, no timer, or a time of its own, as on
@@ -1735,7 +1802,8 @@ function ActiveWorkout() {
   // finish logs 0:38 of a 0:45 target rather than crediting the full prescription — and then
   // checks the set off through the normal path, so rest, supersets and the finish prompt all
   // behave exactly as they do for a reps set.
-  const startTimed = (idx, i, onFocusProgress) => {
+  // `startedAt`/`auto`: a hold the chain started by itself when its count-in ended (lib/auto-holds.js).
+  const startTimed = (idx, i, onFocusProgress, { startedAt = null } = {}) => {
     if (editing) return
     const e = A.entries[idx]
     // This tap may be the only one before the hold's countdown beeps (a timed first exercise):
@@ -1749,13 +1817,16 @@ function ActiveWorkout() {
     // reaches S.workouts (lib/finish-workout.js).
     const plan = (!e.sets[i].done && e.sets[i].planSec) || e.sets[i].sec || 45
     const owner = { idx, i }
-    useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), holdDone(owner, plan, onFocusProgress), { idx, i, id: e.id })
+    // A hold of an exercise whose holds run themselves gets the chain's controls on its bar, also
+    // when it was started by hand: after it the chain carries on by itself.
+    const auto = autoHoldsFor(useStore.getState().S, e.target)
+    useUI.getState().startWork(plan, exerciseNameText(exOr(e.id)), holdDone(owner, plan, onFocusProgress), { idx, i, id: e.id }, { startedAt, auto })
     // After startWork: a hold it displaced has already written its seconds to its own row.
     holdAt = { owner, idx, i }
   }
   // What a hold hands back to its row: on its end, its Done, or a rest displacing it. Also bound
   // again to a hold restored after a reload (useUI.bindWork, below).
-  const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false } = {}) => {
+  const holdDone = (owner, plan, onFocusProgress) => (elapsed, { abandoned = false, chimed = false, endedAt = null } = {}) => {
     const { idx } = owner
     // The row may have moved while the hold ran (a set copied or removed above it): write to
     // where it is now. holdAt is that place (deleteActiveSet, copyActiveSet).
@@ -1775,8 +1846,43 @@ function ActiveWorkout() {
       return
     }
     mutEntry(idx, en => { en.sets[i].sec = elapsed; delete en.sets[i].planSec })
+    const restBefore = useUI.getState().timer
     if (!useStore.getState().S.active.entries[idx].sets[i].done) toggle(idx, i, undefined, { quiet: chimed, onFocusProgress })
+    // Holds that run themselves (lib/auto-holds.js). A hold that ran out while the phone was locked
+    // is heard of late: its set is logged at the time it ended and its rest started then, so the
+    // rest is as far along as it would have been. With no rest after it, the next hold counts in.
+    const late = endedAt && Date.now() - endedAt > 1000 ? endedAt : null
+    if (late) mutEntry(idx, en => { if (en.sets[i]?.done) en.sets[i].at = late })
+    const rest = useUI.getState().timer
+    if (rest && rest !== restBefore && !rest.ready && !rest.paused) { if (late) useUI.getState().backdateRest?.(late); return }
+    useUI.getState().autoAfterHold?.(late || Date.now())
   }
+  // What the chain needs from this screen (store/useUI.js bindAuto): the next hold that starts by
+  // itself, the move to its exercise, its start, and the holds after it for the locked phone.
+  const timedAt = idx => {
+    const live = useStore.getState().S.active
+    const en = live?.entries?.[idx]
+    return !!en && modeOf({ ...(en.target || {}), id: en.id }) === 'time'
+  }
+  const autoStartRef = useRef(null)
+  autoStartRef.current = (owner, startedAt) => {
+    const live = useStore.getState().S.active
+    const en = live?.entries?.[owner.idx]
+    // Only the set it counted in for, while it is still that one and still open.
+    if (!en || en.id !== owner.id || !en.sets?.[owner.i] || en.sets[owner.i].done || useUI.getState().work) return
+    startTimed(owner.idx, owner.i, undefined, { startedAt })
+  }
+  useEffect(() => useUI.getState().bindAuto?.({
+    peek: () => {
+      const live = useStore.getState().S
+      const next = nextAutoHold(live, timedAt)
+      return next && { ...next, label: exerciseNameText(exOr(next.id)) }
+    },
+    focus: owner => { if (!owner.current) update(s => { if (s.active && s.active.entries?.[owner.idx]?.id === owner.id) s.active.cur = owner.idx }) },
+    startHold: (owner, startedAt) => autoStartRef.current?.(owner, startedAt),
+    forecast: owner => forecastHolds(useStore.getState().S, owner, { isTimed: timedAt, switchSec: SWITCH_SIDES_SEC }),
+    stop: () => update(s => { if (s.active) s.active.autoHoldsOff = true }),
+  }), [])
   // A hold that came back from a reload has no handler yet: this screen gives it its own.
   const holdDoneRef = useRef(holdDone)
   holdDoneRef.current = holdDone
@@ -1834,13 +1940,16 @@ function ActiveWorkout() {
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
 
-    // One side of a per-side reps set ticked, the other still to go: the exercise's own break
-    // between sides, when it has one (sideRestFor); none otherwise, as before.
+    // One side of a per-side reps set ticked, the other still to go: the set's own rest when it
+    // has one ("Rest after this set", #853), else the exercise's break between sides
+    // (sideRestFor); none otherwise, as before.
     if (side && !checked) {
-      const row = useStore.getState().S.active?.entries[idx]?.sets[i]
+      const sets = useStore.getState().S.active?.entries[idx]?.sets
+      const row = sets?.[i]
       const other = side === 'L' ? 'R' : 'L'
       if (row?.sides?.[side]?.done && !row.sides[other]?.done) {
-        const pause = sideRestFor(useStore.getState().S.active.entries[idx].target, { timed: false })
+        const ownSec = ownSetRest(sets[setSpanAt(sets, i)[0]])
+        const pause = sideRestFor(useStore.getState().S.active.entries[idx].target, { timed: false, ownSec })
         if (pause > 0) startRest(pause, idx, { kind: 'switch', forSet: i })
       }
     }
@@ -1856,9 +1965,6 @@ function ActiveWorkout() {
       const freshUnitDone = freshUnit?.every(ui => fresh.entries[ui].sets.every(x => x.done))
       const nextUnit = freshUnitDone ? nextUnfinishedUnit(fresh.entries, freshUnits, idx) : null
       const freshWorkoutDone = freshUnitDone && !nextUnit
-      const restBeforeWarmup = nextUnit?.some(ui =>
-        fresh.entries[ui].sets.some(set => isWarmupRow(set) && !set.done),
-      )
       // The rest this set has earned: the exercise's own restSec when it set one, the global
       // timer when it did not, and the longest of the group's across a superset (issue #10).
       // Resolved once here so every branch below times the same break.
@@ -1877,7 +1983,7 @@ function ActiveWorkout() {
       // still the rest you are in, held on purpose, and a re-check leaves it as it is.
       if (!progress.isNew) {
         const rest = useUI.getState().timer
-        if (!restBeforeWarmup && restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
         return
       }
 
@@ -1906,11 +2012,12 @@ function ActiveWorkout() {
       }
 
       // Singleton units are ordinary exercises: they rest between sets and after the closing
-      // one unless the next unit has an unfinished warm-up, and never enter superset navigation.
+      // one (also when the next exercise starts with warm-ups, #853), and never enter superset
+      // navigation.
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
       if (!freshUnit || freshUnit.length <= 1) {
-        if (!restBeforeWarmup && restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
         onFocusProgress?.({ unitDone: freshUnitDone })
         return
       }
@@ -1918,7 +2025,7 @@ function ActiveWorkout() {
       const step = supersetFlowStep(fresh.entries, freshUnit, idx)
       if (!step) { onFocusProgress?.({ unitDone: freshUnitDone }); return }
       if (step.unitDone) {
-        if (nextUnit?.length && !restBeforeWarmup) startRest(restAfter, idx, { forSet: i })
+        if (nextUnit?.length) startRest(restAfter, idx, { forSet: i })
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
         if (step.roundDone) startRest(restAfter, idx, { forSet: i })
@@ -2009,6 +2116,9 @@ function ActiveWorkout() {
       const A = useStore.getState().S.active
       if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
       const restBefore = useUI.getState().timer
+      // Log set on a hold that is running: the hold ends there, with what was held up to the tap.
+      const wk = useUI.getState().work
+      if (wk?.owner && wk.owner.idx === idx && wk.owner.i === i && useUI.getState().finishWorkEarly) { useUI.getState().finishWorkEarly(at || Date.now()); return }
       liveToggleRef.current(idx, i)
       if (!at) return
       mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
@@ -2020,7 +2130,9 @@ function ActiveWorkout() {
     },
     // Next exercise and Skip rest: what this screen's own Next and the rest bar's Skip do.
     next: idx => update(s => { if (s.active && !s.active.editingWorkoutId && s.active.entries?.[idx]) s.active.cur = idx }),
-    restSkip: () => useUI.getState().stopRest(),
+    restSkip: () => (useUI.getState().skipRest || useUI.getState().stopRest)(),
+    // Stop auto on the Lock Screen: the chain ends, as with the bar's own button.
+    autoStop: () => useUI.getState().stopAuto?.(),
     timer: () => useUI.getState().timer,
   }), [])
 
@@ -2209,7 +2321,9 @@ function ActiveWorkout() {
       {editing
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && <LiveHeartRate />}</div></div>
+      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
+        ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
+        : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
       <button className="iconbtn" data-tour="workout-more" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" data-tour="finish" aria-label={editing ? t('Save changes') : undefined}
