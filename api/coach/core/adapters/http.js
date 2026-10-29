@@ -241,24 +241,31 @@ export function httpAdapter(spec) {
       if (!asked) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
       let chosen = substitutes.get(substituteKey(id, base, asked)) || asked;
 
-      const build = () => spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens });
+      const build = () => spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens, base });
       let steps = spec.compat ? (compatProfiles.get(compatKey(id, base, chosen)) || []) : [];
       let body = spec.compat ? applySteps(spec, build(), steps) : build();
       let triedOtherModel = false;
       let transientRetries = 0;
       let firstRefusal = null;
-      // The next rung out of `rungs` that changes the request at all, or null.
-      const nextRung = rungs => {
+      // Every request shape sent in this call, so no rung ever asks the same thing twice.
+      const sent = new Set();
+      // The next rung out of `rungs` that changes the request at all, or null. A 400 that names a
+      // token field already swapped (`undo`) swaps it back: a remembered "tokens" step that the
+      // first guess of the field (#869) has made the wrong way round.
+      const nextRung = (rungs, undo = false) => {
         if (!spec.compat) return null;
         const now = JSON.stringify(body);
         for (const r of rungs) {
-          if (steps.includes(r)) continue;
-          const tried = applySteps(spec, build(), cleanSteps([...steps, r]));
-          if (JSON.stringify(tried) !== now) return { step: r, body: tried };
+          if (steps.includes(r) && !(undo && r === 'tokens')) continue;
+          const next = steps.includes(r) ? steps.filter(x => x !== r) : cleanSteps([...steps, r]);
+          const tried = applySteps(spec, build(), next);
+          const key = JSON.stringify(tried);
+          if (key !== now && !sent.has(key)) return { steps: next, body: tried };
         }
         return null;
       };
       for (;;) {
+        sent.add(JSON.stringify(body));
         let res;
         try {
           res = await reach(spec, base, spec.path(chosen), url => call(fetchImpl, url, {
@@ -283,12 +290,12 @@ export function httpAdapter(spec) {
           // rung for it. A rung that changes nothing (a complaint about a temperature this request
           // never sent) is no retry: asking again would be asking the same wrong thing.
           const named = res.status === 400 ? namedRungs(msg) : null;
-          let rung = named ? nextRung(named) : null;
+          let rung = named ? nextRung(named, true) : null;
           // A 400 that names nothing walks the ladder, on an endpoint that opted in (#804).
           if (!rung && res.status === 400 && !named && spec.compatLadder && !isModelGone(res.status, msg)) rung = nextRung(COMPAT_STEPS);
           if (rung && !(signal && signal.aborted)) {
             if (!firstRefusal) firstRefusal = `${res.status} ${shownError(spec, data, 280)}`;
-            steps = cleanSteps([...steps, rung.step]);
+            steps = rung.steps;
             body = rung.body;
             transientRetries = 0;
             continue;
