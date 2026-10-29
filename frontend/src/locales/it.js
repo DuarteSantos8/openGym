@@ -958,6 +958,7 @@ export default {
   // --- equipment profiles ---
   'Showing all equipment': 'Vengono mostrati tutti gli attrezzi',
   'Showing what you have in "{0}"': 'Viene mostrato ciò che hai in “{0}”',
+  'Not in "{0}": {1} more': 'Non in “{0}”: altri {1}',
   'Show all equipment': 'Mostra tutti gli attrezzi',
   'Filter by "{0}"': 'Filtra per “{0}”',
   'Edit profile': 'Modifica profilo',

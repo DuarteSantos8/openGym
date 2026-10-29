@@ -886,6 +886,7 @@ export default {
   'Filter by "{0}"': 'Szűrés erre: „{0}”',
   'Show all equipment': 'Minden eszköz megjelenítése',
   'Showing what you have in "{0}"': 'Az jelenik meg, ami megvan a(z) „{0}” profilban',
+  'Not in "{0}": {1} more': 'Nincs a(z) „{0}” profilban: még {1}',
   'Showing all equipment': 'Minden eszköz megjelenítve',
   'Move up': 'Feljebb',
   'Move down': 'Lejjebb',

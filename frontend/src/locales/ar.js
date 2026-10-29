@@ -694,6 +694,7 @@ export default {
   'Unpair': 'إلغاء الربط',
   'Showing all equipment': 'عرض جميع المعدات',
   'Showing what you have in "{0}"': 'عرض ما لديك في «{0}»',
+  'Not in "{0}": {1} more': 'ليست في «{0}»: {1} أخرى',
   'Show all equipment': 'عرض جميع المعدات',
   'Filter by "{0}"': 'التصفية حسب «{0}»',
   'Edit profile': 'تعديل الملف',

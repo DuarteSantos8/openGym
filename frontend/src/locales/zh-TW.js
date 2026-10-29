@@ -950,6 +950,7 @@ export default {
   // --- equipment profiles ---
   'Showing all equipment': '目前顯示所有器材',
   'Showing what you have in "{0}"': '目前顯示你在「{0}」擁有的器材',
+  'Not in "{0}": {1} more': '不在「{0}」中：還有 {1} 個',
   'Show all equipment': '顯示全部器材',
   'Filter by "{0}"': '依「{0}」篩選',
   'Edit profile': '編輯器材設定檔',

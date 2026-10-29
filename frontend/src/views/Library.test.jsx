@@ -185,3 +185,37 @@ describe('Library similar exercises', () => {
     expect(new Set(all).size).toBe(all.length)
   })
 })
+
+describe('Library gym filter while searching', () => {
+  const search = (host, text) => {
+    const input = host.querySelector('.search input')
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+    act(() => { setter.call(input, text); input.dispatchEvent(new Event('input', { bubbles: true })) })
+  }
+  const line = host => [...host.querySelectorAll('span')].find(el => el.textContent.startsWith('Not in "Home"'))
+  const homeOnlyDumbbells = () => {
+    mocks.S.equipProfiles = [{ id: 'home', name: 'Home', equipment: ['dumbbell'], accV: 1 }]
+    mocks.S.activeEquipId = 'home'
+    mocks.S.equipFilterOn = true
+  }
+
+  it('says how many matches the gym hid, and shows them all on a tap', () => {
+    homeOnlyDumbbells()
+    const host = render()
+    search(host, 'bench press')
+    const kept = names(host).length
+    expect(line(host).textContent).toMatch(/^Not in "Home": \d+ more$/)
+    expect(Number(line(host).textContent.match(/(\d+) more/)[1])).toBeGreaterThan(0)
+    act(() => line(host).nextSibling.click())
+    expect(line(host)).toBeUndefined()
+    expect(names(host).length).toBeGreaterThan(kept)
+  })
+  it('says nothing while browsing, or when the gym hid none of the matches', () => {
+    homeOnlyDumbbells()
+    const host = render()
+    expect(line(host)).toBeUndefined()
+    search(host, 'dumbbell curl')
+    expect(names(host).length).toBeGreaterThan(0)
+    expect(line(host)).toBeUndefined()
+  })
+})
