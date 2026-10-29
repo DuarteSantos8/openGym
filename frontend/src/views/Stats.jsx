@@ -531,8 +531,15 @@ export function StatsIndex({ sections }) {
   }
   useEffect(() => {
     if (!asked || asked === 'overview' || !sections.some(x => x.value === asked)) return
+    // Once now, and once more when the cards above have drawn their charts and grown: the first
+    // jump alone landed a screen short. Not again if the reader has started scrolling by then.
     const frame = window.requestAnimationFrame(() => go(asked, false))
-    return () => window.cancelAnimationFrame(frame)
+    let moved = false
+    const mark = () => { moved = true }
+    window.addEventListener('touchstart', mark, { passive: true, once: true })
+    window.addEventListener('wheel', mark, { passive: true, once: true })
+    const settle = window.setTimeout(() => { if (!moved) go(asked, false) }, 450)
+    return () => { window.cancelAnimationFrame(frame); window.clearTimeout(settle); window.removeEventListener('touchstart', mark); window.removeEventListener('wheel', mark) }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     let raf = 0
