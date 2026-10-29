@@ -281,7 +281,8 @@ function MuscleBalance({ S }) {
   </>
 
   return <div className="card" data-tour="stats-body">
-    <Segmented className="seg-range" value={view} onChange={setView}
+    {/* sized by their labels: in thirds, "Muscle balance" broke onto two lines at 390px */}
+    <Segmented className="seg-range seg-scroll" value={view} onChange={setView}
       options={[{ value: 'balance', label: t('Muscle balance') }, { value: 'fatigue', label: t('Fatigue') }, { value: 'strength', label: t('Strength') }]} />
     {view === 'balance' ? <>
       <div className="row between" style={{ marginBottom: 8 }}>
