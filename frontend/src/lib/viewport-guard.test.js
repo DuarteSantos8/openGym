@@ -2,11 +2,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { installViewportGuard, realign, realignPinned, viewportDisplacement, keyboardOpen } from './viewport-guard.js'
 
-function fakeWindow({ innerHeight = 800, vvHeight = 800, offsetTop = 0, pageTop = 0, scrollY = 0, active = null, bodyStyle = {} } = {}) {
+function fakeWindow({ innerHeight = 800, vvHeight = 800, offsetTop = 0, pageTop = 0, scrollY = 0, active = null, bodyStyle = {}, scale = 1 } = {}) {
   const listeners = {}
   const on = (map, type, fn) => { (map[type] = map[type] || []).push(fn) }
   const vv = {
-    height: vvHeight, offsetTop, pageTop, listeners: {},
+    height: vvHeight, offsetTop, pageTop, scale, listeners: {},
     addEventListener(t, fn) { on(this.listeners, t, fn) }, removeEventListener() {}
   }
   const doc = {
@@ -22,6 +22,11 @@ function fakeWindow({ innerHeight = 800, vvHeight = 800, offsetTop = 0, pageTop 
 }
 
 describe('viewport guard', () => {
+  it('leaves a pinched-in page alone (the web build zooms since 1.4.5)', () => {
+    const win = fakeWindow({ offsetTop: 190, scale: 2 })
+    expect(realign(win)).toBe(false)
+    expect(win.scrollTo).not.toHaveBeenCalled()
+  })
   it('reads the displacement from either the offset or a page-top that outran scrollY', () => {
     expect(viewportDisplacement(fakeWindow({ offsetTop: 190 }))).toBe(190)
     expect(viewportDisplacement(fakeWindow({ pageTop: 120, scrollY: 0 }))).toBe(120)
