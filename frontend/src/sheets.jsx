@@ -33,7 +33,7 @@ import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
-import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
+import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle } from './lib/muscles.js'
 import { parseImport, mergeImport } from './lib/import-csv.js'
 import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
 import { buildPlanBundle, parsePlan, mergePlan, printPlan, planPrintHTML } from './lib/plan-share.js'
@@ -1100,7 +1100,13 @@ function OneRM({ ex }) {
 
 // A muscle the catalogue credits with nothing (a bench press's biceps, #359) is not one it trains,
 // so it is not shown as a tag either; "By muscle" already leaves the exercise out.
-const trainedBy = ex => { const weights = muscleWeightsOf(ex); return slug => (weights[slug] || 0) !== 0 }
+const trainedBy = ex => {
+  const weights = muscleWeightsOf(ex)
+  return name => {
+    const slug = canonicalMuscle(name)
+    return slug != null && (weights[slug] || 0) !== 0
+  }
+}
 // The detail page's tags: body part, main muscles, equipment, then up to three helpers. A word
 // says once what it says: the body part "Chest" and the main muscle "Chest" of a bench press
 // were two tags (QA 10-06), and a helper never repeats a main muscle.
@@ -1121,17 +1127,47 @@ export function detailTags(ex) {
     out.push({ key: out.length, label, ...extra })
     return true
   }
-  // A body part that is also a drawable muscle (Chest, Back is not) carries the same
-  // percentage as that muscle, so the primary does not have to be printed twice.
-  const bpPct = (weights[ex.bp] || 0) !== 0 ? ' ' + pctOf(ex.bp) : ''
+  // A body part that is also a (possibly aliased) muscle carries that muscle's percentage,
+  // so the primary is not printed twice.
+  const bpSlug = canonicalMuscle(ex.bp)
+  // Only fold the percentage into the body-part tag when it would otherwise be printed
+  // twice (same word, like "Chest"/"Chest"). Otherwise the muscle tag keeps it.
+  const sameWord = bpSlug != null && t(ex.bp).trim().toLocaleLowerCase() === t(MUSCLE_NAME[bpSlug] || bpSlug).trim().toLocaleLowerCase()
+  const bpPct = sameWord && bpSlug && (weights[bpSlug] || 0) !== 0 ? ' ' + pctOf(bpSlug) : ''
   add(t(ex.bp) + bpPct, { acc: true }, t(ex.bp))
-  if (ex.bp === 'cardio') add(t(MUSCLE_NAME['cardiovascular system']), { icon: 'figureStrength' })
-  else for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : [])).filter(trainedBy(ex))) add(t(MUSCLE_NAME[s] || s) + ' ' + pctOf(s), { icon: 'figureStrength' }, t(MUSCLE_NAME[s] || s))
+  if (ex.bp === 'cardio') {
+    const cardioPct = (weights['cardiovascular system'] || 0) !== 0 ? ' ' + pctOf('cardiovascular system') : ''
+    add(t(MUSCLE_NAME['cardiovascular system']) + cardioPct, { icon: 'figureStrength' }, t(MUSCLE_NAME['cardiovascular system']))
+  }
+  for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : [])).filter(trainedBy(ex))) {
+    const slug = canonicalMuscle(s)
+    if (!slug) continue
+    add(t(MUSCLE_NAME[slug] || slug) + ' ' + pctOf(slug), { icon: 'figureStrength' }, t(MUSCLE_NAME[slug] || slug))
+  }
   add(t(ex.eq), { icon: 'kettlebell' })
-  let helpers = 0
+  // Secondary muscles: at most three tags in total, "Other" included. So when there are
+  // more than three distinct helpers, two are shown individually and the rest are folded
+  // into "Other" (whose percentage is their combined share).
+  const secondarySlugs = []
+  const seenSecondary = new Set()
   for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex))) {
-    if (helpers >= 3) break
-    if (add(t(MUSCLE_NAME[s] || s) + ' ' + pctOf(s), undefined, t(MUSCLE_NAME[s] || s))) helpers++
+    const slug = canonicalMuscle(s)
+    if (!slug) continue
+    const label = t(MUSCLE_NAME[slug] || slug)
+    if (seen.has(label.toLocaleLowerCase()) || seenSecondary.has(label.toLocaleLowerCase())) continue
+    seenSecondary.add(label.toLocaleLowerCase())
+    secondarySlugs.push({ slug, label })
+  }
+  const hasOther = secondarySlugs.length > 3
+  const shownSecondaries = hasOther ? secondarySlugs.slice(0, 2) : secondarySlugs.slice(0, 3)
+  let otherWeight = 0
+  for (const { slug } of (hasOther ? secondarySlugs.slice(2) : [])) otherWeight += (weights[slug] || 0)
+  for (const { slug, label } of shownSecondaries) {
+    add(label + ' ' + pctOf(slug), undefined, label)
+  }
+  if (hasOther && otherWeight > 0 && total > 0) {
+    const otherPct = Math.round(otherWeight / total * 100)
+    if (otherPct > 0) add(t('Other') + ' ' + otherPct + '%')
   }
   return out
 }
