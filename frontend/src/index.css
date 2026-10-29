@@ -2707,3 +2707,4 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .wr-home{position:relative;overflow:hidden;background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 24%,var(--surface)),var(--surface) 72%)}
 .wr-home .ttl{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
 .wr-home .wr-x{position:absolute;top:8px;inset-inline-end:8px}
+.stp .val .stp-word{font-weight:600;min-width:2.5em;text-align:center;display:inline-block}

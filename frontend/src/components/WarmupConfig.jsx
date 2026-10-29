@@ -77,7 +77,7 @@ export default function WarmupConfig({ st, ex, c, setC }) {
       {rows.map((r, i) => <div className="row cfgrow warmup-row" key={i} style={{ marginBottom: 6, alignItems: 'flex-end' }}>
         <Stepper label={t('Warm-up {0}', i + 1)} value={r.wb ? 0 : r.wp} step={5} min={lowest} max={OWN_PCT_MAX} decimal={false}
           ariaLabel={t('Warm-up {0}', i + 1) + ': ' + pctLabel(r)}
-          unit={r.wb ? t('Bar') : r.wp === 0 ? t('Body') : '%'}
+          unit="%" display={r.wb ? t('Bar') : r.wp === 0 ? t('Body') : undefined}
           onChange={v => setRows(rows.map((x, j) => j !== i ? x : v <= 0 ? (floor > 0 ? { wb: true, r: x.r } : { wp: 0, r: x.r }) : { wp: Math.max(5, v), r: x.r }))} />
         <Stepper label={t('Reps')} value={r.r} step={1} min={1} max={30} decimal={false}
           onChange={v => setRows(rows.map((x, j) => j !== i ? x : { ...x, r: Math.max(1, Math.round(v) || 1) }))} />
