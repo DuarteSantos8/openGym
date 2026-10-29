@@ -1332,14 +1332,15 @@ export function detailTags(ex) {
   }
   const hasOther = secondarySlugs.length > 3
   const shownSecondaries = hasOther ? secondarySlugs.slice(0, 2) : secondarySlugs.slice(0, 3)
+  const omitted = hasOther ? secondarySlugs.slice(2) : []
   let otherWeight = 0
-  for (const { slug } of (hasOther ? secondarySlugs.slice(2) : [])) otherWeight += (weights[slug] || 0)
+  for (const { slug } of omitted) otherWeight += (weights[slug] || 0)
   for (const { slug, label } of shownSecondaries) {
     add(label + ' ' + pctOf(slug), undefined, label)
   }
   if (hasOther && otherWeight > 0 && total > 0) {
     const otherPct = Math.round(otherWeight / total * 100)
-    if (otherPct > 0) add(t('Other') + ' ' + otherPct + '%')
+    if (otherPct > 0) add(t('Other') + ' ' + otherPct + '%', { other: omitted.map(({ slug, label }) => ({ slug, label, pct: pctOf(slug) })) })
   }
   return out
 }
@@ -1355,6 +1356,7 @@ function ExerciseDetail({ ex, close }) {
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
+  const [showOther, setShowOther] = useState(false)
   const flipFav = () => {
     let on = false
     update(s => { on = toggleFav(s, ex.id) })
@@ -1370,8 +1372,16 @@ function ExerciseDetail({ ex, close }) {
     </div>
     <Media ex={ex} />
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
-      {detailTags(ex).map(tg => <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>)}
+      {detailTags(ex).map(tg => tg.other
+        ? <button key={tg.key} type="button" className="tag" onClick={() => setShowOther(v => !v)} aria-expanded={showOther}>{tg.label}</button>
+        : <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>)}
     </div>
+    {showOther && (() => {
+      const other = detailTags(ex).find(tg => tg.other)?.other || []
+      return <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '0 0 10px' }}>
+        {other.map((m, i) => <span key={i} className="tag dim">{m.label} {m.pct}</span>)}
+      </div>
+    })()}
     <ExerciseAliasesEditor key={ex.id} ex={ex} />
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {/* One line of text that wraps as a sentence: as a flex row, the last session became a
