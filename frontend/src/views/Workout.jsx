@@ -2105,6 +2105,8 @@ function ActiveWorkout() {
     },
     finish: () => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow() },
     discard: () => { if (!useStore.getState().S.active?.editingWorkoutId) discardNow() },
+    // The watch ended the workout as forgotten while it was being logged here (#904): kept running.
+    idleKept: () => useUI.getState().toast(t('Your watch thought this workout was forgotten. It keeps going here.')),
   }), [])
 
   // The Lock Screen's Done (lib/live-activity.js) ticks its set through this same toggle, as if

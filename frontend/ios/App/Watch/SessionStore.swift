@@ -753,8 +753,54 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         case .ask:
             if !askDone { askDone = true; Haptics.ask() }
         case .end:
+            confirmEnd(wid: w.id, since: since, last: last)
+        }
+    }
+
+    /// The phone being asked whether the workout goes on there.
+    private var askingPhone = false
+
+    /// Before a workout ends as forgotten, the phone has its say (#904): the watch's copy can be
+    /// stale (snapshots that never reached it), and it ended a workout being logged set by set on
+    /// the phone. The phone's native side answers from its newest snapshot, also while its page
+    /// sleeps. No answer: the watch only asks, never ends (Idle.verdict).
+    private func confirmEnd(wid: String?, since: Double, last: Double) {
+        guard !askingPhone else { return }
+        guard WCSession.isSupported(), WCSession.default.activationState == .activated, WCSession.default.isReachable else {
+            settleIdle(wid: wid, since: since, last: last, reply: nil)
+            return
+        }
+        askingPhone = true
+        WCSession.default.sendMessage(["idleCheck": wid ?? ""], replyHandler: { [weak self] answer in
+            let reply = Idle.PhoneReply(wid: answer["wid"] as? String, activeAt: (answer["activeAt"] as? NSNumber)?.doubleValue)
+            DispatchQueue.main.async {
+                self?.askingPhone = false
+                self?.settleIdle(wid: wid, since: since, last: last, reply: reply)
+            }
+        }, errorHandler: { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.askingPhone = false
+                self?.settleIdle(wid: wid, since: since, last: last, reply: nil)
+            }
+        })
+    }
+
+    private func settleIdle(wid: String?, since: Double, last: Double, reply: Idle.PhoneReply?) {
+        // Finished, discarded or replaced while the phone was being asked: nothing to settle.
+        guard let w = workout, w.id == wid, holdEndsAt == nil, restEndsAt == nil else { return }
+        // Used on the phone since: the idle clock counts from then, like a change from the phone.
+        if let r = reply, r.wid == wid, let at = r.activeAt, at > since {
+            let phoneAt = Date(timeIntervalSince1970: at / 1000)
+            if activityAt.map({ $0 < phoneAt }) ?? true { activityAt = phoneAt }
+        }
+        switch Idle.verdict(since: since, now: Date().timeIntervalSince1970 * 1000, wid: wid, reply: reply) {
+        case .active:
             askDone = false
-            finish(at: Date(timeIntervalSince1970: last / 1000))
+        case .ask:
+            if !askDone { askDone = true; Haptics.ask() }
+        case .end:
+            askDone = false
+            finish(at: Date(timeIntervalSince1970: last / 1000), idle: true)
         }
     }
 
@@ -766,11 +812,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
     /// ended (a workout left running ends at its last set), else now.
-    func finish(at end: Date = Date()) {
+    func finish(at end: Date = Date(), idle: Bool = false) {
         closeRest(at: end)
         let now = end.timeIntervalSince1970 * 1000
         let ended = workout
-        let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString)
+        let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString, idle: idle)
         guard let ev = event else { return }
         if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
         ran(ended?.id)

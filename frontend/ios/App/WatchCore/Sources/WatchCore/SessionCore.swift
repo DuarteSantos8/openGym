@@ -306,7 +306,9 @@ enum SessionCore {
     }
 
     /// The session finished here, or discarded here (the phone drops it unsaved).
-    static func finish(_ s0: SessionState, at: Double, id: String, discard: Bool = false) -> (SessionState, Event?) {
+    /// `idle`: ended as forgotten (Idle), not by a tap: the phone checks it against its own log
+    /// before it saves anything (frontend lib/watch-sync.js staleWatchFinish, #904).
+    static func finish(_ s0: SessionState, at: Double, id: String, discard: Bool = false, idle: Bool = false) -> (SessionState, Event?) {
         guard let w = s0.workout else { return (s0, nil) }
         var s = s0
         s.workout = nil
@@ -314,7 +316,9 @@ enum SessionCore {
         s.skipped = nil
         s.startedHere = nil
         if let wid = w.id { s.finishedHere = Array((s.finishedHere + [wid]).suffix(5)) }
-        return (s, ["id": id, "type": discard ? "discard" : "finish", "wid": w.id ?? "", "at": at])
+        var event: Event = ["id": id, "type": discard ? "discard" : "finish", "wid": w.id ?? "", "at": at]
+        if idle && !discard { event["idle"] = true }
+        return (s, event)
     }
 
     /// The set to do next in an exercise: the one picked, or the first not done.
@@ -425,11 +429,13 @@ enum Idle: Equatable {
     static let askAfter: Double = 20 * 60 * 1000
     static let endAfter: Double = 45 * 60 * 1000
 
-    /// When the last set was logged, here or on the phone (one side of a per-side set counts),
-    /// else when the workout started; nil when it says neither.
+    /// When the last set was logged, here or on the phone (one side of a per-side set counts), or
+    /// the phone was last used in the workout (its `activeAt`: an edit, the app opened, #904),
+    /// whichever is later; else when the workout started; nil when it says none of them.
     static func lastSet(_ w: ActiveWorkout) -> Double? {
         let ticks = w.entries.flatMap { $0.sets }.compactMap { $0.at }.filter { $0 > 0 }
-        return ticks.max() ?? w.start.flatMap { $0 > 0 ? $0 : nil }
+        let phone = w.activeAt.flatMap { $0 > 0 ? $0 : nil }
+        return [ticks.max(), phone].compactMap { $0 }.max() ?? w.start.flatMap { $0 > 0 ? $0 : nil }
     }
 
     /// What idle time counts from: the newest of the last set, when this watch picked the workout
@@ -443,6 +449,28 @@ enum Idle: Equatable {
     static func state(since: Double, now: Double) -> Idle {
         let idle = now - since
         return idle >= endAfter ? .end : idle >= askAfter ? .ask : .active
+    }
+
+    /// What the phone answers when the watch asks before ending a workout as forgotten: the workout
+    /// it runs and when it was last used in it (its newest snapshot, read by the phone app's native
+    /// side, so the answer comes even while the page sleeps).
+    struct PhoneReply: Equatable {
+        var wid: String?
+        var activeAt: Double?
+    }
+
+    /// The watch's copy can be stale: in #904 no snapshot had reached it for 45 minutes while sets
+    /// were ticked on the phone, and it ended that workout. So `.end` is only the watch's to call
+    /// once the phone has had its say:
+    ///   no answer (out of reach, no reply)       ask, never end: the lifter decides
+    ///   the phone runs another workout, or none  end: nothing of this one goes on there
+    ///   the phone used it since                  counted from then, like a set logged here
+    static func verdict(since: Double, now: Double, wid: String?, reply: PhoneReply?) -> Idle {
+        let alone = state(since: since, now: now)
+        guard alone == .end else { return alone }
+        guard let r = reply else { return .ask }
+        guard r.wid != nil, r.wid == wid else { return .end }
+        return state(since: max(since, r.activeAt ?? 0), now: now)
     }
 }
 
