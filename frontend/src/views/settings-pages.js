@@ -109,6 +109,7 @@ export const SEARCH = [
   { page: 'plan', title: 'How you train', icon: 'repeat', tint: 'var(--orange)', kw: 'scheduling schedule rotation fixed week split loop round cycle', opts: ['Fixed Week', 'Rotation'] },
   { page: 'plan', title: 'Workouts per week', icon: 'target', tint: 'var(--green)', kw: 'target goal sessions per week rotation left countdown remaining', when: c => c.rotation },
   { page: 'plan', title: 'Week starts on', icon: 'calendar', tint: 'var(--orange)', kw: 'monday sunday first day week', opts: ['Monday', 'Sunday'], tkw: () => t('week start') },
+  { page: 'plan', title: 'Weekly sets per muscle', icon: 'slider', tint: 'var(--teal)', kw: 'volume sets per week muscle target range mev mrv hypertrophy landmarks' },
   { page: 'plan', title: 'Load starter plan', icon: 'clipboard', tint: 'var(--green)', kw: 'starter template beginner program routine' },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },
@@ -137,6 +138,7 @@ export const SEARCH = [
   { page: 'look', title: 'Set up an NFC sticker', icon: 'nfc', tint: 'var(--blue)', kw: 'nfc sticker tag tap check in start workout locker machine', when: c => !!c.nfc },
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', kw: 'weight card home' },
   { page: 'look', title: 'Recovery tips', icon: 'figureStrength', tint: 'var(--green)', kw: 'recovery recovering rest muscle fatigue hint tip card home sore' },
+  { page: 'look', title: 'Weekly sets on Home', icon: 'figureStrength', tint: 'var(--teal)', kw: 'weekly sets muscle volume range home card line' },
   { page: 'look', title: 'Monthly challenges', icon: 'target', tint: 'var(--orange)', kw: 'challenge challenges monthly month goal goals badge badges trophy motivation' },
   { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', kw: 'seasonal season holiday halloween christmas advent calendar snow theme decoration' },
   // Seasonal themes

@@ -2295,6 +2295,23 @@ export const PT_BR_OVERRIDES = {
   "A word about this set": "Uma palavra sobre esta série",
   "Grip slipped, a little twinge, felt easy…": "A pegada escorregou, uma fisgada, pareceu fácil…",
   "Note: {0}": "Nota: {0}",
+  "room for more": "tem espaço para mais",
+  "in range": "dentro da faixa",
+  "above range": "acima da faixa",
+  "{0}: {1} sets this week, range {2} to {3}": "{0}: {1} séries nesta semana, faixa de {2} a {3}",
+  "Sets per muscle this week": "Séries por músculo nesta semana",
+  "Ranges": "Faixas",
+  "In range: {0} of {1} main muscles. A supporting muscle counts as a bit under half a set.": "Dentro da faixa: {0} de {1} músculos principais. Um músculo auxiliar conta um pouco menos de meia série.",
+  "Most room this week: {0}, {1} of {2}–{3} sets": "Mais espaço nesta semana: {0}, {1} de {2}–{3} séries",
+  "Every main muscle is in range this week. Tidy.": "Todos os músculos principais dentro da faixa nesta semana. Caprichado.",
+  "Weekly sets per muscle": "Séries semanais por músculo",
+  "Starting points from hypertrophy research: below the low end is room for more, past the high end extra sets stop paying. Tweak them to fit you.": "Pontos de partida da pesquisa sobre hipertrofia: abaixo do mínimo tem espaço para mais, acima do máximo as séries extras param de compensar. Ajuste do seu jeito.",
+  "{0}: low end": "{0}: mínimo",
+  "{0}: high end": "{0}: máximo",
+  "Back to the defaults": "Voltar aos padrões",
+  "Weekly sets on Home": "Séries semanais no Início",
+  "The muscle with the most room left this week, under your streak.": "O músculo com mais espaço nesta semana, embaixo da sua sequência.",
+  "The range each muscle aims for": "A faixa que cada músculo busca",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

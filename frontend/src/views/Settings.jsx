@@ -23,6 +23,7 @@ import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
 import { speak, speechSupported, SPEECH_RATES, speechRateOf } from '../lib/speech.js'
 import { sampleCue } from '../lib/spoken-cues.js'
+import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -810,6 +811,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
       </Section>
       <Section>
+        {/* The target range of weekly sets for each main muscle (lib/muscle-targets.js). */}
+        <Row icon="slider" iconTint="var(--teal)" title={t('Weekly sets per muscle')} subtitle={t('The range each muscle aims for')} accessory="chevron" onClick={muscleTargetsSheet} />
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
       </Section>
     </>,
@@ -978,6 +981,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
         {/* Three goals a month on Home, sized to how you train (lib/challenges.js). Off: no card,
             no Stats progress; badges already earned stay on the shelf. */}
+        {/* This week's sets for the muscle with the most room, under the streak (components/WeeklySets.jsx). */}
+        <Row icon="figureStrength" iconTint="var(--teal)" title={t('Weekly sets on Home')}
+          subtitle={t('The muscle with the most room left this week, under your streak.')}>
+          <Switch aria-label={t('Weekly sets on Home')} checked={S.homeMuscleSets === true} onChange={v => update(s => { s.homeMuscleSets = v })} />
+        </Row>
         <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
           subtitle={t('Three goals a month on Home, sized to how you train.')}>
           <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v })} />

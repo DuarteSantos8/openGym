@@ -44,6 +44,15 @@ workout is saved, and appears in History under that exercise's sets. It goes int
 (a new set_note column) and the MCP bridge's get_workout, and it reaches the Coach the way your
 workout notes already do.
 
+**Weekly sets per muscle, against a target range.** A new Stats card lists this week's working
+sets for each main muscle next to the range it aims for, "Chest 14 / 10–20", with a bar that shows
+the range: room for more, in range or above range, never a telling-off. A set counts fully for the
+muscles it mainly trains and a bit under half for the ones that help (the same weights as the
+muscle map and the fatigue model), warm-ups don't count. The ranges start from hypertrophy
+research (roughly the minimum that grows a muscle to the most you can recover from) and each one
+is yours to change under Settings → Plan & schedule → Weekly sets per muscle. Settings → Look &
+Home → Weekly sets on Home adds one line under your streak: the muscle with the most room left.
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic

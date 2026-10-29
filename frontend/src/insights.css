@@ -17,3 +17,22 @@
 .setnote-mark{margin-inline-start:3px;font-size:11px;color:var(--yellow);vertical-align:-1px}
 .setnote-hist{margin-top:3px;display:flex;gap:4px;align-items:baseline}
 .setnote-hist .icn{flex:none;font-size:11px;color:var(--yellow);transform:translateY(1px)}
+
+/* Weekly sets per muscle (components/WeeklySets.jsx): one line per muscle, the range as a band
+   on the bar and the week's sets as its fill. */
+.wsets-row{padding:7px 0;border-top:1px solid var(--sep)}
+.wsets-row:first-of-type{border-top:0}
+.wsets-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.wsets-name{font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wsets-num{flex:none;font-variant-numeric:tabular-nums;color:var(--label-2);font-size:14px}
+.wsets-num b{color:var(--label);font-weight:600}
+.wsets-bar{position:relative;height:8px;margin:6px 0 3px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.wsets-band{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--green) 22%,transparent)}
+.wsets-fill{position:absolute;top:2px;bottom:2px;inset-inline-start:0;border-radius:3px;opacity:.9}
+.wsets-st{font-size:12px}
+.wsets-home{display:flex;align-items:center;gap:8px;width:100%;margin-top:8px;padding:8px 0 0;border:0;border-top:1px solid var(--sep);background:none;color:var(--label-2);font:inherit;font-size:13px;text-align:start;cursor:pointer}
+.wsets-home .icn:first-child{color:var(--green);flex:none}
+.wsets-home span{flex:1;min-width:0}
+.wsets-edit{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--sep)}
+.wsets-edit-n{flex:1;min-width:0;font-weight:500}
+.wsets-edit .stp{flex:none;width:118px}
