@@ -378,5 +378,10 @@
         <intent>
             <action android:name="android.media.action.VIDEO_CAPTURE" />
         </intent>
+        <!-- Spoken cues (SpeechCue.java): the phone's text-to-speech engine is another app, and
+             since Android 11 the app cannot bind to it without saying so here. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
     </queries>
 </manifest>

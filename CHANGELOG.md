@@ -20,6 +20,14 @@ counts its planned days, the same numbers as the streak card. A rotation has no 
 so Settings → Plan & schedule → Workouts per week gives it a target to count against (off says
 nothing). The widget snapshot carries it too, for the widgets to pick up.
 
+**Spoken cues.** Settings → Timer alerts → Spoken cues (off until you want it) gives the timer a
+voice, so the phone can stay on the bench: it says your next set as the rest starts ("Set 3, 80
+kilos, 8 reps", with the exercise's name when it changes), "10 seconds" before a rest ends, "Rest
+is over", and counts holds down, 3, 2, 1, go, the ones that start by themselves included. In the
+app's language, slow, normal or fast, with a Try it button. The apps use the phone's own voice
+and your music only turns down for a moment, it never stops; a browser uses its built-in voice.
+Only while the app is on screen: a locked phone still gets the end tone and the notification.
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic

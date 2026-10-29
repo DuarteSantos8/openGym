@@ -21,6 +21,8 @@ import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
+import { speak, speechSupported, SPEECH_RATES, speechRateOf } from '../lib/speech.js'
+import { sampleCue } from '../lib/spoken-cues.js'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -451,6 +453,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     nfc: nfcOK,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
     rotation: scheduleModeOf(S) === 'rotation' && !externalQ,
+    spokenCues: S.spokenCues === true,
   }
   const mode = scheduleModeOf(S)
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
@@ -748,6 +751,25 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="sun" iconTint="var(--yellow)" title={t('Flash the screen')}>
             <Switch checked={!!S.timerFlash} onChange={v => update(s => { s.timerFlash = v })} />
           </Row>
+        </Section>
+        {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
+            over" and the count of a hold, in the app's language. The phone's own voice in the
+            apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
+        <Section title={t('Spoken cues')} footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
+          <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
+            subtitle={t('Says your next set, “10 seconds” and “Rest is over”, and counts holds down.')}>
+            <Switch aria-label={t('Spoken cues')} checked={S.spokenCues === true} disabled={!speechSupported()}
+              onChange={v => { update(s => { s.spokenCues = v }); if (v) speak(sampleCue(S.unit), { rate: SPEECH_RATES[speechRateOf(S)] }) }} />
+          </Row>
+          {S.spokenCues === true && <>
+            <Row icon="speaker" iconTint="var(--teal)" title={t('Speaking rate')}>
+              <Segmented className="seg-inline"
+                options={[{ value: 'slow', label: t('Slow') }, { value: 'normal', label: t('Normal') }, { value: 'fast', label: t('Fast') }]}
+                value={speechRateOf(S)} onChange={v => { update(s => { s.speechRate = v }); speak(sampleCue(S.unit), { rate: SPEECH_RATES[v], queue: false }) }} />
+            </Row>
+            <Row icon="play" iconTint="var(--green)" title={t('Try it')} accessory="chevron"
+              onClick={() => speak(sampleCue(S.unit), { rate: SPEECH_RATES[speechRateOf(S)], queue: false })} />
+          </>}
         </Section>
       </>
     },
