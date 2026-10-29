@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
@@ -50,6 +50,7 @@ import { buildPlanBundle, buildProgrammeBundle, parsePlan, mergePlan } from './l
 import PrintPlanSheet from './components/PrintPlanSheet.jsx'
 import { printWorkout } from './lib/report-print.js'
 import { estimate1RM, best1RM, is1RMRecord, REP_CAP, formulaOf, FORMULA_NAMES } from './lib/onerm.js'
+import { setTrendOn, setTrendsFor, lastTimeBefore, trendGlyph, trendLabel } from './lib/set-trend.js'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep } from './lib/dumbbells.js'
@@ -3061,13 +3062,28 @@ function WorkoutDetail({ w, close }) {
   const times = entryTimes(w)
   // Tapping an exercise opens its history (Discord 'Improvement ideas'): from one session to the
   // curve it sits on, which is the question a past workout raises most often.
+  // Each set as logged, with its arrow against the same set last time (#907, lib/set-trend.js):
+  // last time as the log stood before this workout, so an old one is never held against a later.
+  const trendsOn = setTrendOn(st)
+  const detailSets = e => {
+    const ve = viewEntry(st, e)
+    const last = trendsOn ? lastTimeBefore(st, w, e) : null
+    const trends = last ? setTrendsFor(ve, viewEntry(st, { ...last, id: e.id }), { formula: formulaOf(st) }) : []
+    const unit = exUnitOf(st, e.id)
+    const shown = ve.sets.map((s, j) => [s, j]).filter(([s]) => hasCompletedWork(s))
+    if (!shown.length) return t('no sets')
+    return shown.map(([s, j], k) => <Fragment key={j}>
+      {k > 0 && '  ·  '}
+      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}</span>
+    </Fragment>)
+  }
   const entryRow = (e, i) => {
     const ex = EXIDX[e.id]
     return <div key={i} className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
       {ex && <button type="button" className="wd-thumb" aria-label={t('Details')} onClick={ev => { ev.stopPropagation(); exerciseDetailSheet(ex) }}><Thumb ex={ex} /></button>}
       <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
         {/* An exercise in a unit of its own (#657) reads in it, and says which. */}
-        <div className="ss">{viewEntry(st, e).sets.filter(hasCompletedWork).map(s => setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)).join('  ·  ') || t('no sets')}{exUnitTag(st, e.id)}</div>
+        <div className="ss">{detailSets(e)}{exUnitTag(st, e.id)}</div>
         {times[i] > 0 && <div className="small dim" style={{ marginTop: 3 }}>
           <Icon name="timer" style={{ fontSize: 12, marginInlineEnd: 4, verticalAlign: '-1px' }} />{fmtDur(Math.max(times[i], 60000))}
         </div>}

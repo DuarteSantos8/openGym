@@ -68,6 +68,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Rest between warm-ups', icon: 'timer', tint: 'var(--yellow)', kw: 'warm-up warmup ramp rest break timer shorter no rest' },
   { page: 'workout', title: 'Effort per set', icon: 'gauge', tint: 'var(--purple)', kw: 'rir rpe effort reps in reserve difficulty', opts: ['RIR', 'RPE'] },
   { page: 'workout', title: 'Shown under each exercise', icon: 'history', tint: 'var(--blue)', kw: 'last time best set reference previous', opts: ['Last time', 'Best set'] },
+  { page: 'workout', title: 'Compare sets with last time', icon: 'arrowUp', tint: 'var(--green)', kw: 'arrow trend last time previous better worse same set compare up down' },
   { page: 'workout', title: 'Layout', icon: 'layout', tint: 'var(--blue)', kw: 'workout view cards list compact', opts: ['Cards', 'List', 'Compact'] },
   { page: 'workout', title: 'Collapse completed exercises', icon: 'minimize', tint: 'var(--teal)', kw: 'collapse fold minimize hide done finished completed exercises list compact remaining left to do' },
   { page: 'workout', title: 'Skip completed exercises', icon: 'skipForward', tint: 'var(--teal)', kw: 'skip jump done finished completed exercises cards focus next previous' },

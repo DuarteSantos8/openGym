@@ -4,6 +4,16 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased (v1.4.5)
+
+**Every set against last time** (#907, thanks @lodepav for the idea and the first version). A
+finished set now wears a small ↑, = or ↓ on its number: the same set last time, weight first and
+then reps, and when those pull apart (heavier but fewer) the estimated 1RM settles it. On an
+assisted machine less help counts as more, holds go by seconds and cardio by minutes. Saved
+workouts in History get the arrows too, held against the workout before them, never a later one.
+Screen readers hear it in words ("2.5 kg more than last time"). Settings → Workout → Compare sets
+with last time switches it off.
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic

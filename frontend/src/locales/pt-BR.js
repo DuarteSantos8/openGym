@@ -2246,6 +2246,22 @@ export const PT_BR_OVERRIDES = {
   "Bar": "Barra",
   "{0} change made to this workout": "{0} alteração neste treino",
   "{0} changes made to this workout": "{0} alterações neste treino",
+  "{0} more than last time": "{0} a mais que da última vez",
+  "{0} less than last time": "{0} a menos que da última vez",
+  "{0} less help than last time": "{0} a menos de ajuda que da última vez",
+  "{0} more help than last time": "{0} a mais de ajuda que da última vez",
+  "{0} more rep than last time": "{0} rep. a mais que da última vez",
+  "{0} more reps than last time": "{0} rep. a mais que da última vez",
+  "{0} rep fewer than last time": "{0} rep. a menos que da última vez",
+  "{0} reps fewer than last time": "{0} rep. a menos que da última vez",
+  "Better estimated 1RM than last time": "1RM estimado melhor que da última vez",
+  "Lower estimated 1RM than last time": "1RM estimado mais baixo que da última vez",
+  "{0} longer than last time": "{0} a mais que da última vez",
+  "{0} shorter than last time": "{0} a menos que da última vez",
+  "Faster than last time": "Mais rápido que da última vez",
+  "Slower than last time": "Mais lento que da última vez",
+  "Compare sets with last time": "Comparar séries com a última vez",
+  "A small ↑, = or ↓ on each set you finish, in the workout and in History.": "Um pequeno ↑, = ou ↓ em cada série que você termina, no treino e no histórico.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

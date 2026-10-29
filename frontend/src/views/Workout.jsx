@@ -67,6 +67,8 @@ import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
 import { exView, viewEntry, inEntryUnit } from '../lib/ex-unit.js'
+import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-trend.js'
+import { formulaOf } from '../lib/onerm.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -249,6 +251,14 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // The routine's own last session of this exercise (or any, for a routine that has none), the
   // same one the rows and the progression line were built from (#216).
   const last = lastEntryFor(H, entry.id, entry.rid)
+  // Each finished set against the same set last time (#907, lib/set-trend.js): a small arrow on
+  // the set's number, said in words to a screen reader. Settings → Workout can switch it off.
+  const trends = setTrendOn(S) ? setTrendsFor(entry, last, { formula: formulaOf(S) }) : null
+  const trendMark = i => {
+    const tr = trends?.[i]
+    return tr ? <span className={'settrend ' + (tr.dir > 0 ? 'up' : tr.dir < 0 ? 'down' : 'same')} aria-hidden="true">{trendGlyph(tr)}</span> : null
+  }
+  const trendSay = (i, label) => (trends?.[i] ? label + ', ' + trendLabel(trends[i], S.unit) : label)
   const standingNote = exNoteFor(S, entry.id)
   // Only worth surfacing while there is still work left: once the exercise is finished, a note
   // telling you what to do in it is behind you, and the block is already long.
@@ -712,7 +722,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const failSay = (s, label) => isFailureSet(s) ? label + ', ' + t('Taken to failure') : label
   const plainRow = (s, i) => (
     <div ref={el => onSetRowRef?.(i, el)} data-tour="set" className={'setrow' + (s.done ? ' done' : '') + (col3 ? ' eff3' : '') + (timed ? ' timed' : '')}>
-      <button type="button" className="n" aria-label={failSay(s, sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i)))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}</button>
+      <button type="button" className="n" aria-label={trendSay(i, failSay(s, sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{setNumOf(s, i)}{failMark(s)}{trendMark(i)}</button>
       {/* Both words sit in the pill's one grid cell (::before/::after, hidden), so Left and
           Right are as wide as the longer of the two in every language and the inputs
           after them line up (#322). */}
@@ -839,7 +849,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             // ticked on its own (issue #60). Warm-ups split the same way as the work sets they
             // ramp toward, so a warm-up side set shows L/R too (#388).
             <div ref={el => onSetRowRef?.(i, el)} className={'setrow-side' + (s.done ? ' done' : '')}>
-              <button type="button" className="n" aria-label={failSay(s, t('Set {0}', phaseNum))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}{failMark(s)}</button>
+              <button type="button" className="n" aria-label={trendSay(i, failSay(s, t('Set {0}', phaseNum)))} aria-describedby={optsId} title={t('More')} onClick={() => openSetMenu(s, i)}>{phaseNum}{failMark(s)}{trendMark(i)}</button>
               <div className="side-rows">
                 {sideRow(s, i, 'L', col1, col2, col3)}
                 {sideExtras(s, i, 'L')}
