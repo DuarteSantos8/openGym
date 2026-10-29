@@ -3,6 +3,8 @@
 //                          watch app ios/App/Watch
 //   Android + Wear OS      native android/app/.../WatchBridgePlugin.java (the Wearable Data
 //                          Layer), the watch app android/wear (docs/WEAR_OS.md)
+//   any + Zepp OS          lib/watch-relay.js: the same calls over the user's own server (the
+//                          watch's Side Service lives in the Zepp app), watch-zepp/ (docs/ZEPP_OS.md)
 // Both plugins are called WatchBridge and answer the same calls, and both watches read the same
 // snapshot and send the same events, so everything below is the same for either.
 //
@@ -453,13 +455,22 @@ export function drainWatchEvents () {
   if (draining) return draining
   draining = (async () => {
     try {
-      const p = await watchPlugin()
-      if (!p || !getStateRef || !storeReady()) return []
-      const { events = [] } = (await p.WatchBridge.drain()) || {}
-      const done = applyEvents(events, getStateRef)
-      if (done.length) await getStateRef()?.saveNow?.()
-      if (done.length) await p.WatchBridge.ack({ ids: done })
-      return done
+      const native = await watchPlugin()
+      if (!getStateRef || !storeReady()) return []
+      const all = []
+      // The native link first, then the others (the Zepp watches' relay), each on its own: one
+      // that cannot be reached keeps nobody else's events waiting.
+      for (const p of [native, ...extraLinks]) {
+        if (!p) continue
+        try {
+          const { events = [] } = (await p.WatchBridge.drain()) || {}
+          const done = applyEvents(events, getStateRef)
+          if (done.length) await getStateRef()?.saveNow?.()
+          if (done.length) await p.WatchBridge.ack({ ids: done })
+          all.push(...done)
+        } catch { /* not now: the next drain tries again */ }
+      }
+      return all
     } catch { return [] } finally { draining = null }
   })()
   return draining
@@ -619,6 +630,27 @@ export function streakFor (S, today = todayISO()) {
 export async function startWatchSync ({ useStore, useUI }) {
   const p = await watchPlugin()
   if (!p) return () => {}
+  return runLink(p, { useStore, useUI })
+}
+
+// Links besides the phone's own WatchBridge, with the same calls (lib/watch-relay.js). Their
+// events are drained with the native queue's.
+const extraLinks = new Set()
+
+/**
+ * Runs the sync below over another link than the native one: `plugin` answers WatchBridge's calls
+ * (status, sendSnapshot, drain, ack, addListener). `health: false` for a watch that has no Apple
+ * Health, `clips: false` for one that gets no animations. Returns the stop.
+ */
+export async function startLinkSync (plugin, { useStore, useUI }, opts = {}) {
+  const p = { WatchBridge: plugin }
+  extraLinks.add(p)
+  let stop = () => {}
+  try { stop = await runLink(p, { useStore, useUI }, opts) } catch { /* the link failed to start: nothing runs */ }
+  return () => { extraLinks.delete(p); stop() }
+}
+
+async function runLink (p, { useStore, useUI }, { health = true, clips: withClips = true } = {}) {
   getStateRef = () => useStore.getState()
   let lastSent = null, lastClips = null, tm = null
   // The ready sessions only change with the plan, the log or the day: built again only then.
@@ -645,7 +677,7 @@ export async function startWatchSync ({ useStore, useUI }) {
   await checkLink()
   // Apple Health on the watch follows the phone's own Apple Health switch (Settings → Data).
   let healthOn = false, offHealth = () => {}
-  try {
+  if (health) try {
     const hs = await import('./health-sync.js')
     healthOn = !!(await hs.loadHealth())?.on
     offHealth = hs.onHealthChange(h => { if (!!h?.on !== healthOn) { healthOn = !!h?.on; schedule() } })
@@ -680,7 +712,7 @@ export async function startWatchSync ({ useStore, useUI }) {
         if (r && r.sent) lastSent = json
       }
       // The workout's animations, once per workout and exercise (the native side remembers).
-      const clips = prefs.enabled ? clipsFor(S) : []
+      const clips = prefs.enabled && withClips ? clipsFor(S) : []
       const key = S.active ? S.active.id + '|' + clips.map(c => c.exId).join(',') : ''
       if (clips.length && key !== lastClips) {
         await p.WatchBridge.sendClips({ wid: S.active.id, clips })
@@ -741,7 +773,7 @@ export async function startWatchSync ({ useStore, useUI }) {
 
 // Test seams.
 export function _setWatchPluginForTest (plugin, getState) { pluginP = Promise.resolve(plugin ? { WatchBridge: plugin } : null); getStateRef = getState || null }
-export function _resetWatchSync () { startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
+export function _resetWatchSync () { extraLinks.clear(); startedOnWatch.clear(); claimedByWatch.clear(); handlers = null; appHandlers = null; pluginP = null; getStateRef = null; draining = null; editedHere = { wid: null, at: 0 }; openedHere = { wid: null, at: 0 }; applyingWatch = false }
 
 /**
  * Writes `fields` (heart rate) onto one set: in the running session when it is that workout, else in

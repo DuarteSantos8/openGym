@@ -65,6 +65,7 @@ import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './se
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
+import ZeppSettingsPage from './ZeppSettings.jsx'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
@@ -475,6 +476,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     data: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
+    zepp: () => '',
   }
 
   const open = id => {
@@ -528,6 +530,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
   const pages = {
     watch: () => <WatchSettingsPage />,
+    zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
