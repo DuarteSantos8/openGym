@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  'Update your routine too?': 'Atualizar também a sua rotina?',
+  'Routine changes from today’s workout.': 'Alterações na rotina a partir do treino de hoje.',
+  'Your routine changed since then, so nothing was updated.': 'Sua rotina mudou desde então, por isso nada foi atualizado.',
   'The search finds it by these too. Separate them with commas.': 'A busca também encontra o exercício por estes. Separe com vírgulas.',
   'Save names': 'Salvar nomes',
   'Handy when you compare with another app. Records ignore warm-ups either way.': 'Ajuda quando você compara com outro app. Os recordes ignoram o aquecimento de qualquer jeito.',

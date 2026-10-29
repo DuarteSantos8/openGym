@@ -156,8 +156,10 @@ warm-ups, and Update routine offers it too. A routine's own warm-ups win over Yo
 is taken, you are short on time, feeling great or running on empty, and the Coach suggests up to
 six changes to what is left of the workout (swap, fewer or more sets, reps, a lighter or slightly
 heavier weight, add, skip, do it next or last, rest), as cards you tick. Logged sets and your
-routine are never touched, and the suggestion only applies to the workout you asked in. Works with
-your server's Coach and with your own key on the phone.
+routine are never touched, and the suggestion only applies to the workout you asked in. Once
+applied, the sheet offers what they would mean for the routine: a swap kept, the order kept, an
+added exercise kept, each one through the Coach's Undo; sets, reps and weight stay with today.
+Works with your server's Coach and with your own key on the phone.
 
 **The Coach does more.** A review can now set an exercise's warm-ups and write or revise a
 multi-week programme (saved under Plan → Programmes, it starts when you start it), and Undo takes
