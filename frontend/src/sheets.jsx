@@ -1100,28 +1100,37 @@ function OneRM({ ex }) {
 
 // A muscle the catalogue credits with nothing (a bench press's biceps, #359) is not one it trains,
 // so it is not shown as a tag either; "By muscle" already leaves the exercise out.
-const trainedBy = ex => { const weights = muscleWeightsOf(ex); return slug => weights[slug] !== 0 }
+const trainedBy = ex => { const weights = muscleWeightsOf(ex); return slug => (weights[slug] || 0) !== 0 }
 // The detail page's tags: body part, main muscles, equipment, then up to three helpers. A word
 // says once what it says: the body part "Chest" and the main muscle "Chest" of a bench press
 // were two tags (QA 10-06), and a helper never repeats a main muscle.
+// Each involved muscle carries its share of the exercise's stimulus, as a percentage of the
+// strongest muscle the exercise trains (a primary is 100 %, a supporting one 40 %).
 export function detailTags(ex) {
+  const weights = muscleWeightsOf(ex)
+  const pctOf = slug => Math.round(((weights[slug] || 0)) * 100) + '%'
   const seen = new Set()
   const out = []
-  const add = (label, extra) => {
-    const k = String(label || '').trim().toLocaleLowerCase()
+  // `key` lets a label that carries extra text (a percentage) still dedupe on the
+  // underlying word, so "Chest 100 %" and "Chest 40 %" never both appear.
+  const add = (label, extra, key) => {
+    const k = String(key != null ? key : label || '').trim().toLocaleLowerCase()
     if (!k || seen.has(k)) return false
     seen.add(k)
     out.push({ key: out.length, label, ...extra })
     return true
   }
-  add(t(ex.bp), { acc: true })
+  // A body part that is also a drawable muscle (Chest, Back is not) carries the same
+  // percentage as that muscle, so the primary does not have to be printed twice.
+  const bpPct = (weights[ex.bp] || 0) !== 0 ? ' ' + pctOf(ex.bp) : ''
+  add(t(ex.bp) + bpPct, { acc: true }, t(ex.bp))
   if (ex.bp === 'cardio') add(t(MUSCLE_NAME['cardiovascular system']), { icon: 'figureStrength' })
-  else for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : [])).filter(trainedBy(ex))) add(t(MUSCLE_NAME[s] || s), { icon: 'figureStrength' })
+  else for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : [])).filter(trainedBy(ex))) add(t(MUSCLE_NAME[s] || s) + ' ' + pctOf(s), { icon: 'figureStrength' }, t(MUSCLE_NAME[s] || s))
   add(t(ex.eq), { icon: 'kettlebell' })
   let helpers = 0
   for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex))) {
     if (helpers >= 3) break
-    if (add(t(MUSCLE_NAME[s] || s))) helpers++
+    if (add(t(MUSCLE_NAME[s] || s) + ' ' + pctOf(s), undefined, t(MUSCLE_NAME[s] || s))) helpers++
   }
   return out
 }
