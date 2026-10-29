@@ -38,7 +38,7 @@ import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } f
 import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
-import { getChannel } from '../lib/channel.js'
+import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
@@ -193,6 +193,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const [ios, setIos] = useState(() => MOBILE && platformNow() === 'ios')   // the iPhone app: Settings → Apple Watch
   const [selfUpdate, setSelfUpdate] = useState(false)   // the sideloaded APK, which updates itself
   const [play, setPlay] = useState(false)   // the Google Play build: no donation links (Play payments policy)
+  const [gymReminder, setGymReminder] = useState(true)   // false in a Play build without background location
   const [checking, setChecking] = useState(false)
   // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
   const [backupDir] = useBackupFolder(MOBILE && android && !!S.autoBackup)
@@ -212,6 +213,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       const own = channel === 'sideload'
       setSelfUpdate(own)
       setPlay(channel === 'play')
+      if (ok) gymReminderBuilt().then(setGymReminder)
       // Nothing newer: an update APK still in the cache is the one already installed.
       if (own && page === 'about') checkForUpdate().then(info => { setUpdateInfo(info); if (!info?.hasUpdate) forgetDownloadedUpdate() }).catch(() => {})
     })
@@ -450,7 +452,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
-    nfc: nfcOK,
+    nfc: nfcOK, gymReminder,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
   }
   const mode = scheduleModeOf(S)
@@ -749,7 +751,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
     reminders: () => <>
       <NotificationsCard S={S} update={update} toast={toast} />
-      {MOBILE && <Section footer={t('A nudge when you walk into your gym.')}>
+      {MOBILE && gymReminder && <Section footer={t('A nudge when you walk into your gym.')}>
         <Row icon="mapPin" iconTint="var(--green)" title={t('Gym reminder')} value={gymOn ? t('On') : t('Off')} accessory="chevron" onClick={() => nav('/settings/gym')} />
       </Section>}
     </>,

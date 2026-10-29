@@ -173,8 +173,8 @@ The full-quality files only ever travel from the release machine to Apple, like 
    - **Background location** (`ACCESS_BACKGROUND_LOCATION`, the gym reminder): a declaration with
      a video of the in-app explainer, the system prompt and the reminder firing. Play allows it
      only for a feature that matters to the app; if it refuses, build with
-     `-PplayWithoutBackgroundLocation` (app/build.gradle) and the Play build asks for no
-     background location at all (the reminder then can't fire with the app closed).
+     `-PplayWithoutBackgroundLocation` (app/build.gradle): the Play build then asks for no
+     background location at all and hides the gym reminder (ChannelPlugin, `lib/channel.js`).
    - **Exact alarms:** only the user-granted `SCHEDULE_EXACT_ALARM` (reminder to the minute, the
      rest-over fallback alarm), no `USE_EXACT_ALARM` (that one is for alarm clock and calendar
      apps).

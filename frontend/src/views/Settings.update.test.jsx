@@ -56,7 +56,7 @@ vi.mock('../lib/update.js', () => ({
   downloadAndInstall: vi.fn(),
   forgetDownloadedUpdate: (...a) => mocks.forget(...a),
 }))
-vi.mock('../lib/channel.js', () => ({ getChannel: () => Promise.resolve(mocks.channel) }))
+vi.mock('../lib/channel.js', () => ({ getChannel: () => Promise.resolve(mocks.channel), gymReminderBuilt: () => Promise.resolve(true) }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), confirmSheet: (...a) => mocks.confirmSheet(...a), importFromApp: vi.fn(),
