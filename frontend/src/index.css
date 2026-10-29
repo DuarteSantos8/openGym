@@ -643,12 +643,12 @@ h4.sec{
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
-  #tabbar,#timer,#toast,.conn-bar,.whdr.stick{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index{-webkit-backdrop-filter:none;backdrop-filter:none}
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
-  .conn-bar,.whdr.stick{background:var(--bg)}
+  .conn-bar,.whdr.stick,.stats-index{background:var(--bg)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
      darker pill so its white text no longer depends on what the picture shows behind it. */
   .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -1101,6 +1101,19 @@ body.chips-dragging *{cursor:inherit}
    with the screen edge from the first pixel, and given the page's own ground plus a light blur so
    the rows scrolling underneath read as underneath. The connection indicator, when there is
    one, sits over its top (--conn) and its content starts below it. */
+/* Stats' sticky index (Stats.jsx StatsIndex, P5): the page ground with the bars' frost, edge to
+   edge, held under the status bar; each part keeps its heading clear of it when jumped to. */
+.stats-index{
+  position:sticky;top:calc(var(--sat) + var(--conn));z-index:20;
+  margin:-6px calc(-1 * var(--pad)) 10px;padding:6px var(--pad) 8px;
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 94%,transparent);
+  -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
+}
+.stats-sect{scroll-margin-top:calc(var(--sat) + var(--conn) + 58px)}
+/* a control reached by Tab scrolls clear of the sticky index too, not under it */
+:root:has(.stats-index){scroll-padding-top:calc(var(--sat) + var(--conn) + 58px)}
+.stats-sect+.stats-sect{margin-top:26px}
+.stats-sect-h{font-size:var(--fs-title3);font-weight:700;letter-spacing:var(--ls-title);line-height:var(--lh-title);margin:0 2px 12px}
 .whdr.stick{
   position:sticky;top:0;z-index:20;
   margin:calc(-1 * (var(--sat) + var(--conn) + 8px)) calc(-1 * var(--pad)) 6px;
