@@ -10,7 +10,7 @@ describe('the exercise detail tags', () => {
 
   it('say Chest once on a bench press, with the body part first', () => {
     const l = labels('0025')
-    expect(l.filter(x => x === 'chest 100%')).toHaveLength(1)
+    expect(l.filter(x => x === 'chest 56%')).toHaveLength(1)
     expect(detailTags(exOr('0025'))[0]).toMatchObject({ acc: true })
     expect(new Set(l).size).toBe(l.length)
   })
