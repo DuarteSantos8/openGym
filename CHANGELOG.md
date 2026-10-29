@@ -6,6 +6,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**openGym on your Wear OS watch** (thanks @vampireJSV for the idea and the first take in #673).
+Galaxy Watch, Pixel Watch, TicWatch, OnePlus and friends now get what the Apple Watch has: the
+workout follows you to the wrist, big numbers you turn with the crown, Done, a rest ring that buzzes
+you back to the bar, heart rate on every set, a summary at the end, and a Tile with your streak and
+today's plan. Start today's routine right from the watch. Your phone stays in charge, the watch just
+saves you the walk to the bench where you left it.
+
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic
 warm-ups: Off (the default, nothing changes), Compound lifts or Every loaded lift. The ramp comes
 from your work weight, the way a coach would scribble it: a heavy squat gets the bar for ten and

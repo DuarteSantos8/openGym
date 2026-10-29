@@ -9,6 +9,7 @@ Pick the part that matches what you're doing. If you just have a question, try t
 |---|---|
 | [FAQ](FAQ.md) | You have a quick question: iPhone, cost, where your data goes, AI, the exercise media |
 | [Phone app](MOBILE.md) | You want the iPhone app, the Apple Watch or the Android APK, or to connect the app to your own server |
+| [Wear OS watch](WEAR_OS.md) | You want openGym on a Galaxy Watch, Pixel Watch or another Wear OS watch, or you work on the watch app |
 | [Importing data](DATA_IMPORTS.md) | You're coming from FitNotes, Strong, Hevy or Apple Health, or sharing a plan with someone |
 | [AI coach](AI_COACH.md) | Your instance has the coach switched on and you want to know what it sees and can change |
 
