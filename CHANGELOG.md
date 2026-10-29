@@ -13,6 +13,21 @@ you back to the bar, heart rate on every set, a summary at the end, and a Tile w
 today's plan. Start today's routine right from the watch. Your phone stays in charge, the watch just
 saves you the walk to the bench where you left it.
 
+**A fresh coat of paint.** The whole app got a proper look-and-feel pass, the kind where nobody
+can point at what changed but everything sits better. Home's cards all introduce themselves the
+same way now (a small line, a title, one button), so the screen stops sounding like five apps
+talking at once. Stats is in four parts, Overview, Body, Lifts and Effort, with an index that
+sticks to the top and jumps you there; `#/stats?section=lifts` links straight to one. The Library
+keeps its filters in one row: Filters opens a sheet with the type and the equipment, and tapping
+the chosen body part again shows them all. The end of a workout is one tidy list (Add exercise,
+the session note) with Finish under it, the routine editor's Copy, Share and Print sit together
+with Delete on its own and saying what it removes, and an exercise's Delete waits at the bottom
+of its sheet instead of shouting next to Edit. Empty screens put their first button right where
+your stuff will appear. Under the hood: one type scale in rem (your browser's text size and zoom
+now grow the layout too), pinch zoom in the browser and the installed web app (the phone apps
+stay as they were), lifted surfaces for things that float, a readable text shade for your own
+accent colour, and one press feel per kind of control. Same app, better posture.
+
 **Every set against last time** (#907, thanks @lodepav for the idea and the first version). A
 finished set now wears a small ↑, = or ↓ on its number: the same set last time, weight first and
 then reps, and when those pull apart (heavier but fewer) the estimated 1RM settles it. On an
