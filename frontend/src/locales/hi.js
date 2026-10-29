@@ -2512,6 +2512,7 @@ export default {
   'Support openGym': 'openGym को सपोर्ट करें',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'openGym मुफ़्त है: न विज्ञापन, न सब्सक्रिप्शन, न ट्रैकिंग। एक कॉफ़ी इसे ऐसा ही बनाए रखती है।',
   'Rate openGym on the App Store': 'App Store पर openGym को रेट करें',
+  'Rate openGym on Google Play': 'Google Play पर openGym को रेट करें',
   'Buy me a coffee': 'मुझे एक कॉफ़ी पिलाएँ',
   'Export as spreadsheet (CSV)': 'स्प्रेडशीट के रूप में एक्सपोर्ट करें (CSV)',
   'Workouts, body weight and measurements': 'वर्कआउट, शरीर का वज़न और माप',

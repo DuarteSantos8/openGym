@@ -2523,6 +2523,7 @@ export default {
   'Support openGym': 'สนับสนุน openGym',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'openGym ใช้ฟรี: ไม่มีโฆษณา ไม่มีสมาชิกรายเดือน ไม่มีการติดตาม กาแฟสักแก้วช่วยให้เป็นแบบนี้ต่อไป',
   'Rate openGym on the App Store': 'ให้คะแนน openGym ใน App Store',
+  'Rate openGym on Google Play': 'ให้คะแนน openGym ใน Google Play',
   'Buy me a coffee': 'เลี้ยงกาแฟสักแก้ว',
   'Export as spreadsheet (CSV)': 'ส่งออกเป็นสเปรดชีต (CSV)',
   'Workouts, body weight and measurements': 'การออกกำลังกาย น้ำหนักตัว และสัดส่วน',

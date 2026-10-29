@@ -2512,6 +2512,7 @@ export default {
   'Support openGym': 'Wesprzyj openGym',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'openGym jest darmowy: bez reklam, subskrypcji i śledzenia. Kawa pomaga, żeby tak zostało.',
   'Rate openGym on the App Store': 'Oceń openGym w App Store',
+  'Rate openGym on Google Play': 'Oceń openGym w Google Play',
   'Buy me a coffee': 'Postaw mi kawę',
   'Export as spreadsheet (CSV)': 'Eksportuj jako arkusz (CSV)',
   'Workouts, body weight and measurements': 'Treningi, masa ciała i pomiary',

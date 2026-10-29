@@ -2515,6 +2515,7 @@ export default {
   'Support openGym': 'Támogasd az openGymet',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'Az openGym ingyenes: nincs reklám, előfizetés vagy követés. Egy kávé segít, hogy így maradjon.',
   'Rate openGym on the App Store': 'Értékeld az openGymet az App Store-ban',
+  'Rate openGym on Google Play': 'Értékeld az openGymet a Google Playen',
   'Buy me a coffee': 'Hívj meg egy kávéra',
   'Export as spreadsheet (CSV)': 'Exportálás táblázatként (CSV)',
   'Workouts, body weight and measurements': 'Edzések, testsúly és testméretek',

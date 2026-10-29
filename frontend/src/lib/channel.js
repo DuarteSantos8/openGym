@@ -7,21 +7,33 @@
 // plugin existed is a sideloaded one: the Play build never shipped without it.
 import { MOBILE } from './mobile.js'
 
-let channelP = null
-export function getChannel() {
-  return channelP || (channelP = (async () => {
-    if (!MOBILE) return 'web'
+// The Android answer also says whether this build may ask for background location: a Play build
+// made with -PplayWithoutBackgroundLocation (app/build.gradle, Google Play's plan B) can't, so it
+// has no gym reminder. Every other build (and an older APK that doesn't say) has one.
+let infoP = null
+function channelInfo() {
+  return infoP || (infoP = (async () => {
+    if (!MOBILE) return { channel: 'web', gymReminder: false }
     const { Capacitor, registerPlugin } = await import('@capacitor/core')
     const platform = Capacitor.getPlatform()
-    if (platform === 'ios') return 'appstore'
-    if (platform !== 'android') return 'web'
+    if (platform === 'ios') return { channel: 'appstore', gymReminder: true }
+    if (platform !== 'android') return { channel: 'web', gymReminder: false }
     try {
-      const { channel } = await registerPlugin('Channel').get()
-      return channel === 'play' ? 'play' : 'sideload'
+      const r = await registerPlugin('Channel').get()
+      return { channel: r?.channel === 'play' ? 'play' : 'sideload', gymReminder: r?.backgroundLocation !== false }
     } catch {
-      return 'sideload'
+      return { channel: 'sideload', gymReminder: true }
     }
-  })().catch(() => 'web'))
+  })().catch(() => ({ channel: 'web', gymReminder: false })))
+}
+
+export async function getChannel() {
+  return (await channelInfo()).channel
+}
+
+/** Whether this phone build can offer the gym reminder (it needs background location). */
+export async function gymReminderBuilt() {
+  return (await channelInfo()).gymReminder
 }
 
 // The in-app updater is for the sideloaded APK only.

@@ -20,7 +20,11 @@
 #   PLUS_PX       the Plus APK's built-in size, default 240; PLUS_PX=0 builds no Plus APK
 #   HD_PX         the HD APK's built-in size, default 360; HD_PX=0 builds no HD APK
 #   APK_ONLY=1    only the APKs, no Play bundle
+#   AAB_ONLY=1    only the Play bundle, no APKs
 #   NO_PACKS=1    a Play bundle without asset packs
+#   PACK_PX       the qualities made into asset packs, e.g. "240,360"; default every sharper one
+#   GRADLE_ARGS   extra gradle arguments, e.g. "-Dorg.gradle.workers.max=2" on a box that
+#                 must not run hot; BUNDLETOOL  bundletool.jar to validate the bundle with
 set -euo pipefail
 
 KS=${1:?keystore}; PASS=${2:?file with the keystore password}; ALIAS=$(cat "${3:?file with the key alias}")
@@ -34,6 +38,8 @@ PLAY_PX=${PLAY_PX:-180}
 export VITE_CLIP_EXT=webp
 : "${ANDROID_HOME:?set ANDROID_HOME}"
 BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+if [ -n "${AAB_ONLY:-}" ]; then [ -z "${APK_ONLY:-}" ] || { echo "APK_ONLY and AAB_ONLY together build nothing" >&2; exit 1; }; PLUS_PX=0; HD_PX=0; fi
+GRADLE_ARGS=${GRADLE_ARGS:-}
 for px in "$APK_PX" "$PLAY_PX" $([ "$PLUS_PX" != 0 ] && echo "$PLUS_PX") $([ "$HD_PX" != 0 ] && echo "$HD_PX"); do
   [ -d "$QUALITY_ROOT/$px" ] || { echo "no $QUALITY_ROOT/$px" >&2; exit 1; }
 done
@@ -54,21 +60,23 @@ phone_build() {
 
 # 1. The APKs: Standard (180 px built in), Plus (PLUS_PX) and HD (HD_PX), no packs.
 node "$ROOT/scripts/android/make-asset-packs.mjs" --clean
-phone_build "$APK_PX" standard
-(cd android && ./gradlew --no-daemon clean assembleSideloadRelease)
 APK_BUILT="$OUT/.openGym-$VER-sideload-unsigned.apk"   # beside the outputs: the root disk has no room
-cp android/app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk "$APK_BUILT"
 PLUS_BUILT="$OUT/.openGym-Plus-$VER-sideload-unsigned.apk"
+HD_BUILT="$OUT/.openGym-HD-$VER-sideload-unsigned.apk"
+if [ -z "${AAB_ONLY:-}" ]; then
+phone_build "$APK_PX" standard
+(cd android && ./gradlew --no-daemon $GRADLE_ARGS clean assembleSideloadRelease)
+cp android/app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk "$APK_BUILT"
 if [ "$PLUS_PX" != 0 ]; then
   phone_build "$PLUS_PX" plus
-  (cd android && ./gradlew --no-daemon assembleSideloadRelease)
+  (cd android && ./gradlew --no-daemon $GRADLE_ARGS assembleSideloadRelease)
   cp android/app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk "$PLUS_BUILT"
 fi
-HD_BUILT="$OUT/.openGym-HD-$VER-sideload-unsigned.apk"
 if [ "$HD_PX" != 0 ]; then
   phone_build "$HD_PX" hd
-  (cd android && ./gradlew --no-daemon assembleSideloadRelease)
+  (cd android && ./gradlew --no-daemon $GRADLE_ARGS assembleSideloadRelease)
   cp android/app/build/outputs/apk/sideload/release/app-sideload-release-unsigned.apk "$HD_BUILT"
+fi
 fi
 
 sign_apk() {  # <unsigned> <name>
@@ -79,10 +87,12 @@ sign_apk() {  # <unsigned> <name>
   "$BT/apksigner" verify --print-certs "$OUT/$2" | grep -i "SHA-256"
   (cd "$OUT" && sha256sum "$2" > "$2.sha256")
 }
-sign_apk "$APK_BUILT" "openGym-$VER.apk"
-[ "$PLUS_PX" = 0 ] || sign_apk "$PLUS_BUILT" "openGym-Plus-$VER.apk"
-[ "$HD_PX" = 0 ] || sign_apk "$HD_BUILT" "openGym-HD-$VER.apk"
-(cd "$OUT" && cat openGym-*"$VER".apk.sha256 > SHA256SUMS)
+if [ -z "${AAB_ONLY:-}" ]; then
+  sign_apk "$APK_BUILT" "openGym-$VER.apk"
+  [ "$PLUS_PX" = 0 ] || sign_apk "$PLUS_BUILT" "openGym-Plus-$VER.apk"
+  [ "$HD_PX" = 0 ] || sign_apk "$HD_BUILT" "openGym-HD-$VER.apk"
+  (cd "$OUT" && cat openGym-*"$VER".apk.sha256 > SHA256SUMS)
+fi
 
 
 if [ -n "${APK_ONLY:-}" ]; then
@@ -95,11 +105,11 @@ fi
 phone_build "$PLAY_PX"
 if [ -z "${NO_PACKS:-}" ]; then
   trap 'node "$ROOT/scripts/android/make-asset-packs.mjs" --clean; rm -f "$APK_BUILT" "$PLUS_BUILT" "$HD_BUILT"' EXIT
-  node "$ROOT/scripts/android/make-asset-packs.mjs" --builtin "$PLAY_PX" --src-root "$QUALITY_ROOT"
+  node "$ROOT/scripts/android/make-asset-packs.mjs" --builtin "$PLAY_PX" --src-root "$QUALITY_ROOT" ${PACK_PX:+--px "$PACK_PX"}
 else
   trap 'rm -f "$APK_BUILT" "$PLUS_BUILT" "$HD_BUILT"' EXIT
 fi
-(cd android && ./gradlew --no-daemon bundlePlayRelease)
+(cd android && ./gradlew --no-daemon $GRADLE_ARGS ${AAB_ONLY:+clean} bundlePlayRelease)
 
 AAB_IN=android/app/build/outputs/bundle/playRelease/app-play-release.aab
 
@@ -110,7 +120,8 @@ jarsigner -keystore "$KS" -storepass:file "$PASS" -keypass:file "$PASS" \
   -sigalg SHA256withRSA -digestalg SHA-256 "$OUT/openGym-$VER.aab" "$ALIAS" >/dev/null
 jarsigner -verify "$OUT/openGym-$VER.aab" | grep -q "jar verified" || { echo "the bundle did not verify" >&2; exit 1; }
 
-ls -la "$OUT"/openGym-*"$VER".apk "$OUT/openGym-$VER.aab"
+ls -la "$OUT"/openGym-*"$VER".apk "$OUT/openGym-$VER.aab" 2>/dev/null || true
+if [ -n "${BUNDLETOOL:-}" ]; then java -jar "$BUNDLETOOL" validate --bundle="$OUT/openGym-$VER.aab" >/dev/null && echo "bundletool validate: OK"; fi
 # Google Play's limits: 500 MB for the base module, 1.5 GB per asset pack (the packs are split
 # below that by make-asset-packs.mjs). The base is what the bundle holds outside the packs.
 BASE=$(unzip -l "$OUT/openGym-$VER.aab" | awk '$4 != "" && $4 !~ /^anim_/ {s+=$1} END {print s}')
