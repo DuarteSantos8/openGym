@@ -1104,11 +1104,12 @@ const trainedBy = ex => { const weights = muscleWeightsOf(ex); return slug => (w
 // The detail page's tags: body part, main muscles, equipment, then up to three helpers. A word
 // says once what it says: the body part "Chest" and the main muscle "Chest" of a bench press
 // were two tags (QA 10-06), and a helper never repeats a main muscle.
-// Each involved muscle carries its share of the exercise's stimulus, as a percentage of the
-// strongest muscle the exercise trains (a primary is 100 %, a supporting one 40 %).
+// Each involved muscle's share of the exercise's total stimulus: the weights are
+// normalised so the involved muscles add up to 100 %.
 export function detailTags(ex) {
   const weights = muscleWeightsOf(ex)
-  const pctOf = slug => Math.round(((weights[slug] || 0)) * 100) + '%'
+  const total = Object.values(weights).reduce((sum, w) => sum + ((w || 0) > 0 ? (w || 0) : 0), 0)
+  const pctOf = slug => total > 0 ? Math.round(((weights[slug] || 0) / total * 100)) + '%' : '0%'
   const seen = new Set()
   const out = []
   // `key` lets a label that carries extra text (a percentage) still dedupe on the
