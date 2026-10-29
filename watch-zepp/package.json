@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "zeus build",
-    "test": "node --test test/",
+    "test": "node --test test/*.test.js",
     "strings": "node zepp-strings.mjs"
   },
   "devDependencies": {
