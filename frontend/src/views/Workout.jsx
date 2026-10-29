@@ -48,6 +48,9 @@ import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgre
 import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotIndex, ownWarmupsChange, keepOwnWarmups } from '../lib/routines.js'
 import { ownRowsLine } from '../lib/warmup-ramp.js'
 import { useCoachGate } from '../lib/use-coach-gate.js'
+// Opened in the same tick as the menu closes, like every other sheet from that menu: a sheet that
+// opened a moment later (after a dynamic import) took the menu's history entry with it on close.
+import { workoutCoachSheet } from '../components/WorkoutCoachSheet.jsx'
 import { hasConsent } from '../lib/coach.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
@@ -1550,7 +1553,7 @@ function ActiveWorkout() {
     onKeepWarmups: keepWarmupsFor(idx),
     // Only with the Coach set up and agreed to, live (not a past workout), and something left to do.
     onAskCoach: coachGate.ok && hasConsent(S) && !editing && (A.entries[idx]?.sets || []).some(x => !isWarmupRow(x) && !x.done)
-      ? () => import('../components/WorkoutCoachSheet.jsx').then(m => m.workoutCoachSheet(idx)) : null,
+      ? () => workoutCoachSheet(idx) : null,
     onRemoveSetAt: i => removeSetAt(idx, i),
     onCopySetAt: i => copyActiveSet(idx, i),
     onStartTimed: (i, onFocusProgress) => startTimed(idx, i, onFocusProgress),
