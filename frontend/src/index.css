@@ -2739,11 +2739,14 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .sp-version{text-align:center;margin-top:4px;line-height:1.6}
 /* The root rows' previews ("2:00 de descanso · Tarjetas", "Som · Vibração") are two or three facts, and a
    one-line ellipsis cut all but the first. They wrap instead, up to three lines, and never below
-   their longest word (min-content, since overflow:hidden would make auto mean 0). On the narrowest phones there is no room beside
-   the title at all, so the preview moves under it, like a subtitle. */
+   their longest word (min-content, since overflow:hidden would make auto mean 0). On a phone there
+   is no room beside the title for both: at 390px "Plan & schedule" broke over two lines because
+   "Fixed Week · Mon" kept its width. So on every phone width the preview moves under the title,
+   as the row's subtitle, in the secondary grey; a tablet or a desktop keeps it beside the title,
+   where there is room (redesign 1.4.5, P10). */
 .lrow.sp-root-row .lrow-v{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;
   min-width:min-content;max-width:62%;line-height:1.25;text-wrap:balance}
-@media (max-width:360px){
+@media (max-width:430px){
   .lrow.sp-root-row:has(.lrow-v){display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:1px}
   .lrow.sp-root-row:has(.lrow-v) .lrow-i{grid-column:1;grid-row:1 / span 2}
   .lrow.sp-root-row:has(.lrow-v) .lrow-m{grid-column:2;grid-row:1}

@@ -113,6 +113,10 @@ describe('the root', () => {
     expect(rule).toMatch(/white-space:normal/)
     expect(rule).toMatch(/line-clamp:3/)
     expect(rule).toMatch(/min-width:min-content/)
+    // P10 (redesign 1.4.5): on every phone width the preview is the row's subtitle, under the title
+    const phone = css.match(/@media \(max-width:430px\)\{\n  \.lrow\.sp-root-row:has\(\.lrow-v\)\{([^}]*)\}/)?.[1] || ''
+    expect(phone).toMatch(/display:grid/)
+    expect(css).toMatch(/\.lrow\.sp-root-row \.lrow-v\{grid-column:2;grid-row:2;[^}]*text-align:start/)
     // the sub-page title takes a second line rather than an ellipsis ("Alertas do temporizador")
     const title = css.match(/^\.sp-title\{([^}]*)\}/m)?.[1] || ''
     expect(title).not.toMatch(/nowrap/)
