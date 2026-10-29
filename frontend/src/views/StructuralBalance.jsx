@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { countedS } from '../lib/counted-log.js'
 import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
@@ -23,7 +24,8 @@ const exerciseName = id => (id ? exerciseNameFor(exOr(id)) : null)
 
 export default function StructuralBalance() {
   const nav = useNavigate()
-  const S = useStore(s => s.S)
+  // Exercises kept out of progression are kept out of the statistics too (lib/counted-log.js).
+  const S = countedS(useStore(s => s.S))
   const update = useStore(s => s.update)
   // Own keys only: a synced or imported id such as "constructor" would otherwise find an
   // Object.prototype member and take the screen down.
