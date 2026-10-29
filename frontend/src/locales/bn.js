@@ -2591,6 +2591,7 @@ export default {
   'Support openGym': 'openGym-কে সমর্থন করুন',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'openGym বিনামূল্যে: কোনো বিজ্ঞাপন, সাবস্ক্রিপশন বা ট্র্যাকিং নেই। এক কাপ কফি এটাকে এভাবেই রাখে।',
   'Rate openGym on the App Store': 'App Store-এ openGym-কে রেটিং দিন',
+  'Rate openGym on Google Play': 'Google Play-তে openGym-কে রেটিং দিন',
   'Buy me a coffee': 'আমাকে একটা কফি কিনে দিন',
   'Export as spreadsheet (CSV)': 'স্প্রেডশিট হিসেবে এক্সপোর্ট করুন (CSV)',
   'Workouts, body weight and measurements': 'ওয়ার্কআউট, শরীরের ওজন আর মাপ',

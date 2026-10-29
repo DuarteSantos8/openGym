@@ -10,8 +10,8 @@ android {
         applicationId "ch.duartesantos.opengym"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 28
-        versionName "1.4.3"
+        versionCode 29
+        versionName "1.4.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -55,6 +55,13 @@ android {
             dimension = "channel"
             buildConfigField "String", "CHANNEL", '"play"'
         }
+    }
+    // Plan B for Google Play's background-location review (docs/APP_STORES.md): with
+    // -PplayWithoutBackgroundLocation the Play build leaves out ACCESS_BACKGROUND_LOCATION, so no
+    // declaration is needed. The gym reminder then can't spot the gym with openGym closed (its
+    // settings say so when "all the time" isn't granted); "I'm at the gym" keeps working. Off by default.
+    if (project.hasProperty('playWithoutBackgroundLocation')) {
+        sourceSets.play.manifest.srcFile 'src/playNoBackgroundLocation/AndroidManifest.xml'
     }
 }
 

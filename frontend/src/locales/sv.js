@@ -2553,6 +2553,7 @@ export default {
   'Support openGym': 'Stöd openGym',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'openGym är gratis: ingen reklam, inga prenumerationer, ingen spårning. En kaffe håller det så.',
   'Rate openGym on the App Store': 'Betygsätt openGym i App Store',
+  'Rate openGym on Google Play': 'Betygsätt openGym på Google Play',
   'Buy me a coffee': 'Bjud mig på en kaffe',
   'Export as spreadsheet (CSV)': 'Exportera som kalkylark (CSV)',
   'Workouts, body weight and measurements': 'Pass, kroppsvikt och mått',

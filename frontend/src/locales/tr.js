@@ -2512,6 +2512,7 @@ export default {
   'Support openGym': 'openGym\'i destekle',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'openGym ücretsiz: reklam yok, abonelik yok, takip yok. Bir kahve bunu böyle tutar.',
   'Rate openGym on the App Store': 'openGym\'i App Store\'da değerlendir',
+  'Rate openGym on Google Play': 'openGym\'i Google Play\'de değerlendir',
   'Buy me a coffee': 'Bana bir kahve ısmarla',
   'Export as spreadsheet (CSV)': 'Tablo olarak dışa aktar (CSV)',
   'Workouts, body weight and measurements': 'Antrenmanlar, vücut ağırlığı ve ölçüler',

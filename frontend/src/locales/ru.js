@@ -2516,6 +2516,7 @@ export default {
   'Support openGym': 'Поддержать openGym',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'openGym бесплатный: без рекламы, подписок и слежки. Чашка кофе помогает так и оставаться.',
   'Rate openGym on the App Store': 'Оценить openGym в App Store',
+  'Rate openGym on Google Play': 'Оценить openGym в Google Play',
   'Buy me a coffee': 'Угостить кофе',
   'Export as spreadsheet (CSV)': 'Экспорт в таблицу (CSV)',
   'Workouts, body weight and measurements': 'Тренировки, вес тела и замеры',

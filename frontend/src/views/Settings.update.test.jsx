@@ -56,7 +56,7 @@ vi.mock('../lib/update.js', () => ({
   downloadAndInstall: vi.fn(),
   forgetDownloadedUpdate: (...a) => mocks.forget(...a),
 }))
-vi.mock('../lib/channel.js', () => ({ selfUpdates: () => Promise.resolve(mocks.channel === 'sideload') }))
+vi.mock('../lib/channel.js', () => ({ getChannel: () => Promise.resolve(mocks.channel) }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), confirmSheet: (...a) => mocks.confirmSheet(...a), importFromApp: vi.fn(),
@@ -191,5 +191,36 @@ describe('Settings → About: which APK this is', () => {
       await mount()
       expect(versionRow().textContent).not.toContain('APK,')
     }
+  })
+})
+
+// Google Play's payments policy: no links to pay outside Play billing for anything but a
+// registered charity, so the Play build has no coffee links, only its own rating row.
+describe('Settings: support links', () => {
+  const row = text => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes(text))
+  it('the APK keeps the donation links and has no Play rating row', async () => {
+    mocks.MOBILE = true
+    mocks.android = true
+    await mount()
+    expect(row('Buy me a coffee')).toBeTruthy()
+    expect(row('Ko-fi')).toBeTruthy()
+    expect(row('GitHub Sponsors')).toBeTruthy()
+    expect(row('Rate openGym on Google Play')).toBeUndefined()
+  })
+  it('the Google Play build shows only the rating row', async () => {
+    mocks.MOBILE = true
+    mocks.android = true
+    mocks.channel = 'play'
+    await mount()
+    expect(row('Buy me a coffee')).toBeUndefined()
+    expect(row('Ko-fi')).toBeUndefined()
+    expect(row('GitHub Sponsors')).toBeUndefined()
+    expect(row('Rate openGym on Google Play')).toBeTruthy()
+    expect(host.textContent).not.toContain('A coffee keeps it that way')
+  })
+  it('the web keeps the donation links', async () => {
+    await mount()
+    expect(row('Buy me a coffee')).toBeTruthy()
+    expect(row('Rate openGym on Google Play')).toBeUndefined()
   })
 })

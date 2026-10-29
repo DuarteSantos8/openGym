@@ -2512,6 +2512,7 @@ export default {
   'Support openGym': 'openGym 후원하기',
   'openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.': 'openGym은 무료예요: 광고도, 구독도, 추적도 없어요. 커피 한 잔이 계속 그렇게 지켜줘요.',
   'Rate openGym on the App Store': 'App Store에서 openGym 평가하기',
+  'Rate openGym on Google Play': 'Google Play에서 openGym 평가하기',
   'Buy me a coffee': '커피 한 잔 사주기',
   'Export as spreadsheet (CSV)': '스프레드시트로 내보내기 (CSV)',
   'Workouts, body weight and measurements': '운동, 체중, 신체 치수',
