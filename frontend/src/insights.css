@@ -12,11 +12,11 @@
 
 /* A note on one set: a quiet line under the row in the workout, a mark after the set in History. */
 .setnote-line{display:flex;align-items:center;gap:5px;width:100%;margin:2px 0 4px;padding:2px 4px;padding-inline-start:34px;border:0;background:none;color:var(--label-2);font:inherit;font-size:12px;text-align:start;cursor:pointer;min-width:0}
-.setnote-line .icn{flex:none;font-size:12px;color:var(--yellow)}
+.setnote-line .icn{flex:none;font-size:12px;color:var(--gold-ink)}
 .setnote-line span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.setnote-mark{display:inline-block;margin-inline-start:3px;font-size:11px;color:var(--yellow);vertical-align:-1px}
+.setnote-mark{display:inline-block;margin-inline-start:3px;font-size:11px;color:var(--gold-ink);vertical-align:-1px}
 .setnote-hist{margin-top:3px;display:flex;gap:4px;align-items:baseline}
-.setnote-hist .icn{flex:none;font-size:11px;color:var(--yellow);transform:translateY(1px)}
+.setnote-hist .icn{flex:none;font-size:11px;color:var(--gold-ink);transform:translateY(1px)}
 
 /* Weekly sets per muscle (components/WeeklySets.jsx): one line per muscle, the range as a band
    on the bar and the week's sets as its fill. */
