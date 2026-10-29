@@ -10,7 +10,7 @@ import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
 import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, partialsModeOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { clampIncline, hasIncline, inclineFits, inclineFrom, INCLINE_STEP } from '../lib/incline.js'
@@ -413,6 +413,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // workout → Workout controls). The lean default keeps the sets and one "more" button; each
   // switch brings one of the old always-visible button rows back.
   const wc = workoutControls(S)
+  // Settings → Workout → Partial reps: the "+ Partials" chip and the set-menu entry only exist
+  // when it is Fold or Keep open (lib/history.js partialsModeOf; Effort per set Off reads as Off).
+  const partialsOn = partialsModeOf(S) !== 'off'
   const cell = (s, i, col, cls) => (
     <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
       {wc.steppers && <button aria-label={t('Decrease')} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
@@ -605,7 +608,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           // A word about this one set (lib/set-notes.js), kept with the workout.
           { icon: 'note', label: noteHere ? t('Edit note') : t('Note'), sub: noteHere || t('A word about this set'), onClick: () => setNoteSheet(entryIdx, spanStart, warm ? t('Warm-up') : t('Set {0}', setNumOf(s, i))) },
           // Only once the set is done, and never on a per-side pair: partials follow the last full rep.
-          !warm && mode === 'reps' && !isSideSet(s) && s.done && { icon: 'arrowDown', label: t('Lengthened partials'), sub: !partialsAllowed(s) ? t('Needs a set taken to failure') : partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('After failure, no rest'), onClick: () => openPartials(s, i) },
+          partialsOn && !warm && mode === 'reps' && !isSideSet(s) && s.done && { icon: 'arrowDown', label: t('Lengthened partials'), sub: !partialsAllowed(s) ? t('Needs a set taken to failure') : partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('After failure, no rest'), onClick: () => openPartials(s, i) },
         ] },
         { more: [{ items: [
           // A warm-up logged as a work set (or the other way round) changes phase here. Reps sets
@@ -922,10 +925,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
                 <button className="iconbtn" aria-label={t('Remove burst')} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
               </div>
             ))}
-            {wc.setShortcuts && <div className="setextra">
-              {!isRestPauseSet(s) && <button className="chip add" onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
-              {!isDropSet(s) && <button className="chip add" onClick={() => addBurstRow(i)}><Icon name="bolt" />{t('+ Burst')}</button>}
-              {s.done && !isSideSet(s) && <button className="chip add" aria-disabled={!partialsAllowed(s) || undefined} style={!partialsAllowed(s) ? { opacity: 0.45 } : undefined} onClick={() => openPartials(s, i)}><Icon name="arrowDown" />{partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('+ Partials')}</button>}
+            {(wc.setShortcuts || partialsOn && s.done && !isSideSet(s)) && <div className="setextra">
+              {wc.setShortcuts && !isRestPauseSet(s) && <button className="chip add" onClick={() => addDropRow(i)}><Icon name="arrowDown" />{t('+ Drop')}</button>}
+              {wc.setShortcuts && !isDropSet(s) && <button className="chip add" onClick={() => addBurstRow(i)}><Icon name="bolt" />{t('+ Burst')}</button>}
+              {partialsOn && s.done && !isSideSet(s) && <button className="chip add" aria-disabled={!partialsAllowed(s) || undefined} style={!partialsAllowed(s) ? { opacity: 0.45 } : undefined} onClick={() => openPartials(s, i)}><Icon name="arrowDown" />{partialsOf(s) ? t('Partials: {0}', partialsOf(s)) : t('+ Partials')}</button>}
             </div>}
           </>}
         </div>
@@ -1159,12 +1162,13 @@ function ActiveWorkout() {
   const [openedState, setOpenedState] = useState(() => ({ len: A.entries.length, keys: new Set() }))
   const opened = openedState.len === A.entries.length ? openedState.keys : new Set()
   const finished = u => u.every(idx => A.entries[idx].sets.length > 0 && A.entries[idx].sets.every(s => s.done))
-  // Optional (Settings → Workout): the exercise just left stays open one step longer, so a late
-  // addition such as lengthened partials doesn't mean reopening it. Remembered per screen.
+  // Settings → Workout → Partial reps on "Keep open": the exercise just left stays open one step
+  // longer, so a late addition such as lengthened partials doesn't mean reopening it. Remembered
+  // per screen.
   const prevCurRef = useRef(cur)
   const leftRef = useRef(null)
   if (prevCurRef.current !== cur) { leftRef.current = prevCurRef.current; prevCurRef.current = cur }
-  const keepLast = workoutControls(S).keepLastOpen === true
+  const keepLast = partialsModeOf(S) === 'open'
   const collapsed = new Set(collapseOn ? units.filter(u =>
     !u.includes(cur) && !(keepLast && leftRef.current != null && u.includes(leftRef.current)) && !opened.has(u.join('-')) && finished(u),
   ).map(u => u.join('-')) : [])
@@ -2053,9 +2057,8 @@ function ActiveWorkout() {
       }
     }, true)
     if (editing) return
-    // "Keep the last exercise open" (Settings → Workout) also holds back the finish sheet, so a
-    // late addition such as lengthened partials doesn't start with dismissing it. Finish stays
-    // one tap away on the Finish button.
+    // Partial reps on "Keep open" also hold back the finish sheet, so a late addition doesn't
+    // start with dismissing it. Finish stays one tap away on the Finish button.
     if (workoutDone && !keepLast) workoutCompleteSheet()
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))
@@ -2113,8 +2116,8 @@ function ActiveWorkout() {
       // and revealCur brings the next exercise up if it was left low on the screen. Only on new
       // progress, never on a re-tick, and never in the other layouts, where the marker stays put.
       if (collapseOn && freshUnitDone && nextUnit && freshUnit?.includes(fresh.cur)) {
-        // "Keep the last exercise open" stays where it is: no glide to the next one either.
-        revealCur.current = !wc.keepLastOpen
+        // Partial reps on "Keep open" stay where they are: no glide to the next exercise either.
+        revealCur.current = !keepLast
         update(s => { if (s.active) s.active.cur = nextUnit[0] })
       }
 
