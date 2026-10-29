@@ -191,3 +191,76 @@ test('OpenAI itself never walks the generic ladder: its errors name what is wron
   assert.equal(r.code, 1);
   assert.equal(calls, 1);
 });
+
+/* #869: "Unsupported parameter: 'max_tokens' is not supported with this model. Use
+ * 'max_completion_tokens' instead." from Azure OpenAI and OpenAI's reasoning models behind the
+ * OpenAI-compatible provider. */
+const OPENAI_WORDS = "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.";
+const azure = () => ({ provider: 'compatible', providerOptions: { compatible: { baseUrl: `https://res${++n}.openai.azure.com/openai/v1` } } });
+
+test('Azure OpenAI and OpenAI reasoning models get max_completion_tokens from the first request (#869)', async () => {
+  for (const [cfg, model] of [[azure(), 'my-deployment'], [at(), 'gpt-5.4-mini'], [at(), 'o4-mini']]) {
+    const f = gateway(['completionTokens'], { say: true });
+    const r = await ask(cfg, f, { model });
+    assert.equal(r.code, 0, r.stderr);
+    assert.equal(f.calls.length, 1, `${model}: asked right the first time`);
+    assert.equal(f.calls[0].body.max_completion_tokens, 16000);
+    assert.ok(!('max_tokens' in f.calls[0].body));
+  }
+  // A reasoning model takes only its default temperature, so none is sent.
+  const f = gateway([]);
+  await ask(at(), f, { model: 'gpt-5.4-mini' });
+  assert.ok(!('temperature' in f.calls[0].body));
+  // Ollama, LM Studio, OpenRouter's vendor/model names keep max_tokens and temperature 0.
+  for (const model of ['llama3.1:8b', 'openai/gpt-5', 'qwen2.5:3b']) {
+    const g = gateway([]);
+    await ask(at(), g, { model });
+    assert.equal(g.calls[0].body.max_tokens, 16000, model);
+    assert.equal(g.calls[0].body.temperature, 0, model);
+  }
+});
+
+test('the exact OpenAI 400 is answered once with the other field and remembered for that endpoint (#869)', async () => {
+  const cfg = at();
+  // A model name the guess does not know, on a host it does not know.
+  const f = async (url, init) => {
+    const b = JSON.parse(init.body);
+    f.calls.push(b);
+    return 'max_tokens' in b ? reply(400, { error: { message: OPENAI_WORDS, type: 'invalid_request_error', param: 'max_tokens', code: 'unsupported_parameter' } })
+      : reply(200, { choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] });
+  };
+  f.calls = [];
+  const r = await ask(cfg, f, { model: 'company-gpt' });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 2, 'one retry');
+  assert.equal(f.calls[1].max_completion_tokens, 16000);
+  assert.deepEqual(compatProfile('compatible', cfg, 'company-gpt'), ['tokens']);
+  f.calls = [];
+  assert.equal((await ask(cfg, f, { model: 'company-gpt' })).code, 0);
+  assert.equal(f.calls.length, 1, 'the next job asks with max_completion_tokens straight away');
+});
+
+test('a wrong guess of the token field is undone once, even against a remembered swap (#869)', async () => {
+  // An old server that only knows max_tokens, serving a model named like a reasoning one.
+  const cfg = at();
+  const f = gateway(['legacyTokens'], { say: true });
+  const r = await ask(cfg, f, { model: 'gpt-5-local' });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[1].body.max_tokens, 16000);
+  // A profile saved by an earlier build (tokens swapped from max_tokens) now points the wrong
+  // way for a model the first guess already sends max_completion_tokens to: one more try, never a loop.
+  const cfg2 = at();
+  rememberCompatProfile('compatible', cfg2, 'gpt-5.4-mini', ['tokens']);
+  const g = gateway(['completionTokens'], { say: true });
+  const r2 = await ask(cfg2, g, { model: 'gpt-5.4-mini' });
+  assert.equal(r2.code, 0, r2.stderr);
+  assert.equal(g.calls.length, 2);
+  assert.equal(g.calls[1].body.max_completion_tokens, 16000);
+  assert.deepEqual(compatProfile('compatible', cfg2, 'gpt-5.4-mini'), null, 'the profile is clean again');
+  // A server that refuses both fields: bounded, and its words come back.
+  const h = gateway(['legacyTokens', 'completionTokens'], { say: true });
+  const r3 = await ask(at(), h, { model: 'gpt-5.4-mini' });
+  assert.equal(r3.code, 1);
+  assert.ok(h.calls.length <= 3, `${h.calls.length} calls`);
+});

@@ -3291,4 +3291,11 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "ทุกชาเลนจ์ที่ทำสำเร็จจะได้เหรียญมาวางที่นี่ เดือนละหนึ่งชั้น",
   "Monthly challenges": "ชาเลนจ์รายเดือน",
   "Three goals a month on Home, sized to how you train.": "เป้าหมายเดือนละสามข้อบนหน้าหลัก ปรับตามการฝึกของคุณ",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "http:// ที่ไม่เข้ารหัสใช้ได้เฉพาะกับที่อยู่ในเครือข่ายที่บ้าน เช่น 192.168.x.x ชื่อ .local หรือที่อยู่ 100.x ของ Tailscale อะไรก็ตามบนอินเทอร์เน็ตต้องใช้ https://",
+  "Plain http only on your home network": "http ที่ไม่เข้ารหัสใช้ได้เฉพาะในเครือข่ายที่บ้าน",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "ฟรีสไตล์จะทำซ้ำสิ่งที่คุณทำครั้งก่อน โดยไม่มีกฎการเพิ่มน้ำหนัก กฎใช้กับท่าในรูทีน",
+  "Your watch thought this workout was forgotten. It keeps going here.": "นาฬิกาของคุณคิดว่าการออกกำลังกายนี้ถูกลืม ที่นี่ยังดำเนินต่อไป",
+  "No rule (freestyle)": "ไม่มีกฎ (ฟรีสไตล์)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "ฟรีสไตล์จะใช้ตัวเลขที่คุณตั้งไว้ กฎที่เลือกตรงนี้ใช้กับการออกกำลังกายครั้งนี้เท่านั้น",
 }

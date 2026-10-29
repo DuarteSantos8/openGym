@@ -21,7 +21,7 @@ import * as payloadLib from '../../../api/coach/core/payload.js'
 import { runPipeline } from '../../../api/coach/core/pipeline.js'
 import { waitingProposal } from '../../../api/coach/core/pending.js'
 import { isDue } from '../../../api/coach/core/due.js'
-import { HTTP_PROVIDERS, baseUrlFor } from '../../../api/coach/core/providers.js'
+import { HTTP_PROVIDERS, baseUrlFor, phoneMayCall } from '../../../api/coach/core/providers.js'
 import anthropic from '../../../api/coach/core/adapters/anthropic.js'
 import openai from '../../../api/coach/core/adapters/openai.js'
 import gemini from '../../../api/coach/core/adapters/gemini.js'
@@ -53,6 +53,14 @@ let notify = null
 export function setNotifier(fn) { notify = fn }
 
 /* ---------- what this phone is configured with ---------- */
+
+// Every request the phone's Coach sends goes through here: https:// anywhere, plain http:// only
+// to an address on the home network (#913, providers.js phoneMayCall). The setup screen refuses
+// anything else up front; this is the same rule at the moment of the call, for a device file
+// written some other way and for every URL the adapters derive from the base.
+export const guardedFetch = (url, init) => (phoneMayCall(url)
+  ? nativeFetch(url, init)
+  : Promise.reject(new Error(t('Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.'))))
 
 const cfgOf = d => ({ provider: d.provider, providerOptions: d.baseUrl ? { [d.provider]: { baseUrl: d.baseUrl } } : {} })
 const envOf = (d, key) => (key ? { [HTTP_PROVIDERS[d.provider].apiKeyEnv]: key } : {})
@@ -159,7 +167,7 @@ export async function localDisclosure() {
 export async function localModels(settings, key) {
   const adapter = ADAPTERS[settings.provider]
   if (!adapter) return { ok: false, error: 'unknown provider', models: [] }
-  return adapter.models(cfgOf(settings), envOf(settings, key), { fetch: nativeFetch, timeoutMs: 20000 })
+  return adapter.models(cfgOf(settings), envOf(settings, key), { fetch: guardedFetch, timeoutMs: 20000 })
 }
 
 const hostOf = url => { try { return new URL(url).host } catch { return url || '' } }
@@ -198,7 +206,7 @@ async function run(S, kind, opts, d, adapter) {
   const attempt = await runPipeline({
     adapter, cfg: cfgOf(d), kind, payload,
     model, timeoutMs: timeoutFor(d.provider),
-    invokeOpts: { env: envOf(d, key), fetch: nativeFetch, maxTokens: coachLimits(d).maxOutputTokens }
+    invokeOpts: { env: envOf(d, key), fetch: guardedFetch, maxTokens: coachLimits(d).maxOutputTokens }
   })
   // The saved model was refused and another one answered (#758): keep that one, so the next
   // launch does not pay for the same 404 again. The setup screen shows the new name.

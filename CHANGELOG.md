@@ -307,6 +307,10 @@ Settings → Look & Home → Siri & Shortcuts lists what to say.
 - Ask the Coach for more core (or arms, legs, glutes...) and its review gets a real choice of those exercises, not the same four, plus room for new ones beside your plan (#829).
 - iPhone app: the rest sound no longer pauses your music. It turns it down for a moment and lets it play on, also with Play even on silent.
 - **Searching a muscle shows the lifts people do**: "chest" opens on the bench press, flyes and dips, "back" on rows and pulldowns. Stretches only lead when you search for a stretch.
+- Apple Watch: the forgotten-workout check no longer ends a workout you are logging on the iPhone (#904, thanks @gkitayama). Ticks, edits and opening the app on the phone count as the workout going on, the watch asks the phone before it ends anything (and only asks "All done?" when it can't reach it), and the phone keeps a workout running when the watch's finish is older than its own sets.
+- Freestyle tells the truth about progression (#910, thanks @soldsawn): adding an exercise says it repeats what you did last time instead of offering "Follow the routine (Linear progression)", and a freestyle exercise's settings mid-workout say No rule and keep your numbers instead of quietly adding a linear step. Pick a rule there and it applies to that workout.
+- AI Coach with newer OpenAI models and Azure OpenAI: no more "400 Unsupported parameter: 'max_tokens'" (#869, thanks @tapanmeena). The OpenAI-compatible endpoint sends max_completion_tokens to OpenAI's reasoning models and Azure, switches field once if an endpoint says otherwise and remembers it, and an Azure Responses URL gets told the base URL that works.
+- The phone's own Coach can talk plain http:// to a model on your home network (#913, thanks @pgavrilov): 192.168.x.x, 10.x, 172.16 to 31.x, Tailscale's 100.x, .local names, localhost and private IPv6. Anything on the internet still needs https://.
 
 **Bring your history from more apps** (#862, thanks @Gitoffomalawn). Import from another app now
 reads Liftosaur (the history CSV, or the JSON export, whose programs arrive as routines with their

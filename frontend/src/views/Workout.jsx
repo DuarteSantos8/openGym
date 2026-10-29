@@ -1614,7 +1614,7 @@ function ActiveWorkout() {
     // who wants to set sets/reps first.
     if (quick) { commit(seed || pickedExerciseConfig(ex.id)); useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
     // The confirm names what it changes: this workout, never the routine behind it.
-    else exConfigSheet(ex, null, commit, null, routine, seed, null, t('Add to this workout'))
+    else exConfigSheet(ex, null, commit, null, routine, seed, null, t('Add to this workout'), { freestyle: freestyle ? 'add' : false })
   })
   // Ending the session without saving it, from the Finish sheet only. It used to end the header ⋯
   // as a red trash too, right where the exercise ⋯ keeps Remove exercise, and after a hard session
@@ -1748,7 +1748,9 @@ function ActiveWorkout() {
         // kept in place (done warm-ups first, then done work sets, then the fresh remainder).
         // Without a prescription only in a routine kept out of progression: an exercise kept out
         // by hand keeps its prescription, so its Undo leaves the numbers it should count at.
-        const built = buildPlannedEntry(sessionHistory(s), full, activeRoutine, { noProg: builtOutOfProgression(activeEntry, activeRoutine) })
+        // A freestyle exercise (no routine) follows only a rule picked on it: without one it is
+        // rebuilt at the numbers the sheet was saved with, never at a linear step nobody picked (#910).
+        const built = buildPlannedEntry(sessionHistory(s), full, activeRoutine, { noProg: (!activeRoutine && !full.prog) || builtOutOfProgression(activeEntry, activeRoutine) })
         const fresh = built.sets
         // A per-side set with one side ticked is logged work too, not a row to rebuild.
         const logged = x => x.done || x.sides?.L?.done || x.sides?.R?.done
@@ -1763,7 +1765,7 @@ function ActiveWorkout() {
         else delete activeEntry.carried
         activeEntry.sets = [...doneWarm, ...freshWarm.slice(doneWarm.length), ...doneWork, ...freshWork.slice(doneWork.length)]
       })
-    }, null, routine)
+    }, null, routine, null, null, undefined, { freestyle: routine ? false : 'edit' })
   }
 
   // Remove a whole exercise from the session. The confirmation always asks first; in a
@@ -2103,6 +2105,8 @@ function ActiveWorkout() {
     },
     finish: () => { if (!useStore.getState().S.active?.editingWorkoutId) finishWorkoutNow() },
     discard: () => { if (!useStore.getState().S.active?.editingWorkoutId) discardNow() },
+    // The watch ended the workout as forgotten while it was being logged here (#904): kept running.
+    idleKept: () => useUI.getState().toast(t('Your watch thought this workout was forgotten. It keeps going here.')),
   }), [])
 
   // The Lock Screen's Done (lib/live-activity.js) ticks its set through this same toggle, as if

@@ -30,8 +30,15 @@ child process to drop privileges on, no runtime to carry in the image, and nothi
 
 A model on your own LAN is the compatible endpoint with no key: point it at
 `http://ollama.lan:11434` and pick a model from the list it serves. That is the whole
-configuration. (On the server, that is. The phone app's own-key Coach needs `https://`; see
-[On the phone](#on-the-phone).)
+configuration. (On the server, that is. The phone app's own-key Coach takes `http://` only for
+an address on the home network; see [On the phone](#on-the-phone).)
+
+Azure OpenAI is the compatible endpoint too: the base URL is
+`https://<resource>.openai.azure.com/openai/v1` (not the Responses URL with `?api-version=` the
+portal shows), the key is the resource's API key, and the model is your deployment's name.
+OpenAI's reasoning models (o1, o3, o4, gpt-5) and Azure get `max_completion_tokens` instead of
+`max_tokens`; an endpoint that wants the other one says so, and the Coach switches once and
+remembers it (#869).
 
 ## Turning it on
 
@@ -507,12 +514,18 @@ The App-Store build has no server of its own, so the Coach there is a choice mad
   the workout that completes the count, or on the first open after the weekly slot, and says
   something only when it has a suggestion. Up to v1.4.2 nothing ran them on a phone at all.
 
-  A compatible endpoint has to be **`https://`** here. Android does not let apps send
-  unencrypted `http://` traffic, so a model on your LAN at `http://ollama.lan:11434` cannot be
-  reached from the phone, and the setup screen says so as soon as such an address is typed.
-  Either put HTTPS in front of the model (Tailscale's HTTPS certificates, or a reverse proxy
-  with a certificate), or use the first option: the server has no such rule, and its Coach
-  reaches an `http://` model on its own network.
+  A compatible endpoint on the **home network** can be plain `http://` here (#913): a private
+  IPv4 address (`192.168.x.x`, `10.x.x.x`, `172.16.x.x` to `172.31.x.x`), Tailscale's `100.x`
+  addresses, `localhost`, a `.local` name, a single-word host name, and private or link-local
+  IPv6 (`fd…`, `fe80…`). Anything else, any address on the internet, has to be `https://`: the
+  key and your training data ride in the request. The check is in
+  `api/coach/core/providers.js` (`phoneMayCall`) and runs on every request, not only in the
+  setup screen, because Android can only allow unencrypted traffic for the whole app
+  (`network_security_config.xml`), while iOS allows it for local addresses only
+  (`NSAllowsLocalNetworking`). A name like `ollama.lan` is not one of those: use the model's IP
+  address or `.local` name, put HTTPS in front of it, or use the first option, whose server
+  Coach reaches any `http://` model on its own network. In a browser there is no own-key Coach:
+  an `https://` page may not call `http://` addresses, so the web app always uses the server's.
 
 ## Off is really off
 

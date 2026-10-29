@@ -3359,4 +3359,11 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "প্রতিটি শেষ করা চ্যালেঞ্জ এখানে একটি ব্যাজ রাখে, প্রতি মাসে একটি তাক।",
   "Monthly challenges": "মাসিক চ্যালেঞ্জ",
   "Three goals a month on Home, sized to how you train.": "হোমে প্রতি মাসে তিনটি লক্ষ্য, আপনার ট্রেনিং অনুযায়ী।",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "এনক্রিপ্ট না করা http:// শুধু আপনার বাড়ির নেটওয়ার্কের কোনো ঠিকানায় চলে, যেমন 192.168.x.x, একটি .local নাম বা Tailscale-এর 100.x ঠিকানা। ইন্টারনেটের যেকোনো কিছুর জন্য https:// লাগবে।",
+  "Plain http only on your home network": "এনক্রিপ্ট না করা http শুধু বাড়ির নেটওয়ার্কে",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "ফ্রিস্টাইল আগেরবার যা করেছিলেন তা-ই আবার দেয়, কোনো প্রগ্রেশন নিয়ম ছাড়া। নিয়মগুলো রুটিনের ব্যায়ামে কাজ করে।",
+  "Your watch thought this workout was forgotten. It keeps going here.": "আপনার ঘড়ি ভেবেছিল এই ওয়ার্কআউটটা ভুলে যাওয়া হয়েছে। এখানে এটা চলতে থাকবে।",
+  "No rule (freestyle)": "কোনো নিয়ম নেই (ফ্রিস্টাইল)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "ফ্রিস্টাইল আপনার দেওয়া সংখ্যাগুলোই রাখে। এখানে বেছে নেওয়া নিয়ম শুধু এই ওয়ার্কআউটে কাজ করে।",
 }

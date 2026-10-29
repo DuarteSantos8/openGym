@@ -3277,4 +3277,11 @@ export default {
   "Every challenge you finish puts a badge here, one shelf per month.": "Кожен виконаний челендж залишає тут значок, по полиці на місяць.",
   "Monthly challenges": "Щомісячні челенджі",
   "Three goals a month on Home, sized to how you train.": "Три цілі на місяць на Головній, під твій рівень.",
+  // --- v1.4.4: LAN http for the phone Coach (#913), freestyle progression (#910), watch idle finish (#904) ---
+  "Plain http:// only works for an address on your home network, like 192.168.x.x, a .local name or a Tailscale 100.x address. Anything on the internet needs https://.": "Незашифрований http:// працює лише з адресою у твоїй домашній мережі, як-от 192.168.x.x, ім’я .local або адреса Tailscale 100.x. Усе в інтернеті потребує https://.",
+  "Plain http only on your home network": "Незашифрований http лише в домашній мережі",
+  "Freestyle repeats what you did last time, with no progression rule. Rules apply to exercises in a routine.": "Довільне тренування повторює те, що ти робив минулого разу, без правила прогресії. Правила діють для вправ у програмі.",
+  "Your watch thought this workout was forgotten. It keeps going here.": "Годинник вирішив, що це тренування забуте. Тут воно триває.",
+  "No rule (freestyle)": "Без правила (довільна)",
+  "Freestyle keeps the numbers you set. A rule picked here applies to this workout only.": "Довільне тренування зберігає числа, які ти задаєш. Правило, вибране тут, діє лише в цьому тренуванні.",
 }
