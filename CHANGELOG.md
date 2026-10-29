@@ -13,6 +13,12 @@ you back to the bar, heart rate on every set, a summary at the end, and a Tile w
 today's plan. Start today's routine right from the watch. Your phone stays in charge, the watch just
 saves you the walk to the bench where you left it.
 
+**openGym on Amazfit watches** (Zepp OS 3 and later: Balance, GTR 4, GTS 4, Active, T-Rex, Cheetah,
+Bip 5 and friends). Same deal as Wear OS: start a routine on the wrist, turn the crown (or tap + and
+-) for weight and reps, Done, a rest ring that buzzes, heart rate on every set, a summary, and a
+shortcut card with your streak. It talks to openGym through your own server, so pair it in
+Settings → Zepp OS watch and type the code into the Zepp app. Works with the web app too.
+
 **A fresh coat of paint.** The whole app got a proper look-and-feel pass, the kind where nobody
 can point at what changed but everything sits better. Home's cards all introduce themselves the
 same way now (a small line, a title, one button), so the screen stops sounding like five apps
