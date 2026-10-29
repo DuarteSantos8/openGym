@@ -1483,6 +1483,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setrow.done>*:not(.n){opacity:.45}
 .setrow.done .n{background:var(--acc);color:var(--on-acc);
   background:color-mix(in srgb,var(--acc) 45%,var(--surface));color:color-mix(in srgb,var(--on-acc) 45%,var(--surface))}
+/* Safari before 16.2: the number fades as a whole, as the row did before */
+@supports not (color: color-mix(in srgb, red 50%, blue)){.setrow.done .n{color:var(--on-acc);opacity:.45}}
 
 /* Swipe on sets (v1.3.11, components/SwipeRow.jsx). The row slides over two panes: Copy at the
    start of the line, Delete at its end, each as wide as the swipe has gone and zero wide at rest.
