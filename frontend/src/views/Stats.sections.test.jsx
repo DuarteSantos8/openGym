@@ -60,4 +60,15 @@ describe('Stats sections (P5)', () => {
     mount()
     expect(index()[1].getAttribute('aria-pressed')).toBe('true')
   })
+  it('leaves the highlight alone while a sheet pins the page (it jumped to the last part)', async () => {
+    window.history.replaceState(null, '', '#/stats')
+    mount()
+    document.body.style.position = 'fixed'
+    await act(async () => { window.dispatchEvent(new Event('scroll')); await new Promise(r => setTimeout(r, 60)) })
+    expect(index()[0].getAttribute('aria-pressed')).toBe('true')
+    document.body.style.position = ''
+    await act(async () => { window.dispatchEvent(new Event('scroll')); await new Promise(r => setTimeout(r, 60)) })
+    // unpinned, the spy reads the page again (here every part sits at the top, so the last wins)
+    expect(index().at(-1).getAttribute('aria-pressed')).toBe('true')
+  })
 })
