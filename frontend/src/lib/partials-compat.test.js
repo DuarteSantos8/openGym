@@ -90,7 +90,7 @@ describe('histories without lp', () => {
   const w = plainState().workouts[0]
 
   it('count the same volume with the partials switch on or off', () => {
-    expect(sessionVolume(w, {})).toBe(sessionVolume(w, { volumePartials: true }))
+    expect(sessionVolume(w, {})).toBe(sessionVolume(w, { effort: 'rir', partials: 'fold' }))
     expect(workoutVolume(w)).toBe(workoutVolume(w, { partials: true }))
   })
 
