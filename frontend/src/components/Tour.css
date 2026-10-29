@@ -8,8 +8,9 @@
 .tour-hole{position:fixed;border-radius:14px;box-shadow:0 0 0 200vmax rgba(0,0,0,.55);outline:2px solid var(--acc);outline-offset:0;
   transition:top .25s ease,left .25s ease,width .25s ease,height .25s ease;pointer-events:none}
 .tour-card{position:fixed;pointer-events:auto;width:min(340px,calc(100vw - 32px));box-sizing:border-box;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;
-  padding:14px 16px 12px;border-radius:var(--r-xl,18px);background:var(--surface);color:var(--label);
-  box-shadow:0 16px 48px -12px rgba(0,0,0,.55);transition:top .25s ease,left .25s ease;outline:none}
+  padding:14px 16px 12px;border-radius:var(--r-xl,18px);background:var(--surface-raised,var(--surface));color:var(--label);
+  /* a raised surface (P11): lighter than the cards under the dim, edged with a hairline of light */
+  box-shadow:inset 0 0 0 var(--hair,.5px) var(--raised-line,transparent),0 16px 48px -12px rgba(0,0,0,.55);transition:top .25s ease,left .25s ease;outline:none}
 .tour-center{top:50%;left:50%;transform:translate(-50%,-50%)}
 .tour-card h2{margin:2px 0 6px;font-size:18px;font-weight:700;letter-spacing:-.02em;text-transform:none;color:var(--label)}
 .tour-card p{margin:0 0 12px;font-size:var(--fs-subhead);line-height:1.45;color:var(--label-2,var(--label))}
@@ -21,7 +22,7 @@
 .tour-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 /* The card's point: a little notch toward the spotlight, at the hole's middle (Tour.jsx). Its own
    box, so the card itself can scroll (overflow) without clipping it. */
-.tour-arrow{position:absolute;width:14px;height:14px;margin-left:-7px;background:var(--surface);transform:rotate(45deg);pointer-events:none}
+.tour-arrow{position:absolute;width:14px;height:14px;margin-left:-7px;background:var(--surface-raised,var(--surface));transform:rotate(45deg);pointer-events:none}
 .tour-arrow.below{top:-6px}
 .tour-arrow.above{bottom:-6px}
 .tour-card:has(.tour-arrow){overflow:visible}

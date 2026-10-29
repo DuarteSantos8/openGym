@@ -24,6 +24,12 @@
   --surface:   #1c1c1e;   /* card / grouped-list fill */
   --surface-2: #2c2c2e;   /* pressed + nested fill */
   --surface-3: #3a3a3c;   /* controls (segmented track, switch off) */
+  /* Things that float over the page (the tour bubble, a dialog, the rest timer, a chart's tooltip,
+     the back-to-top button): one step lighter than a card and edged with a hairline of light, so
+     in the dark theme they read as lifted rather than as one more card under a shadow you cannot
+     see on black (redesign 1.4.5, P11). In the light theme white with the shadow does that. */
+  --surface-raised: #2c2c2e;
+  --raised-line: rgba(255,255,255,.09);
 
   /* text */
   --label:     #ffffff;
@@ -107,6 +113,8 @@
   --surface:   #ffffff;
   --surface-2: #ececef;
   --surface-3: #e3e3e8;
+  --surface-raised: #ffffff;
+  --raised-line: rgba(60,60,67,.10);
 
   --label:     #000000;
   /* .75, not the system's .60: at .60 the secondary text was 3.5:1 on a white card and 3.2:1 on
@@ -601,7 +609,7 @@ h4.sec{
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
-  #timer{background:var(--surface)}
+  #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
 }
 /* The setting itself, read directly. The @supports fallback above only fires where backdrop-filter
@@ -611,7 +619,7 @@ h4.sec{
   #tabbar,#timer,#toast,.conn-bar,.whdr.stick{-webkit-backdrop-filter:none;backdrop-filter:none}
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
-  #timer{background:var(--surface)}
+  #timer{background:var(--surface-raised)}
   #toast{background:var(--surface-2)}
   .conn-bar,.whdr.stick{background:var(--bg)}
   /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
@@ -1684,11 +1692,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:calc(88px + var(--sab));z-index:60;
   /* nearly opaque: the set rows underneath were reading through the old 82% and made the
      clock hard to pick out mid-set. The blur stays, so it still sits above the page. */
-  background:var(--surface);background:color-mix(in srgb,var(--surface) 97%,transparent);
+  background:var(--surface-raised);background:color-mix(in srgb,var(--surface-raised) 97%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
   border-radius:var(--r-lg);padding:12px 12px 10px;overflow:hidden;
   display:flex;align-items:center;gap:10px;
-  box-shadow:0 12px 34px -8px rgba(0,0,0,.55);
+  box-shadow:inset 0 0 0 var(--hair) var(--raised-line),0 12px 34px -8px rgba(0,0,0,.55);
   animation:slideup var(--med) var(--ease);
 }
 @keyframes slideup{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
@@ -1746,7 +1754,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 body.no-tabbar #timer{
   inset-inline-start:0;inset-inline-end:0;bottom:0;
   border-radius:var(--r-xl) var(--r-xl) 0 0;padding:14px 14px calc(10px + var(--sab));
-  box-shadow:0 -10px 30px -14px rgba(0,0,0,.55);
+  box-shadow:inset 0 var(--hair) 0 var(--raised-line),0 -10px 30px -14px rgba(0,0,0,.55);
 }
 body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
 @media (max-width:399px){
@@ -1835,9 +1843,9 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 :root[data-theme="light"] .picker-search{background:var(--bg)}
 .center{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  width:min(84vw,300px);background:var(--bg-el);border-radius:var(--r-lg);padding:20px;
+  width:min(84vw,300px);background:var(--surface-raised);border-radius:var(--r-lg);padding:20px;
   max-height:calc(100dvh - 2*var(--sat) - 24px);overflow-y:auto;
-  box-shadow:0 20px 60px -12px rgba(0,0,0,.5);
+  box-shadow:inset 0 0 0 var(--hair) var(--raised-line),0 20px 60px -12px rgba(0,0,0,.5);
   animation:pop .28s var(--ease);
 }
 :root[data-theme="light"] .center{background:#fff}
@@ -1915,10 +1923,10 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* left/top are written by LineChart after measuring the label, so it can never be
    pushed under the `.chart` clip at either edge — hence no offset here. */
 .ctip{
-  position:absolute;left:0;top:0;background:var(--surface-2);
+  position:absolute;left:0;top:0;background:var(--surface-raised);
   border-radius:8px;padding:4px 10px;font-size:var(--fs-caption);font-weight:500;white-space:nowrap;
   max-width:calc(100% - 8px);overflow:hidden;text-overflow:ellipsis;
-  pointer-events:none;box-shadow:0 6px 18px -4px rgba(0,0,0,.4);
+  pointer-events:none;box-shadow:inset 0 0 0 var(--hair) var(--raised-line),0 6px 18px -4px rgba(0,0,0,.4);
 }
 
 /* --- activity heatmap --- */
@@ -2291,7 +2299,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 #totop{
   position:fixed;inset-inline-end:max(16px,calc(50vw - 264px));bottom:calc(80px + var(--sab));z-index:45;
   width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
-  background:var(--surface-2);color:var(--acc-ink);border:var(--hair) solid var(--sep-op);
+  background:var(--surface-raised);color:var(--acc-ink);border:var(--hair) solid var(--raised-line);
   box-shadow:0 8px 22px -8px rgba(0,0,0,.5);
   opacity:0;transform:translateY(10px) scale(.6);visibility:hidden;pointer-events:none;
   transition:opacity var(--fast),transform var(--med) var(--ease),visibility 0s linear var(--med);
