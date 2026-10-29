@@ -9,10 +9,12 @@ import { MUSCLE_NAME } from '../lib/muscles.js'
 import Icon from './Icon.jsx'
 import { Button, Stepper } from './ui.jsx'
 
+// The status words carry the meaning; the row's class (below / in / above) colours its fill and
+// words from the shared status inks in index.css: grey for room left, green in range, orange past.
 const STATUS = {
-  below: { label: () => t('room for more'), color: 'var(--blue)' },
-  in: { label: () => t('in range'), color: 'var(--green)' },
-  above: { label: () => t('above range'), color: 'var(--orange)' },
+  below: { label: () => t('room for more') },
+  in: { label: () => t('in range') },
+  above: { label: () => t('above range') },
 }
 
 /** One muscle's line: name, "14 / 10–20", and a bar with the range drawn in. */
@@ -20,7 +22,7 @@ function SetsRow({ r }) {
   const top = Math.max(r.hi * 1.25, r.sets, 1)
   const pct = v => Math.min(100, (v / top) * 100)
   const st = STATUS[r.status]
-  return <div className="wsets-row" role="group"
+  return <div className={'wsets-row ' + r.status} role="group"
     aria-label={t('{0}: {1} sets this week, range {2} to {3}', t(r.name), fmtNum(r.sets), r.lo, r.hi) + ', ' + st.label()}>
     <div className="wsets-head">
       <span className="wsets-name">{t(r.name)}</span>
@@ -28,9 +30,9 @@ function SetsRow({ r }) {
     </div>
     <div className="wsets-bar" aria-hidden="true">
       <span className="wsets-band" style={{ insetInlineStart: pct(r.lo) + '%', width: (pct(r.hi) - pct(r.lo)) + '%' }} />
-      <span className="wsets-fill" style={{ width: pct(r.sets) + '%', background: st.color }} />
+      <span className="wsets-fill" style={{ width: pct(r.sets) + '%' }} />
     </div>
-    <div className="wsets-st small" style={{ color: st.color }}>{st.label()}</div>
+    <div className="wsets-st">{st.label()}</div>
   </div>
 }
 
@@ -80,11 +82,13 @@ function TargetsEditor() {
       const [lo, hi] = targetOf(S, slug)
       return <div key={slug} className="wsets-edit">
         <div className="wsets-edit-n">{t(MUSCLE_NAME[slug])}</div>
+        <div className="wsets-edit-r">
         <Stepper ariaLabel={t('{0}: low end', t(MUSCLE_NAME[slug]))} value={lo} step={1} min={0} max={TARGET_MAX} decimal={false}
           onChange={v => set(slug, [v, Math.max(v, hi)])} />
-        <span className="dim">–</span>
+        <span className="dim" aria-hidden="true">–</span>
         <Stepper ariaLabel={t('{0}: high end', t(MUSCLE_NAME[slug]))} value={hi} step={1} min={0} max={TARGET_MAX} decimal={false}
           onChange={v => set(slug, [Math.min(lo, v), v])} />
+        </div>
       </div>
     })}
     {own && <><div style={{ height: 12 }} /><Button variant="ghost" icon="reset" onClick={() => update(s => { delete s.muscleTargets })}>{t('Back to the defaults')}</Button></>}
