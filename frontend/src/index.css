@@ -409,6 +409,21 @@ h4.sec{
 /* The body-weight card header (Home and Stats): title on the left, Goal + Log on the right. In
    German the title and the two buttons ("Ziel", "+ Eintragen") outgrow a 320px card by about
    55px, so the button pair may drop to a second line — still flush right, hence the auto margin. */
+/* One card header for Home (components/CardHead.jsx, redesign 1.4.5 P2): icon, a small line, a
+   17/600 title, an optional subtitle, at most one trailing control. */
+.card-head{display:flex;align-items:center;gap:8px;min-width:0}
+.card-head-main{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-align:start;color:inherit}
+.card-head-toggle{padding:0;border:0;background:none;font:inherit;cursor:pointer}
+.card-head-t{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.card-head-title{font-size:var(--fs-body);font-weight:600;line-height:1.25;letter-spacing:var(--ls-body);overflow-wrap:break-word;text-wrap:balance}
+.card-head-sub{font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
+.card-head-g{flex:none;display:grid;place-items:center;width:29px;height:29px;font-size:var(--fs-title2)}
+.card-head>.iconbtn{flex:none;width:30px;height:30px;font-size:14px}
+.card-head>.chev{flex:none}
+.card-head+*{margin-top:10px}
+.card-head-indent{padding-inline-start:39px}
+.card-head+.streak-meta-line{margin-top:2px}
+.card-head+.ch-mini,.card-head+.streak-party{margin-top:8px}
 .bw-head{flex-wrap:wrap;row-gap:8px}
 .bw-head>.row{margin-inline-start:auto}
 .bw-rate{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;width:100%;margin-top:6px;padding:6px 2px;background:none;border:0;color:var(--label-2);font:inherit;font-size:var(--fs-subhead);line-height:1.3;text-align:start;cursor:pointer}
@@ -2854,6 +2869,5 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Your year in openGym: Home's December card (components/WrappedEntry.jsx). The stories' own
    styles load with them (components/Wrapped.css). */
 .wr-home{position:relative;overflow:hidden;background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 24%,var(--surface)),var(--surface) 72%)}
-.wr-home .ttl{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
-.wr-home .wr-x{position:absolute;top:8px;inset-inline-end:8px}
+.wr-home>.btn{margin-top:12px}
 .stp .val .stp-word{font-weight:600;min-width:2.5em;text-align:center;display:inline-block}

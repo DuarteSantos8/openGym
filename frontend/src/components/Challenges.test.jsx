@@ -82,7 +82,7 @@ describe('Home card', () => {
 
   it('folds to a line, and the × hides it until next month', () => {
     const el = render()
-    act(() => el.querySelector('.ch-head').click())
+    act(() => el.querySelector('.card-head-toggle').click())
     expect(S().challengesFold).toBe(true)
     expect(el.querySelector('.ch-list')).toBeNull()
     expect(el.querySelectorAll('.ch-mini span')).toHaveLength(3)

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
+import CardHead from './CardHead.jsx'
 import { Medal, PartyBanner, PARTY_MS, TIERS } from './Streak.jsx'
 import {
   monthKeyOf, shiftMonth, monthChallenges, progressOf, newlyDone, savePicks, markDone, isGold,
@@ -88,18 +89,10 @@ export function ChallengesCard({ S, now = new Date() }) {
   const newMonth = now.getDate() <= NEW_MONTH_DAYS && !!prevMonth && !isGold(prevMonth)
   const update = fn => useStore.getState().update(fn)
   return <div className={'card challenges' + (gold ? ' gold' : '')} data-challenges>
-    <div className="row between" style={{ alignItems: 'center', gap: 8 }}>
-      <button type="button" className="ch-head" aria-expanded={!folded} onClick={() => update(s => { s.challengesFold = !folded })}>
-        <span className="lrow-i" style={{ background: gold ? 'var(--yellow)' : 'var(--orange)' }}><Icon name={gold ? 'crown' : 'target'} /></span>
-        <span className="ch-head-t">
-          <span className="ch-sub">{monthLabel(key)} · {doneLine(done, progress.length)}</span>
-          <span className="ttl">{t('This month’s challenges')}</span>
-        </span>
-        <Icon name={folded ? 'chevronDown' : 'chevronUp'} className="chev" />
-      </button>
-      <button type="button" className="iconbtn" style={{ width: 30, height: 30, fontSize: 14, flex: 'none' }}
-        onClick={() => update(s => { s.challengesHidden = key })} aria-label={t('Hide until next month')}><Icon name="xmark" /></button>
-    </div>
+    <CardHead icon={gold ? 'crown' : 'target'} tint={gold ? 'var(--yellow)' : 'var(--orange)'}
+      eyebrow={<>{monthLabel(key)} · {doneLine(done, progress.length)}</>} title={t('This month’s challenges')}
+      toggle={{ expanded: !folded, onToggle: () => update(s => { s.challengesFold = !folded }) }}
+      action={<button type="button" className="iconbtn" onClick={() => update(s => { s.challengesHidden = key })} aria-label={t('Hide until next month')}><Icon name="xmark" /></button>} />
     {folded
       ? <div className="ch-mini" aria-hidden="true">{progress.map(p => <span key={p.id} className={'pbar' + (p.done ? ' done' : '')}><i style={{ '--p': Math.min(1, Math.max(0, p.pct)) }} /></span>)}</div>
       : <ChallengeRows progress={progress} unit={S.unit} />}

@@ -11,6 +11,7 @@ import { printReport } from '../lib/report-print.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import ShareCardSheet from './ShareCard.jsx'
 import Icon from './Icon.jsx'
+import CardHead from './CardHead.jsx'
 import { Button } from './ui.jsx'
 
 const titleOf = r => (r.kind === 'month' ? t('Your month') : t('Your week'))
@@ -39,17 +40,8 @@ export function RecapHomeCard({ S }) {
   if (!r) return null
   const dismiss = ev => { ev.stopPropagation(); update(s => { s.recapSeen = r.key }) }
   return <div className="card tappable recap-card" data-recap={r.kind} style={{ cursor: 'pointer' }} {...tappable(() => recapSheet(r))}>
-    <div className="row between" style={{ gap: 8 }}>
-      <div className="row" style={{ gap: 9, minWidth: 0 }}>
-        <span className="lrow-i" style={{ background: 'var(--purple)' }}><Icon name="chart" /></span>
-        <div style={{ minWidth: 0 }}>
-          <div className="lbl2">{datesOf(r)}</div>
-          <div className="ttl">{titleOf(r)}</div>
-          <div className="ss">{lineOf(r, S.unit)}</div>
-        </div>
-      </div>
-      <button type="button" className="iconbtn" aria-label={t('Put it away')} onClick={dismiss}><Icon name="xmark" /></button>
-    </div>
+    <CardHead icon="chart" tint="var(--purple)" eyebrow={datesOf(r)} title={titleOf(r)} sub={lineOf(r, S.unit)}
+      action={<button type="button" className="iconbtn" aria-label={t('Put it away')} onClick={dismiss}><Icon name="xmark" /></button>} />
   </div>
 }
 

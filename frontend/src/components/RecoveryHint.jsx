@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
+import CardHead from './CardHead.jsx'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { todayISO } from '../lib/format.js'
@@ -26,17 +27,10 @@ export default function RecoveryHint({ S }) {
   if (!text) return null
   const dismiss = () => useStore.getState().update(s => { s.recoveryHintDay = today })
   return <div className="card recovery-hint" data-hint={hint.kind}>
-    <div className="row" style={{ gap: 10, alignItems: 'flex-start' }}>
-      <span className="lrow-i" style={{ background: 'var(--green)' }}><Icon name="figureStrength" /></span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="lbl2">{t('Recovery')}</div>
-        <div className="small" style={{ fontWeight: 500 }}>{text[0]}</div>
-        <div className="small muted">{text[1]}</div>
-        {hint.kind === 'lighter' && <div style={{ marginTop: 8 }}>
-          <Button size="sm" variant="tinted" icon="swap" onClick={() => dayOverrideSheet(today)}>{t('Swap session')}</Button>
-        </div>}
-      </div>
-      <button type="button" className="iconbtn" style={{ width: 30, height: 30, fontSize: 14 }} onClick={dismiss} aria-label={t('Hide for today')}><Icon name="xmark" /></button>
-    </div>
+    <CardHead icon="figureStrength" tint="var(--green)" eyebrow={t('Recovery')} title={text[0]} sub={text[1]}
+      action={<button type="button" className="iconbtn" onClick={dismiss} aria-label={t('Hide for today')}><Icon name="xmark" /></button>} />
+    {hint.kind === 'lighter' && <div className="card-head-indent">
+      <Button size="sm" variant="tinted" icon="swap" onClick={() => dayOverrideSheet(today)}>{t('Swap session')}</Button>
+    </div>}
   </div>
 }
