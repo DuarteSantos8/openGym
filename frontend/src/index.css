@@ -2397,6 +2397,15 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
 .empty .ico{font-size:34px;color:var(--label-2);margin-bottom:12px;display:flex;justify-content:center}
+/* An empty list with its first action in place (components/EmptyState.jsx, P9): the sentence and
+   the button together, centred in a quiet frame where the rows will appear. */
+.empty-state{background:var(--surface);border-radius:var(--r-card);padding:28px 20px 22px;margin-block:4px 16px}
+.empty-state.in-sect{background:none;margin:0;padding:22px 16px 18px}
+.empty-state .ico{font-size:30px;margin-bottom:10px}
+.empty-t{font-size:var(--fs-body);font-weight:600;color:var(--label);margin-bottom:4px}
+.empty-x{text-wrap:pretty}
+.empty-acts{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:16px}
+.empty-acts>.btn{width:auto;min-width:min(240px,100%);padding-inline:20px}
 .steps-list{
   padding-inline-start:18px;color:var(--label-2);font-size:var(--fs-subhead);line-height:1.5;
   display:flex;flex-direction:column;gap:9px;
