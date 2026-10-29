@@ -27,7 +27,7 @@
 .wsets-num{flex:none;font-variant-numeric:tabular-nums;color:var(--label-2);font-size:14px}
 .wsets-num b{color:var(--label);font-weight:600}
 .wsets-bar{position:relative;height:8px;margin:6px 0 3px;border-radius:4px;background:var(--surface-2);overflow:hidden}
-.wsets-band{position:absolute;top:0;bottom:0;background:color-mix(in srgb,var(--green) 22%,transparent)}
+.wsets-band{position:absolute;top:0;bottom:0;background:rgba(48,209,88,.22);background:color-mix(in srgb,var(--green) 22%,transparent)}
 .wsets-fill{position:absolute;top:2px;bottom:2px;inset-inline-start:0;border-radius:3px;opacity:.9}
 .wsets-st{font-size:12px}
 .wsets-home{display:flex;align-items:center;gap:8px;width:100%;margin-top:8px;padding:8px 0 0;border:0;border-top:1px solid var(--sep);background:none;color:var(--label-2);font:inherit;font-size:13px;text-align:start;cursor:pointer}
