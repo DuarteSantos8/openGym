@@ -155,9 +155,21 @@ private struct PressStyle: ButtonStyle {
 
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    /// Which whole screen is up, worked out as the body's chain is: the one key its fade runs on.
+    private enum Screen: Hashable { case weighIn, summary, countdown, idle, holdCount, hold, session }
+    private var screen: Screen {
+        if store.weighInFor != nil { return .weighIn }
+        if store.summary != nil { return .summary }
+        if store.workout == nil { return store.countdownFrom != nil ? .countdown : .idle }
+        if store.holdCountFrom != nil { return .holdCount }
+        return store.holdEndsAt != nil ? .hold : .session
+    }
 
     var body: some View {
-        Group {
+        // A ZStack, not a Group: the screen going and the one coming overlap for the fade.
+        ZStack {
             if store.weighInFor != nil {
                 WeighInView()
             } else if let summary = store.summary {
@@ -174,6 +186,8 @@ struct RootView: View {
                 SessionScreen()
             }
         }
+        // A cut looked like a glitch when the screen changes by itself (an auto hold); still a fade under Reduce Motion.
+        .animation(dimmed ? nil : .easeOut(duration: 0.2), value: screen)
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
         // Text's words up by this locale).
         .environment(\.locale, store.locale)
@@ -481,7 +495,6 @@ struct SessionScreen: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var page: Page = SessionStore.demoOpensOverview ? .overview : SessionStore.demoOpensMetrics ? .metrics : SessionStore.demoScreen == "music" ? .music : .set
 
     var body: some View {
@@ -500,7 +513,8 @@ struct SessionScreen: View {
                         .accessibilityHidden(resting)
                     if resting, let end { RestView(end: end).transition(.opacity) }
                 }
-                .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: resting)
+                // It enters, so ease-out; a fade is not movement, so it stays under Reduce Motion.
+                .animation(dimmed ? nil : .easeOut(duration: 0.2), value: resting)
                 .tag(Page.set)
                 MetricsPage(health: store.health, front: page == .metrics && scenePhase == .active).tag(Page.metrics)
                 NowPlayingView().tag(Page.music)        // Apple's own player, as in Workout
@@ -559,9 +573,12 @@ struct ExercisePage: View {
     @State private var keypad: Keypad.Request?
     @State private var rating = false
     @State private var confirmSkip = false
+    /// Which way the last ‹ › went: the set coming in nudges in from that side.
+    @State private var forward = true
     @FocusState private var crownFocus: Bool
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
 
     /// How many of the two extra lines (last time, planned) a layout carries; the page takes the first that fits.
@@ -731,13 +748,22 @@ struct ExercisePage: View {
         let last = store.show.showLast ? SetPage.lastTime(entry.last, pos) : nil
         let plan = SetPage.planned(entry, set: si, unit: unit) { store.isSkipped(entry.id, $0) }
         VStack(spacing: 0) {
-            positionRow(entry, row, pos)
-            Spacer(minLength: 1)
-            if lines != .none, let last { lastLine(last) }
-            boxes(entry, row, unit: unit, current: current)
-            // A done set: the plan ahead is not about it.
-            if let plan, !row.done, lines == .both || (lines == .one && last == nil) { plannedLine(plan) }
-            Spacer(minLength: 1)
+            // The set's own rows, one per set: ‹ › swap them with a nudge; the arrows and Done stay put under the thumb.
+            ZStack {
+                VStack(spacing: 0) {
+                    positionRow(entry, row, pos)
+                    Spacer(minLength: 1)
+                    if lines != .none, let last { lastLine(last) }
+                    boxes(entry, row, unit: unit, current: current)
+                    // A done set: the plan ahead is not about it.
+                    if let plan, !row.done, lines == .both || (lines == .one && last == nil) { plannedLine(plan) }
+                    Spacer(minLength: 1)
+                }
+                .id(si)
+                .transition(.asymmetric(insertion: reduceMotion ? .opacity : .offset(x: forward ? 12 : -12).combined(with: .opacity),
+                                        removal: .opacity))
+            }
+            .frame(maxHeight: .infinity)
             primaryRow(entry, si, current: current)
         }
         .frame(maxHeight: .infinity)        // the spare room goes between the rows
@@ -747,10 +773,16 @@ struct ExercisePage: View {
     private func arrows(@ViewBuilder _ middle: () -> some View) -> some View {
         let cardio = store.workout?.entries[index].isCardio ?? true
         return HStack(spacing: 4) {
-            if !cardio { NavArrow(forward: false, enabled: store.canMove(index, by: -1), width: 32, height: Theme.tap) { store.move(index, by: -1) } }
+            if !cardio { NavArrow(forward: false, enabled: store.canMove(index, by: -1), width: 32, height: Theme.tap) { step(-1) } }
             middle().frame(maxWidth: .infinity)
-            if !cardio { NavArrow(forward: true, enabled: store.canMove(index, by: 1), width: 32, height: Theme.tap) { store.move(index, by: 1) } }
+            if !cardio { NavArrow(forward: true, enabled: store.canMove(index, by: 1), width: 32, height: Theme.tap) { step(1) } }
         }
+    }
+
+    /// ‹ or ›: the set comes in from the side it was asked from, so "did it move, which way?" needs no reading.
+    private func step(_ d: Int) {
+        forward = d > 0
+        withAnimation(dimmed ? nil : reduceMotion ? .easeOut(duration: 0.15) : .snappy(duration: 0.18)) { store.move(index, by: d) }
     }
 
     /// "Set 2 of 4", or Warm-up, then Left / Right and Superset. Short of room, Superset is a link glyph,
@@ -1140,6 +1172,7 @@ struct EffortEditor: View {
     @State private var opened: Double = 0
     @FocusState private var focused: Bool
     @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 54
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The profile's effort scale; the editor turns a crown position (Effort.value).
     private var kind: String { store.effortKind ?? "rpe" }
@@ -1158,7 +1191,9 @@ struct EffortEditor: View {
                     Text(verbatim: shown)
                         .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(shownColor)
-                        .contentTransition(.numericText())
+                        // Rolls the way the crown went, short as Apple's pickers so a fast spin never lags.
+                        .contentTransition(.numericText(value: value.rounded()))
+                        .animation(reduceMotion ? nil : .snappy(duration: 0.18), value: shown)
                         .lineLimit(1)
                         .minimumScaleFactor(0.4)
                     Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)).foregroundStyle(.secondary)
@@ -1365,6 +1400,7 @@ struct WeighInView: View {
     enum Part: Hashable { case whole, tenth }
     @FocusState private var part: Part?
     @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var whole: Binding<Double> {
         Binding(get: { WeighIn.parts(store.bodyWeight).whole },
@@ -1425,7 +1461,9 @@ struct WeighInView: View {
         return Text(verbatim: text)
             .font(.system(size: which == .whole ? size : size * 0.8, weight: .semibold, design: .rounded).monospacedDigit())
             .foregroundStyle(on ? Theme.accent : Color.white)
-            .contentTransition(.numericText())
+            // Rolls the way the crown went, short as Apple's pickers so a fast spin never lags.
+            .contentTransition(.numericText(value: value.wrappedValue))
+            .animation(reduceMotion ? nil : .snappy(duration: 0.18), value: text)
             .padding(.horizontal, 4)
             .frame(minWidth: Theme.tap * 0.7, minHeight: Theme.tap)
             .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(on ? Theme.dim : Color.clear))
