@@ -137,7 +137,8 @@
 :root[data-accent="teal"]  { --acc:var(--teal);   --acc-2:#0071a4; --on-acc:#000 }
 :root[data-accent="gold"]  { --acc:var(--yellow); --acc-2:#b25000; --on-acc:#000; --knob-ring:rgba(0,0,0,.28) }
 /* --acc-ink in the light theme, per preset: 4.5:1 or better on both --bg (#f2f2f7) and white. A
-   colour of the user's own keeps its --acc (lib/accent.js already darkens it to 3:1 there). */
+   colour of the user's own gets its --acc-ink inline from lib/accent.js (inkIn), to the same 4.5:1
+   in both themes (redesign 1.4.5, P12). */
 :root[data-theme="light"][data-accent="lime"]  { --acc-ink:#1a7f37 }
 :root[data-theme="light"][data-accent="sky"]   { --acc-ink:#0062cc }
 :root[data-theme="light"][data-accent="orange"]{ --acc-ink:#a85200 }
