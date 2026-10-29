@@ -73,7 +73,7 @@ To try packs on an emulator: `make-asset-packs.mjs --px 240 --builtin 180 --limi
 `./gradlew bundlePlayDebug` and `bundletool build-apks --local-testing` + `install-apks`.
 
 Only the bundle: `AAB_ONLY=1`. Only some packs: `PACK_PX=240,360` (the 1.4.4 closed test had
-180 built in plus 240 and 360 as packs, about 2.1 GB to upload; the full set 240 to 1080 is about
+180 built in plus 240 and 360 as packs, 2.0 GB to upload; the full set 240 to 1080 is about
 13 GB). On a box that must not run hot: `GRADLE_ARGS=-Dorg.gradle.workers.max=2` and
 `nice -n 19 ionice -c3`. `BUNDLETOOL=/path/bundletool.jar` validates the bundle at the end.
 
