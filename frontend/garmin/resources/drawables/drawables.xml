@@ -1,0 +1,4 @@
+<drawables>
+    <!-- The app's barbell, lime on clear (public/icon-180.png). The compiler scales it to each watch. -->
+    <bitmap id="LauncherIcon" filename="launcher_icon.png" />
+</drawables>
