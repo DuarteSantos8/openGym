@@ -7,18 +7,22 @@ to keep it that way: easy to read, easy to self-host.
 
 ```
 frontend/  React + Vite app (src/views, src/components, src/store, src/lib). Builds to static files.
-           android/ and ios/ are the Capacitor shells for the standalone app (docs/MOBILE.md).
-api/       Backend: server.js on plain node:http, two dependencies (@simplewebauthn/server, web-push).
-           coach/ is the optional AI coach; openapi.yaml documents every route.
+           android/ and ios/ are the Capacitor shells for the phone apps, ios/ with the Apple
+           Watch app and the widgets (docs/MOBILE.md).
+api/       Backend: server.js on plain node:http, three dependencies (@simplewebauthn/server,
+           web-push, undici). coach/ is the optional AI coach; openapi.yaml documents every route.
 web/       Multi-stage Dockerfile (builds the frontend, serves it with nginx) and the nginx template.
 mcp/       Optional read-only MCP server for LLM clients (Claude Desktop, Cursor, ...). Not in the
            Docker build; it only runs when a client spawns it. See mcp/README.md.
 website/   The static project site at opengym.ch.
 kubernetes/ Example manifests (docs/SELF_HOSTING_KUBERNETES.md).
 docs/      User and operator guides (index: docs/README.md); docs/dev/ has feature design notes.
+scripts/   Build and release helpers (scripts/README.md).
 catalogue/ The exercise catalogue: one JSON file per exercise, translations in i18n/, and the
            licensed 180 px stills and animations in media/ (catalogue/README.md).
 ```
+
+The [architecture overview](docs/ARCHITECTURE.md) explains how the pieces talk to each other.
 
 ## Running for development
 
@@ -34,8 +38,9 @@ cd mcp && npm test
 
 ## Guidelines
 
-- **Keep it dependency-light.** The frontend uses React, React Router and Zustand; `api/` has two
-  dependencies. A new dependency on either side is a hard sell.
+- **Keep it dependency-light.** The frontend uses React, React Router and Zustand (plus the
+  Capacitor plugins for the phone apps); `api/` has three dependencies. A new dependency on either
+  side is a hard sell.
 - **Match the style.** Small components, clear names, comments only where the *why* isn't obvious.
   State lives in the Zustand store (`src/store`), pure helpers in `src/lib`. There is no linter or
   formatter config, so follow the surrounding code.
@@ -51,10 +56,17 @@ cd mcp && npm test
   session back, belongs in a pure helper in `src/lib` with a test beside it. These rules are easy
   to get subtly wrong and nearly impossible to check by clicking; the progression engine has had
   real bugs that only a test caught.
+- **Some rules exist twice on purpose**, once in `frontend/src/lib/` and once in `api/` (sync,
+  queue, nudge, routine icons), because the API image can't import the frontend. Change both in the
+  same pull request; [the list is here](docs/ARCHITECTURE.md#code-that-exists-twice-on-purpose).
+- **Leave CHANGELOG.md alone.** Release notes are written at release time, from the merged pull
+  requests.
 - **New UI strings go into every locale** in `frontend/src/locales/`. English is the source
-  language and has no file. `node scripts/check-locales.mjs` (run in CI) flags a key that is
-  missing, blank or has lost a `{n}` placeholder. Portuguese (Brazil) inherits from Portuguese
-  (Portugal) and has its own guard test.
+  language and has no file. `cd frontend && node scripts/check-locales.mjs` (run in CI) flags a
+  key that is missing, blank or has lost a `{n}` placeholder. Portuguese (Brazil) inherits from
+  Portuguese (Portugal) and has its own guard test: a new Portuguese string either gets a Brazilian
+  override or is accepted as shared, then `node scripts/pt-br-inheritance-fingerprint.mjs` prints
+  the numbers the test expects.
 
 ## Using AI tools
 
@@ -73,9 +85,11 @@ it in review.
 </picture>
 </p>
 
-A pull request runs the three test suites and builds and boots both api image targets. The APK and
-the published images come from GitLab CI on the mirror, built from `main` after the merge. If your
-change needs an APK to be judged, say so in the pull request and a maintainer will run that build.
+A pull request runs the three test suites and builds and boots both api image targets. Changes to
+the iPhone or Apple Watch app (`frontend/ios`) can run the `iOS` workflow too (build, UI tests and the
+WatchCore tests on a macOS runner); ask in the pull request if a maintainer should start it. Signed
+APKs, TestFlight and App Store builds are made by the maintainer at release time, so if your change
+needs a phone build to be judged, say so and we'll put it on TestFlight or send you an APK.
 A first-time contributor's workflows wait for a maintainer to approve them, so "no checks yet"
 just means nobody has pressed the button.
 
@@ -112,5 +126,10 @@ Open an issue with what you did, what you expected, what happened, and your brow
 login or passkey problems, include your `RP_ID` and `ORIGIN` (not the contents of `data/`); most
 login issues are an origin mismatch.
 
-By contributing you agree that your work is licensed under the project's
-[GNU AGPL v3.0](LICENSE).
+## Contributor License Agreement
+
+Before your first pull request is merged, you sign the [Contributor License Agreement](CLA.md) once,
+by commenting the sentence the CLA check asks for on your pull request. It covers all your past and
+future contributions. You keep the copyright in your work; openGym may use and relicense it, which
+is what keeps the app possible in the App Store and Google Play long term. Every version released
+under the [GNU AGPL v3.0](LICENSE) stays available under it.

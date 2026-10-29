@@ -1,0 +1,53 @@
+# Records a CLA signature made as a comment on the pinned CLA issue (#554) in the same file the
+# pull-request check reads (signatures/cla.json on the cla-signatures branch), so an earlier
+# contributor who signed there is never asked again on their next pull request.
+name: CLA (issue)
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cla-signatures
+  cancel-in-progress: false
+
+jobs:
+  record:
+    if: github.event.issue.number == 554 && !github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: cla-signatures
+      - name: Add the signature
+        env:
+          BODY: ${{ github.event.comment.body }}
+          LOGIN: ${{ github.event.comment.user.login }}
+          UID: ${{ github.event.comment.user.id }}
+          CID: ${{ github.event.comment.id }}
+          AT: ${{ github.event.comment.created_at }}
+          REPO_ID: ${{ github.event.repository.id }}
+        run: |
+          node - <<'JS'
+          const fs = require('fs')
+          const phrase = 'I have read the CLA Document and I hereby sign the CLA'
+          if (process.env.BODY.trim() !== phrase) { console.log('not the sign phrase'); process.exit(0) }
+          const file = 'signatures/cla.json'
+          const data = JSON.parse(fs.readFileSync(file, 'utf8'))
+          const list = data.signedContributors || (data.signedContributors = [])
+          if (list.some(s => String(s.id) === process.env.UID)) { console.log('already signed'); process.exit(0) }
+          list.push({ name: process.env.LOGIN, id: Number(process.env.UID), comment_id: Number(process.env.CID),
+            created_at: process.env.AT, repoId: Number(process.env.REPO_ID), pullRequestNo: 554 })
+          fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n')
+          console.log('recorded', process.env.LOGIN)
+          JS
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -qam "@$LOGIN has signed the CLA in #554"
+            git push
+          fi

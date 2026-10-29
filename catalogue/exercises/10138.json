@@ -9,6 +9,7 @@
     "forearms"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A static curl hold where you keep the elbows bent and the biceps working without moving.",
   "instructions": [
     "Stand tall with feet hip width apart and your elbows at your sides.",

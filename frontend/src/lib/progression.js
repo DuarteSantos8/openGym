@@ -16,13 +16,13 @@
 //   · fewer sets than prescribed                       → miss
 // So a session that fell apart can never advance the load as though it had succeeded.
 
-import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId } from './history.js'
+import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRoutineId, lastAcrossRoutines } from './history.js'
 import { EXIDX, isAssisted, isLoadedEq, defaultIncrement } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
 import { isPyramid } from './pyramid.js'
 import { backoffAt } from './backoff.js'
-import { ownedWeightsFor, ownedUp, ownedDeload, ownedAround } from './dumbbells.js'
+import { ownedWeightsFor, ownedKindFor, ownedUp, ownedDeload, ownedAround } from './dumbbells.js'
 
 export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'triple', 'time']
 
@@ -328,9 +328,10 @@ export function readSession(entry, fallback) {
  * no session of its own reads the exercise's whole history instead, so a new or copied routine
  * continues from where you are. Each session carries the routine it came from (`rid`) and the
  * plan it was built from (`planned`), so the caller can tell a borrowed or outdated baseline.
+ * "Last time means → Any workout" (#770) reads the whole history as one line, routine or not.
  */
 export function sessionsFor(S, exId, fallback, rid) {
-  if (rid) {
+  if (rid && !lastAcrossRoutines(S)) {
     const own = sessionsIn(S, exId, fallback, rid)
     if (own.length) return own
   }
@@ -457,7 +458,8 @@ export function nextPrescription(S, cfg, routine) {
   // The dumbbells you own (issue #376, lib/dumbbells.js), when the profile has listed them and
   // this is a dumbbell lift: a raise goes to the next bell up (a double jump two up), a deload
   // to the owned bell nearest the deload target, and at the heaviest bell the weight holds.
-  // Without a list, null, and the increment's grid decides as it always did.
+  // Without a list, null, and the increment's grid decides as it always did. A machine with its
+  // own stack listed (#688) walks that list the same way.
   const owned = mode === 'reps' && !assisted ? ownedWeightsFor(S, cfg) : null
   const harder = (weight, step) => (assisted ? Math.max(0, addStep(weight, -step, inc))
     : owned ? ownedUp(owned, weight, step > inc ? 2 : 1) ?? weight
@@ -465,7 +467,11 @@ export function nextPrescription(S, cfg, routine) {
   const easier = weight => (assisted ? addStep(weight, inc, inc) : owned ? ownedDeload(owned, weight, DELOAD_FACTOR) : deloadTo(weight, inc))
   // At the heaviest bell there is nothing to raise to: the weight holds and the line says why.
   const topped = weight => !!owned && ownedUp(owned, weight) == null
-  const toppedOut = (weight, extra = {}) => ({ policy, kind: 'hold', weight, ...extra, why: ['You’ve outgrown the rack: {0} {1} is your heaviest dumbbell, so the weight stays.', weight, unit] })
+  // A machine's own stack (#688) walks the same way; only the line at the top says which it is.
+  const onStack = !!owned && ownedKindFor(S, cfg) === 'stack'
+  const toppedOut = (weight, extra = {}) => ({ policy, kind: 'hold', weight, ...extra, why: onStack
+    ? ['That’s the whole stack: {0} {1} is the heaviest it goes, so the weight stays.', weight, unit]
+    : ['You’ve outgrown the rack: {0} {1} is your heaviest dumbbell, so the weight stays.', weight, unit] })
 
 
   // The routine's own sessions of this exercise, or the exercise's whole history when the
@@ -491,8 +497,14 @@ export function nextPrescription(S, cfg, routine) {
   // routine no longer asks for. The sets and reps are the routine's own (double progression aims
   // inside its new range, from what you managed).
   // A borrowed session saved before plans were stamped is taken as a different plan.
-  const borrowed = !!routine?.id && last.rid !== routine.id
-  if (last.planned ? planChanged(last.planned, cfg) : borrowed) {
+  // With "Last time means → Any workout" (#770) another routine's session is not borrowed, it is
+  // simply the last one: one line of progress across routines, so only an edit of this routine's
+  // own plan restarts it. Held against the other routine's plan, Monday's 3 × 5 would restart
+  // Thursday's 3 × 8 every single week.
+  const across = lastAcrossRoutines(S)
+  const borrowed = !!routine?.id && !across && last.rid !== routine.id
+  const ownPlan = !across || !routine?.id || last.rid === routine.id
+  if (last.planned && ownPlan ? planChanged(last.planned, cfg) : borrowed) {
     const why = borrowed ? ['First time in this routine, so starting from its own target.'] : ['Plan changed, so starting from your new target.']
     // The weight holds at what was last lifted, unless the plan's own weight is not the one the
     // session was built from: the same edit that turned 3 × 5 @ 100 into 3 × 10 @ 70 set 70,
@@ -747,9 +759,10 @@ export function nextPrescription(S, cfg, routine) {
 /**
  * Apply a prescription to freshly built sets. Only the fields the policy actually decided
  * are touched, and only on sets that have not been logged yet. `floor` is the lift's bar
- * (history.js barFloor), which the re-ramped warm-ups never go under.
+ * (history.js barFloor), which the re-ramped warm-ups never go under. `assisted` (exercises.js
+ * isAssisted): an assistance machine, whose warm-ups ramp down from more help instead.
  */
-export function applyPrescription(sets, p, step = 2.5, floor = 0) {
+export function applyPrescription(sets, p, step = 2.5, floor = 0, assisted = false) {
   // A first session has nothing to prescribe from, except triple progression's start of a cycle.
   if (!p || p.kind === 'off' || (p.kind === 'first' && !p.rowReps)) return sets
   const out = sets.map(s => {
@@ -786,7 +799,7 @@ export function applyPrescription(sets, p, step = 2.5, floor = 0) {
   if (p.sets > workRows.length) {
     // An all-warm-up entry has no work row to seed growth from - growing warm-up copies
     // would both invent work and never terminate the loop. Leave the entry untouched.
-    if (!workRows.length) return rerampWarmups(out, step, floor)
+    if (!workRows.length) return rerampWarmups(out, step, floor, assisted)
     const seed = workRows[workRows.length - 1]
     // A freshly appended row hasn't been performed, so it never inherits a seed's already-
     // logged drops/clusters — that would invent extra work the row never actually did. Its
@@ -815,5 +828,5 @@ export function applyPrescription(sets, p, step = 2.5, floor = 0) {
   }
   // Last, because the work rows now carry their final weight: the warm-up block ramps toward
   // what you are actually about to lift, not toward what you lifted last time.
-  return rerampWarmups(out, step, floor)
+  return rerampWarmups(out, step, floor, assisted)
 }

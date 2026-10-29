@@ -7,12 +7,10 @@ import { nativeFetch } from './capacitor-fetch.js'
 export const IS_APPLE = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
 export const IS_ANDROID = /Android/.test(navigator.userAgent)
 export const BIO = IS_APPLE ? 'Face ID / Touch ID' : IS_ANDROID ? 'fingerprint or face unlock' : 'your fingerprint, face or PIN'
-export const VAULT = IS_APPLE ? 'iCloud Keychain' : IS_ANDROID ? 'Google Password Manager' : 'your password manager'
-// The same phrases in the UI language. They go into translated sentences ("confirm with {0}"),
-// so the English constants above left an English phrase in the middle of every other language.
+// The same phrase in the UI language. It goes into translated sentences ("confirm with {0}"),
+// so the English constant above left an English phrase in the middle of every other language.
 // Functions, not constants: the pack is loaded after this module is.
 export const bio = () => (IS_APPLE ? t('Face ID / Touch ID') : IS_ANDROID ? t('fingerprint or face unlock') : t('your fingerprint, face or PIN'))
-export const vault = () => (IS_APPLE ? t('iCloud Keychain') : IS_ANDROID ? t('Google Password Manager') : t('your password manager'))
 // PublicKeyCredential is the WebAuthn-specific capability signal. Do not also gate the UI on
 // navigator.credentials: some browsers expose WebAuthn while that generic Credential Management
 // API check produces a false negative (notably Chrome on iOS). The real create/get calls still run
@@ -33,6 +31,10 @@ export function setAccessHeaders(h, origin) { accessHeaders = Object.assign({}, 
 const originOf = base => { try { return new URL(base).origin } catch { return '' } }
 const accessFor = base => (base && accessOrigin && originOf(base) === accessOrigin ? accessHeaders : {})
 const remoteHeaders = () => Object.assign({}, accessFor(remoteBase), remoteToken ? { Authorization: 'Bearer ' + remoteToken } : {})
+// The paired server and what a request to it carries (the token, an Access service token for that
+// origin), for the phone's background check (lib/nudge-check.js), which runs with no WebView and
+// so has to be handed them. null when this is not a paired phone.
+export const remoteAuth = () => (remoteBase && remoteToken ? { base: remoteBase, headers: remoteHeaders() } : null)
 
 export { appBase }
 
@@ -46,6 +48,14 @@ const TIMEOUT_GET_MS = 20000
 const TIMEOUT_MS = 60000
 
 const failure = (message, code, status) => Object.assign(new Error(message), { code, status })
+// The message an error answer is shown with. The server's English `error`, except a write the
+// origin check refused (or a passkey made at another address): a self-hoster whose ORIGIN is not
+// the address they opened only ever saw "cross-origin request refused", and nobody could tell
+// what to change. The answer names ORIGIN, so the sentence can too (api/verify-error.js).
+function refusal(status, body) {
+  if (body && body.code === 'origin-mismatch') return t('This server only takes changes made at {0}. If you opened openGym at another address, whoever runs the server can set ORIGIN and RP_ID to match it (the self-hosting guide shows how).', String(body.expected || '?'))
+  return (body && body.error) || ('HTTP ' + status)
+}
 
 export async function api(path, opts) {
   const { timeout, ...init } = opts || {}
@@ -90,7 +100,7 @@ async function exchange(url, init) {
   try { data = await r.json() } catch { parsed = false }
   const body = parsed && data && typeof data === 'object' ? data : null
   // The body rides along on the error: a 409 from /api/data carries the server's document.
-  if (!r.ok) { const e = new Error((body && body.error) || ('HTTP ' + r.status)); e.status = r.status; e.data = body || {}; throw e }
+  if (!r.ok) { const e = new Error(refusal(r.status, body)); e.status = r.status; e.data = body || {}; throw e }
   if (!body) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', r.status)
   return body
 }
@@ -147,7 +157,7 @@ export async function apiBlob(path, { expectSize, idleMs = 30000, fetchImpl = gl
     if (!r.ok) {
       let body = null
       try { body = await r.json() } catch { /* not JSON: a proxy's page */ }
-      throw Object.assign(new Error((body && body.error) || 'HTTP ' + r.status), { status: r.status, code: (body && body.code) || 'http', data: body || {} })
+      throw Object.assign(new Error(refusal(r.status, body)), { status: r.status, code: (body && body.code) || 'http', data: body || {} })
     }
     const announced = Number(r.headers?.get?.('content-length'))
     if (Number.isFinite(announced) && announced > max) { ctl?.abort(); throw tooBig(r.status) }
@@ -205,7 +215,7 @@ export function apiUpload(path, blob, mime, { onProgress, idleMs = 60000, XHR = 
         return
       }
       if (xhr.status === 413 && !body) { reject(failure('HTTP 413', 'proxy-too-large', 413)); return }
-      const e = Object.assign(new Error((body && body.error) || 'HTTP ' + xhr.status), { status: xhr.status, code: (body && body.code) || 'http', data: body || {} })
+      const e = Object.assign(new Error(refusal(xhr.status, body)), { status: xhr.status, code: (body && body.code) || 'http', data: body || {} })
       if (xhr.status === 429) {
         const header = Number(xhr.getResponseHeader && xhr.getResponseHeader('Retry-After'))
         e.retryAfter = Number(body && body.retryAfter) || (Number.isFinite(header) && header > 0 ? header : 60)
@@ -373,6 +383,7 @@ export function passkeyError(e, fallback) {
     case 'unknown-credential': return t('This server doesn’t know that passkey. Make a profile first.')
     case 'disabled': return t('This account has been disabled.')
     case 'challenge-expired': return t('That took a little too long. Give it another go.')
+    case 'origin-mismatch': return refusal(e.status, e.data)
   }
   return e?.message || fallback
 }

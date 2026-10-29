@@ -2,9 +2,17 @@
 <!-- Android 12 (API 31) and later: the same rule as backup_rules.xml for the cloud backup, where
      the 25 MB cap applies. A device-to-device transfer has no such cap, and a phone moved to a
      new one should arrive with its photos and videos, so that section is left out: without one,
-     a transfer takes everything, as before. -->
+     a transfer takes everything, as before, except the pairing (opengym-remote.json), which holds
+     the session token for the server and stays out of both. A new phone pairs again. The gym
+     reminder's places (opengym_gym_reminder.xml, #614) stay out of both too: they never leave the phone. -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="file" path="opengym-media/" />
+        <exclude domain="file" path="opengym-remote.json" />
+        <exclude domain="sharedpref" path="opengym_gym_reminder.xml" />
     </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="opengym-remote.json" />
+        <exclude domain="sharedpref" path="opengym_gym_reminder.xml" />
+    </device-transfer>
 </data-extraction-rules>

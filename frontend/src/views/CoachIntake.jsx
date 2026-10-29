@@ -15,13 +15,16 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { DAYN } from '../lib/format.js'
 import { EXDB } from '../lib/exercises.js'
-import { emptyCoach, coachAvailable, hasConsent, CONSENT_VERSION, CATEGORY_TEXT, appendChat } from '../lib/coach.js'
-import { requestPlan, disclosure, JOB_ERRORS } from '../lib/coach-api.js'
+import { emptyCoach, coachAvailable, hasConsent, CONSENT_VERSION, CATEGORY_TEXT, appendChat, defaultTrainingDays } from '../lib/coach.js'
+import { requestPlan, disclosure, JOB_ERRORS, isDeclined, coachVia } from '../lib/coach-api.js'
+import { consentTarget, allowAi } from '../lib/coach-consent.js'
 import { DEMO } from '../lib/demo.js'
+import { useCoachGate } from '../lib/use-coach-gate.js'
 import { MOBILE } from '../lib/mobile.js'
 import { activeProfile } from '../lib/equipment.js'
 import Icon from '../components/Icon.jsx'
 import { Button, TextArea } from '../components/ui.jsx'
+import { HourMinuteWheel } from '../components/DurationWheel.jsx'
 import '../coach.css'
 
 // Each choice's text returns [title, detail] in the current language, through literal t() calls
@@ -50,8 +53,8 @@ const EQUIPMENT = (() => {
 })()
 
 const QUICK_MIN = [30, 45, 60, 90]
-const toHHMM = min => String(Math.floor(min / 60)).padStart(2, '0') + ':' + String(min % 60).padStart(2, '0')
-const fromHHMM = v => { const [h, m] = String(v || '').split(':').map(Number); return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null }
+const sameDays = (a, b) => a.length === b.length && b.every(d => a.includes(d))
+const toHHMM = min => Math.floor(min / 60) + ':' + String(min % 60).padStart(2, '0')
 
 export default function CoachIntake() {
   const nav = useNavigate()
@@ -72,14 +75,16 @@ export default function CoachIntake() {
   const [step, setStep] = useState(0)
   const [busy, setBusy] = useState(false)
   const [p, setP] = useState(() => ({
-    goal: null, experience: null, daysPerWeek: 3, preferredDays: [1, 3, 5],
+    goal: null, experience: null, daysPerWeek: 3, preferredDays: defaultTrainingDays(3),
     // A home gym already set up under Settings → Equipment is the best first guess here.
     sessionMin: 60, equipment: (activeProfile(S)?.equipment || []).filter(e => EQUIPMENT.includes(e)), limitations: '', likes: '', dislikes: '', notes: '',
     ...(S.coach?.profile || {})
   }))
   const set = patch => setP(v => ({ ...v, ...patch }))
 
-  if (!coachAvailable(config, user, { demo: DEMO, mobile: MOBILE, coachMode })) { nav('/home', { replace: true }); return null }
+  const gate = useCoachGate()
+  useEffect(() => { if (gate.known && !gate.ok) nav('/home', { replace: true }) }, [gate.known, gate.ok])
+  if (!gate.ok) return null
 
   const key = STEPS[step]
   const last = step === STEPS.length - 1
@@ -89,7 +94,13 @@ export default function CoachIntake() {
   const next = () => (last ? finish() : setStep(step + 1))
   const back = () => (step ? setStep(step - 1) : nav(editing ? '/coach' : '/plan'))
 
-  const agree = () => {
+  const agree = info => {
+    // This screen just named the provider and listed what goes there, which is the question the
+    // data-sharing sheet asks before the first request (lib/coach-api.js ensureAiConsent). The
+    // yes counts for that provider and host too, so a first-timer is asked once, not twice.
+    // Only when the disclosure arrived: a screen that could not say where to is not a yes to it.
+    const target = !DEMO && consentTarget(info, coachVia())
+    if (target && !target.local) allowAi(target).catch(() => {})
     update(s => { s.coach = { ...(s.coach || emptyCoach()), consent: { agreedAt: new Date().toISOString(), version: CONSENT_VERSION } } })
     if (reconsentOnly) nav('/coach', { replace: true })
     else setStep(step + 1)
@@ -115,10 +126,20 @@ export default function CoachIntake() {
       nav('/coach', { replace: true })
     } catch (e) {
       // The server's refusal is English with its class beside it; the class picks the line.
-      toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach')); setBusy(false)
+      // "Not now" on the data-sharing question sends nothing and says nothing; the answers are saved.
+      if (!isDeclined(e)) toast(JOB_ERRORS[e.data?.code] || e.message || t('Could not ask the Coach'))
+      setBusy(false)
     }
   }
 
+  // The weekdays start as the usual spread for the count and follow it until somebody picks their
+  // own. Mon/Wed/Fri left standing under a count of four saved a profile asking for four days
+  // that preferred three nobody had chosen (#620). Fewer picked days than the count stay a valid
+  // answer: the Coach fills the rest.
+  const setDays = n => {
+    const untouched = sameDays(p.preferredDays, defaultTrainingDays(p.daysPerWeek))
+    set({ daysPerWeek: n, preferredDays: untouched ? defaultTrainingDays(n) : p.preferredDays })
+  }
   const toggleDay = d => set({
     preferredDays: p.preferredDays.includes(d) ? p.preferredDays.filter(x => x !== d) : [...p.preferredDays, d].sort()
   })
@@ -131,7 +152,7 @@ export default function CoachIntake() {
 
   return <div className="narrow ob">
     <div className="ob-top">
-      <button className="iconbtn" onClick={back} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" data-back={step ? '' : editing ? '/coach' : '/plan'} onClick={back} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
       {key !== 'consent' && <div className="ob-dots">
         {dots.map((s, i) => <span key={s} className={'ob-dot' + (i === dotIndex ? ' on' : i < dotIndex ? ' done' : '')} />)}
       </div>}
@@ -163,12 +184,19 @@ export default function CoachIntake() {
         <div className="ob-eyebrow">{t('Schedule')}</div>
         <h1 className="ob-h">{t('How many days a week?')}</h1>
         <p className="ob-p">{t('Pick what you will actually keep, not the best week you can imagine.')}</p>
-        <div className="ob-days">
-          {[1, 2, 3, 4, 5, 6, 7].map(n => <button key={n} className={'ob-day' + (p.daysPerWeek === n ? ' on' : '')} onClick={() => set({ daysPerWeek: n })}>{n}</button>)}
+        {/* Two questions, two groups: how many (a count), then which (weekdays, optional). Each
+            has its own label, so the row of numbers never reads as dates. */}
+        <div className="ob-group" role="group" aria-labelledby="ob-days-l">
+          <div className="ob-sub ob-sub-first" id="ob-days-l">{t('Days per week')}</div>
+          <div className="ob-days">
+            {[1, 2, 3, 4, 5, 6, 7].map(n => <button key={n} className={'ob-day' + (p.daysPerWeek === n ? ' on' : '')} aria-pressed={p.daysPerWeek === n} onClick={() => setDays(n)}>{n}</button>)}
+          </div>
         </div>
-        <div className="ob-sub">{t('Which days suit you? (optional)')}</div>
-        <div className="ob-week">
-          {[1, 2, 3, 4, 5, 6, 0].map(d => <button key={d} className={'ob-wd' + (p.preferredDays.includes(d) ? ' on' : '')} onClick={() => toggleDay(d)}>{t(DAYN[d]).slice(0, 2)}</button>)}
+        <div className="ob-group" role="group" aria-labelledby="ob-week-l">
+          <div className="ob-sub ob-sub-first" id="ob-week-l">{t('Which days suit you? (optional)')}</div>
+          <div className="ob-week">
+            {[1, 2, 3, 4, 5, 6, 0].map(d => <button key={d} className={'ob-wd' + (p.preferredDays.includes(d) ? ' on' : '')} aria-pressed={p.preferredDays.includes(d)} onClick={() => toggleDay(d)}>{t(DAYN[d]).slice(0, 2)}</button>)}
+          </div>
         </div>
       </>}
 
@@ -176,20 +204,10 @@ export default function CoachIntake() {
         <div className="ob-eyebrow">{t('Session length')}</div>
         <h1 className="ob-h">{t('How long is a session?')}</h1>
         <p className="ob-p">{t('The Coach fits the volume to the time you actually have, including rest between sets.')}</p>
-        {/* A duration, not a clock time — so two wheels (hours, minutes in fives), never the
-            native time input, which insists on AM/PM. */}
-        <div className="ob-time" role="group" aria-label={t('How long is a session?')}>
-          <select className="ob-wheel" value={Math.floor((p.sessionMin || 60) / 60)}
-            onChange={e => set({ sessionMin: (+e.target.value) * 60 + ((p.sessionMin || 60) % 60) || 5 })}>
-            {[0, 1, 2, 3].map(h => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
-          </select>
-          <span className="ob-time-sep">:</span>
-          <select className="ob-wheel" value={(p.sessionMin || 60) % 60}
-            onChange={e => set({ sessionMin: Math.floor((p.sessionMin || 60) / 60) * 60 + (+e.target.value) || 5 })}>
-            {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => <option key={m} value={m}>{String(m).padStart(2, '0')}</option>)}
-          </select>
-          <span className="ob-time-l">{t('h:mm')}</span>
-        </div>
+        {/* A duration, not a clock time: the app's own wheels (hours, minutes in fives), like every
+            other time picker, never the native time input, which insists on AM/PM. */}
+        <div className="dw-read" aria-hidden="true">{toHHMM(p.sessionMin || 60)}</div>
+        <HourMinuteWheel value={p.sessionMin || 60} onChange={m => set({ sessionMin: m })} min={10} />
         <div className="ob-quick">
           {QUICK_MIN.map(m => <button key={m} className={'chip' + (p.sessionMin === m ? ' on' : '')} onClick={() => set({ sessionMin: m })}>{m} {t('min')}</button>)}
         </div>
@@ -253,7 +271,7 @@ function Consent({ onAgree, onDecline }) {
   useEffect(() => { disclosure().then(setInfo).catch(() => {}) }, [])
   const who = info?.payer === 'you'
     ? t('Sent straight to {0} with your own API key. You pay for every request.', info.host || info.providerLabel)
-    : t('Sent to {0}, running on this server under the instance owner’s account.', info?.providerLabel || config?.coach?.providerLabel || t('the configured AI provider'))
+    : t('Sent to {0}, running on this server under the instance owner’s account.', (info?.provider === 'compatible' && info.host) || info?.providerLabel || config?.coach?.providerLabel || t('the configured AI provider'))
   return <>
     <div className="ob-eyebrow">{t('Before we start')}</div>
     <h1 className="ob-h">{t('Meet the Coach')}</h1>
@@ -271,7 +289,7 @@ function Consent({ onAgree, onDecline }) {
       <div style={{ color: 'var(--yellow)' }}>{t('The Coach is not a doctor or a physiotherapist. If something hurts, ask a professional.')}</div>
     </div>
     <div className="ob-foot" style={{ flexDirection: 'column' }}>
-      <Button variant="primary" onClick={onAgree}>{t('I understand, let’s go')}</Button>
+      <Button variant="primary" onClick={() => onAgree(info)}>{t('I understand, let’s go')}</Button>
       <Button onClick={onDecline}>{t('Not now')}</Button>
     </div>
   </>

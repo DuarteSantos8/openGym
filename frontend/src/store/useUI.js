@@ -69,6 +69,9 @@ const maybeRestNotification = async () => {
     // Android Chrome forbids the Notification constructor (Illegal constructor) - the
     // service-worker registration path is the one that actually pops there.
     const opts = { tag: 'rest-timer', icon: 'icon-512.png' }
+    // iOS ignores the tag replacement (issue #172): close the previous one by hand, as the
+    // worker does on a push, or the end of a rest leaves two banners stacked there.
+    try { for (const n of (await reg?.getNotifications?.({ tag: 'rest-timer' })) || []) n.close() } catch { /* no getNotifications: the tag is all there is */ }
     if (reg?.showNotification) { reg.showNotification(t('Rest’s over. Next set!'), opts); return }
     new Notification(t('Rest’s over. Next set!'), opts)
   } catch {
@@ -214,7 +217,7 @@ function endTone(enabled, kind) {
 }
 
 export const useUI = create((set, get) => ({
-  sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked }
+  sheets: [],          // { id, render:(close)=>JSX, kind:'sheet'|'center', locked, wide }
   toastMsg: '',
   toastAction: null,   // { label, run, id } while the toast offers an action (Undo)
   swipeHint: null,     // { idx, i, id }: the set row showing the one-time swipe hint (Workout.jsx)
@@ -232,9 +235,9 @@ export const useUI = create((set, get) => ({
     set(s => ({ timerFlashId: s.timerFlashId + 1 }))
   },
 
-  openSheet(render, { kind = 'sheet', locked = false } = {}) {
+  openSheet(render, { kind = 'sheet', locked = false, wide = false } = {}) {
     const id = uid()
-    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked }] }))
+    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, wide }] }))
     const close = () => get().closeSheet(id)
     return { id, close, lock: v => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }
   },
@@ -259,6 +262,12 @@ export const useUI = create((set, get) => ({
     clearTimeout(toastTm)
     set({ toastMsg: '', toastAction: null })
     act.run()
+  },
+  // The toast's ×: gone now, its action with it (what it would have undone stays done).
+  dismissToast() {
+    clearTimeout(toastTm)
+    toastPaused = false
+    set({ toastMsg: '', toastAction: null })
   },
   pauseToast() {
     if (!get().toastAction || toastPaused) return
@@ -458,12 +467,20 @@ export const useUI = create((set, get) => ({
 // A rest that ended meanwhile, or one left with no session running, is dropped.
 export const REST_KEY = 'gym_rest'
 const restStore = () => { try { return typeof localStorage === 'undefined' ? null : localStorage } catch { return null } }
+// Written when the rest itself changes, not on each second's tick: a running rest comes back from
+// its `endsAt`, and its `left` (kept in the copy for older builds) is read only while paused. The
+// bar's tick used to rewrite the key every second of every rest.
+let savedRestKey = null
 const saveRest = tm => {
   const ss = restStore()
   if (!ss) return
   try {
-    if (!tm || tm.ready) ss.removeItem(REST_KEY)
-    else ss.setItem(REST_KEY, JSON.stringify({ endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, paused: !!tm.paused, left: tm.left }))
+    if (!tm || tm.ready) { savedRestKey = null; ss.removeItem(REST_KEY); return }
+    const v = { endsAt: tm.endsAt, total: tm.total, forIdx: tm.forIdx ?? null, forSet: tm.forSet ?? null, kind: tm.kind || null, paused: !!tm.paused, left: tm.left }
+    const key = JSON.stringify({ ...v, left: v.paused ? v.left : null })
+    if (key === savedRestKey && ss.getItem(REST_KEY) !== null) return
+    ss.setItem(REST_KEY, JSON.stringify(v))
+    savedRestKey = key
   } catch { /* the rest just does not outlive a reload */ }
 }
 export function restoreRest(now = Date.now()) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor } from './supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from './supersetFlow.js'
 
 const entry = done => ({ sets: done.map(value => ({ done: value })) })
 
@@ -138,6 +138,37 @@ describe('restSecFor', () => {
   })
 })
 
+describe('set-specific rests (Discord: rest for warm-ups and between sides)', () => {
+  const ramp = target => ({ target, sets: [{ phase: 'warmup', done: false }, { phase: 'warmup', done: false }, { done: false }] })
+  it('"no timer" between ramp sets is 0; the last ramp set still rests the work rest', () => {
+    expect(warmupRestSecFor(ramp({ warmupRestOff: true, warmupRestSec: 45 }), 0, 150)).toBe(0)
+    expect(warmupRestSecFor(ramp({ warmupRestOff: true }), 1, 150)).toBe(150)
+  })
+  it('anything but true is not "no timer": the old behaviour', () => {
+    for (const v of [false, 'true', 1, null]) expect(warmupRestSecFor(ramp({ warmupRestOff: v }), 0, 150), String(v)).toBe(150)
+  })
+  it('between sides: the exercise\'s own break, else what it always was', () => {
+    expect(sideRestFor({ sideRestSec: 20 }, { timed: false })).toBe(20)
+    expect(sideRestFor({ sideRestSec: 20 }, { timed: true, restAfter: 0, switchSec: 10 })).toBe(20)
+    // without one: reps has no break, a hold the switch pause capped at its rest, none with rest off
+    expect(sideRestFor({}, { timed: false })).toBeNull()
+    expect(sideRestFor(undefined, { timed: true, restAfter: 90, switchSec: 10 })).toBe(10)
+    expect(sideRestFor({}, { timed: true, restAfter: 5, switchSec: 10 })).toBe(5)
+    expect(sideRestFor({ sideRestSec: 0 }, { timed: true, restAfter: 0, switchSec: 10 })).toBeNull()
+  })
+  it('a set\'s own rest: a number of 0 or more, anything else is none (#609)', () => {
+    expect(ownSetRest({ restSec: 0 })).toBe(0)
+    expect(ownSetRest({ restSec: 90.4 })).toBe(90)
+    for (const v of [undefined, null, -5, '60', NaN]) expect(ownSetRest({ restSec: v }), String(v)).toBeNull()
+    expect(ownSetRest(undefined)).toBeNull()
+  })
+  it('"no timer" between sides turns a hold\'s switch pause off, set rest or not (#636)', () => {
+    expect(sideRestFor({ sideRestOff: true }, { timed: true, restAfter: 90, switchSec: 10 })).toBeNull()
+    expect(sideRestFor({ sideRestOff: true, sideRestSec: 20 }, { timed: true, restAfter: 90, switchSec: 10 })).toBeNull()
+    for (const v of [false, 'true', 1]) expect(sideRestFor({ sideRestOff: v }, { timed: true, restAfter: 90, switchSec: 10 })).toBe(10)
+  })
+})
+
 describe('warmupRestSecFor', () => {
   const ramp = (warmupRestSec, done = [false, false, false, false]) => ({
     target: { restSec: 150, ...(warmupRestSec ? { warmupRestSec } : {}) },
@@ -171,6 +202,23 @@ describe('warmupRestSecFor', () => {
     expect(warmupRestSecFor(ramp(45, [true, true, false, false]), 0, 150)).toBe(150)
   })
 
+  // Discord (seals187): one warm-up rest for the whole profile, S.warmupRestSec.
+  it('without its own, a ramp set rests the profile\'s warm-up rest; 0 is no timer', () => {
+    expect(warmupRestSecFor(ramp(null), 0, 150, 30)).toBe(30)
+    expect(warmupRestSecFor(ramp(null), 0, 150, 0)).toBe(0)
+    for (const v of [undefined, null, '30', NaN]) expect(warmupRestSecFor(ramp(null), 0, 150, v), String(v)).toBe(150)
+  })
+
+  it('the exercise\'s own wins over the profile\'s, its "no timer" too', () => {
+    expect(warmupRestSecFor(ramp(45), 0, 150, 30)).toBe(45)
+    expect(warmupRestSecFor({ target: { warmupRestOff: true }, sets: ramp(null).sets }, 0, 150, 30)).toBe(0)
+  })
+
+  it('the profile\'s never touches the last ramp set or a work set', () => {
+    expect(warmupRestSecFor(ramp(null), 1, 150, 0)).toBe(150)
+    expect(warmupRestSecFor(ramp(null), 2, 150, 30)).toBe(150)
+  })
+
   it('is safe on a legacy warmup boolean and on missing entries', () => {
     const legacy = { target: { warmupRestSec: 45 }, sets: [{ warmup: true, done: false }, { warmup: true, done: false }, { done: false }] }
     expect(warmupRestSecFor(legacy, 0, 120)).toBe(45)
@@ -191,5 +239,81 @@ describe('restSecFor with a pyramid set’s own rest', () => {
   it('a superset still takes the longest of the group', () => {
     expect(restSecFor(entries, [0, 1], 120, { idx: 1, sec: 30 })).toBe(90)
     expect(restSecFor(entries, [0, 1], 120, { idx: 1, sec: 200 })).toBe(200)
+  })
+})
+
+describe('stepUnitIndex (#523 skip completed exercises)', () => {
+  const ex = (...done) => ({ sets: done.map(d => ({ done: d })) })
+  const entries = [ex(true), ex(true, true), ex(false), ex(true), ex(false, true)]
+  const units = [[0], [1], [2], [3], [4]]
+  it('without the setting, the neighbour, -1 past either end', () => {
+    expect(stepUnitIndex(entries, units, 0, 1)).toBe(1)
+    expect(stepUnitIndex(entries, units, 0, -1)).toBe(-1)
+    expect(stepUnitIndex(entries, units, 4, 1)).toBe(-1)
+  })
+  it('with it, over finished exercises both ways', () => {
+    expect(stepUnitIndex(entries, units, 0, 1, true)).toBe(2)
+    expect(stepUnitIndex(entries, units, 2, 1, true)).toBe(4)
+    expect(stepUnitIndex(entries, units, 4, -1, true)).toBe(2)
+  })
+  it('everything that way finished: the neighbour after all', () => {
+    expect(stepUnitIndex(entries, units, 2, -1, true)).toBe(1)
+  })
+  it('a superset counts as finished only when every member is', () => {
+    const e2 = [ex(true), ex(true), ex(false), ex(false)]
+    expect(stepUnitIndex(e2, [[0], [1, 2], [3]], 0, 1, true)).toBe(1)
+  })
+})
+
+describe('advanceAfterTimedRest (#532)', () => {
+  const ex = (...done) => ({ sets: done.map(d => ({ done: d })) })
+  const timed = set => idx => set.includes(idx)
+  it('a finished timed exercise still on screen: the next with work left', () => {
+    const entries = [ex(true, true), ex(true), ex(false)]
+    expect(advanceAfterTimedRest(entries, [[0], [1], [2]], 0, 0, timed([0]))).toBe(2)
+  })
+  it('nothing for weighted work, an unfinished one, a screen already moved on, or no work left', () => {
+    const entries = [ex(true, true), ex(false)]
+    const units = [[0], [1]]
+    expect(advanceAfterTimedRest(entries, units, 0, 0, timed([]))).toBeNull()
+    expect(advanceAfterTimedRest([ex(true, false), ex(false)], units, 0, 0, timed([0]))).toBeNull()
+    expect(advanceAfterTimedRest(entries, units, 0, 1, timed([0]))).toBeNull()
+    expect(advanceAfterTimedRest([ex(true), ex(true)], units, 0, 0, timed([0]))).toBeNull()
+    expect(advanceAfterTimedRest(entries, units, undefined, 0, timed([0]))).toBeNull()
+  })
+  it('a superset only when every member is timed and done', () => {
+    const entries = [ex(true), ex(true), ex(false)]
+    expect(advanceAfterTimedRest(entries, [[0, 1], [2]], 1, 0, timed([0, 1]))).toBe(2)
+    expect(advanceAfterTimedRest(entries, [[0, 1], [2]], 1, 0, timed([1]))).toBeNull()
+  })
+})
+
+
+// Discord (lajawi): an exercise can say "No timer" for itself (`restOff`), where a 0 rest has
+// always meant "the default".
+describe('an exercise on "No timer"', () => {
+  const ex = (target, sets = [{ done: true }, { done: false }]) => ({ target, sets })
+  it('rests nothing after its sets, whatever the default is', () => {
+    expect(restSecFor([ex({ restOff: true })], [0], 90)).toBe(0)
+    expect(restSecFor([ex({ restSec: 0 })], [0], 90)).toBe(90)
+    expect(restSecFor([ex({})], [0], 90)).toBe(90)
+  })
+  it('in a superset the other member’s rest still applies, the longest as always', () => {
+    expect(restSecFor([ex({ restOff: true, sg: 'a' }), ex({ sg: 'a' })], [0, 1], 90)).toBe(90)
+    expect(restSecFor([ex({ restOff: true, sg: 'a' }), ex({ restOff: true, sg: 'a' })], [0, 1], 90)).toBe(0)
+  })
+  it('a pyramid set’s own rest still stands in for it', () => {
+    expect(restSecFor([ex({ restOff: true })], [0], 90, { idx: 0, sec: 45 })).toBe(45)
+  })
+  it('a time picked next to it on an older app wins, and garbage reads as the default', () => {
+    expect(ownExerciseRest({ restOff: true, restSec: 120 })).toBe(120)
+    expect(ownExerciseRest({ restOff: true })).toBe(0)
+    expect(ownExerciseRest({ restOff: 'yes' })).toBeNull()
+    expect(ownExerciseRest({ restSec: -5 })).toBeNull()
+    expect(ownExerciseRest(undefined)).toBeNull()
+  })
+  it('its last warm-up goes into the first work set without a timer too', () => {
+    const e = { target: { restOff: true }, sets: [{ phase: 'warmup', done: true }, { done: false }] }
+    expect(warmupRestSecFor(e, 0, restSecFor([e], [0], 90), undefined)).toBe(0)
   })
 })

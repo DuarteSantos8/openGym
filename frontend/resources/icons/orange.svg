@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <!-- openGym app icon "orange", written by scripts/app-icons.mjs (the glyph of resources/icon.svg). -->
+  <rect width="512" height="512" fill="#ff9f0a"/>
+  <g fill="#0c0e12">
+    <rect x="80" y="242" width="352" height="28"/>
+    <rect x="80" y="199" width="36" height="114"/>
+    <rect x="131" y="169" width="47" height="174"/>
+    <rect x="334" y="169" width="47" height="174"/>
+    <rect x="396" y="199" width="36" height="114"/>
+  </g>
+</svg>

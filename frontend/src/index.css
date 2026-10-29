@@ -113,6 +113,30 @@
 :root[data-theme="light"][data-accent="pink"],
 :root[data-theme="light"][data-accent="red"]   { --on-acc:#fff }
 
+/* Increase Contrast (iOS, macOS) and the other platforms' high-contrast settings. Apple's HIG
+   asks custom colours to supply a "significantly more differentiated increased contrast option";
+   the system colours below are the increased-contrast values from its colour table. Secondary
+   text and hairlines get firmer too, since those are what fade first. The brighter dark-theme
+   accents fall under 3:1 with white on a filled button (blue 2.2:1, red 2.9:1), so every accent
+   takes black text there; the darker light-theme ones keep the inks chosen above. */
+@media (prefers-contrast: more){
+  :root{
+    --blue:#5cb8ff; --green:#4ad968; --red:#ff6165; --orange:#ffa056;
+    --yellow:#fedf43; --teal:#3bddec; --indigo:#a7aaff; --pink:#ff8ac4;
+    --purple:#ea8dff; --mint:#54dfcb; --brown:#dba679; --grey:#aeaeb2;
+    --label-2:rgba(235,235,245,.78); --label-3:rgba(235,235,245,.55); --label-4:rgba(235,235,245,.36);
+    --sep:rgba(84,84,88,.95); --sep-op:rgba(84,84,88,.8);
+  }
+  :root:not([data-theme="light"]){ --on-acc:#000 }
+  :root[data-theme="light"]{
+    --blue:#1e6ef4; --green:#008932; --red:#e9152d; --orange:#c55300;
+    --yellow:#a16a00; --teal:#008198; --indigo:#564ade; --pink:#e7124d;
+    --purple:#b02fc2; --mint:#008575; --brown:#956d51; --grey:#6c6c70;
+    --label-2:rgba(60,60,67,.82); --label-3:rgba(60,60,67,.6); --label-4:rgba(60,60,67,.4);
+    --sep:rgba(60,60,67,.6); --sep-op:rgba(60,60,67,.5);
+  }
+}
+
 /* ---------------------------------------------------------------- reset -- */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{
@@ -179,7 +203,26 @@ body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 @keyframes viewfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-#app.vfade{animation:viewfade var(--med) var(--ease)}
+#app > .page.vfade{animation:viewfade var(--med) var(--ease)}
+/* Drilling into a settings page and back (App.jsx pageMotion): the iPhone's own push and pop.
+   The page slides, the window never scrolls sideways while it does. */
+@keyframes viewpush{from{transform:translateX(100%)}to{transform:none}}
+@keyframes viewpop{from{transform:translateX(-28%);opacity:.7}to{transform:none;opacity:1}}
+#app > .page.vpush{animation:viewpush .38s cubic-bezier(.32,.72,0,1);background:var(--bg);box-shadow:-12px 0 28px rgba(0,0,0,.18)}
+#app > .page.vpop{animation:viewpop .34s cubic-bezier(.32,.72,0,1)}
+[dir="rtl"] #app > .page.vpush{animation-name:viewpush-rtl;box-shadow:12px 0 28px rgba(0,0,0,.18)}
+[dir="rtl"] #app > .page.vpop{animation-name:viewpop-rtl}
+@keyframes viewpush-rtl{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes viewpop-rtl{from{transform:translateX(28%);opacity:.7}to{transform:none;opacity:1}}
+#app:has(> .page.vpush),#app:has(> .page.vpop){overflow-x:clip}
+/* The page an edge swipe back returns to (App.jsx Page `under`, lib/edge-swipe-back.js): laid
+   out where #app lays out a page, fixed under the current one, at the scroll position it was
+   left at (.page-in is moved up by it), hidden until the finger has committed to the swipe. */
+#app > .page.under{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;overflow:hidden;
+  padding:inherit;max-width:inherit;margin:0 auto;
+  visibility:hidden;pointer-events:none;will-change:transform;
+}
 
 /* Connection indicator (components/SyncBanner.jsx): pinned under the status bar for as long as
    the app is not connected to a server. It carries the page's own ground and blur, like the
@@ -190,21 +233,21 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .conn-bar{
   position:fixed;inset-inline-start:0;inset-inline-end:0;top:0;z-index:45;
   padding:var(--sat) var(--pad) 0;
-  background:color-mix(in srgb,var(--bg) 94%,transparent);
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
 }
 .conn-row{max-width:560px;margin:0 auto;padding:6px 0}
 .conn{
   display:flex;align-items:center;gap:9px;width:100%;text-align:start;min-height:34px;
   padding-block:6px;padding-inline:12px 8px;border-radius:var(--r);
-  background:color-mix(in srgb,var(--yellow) 16%,var(--surface));color:var(--label);font-size:13px;line-height:1.3;
+  background:linear-gradient(rgba(255,214,10,0.16),rgba(255,214,10,0.16)),var(--surface);background:color-mix(in srgb,var(--yellow) 16%,var(--surface));color:var(--label);font-size:13px;line-height:1.3;
 }
 .conn .icn{flex:none;font-size:16px;color:var(--label-2)}
 .conn-t{flex:1;min-width:0;overflow-wrap:break-word}
 .conn-a{flex:none;padding:4px 10px;border-radius:99px;background:var(--surface-3);font-weight:600;white-space:nowrap}
 button.conn:active{filter:brightness(1.12)}
-.conn-bar.off .conn{background:color-mix(in srgb,var(--label-3) 18%,var(--surface))}
-.conn-bar.bad .conn{background:color-mix(in srgb,var(--red) 16%,var(--surface))}
+.conn-bar.off .conn{background:var(--surface);background:color-mix(in srgb,var(--label-3) 18%,var(--surface))}
+.conn-bar.bad .conn{background:linear-gradient(rgba(255,69,58,0.16),rgba(255,69,58,0.16)),var(--surface);background:color-mix(in srgb,var(--red) 16%,var(--surface))}
 .conn-bar.bad .conn .icn{color:var(--red)}
 /* a deliberate local setup: said, not flagged — one small line, no fill */
 .conn-bar.quiet .conn-row{padding:2px 0 4px}
@@ -271,7 +314,6 @@ h4.sec{
   font-size:13px;font-weight:400;letter-spacing:-.004em;color:var(--label-2);
   text-transform:none;margin:0 0 12px;
 }
-.divider{height:var(--hair);background:var(--sep);margin:14px 0;border:0}
 .row{display:flex;align-items:center;gap:12px}
 .row.between{justify-content:space-between}
 /* The body-weight card header (Home and Stats): title on the left, Goal + Log on the right. In
@@ -279,6 +321,9 @@ h4.sec{
    55px, so the button pair may drop to a second line — still flush right, hence the auto margin. */
 .bw-head{flex-wrap:wrap;row-gap:8px}
 .bw-head>.row{margin-inline-start:auto}
+.bw-rate{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;width:100%;margin-top:6px;padding:6px 2px;background:none;border:0;color:var(--label-2);font:inherit;text-align:start;cursor:pointer}
+.bw-rate-t{min-width:0}
+.rate-range{display:grid;gap:8px;margin:14px 0 8px}
 
 /* ----------------------------------------------------------------- card -- */
 .card{
@@ -374,7 +419,7 @@ h4.sec{
 .btn.primary{background:var(--acc);color:var(--on-acc)}
 .btn.primary:active{background:var(--acc-2)}
 .btn.tinted{background:var(--acc-soft);color:var(--acc)}
-.btn.danger{background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
+.btn.danger{background:rgba(255,69,58,0.15);background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red)}
 .btn.ghost,.btn.plain{background:none;color:var(--acc);font-weight:400}
 .btn.ghost:active,.btn.plain:active{background:var(--surface-2)}
 .btn.sm{padding:8px 14px;width:auto;font-size:15px;border-radius:var(--r-sm);gap:5px}
@@ -396,7 +441,7 @@ h4.sec{
   position:fixed;inset-inline-start:0;inset-inline-end:0;bottom:0;z-index:50;
   display:flex;justify-content:space-around;align-items:flex-end;
   padding:7px 6px calc(6px + var(--sab));
-  background:color-mix(in srgb,var(--bg-el) 94%,transparent);
+  background:var(--bg-el);background:color-mix(in srgb,var(--bg-el) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
   border-top:var(--hair) solid var(--sep-op);
 }
@@ -426,7 +471,7 @@ h4.sec{
 #tabbar button.start .cir{
   width:52px;height:52px;border-radius:50%;background:var(--acc);color:var(--on-acc);
   display:flex;align-items:center;justify-content:center;position:relative;
-  box-shadow:0 6px 18px -4px color-mix(in srgb,var(--acc) 55%,transparent);
+  box-shadow:0 6px 18px -4px var(--acc);box-shadow:0 6px 18px -4px color-mix(in srgb,var(--acc) 55%,transparent);
   transition:transform var(--fast) var(--ease);
 }
 #tabbar button.start:active .cir{transform:scale(.93)}
@@ -438,7 +483,7 @@ h4.sec{
    orange play glyph onto an orange disc. Both states restate their own colour.
    The disc is orange in either theme, so its glyph is black, not `--on-acc`. */
 #tabbar button.start .cir{color:var(--on-acc)}
-#tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
+#tabbar button.start.rec .cir{background:var(--orange);color:#000;box-shadow:0 6px 18px -4px var(--orange);box-shadow:0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
 #tabbar button.start.rec span{color:var(--orange)}
 #tabbar button.start.rec .cir::after{
   content:'';position:absolute;inset:0;border-radius:50%;
@@ -459,6 +504,21 @@ h4.sec{
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface)}
   #toast{background:var(--surface-2)}
+}
+/* The setting itself, read directly. The @supports fallback above only fires where backdrop-filter
+   is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
+   Same opaque fills, on every translucent surface. */
+@media (prefers-reduced-transparency: reduce){
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #tabbar{background:var(--bg-el)}
+  :root[data-theme="light"] #tabbar{background:#f9f9fb}
+  #timer{background:var(--surface)}
+  #toast{background:var(--surface-2)}
+  .conn-bar,.whdr.stick{background:var(--bg)}
+  /* The badges over an animation and the dim behind a sheet: no frost, and the badge gets a
+     darker pill so its white text no longer depends on what the picture shows behind it. */
+  .exmedia .gifhint,.exmedia .giftoggle,.mback{-webkit-backdrop-filter:none;backdrop-filter:none}
+  .exmedia .gifhint,.exmedia .giftoggle{background:rgba(0,0,0,.8)}
 }
 
 /* ------------------------------------------------------------ week strip -- */
@@ -610,6 +670,11 @@ h4.sec{
 .chip:active{background:var(--surface-2)}
 .chip.on{background:var(--acc);color:var(--on-acc);font-weight:500}
 .chip.on .dim{color:color-mix(in srgb,var(--on-acc) 62%,transparent)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.chip.on .dim{color:var(--on-acc)}}
+/* A chip with an icon in front (the day note's Sick / Travelling / …): the icon is a block, so
+   without this the label wrapped under it and every chip became a two-line button. One line
+   each; a row wider than the sheet scrolls sideways like every .chips strip. */
+.chip.ichip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .chip .qstate{text-transform:none}
 /* On a phone these rows scroll by swipe. On a pointer device lib/hchips.js lets you
    click-drag anywhere on the row to pull it along; a grab cursor on rows that actually
@@ -645,12 +710,6 @@ body.chips-dragging *{cursor:inherit}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
 .measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:12px;color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
-.measure-home-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.measure-home-grid button{background:var(--surface-2);border-radius:10px;padding:10px;text-align:left;min-width:0}
-.measure-home-grid span,.measure-home-grid i{display:block;font-size:11px;color:var(--label-2);font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.measure-home-grid b{display:block;font-size:16px;margin:3px 0;white-space:nowrap}
-.measure-empty{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;color:var(--label-2);font-size:13px;gap:10px}
-.measure-empty .icn{flex:none}
 .exnote{
   background:var(--surface);border-radius:var(--r);padding:13px 15px;
   line-height:1.45;white-space:pre-wrap;font-size:15px;margin-bottom:10px;color:var(--label-2);
@@ -743,7 +802,7 @@ body.chips-dragging *{cursor:inherit}
 .seg button{
   position:relative;z-index:1;padding:6px 8px;font-size:14px;font-weight:500;
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
-  justify-content:center;gap:5px;min-height:30px;transition:opacity var(--fast);
+  justify-content:center;gap:5px;min-height:32px;transition:opacity var(--fast);
 }
 .seg button .icn{font-size:16px}
 .seg button:not(.on){color:var(--label-2);font-weight:400}
@@ -854,7 +913,7 @@ body.chips-dragging *{cursor:inherit}
   position:sticky;top:0;z-index:20;
   margin:calc(-1 * (var(--sat) + var(--conn) + 8px)) calc(-1 * var(--pad)) 6px;
   padding:calc(var(--sat) + var(--conn) + 8px) var(--pad) 0;
-  background:color-mix(in srgb,var(--bg) 94%,transparent);
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
 }
 .whdr.stick .hdr{margin-bottom:12px}
@@ -884,6 +943,12 @@ body.chips-dragging *{cursor:inherit}
 .exhd{align-items:center}
 .wprog{height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden;margin-bottom:16px}
 .wprog i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width var(--med) var(--ease)}
+/* The bar with the session's volume at its end (#774): 12 px tall where the bar is 4, so it takes
+   8 px less margin and the header keeps the exact height it has without it. */
+.wprog-row{display:flex;align-items:center;gap:8px;height:12px;margin-bottom:8px}
+.wprog-row .wprog,.whdr.stick .wprog-row .wprog{flex:1;min-width:0;margin-bottom:0}
+.whdr.stick .wprog-row{margin-bottom:2px}
+.wvol{flex:none;font-size:12px;line-height:12px;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .exmedia{position:relative;border-radius:var(--r-lg);overflow:hidden;background:#fff;margin-bottom:12px}
 .exmedia img{width:100%;height:320px;object-fit:contain;display:block}
 .exmedia .gifhint,.exmedia .giftoggle{
@@ -1139,7 +1204,7 @@ body.chips-dragging *{cursor:inherit}
   background:var(--bc);color:#fff;font-size:13px;font-weight:700;letter-spacing:-.02em;
   font-variant-numeric:tabular-nums;
 }
-.effpick .menu-item.on{background:color-mix(in srgb,var(--bc) 14%,var(--surface))}
+.effpick .menu-item.on{background:var(--surface);background:color-mix(in srgb,var(--bc) 14%,var(--surface))}
 .effpick .menu-on.is-on{color:var(--bc)}
 .effpick .effpick-free{padding-inline-end:8px}
 .effpick .effpick-free .stp{flex:none;width:148px}
@@ -1159,7 +1224,7 @@ body.chips-dragging *{cursor:inherit}
 /* Its own layer only while it moves: on every row it was a layer per set (#431). */
 .swrow.dragging .swfront,.swrow.go-del .swfront,.swrow.go-cp .swfront{will-change:transform}
 .swpane{position:absolute;top:0;bottom:0;width:0;overflow:hidden;z-index:0}
-.swpane.del{inset-inline-end:0;background:color-mix(in srgb,var(--red) 22%,var(--surface))}
+.swpane.del{inset-inline-end:0;background:linear-gradient(rgba(255,69,58,0.22),rgba(255,69,58,0.22)),var(--surface);background:color-mix(in srgb,var(--red) 22%,var(--surface))}
 .swpane.cp{inset-inline-start:0;background:var(--acc-soft)}
 .swpane button{position:absolute;top:0;bottom:0;width:76px;padding:0;color:#fff;transition:width .16s var(--ease)}
 .swpane.del button{inset-inline-end:0;background:var(--red)}
@@ -1177,9 +1242,9 @@ body.chips-dragging *{cursor:inherit}
 .swpane.del.dis button{background:var(--surface-3);color:var(--label-3)}
 .swpane.del.dis.armed button{width:76px}
 .swrow.flash .swfront{animation:swflash .4s ease}
-@keyframes swflash{0%,35%{background:color-mix(in srgb,var(--acc) 28%,var(--surface))}100%{background:var(--surface)}}
+@keyframes swflash{0%,35%{background:linear-gradient(var(--acc-line),var(--acc-line)),var(--surface);background:color-mix(in srgb,var(--acc) 28%,var(--surface))}100%{background:var(--surface)}}
 .swrow.flash-red .swfront{animation:swflashr .5s ease}
-@keyframes swflashr{0%,35%{background:color-mix(in srgb,var(--red) 22%,var(--surface))}100%{background:var(--surface)}}
+@keyframes swflashr{0%,35%{background:linear-gradient(rgba(255,69,58,0.22),rgba(255,69,58,0.22)),var(--surface);background:color-mix(in srgb,var(--red) 22%,var(--surface))}100%{background:var(--surface)}}
 /* The first-use hint under the row it nudged. */
 .swhint{display:flex;justify-content:center;padding:4px 0 6px}
 .swhint button{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);color:var(--acc);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;animation:swhintin .3s var(--ease);text-align:start}
@@ -1374,7 +1439,7 @@ body.chips-dragging *{cursor:inherit}
 /* an exercise kept out of progression for this session, with its undo */
 .noprog{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:13px;line-height:1.38;color:var(--orange)}
 .noprog svg{flex:none}
-.noprog .chip{margin-inline-start:auto;padding:3px 11px;font-size:13px;color:var(--orange);background:color-mix(in srgb,var(--orange) 14%,transparent)}
+.noprog .chip{margin-inline-start:auto;padding:3px 11px;font-size:13px;color:var(--orange);background:rgba(255,159,10,0.14);background:color-mix(in srgb,var(--orange) 14%,transparent)}
 
 /* start a timed set (issue #16) — sits where you'd otherwise reach for the checkbox */
 .setrow .setgo{
@@ -1409,7 +1474,7 @@ body.chips-dragging *{cursor:inherit}
   position:fixed;inset-inline-start:12px;inset-inline-end:12px;bottom:calc(88px + var(--sab));z-index:60;
   /* nearly opaque: the set rows underneath were reading through the old 82% and made the
      clock hard to pick out mid-set. The blur stays, so it still sits above the page. */
-  background:color-mix(in srgb,var(--surface) 97%,transparent);
+  background:var(--surface);background:color-mix(in srgb,var(--surface) 97%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
   border-radius:var(--r-lg);padding:12px 12px 10px;overflow:hidden;
   display:flex;align-items:center;gap:10px;
@@ -1418,7 +1483,8 @@ body.chips-dragging *{cursor:inherit}
 }
 @keyframes slideup{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
 #timer .bar{position:absolute;top:0;inset-inline-start:0;inset-inline-end:0;height:3px;background:var(--surface-3)}
-#timer .bar i{display:block;height:100%;background:var(--acc);transition:width 1s linear}
+#timer .bar i{display:block;height:100%;background:var(--acc);transform-origin:left center;transition:transform 1s linear;will-change:transform}
+[dir="rtl"] #timer .bar i{transform-origin:right center}
 /* The clock is what the bar is for, so it never gives up width: the buttons do (Skip is the one that
    gives: in a long language on a narrow phone it becomes an icon, RestTimer.jsx useSkipFits). The label under the
    clock fills the clock's width but does not widen it. */
@@ -1504,7 +1570,10 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   animation:sheetup .34s var(--ease);
   overscroll-behavior:contain;touch-action:pan-y;will-change:transform;
 }
-.sheet:has(.picker-search){
+/* A sheet with a field (.picker-search) or marked .kb-lift (the connect sheet) stands on the
+   keyboard instead of letting the system scroll the pinned page to reach the field: see
+   lib/use-sheet-keyboard.js for the two variables. */
+.sheet:has(.picker-search),.sheet:has(.kb-lift){
   bottom:max(var(--picker-keyboard-bottom,0px),var(--native-kb,0px));
   /* with the keyboard up the sheet is capped by the visual viewport — which still starts
      under the notch, hence the inset here too */
@@ -1535,6 +1604,10 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
   animation:pop .28s var(--ease);
 }
 :root[data-theme="light"] .center{background:#fff}
+/* a dialog with real content in it (the workout summary) takes the width of the phone */
+.center.wide{width:min(94vw,440px);padding:18px}
+.fin-x{position:sticky;top:0;z-index:2;height:0;display:flex;justify-content:flex-end}
+.fin-x .iconbtn{margin:-6px -6px 0 0}
 /* a dialog with a field centres in what the Android 15 keyboard leaves */
 :root[data-native-kb] .center{
   top:calc((100% - var(--native-kb)) / 2);
@@ -1622,9 +1695,9 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-grid{display:flex;gap:3px}
 .hm-col{display:flex;flex-direction:column;gap:3px}
 .hm-c{width:11px;height:11px;border-radius:3px;background:var(--surface-2);flex:none}
-.hm-c.l1{background:color-mix(in srgb,var(--acc) 30%,var(--surface-2))}
-.hm-c.l2{background:color-mix(in srgb,var(--acc) 55%,var(--surface-2))}
-.hm-c.l3{background:color-mix(in srgb,var(--acc) 78%,var(--surface-2))}
+.hm-c.l1{background:linear-gradient(var(--acc-line),var(--acc-line)),var(--surface-2);background:color-mix(in srgb,var(--acc) 30%,var(--surface-2))}
+.hm-c.l2{background:var(--acc);background:color-mix(in srgb,var(--acc) 55%,var(--surface-2))}
+.hm-c.l3{background:var(--acc);background:color-mix(in srgb,var(--acc) 78%,var(--surface-2))}
 .hm-c.l4{background:var(--acc)}
 .hm-c.today{box-shadow:0 0 0 1.5px var(--acc)}
 .hm-c.future{opacity:.3}
@@ -1651,6 +1724,27 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 }
 .bm-v{flex:1;min-width:0;height:auto;max-height:min(46vh,340px)}
 .bm-ph{height:200px}                       /* holds the space while the geometry loads */
+/* The thumbnail beside a routine's name (components/MiniBodyMap.jsx): front and back, row height. */
+.bm-mini-wrap{flex:none;display:flex}
+.bodymap.bm-mini{gap:2px;--bm-base:color-mix(in srgb,var(--label) 26%,var(--surface))}
+.bodymap.bm-mini .bm-v{flex:none;height:46px;width:auto;max-height:none}
+.bodymap.bm-mini .bm-ph{height:46px;width:44px}
+.bodymap.bm-mini .bm-sil{fill:color-mix(in srgb,var(--label) 34%,var(--surface))}
+.bodymap.bm-mini .bm-v path{stroke-width:3}
+/* The live session's body (#670, components/SessionMuscles.jsx): at the end of the exercise
+   chips, and no taller than their 37px row, so it moves nothing in any layout. */
+.iconbtn.whdr-map{width:auto;height:32px;padding:0 2px;border-radius:10px}
+.wchips-row{display:flex;align-items:center;gap:4px}
+.wchips-row>.wchips{flex:1;min-width:0}
+.whdr-map .bodymap.bm-mini{gap:1px}
+.whdr-map .bodymap.bm-mini .bm-v{height:30px}
+.whdr-map .bodymap.bm-mini .bm-ph{height:30px;width:29px}
+/* Still to come is a whisper of the accent, so the worked muscles (l3, l4) stand out from it. */
+.bm-session .bm-m.l1{fill:color-mix(in srgb,var(--acc) 20%,var(--bm-base))}
+.sm-legend .hm-c.l1{background:linear-gradient(var(--acc-soft),var(--acc-soft)),var(--surface-2);background:color-mix(in srgb,var(--acc) 20%,var(--surface-2))}
+.mrow .v.sess{min-width:64px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sm-legend{justify-content:center;gap:6px;margin:10px 0 6px}
+.sm-legend .hm-c:not(:first-child){margin-inline-start:8px}
 .bm-sil{fill:color-mix(in srgb,var(--label) 18%,var(--surface))}
 .bm-m{fill:var(--bm-base);transition:fill var(--med) var(--ease)}
 .bm-m.l1{fill:color-mix(in srgb,var(--acc) 32%,var(--bm-base))}
@@ -1662,6 +1756,23 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-fatigue .bm-m.l3{fill:var(--orange)}
 .hm-fatigue .bm-m.l2{fill:var(--yellow)}
 .hm-fatigue .bm-m.l1{fill:color-mix(in srgb,var(--yellow) 32%,var(--bm-base))}
+/* Safari before 16.2 (the iOS app goes back to 15.5) has no color-mix(). Most declarations that
+   mix have a plain one in front of them for it (color-mix-fallback.test.js keeps it that way), but
+   two kinds cannot: a custom property (the mixed one parses, then fails where it is used) and a
+   fill or a color, whose plain twin the CSS minifier drops as a duplicate. Those get their
+   stand-ins here, after the rules they stand in for; lib/accent.js sets the accent's tints exactly. */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  :root{--acc-soft:var(--label-4);--acc-line:var(--label-3)}
+  .bodymap{--bm-base:var(--surface-2)}
+  .bodymap.bm-mini{--bm-base:var(--surface-3)}
+  .bodymap.bm-mini .bm-sil{fill:var(--surface-3)}
+  .bm-session .bm-m.l1{fill:var(--acc-soft)}
+  .bm-sil{fill:var(--surface-3)}
+  .bm-m.l1{fill:var(--acc-line)}
+  .bm-m.l2{fill:var(--acc)}
+  .bm-m.l3{fill:var(--acc)}
+  .hm-fatigue .bm-m.l1{fill:rgba(255,214,10,0.32)}
+}
 .hm-fatigue .hm-c.l4{background:var(--red)}
 .hm-fatigue .hm-c.l3{background:var(--orange)}
 .hm-fatigue .hm-c.l2{background:var(--yellow)}
@@ -1681,12 +1792,51 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mrow .bar{width:74px;height:5px;border-radius:3px;background:var(--surface-2);flex:none;overflow:hidden}
 .mrow .bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
 .mrow .v{font-size:12px;color:var(--label-2);min-width:52px;text-align: end;flex:none}
+/* The Week view's "done/planned · %" (#573): wider than a set count, and as wide on every row, so
+   the bars line up the way they do in 30d, 90d and All. coach.css has a `.cmp` of its own (the
+   Coach's comparison rows) with a rule line and padding, loaded on every page: reset both here. */
+.mrow .v.cmp{min-width:92px;font-variant-numeric:tabular-nums;white-space:nowrap;border-top:none;padding:0}
+/* Selected-muscle fatigue detail: the legend's three bands as one bar, the value above
+   its marker, the 0–100% endpoints under it and each zone named beneath itself. Ready is
+   the map's unshaded base, so the left zone stays neutral; margins leave room for the
+   value bubble above the bar. */
+.fname{font-size:14px;padding:5px 0 0}
+.fbarwrap{position:relative;height:8px;margin-top:20px}
+.fbar{position:relative;display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--surface-2)}
+.fbar .zone{height:100%}
+.fbar .zone.ready{width:25%;background:var(--surface-3);background:color-mix(in srgb,var(--label) 14%,var(--surface-2))}
+.fbar .zone.recovering{width:25%;background:var(--yellow)}
+.fbar .zone.fatigued{width:50%;background:var(--red)}
+.fbarwrap .knob{position:absolute;top:-3px;bottom:-3px;width:3px;border-radius:2px;background:var(--label);box-shadow:0 0 0 1.5px var(--surface);pointer-events:none}
+.fbarwrap .fval{position:absolute;bottom:100%;margin-bottom:3px;transform:translateX(-50%);font-size:11px;font-weight:600;color:var(--label);white-space:nowrap;pointer-events:none}
+[dir="rtl"] .fbarwrap .fval{transform:translateX(50%)}
+.fends{display:flex;justify-content:space-between;font-size:10px;color:var(--label-3);margin-top:3px}
+.fzones{display:flex;font-size:10px;color:var(--label-3);line-height:1.2}
+/* A zone is a quarter of the bar, 64px on a 320px phone: "Восстанавливается" or "En
+   recuperación" don't fit and were cut to "Восстанав…". A name may spill past its zone instead,
+   centred on it, and Ready starts at the bar's start so the middle one has room on both sides. */
+.fzones .z{display:flex;justify-content:center;white-space:nowrap}
+.fzones .z.ready{justify-content:flex-start}
+.fzones .z.ready{width:25%}
+.fzones .z.recovering{width:25%}
+.fzones .z.fatigued{width:50%}
 /* A headline number inside a card — tile weight without a tile around it, for the pair of
    readings at the top of the effort card. */
 .stat-v{font-size:26px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 .mchip{font-size:12px;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2)}
-.mchip.miss{background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
+.mchip.miss{background:rgba(255,159,10,0.16);background:color-mix(in srgb,var(--orange) 16%,transparent);color:var(--orange)}
+button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
+/* "Exercises ›" on an untrained muscle picked on the map (#553), at the end of its row. On a
+   narrow phone the row has no room for it (the name shrank to nothing at 320 and 360px, and the
+   Russian chip poked out of the card), so it wraps to a line of its own, still at the end; the
+   name keeps enough width to be read. The ::after stretches the tap area to 33px without making
+   the chip look any bigger. */
+.mchip.mfind{flex:none;display:inline-flex;align-items:center;gap:2px;padding-inline-end:6px;position:relative}
+.mchip.mfind::after{content:"";position:absolute;inset:-5px 0}
+.mrow.has-find{flex-wrap:wrap;row-gap:4px}
+.mrow.has-find .nm{flex-basis:0;min-width:64px}
+.mrow.has-find .mfind{margin-inline-start:auto}
 
 /* --- stat tiles --- */
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
@@ -1698,11 +1848,17 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .tile .l .icn{font-size:14px;color:var(--label)}
 .tile .v{font-size:26px;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
 .tile.tappable:active{background:var(--surface-2)}
+/* the workout summary: time and volume share the first row, sets get the wider cell of the second
+   because "15 sets · 15 work" does not fit a half */
+.center .tiles.fin{grid-template-columns:repeat(6,1fr)}
+.tiles.fin .tile{grid-column:span 3;min-width:0}
+.tiles.fin .tile.wide{grid-column:span 4}
+.tiles.fin .tile.narrow{grid-column:span 2}
 
 /* --- PR badge --- */
 .pr{
   display:inline-flex;align-items:center;gap:4px;
-  background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--yellow);
+  background:rgba(255,214,10,0.18);background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--yellow);
   border-radius:6px;padding:3px 8px;font-size:12px;font-weight:500;
 }
 .pr .icn{font-size:13px}
@@ -1711,7 +1867,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 #toast{
   position:fixed;left:50%;transform:translateX(-50%) translateY(6px);
   bottom:calc(96px + var(--sab));z-index:200;
-  background:color-mix(in srgb,var(--surface-2) 88%,transparent);
+  background:var(--surface-2);background:color-mix(in srgb,var(--surface-2) 88%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
   /* 22px, not a pill radius: one line (about 41px high) still reads as a pill, and a toast that
      wraps to four lines is a rounded box instead of a circle over the page. */
@@ -1724,11 +1880,14 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 /* With an action (Undo): the message, then the button at the end, and the toast takes taps. */
-#toast.has-action{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 6px 4px 18px;text-align:start}
+#toast.has-action{pointer-events:auto;display:flex;align-items:center;gap:6px;padding:4px 6px 4px 6px;text-align:start}
 #toast.has-action .toast-msg{flex:1;min-width:0;padding:7px 0}
 #toast .toast-act{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--acc);font-weight:700;padding:8px 12px;border-radius:14px;min-height:36px}
-#toast .toast-act:active{background:color-mix(in srgb,var(--label) 10%,transparent)}
+#toast .toast-act:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
 #toast .toast-act .icn{font-size:16px}
+#toast .toast-x{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;color:var(--label-2)}
+#toast .toast-x:active{background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent)}
+#toast .toast-x .icn{font-size:15px}
 body.no-tabbar #toast{bottom:calc(24px + var(--sab))}
 body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 
@@ -1776,6 +1935,13 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 }
 .swatch-input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;border-radius:50%;cursor:pointer;-webkit-appearance:none;appearance:none}
 .swatch-note{margin-top:-4px}
+/* Settings → App icon: the previews in the shape of a home-screen icon, the chosen one ringed like a swatch. */
+.app-icons{flex-basis:100%;padding-inline-start:41px;display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:12px}
+.app-icon{position:relative;aspect-ratio:1;max-width:60px;border-radius:23%;padding:0;transition:transform var(--fast)}
+.app-icon img{width:100%;height:100%;display:block;border-radius:inherit;box-shadow:0 0 0 .5px var(--sep)}
+.app-icon:active{transform:scale(.92)}
+.app-icon:disabled{opacity:1}
+.app-icon.on::after{content:'';position:absolute;inset:-4px;border-radius:27%;box-shadow:0 0 0 2px var(--acc);pointer-events:none}
 
 /* --- supersets --- */
 .ss-label{
@@ -1851,6 +2017,11 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    measures the header (--whdr-h on .workout-list, safe area included) because it grows when
    the session name wraps; the fallback is the height of a one-line header. */
 .wl-unit{scroll-margin-top:calc(var(--whdr-h, var(--sat) + var(--conn) + 80px) + 16px)}
+/* A superset is one unit, so finishing a member and moving to the next scrolls to that member's
+   own row (Workout.jsx), not the unit: the row needs the same clearance under the sticky header,
+   since scroll-margin does not inherit from the .wl-unit around it. Scoped to the list so Cards,
+   which has no pinned header, is untouched. */
+.workout-list .ss-ex,.workout-list .setrow,.workout-list .setrow-side{scroll-margin-top:calc(var(--whdr-h, var(--sat) + var(--conn) + 80px) + 16px)}
 .wl-unit.cur{box-shadow:inset 0 0 0 1.5px var(--acc-line)}
 .wl-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .wl-summary{display:grid;gap:8px;padding-bottom:10px}
@@ -1871,8 +2042,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--sep);
 }
 .wchip .icn{width:12px;height:12px}
-.wchip.partial{background:linear-gradient(to top,color-mix(in srgb,var(--orange) 45%,var(--surface)) 50%,var(--surface) 50%);box-shadow:inset 0 0 0 1.5px var(--orange);color:var(--label)}
-.wchip.done{background:color-mix(in srgb,var(--green) 70%,var(--surface));box-shadow:none;color:var(--label)}
+.wchip.partial{background:linear-gradient(to top,rgba(255,159,10,0.45) 50%,var(--surface) 50%);background:linear-gradient(to top,color-mix(in srgb,var(--orange) 45%,var(--surface)) 50%,var(--surface) 50%);box-shadow:inset 0 0 0 1.5px var(--orange);color:var(--label)}
+.wchip.done{background:var(--green);background:color-mix(in srgb,var(--green) 70%,var(--surface));box-shadow:none;color:var(--label)}
 .wchip.cur{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--acc);color:var(--label)}
 .wchip.partial.cur{box-shadow:inset 0 0 0 1.5px var(--orange),0 0 0 2px var(--bg),0 0 0 3.5px var(--acc)}
 /* part of the give-back above — one edge for all three insets of a row in the list view */
@@ -1895,11 +2066,17 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;
 }
 
+/* Below 360px the mini body map and the Start tag leave the name about 120px, so "Push Day"
+   already wrapped in ru. The map is a nice-to-have there; the name is what the row is for. */
+@media (max-width:359px){
+  .today-row .bm-mini-wrap{display:none}
+}
+
 /* Only where a pointer really hovers — on a phone :hover sticks to the row after the tap.
    Lighter than :active, which goes all the way to --surface-3, so the two stay distinct. */
 @media (hover:hover){
-  .today-row:hover{background:color-mix(in srgb,var(--surface-2),var(--surface-3) 60%)}
-  :root[data-theme="light"] .today-row:hover{background:color-mix(in srgb,var(--surface-2),var(--surface-3) 85%)}
+  .today-row:hover{background:var(--surface-3);background:color-mix(in srgb,var(--surface-2),var(--surface-3) 60%)}
+  :root[data-theme="light"] .today-row:hover{background:var(--surface-3);background:color-mix(in srgb,var(--surface-2),var(--surface-3) 85%)}
 }
 
 /* --------------------------------------------------- desktop (≥1000px) --- */
@@ -1931,6 +2108,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   #tabbar button.start{margin-top:-26px}
   .sheet{left:50%;right:auto;margin-left:-320px;width:640px;border-radius:var(--r-xl) var(--r-xl) 0 0}
   .center{width:340px}
+  .center.wide{width:440px}
   #timer{left:50%;right:auto;margin-left:-260px;width:520px;bottom:112px}
   body.no-tabbar #timer{left:50%;right:auto;bottom:16px;border-radius:var(--r-xl);padding-bottom:10px;box-shadow:0 12px 40px -10px rgba(0,0,0,.5)}
   .exmedia img,.exmedia video{height:380px}
@@ -2045,7 +2223,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .dw{--dw-item:40px;position:relative;display:flex;justify-content:center;height:calc(var(--dw-item) * 5);
   margin:4px auto 16px;max-width:320px;user-select:none;-webkit-user-select:none;touch-action:pan-y}
 .dw-band{position:absolute;inset-inline:6px;top:calc(var(--dw-item) * 2);height:var(--dw-item);border-radius:10px;
-  background:color-mix(in srgb,var(--label) 10%,transparent);pointer-events:none}
+  background:var(--label-4);background:color-mix(in srgb,var(--label) 10%,transparent);pointer-events:none}
 .dw-col{position:relative;flex:1;min-width:0;outline:none;border-radius:10px}
 .dw-col:focus-visible::after{content:'';position:absolute;inset-inline:8px;top:calc(var(--dw-item) * 2);height:var(--dw-item);
   border-radius:10px;box-shadow:0 0 0 2px var(--acc);pointer-events:none}
@@ -2135,3 +2313,31 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 [dir="rtl"] *{letter-spacing:0}
 .exfix-link{display:inline-flex;align-items:center;gap:5px;margin:14px 0 4px;color:var(--label-3);text-decoration:none}
 .list .similar-label{margin:16px 2px 6px;grid-column:1/-1}
+
+/* The edge swipe back (lib/edge-swipe-back.js): the page follows the finger, the one it goes
+   back to slides in underneath with a shade over it. The sliding page's own ground reaches the
+   screen's edges (--eb-*: how far #app's padding and margins leave it short of them). */
+.edge-back-shade{position:fixed;inset:0;background:#000;opacity:.35;pointer-events:none;z-index:1}
+.edge-back-page{position:relative;z-index:2;will-change:transform}
+.edge-back-page::before{
+  content:'';position:absolute;z-index:-1;pointer-events:none;background:var(--bg);
+  top:calc(-1 * var(--eb-t,0px));bottom:calc(-1 * var(--eb-b,0px));
+  left:calc(-1 * var(--eb-l,0px));right:calc(-1 * var(--eb-r,0px));
+  box-shadow:0 0 28px rgba(0,0,0,.28);
+}
+
+/* Gym reminder (#614, views/GymReminder.jsx): the map with its pin and radius, and the editor rows */
+.gym-map-wrap{margin:0 0 22px}
+.gym-map{height:300px;border-radius:12px;overflow:hidden;background:var(--surface-2);z-index:0;isolation:isolate}
+.gym-map .leaflet-control-attribution{font-size:10px}
+.gym-pin span{display:block;width:30px;height:30px;border-radius:50% 50% 50% 0;background:var(--acc);transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.35);border:2px solid #fff}
+.gym-radius{stroke:var(--acc);fill:var(--acc);stroke-width:2}
+.gym-search{display:flex;gap:8px;align-items:center;padding:8px 12px}
+.gym-search>.field{flex:1;min-width:0;width:auto}
+.gym-search>.btn{flex:none;width:auto;padding-left:16px;padding-right:16px}
+.gym-field{padding:8px 12px}
+.gym-field input{width:100%}
+.gym-radius-row{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.gym-radius-row>:first-child{flex:1}
+.gym-radius-val{min-width:64px;text-align:end;font-variant-numeric:tabular-nums;color:var(--label-2)}
+.gym-actions{display:flex;flex-direction:column;gap:10px;margin:4px 0 30px}

@@ -10,6 +10,9 @@
     "triceps"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying on a bench, you raise a barbell from your thighs to above your chest. It builds the front shoulder.",
   "instructions": [
     "Lie on a bench holding a barbell at arm's length over your thighs.",

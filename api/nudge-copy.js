@@ -291,6 +291,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "lt": {
+    "friendly": {
+      "title": "Viskas gerai?",
+      "lines": [
+        "{0} vis dar laukia. Kas nutiko?",
+        "Šiandien be {0}? Net trumpa treniruotė rytoj skaičiuojasi.",
+        "Sunki diena? {0} palauks. Rytoj – nauja pradžia.",
+        "Sveiki, šiandien {0} neįvyko. Viskas gerai?"
+      ]
+    },
+    "guilt": {
+      "title": "Ilgiuosi tavęs",
+      "lines": [
+        "{0} visą vakarą laukė prie durų. Laukė tavęs.",
+        "Šiandien štanga paklausė apie tave. Nežinojau, ką atsakyti.",
+        "Ar pasakiau ką nors ne taip? {0} tavęs pasiilgo.",
+        "Tau palikau vietą ant suoliuko. Ji vis dar tuščia."
+      ]
+    },
+    "drill": {
+      "title": "Dėmesio, kareivi!",
+      "lines": [
+        "Tavo rezultatai jau pakuojasi. {0} rytoj, jokių pateisinimų!",
+        "{0} pats savęs neatliks, rekrute. Judėk!",
+        "Pasiteisinimai kelti svorių nemoka. Rytoj atlik {0}!",
+        "Tavo raumenys paskelbė tavęs paiešką. Ateik į treniruotę: {0}!"
+      ]
+    }
+  },
   "pl": {
     "friendly": {
       "title": "Wszystko w porządku?",
@@ -404,6 +433,35 @@ export const NUDGE_COPY = {
         "Тренировка «{0}» сама себя не сделает, новобранец. Шевелитесь!",
         "Отговорки не поднимают веса. Завтра явиться на «{0}»!",
         "Ваши мышцы подали заявление о пропаже. Явиться на «{0}»!"
+      ]
+    }
+  },
+  "sv": {
+    "friendly": {
+      "title": "Är allt okej?",
+      "lines": [
+        "{0} väntar fortfarande. Hur är läget?",
+        "Inget {0} idag? Även ett kort pass i morgon räknas.",
+        "Tuff dag? {0} kan vänta. I morgon är en ny dag.",
+        "Hej, {0} blev inte av idag. Allt bra?"
+      ]
+    },
+    "guilt": {
+      "title": "Jag saknar dig",
+      "lines": [
+        "{0} väntade vid dörren hela kvällen. På dig.",
+        "Skivstången frågade efter dig idag. Jag visste inte vad jag skulle säga.",
+        "Var det något jag sa? {0} saknar dig.",
+        "Jag höll en plats på bänken åt dig. Den är fortfarande tom."
+      ]
+    },
+    "drill": {
+      "title": "Givakt, rekryt!",
+      "lines": [
+        "Dina gains packar väskorna. {0} i morgon, inga ursäkter!",
+        "{0} gör inte sig självt, rekryt. Sätt fart!",
+        "Ursäkter lyfter inga vikter. Anmäl dig till {0} i morgon!",
+        "Dina muskler har anmält dig försvunnen. Infinn dig till {0}!"
       ]
     }
   },

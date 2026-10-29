@@ -6,9 +6,10 @@
 // window it names, which is why an old proposal in the thread still draws its chart months
 // later, against the data as it was then.
 import { EXIDX } from './exercises.js'
-import { workoutVolume, workoutAt } from './history.js'
+import { sessionVolume, workoutAt } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { bestSetOf } from './onerm.js'
+import { weighInAt } from './bodyweight.js'
 
 const median = arr => {
   const a = arr.filter(n => Number.isFinite(n)).sort((x, y) => x - y)
@@ -30,7 +31,8 @@ export function windowWorkouts(S, { from, to } = {}) {
 export function insightsFor(S, win = {}, { topN = 3 } = {}) {
   const ws = windowWorkouts(S, win)
   const minutes = ws.map(w => (w.end && w.start ? Math.round((w.end - w.start) / 60000) : null)).filter(n => n > 0)
-  const volume = ws.reduce((n, w) => n + (Number.isFinite(w.vol) ? w.vol : workoutVolume(w)), 0)
+  // The volume the app shows, so the coach and the Stats screen quote the same number (#719).
+  const volume = ws.reduce((n, w) => n + sessionVolume(w, S), 0)
 
   const byBp = {}
   let setsTotal = 0
@@ -47,7 +49,7 @@ export function insightsFor(S, win = {}, { topN = 3 } = {}) {
   const from = win.from || ws[0]?.d || null
   const to = win.to || ws[ws.length - 1]?.d || null
   const bw = (S.bodyweight || []).filter(b => b && b.d && (!from || b.d >= from) && (!to || b.d <= to))
-    .map(b => ({ t: b.t || new Date(b.d + 'T12:00:00').getTime(), y: b.w, d: b.d }))
+    .map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
   const bodyweight = {
     points: bw,
     delta: bw.length > 1 ? Math.round((bw[bw.length - 1].y - bw[0].y) * 10) / 10 : null,
@@ -88,7 +90,7 @@ export function sessionInsights(S, workout) {
   const before = (idx >= 0 ? all.slice(0, idx) : all).filter(w => w.name && w.name === workout.name)
   const prev = before[before.length - 1] || null
   const stat = w => ({
-    volume: Math.round(Number.isFinite(w.vol) ? w.vol : workoutVolume(w)),
+    volume: Math.round(sessionVolume(w, S)),
     sets: (w.entries || []).reduce((n, en) => n + (en.sets || []).filter(s => s.done && !isWarmupRow(s)).length, 0),
     minutes: w.end && w.start ? Math.round((w.end - w.start) / 60000) : null,
     prs: (w.prs || []).length

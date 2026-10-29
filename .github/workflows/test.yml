@@ -1,134 +1,363 @@
-# Runs on pull requests too — the other two workflows only fire on push to main, so
-# contributed changes used to reach main without anything ever having been run.
+# The check every change goes through: pull requests, main, the release branches (stores,
+# watch) and ci-* branches. One workflow, one result: the last job, `tests-ok`, is the one to
+# mark as required in a ruleset. It is green when every job that had something to check passed;
+# jobs with nothing to check (a docs-only change) are skipped, not red, so a required check
+# never hangs waiting for a run that a path filter swallowed.
+#
+# What runs is decided per job by the `changes` job (dorny/paths-filter), not by a workflow
+# level `paths:`. That way the workflow always reports, and a change to api/ alone does not
+# spend four minutes building the frontend.
+#
+# Every run writes its numbers (tests and coverage per app area, slowest tests, runtime) to the
+# job summary through scripts/ci/test-report.mjs and keeps them as the `test-stats` artifact.
 name: Tests
 
 on:
   pull_request:
-    paths:
-      - 'frontend/**'
-      - 'api/**'
-      - 'mcp/**'
-      - 'scripts/build-coach-assets.mjs'
-      - 'scripts/build-coach-library.mjs'
-      - 'scripts/build-api-docs.mjs'
-      - 'website/api.html'
-      - 'api/coach/prompts/**'
-      - '.github/workflows/test.yml'
   push:
-    branches: [main, coach]
-    paths:
-      - 'frontend/**'
-      - 'api/**'
-      - 'mcp/**'
-      - 'scripts/build-coach-assets.mjs'
-      - 'scripts/build-coach-library.mjs'
-      - 'scripts/build-api-docs.mjs'
-      - 'website/api.html'
-      - 'api/coach/prompts/**'
-      - '.github/workflows/test.yml'
+    branches: [main, stores, watch, 'ci-*']
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: test-${{ github.ref }}
+  # One run per PR or branch; a newer push makes the older run pointless.
+  group: tests-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  # The images are node:22-alpine (web/Dockerfile, api/Dockerfile): CI matches production.
+  NODE_VERSION: 22
+  FORCE_COLOR: '1'
+
 jobs:
-  test:
+  changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      frontend: ${{ steps.f.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' }}
+      api: ${{ steps.f.outputs.api == 'true' || github.event_name == 'workflow_dispatch' }}
+      mcp: ${{ steps.f.outputs.mcp == 'true' || github.event_name == 'workflow_dispatch' }}
+      images: ${{ steps.f.outputs.images == 'true' || github.event_name == 'workflow_dispatch' }}
+      android: ${{ steps.f.outputs.android == 'true' || github.event_name == 'workflow_dispatch' }}
+      catalogue: ${{ steps.f.outputs.catalogue == 'true' || github.event_name == 'workflow_dispatch' }}
     steps:
-      - uses: actions/checkout@v7
-      # node:22-alpine in web/Dockerfile and api/Dockerfile — CI must match production.
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 22
+          persist-credentials: false
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: f
+        with:
+          # A push compares with the commit before it (its own branch), not with main: stores and
+          # watch are hundreds of commits ahead of main, so against main everything "changed" and
+          # every job ran on every push. Pull requests compare with their base, as always.
+          base: ${{ github.event_name == 'push' && github.ref_name || '' }}
+          filters: |
+            frontend:
+              - '.github/workflows/test.yml'
+              - 'scripts/ci/**'
+              - 'frontend/src/**'
+              - 'frontend/public/**'
+              - 'frontend/scripts/**'
+              - 'frontend/index.html'
+              - 'frontend/vite.config.js'
+              - 'frontend/package*.json'
+              # The phone build and the Coach import the api's shared core.
+              - 'api/coach/core/**'
+              - 'api/coach/prompts/**'
+              - 'api/sync-stamps.js'
+              - 'api/nudge-copy.js'
+              - 'api/server.js'
+              - 'api/test/fixtures/**'
+              - 'catalogue/**'
+              - 'scripts/build-coach-*.mjs'
+              - 'web/Dockerfile'
+            api:
+              - '.github/workflows/test.yml'
+              - 'scripts/ci/**'
+              - 'api/**'
+              - 'website/api.html'
+              - 'scripts/build-api-docs.mjs'
+              - 'website/*.html'
+              - 'scripts/build-coach-*.mjs'
+              - 'catalogue/**'
+              - 'frontend/src/lib/**'
+              - 'frontend/src/locales/**'
+            mcp:
+              - '.github/workflows/test.yml'
+              - 'scripts/ci/**'
+              - 'mcp/**'
+              - 'frontend/src/lib/**'
+            images:
+              - '.github/workflows/test.yml'
+              - 'api/Dockerfile'
+              - 'api/package*.json'
+              - 'api/*.js'
+              - 'api/coach/**'
+              - 'web/**'
+              - 'frontend/package*.json'
+              - 'frontend/vite.config.js'
+            android:
+              - '.github/workflows/test.yml'
+              - 'frontend/android/**'
+              - 'frontend/package*.json'
+              - 'frontend/capacitor.config.json'
+              - 'frontend/scripts/check-mobile-bundle.mjs'
+              - 'scripts/android/**'
+              - 'scripts/catalogue/stage-media.mjs'
+            catalogue:
+              - '.github/workflows/test.yml'
+              - 'catalogue/**'
+              - 'scripts/catalogue/**'
+              - 'frontend/src/lib/exercises-data.js'
+              - 'frontend/src/instr/**'
+              - 'frontend/src/exercise-names/**'
+              - 'frontend/src/exercise-desc/**'
+
+  frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
+      # --ignore-scripts: nothing the tests or the web build need runs an install script.
+      - run: npm ci --ignore-scripts --no-audit --no-fund
         working-directory: frontend
-      - run: npm test
+      # Unit + component suite with v8 coverage and a JSON report for the stats step. No
+      # retries: a test that only passes the second time is a bug. Order, time zone and clock
+      # are shaken weekly in audit.yml.
+      - name: Unit and component tests
         working-directory: frontend
+        run: >
+          npx vitest run
+          --reporter=default --reporter=json --outputFile.json=test-results.json
+          --reporter=junit --outputFile.junit=junit.xml
+          --coverage --coverage.provider=v8 --coverage.include='src/**'
+          --coverage.reporter=json-summary --coverage.reporter=text-summary
       # A broken import or bad JSX fails the build long before any test covers it.
-      - run: npm run build
+      - name: Web build
+        run: npm run build
         working-directory: frontend
-      - run: node scripts/check-locales.mjs
+      - name: Bundle size
+        run: node scripts/bundle-size.mjs --out bundle-size.json
+        working-directory: frontend
+      - name: Locale packs are in sync
+        run: node scripts/check-locales.mjs
         working-directory: frontend
       # check-locales compares the packs to each other, so a key missing from ALL of them is
-      # invisible to it. This walks src/ instead. Report-only for now: there is a known
-      # backlog of untranslated demo-view strings to clear before it can fail the build.
-      - run: node scripts/check-source-strings.mjs
+      # invisible to it. This walks src/ instead. Report-only (a known backlog of demo strings).
+      - name: Untranslated strings in src (report only)
+        run: node scripts/check-source-strings.mjs
         working-directory: frontend
       # The fatigue model must never read higher after a rest day than before it.
       # Property probe over ~108k comparisons; too slow for the unit suite, cheap here.
-      - run: npm run test:fatigue-probe
+      - name: Fatigue model property probe
+        run: npm run test:fatigue-probe
         working-directory: frontend
-
-
-  mcp:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - name: Stats
+        if: always()
+        run: >
+          node scripts/ci/test-report.mjs --label Frontend --root frontend
+          --vitest frontend/test-results.json --coverage frontend/coverage/coverage-summary.json
+          --bundle frontend/bundle-size.json --out stats/frontend.json
+      # Tests without an assertion, duplicated tests, tests that read source text: report only.
+      - name: Test audit
+        if: always()
+        run: node scripts/ci/test-audit.mjs frontend/src frontend/scripts api/test mcp/test > /dev/null
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: mcp/package-lock.json
-      - run: npm ci
-        working-directory: mcp
-      - run: npm test
-        working-directory: mcp
-      # The one check the vitest suite structurally cannot make. The MCP server is a bare node
-      # process, but vitest runs its tests through Vite — import.meta.glob, .jsx imports and
-      # ?raw all resolve happily there. That is how a Vite-only import reached a shared lib
-      # module with 33 green tests standing over a server that died on startup.
-      - run: npm run check:node-loadable
-        working-directory: mcp
+          name: stats-frontend
+          path: |
+            stats/frontend.json
+            frontend/junit.xml
+          retention-days: 30
+          if-no-files-found: ignore
 
   api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 22
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
-          cache-dependency-path: api/package-lock.json
-      # The Coach tests run on node:test and drive the in-repo fixture provider plus a local mock
-      # of the Chat Completions shape, so the job needs no AI account and no network — but it does
-      # need the api's own dependencies since the server-side fetch moved onto undici (same
-      # install as test:api in .gitlab-ci.yml; the Agent SDK is optional and stays out).
-      - run: npm ci --omit=optional
+          cache-dependency-path: |
+            api/package-lock.json
+            package-lock.json
+      # The Coach tests drive the in-repo fixture provider and a local mock of the Chat
+      # Completions shape: no AI account, no network. The Agent SDK is optional and stays out.
+      - run: npm ci --omit=optional --no-audit --no-fund
         working-directory: api
-      - run: npm test
+      - name: API tests
         working-directory: api
+        run: >
+          node --test --experimental-test-coverage
+          --test-coverage-exclude='test/**' --test-coverage-exclude='node_modules/**'
+          --test-reporter=spec --test-reporter-destination=stdout
+          --test-reporter=../scripts/ci/node-test-reporter.mjs --test-reporter-destination=test-results.jsonl
+          --test-reporter=lcov --test-reporter-destination=lcov.info
+          --test-reporter=junit --test-reporter-destination=junit.xml
+          test/*.test.js
       # The api's copy of the exercise catalogue is generated and committed. A dataset change
-      # that forgets to regenerate it would otherwise only surface as "the Coach can't find
-      # that exercise" on somebody's instance.
-      - run: node scripts/build-coach-assets.mjs --check
+      # that forgets to regenerate it would surface as "the Coach can't find that exercise".
+      - name: Generated Coach assets are current
+        run: node scripts/build-coach-assets.mjs --check
       # website/api.html is generated from api/openapi.yaml and committed. Same reason.
-      - run: npm ci
-      - run: node scripts/build-api-docs.mjs --check
-      - run: node api/scripts/check-core-loadable.mjs
+      - run: npm ci --no-audit --no-fund
+      - name: Generated API docs are current
+        run: node scripts/build-api-docs.mjs --check
+      - name: Coach core loads in plain node
+        run: node api/scripts/check-core-loadable.mjs
+      - name: Stats
+        if: always()
+        run: >
+          node scripts/ci/test-report.mjs --label API --root api
+          --node api/test-results.jsonl --lcov api/lcov.info --out stats/api.json
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
+        with:
+          name: stats-api
+          path: |
+            stats/api.json
+            api/junit.xml
+          retention-days: 30
+          if-no-files-found: ignore
 
-  # Builds *and runs* both image targets. Building alone would not have caught the api image
-  # shipping without coach/ — that image built perfectly and exited on boot. So each target has
-  # to answer for itself: the default one starts and serves, and the coach one additionally
-  # resolves the Agent SDK's per-platform runtime (musl on this base), which is the one thing
-  # that cannot be checked from the source tree.
-  api-image:
+  mcp:
+    needs: changes
+    if: needs.changes.outputs.mcp == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: |
+            mcp/package-lock.json
+            api/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: mcp
+      # log_workout's end-to-end test drives the real api/server.js, so the api's own
+      # dependencies are here too (same install as the api job). Without them that test fails
+      # under CI rather than skipping, so a green run means it ran.
+      - run: npm ci --no-audit --no-fund --omit=optional
+        working-directory: api
+      - name: MCP tests
+        working-directory: mcp
+        run: >
+          npx vitest run
+          --reporter=default --reporter=json --outputFile.json=test-results.json
+          --coverage --coverage.provider=v8 --coverage.reporter=json-summary
+      # The one check the vitest suite structurally cannot make: the MCP server is a bare node
+      # process, but vitest resolves import.meta.glob, .jsx and ?raw happily. That is how a
+      # Vite-only import reached a shared module with 33 green tests over a dead server.
+      - name: Server loads in plain node
+        run: npm run check:node-loadable
+        working-directory: mcp
+      - name: Stats
+        if: always()
+        run: >
+          node scripts/ci/test-report.mjs --label MCP --root mcp
+          --vitest mcp/test-results.json --coverage mcp/coverage/coverage-summary.json --out stats/mcp.json
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        if: always()
+        with:
+          name: stats-mcp
+          path: stats/mcp.json
+          retention-days: 30
+          if-no-files-found: ignore
 
-      - run: docker build --target default -t opengym-api:default ./api
-      - run: docker build --target coach   -t opengym-api:coach   ./api
-      # No --target, exactly like docker-publish.yml. That workflow names no stage, so what it
-      # ships is whatever Dockerfile stage happens to be last -- and that untargeted artifact,
-      # not opengym-api:default above, is the image every self-hoster pulls as :latest. Build it
-      # the same way here so the assertion below is about the thing we actually publish.
-      - run: docker build -t opengym-api:published ./api
+  # Was its own workflow (catalogue.yml); here it reports into the one required check.
+  catalogue:
+    needs: changes
+    if: needs.changes.outputs.catalogue == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Validate the catalogue
+        run: node scripts/catalogue/validate.mjs
+      - name: Generated files are up to date
+        run: node scripts/catalogue/build.mjs --check
+      - name: Media stay within 180 px (licence)
+        run: node scripts/catalogue/check-media.mjs
+
+  # Builds *and runs* the api image targets and the web image. Building alone would not have
+  # caught the api image shipping without coach/: that image built perfectly and exited on boot.
+  images:
+    needs: changes
+    if: needs.changes.outputs.images == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      # Layers cached between runs (GitHub cache), loaded into the local engine to be started.
+      - name: api, default target
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ./api
+          target: default
+          load: true
+          tags: opengym-api:default
+          cache-from: type=gha,scope=ci-api
+          cache-to: type=gha,mode=max,scope=ci-api
+      - name: api, coach target
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ./api
+          target: coach
+          load: true
+          tags: opengym-api:coach
+          cache-from: type=gha,scope=ci-api-coach
+          cache-to: type=gha,mode=max,scope=ci-api-coach
+      # No target, exactly like docker-publish.yml: what that workflow ships is whatever stage
+      # is last, and that untargeted image is what every self-hoster pulls as :latest.
+      - name: api, as published
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ./api
+          load: true
+          tags: opengym-api:published
+          cache-from: type=gha,scope=ci-api
+      - name: web
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ./web/Dockerfile
+          load: true
+          tags: opengym-web:ci
+          cache-from: type=gha,scope=ci-web
+          cache-to: type=gha,mode=max,scope=ci-web
 
       - name: the image published as :latest has no AI runtime either
         run: |
@@ -139,17 +368,25 @@ jobs:
 
       - name: the default image boots and serves, with no AI runtime in it
         run: |
-          docker run -d --name api-default -e DATA_DIR=/data -p 3000:3000 opengym-api:default
+          docker network create og
+          docker run -d --name api-default --network og --network-alias api -e DATA_DIR=/data -p 3000:3000 opengym-api:default
           for i in $(seq 1 30); do
             curl -fsS http://localhost:3000/api/config >/dev/null 2>&1 && break
             sleep 1
           done
           curl -fsS http://localhost:3000/api/config | tee /dev/stderr | grep -q '"invite_only"'
-          # Absent by construction, not by accident: --omit=optional is the only thing keeping
-          # the AI dependency out of the image an owner gets when they never asked for it.
           docker run --rm opengym-api:default node -e \
             'import("@anthropic-ai/claude-agent-sdk").then(()=>{console.error("AI runtime present in the default image");process.exit(1)},()=>process.exit(0))'
-          docker rm -f api-default
+
+      # The stack the way docker-compose.yml wires it: nginx in the web image proxies /api to
+      # the api container. A green api image and a green web image can still not talk.
+      - name: the web image serves the app and reaches the api through nginx
+        run: |
+          docker run -d --name web --network og -p 8080:80 opengym-web:ci
+          for i in $(seq 1 30); do curl -fsS http://localhost:8080/ >/dev/null 2>&1 && break; sleep 1; done
+          curl -fsS http://localhost:8080/ | grep -q 'id="root"'
+          curl -fsS http://localhost:8080/api/config | grep -q '"invite_only"'
+          docker rm -f web api-default
 
       - name: the coach image carries a runnable Agent SDK
         run: |
@@ -164,19 +401,110 @@ jobs:
         run: |
           docker run --rm opengym-api:coach codex --version
           docker run --rm opengym-api:coach bwrap --version
-          # Owned by the user jobs drop to, and 0700 — a credential cache readable by anything
+          # Owned by the user jobs drop to, and 0700: a credential cache readable by anything
           # else in the container would undo the point of dropping privileges at all.
           test "$(docker run --rm opengym-api:coach stat -c '%U %a' /coach-auth)" = "coach 700"
 
       - name: neither Codex nor its sandbox is in the default image
         run: |
-          # bubblewrap is a Codex requirement, so an owner who never opted in should not be
-          # carrying it. Both commands must fail.
           ! docker run --rm opengym-api:default codex --version 2>/dev/null
           ! docker run --rm opengym-api:default bwrap --version 2>/dev/null
 
       - name: the privilege drop can actually be performed in the image
         run: |
-          # canDropPrivileges() fails closed, so a missing `coach` user disables every job —
-          # including the fixture provider. Cheaper to assert here than to discover on an instance.
+          # canDropPrivileges() fails closed, so a missing `coach` user disables every job,
+          # including the fixture provider.
           docker run --rm opengym-api:default id coach
+
+  # The Android app compiles, its JVM unit tests pass, and the phone bundle inside it is the
+  # mobile flavour (check-mobile-bundle runs inside build:mobile). Debug and unsigned: signing
+  # is the release machine's job (scripts/android/build-release.sh).
+  android:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          # Only main and stores write the Gradle cache; other branches and PRs read it.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/stores' }}
+          add-job-summary: on-failure
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+        working-directory: frontend
+      - name: Phone bundle + cap sync
+        run: npm run build:mobile
+        working-directory: frontend
+      - name: JVM unit tests, sideload APK, play flavour compiles
+        working-directory: frontend/android
+        run: ./gradlew --no-daemon testSideloadDebugUnitTest assembleSideloadDebug compilePlayDebugJavaWithJavac
+      - name: Stats
+        if: always()
+        working-directory: frontend/android
+        run: |
+          {
+            echo "### Android"
+            for a in app/build/outputs/apk/sideload/debug/*.apk; do
+              [ -f "$a" ] && echo "- debug sideload APK: $(numfmt --to=iec "$(stat -c %s "$a")") ($(basename "$a"))"
+            done
+            cat app/build/test-results/testSideloadDebugUnitTest/*.xml 2>/dev/null \
+              | grep -o '<testsuite [^>]*' | sed -E 's/.*name="([^"]*)".*tests="([0-9]+)".*failures="([0-9]+)".*/- JVM: \1: \2 tests, \3 failed/' || true
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # One summary of the numbers of every suite that ran.
+  report:
+    needs: [frontend, api, mcp]
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/ci
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: stats-*
+          merge-multiple: true
+          path: dl
+      - name: Test report
+        run: |
+          set -- $(find dl -name '*.json' | sort)
+          if [ $# -eq 0 ]; then echo "Nothing was tested in this run (no matching changes)." >> "$GITHUB_STEP_SUMMARY"; exit 0; fi
+          node scripts/ci/test-report.mjs --combine "$@" --out combined.json
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: test-stats
+          path: combined.json
+          retention-days: 90
+          if-no-files-found: ignore
+
+  # The single required check. Green when every job that ran passed and the others were
+  # skipped because nothing they check changed.
+  tests-ok:
+    needs: [changes, frontend, api, mcp, catalogue, images, android]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Every job passed or had nothing to check
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | node -e '
+            const n = JSON.parse(require("fs").readFileSync(0, "utf8"))
+            for (const [k, v] of Object.entries(n)) console.log(k.padEnd(10), v.result)
+            const bad = Object.entries(n).filter(([, v]) => !["success", "skipped"].includes(v.result))
+            if (bad.length) { console.log("::error::" + bad.map(([k, v]) => k + ": " + v.result).join(", ")); process.exit(1) }'

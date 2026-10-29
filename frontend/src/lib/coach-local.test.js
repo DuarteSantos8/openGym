@@ -17,14 +17,14 @@ vi.mock('./coach-secrets.js', () => ({ getApiKey: async () => secret.key, setApi
 const wire = { calls: [], answer: null }
 vi.mock('./capacitor-fetch.js', () => ({
   nativeFetch: async (url, init) => {
-    wire.calls.push({ url, init, body: JSON.parse(init.body) })
-    const a = typeof wire.answer === 'function' ? wire.answer(wire.calls.length) : wire.answer
+    wire.calls.push({ url, init, body: init.body ? JSON.parse(init.body) : null })
+    const a = typeof wire.answer === 'function' ? wire.answer(wire.calls.length, url, init) : wire.answer
     return { ok: a.status < 300, status: a.status, text: async () => JSON.stringify(a.body), json: async () => a.body }
   }
 }))
 
 const local = await import('./coach-local.js')
-const { _resetCoachDevice, loadCoachDevice, saveCoachDevice } = await import('./coach-device.js')
+const { _resetCoachDevice, loadCoachDevice, saveCoachDevice, COACH_LIMITS } = await import('./coach-device.js')
 const { applyChangeSet, markStale, planHash } = await import('./coach.js')
 const { todayISO } = await import('./format.js')
 const { EXERCISES } = await import('../../../api/coach/core/library-data.js')
@@ -108,9 +108,26 @@ describe('the Coach on a phone with its own key', () => {
     await local.localReview(state())
     const s = await settle()
     expect(s.lastError.errorClass).toBe('provider')
-    expect(s.lastError.detail).toMatch(/^404 The model `gpt-4o-mini-tts` does not exist/)
+    expect(s.lastError.detail).toMatch(/^404 the model "gpt-t" is not available to this key.*: The model `gpt-4o-mini-tts` does not exist/)
     expect(seen.at(-1)).toMatchObject({ kind: 'failed', errorClass: 'provider', detail: expect.stringMatching(/does not exist/) })
     local.setNotifier(null)
+  })
+
+  it('a saved model the key cannot use is swapped for one it can, and the swap is kept (#758)', async () => {
+    const { HTTP_PROVIDERS } = await import('../../../api/coach/core/providers.js')
+    const next = HTTP_PROVIDERS.gemini.defaultModel
+    device.data = { mode: 'byok', provider: 'gemini', model: 'gemini-2.5-pro', baseUrl: null }
+    wire.answer = (n, url) => url.includes('/models?')
+      ? { status: 200, body: { models: [{ name: 'models/gemini-2.5-pro' }, { name: 'models/' + next }] } }
+      : url.includes('gemini-2.5-pro')
+        ? { status: 404, body: { error: { message: 'This model models/gemini-2.5-pro is no longer available to new users.' } } }
+        : { status: 200, body: { candidates: [{ finishReason: 'STOP', content: { parts: [{ text: JSON.stringify(review) }] } }] } }
+    await local.localReview(state())
+    const s = await settle()
+    expect(s.lastError).toBeNull()
+    expect(s.pending?.kind).toBe('review')
+    expect(wire.calls.at(-1).url).toContain(`/models/${next}:generateContent`)
+    expect((await loadCoachDevice()).model).toBe(next)
   })
 
   it('a 401 is an auth failure, and never a proposal', async () => {
@@ -153,9 +170,53 @@ describe('the Coach on a phone with its own key', () => {
 
     // The cap is keyed by the LOCAL date (todayISO), not the UTC one: in the evening in the
     // Americas the two differ, and a UTC stamp here read as yesterday's record and let the run through.
-    await saveCoachDevice({ daily: { d: todayISO(), n: local.LOCAL_DAILY_CAP } })
+    const cap = COACH_LIMITS.daily.def
+    await saveCoachDevice({ daily: { d: todayISO(), n: cap } })
     await expect(local.localReview(state())).rejects.toMatchObject({ code: 'cap' })
-    expect((await local.localStatus()).cap).toEqual({ used: local.LOCAL_DAILY_CAP, limit: local.LOCAL_DAILY_CAP })
+    expect((await local.localStatus()).cap).toEqual({ used: cap, limit: cap })
+  })
+
+  it('reads the daily cap from the device dial, and 0 is no limit', async () => {
+    await saveCoachDevice({ limits: { daily: 3 }, daily: { d: todayISO(), n: 3 } })
+    await expect(local.localReview(state())).rejects.toMatchObject({ code: 'cap' })
+    expect((await local.localStatus()).cap).toEqual({ used: 3, limit: 3 })
+
+    // The documented "unlimited": stored runs above any limit no longer refuse the next one.
+    await saveCoachDevice({ limits: { daily: 0 } })
+    await local.localReview(state())
+    const s = await settle()
+    expect(s.pending).toBeTruthy()
+    expect(s.cap).toEqual({ used: 4, limit: 0 })
+  })
+
+  it('sends the device output-token ceiling on the wire', async () => {
+    await saveCoachDevice({ limits: { maxOutputTokens: 48000 } })
+    await local.localReview(state())
+    await settle()
+    expect(wire.calls[0].body.max_completion_tokens).toBe(48000)
+  })
+
+  it('clips free text to the device message dial, clamped to the floor', async () => {
+    // Below the floor is raised to it and reported as such, both to the composer and to the clip.
+    await saveCoachDevice({ limits: { maxMessageLen: 50 } })
+    expect((await local.localStatus()).maxMessageLen).toBe(COACH_LIMITS.maxMessageLen.min)
+
+    const note = 'x'.repeat(500)
+    await local.localReview(state(), note)
+    await settle()
+    const sent = wire.calls[0].body.messages[1].content
+    expect(sent).toContain('"userNote":"' + 'x'.repeat(COACH_LIMITS.maxMessageLen.min) + '"')
+    expect(sent).not.toContain('x'.repeat(COACH_LIMITS.maxMessageLen.min + 1))
+  })
+
+  it('a question is clipped to the same message dial', async () => {
+    await saveCoachDevice({ limits: { maxMessageLen: 2400 } })
+    wire.answer = chat(JSON.stringify({ coach_contract: 1, answer: 'Yes.' }))
+    await local.localAsk(state(), 'q'.repeat(3000), null)
+    await settle()
+    const sent = wire.calls.at(-1).body.messages[1].content
+    expect(sent).toContain('q'.repeat(2400))
+    expect(sent).not.toContain('q'.repeat(2401))
   })
 
   it('a proposal waits in the device file, expires, and is cleared by resolve', async () => {
@@ -165,6 +226,23 @@ describe('the Coach on a phone with its own key', () => {
     await saveCoachDevice({ pending: { ...device.data.pending, expiresAt: Date.now() - 1 } })
     expect((await local.localStatus()).pending).toBeNull()
     await local.localReview(state()); await settle()
+    await local.localResolve()
+    expect(device.data.pending).toBeNull()
+  })
+
+  it('answers a question in words, and the review waiting beside it comes back once read (#660)', async () => {
+    await local.localReview(state()); await settle()
+    expect(device.data.pending.kind).toBe('review')
+    wire.answer = chat(JSON.stringify({ coach_contract: 1, answer: 'Two to three minutes between heavy sets.' }))
+    await local.localAsk(state(), 'how long should I rest?', null)
+    const s = await settle()
+    expect(s.pending.kind).toBe('ask')
+    expect(s.pending.answer).toBe('Two to three minutes between heavy sets.')
+    expect(s.pending.changes).toBeUndefined()
+    expect(wire.calls.at(-1).body.messages[1].content).toContain('how long should I rest?')
+    await local.localResolve()
+    expect(device.data.pending.kind).toBe('review')
+    expect(device.data.pending.changes).toHaveLength(1)
     await local.localResolve()
     expect(device.data.pending).toBeNull()
   })
