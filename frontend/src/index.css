@@ -1121,9 +1121,9 @@ body.chips-dragging *{cursor:inherit}
   background:var(--bg);background:color-mix(in srgb,var(--bg) 94%,transparent);
   -webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);
 }
-.stats-sect{scroll-margin-top:calc(var(--sat) + var(--conn) + 58px)}
-/* a control reached by Tab scrolls clear of the sticky index too, not under it */
-:root:has(.stats-index){scroll-padding-top:calc(var(--sat) + var(--conn) + 58px)}
+/* A jump to a part, and a control reached by Tab, stop clear of the sticky index. One root
+   padding does both; a scroll-margin on the parts as well would add up to twice the gap. */
+:root:has(.stats-index){scroll-padding-top:calc(var(--sat) + var(--conn) + 62px)}
 .stats-sect+.stats-sect{margin-top:26px}
 .stats-sect-h{font-size:var(--fs-title3);font-weight:700;letter-spacing:var(--ls-title);line-height:var(--lh-title);margin:0 2px 12px}
 .whdr.stick{
