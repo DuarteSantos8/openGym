@@ -575,6 +575,8 @@ struct ExercisePage: View {
     @State private var confirmSkip = false
     /// Which way the last ‹ › went: the set coming in nudges in from that side.
     @State private var forward = true
+    /// Counts ‹ › taps: each one plays the nudge.
+    @State private var nudges = 0
     @FocusState private var crownFocus: Bool
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.isLuminanceReduced) private var dimmed
@@ -748,22 +750,24 @@ struct ExercisePage: View {
         let last = store.show.showLast ? SetPage.lastTime(entry.last, pos) : nil
         let plan = SetPage.planned(entry, set: si, unit: unit) { store.isSkipped(entry.id, $0) }
         VStack(spacing: 0) {
-            // The set's own rows, one per set: ‹ › swap them with a nudge; the arrows and Done stay put under the thumb.
-            ZStack {
-                VStack(spacing: 0) {
-                    positionRow(entry, row, pos)
-                    Spacer(minLength: 1)
-                    if lines != .none, let last { lastLine(last) }
-                    boxes(entry, row, unit: unit, current: current)
-                    // A done set: the plan ahead is not about it.
-                    if let plan, !row.done, lines == .both || (lines == .one && last == nil) { plannedLine(plan) }
-                    Spacer(minLength: 1)
-                }
-                .id(si)
-                .transition(.asymmetric(insertion: reduceMotion ? .opacity : .offset(x: forward ? 12 : -12).combined(with: .opacity),
-                                        removal: .opacity))
+            // The set's own rows: ‹ › swap them at once (two sets of digits read as mud), then the new set nudges in
+            // from the arrow's side. The arrows and Done stay put under the thumb.
+            VStack(spacing: 0) {
+                positionRow(entry, row, pos)
+                Spacer(minLength: 1)
+                if lines != .none, let last { lastLine(last) }
+                boxes(entry, row, unit: unit, current: current)
+                // A done set: the plan ahead is not about it.
+                if let plan, !row.done, lines == .both || (lines == .one && last == nil) { plannedLine(plan) }
+                Spacer(minLength: 1)
             }
             .frame(maxHeight: .infinity)
+            .keyframeAnimator(initialValue: 0.0, trigger: nudges) { rows, away in
+                rows.offset(x: reduceMotion ? 0 : (forward ? 12 : -12) * away).opacity(1 - away)
+            } keyframes: { _ in
+                MoveKeyframe(1.0)
+                CubicKeyframe(0.0, duration: 0.18)       // lands on 0; a spring cut at 0.18 s can stop short
+            }
             primaryRow(entry, si, current: current)
         }
         .frame(maxHeight: .infinity)        // the spare room goes between the rows
@@ -782,7 +786,8 @@ struct ExercisePage: View {
     /// ‹ or ›: the set comes in from the side it was asked from, so "did it move, which way?" needs no reading.
     private func step(_ d: Int) {
         forward = d > 0
-        withAnimation(dimmed ? nil : reduceMotion ? .easeOut(duration: 0.15) : .snappy(duration: 0.18)) { store.move(index, by: d) }
+        store.move(index, by: d)
+        if !dimmed { nudges += 1 }
     }
 
     /// "Set 2 of 4", or Warm-up, then Left / Right and Superset. Short of room, Superset is a link glyph,
