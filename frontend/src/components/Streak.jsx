@@ -1,19 +1,81 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t, tn } from '../lib/i18n.js'
 import { STREAK_BADGES, FREEZE_MAX, streakCelebration } from '../lib/streak.js'
 import { reducedMotion } from '../lib/use-swipe-row.js'
+import { vibrate } from '../lib/sound.js'
 import Icon from './Icon.jsx'
 import { SeasonDeco } from './Seasonal.jsx'
 
 /* The week streak's extras (lib/streak.js): the best run and the freezes under the streak, the
-   milestone badges on Stats, and Home's little party when a week is done or a badge is reached. */
+   milestone badges on Stats, and Home's little party when a week is done or a badge is reached.
+   The flame, the medals and the party banner live here too; Challenges.jsx reuses them. */
 
-/** Snowflakes for the freezes banked: filled ones are there, faint ones still to earn. */
+/**
+ * The streak's flame: filled, a warm gradient with a light core, where the icon set's `flame` is a
+ * thin outline (warm-ups keep that one). It flickers a few times when it appears, then rests
+ * (index.css .flame.lit), and stays still with reduced motion. 1em square like an icon, so it sits
+ * where the icon sat and the seasonal Santa hat (spot "streak-flame") still lands on its tip.
+ * `lit` false (no streak yet) draws it in grey.
+ */
+export function StreakFlame ({ className = '', style, lit = true }) {
+  const id = 'fl' + useId().replace(/[^a-zA-Z0-9]/g, '')
+  return <svg className={'flame' + (lit ? ' lit' : ' out') + (className ? ' ' + className : '')} style={style} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id={id + 'o'} x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" className="flame-s1" />
+        <stop offset=".55" className="flame-s2" />
+        <stop offset="1" className="flame-s3" />
+      </linearGradient>
+      <linearGradient id={id + 'i'} x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" className="flame-s4" />
+        <stop offset="1" className="flame-s5" />
+      </linearGradient>
+    </defs>
+    <g className="flame-o">
+      <path fill={`url(#${id}o)`} d="M12 22c-4.1 0-7-2.8-7-6.7 0-2.9 1.5-5 3.2-6.6.2 1.5.9 2.6 2 3.1-.3-3.6 1.4-6.9 4.6-9.3-.1 2.9 1 4.7 2.5 6.4 1.6 1.8 2.9 3.6 2.9 6.3C20.2 19.2 17.1 22 12 22Z" />
+    </g>
+    <g className="flame-i">
+      <path fill={`url(#${id}i)`} d="M12.1 22c-2.1 0-3.6-1.4-3.6-3.3 0-1.8 1-3 2.2-4.1.1 1 .6 1.7 1.2 2-.1-1.8.6-3.3 1.9-4.4.1 1.6.8 2.5 1.5 3.4.6.8 1 1.6 1 2.8 0 2.2-1.7 3.6-4.2 3.6Z" />
+    </g>
+  </svg>
+}
+
+// The medal tiers, lowest first: the streak's five milestones take one each, a month's three
+// challenges the first three.
+export const TIERS = ['bronze', 'silver', 'gold', 'platinum', 'legend']
+
+/** A medal on its ribbon, coloured by tier (index.css .medal-*), or `locked` for one still to earn.
+    Decorative: the row it sits in says what it is. */
+export function Medal ({ tier = 'gold', className = '' }) {
+  return <svg className={'medal medal-' + tier + (className ? ' ' + className : '')} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">
+    <path className="medal-rib" d="M7 2.4h3.7l2.5 6.4-3.4 1.7ZM17 2.4h-3.7l-1.4 3.6 2 4.5 3.1-1.6Z" />
+    <circle className="medal-disc" cx="12" cy="15.2" r="6.3" />
+    <circle className="medal-ring" cx="12" cy="15.2" r="4.3" />
+    <path className="medal-star" d="m12 12.6.8 1.6 1.8.3-1.3 1.2.3 1.8-1.6-.8-1.6.8.3-1.8-1.3-1.2 1.8-.3Z" />
+  </svg>
+}
+
+/**
+ * The party's burst: a dozen bits of confetti flying out of the icon, gone within a second
+ * (index.css .burst). Decorative; the caller leaves it out with reduced motion.
+ */
+const BURST = 12
+export function Burst () {
+  return <span className="burst" aria-hidden="true">
+    {Array.from({ length: BURST }, (_, i) => {
+      const a = (i / BURST) * Math.PI * 2 + (i % 2 ? 0.22 : -0.12)
+      const d = [30, 23, 17][i % 3]
+      return <i key={i} style={{ '--dx': Math.round(Math.cos(a) * d) + 'px', '--dy': Math.round(Math.sin(a) * d) + 'px', '--rot': ((i * 67) % 240 - 120) + 'deg', animationDelay: (i % 4) * 30 + 'ms' }} />
+    })}
+  </span>
+}
+
+/** Snowflakes for the freezes banked: filled chips are there, outlined ones still to earn. */
 export function Freezes ({ n, className = '' }) {
   const label = t('Streak freezes: {0} of {1}', n, FREEZE_MAX)
   return <span className={'streak-freezes ' + className} role="img" aria-label={label} title={label}>
-    {Array.from({ length: FREEZE_MAX }, (_, i) => <Icon key={i} name="snowflake" className={i < n ? 'on' : ''} />)}
+    {Array.from({ length: FREEZE_MAX }, (_, i) => <span key={i} className={'frz' + (i < n ? ' on' : '')}><Icon name="snowflake" className={i < n ? 'on' : ''} /></span>)}
   </span>
 }
 
@@ -25,47 +87,78 @@ export function StreakMeta ({ info }) {
   </span>
 }
 
-/** The milestones as a row of medals, the reached ones in colour. */
+/** The milestones as a row of medals, bronze to legend; the ones still to reach are outlined. */
 export function StreakBadges ({ info }) {
   return <div className="streak-badges" role="list" aria-label={t('Streak badges')}>
-    {STREAK_BADGES.map(b => {
+    {STREAK_BADGES.map((b, i) => {
       const got = info.badges.includes(b)
-      return <div key={b} role="listitem" className={'streak-badge' + (got ? ' got' : '')}
+      return <div key={b} role="listitem" className={'streak-badge' + (got ? ' got' : '')} data-tier={TIERS[i]}
         aria-label={got ? t('{0} weeks: reached', b) : t('{0} weeks: not yet', b)}>
-        <Icon name={got ? 'medal' : 'lock'} />
+        <span className="streak-badge-art" aria-hidden="true">
+          <Medal tier={got ? TIERS[i] || 'gold' : 'locked'} />
+          {!got && <Icon name="lock" className="lk" />}
+        </span>
         <span className="n">{b}</span>
       </div>
     })}
   </div>
 }
 
-/** Stats: the streak with its best, the freezes, the badges and what comes next. */
+/** Stats: the streak with its best, the freezes, the badges and how far the next one is. */
 export function StreakCard ({ info }) {
   const hint = info.freezes >= FREEZE_MAX
     ? t('Freezes full. A missed week uses one, no harm done.')
     : tn('One more week with a workout earns a freeze.', '{0} more weeks with a workout earn a freeze.', info.toNextFreeze)
+  const nextLine = info.next ? t('Next badge at {0} weeks.', info.next) : t('Every badge collected. Legend.')
   return <div className="card streak-card" data-streak-card>
     <div className="row between" style={{ alignItems: 'flex-start' }}>
       <div>
         <h2 style={{ margin: 0 }}>{t('Week streak')}</h2>
-        <div className="row" style={{ gap: 7, marginTop: 6, fontSize: 30, fontWeight: 600, letterSpacing: '-.026em' }}>
-          <Icon name="flame" style={{ color: 'var(--orange)' }} />{info.current}
-        </div>
+        <div className="streak-num"><StreakFlame lit={info.current > 0} /><span>{info.current}</span></div>
       </div>
-      <div style={{ textAlign: 'end' }}>
+      <div className="streak-side">
         <div className="muted small">{t('Best: {0}', info.best)}</div>
         <Freezes n={info.freezes} className="big" />
       </div>
     </div>
     <StreakBadges info={info} />
-    <div className="muted small" style={{ marginTop: 8 }}>
-      {info.next ? t('Next badge at {0} weeks.', info.next) + ' ' : t('Every badge collected. Legend.') + ' '}{hint}
-    </div>
+    {info.next
+      ? <div className="streak-next">
+        <div className="pbar-t small"><span>{nextLine}</span><span className="pbar-n">{info.current} / {info.next}</span></div>
+        <div className="pbar" role="progressbar" aria-label={nextLine} aria-valuemin={0} aria-valuemax={info.next} aria-valuenow={Math.min(info.current, info.next)}>
+          <i style={{ '--p': Math.min(1, info.current / info.next) }} />
+        </div>
+      </div>
+      : null}
+    <div className="muted small streak-hint">{info.next ? '' : nextLine + ' '}{hint}</div>
   </div>
 }
 
-// How long the party stays when nobody taps it away.
-const PARTY_MS = 7000
+// How long a party stays when nobody taps it away.
+export const PARTY_MS = 7000
+
+/**
+ * A party banner, the streak's and the challenges': the icon popping in with its burst, one line,
+ * tap anywhere on it to close. It sits in the card's flow, never over anything, and one short buzz
+ * on the phone goes with it (lib/sound.js vibrate; Settings → Vibrate turns it off).
+ */
+export function PartyBanner ({ text, icon, className = '', onClose, children }) {
+  const still = reducedMotion()
+  useEffect(() => { vibrate([14, 40, 22]) }, [text])
+  // The live region wraps the button, so it is still announced as a button (a role on the button
+  // itself would replace that).
+  return <div className="party-live" role="status">
+    <button type="button" className={'streak-party' + (still ? ' still' : '') + (className ? ' ' + className : '')}
+      onClick={e => { e.stopPropagation(); onClose() }} aria-label={text}>
+      {children}
+      <span className="streak-party-icon" aria-hidden="true">
+        <span className="streak-party-art">{icon}</span>
+        {!still && <span className="sparks"><Burst /></span>}
+      </span>
+      <span className="streak-party-text">{text}</span>
+    </button>
+  </div>
+}
 
 /**
  * Home: a week done or a badge reached, said once (S.streakSeen remembers it, synced like any
@@ -89,17 +182,12 @@ export function StreakParty ({ S, info, tally }) {
     return () => clearTimeout(tm)
   }, [party])
   if (!party) return null
-  const still = reducedMotion()
   const text = party.kind === 'badge'
     ? t('{0} weeks in a row. New badge!', party.weeks)
     : t('Week done. The flame lives on.')
-  return <button type="button" className={'streak-party' + (still ? ' still' : '')} role="status"
-    onClick={e => { e.stopPropagation(); setParty(null) }} aria-label={text}>
+  const tier = TIERS[STREAK_BADGES.indexOf(party.weeks)] || 'gold'
+  return <PartyBanner text={text} className={party.kind === 'badge' ? 'is-badge' : 'is-week'} onClose={() => setParty(null)}
+    icon={party.kind === 'badge' ? <Medal tier={tier} /> : <StreakFlame />}>
     <SeasonDeco spot="streak-party" />
-    <span className="streak-party-icon" aria-hidden="true">
-      <Icon name={party.kind === 'badge' ? 'medal' : 'flame'} />
-      {!still && <span className="sparks">{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</span>}
-    </span>
-    <span className="streak-party-text">{text}</span>
-  </button>
+  </PartyBanner>
 }

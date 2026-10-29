@@ -1983,66 +1983,136 @@ button.mchip{border:none;font:inherit;font-size:12px;cursor:pointer}
 .tile .l .icn{font-size:14px;color:var(--label)}
 .tile .v{font-size:26px;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
 .tile.tappable:active{background:var(--surface-2)}
-/* The week streak's extras (components/Streak.jsx): best + freezes, badges, Home's party. */
+/* The week streak (components/Streak.jsx): the flame, best + freezes, the medals, the parties.
+   Colours that carry meaning get a darker ink in the light theme, so a bar or a snowflake keeps
+   3:1 against white where the system orange, green and cyan do not. */
+:root{
+  --streak-ink:var(--orange); --win-ink:var(--green); --frost:#64d2ff; --frost-soft:rgba(100,210,255,.16);
+  --gold-ink:var(--yellow);
+}
+:root[data-theme="light"]{
+  --streak-ink:#e06a00; --win-ink:#1e9e47; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
+  --gold-ink:#a26b00;
+}
+/* The flame: a warm gradient with a light core; three gentle flickers when it appears, then still. */
+.flame{display:inline-block;flex:none;overflow:visible;vertical-align:-.12em}
+.flame-s1{stop-color:#ff4d1a} .flame-s2{stop-color:#ff8a1f} .flame-s3{stop-color:#ffc23d}
+.flame-s4{stop-color:#ffd76a} .flame-s5{stop-color:#fff4cf}
+.flame.out .flame-s1{stop-color:#8e8e93} .flame.out .flame-s2{stop-color:#a1a1a6} .flame.out .flame-s3{stop-color:#b8b8bd}
+.flame.out .flame-s4{stop-color:#d1d1d6} .flame.out .flame-s5{stop-color:#e5e5ea}
+.flame-o,.flame-i{transform-box:fill-box;transform-origin:50% 100%}
+.flame.lit .flame-o{animation:flame-sway 1.5s ease-in-out .2s 3}
+.flame.lit .flame-i{animation:flame-core 1s ease-in-out .2s 4}
+@keyframes flame-sway{0%,100%{transform:none}35%{transform:skewX(-3deg) scaleY(1.04)}70%{transform:skewX(2deg) scaleY(.97)}}
+@keyframes flame-core{0%,100%{transform:none}50%{transform:scale(.9,1.1)}}
+.streak-flame-wrap{position:relative;display:inline-flex}
+.streak-num{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+.streak-num .flame{font-size:.92em;vertical-align:0}
+.streak-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:end}
+
+/* Freezes: a snowflake in a round chip, filled when banked, outlined while still to earn. */
 .streak-meta{display:inline-flex;align-items:center;gap:8px}
-.streak-freezes{display:inline-flex;gap:2px;vertical-align:middle}
-.streak-freezes .icn{font-size:13px;color:var(--label-3);opacity:.35}
-.streak-freezes .icn.on{color:#64d2ff;opacity:1}
-.streak-freezes.big .icn{font-size:18px}
-.tile-freezes{margin-inline-start:8px}
-.tile-freezes .icn{font-size:15px}
-.streak-badges{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}
-.streak-badge{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 6px;border-radius:12px;background:var(--surface-2);color:var(--label-3)}
-.streak-badge .icn{font-size:20px}
+.streak-freezes{display:inline-flex;gap:3px;vertical-align:middle;font-size:11px}
+.frz{display:inline-grid;place-items:center;width:1.6em;height:1.6em;border-radius:50%;color:var(--label-3);box-shadow:inset 0 0 0 1px var(--label-4)}
+.frz .icn{font-size:1.05em}
+.frz.on{color:var(--frost);background:var(--frost-soft);box-shadow:none;--icon-stroke:2}
+.streak-freezes.big{font-size:14px;gap:4px}
+.tile-freezes{margin-inline-start:8px;font-size:11px}
+
+/* The medals: one per milestone, tiers bronze to legend; one still to earn is a dashed outline. */
+.medal{display:inline-block;flex:none;overflow:visible}
+.medal-ring{fill:none;stroke-width:1}
+.medal-bronze .medal-rib{fill:#9a4f22} .medal-bronze .medal-disc{fill:#cd7f3e} .medal-bronze .medal-ring{stroke:#f2b27a} .medal-bronze .medal-star{fill:#f7cba3}
+.medal-silver .medal-rib{fill:#6f7a88} .medal-silver .medal-disc{fill:#a9b3bf} .medal-silver .medal-ring{stroke:#eef2f6} .medal-silver .medal-star{fill:#f4f7fa}
+.medal-gold .medal-rib{fill:#b06f12} .medal-gold .medal-disc{fill:#f2b81c} .medal-gold .medal-ring{stroke:#ffe58a} .medal-gold .medal-star{fill:#fff1b8}
+.medal-platinum .medal-rib{fill:#2f6f86} .medal-platinum .medal-disc{fill:#78c9df} .medal-platinum .medal-ring{stroke:#dff6ff} .medal-platinum .medal-star{fill:#effbff}
+.medal-legend .medal-rib{fill:#a82a0b} .medal-legend .medal-disc{fill:#ff6a2b} .medal-legend .medal-ring{stroke:#ffd36b} .medal-legend .medal-star{fill:#ffe9a8}
+.medal-locked .medal-rib{fill:var(--label-4)}
+.medal-locked .medal-disc{fill:none;stroke:var(--label-3);stroke-width:1.3;stroke-dasharray:2.4 2}
+.medal-locked .medal-ring,.medal-locked .medal-star{display:none}
+.streak-badges{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:14px}
+.streak-badge{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:10px 0 8px;border-radius:12px;background:var(--surface-2);color:var(--label-2)}
+.streak-badge-art{position:relative;display:inline-flex;font-size:28px}
+.streak-badge .lk{position:absolute;inset-inline-end:-4px;bottom:-1px;font-size:14px;padding:2px;border-radius:50%;background:var(--surface-2);color:var(--label-2);--icon-stroke:2}
 .streak-badge .n{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
-.streak-badge.got{background:var(--acc-soft);color:var(--label)}
-.streak-badge.got .icn{color:var(--orange)}
-.streak-party{position:relative;display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:10px 12px;border:0;border-radius:14px;
-  background:var(--acc-soft);color:var(--label);font:inherit;font-weight:600;text-align:start;animation:slideup .45s cubic-bezier(.3,1.4,.5,1) both}
-.streak-party.still{animation:none}
-.streak-party-icon{position:relative;display:inline-flex;font-size:24px;color:var(--orange);animation:streak-pop .7s cubic-bezier(.3,1.8,.5,1) .15s both}
-.streak-party.still .streak-party-icon{animation:none}
-.streak-party .sparks{position:absolute;inset:50% auto auto 50%;pointer-events:none}
-.streak-party .sparks i{position:absolute;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:var(--acc);opacity:0;animation:streak-spark .8s ease-out .3s both}
-.streak-party .sparks i:nth-child(2n){background:var(--orange)}
-.streak-party .sparks i:nth-child(1){--dx:-18px;--dy:-16px}
-.streak-party .sparks i:nth-child(2){--dx:0;--dy:-22px}
-.streak-party .sparks i:nth-child(3){--dx:18px;--dy:-16px}
-.streak-party .sparks i:nth-child(4){--dx:20px;--dy:6px}
-.streak-party .sparks i:nth-child(5){--dx:-20px;--dy:6px}
-.streak-party .sparks i:nth-child(6){--dx:0;--dy:18px}
+.streak-badge.got{color:var(--label)}
+.streak-next{margin-top:14px}
+.streak-hint{margin-top:10px}
+
+/* A progress bar (streak card, challenges): 8px, fully rounded, the fill clipped to the true ratio
+   (no stub at zero) and sliding to a new value, from empty when it first appears. */
+.pbar-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px;color:var(--label-2)}
+.pbar-n{flex:none;font-variant-numeric:tabular-nums}
+.pbar{display:block;height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+:root[data-theme="light"] .pbar{background:var(--surface-3)}
+.pbar i{display:block;height:100%;border-radius:inherit;background:var(--streak-ink);
+  clip-path:inset(0 calc((1 - var(--p, 0)) * 100%) 0 0 round 99px);transition:clip-path .7s cubic-bezier(.23,1,.32,1)}
+@starting-style{.pbar i{clip-path:inset(0 100% 0 0 round 99px)}}
+[dir="rtl"] .pbar i{clip-path:inset(0 0 0 calc((1 - var(--p, 0)) * 100%) round 99px)}
+@starting-style{[dir="rtl"] .pbar i{clip-path:inset(0 0 0 100% round 99px)}}
+
+/* The party: a warm banner in the card, its icon popping in on a burst of confetti (under 1.2 s). */
+.streak-party{position:relative;display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:8px 14px 8px 8px;border:0;border-radius:16px;
+  background:rgba(255,159,10,.14);color:var(--label);font:inherit;font-size:15px;font-weight:600;line-height:1.3;letter-spacing:-.01em;text-align:start;cursor:pointer;
+  animation:party-in .42s cubic-bezier(.23,1,.32,1) both;touch-action:manipulation}
+[dir="rtl"] .streak-party{padding:8px 8px 8px 14px}
+@media (hover:hover) and (pointer:fine){.streak-party:hover{background:rgba(255,159,10,.2)}.streak-party.gold:hover{background:rgba(255,214,10,.24)}}
+.streak-party:active{transform:scale(.98);transition:transform .12s ease-out}
+.streak-party.gold{background:rgba(255,214,10,.18)}
+.streak-party-icon{position:relative;flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--surface);font-size:30px}
+.streak-party-art{display:inline-flex;animation:party-pop .55s cubic-bezier(.34,1.56,.64,1) .08s both}
+.streak-party-text{min-width:0;text-wrap:pretty}
+.streak-party.still,.streak-party.still .streak-party-art{animation:none}
+.streak-party .sparks,.burst{position:absolute;inset:50% auto auto 50%;pointer-events:none}
+.burst i{position:absolute;width:4px;height:8px;margin:-4px -2px;border-radius:1.5px;background:var(--orange);opacity:0;animation:burst .9s cubic-bezier(.23,1,.32,1) .12s both}
+.burst i:nth-child(3n+1){background:var(--acc)}
+.burst i:nth-child(3n+2){background:var(--yellow)}
+.burst i:nth-child(4n){width:5px;height:5px;margin:-2.5px;border-radius:50%}
+.ch-party.gold .burst i:nth-child(3n+1){background:var(--yellow)}
+@keyframes party-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes party-pop{from{opacity:0;transform:scale(.6) rotate(-14deg)}to{opacity:1;transform:none}}
+@keyframes burst{0%{opacity:1;transform:translate(0,0) rotate(0) scale(.5)}70%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(1)}}
+@media (prefers-reduced-motion: reduce){
+  .flame.lit .flame-o,.flame.lit .flame-i,.streak-party,.streak-party-art,.burst i{animation:none}
+  .pbar i{transition:none}
+  .burst{display:none}
+}
+
 /* Monthly challenges (components/Challenges.jsx): Home's card, Stats' trophy shelf. */
-.challenges .lbl2,.challenges-stats .lbl2{display:block;font-size:11px;font-weight:500;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
-.ch-head{display:flex;align-items:center;gap:9px;flex:1;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
-.ch-head-t{display:flex;flex-direction:column;min-width:0;flex:1}
+.ch-head{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.ch-head-t{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1}
 .ch-head .ttl{font-size:16px;font-weight:600;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ch-list{display:flex;flex-direction:column;gap:12px;margin-top:12px}
-.ch-row{display:flex;align-items:center;gap:10px}
-.ch-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;border-radius:9px;background:var(--surface-2);color:var(--label-2);font-size:16px}
-.ch-row.done .ch-ic{background:rgba(48,209,88,0.18);background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+.ch-sub{display:block;font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums}
+.challenges-stats .ch-sub{margin:-4px 0 2px}
+.ch-list{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+.ch-row{display:flex;align-items:center;gap:12px}
+.ch-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;border-radius:10px;background:var(--surface-2);color:var(--label-2);font-size:17px}
+.ch-row.done .ch-ic{background:rgba(48,209,88,0.18);background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--win-ink)}
 .ch-body{flex:1;min-width:0}
-.ch-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;font-weight:500}
-.ch-name{min-width:0}
-.ch-n{flex:none;font-size:13px;color:var(--label-2);font-variant-numeric:tabular-nums}
-.ch-bar{height:6px;margin-top:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
-.ch-bar i{display:block;height:100%;border-radius:3px;background:var(--orange);transition:width .5s ease}
-.ch-row.done .ch-bar i{background:var(--green)}
-.ch-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
-.ch-mini span{height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
-.ch-mini i{display:block;height:100%;background:var(--orange)}
-.ch-mini span.done i{background:var(--green)}
-.ch-note{display:flex;align-items:center;gap:6px;margin-top:12px}
-.challenges.gold .ch-note .icn{color:var(--yellow)}
-.ch-party.gold .streak-party-icon{color:var(--yellow)}
-.ch-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px;margin-top:8px}
-.ch-month{display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px 7px;border-radius:12px;background:var(--surface-2)}
-.ch-medals{display:inline-flex;gap:1px;font-size:17px;color:var(--orange);min-height:20px;align-items:center}
-.ch-month.gold{background:linear-gradient(rgba(255,214,10,0.22),rgba(255,214,10,0.22)),var(--surface-2);background:color-mix(in srgb,var(--yellow) 22%,var(--surface-2))}
-.ch-month.gold .ch-medals{color:var(--yellow);font-size:20px}
+.ch-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:15px;font-weight:500;letter-spacing:-.01em;line-height:1.3}
+.ch-name{min-width:0;text-wrap:pretty}
+.ch-n{flex:none;display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:500;color:var(--label-2)}
+.ch-row.done .ch-n{color:var(--win-ink)}
+.ch-ok{font-size:12px;--icon-stroke:2.6}
+.ch-bar{margin-top:7px}
+.ch-row.done .pbar i,.ch-mini .done i{background:var(--win-ink)}
+.ch-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.ch-mini .pbar{height:5px}
+.ch-note{display:flex;align-items:center;gap:6px;margin-top:14px}
+.ch-crown{color:var(--gold-ink)}
+.challenges.gold{background:rgba(255,214,10,.08);background:color-mix(in srgb,var(--yellow) 8%,var(--surface))}
+.ch-party .streak-party-icon .ch-crown{font-size:24px;--icon-stroke:2}
+.ch-shelf-h{margin:20px 0 8px;font-size:13px;font-weight:600;letter-spacing:-.004em;color:var(--label)}
+.ch-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;padding-top:6px}
+.ch-month{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 4px 9px;border-radius:12px;background:var(--surface-2)}
+.ch-medals{display:inline-flex;align-items:center;gap:1px;min-height:22px;font-size:21px}
+.ch-slot{width:11px;height:11px;margin:0 4px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3)}
 .ch-m{font-size:12px;font-weight:600;color:var(--label-2);white-space:nowrap}
-@media (prefers-reduced-motion: reduce){.ch-bar i{transition:none}}
-@keyframes streak-pop{from{transform:scale(.3)}to{transform:none}}
-@keyframes streak-spark{0%{opacity:1;transform:none}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+.ch-month.gold{background:rgba(255,214,10,0.12);background:color-mix(in srgb,var(--yellow) 12%,var(--surface-2))}
+.ch-month.gold .ch-m{color:var(--label)}
+.ch-month.gold>.ch-crown{position:absolute;top:-9px;left:50%;transform:translateX(-50%);padding:2px 5px;border-radius:9px;background:var(--surface);font-size:17px;box-sizing:content-box;--icon-stroke:2}
+.ch-shelf-empty{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--surface-2)}
+.ch-shelf-empty .ch-medals{font-size:22px;gap:2px}
 /* the workout summary: time and volume share the first row, sets get the wider cell of the second
    because "15 sets · 15 work" does not fit a half */
 .center .tiles.fin{grid-template-columns:repeat(6,1fr)}

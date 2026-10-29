@@ -58,6 +58,12 @@ describe('Home card', () => {
     const party = el.querySelector('.streak-party')
     expect(party.textContent).toContain('Challenge done: 3 workouts this month. New badge!')
     expect(party.classList.contains('still')).toBe(false)
+    // the month's first badge is bronze, and the burst flies
+    expect(party.querySelector('.medal-bronze')).toBeTruthy()
+    expect(party.querySelectorAll('.burst i').length).toBeGreaterThan(6)
+    // the bar carries its true ratio, done in full
+    expect(row().querySelector('.pbar i').style.getPropertyValue('--p')).toBe('1')
+    expect(row().querySelector('.ch-ok')).toBeTruthy()
     act(() => party.click())
     expect(el.querySelector('.streak-party')).toBeNull()
   })
@@ -125,7 +131,12 @@ describe('Stats', () => {
     expect(months).toHaveLength(2)
     expect(months[0].classList.contains('gold')).toBe(true)
     expect(months[0].getAttribute('aria-label')).toMatch(/^Gold month: .*3 of 3 challenges$/)
-    expect(months[1].querySelectorAll('.ch-medals > *')).toHaveLength(1)
+    // a medal per challenge done, bronze first, and an empty slot for each still open
+    expect(months[1].querySelectorAll('.ch-medals > .got')).toHaveLength(1)
+    expect(months[1].querySelector('.ch-medals > .got').classList.contains('medal-bronze')).toBe(true)
+    expect(months[1].querySelectorAll('.ch-medals > .ch-slot')).toHaveLength(2)
+    expect(months[0].querySelectorAll('.ch-medals > .medal-gold')).toHaveLength(3)
+    expect(months[0].querySelector('.ch-crown')).toBeTruthy()
   })
 
   it('keeps the shelf when switched off, says what it is for when empty', () => {
@@ -136,6 +147,7 @@ describe('Stats', () => {
     setS({ monthlyChallenges: true, challenges: undefined })
     el = render(Stats)
     expect(el.textContent).toContain('Every challenge you finish puts a badge here')
+    expect(el.querySelectorAll('.ch-shelf-empty .medal-locked')).toHaveLength(3)
   })
 })
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
-import { reducedMotion } from '../lib/use-swipe-row.js'
+import { Medal, PartyBanner, PARTY_MS, TIERS } from './Streak.jsx'
 import {
   monthKeyOf, shiftMonth, monthChallenges, progressOf, newlyDone, savePicks, markDone, isGold,
   cleanChallenges, storedMonth, shelfOf, challengesOn, hiddenFor, factsFor,
@@ -12,12 +12,10 @@ import { challengeTitle, challengeCount, monthLabel, doneLine } from '../lib/cha
 /* The monthly challenges (lib/challenges.js): Home's card with the month's three and their
    progress, a small party when one is done, and Stats' card with the trophy shelf. */
 
-// How long a party stays when nobody taps it away (as the streak's, components/Streak.jsx).
-const PARTY_MS = 7000
 // The first days of a month say why the goals changed.
 const NEW_MONTH_DAYS = 3
 
-/** The month's three as rows with a bar each. */
+/** The month's three as rows with a bar each; a done one turns green with a check by its count. */
 export function ChallengeRows({ progress, unit }) {
   return <div className="ch-list">
     {progress.map(p => {
@@ -25,9 +23,9 @@ export function ChallengeRows({ progress, unit }) {
       return <div key={p.id} className={'ch-row' + (p.done ? ' done' : '')} data-challenge={p.id}>
         <span className="ch-ic" aria-hidden="true"><Icon name={p.done ? 'checkCircle' : p.icon} /></span>
         <div className="ch-body">
-          <div className="ch-t"><span className="ch-name">{title}</span><span className="ch-n">{challengeCount(p, unit)}</span></div>
-          <div className="ch-bar" role="progressbar" aria-label={title} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p.pct * 100)}>
-            <i style={{ width: Math.round(p.pct * 100) + '%' }} />
+          <div className="ch-t"><span className="ch-name">{title}</span><span className="ch-n pbar-n">{p.done && <Icon name="check" className="ch-ok" />}{challengeCount(p, unit)}</span></div>
+          <div className="pbar ch-bar" role="progressbar" aria-label={title} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(p.pct * 100)}>
+            <i style={{ '--p': Math.min(1, Math.max(0, p.pct)) }} />
           </div>
         </div>
       </div>
@@ -35,22 +33,16 @@ export function ChallengeRows({ progress, unit }) {
   </div>
 }
 
-/** One challenge done, or all three: said once, the way the streak's party says a week is done. */
+/** One challenge done, or all three: said once, the way the streak's party says a week is done.
+    The medal is the month's next tier (bronze, silver, gold), a gold month gets the crown. */
 function ChallengeParty({ party, onClose }) {
   useEffect(() => {
     const tm = setTimeout(onClose, PARTY_MS)
     return () => clearTimeout(tm)
   }, [party, onClose])
-  const still = reducedMotion()
   const text = party.gold ? t('All three done. Gold month!') : t('Challenge done: {0}. New badge!', party.title)
-  return <button type="button" className={'streak-party ch-party' + (still ? ' still' : '') + (party.gold ? ' gold' : '')} role="status"
-    onClick={e => { e.stopPropagation(); onClose() }} aria-label={text}>
-    <span className="streak-party-icon" aria-hidden="true">
-      <Icon name={party.gold ? 'crown' : 'medal'} />
-      {!still && <span className="sparks">{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</span>}
-    </span>
-    <span className="streak-party-text">{text}</span>
-  </button>
+  const icon = party.gold ? <Icon name="crown" className="ch-crown" /> : <Medal tier={TIERS[Math.max(0, Math.min(2, (party.n || 1) - 1))]} />
+  return <PartyBanner text={text} icon={icon} className={'ch-party' + (party.gold ? ' gold' : '')} onClose={onClose} />
 }
 
 /** Home: this month's challenges. Folds to one line, × hides it until next month, off in Settings. */
@@ -71,10 +63,10 @@ export function ChallengesCard({ S, now = new Date() }) {
     if (!month || sandbox) return
     const { update } = useStore.getState()
     if (fresh.length) {
-      let gold = false
-      update(s => { markDone(s, key, fresh, month.picked); gold = isGold(cleanChallenges(s.challenges)?.[key]) })
+      let gold = false, n = 1
+      update(s => { markDone(s, key, fresh, month.picked); const m = cleanChallenges(s.challenges)?.[key]; gold = isGold(m); n = m?.done.length || 1 })
       const p = progress.find(x => x.id === fresh[0])
-      setParty({ gold, title: challengeTitle(p, S.unit), at: Date.now() })
+      setParty({ gold, n, title: challengeTitle(p, S.unit), at: Date.now() })
     } else if (!month.stored) update(s => { savePicks(s, key, month.picked) })
     // Last month's goals reached on its last evening, with the app opened only now: the badge
     // still counts, quietly.
@@ -100,7 +92,7 @@ export function ChallengesCard({ S, now = new Date() }) {
       <button type="button" className="ch-head" aria-expanded={!folded} onClick={() => update(s => { s.challengesFold = !folded })}>
         <span className="lrow-i" style={{ background: gold ? 'var(--yellow)' : 'var(--orange)' }}><Icon name={gold ? 'crown' : 'target'} /></span>
         <span className="ch-head-t">
-          <span className="lbl2">{monthLabel(key)} · {doneLine(done, progress.length)}</span>
+          <span className="ch-sub">{monthLabel(key)} · {doneLine(done, progress.length)}</span>
           <span className="ttl">{t('This month’s challenges')}</span>
         </span>
         <Icon name={folded ? 'chevronDown' : 'chevronUp'} className="chev" />
@@ -109,9 +101,9 @@ export function ChallengesCard({ S, now = new Date() }) {
         onClick={() => update(s => { s.challengesHidden = key })} aria-label={t('Hide until next month')}><Icon name="xmark" /></button>
     </div>
     {folded
-      ? <div className="ch-mini" aria-hidden="true">{progress.map(p => <span key={p.id} className={p.done ? 'done' : ''}><i style={{ width: Math.round(p.pct * 100) + '%' }} /></span>)}</div>
+      ? <div className="ch-mini" aria-hidden="true">{progress.map(p => <span key={p.id} className={'pbar' + (p.done ? ' done' : '')}><i style={{ '--p': Math.min(1, Math.max(0, p.pct)) }} /></span>)}</div>
       : <ChallengeRows progress={progress} unit={S.unit} />}
-    {!folded && gold && <div className="ch-note small"><Icon name="crown" /> {t('Gold month. Take a bow.')}</div>}
+    {!folded && gold && <div className="ch-note small"><Icon name="crown" className="ch-crown" /> {t('Gold month. Take a bow.')}</div>}
     {!folded && !gold && newMonth && <div className="ch-note small muted">{t('New month, new challenges.')}</div>}
     {party && <ChallengeParty party={party} onClose={closeParty} />}
   </div>
@@ -128,20 +120,25 @@ export function ChallengesStatsCard({ S, now = new Date() }) {
   return <div className="card challenges-stats" data-challenge-shelf>
     <h2>{t('Challenges')}</h2>
     {month && <>
-      <div className="small muted" style={{ marginBottom: 6 }}>{monthLabel(key)} · {doneLine(progress.filter(p => p.done).length, progress.length)}</div>
+      <div className="ch-sub">{monthLabel(key)} · {doneLine(progress.filter(p => p.done).length, progress.length)}</div>
       <ChallengeRows progress={progress} unit={S.unit} />
     </>}
-    <div className="lbl2" style={{ marginTop: 14 }}>{t('Trophy shelf')}</div>
+    <h3 className="ch-shelf-h">{t('Trophy shelf')}</h3>
     {shelf.length
       ? <div className="ch-shelf" role="list">
         {shelf.map(m => <div key={m.key} role="listitem" className={'ch-month' + (m.gold ? ' gold' : '')}
           aria-label={(m.gold ? t('Gold month') + ': ' : '') + t('{0}: {1} of {2} challenges', monthLabel(m.key), m.done, m.total)}>
+          {m.gold && <Icon name="crown" className="ch-crown" aria-hidden="true" />}
           <span className="ch-medals" aria-hidden="true">
-            {m.gold ? <Icon name="crown" /> : Array.from({ length: m.done }, (_, i) => <Icon key={i} name="medal" />)}
+            {Array.from({ length: m.done }, (_, i) => <Medal key={i} className="got" tier={m.gold ? 'gold' : TIERS[Math.min(i, 2)]} />)}
+            {Array.from({ length: Math.max(0, m.total - m.done) }, (_, i) => <span key={'e' + i} className="ch-slot" />)}
           </span>
           <span className="ch-m">{monthLabel(m.key, { short: true })}</span>
         </div>)}
       </div>
-      : <div className="small muted" style={{ marginTop: 4 }}>{t('Every challenge you finish puts a badge here, one shelf per month.')}</div>}
+      : <div className="ch-shelf-empty">
+        <span className="ch-medals" aria-hidden="true">{TIERS.slice(0, 3).map(tr => <Medal key={tr} tier="locked" />)}</span>
+        <span className="small muted">{t('Every challenge you finish puts a badge here, one shelf per month.')}</span>
+      </div>}
   </div>
 }
