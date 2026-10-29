@@ -15,7 +15,7 @@
 .tour-card p{margin:0 0 12px;font-size:15px;line-height:1.45;color:var(--label-2,var(--label))}
 .tour-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px}
 .tour-count{font-size:12px;font-weight:600;color:var(--label-3,var(--label));font-variant-numeric:tabular-nums;white-space:nowrap}
-.tour-skip{background:none;border:0;padding:4px 0;font:inherit;font-size:13px;color:var(--acc);cursor:pointer;text-align:end}
+.tour-skip{background:none;border:0;padding:4px 0;font:inherit;font-size:13px;color:var(--acc-ink);cursor:pointer;text-align:end}
 .tour-acts{display:flex;gap:8px;justify-content:flex-end}
 .tour-acts .btn{flex:1 1 0;min-width:0}
 .tour-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

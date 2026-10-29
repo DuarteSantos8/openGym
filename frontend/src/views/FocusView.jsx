@@ -333,7 +333,7 @@ export default function FocusView({
       </Prescription>
       {locked && <p className="focus-lock-note" role="status">{t('Complete set {0} to edit this one.', firstOpenSet + 1)}</p>}
 
-      <div data-testid="focus-set" data-tour="set" className={(set.done ? 'complete ' : '') + (locked ? 'locked' : '')}>
+      <div data-testid="focus-set" data-tour="set" className={'focus-set' + (set.done ? ' complete' : '') + (locked ? ' locked' : '')}>
         {isSideSet(set) ? <div className="focus-sides">{sideFields('L')}{sideFields('R')}</div> : <>
           {mode === 'cardio' ? <>
             <Stepper label={t('Duration (min)')} ariaLabel="duration" value={set.min || 0} step={1} decimal={false} disabled={readOnly}

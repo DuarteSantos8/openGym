@@ -127,7 +127,7 @@ function RoutinePreview({ parsed, close }) {
         </div>
       </div>)}
     </div>
-    {parsed.dropped > 0 && <div className="small" style={{ color: 'var(--yellow)', marginBottom: 12, lineHeight: 1.4 }}>
+    {parsed.dropped > 0 && <div className="small" style={{ color: 'var(--gold-ink)', marginBottom: 12, lineHeight: 1.4 }}>
       {t(parsed.dropped === 1
         ? '{0} exercise in the file isn’t in your library and was left out.'
         : '{0} exercises in the file aren’t in your library and were left out.', parsed.dropped)}

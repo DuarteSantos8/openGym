@@ -47,7 +47,7 @@ export default function PermissionSteps() {
   }
   const c = (COPY[step.id] || (() => ({ icon: 'info', title: step.id, body: '', lines: [] })))()
   return <div className="narrow" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '78vh', textAlign: 'center' }}>
-    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc)' }}><Icon name={c.icon} /></div>
+    <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name={c.icon} /></div>
     <div className="dim small" style={{ marginTop: 12, textTransform: 'uppercase', letterSpacing: '.06em' }}>{t('One quick thing')}</div>
     <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.024em', margin: '6px 0 10px' }}>{c.title}</h1>
     <div className="muted" style={{ lineHeight: 1.5, marginBottom: 18 }}>{c.body}</div>
