@@ -852,6 +852,18 @@ describe('an entry edited on two devices keeps both edits, field by field', () =
     }
   })
 
+  it('a workout saved with nothing changed does not outrank a removal (property seed 916282567)', () => {
+    const A = change(S0, 1000, S => { S.workouts[0].entries[0].sets.push({ w: 20, r: 1 }); stampWorkout(S.workouts[0], 1000) })
+    const B = change(S0, 3000, S => { S.workouts[0].entries[0].sets[0].w = 100; stampWorkout(S.workouts[0], 3000) })
+    const C = change(S0, 2000, S => { S.workouts = [] })
+    expect(B.workouts[0]._ts).toBeUndefined()
+    const view = S => S.workouts.map(w => w.entries)
+    const left = view(mergeStates(mergeStates(A, B), C))
+    expect(left).toEqual([])
+    expect(view(mergeStates(A, mergeStates(B, C)))).toEqual(left)
+    expect(view(mergeStates(mergeStates(C, A), B))).toEqual(left)
+  })
+
   it('the same field edited on both: the later edit wins, a removal included', () => {
     const A = change(S0, 1000, S => { S.workouts[0].note = 'first'; stampWorkout(S.workouts[0], 1000) })
     const B = change(A, 2000, S => { delete S.workouts[0].note; stampWorkout(S.workouts[0], 2000) })
