@@ -13,7 +13,13 @@
 import { CONTRACT } from './payload.js';
 
 export function extractJSON(text) {
-  const raw = String(text || '').trim();
+  // Reasoning models (MiniMax M2/M3, DeepSeek R1 class) can put their chain of thought in the
+  // content between <think> tags. It is not part of the answer and may hold braces of its own,
+  // which would otherwise be mistaken for the start of the JSON object.
+  let body = String(text || '').replace(/<think>[\s\S]*?<\/think>/gi, '');
+  const closing = body.lastIndexOf('</think>');
+  if (closing >= 0) body = body.slice(closing + '</think>'.length);
+  const raw = body.trim();
   if (!raw) return { error: 'the provider returned nothing' };
   try { return { value: JSON.parse(raw) }; } catch { /* keep looking */ }
   const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
