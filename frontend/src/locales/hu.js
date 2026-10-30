@@ -3472,4 +3472,10 @@ export default {
   "Clear filters": "Szűrők törlése",
   "Overview": "Áttekintés",
   "Lifts": "Gyakorlatok",
+  'Check exercise matches': 'Gyakorlatpárosítások ellenőrzése',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'Koppints egy névre, hogy megváltoztasd, mi legyen belőle. A választásod megmarad a következő importáláshoz.',
+  'Pick from the library': 'Választás a könyvtárból',
+  'Keep as your own exercise': 'Megtartás saját gyakorlatként',
+  'Use the automatic match': 'Automatikus párosítás használata',
+  'your pick': 'a te választásod',
 }

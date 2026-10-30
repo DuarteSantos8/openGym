@@ -10,6 +10,7 @@ import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { daysBetween, importId, priorCustom, roundWeight } from './import-csv.js'
+import { OWN, matchKey, pickFor, namesOf } from './import-matches.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
 export const HEVY_API = 'https://api.hevyapp.com'
@@ -161,21 +162,34 @@ function bpOfTemplate(t) {
 /**
  * Shared resolver: the user's own custom exercise when an earlier import made one (priorCustom,
  * so one exercise keeps one id once the map learns it), else a HEVY_ID_MAP hit, else one custom
- * exercise per Hevy template id. `customEx`: the custom exercises already in state.
+ * exercise per Hevy template id. `customEx`: the custom exercises already in state. The user's
+ * own pick for a title (`matches`, lib/import-matches.js) comes before all of them.
  */
-function makeResolver(templates, customEx) {
+function makeResolver(templates, customEx, matches = null) {
   const byId = new Map((templates || []).map(t => [t.id, t]))
   const created = new Map()
   const titleOf = new Map()      // custom id → the name Hevy showed for it
   const matchedIds = new Set()
+  const names = new Map()        // matchKey → { name, id }: what each title became, for the review
 
   const resolve = (templateId, fallbackTitle) => {
+    const id = resolveTitle(templateId, fallbackTitle)
+    const title = byId.get(templateId)?.title || fallbackTitle
+    if (id && title && !names.has(matchKey(title))) names.set(matchKey(title), { name: title, id })
+    return id
+  }
+  const resolveTitle = (templateId, fallbackTitle) => {
     const key = templateId || String(fallbackTitle || '').toLowerCase()
     if (!key) return null
     const t = templateId ? byId.get(templateId) : null
+    const pick = pickFor(matches, t?.title || fallbackTitle, customEx)
+    if (pick && pick !== OWN) {
+      if (EXIDX[pick] && !EXIDX[pick].custom) matchedIds.add(pick)
+      return pick
+    }
     const own = priorCustom(customEx, importId('im', 'Hevy|' + key), t?.title || fallbackTitle)
     if (own) return own.id
-    const pinned = templateId && canonicalExId(HEVY_ID_MAP[templateId])
+    const pinned = pick !== OWN && templateId && canonicalExId(HEVY_ID_MAP[templateId])
     if (pinned && EXIDX[pinned]) {
       matchedIds.add(pinned)
       return pinned
@@ -205,6 +219,7 @@ function makeResolver(templates, customEx) {
     customEx: used => kept(used),
     unmatchedNames: used => [...new Set(kept(used).map(c => titleOf.get(c.id)))].sort(),
     matchedIds: used => [...matchedIds].filter(id => used.has(id)),
+    names: used => namesOf(new Map([...names].filter(([, v]) => used.has(v.id))), new Set(kept(used).map(c => c.id))),
     matchedCount: used => [...matchedIds].filter(id => used.has(id)).length,
     createdCount: used => kept(used).length,
   }
@@ -234,8 +249,8 @@ const toProfileWeight = (wKg, unit) => {
  * Mapping is by `exercise_template_id` through `HEVY_ID_MAP` only — localized
  * titles on each set are never used to pick a catalogue entry.
  */
-export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx = [] } = {}) {
-  const R = makeResolver(templates, customEx)
+export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx = [], matches = null } = {}) {
+  const R = makeResolver(templates, customEx, matches)
   const byDate = new Map()           // Hevy workout -> the session being built
   let sets = 0, skipped = 0, matched = 0, warmups = 0, rpeSets = 0
 
@@ -330,6 +345,7 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
     matchedSets: matched,
     created: R.createdCount(used),
     unmatchedNames: R.unmatchedNames(used),
+    names: R.names(used),
     sets, skipped, warmups,
     fileUnit: 'kg',
     mixedUnits: false,
@@ -345,8 +361,8 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
  * Work sets become `sets`×`reps`/`weight`; warm-ups become `warmupSets`;
  * supersets keep adjacency via `sg`. Always imported as *new* routines.
  */
-export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx = [] } = {}) {
-  const R = makeResolver(templates, customEx)
+export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx = [], matches = null } = {}) {
+  const R = makeResolver(templates, customEx, matches)
   const out = []
 
   for (const r of routines || []) {
@@ -417,6 +433,7 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx =
     matchedIds: R.matchedIds(used),
     created: R.createdCount(used),
     unmatchedNames: R.unmatchedNames(used),
+    names: R.names(used),
     exerciseCount: out.reduce((n, r) => n + r.ex.length, 0),
     converted: unit === 'lb',
   }
@@ -485,14 +502,20 @@ export function parseHevyBodyweight(measurements, { unit = 'kg' } = {}) {
  * Fetch + parse. Returns `{ workouts, routines, bodyweight }` ready to merge,
  * or throws `HevyApiError`. The apiKey is only read here — never written.
  */
-export async function importHevyData(apiKey, { unit = 'kg', onProgress, customEx = [] } = {}) {
+export async function importHevyData(apiKey, { unit = 'kg', onProgress, customEx = [], matches = null } = {}) {
   const { templates, workouts, routines, bodyMeasurements } = await fetchHevyAccount(apiKey, { onProgress })
   onProgress && onProgress({ stage: 'parse' })
+  // `reparse` reads the same account again with other picks, from memory: the summary's review
+  // of the matches changes one without fetching anything.
+  const parse = m => ({
+    workouts: parseHevyWorkouts(workouts, templates, { unit, customEx, matches: m }),
+    routines: parseHevyRoutines(routines, templates, { unit, customEx, matches: m }),
+  })
   return {
-    workouts: parseHevyWorkouts(workouts, templates, { unit, customEx }),
-    routines: parseHevyRoutines(routines, templates, { unit, customEx }),
+    ...parse(matches),
     bodyweight: parseHevyBodyweight(bodyMeasurements, { unit }),
     templateCount: templates.length,
+    reparse: parse,
   }
 }
 

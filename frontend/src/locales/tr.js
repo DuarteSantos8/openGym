@@ -3469,4 +3469,10 @@ export default {
   "Clear filters": "Filtreleri temizle",
   "Overview": "Genel bakış",
   "Lifts": "Kaldırışlar",
+  'Check exercise matches': 'Egzersiz eşleşmelerini kontrol et',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'Neye dönüşeceğini değiştirmek için bir isme dokun. Seçimin bir sonraki içe aktarma için hatırlanır.',
+  'Pick from the library': 'Kütüphaneden seç',
+  'Keep as your own exercise': 'Kendi egzersizin olarak tut',
+  'Use the automatic match': 'Otomatik eşleşmeyi kullan',
+  'your pick': 'senin seçimin',
 }

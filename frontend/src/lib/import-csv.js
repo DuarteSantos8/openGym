@@ -31,6 +31,7 @@ import {
 import { isWarmupRow, completedVolumeOf, syncSideAggregate } from './workout-model.js'
 import { HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { clampIncline, inclineFrom } from './incline.js'
+import { OWN, matchKey, pickFor, namesOf } from './import-matches.js'
 
 /* ----------------------------------------------------------------- CSV ---- */
 
@@ -625,7 +626,7 @@ export function parseWorkoutCSV(text, opts = {}) {
  * catalogue when the app's own display name leaves out what it means (Liftosaur's "Front Raise"
  * is a dumbbell one). `skipped` counts rows the caller already threw away.
  */
-export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0 } = {}) {
+export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], matches = null, skipped: preSkipped = 0 } = {}) {
   // Our own export (lib/export-csv.js) says more than the others: the catalogue id, which side of
   // a per-side set a row is, a drop-set's drops as rows of their own. Read that way only when the
   // header says it is ours.
@@ -649,6 +650,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
   const byDate = new Map()           // session key -> the workout being built (see `sessionKey` below)
   const created = new Map()
   const unmatched = new Set()
+  const names = new Map()            // matchKey -> { name, id }: what each name became, for the review
   const rowNotes = new Map()         // session key -> Strong's Note rows, as [exact title, name key, text]
   let sets = 0, skipped = preSkipped, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
   let sawLb = false, sawKg = false
@@ -733,12 +735,14 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       else {
         const mine = priorCustom(customEx, fileId || importId('im', source + '|' + name.toLowerCase()), name)
         if (mine) prior.set(key, mine)
+        // The user's own pick for this name (lib/import-matches.js) comes before any guess.
+        const pick = fileId ? null : pickFor(matches, name, customEx)
         // Hevy CSV: prefer the generated English-title map (same table as the API import).
         // Localized titles still fall through to the word-bag matcher. A custom exercise of ours
         // stays custom: it was not in the catalogue on purpose.
         const alt = map.matchName !== undefined ? cell(r, 'matchName') : ''
         const byName = () => (alt ? matchExercise(alt) || (isNoMatch(alt) ? null : matchExercise(name)) : matchExercise(name))
-        id = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || byName())
+        id = pick === OWN ? mine?.id || null : pick || (mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || byName()))
       }
       resolved.set(exact, id)
     }
@@ -759,6 +763,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       }
       id = c.id
     }
+    if (!own && !names.has(matchKey(name))) names.set(matchKey(name), { name, id })
 
     // A Seconds column with no distance and no reps, on an exercise that is not cardio, is a
     // timed hold (Strong's "Plank, 60 s"): a set of seconds, the way the app logs one — not a
@@ -935,6 +940,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     matchedIds: [...new Set([...resolved.values()].filter(Boolean))],
     matchedSets: matched,
     created: created.size, unmatchedNames: [...unmatched].sort(),
+    names: namesOf(names, new Set([...created.values()].map(c => c.id))),
     sets, skipped, warmups, fileUnit, mixedUnits, converted, rpeSets, rirSets,
     from: dates[0] || null, to: dates[dates.length - 1] || null,
   }

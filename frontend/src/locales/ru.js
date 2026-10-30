@@ -3473,4 +3473,10 @@ export default {
   "Clear filters": "Сбросить фильтры",
   "Overview": "Обзор",
   "Lifts": "Упражнения",
+  'Check exercise matches': 'Проверить сопоставление упражнений',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'Нажмите на название, чтобы изменить, чем оно станет. Ваш выбор запомнится для следующего импорта.',
+  'Pick from the library': 'Выбрать из библиотеки',
+  'Keep as your own exercise': 'Оставить как своё упражнение',
+  'Use the automatic match': 'Использовать автоматическое сопоставление',
+  'your pick': 'ваш выбор',
 }

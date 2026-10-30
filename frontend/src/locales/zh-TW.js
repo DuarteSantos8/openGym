@@ -3462,4 +3462,10 @@ export default {
   "Clear filters": "清除篩選",
   "Overview": "總覽",
   "Lifts": "重量動作",
+  'Check exercise matches': '檢查動作配對',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': '點一下名稱即可更改它對應的動作。你的選擇會在下次匯入時沿用。',
+  'Pick from the library': '從動作庫選擇',
+  'Keep as your own exercise': '保留為自訂動作',
+  'Use the automatic match': '使用自動配對',
+  'your pick': '你的選擇',
 }

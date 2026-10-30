@@ -3548,4 +3548,10 @@ export default {
   "Clear filters": "ফিল্টার মুছুন",
   "Overview": "সংক্ষেপে",
   "Lifts": "লিফট",
+  'Check exercise matches': 'ব্যায়ামের মিল যাচাই করুন',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'কোনো নামে ট্যাপ করে বদলান সেটি কী হবে। আপনার পছন্দ পরের ইমপোর্টের জন্য মনে রাখা হবে।',
+  'Pick from the library': 'লাইব্রেরি থেকে বেছে নিন',
+  'Keep as your own exercise': 'নিজের ব্যায়াম হিসেবে রাখুন',
+  'Use the automatic match': 'স্বয়ংক্রিয় মিল ব্যবহার করুন',
+  'your pick': 'আপনার পছন্দ',
 }

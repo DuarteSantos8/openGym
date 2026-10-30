@@ -3469,4 +3469,10 @@ export default {
   "Clear filters": "필터 지우기",
   "Overview": "개요",
   "Lifts": "리프트",
+  'Check exercise matches': '운동 매칭 확인',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': '이름을 탭해 무엇으로 가져올지 바꾸세요. 선택은 다음 가져오기에도 기억됩니다.',
+  'Pick from the library': '라이브러리에서 선택',
+  'Keep as your own exercise': '내 운동으로 유지',
+  'Use the automatic match': '자동 매칭 사용',
+  'your pick': '내 선택',
 }

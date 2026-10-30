@@ -3480,4 +3480,10 @@ export default {
   "Clear filters": "ล้างตัวกรอง",
   "Overview": "ภาพรวม",
   "Lifts": "ท่ายก",
+  'Check exercise matches': 'ตรวจการจับคู่ท่า',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'แตะชื่อเพื่อเปลี่ยนว่าจะเป็นท่าใด ระบบจะจำตัวเลือกไว้สำหรับการนำเข้าครั้งถัดไป',
+  'Pick from the library': 'เลือกจากคลังท่า',
+  'Keep as your own exercise': 'เก็บเป็นท่าของคุณเอง',
+  'Use the automatic match': 'ใช้การจับคู่อัตโนมัติ',
+  'your pick': 'ตัวเลือกของคุณ',
 }

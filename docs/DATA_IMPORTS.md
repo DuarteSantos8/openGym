@@ -22,6 +22,12 @@ duplicates anything. You see a summary (workouts, sets, matched exercises, the u
 anything is written. A file that looks like one of the apps below but doesn't read as one is
 refused with a message rather than half imported.
 
+**Check exercise matches** in that summary lists every exercise name in the file and what it
+becomes. Tap one to pick another exercise from the library, or to keep it as your own exercise.
+A name you picked an exercise for is kept as one of that exercise's other names (Edit → Other
+names), so the next import of the same name lands there too; remove it there to undo. The Hevy
+import below has the same check.
+
 These exports work without any editing:
 
 | App | Where to export |
@@ -208,7 +214,8 @@ CSV (Liftosaur, Liftoff, StrongLifts, Fitbod, JEFIT) are read in `frontend/src/l
 which turns each file into the same rows and hands them to the CSV parser; each reader names the
 public source its format was taken from. Exercise names are matched through the curated alias
 table in `import-csv.js` (`ALIAS_EX`, plus `NO_MATCH` for names that must stay custom), then by
-words. The Hevy API import and a detected Hevy CSV
+words. Before any of that, a name the user gave an exercise as one of its other names, or picked
+in Check exercise matches, wins (`frontend/src/lib/import-matches.js`, read by all three resolvers). The Hevy API import and a detected Hevy CSV
 resolve exercises through the same generated lookup, `frontend/src/lib/hevy-id-map.js` (template id
 for the API, English title for the CSV). To regenerate it, set `HEVY_API_KEY` in the environment or
 `.env` and run `node scripts/build-hevy-id-map.mjs`. Localised (non-English) Hevy titles fall back

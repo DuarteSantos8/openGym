@@ -2350,6 +2350,12 @@ export const PT_BR_OVERRIDES = {
   "Clear filters": "Limpar filtros",
   "Overview": "Visão geral",
   "Lifts": "Exercícios",
+  'Check exercise matches': 'Verificar correspondências de exercícios',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'Toque em um nome para mudar o que ele vira. Sua escolha fica salva para a próxima importação.',
+  'Pick from the library': 'Escolher da biblioteca',
+  'Keep as your own exercise': 'Manter como exercício próprio',
+  'Use the automatic match': 'Usar a correspondência automática',
+  'your pick': 'sua escolha',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
