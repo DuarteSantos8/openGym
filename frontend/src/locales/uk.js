@@ -3466,4 +3466,10 @@ export default {
   "Clear filters": "Скинути фільтри",
   "Overview": "Огляд",
   "Lifts": "Вправи",
+  'Check exercise matches': 'Перевірити відповідність вправ',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'Торкніться назви, щоб змінити, чим вона стане. Ваш вибір запам’ятається для наступного імпорту.',
+  'Pick from the library': 'Вибрати з бібліотеки',
+  'Keep as your own exercise': 'Залишити як власну вправу',
+  'Use the automatic match': 'Використати автоматичну відповідність',
+  'your pick': 'ваш вибір',
 }

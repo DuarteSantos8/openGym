@@ -3469,4 +3469,10 @@ export default {
   "Clear filters": "Quitar filtros",
   "Overview": "Resumen",
   "Lifts": "Levantamientos",
+  'Check exercise matches': 'Revisar coincidencias de ejercicios',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'Toca un nombre para cambiar en qué se convierte. Tu elección se recuerda para la próxima importación.',
+  'Pick from the library': 'Elegir de la biblioteca',
+  'Keep as your own exercise': 'Mantener como ejercicio propio',
+  'Use the automatic match': 'Usar la coincidencia automática',
+  'your pick': 'tu elección',
 }

@@ -13,6 +13,7 @@
 // log date) is kept as that day, never shifted through UTC.
 
 import { parseCSV, parseImport, parseWorkoutRows, matchExercise, isNoMatch, importId, priorCustom, bpFromName, roundWeight } from './import-csv.js'
+import { OWN, matchKey, pickFor, namesOf } from './import-matches.js'
 import { EXIDX, canonicalExId } from './exercises.js'
 import { uid } from './format.js'
 import { LIFTOSAUR_EXERCISES } from './liftosaur-exercises.js'
@@ -309,16 +310,24 @@ export function liftoscriptDay(text, { unit = 'kg', resolve, templates = new Map
 // Exercises a routine names, resolved the way parseWorkoutRows resolves a set's: the user's own
 // exercise when an earlier import made it, else the catalogue, else a custom one with the id the
 // history import gives that same name, so a plan and its history point at one exercise.
-function routineResolver(source, customEx, toMatchName = () => '') {
-  const created = new Map(), matched = new Set()
+// The user's own pick for a name (lib/import-matches.js) comes first, as it does there.
+function routineResolver(source, customEx, toMatchName = () => '', matches = null) {
+  const created = new Map(), matched = new Set(), names = new Map()
   const resolve = name => {
     const n = str(name)
     if (!n) return null
+    const id = resolveName(n)
+    if (!names.has(matchKey(n))) names.set(matchKey(n), { name: n, id })
+    return id
+  }
+  const resolveName = n => {
     const ownId = importId('im', source + '|' + n.toLowerCase())
     const mine = priorCustom(customEx, ownId, n)
+    const pick = pickFor(matches, n, customEx)
+    if (pick && pick !== OWN) { if (EXIDX[pick] && !EXIDX[pick].custom) matched.add(pick); return pick }
     if (mine) return mine.id
     const alt = toMatchName(n)
-    const hit = canonicalExId(alt ? matchExercise(alt) || (isNoMatch(alt) ? null : matchExercise(n)) : matchExercise(n))
+    const hit = pick === OWN ? null : canonicalExId(alt ? matchExercise(alt) || (isNoMatch(alt) ? null : matchExercise(n)) : matchExercise(n))
     if (hit && EXIDX[hit]) { matched.add(hit); return hit }
     if (!created.has(ownId)) created.set(ownId, { id: ownId, n: n.toLowerCase(), custom: true, eq: 'custom', tg: '', desc: '', bp: bpFromName(n.toLowerCase()) || 'upper legs', _name: n })
     return ownId
@@ -332,14 +341,15 @@ function routineResolver(source, customEx, toMatchName = () => '') {
       matched: [...matched].filter(id => used.has(id)).length,
       matchedIds: [...matched].filter(id => used.has(id)),
       created: customs.length, unmatchedNames: [...new Set(customs.map(c => c._name))].sort(),
+      names: namesOf(new Map([...names].filter(([, v]) => used.has(v.id))), new Set(customs.map(c => c.id))),
       ...extra,
     }
   }
   return { resolve, finish }
 }
 
-function liftosaurRoutines(o, { unit = 'kg', customEx = [] } = {}) {
-  const R = routineResolver('Liftosaur', customEx, liftosaurMatchName)
+function liftosaurRoutines(o, { unit = 'kg', customEx = [], matches = null } = {}) {
+  const R = routineResolver('Liftosaur', customEx, liftosaurMatchName, matches)
   const routines = []
   let skipped = 0, scripted = 0
   for (const p of o.programs) {
@@ -420,8 +430,8 @@ function parseLiftoffWorkouts(posts, opts) {
   return workouts(rows, LIFTOFF, opts, skipped)
 }
 
-function parseLiftoffRoutines(presets, { customEx = [] } = {}) {
-  const R = routineResolver(LIFTOFF, customEx)
+function parseLiftoffRoutines(presets, { customEx = [], matches = null } = {}) {
+  const R = routineResolver(LIFTOFF, customEx, () => '', matches)
   const routines = []
   let skipped = 0
   for (const p of presets) {

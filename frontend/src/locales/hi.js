@@ -3469,4 +3469,10 @@ export default {
   "Clear filters": "फ़िल्टर हटाएँ",
   "Overview": "सारांश",
   "Lifts": "लिफ़्ट",
+  'Check exercise matches': 'व्यायाम मिलान जाँचें',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'किसी नाम पर टैप करके बदलें कि वह क्या बनेगा। आपकी पसंद अगले इम्पोर्ट के लिए याद रखी जाएगी।',
+  'Pick from the library': 'लाइब्रेरी से चुनें',
+  'Keep as your own exercise': 'अपने व्यायाम के रूप में रखें',
+  'Use the automatic match': 'स्वचालित मिलान इस्तेमाल करें',
+  'your pick': 'आपकी पसंद',
 }

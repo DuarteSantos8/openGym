@@ -3524,4 +3524,10 @@ export default {
   "Clear filters": "مسح الفلاتر",
   "Overview": "نظرة عامة",
   "Lifts": "الرفعات",
+  'Check exercise matches': 'تحقّق من مطابقة التمارين',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'انقر على اسم لتغيير ما يصبح عليه. يُحفظ اختيارك للاستيراد التالي.',
+  'Pick from the library': 'اختر من المكتبة',
+  'Keep as your own exercise': 'أبقِه كتمرين خاص بك',
+  'Use the automatic match': 'استخدم المطابقة التلقائية',
+  'your pick': 'اختيارك',
 }

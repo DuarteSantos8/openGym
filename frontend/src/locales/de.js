@@ -3489,4 +3489,10 @@ export default {
   "Clear filters": "Filter zurücksetzen",
   "Overview": "Überblick",
   "Lifts": "Übungen",
+  'Check exercise matches': 'Übungszuordnung prüfen',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'Tippe auf einen Namen, um zu ändern, was daraus wird. Deine Wahl wird für den nächsten Import gemerkt.',
+  'Pick from the library': 'Aus der Bibliothek wählen',
+  'Keep as your own exercise': 'Als eigene Übung behalten',
+  'Use the automatic match': 'Automatische Zuordnung verwenden',
+  'your pick': 'deine Wahl',
 }

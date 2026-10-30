@@ -3469,4 +3469,10 @@ export default {
   "Clear filters": "清除筛选",
   "Overview": "概览",
   "Lifts": "力量动作",
+  'Check exercise matches': '检查动作匹配',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': '点按名称可更改它对应的动作。你的选择会在下次导入时沿用。',
+  'Pick from the library': '从动作库选择',
+  'Keep as your own exercise': '保留为自定义动作',
+  'Use the automatic match': '使用自动匹配',
+  'your pick': '你的选择',
 }

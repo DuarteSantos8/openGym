@@ -3516,4 +3516,10 @@ export default {
   "Clear filters": "Rensa filter",
   "Overview": "Översikt",
   "Lifts": "Lyft",
+  'Check exercise matches': 'Kontrollera övningsmatchningar',
+  'Tap a name to change what it becomes. Your pick is remembered for the next import.': 'Tryck på ett namn för att ändra vad det blir. Ditt val sparas till nästa import.',
+  'Pick from the library': 'Välj från biblioteket',
+  'Keep as your own exercise': 'Behåll som egen övning',
+  'Use the automatic match': 'Använd den automatiska matchningen',
+  'your pick': 'ditt val',
 }

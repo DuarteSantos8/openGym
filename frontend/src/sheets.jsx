@@ -40,6 +40,8 @@ import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
+import { importMatches, rememberPicks, reviewList } from './lib/import-matches.js'
+import { ImportMatchesRow } from './components/ImportMatches.jsx'
 import { suggestedSubstitutes, relatedSubstitutes } from './lib/exercise-substitutes.js'
 import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
 import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
@@ -529,8 +531,15 @@ const effortLine = (effort, n, scale) => effort === 'none'
 // the one action where "just try it" is expensive — it's someone's entire training
 // history — so the numbers, the unit conversion and the exercises we couldn't recognise
 // are all on screen before the confirm button.
-function ImportSummary({ parsed, close }) {
+// The names in a parse and what each became, as rememberPicks wants them.
+const namesByKey = parts => new Map(reviewList(...parts).map(x => [x.key, x.name]))
+const partsOf = p => [p, p.routines?.routines?.length ? p.routines : null]
+
+function ImportSummary({ parsed: first, reparse, close }) {
   const st = useStore(s => s.S)
+  // The user's picks from Check exercise matches; the file is read again with them.
+  const [picks, setPicks] = useState({})
+  const parsed = useMemo(() => (reparse && Object.keys(picks).length ? reparse(picks) : first), [first, reparse, picks])
   const isBW = parsed.kind === 'bodyweight'
   // Our own body CSV brings measurement check-ins along (#718); a day that has one keeps it.
   const checkIns = isBW ? parsed.measurements || [] : []
@@ -548,6 +557,7 @@ function ImportSummary({ parsed, close }) {
   const doImport = () => {
     let res, planRes
     update(s => {
+      rememberPicks(s, picks, namesByKey(partsOf(parsed)))
       res = mergeImport(s, parsed)
       if (plans) planRes = mergeImportedRoutines(s, plans)
     })
@@ -609,6 +619,8 @@ function ImportSummary({ parsed, close }) {
     {plans && newPlans < plans.routines.length && <div className="small dim" style={{ marginBottom: 10 }}>
       {tn('{0} routine is already here and will be left alone.', '{0} routines are already here and will be left alone.', plans.routines.length - newPlans)}
     </div>}
+    {!isBW && reparse && <ImportMatchesRow parts={partsOf(parsed)} picks={picks} onChange={setPicks}
+      reparse={p => partsOf(reparse(p))} />}
     {!isBW && unmatched.length > 0 && <>
       <h4 className="sec">{t('Not in the library, so they’re added as your own exercises')}</h4>
       <div className="mchips" style={{ marginBottom: 12 }}>
@@ -629,8 +641,10 @@ function ImportSummary({ parsed, close }) {
 export function importFromApp(file, onDone) {
   const rd = new FileReader()
   rd.onload = () => {
+    // A name picked before (Check exercise matches) lands where it was picked to.
+    const read = picks => parseImportFile(String(rd.result), { unit: S().unit, customEx: S().customEx, matches: importMatches(S(), picks) })
     let parsed
-    try { parsed = parseImportFile(String(rd.result), { unit: S().unit, customEx: S().customEx }) }
+    try { parsed = read() }
     catch (e) { toast(t('Could not read that file')); return }
     if (parsed.error === 'empty') { toast(t('That file is empty')); return }
     // It looks like that app's export but does not read as one: say so rather than guess.
@@ -640,7 +654,7 @@ export function importFromApp(file, onDone) {
     if (parsed.kind === 'bodyweight' ? !parsed.bodyweight.length && !parsed.measurements?.length : !parsed.workouts.length && !parsed.routines?.routines?.length) {
       toast(t('Nothing to import from that file')); return
     }
-    ui().openSheet(close => <ImportSummary parsed={parsed} close={close} />)
+    ui().openSheet(close => <ImportSummary parsed={parsed} reparse={read} close={close} />)
     onDone && onDone()
   }
   rd.onerror = () => toast(t('Could not read that file'))
@@ -671,7 +685,11 @@ function HevyImportSheet({ close }) {
   const [apiKey, setApiKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(null)
-  const [payload, setPayload] = useState(null) // { workouts, routines, bodyweight }
+  const [fetched, setFetched] = useState(null) // { workouts, routines, bodyweight, reparse }
+  const [picks, setPicks] = useState({})   // Check exercise matches, as in ImportSummary
+  // The account read again from memory with the picks (importHevyData's reparse).
+  const reparseHevy = p => fetched.reparse(importMatches(S(), p))
+  const payload = useMemo(() => (fetched && Object.keys(picks).length ? { ...fetched, ...reparseHevy(picks) } : fetched), [fetched, picks]) // eslint-disable-line react-hooks/exhaustive-deps
   const [wantWorkouts, setWantWorkouts] = useState(true)
   const [wantRoutines, setWantRoutines] = useState(true)
   const [wantBody, setWantBody] = useState(true)
@@ -687,9 +705,9 @@ function HevyImportSheet({ close }) {
     if (!key) { toast(t('Paste your Hevy API key first')); return }
     setBusy(true)
     setProgress({ stage: 'templates', page: 1, pageCount: 1 })
-    setPayload(null)
+    setFetched(null)
     try {
-      const data = await importHevyData(key, { unit: st.unit, customEx: st.customEx, onProgress: setProgress })
+      const data = await importHevyData(key, { unit: st.unit, customEx: st.customEx, matches: importMatches(st), onProgress: setProgress })
       wipeKey()
       const empty = !data.workouts.workouts.length && !data.routines.routines.length && !data.bodyweight.bodyweight.length
       if (empty) {
@@ -699,7 +717,8 @@ function HevyImportSheet({ close }) {
       setWantWorkouts(!!data.workouts.workouts.length)
       setWantRoutines(!!data.routines.routines.length)
       setWantBody(!!data.bodyweight.bodyweight.length)
-      setPayload(data)
+      setPicks({})
+      setFetched(data)
     } catch (e) {
       if (e instanceof HevyApiError && e.message === 'auth') toast(t('That Hevy API key was refused'))
       else if (e instanceof HevyApiError && e.message === 'rate-limit') toast(t('Hevy is rate-limiting requests. Wait a minute and try again'))
@@ -716,6 +735,7 @@ function HevyImportSheet({ close }) {
     const parts = []
     let addedW = 0, addedR = 0, addedB = 0
     update(s => {
+      rememberPicks(s, picks, namesByKey([wantWorkouts && payload.workouts, wantRoutines && payload.routines]))
       if (wantWorkouts && payload.workouts.workouts.length) {
         const res = mergeImport(s, payload.workouts)
         addedW = res.added
@@ -827,6 +847,8 @@ function HevyImportSheet({ close }) {
     {wantWorkouts && (w.rirSets + w.rpeSets) > 0 && <div className="small dim" style={{ marginBottom: 10 }}>
       {effortLine(effortOf(st), w.rirSets || w.rpeSets, w.rirSets ? 'RIR' : 'RPE')}
     </div>}
+    <ImportMatchesRow parts={[wantWorkouts && w, wantRoutines && r]} picks={picks} onChange={setPicks}
+      reparse={p => { const x = reparseHevy(p); return [wantWorkouts && x.workouts, wantRoutines && x.routines] }} />
     {unmatched.length > 0 && <>
       <h4 className="sec">{t('Not in the library, so they’re added as your own exercises')}</h4>
       <div className="mchips" style={{ marginBottom: 12 }}>
@@ -839,7 +861,7 @@ function HevyImportSheet({ close }) {
       {canImport ? t('Import') : t('Nothing new to import')}
     </Button>
     <div style={{ height: 8 }} />
-    <Button variant="ghost" className="dim" onClick={() => { setPayload(null); wipeKey() }}>{t('Back')}</Button>
+    <Button variant="ghost" className="dim" onClick={() => { setFetched(null); wipeKey() }}>{t('Back')}</Button>
   </>
 }
 
