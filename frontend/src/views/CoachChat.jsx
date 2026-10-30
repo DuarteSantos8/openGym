@@ -828,10 +828,15 @@ function CadenceSheet({ update }) {
             onChange={e => patch(c => { c.cadence = { weekly: { ...c.cadence.weekly, time: e.target.value } } })} />
         </Row>
       </>}
-      {mode === 'every' && <SelectRow icon="dumbbell" iconTint="var(--teal)" title={t('After how many workouts')}
-        value={cadence.everyWorkouts || 4}
-        onChange={v => patch(c => { c.cadence = { everyWorkouts: v } })}
-        options={[3, 4, 5, 6, 8, 10].map(n => ({ value: n, label: tn('{0} workout', '{0} workouts', n) }))} />}
+      {mode === 'every' && <>
+        <SelectRow icon="dumbbell" iconTint="var(--teal)" title={t('After how many workouts')}
+          value={cadence.everyWorkouts || 4}
+          onChange={v => patch(c => { c.cadence = { ...c.cadence, everyWorkouts: v } })}
+          options={[3, 4, 5, 6, 8, 10].map(n => ({ value: n, label: tn('{0} workout', '{0} workouts', n) }))} />
+        <Row icon="dumbbell" iconTint="var(--teal)" title={t('Read only the latest {0} workouts', cadence.everyWorkouts || 4)}>
+          <Switch checked={!!cadence.latestOnly} onChange={on => patch(c => { c.cadence = { ...c.cadence, latestOnly: on } })} />
+        </Row>
+      </>}
     </Section>
   </>
 }

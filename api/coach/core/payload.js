@@ -380,6 +380,14 @@ export function reviewWindow(S, since) {
   return (fresh.length >= MIN_REVIEW_SESSIONS ? fresh : recent.slice(-MIN_REVIEW_SESSIONS)).slice(-MAX_SESSIONS);
 }
 
+/** The newest N workouts, for a review the person asked to read only the latest N (the every-N
+ *  cadence with `latestOnly` on). N is held to the same 1 to 10 the setting allows. */
+export function latestWindow(S, n) {
+  const all = (S.workouts || []).filter(w => w && w.d);
+  const k = Math.min(10, Math.max(1, Math.round(Number(n) || 1)));
+  return all.slice(-k);
+}
+
 function aggregates(S, workouts) {
   // Per-exercise stall/deload picture, computed over the same sessions the engine would see.
   const byEx = new Map();
@@ -721,7 +729,13 @@ export function build(S, opts = {}) {
       keep: (today?.entries || []).map(en => en.id), max: 36
     });
   } else if (opts.kind === 'review') {
-    const workouts = reviewWindow(S, coach.lastReview?.at);
+    // The every-N cadence can ask for only its latest N workouts; otherwise the window runs back
+    // to the last review (or 12 weeks). The last review's time goes in as given: reviewWindow
+    // reads both epoch ms and an ISO string, and slicing it would break the epoch form.
+    const cad = coach.cadence && typeof coach.cadence === 'object' ? coach.cadence : null;
+    const workouts = cad?.everyWorkouts && cad.latestOnly === true
+      ? latestWindow(S, cad.everyWorkouts)
+      : reviewWindow(S, coach.lastReview?.at);
     const detailFrom = Math.max(0, workouts.length - FULL_DETAIL_SESSIONS);
     p.window = {
       from: day(workouts[0]?.d),
