@@ -236,6 +236,27 @@ test('compatible: a schema the provider cannot serve, wrapped by OpenRouter, is 
   assert.deepEqual(f.calls[1].body.response_format, { type: 'json_object' });
 });
 
+// MiniMax's chat endpoint refuses a schema with a union type (["number","string"]) without ever
+// saying "schema": the only words are "invalid params" and a type mismatch at some offset.
+test('compatible: MiniMax refusing a union type in the schema is retried once in plain JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: 'invalid params, Mismatch type string with value array "at index 19932: mismatched type with value"' } } }
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const schema = { type: 'object', properties: { after: { type: ['number', 'string'] } } };
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema, env: {}, model: 'MiniMax-M2', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.deepEqual(f.calls[1].body.response_format, { type: 'json_object' });
+});
+
+test('compatible: an "invalid params" 400 that is not a type mismatch is not retried', async () => {
+  const f = fakeFetch([{ status: 400, body: { error: { message: 'invalid params, temperature out of range' } } }]);
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', env: {}, model: 'MiniMax-M2', fetch: f });
+  assert.equal(r.code, 1);
+  assert.equal(f.calls.length, 1, 'not a JSON-mode problem, so no second request');
+});
+
 test('a provider error wrapped by OpenRouter reaches stderr in the provider’s own words', async () => {
   const f = fakeFetch([openRouterWrapped('Request contains an invalid argument: temperature out of range.')]);
   const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
