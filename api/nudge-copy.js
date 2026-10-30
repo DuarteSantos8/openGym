@@ -291,6 +291,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "lt": {
+    "friendly": {
+      "title": "Viskas gerai?",
+      "lines": [
+        "{0} vis dar laukia. Kas nutiko?",
+        "Šiandien be {0}? Net trumpa treniruotė rytoj skaičiuojasi.",
+        "Sunki diena? {0} palauks. Rytoj – nauja pradžia.",
+        "Sveiki, šiandien {0} neįvyko. Viskas gerai?"
+      ]
+    },
+    "guilt": {
+      "title": "Ilgiuosi tavęs",
+      "lines": [
+        "{0} visą vakarą laukė prie durų. Laukė tavęs.",
+        "Šiandien štanga paklausė apie tave. Nežinojau, ką atsakyti.",
+        "Ar pasakiau ką nors ne taip? {0} tavęs pasiilgo.",
+        "Tau palikau vietą ant suoliuko. Ji vis dar tuščia."
+      ]
+    },
+    "drill": {
+      "title": "Dėmesio, kareivi!",
+      "lines": [
+        "Tavo rezultatai jau pakuojasi. {0} rytoj, jokių pateisinimų!",
+        "{0} pats savęs neatliks, rekrute. Judėk!",
+        "Pasiteisinimai kelti svorių nemoka. Rytoj atlik {0}!",
+        "Tavo raumenys paskelbė tavęs paiešką. Ateik į treniruotę: {0}!"
+      ]
+    }
+  },
   "pl": {
     "friendly": {
       "title": "Wszystko w porządku?",
