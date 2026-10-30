@@ -1442,8 +1442,7 @@ export const PT_BR_OVERRIDES = {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'O aquecimento é leve, então pode descansar menos ou nada. O último continua tendo o descanso completo antes da sua primeira série de trabalho.',
   // --- progress photos for any day (#557) ---
   'No progress photos yet. Add one for today or any day before.': 'Ainda não há fotos de progresso. Adicione uma para hoje ou para um dia anterior.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'A foto diz que foi tirada em {0}. Mude o dia se foi outro.',
-  'They all go on the day below.': 'Todas vão para o dia abaixo.',
+  'Guessed from the file date.': 'Data estimada a partir do arquivo.',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Seu servidor só guarda fotos em dias com treino. Uma atualização permite guardá-las para qualquer dia.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Todas as fotos de progresso por data, de qualquer dia. E um controle deslizante de antes/depois.',

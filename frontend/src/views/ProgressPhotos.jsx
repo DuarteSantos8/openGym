@@ -8,7 +8,7 @@
 // suggested by the photo's own EXIF date where it has one, else the day picked in the sheet.
 // Both kinds are private to the account like every other photo (DATA_DIR/uploads/<uid>/,
 // api/media.js).
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -16,8 +16,8 @@ import { t, tn } from '../lib/i18n.js'
 import { fmtDate, todayISO } from '../lib/format.js'
 import { workoutMediaOf } from '../lib/media-refs.js'
 import { removeWorkoutMedia, restoreWorkoutMedia } from '../lib/workout-media.js'
-import { dayPhotosOf, removeDayPhoto, restoreDayPhoto, serverTakesDayPhotos, fileProgressPhoto } from '../lib/day-photos.js'
-import { exifDateOfFile } from '../lib/exif-date.js'
+import { dayPhotosOf, removeDayPhoto, restoreDayPhoto, serverTakesDayPhotos, fileProgressPhoto, moveProgressPhoto } from '../lib/day-photos.js'
+import { photoDateOfFile } from '../lib/photo-date.js'
 import { sameWorkout } from '../lib/workout-date.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { useMediaPicker } from '../components/CustomMediaField.jsx'
@@ -76,7 +76,22 @@ export function daysBetween(a, b) {
 // exactly as the workout's own photo viewer takes it off (lib/workout-media.js), and the file is
 // left to the media clean-up like there. An Undo puts it back where it was.
 export function PhotoView({ p, close }) {
-  const [asking, setAsking] = useState(false)
+  const [panel, setPanel] = useState(null)   // null, 'remove' (the ask) or 'date' (the day field)
+  const asking = panel === 'remove'
+  const [date, setDate] = useState(p.d)
+  const today = todayISO()
+  // The day changed (#940): a photo can be added on the wrong day, or its own data can be missing.
+  // It moves to the new day the way a new photo is filed (lib/day-photos.js moveProgressPhoto).
+  const saveDate = () => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today) return
+    if (date === p.d) { setPanel(null); return }
+    const st = useStore.getState()
+    let res
+    st.update(s => { res = moveProgressPhoto(s, p, date, { canDay: serverTakesDayPhotos(st.user, st.config) }) })
+    if (res === 'no-room') { useUI.getState().toast(t('Your server keeps photos only on days with a workout. An update lets it keep them for any day.')); return }
+    close()
+    if (res === 'moved') useUI.getState().toast(t('Saved'))
+  }
   const remove = () => {
     const st = useStore.getState()
     if (p.day) {
@@ -105,15 +120,24 @@ export function PhotoView({ p, close }) {
   return <div className="mviewer" role="dialog" aria-modal="true" aria-label={t('Photo')}>
     <div className="mviewer-bar">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
-      <span className="mviewer-count">{fmtDate(p.d, true, true)}</span>
-      <button type="button" className="iconbtn" aria-label={t('Remove')} onClick={() => setAsking(a => !a)}><Icon name="trash" /></button>
+      <button type="button" className="mviewer-count mviewer-date" aria-label={t('Date')} aria-expanded={panel === 'date'}
+        onClick={() => { setDate(p.d); setPanel(x => (x === 'date' ? null : 'date')) }}>{fmtDate(p.d, true, true)}<Icon name="pencil" /></button>
+      <button type="button" className="iconbtn" aria-label={t('Remove')} onClick={() => setPanel(x => (x === 'remove' ? null : 'remove'))}><Icon name="trash" /></button>
     </div>
     <div className="mviewer-stage"><MediaView m={p.m} cls="exmedia viewer" /></div>
     {asking && <div className="mviewer-ask">
       <div className="mviewer-ask-t">{t('Remove this photo or video?')}</div>
       <div className="mviewer-ask-b">
-        <Button variant="ghost" size="sm" onClick={() => setAsking(false)}>{t('Cancel')}</Button>
+        <Button variant="ghost" size="sm" onClick={() => setPanel(null)}>{t('Cancel')}</Button>
         <Button variant="danger" size="sm" onClick={remove}>{t('Remove')}</Button>
+      </div>
+    </div>}
+    {panel === 'date' && <div className="mviewer-ask">
+      <label className="mviewer-ask-t" htmlFor="pp-photo-date">{t('Date')}</label>
+      <input id="pp-photo-date" className="field mviewer-date-field" type="date" value={date} max={today} onChange={e => setDate(e.target.value)} />
+      <div className="mviewer-ask-b">
+        <Button variant="ghost" size="sm" onClick={() => setPanel(null)}>{t('Cancel')}</Button>
+        <Button variant="primary" size="sm" disabled={!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > today} onClick={saveDate}>{t('Save')}</Button>
       </div>
     </div>}
   </div>
@@ -173,34 +197,62 @@ export function openProgressCompare(x, y) {
 // How many photos one pick takes: each is read and re-encoded on the device, one after another.
 const MAX_AT_ONCE = 20
 
-/* The day the picked photos go under. One photo: its own EXIF date, or today, either changeable.
-   Several: each with an EXIF date goes on that day, the rest on the day picked here. */
+/* A picked file shown while the person decides its day. Revoked when the file changes or the
+   sheet goes; a format the browser cannot draw (HEIC outside Safari) is reported as null. */
+function useFilePreview(file) {
+  const [state, setState] = useState({ url: null, broken: false })
+  useEffect(() => {
+    let url = null
+    try { url = typeof URL.createObjectURL === 'function' && file ? URL.createObjectURL(file) : null } catch { url = null }
+    setState({ url, broken: false })
+    return () => { if (url) { try { URL.revokeObjectURL(url) } catch { /* nothing to free */ } } }
+  }, [file])
+  return [state.broken ? null : state.url, () => setState(s => ({ ...s, broken: true }))]
+}
+
+/* The day each picked photo goes under (#557, #939): the one its own data says (lib/photo-date.js:
+   the EXIF, else the file name, else the file's date), or today, always changeable, one photo at a
+   time with a preview, "Photo 2 of 5" and the arrows between them. `items` are { file, date?,
+   source? }; `save(items, dates)` gets one day per photo, in the same order. */
 export function AddPhotosSheet({ items, close, save }) {
   const today = todayISO()
-  const one = items.length === 1
-  const own = items.filter(i => i.exif).length
-  const [date, setDate] = useState((one && items[0].exif) || today)
+  const n = items.length
+  const [dates, setDates] = useState(() => items.map(it => it.date || today))
+  const [at, setAt] = useState(0)
   const [busy, setBusy] = useState(false)
-  const ok = /^\d{4}-\d{2}-\d{2}$/.test(date) && date <= today
+  const item = items[at]
+  const [preview, onBroken] = useFilePreview(item.file)
+  const valid = d => /^\d{4}-\d{2}-\d{2}$/.test(d) && d <= today
   const go = async () => {
-    if (!ok || busy) return
+    if (busy) return
+    const bad = dates.findIndex(d => !valid(d))
+    if (bad >= 0) { setAt(bad); return }   // show the one that needs a day
     setBusy(true)
-    try { await save(items, date) } finally { setBusy(false); close() }
+    try { await save(items, dates) } finally { setBusy(false); close() }
   }
   return <>
-    <h3>{tn('Add {0} photo', 'Add {0} photos', items.length)}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>
-      {one
-        ? (items[0].exif ? t('The photo says it was taken on {0}. Change the day if it was another one.', fmtDate(items[0].exif, true, true)) : t('Which day is this photo from?'))
-        : own === items.length ? t('Each photo goes on the day it was taken.')
-          : own ? tn('{0} photo knows its day and goes there. The others go on the day below.', '{0} photos know their day and go there. The others go on the day below.', own)
-            : t('They all go on the day below.')}
+    <h3>{tn('Add {0} photo', 'Add {0} photos', n)}</h3>
+    <div className="muted small pp-add-hint">
+      {item.source === 'exif' || item.source === 'name'
+        ? t('Date read from the photo.')
+        : item.source === 'modified'
+          ? t('Guessed from the file date.')
+          : t('Which day is this photo from?')}
     </div>
-    {(one || own < items.length) && <label className="measure-date" style={{ display: 'block', marginBottom: 14 }}>
+    {preview
+      ? <img className="pp-add-preview" src={preview} alt="" draggable={false} onError={onBroken} />
+      : <div className="pp-add-preview pp-add-none"><Icon name="image" /></div>}
+    {n > 1 && <div className="pp-step" dir="ltr">
+      <button type="button" className="iconbtn" aria-label={t('Previous')} disabled={at === 0} onClick={() => setAt(at - 1)}><Icon name="chevronLeft" /></button>
+      <span className="pp-step-n">{t('{0} of {1}', at + 1, n)}</span>
+      <button type="button" className="iconbtn" aria-label={t('Next')} disabled={at === n - 1} onClick={() => setAt(at + 1)}><Icon name="chevronRight" /></button>
+    </div>}
+    <label className="measure-date" style={{ display: 'block', marginBottom: 14 }}>
       <span className="small">{t('Date')}</span>
-      <input className="field" type="date" value={date} max={today} onChange={e => setDate(e.target.value)} />
-    </label>}
-    <Button variant="primary" disabled={!ok || busy} onClick={go}>{busy ? t('Loading…') : t('Add')}</Button>
+      <input className="field" type="date" value={dates[at]} max={today}
+        onChange={e => setDates(cur => cur.map((d, k) => (k === at ? e.target.value : d)))} />
+    </label>
+    <Button variant="primary" disabled={busy} onClick={go}>{busy ? t('Loading…') : t('Add')}</Button>
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" disabled={busy} onClick={close}>{t('Cancel')}</Button>
   </>
@@ -230,8 +282,8 @@ export default function ProgressPhotos() {
     cancelCompare()
     if (a && b) openProgressCompare(a, b)
   }
-  // Several photos at once (#557), each filed under the day it was taken where its EXIF says so,
-  // else under the day picked in the sheet (today unless changed); see fileProgressPhoto.
+  // Several photos at once (#557), each filed under the day set for it in the sheet (the day its
+  // own data says, else today, until changed); see fileProgressPhoto.
   const user = useStore(s => s.user)
   const config = useStore(s => s.config)
   const canDay = serverTakesDayPhotos(user, config)
@@ -239,21 +291,16 @@ export default function ProgressPhotos() {
     const files = [...(ev.target.files || [])].slice(0, MAX_AT_ONCE)
     ev.target.value = ''
     if (!files.length) return
-    const today = todayISO()
-    const items = await Promise.all(files.map(async file => {
-      const d = await exifDateOfFile(file)
-      return { file, exif: d && d <= today ? d : null }
-    }))
+    const items = await Promise.all(files.map(async file => ({ file, ...(await photoDateOfFile(file)) })))
     useUI.getState().openSheet(close => <AddPhotosSheet items={items} close={close} save={save} />)
   }
-  const save = async (items, picked) => {
+  const save = async (items, dates) => {
     const n = { added: 0, noRoom: 0 }
-    for (const it of items) {
+    for (const [k, it] of items.entries()) {
       const got = await pick(it.file)
       if (!got) continue
-      const d = items.length > 1 ? (it.exif || picked) : picked
       let res
-      update(s => { res = fileProgressPhoto(s, d, got, { canDay }) })
+      update(s => { res = fileProgressPhoto(s, dates[k], got, { canDay }) })
       if (res === 'workout' || res === 'day') n.added++
       else if (res === 'no-room') n.noRoom++
     }

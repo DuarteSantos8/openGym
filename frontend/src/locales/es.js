@@ -2259,18 +2259,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'El calentamiento es ligero, así que puede descansar menos o nada. El último sigue teniendo el descanso completo antes de tu primera serie de trabajo.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'Añadir fotos',
-  'Each photo goes on the day it was taken.': 'Cada foto va al día en que se tomó.',
+  '{0} of {1}': '{0} de {1}',
+  'Date read from the photo.': 'Fecha leída de la foto.',
+  'Guessed from the file date.': 'Fecha estimada del archivo.',
   'No progress photos yet. Add one for today or any day before.': 'Aún no hay fotos de progreso. Añade una para hoy o para cualquier día anterior.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'La foto dice que se tomó el {0}. Cambia el día si fue otro.',
-  'They all go on the day below.': 'Todas van al día de abajo.',
   'Which day is this photo from?': '¿De qué día es esta foto?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Tu servidor solo guarda fotos en días con entrenamiento. Una actualización le permite guardarlas para cualquier día.',
   'Add {0} photo': 'Añadir {0} foto',
   'Add {0} photos': 'Añadir {0} fotos',
   '{0} photo added': '{0} foto añadida',
   '{0} photos added': '{0} fotos añadidas',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} foto sabe su día y va allí. Las demás van al día de abajo.',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} fotos saben su día y van allí. Las demás van al día de abajo.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Todas tus fotos de progreso por fecha, de cualquier día. Y un deslizador de antes y después.',
   // --- routine backups ---

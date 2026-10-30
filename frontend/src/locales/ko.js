@@ -2259,18 +2259,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': '워밍업은 가벼우니 짧게 쉬거나 안 쉬어도 돼요. 마지막 워밍업 뒤에는 첫 본 세트 전에 원래 휴식을 다 줘요.',
   // --- progress photos for any day (#557) ---
   'Add photos': '사진 추가',
-  'Each photo goes on the day it was taken.': '사진마다 찍은 날로 들어가요.',
+  '{0} of {1}': '{0} / {1}',
+  'Date read from the photo.': '사진에서 읽은 날짜입니다.',
+  'Guessed from the file date.': '파일 날짜로 추정했습니다.',
   'No progress photos yet. Add one for today or any day before.': '아직 진행 사진이 없어요. 오늘이나 지난 날짜로 하나 추가해 보세요.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': '사진에는 {0}에 찍었다고 나와요. 다른 날이었다면 날짜를 바꾸세요.',
-  'They all go on the day below.': '모두 아래 날짜로 들어가요.',
   'Which day is this photo from?': '이 사진은 어느 날 사진인가요?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': '서버가 운동한 날에만 사진을 보관해요. 업데이트하면 어느 날이든 보관할 수 있어요.',
   'Add {0} photo': '사진 {0}장 추가',
   'Add {0} photos': '사진 {0}장 추가',
   '{0} photo added': '사진 {0}장을 추가했어요',
   '{0} photos added': '사진 {0}장을 추가했어요',
-  '{0} photo knows its day and goes there. The others go on the day below.': '사진 {0}장은 찍은 날을 알아서 그날로 들어가요. 나머지는 아래 날짜로 들어가요.',
-  '{0} photos know their day and go there. The others go on the day below.': '사진 {0}장은 찍은 날을 알아서 그날로 들어가요. 나머지는 아래 날짜로 들어가요.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': '모든 진행 사진을 날짜순으로, 어느 날이든. 비포/애프터 슬라이더도 있어요.',
   // --- routine backups ---

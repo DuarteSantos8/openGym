@@ -2262,18 +2262,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'A bemelegítés könnyű, így kevesebb pihenő is elég, vagy semmi. Az utolsó így is megkapja a teljes pihenőt az első munkasorozat előtt.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'Fotók hozzáadása',
-  'Each photo goes on the day it was taken.': 'Minden fotó arra a napra kerül, amikor készült.',
+  '{0} of {1}': '{0} / {1}',
+  'Date read from the photo.': 'A dátum a fotóból olvasva.',
+  'Guessed from the file date.': 'A dátum a fájlból becsülve.',
   'No progress photos yet. Add one for today or any day before.': 'Még nincs fejlődési fotó. Adj hozzá egyet mára vagy egy korábbi napra.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'A fotó szerint {0} napon készült. Változtasd meg a napot, ha más volt.',
-  'They all go on the day below.': 'Mind a lenti napra kerül.',
   'Which day is this photo from?': 'Melyik napról van ez a fotó?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'A szervered csak edzésnapokon tartja meg a fotókat. Egy frissítéssel bármelyik napra megtartja őket.',
   'Add {0} photo': '{0} fotó hozzáadása',
   'Add {0} photos': '{0} fotó hozzáadása',
   '{0} photo added': '{0} fotó hozzáadva',
   '{0} photos added': '{0} fotó hozzáadva',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} fotó tudja a napját, és oda kerül. A többi a lenti napra kerül.',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} fotó tudja a napját, és oda kerül. A többi a lenti napra kerül.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Minden fejlődési fotó dátum szerint, bármelyik napról. Plusz egy előtte/utána csúszka.',
   // --- routine backups ---

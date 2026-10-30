@@ -2259,18 +2259,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'Isınma setleri hafif, o yüzden daha az ya da hiç dinlenmeyebilir. Sonuncusu yine de ilk çalışma setinden önce tam dinlenmeyi alır.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'Fotoğraf ekle',
-  'Each photo goes on the day it was taken.': 'Her fotoğraf çekildiği güne gider.',
+  '{0} of {1}': '{0} / {1}',
+  'Date read from the photo.': 'Tarih fotoğraftan okundu.',
+  'Guessed from the file date.': 'Tarih dosyadan tahmin edildi.',
   'No progress photos yet. Add one for today or any day before.': 'Henüz ilerleme fotoğrafı yok. Bugün ya da önceki bir gün için bir tane ekle.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'Fotoğrafa göre {0} tarihinde çekilmiş. Başka bir günse günü değiştir.',
-  'They all go on the day below.': 'Hepsi aşağıdaki güne gider.',
   'Which day is this photo from?': 'Bu fotoğraf hangi günden?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Sunucun fotoğrafları yalnızca antrenman olan günlerde saklıyor. Bir güncellemeyle her gün için saklayabilir.',
   'Add {0} photo': '{0} fotoğraf ekle',
   'Add {0} photos': '{0} fotoğraf ekle',
   '{0} photo added': '{0} fotoğraf eklendi',
   '{0} photos added': '{0} fotoğraf eklendi',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} fotoğraf gününü biliyor ve oraya gidiyor. Diğerleri aşağıdaki güne gider.',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} fotoğraf gününü biliyor ve oraya gidiyor. Diğerleri aşağıdaki güne gider.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Tüm ilerleme fotoğrafların tarihe göre, herhangi bir gün için. Bir de önce/sonra kaydırıcısı.',
   // --- routine backups ---

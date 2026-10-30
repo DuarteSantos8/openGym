@@ -2259,18 +2259,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'Il riscaldamento è leggero, quindi può recuperare meno o per niente. L’ultimo ha comunque il recupero pieno prima della prima serie allenante.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'Aggiungi foto',
-  'Each photo goes on the day it was taken.': 'Ogni foto va nel giorno in cui è stata scattata.',
+  '{0} of {1}': '{0} di {1}',
+  'Date read from the photo.': 'Data letta dalla foto.',
+  'Guessed from the file date.': 'Data stimata dal file.',
   'No progress photos yet. Add one for today or any day before.': 'Ancora nessuna foto dei progressi. Aggiungine una per oggi o per un giorno prima.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'Dalla foto risulta scattata il {0}. Cambia il giorno se era un altro.',
-  'They all go on the day below.': 'Vanno tutte nel giorno qui sotto.',
   'Which day is this photo from?': 'Di che giorno è questa foto?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Il tuo server tiene le foto solo nei giorni con un allenamento. Un aggiornamento gli permette di tenerle per qualsiasi giorno.',
   'Add {0} photo': 'Aggiungi {0} foto',
   'Add {0} photos': 'Aggiungi {0} foto',
   '{0} photo added': '{0} foto aggiunta',
   '{0} photos added': '{0} foto aggiunte',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} foto conosce il suo giorno e va lì. Le altre vanno nel giorno qui sotto.',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} foto conoscono il loro giorno e vanno lì. Le altre vanno nel giorno qui sotto.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Tutte le foto dei progressi in ordine di data, di qualsiasi giorno. Più uno slider prima/dopo.',
   // --- routine backups ---

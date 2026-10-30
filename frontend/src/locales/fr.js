@@ -2259,18 +2259,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'L’échauffement est léger, il peut donc se reposer moins, voire pas du tout. Le dernier garde le repos complet avant ta première série de travail.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'Ajouter des photos',
-  'Each photo goes on the day it was taken.': 'Chaque photo va au jour où elle a été prise.',
+  '{0} of {1}': '{0} sur {1}',
+  'Date read from the photo.': 'Date lue dans la photo.',
+  'Guessed from the file date.': 'Date estimée d’après le fichier.',
   'No progress photos yet. Add one for today or any day before.': 'Pas encore de photos de progression. Ajoute-en une pour aujourd’hui ou un jour d’avant.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'D’après la photo, elle a été prise le {0}. Change le jour si c’était un autre.',
-  'They all go on the day below.': 'Elles vont toutes au jour ci-dessous.',
   'Which day is this photo from?': 'De quel jour est cette photo ?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Ton serveur ne garde les photos que les jours avec une séance. Une mise à jour lui permet de les garder pour n’importe quel jour.',
   'Add {0} photo': 'Ajouter {0} photo',
   'Add {0} photos': 'Ajouter {0} photos',
   '{0} photo added': '{0} photo ajoutée',
   '{0} photos added': '{0} photos ajoutées',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} photo connaît son jour et y va. Les autres vont au jour ci-dessous.',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} photos connaissent leur jour et y vont. Les autres vont au jour ci-dessous.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Toutes tes photos de progression par date, pour n’importe quel jour. Avec un curseur avant/après.',
   // --- routine backups ---
