@@ -1148,7 +1148,11 @@ export function stampChange(prev, next, wall = Date.now()) {
   for (const w of list(next.workouts)) {
     if (!w || typeof w !== 'object' || w.id == null || w._ts == null) continue
     const old = before.get(w.id)
-    if (old && w._ts !== old._ts) stampEntry(old, w, now)
+    if (!old || w._ts === old._ts) continue
+    // Saved with nothing changed (a weight set to what it was): no edit, as for a routine. Its new
+    // stamp alone outranked a removal from another device and brought the workout back.
+    if (sameEntry(old, w)) { if (old._ts == null) delete w._ts; else w._ts = old._ts }
+    else stampEntry(old, w, now)
   }
   // Settings maps whose entries carry their own stamp (mergeStampedMap): an entry the change
   // re-stamped takes the change's time.
