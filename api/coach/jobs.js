@@ -296,7 +296,7 @@ function finish(job, result) {
     // leaves the user with a job that finished and nothing to show for it. It lives here, in
     // the profile's own file — deliberately not in `detail`, which goes to the instance log
     // the admin card renders, and which carries counts and outcomes only (FR-12/42).
-    ...(result.reading ? { reading: String(result.reading).slice(0, 1200) } : {})
+    ...(result.reading ? { reading: String(result.reading).slice(0, 4000) } : {})
   }].slice(-HISTORY_MAX);
   writeUser(job.uid, {
     ...rec,

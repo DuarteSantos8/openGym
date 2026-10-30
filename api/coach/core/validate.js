@@ -55,7 +55,17 @@ const MAX_EX_PER_ROUTINE = 20;
 const isStr = v => typeof v === 'string' && v.trim().length > 0;
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
 const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
-const clampStr = (v, n) => String(v == null ? '' : v).slice(0, n);
+// Over the limit, cut at the last sentence (failing that, word) boundary and mark the cut with
+// an ellipsis, so the lifter never reads a coach's text that stops mid-word.
+const clampStr = (v, n) => {
+  const s = String(v == null ? '' : v);
+  if (s.length <= n) return s;
+  const head = s.slice(0, n - 1);
+  const sentence = Math.max(head.lastIndexOf('. '), head.lastIndexOf('! '), head.lastIndexOf('? '), head.lastIndexOf('\n'));
+  if (sentence > n * 0.6) return head.slice(0, sentence + 1).trimEnd();
+  const space = head.lastIndexOf(' ');
+  return (space > n * 0.6 ? head.slice(0, space) : head).trimEnd() + '…';
+};
 // The minutes and pace of a cardio exercise a review adds, in the bounds the 'cardio' change
 // holds them to. Without them the app fell back to 20 min at 8 km/h whatever was shown (#640).
 const cardioTarget = e => (e.mode !== 'cardio' ? {} : {
@@ -111,7 +121,7 @@ export function validatePlan(data, ctx = {}) {
   const customEx = (Array.isArray(data.customEx) ? data.customEx : [])
     .filter(c => c && safeId(c.id) && !libraryHas(c.id) && isStr(c.n))
     .slice(0, 20)
-    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampStr(c.desc, 400) } : {}) }));
+    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampStr(c.desc, 1000) } : {}) }));
   // Ids the plan may name: invented in this same answer, or already the user's own.
   const proposedIds = new Set([...customEx.map(c => c.id), ...(ctx.customIds || [])]);
 
@@ -172,7 +182,7 @@ export function validatePlan(data, ctx = {}) {
       if (e.bodyweight != null) clean.bodyweight = !!e.bodyweight;
       if (perSide) clean.side = true;
       if (isStr(e.sg)) clean.sg = clampStr(e.sg, 20);
-      if (isStr(e.why)) clean.why = clampStr(e.why, 400);
+      if (isStr(e.why)) clean.why = clampStr(e.why, 1500);
       // The same exercise twice in one routine has no honest reading: `reorder` can never be
       // satisfied again (it demands each id once), and every targeted change resolves to
       // whichever copy comes first.
@@ -195,7 +205,7 @@ export function validatePlan(data, ctx = {}) {
       name: clampStr(r.name || 'Routine', 40),
       emoji: glyphStr(r.emoji),
       ...(POLICIES.includes(r.prog) ? { prog: r.prog } : {}),
-      ...(isStr(r.why) ? { why: clampStr(r.why, 400) } : {}),
+      ...(isStr(r.why) ? { why: clampStr(r.why, 1500) } : {}),
       ex
     });
   });
@@ -236,8 +246,8 @@ export function validatePlan(data, ctx = {}) {
     bundle: {
       opengym_plan: 1,
       name: clampStr(data.name || 'Coach plan', 40),
-      summary: clampStr(data.summary || '', 1200),
-      basedOn: clampStr(data.basedOn || '', 400),
+      summary: clampStr(data.summary || '', 4000),
+      basedOn: clampStr(data.basedOn || '', 1500),
       week, routines, customEx
     }
   };
@@ -253,7 +263,7 @@ export function validatePlan(data, ctx = {}) {
 export function validateReview(data, plan, ctx = {}) {
   if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
   if (data.nochange) {
-    return { ok: true, nochange: true, reading: clampStr(data.reading || data.summary || '', 1200) };
+    return { ok: true, nochange: true, reading: clampStr(data.reading || data.summary || '', 4000) };
   }
   const errors = [];
   const routines = new Map((plan?.routines || []).map(r => [r.id, r]));
@@ -326,7 +336,7 @@ export function validateReview(data, plan, ctx = {}) {
         ...(isStr(target.exId) ? { exId: clampStr(target.exId, 40) } : {}),
         ...(isInt(target.weekday, 0, 6) ? { weekday: target.weekday } : {})
       },
-      why: clampStr(c.why, 600),
+      why: clampStr(c.why, 1500),
       // The screen had no way to say WHICH routine: "Remove a routine" was the entire card, and
       // approving one is irreversible from that screen. The name is right here; send it.
       ...(routine ? { routineName: clampStr(routine.name || '', 40) } : {}),
@@ -590,12 +600,12 @@ export function validateReview(data, plan, ctx = {}) {
   if (!kept.length) {
     // An empty change list and "no changes" are the same outcome; treat it as the latter
     // rather than showing someone an empty proposal screen (FR-25).
-    return { ok: true, nochange: true, reading: clampStr(data.summary || data.reading || '', 1200) };
+    return { ok: true, nochange: true, reading: clampStr(data.summary || data.reading || '', 4000) };
   }
   return {
     ok: true,
     proposal: {
-      summary: clampStr(data.summary || '', 1200),
+      summary: clampStr(data.summary || '', 4000),
       evidence: {
         // Clamped because this is stored verbatim in the synced coach log, and trim() cannot
         // shrink a single oversized entry — one answer could push a profile permanently over
@@ -605,7 +615,7 @@ export function validateReview(data, plan, ctx = {}) {
         sessions: isInt(data.evidence?.sessions, 0, 10000) ? data.evidence.sessions : null
       },
       changes: kept,
-      notes: (Array.isArray(data.notes) ? data.notes : []).filter(isStr).slice(0, 6).map(n => clampStr(n, 600))
+      notes: (Array.isArray(data.notes) ? data.notes : []).filter(isStr).slice(0, 6).map(n => clampStr(n, 1500))
     }
   };
 }
@@ -681,9 +691,9 @@ export function validateDebrief(data) {
   DEBRIEF_LISTS.forEach(k => {
     const v = data[k];
     if (v != null && !Array.isArray(v)) { errors.push(`${k} must be an array of short strings`); lists[k] = []; return; }
-    lists[k] = (v || []).filter(isStr).map(x => clampStr(x.trim(), 300)).slice(0, MAX_DEBRIEF_ITEMS);
+    lists[k] = (v || []).filter(isStr).map(x => clampStr(x.trim(), 1000)).slice(0, MAX_DEBRIEF_ITEMS);
   });
   if (!DEBRIEF_LISTS.some(k => lists[k].length)) errors.push('at least one of highlights, watch or nextTime must have an item');
   if (errors.length) return fail(errors);
-  return { ok: true, proposal: { summary: clampStr(data.summary.trim(), 600), score, ...lists } };
+  return { ok: true, proposal: { summary: clampStr(data.summary.trim(), 2000), score, ...lists } };
 }
