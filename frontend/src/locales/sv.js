@@ -882,6 +882,8 @@ export default {
   'After every few workouts': 'Efter några pass',
   'As soon as you have logged enough': 'Så snart du har loggat tillräckligt',
   'Day': 'Dag',
+  'Token use shows here after the first review.': 'Tokenförbrukningen visas här efter den första genomgången.',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Genomsnitt för de senaste {0} genomgångarna: ungefär {1} token skickade och {2} mottagna per genomgång, {3} anrop till leverantören vardera.',
   'After how many workouts': 'Efter hur många pass',
   'applied': 'genomfört',
   'declined': 'avböjt',

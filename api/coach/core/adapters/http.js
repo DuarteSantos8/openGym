@@ -277,7 +277,11 @@ export function httpAdapter(spec) {
         try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
         if (out.error) return { code: 1, text: '', stderr: out.error };
         if (out.truncated) return { code: 1, text: '', stderr: 'the answer was cut off at the output limit; try a smaller plan or a bigger model' };
-        return { code: 0, text: String(out.text || '').trim(), stderr: '', ...(chosen !== asked ? { model: chosen } : {}) };
+        // What the provider billed for this call, when it said (see core/usage.js). A malformed
+        // usage block must never fail an answer that parsed, so it is simply left unrecorded.
+        let usage = null;
+        try { usage = spec.readUsage ? spec.readUsage(data) : null; } catch { usage = null; }
+        return { code: 0, text: String(out.text || '').trim(), stderr: '', usage, ...(chosen !== asked ? { model: chosen } : {}) };
       }
     }
   };

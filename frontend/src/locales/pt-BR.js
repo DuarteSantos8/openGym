@@ -1670,6 +1670,9 @@ export const PT_BR_OVERRIDES = {
   'App icon': 'Ícone do app',
   'Just for this phone. Some home screens take a moment to catch up.': 'Só para este celular. Algumas telas iniciais demoram um pouco para perceber.',
   'Try the Halloween app icon': 'Experimente o ícone de Halloween do app',
+  // --- Coach → token use under "After how many workouts" ---
+  'Token use shows here after the first review.': 'O uso de tokens aparece aqui depois da primeira análise.',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Média das suas últimas {0} análises: cerca de {1} tokens enviados e {2} recebidos por análise, {3} chamadas ao provedor em cada uma.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

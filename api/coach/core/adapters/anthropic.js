@@ -1,6 +1,7 @@
 /* Anthropic Messages API. */
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
+import { usageOf } from '../usage.js';
 
 export const ANTHROPIC_VERSION = '2023-06-01';
 
@@ -30,6 +31,12 @@ export const anthropicSpec = {
     if (data.stop_reason === 'refusal') return { error: 'the model declined this request' + (data.stop_details && data.stop_details.explanation ? ': ' + data.stop_details.explanation : '') };
     const text = (data.content || []).filter(b => b && b.type === 'text').map(b => b.text).join('');
     return { text, truncated: data.stop_reason === 'max_tokens' };
+  },
+  // input_tokens leaves out what the prompt cache served or wrote; those are input all the same.
+  readUsage: data => {
+    const u = data && data.usage;
+    if (!u) return null;
+    return usageOf((u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0), u.output_tokens);
   },
   readModels: data => (data.data || []).map(m => m.id)
 };

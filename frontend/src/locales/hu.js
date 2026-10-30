@@ -1021,6 +1021,8 @@ export default {
   'After every few workouts': 'Néhány edzésenként',
   'As soon as you have logged enough': 'Amint elég edzést rögzítettél',
   'Day': 'Nap',
+  'Token use shows here after the first review.': 'A tokenhasználat az első áttekintés után itt jelenik meg.',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Az utolsó {0} áttekintés átlaga: áttekintésenként körülbelül {1} token küldve és {2} fogadva, mindegyik {3} szolgáltatói hívással.',
   'After how many workouts': 'Hány edzés után',
   'applied': 'alkalmazva',
   'declined': 'elutasítva',

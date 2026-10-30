@@ -1029,6 +1029,8 @@ export default {
   'After every few workouts': 'ทุก ๆ สองสามครั้งของการฝึก',
   'As soon as you have logged enough': 'ทันทีที่คุณบันทึกมากพอ',
   'Day': 'วัน',
+  'Token use shows here after the first review.': 'การใช้โทเคนจะแสดงที่นี่หลังการวิเคราะห์ครั้งแรก',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'ค่าเฉลี่ยของ {0} การวิเคราะห์ล่าสุด: ประมาณ {1} โทเคนที่ส่งและ {2} ที่รับต่อการวิเคราะห์ มีการเรียกผู้ให้บริการ {3} ครั้งต่อรอบ',
   'After how many workouts': 'หลังจากฝึกกี่ครั้ง',
   'applied': 'นำไปใช้แล้ว',
   'declined': 'ปฏิเสธแล้ว',

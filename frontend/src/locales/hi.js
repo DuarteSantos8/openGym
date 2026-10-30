@@ -863,6 +863,8 @@ export default {
   'After every few workouts': 'हर कुछ वर्कआउट के बाद',
   'As soon as you have logged enough': 'जैसे ही पर्याप्त रिकॉर्ड हो जाएँ',
   'Day': 'दिन',
+  'Token use shows here after the first review.': 'पहली समीक्षा के बाद टोकन उपयोग यहाँ दिखेगा।',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'आपकी पिछली {0} समीक्षाओं का औसत: प्रति समीक्षा लगभग {1} टोकन भेजे और {2} प्राप्त हुए, हर एक में {3} प्रदाता कॉल।',
   'After how many workouts': 'कितने वर्कआउट के बाद',
   'applied': 'लागू',
   'declined': 'अस्वीकृत',

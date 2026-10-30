@@ -20,7 +20,7 @@ export function isDue(coach, S, now, reviewedAt = 0, tz = null) {
   if (!since.length) return false;
 
   if (cadence.everyWorkouts) {
-    return since.length >= Math.max(1, Math.min(20, cadence.everyWorkouts));
+    return since.length >= Math.max(1, Math.min(10, cadence.everyWorkouts));
   }
   if (cadence.weekly) {
     if (!now) return false;

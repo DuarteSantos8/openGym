@@ -844,6 +844,8 @@ export default {
   'After every few workouts': 'Каждые несколько тренировок',
   'As soon as you have logged enough': 'Как только наберётся достаточно записей',
   'Day': 'День',
+  'Token use shows here after the first review.': 'Расход токенов появится здесь после первого разбора.',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Среднее за последние {0} разборов: около {1} токенов отправлено и {2} получено на разбор, {3} запросов к провайдеру на каждый.',
   'After how many workouts': 'Через сколько тренировок',
   'applied': 'применено',
   'declined': 'отклонено',

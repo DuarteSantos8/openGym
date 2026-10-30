@@ -881,6 +881,8 @@ export default {
   'After every few workouts': 'Nach jeweils ein paar Einheiten',
   'As soon as you have logged enough': 'Sobald du genug protokolliert hast',
   'Day': 'Tag',
+  'Token use shows here after the first review.': 'Der Token-Verbrauch wird nach der ersten Auswertung hier angezeigt.',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Durchschnitt der letzten {0} Auswertungen: etwa {1} Token gesendet und {2} empfangen pro Auswertung, jeweils {3} Anfragen an den Anbieter.',
   'After how many workouts': 'Nach wie vielen Einheiten',
   'applied': 'übernommen',
   'declined': 'abgelehnt',

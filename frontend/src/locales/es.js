@@ -863,6 +863,8 @@ export default {
   'After every few workouts': 'Cada varios entrenamientos',
   'As soon as you have logged enough': 'En cuanto hayas registrado suficientes',
   'Day': 'Día',
+  'Token use shows here after the first review.': 'El uso de tokens aparece aquí después de la primera revisión.',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Media de tus últimas {0} revisiones: unos {1} tokens enviados y {2} recibidos por revisión, {3} llamadas al proveedor cada una.',
   'After how many workouts': 'Cada cuántos entrenamientos',
   'applied': 'aplicado',
   'declined': 'rechazado',

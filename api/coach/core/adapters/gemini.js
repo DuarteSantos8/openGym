@@ -2,6 +2,7 @@
  * a query string ends up in proxy logs, error messages and browser history. */
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
+import { usageOf } from '../usage.js';
 
 const versionOf = m => { const v = /^gemini-(\d+)(?:\.(\d+))?/.exec(m); return v ? Number(v[1]) * 100 + Number(v[2] || 0) : 0; };
 
@@ -28,6 +29,10 @@ export const geminiSpec = {
     if (cand.finishReason && cand.finishReason !== 'STOP') return { error: `the model stopped early: ${cand.finishReason}` };
     const text = ((cand.content && cand.content.parts) || []).map(p => p.text || '').join('');
     return { text, truncated: false };
+  },
+  readUsage: data => {
+    const u = data && data.usageMetadata;
+    return u ? usageOf(u.promptTokenCount, u.candidatesTokenCount) : null;
   },
   // After a refused model (#758): the newest plain Flash the key lists, since that is the one a
   // free key can call; then the newest non-preview Gemini; then whatever text model is there.

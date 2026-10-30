@@ -18,6 +18,20 @@ export { isDue };
 
 const TICK_MS = 60000;
 
+// Failures that will keep happening until someone fixes the setup (key, runtime, provider
+// refusal). A scheduled review that hits one of these waits for its next slot like any other
+// review; retrying every minute would only spend the daily cap. Timeouts and state problems
+// (consent, switched off) are not in the list, so they are retried.
+const PERSISTENT_FAILURES = new Set(['auth', 'provider', 'missing', 'unprivileged']);
+
+/** The newest time a review was actually attempted by the model, for `isDue`. */
+export function reviewedAtOf(history = []) {
+  return Math.max(0, ...history
+    .filter(h => h.kind === 'review' && (h.outcome === 'ready' || h.outcome === 'nochange'
+      || (h.outcome === 'failed' && (h.errorClass === 'unusable' || PERSISTENT_FAILURES.has(h.errorClass)))))
+    .map(h => h.at || 0));
+}
+
 /**
  * @param {object} deps  { users(): [{id}], userNow(tz): {date,hhmm,weekday}, skip?(uid): bool }
  */
@@ -38,11 +52,8 @@ export function startCadence(deps) {
         if (st.job || st.pending) continue;
         // Reviewed means the model read those workouts and answered — with a proposal, with
         // "nothing to change", or with an answer that failed validation and was paid for all the
-        // same. A call that never reached it (timeout, no runtime, consent, switched off) is retried.
-        const reviewedAt = Math.max(0, ...jobs.readUser(user.id).history
-          .filter(h => h.kind === 'review' && (h.outcome === 'ready' || h.outcome === 'nochange'
-            || (h.outcome === 'failed' && h.errorClass === 'unusable')))
-          .map(h => h.at || 0));
+        // same — or failed in a way a retry will not fix (see PERSISTENT_FAILURES).
+        const reviewedAt = reviewedAtOf(jobs.readUser(user.id).history);
         const tz = coach.cadence?.weekly ? (S.reminder?.tz || 'UTC') : null;
         const now = tz ? deps.userNow(tz) : null;
         if (!isDue(coach, S, now, reviewedAt, tz)) continue;

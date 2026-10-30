@@ -863,6 +863,8 @@ export default {
   'After every few workouts': '몇 번의 운동마다',
   'As soon as you have logged enough': '기록이 충분히 쌓이면 바로',
   'Day': '요일',
+  'Token use shows here after the first review.': '첫 검토 후에 토큰 사용량이 여기에 표시됩니다.',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': '최근 {0}회 검토의 평균: 검토당 약 {1} 토큰 전송, {2} 토큰 수신, 검토마다 제공자 호출 {3}회.',
   'After how many workouts': '몇 번의 운동마다',
   'applied': '적용됨',
   'declined': '거절됨',
