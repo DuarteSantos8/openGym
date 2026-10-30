@@ -18,7 +18,8 @@
 // under a day only where the server says it keeps them (GET /api/config media.days), or where
 // there is no server at all.
 import { normalizeMediaRef, workoutMediaOf, WORKOUT_MEDIA_MAX } from './media-refs.js'
-import { addWorkoutMedia } from './workout-media.js'
+import { addWorkoutMedia, removeWorkoutMedia } from './workout-media.js'
+import { sameWorkout } from './workout-date.js'
 
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const ISO = /^\d{4}-\d{2}-\d{2}$/
@@ -100,3 +101,34 @@ export function fileProgressPhoto(state, d, ref, { canDay = true, now = Date.now
   return r === 'added' ? 'day' : r
 }
 
+/**
+ * Moves a progress photo to day `d` (changing the date of a photo already added). `photo` is an
+ * entry as the gallery lists them: { day: true, m } for one filed under a day, else { w, m } for
+ * one on workout `w`. A photo on a workout comes off it and is filed for the new day the way a
+ * new photo is (onto that day's workout while it has room, else under the day); one filed under
+ * a day just takes the new day. Returns 'moved', 'same' (already on that day), or why not:
+ * 'no-room' (the server keeps photos only on days with a workout, nothing was changed),
+ * 'gone' (the photo or its workout is no longer there) or 'invalid' (not a date).
+ * Mutates `state`, made for useStore's update().
+ */
+export function moveProgressPhoto(state, photo, d, { canDay = true, now = Date.now() } = {}) {
+  if (!ISO.test(String(d || ''))) return 'invalid'
+  const m = normalizeMediaRef(photo && photo.m)
+  if (!m) return 'invalid'
+  if (photo.day) {
+    const map = isMap(state.dayPhotos) ? state.dayPhotos : {}
+    const cur = readDayPhoto(map[m.hash])
+    if (!cur) return 'gone'
+    if (cur.d === d) return 'same'
+    state.dayPhotos = { ...map, [m.hash]: { d, m: cur.m, _ts: now } }
+    return 'moved'
+  }
+  const rec = (Array.isArray(state.workouts) ? state.workouts : []).find(x => x && photo.w && sameWorkout(x, photo.w))
+  if (!rec || !(Array.isArray(rec.media) && rec.media.some(x => x && x.hash === m.hash))) return 'gone'
+  if (rec.d === d) return 'same'
+  // File it for the new day first: if there is no room for it there, the photo stays where it is.
+  const res = fileProgressPhoto(state, d, m, { canDay, now })
+  if (res === 'no-room' || res === 'invalid') return res
+  removeWorkoutMedia(state, rec, m.hash, now)
+  return 'moved'
+}

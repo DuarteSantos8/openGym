@@ -919,6 +919,17 @@ body.chips-dragging *{cursor:inherit}
 .bw-when-btn{background:none;border:0;padding:4px 0;font:inherit;color:inherit;text-align:start;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-width:0}
 .bw-src{font-size:var(--fs-caption2);color:var(--pink)}
 .bw-day{padding:10px 2px 2px}
+.measure-date{min-width:0}
+.pp-step{display:flex;align-items:center;justify-content:space-between;margin:0 0 14px}
+.pp-step-n{font-size:14px;font-variant-numeric:tabular-nums}
+.pp-step .iconbtn:disabled{opacity:.3}
+[dir="rtl"] .pp-step .icn{transform:scaleX(-1)}
+/* The preview box has one fixed height for every photo, so the text and buttons around it stay put
+   while stepping through them; the photo is fitted inside it, whatever its shape. The hint keeps
+   a line of room whether it has text or not for the same reason. */
+.pp-add-hint{min-height:1.4em;margin:0 0 10px}
+.pp-add-preview{display:block;width:100%;height:min(36dvh,320px);object-fit:contain;border-radius:12px;background:#000;margin:0 0 12px}
+.pp-add-none{display:flex;align-items:center;justify-content:center;color:var(--label-2);font-size:28px}
 .measure-form{display:grid;grid-template-columns:1fr 1fr;gap:11px 10px}
 .measure-field{min-width:0}
 .measure-input{height:47px;background:var(--surface-2);border-radius:var(--r);display:flex;align-items:center;padding:0 12px;gap:6px}
@@ -1374,6 +1385,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .mviewer-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;flex:none}
 .mviewer .iconbtn{color:#fff;background:rgba(255,255,255,.12)}
 .mviewer-count{font-size:14px;font-variant-numeric:tabular-nums;opacity:.85}
+.mviewer-date{display:inline-flex;align-items:center;gap:7px;color:#fff;background:rgba(255,255,255,.12);padding:7px 12px;border-radius:99px;opacity:1}
+.mviewer-date .icn{font-size:13px;opacity:.7}
 .mviewer-stage{flex:1;min-height:0;display:flex}
 .exmedia.viewer{flex:1;min-width:0;margin:0;border-radius:0;background:#000;display:flex;align-items:center;justify-content:center}
 .exmedia.viewer img,.exmedia.viewer video{width:100%;height:100%;max-height:100%;object-fit:contain;background:#000}
@@ -1381,7 +1394,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .mviewer-nav{display:flex;justify-content:space-between;padding:8px 12px;flex:none}
 [dir="rtl"] .mviewer-nav .icn{transform:scaleX(-1)}
 .mviewer-ask{flex:none;padding:12px 16px;background:rgba(255,255,255,.08)}
-.mviewer-ask-t{font-weight:600;margin-bottom:10px}
+.mviewer-ask-t{display:block;font-weight:600;margin-bottom:10px}
+.mviewer-date-field{margin-bottom:12px;background:rgba(255,255,255,.12);color:#fff;color-scheme:dark}
 .mviewer-ask-b{display:flex;gap:8px;justify-content:flex-end}
 
 .sethead{
