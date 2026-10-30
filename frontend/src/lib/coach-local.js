@@ -20,7 +20,8 @@
 import * as payloadLib from '../../../api/coach/core/payload.js'
 import { runPipeline } from '../../../api/coach/core/pipeline.js'
 import { waitingProposal } from '../../../api/coach/core/pending.js'
-import { isDue } from '../../../api/coach/core/due.js'
+import { isDue, scheduledRun } from '../../../api/coach/core/due.js'
+import { averageUsage, USAGE_WINDOW } from '../../../api/coach/core/usage.js'
 import { HTTP_PROVIDERS, baseUrlFor } from '../../../api/coach/core/providers.js'
 import anthropic from '../../../api/coach/core/adapters/anthropic.js'
 import openai from '../../../api/coach/core/adapters/openai.js'
@@ -89,7 +90,7 @@ async function bumpDaily() {
 export async function localStatus() {
   const d = await loadCoachDevice()
   if (d.pending && d.pending.expiresAt && d.pending.expiresAt < Date.now()) await saveCoachDevice({ pending: null })
-  return { job, pending: (await loadCoachDevice()).pending || null, cap: await capState(), lastError, last, maxMessageLen: coachLimits(d).maxMessageLen }
+  return { job, pending: (await loadCoachDevice()).pending || null, cap: await capState(), lastError, last, maxMessageLen: coachLimits(d).maxMessageLen, usage: averageUsage(d.usage) }
 }
 
 export const localReview = async (S, note) => {
@@ -127,7 +128,8 @@ export async function localScheduled(S, now = new Date()) {
   if (cap.limit > 0 && cap.used >= cap.limit) return null
   const tz = deviceZone()
   if (!isDue(S.coach, S, wallClock(now), d.reviewedAt || 0, tz)) return null
-  try { return await start(S, 'review', { scheduled: true }) } catch { return null }
+  const run = scheduledRun(S)
+  try { return await start(S, run.kind, { scheduled: true, workoutId: run.workoutId }) } catch { return null }
 }
 // The phone's own clock, in the shape the server's userNow() hands the tick.
 export function wallClock(now) {
@@ -141,7 +143,7 @@ export async function localResolve() {
   await saveCoachDevice({ pending: d.pending?.kind === 'ask' ? waitingProposal(d.pending.prev) : null })
   return { ok: true }
 }
-export async function localForget() { job = null; lastError = null; await saveCoachDevice({ pending: null, daily: null, reviewedAt: null }); return { ok: true } }
+export async function localForget() { job = null; lastError = null; await saveCoachDevice({ pending: null, daily: null, reviewedAt: null, usage: null }); return { ok: true } }
 
 export async function localDisclosure() {
   const d = await loadCoachDevice()
@@ -196,6 +198,12 @@ async function run(S, kind, opts, d, adapter) {
     model, timeoutMs: timeoutFor(d.provider),
     invokeOpts: { env: envOf(d, key), fetch: nativeFetch, maxTokens: coachLimits(d).maxOutputTokens }
   })
+  // What counts as the last review, as on the server (core/due.js, api/coach/cadence.js): a
+  // review, or a scheduled debrief in every-1 mode.
+  const counts = kind === 'review' || (kind === 'debrief' && !!opts.scheduled)
+  // What this run cost in provider tokens, kept for the average the settings screen shows.
+  // Recorded whatever the outcome: a refused answer was billed like any other.
+  await recordUsage(attempt.usage)
   // The saved model was refused and another one answered (#758): keep that one, so the next
   // launch does not pay for the same 404 again. The setup screen shows the new name.
   const swapped = model && modelSubstitute(d.provider, cfgOf(d), model)
@@ -208,13 +216,13 @@ async function run(S, kind, opts, d, adapter) {
       : null)
     lastError = { errorClass: attempt.errorClass, detail }
     last = { id: job.id, kind, outcome: 'failed', errorClass: attempt.errorClass, at: Date.now() }
-    if (kind === 'review' && attempt.errorClass === 'unusable') await markReviewed()
+    if (counts && (attempt.errorClass === 'unusable' || PERSISTENT_FAILURES.includes(attempt.errorClass))) await markReviewed()
     if (notify) notify({ kind: 'failed', errorClass: attempt.errorClass, detail, scheduled: !!opts.scheduled })
     return
   }
   if (attempt.nochange) {
     last = { id: job.id, kind, outcome: 'nochange', errorClass: null, at: Date.now(), reading: attempt.reading }
-    if (kind === 'review') await markReviewed()
+    if (counts) await markReviewed()
     if (notify) notify({ kind: 'nochange', reading: attempt.reading, scheduled: !!opts.scheduled })
     return
   }
@@ -225,12 +233,20 @@ async function run(S, kind, opts, d, adapter) {
     ...(kind === 'ask' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
     ...attempt.result
   }
-  await saveCoachDevice({ pending, ...(kind === 'review' ? { reviewedAt: Date.now() } : {}) })
+  await saveCoachDevice({ pending, ...(counts ? { reviewedAt: Date.now() } : {}) })
   last = { id: job.id, kind, outcome: 'ready', errorClass: null, at: Date.now() }
   if (notify) notify({ kind: 'ready', pending, scheduled: !!opts.scheduled })
 }
+// Failures a retry will not fix; a scheduled run that hits one waits for its next slot (api/coach/cadence.js).
+const PERSISTENT_FAILURES = ['auth', 'provider', 'missing', 'unprivileged']
 // Any review the model read counts as the latest one, asked for or scheduled, as on the server.
 const markReviewed = () => saveCoachDevice({ reviewedAt: Date.now() })
+// The last USAGE_WINDOW runs' provider usage, one entry per run (core/usage.js averages them).
+async function recordUsage(usage) {
+  if (!usage) return
+  const d = await loadCoachDevice()
+  await saveCoachDevice({ usage: [...(d.usage || []), { usage }].slice(-USAGE_WINDOW) })
+}
 
 // The session a debrief is about, in the shape the card reads. The core builds it for the
 // server; the fallback covers a core that predates it.

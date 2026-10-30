@@ -28,6 +28,7 @@ import { handleFor } from './handle.js';
 import { fetchFor } from './node-fetch.js';
 import { privilegeRefusal, unprivilegedIds } from './adapters/spawn.js';
 import { cohortForPayload, invalidate as invalidateCohort } from './cohort.js';
+import { averageUsage } from './core/usage.js';
 
 // The prompt assembly, the plan fingerprint and the invoke→parse→validate→repair loop all
 // live in ./core now, where the phone can import them too. Re-exported so nothing that
@@ -151,7 +152,10 @@ export function status(uid) {
     cap: capState(uid),
     // How the most recent job ended, so the chat can say "nothing to change" or "that failed"
     // in the Coach's own bubble rather than leaving a job that silently stopped appearing.
-    last: lastOutcome(rec)
+    last: lastOutcome(rec),
+    // What a review has cost this profile lately: the average over its last few reviews that
+    // the provider reported usage for (core/usage.js). Null until one has.
+    usage: averageUsage(rec.history)
   };
 }
 function lastOutcome(rec) {
@@ -292,11 +296,14 @@ function finish(job, result) {
   const history = [...(rec.history || []), {
     id: job.id, kind: job.kind, trigger: job.trigger, outcome: result.outcome,
     errorClass: result.errorClass || null, at: Date.now(),
+    // What the provider billed for the calls this job made, when it reported any. Kept on the
+    // entry so the average is over real runs and survives a restart.
+    ...(result.usage ? { usage: result.usage } : {}),
     // "Nothing to change" is an answer with a reason attached, and throwing the reason away
     // leaves the user with a job that finished and nothing to show for it. It lives here, in
     // the profile's own file — deliberately not in `detail`, which goes to the instance log
     // the admin card renders, and which carries counts and outcomes only (FR-12/42).
-    ...(result.reading ? { reading: String(result.reading).slice(0, 1200) } : {})
+    ...(result.reading ? { reading: String(result.reading).slice(0, 4000) } : {})
   }].slice(-HISTORY_MAX);
   writeUser(job.uid, {
     ...rec,
@@ -382,10 +389,10 @@ async function execute(job) {
     if (!attempt.ok) {
       // Cancelled by a forget, not failed by the provider: the log must not blame the job budget.
       const errorClass = ctl.signal.aborted ? 'forgotten' : attempt.errorClass;
-      return finish(job, { outcome: 'failed', errorClass, detail: attempt.detail || whyUnusable(attempt.errors) });
+      return finish(job, { outcome: 'failed', errorClass, detail: attempt.detail || whyUnusable(attempt.errors), usage: attempt.usage });
     }
     if (attempt.nochange) {
-      return finish(job, { outcome: 'nochange', pending: null, detail: null, reading: attempt.reading });
+      return finish(job, { outcome: 'nochange', pending: null, detail: null, reading: attempt.reading, usage: attempt.usage });
     }
     const pending = {
       id: job.id,
@@ -402,7 +409,7 @@ async function execute(job) {
       ...(job.kind === 'ask' ? { prev: waitingProposal(readUser(job.uid).pending) } : {}),
       ...attempt.result
     };
-    return finish(job, { outcome: 'ready', pending });
+    return finish(job, { outcome: 'ready', pending, usage: attempt.usage });
   } finally {
     aborts.delete(job.uid);
     if (jobDir) removeJobDir(jobDir, unprivilegedIds());

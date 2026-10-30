@@ -31,7 +31,8 @@ import {
   changeTitle, changeValues, exName, canRevert, revertLast
 } from '../lib/coach.js'
 import { insightsFor, sessionInsights } from '../lib/coach-insights.js'
-import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
+import { clampWorkoutCount } from '../lib/coach-schedule.js'
+import { useCoachStatus, coachStatus, requestReview, requestDebrief, requestPlan, refinePlan, askCoach, resolvePending, cohortStats, setCohortShare, jobErrorText, awaitedJob, settleAwaited, JOB_ERRORS, ensureAiConsent, isDeclined } from '../lib/coach-api.js'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
@@ -783,6 +784,14 @@ function CadenceSheet({ update }) {
   const mode = !cadence ? 'off' : cadence.weekly ? 'weekly' : 'every'
   // A phone with its own key runs them itself, and only while the app is open (lib/coach-schedule.js).
   const deviceMode = useStore(s => s.coachLocal?.mode)
+  // What the reviews have cost lately, read once when the sheet opens (the status poll is the
+  // chat screen's, and this sheet can be opened from anywhere that has no poll).
+  const [usage, setUsage] = useState(null)
+  useEffect(() => {
+    let on = true
+    coachStatus().then(s => { if (on) setUsage(s?.usage || null) }).catch(() => {})
+    return () => { on = false }
+  }, [])
   const onPhone = MOBILE && deviceMode === 'byok'
   // Automatic reviews send your training while nobody is looking, so switching them on is where
   // the data-sharing question is asked for them. "Not now" leaves them off.
@@ -815,10 +824,42 @@ function CadenceSheet({ update }) {
             onChange={e => patch(c => { c.cadence = { weekly: { ...c.cadence.weekly, time: e.target.value } } })} />
         </Row>
       </>}
-      {mode === 'every' && <SelectRow icon="dumbbell" iconTint="var(--teal)" title={t('After how many workouts')}
-        value={cadence.everyWorkouts || 4}
-        onChange={v => patch(c => { c.cadence = { everyWorkouts: v } })}
-        options={[3, 4, 5, 6, 8, 10].map(n => ({ value: n, label: tn('{0} workout', '{0} workouts', n) }))} />}
+      {mode === 'every' && <>
+        <Row icon="dumbbell" iconTint="var(--teal)" title={t('After how many workouts')}>
+          <WorkoutCount value={cadence.everyWorkouts || 4} onCommit={n => patch(c => { c.cadence = { ...c.cadence, everyWorkouts: n } })} />
+        </Row>
+        <Row icon="dumbbell" iconTint="var(--teal)" title={t('Read only the latest {0} workouts', cadence.everyWorkouts || 4)}>
+          <Switch checked={!!cadence.latestOnly} onChange={on => patch(c => { c.cadence = { ...c.cadence, latestOnly: on } })} />
+        </Row>
+      </>}
     </Section>
+    {mode === 'every' && <UsageLine usage={usage} />}
   </>
+}
+
+// A number the person types, kept as they type it and committed on leaving the field (or Enter):
+// the range is enforced there, so a half-typed "1" on the way to "10" is never saved, and an
+// empty field goes back to the saved value rather than to a surprise.
+function WorkoutCount({ value, onCommit }) {
+  const [draft, setDraft] = useState(String(value))
+  useEffect(() => setDraft(String(value)), [value])
+  const commit = () => {
+    const n = clampWorkoutCount(draft, value)
+    setDraft(String(n))
+    if (n !== value) onCommit(n)
+  }
+  return <input type="number" className="timef" inputMode="numeric" min={1} max={10} step={1}
+    aria-label={t('After how many workouts')} value={draft}
+    onChange={e => setDraft(e.target.value)}
+    onBlur={commit}
+    onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }} />
+}
+
+// What a review costs in provider tokens, from this profile's recent reviews (core/usage.js). The
+// figure is the average per review, so the number of workouts it is paid over is up to the person.
+function UsageLine({ usage }) {
+  if (!usage) return <p className="dim" style={{ padding: '0 16px 12px', margin: 0 }}>{t('Token use shows here after the first review.')}</p>
+  return <p className="dim" style={{ padding: '0 16px 12px', margin: 0 }}>
+    {t('Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.', usage.reviews, fmtNum(usage.input), fmtNum(usage.output), fmtNum(usage.calls))}
+  </p>
 }

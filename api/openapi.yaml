@@ -4090,7 +4090,7 @@ components:
         planHash: { type: string, description: The plan this was written against. A later edit makes it stale. }
         iteration: { type: integer, description: "1, or higher after a refine." }
         trigger: { type: string, enum: [scheduled], description: "Present when an automatic review made it, which nobody was watching for." }
-        summary: { type: string, maxLength: 1200 }
+        summary: { type: string, maxLength: 2000 }
         changes:
           type: array
           description: A review's change-set, each one applied or rejected on its own.

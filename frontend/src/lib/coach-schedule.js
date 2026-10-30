@@ -17,6 +17,15 @@ import { MOBILE } from './mobile.js'
 
 const TICK_MS = 60000
 
+/** The "After how many workouts" value a person typed, held to 1 to 10 (whole numbers). An empty
+ *  or non-numeric entry gives back the saved value, so nothing is saved by accident. */
+export function clampWorkoutCount(raw, saved) {
+  if (!String(raw ?? '').trim()) return saved
+  const n = Math.round(Number(raw))
+  if (!Number.isFinite(n)) return saved
+  return Math.min(10, Math.max(1, n))
+}
+
 /** Whether this state could have a review due here at all, before anything is loaded. */
 export function mayBeDue(store) {
   const cadence = store?.S?.coach?.cadence

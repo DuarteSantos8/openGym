@@ -16,6 +16,7 @@ import { SCHEMAS } from './schemas.js';
 import { extractJSON, contractOK } from './parse.js';
 import { validatePlan, validateReview, validateDebrief, validateAsk } from './validate.js';
 import { isChangeList, changesOntoPlan } from './refine-changes.js';
+import { sumUsage } from './usage.js';
 
 /**
  * One attempt: prompt → provider → parse → validate.
@@ -90,13 +91,29 @@ export async function attemptOnce({ adapter, cfg, kind, payload, model, timeoutM
   return { ok: true, result: checked.proposal || { bundle: checked.bundle, summary: checked.bundle.summary } };
 }
 
-/** The whole loop: one attempt, then one repair round if the answer was fixable (FR-48). */
+/** The whole loop: one attempt, then one repair round if the answer was fixable (FR-48).
+ *
+ * Every provider call the loop makes is metered, the failed ones too: a call that answered and
+ * was refused is still billed. The result carries the sum as `usage` ({input, output, calls}),
+ * or null when the provider reported nothing (see core/usage.js). The adapter is wrapped with a
+ * prototype link rather than a copy, so its methods run with the adapter they were written on. */
 export async function runPipeline(opts) {
-  let attempt = await attemptOnce(opts, null);
+  const reported = [];
+  const metered = Object.create(opts.adapter, {
+    invoke: {
+      value: async o => {
+        const r = await opts.adapter.invoke(o);
+        reported.push(r && r.usage ? r.usage : null);
+        return r;
+      }
+    }
+  });
+  const run = (repair) => attemptOnce({ ...opts, adapter: metered }, repair);
+  let attempt = await run(null);
   if (!attempt.ok && attempt.repairable) {
     // One repair round, then done. Two failures is a provider problem, not a prompting
     // problem, and a retry loop against a paid API is a bad way to find out.
-    attempt = await attemptOnce(opts, { previous: attempt.raw, errors: attempt.errors });
+    attempt = await run({ previous: attempt.raw, errors: attempt.errors });
   }
-  return attempt;
+  return { ...attempt, usage: sumUsage(reported) };
 }

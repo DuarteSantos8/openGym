@@ -6,6 +6,7 @@
  */
 import { httpAdapter } from './http.js';
 import { SYSTEM_PROMPT } from '../system-prompt.js';
+import { usageOf } from '../usage.js';
 
 export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_tokens', temperature = null, versionlessFallback = false } = {}) {
   return {
@@ -65,6 +66,7 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
       const text = typeof content === 'string' ? content : Array.isArray(content) ? content.map(p => p.text || '').join('') : '';
       return { text, truncated: choice.finish_reason === 'length' };
     },
+    readUsage: data => (data && data.usage ? usageOf(data.usage.prompt_tokens, data.usage.completion_tokens) : null),
     readModels: data => {
       const ids = (data.data || data.models || []).map(m => (typeof m === 'string' ? m : m.id || m.name)).filter(Boolean);
       // OpenAI's own list is everything the account can call — speech, embeddings, image

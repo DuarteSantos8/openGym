@@ -15,7 +15,7 @@ const FILE = 'opengym-coach.json'
 
 export const COACH_MODES = ['off', 'server', 'byok']
 
-const DEFAULTS = { mode: 'off', provider: null, model: null, baseUrl: null, handle: null, daily: null, pending: null, reviewedAt: null, limits: null }
+const DEFAULTS = { mode: 'off', provider: null, model: null, baseUrl: null, handle: null, daily: null, pending: null, reviewedAt: null, limits: null, usage: null }
 
 /* The three dials the BYOK setup screen's "Advanced" exposes, with the same ranges the server's
    admin card clamps to (api/coach/config.js). That file is node-only — it reads ./data and

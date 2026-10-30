@@ -479,15 +479,28 @@ const { validateDebrief } = await import('../coach/core/validate.js');
 test('a debrief keeps summary, a clamped whole-number score and the three short lists', () => {
   const r = validateDebrief({
     coach_contract: 1, summary: '  Solid session. ', score: 7.6,
-    highlights: ['All 9 sets done', '', 'x'.repeat(400)], watch: null, nextTime: ['Add a rep']
+    highlights: ['All 9 sets done', '', 'x'.repeat(1200)], watch: null, nextTime: ['Add a rep']
   });
   assert.equal(r.ok, true);
   assert.equal(r.proposal.summary, 'Solid session.');
   assert.equal(r.proposal.score, 8);
-  assert.deepEqual(r.proposal.highlights.map(x => x.length), [15, 300]);
+  assert.deepEqual(r.proposal.highlights.map(x => x.length), [15, 1000]);
   assert.deepEqual(r.proposal.watch, []);
   assert.deepEqual(r.proposal.nextTime, ['Add a rep']);
   assert.equal('changes' in r.proposal, false);
+});
+
+test('an over-long coach text ends at a sentence or a word, never mid-word', () => {
+  // A whole sentence fits: the cut lands after the last full stop, with nothing added.
+  const sentences = validateDebrief({ coach_contract: 1, summary: 'Squats moved well today. '.repeat(100), score: 7, highlights: ['ok'] });
+  assert.ok(sentences.proposal.summary.length <= 2000);
+  assert.ok(sentences.proposal.summary.endsWith('today.'));
+  // One long sentence: the cut lands on a space and says so.
+  const words = validateDebrief({ coach_contract: 1, summary: 'ok', score: 7, highlights: ['keep the bar close '.repeat(80)] });
+  const item = words.proposal.highlights[0];
+  assert.ok(item.length <= 1000);
+  assert.ok(item.endsWith('…'));
+  assert.ok(/(keep|the|bar|close)…$/.test(item));
 });
 
 test('a debrief without a score, or with every list empty, is refused', () => {
@@ -510,6 +523,12 @@ test('a debrief carrying changes, or answering "nochange", is refused rather tha
 test('a debrief score outside 1-10 is clamped, not refused', () => {
   assert.equal(validateDebrief({ summary: 'ok', score: 14, nextTime: ['x'] }).proposal.score, 10);
   assert.equal(validateDebrief({ summary: 'ok', score: -2, nextTime: ['x'] }).proposal.score, 1);
+});
+
+test('a debrief summary of a few sentences with numbers arrives whole', () => {
+  const summary = ('Bench went 3 sets of 8 at 80 kg, every set on target and the top set up 2.5 kg on last week. ').repeat(8).trim();
+  assert.ok(summary.length > 600 && summary.length < 1200);
+  assert.equal(validateDebrief({ summary, score: 7, nextTime: ['x'] }).proposal.summary, summary);
 });
 
 /* A created plan's own exercises carry a name, a body part and a description, and nothing else:
