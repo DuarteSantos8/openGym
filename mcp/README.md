@@ -98,7 +98,8 @@ re-interpret them.
 
 `log_workout` lets you tell your LLM what you did instead of tapping it in:
 
-> "Log today: dumbbell curls, 12 kg, three sets of 12 except the last was 10. Then planks, 3 × 60 s."
+> "Log today: dumbbell curls, 12 kg, three sets of 12 except the last was 10. Then planks, 3 × 60 s,
+> and 20 minutes on the treadmill at 3.5 mph, incline 7."
 
 The LLM turns that into exercises and sets; the tool matches the exercises against your library,
 builds the workout the way the app's Finish button does (PR badges, the next suggested weight,
@@ -156,7 +157,8 @@ Things to know about that token:
 
 ### What it does not do (yet)
 
-- Cardio by time and speed, supersets, per-side sets. Log those in the app.
+- Supersets and per-side sets. Log those in the app. A cardio set is minutes at one speed and
+  a grade: a distance becomes the average speed, and heart rate stays the watch's.
 - Edit or delete a workout. Fix a mistake in the app's History.
 - Complete a routine's session. A logged workout is freestyle: it counts in history, stats,
   1RM, PRs and the muscle map, and like any freestyle session it can inform a routine that has

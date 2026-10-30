@@ -226,6 +226,10 @@ const ALIAS_EX = {
   treadmill: '3666', 'treadmill walk': '3666', 'treadmill run': '3666',
   cycling: '2331', 'cross trainer': '2331', elliptical: '2141',
   'stationary bike': '2138', 'exercise bike': '2138', 'stepmill': '2311',
+  // What people say to an LLM about the same machines (MCP log_workout): "incline walk" shares
+  // its words with crab and farmer's walks, "rower" and "stairmaster" with nothing.
+  'incline walk': '3666', 'incline treadmill walk': '3666', 'treadmill incline walk': '3666',
+  rower: '1161', stairmaster: '2311', 'stair master': '2311', 'stair climber': '2311',
   // The catalogue has only band Pallof presses, so a cable one resolves to the band entry:
   // same movement, wrong equipment label, which beats leaving it uncategorised.
   'pallof press': '0979', 'cable pallof press': '0979', 'vertical pallof press': '1015',
