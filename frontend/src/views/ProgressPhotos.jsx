@@ -1,5 +1,5 @@
 // Every progress photo in one place, newest first: adding them, for today or an earlier day,
-// several at once; removing one; and a before/after comparison between any two.
+// several at once; removing one; and a comparison of two to five of them.
 //
 // A photo for a day with a logged workout goes onto that workout (addWorkoutMedia, the saved
 // workout's own `media` list, the same place WorkoutMedia.jsx writes). One for a day without a
@@ -20,9 +20,12 @@ import { dayPhotosOf, removeDayPhoto, restoreDayPhoto, serverTakesDayPhotos, fil
 import { exifDateOfFile } from '../lib/exif-date.js'
 import { sameWorkout } from '../lib/workout-date.js'
 import { syncMedia } from '../lib/media-sync.js'
+import { renderCompareImage } from '../lib/compare-image.js'
+import { shareImage } from '../lib/share-image.js'
+import { MAX_COMPARE, toggleCompareKey, orderForCompare, modesFor, defaultMode, validMode, spanDays } from '../lib/photo-compare.js'
 import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
-import { Button } from '../components/ui.jsx'
+import { Button, Segmented } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
 
 const toast = m => useUI.getState().toast(m)
@@ -123,11 +126,19 @@ function openPhotoView(p) {
   useUI.getState().openSheet(close => <PhotoView p={p} close={close} />, { kind: 'viewer' })
 }
 
-/** The before/after slider between two progress photos `a` (earlier) and `b` (later). */
-function ProgressCompare({ a, b, close }) {
+/** One photo of a comparison with its date right under it. */
+function CompareCell({ p }) {
+  const { url } = useMediaUrl(p.m)
+  return <figure className="pp-cell">
+    {url && <img className="pp-img" src={url} alt="" draggable={false} />}
+    <figcaption className="pp-caption">{fmtDate(p.d, true)}</figcaption>
+  </figure>
+}
+
+/** The before/after slider between `a` (earlier) and `b`. */
+function ComparePair({ a, b, pct, setPct }) {
   const before = useMediaUrl(a.m)
   const after = useMediaUrl(b.m)
-  const [pct, setPct] = useState(50)
   const stageRef = useRef(null)
   const dragging = useRef(false)
 
@@ -142,32 +153,68 @@ function ProgressCompare({ a, b, close }) {
   const onPointerMove = e => { if (dragging.current) setFromClientX(e.clientX) }
   const endDrag = () => { dragging.current = false }
 
-  const days = daysBetween(a.d, b.d)
+  // A photo has no reading direction: before stays on the left and the finger drives the
+  // handle the same way in Arabic, so the stage is ltr like DurationWheel's wheel.
+  return <div className="pp-compare" dir="ltr" ref={stageRef} data-swipe-ignore
+    onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}>
+    {after.url && <img className="pp-img" src={after.url} alt="" draggable={false} />}
+    {before.url && <img className="pp-img" src={before.url} alt="" draggable={false}
+      style={{ clipPath: `inset(0 ${100 - pct}% 0 0)` }} />}
+    <div className="pp-handle" style={{ insetInlineStart: pct + '%' }}><div className="pp-grip" /></div>
+    <div className="pp-label pp-label-before">{fmtDate(a.d, true)}</div>
+    <div className="pp-label pp-label-after">{fmtDate(b.d, true)}</div>
+  </div>
+}
+
+/** Two to MAX_COMPARE progress photos, earliest first: in a row, or for two photos as a slider. */
+function ProgressCompare({ photos, close }) {
+  const n = photos.length
+  const [picked, setMode] = useState(defaultMode(n))
+  const [pct, setPct] = useState(50)   // the slider's handle, kept here so a shared picture matches what is on screen
+  const [sharing, setSharing] = useState(false)
+  const mode = validMode(picked, n)
+  const days = spanDays(photos)
+  const title = days > 0 ? tn('{0} day apart', '{0} days apart', days) : t('Same day')
+  const share = async () => {
+    if (sharing) return
+    setSharing(true)
+    try {
+      const blob = await renderCompareImage({ photos, labels: photos.map(p => fmtDate(p.d, true)), mode, pct, title })
+      if (!blob) { toast(t('Something went wrong')); return }
+      await shareImage(blob, `opengym-progress-${photos[0].d}-${photos[n - 1].d}.png`, t('Progress photos'))
+    } catch (e) {
+      toast(t('Something went wrong'))
+    } finally {
+      setSharing(false)
+    }
+  }
+  const labels = { slider: t('Slider'), side: t('Side by side') }
+  const modes = modesFor(n)
 
   return <div className="mviewer" role="dialog" aria-modal="true" aria-label={t('Compare photos')}>
     <div className="mviewer-bar">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
-      <span className="mviewer-count">{days > 0 ? tn('{0} day apart', '{0} days apart', days) : t('Same day')}</span>
-      <span style={{ width: 36 }} />
+      <span className="mviewer-count">{title}</span>
+      <button type="button" className="iconbtn" aria-label={t('Share')} disabled={sharing} onClick={share}><Icon name="share" /></button>
     </div>
-    {/* A photo has no reading direction: before stays on the left and the finger drives the
-        handle the same way in Arabic, so the stage is ltr like DurationWheel's wheel. */}
-    <div className="pp-compare" dir="ltr" ref={stageRef} data-swipe-ignore
-      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}>
-      {after.url && <img className="pp-img" src={after.url} alt="" draggable={false} />}
-      {before.url && <img className="pp-img" src={before.url} alt="" draggable={false}
-        style={{ clipPath: `inset(0 ${100 - pct}% 0 0)` }} />}
-      <div className="pp-handle" style={{ insetInlineStart: pct + '%' }}><div className="pp-grip" /></div>
-      <div className="pp-label pp-label-before">{fmtDate(a.d, true)}</div>
-      <div className="pp-label pp-label-after">{fmtDate(b.d, true)}</div>
-    </div>
+    {mode === 'slider'
+      ? <ComparePair a={photos[0]} b={photos[1]} pct={pct} setPct={setPct} />
+      : <div className="pp-grid" dir="ltr" data-swipe-ignore style={{ '--cols': n }}>
+          {photos.map(p => <CompareCell key={p.key || p.m.hash} p={p} />)}
+        </div>}
+    {modes.length > 1 && <div className="pp-modes">
+      <Segmented options={modes.map(m => ({ value: m, label: labels[m] }))} value={mode} onChange={setMode} />
+    </div>}
   </div>
 }
 
-/** Opens the before/after slider between two progressPhotosOf() entries, in date order either way. */
-export function openProgressCompare(x, y) {
-  const [a, b] = x.d <= y.d ? [x, y] : [y, x]
-  useUI.getState().openSheet(close => <ProgressCompare a={a} b={b} close={close} />, { kind: 'viewer' })
+/**
+ * Opens the comparison of two to MAX_COMPARE progressPhotosOf() entries, in date order whichever
+ * order they were picked in. Takes them as arguments or as one array.
+ */
+export function openProgressCompare(...args) {
+  const photos = orderForCompare(args.flat()).slice(0, MAX_COMPARE)
+  useUI.getState().openSheet(close => <ProgressCompare photos={photos} close={close} />, { kind: 'viewer' })
 }
 
 // How many photos one pick takes: each is read and re-encoded on the device, one after another.
@@ -213,22 +260,17 @@ export default function ProgressPhotos() {
   const photos = useMemo(() => progressPhotosOf(S), [S.workouts, S.dayPhotos])
   const groups = useMemo(() => groupByDate(photos), [photos])
   const [comparing, setComparing] = useState(false)
-  const [picked, setPicked] = useState([])   // up to 2 photo keys, in tap order
+  const [picked, setPicked] = useState([])   // up to MAX_COMPARE photo keys, in tap order
   const { pick, busy, canAdd, showAdd } = useMediaPicker()
   const fileRef = useRef(null)
 
-  const toggle = p => setPicked(cur => {
-    if (cur.includes(p.key)) return cur.filter(k => k !== p.key)
-    return cur.length >= 2 ? [cur[1], p.key] : [...cur, p.key]
-  })
+  const toggle = p => setPicked(cur => toggleCompareKey(cur, p.key))
   const cancelCompare = () => { setComparing(false); setPicked([]) }
   const runCompare = () => {
-    if (picked.length !== 2) return
-    const [ha, hb] = picked
-    const a = photos.find(p => p.key === ha)
-    const b = photos.find(p => p.key === hb)
+    if (picked.length < 2) return
+    const chosen = picked.map(k => photos.find(p => p.key === k)).filter(Boolean)
     cancelCompare()
-    if (a && b) openProgressCompare(a, b)
+    if (chosen.length >= 2) openProgressCompare(chosen)
   }
   // Several photos at once (#557), each filed under the day it was taken where its EXIF says so,
   // else under the day picked in the sheet (today unless changed); see fileProgressPhoto.
@@ -278,7 +320,7 @@ export default function ProgressPhotos() {
     </div>}
 
     {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
-      {picked.length < 2 ? t('Pick two photos to compare.') : t('Ready! Open the comparison.')}
+      {picked.length < 2 ? t('Pick 2 to {0} photos to compare.', MAX_COMPARE) : t('Ready! Open the comparison.')}
     </div>}
 
     {!photos.length
@@ -305,7 +347,7 @@ export default function ProgressPhotos() {
         </div>
       ))}
 
-    {comparing && picked.length === 2 && <div className="pp-cta">
+    {comparing && picked.length >= 2 && <div className="pp-cta">
       <Button variant="primary" onClick={runCompare}>{t('Compare')}</Button>
     </div>}
   </>

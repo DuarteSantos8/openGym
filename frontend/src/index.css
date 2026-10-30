@@ -1067,6 +1067,14 @@ body.chips-dragging *{cursor:inherit}
 }
 .pp-label-before{inset-inline-start:10px}
 .pp-label-after{inset-inline-end:10px}
+.pp-modes{flex:none;padding:10px 16px 12px}
+.pp-modes .seg button{padding:6px 4px;font-size:13px;line-height:1.15;text-align:center}
+/* Side by side: one row, each photo at its own shape with its date underneath. */
+.pp-grid{flex:1;min-height:0;display:grid;gap:10px 2px;background:#000;overflow-y:auto;align-content:safe center;
+  grid-template-columns:repeat(var(--cols,2),minmax(0,1fr))}
+.pp-cell{margin:0;min-width:0;display:flex;flex-direction:column}
+.pp-cell .pp-img{position:static;inset:auto;width:100%;height:auto;max-height:calc(100dvh - 230px)}
+.pp-caption{font-size:12px;font-weight:600;text-align:center;padding:5px 0 0;color:#fff}
 .wrow-media .icn{font-size:13px}
 .mviewer{
   position:absolute;inset:0;background:#000;color:#fff;display:flex;flex-direction:column;

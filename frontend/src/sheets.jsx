@@ -48,6 +48,7 @@ import { normalizeRepRange } from './lib/rep-range.js'
 import { isBackoff, backoffWeights } from './lib/backoff.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
 import { MOBILE, shareExport, shareExportBlob, printHtml } from './lib/mobile.js'
+import { shareImage } from './lib/share-image.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incline.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
@@ -3003,18 +3004,6 @@ async function saveFitFile(blob, name) {
   if (MOBILE) { try { await shareExportBlob(blob, name) } catch (e) { /* share sheet dismissed */ } return }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
   toast(t('Saved. Garmin Connect can take it from here.'))
-}
-// The phone app goes through the OS share sheet the way a backup does; a browser that can share
-// files (most phones) opens its own; anything else saves the picture as a download.
-async function shareImage(blob, name, title) {
-  if (MOBILE) { try { await shareExportBlob(blob, name) } catch (e) { /* share sheet dismissed */ } return }
-  const file = typeof File === 'function' ? new File([blob], name, { type: 'image/png' }) : null
-  if (file && navigator.canShare?.({ files: [file] })) {
-    try { await navigator.share({ files: [file], title }) } catch (e) { /* dismissed */ }
-    return
-  }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href)
-  toast(t('Image saved'))
 }
 // The sentence a workout's Delete adds when its photos and videos go with it — every file the
 // record lists, shown or not. Empty when it has none.
