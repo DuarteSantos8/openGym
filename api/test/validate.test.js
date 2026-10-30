@@ -525,6 +525,12 @@ test('a debrief score outside 1-10 is clamped, not refused', () => {
   assert.equal(validateDebrief({ summary: 'ok', score: -2, nextTime: ['x'] }).proposal.score, 1);
 });
 
+test('a debrief summary of a few sentences with numbers arrives whole', () => {
+  const summary = ('Bench went 3 sets of 8 at 80 kg, every set on target and the top set up 2.5 kg on last week. ').repeat(8).trim();
+  assert.ok(summary.length > 600 && summary.length < 1200);
+  assert.equal(validateDebrief({ summary, score: 7, nextTime: ['x'] }).proposal.summary, summary);
+});
+
 /* A created plan's own exercises carry a name, a body part and a description, and nothing else:
    a `url` the model made up is a link the app would offer the person to open, and a `media` ref
    would point at a file the model never saw. Both are dropped, whatever the model wrote. */
