@@ -295,6 +295,14 @@ export function reviewWindow(S, since) {
   return all.filter(w => w.d >= from).slice(-MAX_SESSIONS);
 }
 
+/** The newest N workouts, for a review the person asked to read only the latest N (the every-N
+ *  cadence with `latestOnly` on). N is held to the same 1 to 10 the setting allows. */
+export function latestWindow(S, n) {
+  const all = (S.workouts || []).filter(w => w && w.d);
+  const k = Math.min(10, Math.max(1, Math.round(Number(n) || 1)));
+  return all.slice(-k);
+}
+
 function aggregates(S, workouts) {
   // Per-exercise stall/deload picture, computed over the same sessions the engine would see.
   const byEx = new Map();
@@ -578,7 +586,12 @@ export function build(S, opts = {}) {
     const today = cleanToday(opts.today);
     if (today) p.today = today;
   } else if (opts.kind === 'review') {
-    const workouts = reviewWindow(S, coach.lastReview?.at ? String(coach.lastReview.at).slice(0, 10) : null);
+    // The every-N cadence can ask for only its latest N workouts; otherwise the window runs back
+    // to the last review (or 12 weeks).
+    const cad = coach.cadence && typeof coach.cadence === 'object' ? coach.cadence : null;
+    const workouts = cad?.everyWorkouts && cad.latestOnly === true
+      ? latestWindow(S, cad.everyWorkouts)
+      : reviewWindow(S, coach.lastReview?.at ? String(coach.lastReview.at).slice(0, 10) : null);
     const detailFrom = Math.max(0, workouts.length - FULL_DETAIL_SESSIONS);
     p.window = {
       from: day(workouts[0]?.d),

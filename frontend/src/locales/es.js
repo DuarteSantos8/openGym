@@ -865,6 +865,7 @@ export default {
   'Day': 'Día',
   'Token use shows here after the first review.': 'El uso de tokens aparece aquí después de la primera revisión.',
   'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Media de tus últimas {0} revisiones: unos {1} tokens enviados y {2} recibidos por revisión, {3} llamadas al proveedor cada una.',
+  'Read only the latest {0} workouts': 'Revisar solo los últimos {0} entrenamientos',
   'After how many workouts': 'Cada cuántos entrenamientos',
   'applied': 'aplicado',
   'declined': 'rechazado',

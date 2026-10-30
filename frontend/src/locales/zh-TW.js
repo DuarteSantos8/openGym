@@ -857,6 +857,7 @@ export default {
   'Day': '星期',
   'Token use shows here after the first review.': '第一次回顧後，這裡會顯示權杖用量。',
   'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': '最近 {0} 次回顧的平均值：每次約傳送 {1} 個權杖、接收 {2} 個權杖，每次呼叫供應商 {3} 次。',
+  'Read only the latest {0} workouts': '只分析最近 {0} 次訓練',
   'After how many workouts': '每累積多少次訓練後',
   'applied': '已套用',
   'declined': '已拒絕',

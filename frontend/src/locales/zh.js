@@ -865,6 +865,7 @@ export default {
   'Day': '星期',
   'Token use shows here after the first review.': '首次回顾后，这里会显示令牌用量。',
   'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': '最近 {0} 次回顾的平均值：每次约发送 {1} 个令牌、接收 {2} 个令牌，每次调用服务商 {3} 次。',
+  'Read only the latest {0} workouts': '只分析最近 {0} 次训练',
   'After how many workouts': '每隔多少次训练',
   'applied': '已应用',
   'declined': '已拒绝',

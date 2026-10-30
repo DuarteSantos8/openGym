@@ -883,6 +883,7 @@ export default {
   'Day': 'Tag',
   'Token use shows here after the first review.': 'Der Token-Verbrauch wird nach der ersten Auswertung hier angezeigt.',
   'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Durchschnitt der letzten {0} Auswertungen: etwa {1} Token gesendet und {2} empfangen pro Auswertung, jeweils {3} Anfragen an den Anbieter.',
+  'Read only the latest {0} workouts': 'Nur die letzten {0} Einheiten auswerten',
   'After how many workouts': 'Nach wie vielen Einheiten',
   'applied': 'übernommen',
   'declined': 'abgelehnt',

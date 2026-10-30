@@ -826,7 +826,10 @@ function CadenceSheet({ update }) {
       </>}
       {mode === 'every' && <>
         <Row icon="dumbbell" iconTint="var(--teal)" title={t('After how many workouts')}>
-          <WorkoutCount value={cadence.everyWorkouts || 4} onCommit={n => patch(c => { c.cadence = { everyWorkouts: n } })} />
+          <WorkoutCount value={cadence.everyWorkouts || 4} onCommit={n => patch(c => { c.cadence = { ...c.cadence, everyWorkouts: n } })} />
+        </Row>
+        <Row icon="dumbbell" iconTint="var(--teal)" title={t('Read only the latest {0} workouts', cadence.everyWorkouts || 4)}>
+          <Switch checked={!!cadence.latestOnly} onChange={on => patch(c => { c.cadence = { ...c.cadence, latestOnly: on } })} />
         </Row>
       </>}
     </Section>

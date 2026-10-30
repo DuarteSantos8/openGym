@@ -821,6 +821,7 @@ export default {
   'Day': 'اليوم',
   'Token use shows here after the first review.': 'يظهر استهلاك الرموز هنا بعد المراجعة الأولى.',
   'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'متوسط آخر {0} مراجعات: حوالي {1} رمز مُرسل و{2} مستلم لكل مراجعة، و{3} طلبات للمزود في كل مرة.',
+  'Read only the latest {0} workouts': 'اقرأ آخر {0} تدريبات فقط',
   'After how many workouts': 'بعد كم تمرين',
   'applied': 'مُطبَّق',
   'declined': 'مرفوض',

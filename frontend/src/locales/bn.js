@@ -947,6 +947,7 @@ export default {
   'Day': 'দিন',
   'Token use shows here after the first review.': 'প্রথম পর্যালোচনার পর এখানে টোকেন ব্যবহার দেখানো হবে।',
   'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'আপনার শেষ {0}টি পর্যালোচনার গড়: প্রতিটিতে প্রায় {1} টোকেন পাঠানো ও {2} টোকেন গ্রহণ, প্রতিটিতে {3} প্রদানকারী কল।',
+  'Read only the latest {0} workouts': 'শুধু শেষ {0}টি ওয়ার্কআউট পড়ুন',
   'After how many workouts': 'কতগুলো ওয়ার্কআউটের পরে',
   'applied': 'প্রয়োগ করা',
   'declined': 'প্রত্যাখ্যাত',
