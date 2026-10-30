@@ -20,7 +20,7 @@
 import * as payloadLib from '../../../api/coach/core/payload.js'
 import { runPipeline } from '../../../api/coach/core/pipeline.js'
 import { waitingProposal } from '../../../api/coach/core/pending.js'
-import { isDue } from '../../../api/coach/core/due.js'
+import { isDue, scheduledRun } from '../../../api/coach/core/due.js'
 import { averageUsage, USAGE_WINDOW } from '../../../api/coach/core/usage.js'
 import { HTTP_PROVIDERS, baseUrlFor } from '../../../api/coach/core/providers.js'
 import anthropic from '../../../api/coach/core/adapters/anthropic.js'
@@ -128,7 +128,8 @@ export async function localScheduled(S, now = new Date()) {
   if (cap.limit > 0 && cap.used >= cap.limit) return null
   const tz = deviceZone()
   if (!isDue(S.coach, S, wallClock(now), d.reviewedAt || 0, tz)) return null
-  try { return await start(S, 'review', { scheduled: true }) } catch { return null }
+  const run = scheduledRun(S)
+  try { return await start(S, run.kind, { scheduled: true, workoutId: run.workoutId }) } catch { return null }
 }
 // The phone's own clock, in the shape the server's userNow() hands the tick.
 export function wallClock(now) {
@@ -197,6 +198,9 @@ async function run(S, kind, opts, d, adapter) {
     model, timeoutMs: timeoutFor(d.provider),
     invokeOpts: { env: envOf(d, key), fetch: nativeFetch, maxTokens: coachLimits(d).maxOutputTokens }
   })
+  // What counts as the last review, as on the server (core/due.js, api/coach/cadence.js): a
+  // review, or a scheduled debrief in every-1 mode.
+  const counts = kind === 'review' || (kind === 'debrief' && !!opts.scheduled)
   // What this run cost in provider tokens, kept for the average the settings screen shows.
   // Recorded whatever the outcome: a refused answer was billed like any other.
   await recordUsage(attempt.usage)
@@ -212,13 +216,13 @@ async function run(S, kind, opts, d, adapter) {
       : null)
     lastError = { errorClass: attempt.errorClass, detail }
     last = { id: job.id, kind, outcome: 'failed', errorClass: attempt.errorClass, at: Date.now() }
-    if (kind === 'review' && attempt.errorClass === 'unusable') await markReviewed()
+    if (counts && (attempt.errorClass === 'unusable' || PERSISTENT_FAILURES.includes(attempt.errorClass))) await markReviewed()
     if (notify) notify({ kind: 'failed', errorClass: attempt.errorClass, detail, scheduled: !!opts.scheduled })
     return
   }
   if (attempt.nochange) {
     last = { id: job.id, kind, outcome: 'nochange', errorClass: null, at: Date.now(), reading: attempt.reading }
-    if (kind === 'review') await markReviewed()
+    if (counts) await markReviewed()
     if (notify) notify({ kind: 'nochange', reading: attempt.reading, scheduled: !!opts.scheduled })
     return
   }
@@ -229,10 +233,12 @@ async function run(S, kind, opts, d, adapter) {
     ...(kind === 'ask' ? { prev: waitingProposal((await loadCoachDevice()).pending) } : {}),
     ...attempt.result
   }
-  await saveCoachDevice({ pending, ...(kind === 'review' ? { reviewedAt: Date.now() } : {}) })
+  await saveCoachDevice({ pending, ...(counts ? { reviewedAt: Date.now() } : {}) })
   last = { id: job.id, kind, outcome: 'ready', errorClass: null, at: Date.now() }
   if (notify) notify({ kind: 'ready', pending, scheduled: !!opts.scheduled })
 }
+// Failures a retry will not fix; a scheduled run that hits one waits for its next slot (api/coach/cadence.js).
+const PERSISTENT_FAILURES = ['auth', 'provider', 'missing', 'unprivileged']
 // Any review the model read counts as the latest one, asked for or scheduled, as on the server.
 const markReviewed = () => saveCoachDevice({ reviewedAt: Date.now() })
 // The last USAGE_WINDOW runs' provider usage, one entry per run (core/usage.js averages them).

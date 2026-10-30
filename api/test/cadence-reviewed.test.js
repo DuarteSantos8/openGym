@@ -22,6 +22,13 @@ test('timeouts and state problems are retried, so they do not count', () => {
   }
 });
 
+test('a scheduled debrief counts as the last review, a manual one does not', () => {
+  const sched = { kind: 'debrief', trigger: 'scheduled', outcome: 'ready', at: 700 };
+  const manual = { kind: 'debrief', trigger: 'manual', outcome: 'ready', at: 800 };
+  assert.equal(reviewedAtOf([sched]), 700);
+  assert.equal(reviewedAtOf([sched, manual]), 700);
+});
+
 test('the newest counting review wins, and debriefs or asks are ignored', () => {
   const history = [
     run('ready', null, 100),

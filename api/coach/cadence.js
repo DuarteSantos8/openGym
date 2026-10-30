@@ -11,7 +11,7 @@
  */
 import * as jobs from './jobs.js';
 import * as cfgStore from './config.js';
-import { isDue } from './core/due.js';
+import { isDue, scheduledRun } from './core/due.js';
 
 // Re-exported so nothing that reached it through this module has to move.
 export { isDue };
@@ -24,10 +24,14 @@ const TICK_MS = 60000;
 // (consent, switched off) are not in the list, so they are retried.
 const PERSISTENT_FAILURES = new Set(['auth', 'provider', 'missing', 'unprivileged']);
 
+/** A run that counts as the last review: a review, or a scheduled debrief (every-1 mode, see
+ *  core/due.js scheduledRun). A manual debrief reads one session and is not a review. */
+const countsAsReview = h => h.kind === 'review' || (h.kind === 'debrief' && h.trigger === 'scheduled');
+
 /** The newest time a review was actually attempted by the model, for `isDue`. */
 export function reviewedAtOf(history = []) {
   return Math.max(0, ...history
-    .filter(h => h.kind === 'review' && (h.outcome === 'ready' || h.outcome === 'nochange'
+    .filter(h => countsAsReview(h) && (h.outcome === 'ready' || h.outcome === 'nochange'
       || (h.outcome === 'failed' && (h.errorClass === 'unusable' || PERSISTENT_FAILURES.has(h.errorClass)))))
     .map(h => h.at || 0));
 }
@@ -57,8 +61,9 @@ export function startCadence(deps) {
         const tz = coach.cadence?.weekly ? (S.reminder?.tz || 'UTC') : null;
         const now = tz ? deps.userNow(tz) : null;
         if (!isDue(coach, S, now, reviewedAt, tz)) continue;
-        jobs.enqueue(user.id, { kind: 'review', trigger: 'scheduled' });
-        console.log('coach: scheduled review queued for', user.id);
+        const run = scheduledRun(S);
+        jobs.enqueue(user.id, { kind: run.kind, workoutId: run.workoutId, trigger: 'scheduled' });
+        console.log('coach: scheduled', run.kind, 'queued for', user.id);
       } catch (e) {
         // Caps, an in-flight job, a provider that just went down: all ordinary, all silent.
         if (!(e instanceof jobs.CoachError)) console.error('coach cadence', user.id, e);

@@ -36,6 +36,18 @@ export function isDue(coach, S, now, reviewedAt = 0, tz = null) {
   return false;
 }
 
+/* What an automatic run does, for both the server tick and the phone. Every 1 with "read only the
+ * latest" on is a debrief of the newest workout: the same card as "Review my last workout", since
+ * that is what one new workout is. Anything else is a review. Pure. */
+export function scheduledRun(S) {
+  const c = S?.coach?.cadence;
+  if (c && typeof c === 'object' && Number(c.everyWorkouts) === 1 && c.latestOnly === true) {
+    const last = (S.workouts || []).filter(w => w && w.d).at(-1);
+    if (last) return { kind: 'debrief', workoutId: last.id };
+  }
+  return { kind: 'review', workoutId: null };
+}
+
 /* When this week's slot fell, as an epoch timestamp — the clock `lastAt` is on.
  *
  * `now` is the user's own wall clock (date, hh:mm, weekday, from their reminder timezone) and
