@@ -247,7 +247,7 @@ export function httpAdapter(spec) {
           // Some OpenAI-compatible servers reject the JSON-mode flag outright, and some providers
           // reject a schema they cannot serve (Gemini: "the specified schema produces a constraint
           // that has too many states"). Once, without it: the validator still judges the answer.
-          if (res.status === 400 && spec.withoutJsonMode && !retriedWithoutJsonMode && /response_format|json_schema|json_object|json mode|structured|\bschema\b/i.test(msg)) {
+          if (res.status === 400 && spec.withoutJsonMode && !retriedWithoutJsonMode && /response_format|json_schema|json_object|json mode|structured|\bschema\b|mismatch(?:ed)? type/i.test(msg)) {
             body = spec.withoutJsonMode(body);
             retriedWithoutJsonMode = true;
             continue;
