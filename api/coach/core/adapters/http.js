@@ -134,7 +134,9 @@ function namedRungs(msg) {
   if (/additionalProperties|must be explicitly set/i.test(msg)) return ['strict', 'json_object', 'plain'];
   if (/max_(?:completion_)?tokens/i.test(msg)) return ['tokens'];
   if (/temperature/i.test(msg)) return ['temperature'];
-  if (/response_format|json_schema|json_object|json mode|structured|\bschema\b/i.test(msg)) return ['json_object', 'plain'];
+  // MiniMax refuses a union type in the schema with "invalid params, Mismatch type string with
+  // value array" and never says "schema" (#928).
+  if (/response_format|json_schema|json_object|json mode|structured|\bschema\b|mismatch(?:ed)? type/i.test(msg)) return ['json_object', 'plain'];
   return null;
 }
 const applySteps = (spec, base, steps) => steps.reduce((b, s) => spec.compat[s](b), base);
