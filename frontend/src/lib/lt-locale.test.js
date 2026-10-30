@@ -47,6 +47,13 @@ describe('Lithuanian locale', () => {
     expect(changes(1.5)).toBe('Pritaikyta 1.5 pakeitimo')
   })
 
+  test('distinguishes notification delivery from scheduled reminders', () => {
+    expect(lt.Notifications).toBe('Pranešimai')
+    expect(lt.Reminders).toBe('Priminimai')
+    expect(lt['Push notifications']).toBe('Tiesioginiai pranešimai')
+    expect(lt['Workout day reminder']).toBe('Treniruotės dienos priminimas')
+  })
+
   test('matches the baseline key set and preserves interpolation placeholders', () => {
     expect(Object.keys(lt).sort()).toEqual(Object.keys(pl).sort())
     for (const [source, translated] of Object.entries(lt)) {
