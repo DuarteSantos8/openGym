@@ -2338,18 +2338,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'ওয়ার্ম-আপ হালকা, তাই বিশ্রাম কম বা একেবারেই না হলেও চলে। শেষটি প্রথম কাজের সেটের আগে পুরো বিশ্রাম পায়।',
   // --- progress photos for any day (#557) ---
   'Add photos': 'ছবি যোগ করুন',
-  'Each photo goes on the day it was taken.': 'প্রতিটি ছবি সেই দিনে যাবে যেদিন তোলা হয়েছিল।',
+  '{0} of {1}': '{0} / {1}',
+  'Date read from the photo.': 'তারিখ ছবি থেকে পড়া হয়েছে।',
+  'Guessed from the file date.': 'তারিখ ফাইল থেকে অনুমান করা।',
   'No progress photos yet. Add one for today or any day before.': 'এখনও কোনো অগ্রগতির ছবি নেই। আজকের বা আগের যেকোনো দিনের জন্য একটি যোগ করুন।',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'ছবি বলছে এটি {0} তারিখে তোলা। অন্য দিন হলে দিনটি বদলে নিন।',
-  'They all go on the day below.': 'সবগুলো নিচের দিনে যাবে।',
   'Which day is this photo from?': 'এই ছবি কোন দিনের?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'আপনার সার্ভার শুধু ওয়ার্কআউটের দিনে ছবি রাখে। আপডেট করলে যেকোনো দিনের জন্য রাখতে পারবে।',
   'Add {0} photo': '{0}টি ছবি যোগ করুন',
   'Add {0} photos': '{0}টি ছবি যোগ করুন',
   '{0} photo added': '{0}টি ছবি যোগ হয়েছে',
   '{0} photos added': '{0}টি ছবি যোগ হয়েছে',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0}টি ছবি তার দিন জানে আর সেখানে যাবে। বাকিগুলো নিচের দিনে যাবে।',
-  '{0} photos know their day and go there. The others go on the day below.': '{0}টি ছবি তাদের দিন জানে আর সেখানে যাবে। বাকিগুলো নিচের দিনে যাবে।',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'সব অগ্রগতির ছবি তারিখ অনুযায়ী সাজানো, যেকোনো দিনের। সঙ্গে আগে/পরে তুলনার স্লাইডার।',
   // --- routine backups ---

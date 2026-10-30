@@ -2256,18 +2256,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'Розминка легка, тож відпочивати можна менше або зовсім ні. Після останньої розминки все одно буде повний відпочинок перед першим робочим підходом.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'Додати фото',
-  'Each photo goes on the day it was taken.': 'Кожне фото потрапить у день, коли його зроблено.',
+  '{0} of {1}': '{0} з {1}',
+  'Date read from the photo.': 'Дату зчитано з фото.',
+  'Guessed from the file date.': 'Дату припущено за файлом.',
   'No progress photos yet. Add one for today or any day before.': 'Поки немає фото прогресу. Додайте одне на сьогодні або на будь-який попередній день.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'Судячи з фото, його зроблено {0}. Змініть день, якщо це був інший.',
-  'They all go on the day below.': 'Усі потраплять у день нижче.',
   'Which day is this photo from?': 'З якого дня це фото?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Ваш сервер зберігає фото лише в дні з тренуванням. Після оновлення він зможе зберігати їх для будь-якого дня.',
   'Add {0} photo': 'Додати {0} фото',
   'Add {0} photos': { one: 'Додати {0} фото', few: 'Додати {0} фото', many: 'Додати {0} фото' },
   '{0} photo added': 'Додано {0} фото',
   '{0} photos added': { one: 'Додано {0} фото', few: 'Додано {0} фото', many: 'Додано {0} фото' },
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} фото знає свій день і потрапить туди. Решта потраплять у день нижче.',
-  '{0} photos know their day and go there. The others go on the day below.': { one: '{0} фото знає свій день і потрапить туди. Решта потраплять у день нижче.', few: '{0} фото знають свій день і потраплять туди. Решта потраплять у день нижче.', many: '{0} фото знають свій день і потраплять туди. Решта потраплять у день нижче.' },
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Усі фото прогресу за датами, за будь-який день. І повзунок «до і після».',
   // --- routine backups ---

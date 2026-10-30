@@ -2259,18 +2259,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'Rozgrzewka jest lekka, więc może mieć krótszą przerwę albo żadną. Ostatnia i tak dostaje pełną przerwę przed pierwszą serią roboczą.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'Dodaj zdjęcia',
-  'Each photo goes on the day it was taken.': 'Każde zdjęcie trafia na dzień, w którym zostało zrobione.',
+  '{0} of {1}': '{0} z {1}',
+  'Date read from the photo.': 'Data odczytana ze zdjęcia.',
+  'Guessed from the file date.': 'Data odgadnięta z pliku.',
   'No progress photos yet. Add one for today or any day before.': 'Nie ma jeszcze zdjęć postępów. Dodaj jedno na dziś albo na wcześniejszy dzień.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'Według zdjęcia zrobiono je {0}. Zmień dzień, jeśli to był inny.',
-  'They all go on the day below.': 'Wszystkie trafią na dzień poniżej.',
   'Which day is this photo from?': 'Z którego dnia jest to zdjęcie?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Twój serwer trzyma zdjęcia tylko w dni z treningiem. Aktualizacja pozwoli mu trzymać je na każdy dzień.',
   'Add {0} photo': 'Dodaj {0} zdjęcie',
   'Add {0} photos': { one: 'Dodaj {0} zdjęcie', few: 'Dodaj {0} zdjęcia', many: 'Dodaj {0} zdjęć' },
   '{0} photo added': 'Dodano {0} zdjęcie',
   '{0} photos added': { one: 'Dodano {0} zdjęcie', few: 'Dodano {0} zdjęcia', many: 'Dodano {0} zdjęć' },
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} zdjęcie zna swój dzień i tam trafi. Pozostałe trafią na dzień poniżej.',
-  '{0} photos know their day and go there. The others go on the day below.': { one: '{0} zdjęcie zna swój dzień i tam trafi. Pozostałe trafią na dzień poniżej.', few: '{0} zdjęcia znają swój dzień i tam trafią. Pozostałe trafią na dzień poniżej.', many: '{0} zdjęć zna swój dzień i tam trafi. Pozostałe trafią na dzień poniżej.' },
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Wszystkie zdjęcia postępów według daty, z dowolnego dnia. Do tego suwak przed/po.',
   // --- routine backups ---

@@ -2288,18 +2288,16 @@ export default {
 
   // --- progress photos for any day (#557) ---
   'Add photos': 'Lägg till foton',
-  'Each photo goes on the day it was taken.': 'Varje foto hamnar på dagen det togs.',
+  '{0} of {1}': '{0} av {1}',
+  'Date read from the photo.': 'Datum läst från fotot.',
+  'Guessed from the file date.': 'Datum gissat från filen.',
   'No progress photos yet. Add one for today or any day before.': 'Inga framstegsfoton än. Lägg till ett för idag eller någon tidigare dag.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'Enligt fotot togs det {0}. Ändra dagen om det var en annan.',
-  'They all go on the day below.': 'Alla hamnar på dagen nedan.',
   'Which day is this photo from?': 'Vilken dag är fotot från?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Din server sparar bara foton på dagar med ett pass. Efter en uppdatering kan den spara dem för vilken dag som helst.',
   'Add {0} photo': 'Lägg till {0} foto',
   'Add {0} photos': 'Lägg till {0} foton',
   '{0} photo added': '{0} foto tillagt',
   '{0} photos added': '{0} foton tillagda',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} foto vet sin dag och hamnar där. De andra hamnar på dagen nedan.',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} foton vet sin dag och hamnar där. De andra hamnar på dagen nedan.',
 
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Alla framstegsfoton i datumordning, för vilken dag som helst. Plus ett före/efter-reglage.',

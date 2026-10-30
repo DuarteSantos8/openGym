@@ -2259,18 +2259,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': '热身组较轻，可以少休息或不休息。最后一个热身组在第一个正式组前仍会得到完整的休息。',
   // --- progress photos for any day (#557) ---
   'Add photos': '添加照片',
-  'Each photo goes on the day it was taken.': '每张照片都会放到拍摄当天。',
+  '{0} of {1}': '{0} / {1}',
+  'Date read from the photo.': '日期读取自照片。',
+  'Guessed from the file date.': '日期根据文件推测。',
   'No progress photos yet. Add one for today or any day before.': '还没有进度照片。为今天或之前的某一天添加一张吧。',
-  'The photo says it was taken on {0}. Change the day if it was another one.': '照片显示拍摄于 {0}。如果是别的日子，改一下日期。',
-  'They all go on the day below.': '全部放到下面的日期。',
   'Which day is this photo from?': '这张照片是哪一天的？',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': '你的服务器只在有训练的日子保留照片。更新后可以保留任何一天的照片。',
   'Add {0} photo': '添加 {0} 张照片',
   'Add {0} photos': '添加 {0} 张照片',
   '{0} photo added': '已添加 {0} 张照片',
   '{0} photos added': '已添加 {0} 张照片',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} 张照片知道自己的日期，会放到那天。其余的放到下面的日期。',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} 张照片知道自己的日期，会放到那天。其余的放到下面的日期。',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': '所有进度照片按日期排列，任何一天都行。还有前后对比滑块。',
   // --- routine backups ---

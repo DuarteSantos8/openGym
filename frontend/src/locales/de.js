@@ -2279,18 +2279,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'Aufwärmsätze sind leicht, da reicht weniger Pause oder gar keine. Der letzte bekommt trotzdem die volle Pause vor dem ersten Arbeitssatz.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'Fotos hinzufügen',
-  'Each photo goes on the day it was taken.': 'Jedes Foto landet an dem Tag, an dem es gemacht wurde.',
+  '{0} of {1}': '{0} von {1}',
+  'Date read from the photo.': 'Datum aus dem Foto gelesen.',
+  'Guessed from the file date.': 'Datum aus der Datei geschätzt.',
   'No progress photos yet. Add one for today or any day before.': 'Noch keine Fortschrittsfotos. Füg eins für heute oder einen früheren Tag hinzu.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'Laut Foto wurde es am {0} gemacht. Ändere den Tag, falls es ein anderer war.',
-  'They all go on the day below.': 'Alle landen am Tag unten.',
   'Which day is this photo from?': 'Von welchem Tag ist dieses Foto?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'Dein Server behält Fotos nur an Tagen mit Training. Mit einem Update behält er sie für jeden Tag.',
   'Add {0} photo': '{0} Foto hinzufügen',
   'Add {0} photos': '{0} Fotos hinzufügen',
   '{0} photo added': '{0} Foto hinzugefügt',
   '{0} photos added': '{0} Fotos hinzugefügt',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} Foto kennt seinen Tag und landet dort. Die anderen landen am Tag unten.',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} Fotos kennen ihren Tag und landen dort. Die anderen landen am Tag unten.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'Alle Fortschrittsfotos nach Datum, für jeden Tag. Dazu ein Vorher-nachher-Regler.',
   // --- routine backups ---

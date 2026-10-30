@@ -60,6 +60,80 @@ describe('removing a progress photo', () => {
   })
 })
 
+describe('changing the date of a photo already added (#940)', () => {
+  const field = () => host.querySelector('input[type=date]')
+  const setDate = value => {
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+    act(() => { set.call(field(), value); field().dispatchEvent(new Event('input', { bubbles: true })) })
+  }
+  const saveBtn = () => [...host.querySelectorAll('.mviewer-ask button')].find(b => b.textContent === 'Save')
+
+  it('the date in the bar opens a day field with the photo\'s day, and Save moves it', () => {
+    const p = progressPhotosOf(useStore.getState().S).find(x => x.w.id === 'w1' && x.m.hash === ref(3).hash)
+    let closed = 0
+    act(() => root.render(<PhotoView p={p} close={() => { closed++ }} />))
+    expect(field()).toBeNull()
+    act(() => button('Date').click())
+    expect(field().value).toBe('2026-10-01')
+    expect(field().max).toBe(todayISO())
+    setDate('2026-10-03')
+    act(() => saveBtn().click())
+    expect(closed).toBe(1)
+    expect(media('w1').map(m => m.hash)).toEqual([ref(1).hash, ref(2).hash])
+    expect(useStore.getState().S.dayPhotos[ref(3).hash]).toMatchObject({ d: '2026-10-03', m: ref(3) })
+    expect(progressPhotosOf(useStore.getState().S).find(x => x.m.hash === ref(3).hash).d).toBe('2026-10-03')
+  })
+
+  it('onto the new day\'s workout when it has one', () => {
+    const p = progressPhotosOf(useStore.getState().S).find(x => x.w.id === 'w1' && x.m.hash === ref(3).hash)
+    act(() => root.render(<PhotoView p={p} close={() => {}} />))
+    act(() => button('Date').click())
+    setDate('2026-10-05')
+    act(() => saveBtn().click())
+    expect(media('w1').map(m => m.hash)).toEqual([ref(1).hash, ref(2).hash])
+    expect(media('w2').map(m => m.hash)).toEqual([ref(2).hash, ref(3).hash])
+  })
+
+  it('a photo filed under a day takes the new day', () => {
+    useStore.setState({ S: { ...state(), dayPhotos: { [ref(7).hash]: { d: '2026-10-03', m: ref(7), _ts: 1 } } } })
+    const p = progressPhotosOf(useStore.getState().S).find(x => x.day)
+    act(() => root.render(<PhotoView p={p} close={() => {}} />))
+    act(() => button('Date').click())
+    expect(field().value).toBe('2026-10-03')
+    setDate('2026-09-20')
+    act(() => saveBtn().click())
+    expect(useStore.getState().S.dayPhotos[ref(7).hash]).toMatchObject({ d: '2026-09-20', m: ref(7) })
+  })
+
+  it('does not save the same day, an empty one or one in the future; Cancel closes the field', () => {
+    const p = progressPhotosOf(useStore.getState().S).find(x => x.w.id === 'w1' && x.m.hash === ref(3).hash)
+    let closed = 0
+    act(() => root.render(<PhotoView p={p} close={() => { closed++ }} />))
+    act(() => button('Date').click())
+    act(() => saveBtn().click())                                   // unchanged: the field just closes
+    expect(field()).toBeNull()
+    expect(closed).toBe(0)
+    act(() => button('Date').click())
+    setDate('')
+    expect(saveBtn().disabled).toBe(true)
+    setDate('2999-01-01')
+    expect(saveBtn().disabled).toBe(true)
+    act(() => [...host.querySelectorAll('.mviewer-ask button')].find(b => b.textContent === 'Cancel').click())
+    expect(field()).toBeNull()
+    expect(media('w1').map(m => m.hash)).toEqual([ref(1).hash, ref(2).hash, ref(3).hash])
+  })
+
+  it('shares the bar with Remove: opening one closes the other', () => {
+    const p = progressPhotosOf(useStore.getState().S)[0]
+    act(() => root.render(<PhotoView p={p} close={() => {}} />))
+    act(() => button('Date').click())
+    expect(field()).not.toBeNull()
+    act(() => button('Remove').click())
+    expect(field()).toBeNull()
+    expect(host.querySelector('.mviewer-ask-t').textContent).toBe('Remove this photo or video?')
+  })
+})
+
 describe('photos filed under a day (#557)', () => {
   it('show in the gallery with the workout photos, and come off with Undo the same way', () => {
     useStore.setState({ S: { ...state(), dayPhotos: { [ref(7).hash]: { d: '2026-10-03', m: ref(7), _ts: 1 } } } })
@@ -77,24 +151,85 @@ describe('photos filed under a day (#557)', () => {
 })
 
 describe('adding photos for a day', () => {
-  const item = exif => ({ file: new Blob(['x']), exif })
-  it('one photo: the day it was taken, changeable; several: their own days, the rest on the picked one', async () => {
-    const save = vi.fn(async () => {})
-    act(() => root.render(<AddPhotosSheet items={[item('2026-09-14')]} close={() => {}} save={save} />))
-    expect(host.querySelector('h3').textContent).toBe('Add 1 photo')
-    expect(host.querySelector('input[type=date]').value).toBe('2026-09-14')
-    expect(host.querySelector('input[type=date]').max).toBe(todayISO())
-    await act(async () => { button('Add').click() })
-    expect(save).toHaveBeenCalledWith([item('2026-09-14')], '2026-09-14')
+  const item = (date, source = date ? 'exif' : undefined) => ({ file: new Blob(['x']), ...(date ? { date, source } : {}) })
+  const field = () => host.querySelector('input[type=date]')
+  const setDate = value => {
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
+    act(() => { set.call(field(), value); field().dispatchEvent(new Event('input', { bubbles: true })) })
+  }
 
-    act(() => root.render(null))
-    act(() => root.render(<AddPhotosSheet items={[item('2026-09-14'), item(null), item(null)]} close={() => {}} save={save} />))
-    expect(host.textContent).toContain('1 photo knows its day and goes there. The others go on the day below.')
-    expect(host.querySelector('input[type=date]').value).toBe(todayISO())
-    act(() => root.render(null))
+  it('one photo: the day it was taken, changeable, with no stepper', async () => {
+    const save = vi.fn(async () => {})
+    const one = item('2026-09-14')
+    act(() => root.render(<AddPhotosSheet items={[one]} close={() => {}} save={save} />))
+    expect(host.querySelector('h3').textContent).toBe('Add 1 photo')
+    expect(field().value).toBe('2026-09-14')
+    expect(field().max).toBe(todayISO())
+    expect(host.querySelector('.pp-step')).toBeNull()
+    expect(host.querySelector('.pp-add-preview')).not.toBeNull()
+    expect(host.textContent).toContain('Date read from the photo.')
+    await act(async () => { button('Add').click() })
+    expect(save).toHaveBeenCalledWith([one], ['2026-09-14'])
+  })
+
+  it('several photos: one at a time, "2 of 3", each with its own day', async () => {
+    const save = vi.fn(async () => {})
+    const items = [item('2026-09-14'), item(null), item('2026-09-16', 'name')]
+    act(() => root.render(<AddPhotosSheet items={items} close={() => {}} save={save} />))
+    expect(host.querySelector('h3').textContent).toBe('Add 3 photos')
+    expect(host.querySelector('.pp-step-n').textContent).toBe('1 of 3')
+    expect(field().value).toBe('2026-09-14')
+    expect(button('Previous').disabled).toBe(true)
+    act(() => button('Next').click())
+    expect(host.querySelector('.pp-step-n').textContent).toBe('2 of 3')
+    expect(field().value).toBe(todayISO())                       // nothing said a day: today, and it asks
+    expect(host.textContent).toContain('Which day is this photo from?')
+    setDate('2026-09-15')
+    act(() => button('Next').click())
+    expect(host.querySelector('.pp-step-n').textContent).toBe('3 of 3')
+    expect(field().value).toBe('2026-09-16')
+    expect(button('Next').disabled).toBe(true)
+    act(() => button('Previous').click())
+    expect(field().value).toBe('2026-09-15')                       // what was typed is kept
+    await act(async () => { button('Add').click() })
+    expect(save).toHaveBeenCalledWith(items, ['2026-09-14', '2026-09-15', '2026-09-16'])
+  })
+
+  it('puts the line about the day on top and the "1 of 3" stepper under the preview', () => {
+    act(() => root.render(<AddPhotosSheet items={[item('2026-09-14'), item(null), item(null)]} close={() => {}} save={async () => {}} />))
+    const kids = [...host.children].map(el => el.className)
+    const at = cls => kids.findIndex(c => String(c).includes(cls))
+    expect(at('pp-add-hint')).toBeGreaterThan(-1)
+    expect(at('pp-add-hint')).toBeLessThan(at('pp-add-preview'))
+    expect(at('pp-add-preview')).toBeLessThan(at('pp-step'))
+    expect(at('pp-step')).toBeLessThan(at('measure-date'))
+  })
+
+  it('says when the day is only a guess from the file date', () => {
+    act(() => root.render(<AddPhotosSheet items={[item('2026-09-14', 'modified')]} close={() => {}} save={async () => {}} />))
+    expect(host.textContent).toContain('Guessed from the file date.')
+    expect(host.textContent).not.toContain('Date read from the photo.')
+  })
+
+  it('does not add until every photo has a day, and jumps to the one that has none', async () => {
+    const save = vi.fn(async () => {})
     act(() => root.render(<AddPhotosSheet items={[item('2026-09-14'), item('2026-09-15')]} close={() => {}} save={save} />))
-    expect(host.querySelector('input[type=date]')).toBeNull()
-    expect(host.textContent).toContain('Each photo goes on the day it was taken.')
+    act(() => button('Next').click())
+    setDate('')                                                    // a half-typed date reads as empty
+    act(() => button('Previous').click())
+    await act(async () => { button('Add').click() })
+    expect(save).not.toHaveBeenCalled()
+    expect(host.querySelector('.pp-step-n').textContent).toBe('2 of 2')
+    setDate('2026-09-17')
+    await act(async () => { button('Add').click() })
+    expect(save).toHaveBeenCalledWith(expect.any(Array), ['2026-09-14', '2026-09-17'])
+  })
+
+  it('refuses a day in the future', async () => {
+    const save = vi.fn(async () => {})
+    act(() => root.render(<AddPhotosSheet items={[item(null)]} close={() => {}} save={save} />))
+    setDate('2999-01-01')
+    await act(async () => { button('Add').click() })
+    expect(save).not.toHaveBeenCalled()
   })
 })
-

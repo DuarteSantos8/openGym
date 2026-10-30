@@ -2270,18 +2270,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'เซ็ตวอร์มอัพเบา จึงพักน้อยลงหรือไม่พักเลยก็ได้ เซ็ตสุดท้ายยังได้พักเต็มก่อนเซ็ตหลักแรก',
   // --- progress photos for any day (#557) ---
   'Add photos': 'เพิ่มรูป',
-  'Each photo goes on the day it was taken.': 'แต่ละรูปจะไปอยู่ในวันที่ถ่าย',
+  '{0} of {1}': '{0} จาก {1}',
+  'Date read from the photo.': 'อ่านวันที่จากรูป',
+  'Guessed from the file date.': 'คาดเดาวันที่จากไฟล์',
   'No progress photos yet. Add one for today or any day before.': 'ยังไม่มีรูปความก้าวหน้า เพิ่มสักรูปสำหรับวันนี้หรือวันก่อนหน้า',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'รูปบอกว่าถ่ายเมื่อ {0} เปลี่ยนวันได้ถ้าเป็นวันอื่น',
-  'They all go on the day below.': 'ทั้งหมดจะไปอยู่ในวันด้านล่าง',
   'Which day is this photo from?': 'รูปนี้มาจากวันไหน',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'เซิร์ฟเวอร์ของคุณเก็บรูปเฉพาะวันที่มีการออกกำลังกาย อัปเดตแล้วจะเก็บได้ทุกวัน',
   'Add {0} photo': 'เพิ่ม {0} รูป',
   'Add {0} photos': 'เพิ่ม {0} รูป',
   '{0} photo added': 'เพิ่มแล้ว {0} รูป',
   '{0} photos added': 'เพิ่มแล้ว {0} รูป',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} รูปรู้วันของตัวเองและจะไปอยู่ที่นั่น ที่เหลือไปอยู่ในวันด้านล่าง',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} รูปรู้วันของตัวเองและจะไปอยู่ที่นั่น ที่เหลือไปอยู่ในวันด้านล่าง',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'รูปความก้าวหน้าทุกรูปเรียงตามวันที่ วันไหนก็ได้ พร้อมแถบเลื่อนเปรียบเทียบก่อน/หลัง',
   // --- routine backups ---

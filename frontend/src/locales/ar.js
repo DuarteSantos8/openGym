@@ -2314,18 +2314,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'مجموعات الإحماء خفيفة، فيمكن أن تكون استراحتها أقصر أو بلا استراحة. آخرها يحصل على الاستراحة الكاملة قبل أول مجموعة عمل.',
   // --- progress photos for any day (#557) ---
   'Add photos': 'إضافة صور',
-  'Each photo goes on the day it was taken.': 'كل صورة تذهب إلى اليوم الذي التُقطت فيه.',
+  '{0} of {1}': '{0} من {1}',
+  'Date read from the photo.': 'التاريخ مقروء من الصورة.',
+  'Guessed from the file date.': 'التاريخ مُقدَّر من الملف.',
   'No progress photos yet. Add one for today or any day before.': 'لا صور تقدّم بعد. أضف واحدة لليوم أو لأي يوم سابق.',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'تقول الصورة إنها التُقطت في {0}. غيّر اليوم إن كان يومًا آخر.',
-  'They all go on the day below.': 'كلها تذهب إلى اليوم أدناه.',
   'Which day is this photo from?': 'من أي يوم هذه الصورة؟',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'خادمك يحتفظ بالصور فقط في أيام التمرين. التحديث يتيح له الاحتفاظ بها لأي يوم.',
   'Add {0} photo': 'إضافة {0} صورة',
   'Add {0} photos': 'إضافة {0} صور',
   '{0} photo added': 'تمت إضافة {0} صورة',
   '{0} photos added': 'تمت إضافة {0} صور',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} صورة تعرف يومها وتذهب إليه. البقية تذهب إلى اليوم أدناه.',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} صور تعرف يومها وتذهب إليه. البقية تذهب إلى اليوم أدناه.',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'كل صور التقدّم مرتبة حسب التاريخ، لأي يوم. ومعها شريط مقارنة قبل وبعد.',
   // --- routine backups ---

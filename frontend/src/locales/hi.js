@@ -2259,18 +2259,16 @@ export default {
   'Warm-ups are light, so they can rest less, or not at all. The last one still gets the full rest before your first work set.': 'वॉर्म-अप हल्के होते हैं, इसलिए आराम कम या बिल्कुल नहीं भी चलेगा। आख़िरी वॉर्म-अप को पहले वर्क सेट से पहले पूरा आराम मिलता है।',
   // --- progress photos for any day (#557) ---
   'Add photos': 'फ़ोटो जोड़ें',
-  'Each photo goes on the day it was taken.': 'हर फ़ोटो उसी दिन पर जाएगी जिस दिन ली गई थी।',
+  '{0} of {1}': '{0} / {1}',
+  'Date read from the photo.': 'तारीख़ फ़ोटो से पढ़ी गई।',
+  'Guessed from the file date.': 'तारीख़ फ़ाइल से अनुमानित।',
   'No progress photos yet. Add one for today or any day before.': 'अभी कोई प्रोग्रेस फ़ोटो नहीं। आज या किसी पिछले दिन के लिए एक जोड़ें।',
-  'The photo says it was taken on {0}. Change the day if it was another one.': 'फ़ोटो के मुताबिक यह {0} को ली गई थी। कोई और दिन था तो दिन बदल दें।',
-  'They all go on the day below.': 'सभी नीचे वाले दिन पर जाएँगी।',
   'Which day is this photo from?': 'यह फ़ोटो किस दिन की है?',
   'Your server keeps photos only on days with a workout. An update lets it keep them for any day.': 'आपका सर्वर सिर्फ़ वर्कआउट वाले दिनों पर फ़ोटो रखता है। अपडेट के बाद वह किसी भी दिन के लिए रख पाएगा।',
   'Add {0} photo': '{0} फ़ोटो जोड़ें',
   'Add {0} photos': '{0} फ़ोटो जोड़ें',
   '{0} photo added': '{0} फ़ोटो जोड़ी गई',
   '{0} photos added': '{0} फ़ोटो जोड़ी गईं',
-  '{0} photo knows its day and goes there. The others go on the day below.': '{0} फ़ोटो अपना दिन जानती है और वहीं जाएगी। बाकी नीचे वाले दिन पर जाएँगी।',
-  '{0} photos know their day and go there. The others go on the day below.': '{0} फ़ोटो अपना दिन जानती हैं और वहीं जाएँगी। बाकी नीचे वाले दिन पर जाएँगी।',
   // --- progress photos card ---
   'Every progress photo, lined up by date, for any day. Plus a before/after slider.': 'हर प्रोग्रेस फ़ोटो तारीख़ के क्रम में, किसी भी दिन की। साथ में पहले/बाद का स्लाइडर।',
   // --- routine backups ---
