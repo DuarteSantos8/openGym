@@ -22,7 +22,7 @@ import { sameWorkout } from '../lib/workout-date.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { renderCompareImage } from '../lib/compare-image.js'
 import { shareImage } from '../lib/share-image.js'
-import { MAX_COMPARE, toggleCompareKey, orderForCompare, modesFor, defaultMode, validMode, spanDays } from '../lib/photo-compare.js'
+import { MAX_COMPARE, toggleCompareKey, orderForCompare, modesFor, defaultMode, validMode, spanDays, cellRatio, coverCrop, dragPan, CENTRED } from '../lib/photo-compare.js'
 import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
@@ -126,17 +126,34 @@ function openPhotoView(p) {
   useUI.getState().openSheet(close => <PhotoView p={p} close={close} />, { kind: 'viewer' })
 }
 
-/** One photo of a comparison with its date right under it. */
-function CompareCell({ p }) {
+/**
+ * One photo of a side-by-side comparison. Every photo is shown in the same shape, so they all have the
+ * same height; a photo of another shape is cropped to it, and can be dragged to choose which part shows.
+ * Its date is a pill on the photo, like the date pills of the gallery.
+ */
+function CompareCell({ p, ratio, pos, setPos, label }) {
   const { url } = useMediaUrl(p.m)
-  return <figure className="pp-cell">
-    {url && <img className="pp-img" src={url} alt="" draggable={false} />}
-    <figcaption className="pp-caption">{fmtDate(p.d, true)}</figcaption>
+  const drag = useRef(null)
+  const down = e => {
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    drag.current = { x: e.clientX, y: e.clientY, pos, rect: e.currentTarget.getBoundingClientRect() }
+  }
+  const move = e => {
+    const d = drag.current
+    if (!d) return
+    const c = coverCrop(p.m.width, p.m.height, d.rect.width, d.rect.height)
+    setPos(dragPan(d.pos, e.clientX - d.x, e.clientY - d.y, c.overflowX, c.overflowY))
+  }
+  const up = () => { drag.current = null }
+  return <figure className="pp-cell" style={{ aspectRatio: 1 / ratio }}
+    onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+    {url && <img className="pp-img" src={url} alt="" draggable={false} style={{ objectPosition: `${pos.x * 100}% ${pos.y * 100}%` }} />}
+    <span className="pp-label pp-label-cell">{label}</span>
   </figure>
 }
 
 /** The before/after slider between `a` (earlier) and `b`. */
-function ComparePair({ a, b, pct, setPct }) {
+function ComparePair({ a, b, pct, setPct, labels }) {
   const before = useMediaUrl(a.m)
   const after = useMediaUrl(b.m)
   const stageRef = useRef(null)
@@ -161,8 +178,8 @@ function ComparePair({ a, b, pct, setPct }) {
     {before.url && <img className="pp-img" src={before.url} alt="" draggable={false}
       style={{ clipPath: `inset(0 ${100 - pct}% 0 0)` }} />}
     <div className="pp-handle" style={{ insetInlineStart: pct + '%' }}><div className="pp-grip" /></div>
-    <div className="pp-label pp-label-before">{fmtDate(a.d, true)}</div>
-    <div className="pp-label pp-label-after">{fmtDate(b.d, true)}</div>
+    <div className="pp-label pp-label-before">{labels[0]}</div>
+    <div className="pp-label pp-label-after">{labels[1]}</div>
   </div>
 }
 
@@ -171,6 +188,11 @@ function ProgressCompare({ photos, close }) {
   const n = photos.length
   const [picked, setMode] = useState(defaultMode(n))
   const [pct, setPct] = useState(50)   // the slider's handle, kept here so a shared picture matches what is on screen
+  const [pans, setPans] = useState({})  // where each photo was dragged to in its cell, for the same reason
+  const keyOf = p => p.key || p.m.hash
+  const ratio = cellRatio(photos.map(p => ({ w: p.m.width, h: p.m.height })))
+  const thisYear = String(new Date().getFullYear())
+  const dateOf = p => fmtDate(p.d, false, photos.some(x => x.d.slice(0, 4) !== thisYear))
   const [sharing, setSharing] = useState(false)
   const mode = validMode(picked, n)
   const days = spanDays(photos)
@@ -179,7 +201,7 @@ function ProgressCompare({ photos, close }) {
     if (sharing) return
     setSharing(true)
     try {
-      const blob = await renderCompareImage({ photos, labels: photos.map(p => fmtDate(p.d, true)), mode, pct, title })
+      const blob = await renderCompareImage({ photos, labels: photos.map(dateOf), pans: photos.map(p => pans[keyOf(p)] || CENTRED), mode, pct, title })
       if (!blob) { toast(t('Something went wrong')); return }
       await shareImage(blob, `opengym-progress-${photos[0].d}-${photos[n - 1].d}.png`, t('Progress photos'))
     } catch (e) {
@@ -198,9 +220,10 @@ function ProgressCompare({ photos, close }) {
       <button type="button" className="iconbtn" aria-label={t('Share')} disabled={sharing} onClick={share}><Icon name="share" /></button>
     </div>
     {mode === 'slider'
-      ? <ComparePair a={photos[0]} b={photos[1]} pct={pct} setPct={setPct} />
+      ? <ComparePair a={photos[0]} b={photos[1]} pct={pct} setPct={setPct} labels={[dateOf(photos[0]), dateOf(photos[1])]} />
       : <div className="pp-grid" dir="ltr" data-swipe-ignore style={{ '--cols': n }}>
-          {photos.map(p => <CompareCell key={p.key || p.m.hash} p={p} />)}
+          {photos.map(p => <CompareCell key={keyOf(p)} p={p} ratio={ratio} label={dateOf(p)} pos={pans[keyOf(p)] || CENTRED}
+            setPos={pos => setPans(cur => ({ ...cur, [keyOf(p)]: pos }))} />)}
         </div>}
     {modes.length > 1 && <div className="pp-modes">
       <Segmented options={modes.map(m => ({ value: m, label: labels[m] }))} value={mode} onChange={setMode} />
