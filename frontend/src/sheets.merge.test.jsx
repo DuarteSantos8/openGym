@@ -51,7 +51,7 @@ describe('Merge into… (#656)', () => {
       input.dispatchEvent(new Event('input', { bubbles: true }))
     })
     const row = [...picker.querySelectorAll('.item')].find(el => el.textContent.toLowerCase().includes(EXIDX[BENCH].n.toLowerCase()))
-    act(() => row.click())
+    act(() => row.querySelector('.tap-main').click())
     const confirm = renderTop()
     expect(confirm.textContent).toContain('1 workout, 1 routine move to')
     expect(confirm.textContent).toContain('Then “Bench Press (Barbell)” is deleted.')

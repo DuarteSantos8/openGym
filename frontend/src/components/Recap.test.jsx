@@ -34,7 +34,7 @@ describe('Your week on Home', () => {
     const host = render(<RecapHomeCard S={useStore.getState().S} />)
     expect(host.querySelector('.card-head-title').textContent).toBe('Your week')
     expect(host.querySelector('.card-head-sub').textContent).toBe('2 workouts · 1,000 kg · 2 new bests')
-    act(() => host.querySelector('.recap-card').click())
+    act(() => host.querySelector('.recap-card .tap-main').click())
     const sheet = useUI.getState().sheets.at(-1)
     const sh = render(sheet.render(() => {}))
     expect([...sh.querySelectorAll('.recap-v')].map(e => e.textContent)).toEqual(['2', '1,000 kg', '2', '1'])

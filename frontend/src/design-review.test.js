@@ -3,7 +3,7 @@
 // both the page (--bg) and a card (--surface), in both themes. The tertiary --label-3 is left out
 // on purpose: it is for placeholders, disabled controls and hairline icons, not for reading.
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
@@ -156,6 +156,89 @@ describe('Integrations pass', () => {
     }
     expect(rule('.intg-open:active')).toMatch(/var\(--press-fill\)/)
     expect(rule('.intg-h .icn')).toMatch(/var\(--acc-ink\)/)
+  })
+})
+
+// Card dismiss pass (1.4.4): a card or row that opens something is never a button holding another
+// control (the recap's × inside a role=button card was the case in point). Every element spread with
+// tappable() is walked in the JSX source, and must hold no control: no <button>, link, field, nested
+// tappable, CardHead action button, or a component that renders one. A card that needs a control of
+// its own uses the stretched primary instead (.tap-host + .tap-main, CardHead `open`).
+describe('Card dismiss pass', () => {
+  const SRC = resolve(process.cwd(), 'src')
+  const files = (dir => { const out = []; const walk = d => readdirSync(d).forEach(f => { const p = resolve(d, f); if (statSync(p).isDirectory()) walk(p); else if (/\.jsx$/.test(f) && !/\.test\./.test(f)) out.push(p) }); walk(dir); return out })(SRC)
+  // The end of the tag that opens at `i` (braces and quoted strings skipped), and whether it closes itself.
+  const tagEnd = (s, i) => {
+    let depth = 0
+    for (let k = i + 1; k < s.length; k++) {
+      const c = s[k]
+      if (c === '"' || c === "'" || c === '`') { k = s.indexOf(c, k + 1); continue }
+      if (c === '{') depth++
+      else if (c === '}') depth--
+      else if (c === '>' && depth === 0) return { end: k, self: s[k - 1] === '/' }
+    }
+    return { end: s.length, self: true }
+  }
+  // Every tappable() element: its file, line, tag name and inner JSX.
+  const tappables = files.flatMap(file => {
+    const s = readFileSync(file, 'utf8'), out = []
+    for (const m of s.matchAll(/\{\.\.\.tappable\(/g)) {
+      let k = m.index, depth = 0
+      for (; k > 0; k--) {   // back to the '<' that opens this tag, outside any attribute's braces
+        if (s[k] === '}') depth++
+        else if (s[k] === '{') depth--
+        else if (s[k] === '<' && depth <= 0 && /[A-Za-z]/.test(s[k + 1])) break
+      }
+      const tag = s.slice(k + 1).match(/^[\w.]+/)[0]
+      const open = tagEnd(s, k)
+      const at = `${file.slice(SRC.length + 1)}:${s.slice(0, k).split('\n').length}`
+      if (open.self) { out.push({ at, tag, inner: '' }); continue }
+      let level = 1, p = open.end + 1, inner = ''
+      const re = new RegExp(`<${tag}[\\s>]|</${tag}>`, 'g')
+      re.lastIndex = p
+      for (let hit; (hit = re.exec(s));) {
+        if (hit[0].startsWith('</')) { if (--level === 0) { inner = s.slice(p, hit.index); break } }
+        else if (!tagEnd(s, hit.index).self) level++
+      }
+      out.push({ at, tag, inner })
+    }
+    return out
+  })
+  const CONTROL = /<(button|a|input|select|textarea|Button|Segmented|Toggle|Switch|Stepper|WeeklySetsHomeLine|StreakParty|PartyBanner)[\s>/]|tappable\(|\bopen=\{\{/
+  it('finds the tappable rows and cards it guards', () => expect(tappables.length).toBeGreaterThan(20))
+  it('no tappable card or row holds a control of its own', () => {
+    expect(tappables.filter(x => CONTROL.test(x.inner)).map(x => x.at)).toEqual([])
+  })
+  it('the cards and rows that hold a control use the stretched primary', () => {
+    const src = f => readFileSync(resolve(SRC, f), 'utf8')
+    expect(src('components/Recap.jsx')).toMatch(/className="card tap-host recap-card"[\s\S]*open=\{\{ onClick: \(\) => recapSheet\(r\)/)
+    expect(src('views/Home.jsx')).toMatch(/className="card tap-host streak-card"/)
+    expect(src('views/Home.jsx')).toMatch(/className="card tap-host checkin-card"/)
+    for (const f of ['views/Library.jsx', 'components/MuscleExplorer.jsx', 'sheets.jsx', 'views/RoutineEdit.jsx']) expect(src(f), f).toMatch(/className="grow item-open tap-main"/)
+    expect(src('components/CardHead.jsx')).toMatch(/className="card-head-main tap-main"/)
+    // with nothing nested, no control has to stop its click from reaching a card any more
+    for (const f of ['components/Recap.jsx', 'components/WeeklySets.jsx', 'views/Library.jsx', 'components/MuscleExplorer.jsx']) expect(src(f), f).not.toMatch(/stopPropagation/)
+  })
+  it('the cover spans the card, the other controls sit above it, and the press answers the primary only', () => {
+    expect(rule('.tap-host')).toMatch(/position:relative/)
+    expect(rule('.tap-main::after')).toMatch(/position:absolute;inset:0;z-index:1/)
+    expect(css).toMatch(/:where\(\.tap-host\) :where\(button, a\[href\], input, select, textarea, \[role="button"\]\):not\(\.tap-main\)\{z-index:2\}/)
+    expect(rule('.tap-main:focus-visible::after')).toMatch(/outline:2\.5px solid var\(--acc-ink\)/)
+    expect(css).toMatch(/\.card\.tap-host:has\(\.tap-main:active\)\{transform:scale\(var\(--press-scale-card\)\)\}/)
+    expect(css).toMatch(/\.item\.tap-host:has\(\.tap-main:active\),\.wd-ex\.tap-host:has\(\.tap-main:active\)\{background:var\(--press-fill\)\}/)
+    // a row's own fill no longer fires when one of its buttons is pressed
+    expect(rule('.item:active')).toBe('')
+    expect(rule('.item:not(.tap-host):active')).toMatch(/var\(--press-fill\)/)
+    expect(rule('.wd-ex:not(.tap-host):active')).toMatch(/var\(--press-fill\)/)
+  })
+  it('the card × is a 44 px target or more, reaching into its corner', () => {
+    const size = Number(rule('.card-head>.iconbtn').match(/width:(\d+)px/)[1])
+    const hit = rule('.card-head>.iconbtn::before')
+    const [b] = hit.match(/inset-block:-(\d+)px/).slice(1).map(Number)
+    const [s, e] = hit.match(/inset-inline:-(\d+)px -(\d+)px/).slice(1).map(Number)
+    expect(size + 2 * b).toBeGreaterThanOrEqual(44)
+    expect(size + s + e).toBeGreaterThanOrEqual(44)
+    expect(s).toBeLessThanOrEqual(8)   // no further than the CardHead gap: never over the primary's own button
   })
 })
 
