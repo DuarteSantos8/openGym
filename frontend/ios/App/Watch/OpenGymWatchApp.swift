@@ -431,6 +431,7 @@ struct IdleView: View {
                                 }
                                 .id("end")
                             }
+                            versionLine
                         }
                         .padding(.horizontal, Theme.side)
                         .padding(.bottom, 12)
@@ -464,6 +465,14 @@ struct IdleView: View {
         }
     }
 
+    /// The build on this watch, at the foot of the start screen, so a tester can say which one they have.
+    private var versionLine: some View {
+        let info = Bundle.main.infoDictionary
+        return Text(verbatim: "openGym \(info?["CFBundleShortVersionString"] as? String ?? "") (\(info?["CFBundleVersion"] as? String ?? ""))")
+            .font(.caption2).foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity).padding(.top, 4)
+    }
+
     private func empty(fresh: Bool, logo: Bool) -> some View {
         VStack(spacing: 10) {
             if logo {
@@ -482,6 +491,7 @@ struct IdleView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+            versionLine
         }
         .accessibilityElement(children: .combine)
         .padding(.horizontal, Theme.side)
@@ -660,6 +670,8 @@ struct ExercisePage: View {
                 .digitalCrownRotation(detent: Binding(get: { store.crownTotal }, set: { store.turn(to: $0) }),
                                       from: -100_000, through: 100_000, by: 1, sensitivity: .medium,
                                       isContinuous: false, isHapticFeedbackEnabled: armed != nil)
+                // The page swallows the Crown for its boxes: no position bar beside it, as there is nothing to scroll.
+                .digitalCrownAccessory(.hidden)
                 .onChange(of: owns, initial: true) { _, o in
                     crownFocus = o
                     DispatchQueue.main.async { crownFocus = o }         // again one runloop later: a sheet closing takes focus with it
@@ -901,7 +913,7 @@ struct ExercisePage: View {
     private func tile(_ f: ValueField, value: String, unit: String?, label: Text, short: Text? = nil, tint: Color,
                       current: Bool, weightUnit: String) -> some View {
         ValueTile(value: value, unit: unit, label: label, short: short, tint: tint,
-                  armed: current && !dimmed && store.armedField == f, rising: store.rising,
+                  armed: current && !dimmed && store.armedField == f,
                   type: { if current { openKeypad(f, unit: weightUnit) } },
                   adjust: { if current { store.nudge(f, by: $0) } }) {
             if current, store.tapBox(f) { openKeypad(f, unit: weightUnit) }
@@ -1084,8 +1096,6 @@ struct ValueTile: View {
     var tint: Color = .white
     /// The crown turns it now.
     var armed = false
-    /// The last step went up: the number slides in from below.
-    var rising = true
     /// VoiceOver's "Type a number" and its adjust (one step).
     var type: () -> Void = {}
     var adjust: (Int) -> Void = { _ in }
@@ -1107,18 +1117,15 @@ struct ValueTile: View {
         Button(action: tap) {
             VStack(spacing: 0) {
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    // Fixed height and clipped: the old number leaves and the new one comes in without moving the box.
-                    ZStack {
-                        Text(verbatim: value)
-                            .font(.system(size: font, weight: .semibold, design: .rounded).monospacedDigit())
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.5)
-                            .id(value)
-                            .transition(reduceMotion ? .opacity : .push(from: rising ? .bottom : .top))
-                    }
-                    .frame(height: font * 1.2)
-                    .clipped()
-                    .animation(lit ? (reduceMotion ? .linear(duration: 0.08) : .easeOut(duration: 0.15)) : nil, value: value)
+                    // Only the digits that change roll, the way the Crown went, as in Apple's pickers: a whole-number
+                    // swap made the edges jump when the length changed (9 → 10).
+                    Text(verbatim: value)
+                        .font(.system(size: font, weight: .semibold, design: .rounded).monospacedDigit())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                        .contentTransition(.numericText(value: Double(value) ?? 0))
+                        .frame(height: font * 1.2)
+                        .animation(lit && !reduceMotion ? .snappy(duration: 0.18) : nil, value: value)
                     if let u = unit {
                         Text(verbatim: u).font(.system(size: 12, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
                     }

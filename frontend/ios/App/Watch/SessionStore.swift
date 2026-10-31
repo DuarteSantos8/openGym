@@ -93,7 +93,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The box the Crown turns (tapped to arm), the direction of the last step (for the number's slide),
     /// and the Crown's own count. Edits go straight into weight, reps and seconds; only Done sends them.
     @Published private(set) var arm = CrownArm()
-    @Published private(set) var rising = true
     private var gate = CrownGate()          // not published: a tick does not redraw the app
     private var draft = SetDraft()
     var crownTotal: Double { gate.last }
@@ -478,7 +477,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let f = armedField
         let n = gate.steps(to: total, at: Date(), allowed: crownAllowed && f != nil)
         guard n != 0, let f, let s = spec(f) else { return }
-        rising = n > 0
         arm.touch(at: Date())
         write(f, s.turned(current(f), by: n))
     }
@@ -486,7 +484,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// VoiceOver's adjust: one step, then the box is let go.
     func nudge(_ f: ValueField, by n: Int) {
         guard let s = spec(f) else { return }
-        rising = n > 0
         write(f, s.turned(current(f), by: n))
         arm.disarm()
     }
