@@ -1046,13 +1046,15 @@ body.chips-dragging *{cursor:inherit}
 
 .pp-actions{display:grid;gap:10px;margin:0 0 16px}
 /* While picking photos to compare the two buttons stay pinned under the top edge, side by side, so
-   Confirm is in reach however far down the grid you have scrolled. Same ground and offsets as the
-   pinned workout header (.whdr.stick); the shadow paints the same ground up to the screen edge. */
+   Confirm is in reach however far down the grid you have scrolled. Same offsets as the pinned
+   workout header (.whdr.stick). The strip above them, under the status bar, is covered by .pp-cap, a
+   fixed block of its own (a shadow painted up from the buttons was not drawn on iOS Safari): the
+   photos scrolling by read as under it. It sits below the connection indicator (45) when there is one. */
 .pp-actions.stick{
   position:sticky;top:calc(var(--sat) + var(--conn) + 8px);z-index:20;grid-template-columns:1fr 1fr;
   margin:0 calc(-1 * var(--pad)) 16px;padding:8px var(--pad);background:var(--bg);
-  box-shadow:0 calc(-1 * (var(--sat) + var(--conn) + 8px)) 0 var(--bg);
 }
+.pp-cap{position:fixed;inset-inline:0;top:0;height:calc(var(--sat) + var(--conn) + 8px);background:var(--bg);z-index:19;pointer-events:none}
 .pp-status{display:flex;align-items:center;gap:12px;padding:13px 14px;margin:0 0 14px;border-radius:var(--r);background:var(--surface);font-size:15px;line-height:1.3}
 .pp-status span:last-child{text-wrap:balance}
 .pp-status.ok{background:var(--surface);background:color-mix(in srgb,var(--acc) 14%,var(--surface))}

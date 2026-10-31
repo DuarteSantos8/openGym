@@ -289,6 +289,7 @@ export default function ProgressPhotos() {
       <Heatmap S={S} counts={counts} onDay={jumpTo} legend={{ less: t('Fewer photos'), more: t('More photos') }} />
     </div>}
 
+    {comparing && <div className="pp-cap" aria-hidden="true" />}
     {(showAdd || photos.length >= 2) && <div className={'pp-actions' + (comparing ? ' stick' : '')}>
       {comparing
         ? <Button variant="primary" disabled={picked.length !== 2} onClick={runCompare}>{t('Confirm')}</Button>
