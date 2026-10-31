@@ -33,6 +33,14 @@ export function overlayTransform({ x = 0, y = 0, scale = 1 } = {}) {
   return `translate(${Math.round(x)}px, ${Math.round(y)}px) scale(${clampScale(scale).toFixed(3)})`
 }
 
+/**
+ * Whether a camera's preview is shown mirrored, as every camera app does for the front one. The
+ * picture that is kept is mirrored the same way: what is on the screen is what is saved. The camera
+ * says which it is (`reported`, from the track's settings); when it does not, what was asked for
+ * decides.
+ */
+export const isMirrored = (reported, requested) => (reported ? reported === 'user' : requested === 'user')
+
 /** The saved picture's size: the video frame, brought down to `max` on its longer side. */
 export function captureSize(width, height, max = 1600) {
   if (!(width > 0) || !(height > 0)) return { width: 0, height: 0 }

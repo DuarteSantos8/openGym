@@ -18,7 +18,8 @@ const ref = n => ({ kind: 'image', hash: String(n).padStart(64, '0'), mime: 'ima
 const photos = [{ key: 'a', d: '2026-10-20', m: ref(1) }, { key: 'b', d: '2026-10-01', m: ref(2) }]
 
 let host, root, tracks, getUserMedia, props
-const stream = () => { const track = { stop: vi.fn() }; tracks.push(track); return { getTracks: () => [track] } }
+let reported   // what the fake camera says about itself
+const stream = () => { const track = { stop: vi.fn(), getSettings: () => ({ facingMode: reported }) }; tracks.push(track); return { getTracks: () => [track], getVideoTracks: () => [track] } }
 const mount = (extra = {}) => {
   props = { photos, onTaken: vi.fn(), close: vi.fn(), capture: vi.fn(async () => new Blob(['jpg'], { type: 'image/jpeg' })), ...extra }
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
@@ -30,6 +31,7 @@ const fire = (type, init) => act(() => { host.querySelector('.pp-cam-stage').dis
 
 beforeEach(() => {
   tracks = []
+  reported = 'environment'
   getUserMedia = vi.fn(async () => stream())
   Object.defineProperty(navigator, 'mediaDevices', { value: { getUserMedia }, configurable: true })
   Object.defineProperty(HTMLMediaElement.prototype, 'srcObject', { set() {}, get() { return null }, configurable: true })   // happy-dom only takes a real MediaStream
@@ -150,5 +152,40 @@ describe('the shutter', () => {
     await mount({ capture: vi.fn(async () => null) })
     await act(async () => { button('Take photo').click() })
     expect(host.querySelector('.pp-cam-shot')).toBeNull()
+  })
+})
+
+describe('the front camera', () => {
+  const video = () => host.querySelector('.pp-cam-stage video')
+  it('shows the rear camera as it is, and keeps the frame as it is', async () => {
+    await mount()
+    expect(video().style.transform).toBe('')
+    await act(async () => { button('Take photo').click() })
+    expect(props.capture).toHaveBeenCalledWith(video(), { mirror: false })
+  })
+  it('shows the front camera mirrored and keeps the picture mirrored too: what is on the screen is what is saved', async () => {
+    reported = 'user'
+    await mount()
+    expect(video().style.transform).toBe('scaleX(-1)')
+    await act(async () => { button('Take photo').click() })
+    expect(props.capture).toHaveBeenCalledWith(video(), { mirror: true })
+    expect(host.querySelector('.pp-cam-shot').style.transform).toBe('')     // the picture is already the mirrored one
+  })
+  it('leaves the overlay as the photo looks in the gallery, and a drag goes the way the finger does', async () => {
+    reported = 'user'
+    await mount()
+    expect(overlay().style.transform).toBe('translate(0px, 0px) scale(1.000)')
+    fire('pointerdown', { pointerId: 1, clientX: 100, clientY: 100 })
+    fire('pointermove', { pointerId: 1, clientX: 130, clientY: 100 })
+    expect(overlay().style.transform).toBe('translate(30px, 0px) scale(1.000)')
+  })
+  it('mirrors after a flip to a front camera that does not say which it is, and back', async () => {
+    reported = undefined
+    await mount()
+    expect(video().style.transform).toBe('')                     // asked for the rear camera
+    await act(async () => { button('Flip camera').click() })
+    expect(video().style.transform).toBe('scaleX(-1)')
+    await act(async () => { button('Flip camera').click() })
+    expect(video().style.transform).toBe('')
   })
 })
