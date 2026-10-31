@@ -1,0 +1,67 @@
+/* ============================================================================
+   Reta-rpm.fr — look taken from tom-rpm.fr
+   ----------------------------------------------------------------------------
+   Loaded after index.css and only overrides it: near-black page, navy cards, a coral
+   accent, pill buttons, bold titles and a soft red-to-blue glow behind the page.
+   Change the palette here and nowhere else.
+
+     page          #0a0a0b        coral         #e0524e
+     cards         #131826        coral (dark)  #c4403c
+     raised        #1b2236        orange (bars) #e8803a
+     controls      #273049        brand red     #b5271b (the tachometer in the logo)
+   ========================================================================== */
+
+:root {
+  --bg:        #0a0a0b;
+  --bg-el:     #0f121b;
+  --surface:   #131826;
+  --surface-2: #1b2236;
+  --surface-3: #273049;
+
+  --label-2:   rgba(226,232,245,.62);
+  --label-3:   rgba(226,232,245,.36);
+  --label-4:   rgba(226,232,245,.20);
+
+  --sep:       rgba(255,255,255,.10);
+  --sep-op:    rgba(255,255,255,.07);
+
+  --orange:    #e8803a;
+
+  --r:14px; --r-lg:18px; --r-xl:26px; --r-card:20px;
+
+  --brand-coral: #e0524e;
+  --brand-coral-2: #c4403c;
+  --brand-orange: #e8803a;
+}
+
+/* The coral is the red accent, and the default one (store/useStore.js DEF). */
+:root[data-accent="red"] { --acc:var(--brand-coral); --acc-2:var(--brand-coral-2); --on-acc:#fff }
+
+/* Inter when the device has it, the system font otherwise. Nothing is downloaded: the app never
+   calls out to a font service. */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+  letter-spacing: -.005em;
+}
+h1, h2, h3 { font-weight: 700; letter-spacing: -.02em }
+
+/* Pills, like the buttons of the site. */
+.btn { border-radius: 999px }
+.btn.primary { box-shadow: 0 6px 18px -8px rgba(224,82,78,.7); box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--acc) 70%, transparent) }
+
+/* Navy cards with a hairline edge. */
+.card, .sect-b { border: 1px solid rgba(255,255,255,.07) }
+.field { border-radius: var(--r) }
+
+/* The workout's progress bar goes coral to orange, like the skill bars on the site. */
+.wprog > i { background: linear-gradient(90deg, var(--brand-coral), var(--brand-orange)) }
+
+/* The glow behind the pages: warm on the left, teal on the right, indigo underneath. Dark only. */
+:root:not([data-theme="light"]) body { background: transparent }
+:root:not([data-theme="light"]) body::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60% 42% at 0% 30%, rgba(150,52,40,.34), transparent 72%),
+    radial-gradient(55% 42% at 100% 38%, rgba(47,110,128,.30), transparent 72%),
+    radial-gradient(75% 38% at 60% 100%, rgba(52,52,130,.30), transparent 72%);
+}

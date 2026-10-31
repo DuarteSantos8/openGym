@@ -2430,7 +2430,7 @@ describe('workout view header menu', () => {
     // No Discard here: it ended this menu as a red trash, right where the exercise ⋯ keeps
     // Remove exercise, and got hit by mistake (#751). The Finish sheet has it.
     expect(menuItemsOf(menu).map(it => it.label)).toEqual([
-      'Workout settings', 'Add exercise', 'Add routine', 'Rename workout', 'Layout', 'Add session note', 'Don’t count for progression',
+      'Workout settings', 'Add exercise', 'Add routine', 'Rename workout', 'Gym', 'Layout', 'Add session note', 'Don’t count for progression',
     ])
     expect(menuItemsOf(menu).some(it => it.danger)).toBe(false)
     expect(item(menu, 'Workout settings').sub).toBe('1:30 rest · Silent')

@@ -126,5 +126,8 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     prs,
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),
+    // The gym the session was done in (lib/gyms.js). Written only when one was chosen, so a
+    // profile that never lists a gym saves the shape it always did.
+    ...(active.gym ? { gym: active.gym } : {}),
   }
 }

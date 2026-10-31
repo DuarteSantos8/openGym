@@ -35,13 +35,15 @@ import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
-import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
+import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression, reseedEntriesForGym } from '../lib/session-start.js'
+import { gymSheet } from '../components/GymSheet.jsx'
 import { routineChangesFromEntry, updateRoutineFromEntry } from '../lib/routines.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
+import { gymHistory, gymNameOf, carriedFromOtherGym, gymOf } from '../lib/gyms.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
@@ -208,7 +210,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const H = sessionHistory(S)
   // The routine's own last session of this exercise (or any, for a routine that has none), the
   // same one the rows and the progression line were built from (#216).
-  const last = lastEntryFor(H, entry.id, entry.rid)
+  const last = lastEntryFor(gymHistory(H, entry.id), entry.id, entry.rid)
   const standingNote = exNoteFor(S, entry.id)
   // Only worth surfacing while there is still work left: once the exercise is finished, a note
   // telling you what to do in it is behind you, and the block is already long.
@@ -1491,6 +1493,19 @@ function ActiveWorkout() {
     compact: t('Compact'),
     focus: t('Focus'),
   }
+  // The gym this session is in (lib/gyms.js). Changing it rebuilds the exercises with nothing
+  // logged yet from that gym's history, so the weights on the screen are the ones its machines
+  // took last time. Editing a saved workout can move it to another gym, never to none.
+  const changeGym = () => gymSheet({
+    current: A.gym || null, allowNone: !editing,
+    onPick: id => {
+      update(s => {
+        if (!s.active) return
+        if (id) { s.active.gym = id; s.gymLast = id } else delete s.active.gym
+        reseedEntriesForGym(s)
+      })
+    },
+  })
   const openLayoutMenu = () => menuSheet({
     title: t('Layout'),
     items: [
@@ -1584,6 +1599,7 @@ function ActiveWorkout() {
       { title: t('This workout'), items: [
         A.backfill && A.entries.length > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), onClick: markAllDone },
         { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
+        { icon: 'mapPin', label: t('Gym'), sub: gymNameOf(S, A.gym) || t('No gym'), onClick: changeGym },
         { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
         { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
         noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
@@ -2160,7 +2176,7 @@ function ActiveWorkout() {
       {editing
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
+      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{gymNameOf(S, A.gym) ? ' · ' + gymNameOf(S, A.gym) : ''}</div></div>
       {!chipRow && sessionMap}
       <button className="iconbtn" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" aria-label={editing ? t('Save changes') : undefined}

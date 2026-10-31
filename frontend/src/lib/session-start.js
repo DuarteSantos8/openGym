@@ -11,6 +11,7 @@ import { backoffStepOf, applyBackoff } from './backoff.js'
 import { dbLoadFor, historyAs, ownedWeightsFor, withMeaning } from './dumbbells.js'
 import { isAssisted } from './exercises.js'
 import { sessionHistory } from './backfill.js'
+import { gymHistory } from './gyms.js'
 
 /**
  * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
@@ -35,6 +36,9 @@ export const startsFromLast = st => st?.startFrom === 'last'
  * `noProg` builds the routine's own numbers with no prescription, as an excluded routine does.
  */
 export function buildPlannedEntry(stored, cfg, routine, { noProg = false } = {}) {
+  // In the gym this session is in, the exercise opens from what was lifted in that gym (lib/gyms.js);
+  // an exercise never done there still starts from the rest of the log.
+  stored = gymHistory(stored, cfg.id)
   // What a dumbbell weight means for this exercise today (lib/dumbbells.js): the history it
   // progresses from is read in that meaning, so a switch from "40 total" to per bell opens at
   // 20, not at 40 a hand. Only a switch between the two explicit meanings converts anything.
@@ -127,7 +131,7 @@ export const builtOutOfProgression = (entry, routine) => entry?.noProg === true 
  */
 export function buildSessionEntry(st, id, cfg, routine, slot) {
   const full = { ...cfg, id }
-  const past = sessionHistory(st)
+  const past = gymHistory(sessionHistory(st), id)
   if (routine) return buildPlannedEntry(past, full, routine, { noProg: builtOutOfProgression(slot, routine) })
   // Freestyle stamps the meaning of a dumbbell weight and reads last time in it, the way
   // buildPlannedEntry does for a planned exercise (lib/dumbbells.js).
@@ -148,4 +152,38 @@ export function buildSessionEntries(st, r) {
     const built = buildPlannedEntry(st, cfg, r, { noProg })
     return { id: cfg.id, sg: cfg.sg, ...built, ...(noProg ? { noProg: true } : {}) }
   })
+}
+
+/**
+ * The gym of a running session was changed (lib/gyms.js): every exercise with nothing logged yet
+ * is built again from that gym's history, the way the session start builds it, so the weights on
+ * the screen are the ones that gym's machines take. An exercise with a set already ticked keeps
+ * its rows: a change of place does not rewrite what was lifted. Edits `s.active` in place and
+ * returns how many exercises were rebuilt.
+ */
+export function reseedEntriesForGym(s) {
+  const A = s?.active
+  if (!A || !Array.isArray(A.entries)) return 0
+  const logged = x => x.done || x.sides?.L?.done || x.sides?.R?.done
+  let rebuilt = 0
+  for (const en of A.entries) {
+    if (!en || !Array.isArray(en.sets) || en.sets.some(logged)) continue
+    const routine = (s.routines || []).find(r => r.id === en.rid)
+    const full = { ...plannedConfigOf(en), id: en.id }
+    // The weight on the entry is today's prescription; the plan's own is what the build starts from.
+    if (en.planned?.weight != null) full.weight = en.planned.weight
+    if (!(full.sets > 0)) full.sets = en.sets.filter(x => !isWarmupRow(x)).length || 1
+    const built = routine
+      ? buildPlannedEntry(sessionHistory(s), full, routine, { noProg: builtOutOfProgression(en, routine) })
+      : buildSessionEntry(s, en.id, full, null, en)
+    en.target = built.target
+    en.plan = built.plan
+    if (built.planned) en.planned = built.planned
+    else delete en.planned
+    if (built.carried) en.carried = true
+    else delete en.carried
+    en.sets = built.sets
+    rebuilt++
+  }
+  return rebuilt
 }
