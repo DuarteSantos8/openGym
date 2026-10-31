@@ -58,7 +58,7 @@ export function WeeklySetsHomeLine({ S, onOpen }) {
   const rows = weeklyMuscleSets(S, today)
   if (!rows.some(r => r.sets > 0)) return null
   const room = mostRoom(rows)
-  return <button type="button" className="wsets-home small" onClick={onOpen} onKeyDown={ev => ev.stopPropagation()}>
+  return <button type="button" className="wsets-home small" onClick={onOpen}>
     <Icon name="figureStrength" />
     <span>{room
       ? t('Most room this week: {0}, {1} of {2}–{3} sets', t(room.name), fmtNum(room.sets), room.lo, room.hi)

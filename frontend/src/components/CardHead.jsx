@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import Icon from './Icon.jsx'
 
 // One header for every card on Home (redesign 1.4.5, P2). Home used to show five header styles on
@@ -14,21 +15,35 @@ import Icon from './Icon.jsx'
 // any node drawn bare (the streak's flame). `toggle` makes the icon, text and a chevron one button
 // that folds the card (Challenges). The heading is a div, not an h2: the cards are peers on a
 // scrolling page and the screen's one heading is the page title.
-export default function CardHead({ icon, tint, glyph, eyebrow, title, sub, action, toggle, className = '', titleProps }) {
+//
+// `open` makes the card open something (the recap's sheet, the streak's calendar, Check in) without
+// the card itself being a button (card dismiss pass, 1.4.4). The text becomes the card's one primary
+// button, named by the title and described by the eyebrow and subtitle, and its ::after stretches
+// over the whole card (index.css .tap-host / .tap-main). The trailing control is a sibling layered
+// above it, never inside it: a tap on the × only puts the card away, the card's press scale answers
+// only the primary, and a screen reader meets two plain buttons instead of a button in a button.
+// The card that uses it carries `tap-host`. open = { onClick, haspopup }.
+export default function CardHead({ icon, tint, glyph, eyebrow, title, sub, action, toggle, open, className = '', titleProps }) {
+  const id = useId()
+  const hasEyebrow = eyebrow != null && eyebrow !== false, hasSub = sub != null && sub !== false
   const lead = glyph ? <span className="card-head-g" aria-hidden="true">{glyph}</span>
     : icon ? <span className="lrow-i" style={tint ? { background: tint } : undefined} aria-hidden="true"><Icon name={icon} /></span>
       : null
   const text = <span className="card-head-t">
-    {eyebrow != null && eyebrow !== false && <span className="lbl2">{eyebrow}</span>}
-    <span className="card-head-title" {...titleProps}>{title}</span>
-    {sub != null && sub !== false && <span className="card-head-sub">{sub}</span>}
+    {hasEyebrow && <span className="lbl2" id={id + 'e'}>{eyebrow}</span>}
+    <span className="card-head-title" id={id + 't'} {...titleProps}>{title}</span>
+    {hasSub && <span className="card-head-sub" id={id + 's'}>{sub}</span>}
   </span>
   return <div className={'card-head' + (className ? ' ' + className : '')}>
     {toggle
       ? <button type="button" className="card-head-main card-head-toggle" aria-expanded={toggle.expanded} onClick={toggle.onToggle}>
         {lead}{text}<Icon name={toggle.expanded ? 'chevronUp' : 'chevronDown'} className="chev" />
       </button>
-      : <span className="card-head-main">{lead}{text}</span>}
+      : open
+        ? <button type="button" className="card-head-main tap-main" onClick={open.onClick} aria-haspopup={open.haspopup}
+          aria-labelledby={titleProps?.id || id + 't'}
+          aria-describedby={[hasEyebrow && id + 'e', hasSub && id + 's'].filter(Boolean).join(' ') || undefined}>{lead}{text}</button>
+        : <span className="card-head-main">{lead}{text}</span>}
     {action}
   </div>
 }

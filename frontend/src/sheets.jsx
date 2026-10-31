@@ -1776,8 +1776,9 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups }) {
   const similar = q.trim() && qLate === q && !special && f.length <= shown
     ? similarExercises((profile && !showAll ? all.filter(e => exAvailable(gymS, e)) : all).filter(e => bp === SAME || !bp || e.bp === bp), q, f, f.length ? 12 : 30)
     : []
-  const pickRow = e => <div key={e.id} className="item" {...tappable(() => onPick(e))}>
-        <Thumb ex={e} /><div className="grow"><div className={`tt ${exerciseNameClass(e)}`}>{isFav(st, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</div><div className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</div></div>
+  // The name opens the config sheet, stretched over the row; the quick add is its sibling (card dismiss pass).
+  const pickRow = e => <div key={e.id} className="item tap-host">
+        <Thumb ex={e} /><button type="button" className="grow item-open tap-main" onClick={() => onPick(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(st, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
         {/* Accent tag = already in a routine/log ("Chosen"); the yellow star by the name = favourite. */}
         {usage[e.id] && <span className="tag acc"><Icon name="starFill" /></span>}
         {/* A "+" or "swap" glyph reads as "commit this now" — it used to just open the same detail sheet as
@@ -1786,8 +1787,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups }) {
             config right away. In a swap or replace flow (#561), the opposed-arrows glyph makes it clear
             this replaces the chosen exercise rather than adding a new one. Tapping the row itself still
             opens the detail/config sheet, for when you want to set sets/reps before committing. */}
-        <button className="iconbtn chev" aria-label={quickLabel(e)} style={{ padding: 8, margin: -8 }}
-          onClick={ev => { ev.stopPropagation(); onPick(e, true) }}><Icon name={quickIcon} /></button>
+        <button type="button" className="iconbtn chev" aria-label={quickLabel(e)} style={{ padding: 8, margin: -8 }}
+          onClick={() => onPick(e, true)}><Icon name={quickIcon} /></button>
       </div>
   if (byMuscle) return <>
     <div className="row between" style={{ marginBottom: 10 }}><h3>{title || t('Add exercise')}</h3>
@@ -3142,19 +3143,21 @@ function WorkoutDetail({ w, close }) {
   })
   const entryRow = (e, i) => {
     const ex = EXIDX[e.id]
-    return <div key={i} className="row wd-ex" style={{ alignItems: 'flex-start' }} {...tappable(() => exerciseHistorySheet(e.id))}>
-      {ex && <button type="button" className="wd-thumb" aria-label={t('Details')} onClick={ev => { ev.stopPropagation(); exerciseDetailSheet(ex) }}><Thumb ex={ex} /></button>}
-      <div className="grow"><div className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</div>
+    // The row is not a button (card dismiss pass): the text opens the history, stretched over the row
+    // (.tap-main), and the picture is its own button above it for the exercise's details.
+    return <div key={i} className="row wd-ex tap-host" style={{ alignItems: 'flex-start' }}>
+      {ex && <button type="button" className="wd-thumb" aria-label={t('Details')} aria-haspopup="dialog" onClick={() => exerciseDetailSheet(ex)}><Thumb ex={ex} /></button>}
+      <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseHistorySheet(e.id)}><span className={`tt ${exerciseNameClass(ex)}`} style={{ fontWeight: 600 }}>{nameOf(e)} {w.prs && w.prs.includes(e.id) && <span className="pr"><Icon name="trophy" />PR</span>}</span>
         {/* An exercise in a unit of its own (#657) reads in it, and says which. */}
-        <div className="ss">{detailSets(e)}{exUnitTag(st, e.id)}</div>
-        {times[i] > 0 && <div className="small dim" style={{ marginTop: 3 }}>
+        <span className="ss">{detailSets(e)}{exUnitTag(st, e.id)}</span>
+        {times[i] > 0 && <span className="small dim" style={{ marginTop: 3 }}>
           <Icon name="timer" style={{ fontSize: 'var(--fs-caption)', marginInlineEnd: 4, verticalAlign: '-1px' }} />{fmtDur(Math.max(times[i], 60000))}
-        </div>}
-        {e.note && <div className="small dim" style={{ marginTop: 3 }}>
+        </span>}
+        {e.note && <span className="small dim" style={{ marginTop: 3 }}>
           {e.notePin && <Icon name="pin" style={{ fontSize: 'var(--fs-caption)', marginInlineEnd: 4, verticalAlign: '-1px', color: 'var(--gold-ink)' }} />}{e.note}
-        </div>}
+        </span>}
         {/* Each set's own note (lib/set-notes.js), under the sets: "Set 2: grip slipped". */}
-        {setNotesOf(e).map(n => <div key={n.i} className="small dim setnote-hist"><Icon name="note" />{n.label}: {n.note}</div>)}</div>
+        {setNotesOf(e).map(n => <span key={n.i} className="small dim setnote-hist"><Icon name="note" />{n.label}: {n.note}</span>)}</button>
       <Icon name="chevronRight" className="chev" style={{ alignSelf: 'center' }} />
     </div>
   }

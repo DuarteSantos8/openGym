@@ -90,7 +90,8 @@
        highlight for a table cell;
      - controls (.btn, .chip, a segment, a stepper) scale to --press-scale, and the small round
        ones (.iconbtn, a set's tick, a swatch) to --press-scale-sm, which reads at 30 px;
-     - cards (.card.tappable) scale less, --press-scale-card, because they are larger.
+     - cards (.card.tappable, and a .card.tap-host when its primary is pressed) scale less,
+       --press-scale-card, because they are larger.
      All of them answer on pointer-down within --fast, on --ease (EMIL: 100-160 ms press feedback,
      scale .95-.98; APPLE §1: feedback on touch-down, never on release). */
   --press-scale:.97; --press-scale-sm:.92; --press-scale-card:.985;
@@ -427,6 +428,9 @@ h4.sec{
 .card-head-sub{font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
 .card-head-g{flex:none;display:grid;place-items:center;width:29px;height:29px;font-size:var(--fs-title2)}
 .card-head>.iconbtn{flex:none;width:30px;height:30px;font-size:14px}
+/* the card × owns its corner (card dismiss pass): 54 x 50 px, from the 8px gap before it to the
+   card's padding edge, so a slightly-off tap still puts the card away (UUX touch-target-size) */
+.card-head>.iconbtn::before{inset-block:-10px;inset-inline:-8px -16px}
 .card-head>.chev{flex:none}
 .card-head+*{margin-top:10px}
 .card-head-indent{padding-inline-start:39px}
@@ -452,6 +456,33 @@ h4.sec{
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
 .card.tappable:active{transform:scale(var(--press-scale-card))}
+
+/* Card dismiss pass (1.4.4): one pattern for a card or a row that opens something AND holds a
+   control of its own (the recap's ×, the streak's weekly-sets line, Add to my plan, the quick add,
+   Plan, a past workout's picture). The card is not a button. Its primary is a real <button>
+   (.tap-main: CardHead's text, or a row's name) whose ::after stretches over the whole card, and the
+   other controls are siblings layered above that cover. So:
+   - a tap on or near the × lands on the × and nothing else, with no stopPropagation anywhere;
+   - the card's press (the scale, or a row's fill) answers the primary only, never the ×;
+   - a screen reader meets two plain buttons, one name each, never a button inside a button.
+   (UUX touch-target-size / press-feedback / Semantic native controls; APPLE §10 hit padding;
+   EMIL press feedback; WIG no nested interactive elements.) */
+.tap-host{position:relative;isolation:isolate}
+.tap-main{padding:0;margin:0;text-align:start;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tap-main::after{content:'';position:absolute;inset:0;z-index:1;border-radius:var(--r-card)}
+.tap-main:focus-visible{outline:none}
+.tap-main:focus-visible::after{outline:2.5px solid var(--acc-ink);outline-offset:2px}
+/* every other control in the card sits above the cover; position only where nothing set one */
+:where(.tap-host) :where(button, a[href], input, select, textarea, [role="button"]):not(.tap-main){z-index:2}
+:where(.tap-host button:not(.tap-main), .tap-host a[href], .tap-host [role="button"]){position:relative}
+/* the routine editor's grip picks the row up with a mouse, so it stays reachable above the cover */
+.tap-host [data-drag-handle]{position:relative;z-index:2}
+.card.tap-host{transition:transform var(--fast) var(--ease)}
+.card.tap-host:has(.tap-main:active){transform:scale(var(--press-scale-card))}
+.item.tap-host:has(.tap-main:active),.wd-ex.tap-host:has(.tap-main:active){background:var(--press-fill)}
+.wd-ex .tap-main::after{border-radius:10px}
+.wd-ex .item-open{display:flex;flex-direction:column}
+:where(.wd-ex .item-open)>span{display:block}
 
 /* ------------------------------------------------------ inset group list -- */
 .sect{margin-bottom:22px}
@@ -685,7 +716,7 @@ h4.sec{
   border-radius:var(--r-card);padding:10px 12px;min-height:60px;
   transition:background var(--fast);text-align: start;width:100%;
 }
-.item:active{background:var(--press-fill)}
+.item:not(.tap-host):active{background:var(--press-fill)}
 .routine-list{position:relative}
 /* The routine editor's rail (P4): the superset link beside Move up over Move down. Each button is
    40px wide; up and down reach into the row's padding, so each is a 40x40 target and the link a
@@ -2545,7 +2576,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .wd-set{white-space:nowrap}
 .wd-ex .ss{font-size:var(--fs-subhead);line-height:1.35;color:var(--label-2);margin-top:2px}
 .wd-thumb{background:none;border:none;padding:0;cursor:pointer;display:block;flex:none}
-.wd-ex:active{background:var(--press-fill)}
+.wd-ex:not(.tap-host):active{background:var(--press-fill)}
 .wd-ss{box-shadow:inset 3px 0 0 var(--acc);padding-inline-start:11px;margin-bottom:12px}
 .wd-ss .ss-label{margin:0 0 8px}
 .wd-ss .wd-ex:last-child{margin-bottom:0}

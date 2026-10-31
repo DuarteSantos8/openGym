@@ -11,7 +11,6 @@ import { Thumb } from './Media.jsx'
 import Icon from './Icon.jsx'
 import ExerciseViewToggle from './ExerciseViewToggle.jsx'
 import { Button } from './ui.jsx'
-import { tappable } from '../lib/use-sheet-keyboard.js'
 import { useAutoMore } from '../lib/use-auto-more.js'
 import { favIds, isFav, sortFavouritesFirst } from '../lib/favourites.js'
 
@@ -99,12 +98,13 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
         {exercises.slice(0, shown).map(e => {
           const best = bestWeightFor(S, e.id)
           const primary = musclesOf(e)[selected] === 1
-          return <div key={e.id} className="item" {...tappable(() => choose(e))}>
+          // The name is the row's button, stretched over it; Plan is its sibling (card dismiss pass).
+          return <div key={e.id} className="item tap-host">
             <Thumb ex={e} />
-            <div className="grow"><div className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</div><div className="ss">{t(primary ? 'Primary target' : 'Also trains')} · <span className="capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></div></div>
+            <button type="button" className="grow item-open tap-main" onClick={() => choose(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss">{t(primary ? 'Primary target' : 'Also trains')} · <span className="capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></span></button>
             {onPick ? <Icon name={pickIcon} className="chev" /> : <>
               {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
-              <Button size="sm" variant="tinted" icon="plus" onClick={ev => { ev.stopPropagation(); onPlan(e) }}>{t('Plan')}</Button>
+              <Button size="sm" variant="tinted" icon="plus" onClick={() => onPlan(e)}>{t('Plan')}</Button>
             </>}
           </div>
         })}

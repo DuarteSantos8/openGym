@@ -152,7 +152,7 @@ export function PartyBanner ({ text, icon, className = '', onClose, children }) 
   // itself would replace that).
   return <div className="party-live" role="status">
     <button type="button" className={'streak-party' + (still ? ' still' : '') + (className ? ' ' + className : '')}
-      onClick={e => { e.stopPropagation(); onClose() }} aria-label={text}>
+      onClick={onClose} aria-label={text}>
       {children}
       <span className="streak-party-icon" aria-hidden="true">
         <span className="streak-party-art">{icon}</span>

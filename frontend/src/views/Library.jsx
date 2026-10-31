@@ -69,13 +69,15 @@ export default function Library() {
     : []
   const row = e => {
     const best = bestWeightFor(S, e.id)
-    return <div key={e.id} className="item" {...tappable(() => exerciseDetailSheet(e))}>
+    // The row is not a button: its name is, stretched over the row (.tap-main), with Add to my plan
+    // a sibling above it (card dismiss pass), so neither tap can land on the other.
+    return <div key={e.id} className="item tap-host">
       <Thumb ex={e} />
-      <div className="grow"><div className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</div><div className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</div></div>
+      <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseDetailSheet(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
       {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
       {/* a quiet trailing button (P7): the accent stays on the one action of the screen */}
       <button type="button" className="iconbtn lib-add" aria-label={t('Add to my plan')} title={t('Add to my plan')}
-        onClick={ev => { ev.stopPropagation(); addToRoutineSheet(e) }}><Icon name="plus" /></button>
+        onClick={() => addToRoutineSheet(e)}><Icon name="plus" /></button>
     </div>
   }
 
