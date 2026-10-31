@@ -19,4 +19,13 @@ final class TouchLockTests: XCTestCase {
         lock.unlock()
         XCTAssertTrue(lock.allows(at: t.addingTimeInterval(0.1)))
     }
+
+    func testLockedAgainAfterAnUnlock() {
+        let t = Date(timeIntervalSince1970: 1000)
+        var lock = TouchLock()
+        lock.unlock()
+        lock.lock(at: t)
+        XCTAssertFalse(lock.allows(at: t.addingTimeInterval(0.5)), "a row picked by tap waits a second even after a swipe unlocked")
+        XCTAssertTrue(lock.allows(at: t.addingTimeInterval(1)))
+    }
 }

@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, uk. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Сьогодні";
+"Routines" = "Програми";
 "Start workout" = "Почати тренування";
+"Start" = "Старт";
 "Done" = "Готово";
 "Warm-up" = "Розминка";
 "Reps" = "Повт.";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Завершити тренування?";
 "Finish and save" = "Завершити й зберегти";
 "Discard workout" = "Скасувати тренування";
+"Discard workout?" = "Скасувати тренування?";
+"The sets you logged in this session will be lost." = "Підходи, записані в цій сесії, буде втрачено.";
 "Continue workout" = "Продовжити тренування";
 "Cancel" = "Скасувати";
 "Rest’s over. Next set!" = "Відпочинок скінчився. Наступний підхід!";
@@ -32,14 +36,21 @@
 "More" = "Більше";
 "Effort" = "Зусилля";
 "None" = "Немає";
+"How hard was that set?" = "Наскільки важким був підхід?";
+"Nothing left, went to failure" = "Нічого не лишилось, до відмови";
+"One more rep in the tank" = "Ще одне повторення в запасі";
+"Two more reps" = "Ще два повторення";
+"Three more reps" = "Ще три повторення";
+"Planned" = "Заплановано";
+"Up next" = "Далі";
 "Last time: %@" = "Минулого разу: %@";
+"Exercises" = "Вправи";
 "No workout running" = "Тренування не триває";
 "Not synced yet" = "Ще не синхронізовано";
 "Open openGym on your iPhone once and your routines show up here." = "Відкрий openGym на iPhone один раз, і твої програми з’являться тут.";
 "Start one on your iPhone and it shows up here." = "Почни його на iPhone, і воно з’явиться тут.";
 "All sets done" = "Усі підходи зроблено";
 "measuring" = "вимірюю …";
-"Next: %@, set %lld" = "Далі: %@, підхід %lld";
 "%@, set %lld" = "%@, підхід %lld";
 "Calories" = "Калорії";
 "Heart rate" = "Пульс";
@@ -63,3 +74,4 @@
 "Added weight" = "Додаткова вага";
 "Your rest, your next set, or today's workout." = "Відпочинок, наступний підхід або сьогоднішнє тренування.";
 "Opens openGym." = "Відкриває openGym.";
+"Hold to finish" = "Утримуй, щоб завершити";

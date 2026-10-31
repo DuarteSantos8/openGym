@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, hu. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Ma";
+"Routines" = "Rutinok";
 "Start workout" = "Edzés indítása";
+"Start" = "Indítás";
 "Done" = "Kész";
 "Warm-up" = "Bemelegítés";
 "Reps" = "Ism.";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Befejezed az edzést?";
 "Finish and save" = "Befejezés és mentés";
 "Discard workout" = "Edzés elvetése";
+"Discard workout?" = "Elveted az edzést?";
+"The sets you logged in this session will be lost." = "Az ebben az edzésben rögzített sorozatok elvesznek.";
 "Continue workout" = "Edzés folytatása";
 "Cancel" = "Mégse";
 "Rest’s over. Next set!" = "Vége a pihenőnek. Jöhet a következő sorozat!";
@@ -32,14 +36,21 @@
 "More" = "Több";
 "Effort" = "Megerőltetés";
 "None" = "Nincs";
+"How hard was that set?" = "Mennyire volt nehéz ez a sorozat?";
+"Nothing left, went to failure" = "Nem maradt semmi, kimerülésig ment";
+"One more rep in the tank" = "Egy ismétlés még belefért volna";
+"Two more reps" = "Két ismétlés még belefért volna";
+"Three more reps" = "Három ismétlés még belefért volna";
+"Planned" = "Tervezett";
+"Up next" = "Következő";
 "Last time: %@" = "Legutóbb: %@";
+"Exercises" = "Gyakorlatok";
 "No workout running" = "Nincs folyamatban edzés";
 "Not synced yet" = "Még nincs szinkronizálva";
 "Open openGym on your iPhone once and your routines show up here." = "Nyisd meg egyszer az openGymet az iPhone-on, és itt lesznek a rutinjaid.";
 "Start one on your iPhone and it shows up here." = "Indíts egyet az iPhone-on, és itt megjelenik.";
 "All sets done" = "Minden sorozat kész";
 "measuring" = "mérés …";
-"Next: %@, set %lld" = "Következik: %@, %lld. sorozat";
 "%@, set %lld" = "%@, %lld. sorozat";
 "Calories" = "Kalória";
 "Heart rate" = "Pulzus";
@@ -63,3 +74,4 @@
 "Added weight" = "Plusz súly";
 "Your rest, your next set, or today's workout." = "A pihenőd, a következő sorozat vagy a mai edzés.";
 "Opens openGym." = "Megnyitja az openGymet.";
+"Hold to finish" = "Tartsd lenyomva a befejezéshez";

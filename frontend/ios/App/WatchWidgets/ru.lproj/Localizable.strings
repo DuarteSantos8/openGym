@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, ru. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Сегодня";
+"Routines" = "Программы";
 "Start workout" = "Начать тренировку";
+"Start" = "Старт";
 "Done" = "Готово";
 "Warm-up" = "Разминка";
 "Reps" = "Повт.";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Завершить тренировку?";
 "Finish and save" = "Завершить и сохранить";
 "Discard workout" = "Отменить тренировку";
+"Discard workout?" = "Отменить тренировку?";
+"The sets you logged in this session will be lost." = "Подходы, записанные в этой сессии, будут потеряны.";
 "Continue workout" = "Продолжить тренировку";
 "Cancel" = "Отмена";
 "Rest’s over. Next set!" = "Отдых окончен. Следующий подход!";
@@ -32,14 +36,21 @@
 "More" = "Больше";
 "Effort" = "Усилие";
 "None" = "Нет";
+"How hard was that set?" = "Насколько тяжёлым был подход?";
+"Nothing left, went to failure" = "Ничего не осталось, до отказа";
+"One more rep in the tank" = "Ещё одно повторение в запасе";
+"Two more reps" = "Ещё два повторения";
+"Three more reps" = "Ещё три повторения";
+"Planned" = "Запланировано";
+"Up next" = "Далее";
 "Last time: %@" = "В прошлый раз: %@";
+"Exercises" = "Упражнения";
 "No workout running" = "Тренировка не идёт";
 "Not synced yet" = "Ещё не синхронизировано";
 "Open openGym on your iPhone once and your routines show up here." = "Откройте openGym на iPhone один раз, и ваши программы появятся здесь.";
 "Start one on your iPhone and it shows up here." = "Начните её на iPhone, и она появится здесь.";
 "All sets done" = "Все подходы сделаны";
 "measuring" = "измеряю …";
-"Next: %@, set %lld" = "Далее: %@, подход %lld";
 "%@, set %lld" = "%@, подход %lld";
 "Calories" = "Калории";
 "Heart rate" = "Пульс";
@@ -63,3 +74,4 @@
 "Added weight" = "Доп. вес";
 "Your rest, your next set, or today's workout." = "Отдых, следующий подход или сегодняшняя тренировка.";
 "Opens openGym." = "Открывает openGym.";
+"Hold to finish" = "Удерживайте, чтобы завершить";
