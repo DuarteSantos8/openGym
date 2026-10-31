@@ -928,7 +928,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.banner, .sound])
+        // With the app in front the rest's own alarm (restOver) is the alert: the system's banner on
+        // top of it was dismissed to the watch face, after every rest (#936).
+        completionHandler(notification.request.identifier == SessionStore.restNotificationId ? [] : [.banner, .sound])
     }
 
     private func send(event: [String: Any]) {
