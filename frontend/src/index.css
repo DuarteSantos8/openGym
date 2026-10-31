@@ -3225,3 +3225,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .stats-list-h{margin-bottom:10px}
 .stats-links{margin-bottom:12px}
 .effort-card h4.sec{margin:16px 0 6px;padding:0}
+/* A phone under 360px: three cells of about 90px; the figure a step smaller so "-1.6 kg" stays on
+   one line (it broke as "-1.6 / kg" at 320). */
+@media (max-width:360px){
+  .kpis .tile{padding:10px 11px}
+  .kpis .tile .v{font-size:var(--fs-title3)}
+}
