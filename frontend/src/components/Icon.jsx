@@ -1,5 +1,3 @@
-import { memo } from 'react'
-
 // openGym icon set — hand-drawn on a 24×24 grid, stroke-based, single weight.
 //
 // Everything is one <svg> primitive with `currentColor`, so an icon inherits the
@@ -25,6 +23,9 @@ const P = {
   gear: <><path d="M20.48 10.59 20.48 13.41 18.58 13.72 17.87 15.43 19 17 17 19 15.43 17.87 13.72 18.58 13.41 20.48 10.59 20.48 10.28 18.58 8.57 17.87 7 19 5 17 6.13 15.43 5.42 13.72 3.52 13.41 3.52 10.59 5.42 10.28 6.13 8.57 5 7 7 5 8.57 6.13 10.28 5.42 10.59 3.52 13.41 3.52 13.72 5.42 15.43 6.13 17 5 19 7 17.87 8.57 18.58 10.28Z" /><circle cx="12" cy="12" r="3.1" /></>,
 
   /* ---- training ---- */
+  nutrition: <><path d="M12 5.2c-1.6-1.4-4.2-.8-5.3 1.2-1.7 3-.6 8.5 5.3 13.8 5.9-5.3 7-10.8 5.3-13.8-1.1-2-3.7-2.6-5.3-1.2Z" /><path d="M12 5.2V2.6c.9.3 1.8 1 2.2 1.8" /></>,
+  apple: <><path d="M12 5.2c-1.6-1.4-4.2-.8-5.3 1.2-1.7 3-.6 8.5 5.3 13.8 5.9-5.3 7-10.8 5.3-13.8-1.1-2-3.7-2.6-5.3-1.2Z" /><path d="M12 5.2V2.6c.9.3 1.8 1 2.2 1.8" /></>,
+  utensils: <><path d="M18 4.2v15.6M15 4.2c0 2.5 1.5 4.5 3 4.5v11.1M6 4.2v5.2c0 1.5 1 2.8 2.5 3.1v7.3M9 4.2v5.2M3.5 4.2v5.2c0 1.5 1 2.8 2.5 3.1" /></>,
   dumbbell: <><rect x="5.9" y="7.9" width="3.2" height="8.2" rx="1.3" /><rect x="14.9" y="7.9" width="3.2" height="8.2" rx="1.3" /><path d="M9.1 12h5.8M3.6 9.9v4.2M20.4 9.9v4.2" /></>,
   barbell: <path d="M2.9 12h18.2M7.4 7.4v9.2M9.8 9.3v5.4M16.6 7.4v9.2M14.2 9.3v5.4" />,
   figureRun: <><circle cx="14.2" cy="4.9" r="1.9" /><path d="M13.4 9.1 9.6 11.4l1.7 3.3-2.4 5.4M13.4 9.1l3.4 1.5 1.4 3.4M11.3 14.7l4.3.9 1.5 4.5M9.6 11.4 6 10.2" /></>,
@@ -102,8 +103,6 @@ const P = {
   grid: <><rect x="4" y="4" width="6.5" height="6.5" rx="1.6" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" /></>,
   folder: <path d="M3.6 7.4a2 2 0 0 1 2-2h3.1l2 2.4h6.7a2 2 0 0 1 2 2v7.8a2 2 0 0 1-2 2H5.6a2 2 0 0 1-2-2Z" />,
   globe: <><circle cx="12" cy="12" r="8.2" /><path d="M3.8 12h16.4M12 3.8c2.1 2.2 3.2 5.1 3.2 8.2s-1.1 6-3.2 8.2c-2.1-2.2-3.2-5.1-3.2-8.2s1.1-6 3.2-8.2Z" /></>,
-  // Seasonal themes (lib/seasonal.js): two halves of a pumpkin and its stem.
-  pumpkin: <><path d="M12 7.4c-1.6-1.2-4.9-1.4-6.8.6-2.4 2.6-2.4 8.4 0 11 1.9 2 5.2 1.8 6.8.6 1.6 1.2 4.9 1.4 6.8-.6 2.4-2.6 2.4-8.4 0-11-1.9-2-5.2-1.8-6.8-.6Z" /><path d="M12 7.4c-1.4 2.2-1.4 10 0 12.2M12 7.4c.1-1.6.6-2.9 1.8-3.8" /></>,
   moon: <path d="M19.4 14.2A7.8 7.8 0 0 1 9.8 4.6a8.2 8.2 0 1 0 9.6 9.6Z" />,
   sun: <><circle cx="12" cy="12" r="4.4" /><path d="M12 3.6v2M12 18.4v2M20.4 12h-2M5.6 12h-2M17.94 6.06l-1.42 1.42M7.48 16.52l-1.42 1.42M17.94 17.94l-1.42-1.42M7.48 7.48 6.06 6.06" /></>,
   key: <><circle cx="8.2" cy="15.8" r="3.8" /><path d="m10.9 13.1 8-8M16.6 7.4l2 2M14.6 9.4l2 2" /></>,
@@ -180,8 +179,6 @@ const P = {
   steps: <path d="M3.6 19.8h4.6v-4.6h4.6v-4.6h4.6V6h3" />,
   // a note pinned to show next time (flag is Finish workout)
   pin: <path d="M9.2 3.8h5.6M10.2 3.8v5.4l-3.4 3.8h10.4l-3.4-3.8V3.8M12 13v7.2" />,
-  // a place on a map (the gym reminder, #614)
-  mapPin: <><path d="M12 20.6s-6.4-5.6-6.4-10.6a6.4 6.4 0 0 1 12.8 0c0 5-6.4 10.6-6.4 10.6Z" /><circle cx="12" cy="10" r="2.4" /></>,
   // copy to the clipboard: two overlapping sheets
   copy: <><rect x="8.4" y="8.4" width="11.6" height="11.6" rx="2.4" /><path d="M15.6 8.4v-2A2.4 2.4 0 0 0 13.2 4H6.4A2.4 2.4 0 0 0 4 6.4v6.8a2.4 2.4 0 0 0 2.4 2.4h2" /></>,
   // a passkey (key is the password, lock is "stays on this device")
@@ -196,7 +193,7 @@ export const ICON_NAMES = Object.keys(P)
  * <Icon name="flame" />           — inherits font-size via `1em` sizing
  * <Icon name="flame" size={28} /> — explicit pixel size
  */
-function Icon({ name, size, className = '', style, ...rest }) {
+export default function Icon({ name, size, className = '', style, ...rest }) {
   const d = P[name]
   if (!d) return null
   const s = size ? { width: size, height: size } : null
@@ -214,7 +211,3 @@ function Icon({ name, size, className = '', style, ...rest }) {
     </svg>
   )
 }
-
-// Memoised: an icon draws the same for the same props, and a workout screen holds a few dozen of
-// them (steppers, checks, swipe actions). A set tick re-rendered ~80 of them for nothing.
-export default memo(Icon)

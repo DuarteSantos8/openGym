@@ -8,7 +8,6 @@ import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starter
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import QueueRow from '../components/QueueRow.jsx'
-import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { queueOf, queueView, weekTally, pinState } from '../lib/queue.js'
 import { scheduleModeOf } from '../lib/rotation.js'
 import { useConnectionTrouble } from '../components/SyncBanner.jsx'
@@ -17,8 +16,6 @@ import { tappable } from '../lib/use-sheet-keyboard.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
 import { weighInAt } from '../lib/bodyweight.js'
-import WeightRate from '../components/WeightRate.jsx'
-import { SeasonDeco } from '../components/Seasonal.jsx'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -106,8 +103,7 @@ export default function Home() {
 
   return <div className="narrow">
     <div className="hdr">
-      <SeasonDeco spot="header-bats" />
-      <div><h1>{user ? t('Hi {0}', user.name) : 'openGym'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
+      <div><h1>{user ? t('Hi {0}', user.name) : 'FreeFit'}</h1><div className="sub">{today.toLocaleDateString(dateLocale(), { weekday: 'long', day: 'numeric', month: 'long' })}</div></div>
       <button className="iconbtn" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
 
@@ -147,7 +143,7 @@ export default function Home() {
         </div>
         {S.active ? <span className="tag" style={{ color: 'var(--orange)', background: 'color-mix(in srgb,var(--orange) 16%,transparent)' }}>{editingSaved ? t('Edit') : t('Resume')}</span>
           : doneToday ? <span className="tag" style={{ color: 'var(--green)', background: 'color-mix(in srgb,var(--green) 16%,transparent)' }}>{t('Done')}</span>
-          : routine ? <span className="row" style={{ gap: 8 }}><MiniBodyMap routines={todayRoutines} body={S.body} /><span className="tag acc">{t('Start')}</span></span>
+          : routine ? <span className="tag acc">{t('Start')}</span>
           : <Icon name="plus" className="chev" />}
       </div>
       {/* The row above starts today's plan in one tap, and so does the Start button in the tab
@@ -161,7 +157,6 @@ export default function Home() {
           {t('Choose a different workout')}
         </Button>
       </div>}
-      <SeasonDeco spot="home-hero" />
     </div>
 
     {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
@@ -220,8 +215,6 @@ export default function Home() {
           </div>
         )}
         <div className="chart" style={{ marginTop: 8 }}><LineChart points={bwPoints} h={130} unit={S.unit} goal={S.targetW} /></div>
-        {/* the weekly rate and, with one set, how it sits in its corridor (#759) */}
-        <WeightRate S={S} />
         {/* every weigh-in, week by week with its average (Discord 'Weight') */}
         <div className="row" style={{ justifyContent: 'flex-end', marginTop: 4 }}>
           <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
@@ -231,8 +224,38 @@ export default function Home() {
         : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>}
     </div>}
 
+    {/* Nutrition Glance Card */}
+    <div className="card" onClick={() => nav('/nutrition')} style={{ cursor: 'pointer' }}>
+      <div className="row between" style={{ marginBottom: 6 }}>
+        <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Icon name="nutrition" />
+          <span>{t('Nutrition')}</span>
+        </h2>
+        <Button size="sm" icon="plus" onClick={e => { e.stopPropagation(); nav('/nutrition') }}>{t('Log Food')}</Button>
+      </div>
+      {S.nutrition?.profile ? (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 8 }}>
+            <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--acc)' }}>
+              {Math.round((S.nutrition.logs?.[todayISO()] || []).reduce((s, e) => s + (e.nutrients?.calories || 0), 0))}
+              <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--label-2)', marginInlineStart: 4 }}>kcal</span>
+            </span>
+            <span style={{ fontSize: 13, color: 'var(--label-2)' }}>
+              {t('Goal: {0} kcal', [S.nutrition.profile?.tdee ? S.nutrition.profile.tdee + (S.nutrition.profile.customDeficit ?? 0) : 2000])}
+            </span>
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--label-3)', marginTop: 4 }}>
+            {t('{0} foods logged today • Tap to view meals & Pakistani food library', [(S.nutrition.logs?.[todayISO()] || []).length])}
+          </div>
+        </div>
+      ) : (
+        <div style={{ fontSize: 13, color: 'var(--label-2)', marginTop: 6 }}>
+          {t('Track Pakistani dishes, Mifflin-St Jeor BMR, calories & macros. Tap to set up.')}
+        </div>
+      )}
+    </div>
+
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
-      <SeasonDeco spot="home-streak" />
       <div className="row between">
         <div>
           <div className="row" style={{ gap: 7, fontSize: 22, fontWeight: 600, letterSpacing: '-.021em' }}>
