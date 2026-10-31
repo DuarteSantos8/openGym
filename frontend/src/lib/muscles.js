@@ -147,7 +147,7 @@ export function hasExplicitMuscleMetadata(entry) {
   return [ex.tg, ex.mg, ...arrayOf(smOf(ex))].some(value => canonicalMuscle(value))
 }
 
-function canonicalMuscle(value) {
+export function canonicalMuscle(value) {
   const name = String(value || '').toLowerCase().trim()
   if (MUSCLES.includes(name)) return name
   return ALIAS[name] || null
