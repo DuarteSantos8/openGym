@@ -79,7 +79,7 @@ class OpenGymApp extends Application.AppBase {
     }
 
     //! A message from the phone: the snapshot (lib/garmin-snapshot.js), as a dictionary.
-    function onPhone(msg) {
+    function onPhone(msg as Communications.PhoneAppMessage) as Void {
         var data = msg.data;
         if (!(data instanceof Lang.Dictionary)) {
             return;

@@ -7,6 +7,8 @@
 //   - a (:color) helper without its (:mono) twin, or the other way round
 //   - a product in manifest.xml that is not a Connect IQ device id (when the SDK is there)
 //   - an em dash in the copy
+//   - a function named like a Monkey C keyword (`has`, `instanceof`, …): the parser stops there
+//   - a manifest version that is not the app's (frontend/package.json), as for Zepp OS and Wear OS
 //
 //   node frontend/garmin/check.mjs [path to the Connect IQ SDK]
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
@@ -51,6 +53,8 @@ function pairs (file, src) {
   if (stack.length) bad(file, `'${stack.at(-1)[0]}' from line ${stack.at(-1)[1]} is never closed`)
 }
 
+const KEYWORDS = new Set(['and', 'as', 'break', 'case', 'catch', 'class', 'const', 'continue', 'default', 'do', 'else', 'enum', 'extends', 'false', 'finally', 'for', 'function', 'has', 'hidden', 'if', 'import', 'instanceof', 'me', 'module', 'native', 'new', 'null', 'or', 'private', 'protected', 'public', 'return', 'self', 'static', 'switch', 'throw', 'true', 'try', 'typedef', 'using', 'var', 'while'])
+
 const ids = file => new Set([...readFileSync(file, 'utf8').matchAll(/<string id="([a-z0-9_]+)">/g)].map(m => m[1]))
 const eng = ids(join(here, 'resources', 'strings', 'strings.xml'))
 
@@ -62,6 +66,7 @@ for (const f of readdirSync(srcDir).filter(f => f.endsWith('.mc'))) {
   for (const m of raw.matchAll(/Rez\.Strings\.([A-Za-z0-9_]+)/g)) if (!eng.has(m[1])) bad(f, `Rez.Strings.${m[1]} is not in resources/strings`)
   // statements that look cut off: a line ending in an operator before a closing brace
   src.split('\n').forEach((l, i) => { if (/[^=!<>]=\s*$/.test(l) && !/^\s*\/\//.test(l)) bad(f, `line ${i + 1}: ends in '=': ${l.trim()}`) })
+  for (const m of src.matchAll(/\bfunction\s+(\w+)/g)) if (KEYWORDS.has(m[1])) bad(f, `function ${m[1]}: a Monkey C keyword`)
   const color = [...src.matchAll(/\(:color\)\s*function\s+(\w+)/g)].map(m => m[1]).sort()
   const mono = [...src.matchAll(/\(:mono\)\s*function\s+(\w+)/g)].map(m => m[1]).sort()
   if (color.join() !== mono.join()) bad(f, `(:color) ${color} and (:mono) ${mono} differ`)
@@ -81,6 +86,9 @@ for (const dir of ['resources', ...readdirSync(here).filter(d => d.startsWith('r
 
 const manifest = readFileSync(join(here, 'manifest.xml'), 'utf8')
 const products = [...manifest.matchAll(/<iq:product id="([a-z0-9_]+)"\/>/g)].map(m => m[1])
+const appVersion = JSON.parse(readFileSync(join(here, '..', 'package.json'), 'utf8')).version
+const ciqVersion = (manifest.match(/<iq:application [^>]*version="([^"]+)"/) || [])[1]
+if (ciqVersion !== appVersion) bad('manifest.xml', `version ${ciqVersion} is not the app's ${appVersion} (frontend/package.json)`)
 const sdk = process.argv[2] || process.env.CIQ_SDK
 const refDir = sdk && join(sdk, 'resources', 'device-reference')
 if (refDir && existsSync(refDir)) {

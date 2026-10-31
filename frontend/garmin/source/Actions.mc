@@ -147,7 +147,7 @@ class RoutineMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function onSelect(item) {
-        var id = item.getId();
+        var id = item.getId() as Number;
         var rd = Core.dictOf(G.state["rd"]);
         var session = null;
         if (rd != null) {

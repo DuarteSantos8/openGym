@@ -161,6 +161,11 @@ jobs:
       - name: Untranslated strings in src (report only)
         run: node scripts/check-source-strings.mjs
         working-directory: frontend
+      # The Garmin watch app (frontend/garmin, Monkey C): brackets, strings in every language,
+      # keywords used as names, the manifest version. No Connect IQ SDK needed (docs/GARMIN.md).
+      - name: Garmin watch app check
+        run: node garmin/check.mjs
+        working-directory: frontend
       # The fatigue model must never read higher after a rest day than before it.
       # Property probe over ~108k comparisons; too slow for the unit suite, cheap here.
       - name: Fatigue model property probe

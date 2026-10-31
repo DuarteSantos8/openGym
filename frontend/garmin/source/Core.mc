@@ -61,7 +61,7 @@ module Core {
     function same(a, b) {
         return a != null && b != null && (a instanceof Lang.String) && a.equals(b);
     }
-    function has(arr, v) {
+    function inArr(arr, v) {
         for (var i = 0; i < arr.size(); i += 1) {
             if (same(arr[i], v)) { return true; }
         }
@@ -144,13 +144,13 @@ module Core {
         var cur = dictOf(s["w"]);
         var wid = cur == null ? null : cur["id"];
         var discarded = arrOf(snap["discarded"]);
-        var droppedThere = wid != null && has(discarded, wid);
+        var droppedThere = wid != null && inArr(discarded, wid);
         if (droppedThere && same(wid, s["sh"])) { s["sh"] = null; }
         var unconfirmed = wid != null && same(wid, s["sh"]);
         var nx = dictOf(snap["active"]);
         var nid = nx == null ? null : nx["id"];
 
-        if (nx == null || (nid != null && has(s["fh"], nid))) {
+        if (nx == null || (nid != null && inArr(s["fh"], nid))) {
             // No workout on the phone, or one the watch has finished already.
             if (unconfirmed || cur == null) { return null; }
             var ended = droppedThere ? null : summary(s, cur, true);
@@ -299,7 +299,7 @@ module Core {
     }
 
     function isSkipped(s, exId, si) {
-        return has(s["sk"], key(exId, si, null));
+        return inArr(s["sk"], key(exId, si, null));
     }
 
     //! The set to do next in an exercise: the first not done and not skipped, or null.
@@ -353,7 +353,7 @@ module Core {
         var e = entryAt(s, pos);
         if (e == null) { return; }
         var k = key(e["id"], si, null);
-        if (!has(s["sk"], k)) { s["sk"].add(k); }
+        if (!inArr(s["sk"], k)) { s["sk"].add(k); }
     }
 
     //! Where to go after set `si` of the exercise at `pos`, and whether a rest comes first, as
