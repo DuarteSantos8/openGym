@@ -1044,12 +1044,38 @@ body.chips-dragging *{cursor:inherit}
 .wmedia-note{margin:6px 2px 0;line-height:1.35}
 .wrow-media{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--label-2);flex:none}
 
+.pp-actions{display:grid;gap:10px;margin:0 0 16px}
+/* While picking photos to compare the two buttons stay pinned under the top edge, side by side, so
+   Confirm is in reach however far down the grid you have scrolled. Same offsets as the pinned
+   workout header (.whdr.stick). The strip above them, under the status bar, is covered by .pp-cap, a
+   fixed block of its own (a shadow painted up from the buttons was not drawn on iOS Safari): the
+   photos scrolling by read as under it. It sits below the connection indicator (45) when there is one. */
+.pp-actions.stick{
+  position:sticky;top:calc(var(--sat) + var(--conn) + 8px);z-index:20;grid-template-columns:1fr 1fr;
+  margin:0 calc(-1 * var(--pad)) 16px;padding:8px var(--pad);background:var(--bg);
+}
+.pp-cap{position:fixed;inset-inline:0;top:0;height:calc(var(--sat) + var(--conn) + 8px);background:var(--bg);z-index:19;pointer-events:none}
+.pp-status{display:flex;align-items:center;gap:12px;padding:13px 14px;margin:0 0 14px;border-radius:var(--r);background:var(--surface);font-size:15px;line-height:1.3}
+.pp-status span:last-child{text-wrap:balance}
+.pp-status.ok{background:var(--surface);background:color-mix(in srgb,var(--acc) 14%,var(--surface))}
+.pp-status-ico{flex:none;width:32px;height:32px;border-radius:99px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--label-2);font-size:16px}
+.pp-status.ok .pp-status-ico{background:var(--acc);color:var(--on-acc)}
+/* One grid for every photo, newest first, a header per month; each photo carries its own date so
+   the day is never further than a glance away. */
+.pp-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.pp-month{grid-column:1/-1;margin:14px 0 2px;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--label-2)}
+.pp-month:first-child{margin-top:0}
+.pp-tile{position:relative;aspect-ratio:3/4;border:0;padding:0;border-radius:10px;overflow:hidden;background:var(--surface-2);color:var(--label-2);cursor:pointer;font:inherit}
+.pp-tile .thumb{width:100%;height:100%;border-radius:0;display:block;object-fit:cover}
+.pp-tile .thumb-x{font-size:22px}
+.pp-chip{position:absolute;inset-inline-start:6px;bottom:6px;padding:3px 8px;border-radius:99px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:600;line-height:1.2;pointer-events:none}
+.pp-flash{animation:pp-flash 1.5s var(--ease)}
+@keyframes pp-flash{0%,60%{outline:3px solid var(--acc);outline-offset:-3px}100%{outline:3px solid transparent;outline-offset:-3px}}
 .pp-selected{outline:3px solid var(--acc);outline-offset:-3px}
 .pp-check{
   position:absolute;inset-inline-end:5px;top:5px;width:20px;height:20px;border-radius:99px;
   display:flex;align-items:center;justify-content:center;background:var(--acc);color:#fff;font-size:11px;
 }
-.pp-cta{position:sticky;bottom:calc(var(--sab) + 10px);display:flex;justify-content:center;margin-top:14px}
 .pp-compare{position:relative;flex:1;min-height:0;overflow:hidden;background:#000;touch-action:none}
 .pp-img{
   position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;

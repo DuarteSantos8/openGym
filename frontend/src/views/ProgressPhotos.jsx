@@ -8,12 +8,12 @@
 // suggested by the photo's own EXIF date where it has one, else the day picked in the sheet.
 // Both kinds are private to the account like every other photo (DATA_DIR/uploads/<uid>/,
 // api/media.js).
-import { useMemo, useRef, useState } from 'react'
+import { Fragment, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
-import { fmtDate, todayISO } from '../lib/format.js'
+import { fmtDate, todayISO, MONTHS_LONG } from '../lib/format.js'
 import { workoutMediaOf } from '../lib/media-refs.js'
 import { removeWorkoutMedia, restoreWorkoutMedia } from '../lib/workout-media.js'
 import { dayPhotosOf, removeDayPhoto, restoreDayPhoto, serverTakesDayPhotos, fileProgressPhoto } from '../lib/day-photos.js'
@@ -22,6 +22,8 @@ import { sameWorkout } from '../lib/workout-date.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
+import { photoStatus, photoCountsByDay, groupByMonth } from '../lib/photo-gallery.js'
+import Heatmap from '../components/Heatmap.jsx'
 import { Button } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
 
@@ -52,17 +54,6 @@ export function progressPhotosOf(S) {
   // And the ones filed under a day (#557), after a day's workout photos.
   for (const p of dayPhotosOf(S)) out.push({ key: 'day:' + p.hash, d: p.d, start: 0, w: null, day: true, m: p.m })
   out.sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : b.start - a.start))
-  return out
-}
-
-/** Runs an already-sorted progressPhotosOf() list into { d, items }[] groups of the same date. */
-export function groupByDate(photos) {
-  const out = []
-  for (const p of photos) {
-    const last = out[out.length - 1]
-    if (last && last.d === p.d) last.items.push(p)
-    else out.push({ d: p.d, items: [p] })
-  }
   return out
 }
 
@@ -170,6 +161,18 @@ export function openProgressCompare(x, y) {
   useUI.getState().openSheet(close => <ProgressCompare a={a} b={b} close={close} />, { kind: 'viewer' })
 }
 
+/* The line at the top: that today's photo is in, or how long it has been (lib/photo-gallery.js). */
+function PhotoStatus({ status }) {
+  if (status.kind === 'none') return null
+  const text = status.kind === 'today' ? t('Today’s photo is in. Nice work!')
+    : status.kind === 'yesterday' ? t('Your last photo was yesterday. Ready for today’s?')
+      : tn('No photo for {0} day. What are you waiting for?', 'No photo for {0} days. What are you waiting for?', status.days)
+  return <div className={'pp-status' + (status.kind === 'today' ? ' ok' : '')} role="status">
+    <span className="pp-status-ico"><Icon name={status.kind === 'today' ? 'check' : 'camera'} /></span>
+    <span>{text}</span>
+  </div>
+}
+
 // How many photos one pick takes: each is read and re-encoded on the device, one after another.
 const MAX_AT_ONCE = 20
 
@@ -211,7 +214,19 @@ export default function ProgressPhotos() {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const photos = useMemo(() => progressPhotosOf(S), [S.workouts, S.dayPhotos])
-  const groups = useMemo(() => groupByDate(photos), [photos])
+  const months = useMemo(() => groupByMonth(photos), [photos])
+  const counts = useMemo(() => photoCountsByDay(photos), [photos])
+  const status = photoStatus(photos)
+  const galleryRef = useRef(null)
+  // A tap on a day of the activity chart scrolls to that day's photos and flashes them.
+  const jumpTo = iso => {
+    const hits = galleryRef.current ? [...galleryRef.current.querySelectorAll('[data-day]')].filter(e => e.dataset.day === iso) : []
+    if (!hits.length) return
+    const reduce = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    hits[0].scrollIntoView?.({ block: 'center', behavior: reduce ? 'auto' : 'smooth' })
+    hits.forEach(e => e.classList.add('pp-flash'))
+    setTimeout(() => hits.forEach(e => e.classList.remove('pp-flash')), 1500)
+  }
   const [comparing, setComparing] = useState(false)
   const [picked, setPicked] = useState([])   // up to 2 photo keys, in tap order
   const { pick, busy, canAdd, showAdd } = useMediaPicker()
@@ -265,16 +280,28 @@ export default function ProgressPhotos() {
     <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Progress photos')}</h1>
         <div className="sub">{tn('{0} photo', '{0} photos', photos.length)}</div></div>
-      {photos.length >= 2 && (comparing
-        ? <Button size="sm" variant="ghost" onClick={cancelCompare}>{t('Cancel')}</Button>
-        : <Button size="sm" variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)}
     </div>
 
-    {!comparing && showAdd && <div className="row" style={{ marginBottom: 16 }}>
-      <Button icon={busy ? 'image' : 'camera'} disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
-        {busy ? t('Loading…') : t('Add photos')}
-      </Button>
-      <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
+    <PhotoStatus status={status} />
+
+    {photos.length > 0 && <div className="card pp-activity">
+      <h2>{t('Activity (last 12 months)')}</h2>
+      <Heatmap S={S} counts={counts} onDay={jumpTo} legend={{ less: t('Fewer photos'), more: t('More photos') }} />
+    </div>}
+
+    {comparing && <div className="pp-cap" aria-hidden="true" />}
+    {(showAdd || photos.length >= 2) && <div className={'pp-actions' + (comparing ? ' stick' : '')}>
+      {comparing
+        ? <Button variant="primary" disabled={picked.length !== 2} onClick={runCompare}>{t('Confirm')}</Button>
+        : showAdd && <>
+          <Button variant="primary" icon={busy ? 'image' : 'camera'} disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
+            {busy ? t('Loading…') : t('Add photos')}
+          </Button>
+          <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
+        </>}
+      {photos.length >= 2 && (comparing
+        ? <Button variant="tinted" onClick={cancelCompare}>{t('Cancel')}</Button>
+        : <Button variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)}
     </div>}
 
     {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
@@ -285,28 +312,23 @@ export default function ProgressPhotos() {
       ? <div className="empty"><div className="ico"><Icon name="image" /></div>
           {t('No progress photos yet. Add one for today or any day before.')}
         </div>
-      : groups.map(g => (
-        <div key={g.d} style={{ marginBottom: 18 }}>
-          <div className="small muted" style={{ marginBottom: 6 }}>{fmtDate(g.d, true, true)}</div>
-          <div className="wmedia-grid">
-            {g.items.map(p => {
-              const selected = picked.includes(p.key)
-              return (
-                <button key={p.key} type="button" data-swipe-ignore
-                  className={'wmedia-item' + (selected ? ' pp-selected' : '')}
-                  aria-label={fmtDate(p.d, true)}
-                  onClick={() => (comparing ? toggle(p) : openPhotoView(p))}>
-                  <CustomThumb ex={{ custom: true, media: p.m }} />
-                  {selected && <span className="pp-check"><Icon name="check" /></span>}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      ))}
-
-    {comparing && picked.length === 2 && <div className="pp-cta">
-      <Button variant="primary" onClick={runCompare}>{t('Compare')}</Button>
-    </div>}
+      : <div className="pp-gallery" ref={galleryRef}>
+        {months.map(g => <Fragment key={g.key}>
+          <h3 className="pp-month">{t(MONTHS_LONG[g.month])} {g.year}</h3>
+          {g.items.map(p => {
+            const selected = picked.includes(p.key)
+            return (
+              <button key={p.key} type="button" data-swipe-ignore data-day={p.d}
+                className={'pp-tile' + (selected ? ' pp-selected' : '')}
+                aria-label={fmtDate(p.d, true, true)}
+                onClick={() => (comparing ? toggle(p) : openPhotoView(p))}>
+                <CustomThumb ex={{ custom: true, media: p.m }} />
+                <span className="pp-chip" aria-hidden="true">{fmtDate(p.d)}</span>
+                {selected && <span className="pp-check"><Icon name="check" /></span>}
+              </button>
+            )
+          })}
+        </Fragment>)}
+      </div>}
   </>
 }

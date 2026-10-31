@@ -112,3 +112,38 @@ it.each([0, 1])('retains week start %i when switching the activity metric', week
   expect(dayLabels()).toEqual(labels)
   expect(host.textContent).toContain('More volume')
 })
+
+describe('drawing a count per day instead of the workouts (#949)', () => {
+  const day = n => { const d = new Date(); d.setDate(d.getDate() - n); return isoOf(d) }
+  const mount = props => {
+    host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
+    act(() => root.render(<Heatmap S={{ workouts: [], unit: 'kg' }} legend={{ less: 'Fewer photos', more: 'More photos' }} {...props} />))
+  }
+  const cell = iso => [...host.querySelectorAll('.hm-c[title]')].find(e => e.title.startsWith(iso))
+
+  it('shades each day by its count, titles it with the photos, and has no Time/Volume switch', () => {
+    mount({ counts: { [day(1)]: 1, [day(2)]: 2, [day(3)]: 3, [day(4)]: 4 } })
+    expect(host.querySelectorAll('button')).toHaveLength(0)
+    expect(cell(day(1)).classList.contains('l1')).toBe(true)
+    expect(cell(day(4)).classList.contains('l4')).toBe(true)
+    expect(cell(day(2)).title).toBe(day(2) + ' · 2 photos')
+    expect(cell(day(1)).title).toBe(day(1) + ' · 1 photo')
+    expect(host.textContent).toContain('Fewer photos')
+    expect(host.textContent).toContain('More photos')
+    expect(host.textContent).not.toContain('Less time')
+  })
+
+  it('ignores the workouts, and lets a day with photos be tapped and an empty one not', () => {
+    const onDay = vi.fn()
+    mount({ counts: { [day(2)]: 1 }, onDay, S: { workouts: [{ d: day(1), start: 1, end: 60001 }], unit: 'kg' } })
+    expect(cell(day(1)).classList.contains('l0')).toBe(true)
+    act(() => cell(day(1)).click()); expect(onDay).not.toHaveBeenCalled()
+    act(() => cell(day(2)).click()); expect(onDay).toHaveBeenCalledWith(day(2))
+  })
+
+  it('draws an empty chart for no photos', () => {
+    mount({ counts: {} })
+    expect(host.querySelectorAll('.hm-grid .hm-c:not(.l0)')).toHaveLength(0)
+  })
+})
+
