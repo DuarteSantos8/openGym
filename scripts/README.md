@@ -14,6 +14,7 @@ want. Run them from the repository root with Node 22 unless noted.
 | `catalogue/build.mjs` | Builds the app's exercise files from `catalogue/`. `--check` fails when they are out of date |
 | `catalogue/check-media.mjs` | Fails on any media file over 180 px (the licence) or in a format the app can't show |
 | `catalogue/stage-media.mjs` | Copies the stills and animations next to a built app (`npm run build:mobile`, the demo) |
+| `android/check-fdroid.sh` | The F-Droid build has nothing from Google Play services, Firebase or ML Kit (classpath, manifest, plugin list) |
 | `ci/fork-mr-pipelines.py` | GitLab mirror only: starts pipelines for merge requests from forks |
 
 ## Used when you change something
