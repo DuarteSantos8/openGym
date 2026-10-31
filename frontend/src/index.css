@@ -2936,6 +2936,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .intg-act-i{flex:none;font-size:var(--fs-title3);color:var(--acc-ink)}
 .intg-end .intg-act-i{color:var(--red)}
 .intg-hook .lrow-m{min-width:0}
+/* the URL and the state: side by side when they fit, the pill flush under the URL when not */
+.intg-hook .lrow-s{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.intg-hook .lrow-s .intg-pill{margin:0}
 .intg-log .lrow-t{display:flex;align-items:center;gap:8px}
 .intg-log-i{flex:none;font-size:17px}
 .intg-log .ok .intg-log-i{color:var(--green-ink)}
