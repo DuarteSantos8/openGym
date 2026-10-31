@@ -32,5 +32,5 @@ jarsigner -verify "$OUT/openGym-Wear-$VER.aab" | grep -q "jar verified" || { ech
 rm -f "$OUT/wear-aligned.apk" "$OUT/openGym-Wear-$VER.apk.idsig"
 "$BT/apksigner" verify --print-certs "$OUT/openGym-Wear-$VER.apk" | grep -i "SHA-256"
 (cd "$OUT" && sha256sum "openGym-Wear-$VER.aab" "openGym-Wear-$VER.apk" > "openGym-Wear-$VER.sha256")
-"$BT/aapt2" dump badging "$OUT/openGym-Wear-$VER.apk" | head -1
+"$BT/aapt2" dump badging "$OUT/openGym-Wear-$VER.apk" | sed -n 1p   # not head: under pipefail its early exit failed the script (141)
 ls -la "$OUT"/openGym-Wear-"$VER".*
