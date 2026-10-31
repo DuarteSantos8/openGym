@@ -555,16 +555,34 @@ struct ExercisePager: View {
     @EnvironmentObject var store: SessionStore
     /// The rest or the Overview is over the pager: nothing on it animates.
     let covered: Bool
+    /// The page the scroll rests on, kept in step with the store both ways.
+    @State private var shown: Int?
 
     var body: some View {
         // Vertical pages, swiped. The crown does not page them: each page owns it (ExercisePage), so it edits the armed box.
+        // A paging scroll, not TabView's .verticalPage: that one keeps a column of dots beside the Crown, with no way to hide it.
         let n = store.workout?.entries.count ?? 0
-        TabView(selection: Binding(get: { min(store.fix?.entry ?? store.entryIndex, max(0, n - 1)) }, set: { store.show(entry: $0) })) {
-            ForEach(Array((store.workout?.entries ?? []).enumerated()), id: \.offset) { pair in
-                ExercisePage(index: pair.offset, covered: covered).tag(pair.offset)
+        // Each page is the whole screen; the page itself puts its top line beside the clock.
+        GeometryReader { g in
+            let inset = g.safeAreaInsets
+            ScrollView(.vertical) {
+                VStack(spacing: 0) {
+                    ForEach(Array((store.workout?.entries ?? []).enumerated()), id: \.offset) { pair in
+                        ExercisePage(index: pair.offset, covered: covered)
+                            .frame(width: g.size.width, height: g.size.height + inset.top + inset.bottom)
+                            .id(pair.offset)
+                    }
+                }
+                .scrollTargetLayout()
             }
+            .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
+            .scrollIndicators(.hidden)
+            .scrollPosition(id: $shown)
+            .ignoresSafeArea(edges: .vertical)
         }
-        .tabViewStyle(.verticalPage)
+        .onAppear { shown = min(store.fix?.entry ?? store.entryIndex, max(0, n - 1)) }
+        .onChange(of: min(store.fix?.entry ?? store.entryIndex, max(0, n - 1))) { _, i in if shown != i { shown = i } }
+        .onChange(of: shown) { _, i in if let i { store.show(entry: i) } }
     }
 }
 
