@@ -85,6 +85,8 @@ if you want to try it before installing anything.
   list view. Switches in Settings bring the old button rows back if you liked them.
 - Optional effort column as RIR or RPE, colour-coded, with a plain-language line per level.
 - Plate math for barbell, EZ bar, trap bar and Smith machine, worked out from the plates you own.
+  Train in more than one place? Each gym keeps its own plates, dumbbells, bars and machine stacks,
+  and the phone can switch to the gym you just walked into.
 - Bodyweight exercises know they carry no load: log reps, add a dip belt if you use one.
 - Per-side reps for lunges and single-arm work, the screen stays awake while you train, and a
   rest-timer alert can flash the screen for loud gyms.

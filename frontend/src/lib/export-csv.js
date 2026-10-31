@@ -11,16 +11,18 @@
 // Body weight and measurements are a second file. They are one row per day, not per set, and a
 // mixed file would leave every workout row with twenty empty measurement columns.
 
+import { readingsOf } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
 import { capWords } from './format.js'
 import { MEASUREMENT_FIELDS, builtinCsvColumn, customCsvColumn, customDisplayValue } from './measurements.js'
 import { hasCompletedWork, isWarmupRow, isFailureSet, isSideSet, dropsOf } from './workout-model.js'
 import { workoutDay } from './history.js'
+import { setNoteOf } from './set-notes.js'
 
 export const WORKOUT_COLUMNS = [
   'date', 'start_time', 'end_time', 'workout', 'workout_note', 'exercise', 'exercise_id', 'body_part',
   'superset_id', 'set', 'set_type', 'side', 'weight', 'unit', 'reps', 'rpe', 'rir', 'distance_km',
-  'seconds', 'incline', 'note',
+  'seconds', 'incline', 'note', 'set_note',
 ]
 
 /** One CSV field, RFC 4180: quoted when it holds a comma, a quote or a line break. */
@@ -95,20 +97,23 @@ export function workoutRows(S, { from = null, to = null } = {}) {
       const exCells = [name, e.id, ex?.bp || '', e.sg ? groups.get(e.sg) : '']
       let no = 0, noteLeft = e.note || ''
       // The entry's note rides on its first row only: the importer keeps one note per exercise.
-      const push = cells => { rows.push([...head, ...exCells, ...cells, noteLeft]); noteLeft = '' }
+      // A set's own note (lib/set-notes.js) on that set's row, its first one for a per-side set.
+      const push = (cells, setNote = '') => { rows.push([...head, ...exCells, ...cells, noteLeft, setNote]); noteLeft = '' }
       const cardio = s => !(s.r > 0) && (s.min > 0 || s.speed > 0)
       for (const s of e.sets || []) {
         if (!hasCompletedWork(s)) continue
         no++
         const type = isWarmupRow(s) ? 'warmup' : isFailureSet(s) ? 'failure' : 'normal'
+        let setNote = setNoteOf(s)
         if (cardio(s)) {
-          push([no, type, '', '', unit, '', '', '', distanceKm(s), n(Math.round((Number(s.min) || 0) * 60)), s.incline != null ? n(s.incline) : ''])
+          push([no, type, '', '', unit, '', '', '', distanceKm(s), n(Math.round((Number(s.min) || 0) * 60)), s.incline != null ? n(s.incline) : ''], setNote)
           continue
         }
         const effort = x => [x.rpe != null ? n(x.rpe) : '', x.rir != null ? n(x.rir) : '']
         const one = (x, side) => {
           if (side && !x.done) return
-          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', ''])
+          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', ''], setNote)
+          setNote = ''
           // A drop-set's drops follow as rows of their own under the same set number.
           for (const d of dropsOf(x)) push([no, 'drop', side, n(d.w || 0), unit, n(d.r || 0), '', '', '', '', ''])
         }
@@ -123,17 +128,24 @@ export function workoutRows(S, { from = null, to = null } = {}) {
 export const workoutsCSV = (S, range) => csvText(WORKOUT_COLUMNS, workoutRows(S, range))
 
 /**
- * Body weight and measurements, one row per day. Weight in the profile's unit (the header says
- * which, so the importer needs no unit column), measurements in centimetres the way they are
- * stored, body fat in percent. Custom measurement fields get a column each, under their own name
- * with their unit in brackets and their values in it (#718; lib/measurements.js customCsvColumn).
+ * Body weight and measurements, one row per day, or per weigh-in on a day with several (#859):
+ * the date cell then carries the time too ("2026-10-28 07:12", which every importer of ours and
+ * any spreadsheet reads as a date), and the day's measurements sit on its first row. Weight in
+ * the profile's unit (the header says which, so the importer needs no unit column), measurements
+ * in centimetres the way they are stored, body fat in percent. Custom measurement fields get a
+ * column each, under their own name with their unit in brackets and their values in it (#718;
+ * lib/measurements.js customCsvColumn).
  */
 export function bodyCSV(S, { from = null, to = null } = {}) {
   const unit = S.unit === 'lb' ? 'lb' : 'kg'
   const inside = d => d && (!from || d >= from) && (!to || d <= to)
   const days = new Map()
-  const at = d => { if (!days.has(d)) days.set(d, { w: null, m: null }); return days.get(d) }
-  for (const b of S.bodyweight || []) if (inside(b?.d) && b.w > 0) at(b.d).w = b.w
+  const at = d => { if (!days.has(d)) days.set(d, { rs: [], m: null }); return days.get(d) }
+  for (const b of S.bodyweight || []) {
+    if (!inside(b?.d) || !(b.w > 0)) continue
+    // A day from before keeps its one row with the date alone, as it always had.
+    at(b.d).rs = Array.isArray(b.ins) ? readingsOf(b) : [{ w: b.w, at: null }]
+  }
   for (const m of S.measurements || []) if (inside(m?.d)) at(m.d).m = m
   const fields = MEASUREMENT_FIELDS.filter(f => [...days.values()].some(v => v.m && v.m[f.key] != null))
   // The field's own name and unit where it still exists, else what the reading carries.
@@ -146,11 +158,14 @@ export function bodyCSV(S, { from = null, to = null } = {}) {
   }
   const header = ['date', 'weight_' + unit, ...fields.map(builtinCsvColumn),
     ...[...custom.values()].map(c => customCsvColumn(c.name, c.unit))]
-  const rows = [...days.keys()].sort().map(d => {
-    const { w, m } = days.get(d)
-    return [d, w != null ? n(w) : '', ...fields.map(f => (m && m[f.key] != null ? n(m[f.key]) : '')),
+  const rows = []
+  for (const d of [...days.keys()].sort()) {
+    const { rs, m } = days.get(d)
+    const meas = [...fields.map(f => (m && m[f.key] != null ? n(m[f.key]) : '')),
       ...[...custom].map(([id, c]) => { const o = (m?.other || []).find(x => x?.id === id); return o?.value != null ? n(customDisplayValue(o.value, c.unit)) : '' })]
-  })
+    if (!rs.length) { rows.push([d, '', ...meas]); continue }
+    rs.forEach((r, i) => rows.push([r.at ? `${d} ${r.at}` : d, n(r.w), ...(i ? meas.map(() => '') : meas)]))
+  }
   return csvText(header, rows)
 }
 
@@ -161,7 +176,7 @@ export function csvCounts(S, range) {
   return {
     workouts: workoutsIn(S, from, to).length,
     sets: workoutRows(S, range).length,
-    weighIns: (S.bodyweight || []).filter(b => inside(b?.d) && b.w > 0).length,
+    weighIns: (S.bodyweight || []).filter(b => inside(b?.d) && b.w > 0).reduce((sum, b) => sum + Math.max(1, readingsOf(b).length), 0),
     measurements: (S.measurements || []).filter(m => inside(m?.d)).length,
   }
 }

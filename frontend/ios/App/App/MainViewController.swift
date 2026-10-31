@@ -32,6 +32,8 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(WidgetBridgePlugin())
         bridge?.registerPluginInstance(LiveActivityPlugin())
         bridge?.registerPluginInstance(AppIconPlugin())
+        bridge?.registerPluginInstance(NfcTagsPlugin())
+        bridge?.registerPluginInstance(VoiceBridgePlugin())
         WidgetPreview.runIfAsked()
         // After loadView has finished: the view is the web view only once it has.
         if ProcessInfo.processInfo.arguments.contains(MainViewController.pendingProbeArgument) {

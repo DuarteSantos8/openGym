@@ -18,25 +18,28 @@ export const PAGES = {
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)' },
-  // Settings → Integrations (v1.4.5): the directory of what openGym talks to (views/Integrations.jsx).
+  // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava sync api mcp' },
+  zepp: { title: 'Zepp OS watch', icon: 'watch', tint: 'var(--orange)' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
-  // Phone app only (#614): the gyms that get you a nudge when you arrive, and one of them.
+  // Phone app only (#614): the gyms that get you a nudge when you arrive, the search that adds one
+  // and the editor for one of them.
   gym: { title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', parent: 'reminders' },
+  'gym-find': { title: 'Add a gym', icon: 'plusCircle', tint: 'var(--green)', parent: 'gym' },
   'gym-edit': { title: 'Your gym', icon: 'mapPin', tint: 'var(--orange)', parent: 'gym' },
   // Seasonal themes (lib/seasonal.js), one section per theme.
   themes: { title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', parent: 'look' },
-  // The phone's health store, one page per platform (until 1.4.5 a section of Data & backup).
+  // The phone's health store, one page per platform (until 1.4.4 a section of Data & backup).
   'apple-health': { title: 'Apple Health', icon: 'heart', tint: 'var(--red)', parent: 'integrations', kw: 'apple health healthkit heart rate weight scale watch sync workouts' },
   'health-connect': { title: 'Health Connect', icon: 'heart', tint: 'var(--red)', parent: 'integrations', kw: 'health connect google fit samsung fitbit garmin heart rate weight scale watch sync workouts' },
 }
 export const PAGE_IDS = Object.keys(PAGES)
 
 // The root, top to bottom. Whether a row shows is pageVisible's call.
-export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch'], ['integrations', 'data', 'about']]
+export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch', 'zepp'], ['integrations', 'data', 'about']]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -48,8 +51,10 @@ export function pageVisible(page, ctx) {
   if (page === 'coach') return !!ctx.mobile
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
+  // Signed in to a server: a Zepp OS watch reaches openGym through it (lib/watch-relay.js).
+  if (page === 'zepp') return !!ctx.user && !ctx.demo
   // The phone app only: a browser cannot watch where you are with the page closed.
-  if (page === 'gym' || page === 'gym-edit') return !!ctx.mobile
+  if (page === 'gym' || page === 'gym-find' || page === 'gym-edit') return !!ctx.mobile && ctx.gymReminder !== false
   // The health store of the phone this runs on (unknown counts as yes, as for the watch).
   if (page === 'apple-health') return !!ctx.ios
   if (page === 'health-connect') return !!ctx.mobile && !!ctx.android
@@ -74,6 +79,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Rest between warm-ups', icon: 'timer', tint: 'var(--yellow)', kw: 'warm-up warmup ramp rest break timer shorter no rest' },
   { page: 'workout', title: 'Effort per set', icon: 'gauge', tint: 'var(--purple)', kw: 'rir rpe effort reps in reserve difficulty', opts: ['RIR', 'RPE'] },
   { page: 'workout', title: 'Shown under each exercise', icon: 'history', tint: 'var(--blue)', kw: 'last time best set reference previous', opts: ['Last time', 'Best set'] },
+  { page: 'workout', title: 'Compare sets with last time', icon: 'arrowUp', tint: 'var(--green)', kw: 'arrow trend last time previous better worse same set compare up down' },
   { page: 'workout', title: 'Layout', icon: 'layout', tint: 'var(--blue)', kw: 'workout view cards list compact', opts: ['Cards', 'List', 'Compact'] },
   { page: 'workout', title: 'Collapse completed exercises', icon: 'minimize', tint: 'var(--teal)', kw: 'collapse fold minimize hide done finished completed exercises list compact remaining left to do' },
   { page: 'workout', title: 'Skip completed exercises', icon: 'skipForward', tint: 'var(--teal)', kw: 'skip jump done finished completed exercises cards focus next previous' },
@@ -100,17 +106,21 @@ export const SEARCH = [
   { page: 'alerts', title: 'Vibrate', icon: 'vibrate', tint: 'var(--indigo)', kw: 'vibrate vibration haptic haptics buzz' },
   { page: 'alerts', title: 'Vibrate on silent too', icon: 'vibrate', tint: 'var(--indigo)', kw: 'alarm silent vibrate android', when: c => c.mobile && c.android && c.canVibrate && c.vibrate },
   { page: 'alerts', title: 'Flash the screen', icon: 'sun', tint: 'var(--yellow)', kw: 'flash light blink screen' },
+  { page: 'alerts', title: 'Spoken cues', icon: 'chat', tint: 'var(--teal)', kw: 'voice speak speech talk tts announce next set countdown read aloud audio' },
+  { page: 'alerts', title: 'Speaking rate', icon: 'speaker', tint: 'var(--teal)', kw: 'voice speed speech rate slow fast', opts: ['Slow', 'Normal', 'Fast'], when: c => c.spokenCues },
   // Reminders
   { page: 'reminders', title: PUSH, icon: 'bell', tint: 'var(--red)', kw: 'push notification alerts', when: c => !c.mobile && !!c.user && c.pushOK },
   { page: 'reminders', title: 'Workout day reminder', icon: 'calendar', tint: 'var(--orange)', kw: 'reminder notification remind', when: remind, via: PUSH },
   { page: 'reminders', title: 'Reminder time', icon: 'clock', tint: 'var(--purple)', kw: 'reminder time clock hour when', when: c => remind(c) && c.reminderOn, via: PUSH },
   { page: 'reminders', title: 'Nudge me when I skip a planned workout', icon: 'bell', tint: 'var(--red)', kw: 'nudge skip missed motivation', when: c => remind(c) && c.reminderOn, via: PUSH },
   { page: 'reminders', title: 'Nudge tone', icon: 'chat', tint: 'var(--blue)', kw: 'nudge tone friendly guilt drill sergeant', opts: ['Friendly', 'Guilt trip', 'Drill sergeant'], when: c => remind(c) && c.reminderOn && c.nudge, via: PUSH },
-  { page: 'reminders', title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', kw: 'gym location arrive arrival geofence place map nearby', when: c => !!c.mobile },
+  { page: 'reminders', title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', kw: 'gym location arrive arrival geofence place map nearby', when: c => !!c.mobile && c.gymReminder !== false },
   { page: 'reminders', title: 'Send test notification', icon: 'bell', tint: 'var(--red)', kw: 'test push notification try', when: c => !c.mobile && c.pushOK, via: PUSH },
   // Plan & schedule
   { page: 'plan', title: 'How you train', icon: 'repeat', tint: 'var(--orange)', kw: 'scheduling schedule rotation fixed week split loop round cycle', opts: ['Fixed Week', 'Rotation'] },
+  { page: 'plan', title: 'Workouts per week', icon: 'target', tint: 'var(--green)', kw: 'target goal sessions per week rotation left countdown remaining', when: c => c.rotation },
   { page: 'plan', title: 'Week starts on', icon: 'calendar', tint: 'var(--orange)', kw: 'monday sunday first day week', opts: ['Monday', 'Sunday'], tkw: () => t('week start') },
+  { page: 'plan', title: 'Weekly sets per muscle', icon: 'slider', tint: 'var(--teal)', kw: 'volume sets per week muscle target range mev mrv hypertrophy landmarks' },
   { page: 'plan', title: 'Load starter plan', icon: 'clipboard', tint: 'var(--green)', kw: 'starter template beginner program routine' },
   // Units & language
   { page: 'units', title: 'Language', icon: 'globe', tint: 'var(--blue)', kw: 'language translation idioma sprache langue lingua' },
@@ -120,13 +130,15 @@ export const SEARCH = [
   { page: 'units', title: 'Weight decimals', icon: 'ruler', tint: 'var(--teal)', kw: 'decimals precision microplates rounding' },
   { page: 'units', title: 'Speed unit', icon: 'figureRun', tint: 'var(--teal)', kw: 'speed mph kmh km/h miles cardio' },
   { page: 'units', title: '1RM formula', icon: 'chart', tint: 'var(--teal)', kw: '1rm one rep max epley brzycki lombardi formula estimate' },
+  { page: 'units', title: 'Daily weigh-in value', icon: 'scale', tint: 'var(--teal)', kw: 'weigh-in body weight morning first average last several day trend chart', opts: ['Morning (first)', 'Average', 'Last'] },
+  { page: 'units', title: 'About you', icon: 'person', tint: 'var(--teal)', kw: 'sex gender age year of birth born strength level standards' },
   { page: 'units', title: 'Count warm-ups in volume', icon: 'sunrise', tint: 'var(--teal)', kw: 'warm-up warmup volume tonnage total gross work sets' },
   // Equipment
   { page: 'equipment', title: 'Plates', icon: 'plate', tint: 'var(--orange)', kw: 'plates bar plate math barbell' },
   { page: 'equipment', title: 'Dumbbells', icon: 'dumbbell', tint: 'var(--teal)', kw: 'dumbbells dumbbell rack inventory adjustable weights own home gym' },
   { page: 'equipment', title: 'Your bars', icon: 'barbell', tint: 'var(--blue)', kw: 'bar barbell weight olympic short women 15 kg 35 lb ez trap smith plate math' },
   { page: 'equipment', title: 'Filter by equipment', icon: 'kettlebell', tint: 'var(--green)', kw: 'equipment filter home gym', when: c => c.profiles },
-  { page: 'equipment', title: 'Active profile', icon: 'house', tint: 'var(--blue)', kw: 'equipment profile home gym', when: c => c.profiles },
+  { page: 'equipment', title: 'Active gym', icon: 'house', tint: 'var(--blue)', kw: 'equipment profile home gym switch plates dumbbells bars per gym location', when: c => c.profiles },
   { page: 'equipment', title: 'Add equipment profile', icon: 'plusCircle', tint: 'var(--green)', kw: 'equipment profile home gym hotel' },
   // Look & Home
   { page: 'look', title: 'Theme', icon: 'moon', tint: 'var(--indigo)', kw: 'dark mode light mode theme appearance night', opts: ['Dark', 'Light', 'System'] },
@@ -135,12 +147,19 @@ export const SEARCH = [
   { page: 'look', title: 'Body diagram', icon: 'figureStrength', tint: 'var(--teal)', kw: 'muscle map body male female', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Exercise drawings', icon: 'figureStrength', tint: 'var(--teal)', kw: 'figure male female woman man picture', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Gym check-in', icon: 'qr', tint: 'var(--blue)', kw: 'qr code membership card check in barcode' },
+  { page: 'look', title: 'Set up an NFC sticker', icon: 'nfc', tint: 'var(--blue)', kw: 'nfc sticker tag tap check in start workout locker machine', when: c => !!c.nfc },
   { page: 'look', title: 'Body weight', icon: 'scale', tint: 'var(--green)', kw: 'weight card home' },
-  { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', kw: 'seasonal season holiday halloween theme decoration' },
+  { page: 'look', title: 'Recovery tips', icon: 'figureStrength', tint: 'var(--green)', kw: 'recovery recovering rest muscle fatigue hint tip card home sore' },
+  { page: 'look', title: 'Week and month recap', icon: 'chart', tint: 'var(--purple)', kw: 'recap summary weekly monthly report your week your month card home share' },
+  { page: 'look', title: 'Weekly sets on Home', icon: 'figureStrength', tint: 'var(--teal)', kw: 'weekly sets muscle volume range home card line' },
+  { page: 'look', title: 'Monthly challenges', icon: 'target', tint: 'var(--orange)', kw: 'challenge challenges monthly month goal goals badge badges trophy motivation' },
+  { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', kw: 'seasonal season holiday halloween christmas advent calendar snow theme decoration' },
   // Seasonal themes
   { page: 'themes', title: 'Halloween', icon: 'pumpkin', tint: 'var(--orange)', kw: 'halloween seasonal theme spooky spider pumpkin bats witch october decoration', opts: ['Auto', 'On', 'Off'] },
   { page: 'themes', title: 'Also during workouts', icon: 'play', tint: 'var(--green)', kw: 'halloween seasonal workout training decoration' },
   { page: 'themes', title: 'Spooky colors', icon: 'palette', tint: 'var(--purple)', kw: 'halloween orange purple accent color colour seasonal' },
+  { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh advent calendar december decoration', opts: ['Auto', 'On', 'Off'] },
+  { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal' },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },
@@ -173,7 +192,11 @@ export const SEARCH = [
   // About & updates
   { page: 'about', title: 'Check for updates', icon: 'download', tint: 'var(--green)', kw: 'update apk android version', when: c => c.mobile && c.android },
   { page: 'about', title: 'Get the Android app', icon: 'download', tint: 'var(--green)', kw: 'apk android download app', when: c => !c.mobile },
-  { page: 'about', title: 'Show the tour again', icon: 'lightbulb', tint: 'var(--yellow)', kw: 'tour intro introduction tutorial walkthrough guide help onboarding how to start' },
+  { page: 'about', title: 'Show the tour again', icon: 'lightbulb', tint: 'var(--yellow)', kw: 'tour tutorials intro introduction tutorial walkthrough guide help onboarding how to start' },
+  { page: 'about', title: 'Build your first plan', icon: 'calendar', tint: 'var(--yellow)', kw: 'tutorial guide routine plan create first help how to' },
+  { page: 'about', title: 'Create your own exercise', icon: 'plusCircle', tint: 'var(--yellow)', kw: 'tutorial guide custom exercise own new help how to' },
+  { page: 'about', title: 'Edit your data', icon: 'pencil', tint: 'var(--yellow)', kw: 'tutorial guide edit fix change workout weigh-in history correct help how to' },
+  { page: 'about', title: 'Export & import', icon: 'folder', tint: 'var(--yellow)', kw: 'tutorial guide export import backup restore csv strong hevy sync help how to' },
   { page: 'about', title: 'Version', icon: 'info', tint: 'var(--grey)', kw: 'version about licence license source code open source' },
   { page: 'about', title: 'In Chrome: ⋮ menu → Add to Home screen', icon: 'share', tint: 'var(--blue)', kw: 'install app home screen tip pwa', when: c => c.installTip && c.androidWeb },
   { page: 'about', title: 'In Safari: Share → Add to Home Screen', icon: 'share', tint: 'var(--blue)', kw: 'install app home screen tip pwa', when: c => c.installTip && !c.androidWeb && !c.desktopWeb },
@@ -181,6 +204,7 @@ export const SEARCH = [
   // Account
   { page: 'account', title: 'Sync now', icon: 'reset', tint: 'var(--acc)', kw: 'server sync upload refresh status connection', when: c => !!c.user && !c.demo && c.synced },
   { page: 'account', title: 'Passkeys', icon: 'fingerprint', tint: 'var(--acc)', kw: 'passkey security login', when: signedInWeb },
+  { page: 'zepp', title: 'Pair a watch', icon: 'watch', tint: 'var(--orange)', kw: 'zepp amazfit watch pair balance gtr gts active t-rex bip cheetah falcon', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Add another device', icon: 'qr', tint: 'var(--blue)', kw: 'device link code phone computer', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Pair the mobile app', icon: 'qr', tint: 'var(--blue)', kw: 'pair phone app android iphone', when: signedInWeb },
   { page: 'account', title: 'Password', icon: 'key', tint: 'var(--orange)', kw: 'password login', when: c => signedInWeb(c) && c.pwOn },

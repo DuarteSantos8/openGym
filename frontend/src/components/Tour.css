@@ -7,16 +7,46 @@
    system asks for less motion (Tour.jsx sets transition:none then). */
 .tour-hole{position:fixed;border-radius:14px;box-shadow:0 0 0 200vmax rgba(0,0,0,.55);outline:2px solid var(--acc);outline-offset:0;
   transition:top .25s ease,left .25s ease,width .25s ease,height .25s ease;pointer-events:none}
-.tour-card{position:fixed;pointer-events:auto;width:min(340px,calc(100vw - 32px));box-sizing:border-box;
-  padding:14px 16px 12px;border-radius:var(--r-xl,18px);background:var(--surface);color:var(--label);
-  box-shadow:0 16px 48px -12px rgba(0,0,0,.55);transition:top .25s ease,left .25s ease;outline:none}
+.tour-card{position:fixed;pointer-events:auto;width:min(340px,calc(100vw - 32px));box-sizing:border-box;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;
+  padding:14px 16px 12px;border-radius:var(--r-xl,18px);background:var(--surface-raised,var(--surface));color:var(--label);
+  /* a raised surface (P11): lighter than the cards under the dim, edged with a hairline of light */
+  box-shadow:inset 0 0 0 var(--hair,.5px) var(--raised-line,transparent),0 16px 48px -12px rgba(0,0,0,.55);transition:top .25s ease,left .25s ease;outline:none}
 .tour-center{top:50%;left:50%;transform:translate(-50%,-50%)}
 .tour-card h2{margin:2px 0 6px;font-size:18px;font-weight:700;letter-spacing:-.02em;text-transform:none;color:var(--label)}
-.tour-card p{margin:0 0 12px;font-size:15px;line-height:1.45;color:var(--label-2,var(--label))}
+.tour-card p{margin:0 0 12px;font-size:var(--fs-subhead);line-height:1.45;color:var(--label-2,var(--label))}
 .tour-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:22px}
-.tour-count{font-size:12px;font-weight:600;color:var(--label-3,var(--label));font-variant-numeric:tabular-nums;white-space:nowrap}
-.tour-skip{background:none;border:0;padding:4px 0;font:inherit;font-size:13px;color:var(--acc);cursor:pointer;text-align:end}
+.tour-count{font-size:var(--fs-caption);font-weight:600;color:var(--label-3,var(--label));font-variant-numeric:tabular-nums;white-space:nowrap}
+.tour-skip{background:none;border:0;padding:4px 0;font:inherit;font-size:var(--fs-footnote);color:var(--acc-ink);cursor:pointer;text-align:end}
 .tour-acts{display:flex;gap:8px;justify-content:flex-end}
 .tour-acts .btn{flex:1 1 0;min-width:0}
 .tour-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (prefers-reduced-motion:reduce){.tour-hole,.tour-card{transition:none}}
+/* The card's point: a little notch toward the spotlight, at the hole's middle (Tour.jsx). Its own
+   box, so the card itself can scroll (overflow) without clipping it. */
+.tour-arrow{position:absolute;width:14px;height:14px;margin-left:-7px;background:var(--surface-raised,var(--surface));transform:rotate(45deg);pointer-events:none}
+.tour-arrow.below{top:-6px}
+.tour-arrow.above{bottom:-6px}
+.tour-card:has(.tour-arrow){overflow:visible}
+/* The closing card's tutorials: rows, like Settings. */
+.tour-list{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}
+.tour-tut{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:12px;background:var(--surface-2);
+  color:var(--label);font:inherit;text-align:start;cursor:pointer}
+.tour-tut .icon,.tour-tut svg{flex:none;color:var(--label-3,var(--label));font-size:14px}
+[dir="rtl"] .tour-tut svg{transform:scaleX(-1)}
+.tour-tut-m{display:flex;flex-direction:column;min-width:0;flex:1}
+.tour-tut-t{font-size:var(--fs-subhead);font-weight:600}
+.tour-tut-s{font-size:var(--fs-footnote);color:var(--label-2,var(--label));line-height:1.35}
+.tour-tut:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+/* A stop that hands the screen over (a sheet to use): no dimmer, a ring and a slim bar at the
+   top, or at the bottom when the sheet reaches that high. */
+.tour-free{pointer-events:none}
+.tour-ring{position:fixed;border-radius:14px;outline:2px solid var(--acc);box-shadow:0 0 0 4px rgba(0,0,0,.18);pointer-events:none;
+  transition:top .25s ease,left .25s ease,width .25s ease,height .25s ease}
+.tour-bar{top:calc(var(--sat,0px) + 10px);left:50%;transform:translateX(-50%);width:min(420px,calc(100vw - 24px));padding:10px 14px 10px;
+  box-shadow:0 10px 32px -8px rgba(0,0,0,.6);border:1px solid var(--sep,transparent)}
+.tour-bar.at-bottom{top:auto;bottom:calc(var(--sab,0px) + 10px)}
+.tour-bar h2{font-size:var(--fs-callout);margin:0 0 2px}
+.tour-bar p{font-size:14px;margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){.tour-hole,.tour-card,.tour-ring{transition:none}}
+/* A short screen (320 x 568): the closing card's tutorials go to one line each, so its buttons
+   stay in sight without scrolling the card. */
+@media (max-height:680px){.tour-tut-s{display:none}.tour-tut{padding:9px 12px}.tour-list{gap:5px}}

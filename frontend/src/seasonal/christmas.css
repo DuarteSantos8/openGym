@@ -1,0 +1,319 @@
+/* Christmas (seasonal/christmas.jsx). Loaded only while the theme shows, and scoped to
+   html[data-season="christmas"] so switching it off mid-session leaves nothing behind.
+   Transforms and opacity only; every animation runs a fixed number of times and stops. */
+
+:root[data-season="christmas"]{
+  --xm-red:#ff5a5f;
+  --xm-red-2:#c81d25;
+  --xm-green:#3ccf74;
+  --xm-green-2:#2a9d5c;
+  --xm-gold:#ffcc4d;
+  --xm-white:#f6f8fc;
+  --xm-flake:rgba(236,243,255,.78);
+  --xm-ink:rgba(206,220,255,.5);      /* the sleigh against a dark sky */
+  --xm-wire:rgba(235,235,245,.32);
+  --xm-thread:rgba(235,235,245,.38);
+  --xm-ginger:#c7793c;
+  --xm-paper0:#b3202c;
+  --xm-paper1:#1f7048;
+  --xm-paper2:#8a5a1c;
+  --xm-lid0:#c14852;
+  --xm-lid1:#478a69;
+}
+:root[data-season="christmas"][data-theme="light"]{
+  --xm-red:#e0303a;
+  --xm-red-2:#a8141d;
+  --xm-green:#1f9d55;
+  --xm-green-2:#16773f;
+  --xm-gold:#e0a400;
+  --xm-flake:rgba(120,156,206,.55);
+  --xm-ink:rgba(52,70,110,.4);
+  --xm-wire:rgba(60,60,67,.3);
+  --xm-thread:rgba(60,60,67,.34);
+  --xm-ginger:#b86a2f;
+  --xm-paper0:#c62834;
+  --xm-paper1:#1d7a4c;
+  --xm-paper2:#a06a20;
+  --xm-lid0:#d0525b;
+  --xm-lid1:#46936e;
+}
+
+/* The snow and the sleigh are drawn behind the page: the body lets the page's own background
+   (the html's, the same colour) show through, so they appear between and around the cards and
+   never on top of anything that can be tapped. */
+:root[data-season="christmas"] body{background:transparent}
+
+/* ---------------------------------------------------------------- snow -- */
+.xm-snowfall{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.xm-flake{
+  position:absolute;top:-16px;width:var(--s);height:var(--s);margin-left:calc(var(--s) / -2);
+  border-radius:50%;background:var(--xm-flake);opacity:0;
+  animation:xm-fall var(--d) linear var(--delay) 3 both;
+}
+.xm-flake.xm-star{background:none;width:calc(var(--s) * 1.8);height:calc(var(--s) * 1.8)}
+.xm-flakesvg{display:block;width:100%;height:100%;fill:none;stroke:var(--xm-flake);stroke-width:1.6;stroke-linecap:round}
+@keyframes xm-fall{
+  0%{transform:translate3d(0,0,0) rotate(0);opacity:0}
+  6%{opacity:.95}
+  50%{transform:translate3d(var(--drift),52vh,0) rotate(90deg)}
+  90%{opacity:.85}
+  100%{transform:translate3d(0,calc(100vh + 24px),0) rotate(180deg);opacity:0}
+}
+
+/* -------------------------------------------------------------- sleigh -- */
+.xm-sleigh{
+  position:fixed;top:calc(var(--sat) + var(--conn, 0px) + 2px);left:0;z-index:-1;width:104px;height:35px;pointer-events:none;
+  animation:xm-fly 9s linear both;
+}
+.xm-sleighsvg{display:block;width:100%;height:100%}
+.xm-sleighsvg .xm-ink{fill:var(--xm-ink)}
+.xm-sleighsvg .xm-line{fill:none;stroke:var(--xm-ink);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.xm-sleighsvg .xm-reins{stroke-width:.9}
+.xm-sleighsvg .xm-nose{fill:#ff3b30}
+@keyframes xm-fly{
+  0%{transform:translate3d(-120px,26px,0) rotate(-4deg)}
+  25%{transform:translate3d(22vw,10px,0) rotate(-2deg)}
+  50%{transform:translate3d(48vw,18px,0) rotate(-4deg)}
+  75%{transform:translate3d(74vw,6px,0) rotate(-1deg)}
+  100%{transform:translate3d(calc(100vw + 30px),-8px,0) rotate(-6deg)}
+}
+
+/* -------------------------------------------------------- fairy lights -- */
+[data-season="christmas"] .hdr:has(> .xm-lights){position:relative}
+[data-season="christmas"] .hdr:has(> .xm-lights) > :not(.xm-lights){position:relative;z-index:1}
+.xm-lights{
+  position:absolute;top:-19px;left:calc(var(--pad) * -1 + 4px);right:calc(var(--pad) * -1 + 4px);height:24px;
+  pointer-events:none;z-index:0;
+}
+.xm-wire{position:absolute;left:0;top:0;width:100%;height:22px;fill:none;stroke:var(--xm-wire);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.xm-bulb{
+  position:absolute;width:6px;height:9px;margin-left:-3px;border-radius:50% 50% 50% 50%/42% 42% 58% 58%;
+  background:var(--c);box-shadow:0 0 6px 1px var(--c);
+  animation:xm-twinkle 1.5s ease-in-out 10 alternate;
+}
+.xm-bulb::before{content:'';position:absolute;top:-2px;left:1.5px;width:3px;height:3px;border-radius:1px;background:var(--xm-wire)}
+.xm-b0{--c:#ff5a5f}
+.xm-b1{--c:#ffd24d}
+.xm-b2{--c:#4cd97b}
+.xm-b3{--c:#64c8ff}
+@keyframes xm-twinkle{from{opacity:1}to{opacity:.4;box-shadow:0 0 1px 0 transparent}}
+.xm-lights.xm-still .xm-bulb{animation:none}
+
+/* ---------------------------------------------------------------- holly -- */
+[data-season="christmas"] :is(.card, .sect-b):has(> .xm-holly){position:relative}
+.xm-holly{position:absolute;width:36px;height:36px;pointer-events:none}
+.xm-holly .xm-leaf{fill:var(--xm-green-2)}
+.xm-holly .xm-leaf-b{fill:var(--xm-green)}
+.xm-holly .xm-berry{fill:var(--xm-red)}
+.xm-holly .xm-shine{fill:#fff;opacity:.7}
+.xm-holly-br{right:4px;bottom:4px;transform:scale(-1,-1) rotate(10deg)}
+.xm-holly-bl{left:4px;bottom:4px;transform:scaleY(-1)}
+[dir="rtl"] .xm-holly-br{right:auto;left:4px;transform:scaleY(-1)}
+[dir="rtl"] .xm-holly-bl{left:auto;right:4px;transform:scale(-1,-1)}
+
+/* ------------------------------------------------- Santa hat on the flame -- */
+.xm-hat{position:absolute;top:-9px;left:4px;width:17px;height:14px;pointer-events:none;transform:rotate(-14deg);transform-origin:30% 100%}
+[dir="rtl"] .xm-hat{left:auto;right:4px;transform:scaleX(-1) rotate(-14deg)}
+.xm-hatsvg{display:block;width:100%;height:100%}
+.xm-red{fill:var(--xm-red)}
+.xm-white{fill:var(--xm-white)}
+
+/* --------------------------------------------------------------- present -- */
+/* Behind the top edge of its card: only the bow and the lid show above it. */
+[data-season="christmas"] .card:has(> .xm-peek){position:relative}
+.xm-peek{position:absolute;bottom:100%;inset-inline-end:52px;width:44px;height:15px;overflow:hidden;pointer-events:none}
+.xm-present{
+  all:unset;position:absolute;left:8px;top:1px;width:28px;height:26px;cursor:pointer;pointer-events:auto;
+  -webkit-tap-highlight-color:transparent;animation:xm-peekup .9s cubic-bezier(.3,1.5,.5,1) .6s both;
+}
+.xm-present.xm-hop{animation:xm-hop .5s cubic-bezier(.3,1.6,.5,1)}
+.xm-presentsvg{display:block;width:100%;height:auto;overflow:visible}
+.xm-presentsvg .xm-box{fill:var(--xm-paper0)}
+.xm-presentsvg .xm-lid{fill:var(--xm-lid0)}
+.xm-presentsvg .xm-ribbon,.xm-presentsvg .xm-bow{fill:var(--xm-gold)}
+.xm-presentsvg.xm-p1 .xm-box{fill:var(--xm-paper1)}
+.xm-presentsvg.xm-p1 .xm-lid{fill:var(--xm-lid1)}
+.xm-presentsvg.xm-p1 .xm-ribbon,.xm-presentsvg.xm-p1 .xm-bow{fill:var(--xm-red)}
+.xm-presentsvg.xm-p2 .xm-box{fill:var(--xm-green-2)}
+.xm-presentsvg.xm-p2 .xm-lid{fill:var(--xm-green)}
+.xm-presentsvg.xm-p2 .xm-ribbon,.xm-presentsvg.xm-p2 .xm-bow{fill:var(--xm-red)}
+@keyframes xm-peekup{from{transform:translateY(28px)}to{transform:none}}
+@keyframes xm-hop{0%{transform:none}35%{transform:translateY(-7px) rotate(-6deg)}70%{transform:translateY(1px) rotate(3deg)}100%{transform:none}}
+
+/* Confetti out of the present (and out of a ticked challenge). */
+.xm-burst{position:fixed;width:0;height:0;z-index:58;pointer-events:none}
+.xm-bit{
+  position:absolute;left:-4px;top:-2px;width:8px;height:4px;border-radius:1px;opacity:0;
+  animation:xm-burst 1.2s cubic-bezier(.2,.7,.3,1) both;
+}
+.xm-c0{background:#ff5a5f}.xm-c1{background:#ffd24d}.xm-c2{background:#4cd97b}.xm-c3{background:#64c8ff}
+@keyframes xm-burst{
+  0%{transform:translate3d(0,0,0) rotate(0) scale(.4);opacity:0}
+  12%{opacity:1}
+  75%{opacity:.9}
+  100%{transform:translate3d(var(--dx),var(--dy),0) rotate(var(--r)) scale(1);opacity:0}
+}
+
+/* ---------------------------------------------------------------- Stats -- */
+/* A snowman peeking over a card's top edge. */
+.xm-peek.xm-peek-snowman{width:48px;height:27px;inset-inline-end:44px}
+.xm-peek-snowman .xm-pk{position:absolute;left:4px;top:1px;width:40px;animation:xm-peekup .9s cubic-bezier(.3,1.5,.5,1) .6s both}
+.xm-snowmansvg{display:block;width:100%;height:auto}
+.xm-snowmansvg .xm-snow{fill:var(--xm-white)}
+[data-theme="light"] .xm-snowmansvg .xm-snow{fill:#fff;stroke:rgba(60,60,67,.22);stroke-width:.8}
+.xm-snowmansvg .xm-hatblk{fill:#2b2b33}
+.xm-snowmansvg .xm-coal{fill:#2b2b33}
+.xm-snowmansvg .xm-carrot{fill:#ff8a1f}
+
+/* A gingerbread person hanging by the hands off the activity card's top edge. */
+[data-season="christmas"] .card:has(> .xm-ginger-hang){position:relative}
+.xm-ginger-hang{
+  position:absolute;top:-3px;inset-inline-end:20px;width:22px;height:31px;pointer-events:none;
+  transform-origin:50% 0;animation:xm-sway 3.2s ease-in-out 4 alternate;
+}
+.xm-gingersvg{display:block;width:100%;height:100%}
+.xm-gingersvg .xm-ginger{fill:var(--xm-ginger)}
+.xm-gingersvg .xm-ginger-limb{fill:none;stroke:var(--xm-ginger);stroke-width:3.4;stroke-linecap:round}
+.xm-gingersvg .xm-icing{fill:none;stroke:#fff;stroke-width:.8;stroke-linecap:round}
+.xm-gingersvg .xm-icing-dot{fill:#3a2416}
+.xm-gingersvg .xm-gumdrop{fill:var(--xm-red)}
+.xm-gingersvg .xm-g2{fill:var(--xm-green)}
+@keyframes xm-sway{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+
+/* Baubles hanging into the empty end of a tile, from its top edge. */
+[data-season="christmas"] .tile:has(> .xm-baubles){position:relative}
+.xm-baubles{position:absolute;top:0;inset-inline-end:20px;width:44px;height:0;pointer-events:none}
+.xm-hang{position:absolute;top:0;right:0;width:14px;transform-origin:50% 0;animation:xm-sway 2.8s ease-in-out 6 alternate}
+.xm-hang.xm-hang-b{right:24px;animation-duration:3.3s;animation-delay:.7s}
+.xm-hangthread{position:absolute;left:6.5px;top:0;width:1px;height:var(--len);background:var(--xm-thread)}
+.xm-baublesvg{position:absolute;left:0;top:calc(var(--len) - 1px);width:14px;height:18px}
+.xm-baublesvg .xm-cap{fill:#b9b9c2}
+.xm-baublesvg .xm-ball{fill:var(--xm-red)}
+.xm-baublesvg.xm-gold .xm-ball{fill:var(--xm-gold)}
+.xm-baublesvg .xm-band{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1}
+.xm-baublesvg .xm-gleam{fill:#fff;opacity:.55}
+
+/* --------------------------------------------------------- the workout -- */
+[data-season="christmas"] .whdr:has(> .xm-wcorner){isolation:isolate}
+[data-season="christmas"] .whdr:not(.stick):has(> .xm-wcorner){position:relative}
+.xm-wcorner{
+  position:absolute;z-index:-1;pointer-events:none;width:0;height:0;
+  top:calc(-1 * (var(--sat) + var(--conn, 0px) + 8px));inset-inline-start:calc(-1 * var(--pad));
+}
+[data-season="christmas"] .whdr.stick > .xm-wcorner{position:absolute;top:0;inset-inline-start:0}
+.xm-hang.xm-hang-w{right:auto;left:1px;top:calc(var(--sat) + var(--conn, 0px) + 6px);width:12px}
+[dir="rtl"] .xm-hang.xm-hang-w{left:auto;right:1px}
+.xm-hang-w .xm-hangthread{left:5.5px}
+.xm-hang-w .xm-baublesvg{width:12px;height:15px}
+
+/* The rest bar: two flakes drifting along its top edge, under its clock and buttons. */
+#timer > .xm-restflakes{position:absolute;left:0;right:0;top:3px;height:10px;z-index:-1;pointer-events:none;overflow:hidden}
+.xm-restlane{position:absolute;inset:0;opacity:0;animation:xm-restcross 5.4s linear .4s 1 both}
+.xm-restlane.xm-rl1{animation-delay:1.8s;animation-duration:6.6s}
+.xm-restflake{position:absolute;left:0;top:0;width:10px;height:10px;animation:xm-spin 5.4s linear 1}
+.xm-rl1 .xm-restflake{width:8px;height:8px;top:1px}
+@keyframes xm-restcross{
+  0%{transform:translate3d(-6%,0,0);opacity:0}
+  10%,85%{opacity:.6}
+  100%{transform:translate3d(104%,0,0);opacity:0}
+}
+@keyframes xm-spin{to{transform:rotate(240deg)}}
+
+/* The finish screen and Home's streak party: a present on each side. */
+.xm-finish{position:absolute;inset:0;pointer-events:none}
+.xm-finish .xm-pk{position:absolute;bottom:0;right:calc(50% + 34px);width:26px;animation:xm-hop .6s cubic-bezier(.3,1.6,.5,1) .5s 2}
+.xm-finish .xm-pk-r{right:auto;left:calc(50% + 34px);width:21px;animation-delay:.75s}
+.streak-party .xm-finish .xm-pk{right:10px;left:auto;bottom:6px;width:22px}
+.streak-party .xm-finish .xm-pk-r{right:38px;width:17px}
+[dir="rtl"] .streak-party .xm-finish .xm-pk{right:auto;left:10px}
+[dir="rtl"] .streak-party .xm-finish .xm-pk-r{left:38px}
+
+/* ------------------------------------------------------- the advent card -- */
+.xm-advent{
+  position:relative;overflow:hidden;
+  background:var(--surface);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--xm-red) 20%,var(--surface)),var(--surface) 55%,color-mix(in srgb,var(--xm-green) 16%,var(--surface)));
+}
+.xm-advent .lbl2{font-size:13px;color:var(--label-2);letter-spacing:-.004em}
+.xm-advent .ttl{font-size:17px;font-weight:600;letter-spacing:-.016em}
+.xm-advent-i{background:var(--surface-2);background:color-mix(in srgb,var(--xm-green) 26%,var(--surface-2));font-size:16px}
+.xm-dots{display:grid;grid-template-columns:repeat(24,1fr);gap:3px;margin-top:12px}
+.xm-dots i{display:block;height:5px;border-radius:3px;background:var(--surface-3)}
+.xm-dots i.on{background:var(--xm-green)}
+.xm-dots i.now{background:var(--xm-red);box-shadow:0 0 6px var(--xm-red)}
+.xm-dots i.later{opacity:.45}
+
+.xm-ask{position:relative}
+.xm-ask .wr-x{position:absolute;top:8px;inset-inline-end:8px}
+.xm-ask .ttl{font-size:17px;font-weight:600;letter-spacing:-.016em;margin-bottom:2px}
+.xm-ask-img{border-radius:11px;flex:none}
+
+/* ------------------------------------------------------- the calendar -- */
+.xm-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.xm-door{
+  all:unset;position:relative;aspect-ratio:1;border-radius:10px;cursor:pointer;perspective:420px;
+  background:var(--surface-2);
+  background:color-mix(in srgb,var(--label) 8%,var(--surface-2));
+  box-shadow:inset 0 0 0 1px rgba(128,128,128,.22);
+  -webkit-tap-highlight-color:transparent;
+}
+.xm-door:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.xm-door-in{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.xm-flap{
+  position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:var(--paper);color:#fff;transform-origin:0 50%;backface-visibility:hidden;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),0 1px 2px rgba(0,0,0,.25);
+  transition:transform .65s cubic-bezier(.3,.8,.3,1);
+}
+[dir="rtl"] .xm-flap{transform-origin:100% 50%}
+.xm-flap::after{
+  /* a little knob on the door's free edge */
+  content:'';position:absolute;inset-inline-end:6px;top:50%;width:3px;height:3px;margin-top:-1.5px;border-radius:50%;background:rgba(255,255,255,.55);
+}
+.xm-num{font-size:17px;font-weight:700;letter-spacing:-.02em;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.xm-paper0{--paper:var(--xm-paper0)}
+.xm-paper1{--paper:var(--xm-paper1)}
+.xm-paper2{--paper:var(--xm-paper2)}
+.xm-door.xm-locked .xm-flap{filter:saturate(.55) brightness(.82)}
+.xm-door.xm-locked .xm-door-in{visibility:hidden}
+.xm-door.xm-ready .xm-flap{box-shadow:inset 0 0 0 1.5px var(--xm-gold),0 1px 2px rgba(0,0,0,.25)}
+.xm-door.xm-today .xm-flap{
+  box-shadow:inset 0 0 0 2px var(--xm-gold),0 0 12px 2px rgba(255,204,77,.6);
+  animation:xm-glow 1.6s ease-in-out 8 alternate;
+}
+@keyframes xm-glow{to{box-shadow:inset 0 0 0 2px var(--xm-gold),0 0 4px 0 rgba(255,204,77,.3)}}
+.xm-door.xm-open .xm-flap{transform:rotateY(-104deg);opacity:.0}
+.xm-door.xm-opening .xm-flap{animation:xm-swing .7s cubic-bezier(.3,.8,.3,1) forwards}
+[dir="rtl"] .xm-door.xm-open .xm-flap{transform:rotateY(104deg)}
+@keyframes xm-swing{0%{transform:none;opacity:1}70%{opacity:1}100%{transform:rotateY(-104deg);opacity:0}}
+.xm-door.xm-open{background:var(--surface-2);background:color-mix(in srgb,var(--paper) 18%,var(--surface-2))}
+.xm-done{position:absolute;right:-3px;top:-5px;font-size:13px;line-height:1}
+.xm-door.xm-shake{animation:xm-shake .45s ease-in-out}
+@keyframes xm-shake{0%,100%{transform:none}20%{transform:translateX(-4px) rotate(-2deg)}40%{transform:translateX(4px) rotate(2deg)}60%{transform:translateX(-3px)}80%{transform:translateX(2px)}}
+.xm-tally{margin-top:12px;text-align:center}
+
+/* A door's surprise. */
+.xm-back{margin:-4px 0 8px;padding-inline-start:4px}
+.xm-reveal{
+  position:relative;border-radius:16px;padding:18px 18px 20px;text-align:center;
+  background:var(--surface-2);
+  background:linear-gradient(160deg,color-mix(in srgb,var(--xm-red) 16%,var(--surface-2)),var(--surface-2) 60%,color-mix(in srgb,var(--xm-green) 14%,var(--surface-2)));
+  animation:xm-pop .5s cubic-bezier(.3,1.4,.5,1) both;
+}
+@keyframes xm-pop{from{transform:scale(.86);opacity:0}to{transform:none;opacity:1}}
+.xm-reveal-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--label-3)}
+.xm-reveal-icon{font-size:44px;line-height:1;margin:14px 0 10px;animation:xm-hop .7s cubic-bezier(.3,1.6,.5,1) .35s 1 both}
+.xm-reveal-text{font-size:17px;line-height:1.38;margin:0 auto 14px;max-width:32ch}
+.xm-reveal-text.small{font-size:14px}
+.xm-stat{margin:4px 0 6px}
+.xm-stat-big{font-size:38px;font-weight:700;letter-spacing:-.03em;margin:4px 0;color:var(--acc-ink)}
+.xm-stretch{list-style:none;margin:0 auto 14px;padding:0;max-width:30ch;text-align:start;font-size:15px;color:var(--label-2)}
+.xm-stretch li{padding:5px 0;border-bottom:var(--hair, 1px) solid var(--sep, rgba(128,128,128,.2))}
+.xm-stretch li:last-child{border-bottom:0}
+.xm-badge{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;font-weight:600;font-size:15px;
+  background:rgba(60,207,116,.22);color:var(--label)}
+
+@media (prefers-reduced-motion: reduce){
+  .xm-snowfall,.xm-sleigh,.xm-burst{display:none}
+  .xm-flap,.xm-door.xm-today .xm-flap,.xm-door.xm-shake,.xm-reveal,.xm-reveal-icon,.xm-hang,.xm-ginger-hang,.xm-bulb{animation:none;transition:none}
+}

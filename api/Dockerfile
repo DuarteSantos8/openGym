@@ -61,8 +61,12 @@ ENV PORT=3000
 EXPOSE 3000
 CMD ["node", "server.js"]
 
-HEALTHCHECK --interval=5m \
+# Every 30 s, so a fresh container reads "healthy" half a minute after it starts instead of after
+# five (TrueNAS and Portainer wait for it before they call the app running, #844).
+# wget is BusyBox's, already in the Alpine image, so nothing is added for it.
+HEALTHCHECK --interval=30s \
             --timeout=5s \
+            --start-period=20s \
             --retries=3 \
             CMD wget --spider -q "http://127.0.0.1:${PORT}/api/health" || exit 1
 

@@ -121,10 +121,13 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 
 // options: [{ value, label, icon? }]  — the selected pill slides between cells.
 // `tour`: the app tour's anchor for this control (data-tour, lib/tour.js); likewise below.
-export function Segmented({ options, value, onChange, className = '', tour }) {
+// `ariaLabelledby` names the choice for a screen reader by its visible label (a group of
+// pressed buttons otherwise reads as three loose words).
+export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby }) {
   const i = Math.max(0, options.findIndex(o => o.value === value))
   return (
-    <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}>
+    <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}
+      role={ariaLabelledby ? 'group' : undefined} aria-labelledby={ariaLabelledby}>
       <span className="seg-sel" aria-hidden="true" />
       {options.map(o => (
         <button
@@ -146,7 +149,7 @@ export function Segmented({ options, value, onChange, className = '', tour }) {
 // `min` and `max` hold for the buttons at once, but for typing only once the field is left:
 // clamped on every keystroke, a field emptied to type a new number snapped to the minimum, and
 // the digits typed next landed after it (a 48 retyped as 75 saved 175).
-export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel }) {
+export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, decimal = true, className = '', label, unit, invalid = false, disabled = false, onStep, ariaLabel, display }) {
   const clamp = v => Math.min(max, Math.max(min, v))
   const set = v => onChange(clamp(Math.round((v || 0) * 100) / 100))
   // Holding a button repeats the step; the latest value/step live in a ref so
@@ -190,8 +193,11 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
     <div className={'stp ' + className}>
       <button {...holdProps(-1)} aria-label={ariaLabel ? `Decrease ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
-        <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />
-        {unit && <i>{unit}</i>}
+        {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
+            +/- still step from `value`. */}
+        {display != null ? <span className="stp-word">{display}</span>
+          : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />}
+        {display == null && unit && <i>{unit}</i>}
       </span>
       <button {...holdProps(1)} aria-label={ariaLabel ? `Increase ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
     </div>

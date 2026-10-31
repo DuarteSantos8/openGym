@@ -67,13 +67,13 @@ const capStamps = m => {
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
   'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx',
-  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos',
+  'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged',
 ]);
 const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'programmes']);
 // The maps whose every entry carries its own edit time (sync-merge.js STAMPED_MAPS): merged per
 // key by the app, so never stamped here as a whole setting. dayNotes is a note per day off,
 // dayPhotos a progress photo filed under a day (#557), one entry per photo.
-export const STAMPED_MAPS = ['balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos'];
+export const STAMPED_MAPS = ['balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'stackWeights', 'exUnit', 'dayNotes', 'dayPhotos', 'exMerged'];
 const ENTRY_META = new Set(['id', '_ts', '_f', '_u']);
 const ENTRY_LISTS = ['routines', 'customEx', 'equipProfiles', 'gymCards', 'workouts'];
 
@@ -336,6 +336,59 @@ function stampUnstamped(cur, next, sent, now, own = null) {
   }
 }
 
+// The monthly challenges (frontend/src/lib/challenges.js mergeChallenges, hand-copied): per month,
+// the picks made first and every challenge either copy completed of them, the last 24 months,
+// capped lists. A badge earned on one device is never lost to a push of a copy from before it,
+// whoever writes (a reset aside, which starts the profile over).
+const CH_ID = /^[a-z][a-z0-9-]{0,31}$/;
+const CH_MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+export const CHALLENGE_MONTHS = 24;
+const CHALLENGE_PICKS = 3;
+function cleanChallengePick(p) {
+  if (!isMap(p) || !CH_ID.test(p.id)) return null;
+  const n = Number(p.n);
+  if (!Number.isFinite(n) || n <= 0 || n > 1e7) return null;
+  return p.u === 'kg' || p.u === 'lb' ? { id: p.id, n, u: p.u } : { id: p.id, n };
+}
+function cleanChallengeMonth(v) {
+  if (!isMap(v)) return null;
+  const picked = [];
+  for (const p of list(v.picked)) {
+    const c = cleanChallengePick(p);
+    if (c && !picked.some(x => x.id === c.id)) picked.push(c);
+    if (picked.length >= CHALLENGE_PICKS) break;
+  }
+  const ids = picked.map(p => p.id);
+  const done = [...new Set(list(v.done).filter(id => typeof id === 'string' && CH_ID.test(id)))]
+    .filter(id => !ids.length || ids.includes(id)).slice(0, CHALLENGE_PICKS).sort();
+  const at = Number(v.at);
+  if (!picked.length && !done.length) return null;
+  return { picked, done, at: Number.isFinite(at) && at > 0 ? at : 0 };
+}
+export function cleanChallenges(v) {
+  if (!isMap(v)) return null;
+  const out = {};
+  for (const k of Object.keys(v).filter(k => CH_MONTH.test(k)).sort().slice(-CHALLENGE_MONTHS)) {
+    const m = cleanChallengeMonth(v[k]);
+    if (m) out[k] = m;
+  }
+  return Object.keys(out).length ? out : null;
+}
+export function mergeChallenges(a, b) {
+  const x = cleanChallenges(a), y = cleanChallenges(b);
+  if (!x || !y) return x || y || undefined;
+  const out = {};
+  for (const k of new Set([...Object.keys(x), ...Object.keys(y)])) {
+    const p = x[k], q = y[k];
+    if (!p || !q) { out[k] = p || q; continue; }
+    const first = !q.picked.length ? p : !p.picked.length ? q
+      : (p.at || Infinity) < (q.at || Infinity) ? p : (q.at || Infinity) < (p.at || Infinity) ? q
+        : JSON.stringify(p.picked) <= JSON.stringify(q.picked) ? p : q;
+    out[k] = { picked: first.picked, done: [...p.done, ...q.done], at: first.at };
+  }
+  return cleanChallenges(out) || undefined;
+}
+
 // The Coach's chat, log and Undo snapshots (sync-merge.js mergeCoach): joined with the stored
 // ones rather than replaced, for a writer that does not stamp. It keeps `coach` as one value it read
 // earlier, so its push dropped every line another device had added since (#779). An Undo's log
@@ -565,6 +618,7 @@ export function stampPut(cur, next, { overRead = false, stamped = false, now = D
       if (rec) next._unstamped = rec;
     }
     if (!stamped && isMap(next.coach) && isMap(cur.coach)) next.coach = mergeCoach(next.coach, cur.coach);
+    if (isMap(next.challenges) && isMap(cur.challenges)) next.challenges = mergeChallenges(next.challenges, cur.challenges);
     if (before != null && content(next) !== before) report.changed = true;
   }
   keepHeld(next, t);

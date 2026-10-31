@@ -88,7 +88,7 @@ afterEach(() => {
 })
 
 const mount = async () => {
-  // Since 1.4.5 the card is a page of its own under Integrations, one per platform.
+  // Since 1.4.4 the card is a page of its own under Integrations, one per platform.
   await act(async () => { root.render(<Settings page={mocks.android ? 'health-connect' : 'apple-health'} />) })
   await act(async () => { await Promise.resolve(); await Promise.resolve() })
 }

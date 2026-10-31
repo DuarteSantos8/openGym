@@ -30,8 +30,15 @@ child process to drop privileges on, no runtime to carry in the image, and nothi
 
 A model on your own LAN is the compatible endpoint with no key: point it at
 `http://ollama.lan:11434` and pick a model from the list it serves. That is the whole
-configuration. (On the server, that is. The phone app's own-key Coach needs `https://`; see
-[On the phone](#on-the-phone).)
+configuration. (On the server, that is. The phone app's own-key Coach takes `http://` only for
+an address on the home network; see [On the phone](#on-the-phone).)
+
+Azure OpenAI is the compatible endpoint too: the base URL is
+`https://<resource>.openai.azure.com/openai/v1` (not the Responses URL with `?api-version=` the
+portal shows), the key is the resource's API key, and the model is your deployment's name.
+OpenAI's reasoning models (o1, o3, o4, gpt-5) and Azure get `max_completion_tokens` instead of
+`max_tokens`; an endpoint that wants the other one says so, and the Coach switches once and
+remembers it (#869).
 
 ## Turning it on
 
@@ -217,6 +224,68 @@ score out of ten, what went well, what to watch, and what to do next time, each 
 session's own numbers. A debrief cannot carry a change; an answer that tries is refused by the
 validator rather than trimmed. The card is kept in the Coach's history like everything else.
 
+### During a workout
+
+**Ask the Coach** sits in every exercise's ⋯ menu while a workout runs (once the Coach is set up
+and agreed to). Pick what is going on (*It hurts*, *Machine's taken*, *Short on time*, *Feeling
+great*, *Running on empty*, *Something else*), add a word if you like, and the Coach answers with
+up to six changes to the **unfinished part of that session**, as cards you tick:
+
+| Change | What it does |
+| --- | --- |
+| `swap` | the sets left of the exercise go to another one (like for like: the same muscle first) |
+| `sets` | how many sets are left of it: fewer drops the trailing open sets, more copies the last |
+| `reps` | the target reps of its open sets |
+| `weight` | its open sets −50 % to +10 %, rounded down to the active gym's plates or dumbbells, warm-ups re-aimed |
+| `add` | another exercise, built the way an exercise added by hand is built |
+| `skip` | drops what is left of it |
+| `move` | do it next, or last (only one not started) |
+| `rest` | its rest between sets, today |
+
+It is a job kind of its own (`adapt`, `POST /api/coach/adapt`, `api/coach/prompts/adapt.md`) with
+its own closed list, checked by `validateAdapt` against the session it was asked about: a change
+that names a logged set, an exercise whose sets are all done, an id outside the library slice or
+already in the session is refused and goes back for the one repair round. Nothing changes until
+you apply; applying (`frontend/src/lib/coach-adapt.js`) touches only rows not yet done, never the
+routine, and finds each exercise again first, so a change for an exercise the session has moved
+past is greyed out instead of landing on whatever now sits at its index. The proposal names the
+session it belongs to; once that workout is finished it can only be dismissed. Every answer keeps
+a line in the Coach's history. Changes are flat scalar fields rather than one `after` of many
+shapes, so a provider that closes every object for a strict schema (#804) can still write them.
+
+The running session is sent the way a question sends it (`today`): exercise ids, targets and the
+sets' numbers, no notes, no media, and never the form videos of a set.
+
+### Warm-ups and programmes
+
+A review can now also:
+
+- set how an exercise warms up (`warmup`: Auto, the app ramping from the work weight by load; a
+  block of its own as shares of the work weight; or none), which the app rounds to the gym's
+  plates itself;
+- write a multi-week **programme** over the plan's routines, or revise the one you have
+  (`programme`: per week a deload, a week-wide RPE, or %1RM and RPE targets per exercise). A new
+  programme is saved under Plan → Programmes and starts when you start it.
+
+Both are undone by **Undo the Coach's changes** like everything else.
+
+Every `why` on a change to progression or volume is asked for in plain words ("you will add a
+rep each session until 12, then the weight goes up"), and the card shows the app's own line for a
+progression rule under it, so "double progression" is never the whole explanation.
+
+### What the Coach reads, besides the plan and the log
+
+All built in `api/coach/core/context.js` and `payload.js`, by name, bounded, and small:
+
+- `muscles`: work sets per target muscle over the last 7 days, the 4-week weekly average, the
+  last 72 hours and days since it was trained (weekly volume and recovery);
+- `gym`: the active gym's equipment, plate sizes and dumbbells (sizes, never the gym's name);
+- `challenges`: this month's three goals and which are done;
+- the warm-up choice of every exercise and the warm-up setting (`meta.warmups`);
+- `plan.programmes`: the six most recent programmes and which one runs, in which week;
+- body weight as one value per day, as Settings → Daily weigh-in value picks it, with how many
+  weigh-ins the day had.
+
 ### Comparing with others on the instance
 
 Off unless the admin turns it on (**Settings → Account → Admin dashboard**, the **AI Coach** card →
@@ -278,7 +347,7 @@ renders from, so the screen cannot drift from the payload — are:
 | Category | What it covers |
 | --- | --- |
 | `plan` | routines, exercises, sets/reps, schedule, progression settings |
-| `training` | logged sets, targets, effort ratings, durations, PRs and session notes in the review window |
+| `training` | logged sets, targets, effort ratings, durations, PRs, session notes and the notes on single sets in the review window |
 | `bodyweight` | weigh-ins in the window and your goal weight |
 | `profile` | the intake answers you gave the Coach, including any limitations |
 | `cohort` (optional) | only with comparison on and your own opt-in: anonymous medians from the other people sharing — never their data, and never yours to them beyond the same medians |
@@ -329,7 +398,7 @@ The prompt asks for a shape and the model usually obliges. `api/coach/validate.j
 "usually" stops mattering, and it — not the prompt — is the security boundary. Nothing reaches
 you that has not:
 
-- **matched the closed list of change types.** Eighteen of them, each with an apply
+- **matched the closed list of change types.** Twenty of them, each with an apply
   implementation on the client to match. A hostile note in your own free text can talk a model
   into saying anything at all; it cannot invent a change type, and a change type that is not on
   the list does nothing. There is no default case anywhere.
@@ -354,7 +423,8 @@ HTTP client waits as long as the job, and the chat says "this can take a while" 
 promising minutes when the endpoint is a local one. The phone's BYOK mode does the same on
 its own: a local endpoint gets 25 minutes there.
 
-The Coach may only touch **routines and the week**. Your training log, your weigh-ins and your
+The Coach may only touch **routines, the week and programmes** (and, during a workout, the
+unfinished part of that one session, when you apply it). Your training log, your weigh-ins and your
 settings are not reachable from any change type that exists.
 
 Applying happens **on the client**, not the server — ordinary local editing, so it works
@@ -507,12 +577,18 @@ The App-Store build has no server of its own, so the Coach there is a choice mad
   the workout that completes the count, or on the first open after the weekly slot, and says
   something only when it has a suggestion. Up to v1.4.2 nothing ran them on a phone at all.
 
-  A compatible endpoint has to be **`https://`** here. Android does not let apps send
-  unencrypted `http://` traffic, so a model on your LAN at `http://ollama.lan:11434` cannot be
-  reached from the phone, and the setup screen says so as soon as such an address is typed.
-  Either put HTTPS in front of the model (Tailscale's HTTPS certificates, or a reverse proxy
-  with a certificate), or use the first option: the server has no such rule, and its Coach
-  reaches an `http://` model on its own network.
+  A compatible endpoint on the **home network** can be plain `http://` here (#913): a private
+  IPv4 address (`192.168.x.x`, `10.x.x.x`, `172.16.x.x` to `172.31.x.x`), Tailscale's `100.x`
+  addresses, `localhost`, a `.local` name, a single-word host name, and private or link-local
+  IPv6 (`fd…`, `fe80…`). Anything else, any address on the internet, has to be `https://`: the
+  key and your training data ride in the request. The check is in
+  `api/coach/core/providers.js` (`phoneMayCall`) and runs on every request, not only in the
+  setup screen, because Android can only allow unencrypted traffic for the whole app
+  (`network_security_config.xml`), while iOS allows it for local addresses only
+  (`NSAllowsLocalNetworking`). A name like `ollama.lan` is not one of those: use the model's IP
+  address or `.local` name, put HTTPS in front of it, or use the first option, whose server
+  Coach reaches any `http://` model on its own network. In a browser there is no own-key Coach:
+  an `https://` page may not call `http://` addresses, so the web app always uses the server's.
 
 ## Off is really off
 

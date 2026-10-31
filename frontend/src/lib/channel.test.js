@@ -51,6 +51,20 @@ describe('install channel', () => {
     expect(await selfUpdates()).toBe(false)
   })
 
+  it('the gym reminder is there unless the build left background location out', async () => {
+    let m = await import('./channel.js')
+    expect(await m.gymReminderBuilt()).toBe(true)
+    vi.resetModules()
+    h.answer = { channel: 'play', backgroundLocation: false }
+    m = await import('./channel.js')
+    expect(await m.getChannel()).toBe('play')
+    expect(await m.gymReminderBuilt()).toBe(false)
+    vi.resetModules()
+    h.fail = true
+    m = await import('./channel.js')
+    expect(await m.gymReminderBuilt()).toBe(true)
+  })
+
   it('the Play flavour says "play" and leaves the updater out', async () => {
     const { readFileSync, existsSync } = await import('node:fs')
     const app = new URL('../../android/app/', import.meta.url)

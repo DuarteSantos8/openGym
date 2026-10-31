@@ -1,4 +1,4 @@
-// Settings → Integrations (v1.4.5): which cards the directory shows on this device, and what each
+// Settings → Integrations (v1.4.4): which cards the directory shows on this device, and what each
 // one says. Pure, so the rules ("Apple Health lives in the iPhone app", "webhooks need your own
 // server") are tested here and the page only draws them.
 //

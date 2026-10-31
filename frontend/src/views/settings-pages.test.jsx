@@ -113,6 +113,10 @@ describe('the root', () => {
     expect(rule).toMatch(/white-space:normal/)
     expect(rule).toMatch(/line-clamp:3/)
     expect(rule).toMatch(/min-width:min-content/)
+    // P10 (redesign 1.4.5): on every phone width the preview is the row's subtitle, under the title
+    const phone = css.match(/@media \(max-width:430px\)\{\n  \.lrow\.sp-root-row:has\(\.lrow-v\)\{([^}]*)\}/)?.[1] || ''
+    expect(phone).toMatch(/display:grid/)
+    expect(css).toMatch(/\.lrow\.sp-root-row \.lrow-v\{grid-column:2;grid-row:2;[^}]*text-align:start/)
     // the sub-page title takes a second line rather than an ellipsis ("Alertas do temporizador")
     const title = css.match(/^\.sp-title\{([^}]*)\}/m)?.[1] || ''
     expect(title).not.toMatch(/nowrap/)
@@ -313,10 +317,10 @@ describe('the pages', () => {
     }
   })
 
-  it('every old row has a home: the Workout page holds the rest, logging and the before/during rows', () => {
+  it('every old row has a home: the Workout page holds the warm-ups, rest, logging and the before/during rows', () => {
     mount('workout')
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Rest', 'Logging', 'Before and during'])
-    expect(titles()).toEqual(['Rest timer', 'Rest between warm-ups', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Layout',
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Warm-ups', 'Rest', 'Logging', 'Before and during'])
+    expect(titles()).toEqual(['Automatic warm-ups', 'Rest timer', 'Rest between warm-ups', 'Rest-pause rest', 'Effort per set', 'Shown under each exercise', 'Compare sets with last time', 'Layout',
       'Collapse completed exercises', 'Skip completed exercises', 'Weigh in before workouts', 'Keep screen awake', 'Exercise animations', 'Fine-tuning'])
     // QA 10-05: the "screen stays on" line is the awake row's own subtitle, not a section footer
     // that read as if it explained the animations above it.
@@ -324,7 +328,7 @@ describe('the pages', () => {
     expect(rowTitled('Exercise animations').querySelector('.lrow-s')).toBeNull()
     expect([...host.querySelectorAll('.sect-f')].some(f => /screen stays on/.test(f.textContent))).toBe(false)
     mount('advanced')
-    expect(titles()).toEqual(['Default progression', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Weight and reps buttons',
+    expect(titles()).toEqual(['Default progression', 'Planned sessions start from', 'Last time means', 'Keep timing after target', 'Timed holds start by themselves', 'Weight and reps buttons',
       'Drop and burst shortcuts on every set', 'Swipe actions', 'Exercise chips at the top', 'Muscle map at the top', 'Superset buttons in the exercise header', 'Move, swap and remove buttons below the exercise'])
   })
 
@@ -507,5 +511,35 @@ describe('translations', () => {
   })
   it('the root groups only name real pages', () => {
     for (const g of ROOT_GROUPS) for (const id of g) expect(PAGES[id], id).toBeTruthy()
+  })
+})
+
+// Equipment per gym (#808): the active gym at the top, its switcher swaps the lists below.
+describe('the equipment page with two gyms', () => {
+  it('shows the active gym first and switching it loads that gym’s plates, with a toast', () => {
+    bindUI(useUI)
+    const homePlates = { kg: { 20: 1, _ts: 5 } }
+    mocks.S = {
+      ...mocks.S, invGym: 'p1', plates: homePlates,
+      equipProfiles: [
+        { id: 'p1', name: 'Home', equipment: [], plates: homePlates, dumbbells: {}, barDefaults: {}, stackWeights: {} },
+        { id: 'p2', name: 'Big gym', equipment: [], plates: { kg: { 25: 3, _ts: 6 } }, dumbbells: {}, barDefaults: {}, stackWeights: {} },
+      ],
+    }
+    mount('equipment')
+    expect(titles().slice(0, 2)).toEqual(['Active gym', 'Plates'])
+    expect(rowTitled('Active gym').querySelector('.lrow-v').textContent).toBe('Home')
+    expect([...host.querySelectorAll('.sect-h, h2, .sect-t')].map(e => e.textContent)).toContain('Equipment at Home')
+    act(() => rowTitled('Active gym').click())
+    const h = document.createElement('div'); document.body.appendChild(h)
+    const r = createRoot(h)
+    act(() => r.render(mocks.sheets.at(-1)(vi.fn())))
+    const big = [...h.querySelectorAll('button, [role="button"], .lrow')].find(e => e.textContent.startsWith('Big gym'))
+    act(() => big.click())
+    expect(mocks.S.activeEquipId).toBe('p2')
+    expect(mocks.S.plates.kg[25]).toBe(3)
+    expect(mocks.S.equipProfiles[0].plates).toEqual(homePlates)
+    expect(mocks.toast).toHaveBeenCalledWith('Using Big gym equipment')
+    act(() => r.unmount()); h.remove()
   })
 })

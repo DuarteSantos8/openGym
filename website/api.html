@@ -215,6 +215,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#meta"><b>Meta</b><span>Health &amp; public config</span></a>
   <a class="side-link" href="#auth"><b>Auth</b><span>Passkeys &amp; sessions</span></a>
   <a class="side-link" href="#pairing"><b>Pairing</b><span>Connect the mobile app</span></a>
+  <a class="side-link" href="#watch"><b>Watch relay</b><span>Zepp OS watches</span></a>
   <a class="side-link" href="#password"><b>Password</b><span>Optional name &amp; password (PASSWORD_LOGIN)</span></a>
   <a class="side-link" href="#passkeys"><b>Passkeys</b><span>More passkeys &amp; device links</span></a>
   <a class="side-link" href="#data"><b>Data</b><span>State sync</span></a>
@@ -246,7 +247,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>82 endpoints</span>
+    <span>92 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -714,6 +715,298 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">400</span>
     <span class="p-desc">Code unknown, already used, expired, or the account behind it is gone or disabled (deliberately the same message for all of these).<span class="r-sig"><code>{&quot;error&quot;:&quot;invalid or expired code&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
+<section class="api-sec" id="watch">
+  <h2>Watch relay</h2>
+  <p class="sub">The watch relay for Zepp OS watches (docs/ZEPP_OS.md)</p>
+  <div class="eps">
+
+<details class="ep" id="op-watchPair">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/watch/pair</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">A pairing code for a Zepp OS watch</span>
+  </summary>
+  <div class="ep-body">
+<p>A signed-in device asks for a code that the Zepp app's settings page for openGym redeems (<code>POST /api/watch/redeem</code>). 12 characters typed as <code>XXXX-XXXX-XXXX</code>, one per profile (a new one replaces the last), good for ten minutes, held only as a hash.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The code and when it expires (ms since the epoch).<span class="r-sig">{ code: string, exp: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-watchRedeem">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/watch/redeem</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Redeem a watch pairing code for a watch token</span>
+  </summary>
+  <div class="ep-body">
+<p>Called by the openGym watch app's Side Service inside the Zepp phone app. The code is the credential (CSRF-exempt, throttled per address like a device link). The answer is a watch token (<code>ogw_…</code>) that opens <code>GET</code>/<code>POST /api/watch/box</code> and nothing else; it ends with &quot;sign out everywhere&quot;, a new password, a disabled account, an unlink, or 90 days without use.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">code<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The watch's name for Settings (40 characters).</span>
+  </div>
+</div>
+<pre><code>{
+  &quot;code&quot;: &quot;K7WQ-2MZP-8RTA&quot;,
+  &quot;name&quot;: &quot;Amazfit Balance&quot;
+}</code></pre>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Paired.<span class="r-sig">{ token: string, id: string, name: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Code unknown, used or expired.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many wrong codes from this address.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-watchLinks">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/watch/links</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The profile's paired watches</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Id, name, when paired and when last used.<span class="r-sig">{ links: object[] }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-watchUnlink">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/watch/unlink</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Unpair one watch, or every watch</span>
+  </summary>
+  <div class="ep-body">
+<p>Without an <code>id</code>, every watch of the profile. The mailbox goes with the last one.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done; the watches left.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-watchSnapshot">
+  <summary>
+    <span class="m put">PUT</span>
+    <span class="ep-path"><code>/api/watch/snapshot</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The page's snapshot for the profile's watches</span>
+  </summary>
+  <div class="ep-body">
+<p>The JSON text the page sends any watch (<code>frontend/src/lib/watch-sync.js</code> buildSnapshot), 64 KB at most. 409 <code>no-watch</code> while no watch is paired.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">json<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Stored.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Not a snapshot.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">No watch paired.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-watchEvents">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/watch/events</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">What the watches sent, oldest first</span>
+  </summary>
+  <div class="ep-body">
+<p>The events exactly as a watch sent them (watch-sync.js applyEvents), until acknowledged (<code>POST /api/watch/ack</code>), for two weeks at most. <code>paired</code> counts the watches, <code>seen</code> is when one last checked in.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The queue.<span class="r-sig">{ events: object[], paired: integer, seen: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-watchAck">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/watch/ack</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Events applied, out of the queue</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">ids</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-watchBoxRead">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/watch/box</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The watch reads the page's last snapshot</span>
+  </summary>
+  <div class="ep-body">
+<p>With the watch token as <code>Authorization Bearer</code>. <code>json</code> is null before the page sent one.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The snapshot text and when it came (ms).<span class="r-sig">{ json: string, at: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No live watch token (<code>watch-unpaired</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-watchBoxSend">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/watch/box</code><span class="ep-chip public">public</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The watch sends its events</span>
+  </summary>
+  <div class="ep-body">
+<p>With the watch token. At most 50 events a request, 4 KB each, of the types the page applies; a queue holds 500. <code>accepted</code> names the ids the watch may forget (queued now or before, or refused for good); the rest it sends again. The answer carries the snapshot too, so one request does both.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">events</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Accepted ids, and the snapshot.<span class="r-sig">{ accepted: string[], json: string, at: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No live watch token (<code>watch-unpaired</code>).</span>
   </div>
     </div>
   </div>
@@ -2385,6 +2678,83 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">400</span>
     <span class="p-desc">No question in the body (<code>code</code> is <code>invalid</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409): a job for this profile is already running. - <code>shared</code> (409): instance mode, and the credential belongs to another profile. - <code>cap</code> (429): this profile's or the instance's daily limit is spent. - <code>consent</code> (403): no consent recorded for this profile. - <code>unprivileged</code> (503): the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409): a job for this profile is already running. - <code>shared</code> (409): instance mode, and the credential belongs to another profile. - <code>cap</code> (429): this profile's or the instance's daily limit is spent. - <code>consent</code> (403): no consent recorded for this profile. - <code>unprivileged</code> (503): the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">The Coach will not take this job, and says which reason in <code>code</code>: - <code>busy</code> (409): a job for this profile is already running. - <code>shared</code> (409): instance mode, and the credential belongs to another profile. - <code>cap</code> (429): this profile's or the instance's daily limit is spent. - <code>consent</code> (403): no consent recorded for this profile. - <code>unprivileged</code> (503): the privilege drop cannot be performed, so no job runs. The message is the one to show; the raw provider detail never reaches the user.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is already thinking about your training&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s5">503</span>
+    <span class="p-desc">The Coach is not set up on this instance (switched off, or no provider connected). Every Coach route answers this rather than pretending, so an unconfigured instance renders exactly the app it was before the feature existed. <code>code</code> is <code>off</code>, the class a job refused at enqueue for the same reason carries; the app shows its own line for it.<span class="r-sig"><code>{&quot;error&quot;:&quot;the Coach is not set up on this instance&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-postCoachAdapt">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/coach/adapt</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Ask the Coach about an exercise mid-workout</span>
+  </summary>
+  <div class="ep-body">
+<p>Queues an <code>adapt</code> job: one exercise of the workout running on the device, and why it needs a rethink (pain, a busy rack, short on time, feeling great, tired). The answer is a pending proposal of kind <code>adapt</code> with up to six <code>changes</code> to the unfinished part of that session (swap, sets, reps, weight, add, skip, move, rest), each naming the exercise by its index in <code>today</code>. Logged sets are never changed. The client applies the ticked ones to its own running session and resolves the proposal; the server never holds the session.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">today<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc">The session running on the device (<code>entries</code> with their sets).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">entry<em class="p-req" title="required">required</em></span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;)</span></span>
+    <span class="p-desc">The index in <code>today.entries</code> of the exercise asked about.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">reason</span>
+    <span class="p-type">&quot;pain&quot; | &quot;busy&quot; | &quot;short&quot; | &quot;great&quot; | &quot;tired&quot; | &quot;other&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">text</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">What the lifter typed, optional. Cut at the instance's message length.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">activeId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The running session's id, handed back on the proposal.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lang</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The language the app is showing, which the Coach answers in.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">202</span>
+    <span class="p-desc">Queued. The job runs in the background; its outcome arrives through <code>GET /api/coach/status</code>, which the client polls.<span class="r-sig">{ job: object }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">No running workout, or no exercise of it named (<code>code</code> is <code>invalid</code>).</span>
   </div>
   <div class="prow rrow">
     <span class="r-code s4">401</span>
@@ -4568,6 +4938,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">always true</span>
     <span class="p-desc">This instance also keeps the files of progress photos filed under a day (<code>dayPhotos</code>, a photo for a day without a workout). Absent on an instance from before; the app then only adds photos to logged workouts there.</span>
   </div>
+  <div class="prow">
+    <span class="p-name">sets</span>
+    <span class="p-type">always true</span>
+    <span class="p-desc">This instance also keeps the files of a form video filmed for one set (<code>workouts[].entries[].sets[].media</code>, v1.4.4). Absent on an instance from before; the app then keeps a set's video on the phone that filmed it and never uploads it.</span>
+  </div>
 </div>
   </div>
 </details>
@@ -4788,10 +5163,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <summary>
     <span class="sch-name"><code>BodyweightEntry</code></span>
     <span class="ep-chev" aria-hidden="true"></span>
-    <span class="ep-sum"></span>
+    <span class="ep-sum">One day of weigh-ins.</span>
   </summary>
   <div class="ep-body">
-
+<p><code>w</code> is the day's one value, the one the profile's <code>bwDaily</code> setting picks from <code>ins</code> (first, the default; avg; last), so a reader that knows nothing of <code>ins</code> gets the same number the app charts. A day from before v1.4.4 has no <code>ins</code>: one weigh-in without a time. A client that writes <code>w</code> and <code>t</code> of a day with <code>ins</code> (an older app correcting the day) has that taken as a correction of the weigh-in <code>w</code> came from.</p>
 <div class="ptab">
   <div class="prow">
     <span class="p-name">d</span>
@@ -4801,12 +5176,57 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">w</span>
     <span class="p-type">number</span>
-    <span class="p-desc">Weight in <code>unit</code>.</span>
+    <span class="p-desc">The day's weight in <code>unit</code> (see the description).</span>
   </div>
   <div class="prow">
     <span class="p-name">t</span>
     <span class="p-type">number</span>
-    <span class="p-desc">Timestamp (ms).</span>
+    <span class="p-desc">When the day was last edited (ms)</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Set when every weigh-in of the day was read from a health app or a file.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">The day's weigh-ins, by time (#859).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Unique within the day. '0' is the weigh-in a day from before held.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].at</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc">Local time of day, HH:MM; null when not known.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].w</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">Weight in <code>unit</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].t</span>
+    <span class="p-type">number</span>
+    <span class="p-desc">When this weigh-in was last edited (ms).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Read from a health app or a file.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ins[].sid</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The health app's own id of the sample.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">gone</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Weigh-ins removed from a day that keeps others, id → when (ms).</span>
   </div>
 </div>
   </div>

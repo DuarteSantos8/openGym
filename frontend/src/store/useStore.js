@@ -3,6 +3,7 @@ import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
+import { syncGymInventory } from '../lib/gym-inventory.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
@@ -14,7 +15,7 @@ import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
-import { referencedHashes } from '../lib/media-refs.js'
+import { keptHashes } from '../lib/media-refs.js'
 import { mediaStore, mediaStoreInUse } from '../lib/media-store.js'
 import { countChanges, syncFingerprint } from '../lib/sync-changes.js'
 import { saveWorkoutEdit, deleteEditedWorkout } from '../lib/session-edit.js'
@@ -148,6 +149,10 @@ export const DEF = {
   reminder: { on: false, time: '08:00', tz: null, nudge: false, tone: 'friendly' }, effort: null, autoBackup: false,
   // Equipment profiles (issue: filter Library/picker/routines by what you actually own —
   // e.g. "Home" vs "Gym" — building on the session-only equipment filter from issue #6).
+  // Since 1.4.4 (#808) each profile is a gym and also keeps that gym's plates, dumbbells, bars and
+  // machine stacks; the top-level plates/dumbbells/barDefaults/stackWeights below are the active
+  // gym's copy, and `invGym` (absent until there is a profile) names the gym that copy belongs to.
+  // How the two are kept in step, and why: lib/gym-inventory.js.
   equipProfiles: [], activeEquipId: null, equipFilterOn: false,
   // Standing per-exercise notes, keyed by exercise id: the gym-specific facts that are true
   // every time you do the movement ("seat 4, pin 7"). Distinct from a routine's `note`, which
@@ -243,6 +248,9 @@ export const DEF = {
   // and the weight too for an exercise with progression off (nothing else decides it).
   // Absent reads as 'plan' too, which is what the MCP bridge sees on a raw state file.
   startFrom: 'plan',
+  // Warm-ups that build themselves from the work weight (Settings → Workout, lib/warmup-ramp.js):
+  // 'off', 'compounds' or 'all'. Absent reads as off, the way every plan worked before.
+  warmupAuto: 'off',
   // Where "last time" is read from (Settings → During a workout, lib/history.js lastAcrossRoutines,
   // #770): 'routine' is the routine's own last session of the exercise, as it has been since #216;
   // 'any' is its newest session in any workout. Absent reads as 'routine'.
@@ -1019,7 +1027,7 @@ export const useStore = create((set, get) => {
   // goes before the wiped copy is written: another tab must learn that the copy is nobody's before
   // it sees the new copy, or it joins its own copy of the account into it (QA 2026-10-06).
   const clearLocalSession = () => {
-    const hadMedia = referencedHashes(get().S).size > 0
+    const hadMedia = keptHashes(get().S).size > 0
     get().setUser(null)
     localStorage.removeItem('gym_guest')
     forgetSync()
@@ -1048,7 +1056,7 @@ export const useStore = create((set, get) => {
     if (hadMedia || mediaStoreInUse()) {
       const since = Date.now()
       Promise.resolve(wiped).then(() => readStashes())
-        .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...referencedHashes(e?.state)])), { keepPutAfter: since }))
+        .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)])), { keepPutAfter: since }))
         .catch(() => {})
     }
     return wiped
@@ -1377,7 +1385,7 @@ export const useStore = create((set, get) => {
   registerExerciseAliases(S0.exAliases)
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
-  if (referencedHashes(S0).size) loadPending()
+  if (keptHashes(S0).size) loadPending()
   meta.set(S0, { base: readStoredSync(), owed: storedOwed() })
   const user0 = (() => { try { return JSON.parse(localStorage.getItem('gym_user')) || null } catch { return null } })()
   adoptHold = !!user0 && readAdopt()?.uid === user0.id
@@ -1455,6 +1463,9 @@ export const useStore = create((set, get) => {
       // The stamps below write the change's records into these two maps in place (stampDeletions,
       // stampEdits); a draft that never touched them still shares them with the previous state.
       for (const k of ['deleted', 'edited']) if (S[k] && typeof S[k] === 'object' && S[k] === prev[k]) S[k] = clone(S[k])
+      // Equipment per gym (#808): the active gym's plates, dumbbells, bars and stacks are kept in
+      // step with its profile, whichever side this change (or a sync before it) touched.
+      syncGymInventory(S, prev)
       // What the change removed, and which routines, workouts, settings and plan days it touched,
       // each with one time that comes after every stamp the copy already carries: a conflict then
       // keeps a removal and the edit made last, even from a device whose clock runs behind
@@ -1847,7 +1858,7 @@ export const useStore = create((set, get) => {
     // as the stash is (lib/media-sync.js localMediaGc, Reset everything).
     async stashedMediaHashes() {
       const all = await readStashes()
-      return new Set(Object.values(all).flatMap(e => [...referencedHashes(e?.state)]))
+      return new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)]))
     },
 
     // Sign-in (and pairing a phone) takes the server's profile as this device's copy — the

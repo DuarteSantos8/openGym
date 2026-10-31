@@ -15,10 +15,10 @@ const signed = v => new Intl.NumberFormat(dateLocale(), { maximumFractionDigits:
 const size = v => new Intl.NumberFormat(dateLocale(), { maximumFractionDigits: 2 }).format(v)
 
 const STATUS = {
-  in: { text: () => t('On pace'), color: 'var(--acc)' },
-  slow: { text: () => t('Slower than planned'), color: 'var(--yellow)' },
-  fast: { text: dir => t(dir === 'gain' ? 'Gaining faster than planned' : 'Losing faster than planned'), color: 'var(--yellow)' },
-  off: { text: () => t('Outside your range'), color: 'var(--yellow)' },
+  in: { text: () => t('On pace'), color: 'var(--acc-ink)' },
+  slow: { text: () => t('Slower than planned'), color: 'var(--gold-ink)' },
+  fast: { text: dir => t(dir === 'gain' ? 'Gaining faster than planned' : 'Losing faster than planned'), color: 'var(--gold-ink)' },
+  off: { text: () => t('Outside your range'), color: 'var(--gold-ink)' },
 }
 
 export const rateText = (rate, unit) => t('Trend {0} a week ({1})', signed(rate.perWeek) + ' ' + unit, signed(rate.pct) + ' %')
@@ -29,10 +29,10 @@ export default function WeightRate({ S }) {
   if (!rate.enough && !corridor) return null
   const status = rateStatus(rate, S.rateGoal)
   return <button type="button" className="bw-rate small" onClick={rateGoalSheet} aria-label={t('Weekly rate')}>
-    <Icon name="chartLine" style={{ fontSize: 13 }} />
+    <Icon name="chartLine" style={{ fontSize: 'var(--fs-footnote)' }} />
     <span className="bw-rate-t">{rate.enough ? rateText(rate, S.unit) : t('A few more weigh-ins, spread over the next days, and you get a weekly trend.')}</span>
     {status && <b style={{ color: STATUS[status].color }}>{STATUS[status].text(corridor.dir)}</b>}
-    <Icon name="chevronRight" className="dim" style={{ fontSize: 11, marginInlineStart: 'auto' }} />
+    <Icon name="chevronRight" className="dim" style={{ fontSize: 'var(--fs-caption2)', marginInlineStart: 'auto' }} />
   </button>
 }
 

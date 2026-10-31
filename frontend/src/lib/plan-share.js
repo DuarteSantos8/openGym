@@ -8,6 +8,7 @@
 //  2. A clean, printable page (Save as PDF) where a single exercise never splits across
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
+import { warmupModeOf, ownRowsOf } from './warmup-ramp.js'
 import { EXIDX, canonicalExId, isBodyweightEq, isCustomEx } from './exercises.js'
 import { cleanBackups } from './routine-backups.js'
 import { cleanUrl } from './media-refs.js'
@@ -154,6 +155,9 @@ function cleanEx(e) {
   if (e.note) o.note = e.note
   const warm = cleanWarmupSets(e.warmupSets)
   if (warm) o.warmupSets = warm
+  // The warm-up choice and a block of your own (lib/warmup-ramp.js) travel with the routine: the
+  // rows are shares of the work weight, so they mean the same in either unit.
+  Object.assign(o, cleanWarmupChoice(e))
   // Drop-sets and rest-pause are part of how the exercise is prescribed, not a logging detail.
   // Without this a shared "3x5 with a double drop" arrived at the other end as a plain 3x5,
   // silently — parsePlan's `dropped` counter only tracks exercises it cannot resolve at all.
@@ -167,6 +171,14 @@ function cleanEx(e) {
 function cleanWarmupSets(v) {
   const n = Math.round(Number(v)) || 0
   return n > 0 ? Math.min(MAX_PLANNED_WARMUPS, n) : 0
+}
+
+/** The slot's warm-up choice and its own rows, cleaned, as fields to spread (none when it follows Settings). */
+function cleanWarmupChoice(e) {
+  const mode = warmupModeOf(e)
+  if (!mode) return {}
+  const rows = mode === 'own' ? ownRowsOf(e) : []
+  return { warmup: mode, ...(rows.length ? { warmupRows: rows } : {}) }
 }
 
 /** A positive whole number of seconds or nothing — the same gate cleanEx applies on the way
@@ -315,9 +327,10 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       const pyramid = normalizePyramid(e.pyramid)
       const pyramidRest = pyramid.length ? normalizePyramidRest(e.pyramidRest, pyramid.length) : []
       const pyramidWeight = pyramid.length ? normalizePyramidWeight(e.pyramidWeight, pyramid.length) : []
-      const { warmupSets, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, incline: _incline, ...passthrough } = e
+      const warmChoice = cleanWarmupChoice(e)
+      const { warmupSets, warmup: _warmup, warmupRows: _warmupRows, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, incline: _incline, ...passthrough } = e
       if (!known.has(passthrough.id)) passthrough.id = canonicalExId(passthrough.id)
-      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}) }, sourceUnit || destination, destination)
+      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...warmChoice, ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}) }, sourceUnit || destination, destination)
     })
   }))
   // Exercise units (#657): only kg or lb, and only for exercises the plan still holds.

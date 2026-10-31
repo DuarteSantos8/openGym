@@ -95,6 +95,17 @@ export const requestDebrief = (...a) => asked(_requestDebrief)(...a).then(track)
 // (lib/coach-context.js): the server never holds it.
 const _askCoach = async text => DEMO ? (await demo()).demoAsk(S(), text) : LOCAL() ? (await local()).localAsk(S(), text, todayForCoach(S())) : api('/api/coach/ask', { method: 'POST', body: JSON.stringify({ text, today: todayForCoach(S()), lang: getLang() }) })
 export const askCoach = (...a) => asked(_askCoach)(...a).then(track)
+// "Ask the Coach" on an exercise mid-workout (the `adapt` job): `entry` is its index in the running
+// session, `reason` one of pain/busy/short/great/tired/other, `text` optional. The session goes
+// along (lib/coach-context.js) with its id, so the answer can be matched to this workout.
+const _requestAdapt = async ({ entry, reason, text } = {}) => {
+  const st = S()
+  const today = todayForCoach(st)
+  if (!today) throw Object.assign(new Error(t('There’s no workout running.')), { code: 'invalid' })
+  const body = { today, entry, reason: reason || 'other', text: String(text || '').trim(), activeId: st.active?.id || null }
+  return DEMO ? (await demo()).demoAdapt(st, body) : LOCAL() ? (await local()).localAdapt(st, body) : api('/api/coach/adapt', { method: 'POST', body: JSON.stringify({ ...body, lang: getLang() }) })
+}
+export const requestAdapt = (...a) => asked(_requestAdapt)(...a).then(track)
 // An automatic review, if one is due (lib/coach-schedule.js asks while the app is open). Only a
 // phone with its own key runs them here; a server runs its own on its tick. The data-sharing
 // question was asked when they were switched on, and nobody is there to ask it now: a "yes"

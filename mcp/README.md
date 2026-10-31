@@ -76,8 +76,8 @@ Ten read-only tools, and one that writes:
 | `preview_session` | What will the app actually put on screen when I start this routine — after the progression policy and my history have overridden the plan? |
 | `get_week_plan` | What's planned when: the next seven days with their routines and how each was decided (coach week, a pinned session, an override, the weekday plan), the current coach week when one is running, and the weekday table. |
 | `list_workouts` | Recent sessions — newest first, with dates, sets done/planned, volume, duration, PRs. |
-| `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. |
-| `get_bodyweight` | Weigh-ins with the latest weight, the goal line, and deltas vs goal. |
+| `get_workout` | Full set-by-set breakdown of one session, by `workout_id` or by date. On a day with two sessions the date alone returns both ids to pick from rather than guessing at one. `form_videos` says how many sets were filmed; the videos themselves never leave the app. A set with a note of its own (set menu → Note) carries it as `sets[].note`. |
+| `get_bodyweight` | Weigh-ins, one value per day (the profile's "Daily weigh-in value": morning, average or last), each day's readings with their times, the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
 | `get_programme` | My programmes (routines as a block of weeks with %1RM / RPE targets), and which week of the running one I'm in. |
@@ -90,6 +90,9 @@ easiest way for a coach to give wrong advice. `get_routine` reports what the rou
 session. The routine's own weight is the last fallback the session builder consults, not the
 first; its reps hold unless a policy that moves reps moved them, or the profile starts planned
 sessions from the last session (`starts_from`). Ask `preview_session` before naming a weight.
+
+An exercise merged into another in the app (an exercise's details → Merge into…) reads as the one
+it went into everywhere, also in a workout another device logged against it before it synced.
 
 Each tool returns JSON the LLM can format as it likes; structured fields (sets, dates, levels)
 are pre-formatted into human-readable labels in `src/labels.js` so the LLM doesn't need to

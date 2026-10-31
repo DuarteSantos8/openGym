@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Szervercím"
+
+msgid "code"
+msgstr "Párosítókód"
+
+msgid "how"
+msgstr "Az openGymben nyisd meg: Beállítások, Zepp OS óra, Óra párosítása, és írd be ide a címet és a kódot."
+
+msgid "pair"
+msgstr "Párosítás"
+
+msgid "pairing"
+msgstr "Párosítás…"
+
+msgid "paired"
+msgstr "Párosítva: {0}. Nyisd meg az openGymet az órán."
+
+msgid "failed"
+msgstr "Nem sikerült. Nézd meg a címet és a kódot, egy kód tíz percig él."
+
+msgid "unpair"
+msgstr "Párosítás bontása"
+
+msgid "not_paired_yet"
+msgstr "Még nincs párosítva."

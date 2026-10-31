@@ -1,4 +1,4 @@
-// Settings → Integrations (v1.4.5): which card shows where, and what it says.
+// Settings → Integrations (v1.4.4): which card shows where, and what it says.
 import { describe, expect, it } from 'vitest'
 import { cardState, directory, webhookUrlProblem, CARDS, WORKS_WITH, PILL } from './integrations.js'
 

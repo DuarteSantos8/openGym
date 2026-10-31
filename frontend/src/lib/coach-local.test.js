@@ -321,3 +321,34 @@ describe('timeouts on the phone', () => {
     for (const p of ['anthropic', 'openai', 'gemini']) expect(timeoutFor(p)).toBe(TIMEOUT_MS)
   })
 })
+
+describe('Ask the Coach mid-workout, on a phone with its own key', () => {
+  beforeEach(async () => {
+    _resetCoachDevice(); local._resetLocal()
+    device.data = { mode: 'byok', provider: 'openai', model: 'gpt-t', baseUrl: null }
+    wire.calls = []; secret.key = 'sk-test-1'
+  })
+
+  it('sends the running session and the exercise, and the answer waits for that workout', async () => {
+    const S = state()
+    const today = { name: 'A', minutes: 10, entries: [
+      { id: EX, target: { sets: 3, reps: 8 }, sets: [{ done: true, w: 40, r: 8 }, { done: false, w: 40, r: 8 }, { done: false, w: 40, r: 8 }] },
+      { id: EX2, target: { sets: 3, reps: 10 }, sets: [{ done: false, w: 20, r: 10 }] }
+    ] }
+    wire.answer = chat(JSON.stringify({ coach_contract: 1, summary: 'Short day: one set less.', changes: [{ type: 'sets', entry: 0, exId: EX, sets: 1, why: 'Ten minutes left.' }] }))
+    await local.localAdapt(S, { today, entry: 0, reason: 'short', text: '10 min left', activeId: 'act-9' })
+    const s = await settle()
+    expect(s.pending?.kind).toBe('adapt')
+    expect(s.pending.activeId).toBe('act-9')
+    expect(s.pending.focus).toMatchObject({ entry: 0, exId: EX, reason: 'short' })
+    expect(s.pending.changes).toEqual([expect.objectContaining({ type: 'sets', entry: 0, sets: 1, before: 2 })])
+    const sent = wire.calls[0].body
+    expect(sent.messages[0].content).toContain('# Task: adapt the workout in progress')
+    expect(sent.messages[1].content).toContain('"focus":{"entry":0')
+    expect(sent.messages[1].content).toContain('"userNote":"10 min left"')
+    expect(sent.response_format?.json_schema?.schema?.properties?.changes).toBeTruthy()
+    // Read: the slot gives back what was waiting before the question.
+    await local.localResolve({ accepted: ['a0'] })
+    expect((await local.localStatus()).pending).toBeNull()
+  })
+})

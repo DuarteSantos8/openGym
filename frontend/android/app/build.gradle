@@ -10,8 +10,8 @@ android {
         applicationId "ch.duartesantos.opengym"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 28
-        versionName "1.4.3"
+        versionCode 29
+        versionName "1.4.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -50,11 +50,20 @@ android {
             dimension = "channel"
             isDefault = true
             buildConfigField "String", "CHANNEL", '"sideload"'
+            buildConfigField "boolean", "BACKGROUND_LOCATION", "true"
         }
         play {
             dimension = "channel"
             buildConfigField "String", "CHANNEL", '"play"'
+            buildConfigField "boolean", "BACKGROUND_LOCATION", project.hasProperty('playWithoutBackgroundLocation') ? "false" : "true"
         }
+    }
+    // Plan B for Google Play's background-location review (docs/APP_STORES.md): with
+    // -PplayWithoutBackgroundLocation the Play build leaves out ACCESS_BACKGROUND_LOCATION, so no
+    // declaration is needed. The app then hides the gym reminder (ChannelPlugin says
+    // BACKGROUND_LOCATION false, lib/channel.js). Off by default.
+    if (project.hasProperty('playWithoutBackgroundLocation')) {
+        sourceSets.play.manifest.srcFile 'src/playNoBackgroundLocation/AndroidManifest.xml'
     }
 }
 
@@ -75,8 +84,14 @@ dependencies {
     // The sharper animations as Play asset packs (AnimationPacksPlugin in src/play): the Play
     // build only. The sideloaded APK has no Play Store behind it and keeps its built-in ones.
     playImplementation "com.google.android.play:asset-delivery:$assetDeliveryVersion"
+    // The Wear OS watch app's link (WatchBridgePlugin, WatchListenerService): the Wearable Data
+    // Layer of Google Play services. Both channels have it; on a phone without Play services or
+    // without a watch every call just answers "no watch" and nothing else changes.
+    implementation "com.google.android.gms:play-services-wearable:$playServicesWearableVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
+    // The real org.json for the JVM tests (WidgetContentTest): android.jar only has stubs of it.
+    testImplementation "org.json:json:20240303"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')

@@ -1,4 +1,4 @@
-/* Where this server may connect out to. Moved out of server.js (v1.4.5) so the push sender and
+/* Where this server may connect out to. Moved out of server.js (v1.4.4) so the push sender and
    the integrations (integrations/, the outbound webhooks) judge an address by the same rules.
    The reasoning for push lives next to its sender in server.js; the rules themselves are here. */
 import dns from 'node:dns';
@@ -114,7 +114,7 @@ export function pushEndpointError(raw) {
   return null;
 }
 
-/* ---------- outbound integrations (integrations/, v1.4.5) ----------
+/* ---------- outbound integrations (integrations/, v1.4.4) ----------
    A webhook URL is chosen by whoever is signed in, exactly like a push endpoint, so it gets the
    same rules: https only, and never a private, loopback or link-local address, judged in the
    lookup the request itself uses (DNS rebinding) and, for a literal address, before every send.

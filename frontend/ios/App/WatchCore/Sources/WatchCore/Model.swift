@@ -47,6 +47,9 @@ struct ActiveWorkout: Codable, Equatable {
     var start: Double?
     /// Apple Health's workout type for it (#799); none: strength training, as before.
     var healthType: String?
+    /// When it was last worked on on the phone (ms): a set ticked, an edit, the app opened with it
+    /// (#904). The forgotten-workout check counts from it as from a set logged here.
+    var activeAt: Double? = nil
 }
 
 struct RestInfo: Codable, Equatable {
@@ -151,6 +154,8 @@ struct WatchSettings: Codable, Equatable {
     var show: WatchShow?
     /// The effort the profile logs per set, "rpe" or "rir"; nil: none (no effort tile).
     var effort: String?
+    /// Timed holds start by themselves (the phone's Settings → Workout): rest over, 3-2-1, hold.
+    var autoHolds: Bool?
 }
 
 /// What a workout screen shows. Each nil means its default.

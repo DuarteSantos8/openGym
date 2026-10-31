@@ -1,4 +1,4 @@
-/* Integrations (v1.4.5): the hub that ties providers, the connection store and the outbox
+/* Integrations (v1.4.4): the hub that ties providers, the connection store and the outbox
  * together. server.js creates one, hands its routes the session helpers, and calls
  * onStateWrite after every successful PUT /api/data.
  *

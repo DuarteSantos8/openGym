@@ -28,10 +28,11 @@ it('a page that slid in keeps no background or shadow once the slide is over', a
   for (const [, selector, body] of rules) {
     expect(body, selector.trim()).not.toMatch(/(^|;)\s*(background|box-shadow)/)
   }
-  // The slide still has both while it runs.
+  // Not even while it slides (TestFlight 1.4.4 build 45): the page sits inside #app's side padding,
+  // so a background or shadow on it showed as an inset box for the length of the slide.
   for (const name of ['viewpush', 'viewpush-rtl']) {
     const frames = css.match(new RegExp('@keyframes ' + name + '\\{(.*?\\})\\}'))?.[1] || ''
-    expect(frames, name).toMatch(/box-shadow/)
-    expect(frames, name).toMatch(/background-color:var\(--bg\)/)
+    expect(frames, name).toMatch(/transform/)
+    expect(frames, name).not.toMatch(/box-shadow|background/)
   }
 })

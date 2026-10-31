@@ -8,6 +8,7 @@ import { barWeightFor } from './bar.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
 import { dbLoadOf, bellsIn, volumeFactor, historyAs, ownedFloor } from './dumbbells.js'
+import { isRungRow, rungWeight } from './warmup-snap.js'
 import { bodyLoadOf, bodyweightFor, countsBodyweight } from './bw-load.js'
 const objectOf = value => value && typeof value === 'object' && !Array.isArray(value) ? value : {}
 // Completed-state-independent work rows whose authoritative mode matches the requested mode.
@@ -945,20 +946,8 @@ export function moveRoutineEntry(items, index, direction) {
 }
 export function unitOf(units, idx) { return units.find(u => u.includes(idx)) || [idx] }
 
-export function streakWeeks(S) {
-  if (!S.workouts.length) return 0
-  const ws = weekStartOf(S)
-  const weeks = new Set(S.workouts.map(w => weekKey(w.d, ws)))
-  let streak = 0
-  const cur = new Date()
-  for (let i = 0; i < 520; i++) {
-    const wk = weekKey(isoOf(cur), ws)
-    if (weeks.has(wk)) streak++
-    else if (i > 0) break
-    cur.setDate(cur.getDate() - 7)
-  }
-  return streak
-}
+// The week streak, with its freezes and badges, lives in lib/streak.js.
+export { streakWeeks } from './streak.js'
 
 /**
  * Cascade an explicit work-set load edit through the later inherited work sets.
@@ -1044,7 +1033,8 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
 // A warm-up rung rounded down to something loadable: the step's grid, or — when `step` is the
 // list of dumbbells the profile owns (lib/dumbbells.js ownedWeightsFor, issue #376) — the
 // heaviest bell at or under it.
-const rungDown = (x, step) => (Array.isArray(step) ? ownedFloor(step, x) : Math.floor(x / step) * step)
+// A function is the gym's own plates (plates.js dropGrid), the heaviest load at or under `x`.
+const rungDown = (x, step) => (typeof step === 'function' ? step(x) : Array.isArray(step) ? ownedFloor(step, x) : Math.floor(x / step) * step)
 
 // An assistance machine (exercises.js isAssisted) ramps from the other side: the stack carries
 // part of your body weight, so less load is harder, and halving it made the warm-up harder than
@@ -1056,11 +1046,13 @@ function assistedRung(from, to, step) {
   const top = from > 0 ? from : 2 * to
   if (!(top > to)) return to
   const x = to + (top - to) / 2
-  if (Array.isArray(step)) return x
+  if (Array.isArray(step) || typeof step === 'function') return x
   return Math.max(to, Math.ceil(x / step - 1e-9) * step)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
 }
 
-export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false) {
+// `keep` says which rows stay as they are: a logged one always (rewriting performed work is data
+// loss), and during a workout a rung you typed yourself too (liveReramp below).
+export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false, keep = row => row.done) {
   const firstWork = rows.findIndex(x => !isWarmupRow(x))
   if (firstWork <= 0) return rows
   const target = rows[firstWork].w || 0
@@ -1068,8 +1060,12 @@ export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false) {
   const out = rows.slice()
   let from = 0
   for (let i = 0; i < firstWork; i++) {
-    if (out[i].done) { from = out[i].w || 0; continue }
-    const w = assisted
+    if (keep(out[i])) { from = out[i].w || 0; continue }
+    // A rung of a generated or saved block (lib/warmup-ramp.js) keeps its own share of the work
+    // weight instead of halving the gap: 60% stays 60% of whatever the work set now weighs.
+    const w = isRungRow(out[i]) && !assisted
+      ? rungWeight(out[i], target, step, floor)
+      : assisted
       ? assistedRung(from, target, step)
       : target > from
         ? Math.min(target, Math.max(0, floor, rungDown(from + (target - from) / 2, step)))
@@ -1083,6 +1079,14 @@ export function rerampWarmups(rows, step = 2.5, floor = 0, assisted = false) {
   }
   return out
 }
+
+/**
+ * The open warm-ups re-aimed at the work weight after it changed mid-workout (#156): bump the first
+ * work set from 100 to 110 and the rungs you have not done yet follow it. A warm-up already
+ * logged, or one you set yourself, stays exactly as it is.
+ */
+export const liveReramp = (rows, step, floor = 0, assisted = false) =>
+  rerampWarmups(rows, step, floor, assisted, row => row.done || hasCompletedWork(row) || row.edited === true)
 
 export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
   const firstWork = rows.findIndex(x => !isWarmupRow(x))
@@ -1186,9 +1190,9 @@ export function setSpanAt(rows, i) {
 // What a copied set leaves behind (v1.3.11, swipe right or "Copy this set"): the tick and when it
 // happened, a hold's set-aside plan, the manual-weight marker (the copy follows a weight change
 // above it like any inherited row) and the drop/burst sub-rows, which belong to the set that was
-// actually done. Weight, reps, time, speed, effort, the warm-up phase, a pyramid's Max and the
-// side layout all come along.
-const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters']
+// actually done, and so does the set's form video (lib/set-videos.js). Weight, reps, time,
+// speed, effort, the warm-up phase, a pyramid's Max and the side layout all come along.
+const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters', 'media']
 const bare = src => {
   const out = { ...src }
   for (const k of NOT_COPIED) delete out[k]

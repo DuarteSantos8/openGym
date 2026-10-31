@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// Settings → Integrations (v1.4.5): the cards by platform and server, the webhook add / test /
+// Settings → Integrations (v1.4.4): the cards by platform and server, the webhook add / test /
 // retry / disconnect flow against a mocked API, and the way in from the Settings search.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'

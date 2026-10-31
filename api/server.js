@@ -29,6 +29,10 @@ import {
   transportsOf,
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks, recoveryLinkOf, RECOVERY_TTL_MS } from './device-link.js';
+import {
+  createWatchCode, takeWatchCode, dropWatchCodes, createWatchLink, findWatchLink, touchWatchLink, listWatchLinks,
+  dropWatchLinks, boxOf, putSnapshot, pushEvents, queuedEvents, ackEvents
+} from './watch-relay.js';
 import { startAdminSocket } from './admin-socket.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { effectiveRoutineId } from './queue.js';
@@ -38,6 +42,7 @@ import { ipv6Groups, guardedLookup, pushEndpointError } from './net-guard.js';
 import { createIntegrations } from './integrations/index.js';
 import { integrationRoutes } from './integrations/routes.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
+import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -189,6 +194,9 @@ function atomicWrite(file, content, mode) { durableWrite(file, content, mode); }
 // synced more writes ago than this merges on its next pull instead of taking the server's copy.
 const WID_KEEP = 50;
 const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
+// The watch relay's mailbox of a profile (watch-relay.js): the page's last snapshot and what its
+// Zepp OS watches sent. Small, rewritten whole like the state file.
+const watchFile = uid => path.join(DATA, 'watch-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
 // When a profile last fetched its document (GET /api/data). The document's own `_ts` moves only
 // on a push, so a device that only ever read — a second phone, a profile that trains elsewhere
 // and just looks — showed "last sync never" in the admin dashboard (QA 1.3.9). Kept on the user
@@ -451,11 +459,24 @@ function stateSummary(uid) {
     rem: r && typeof r === 'object' ? { on: !!r.on, tz: r.tz, time: r.time, nudge: !!r.nudge } : { on: false },
     consent: !!S?.coach?.consent?.agreedAt,
     settled: '',   // a local date the reminder was found to owe nothing on, for this file
+    wrapped: wrappedSummary(S),   // the December push (wrapped.js): a flag, a year, a few years
   };
   stateSummaries.set(uid, sum);
   return sum;
 }
+// "Your year in openGym" (wrapped.js): once per user and year, on Dec 1 from 18:00 server time.
+// The year it went out for is written to db.json before the send, so a crash after it, a restart
+// or the next tick cannot send it twice. Read from the summary only: no state is parsed for it.
+function wrappedTick(user, sum, year) {
+  if (!wrappedPushOwed(user, sum.wrapped, year)) return;
+  console.log('wrapped push firing', user.id, year);
+  user.wrappedPush = year;
+  saveDb();
+  sendPush(user.id, wrappedPush(sum.wrapped.lang, year));
+}
 setInterval(() => {
+  // Server time, read through Date.now() so the tests' clock moves it too.
+  const wrappedYear = wrappedPushYear(new Date(Date.now()));
   for (const user of db.users) {
     if (user.disabled) continue;            // locked out everywhere, reminders included
     if (!db.subs.some(s => s.userId === user.id)) continue;
@@ -464,6 +485,7 @@ setInterval(() => {
     // PUT /api/data refuses the obvious shapes, but a file already on disk answers to nobody.
     try {
       const sum = stateSummary(user.id);
+      if (wrappedYear && sum && user.wrappedPush !== wrappedYear) wrappedTick(user, sum, wrappedYear);
       if (!sum?.rem.on) continue;
       const now = userNow(sum.rem.tz || 'UTC');
       if (!now) continue;
@@ -638,7 +660,9 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // The password routes are deliberately NOT exempt. A name and a password are a credential too,
 // but one a hostile page can know — its own — so an exempt POST /api/login/password would let
 // any site sign a visitor into the attacker's account and collect what they log (login CSRF).
-const CSRF_EXEMPT = new Set(['POST /api/pair/redeem']);
+// The watch relay's two routes for the watch are the same kind: the code in the body, or a watch
+// token in the Authorization header, which no browser attaches on its own.
+const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -734,6 +758,25 @@ function makePairCode() {
   return code;
 }
 setInterval(() => { for (const [k, v] of pairings) if (v.exp < Date.now()) pairings.delete(k); }, 60000).unref();
+
+/* ---------- the watch relay (watch-relay.js, docs/ZEPP_OS.md) ---------- */
+// Pairing codes for watches, in memory like the phone's: hashed, one per profile, ten minutes.
+const watchCodes = new Map();
+setInterval(() => { const now = Date.now(); for (const [k, v] of watchCodes) if (v.exp <= now) watchCodes.delete(k); }, 60000).unref();
+const readBox = uid => { try { return boxOf(JSON.parse(fs.readFileSync(watchFile(uid), 'utf8'))); } catch { return boxOf(null); } };
+const writeBox = (uid, box) => durableWrite(watchFile(uid), JSON.stringify(box), 0o600);
+// The watch link a request carries (`Authorization: Bearer ogw_…`), or null. Never a session: an
+// account that may not sign in, or whose sessions were all ended since, has no live links either.
+function watchLinkFor(req) {
+  const auth = req.headers.authorization || '';
+  if (!auth.startsWith('Bearer ')) return null;
+  const link = findWatchLink(db, auth.slice(7).trim(), uid => {
+    const u = db.users.find(x => x.id === uid);
+    return u && !u.disabled ? sessionVersion(u) : null;
+  });
+  if (link && touchWatchLink(link)) saveDb();
+  return link;
+}
 
 /* ---------- helpers ---------- */
 function json(res, code, obj, extraHeaders) {
@@ -985,6 +1028,8 @@ const THROTTLED = {
   'POST /api/account/passkeys/options': null, 'POST /api/account/device-link': null,
   // Pairing a phone: the same, for the password that may prove it.
   'POST /api/pair/create': null,
+  // A watch's pairing code (watch-relay.js): a wrong one counts like a wrong device link.
+  'POST /api/watch/redeem': 'watch', 'POST /api/watch/pair': null,
   'DELETE /api/account/passkeys': null,
   // Deleting the account: the same, for the password that may prove it.
   'POST /api/account/delete': null
@@ -1272,9 +1317,12 @@ function removeAccount(u) {
   db.creds = (db.creds || []).filter(c => c.userId !== u.id);
   db.subs = (db.subs || []).filter(x => x.userId !== u.id);
   dropDeviceLinks(db, u.id);
+  dropWatchLinks(db, u.id);
+  dropWatchCodes(watchCodes, u.id);
   presence.delete(u.id);
   // The training history and any Coach credential of theirs, both outside db.json.
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
+  try { fs.unlinkSync(watchFile(u.id)); } catch { /* never had a watch */ }
   try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
@@ -2311,6 +2359,92 @@ const routes = {
     }
     audit(req, 'auth.pair.ok', { user });
     json(res, 200, { token: makeSession(user), user: publicUser(user) });
+  },
+
+  // The watch relay (watch-relay.js, docs/ZEPP_OS.md). A signed-in device asks for a code, the
+  // Zepp app's settings page for openGym redeems it for a watch token, and from then on the page
+  // and the watch's Side Service meet in this profile's mailbox. A watch token opens the two
+  // /api/watch/box routes and nothing else, so a session is all that minting one asks; "sign out
+  // everywhere" and a new password end every watch link with the sessions (their version).
+  'POST /api/watch/pair': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const { code, exp } = createWatchCode(watchCodes, user.id);
+    audit(req, 'auth.watch.pair', { user });
+    json(res, 200, { code, exp });
+  },
+  'POST /api/watch/redeem': async (req, res) => {
+    const body = await readBody(req);
+    if (addressPaused(req, res, 'watch')) return;
+    const uid = takeWatchCode(watchCodes, text(body.code));
+    const user = uid && db.users.find(u => u.id === uid);
+    if (!user || user.disabled) {
+      strikeAddress(req, 'watch');
+      auditFail(req, 'auth.watch.fail', { ok: false, msg: 'code-invalid' });
+      return json(res, 400, { error: 'invalid or expired code', code: 'pair-invalid' });
+    }
+    const { token, link } = createWatchLink(db, user.id, sessionVersion(user), text(body.name));
+    saveDb();
+    audit(req, 'auth.watch.ok', { user, msg: link.name });
+    json(res, 200, { token, id: link.id, name: user.name || '' });
+  },
+  'GET /api/watch/links': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { links: listWatchLinks(db, user.id) });
+  },
+  'POST /api/watch/unlink': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const id = text(body.id) || null;
+    if (dropWatchLinks(db, user.id, id)) saveDb();
+    // The last watch gone: nothing is left to read the mailbox.
+    if (!listWatchLinks(db, user.id).length) { try { fs.unlinkSync(watchFile(user.id)); } catch { /* none */ } }
+    audit(req, 'auth.watch.unlink', { user });
+    json(res, 200, { ok: true, links: listWatchLinks(db, user.id) });
+  },
+  // The page's side: its snapshot for the watches, and what they sent.
+  'PUT /api/watch/snapshot': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    if (!listWatchLinks(db, user.id).length) return json(res, 409, { error: 'no watch paired', code: 'no-watch' });
+    const box = readBox(user.id);
+    if (!putSnapshot(box, body.json)) return json(res, 400, { error: 'not a snapshot' });
+    writeBox(user.id, box);
+    json(res, 200, { ok: true });
+  },
+  'GET /api/watch/events': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const links = listWatchLinks(db, user.id);
+    const seen = links.reduce((m, l) => Math.max(m, l.seen || 0), 0);
+    json(res, 200, { events: links.length ? queuedEvents(readBox(user.id)) : [], paired: links.length, seen });
+  },
+  'POST /api/watch/ack': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const box = readBox(user.id);
+    if (ackEvents(box, body.ids)) writeBox(user.id, box);
+    json(res, 200, { ok: true });
+  },
+  // The watch's side (its Side Service, with the watch token): the snapshot, and its events.
+  'GET /api/watch/box': async (req, res) => {
+    const link = watchLinkFor(req);
+    if (!link) return json(res, 401, { error: 'not paired', code: 'watch-unpaired' });
+    const box = readBox(link.userId);
+    json(res, 200, { json: box.snapshot, at: box.snapAt });
+  },
+  'POST /api/watch/box': async (req, res) => {
+    const link = watchLinkFor(req);
+    if (!link) return json(res, 401, { error: 'not paired', code: 'watch-unpaired' });
+    const body = await readBody(req);
+    const box = readBox(link.userId);
+    const accepted = pushEvents(box, body.events);
+    if (accepted.length) writeBox(link.userId, box);
+    json(res, 200, { accepted, json: box.snapshot, at: box.snapAt });
   },
 
   // Absent entirely while PASSWORD_LOGIN is off, so each of them is a plain 404.

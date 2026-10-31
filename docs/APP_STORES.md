@@ -32,10 +32,15 @@ ever sees the repo's 180 px media.
   (`ios/App/App/PrivacyInfo.xcprivacy`): no tracking, no data collected. No non-exempt
   encryption (`ITSAppUsesNonExemptEncryption = NO`, HTTPS only). The Coach asks before anything
   is sent to an AI provider and names it (App Review Guideline 5.1.2(i), November 2025).
-- **Both:** no account, no ads, no analytics in the app, and nothing to buy. Settings → About &
-  updates links to Buy Me a Coffee, Ko-fi and GitHub Sponsors: plain links that open in the
-  browser, unlock nothing, and never pop up on their own. On the iPhone the same section has a
-  link to writing an App Store review (no review prompt, App Review 5.6.1).
+- **Both:** no account, no ads, no analytics in the app, and nothing to buy. On the iPhone,
+  the APK and the web, Settings → About & updates links to Buy Me a Coffee, Ko-fi and GitHub
+  Sponsors: plain links that open in the browser, unlock nothing, and never pop up on their own.
+  On the iPhone the same section has a link to writing an App Store review (no review prompt,
+  App Review 5.6.1). **The Google Play build has no donation links**, only "Rate openGym on
+  Google Play": Play's Payments policy (section 4) says an app "may not lead users to a payment
+  method other than Google Play's billing system", and its exceptions (section 3) cover
+  "tax exempt donations" only, which a one-person open-source project is not. The listing and the
+  website may still mention the project's donation pages; the app doesn't link them.
 
 ## Every release
 
@@ -61,14 +66,26 @@ Each is built from its own phone build: the **Standard** APK with the box-free 1
 built in (`quality/180`, about 315 MB), the **Plus** APK with 240 px (`quality/240`, about
 424 MB; `PLUS_PX=0` none), the **HD** APK with 360 px (`quality/360`, about 760 MB; `HD_PX=0`
 none), the bundle with 180 px (`quality/180`, like the App Store app) and an asset
-pack for every quality above 180 that has a folder in `/mnt/backup-hdd/opengym-media/quality/`
+pack for every quality above 180 that has a folder in `/mnt/build-fast/from-hdd/opengym-media/quality/`
 (`scripts/android/make-asset-packs.mjs`, the same drawings per pack as the iPhone's); the pack
 modules are generated into `frontend/android/` for the build and removed after, never committed.
 To try packs on an emulator: `make-asset-packs.mjs --px 240 --builtin 180 --limit 30`, then
 `./gradlew bundlePlayDebug` and `bundletool build-apks --local-testing` + `install-apks`.
 
-Upload the `.aab` in Play Console → Test and release → Production (or a testing track first),
-with the release notes from the changelog.
+Only the bundle: `AAB_ONLY=1`. Only some packs: `PACK_PX=240,360` (the 1.4.4 closed test had
+180 built in plus 240 and 360 as packs, 2.0 GB to upload; the full set 240 to 1080 is about
+13 GB). On a box that must not run hot: `GRADLE_ARGS=-Dorg.gradle.workers.max=2` and
+`nice -n 19 ionice -c3`. `BUNDLETOOL=/path/bundletool.jar` validates the bundle at the end.
+
+**Version codes.** One `versionCode` per version, shared by the APKs and the Play bundle
+(1.4.3 = 28, 1.4.4 = 29, 1.4.5 = 30, ...), so the same version from either source installs
+over the other. Google Play refuses a code it has seen: if a Play bundle of a version has to be
+uploaded twice, the second one takes the next code and the APK of that version gets it too.
+
+The very first bundle of the app goes up by hand in Play Console (the API cannot create an app).
+After that, `node /root/homelab/scripts/play/upload-aab.mjs <aab> --track internal|alpha|production`
+uploads it through the Google Play Developer API with a service account, release notes per
+language from a folder (`--notes`). `alpha` is Play's name for the closed testing track.
 
 ### iPhone
 
@@ -81,7 +98,7 @@ own widget. Each is a separate bundle id with its own App Store provisioning pro
    exercise media, and stamps the commit into the zip (`ci-commit.txt`). Download the
    `ios-unsigned-ipa` artifact of the release commit (`gh run download <run> -n ios-unsigned-ipa`).
 2. **Phone bundle with the animations**, from the same commit, on the release machine:
-   `cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/backup-hdd/opengym-media/build-appwebp npm run build:mobile`
+   `cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/build-fast/from-hdd/opengym-media/build-appwebp npm run build:mobile`
 3. **Finish and sign** (`scripts/ios/finish-ipa.sh`, no Mac needed, `rcodesign` signs on Linux):
    ```sh
    EXT_PROFILE=downloader.mobileprovision WIDGETS_PROFILE=widgets.mobileprovision \
@@ -143,14 +160,27 @@ The full-quality files only ever travel from the release machine to Apple, like 
    separate apps on a phone. This cannot be changed later.
 4. Store listing, content rating questionnaire (no violence, no user content shared with
    others: "Everyone"), target audience 13+ or 16+, Data safety (below).
-5. Declarations Play asks for:
-   - **Health Connect** (write exercise, write weight): the in-app reason screen exists; the
-     form asks what the data is used for: "writes finished workouts and weigh-ins, reads nothing".
-   - **Foreground service, special use:** the rest countdown in the notification shade
-     (`RestTimerService`). Play may ask for a short screen recording of a rest running.
-   - **Exact alarms:** only the user-granted `SCHEDULE_EXACT_ALARM` (reminder to the minute),
-     no `USE_EXACT_ALARM`.
-   - **Camera:** scanning the gym membership code and photos of your own exercises.
+5. Declarations Play asks for (the texts to paste are in the owner's Play Console notes):
+   - **Health Connect:** write exercise and weight (finished workouts and weigh-ins), read heart
+     rate (shown next to the sets of a workout just logged) and weight (weigh-ins from a scale
+     app), and `READ_HEALTH_DATA_HISTORY` (the first weigh-in read goes back a year instead of
+     30 days). Foreground only, no `READ_HEALTH_DATA_IN_BACKGROUND`. Use case: fitness, wellness
+     and coaching. The in-app reason screen exists (`ViewPermissionUsageActivity`).
+   - **Foreground services:** `specialUse` for the rest countdown in the notification shade
+     (`RestTimerService`), `location` for the gym reminder's short arrival check
+     (`GymScanService`, use case geofencing). Each needs a description, the user impact and a
+     video.
+   - **Background location** (`ACCESS_BACKGROUND_LOCATION`, the gym reminder): a declaration with
+     a video of the in-app explainer, the system prompt and the reminder firing. Play allows it
+     only for a feature that matters to the app; if it refuses, build with
+     `-PplayWithoutBackgroundLocation` (app/build.gradle): the Play build then asks for no
+     background location at all and hides the gym reminder (ChannelPlugin, `lib/channel.js`).
+   - **Exact alarms:** only the user-granted `SCHEDULE_EXACT_ALARM` (reminder to the minute, the
+     rest-over fallback alarm), no `USE_EXACT_ALARM` (that one is for alarm clock and calendar
+     apps).
+   - **Camera:** scanning the gym membership code and photos of your own exercises (a normal
+     runtime permission, no form). "Film this set" hands over to the camera app, so the app
+     itself never asks for the microphone.
 
 **Data safety answers:** no data collected, no data shared. Data stays on the device; the
 optional sync goes to a server the user runs or picks themselves (not the developer's), and

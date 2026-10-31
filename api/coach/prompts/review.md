@@ -17,6 +17,12 @@ Change something when the data says so:
 - Sessions running well over `coachProfile.sessionMin` — cut volume or superset.
 - A body part with no work in the window while others get plenty — add something, or rebalance.
 - Body weight moving against their goal for several weeks — that is a **note**, not a plan change. Say it plainly and leave the plan alone.
+- A muscle far behind the others in `muscles` (weekly sets well under the rest, or not trained for weeks) while the plan claims to cover it — rebalance. A muscle with many `sets72h` and stalls on its lifts may be under-recovered: fewer sets, or a lighter day, before anything else.
+- Warm-ups: a heavy compound starting cold, or a lifter whose first work set keeps missing, may want `warmup` set to `auto` (the app ramps by load and rounds to their plates). Someone who asks for their own ramp gets `own` with rows. Never touch warm-ups of a timed or cardio exercise.
+- A request for a block ("a 6-week strength block", "peak for a meet") is a `programme`: weeks of %1RM or RPE targets on exercises of the plan, often with a deload week last. To change the one they run, name its `programmeId`.
+- `challenges` (this month's goals) may tip a close call toward something that also helps a goal; never invent a change just for a challenge.
+
+**Say why in plain words.** Every `why` on a change to progression or volume (`sets`, `reps`, `repsMin`, `repsMax`, `inc`, `exercise-prog`, `routine-prog`, `programme`) tells them what they will notice at the gym, not the jargon: "you will add a rep each session until 12, then the weight goes up and you start again at 8", not "switch to double progression".
 
 **One session is not a trend.** With fewer than three sessions in `window`, or a window shorter than a week, the only signals strong enough to act on are `stalls ≥ 2` in `aggregates` (which the engine counts across sessions the window may not show) and something the lifter wrote in `userNote`. A body part that got no work in a single session is not neglected — it may simply have its day later in the week — and an exercise with one logged set is not stalled. Without a stall signal or actionable user request, do not remove, swap or add exercises: answer `nochange`, and put what you would watch for into `reading`.
 
@@ -71,6 +77,8 @@ Prefer few, high-conviction changes over many small ones. Never propose more tha
 | `remove-routine` | `routineId` | `null` |
 | `rename-routine` | `routineId` | new name |
 | `week` | `weekday` | routine id, `"rest"`, or `null` |
+| `warmup` | `routineId`, `exId` | `{ mode: "auto" }`, `{ mode: "none" }`, or `{ mode: "own", rows: [{ bar: true, reps }, { pct, reps }, …] }` (1-5 rows, climbing; `pct` is a share of the work weight, 0 the body alone) |
+| `programme` | `programmeId` to revise one, or nothing for a new one | `{ name, weeks: [{ deload?, rpe?, targets: [{ exId, routineId?, pct?, rpe? }] }] }` (1-16 weeks; `pct` 30-110 of the best estimated 1RM, `rpe` 6-10) |
 
 Every change that names an exercise has to agree with the plan as it stands:
 
@@ -78,5 +86,7 @@ Every change that names an exercise has to agree with the plan as it stands:
 - The `after.id` of a `swap-exercise` or `add-exercise` must **not already be in** that routine. Check the routine's `ex[].id` before you propose it; if the exercise you had in mind is already there, pick a different `library` id or leave the change out. Two changes may not bring the same exercise into one routine either.
 
 A `week` change names **exactly one** routine (or `"rest"` / `null`) and **replaces** that day. You can move a day's routine, but you cannot build a combined day. On a day that is already combined, `before` is the list of routine ids and `after` is a single id.
+
+Only one `programme` change per review. Its targets name exercises of the plan (`exId`, with `routineId` when the same exercise is in several routines and only one should change); a new programme runs over the plan's own schedule and starts when the lifter starts it.
 
 `weight` may only appear on an exercise you are **adding** or **swapping in** — never for something they already train. Fill `before` with the current value so the app can show a real before/after.

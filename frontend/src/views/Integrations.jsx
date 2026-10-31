@@ -17,7 +17,7 @@ import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import Icon from '../components/Icon.jsx'
 import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
 
-/* Settings → Integrations (v1.4.5): one directory of what openGym can talk to, grouped, each card
+/* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
    with what it is, whether it is on, and the one thing to do next. The cards are thin on purpose:
    Apple Health and Health Connect keep their switches on their own page, the imports and the CSV
    export open the sheets Data & backup has always opened, the Coach its own setup. Only the

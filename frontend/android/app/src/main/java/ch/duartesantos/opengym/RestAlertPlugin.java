@@ -19,6 +19,8 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  *   await RestAlert.schedule({ id, at, title, sound, tone, classic, vibrate, channelId, visibility, importance, localOnly });
  *   await RestAlert.cancel({ id });
  *   await RestAlert.buzz({ pattern: [200, 100, 200] });   // navigator.vibrate's shape, as an alarm
+ *   await RestAlert.speak({ text, lang, rate, flush });   // a spoken cue, music ducks (SpeechCue)
+ *   await RestAlert.hush();
  */
 @CapacitorPlugin(name = "RestAlert")
 public class RestAlertPlugin extends Plugin {
@@ -93,7 +95,11 @@ public class RestAlertPlugin extends Plugin {
                 call.getString("importance", "high"),
                 Boolean.TRUE.equals(call.getBoolean("localOnly", Boolean.FALSE)),
                 call.getString("countdownTitle", "Rest"),
-                number(call, "totalMs", 0)
+                number(call, "totalMs", 0),
+                // Timed holds that run themselves: the alerts after this one, and whether this one
+                // shows the rest's countdown card (a count-in or a hold does not).
+                cuesOf(call),
+                !Boolean.FALSE.equals(call.getBoolean("countdown", Boolean.TRUE))
         );
         call.resolve();
     }
@@ -135,6 +141,30 @@ public class RestAlertPlugin extends Plugin {
             return;
         }
         RestAlert.playNow(ctx.getApplicationContext(), call.getString("kind", "chime"));
+        call.resolve();
+    }
+
+    /**
+     * A spoken cue in the phone's voice (lib/spoken-cues.js): { text, lang, rate, flush }. Music
+     * ducks for it and comes back up (SpeechCue). Rejected when the phone has no voice to use.
+     */
+    @PluginMethod
+    public void speak(PluginCall call) {
+        Context ctx = getContext();
+        String text = call.getString("text", "");
+        if (ctx == null || text == null || text.isEmpty()) {
+            call.reject("nothing to say");
+            return;
+        }
+        Double rate = call.getDouble("rate");
+        boolean ok = SpeechCue.speak(ctx, text, call.getString("lang", ""), rate == null ? 1f : rate.floatValue(), Boolean.TRUE.equals(call.getBoolean("flush", false)));
+        if (ok) call.resolve();
+        else call.reject("no voice");
+    }
+
+    @PluginMethod
+    public void hush(PluginCall call) {
+        SpeechCue.hush();
         call.resolve();
     }
 
@@ -185,6 +215,13 @@ public class RestAlertPlugin extends Plugin {
             try { ctx.startService(i); } catch (Exception ignored) { /* no rest running */ }
         }
         call.resolve();
+    }
+
+    /** The `cues` array ({ dt, title }) as JSON for the alarm's intent, or "" for none. */
+    private static String cuesOf(PluginCall call) {
+        JSArray cues = call.getArray("cues");
+        if (cues == null || cues.length() == 0) return "";
+        return cues.toString();
     }
 
     // PluginCall.getLong only accepts a Long, and a JS timestamp often arrives as a Double

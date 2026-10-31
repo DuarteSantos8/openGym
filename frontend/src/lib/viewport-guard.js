@@ -36,6 +36,9 @@ export function keyboardOpen(win = window) {
 /** Realign the viewports if iOS left them apart. Returns true when a correction was issued. */
 export function realign(win = window) {
   if (keyboardOpen(win)) return false
+  // Pinched in (the web build allows zoom since 1.4.5): the visual viewport sits inside the layout
+  // one because the reader put it there, so there is nothing to correct.
+  if ((win.visualViewport?.scale || 1) > 1.01) return false
   if (viewportDisplacement(win) <= 1) return false
   // Never touch a page while a text field has focus — no blur, no scroll, no unpin (issue #242).
   // `keyboardOpen` cannot be trusted mid-animation: both sides of its subtraction move, because

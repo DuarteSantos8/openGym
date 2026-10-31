@@ -1,11 +1,13 @@
 // @vitest-environment happy-dom
-// Settings → About & updates → Show the tour again: the app tour from the top, from anywhere,
-// but not over a running workout (its practice session would stand in for the real one).
+// Settings → About & updates → Tutorials: the app tour from the top (Show the tour again) and the
+// four tutorials, from anywhere, but not over a running workout (the tour's practice session and
+// the tutorials' copies would stand in for the real one).
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Settings from './Settings.jsx'
-import { tourState, closeTour, markTourDone } from '../lib/tour.js'
+import { tourState, closeTour, markTourDone, markTutorialDone } from '../lib/tour.js'
+import { searchSettings } from './settings-pages.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -67,7 +69,7 @@ afterEach(() => {
   localStorage.clear()
 })
 
-const row = () => [...host.querySelectorAll('.lrow')].find(b => b.textContent.includes('Show the tour again'))
+const row = (title = 'Show the tour again') => [...host.querySelectorAll('.lrow')].find(b => b.querySelector('.lrow-t')?.textContent === title)
 
 describe('Settings: Show the tour again', () => {
   it('starts the tour from the top, also after it was seen', () => {
@@ -82,5 +84,37 @@ describe('Settings: Show the tour again', () => {
     act(() => row().click())
     expect(tourState()).toBe(null)
     expect(mocks.toast).toHaveBeenCalledWith('Finish your workout first, then the tour is all yours.')
+  })
+})
+
+describe('Settings: Tutorials', () => {
+  it('lists the tour and the four tutorials together, under one heading', () => {
+    act(() => root.render(<Settings page="about" />))
+    const sect = [...host.querySelectorAll('.sect')].find(x => x.textContent.includes('Tutorials'))
+    expect([...sect.querySelectorAll('.lrow-t')].map(x => x.textContent))
+      .toEqual(['Show the tour again', 'Build your first plan', 'Create your own exercise', 'Edit your data', 'Export & import'])
+  })
+  it('each runs its own tutorial, and one seen to the end says Done', () => {
+    markTutorialDone('edit')
+    act(() => root.render(<Settings page="about" />))
+    expect(row('Edit your data').textContent).toContain('Done')
+    expect(row('Build your first plan').textContent).not.toContain('Done')
+    act(() => row('Build your first plan').click())
+    expect(tourState()).toEqual({ kind: 'run', at: null, flow: 'plan' })
+    closeTour()
+    act(() => row('Export & import').click())
+    expect(tourState()).toEqual({ kind: 'run', at: null, flow: 'backup' })
+  })
+  it('a tutorial waits for a running workout too', () => {
+    mocks.S.active = { id: 'a', entries: [] }
+    act(() => root.render(<Settings page="about" />))
+    act(() => row('Create your own exercise').click())
+    expect(tourState()).toBe(null)
+  })
+  it('the search still finds the tour by its old name, and the tutorials by theirs', () => {
+    const ctx = { mobile: false }
+    expect(searchSettings('Show the tour again', ctx).some(h => h.title === 'Show the tour again' && h.page === 'about')).toBe(true)
+    expect(searchSettings('tour', ctx).some(h => h.title === 'Show the tour again')).toBe(true)
+    expect(searchSettings('tutorial', ctx).map(h => h.title)).toEqual(expect.arrayContaining(['Show the tour again', 'Build your first plan', 'Edit your data', 'Export & import']))
   })
 })

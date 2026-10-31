@@ -14,6 +14,7 @@ import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import { Button, Row, SelectRow, Switch } from '../components/ui.jsx'
+import { shareRoutineSheet } from '../components/RoutineShare.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
 import { copyRoutine, deleteRoutine, replaceSlotExercise } from '../lib/routines.js'
@@ -459,9 +460,9 @@ export default function RoutineEdit() {
 
   return <div className="narrow">
     <div className="hdr">
-      <button className="iconbtn" data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Plan')}><Icon name="chevronLeft" /></button>
+      <button className="iconbtn" data-back="/plan" data-tour="routine-back" onClick={() => nav('/plan')} aria-label={t('Plan')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, margin: '0 12px' }}>
-        <input className="input" defaultValue={r.name} style={{ fontWeight: 600, fontSize: 20, letterSpacing: '-.021em' }}
+        <input className="input" data-tour="routine-name" aria-label={t('Routine name')} defaultValue={r.name} style={{ fontWeight: 600, fontSize: 'var(--fs-title3)', letterSpacing: '-.021em' }}
           onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />
       </div>
       <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
@@ -502,7 +503,7 @@ export default function RoutineEdit() {
         had to be scrolled to the bottom before anything could be added. */}
     <div className="row between plan-sec-h routine-ex-h">
       <h4 className="sec">{t('Exercises')}</h4>
-      <Button size="sm" variant="tinted" icon="plus" onClick={addExercise}>{t('Add exercise')}</Button>
+      <Button size="sm" variant="tinted" icon="plus" data-tour="routine-add" onClick={addExercise}>{t('Add exercise')}</Button>
     </div>
     {r.ex.length ? <div ref={reorder.listRef} onClickCapture={reorder.onClickCapture}
       className={'list routine-list' + (reorder.drag ? ' is-reordering' : '')}>{r.ex.map((e, i) => {
@@ -531,15 +532,17 @@ export default function RoutineEdit() {
           <button type="button" className="grow item-open" data-row-open><span className={`tt ${exerciseNameClass(ex)}`}>{exerciseNameFor(ex)}</span><span className="ss">{exLine(viewTarget(S, e.id, e), exUnitOf(S, e.id), speedUnitOf(S))}</span>
             {e.note && <span className="small dim" style={{ marginTop: 2 }}>{e.note}</span>}</button>
           {noEquip && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }} title={t('Needs {0}, which isn’t in your active profile', t(ex.eq))}><Icon name="warning" /></span>}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 'none', alignItems: 'center' }}>
-            {i > 0 && <button className={'iconbtn' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} style={{ width: 32, height: 28, borderRadius: 8, fontSize: 15 }} onClick={ev => { ev.stopPropagation(); toggleLink(i) }}><Icon name="link" /></button>}
-            <div style={{ display: 'flex', gap: 2 }}>
-              <button className="iconbtn" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
-              <button className="iconbtn" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} style={{ width: 28, height: 24, borderRadius: 7, fontSize: 12 }} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
-            </div>
+          {/* One rail (P4): the superset link beside the two move buttons, each a finger-sized
+              target (index.css .re-rail). The first exercise has nothing above to link to, so its
+              link cell stays empty and the arrows keep their place down the list. */}
+          <div className="re-rail">
+            {i > 0 ? <button className={'iconbtn re-link' + (linkedPrev ? ' on-ss' : '')} title={t('Superset with exercise above')} aria-label={t('Superset with exercise above')} aria-pressed={!!linkedPrev} onClick={ev => { ev.stopPropagation(); toggleLink(i) }}><Icon name="link" /></button>
+              : <span className="re-link" aria-hidden="true" />}
+            <button className="iconbtn re-up" aria-label={t('Move up')} title={leavesUp ? t('Move out of the superset') : t('Move up')} disabled={!moveRoutineEntry(r.ex, i, -1)} onClick={ev => { ev.stopPropagation(); move(i, -1) }}><Icon name="chevronUp" /></button>
+            <button className="iconbtn re-down" aria-label={t('Move down')} title={leavesDown ? t('Move out of the superset') : t('Move down')} disabled={!moveRoutineEntry(r.ex, i, 1)} onClick={ev => { ev.stopPropagation(); move(i, 1) }}><Icon name="chevronDown" /></button>
           </div>
         </div>
-      return <div key={i} data-routine-row data-ex-index={i}
+      return <div key={i} data-routine-row data-ex-index={i} data-tour={i === 0 ? 'routine-ex' : undefined}
         className={'routine-drag-row' + (isDragging ? ' is-dragging' : '')}
         style={isDragging ? { transform: `translate3d(0, ${reorder.drag.deltaY}px, 0)` } : undefined}>
         {unitFirst.has(i) && (() => {
@@ -576,21 +579,28 @@ export default function RoutineEdit() {
       </div>
     })()}
 
-    <div className="small dim row" style={{ margin: '10px 2px', gap: 5 }}><Icon name="link" style={{ fontSize: 13 }} />{t('Tap the link button on an exercise to superset it with the one above. You’ll do them back-to-back.')}</div>
-    <Button onClick={() => {
-      const copy = copyRoutine(r, t('Copy'))
-      update(s => { s.routines.push(copy) })
-      nav('/plan/r/' + copy.id)
-    }}>{t('Copy routine')}</Button>
-    <div style={{ height: 10 }} />
-    <Button disabled={!r.ex.length} onClick={printRoutine}>{t('Print / Save as PDF')}</Button>
-    <div style={{ height: 10 }} />
-    <Button variant="danger" onClick={() => confirmSheet({
-      title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,
-      onConfirm: () => {
-        update(s => { deleteRoutine(s, id) })
-        nav('/plan')
-      }
-    })}>{t('Delete routine')}</Button>
+    <div className="small dim row" style={{ margin: '10px 2px', gap: 5 }}><Icon name="link" style={{ fontSize: 'var(--fs-footnote)' }} />{t('Tap the link button on an exercise to superset it with the one above. You’ll do them back-to-back.')}</div>
+    {/* The routine's own actions (P4): one grouped list instead of three stacked buttons, and
+        Delete on its own below it, a red row that says what it removes. */}
+    <div className="sect-b re-acts">
+      <button type="button" className="lrow tap" onClick={() => {
+        const copy = copyRoutine(r, t('Copy'))
+        update(s => { s.routines.push(copy) })
+        nav('/plan/r/' + copy.id)
+      }}><Icon name="copy" className="re-act-i" /><span className="lrow-m"><span className="lrow-t">{t('Copy routine')}</span></span></button>
+      {/* A link a friend taps to add this routine to their own openGym (components/RoutineShare.jsx). */}
+      <button type="button" className="lrow tap" disabled={!r.ex.length} onClick={() => shareRoutineSheet(r)}><Icon name="share" className="re-act-i" /><span className="lrow-m"><span className="lrow-t">{t('Share with a friend')}</span></span></button>
+      <button type="button" className="lrow tap" disabled={!r.ex.length} onClick={printRoutine}><Icon name="download" className="re-act-i" /><span className="lrow-m"><span className="lrow-t">{t('Print / Save as PDF')}</span></span></button>
+    </div>
+    <div className="sect-b re-acts re-danger">
+      <button type="button" className="lrow tap danger" onClick={() => confirmSheet({
+        title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,
+        onConfirm: () => {
+          update(s => { deleteRoutine(s, id) })
+          nav('/plan')
+        }
+      })}><Icon name="trash" className="re-act-i" /><span className="lrow-m"><span className="lrow-t">{t('Delete routine')}</span>
+        <span className="lrow-s">{t('“{0}” and its exercises will be removed.', r.name)}</span></span></button>
+    </div>
   </div>
 }

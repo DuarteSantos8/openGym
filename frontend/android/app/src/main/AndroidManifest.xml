@@ -23,11 +23,38 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"
-            android:exported="true" />
+            android:exported="true">
+            <!-- openGym's own NFC stickers (NfcTagsPlugin, lib/nfc-tags.js): a tap opens the app,
+                 closed or not. Only links on our own stickers, nothing else NFC. -->
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="https" android:host="opengym.ch" android:pathPrefix="/nfc" />
+            </intent-filter>
+            <!-- A friend's routine link, https://opengym.ch/r#<routine> (components/RoutineShare.jsx):
+                 straight into the app instead of the page. Verified once opengym.ch serves
+                 /.well-known/assetlinks.json for this app; until then Android may ask which app. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="opengym.ch" android:path="/r" />
+                <data android:scheme="https" android:host="opengym.ch" android:path="/r/" />
+            </intent-filter>
+            <!-- opengym://nfc?... from opengym.ch/nfc, the page a sticker opens in a browser, and
+                 opengym://r#<routine> from opengym.ch/r. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="opengym" />
+            </intent-filter>
+        </activity>
 
         <!-- The home-screen icon (Settings → Look & Home → App icon, AppIconPlugin): the launcher
              entry is one of these aliases of MainActivity, each with its own icon, and exactly one
-             is enabled. IconDefault, the original, is the one a new install starts with. -->
+             is enabled. IconDefault, the original, is the one a new install starts with. Each one
+             carries the long-press shortcuts (res/xml/shortcuts.xml): a new alias needs them too. -->
         <activity-alias
             android:name=".IconDefault"
             android:enabled="true"
@@ -40,6 +67,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconLight"
@@ -53,6 +81,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconMono"
@@ -66,6 +95,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconNeon"
@@ -79,6 +109,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconSky"
@@ -92,6 +123,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconOrange"
@@ -105,6 +137,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconPink"
@@ -118,6 +151,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconViolet"
@@ -131,6 +165,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
         <activity-alias
             android:name=".IconHalloween"
@@ -144,6 +179,21 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+        <activity-alias
+            android:name=".IconChristmas"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_christmas"
+            android:roundIcon="@mipmap/ic_launcher_christmas_round"
+            android:label="@string/title_activity_main"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
 
         <!-- Health Connect (#200) opens the app from its permission screen to say why the
@@ -185,6 +235,16 @@
              clock and a shrinking bar after the WebView is frozen. The lock screen shows
              it only when the user allows notifications there. specialUse: this is a timer,
              not media playback. -->
+        <!-- The Wear OS watch app's events (WatchBridgePlugin): each one stored even with the app
+             closed, then let go of in the Data Layer. Only our own watch app's paths. -->
+        <service
+            android:name=".WatchListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/opengym/event/" />
+            </intent-filter>
+        </service>
         <service
             android:name=".RestTimerService"
             android:exported="false"
@@ -225,6 +285,30 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
+
+        <!-- The Home Screen widget (v1.4.4): what it shows comes from the app (WidgetBridgePlugin),
+             a tap opens the app at that screen. The configure screen picks what it shows; it
+             only ever writes this app's own widget settings. -->
+        <receiver
+            android:name=".OpenGymWidgetProvider"
+            android:exported="true"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/opengym_widget_info" />
+        </receiver>
+        <activity
+            android:name=".OpenGymWidgetConfigure"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/WidgetConfigTheme">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
 
         <!-- Gym check-in scanner (@capacitor-mlkit/barcode-scanning): pre-fetch the ML Kit
              barcode model at install time so the first scan doesn't wait on a download. -->
@@ -289,9 +373,25 @@
     <uses-feature android:name="android.hardware.location" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.location.network" android:required="false" />
+    <!-- NFC stickers (Settings → NFC sticker): writing one, and the tap that opens the app. A
+         normal permission, no prompt; a phone without NFC still installs the app. -->
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
     <!-- Whether the Health Connect app is there, on Android 13 and lower. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
+        <!-- "Film this set" (components/SetVideo.jsx): a file input with capture="environment"
+             opens the camera app straight into video. Capacitor's file chooser asks the package
+             manager for one first, and since Android 11 that answer is empty without this, so
+             the button fell back to the plain file picker. -->
+        <intent>
+            <action android:name="android.media.action.VIDEO_CAPTURE" />
+        </intent>
+        <!-- Spoken cues (SpeechCue.java): the phone's text-to-speech engine is another app, and
+             since Android 11 the app cannot bind to it without saying so here. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
     </queries>
 </manifest>

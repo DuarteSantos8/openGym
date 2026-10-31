@@ -168,8 +168,11 @@ export function ownSetRest(row) {
  * a timed hold pauses `switchSec` (capped at the set's rest, and none with the rest switched off),
  * and a reps set has no break between its sides, as before the field existed. `sideRestOff`
  * is "no timer" for a hold that wants its switch pause gone but keeps its set rest (#636).
+ * `ownSec` is the set's own rest from its menu (ownSetRest, #609): given, it is this one set's
+ * pause between its sides too (0 = none), before anything the exercise says (#853).
  */
-export function sideRestFor(target, { timed, restAfter, switchSec }) {
+export function sideRestFor(target, { timed, restAfter, switchSec, ownSec = null }) {
+  if (typeof ownSec === 'number' && Number.isFinite(ownSec) && ownSec >= 0) return ownSec > 0 ? Math.round(ownSec) : null
   if (target?.sideRestOff === true) return null
   const own = Math.round(Number(target?.sideRestSec)) || 0
   if (own > 0) return own
