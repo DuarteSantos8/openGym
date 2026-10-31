@@ -4,15 +4,17 @@ import { detailTags } from './sheets.jsx'
 import { exOr } from './lib/exercises.js'
 
 // QA 10-06: the bench press showed "Chest" twice on its detail page, once as the body part and
-// once as the main muscle.
+// once as the main muscle. Order (user): equipment first, then the body part and the muscles.
 describe('the exercise detail tags', () => {
-  const labels = id => detailTags(exOr(id)).map(x => x.label.toLowerCase())
+  const tagsOf = id => detailTags(exOr(id))
+  const labels = id => tagsOf(id).map(x => x.label.toLowerCase())
 
-  it('say Chest once on a bench press, with the body part first', () => {
-    const l = labels('0025')
-    expect(l.filter(x => x === 'chest 56%')).toHaveLength(1)
-    expect(detailTags(exOr('0025'))[0]).toMatchObject({ acc: true })
-    expect(new Set(l).size).toBe(l.length)
+  it('lead with the equipment, then say Chest once as the body part (acc)', () => {
+    const tags = tagsOf('0025')
+    expect(tags[0]).toMatchObject({ icon: 'kettlebell', label: 'barbell' })
+    expect(tags[1]).toMatchObject({ acc: true })
+    expect(labels('0025').filter(x => x === 'chest 56%')).toHaveLength(1)
+    expect(new Set(labels('0025')).size).toBe(tags.length)
   })
 
   it('never repeat a word across the whole catalogue, and keep at most three helpers', () => {
