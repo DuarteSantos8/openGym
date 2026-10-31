@@ -550,7 +550,6 @@ export const PT_BR_OVERRIDES = {
   'AI Coach': 'Treinador IA',
   'Bring my own API key': 'Usar minha própria chave de API',
   'Could not reach the provider: {0}': 'Não foi possível contatar o provedor: {0}',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'O Android bloqueia conexões http:// não criptografadas feitas por aplicativos, então este celular só consegue acessar um endpoint https://. Coloque HTTPS na frente (Tailscale ou um proxy reverso), ou escolha “Usar meu openGym self-hosted”: seu servidor consegue acessar um modelo http:// na própria rede.',
   'Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.': 'Cada pedido vai direto para {0} com a sua chave. Ninguém mais vê, e quem paga é você.',
   'Enter your API key': 'Digite sua chave de API',
   'How should the Coach run?': 'Como o Treinador deve rodar?',

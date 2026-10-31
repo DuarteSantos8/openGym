@@ -1007,7 +1007,6 @@ export default {
   'API key': 'API 키',
   'Bring my own API key': '내 API 키 사용',
   'Could not reach the provider: {0}': '제공자에 연결할 수 없습니다: {0}',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'Android는 앱의 암호화되지 않은 http:// 연결을 차단하므로 이 휴대폰은 https:// 엔드포인트에만 연결할 수 있습니다. 앞단에 HTTPS를 두거나(Tailscale 또는 리버스 프록시) “내 자체 호스팅 openGym 사용”을 선택하세요. 서버는 자체 네트워크의 http:// 모델에 연결할 수 있습니다.',
   'Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.': '모든 요청은 당신의 키로 {0}에 바로 전송됩니다. 다른 누구도 볼 수 없고, 비용은 당신이 냅니다.',
   'Endpoint': '엔드포인트',
   'Enter your API key': 'API 키를 입력하세요',

@@ -987,7 +987,6 @@ export default {
   'API key': 'API-ключ',
   'Bring my own API key': 'Использовать свой API-ключ',
   'Could not reach the provider: {0}': 'Не удалось связаться с провайдером: {0}',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'Android блокирует незашифрованные подключения http:// из приложений, поэтому этот телефон может обращаться только к адресу https://. Поставьте перед ним HTTPS (Tailscale или обратный прокси) или выберите «Использовать мой собственный openGym»: ваш сервер может обращаться к модели по http:// в своей сети.',
   'Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.': 'Каждый запрос уходит напрямую в {0} с вашим ключом. Больше его никто не видит, а платите за него вы.',
   'Endpoint': 'Эндпоинт',
   'Enter your API key': 'Введите API-ключ',

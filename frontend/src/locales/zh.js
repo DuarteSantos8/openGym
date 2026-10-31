@@ -1007,7 +1007,6 @@ export default {
   'API key': 'API 密钥',
   'Bring my own API key': '使用我自己的 API 密钥',
   'Could not reach the provider: {0}': '无法连接到提供商：{0}',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'Android 会阻止应用发起未加密的 http:// 连接，所以这部手机只能连接 https:// 端点。请在它前面加一层 HTTPS（Tailscale 或反向代理），或选择“使用我自托管的 openGym”：你的服务器可以访问它自己网络中的 http:// 模型。',
   'Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.': '每个请求都会用你的密钥直接发送到 {0}。其他人看不到，费用由你承担。',
   'Endpoint': '端点',
   'Enter your API key': '请输入你的 API 密钥',

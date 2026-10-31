@@ -1007,7 +1007,6 @@ export default {
   'API key': 'Clé API',
   'Bring my own API key': 'Utiliser ma propre clé API',
   'Could not reach the provider: {0}': 'Impossible de joindre le fournisseur : {0}',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'Android bloque les connexions http:// non chiffrées depuis les applis, donc ce téléphone ne peut joindre qu’un endpoint https://. Mets HTTPS devant (Tailscale ou un reverse proxy), ou choisis « Utiliser mon openGym auto-hébergé » : ton serveur, lui, peut joindre un modèle en http:// sur son propre réseau.',
   'Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.': 'Chaque requête part directement vers {0} avec ta clé. Personne d’autre ne la voit, et c’est toi qui paies.',
   'Endpoint': 'Point d’accès',
   'Enter your API key': 'Saisis ta clé API',

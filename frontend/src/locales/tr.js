@@ -1007,7 +1007,6 @@ export default {
   'API key': 'API anahtarı',
   'Bring my own API key': 'Kendi API anahtarımı kullan',
   'Could not reach the provider: {0}': 'Sağlayıcıya ulaşılamadı: {0}',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'Android, uygulamalardan gelen şifrelenmemiş http:// bağlantılarını engeller; bu yüzden bu telefon yalnızca bir https:// uç noktasına ulaşabilir. Önüne HTTPS koy (Tailscale ya da ters proxy) veya “Kendi openGym sunucumu kullan” seçeneğini seç: sunucun kendi ağındaki bir http:// modele ulaşabilir.',
   'Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.': 'Her istek anahtarınla doğrudan {0} adresine gider. Başka kimse görmez ve ücretini sen ödersin.',
   'Endpoint': 'Uç nokta',
   'Enter your API key': 'API anahtarını gir',

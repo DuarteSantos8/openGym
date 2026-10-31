@@ -5,9 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
-/* The phone's own-key Coach and an http:// endpoint. Android refuses unencrypted traffic from
-   the app, so a LAN model at http://… used to fail as a bare "could not reach the provider".
-   The screen now says why as soon as the address is typed, and never tries the request. */
+/* The phone's own-key Coach and an http:// endpoint (#913). Both apps allow plain http:// (Android
+   since #428, iOS for local addresses), so a model on the LAN is listed and saved like any other
+   endpoint. The screen says what pairing says about http://, and no longer refuses it. */
 const mocks = vi.hoisted(() => ({ toast: vi.fn(), localModels: vi.fn(async () => ({ ok: true, models: ['llama3'] })), setCoachLocal: vi.fn(async () => {}) }))
 
 vi.mock('../store/useStore.js', () => {
@@ -57,35 +57,34 @@ async function openCompatible() {
   const endpoint = [...page.querySelectorAll('.sect')].find(s => s.querySelector('.sect-t')?.textContent === 'Endpoint')
   return { page, endpoint, input: endpoint.querySelector('input') }
 }
-const REFUSAL = /Android blocks unencrypted http:\/\/ connections/
+const NOTE = 'Plain http:// isn’t encrypted. Fine on your home network, but use https:// if your server is reachable from the internet.'
 
 describe('CoachSetup and an http:// endpoint', () => {
-  it('says why as soon as an http:// address is typed, and refuses to try it', async () => {
+  it('a LAN model at http:// is listed, with the note pairing gives about http://', async () => {
     const { endpoint, input, page } = await openCompatible()
     expect(endpoint.querySelector('.sect-f')).toBeNull()
     type(input, 'http://192.168.1.20:11434')
-    expect(endpoint.querySelector('.sect-f').textContent).toMatch(REFUSAL)
-    expect(endpoint.querySelector('.sect-f').textContent).toContain('Use my self-hosted openGym')
+    expect(endpoint.querySelector('.sect-f').textContent).toBe(NOTE)
 
-    await act(async () => { byText(page, 'button', 'List models').click() })
-    expect(mocks.localModels).not.toHaveBeenCalled()
-    expect(mocks.toast).toHaveBeenCalledWith(expect.stringMatching(REFUSAL))
-  })
-
-  it('an https:// address goes through, and editing it back to http:// after listing still cannot be saved', async () => {
-    const { endpoint, input, page } = await openCompatible()
-    type(input, 'https://ollama.example.com')
-    expect(endpoint.querySelector('.sect-f')).toBeNull()
     await act(async () => { byText(page, 'button', 'List models').click() })
     await settle()
     expect(mocks.localModels).toHaveBeenCalledTimes(1)
-    expect(mocks.localModels.mock.calls[0][0]).toMatchObject({ provider: 'compatible', baseUrl: 'https://ollama.example.com' })
+    expect(mocks.localModels.mock.calls[0][0]).toMatchObject({ provider: 'compatible', baseUrl: 'http://192.168.1.20:11434' })
+    expect(mocks.toast).not.toHaveBeenCalled()
+  })
 
+  it('it saves too, and https:// carries no note', async () => {
+    const { endpoint, input, page } = await openCompatible()
+    type(input, 'https://ollama.example.com')
+    expect(endpoint.querySelector('.sect-f')).toBeNull()
     type(input, 'HTTP://ollama.lan:11434')
+    expect(endpoint.querySelector('.sect-f').textContent).toBe(NOTE)
+    await act(async () => { byText(page, 'button', 'List models').click() })
+    await settle()
     const select = page.querySelector('select')
     act(() => { select.value = 'llama3'; select.dispatchEvent(new Event('change', { bubbles: true })) })
     await act(async () => { byText(page, 'button', 'Save and use the Coach').click() })
-    expect(mocks.setCoachLocal).not.toHaveBeenCalled()
-    expect(mocks.toast).toHaveBeenLastCalledWith(expect.stringMatching(REFUSAL))
+    await settle()
+    expect(mocks.setCoachLocal).toHaveBeenCalledWith(expect.objectContaining({ mode: 'byok', provider: 'compatible', model: 'llama3', baseUrl: 'http://ollama.lan:11434' }))
   })
 })

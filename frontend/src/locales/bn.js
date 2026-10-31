@@ -1083,7 +1083,6 @@ export default {
   'API key': 'API কী',
   'Bring my own API key': 'নিজের API কী ব্যবহার করুন',
   'Could not reach the provider: {0}': 'প্রদানকারীর কাছে পৌঁছানো যায়নি: {0}',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'Android অ্যাপ থেকে এনক্রিপ্ট না করা http:// সংযোগ আটকে দেয়, তাই এই ফোন শুধু https:// এন্ডপয়েন্টে পৌঁছাতে পারে। এর সামনে HTTPS বসান (Tailscale বা রিভার্স প্রক্সি), অথবা “আমার সেলফ-হোস্টেড openGym ব্যবহার করুন” বেছে নিন: আপনার সার্ভার নিজের নেটওয়ার্কের http:// মডেলে পৌঁছাতে পারে।',
   'Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.': 'প্রতিটি অনুরোধ আপনার কী দিয়ে সরাসরি {0}-এ যায়। অন্য কেউ দেখে না, আর খরচ আপনার।',
   'Endpoint': 'এন্ডপয়েন্ট',
   'Enter your API key': 'আপনার API কী লিখুন',

@@ -1095,7 +1095,6 @@ export default {
   'API key': 'คีย์ API',
   'Bring my own API key': 'ใช้คีย์ API ของฉันเอง',
   'Could not reach the provider: {0}': 'ไม่สามารถติดต่อผู้ให้บริการได้: {0}',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'Android บล็อกการเชื่อมต่อ http:// ที่ไม่เข้ารหัสจากแอป โทรศัพท์เครื่องนี้จึงเข้าถึงได้เฉพาะ endpoint แบบ https:// ให้วาง HTTPS ไว้ด้านหน้า (Tailscale หรือ reverse proxy) หรือเลือก “ใช้ openGym ที่ฉันโฮสต์เอง”: เซิร์ฟเวอร์ของคุณเข้าถึงโมเดล http:// ในเครือข่ายของตัวเองได้',
   'Each request goes straight to {0} with your key. Nobody else sees it, and you pay for it.': 'ทุกคำขอส่งตรงไปยัง {0} ด้วยคีย์ของคุณ ไม่มีใครอื่นเห็น และคุณเป็นผู้จ่าย',
   'Endpoint': 'ปลายทาง',
   'Enter your API key': 'ป้อนคีย์ API ของคุณ',

@@ -1453,7 +1453,6 @@ export default {
   // --- v1.3.9: the account id in Settings, an http:// Coach endpoint refused on the phone (#219) ---
   'Account ID': 'معرّف الحساب',
   'Account ID copied': 'تم نسخ معرّف الحساب',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'يحظر Android اتصالات http:// غير المشفرة من التطبيقات، لذا لا يستطيع هذا الهاتف الوصول إلا إلى نقطة نهاية https://. ضع HTTPS أمامها (Tailscale أو وكيل عكسي)، أو اختر «استخدام openGym المستضاف ذاتيًا»: يستطيع خادمك الوصول إلى نموذج عبر http:// على شبكته.',
   // --- v1.3.9: Structural Balance (!140) ---
   'Structural balance': 'التوازن البنيوي',
   'See which lift is holding back the rest.': 'اعرف أي رفعة تعيق البقية.',

@@ -1395,7 +1395,6 @@ export default {
   // --- v1.3.9: the account id in Settings, an http:// Coach endpoint refused on the phone (#219) ---
   'Account ID': 'ID акаунта',
   'Account ID copied': 'ID акаунта скопійовано',
-  'Android blocks unencrypted http:// connections from apps, so this phone can only reach an https:// endpoint. Put HTTPS in front of it (Tailscale or a reverse proxy), or choose “Use my self-hosted openGym”: your server can reach an http:// model on its own network.': 'Android блокує незашифровані з’єднання http:// із застосунків, тож цей телефон може звертатися лише до ендпоінта https://. Постав перед ним HTTPS (Tailscale або зворотний проксі) або вибери «Використати мій власний openGym»: твій сервер може звертатися до моделі через http:// у своїй мережі.',
   // --- v1.3.9: Structural Balance (!140) ---
   'Structural balance': 'Структурний баланс',
   'See which lift is holding back the rest.': 'Подивись, яка вправа гальмує решту.',
