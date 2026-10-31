@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { gymsOf, gymNameOf, entryGym, defaultGymFor, gymHistory, cleanGymName, withGym, renamedGym, MAX_GYMS, GYM_NAME_MAX } from './gyms.js'
+import { gymsOf, gymNameOf, entryGym, defaultGymFor, gymHistory, cleanGymName, withGym, renamedGym, suggestedGyms, GYM_SUGGESTIONS, MAX_GYMS, GYM_NAME_MAX } from './gyms.js'
 import { lastEntryFor } from './history.js'
 
 const done = (w, r = 8) => ({ w, r, done: true })
@@ -124,5 +124,18 @@ describe('defaultGymFor', () => {
   it('skips rows that were never ticked', () => {
     const w = [...base, workout('2026-10-09', [entry('bench', [{ w: 99, r: 8, done: false }], 'tg')])]
     expect(defaultGymFor({ gyms: LIST, workouts: w }, 'bench')).toBe('bf')
+  })
+})
+
+describe('suggestedGyms', () => {
+  it('offers every shortcut when the list is empty or not a list', () => {
+    expect(suggestedGyms([])).toEqual(GYM_SUGGESTIONS)
+    expect(suggestedGyms(undefined)).toEqual(GYM_SUGGESTIONS)
+  })
+  it('leaves out the ones already listed, whatever the case', () => {
+    const left = suggestedGyms([{ id: 'a', name: 'basic-fit' }, { id: 'b', name: 'TECHNOGYM' }, { id: 'c', name: 'My club' }])
+    expect(left).not.toContain('Basic-Fit')
+    expect(left).not.toContain('Technogym')
+    expect(left).toContain('Gigafit')
   })
 })

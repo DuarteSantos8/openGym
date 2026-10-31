@@ -9,7 +9,7 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { uid } from '../lib/format.js'
-import { gymsOf, withGym, renamedGym, cleanGymName, MAX_GYMS, GYM_NAME_MAX } from '../lib/gyms.js'
+import { gymsOf, withGym, renamedGym, cleanGymName, suggestedGyms, MAX_GYMS, GYM_NAME_MAX } from '../lib/gyms.js'
 import Icon from './Icon.jsx'
 import { Button, TextField } from './ui.jsx'
 
@@ -20,16 +20,19 @@ function GymSheet({ current, manage, allowNone = true, onPick, close }) {
   const st = useStore(s => s.S)
   const gyms = gymsOf(st)
   const [name, setName] = useState('')
+  // The name field opens by itself while the list is empty, else behind the "+" at the bottom.
+  const [adding, setAdding] = useState(false)
   const [editing, setEditing] = useState(false)
   const [renaming, setRenaming] = useState({})
 
   const choose = id => { close(); onPick && onPick(id) }
 
-  const add = () => {
-    const made = withGym(gymsOf(useStore.getState().S), name, uid())
-    if (!made) { toast(cleanGymName(name) ? t('You can keep up to {0} machines.', MAX_GYMS) : t('Enter a name for the machine')); return }
+  const add = (typed = name) => {
+    const made = withGym(gymsOf(useStore.getState().S), typed, uid())
+    if (!made) { toast(cleanGymName(typed) ? t('You can keep up to {0} machines.', MAX_GYMS) : t('Enter a name for the machine')); return }
     update(s => { s.gyms = made.gyms })
     setName('')
+    setAdding(false)
     // Picking a machine: the one just typed is the one you are on.
     if (!manage) choose(made.id)
   }
@@ -72,11 +75,18 @@ function GymSheet({ current, manage, allowNone = true, onPick, close }) {
       {!gyms.length && <div className="muted small" style={{ padding: '10px 2px' }}>{t('No machine yet. Add the brands or gyms you use.')}</div>}
     </div>
 
-    <div className="row" style={{ gap: 8, marginTop: 12 }}>
-      <TextField value={name} maxLength={GYM_NAME_MAX} placeholder={t('New machine (Basic-Fit, Technogym…)')} style={{ flex: 1, minWidth: 0 }} aria-label={t('New machine')}
-        onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add() }} />
-      <Button variant="primary" style={{ width: 'auto', flexShrink: 0 }} onClick={add}>{t('Add')}</Button>
-    </div>
+    {/* The "+" at the bottom of the list: one tap to add a machine, then it is picked. */}
+    {(adding || !gyms.length)
+      ? <div className="row" style={{ gap: 8, marginTop: 12 }}>
+          <TextField value={name} maxLength={GYM_NAME_MAX} placeholder={t('New machine (Basic-Fit, Technogym…)')} style={{ flex: 1, minWidth: 0 }} aria-label={t('New machine')}
+            autoFocus onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') add() }} />
+          <Button variant="primary" style={{ width: 'auto', flexShrink: 0 }} onClick={() => add()}>{t('Add')}</Button>
+        </div>
+      : <Button variant="tinted" icon="plus" style={{ width: '100%', marginTop: 12 }} onClick={() => setAdding(true)}>{t('New machine')}</Button>}
+
+    {suggestedGyms(gyms).length > 0 && <div className="row" style={{ gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+      {suggestedGyms(gyms).map(n => <button key={n} type="button" className="chip nocap" onClick={() => add(n)}><Icon name="plus" />{n}</button>)}
+    </div>}
 
     {gyms.length > 0 && <div className="row" style={{ justifyContent: 'flex-end', marginTop: 8 }}>
       <Button size="sm" variant="ghost" onClick={() => setEditing(e => !e)}>{editing ? t('Done') : t('Edit machines')}</Button>

@@ -94,3 +94,13 @@ export function renamedGym(list, id, name) {
   if (gyms.some(g => g.id !== id && g.name.toLowerCase() === clean.toLowerCase())) return null
   return gyms.map(g => (g.id === id ? { ...g, name: clean } : g))
 }
+
+// Brands and clubs offered as one-tap shortcuts in the machine picker. Names, not words: they are
+// not translated.
+export const GYM_SUGGESTIONS = ['Basic-Fit', 'Technogym', 'Gigafit', 'Speedform', 'Fitness Park', 'Life Fitness', 'Hammer Strength', 'Matrix']
+
+/** The shortcuts not already in the list (any case), in their usual order. */
+export function suggestedGyms(list) {
+  const have = new Set((Array.isArray(list) ? list : []).filter(g => g && typeof g.name === 'string').map(g => g.name.toLowerCase()))
+  return GYM_SUGGESTIONS.filter(n => !have.has(n.toLowerCase()))
+}

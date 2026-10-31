@@ -700,6 +700,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         <button className="iconbtn" aria-label={t('More')} title={t('More')} onClick={openMore}><Icon name="more" /></button>
       </div>
     </div>
+    {/* The machine this exercise is done on (lib/gyms.js): a full-width button under the title, in
+        every layout, so it cannot be missed. Weights open from the last time on it. */}
+    {!cardio && onMachine && <Button size="sm" variant="tinted" icon="mapPin" trailingIcon="chevronDown" disabled={busy}
+      style={{ width: '100%', justifyContent: 'space-between', marginBottom: 8 }} onClick={onMachine}>
+      {gymNameOf(S, entry.gym) || t('Which machine?')}
+    </Button>}
     {/* Kept out of progression: by hand for this session (the ⋯ menu, with its undo right here),
         or by a deload or rehab routine, which owns that choice and offers no undo. On in every
         view, compact included: it changes what the next session is built from. */}
@@ -726,8 +732,6 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
       {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
-      {/* The machine this exercise is done on (lib/gyms.js). Weights open from the last time on it. */}
-      {!cardio && onMachine && <button type="button" className="tag nocap" onClick={onMachine}><Icon name="mapPin" />{gymNameOf(S, entry.gym) || t('Machine')}</button>}
     </div>
     {/* Three notes can apply to one exercise and they are not interchangeable, so each keeps its
         own line and its own icon: the plan's instruction (cfg.note, from the routine), the
