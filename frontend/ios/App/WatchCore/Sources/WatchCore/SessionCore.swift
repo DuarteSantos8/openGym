@@ -337,6 +337,11 @@ enum SessionCore {
         return (all.filter { $0.done }.count, all.count)
     }
 
+    /// A routine's size for its row on the start screen: exercises and working sets (warm-ups are not counted).
+    static func size(_ r: ReadySession) -> (exercises: Int, sets: Int) {
+        (r.entries.count, r.entries.flatMap(\.sets).filter { !$0.warmup }.count)
+    }
+
     /// The workout as the summary shows it at its end (here, or on the phone).
     static func summary(_ w: ActiveWorkout, end: Double, startedAt: Double? = nil, endedOnPhone: Bool = false) -> WorkoutSummary {
         var sets = 0, volume = 0.0
@@ -539,5 +544,15 @@ enum WeighIn {
     static func join(whole: Double, tenth: Double) -> Double {
         let t = min(9, max(0, tenth.rounded()))
         return (whole.rounded() * 10 + t) / 10
+    }
+
+    /// What the crown reaches in whole units; the last one also takes nine tenths.
+    static func wholes(unit: String) -> ClosedRange<Double> { 20...(unit == "lb" ? 700 : 320) }
+
+    /// One tenth up or down (VoiceOver), pulled inside what the crown reaches, on the tenths grid.
+    static func nudged(_ v: Double, up: Bool, unit: String) -> Double {
+        let r = wholes(unit: unit)
+        let t = (v * 10).rounded() + (up ? 1 : -1)
+        return min(max(t, r.lowerBound * 10), r.upperBound * 10 + 9) / 10
     }
 }
