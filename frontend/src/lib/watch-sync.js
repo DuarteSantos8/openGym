@@ -21,6 +21,7 @@
 //
 // The phone apps only. Without a paired watch with the app on it, nothing is sent and nothing
 // arrives: the phone behaves exactly as before.
+import { isOn } from './modules.js'
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX, gifSrc, figureOf, isAssisted } from './exercises.js'
 import { packId, packDrawingId } from './anim-quality.js'
@@ -689,20 +690,23 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
     if (!linked || !storeReady()) return
     try {
       const S = useStore.getState().S
-      const prefs = readWatchPrefs()
+      // Settings → Modules: the Watch module off pauses the watch the same way as its own switch.
+      const prefs = isOn(S, 'watch') ? readWatchPrefs() : { ...readWatchPrefs(), enabled: false }
       // Settings → Apple Watch: off, the watch is told there is nothing (no workout, nothing ready).
       const snap = prefs.enabled
         ? buildSnapshot(S, { timer: useUI.getState().timer, ready: readyFor(S), activeAt: phoneActiveAt(S.active) })
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
-      snap.settings = { ...settingsForWatch(prefs, healthOn), ...watchExtras(S) }
-      if (prefs.enabled) snap.streak = streakFor(S)
+      // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
+      const hOn = healthOn && isOn(S, 'health')
+      snap.settings = { ...settingsForWatch(prefs, hOn), ...watchExtras(S) }
+      if (prefs.enabled && isOn(S, 'motivation')) snap.streak = streakFor(S)
       // Discarded here: the watch drops its Apple Health workout instead of saving it (#776).
       const discarded = discardedFor(Date.now(), S)
       if (discarded.length) snap.discarded = discarded
       // With Apple Health on: the deleted workouts, so the watch removes the copies it saved. The
       // discarded ones too: a copy saved before the watch heard (it was away, or ended the workout
       // itself as forgotten) is taken out once it does.
-      if (healthOn) {
+      if (hOn) {
         const gone = [...healthGoneFor(S), ...discarded.map(id => 'opengym-w-' + id).reverse()]
         if (gone.length) snap.healthGone = [...new Set(gone)]
       }

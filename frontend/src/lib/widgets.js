@@ -32,6 +32,7 @@ import { workoutsLeft } from './week-left.js'
 import { todayISO, isoOf, fmtNum, weekStartOf, startOfWeek, weekKey, exerciseNameText } from './format.js'
 import { accentPair, accentValue } from './accent.js'
 import { speedUnitOf } from './speed.js'
+import { isOn } from './modules.js'
 import { viewTarget, exUnitOf, shownWeight } from './ex-unit.js'
 
 export const WIDGET_SNAPSHOT_VERSION = 2
@@ -234,7 +235,9 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
     active: activeOf(st),
     // v 2: the configurable widget's blocks.
     streakInfo: streakX,
-    weight: weightOf(st),
+    // Settings → Modules: Body off leaves the weight block empty (the widget skips a null);
+    // challengesOfWidget already answers null with Motivation off (challengesOn).
+    weight: isOn(st, 'body') ? weightOf(st) : null,
     next: nextOf(days, today),
     records: recordsOf(st, today),
     volume: volumeOf(st, today),

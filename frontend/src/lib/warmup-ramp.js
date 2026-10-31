@@ -18,6 +18,7 @@
 // A generated row remembers the rung it came from (`wp` percent, `wb` the bare bar), so when the
 // work weight moves the open rungs move with it (history.js rerampWarmups) and a block saved as
 // your own scales with your progress instead of freezing at the day you saved it.
+import { isOn } from './modules.js'
 import { modeOf, isBw, isPerSide } from './history.js'
 import { isWarmupRow, makeSideSet } from './workout-model.js'
 import { exerciseOf, isAssisted } from './exercises.js'
@@ -34,7 +35,8 @@ export const OWN_REPS_MAX = 30
 const LB_KG = 0.45359237
 
 /** Settings → Workout → Warm-ups, read safely: anything unknown is off. */
-export const warmupAutoOf = S => (S?.warmupAuto === 'compounds' || S?.warmupAuto === 'all' ? S.warmupAuto : 'off')
+// Settings → Modules: Plates and warm-ups off is no generated warm-ups (the planned ones stay).
+export const warmupAutoOf = S => (!isOn(S, 'plates') ? 'off' : S?.warmupAuto === 'compounds' || S?.warmupAuto === 'all' ? S.warmupAuto : 'off')
 
 /** The slot's own choice, or null when it follows the setting. */
 export const warmupModeOf = cfg => (WARMUP_MODES.includes(cfg?.warmup) ? cfg.warmup : null)

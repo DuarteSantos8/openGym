@@ -16,6 +16,8 @@
    are English keys, translated where they are shown. A theme with `colors` offers an accent
    override, which is only ever opt-in. `appIcon` names its icon in lib/app-icon-variants.js, which
    the settings page then suggests while the theme shows. */
+import { isOn } from './modules.js'
+
 export const THEMES = [
   {
     id: 'halloween', title: 'Halloween', icon: 'pumpkin', tint: 'var(--orange)',
@@ -64,6 +66,8 @@ export function themeOn(S, id, now = new Date()) {
 
 /** The theme showing now, or null. The first in the list wins if two ever overlap. */
 export function activeSeason(S, now = new Date()) {
+  // Settings → Modules: Seasonal themes off is no theme at all, whatever each one is set to.
+  if (!isOn(S, 'seasonal')) return null
   return THEMES.find(th => themeOn(S, th.id, now))?.id || null
 }
 
