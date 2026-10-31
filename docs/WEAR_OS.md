@@ -83,8 +83,8 @@ watch with a debug phone, a release watch with a release phone (or the Play-sign
 
 The watch app takes the phone's `versionName` and **`versionCode` = phone versionCode + 10000**
 (read from `app/build.gradle` by `wear/build.gradle`, nothing to bump by hand). Google Play keeps
-one versionCode space per app for every form factor, so the phone (29 for 1.4.4) and the watch
-(10029) never collide, and each release's watch build is newer than the last one's.
+one versionCode space per app for every form factor, so the phone (30 for 1.4.4) and the watch
+(10030) never collide, and each release's watch build is newer than the last one's.
 
 ## Google Play
 

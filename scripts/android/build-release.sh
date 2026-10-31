@@ -116,7 +116,9 @@ AAB_IN=android/app/build/outputs/bundle/playRelease/app-play-release.aab
 # An app bundle is signed like a jar; Play checks it with the upload key and re-signs the APKs
 # it builds from it with the app signing key.
 cp "$AAB_IN" "$OUT/openGym-$VER.aab"
-jarsigner -keystore "$KS" -storepass:file "$PASS" -keypass:file "$PASS" \
+# Only the store password from the file: -keypass:file on the same file fails, and without it
+# jarsigner takes the store password for the key too.
+jarsigner -keystore "$KS" -storepass:file "$PASS" \
   -sigalg SHA256withRSA -digestalg SHA-256 "$OUT/openGym-$VER.aab" "$ALIAS" >/dev/null
 jarsigner -verify "$OUT/openGym-$VER.aab" | grep -q "jar verified" || { echo "the bundle did not verify" >&2; exit 1; }
 

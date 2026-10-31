@@ -22,7 +22,8 @@ GRADLE=(./gradlew --no-daemon ${GRADLE_ARGS:-})
 "${GRADLE[@]}" :wear:assembleRelease
 # The bundle is signed like a jar with the upload key; Play re-signs what it delivers.
 cp wear/build/outputs/bundle/release/wear-release.aab "$OUT/openGym-Wear-$VER.aab"
-jarsigner -keystore "$KS" -storepass:file "$PASS" -keypass:file "$PASS" \
+# Only the store password from the file (-keypass:file on the same file fails, see build-release.sh).
+jarsigner -keystore "$KS" -storepass:file "$PASS" \
   -sigalg SHA256withRSA -digestalg SHA-256 "$OUT/openGym-Wear-$VER.aab" "$ALIAS" >/dev/null
 jarsigner -verify "$OUT/openGym-Wear-$VER.aab" | grep -q "jar verified" || { echo "the bundle did not verify" >&2; exit 1; }
 "$BT/zipalign" -f -p 4 wear/build/outputs/apk/release/wear-release-unsigned.apk "$OUT/wear-aligned.apk"
