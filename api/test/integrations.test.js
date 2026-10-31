@@ -297,6 +297,8 @@ test('connect, deliver signed, fail, retry and disconnect, end to end', async ()
   // A finished workout (after the webhook was added) goes out once, signed.
   r.tick(60000);
   const w = W('w1', -1000, { end: NOW + 30000 });
+  // Settings → Modules: Integrations off pauses the hub, nothing is queued, nothing disconnected.
+  assert.equal(r.hub.onStateWrite('u1', { workouts: [] }, { workouts: [w], modules: { integrations: false } }), 0);
   assert.equal(r.hub.onStateWrite('u1', { workouts: [] }, { workouts: [w] }), 1);
   assert.equal(r.hub.onStateWrite('u1', { workouts: [] }, { workouts: [w] }), 0, 'the same workout again: no second delivery');
   await r.hub._outbox().run();

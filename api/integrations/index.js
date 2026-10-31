@@ -196,6 +196,9 @@ export function createIntegrations({ dataDir, secret, env = process.env, now = D
     /** After a stored PUT /api/data: queue what the profile's connections asked to hear about. */
     onStateWrite(uid, prev, next) {
       if (!active || !store.has(uid)) return 0;
+      // Settings → Modules: Integrations off pauses every connection (nothing is queued meanwhile,
+      // nothing is disconnected). Switched back on, the next new event goes out as usual.
+      if (next?.modules?.integrations === false) return 0;
       const conns = store.list(uid).filter(r => providers[r.provider] && !r.paused);
       if (!conns.length) return 0;
       const evs = detectEvents(prev, next, { now: now() });
