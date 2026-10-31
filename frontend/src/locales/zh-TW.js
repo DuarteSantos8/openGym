@@ -3598,4 +3598,11 @@ export default {
   "Wear OS watch": "Wear OS 手錶",
   "Not in this build": "此版本沒有",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS 手錶透過 Google Play 服務和手機溝通，而 F-Droid 的 App 不包含它。opengym.ch 的 APK 和 Google Play 上的 App 可以連接手錶。",
+  // Stats redesign
+  "Muscles": "肌肉",
+  "Chart": "圖表",
+  "Harder": "更難",
+  "Target range": "目標範圍",
+  "Period": "時間區間",
+  "Average sets a week": "每週平均組數",
 }

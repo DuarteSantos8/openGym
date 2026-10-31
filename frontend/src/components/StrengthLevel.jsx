@@ -1,5 +1,6 @@
 // Strength level per lift (lib/strength-level.js): the block in an exercise's details, the Stats
 // card, and the small "About you" sheet (sex and year of birth) the levels read.
+import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
@@ -50,22 +51,27 @@ export function StrengthLevelBlock({ exId }) {
   </div>
 }
 
-/** Stats: every graded lift with a level, strongest first. Hidden without one. */
+/** Stats: every graded lift with a level, strongest first, five of them until Show more. Hidden
+ *  without one. One line a lift (stats redesign): the lift, then its level and the ratio; the five
+ *  segmented steps under every lift made it the tallest list on the page and a fourth bar style. */
+const LEVEL_ROWS = 5
 export function StrengthLevelsCard({ S }) {
+  const [all, setAll] = useState(false)
   const rows = strengthLevels(S)
   if (!rows.length) return null
+  const shown = all ? rows : rows.slice(0, LEVEL_ROWS)
   return <div className="card" data-strength-levels>
     <div className="row between" style={{ marginBottom: 6 }}>
       <h2 style={{ margin: 0 }}>{t('Strength levels')}</h2>
       <Button size="sm" icon="person" onClick={aboutYouSheet}>{t('About you')}</Button>
     </div>
-    {/* Two-line rows: the lift in full (it was cut to "barbell bench…", in the catalogue's lower
-        case, beside a level that wrapped), then the level and the ratio, then the steps. */}
-    {rows.map(lv => <div key={lv.lift} className="slevel-row">
-      <div className="slevel-ex">{EXIDX[lv.id] ? exerciseNameText(EXIDX[lv.id]) : lv.id}</div>
-      <div className="slevel-meta"><b>{t(LEVEL_NAME[lv.name])}</b> · {t('{0} × body weight', fmtRatio(lv.ratio))}</div>
-      <LevelBar level={lv.level} />
+    {shown.map(lv => <div key={lv.lift} className="slevel-row" role="group"
+      aria-label={(EXIDX[lv.id] ? exerciseNameText(EXIDX[lv.id]) : lv.id) + ': ' + t(LEVEL_NAME[lv.name]) + ', ' + t('{0} × body weight', fmtRatio(lv.ratio))}>
+      <span className="slevel-ex">{EXIDX[lv.id] ? exerciseNameText(EXIDX[lv.id]) : lv.id}</span>
+      <span className="slevel-meta" aria-hidden="true"><b>{t(LEVEL_NAME[lv.name])}</b> · {fmtRatio(lv.ratio)}×</span>
     </div>)}
+    {rows.length > LEVEL_ROWS && <Button className="sbar-more" trailingIcon={all ? 'chevronUp' : 'chevronDown'} aria-expanded={all}
+      onClick={() => setAll(v => !v)}>{t(all ? 'Show less' : 'Show more')}</Button>}
     <SexHint S={S} />
   </div>
 }

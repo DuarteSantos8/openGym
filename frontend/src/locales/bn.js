@@ -3684,4 +3684,11 @@ export default {
   "Wear OS watch": "Wear OS ঘড়ি",
   "Not in this build": "এই বিল্ডে নেই",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS ঘড়ি Google Play পরিষেবার মাধ্যমে ফোনের সঙ্গে কথা বলে, আর F-Droid অ্যাপে সেটা থাকে না। opengym.ch-এর APK আর Google Play অ্যাপে ঘড়ির সংযোগ আছে।",
+  // Stats redesign
+  "Muscles": "পেশি",
+  "Chart": "চার্ট",
+  "Harder": "আরও কঠিন",
+  "Target range": "লক্ষ্য পরিসর",
+  "Period": "সময়কাল",
+  "Average sets a week": "সপ্তাহে গড় সেট",
 }

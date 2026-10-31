@@ -85,12 +85,13 @@ describe('1.4.5 features pass', () => {
   it('set trends, weekly sets and levels colour text with the inks, never the bare system colours', () => {
     expect(rule('.settrend.up')).toMatch(/var\(--green-ink\)/)
     expect(rule('.settrend.down')).toMatch(/var\(--orange-ink\)/)
-    expect(rule('.wsets-row.in .wsets-st')).toMatch(/var\(--green-ink\)/)
-    expect(rule('.wsets-row.above .wsets-st')).toMatch(/var\(--orange-ink\)/)
-    expect(rule('.wsets-st')).toMatch(/var\(--label-2\)/)
+    // the weekly sets moved into the Muscles card's bars (stats redesign): the fill in the inks
+    expect(rule('.sbar-row.in .sbar-f')).toMatch(/var\(--green-ink\)/)
+    expect(rule('.sbar-row.above .sbar-f')).toMatch(/var\(--orange-ink\)/)
+    expect(rule('.sbar-f')).toMatch(/var\(--label-2\)/)
     expect(rule('.slevel-about')).toMatch(/var\(--acc-ink\)/)
     expect(rule('.wsets-home .icn:first-child')).toMatch(/var\(--green-ink\)/)
-    const feature = [...css.matchAll(/(\.(?:settrend|setnote|wsets|slevel|recap)[^{]*)\{([^}]*)\}/g)]
+    const feature = [...css.matchAll(/(\.(?:settrend|setnote|wsets|slevel|recap|sbar|slegend|sstack)[^{]*)\{([^}]*)\}/g)]
     expect(feature.length).toBeGreaterThan(20)
     for (const [, sel, decls] of feature) expect(decls, sel).not.toMatch(/(^|;)color:var\(--(green|orange|blue|acc)\)/)
   })
@@ -102,7 +103,7 @@ describe('1.4.5 features pass', () => {
   })
   it('rows divide between themselves, not above the first (no :first-of-type that never matched)', () => {
     expect(css).not.toMatch(/\.(wsets|slevel)-row:first-of-type/)
-    for (const sel of ['.wsets-row+.wsets-row', '.slevel-row+.slevel-row', '.wsets-edit+.wsets-edit']) expect(rule(sel), sel).toMatch(/border-top:var\(--hair\) solid var\(--sep\)/)
+    for (const sel of ['.sbar-row+.sbar-row', '.slevel-row+.slevel-row', '.wsets-edit+.wsets-edit']) expect(rule(sel), sel).toMatch(/border-top:var\(--hair\) solid var\(--sep\)/)
   })
   it('tapped lines are finger-sized and press like rows', () => {
     expect(rule('.setnote-line')).toMatch(/min-height:32px/)
@@ -112,8 +113,8 @@ describe('1.4.5 features pass', () => {
     expect(rule('.wsets-home:active')).toMatch(/var\(--press-fill\)/)
   })
   it('the weekly-sets band keeps a plain colour before its color-mix, in both themes', () => {
-    expect(rule('.wsets-band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
-    expect(rule(':root[data-theme="light"] .wsets-band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
+    expect(rule('.sbar-band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
+    expect(rule(':root[data-theme="light"] .sbar-band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
   })
   it('the features use text roles and logical properties', () => {
     const feature = [...css.matchAll(/(\.(?:settrend|setnote|wsets|slevel|recap|about-|wkleft)[^{]*)\{([^}]*)\}/g)]
@@ -238,5 +239,33 @@ describe('Card dismiss pass', () => {
     expect(size + 2 * b).toBeGreaterThanOrEqual(44)
     expect(size + s + e).toBeGreaterThanOrEqual(44)
     expect(s).toBeLessThanOrEqual(8)   // no further than the CardHead gap: never over the primary's own button
+  })
+})
+
+// The Stats redesign (REVIEW.md, "## Stats redesign"): one bar system, one legend style.
+describe('Stats redesign', () => {
+  it('one bar: the track, the fill in the inks by tone, the band with a plain colour first', () => {
+    expect(rule('.sbar-t')).toMatch(/height:8px;border-radius:4px;background:var\(--surface-2\)/)
+    expect(rule('.sbar-row.in .sbar-f')).toMatch(/var\(--green-ink\)/)
+    expect(rule('.sbar-row.above .sbar-f')).toMatch(/var\(--orange-ink\)/)
+    expect(rule('.slegend-m.band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
+    expect(rule('.sbar-v')).toMatch(/font-variant-numeric:tabular-nums/)
+  })
+  it('tapped rows are 44px and fill on press; nothing physical, no px type', () => {
+    expect(rule('.sbar-row.tap')).toMatch(/min-height:44px/)
+    expect(rule('.sbar-row.tap:active')).toMatch(/var\(--press-fill\)/)
+    expect(rule('.ex-day')).toMatch(/min-height:44px/)
+    expect(rule('.ex-day:active')).toMatch(/var\(--press-fill\)/)
+    expect(rule('.card-fold')).toMatch(/min-height:44px/)
+    const own = [...css.matchAll(/(\.(?:sbar|slegend|sstack|mus-|kpis|card-fold|ex-day|ex-eff|effort-)[^{]*)\{([^}]*)\}/g)]
+    expect(own.length).toBeGreaterThan(30)
+    for (const [, sel, decls] of own) {
+      expect(decls, sel).not.toMatch(/(margin|padding)-(left|right)|(^|;)(left|right):/)
+      expect(decls, sel).not.toMatch(/font-size:\d+px/)
+      expect(decls, sel).not.toMatch(/transition:all/)
+    }
+  })
+  it('untrained muscles are a quiet chip, not an orange alarm', () => {
+    expect(rule('.mchip.miss')).toBe('background:var(--surface-2);color:var(--label)')
   })
 })

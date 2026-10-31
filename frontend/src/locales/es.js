@@ -3605,4 +3605,11 @@ export default {
   "Wear OS watch": "Reloj Wear OS",
   "Not in this build": "No en esta versión",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Los relojes Wear OS hablan con el móvil a través de los servicios de Google Play, que las apps de F-Droid dejan fuera. El APK de opengym.ch y la app de Google Play sí tienen la conexión con el reloj.",
+  // Stats redesign
+  "Muscles": "Músculos",
+  "Chart": "Gráfico",
+  "Harder": "Más duro",
+  "Target range": "Rango objetivo",
+  "Period": "Periodo",
+  "Average sets a week": "Series por semana, de media",
 }

@@ -3609,4 +3609,11 @@ export default {
   "Wear OS watch": "Часы Wear OS",
   "Not in this build": "Нет в этой версии",
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Часы Wear OS общаются с телефоном через сервисы Google Play, а в приложениях из F-Droid их нет. В APK с opengym.ch и в приложении из Google Play связь с часами есть.",
+  // Stats redesign
+  "Muscles": "Мышцы",
+  "Chart": "График",
+  "Harder": "Тяжелее",
+  "Target range": "Целевой диапазон",
+  "Period": "Период",
+  "Average sets a week": "Подходов в неделю в среднем",
 }

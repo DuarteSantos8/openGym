@@ -1,12 +1,13 @@
 // @vitest-environment happy-dom
-// Weekly sets per muscle against a target range: the Stats card, the Home line and the ranges sheet.
+// Weekly sets per muscle against a target range: the Home line and the ranges sheet (the Stats
+// bars are tested with the Muscles card, views/Stats.redesign.test.jsx).
 import React, { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { todayISO } from '../lib/format.js'
-import { WeeklySetsCard, WeeklySetsHomeLine, muscleTargetsSheet } from './WeeklySets.jsx'
+import { WeeklySetsHomeLine, muscleTargetsSheet } from './WeeklySets.jsx'
 
 const BENCH = '0025'
 const mounted = []
@@ -27,14 +28,6 @@ beforeEach(() => {
 afterEach(() => { act(() => { mounted.splice(0).forEach(r => r.unmount()) }) })
 
 describe('weekly sets per muscle', () => {
-  it('the card shows each main muscle against its range, said in words', () => {
-    const host = render(<WeeklySetsCard S={useStore.getState().S} />)
-    const rows = [...host.querySelectorAll('.wsets-row')]
-    expect(rows).toHaveLength(10)
-    expect(rows[0].querySelector('.wsets-num').textContent).toBe('12 / 10–20')
-    expect(rows[0].getAttribute('aria-label')).toBe('Chest: 12 sets this week, range 10 to 20, in range')
-    expect(host.textContent).toContain('room for more')
-  })
   it('the Home line names the muscle with the most room, and says nothing before a set this week', () => {
     let host = render(<WeeklySetsHomeLine S={useStore.getState().S} onOpen={() => {}} />)
     expect(host.textContent).toMatch(/^Most room this week: .+, 0 of \d+–\d+ sets$/)
@@ -51,15 +44,7 @@ describe('weekly sets per muscle', () => {
     expect(useStore.getState().S.muscleTargets).toBeUndefined()
   })
 
-  it('colours a row by its status class, not inline, and the sheet keeps both steppers together', () => {
-    const host = render(<WeeklySetsCard S={useStore.getState().S} />)
-    const rows = [...host.querySelectorAll('.wsets-row')]
-    expect(rows[0].classList.contains('in')).toBe(true)
-    expect(rows.some(r => r.classList.contains('below'))).toBe(true)
-    for (const r of rows) {
-      expect(r.querySelector('.wsets-fill').style.background).toBe('')
-      expect(r.querySelector('.wsets-st').getAttribute('style')).toBeNull()
-    }
+  it('the sheet keeps both steppers together', () => {
     muscleTargetsSheet()
     const sheet = render(useUI.getState().sheets.at(-1).render(() => {}))
     const edit = sheet.querySelector('.wsets-edit')

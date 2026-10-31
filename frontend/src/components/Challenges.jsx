@@ -109,13 +109,18 @@ export function ChallengesStatsCard({ S, now = new Date() }) {
   const month = useMemo(() => (on ? monthChallenges(S, key) : null), [on, key, S.challenges, S.workouts, S.bodyweight, S.unit, S.weekStart]) // eslint-disable-line react-hooks/exhaustive-deps
   const progress = useMemo(() => (month ? progressOf(S, month) : []), [month, S.workouts, S.bodyweight, S.unit]) // eslint-disable-line react-hooks/exhaustive-deps
   const shelf = useMemo(() => shelfOf(S), [S.challenges]) // eslint-disable-line react-hooks/exhaustive-deps
+  const [open, setOpen] = useState(false)
   if (!month && !shelf.length) return null
-  return <div className="card challenges-stats" data-challenge-shelf>
-    <h2>{t('Challenges')}</h2>
-    {month && <>
-      <div className="ch-sub">{monthLabel(key)} · {doneLine(progress.filter(p => p.done).length, progress.length)}</div>
-      <ChallengeRows progress={progress} unit={S.unit} />
-    </>}
+  // Folded to one line on Stats (stats redesign): the month and how many are done, the rows and
+  // the trophy shelf a tap away. Local to this card: Home's fold (S.challengesFold) is its own.
+  const summary = month ? monthLabel(key) + ' · ' + doneLine(progress.filter(p => p.done).length, progress.length) : t('Trophy shelf')
+  return <div className={'card challenges-stats' + (open ? ' open' : '')} data-challenge-shelf>
+    <button type="button" className="card-fold" aria-expanded={open} onClick={() => setOpen(o => !o)}>
+      <span className="card-fold-t"><span className="card-fold-k">{t('Challenges')}</span><span className="card-fold-s">{summary}</span></span>
+      <Icon name={open ? 'chevronUp' : 'chevronDown'} className="chev" />
+    </button>
+    {open && <div className="card-fold-b">
+    {month && <ChallengeRows progress={progress} unit={S.unit} />}
     <h3 className="ch-shelf-h">{t('Trophy shelf')}</h3>
     {shelf.length
       ? <div className="ch-shelf" role="list">
@@ -133,5 +138,6 @@ export function ChallengesStatsCard({ S, now = new Date() }) {
         <span className="ch-medals" aria-hidden="true">{TIERS.slice(0, 3).map(tr => <Medal key={tr} tier="locked" />)}</span>
         <span className="small muted">{t('Every challenge you finish puts a badge here, one shelf per month.')}</span>
       </div>}
+    </div>}
   </div>
 }
