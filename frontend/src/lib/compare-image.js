@@ -1,7 +1,8 @@
-// The comparison of progress photos as one picture to share (#939): the same two layouts the
+// The comparison of progress photos as one picture to share (#950): the same two layouts the
 // screen offers, drawn on a canvas. compareLayout is pure (sizes in, rectangles out) so it is
 // tested without a canvas; drawCompare and renderCompareImage are the thin part that paints it.
 import { mediaStore } from './media-store.js'
+import { cellRatio, coverCrop } from './photo-compare.js'
 
 export const IMAGE_WIDTH = 1500
 const PAD = 40
@@ -35,20 +36,25 @@ export function compareLayout(items, { mode = 'side', pct = 50, title = '' } = {
       frame, splitX: frame.x + frame.w * at / 100,
       rects: items.map(it => contain(it, frame)),
       labels: [
-        { text: items[0].label, x: frame.x + 24, y: frame.y + frame.h - 24, align: 'left' },
-        { text: items[1].label, x: frame.x + frame.w - 24, y: frame.y + frame.h - 24, align: 'right' },
+        { text: items[0].label, x: frame.x + 24, y: frame.y + frame.h - 24, align: 'left', font: 30 },
+        { text: items[1].label, x: frame.x + frame.w - 24, y: frame.y + frame.h - 24, align: 'right', font: 30 },
       ],
     }
   }
   const n = Math.max(items.length, 1)
   const cellW = (inner - GAP * (n - 1)) / n
-  const shapes = items.map(it => ({ w: cellW, h: cellW * it.h / it.w }))
-  const rowH = Math.max(0, ...shapes.map(s => s.h))
+  const cellH = cellW * cellRatio(items)           // every photo has the same height; a photo of another shape is cropped to it
   const top = PAD + HEADER
+  const font = n > 3 ? 24 : 28
+  const cells = items.map((it, i) => {
+    const x = PAD + i * (cellW + GAP)
+    return { x, y: top, w: cellW, h: cellH, crop: coverCrop(it.w, it.h, cellW, cellH, it.px, it.py) }
+  })
   return {
-    width, height: Math.round(top + rowH + CAPTION + PAD), title: head, mode: 'side',
-    rects: shapes.map((s, i) => ({ x: PAD + i * (cellW + GAP), y: top + (rowH - s.h) / 2, w: s.w, h: s.h })),
-    labels: items.map((it, i) => ({ text: it.label, x: PAD + i * (cellW + GAP) + cellW / 2, y: top + rowH + CAPTION / 2, align: 'center' })),
+    width, height: Math.round(top + cellH + PAD), title: head, mode: 'side',
+    cells, rects: cells.map(c => ({ x: c.x, y: c.y, w: c.w, h: c.h })),
+    // the date is a pill on the photo, at its bottom left, like the date pills in the gallery
+    labels: items.map((it, i) => ({ text: it.label, x: cells[i].x + Math.round(font * 0.5), y: top + cellH - Math.round(font * 1.3), align: 'left', font })),
   }
 }
 
@@ -66,6 +72,18 @@ export function drawCompare(ctx, layout, images) {
   ctx.fillText(layout.title.text, layout.title.x, layout.title.y)
   ctx.globalAlpha = 1
   const draw = (img, r) => ctx.drawImage(img, r.x, r.y, r.w, r.h)
+  // The date pill: translucent black, white semibold text, round ends (the gallery's date pills).
+  const pills = () => {
+    for (const l of layout.labels) {
+      ctx.font = `600 ${l.font}px ${FONT}`
+      const h = Math.round(l.font * 1.6), w = ctx.measureText(l.text).width + l.font * 1.2
+      const x = l.align === 'left' ? l.x : l.x - w
+      ctx.fillStyle = 'rgba(0,0,0,.6)'
+      ctx.beginPath(); ctx.roundRect(x, l.y - h / 2, w, h, h / 2); ctx.fill()
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'left'
+      ctx.fillText(l.text, x + l.font * 0.6, l.y)
+    }
+  }
   if (layout.mode === 'slider') {
     const { frame, splitX } = layout
     ctx.save()
@@ -79,30 +97,20 @@ export function drawCompare(ctx, layout, images) {
     ctx.fillRect(splitX - 2, frame.y, 4, frame.h)
     ctx.beginPath(); ctx.arc(splitX, frame.y + frame.h / 2, 28, 0, Math.PI * 2); ctx.fill()
     ctx.restore()
-    ctx.font = `600 30px ${FONT}`
-    for (const l of layout.labels) {
-      const w = ctx.measureText(l.text).width + 36
-      const x = l.align === 'left' ? l.x : l.x - w
-      ctx.fillStyle = 'rgba(0,0,0,.55)'
-      ctx.beginPath(); ctx.roundRect(x, l.y - 24, w, 48, 24); ctx.fill()
-      ctx.fillStyle = '#fff'; ctx.textAlign = 'left'
-      ctx.fillText(l.text, x + 18, l.y)
-    }
+    pills()
     return
   }
-  layout.rects.forEach((r, i) => draw(images[i], r))
-  ctx.fillStyle = '#fff'
-  ctx.textAlign = 'center'
-  ctx.font = `600 32px ${FONT}`
-  for (const l of layout.labels) ctx.fillText(l.text, l.x, l.y)
+  layout.cells.forEach((c, i) => ctx.drawImage(images[i], c.crop.sx, c.crop.sy, c.crop.sw, c.crop.sh, c.x, c.y, c.w, c.h))
+  pills()
 }
 
 /**
  * The comparison as a PNG blob, or null when a photo is not on this device yet or the canvas
  * cannot be made. `photos` are progressPhotosOf() entries, earliest first; `labels` their printed
- * dates in the same order.
+ * dates in the same order; `pans` where each photo was dragged to in its cell ({ x, y }, 0 to 1), in
+ * the same order, so the picture is the one on the screen.
  */
-export async function renderCompareImage({ photos, labels, mode, pct, title }) {
+export async function renderCompareImage({ photos, labels, pans = [], mode, pct, title }) {
   const bitmaps = []
   try {
     for (const p of photos) {
@@ -110,7 +118,7 @@ export async function renderCompareImage({ photos, labels, mode, pct, title }) {
       if (!rec) return null
       bitmaps.push(await createImageBitmap(rec.blob))
     }
-    const layout = compareLayout(bitmaps.map((b, i) => ({ w: b.width, h: b.height, label: labels[i] })), { mode, pct, title })
+    const layout = compareLayout(bitmaps.map((b, i) => ({ w: b.width, h: b.height, label: labels[i], px: pans[i] && pans[i].x, py: pans[i] && pans[i].y })), { mode, pct, title })
     const canvas = document.createElement('canvas')
     canvas.width = layout.width
     canvas.height = layout.height
