@@ -2,6 +2,9 @@
 // semi-transparent over it, so a new photo can be framed like an old one. The overlay moves with
 // one finger, scales with two, and its opacity has a slider; it starts as the latest photo and can
 // be changed or turned off. Nothing of the overlay is in the saved picture, only the video frame.
+// The front camera's preview is shown mirrored, the way every camera app does, and the picture that
+// is kept is mirrored the same way: what is on the screen is what is saved. The overlay is the earlier
+// photo as it looks in the gallery, never mirrored.
 //
 // Needs getUserMedia, which a browser only gives on HTTPS or localhost. Where it is not there, or
 // the camera is refused, the screen says so in place and the add-photos flow stays the way in.
@@ -10,7 +13,7 @@ import { useEffect, useRef, useState } from 'react'
 import { t } from '../lib/i18n.js'
 import { fmtDate, todayISO } from '../lib/format.js'
 import { frameToBlob } from '../lib/camera-capture.js'
-import { defaultOverlay, DEFAULT_OPACITY, clampPan, pinchScale, distance, overlayTransform, photoFileName } from '../lib/camera-overlay.js'
+import { defaultOverlay, DEFAULT_OPACITY, clampPan, pinchScale, distance, overlayTransform, isMirrored, photoFileName } from '../lib/camera-overlay.js'
 import { useMediaUrl, CustomThumb } from './CustomMedia.jsx'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
@@ -26,6 +29,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
   const base = useRef(null)           // where the current gesture started: { pos, point, dist }
   const [facing, setFacing] = useState('environment')
   const [error, setError] = useState(null)               // null, 'denied' or 'unavailable'
+  const [mirror, setMirror] = useState(false)             // the front camera's preview is shown mirrored, as in any camera app
   const [overlay, setOverlay] = useState(() => defaultOverlay(photos))
   const [choosing, setChoosing] = useState(false)
   const [opacity, setOpacity] = useState(DEFAULT_OPACITY)
@@ -38,6 +42,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
   useEffect(() => {
     let stream = null, done = false
     setError(null)
+    setMirror(false)
     ;(async () => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setError('unavailable'); return }
       try {
@@ -49,6 +54,9 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
       if (done) { stream.getTracks().forEach(tr => tr.stop()); return }
       const v = videoRef.current
       if (!v) return
+      const track = stream.getVideoTracks ? stream.getVideoTracks()[0] : stream.getTracks()[0]
+      const reported = track && track.getSettings ? track.getSettings().facingMode : undefined
+      setMirror(isMirrored(reported, facing))
       v.srcObject = stream
       try { await v.play() } catch (e) { /* autoplay rules; the frames come once it plays */ }
     })()
@@ -97,7 +105,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
     if (!v || busy) return
     setBusy(true)
     try {
-      const blob = await capture(v)
+      const blob = await capture(v, { mirror })
       if (blob) setShot({ blob, url: URL.createObjectURL(blob) })
     } finally { setBusy(false) }
   }
@@ -118,7 +126,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
     {/* A photo has no reading direction, and the fingers move the overlay the same way in Arabic. */}
     <div className="pp-cam-stage" dir="ltr" ref={stageRef} data-swipe-ignore
       onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endPointer} onPointerCancel={endPointer}>
-      <video ref={videoRef} playsInline muted autoPlay />
+      <video ref={videoRef} playsInline muted autoPlay style={mirror ? { transform: 'scaleX(-1)' } : undefined} />
       {overlayUrl && !error && !shot && <img className="pp-cam-overlay" src={overlayUrl} alt="" draggable={false}
         style={{ opacity, transform: overlayTransform(pos) }} />}
       {shot && <img className="pp-cam-shot" src={shot.url} alt="" draggable={false} />}

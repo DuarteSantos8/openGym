@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { MIN_SCALE, MAX_SCALE, defaultOverlay, clampScale, clampPan, pinchScale, distance, overlayTransform, captureSize, photoFileName } from './camera-overlay.js'
+import { MIN_SCALE, MAX_SCALE, defaultOverlay, isMirrored, clampScale, clampPan, pinchScale, distance, overlayTransform, captureSize, photoFileName } from './camera-overlay.js'
 
 describe('defaultOverlay', () => {
   it('is the newest photo, which is the first of the list', () => {
@@ -63,6 +63,18 @@ describe('overlayTransform', () => {
   it('is the plain picture by default and clamps a wild scale', () => {
     expect(overlayTransform()).toBe('translate(0px, 0px) scale(1.000)')
     expect(overlayTransform({ scale: 50 })).toBe(`translate(0px, 0px) scale(${MAX_SCALE.toFixed(3)})`)
+  })
+})
+
+describe('isMirrored', () => {
+  it('follows the camera when it says which it is', () => {
+    expect(isMirrored('user', 'environment')).toBe(true)
+    expect(isMirrored('environment', 'user')).toBe(false)
+  })
+  it('follows what was asked for when the camera does not say', () => {
+    expect(isMirrored(undefined, 'user')).toBe(true)
+    expect(isMirrored(undefined, 'environment')).toBe(false)
+    expect(isMirrored('', 'environment')).toBe(false)
   })
 })
 
