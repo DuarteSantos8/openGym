@@ -12,12 +12,10 @@ final class CrownTests: XCTestCase {
         XCTAssertEqual(g.steps(to: 0, at: at(1), allowed: true), -1, "turning back")
     }
 
-    func testAFastSpinIsCappedAndTheRestDropped() {
+    func testAFastSpinMovesEveryDetent() {
         var g = CrownGate()
-        XCTAssertEqual(g.steps(to: 5, at: at(0), allowed: true), 2)
-        XCTAssertEqual(g.steps(to: 6, at: at(0.05), allowed: true), 0, "the window is used up")
-        XCTAssertEqual(g.steps(to: 7, at: at(0.15), allowed: true), 1, "a new window: one step, not the 4 left over")
-        XCTAssertEqual(g.steps(to: 12, at: at(0.5), allowed: true), 2, "a later window gives 2 again")
+        XCTAssertEqual(g.steps(to: 5, at: at(0), allowed: true), 5)
+        XCTAssertEqual(g.steps(to: 12, at: at(0.05), allowed: true), 7, "nothing dropped: each detent clicked is a step")
     }
 
     func testASwallowedTurnIsNotOwedLater() {

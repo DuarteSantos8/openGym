@@ -52,20 +52,14 @@ struct ValueSpec: Equatable {
     func tooHigh(_ text: String) -> Bool { Double(text.hasSuffix(".") ? text + "0" : text).map { $0 > hi } ?? false }
 }
 
-/// A Crown turn as whole steps: one detent, one step; a fast spin is capped and the rest dropped, not banked.
+/// A Crown turn as whole steps: one detent, one step, as Apple's pickers do; a fast spin moves every detent.
 struct CrownGate: Equatable {
-    static let spinSteps = 2, spinWindow: TimeInterval = 0.1
     private(set) var last = 0.0                    // the binding's value; the view reads and writes it
-    private var windowFrom = Date.distantPast, used = 0
 
     mutating func steps(to total: Double, at t: Date, allowed: Bool) -> Int {
         let whole = Int((total - last).rounded())
         last = total                               // always: what was swallowed is not owed later
-        guard allowed, whole != 0 else { return 0 }
-        if t.timeIntervalSince(windowFrom) >= CrownGate.spinWindow { windowFrom = t; used = 0 }
-        let n = min(abs(whole), max(CrownGate.spinSteps - used, 0))
-        used += n
-        return whole < 0 ? -n : n
+        return allowed ? whole : 0
     }
 }
 

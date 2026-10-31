@@ -658,7 +658,7 @@ struct ExercisePage: View {
                 .focusEffectDisabled()
                 .accessibilityElement(children: .contain)
                 .digitalCrownRotation(detent: Binding(get: { store.crownTotal }, set: { store.turn(to: $0) }),
-                                      from: -100_000, through: 100_000, by: 1, sensitivity: .low,
+                                      from: -100_000, through: 100_000, by: 1, sensitivity: .medium,
                                       isContinuous: false, isHapticFeedbackEnabled: armed != nil)
                 .onChange(of: owns, initial: true) { _, o in
                     crownFocus = o
@@ -1208,7 +1208,7 @@ struct EffortEditor: View {
                 .focusable()
                 .focused($focused)
                 .digitalCrownRotation($value, from: range.lowerBound, through: range.upperBound, by: 1,
-                                      sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+                                      sensitivity: .medium, isContinuous: false, isHapticFeedbackEnabled: true)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text(verbatim: Effort.name(kind)))
                 .accessibilityValue(shown == "–" ? Text("None") : Text(verbatim: shown))
@@ -1476,7 +1476,7 @@ struct WeighInView: View {
             .focusable()
             .focused($part, equals: which)
             .digitalCrownRotation(value, from: range.lowerBound, through: range.upperBound, by: 1,
-                                  sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
+                                  sensitivity: .medium, isContinuous: false, isHapticFeedbackEnabled: true)
             .onTapGesture { part = which }
     }
 }
