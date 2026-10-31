@@ -22,7 +22,7 @@ import { sameWorkout } from '../lib/workout-date.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { renderCompareImage } from '../lib/compare-image.js'
 import { shareImage } from '../lib/share-image.js'
-import { MAX_COMPARE, toggleCompareKey, orderForCompare, modesFor, defaultMode, validMode, spanDays, cellRatio, coverCrop, dragPan, CENTRED } from '../lib/photo-compare.js'
+import { MAX_COMPARE, toggleCompareKey, orderForCompare, modesFor, defaultMode, validMode, spanDays, cellRatio, coverCrop, dragPan, CENTRED, rowsOf } from '../lib/photo-compare.js'
 import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
@@ -190,6 +190,9 @@ function ProgressCompare({ photos, close }) {
   const [pct, setPct] = useState(50)   // the slider's handle, kept here so a shared picture matches what is on screen
   const [pans, setPans] = useState({})  // where each photo was dragged to in its cell, for the same reason
   const keyOf = p => p.key || p.m.hash
+  const shape = rowsOf(n)           // rows of at most three, a shorter last row centred
+  let at = 0
+  const rows = shape.sizes.map(size => photos.slice(at, (at += size)))
   const ratio = cellRatio(photos.map(p => ({ w: p.m.width, h: p.m.height })))
   const thisYear = String(new Date().getFullYear())
   const dateOf = p => fmtDate(p.d, false, photos.some(x => x.d.slice(0, 4) !== thisYear))
@@ -221,9 +224,13 @@ function ProgressCompare({ photos, close }) {
     </div>
     {mode === 'slider'
       ? <ComparePair a={photos[0]} b={photos[1]} pct={pct} setPct={setPct} labels={[dateOf(photos[0]), dateOf(photos[1])]} />
-      : <div className="pp-grid" dir="ltr" data-swipe-ignore style={{ '--cols': n }}>
-          {photos.map(p => <CompareCell key={keyOf(p)} p={p} ratio={ratio} label={dateOf(p)} pos={pans[keyOf(p)] || CENTRED}
-            setPos={pos => setPans(cur => ({ ...cur, [keyOf(p)]: pos }))} />)}
+      : <div className="pp-grid-stage" dir="ltr" data-swipe-ignore>
+          <div className="pp-grid" style={{ '--cols': shape.cols, '--rows': shape.sizes.length, '--ratio': ratio }}>
+            {rows.map((row, r) => <div className="pp-row" key={r}>
+              {row.map(p => <CompareCell key={keyOf(p)} p={p} ratio={ratio} label={dateOf(p)} pos={pans[keyOf(p)] || CENTRED}
+                setPos={pos => setPans(cur => ({ ...cur, [keyOf(p)]: pos }))} />)}
+            </div>)}
+          </div>
         </div>}
     {modes.length > 1 && <div className="pp-modes">
       <Segmented options={modes.map(m => ({ value: m, label: labels[m] }))} value={mode} onChange={setMode} />

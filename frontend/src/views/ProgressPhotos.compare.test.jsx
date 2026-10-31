@@ -71,9 +71,43 @@ describe('comparing more than two photos', () => {
     expect(host.querySelector('.pp-grid')).toBeNull()
   })
 
-  it('takes the photos as one array too, and keeps five at most', () => {
-    mount([1, 2, 3, 4, 5, 6].map(i => photo('2026-0' + i + '-01', i)))
-    expect(host.querySelectorAll('.pp-cell')).toHaveLength(5)
+  it('takes the photos as one array too, and keeps nine at most', () => {
+    mount(Array.from({ length: 11 }, (_, i) => photo('2026-01-' + String(i + 1).padStart(2, '0'), i + 1)))
+    expect(host.querySelectorAll('.pp-cell')).toHaveLength(9)
+  })
+
+  describe('the rows', () => {
+    const rowSizes = () => [...host.querySelectorAll('.pp-row')].map(r => r.querySelectorAll('.pp-cell').length)
+    const grid = () => host.querySelector('.pp-grid')
+    const many = n => Array.from({ length: n }, (_, i) => photo('2026-01-' + String(i + 1).padStart(2, '0'), i + 1))
+
+    it('hold at most three photos, the earliest first, a shorter last row after the full ones', () => {
+      for (const [n, sizes] of [[3, [3]], [4, [3, 1]], [5, [3, 2]], [6, [3, 3]], [7, [3, 3, 1]], [9, [3, 3, 3]]]) {
+        mount(...many(n))
+        expect(rowSizes(), String(n)).toEqual(sizes)
+        const days = [...host.querySelectorAll('.pp-cell .pp-label')].length
+        expect(days).toBe(n)
+        act(() => root.unmount()); host.remove()
+      }
+    })
+
+    it('have cells of the width of a column of three, so a shorter row is the same size and is centred', () => {
+      mount(...many(5))
+      expect(grid().style.getPropertyValue('--cols')).toBe('3')
+      expect(grid().style.getPropertyValue('--rows')).toBe('2')
+      expect(host.querySelector('.pp-row').parentElement).toBe(grid())
+    })
+
+    it('keep two photos in two columns, so they are as large as they can be', () => {
+      mount(photo('2026-01-01', 1), photo('2026-03-01', 2))
+      expect(grid().style.getPropertyValue('--cols')).toBe('2')
+      expect(rowSizes()).toEqual([2])
+    })
+
+    it('hand the grid the shape of the cells, for its size', () => {
+      mount(...many(4))
+      expect(Number(grid().style.getPropertyValue('--ratio'))).toBeCloseTo(4 / 3)
+    })
   })
 
   it('has a share button in the bar, for a pair and for more', () => {
