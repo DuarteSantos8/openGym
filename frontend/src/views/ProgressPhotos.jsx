@@ -22,6 +22,7 @@ import { sameWorkout } from '../lib/workout-date.js'
 import { syncMedia } from '../lib/media-sync.js'
 import { useMediaPicker } from '../components/CustomMediaField.jsx'
 import { CustomThumb, MediaView, useMediaUrl } from '../components/CustomMedia.jsx'
+import PhotoCamera from '../components/PhotoCamera.jsx'
 import { Button } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
 
@@ -246,6 +247,10 @@ export default function ProgressPhotos() {
     }))
     useUI.getState().openSheet(close => <AddPhotosSheet items={items} close={close} save={save} />)
   }
+  // The camera (#951): the live view with an earlier photo over it. A photo taken now is filed for
+  // today, through the same path as one picked from the gallery.
+  const openCamera = () => useUI.getState().openSheet(close =>
+    <PhotoCamera photos={photos} close={close} onTaken={file => save([{ file }], todayISO())} />, { kind: 'viewer' })
   const save = async (items, picked) => {
     const n = { added: 0, noRoom: 0 }
     for (const it of items) {
@@ -271,9 +276,10 @@ export default function ProgressPhotos() {
     </div>
 
     {!comparing && showAdd && <div className="row" style={{ marginBottom: 16 }}>
-      <Button icon={busy ? 'image' : 'camera'} disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
+      <Button icon="image" disabled={!canAdd || busy} onClick={() => fileRef.current?.click()}>
         {busy ? t('Loading…') : t('Add photos')}
       </Button>
+      <Button icon="camera" disabled={!canAdd || busy} onClick={openCamera}>{t('Take photo')}</Button>
       <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onFiles} />
     </div>}
 
