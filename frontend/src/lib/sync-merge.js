@@ -1148,7 +1148,13 @@ export function stampChange(prev, next, wall = Date.now()) {
   for (const w of list(next.workouts)) {
     if (!w || typeof w !== 'object' || w.id == null || w._ts == null) continue
     const old = before.get(w.id)
-    if (old && w._ts !== old._ts) stampEntry(old, w, now)
+    if (!old || w._ts === old._ts) continue
+    // A save that changed nothing is not an edit: it keeps the stamp it had. Re-stamped, the
+    // untouched copy outlived a removal made in between on another device and came back with
+    // whatever field another copy had changed before that removal, but only when those two met
+    // first (sync-merge.property.test.js: three copies, one deleting).
+    if (sameEntry(old, w)) { if (old._ts == null) delete w._ts; else w._ts = old._ts; continue }
+    stampEntry(old, w, now)
   }
   // Settings maps whose entries carry their own stamp (mergeStampedMap): an entry the change
   // re-stamped takes the change's time.

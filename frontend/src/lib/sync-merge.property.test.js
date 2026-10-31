@@ -107,6 +107,22 @@ describe('merging copies of one account', () => {
     }), RUNS)
   })
 
+  // Found by CI (seed 159381305): one copy deletes w0, one edits it before that, one "edits" it
+  // after without changing anything. The empty save re-stamped w0, so it outlived the delete, but
+  // with the first copy's sets or the base's depending on which two copies met first.
+  it('a save that changed nothing does not bring a deleted workout back with someone else\'s edit', () => {
+    const ops = [
+      [{ k: 'weigh', d: '2026-10-01', w: 60 }, { k: 'del', pick: 0 }],
+      [{ k: 'fix', pick: 0, w: 20 }],
+      [{ k: 'routine', sets: 1 }, { k: 'fix', pick: 0, w: 60 }],
+    ]
+    const [A, B, C] = ops.map((o, i) => play(base(), o, i, []))
+    const left = view(merge(merge(A, B), C))
+    expect(view(merge(A, merge(B, C)))).toEqual(left)
+    expect(view(merge(merge(C, A), B))).toEqual(left)
+    expect(left.workouts.find(w => w.id === 'w0')).toBeUndefined()
+  })
+
   it('nothing logged anywhere is lost unless it was deleted after its last edit', () => {
     fc.assert(fc.property(histories(3), ([oa, ob, oc]) => {
       const logs = [[], [], []]
