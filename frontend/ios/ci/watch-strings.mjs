@@ -22,7 +22,9 @@ const LANGS = {
 // The watch's key (what the Swift source says) → the app's key, for words the app already has.
 const FROM_APP = {
   'Today': 'Today',
+  'Routines': 'Routines',
   'Start workout': 'Start workout',
+  'Start': 'Start',
   'Done': 'Done',
   'Warm-up': 'Warm-up',
   'Reps': 'Reps',
@@ -32,6 +34,8 @@ const FROM_APP = {
   'Finish workout?': 'Finish workout?',
   'Finish and save': 'Finish and save',
   'Discard workout': 'Discard workout',
+  'Discard workout?': 'Discard workout?',
+  'The sets you logged in this session will be lost.': 'The sets you logged in this session will be lost.',
   'Continue workout': 'Continue workout',
   'Cancel': 'Cancel',
   'Rest’s over. Next set!': 'Rest’s over. Next set!',
@@ -59,6 +63,13 @@ const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
 
 // Only the watch says these. %@ is a name, %lld a number, as the Swift source interpolates them.
 const OWN = {
+  // The count on a routine's row ("Exercises 5 · Sets 17"): label first, as the watch has no plurals. The app's
+  // "Exercises" means the library in zh and zh-TW, so these are the watch's own.
+  'Exercises': {
+    de: 'Übungen', fr: 'Exercices', es: 'Ejercicios', it: 'Esercizi', 'pt-PT': 'Exercícios', 'pt-BR': 'Exercícios',
+    pl: 'Ćwiczenia', hu: 'Gyakorlatok', tr: 'Egzersizler', ru: 'Упражнения', uk: 'Вправи', ar: 'التمارين',
+    hi: 'व्यायाम', bn: 'ব্যায়াম', th: 'ท่าออกกำลังกาย', ko: '운동', 'zh-Hans': '动作', 'zh-Hant': '動作',
+  },
   'No workout running': {
     de: 'Kein Training läuft', fr: 'Aucune séance en cours', es: 'Ningún entreno en curso', it: 'Nessun allenamento in corso',
     'pt-PT': 'Nenhum treino a decorrer', 'pt-BR': 'Nenhum treino em andamento', pl: 'Żaden trening nie trwa', hu: 'Nincs folyamatban edzés',
@@ -194,6 +205,14 @@ const OWN = {
   },
   'Opens openGym.': {
     de: 'Öffnet openGym.', fr: 'Ouvre openGym.', es: 'Abre openGym.', it: 'Apre openGym.', 'pt-PT': 'Abre o openGym.', 'pt-BR': 'Abre o openGym.', pl: 'Otwiera openGym.', hu: 'Megnyitja az openGymet.', tr: 'openGym’i açar.', ru: 'Открывает openGym.', uk: 'Відкриває openGym.', ar: 'يفتح openGym.', hi: 'openGym खोलता है।', bn: 'openGym খোলে।', th: 'เปิด openGym', ko: 'openGym을 열어요.', 'zh-Hans': '打开 openGym。', 'zh-Hant': '打開 openGym。',
+  },
+  // Finish workout is a one-second hold: this is the line under it.
+  'Hold to finish': {
+    de: 'Zum Beenden gedrückt halten', fr: 'Maintiens pour terminer', es: 'Mantén pulsado para terminar', it: 'Tieni premuto per terminare',
+    'pt-PT': 'Mantém premido para terminar', 'pt-BR': 'Segure para terminar', pl: 'Przytrzymaj, aby zakończyć', hu: 'Tartsd lenyomva a befejezéshez',
+    tr: 'Bitirmek için basılı tut', ru: 'Удерживайте, чтобы завершить', uk: 'Утримуй, щоб завершити', ar: 'اضغط مطولًا للإنهاء',
+    hi: 'समाप्त करने के लिए दबाए रखें', bn: 'শেষ করতে চেপে ধরে রাখুন', th: 'กดค้างเพื่อจบ', ko: '길게 눌러 마치기',
+    'zh-Hans': '长按结束', 'zh-Hant': '長按結束',
   },
 }
 

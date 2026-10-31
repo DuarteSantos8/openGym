@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, es. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Hoy";
+"Routines" = "Rutinas";
 "Start workout" = "Empezar entrenamiento";
+"Start" = "Empezar";
 "Done" = "Listo";
 "Warm-up" = "Calentamiento";
 "Reps" = "Reps";
@@ -11,6 +13,8 @@
 "Finish workout?" = "¿Terminar entrenamiento?";
 "Finish and save" = "Terminar y guardar";
 "Discard workout" = "Descartar entrenamiento";
+"Discard workout?" = "¿Descartar entrenamiento?";
+"The sets you logged in this session will be lost." = "Las series registradas en esta sesión se perderán.";
 "Continue workout" = "Continuar entrenamiento";
 "Cancel" = "Cancelar";
 "Rest’s over. Next set!" = "Se acabó el descanso. ¡Siguiente serie!";
@@ -33,6 +37,7 @@
 "Effort" = "Esfuerzo";
 "None" = "Ninguno";
 "Last time: %@" = "La última vez: %@";
+"Exercises" = "Ejercicios";
 "No workout running" = "Ningún entreno en curso";
 "Not synced yet" = "Aún sin sincronizar";
 "Open openGym on your iPhone once and your routines show up here." = "Abre openGym una vez en tu iPhone y tus rutinas aparecerán aquí.";
@@ -63,3 +68,4 @@
 "Added weight" = "Peso añadido";
 "Your rest, your next set, or today's workout." = "Tu descanso, tu próxima serie o el entreno de hoy.";
 "Opens openGym." = "Abre openGym.";
+"Hold to finish" = "Mantén pulsado para terminar";
