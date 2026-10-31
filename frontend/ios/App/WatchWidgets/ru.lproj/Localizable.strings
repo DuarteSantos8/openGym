@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, ru. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Сегодня";
+"Routines" = "Программы";
 "Start workout" = "Начать тренировку";
+"Start" = "Старт";
 "Done" = "Готово";
 "Warm-up" = "Разминка";
 "Reps" = "Повт.";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Завершить тренировку?";
 "Finish and save" = "Завершить и сохранить";
 "Discard workout" = "Отменить тренировку";
+"Discard workout?" = "Отменить тренировку?";
+"The sets you logged in this session will be lost." = "Подходы, записанные в этой сессии, будут потеряны.";
 "Continue workout" = "Продолжить тренировку";
 "Cancel" = "Отмена";
 "Rest’s over. Next set!" = "Отдых окончен. Следующий подход!";
@@ -32,7 +36,13 @@
 "More" = "Больше";
 "Effort" = "Усилие";
 "None" = "Нет";
+"Delete" = "Удалить";
+"Planned" = "Запланировано";
+"Save" = "Сохранить";
+"Previous set" = "Предыдущий подход";
+"Next set" = "Следующий подход";
 "Last time: %@" = "В прошлый раз: %@";
+"Exercises" = "Упражнения";
 "No workout running" = "Тренировка не идёт";
 "Not synced yet" = "Ещё не синхронизировано";
 "Open openGym on your iPhone once and your routines show up here." = "Откройте openGym на iPhone один раз, и ваши программы появятся здесь.";
@@ -48,18 +58,21 @@
 "Start hold" = "Начать";
 "Workout saved" = "Тренировка сохранена";
 "Ended on your iPhone" = "Завершено на iPhone";
-"Tap a dot to do a skipped set." = "Нажмите на точку, чтобы сделать пропущенный подход.";
+"Go back to do a skipped set." = "Вернитесь назад, чтобы сделать пропущенный подход.";
 "Log this one on your iPhone." = "Это записывается на iPhone.";
 "Saved on the watch, syncs later" = "Сохранено на часах, синхронизируется позже";
 "All done?" = "Тренировка окончена?";
 "Lock" = "Блокировка";
 "Skip this set?" = "Пропустить этот подход?";
 "Turn the Digital Crown to change it." = "Поверните Digital Crown, чтобы изменить.";
-"%lld done" = "%lld сделано";
 "%lld avg · %lld max" = "ср. %lld · макс. %lld";
 "Set %lld of %lld" = "Подход %lld из %lld";
 "%lld of %lld sets" = "%lld из %lld подходов";
 "Tap to change it." = "Нажмите, чтобы изменить.";
+"Type a number" = "Ввести число";
+"Tap again to type a number." = "Нажмите ещё раз, чтобы ввести число.";
 "Added weight" = "Доп. вес";
 "Your rest, your next set, or today's workout." = "Отдых, следующий подход или сегодняшняя тренировка.";
 "Opens openGym." = "Открывает openGym.";
+"Changed on your iPhone" = "Изменено на iPhone";
+"Hold to finish" = "Удерживайте, чтобы завершить";
