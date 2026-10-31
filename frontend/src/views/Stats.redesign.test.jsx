@@ -274,3 +274,16 @@ describe('Stats redesign: Lifts and Effort on the example profile', () => {
     expect(eff.querySelector('.mrow')).toBeNull()
   })
 })
+
+// Card dismiss pass (1.4.4): the redesigned Stats keeps every control a sibling, never inside
+// another (the folded Challenges header, the tapped bar rows, the day rows, the links list).
+describe('Stats: no control inside a control', () => {
+  it('nothing interactive sits inside anything interactive, with every section shown', () => {
+    mount(Object.assign(clone(DEF), buildDemoState()))
+    act(() => host.querySelector('[data-challenge-shelf] .card-fold')?.click())
+    const sel = 'button, a[href], input, select, textarea, [role="button"], [role="link"], [tabindex]:not([tabindex="-1"])'
+    const nested = [...host.querySelectorAll(sel)].filter(el => el.parentElement?.closest(sel)).map(el => el.outerHTML.slice(0, 80))
+    expect(host.querySelectorAll(sel).length).toBeGreaterThan(20)
+    expect(nested).toEqual([])
+  })
+})
