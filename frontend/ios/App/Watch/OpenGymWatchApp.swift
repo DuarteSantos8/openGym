@@ -1143,7 +1143,7 @@ struct ValueTile: View {
                         .minimumScaleFactor(0.5)
                         .contentTransition(.numericText(value: Double(value) ?? 0))
                         .frame(height: font * 1.2)
-                        .animation(lit && !reduceMotion ? .snappy(duration: 0.18) : nil, value: value)
+                        .animation(lit && !reduceMotion ? .snappy(duration: 0.08) : nil, value: value)
                     if let u = unit {
                         Text(verbatim: u).font(.system(size: 12, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
                     }
@@ -1221,9 +1221,9 @@ struct EffortEditor: View {
                     Text(verbatim: shown)
                         .font(.system(size: size, weight: .semibold, design: .rounded).monospacedDigit())
                         .foregroundStyle(shownColor)
-                        // Rolls the way the crown went, short as Apple's pickers so a fast spin never lags.
+                        // Rolls the way the crown went, as quick as one detent, so a fast spin never lags.
                         .contentTransition(.numericText(value: value.rounded()))
-                        .animation(reduceMotion ? nil : .snappy(duration: 0.18), value: shown)
+                        .animation(reduceMotion ? nil : .snappy(duration: 0.08), value: shown)
                         .lineLimit(1)
                         .minimumScaleFactor(0.4)
                     Image(systemName: "digitalcrown.arrow.clockwise.fill").font(.system(size: 10)).foregroundStyle(.secondary)
@@ -1491,9 +1491,9 @@ struct WeighInView: View {
         return Text(verbatim: text)
             .font(.system(size: which == .whole ? size : size * 0.8, weight: .semibold, design: .rounded).monospacedDigit())
             .foregroundStyle(on ? Theme.accent : Color.white)
-            // Rolls the way the crown went, short as Apple's pickers so a fast spin never lags.
+            // Rolls the way the crown went, as quick as one detent, so a fast spin never lags.
             .contentTransition(.numericText(value: value.wrappedValue))
-            .animation(reduceMotion ? nil : .snappy(duration: 0.18), value: text)
+            .animation(reduceMotion ? nil : .snappy(duration: 0.08), value: text)
             .padding(.horizontal, 4)
             .frame(minWidth: Theme.tap * 0.7, minHeight: Theme.tap)
             .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(on ? Theme.dim : Color.clear))
