@@ -1072,6 +1072,7 @@ export const PT_BR_OVERRIDES = {
   '{0} set becomes {1}: one on each side, {2}s held every time.': '{0} série vira {1}: uma de cada lado, {2} s de isometria cada vez.',
   '{0} sets become {1}: one on each side, {2}s held every time.': '{0} séries viram {1}: uma de cada lado, {2} s de isometria cada vez.',
   'Pick two photos to compare.': 'Escolha duas fotos para comparar.',
+  'Pick 2 to {0} photos to compare.': 'Escolha de 2 a {0} fotos para comparar.',
   'Ready! Open the comparison.': 'Pronto! Abra a comparação.',
   'Move out of the superset': 'Tirar do superset',
   'Your server was reached, but it refused the app’s request (CORS). If a reverse proxy such as Traefik adds CORS headers, let requests from {0} through to openGym unchanged. See “Phone app and CORS” in docs/SELF_HOSTING.md.': 'Seu servidor foi alcançado, mas recusou a solicitação do app (CORS). Se um proxy reverso como o Traefik adiciona cabeçalhos CORS, deixe as solicitações de {0} passarem até o openGym sem alterações. Veja “Phone app and CORS” em docs/SELF_HOSTING.md.',
