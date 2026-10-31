@@ -94,6 +94,10 @@ enum Theme {
     static let side: CGFloat = 9
     /// Always On: bright text and strokes drop to this. On black: white 11:1, accent 6:1.
     static let aod = 0.75
+    /// This screen against the 41 mm one the sizes were set on (176 x 215 pt): the big numbers grow with the glass,
+    /// as in Apple Workout, instead of leaving a 42-49 mm screen half empty.
+    static let wide = WKInterfaceDevice.current().screenBounds.width / 176
+    static let tall = WKInterfaceDevice.current().screenBounds.height / 215
 
     static func ink(_ c: Color, _ dimmed: Bool) -> Color { dimmed ? c.opacity(aod) : c }
 }
@@ -1146,7 +1150,7 @@ struct ValueTile: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
-        let font = min(size, 32)
+        let font = min(size, 32) * Theme.wide
         let lit = armed && !dimmed          // wrist down: never a ring, a glow or a glyph
         Button(action: tap) {
             VStack(spacing: 0) {
@@ -1176,7 +1180,7 @@ struct ValueTile: View {
                 .dynamicTypeSize(...DynamicTypeSize.large)
             }
             .foregroundStyle(tint.opacity(dimmed ? Theme.aod : 1))
-            .frame(maxWidth: .infinity, minHeight: 50)
+            .frame(maxWidth: .infinity, minHeight: 50 * Theme.tall)
             // Always On: no lit tiles, only their outline (less light, the numbers still read), and never a ring.
             .background(shape.fill(dimmed ? Color.clear : (lit ? Theme.accent.opacity(0.16) : Theme.dim)))
             // Inside the box, so a neighbour never clips it.
@@ -1655,12 +1659,12 @@ struct MetricsPage: View {
     let front: Bool
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.locale) private var locale
-    @ScaledMetric(relativeTo: .largeTitle) private var heroScaled: CGFloat = 40
-    @ScaledMetric(relativeTo: .title) private var rowScaled: CGFloat = 30
     @ScaledMetric(relativeTo: .caption) private var unitScaled: CGFloat = 12
-    private var hero: CGFloat { min(heroScaled, 44) }
-    private var row: CGFloat { min(rowScaled, 32) }
-    private var unit: CGFloat { min(unitScaled, 13) }
+    // The time and four rows fill the screen down to the page dots, as Apple Workout's do; already past
+    // the largest text size, so they follow the screen, not the text size.
+    private var hero: CGFloat { 52 * Theme.tall }
+    private var row: CGFloat { 40 * Theme.tall }
+    private var unit: CGFloat { min(unitScaled, 13) * Theme.tall }
 
     var body: some View {
         if front {
@@ -1934,7 +1938,7 @@ struct RestView: View {
                 }
                 VStack(spacing: 1) {
                     Text(timerInterval: min(Date(), end)...end, countsDown: true)
-                        .font(.system(size: store.show.restRing ? countdownSize : countdownSize * 1.35, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: (store.show.restRing ? countdownSize : countdownSize * 1.35) * Theme.wide, weight: .semibold, design: .rounded).monospacedDigit())
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
                         .multilineTextAlignment(.center)
@@ -1993,7 +1997,7 @@ struct HoldView: View {
                 VStack(spacing: 1) {
                     Text(store.entry?.name ?? "").font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
                     Text(timerInterval: min(Date(), end)...end, countsDown: true)
-                        .font(.system(size: countdownSize, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: countdownSize * Theme.wide, weight: .semibold, design: .rounded).monospacedDigit())
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
                         .multilineTextAlignment(.center)
