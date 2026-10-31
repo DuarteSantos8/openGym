@@ -4,6 +4,9 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  'Flip camera': 'Trocar de câmera',
+  'Drag to move, pinch to resize.': 'Arraste para mover, use dois dedos para redimensionar.',
+  'No camera available here. Add the photo from your gallery instead.': 'Não há câmera disponível aqui. Adicione a foto da sua galeria.',
   'The search finds it by these too. Separate them with commas.': 'A busca também encontra o exercício por estes. Separe com vírgulas.',
   'Save names': 'Salvar nomes',
   'Handy when you compare with another app. Records ignore warm-ups either way.': 'Ajuda quando você compara com outro app. Os recordes ignoram o aquecimento de qualquer jeito.',
