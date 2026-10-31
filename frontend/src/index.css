@@ -2894,6 +2894,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    press on --press-fill (P13), pills and the problem line in the status inks with a plain colour
    before every color-mix, the sheets' actions as grouped rows with Disconnect last and red (P4/P6). */
 .intg-intro{margin:-2px 4px 14px;padding:0;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
+/* Settings → Modules (views/Modules.jsx): the same quiet line on top as Integrations. A module row's
+   description may take two lines and wraps rather than ellipsing; the switch stays centred on it. */
+.modules-intro{margin:-2px 4px 14px;padding:0;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2);text-wrap:pretty}
+.module-row .lrow-s{text-wrap:pretty}
+.module-row .sw{flex:none;align-self:center}
 .lrow.intg-card{padding:0;gap:0}
 .intg-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:11px 14px;text-align:start;color:inherit;background:none;border-radius:0;
   transition:background-color var(--fast) var(--ease)}
