@@ -2418,6 +2418,29 @@ export const PT_BR_OVERRIDES = {
   "Couldn’t reach your server. Try again in a moment.": "Não foi possível acessar seu servidor. Tente de novo daqui a pouco.",
   // --- the F-Droid build ---
   "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Os relógios Wear OS falam com o celular através dos serviços do Google Play, que os aplicativos do F-Droid deixam de fora. O APK de opengym.ch e o aplicativo do Google Play têm a conexão com o relógio.",
+  // --- Settings → Modules (1.4.4) ---
+  "Beginner to Elite for your main lifts, measured against your body weight.": "De Iniciante a Elite nos seus exercícios principais, medido em relação ao seu peso corporal.",
+  "Change it anytime in Settings → Modules.": "Mude quando quiser em Configurações → Módulos.",
+  "Film a set and watch it back right under the row.": "Filme uma série e assista logo abaixo da linha.",
+  "How much app do you want?": "Quanto app você quer?",
+  "Log sets from your wrist on an Apple Watch, Wear OS or Zepp watch.": "Registre séries pelo pulso em um Apple Watch, Wear OS ou relógio Zepp.",
+  "Log, plan, progress. Nothing else on the screen.": "Registrar, planejar, progredir. Mais nada na tela.",
+  "Logging, plans, history, the exercise library and the basic stats are always on.": "Registro, planos, histórico, a biblioteca de exercícios e as estatísticas básicas ficam sempre ligados.",
+  "Plates and warm-ups": "Anilhas e aquecimentos",
+  "Plus weigh-ins, measurements, photos and your health apps.": "Mais pesagens, medidas, fotos e seus aplicativos de saúde.",
+  "Rate each set in RIR or RPE, and see in Stats how hard you really push.": "Avalie cada série em RIR ou RPE e veja em Estatísticas o quanto você realmente se esforça.",
+  "Reviews your training and suggests changes. You still say yes or no.": "Analisa seu treino e sugere mudanças. Quem diz sim ou não continua sendo você.",
+  "Scheduled Coach reviews take a break while the AI Coach is off. Your setup and chats stay.": "As revisões agendadas do Treinador dão uma pausa enquanto o Treinador IA está desligado. Sua configuração e suas conversas ficam.",
+  "Streaks, challenges, badges, recaps and your year in openGym.": "Sequências, desafios, emblemas, resumos e seu ano no openGym.",
+  "Streaks, the Coach, themes, the lot.": "Sequências, o Treinador, temas, tudo o que tem direito.",
+  "Switch off what you don’t use. Nothing gets deleted: switch it back on and it’s all still there.": "Desligue o que você não usa. Nada é apagado: ligue de novo e está tudo lá.",
+  "The plates to load under every set, and warm-ups that build themselves.": "As anilhas para colocar em cada série e aquecimentos que se montam sozinhos.",
+  "Weigh-ins, measurements, progress photos and your weight goal.": "Pesagens, medidas, fotos de progresso e sua meta de peso.",
+  "Your membership codes on Home, and NFC stickers that start a workout.": "Seus códigos de sócio no Início e adesivos NFC que iniciam um treino.",
+  "Your own mix. Flip the switches below.": "Sua própria mistura. Mexa nos interruptores abaixo.",
+  "Your watch stops getting workouts while Watch is off. It stays paired.": "Seu relógio para de receber treinos enquanto “Relógio” estiver desligado. Continua pareado.",
+  "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
+  "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
