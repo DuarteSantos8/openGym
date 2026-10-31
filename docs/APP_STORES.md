@@ -6,6 +6,7 @@ openGym ships to phones three ways, all from the same code and the same version 
 |---|---|---|---|
 | Android APK | GitHub release, opengym.ch | the app itself (Settings → About) | release machine |
 | Android, Google Play | Play Store | Google Play | release machine |
+| Android, F-Droid | F-Droid (planned, see below) | F-Droid | F-Droid's build server, from the public source |
 | iPhone (+ Apple Watch) | App Store, TestFlight beta | the App Store | Mac runner (compile) + release machine (finish, sign, upload) |
 
 The two Android builds are flavours of one Gradle project (`frontend/android/app/build.gradle`):
@@ -145,7 +146,49 @@ do, not with every release, and are uploaded once per change, separate from the 
 
 The full-quality files only ever travel from the release machine to Apple, like the IPA (licence).
 
-## One-time setup (owner)
+## F-Droid
+
+The third Android flavour, `fdroid`, is the one F-Droid builds from the public source on its own
+server. F-Droid accepts only free software, so this build carries nothing from Google:
+
+| In the APK and the Play build | In the F-Droid build |
+|---|---|
+| Wear OS link (`play-services-wearable`, the Wearable Data Layer) | left out: `WatchBridgePlugin` and `WatchListenerService` live in `src/gms` (sideload + play only); `src/fdroid` has a `WatchBridgePlugin` that answers "no watch", and Settings → About says why |
+| Gym card scanner: ML Kit (`@capacitor-mlkit/barcode-scanning`, with Play services code scanner, Firebase components, datatransport) | left out (excluded from the flavour's configurations and from its copy of `capacitor.plugins.json`); the scanner and photo import go the browser's way, the WebView's camera with jsQR / `BarcodeDetector` (`lib/scan.js`, `components/CameraScan.jsx`) |
+| Play Asset Delivery (play) | none; the repository's 180 px animations are built in, as in a self-hosted server |
+| In-app updater (sideload) | none; F-Droid updates the app (`lib/channel.js` → `fdroid`) |
+| Gym reminder | the same: the platform's proximity alerts (`LocationManager`), no Play services |
+| Donation links | the same as the APK (F-Droid allows them) |
+
+The unused `google-services` Gradle plugin (FCM push, never set up) is gone from all builds.
+Health Connect (`androidx.health.connect`, Apache 2.0 AndroidX) stays: it only talks to the
+system's Health Connect, which is part of Android 14 and later.
+
+**Build** (what F-Droid's recipe runs, no keys, no private files, no network beyond npm, Google's
+and Maven Central's repositories):
+
+```sh
+cd frontend && npm ci && npm run build:mobile          # 180 px media from catalogue/media, cap sync
+cd android && ./gradlew :app:assembleFdroidRelease     # unsigned APK, about 210 MB
+../../scripts/android/check-fdroid.sh                  # nothing non-free in classpath, manifest, plugin list
+```
+
+CI runs the last two in the `android` job. Two clean builds in different directories gave the same
+APK byte for byte (JDK 21, build-tools 36), so F-Droid's reproducible-build check against an APK we
+sign ourselves is within reach. Same `applicationId` and `versionCode` as the APK.
+
+**Signing.** F-Droid signs with its own key unless its build matches an APK we publish, signed with
+ours (reproducible builds, `Binaries:` in the recipe). With F-Droid's key the app cannot be
+updated from or to the GitHub APK or Google Play without uninstalling (and losing local data
+unless exported first).
+
+**Media.** Only the 180 px media in `catalogue/media` go in, the same files as the repository
+(Gym visual licence, Part A). The F-Droid listing marks the app `NonFreeAssets`, since the media
+are not under a free licence (NOTICE.md).
+
+**Listing** texts and images: `fastlane/metadata/android/<locale>/` (F-Droid and IzzyOnDroid read
+it from the tagged source). The changelog for a version is `changelogs/<versionCode>.txt`.
+
 
 ### Google Play
 

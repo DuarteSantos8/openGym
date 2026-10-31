@@ -200,6 +200,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const [ios, setIos] = useState(() => MOBILE && platformNow() === 'ios')   // the iPhone app: Settings → Apple Watch
   const [selfUpdate, setSelfUpdate] = useState(false)   // the sideloaded APK, which updates itself
   const [play, setPlay] = useState(false)   // the Google Play build: no donation links (Play payments policy)
+  const [fdroid, setFdroid] = useState(false)   // the F-Droid build: F-Droid updates it, no Wear OS link
   const [gymReminder, setGymReminder] = useState(true)   // false in a Play build without background location
   const [checking, setChecking] = useState(false)
   // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
@@ -220,6 +221,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       const own = channel === 'sideload'
       setSelfUpdate(own)
       setPlay(channel === 'play')
+      setFdroid(channel === 'fdroid')
       if (ok) gymReminderBuilt().then(setGymReminder)
       // Nothing newer: an update APK still in the cache is the one already installed.
       if (own && page === 'about') checkForUpdate().then(info => { setUpdateInfo(info); if (!info?.hasUpdate) forgetDownloadedUpdate() }).catch(() => {})
@@ -1106,7 +1108,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           release is newer (checksum verified, see onUpdateRowClick). On the web the app updates
           with its server, so the row points at the APK for the phone instead. iOS and the Google
           Play build are updated by their store. */}
-      <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
+      <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : fdroid ? t('F-Droid installs the updates for this build.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
         {/* The sideloaded APK comes in three kinds that differ only in the animations built in
             (lib/apk-variant.js): which one this is, so nobody has to guess from the file size. */}
         <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__}
@@ -1121,6 +1123,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
               subtitle={t('Download the APK from opengym.ch')} accessory="chevron"
               onClick={() => window.open('https://opengym.ch/#download', '_blank', 'noopener')} />}
       </Section>
+      {/* The F-Droid build has no Wear OS link (it would need Google Play services, which F-Droid
+          leaves out): said here rather than having a watch that silently never connects. */}
+      {fdroid && <Section footer={t('Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.')}>
+        <Row icon="watch" iconTint="var(--grey)" title={t('Wear OS watch')} value={t('Not in this build')} />
+      </Section>}
       {/* Tutorials (components/Tour.jsx): the tour from the top, and the four short guided runs
           its closing card offers. Not over a running workout: the tour's practice session and the
           tutorials' copies would have to stand in for the real one. */}

@@ -20,6 +20,11 @@ is signed, retried for about an hour if the other side is down, never sent twice
 is one tap away. Home Assistant on your home network needs `INTEGRATIONS_ALLOW_LAN=1` from your
 admin. Payloads and a signature checker are in docs/INTEGRATIONS.md.
 
+**On its way to F-Droid.** A new Android build without anything from Google, made to be built by
+F-Droid from the source: the gym card scanner uses the camera in the app instead of Google's,
+updates come from F-Droid, and Wear OS watches (they need Google Play services) are left out,
+which the app says in Settings → About. Everything else is the same app.
+
 **openGym on Amazfit watches** (Zepp OS 3 and later: Balance, GTR 4, GTS 4, Active, T-Rex, Cheetah,
 Bip 5 and friends). Same deal as Wear OS: start a routine on the wrist, turn the crown (or tap + and
 -) for weight and reps, Done, a rest ring that buzzes, heart rate on every set, a summary, and a
