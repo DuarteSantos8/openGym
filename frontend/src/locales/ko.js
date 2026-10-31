@@ -3478,4 +3478,9 @@ export default {
   "Paired watches": "페어링된 워치",
   "Not heard from yet": "아직 연결 기록 없음",
   "Couldn’t reach your server. Try again in a moment.": "서버에 연결할 수 없어요. 잠시 후 다시 시도하세요.",
+  // --- the F-Droid build ---
+  "F-Droid installs the updates for this build.": "이 빌드의 업데이트는 F-Droid가 설치해요.",
+  "Wear OS watch": "Wear OS 워치",
+  "Not in this build": "이 빌드에는 없어요",
+  "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS 워치는 Google Play 서비스를 통해 휴대폰과 연결되는데, F-Droid 앱에는 이게 빠져 있어요. opengym.ch의 APK와 Google Play 앱에는 워치 연결이 있어요.",
 }

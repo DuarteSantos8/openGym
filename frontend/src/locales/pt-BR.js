@@ -2356,6 +2356,8 @@ export const PT_BR_OVERRIDES = {
   "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "No aplicativo Zepp, abra as configurações do app openGym do relógio e digite este endereço e este código. O código vale por dez minutos.",
   "Paired watches": "Relógios pareados",
   "Couldn’t reach your server. Try again in a moment.": "Não foi possível acessar seu servidor. Tente de novo daqui a pouco.",
+  // --- the F-Droid build ---
+  "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Os relógios Wear OS falam com o celular através dos serviços do Google Play, que os aplicativos do F-Droid deixam de fora. O APK de opengym.ch e o aplicativo do Google Play têm a conexão com o relógio.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

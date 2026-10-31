@@ -3478,4 +3478,9 @@ export default {
   "Paired watches": "已配对的手表",
   "Not heard from yet": "还没有消息",
   "Couldn’t reach your server. Try again in a moment.": "连不上你的服务器，请稍后再试。",
+  // --- the F-Droid build ---
+  "F-Droid installs the updates for this build.": "这个版本的更新由 F-Droid 安装。",
+  "Wear OS watch": "Wear OS 手表",
+  "Not in this build": "此版本没有",
+  "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS 手表通过 Google Play 服务和手机通信，而 F-Droid 的应用不包含它。opengym.ch 的 APK 和 Google Play 上的应用可以连接手表。",
 }

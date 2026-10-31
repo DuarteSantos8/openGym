@@ -12,7 +12,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/scan.js', () => ({ scanCode: vi.fn(), importCodeFromImage: vi.fn() }))
+vi.mock('../lib/scan.js', () => ({ scanCode: vi.fn(), importCodeFromImage: vi.fn(), webScanner: vi.fn(async () => true) }))
 vi.mock('../components/CameraScan.jsx', () => ({ default: () => null }))
 vi.mock('../sheets.jsx', () => ({ confirmSheet: vi.fn() }))
 

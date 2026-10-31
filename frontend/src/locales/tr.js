@@ -3478,4 +3478,9 @@ export default {
   "Paired watches": "Eşlenen saatler",
   "Not heard from yet": "Henüz ses yok",
   "Couldn’t reach your server. Try again in a moment.": "Sunucuna ulaşılamadı. Birazdan tekrar dene.",
+  // --- the F-Droid build ---
+  "F-Droid installs the updates for this build.": "Bu sürümün güncellemelerini F-Droid yükler.",
+  "Wear OS watch": "Wear OS saat",
+  "Not in this build": "Bu sürümde yok",
+  "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS saatler telefonla Google Play hizmetleri üzerinden konuşur, F-Droid uygulamalarında bunlar yok. opengym.ch’deki APK ve Google Play uygulaması saat bağlantısına sahip.",
 }

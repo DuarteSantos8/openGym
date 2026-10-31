@@ -3478,4 +3478,9 @@ export default {
   "Paired watches": "जुड़ी घड़ियाँ",
   "Not heard from yet": "अभी तक कोई ख़बर नहीं",
   "Couldn’t reach your server. Try again in a moment.": "आपके सर्वर तक नहीं पहुँच पाए। थोड़ी देर में फिर कोशिश करें।",
+  // --- the F-Droid build ---
+  "F-Droid installs the updates for this build.": "इस बिल्ड के अपडेट F-Droid इंस्टॉल करता है।",
+  "Wear OS watch": "Wear OS घड़ी",
+  "Not in this build": "इस बिल्ड में नहीं",
+  "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Wear OS घड़ियाँ Google Play सेवाओं के ज़रिए फ़ोन से बात करती हैं, और F-Droid ऐप्स में ये नहीं होतीं। opengym.ch का APK और Google Play वाला ऐप घड़ी से जुड़ते हैं।",
 }

@@ -3481,4 +3481,9 @@ export default {
   "Paired watches": "Párosított órák",
   "Not heard from yet": "Még nem jelentkezett",
   "Couldn’t reach your server. Try again in a moment.": "Nem érem el a szervered. Próbáld újra egy perc múlva.",
+  // --- the F-Droid build ---
+  "F-Droid installs the updates for this build.": "A frissítéseket ennél a változatnál az F-Droid telepíti.",
+  "Wear OS watch": "Wear OS óra",
+  "Not in this build": "Ebben a változatban nincs",
+  "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "A Wear OS órák a Google Play-szolgáltatásokon át beszélnek a telefonnal, ezeket pedig az F-Droid appok kihagyják. Az opengym.ch-s APK és a Google Play-es app tud órát csatlakoztatni.",
 }

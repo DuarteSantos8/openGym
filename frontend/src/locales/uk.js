@@ -3475,4 +3475,9 @@ export default {
   "Paired watches": "Під’єднані годинники",
   "Not heard from yet": "Ще не виходив на зв’язок",
   "Couldn’t reach your server. Try again in a moment.": "Не вдалося зв’язатися із сервером. Спробуй трохи згодом.",
+  // --- the F-Droid build ---
+  "F-Droid installs the updates for this build.": "Оновлення цієї версії встановлює F-Droid.",
+  "Wear OS watch": "Годинник Wear OS",
+  "Not in this build": "Немає в цій версії",
+  "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Годинники Wear OS спілкуються з телефоном через сервіси Google Play, а застосунки з F-Droid їх не мають. APK з opengym.ch і застосунок з Google Play мають зв’язок із годинником.",
 }

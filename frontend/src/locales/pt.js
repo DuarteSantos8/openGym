@@ -3478,4 +3478,9 @@ export default {
   "Paired watches": "Relógios emparelhados",
   "Not heard from yet": "Ainda sem notícias",
   "Couldn’t reach your server. Try again in a moment.": "Não foi possível contactar o teu servidor. Tenta de novo daqui a pouco.",
+  // --- the F-Droid build ---
+  "F-Droid installs the updates for this build.": "As atualizações desta versão são instaladas pelo F-Droid.",
+  "Wear OS watch": "Relógio Wear OS",
+  "Not in this build": "Não nesta versão",
+  "Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.": "Os relógios Wear OS falam com o telemóvel através dos serviços Google Play, que as apps do F-Droid deixam de fora. O APK de opengym.ch e a app do Google Play têm a ligação ao relógio.",
 }
