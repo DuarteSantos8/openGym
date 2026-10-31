@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, pt-BR. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Hoje";
+"Routines" = "Rotinas";
 "Start workout" = "Começar treino";
+"Start" = "Começar";
 "Done" = "Concluído";
 "Warm-up" = "Aquecimento";
 "Reps" = "Reps";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Terminar o treino?";
 "Finish and save" = "Terminar e salvar";
 "Discard workout" = "Descartar treino";
+"Discard workout?" = "Descartar treino?";
+"The sets you logged in this session will be lost." = "As séries registradas nesta sessão serão perdidas.";
 "Continue workout" = "Continuar treino";
 "Cancel" = "Cancelar";
 "Rest’s over. Next set!" = "Acabou o descanso. Próxima série!";
@@ -32,7 +36,9 @@
 "More" = "Mais";
 "Effort" = "Esforço";
 "None" = "Nenhum";
+"Waiting to sync" = "Aguardando sincronização";
 "Last time: %@" = "Da última vez: %@";
+"Exercises" = "Exercícios";
 "No workout running" = "Nenhum treino em andamento";
 "Not synced yet" = "Ainda não sincronizado";
 "Open openGym on your iPhone once and your routines show up here." = "Abra o openGym uma vez no iPhone e suas rotinas aparecem aqui.";
@@ -51,6 +57,8 @@
 "Tap a dot to do a skipped set." = "Toque num ponto para fazer uma série pulada.";
 "Log this one on your iPhone." = "Este você registra no iPhone.";
 "Saved on the watch, syncs later" = "Salvo no relógio, sincroniza depois";
+"On your iPhone" = "No seu iPhone";
+"iPhone out of reach" = "iPhone fora de alcance";
 "All done?" = "Terminou?";
 "Lock" = "Bloquear";
 "Skip this set?" = "Pular esta série?";
@@ -63,3 +71,4 @@
 "Added weight" = "Peso adicional";
 "Your rest, your next set, or today's workout." = "Seu descanso, a próxima série ou o treino de hoje.";
 "Opens openGym." = "Abre o openGym.";
+"Hold to finish" = "Segure para terminar";

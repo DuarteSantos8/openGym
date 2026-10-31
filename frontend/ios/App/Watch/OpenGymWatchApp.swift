@@ -15,9 +15,11 @@ import WidgetKit
  *           and, when the profile rates effort, RPE or RIR in a small disc beside Done
  *   rest    a full-screen ring around a huge countdown, +15 s and Skip as small round buttons
  *   hold    a timed set: the seconds on the crown, Start, then a ring counting down, Stop
- *   finish  after the last exercise, one round button
  *   summary the workout at its end: time, sets, volume, heart rate, calories, records; Done
- * Exercises are vertical pages (swipe), with the system's page indicator. Each kind of set has its
+ * Overview ← the exercises: swipe right from a set for every exercise with its sets done (tap one to
+ * jump to it) and Finish workout, a one-second hold at its bottom, Discard workout apart below it.
+ * The exercises are vertical pages (swipe, the crown pages them), with the system's page indicator;
+ * the rest comes up over them, so the exercises never leave. Each kind of set has its
  * own look: a warm-up is orange and says so, a per-side set says Left or Right, a bodyweight set
  * shows the reps (and added weight, when there is some), a superset says so and goes in turns.
  *
@@ -31,7 +33,13 @@ struct OpenGymWatchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            Group {
+                if delegate.store.isDemo, let screen = SessionStore.demoScreen, screen.hasPrefix("complication-") {
+                    ComplicationDemo(screen: screen)
+                } else {
+                    RootView()
+                }
+            }
                 .environmentObject(delegate.store)
                 .tint(Theme.accent)
                 .background(Color.black)
@@ -68,14 +76,126 @@ struct DemoEnvironment: ViewModifier {
     }
 }
 
+/// CI's screenshots of the complications (-OpenGymWatchScreen complication-idle …): the real
+/// WidgetView in each family's frame, sizes from Apple's complication table by watch size. The
+/// corner's curved label is the system's and is not drawn here.
+struct ComplicationDemo: View {
+    let screen: String
+
+    private var state: WidgetState {
+        var s: WidgetState
+        switch screen {
+        case "complication-idle": s = .idle; s.unsent = 3
+        case "complication-today": s = WidgetState(mode: "today", title: "Push day", detail: "", restEndsAt: nil, total: 8); s.unsent = 12
+        case "complication-rest":
+            s = WidgetState(mode: "rest", title: "Bench Press", detail: "", restEndsAt: Date().addingTimeInterval(83), done: 3, total: 12); s.unsent = 1
+        default:
+            s = WidgetState(mode: "set", title: "Bench Press", detail: "62.5 kg × 8", restEndsAt: nil, done: 3, total: 12, setLabel: "2/4")
+            s.unsent = screen == "complication-set" ? 2 : 0
+        }
+        s.lang = SessionStore.argument("-OpenGymWatchLang")
+        return s
+    }
+
+    var body: some View {
+        // (screen width up to, rectangular, circular, corner) for 40, 41, 44 and 45/49 mm.
+        let sizes: [(CGFloat, CGSize, CGFloat, CGFloat)] = [
+            (165, CGSize(width: 162, height: 69), 42, 32), (180, CGSize(width: 171.5, height: 73), 44.5, 34),
+            (190, CGSize(width: 184, height: 78), 47, 36), (.infinity, CGSize(width: 193, height: 82), 50, 38),
+        ]
+        let width = WKInterfaceDevice.current().screenBounds.width
+        let (_, rect, circle, corner) = sizes.first { width <= $0.0 } ?? sizes[3]
+        VStack(spacing: 6) {
+            frame(.accessoryRectangular, rect, inset: 6)
+            HStack(spacing: 8) {
+                frame(.accessoryCircular, CGSize(width: circle, height: circle))
+                frame(.accessoryCorner, CGSize(width: corner, height: corner))
+            }
+            frame(.accessoryInline, CGSize(width: rect.width, height: 20), inset: 6)
+        }
+        .environment(\.locale, state.locale)
+    }
+
+    private func frame(_ family: WidgetFamily, _ size: CGSize, inset: CGFloat = 0) -> some View {
+        WidgetView(state: state, date: Date(), demoFamily: family)
+            .padding(.horizontal, inset)
+            .frame(width: size.width, height: size.height)
+            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Theme.dim))
+    }
+}
+
 enum Theme {
     /// The app's default accent (frontend/src/index.css --green, dark).
     static let accent = Color(red: 0x30 / 255, green: 0xd1 / 255, blue: 0x58 / 255)
     /// Warm-up sets (the app's --orange).
     static let warmup = Color(red: 1, green: 0x9f / 255, blue: 0x0a / 255)
+    /// Sets waiting for the iPhone (the app's --yellow).
+    static let caution = Color(red: 1, green: 0xd6 / 255, blue: 0x0a / 255)
     static let dim = Color.white.opacity(0.14)
     /// The smallest a thing a finger has to hit may be.
     static let tap: CGFloat = 44
+    /// What replaces a fill in Always On. White 40 % is 3.7:1 on black; the app's --label-3 is 2.4:1.
+    static let outline = Color.white.opacity(0.4)
+    /// The app's --r: rows.
+    static let radius: CGFloat = 12
+    /// The app's --r-xl: full-width buttons.
+    static let radiusLarge: CGFloat = 22
+    /// The app's --fast: a press.
+    static let fast = 0.14
+    /// Side margin on the 41 mm rounded screen (the old 4 pt is too tight).
+    static let side: CGFloat = 9
+    /// Always On: bright text and strokes drop to this. On black: white 11:1, accent 6:1.
+    static let aod = 0.75
+
+    static func ink(_ c: Color, _ dimmed: Bool) -> Color { dimmed ? c.opacity(aod) : c }
+}
+
+/// The app's .btn:active: 97.5 % in 140 ms, ease-out, no spring. Reduce Motion or wrist down: dim only.
+private struct Press: ViewModifier {
+    let on: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(on && !reduceMotion && !dimmed ? 0.975 : 1)
+            .opacity(on ? 0.8 : 1)
+            .animation(dimmed ? nil : .easeOut(duration: Theme.fast), value: on)
+    }
+}
+
+/// .btn.primary: solid accent, black label, full width, 44 pt. Wrist down: 2 pt accent outline, no fill.
+struct PrimaryButton: ButtonStyle {
+    var minHeight = Theme.tap
+    @Environment(\.isLuminanceReduced) private var dimmed
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.radiusLarge, style: .continuous)
+        let accent = Theme.ink(Theme.accent, dimmed)
+        configuration.label
+            .foregroundStyle(dimmed ? accent : Color.black)
+            .frame(maxWidth: .infinity, minHeight: minHeight)
+            .background(shape.fill(dimmed ? Color.clear : Theme.accent))
+            .overlay(shape.stroke(accent, lineWidth: dimmed ? 2 : 0))
+            .contentShape(shape)
+            .modifier(Press(on: configuration.isPressed))
+    }
+}
+
+/// .btn (secondary): system glass on watchOS 26, the dim fill before. Wrist down: 1 pt outline.
+struct SecondaryButton: ButtonStyle {
+    @Environment(\.isLuminanceReduced) private var dimmed
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
+        let row = configuration.label
+            .background { if !dimmed { fill(shape) } }
+            .overlay(shape.stroke(Theme.outline, lineWidth: dimmed ? 1 : 0))
+            .contentShape(shape)
+        // Interactive glass answers a touch by itself; the dim fill, and Always On, get the app's press.
+        if #available(watchOS 26, *), !dimmed { row } else { row.modifier(Press(on: configuration.isPressed)) }
+    }
+    @ViewBuilder private func fill(_ shape: RoundedRectangle) -> some View {
+        if #available(watchOS 26, *) { Color.clear.glassEffect(.regular.interactive(), in: shape) }
+        else { shape.fill(Theme.dim) }
+    }
 }
 
 func formatNumber(_ v: Double) -> String {
@@ -84,6 +204,7 @@ func formatNumber(_ v: Double) -> String {
 
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -99,21 +220,19 @@ struct RootView: View {
                 CountdownView(from: from, label: Text("Start hold"), start: { store.startHold(auto: true) }, cancel: { store.stopHoldCount() })
             } else if let end = store.holdEndsAt {
                 HoldView(end: end)
-            } else if let end = store.restEndsAt, end > Date() {
-                RestView(end: end)
             } else {
-                ExercisePager()
+                SessionScreen()
             }
         }
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
         // Text's words up by this locale).
         .environment(\.locale, store.locale)
-        // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Finish page.
+        // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Overview's Finish.
         .alert(Text("All done?"), isPresented: $store.askDone) {
             Button("Continue workout", role: .cancel) { store.keepGoing() }
             Button("Finish workout") {
                 store.keepGoing()
-                store.show(entry: store.workout?.entries.count ?? 0)
+                store.showFinish()
             }
         }
         // Any touch: the rest-over alarm was noticed (it would tap once more otherwise).
@@ -122,11 +241,13 @@ struct RootView: View {
         .onOpenURL { url in
             if url.host == "start", store.workout == nil, let today = store.ready?.today { store.start(today) }
         }
-        .onChange(of: store.widgetState) { state in
-            guard !store.isDemo else { return }
-            state.write()
-            WidgetCenter.shared.reloadAllTimelines()
+        .onChange(of: store.widgetState) { _ in store.publishWidget() }
+        // The sets that waited have reached the iPhone: said to VoiceOver, as the pill vanishes.
+        .onChange(of: store.sync) { old, new in
+            if old.unsent > 0, new.unsent == 0, !store.isDemo { AccessibilityNotification.Announcement(store.L("On your iPhone")).post() }
         }
+        // A count that went stale while the app was away is fresh again once it is on screen.
+        .onChange(of: scenePhase) { phase in if phase == .active, !store.isDemo { store.updateLink() } }
     }
 }
 
@@ -148,17 +269,55 @@ struct Tag: View {
     }
 }
 
-/// The phone is out of reach and events wait on the watch: a small sign, said in words to VoiceOver.
-struct OfflineSign: View {
+/// Whether the sets logged here reached the iPhone (SessionStore.sync): glyph + count + colour, with the words in
+/// the full form. Nothing to tap. The set header has no room for words (compact); the rest header has none
+/// for a capsule either (inline: the glyph and count while sets wait).
+struct SyncPill: View {
+    enum Form { case compact, inline, full }
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let form: Form
 
     var body: some View {
-        if store.offline {
-            Image(systemName: "iphone.slash")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .accessibilityLabel(Text("Saved on the watch, syncs later"))
+        let s = store.sync
+        Group {
+            if s != .none, form == .full || (form == .inline ? s.unsent > 0 : s != .onPhone) {
+                pill(s).transition(.opacity)
+            }
         }
+        .animation(reduceMotion || dimmed ? nil : .easeOut(duration: Theme.fast), value: s)
+    }
+
+    private func pill(_ s: SyncState) -> some View {
+        let waiting = s.unsent > 0
+        let color = waiting ? Theme.ink(Theme.caution, dimmed) : Color.secondary
+        let glyph = waiting ? "arrow.up" : s == .onPhone ? "iphone" : "iphone.slash"
+        let word = store.L(waiting ? "Waiting to sync" : s == .onPhone ? "On your iPhone" : "iPhone out of reach")
+        // The count after the words, as a value: in some languages the words would not agree with it before them.
+        // (a no-break space keeps the count with the last word when the line wraps)
+        let text = form == .full ? " \(word)" + (waiting ? "\u{A0}\(s.countText)" : "") : (waiting ? " \(s.countText)" : "")
+        // The glyph is inline in the text, so a second line starts under it.
+        let shape = RoundedRectangle(cornerRadius: form == .full ? 11 : 9, style: .continuous)
+        return Text("\(Image(systemName: glyph))\(text)")
+            .font(.system(.caption2, design: .rounded).weight(.bold))
+            .contentTransition(.numericText())
+            .foregroundStyle(color)
+            .multilineTextAlignment(.leading)
+            .lineLimit(form == .full ? 3 : 1)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.horizontal, form == .full ? 8 : form == .compact ? 5 : 0)
+            .padding(.vertical, form == .full ? 3 : form == .compact ? 1 : 0)
+            .frame(minHeight: form == .full ? 22 : nil)
+            // Always On: an outline in place of the fill.
+            .background { if !dimmed, form != .inline { shape.fill(waiting ? Theme.caution.opacity(0.18) : Theme.dim) } }
+            .overlay { if dimmed, form != .inline { shape.stroke(Theme.outline, lineWidth: 1) } }
+            .dynamicTypeSize(...(form == .full ? DynamicTypeSize.accessibility5 : DynamicTypeSize.xLarge))
+            .allowsHitTesting(false)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(word)
+            .accessibilityValue(waiting ? "\(store.L("Sets")) \(s.unsent)" : "")
+            .accessibilityHint(s == .onPhone ? "" : store.L("Saved on the watch, syncs later"))
     }
 }
 
@@ -265,6 +424,8 @@ struct CountdownView: View {
 
 struct IdleView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.dynamicTypeSize) private var type
     @State private var debug = false
 
     var body: some View {
@@ -274,58 +435,182 @@ struct IdleView: View {
             .sheet(isPresented: $debug) { DebugView() }
     }
 
+    /// "Exercises 5 · Sets 17", or nothing for a routine without sets. Too wide: a size smaller, then two lines, no dot.
+    @ViewBuilder private func counts(_ session: ReadySession) -> some View {
+        let n = SessionCore.size(session)
+        if n.sets > 0 {
+            let e = "\(store.L("Exercises")) \(n.exercises)", s = "\(store.L("Sets")) \(n.sets)"
+            ViewThatFits(in: .horizontal) {
+                Text(verbatim: "\(e) · \(s)").font(.footnote)
+                Text(verbatim: "\(e) · \(s)").font(.caption)
+                VStack(alignment: .leading, spacing: 0) { Text(verbatim: e); Text(verbatim: s) }.font(.footnote)
+            }
+            .foregroundStyle(.secondary)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: "\(e), \(s)"))
+        }
+    }
+
     @ViewBuilder private var content: some View {
         if let ready = store.ready, ready.today != nil || !ready.others.isEmpty {
-            ScrollView {
-                VStack(spacing: 10) {
-                    if let today = ready.today {
-                        Text(today.name)
-                            .font(.system(.headline, design: .rounded))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.7)
-                            .multilineTextAlignment(.center)
-                        RoundButton(systemImage: "play.fill", label: Text("Start workout")) { store.start(today) }
-                    }
-                    if !ready.others.isEmpty {
-                        VStack(spacing: 4) {
-                            ForEach(Array(ready.others.enumerated()), id: \.offset) { pair in
-                                Button { store.start(pair.element) } label: {
-                                    HStack {
-                                        Text(pair.element.name).lineLimit(1).minimumScaleFactor(0.8)
-                                        Spacer(minLength: 4)
-                                        Image(systemName: "play.fill").font(.caption2).foregroundStyle(.secondary)
-                                    }
-                                    .frame(minHeight: Theme.tap)
-                                    .padding(.horizontal, 10)
-                                    .background(RoundedRectangle(cornerRadius: 12).fill(Theme.dim))
+            // The stack only gives the clock row a word to carry; nothing is pushed.
+            NavigationStack {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if let today = ready.today {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(today.name)
+                                        .font(.title3.weight(.semibold)).lineLimit(2).minimumScaleFactor(0.8)
+                                        .foregroundStyle(Theme.ink(.white, dimmed))
+                                    // Largest text: the rows below say it, so Start stays whole on a 40 mm screen.
+                                    if !type.isAccessibilitySize { counts(today) }
                                 }
-                                .buttonStyle(.plain)
+                                .accessibilityElement(children: .combine)
+                                Button { store.startFromTouch(today) } label: {
+                                    // The short word fits beside the glyph in every language; at large text the word stands alone.
+                                    HStack(spacing: 6) {
+                                        if !type.isAccessibilitySize { Image(systemName: "play.fill").accessibilityHidden(true) }
+                                        Text("Start").multilineTextAlignment(.center)
+                                    }
+                                    .font(.headline.weight(.semibold))
+                                    .padding(.horizontal, 6).padding(.vertical, 6)
+                                }
+                                .buttonStyle(PrimaryButton(minHeight: 52))
+                                .accessibilityValue(Text(verbatim: today.name))
+                            }
+                            // Sets still waiting after a finished workout; Start does not move.
+                            if store.sync.unsent > 0 { SyncPill(form: .full).padding(.leading, 10) }
+                            if !ready.others.isEmpty {
+                                VStack(spacing: 6) {
+                                    if ready.today != nil {
+                                        Text("Routines").font(.footnote).foregroundStyle(.secondary)
+                                            .frame(maxWidth: .infinity, alignment: .leading).padding(.leading, 10)
+                                            .accessibilityAddTraits(.isHeader)
+                                    }
+                                    ForEach(Array(ready.others.enumerated()), id: \.offset) { pair in
+                                        Button { store.startFromTouch(pair.element) } label: {
+                                            // The glyph sits by the name so the counts line below gets the whole row's width.
+                                            VStack(alignment: .leading, spacing: 0) {
+                                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                                    Text(pair.element.name).font(.subheadline.weight(.semibold))
+                                                        .foregroundStyle(Theme.ink(.white, dimmed))
+                                                    Spacer(minLength: 4)
+                                                    if !type.isAccessibilitySize {
+                                                        Image(systemName: "play.fill").font(.caption2.weight(.semibold)).foregroundStyle(.secondary).accessibilityHidden(true)
+                                                    }
+                                                }
+                                                counts(pair.element)
+                                            }
+                                            .padding(.horizontal, 10).padding(.vertical, 4)
+                                            .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
+                                        }
+                                        .buttonStyle(SecondaryButton())
+                                        .accessibilityHint(Text("Start workout"))
+                                    }
+                                }
+                                .id("end")
                             }
                         }
-                        .padding(.top, 6)
+                        .padding(.horizontal, Theme.side)
+                        .padding(.bottom, 12)
+                        .id("top")
+                    }
+                    .scrollBounceBehavior(.basedOnSize)
+                    // Wrist down shows the start screen's top, where Today and Start are (never on a timer).
+                    .onChange(of: dimmed) { _, on in if on { proxy.scrollTo("top", anchor: .top) } }
+                    .onAppear { if SessionStore.demoScreen == "idle-end" { proxy.scrollTo("end", anchor: .bottom) } }
+                    // The stack's content gets the system's luminance, not the screenshots' (CI only).
+                    .modifier(DemoEnvironment())
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        // The same white in both states: the colour marks nothing, the word does.
+                        Text(ready.today != nil ? LocalizedStringKey("Today") : LocalizedStringKey("Routines"))
+                            .foregroundStyle(Theme.ink(.white, dimmed)).accessibilityAddTraits(.isHeader)
                     }
                 }
-                .padding(.horizontal, 4)
             }
         } else {
             // Nothing from the phone yet (it sends only while openGym runs there): say so, rather
             // than a "no workout" that reads as if the two were in touch.
             let fresh = !store.heardFromPhone && store.ready == nil
-            VStack(spacing: 10) {
-                OpenGymLogo()
-                    .fill(Theme.accent)
+            // Centred when it fits; when the text is too big for that, a scroll that gives the words the logo's room.
+            ViewThatFits(in: .vertical) {
+                empty(fresh: fresh, logo: true).frame(maxHeight: .infinity)
+                ScrollView { empty(fresh: fresh, logo: false).padding(.bottom, 12) }
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private func empty(fresh: Bool, logo: Bool) -> some View {
+        VStack(spacing: 10) {
+            if logo {
+                Group {
+                    if dimmed { OpenGymLogo().fill(Theme.accent.opacity(0.5)) } else { OpenGymLogo().fill(Theme.accent) }
+                }
                     .frame(width: 60, height: 30)
                     .accessibilityHidden(true)
-                Text(fresh ? LocalizedStringKey("Not synced yet") : LocalizedStringKey("No workout running"))
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                Text(fresh ? LocalizedStringKey("Open openGym on your iPhone once and your routines show up here.")
-                     : LocalizedStringKey("Start one on your iPhone and it shows up here."))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
             }
-            .padding(.horizontal, 8)
+            Text(fresh ? LocalizedStringKey("Not synced yet") : LocalizedStringKey("No workout running"))
+                .font(.headline)
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .multilineTextAlignment(.center)
+            Text(fresh ? LocalizedStringKey("Open openGym on your iPhone once and your routines show up here.")
+                 : LocalizedStringKey("Start one on your iPhone and it shows up here."))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .accessibilityElement(children: .combine)
+        .padding(.horizontal, Theme.side)
+    }
+}
+
+/* ---------- the session: Overview ← the exercises, the rest over them ---------- */
+
+struct SessionScreen: View {
+    enum Page { case overview, set }
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var page: Page = SessionStore.demoOpensOverview ? .overview : .set
+
+    var body: some View {
+        let end = store.restEndsAt.flatMap { $0 > Date() ? $0 : nil }
+        if store.workout?.entries.isEmpty ?? true {
+            OverviewPage()      // no exercises: the Overview alone
+        } else {
+            TabView(selection: $page) {
+                OverviewPage(onPick: { page = .set }).tag(Page.overview)
+                ZStack {
+                    ExercisePager(covered: end != nil || page != .set)
+                        .disabled(end != nil || page != .set)       // nothing under the rest or the Overview takes the crown
+                        .opacity(end == nil ? 1 : 0)
+                        .accessibilityHidden(end != nil)
+                    if let end { RestView(end: end).transition(.opacity) }
+                }
+                .modifier(DemoEnvironment())        // CI's Always On and text size: the pager's pages do not inherit them
+                .animation(reduceMotion || dimmed ? nil : .easeInOut(duration: 0.2), value: end != nil)
+                .tag(Page.set)
+            }
+            // PageTabViewStyle, not .page(...): that one draws the pages too wide.
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: dimmed || end != nil ? .never : .automatic))
+            // Wrist down or the app left: back to the live set. Nothing else moves the page, and never on a timer.
+            .onChange(of: dimmed) { _, on in if on { page = .set } }
+            .onChange(of: scenePhase) { _, p in if p != .active { page = .set } }
+            // The end of the workout, at the moment the lifter is looking.
+            .onChange(of: store.finishWanted) { _, want in
+                if want && dimmed { store.finishWanted = false } else if want { page = .overview }
+            }
+            // Raised while this screen was away (a hold's last set swaps the root): it is up when it returns.
+            .onAppear { if store.finishWanted && !dimmed { page = .overview } }
+            // Back from the Overview at the end: the last exercise is the one up.
+            .onChange(of: page) { _, p in
+                if p == .set, SessionCore.atEnd(store.state), let n = store.workout?.entries.count { store.show(entry: n - 1) }
+            }
         }
     }
 }
@@ -334,14 +619,16 @@ struct IdleView: View {
 
 struct ExercisePager: View {
     @EnvironmentObject var store: SessionStore
+    /// The rest or the Overview is over the pager: nothing on it animates.
+    let covered: Bool
 
     var body: some View {
         // Vertical pages, swiped; the crown belongs to the numbers on the page (like a volume).
-        TabView(selection: Binding(get: { store.entryIndex }, set: { store.show(entry: $0) })) {
+        let n = store.workout?.entries.count ?? 0
+        TabView(selection: Binding(get: { min(store.entryIndex, max(0, n - 1)) }, set: { store.show(entry: $0) })) {
             ForEach(Array((store.workout?.entries ?? []).enumerated()), id: \.offset) { pair in
-                ExercisePage(index: pair.offset).tag(pair.offset)
+                ExercisePage(index: pair.offset, covered: covered).modifier(DemoEnvironment()).tag(pair.offset)
             }
-            FinishPage().tag(store.workout?.entries.count ?? 0)
         }
         .tabViewStyle(.verticalPage)
     }
@@ -362,6 +649,7 @@ enum EditField: String, Identifiable {
 struct ExercisePage: View {
     @EnvironmentObject var store: SessionStore
     let index: Int
+    let covered: Bool
     @State private var editing: EditField?
     @State private var confirmSkip = false
     @Environment(\.dynamicTypeSize) private var typeSize
@@ -375,7 +663,7 @@ struct ExercisePage: View {
             let si = store.setIndex(in: index)
             let current = index == store.entryIndex
             VStack(spacing: 0) {
-                header(entry)
+                header(entry, pill: !hasTags(entry, si.map { entry.sets[$0] }))
                 Spacer(minLength: 2)
                 if let si = si {
                     let row = entry.sets[si]
@@ -421,6 +709,7 @@ struct ExercisePage: View {
                 }
             }
             .padding(.horizontal, 4)
+            .padding(.bottom, 8)        // the horizontal page dots sit about 6 pt from the bottom edge
             // The set's layout is fixed (numbers, Done, dots on one screen): text grows up to a size
             // that still fits on 41 mm; the start screen and the summary scroll and grow all the way.
             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
@@ -469,10 +758,10 @@ struct ExercisePage: View {
         }
     }
 
-    @ViewBuilder private func header(_ entry: Entry) -> some View {
+    @ViewBuilder private func header(_ entry: Entry, pill: Bool) -> some View {
         HStack(alignment: .top, spacing: 6) {
             if store.show.showClip, let clip = store.clips[entry.id] {
-                ClipView(clip: clip, animating: index == store.entryIndex).frame(width: 30, height: 30)
+                ClipView(clip: clip, animating: index == store.entryIndex && !covered).frame(width: 30, height: 30)
             }
             VStack(alignment: .leading, spacing: 0) {
                 Text(entry.name)
@@ -484,22 +773,29 @@ struct ExercisePage: View {
                 WorkoutExtras()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            OfflineSign()
+            // Below the system clock (the top 28 pt), without making the row taller and clear of the page dots.
+            // With a tag row the page is higher and the pill sits in that row instead.
+            if pill { SyncPill(form: .compact).padding(.trailing, 4).offset(y: 10) }
             if store.show.showHr { HeartRateBadge(health: store.health) }
         }
         // The top row sits just under the clock: it grows less than the numbers do.
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
+    private func hasTags(_ entry: Entry, _ row: SetRow?) -> Bool {
+        row.map { $0.warmup || $0.sideUp != nil || entry.group != nil } ?? false
+    }
+
     /// Warm-up, the side up next, superset: what kind of set this is, above the numbers.
     @ViewBuilder private func tags(_ entry: Entry, _ row: SetRow) -> some View {
         let side = row.sideUp
-        if row.warmup || side != nil || entry.group != nil {
+        if hasTags(entry, row) {
             HStack(spacing: 4) {
                 if row.warmup { Tag(text: Text("Warm-up"), color: Theme.warmup) }
                 if side == "L" { Tag(text: Text("Left"), color: .cyan) }
                 if side == "R" { Tag(text: Text("Right"), color: .cyan) }
                 if entry.group != nil { Tag(text: Text("Superset"), color: .purple) }
+                SyncPill(form: .compact)
             }
             .padding(.bottom, 2)
             .dynamicTypeSize(...DynamicTypeSize.xLarge)
@@ -926,34 +1222,242 @@ struct SetDots: View {
     }
 }
 
-/// After the last exercise: one round button, finish and save (on the phone, as its Finish and save).
-struct FinishPage: View {
+/* ---------- the Overview: every exercise, then Finish and Discard ---------- */
+
+struct OverviewPage: View {
+    /// A row was picked: the session screen moves to the Set page.
+    var onPick: () -> Void = {}
     @EnvironmentObject var store: SessionStore
-    @State private var confirming = false
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @State private var confirmDiscard = SessionStore.demoScreen == "discard"
+    /// How far the Finish hold has filled the screen (0...1); CI's finish-hold shots start part-way.
+    @State private var cover: CGFloat = SessionStore.demoScreen == "finish-hold" ? 0.6 : SessionStore.demoScreen == "finish-hold-full" ? 1 : 0
 
     var body: some View {
-        VStack(spacing: 8) {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 6) {
+                    header
+                    ForEach(Overview.rows(store.state)) { row in
+                        OverviewRow(row: row, onPick: onPick)
+                    }
+                    FinishHoldButton(cover: $cover).id("finish")
+                    Color.clear.frame(height: 18).accessibilityHidden(true)    // Finish and Discard stay 24 pt apart
+                    Button { if store.touchAllowed { confirmDiscard = true } } label: {
+                        Label { Text("Discard workout") } icon: { Image(systemName: "trash") }
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(Theme.ink(.red, dimmed))
+                            .frame(maxWidth: .infinity, minHeight: Theme.tap)
+                    }
+                    .buttonStyle(SecondaryButton())
+                    HStack { Spacer(); LockButton(health: store.health); Spacer() }.padding(.top, 6)
+                }
+                .padding(.horizontal, Theme.side)
+                .padding(.top, 14)
+                .padding(.bottom, 24)       // keeps the last control clear of the page dots
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .modifier(DemoEnvironment())        // the scroll view's content gets the system's luminance, not the screenshots' (CI only)
+            .overlay { FinishFlood(cover: cover) }
+            // The workout ended: Finish in view, once the page has settled.
+            .task(id: store.finishWanted) {
+                guard store.finishWanted else { return }
+                try? await Task.sleep(for: .seconds(0.4))
+                withAnimation { proxy.scrollTo("finish", anchor: .bottom) }
+                store.finishWanted = false
+            }
+            .onAppear { if ["finish", "finish-hold", "finish-hold-full", "discard"].contains(SessionStore.demoScreen) { proxy.scrollTo("finish", anchor: .bottom) } }
+        }
+        .confirmationDialog(Text("Discard workout?"), isPresented: $confirmDiscard, titleVisibility: .visible) {
+            Button("Continue workout", role: .cancel) {}
+            Button("Discard workout", role: .destructive) { store.discard() }
+        } message: {
+            if store.progress.done > 0 { Text("The sets you logged in this session will be lost.") }
+        }
+    }
+
+    private var header: some View {
+        let p = store.progress
+        return VStack(alignment: .leading, spacing: 2) {
             Text(verbatim: store.workout?.name ?? "")
                 .font(.system(.footnote, design: .rounded).weight(.semibold))
                 .lineLimit(2)
-                .multilineTextAlignment(.center)
-            RoundButton(systemImage: "flag.checkered", label: Text("Finish workout")) { confirming = true }
-            let p = store.progress
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .accessibilityAddTraits(.isHeader)
+            HStack(spacing: 6) {
+                WorkoutExtras()
+                if store.show.showHr { HeartRateBadge(health: store.health) }
+            }
             if p.total > 0 {
-                Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(.secondary)
+                Text("\(p.done) of \(p.total) sets").font(.footnote.monospacedDigit()).foregroundStyle(.secondary)
             }
-            if store.offline {
-                Text("Saved on the watch, syncs later").font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            }
-            LockButton(health: store.health)
+            SyncPill(form: .full)
         }
-        .padding(.horizontal, 6)
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
-        .confirmationDialog("Finish workout?", isPresented: $confirming) {
+        .padding(.horizontal, 10)
+    }
+}
+
+/// One exercise: a glyph for its state, its name, the sets done. A tap jumps to it.
+struct OverviewRow: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    let row: Overview.Row
+    let onPick: () -> Void
+
+    var body: some View {
+        Button { if store.choose(entry: row.index) { onPick() } } label: {
+            HStack(alignment: .top, spacing: 8) {
+                glyph.font(.body).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(verbatim: row.name)
+                        .font(.subheadline.weight(row.state == .current ? .bold : .semibold))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .foregroundStyle(row.state == .done ? AnyShapeStyle(.secondary) : AnyShapeStyle(Theme.ink(.white, dimmed)))
+                    if row.total > 0 {
+                        Text(verbatim: "\(row.done)/\(row.total)")
+                            .font(.footnote.monospacedDigit())
+                            .foregroundStyle(row.state == .current ? AnyShapeStyle(Theme.ink(Theme.accent, dimmed)) : AnyShapeStyle(.secondary))
+                    }
+                    if row.superset { Text("Superset").font(.footnote).foregroundStyle(Theme.ink(.purple, dimmed)) }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 6)
+            .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
+        }
+        .buttonStyle(SecondaryButton())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: row.name))
+        .accessibilityValue(row.total > 0 ? Text("\(row.done) of \(row.total) sets") : Text(verbatim: ""))
+        .accessibilityAddTraits(row.state == .current ? [.isButton, .isSelected] : .isButton)
+    }
+
+    // Done is white, not green: the accent reads as an action. Shape and weight carry the state too.
+    @ViewBuilder private var glyph: some View {
+        switch row.state {
+        case .done: Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.ink(.white, dimmed))
+        case .current: Image(systemName: "play.circle.fill").foregroundStyle(Theme.ink(Theme.accent, dimmed))
+        case .todo: Image(systemName: "circle").foregroundStyle(.secondary)
+        }
+    }
+}
+
+/// Finish workout: hold for a second. The fill (FinishFlood) shows it coming; a tap only bolds the hint.
+struct FinishHoldButton: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Binding var cover: CGFloat
+    @State private var confirming = false
+    @State private var hinted = false
+    @State private var pressing = false
+    @State private var ticks: Task<Void, Never>?
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.radiusLarge, style: .continuous)
+        let accent = Theme.ink(Theme.accent, dimmed)
+        VStack(spacing: 0) {
+            Text("Finish workout").font(.headline).lineLimit(2).minimumScaleFactor(0.8).multilineTextAlignment(.center)
+            Text("Hold to finish").font(.footnote.weight(hinted || pressing ? .heavy : .regular))
+                .lineLimit(2).minimumScaleFactor(0.75).multilineTextAlignment(.center)
+        }
+        .foregroundStyle(dimmed ? accent : Color.black)
+        .padding(.horizontal, 6).padding(.vertical, 6)
+        .frame(maxWidth: .infinity, minHeight: 52)
+        .background(shape.fill(dimmed ? Color.clear : Theme.accent))
+        // Reduce Motion: no flood, a pale sweep inside the button instead, behind the label.
+        .background(alignment: .leading) {
+            if reduceMotion && !dimmed && cover > 0 {
+                GeometryReader { g in Color.white.opacity(0.4).frame(width: g.size.width * cover) }.clipShape(shape)
+            }
+        }
+        .overlay(shape.stroke(accent, lineWidth: dimmed ? 2 : 0))
+        .contentShape(shape)
+        .onTapGesture {
+            hinted = true
+            Task { try? await Task.sleep(for: .seconds(1.5)); hinted = false }
+        }
+        // No .interactive() glass here: it cancelled holds inside scrolling lists. A scroll cancels the hold (6 pt).
+        .onLongPressGesture(minimumDuration: 1, maximumDistance: 6, perform: fire, onPressingChanged: { down in
+            pressing = down
+            down ? begin() : release()
+        })
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Finish workout"))
+        .accessibilityHint(Text("Hold to finish"))
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction(.default) { confirming = true }       // VoiceOver cannot hold: it asks first
+        .confirmationDialog(Text("Finish workout?"), isPresented: $confirming) {
             Button("Finish and save") { store.finish() }
-            Button("Discard workout", role: .destructive) { store.discard() }
             Button("Cancel", role: .cancel) {}
         }
+    }
+
+    private func begin() {
+        guard !dimmed else { return }
+        withAnimation(.linear(duration: reduceMotion ? 1 : 0.85)) { cover = 1 }
+        // Soft ticks while it fills; Haptics.finished() starts 250 ms after the last one.
+        ticks = Task {
+            for _ in 0..<3 {
+                try? await Task.sleep(for: .seconds(0.25))
+                if Task.isCancelled { return }
+                Haptics.count()
+            }
+        }
+    }
+
+    private func release() {
+        ticks?.cancel()
+        withAnimation(.easeOut(duration: 0.2)) { cover = 0 }
+    }
+
+    private func fire() {
+        ticks?.cancel()
+        var t = Transaction(); t.disablesAnimations = true
+        withTransaction(t) { cover = 0 }
+        // Finishing an empty workout keeps its dialog.
+        if store.progress.done == 0 { confirming = true } else { store.finish() }
+    }
+}
+
+/// The screen filling from the bottom while Finish is held, full as the hold fires: the words in
+/// white on the dimmed page, in black on the fill (white on the accent is about 2:1, black 10:1).
+struct FinishFlood: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let cover: CGFloat
+
+    var body: some View {
+        if cover > 0 && !dimmed && !reduceMotion {
+            GeometryReader { g in
+                let h = g.size.height * cover
+                ZStack(alignment: .bottom) {
+                    // fully black by a quarter of the hold, so no list text shows through the words
+                    Color.black.opacity(min(cover * 4, 1))
+                    Rectangle().fill(Theme.accent).frame(height: h)
+                    words.foregroundStyle(.white)
+                    words.foregroundStyle(.black).mask(alignment: .bottom) { Rectangle().frame(height: h) }
+                }
+            }
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+    }
+
+    private var words: some View {
+        let p = store.progress
+        return VStack(spacing: 2) {
+            Text("Finish workout").font(.title3.bold())
+            Text("Hold to finish").font(.headline)
+            if p.total > 0 { Text("\(p.done) of \(p.total) sets").font(.footnote.weight(.semibold)) }
+        }
+        .multilineTextAlignment(.center)
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
+        .padding(.horizontal, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -998,7 +1502,12 @@ struct RestView: View {
                     CountdownRing(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end)
                 }
                 VStack(spacing: 1) {
-                    Text("Rest").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Text("Rest").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                        SyncPill(form: .inline)
+                    }
+                    // The ring is narrow up here: the label stays small at the large text sizes.
+                    .dynamicTypeSize(...DynamicTypeSize.xLarge)
                     Text(timerInterval: Date()...end, countsDown: true)
                         .font(.system(size: store.show.restRing ? countdownSize : countdownSize * 1.35, weight: .semibold, design: .rounded).monospacedDigit())
                         .minimumScaleFactor(0.5)
@@ -1017,13 +1526,6 @@ struct RestView: View {
                         .lineLimit(2)
                         .minimumScaleFactor(0.7)
                         .multilineTextAlignment(.center)
-                    }
-                    if store.offline {
-                        Text("Saved on the watch, syncs later")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
                     }
                 }
                 .padding(.horizontal, 18)
@@ -1101,6 +1603,7 @@ struct SummaryView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Text(verbatim: summary.name).font(.footnote).foregroundStyle(.secondary)
+                if !summary.endedOnPhone { SyncPill(form: .full) }
                 if let d = summary.duration { stat(Text("Time"), Text(verbatim: SummaryView.duration(d, locale: locale))) }
                 stat(Text("Sets"), Text(verbatim: "\(summary.sets)"))
                 if summary.volume > 0 {
@@ -1124,11 +1627,6 @@ struct SummaryView: View {
                     }
                     .accessibilityElement(children: .combine)
                     .padding(.top, 2)
-                }
-                if store.offline {
-                    Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
                 }
                 Button { store.closeSummary() } label: {
                     Text("Done").frame(maxWidth: .infinity, minHeight: Theme.tap)
@@ -1179,8 +1677,7 @@ struct ClipView: View {
 
     var body: some View {
         Group {
-            // (SessionStore.demoAOD: CI's Always On, which the pager's pages don't get as an environment value)
-            if dimmed || SessionStore.demoAOD || !animating || clip.images.count < 2 {
+            if dimmed || !animating || clip.images.count < 2 {
                 // Wrist down or off screen: one still frame, no timeline at all.
                 frame(clip.images[0])
             } else {
