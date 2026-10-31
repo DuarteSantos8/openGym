@@ -660,35 +660,58 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var countdownFrom: Date?
     private var countdownFor: (session: ReadySession, bw: Double?)?
     private var countdownTimer: Timer?
+    /// The GO! that ends the 3-2-1: when the workout began. The 3-2-1's screen stays up for
+    /// Countdown.goSeconds with the workout already running under it (CountdownView).
+    @Published private(set) var goAt: Date?
+    private var goTimer: Timer?
 
     /// With Apple Health on, a 3-2-1 first: the workout session is prepared meanwhile, so the heart
     /// rate sensor is warm by set 1. Without it there is nothing to wait for.
     private func countIn(_ session: ReadySession, bw: Double?) {
-        guard health.enabled, !isDemo else { begin(session, bw: bw); return }
+        // The "countdown" demo screen (-OpenGymWatchScreen countdown) runs it for real, without Apple Health.
+        guard (health.enabled && !isDemo) || SessionStore.demoCountdown else { begin(session, bw: bw); return }
         countdownFor = (session, bw)
         let from = Date()
         countdownFrom = from
-        health.prepare(type: session.healthType)
+        if !isDemo { health.prepare(type: session.healthType) }
         Haptics.count()
         countdownTimer?.invalidate()
-        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+        // On the second marks of `from` (not a second after the timer was made, which prepare() may
+        // have held up), so each click lands as the number changes.
+        let t = Timer(fire: from.addingTimeInterval(1), interval: 1, repeats: true) { [weak self] _ in
             if Countdown.number(at: Date().timeIntervalSince(from) + 0.05) == 0 { self?.startNow() } else { Haptics.count() }
         }
+        t.tolerance = 0.01
+        RunLoop.main.add(t, forMode: .common)
+        countdownTimer = t
     }
 
     /// The countdown ran out, or a tap on it: the workout starts.
     func startNow() {
         guard let c = countdownFor else { return }
-        stopCountdown()
+        stopCountdown()                                   // timer + countdownFor only now
         // A workout came from the phone meanwhile: that one runs (its session took the prepared one).
-        guard workout == nil else { return }
-        begin(c.session, bw: c.bw)
+        guard workout == nil else { countdownFrom = nil; return }
+        goAt = Date()                                     // set before begin(): one render covers both
+        begin(c.session, bw: c.bw)                        // the start, its haptic and Apple Health: at the mark
+        // The demo "countdown-go" keeps the GO! up for the camera.
+        if SessionStore.demoScreen != "countdown-go" {
+            goTimer = Timer.scheduledTimer(withTimeInterval: Countdown.goSeconds, repeats: false) { [weak self] _ in self?.endGo() }
+        }
+    }
+
+    private func endGo() {
+        goTimer = nil
+        goAt = nil
+        countdownFrom = nil                               // the dissolve into the workout (countdownExit)
+        touchLock.lock(at: Date())                        // a late tap meant for the 3-2-1 must not log set 1
     }
 
     /// Cancel on the countdown: nothing starts, the prepared session is dropped.
     func cancelCountdown() {
         guard countdownFor != nil else { return }
         stopCountdown()
+        countdownFrom = nil
         if workout == nil { health.end(save: false) }
     }
 
@@ -696,7 +719,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         countdownTimer?.invalidate()
         countdownTimer = nil
         countdownFor = nil
-        countdownFrom = nil
     }
 
     private func begin(_ session: ReadySession, bw: Double?) {
@@ -1056,6 +1078,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /* ---------- the demo the CI screenshots show (text only; a synthetic clip at most) ---------- */
 
+    /// CI: "countdown" runs the real 3-2-1 and GO!; "countdown-go" starts at once and keeps GO! up.
+    static var demoCountdown: Bool { demoScreen?.hasPrefix("countdown") == true }
+
     /// CI: the screens at an accessibility text size (OpenGymWatchApp reads it too).
     static var demoAX: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAX") }
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
@@ -1064,7 +1089,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: screen == "idle" ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
+        if screen != "empty" { apply(json: screen == "idle" || SessionStore.demoCountdown ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
         DispatchQueue.main.async {
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps": self.picked[0] = 2
@@ -1087,6 +1112,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
+            if SessionStore.demoCountdown, let today = self.ready?.today {
+                self.start(today)
+                if screen == "countdown-go" { self.startNow() }
+            }
             if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3 }

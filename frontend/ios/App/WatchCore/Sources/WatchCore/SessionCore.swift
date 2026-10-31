@@ -413,10 +413,29 @@ struct TouchLock: Equatable {
 /// needs a few seconds to lock on), so the first set has its heart rate. One second a number.
 enum Countdown {
     static let seconds = 3
+    /// How long GO! holds the screen after the workout began (it is already running under it).
+    static let goSeconds = 0.6
 
-    /// The number up `elapsed` seconds after the countdown began: 3, 2, 1, then 0 (go).
+    /// The number up `elapsed` seconds after the countdown began: 3, 2, 1, then 0 (the workout
+    /// begins; the screen shows GO!, never a 0).
     static func number(at elapsed: Double) -> Int {
         max(seconds - Int(max(elapsed, 0).rounded(.down)), 0)
+    }
+
+    /// What the 3-2-1 shows. GO! is not a number on the clock: it is the workout having begun
+    /// (on the last mark, or on a tap that starts it early), so it can never come before the real start.
+    enum Face: Hashable { case number(Int), go }
+    static func face(at elapsed: Double, going: Bool) -> Face {
+        going ? .go : .number(max(1, number(at: elapsed)))
+    }
+
+    /// The ring on GO!, `t` seconds after the workout began. `sweep`: how much of the circle is lit
+    /// (full in 0.28 s, ease-out). `wave`: 0...1 along a faint copy that swells off the ring
+    /// (0.18 to 0.58 s), nil outside it. Pass .infinity for the still ring.
+    static func goRing(at t: Double) -> (sweep: Double, wave: Double?) {
+        let ease = { (p: Double) in 1 - pow(1 - min(max(p, 0), 1), 3) }
+        let w = (t - 0.18) / 0.4
+        return (ease(t / 0.28), w > 0 && w < 1 ? ease(w) : nil)
     }
 }
 
