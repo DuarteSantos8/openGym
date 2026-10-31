@@ -235,7 +235,7 @@ ${body}
 /* ---------- writing ---------- */
 
 const enWatch = readLproj('en')
-const en = { app_name: 'openGym' }
+const en = { app_name: 'openGym Beta' }
 for (const [name, key] of Object.entries(FROM_APP)) en[name] = key
 for (const [name, [key, fmt]] of Object.entries(COMPOSED)) en[name] = fmt(key)
 for (const [name, key] of Object.entries(FROM_WATCH)) en[name] = androidFormat(enWatch[key] || key)

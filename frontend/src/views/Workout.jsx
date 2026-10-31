@@ -70,6 +70,7 @@ import { exView, viewEntry, inEntryUnit } from '../lib/ex-unit.js'
 import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-trend.js'
 import { formulaOf } from '../lib/onerm.js'
 import { setNoteOf } from '../lib/set-notes.js'
+import { isOn } from '../lib/modules.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -92,7 +93,7 @@ function StartChooser() {
       <h2 className="accent">{t("Today's plan")}{todayOvr ? ' · ' + t('rescheduled') : ''}</h2>
       <div className="row between" style={{ marginBottom: 12 }}>
         <div><div className="big">{todayName}</div><div className="muted small">{exCount(todayRoutines.reduce((n, r) => n + r.ex.length, 0))}</div></div>
-        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 22 }}><Icon name={glyphOf(todayRoutines[0].emoji)} /></span>
+        <span className="lrow-i" style={{ width: 38, height: 38, borderRadius: 9, fontSize: 'var(--fs-title2)' }}><Icon name={glyphOf(todayRoutines[0].emoji)} /></span>
       </div>
       <Button variant="primary" icon="play" onClick={() => startFlow(todayIds)}>{t('Start {0}', todayName)}</Button>
     </div>}
@@ -439,6 +440,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // stack changes from the loaded row before it, so a run of equal weights shows its plates once.
   // What to strip and what to add rides along, except in the compact view.
   const loadLine = key => {
+    if (!isOn(S, 'plates')) return null   // Settings → Modules: Plates and warm-ups off
     const at = loadSeq.findIndex(x => x.key === key)
     const L = at >= 0 ? loadSeq[at].load : null
     if (!L) return null
@@ -469,7 +471,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const ownRest = ownExerciseRest(entry.target)
   const restSub = ownRest === 0 ? t('No timer') : ownRest ? fmtRest(ownRest) : t('Default ({0})', fmtRest(S.restSec))
   const backups = (entry.target?.subs || []).map(id => EXIDX[id]).filter(b => b && b.id !== entry.id)
-  const filmAt = filmTarget(entry)
+  // Form videos are a module (Settings → Modules): off, nothing offers to film; filmed ones stay.
+  const videosOn = isOn(S, 'videos')
+  const filmAt = videosOn ? filmTarget(entry) : -1
   const setTitle = (s, i) => isWarmupRow(s) ? t('Warm-up') : sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))
   // A timed per-side hold is one set over two rows; its video sits on the first of them.
   const filmSet = i => {
@@ -577,7 +581,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           onCopySetAt && { icon: 'copy', label: t('Copy this set'), onClick: () => onCopySetAt(i) },
           // Your own form video (v1.4.4). Up here rather than under More: it is filmed while the
           // set happens, one tap from the number; once there is one, the same row plays it.
-          video
+          !videosOn ? null : video
             ? { icon: 'play', label: t('Watch your video'), sub: video.dur != null ? fmtClip(video.dur) : undefined, onClick: () => setVideoAt(spanStart) }
             : { icon: 'camera', label: t('Film this set'), sub: t('Check your form later'), onClick: () => filmSet(i) },
           // A word about this one set (lib/set-notes.js), kept with the workout.
@@ -769,7 +773,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {!dense && !thumb && <Media ex={ex} notes={entry.target?.notes} key={entry.id} compact={compact} minimizable />}
     <div className="row between exhd" style={{ marginBottom: 6 }}>
       {thumb && <WorkoutThumb ex={ex} onExpand={() => update(s => { s.gifSize = 'full' })} />}
-      <div style={{ flex: 1, minWidth: 0, fontSize: (compact || dense) ? 17 : 20, fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1.2 }} className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
+      <div style={{ flex: 1, minWidth: 0, fontSize: (compact || dense) ? 'var(--fs-body)' : 'var(--fs-title3)', fontWeight: 600, letterSpacing: '-.02em', lineHeight: 1.2 }} className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</div>
       <div className="row" style={{ gap: 2, flex: 'none' }}>
         {entry.note && <button className="iconbtn" aria-label={t('Note')} title={t('Note')} style={{ color: 'var(--acc-ink)' }}
           onClick={() => exerciseNoteSheet(entryIdx)}><Icon name="note" /></button>}
@@ -808,9 +812,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         standing fact about the movement (exNotes), and the message you pinned to yourself last
         session. Today's own note is edited through the button in the header and shown last. */}
     {cfg.note && <div className="exnote">{cfg.note}</div>}
-    {standingNote && <div className="exnote"><Icon name="info" style={{ fontSize: 13, marginInlineEnd: 5, verticalAlign: '-2px' }} />{standingNote}</div>}
+    {standingNote && <div className="exnote"><Icon name="info" style={{ fontSize: 'var(--fs-footnote)', marginInlineEnd: 5, verticalAlign: '-2px' }} />{standingNote}</div>}
     {pinnedNote && <div className="exnote" style={{ color: 'var(--yellow)' }}>
-      <Icon name="pin" style={{ fontSize: 13, marginInlineEnd: 5, verticalAlign: '-2px' }} />
+      <Icon name="pin" style={{ fontSize: 'var(--fs-footnote)', marginInlineEnd: 5, verticalAlign: '-2px' }} />
       {t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}
     </div>}
     {entry.note && <div className="exnote">{entry.note}</div>}
@@ -875,8 +879,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           </button>}
           {/* The set's own form video: a badge, and the player right under the row on a tap. */}
           {!pairTail && setVideoOf(s) && <>
-            <SetVideoBadge m={setVideoOf(s)} open={videoAt === i} onToggle={() => setVideoAt(videoAt === i ? null : i)} />
-            {videoAt === i && <ActiveSetVideo m={setVideoOf(s)} at={{ entry: entryIdx, set: i }} label={setTitle(s, i)} refilmTitle={t('Film {0}', setTitle(s, i))} />}
+            {videosOn && <SetVideoBadge m={setVideoOf(s)} open={videoAt === i} onToggle={() => setVideoAt(videoAt === i ? null : i)} />}
+            {videosOn && videoAt === i && <ActiveSetVideo m={setVideoOf(s)} at={{ entry: entryIdx, set: i }} label={setTitle(s, i)} refilmTitle={t('Film {0}', setTitle(s, i))} />}
           </>}
           {/* Drop-sets and rest-pause bursts extend this same row — no long rest, no new set.
               A planned exercise arrives with these already filled in (applyIntensifierPlan);
@@ -2399,7 +2403,7 @@ function ActiveWorkout() {
       {editing
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
+      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
@@ -2538,7 +2542,24 @@ function ActiveWorkout() {
     </div>}
     {!listMode && <div style={{ height: 10 }} />}
     {wc.exerciseButtons && listMode && A.entries.length > 0 && <div className="muted small" style={{ marginBottom: 6 }}>{t('Move, swap and remove below act on the exercise marked {0}.', t('Current'))}</div>}
-    <Button onClick={addExercise} icon="plus">{t('Add exercise')}</Button>
+    {/* The end of the workout (redesign 1.4.5, P3): adding an exercise and the session's note are
+        one inset list of two rows, not two centred text buttons 40px apart, so the finish button
+        under them is the one thing that stands out. Wrapping up is when you know how the session
+        went, so the note sits here with the finish rather than in the header. */}
+    <div className="sect-b wk-end">
+      <button type="button" className="lrow tap wk-end-row acc" onClick={addExercise}>
+        <Icon name="plusCircle" className="wk-end-i" />
+        <span className="lrow-m"><span className="lrow-t">{t('Add exercise')}</span></span>
+      </button>
+      <button type="button" className={'lrow tap wk-end-row' + (A.note ? ' has-note' : '')} onClick={sessionNoteSheet}>
+        <Icon name="note" className="wk-end-i" />
+        <span className="lrow-m">
+          <span className="lrow-t">{A.note ? t('Edit session note') : t('Add session note')}</span>
+          {A.note && <span className="lrow-s wk-end-note">{A.note}</span>}
+        </span>
+        <Icon name="chevronRight" className="lrow-c" />
+      </button>
+    </div>
     {wc.exerciseButtons && A.entries.length > 0 && <>
       <div style={{ height: 6 }} />
       <div className="row">
@@ -2557,14 +2578,9 @@ function ActiveWorkout() {
         <Button size="sm" icon="minus" style={{ color: 'var(--red)' }} disabled={working} onClick={removeExerciseSheet}>{t('Remove exercise')}</Button>
       </div>
     </>}
-    <div style={{ height: 10 }} />
-    {/* Wrapping up is when you know how the session went, so the note sits with the finish
-        button rather than somewhere in the header. */}
-    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-      <Button size="sm" icon="note" variant={A.note ? 'tinted' : undefined} onClick={sessionNoteSheet}>
-        {A.note ? t('Edit session note') : t('Add session note')}
-      </Button>
-    </div>
+    <div style={{ height: 16 }} />
+    {/* Finish is a full-width primary button once every set is done; before that it is the quiet
+        "Finish workout early" line, since the header's Finish already covers the early way out. */}
     {(() => {
       const exDone = A.entries.filter(e => e.sets.length && e.sets.every(s => s.done)).length
       const allDone = A.entries.length > 0 && exDone === A.entries.length

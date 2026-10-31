@@ -10,11 +10,12 @@
 import { reportData } from './report.js'
 import { isoOf, todayISO, weekStartOf } from './format.js'
 import { streakWeeks } from './streak.js'
+import { isOn } from './modules.js'
 
 const dateOf = iso => new Date(iso + 'T12:00:00')
 const addDays = (iso, n) => { const d = dateOf(iso); d.setDate(d.getDate() + n); return isoOf(d) }
 
-export const recapOn = S => S?.recap !== false
+export const recapOn = S => S?.recap !== false && isOn(S, 'motivation')
 
 /**
  * The stretch due today, or null: `{ kind: 'month' | 'week', from, to, key }`. The 1st looks back on

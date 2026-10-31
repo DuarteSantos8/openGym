@@ -127,7 +127,8 @@ written temp-then-rename (`durable.js`). Custom-exercise photos and videos live 
 `DATA_DIR/uploads` (`media.js`). Auth is WebAuthn passkeys (`@simplewebauthn/server`), an optional
 password, and a signed session cookie (HMAC with `DATA_DIR/secret`); paired phones get the same
 session as a bearer token. Optional pieces are gated by env vars: `ADMIN_UIDS`, `INVITE_ONLY`,
-`ALLOW_GUEST`, `PASSWORD_LOGIN`, `AUDIT_*`. Web Push (`web-push`, VAPID keys in `data/vapid.json`)
+`ALLOW_GUEST`, `PASSWORD_LOGIN`, `AUDIT_*`, `INTEGRATIONS` (`api/integrations/`: providers, sealed
+connections in `DATA_DIR/integrations/`, the outbound webhook; docs/INTEGRATIONS.md). Web Push (`web-push`, VAPID keys in `data/vapid.json`)
 drives rest-timer and reminder notifications.
 
 ### Sync

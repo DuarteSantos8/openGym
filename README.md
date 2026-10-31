@@ -130,6 +130,12 @@ if you want to try it before installing anything.
   rate per set, and complications. No watch? AirPods Pro 3 do the heart rate on iOS 26. Widgets and
   a Live Activity on the iPhone.
 
+**Only what you use**
+
+- [Modules](docs/MODULES.md): switch whole parts of the app on and off in Settings → Modules, from
+  "Just training" to "Everything". Body, Health, Motivation, the Coach, seasonal themes and more
+  each disappear completely while they're off, and nothing is deleted.
+
 **Optional extras, off by default**
 
 - An [AI coach](docs/AI_COACH.md) that drafts a week of routines and later suggests changes based on
@@ -137,6 +143,9 @@ if you want to try it before installing anything.
   (Anthropic, OpenAI, Gemini or any OpenAI-compatible endpoint, Ollama included).
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
   training history, and log a workout you describe to it. Local; not part of the Docker build.
+- [Integrations](docs/INTEGRATIONS.md) in one place: Apple Health, Health Connect (Garmin, Fitbit,
+  Withings and friends come in through them), imports, and signed webhooks to Home Assistant, n8n or
+  ntfy when you finish a workout, set a record or weigh in.
 
 The full list of what changed release by release is in the [changelog](CHANGELOG.md).
 
@@ -190,6 +199,8 @@ Traefik and nginx, and there are separate guides for
 | `AUDIT_DAYS` | Days kept in the activity log; `0` keeps until `AUDIT_MAX` | `90` |
 | `AUDIT_IP` | Record the caller's address: `off`, `net` (network only) or `full` | `off` |
 | `ALLOWED_PRIVATE_IPS` | Private addresses push endpoints may resolve to (FakeDNS, split-horizon DNS): comma-separated IPs, `a-b` ranges or CIDR blocks | *(none)* |
+| `INTEGRATIONS` | Server integrations to offer, comma-separated: `webhook` ([integrations](docs/INTEGRATIONS.md)) | *(none)* |
+| `INTEGRATIONS_ALLOW_LAN` | `1`: webhooks may reach your home network (Home Assistant), http included; never loopback | *(off)* |
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |

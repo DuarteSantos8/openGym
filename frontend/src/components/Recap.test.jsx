@@ -32,9 +32,9 @@ afterEach(() => { act(() => { mounted.splice(0).forEach(r => r.unmount()) }); vi
 describe('Your week on Home', () => {
   it('shows last week on a Monday, opens the sheet with Share and PDF, and the × puts it away', () => {
     const host = render(<RecapHomeCard S={useStore.getState().S} />)
-    expect(host.querySelector('.ttl').textContent).toBe('Your week')
-    expect(host.querySelector('.ss').textContent).toBe('2 workouts · 1,000 kg · 2 new bests')
-    act(() => host.querySelector('.recap-card').click())
+    expect(host.querySelector('.card-head-title').textContent).toBe('Your week')
+    expect(host.querySelector('.card-head-sub').textContent).toBe('2 workouts · 1,000 kg · 2 new bests')
+    act(() => host.querySelector('.recap-card .tap-main').click())
     const sheet = useUI.getState().sheets.at(-1)
     const sh = render(sheet.render(() => {}))
     expect([...sh.querySelectorAll('.recap-v')].map(e => e.textContent)).toEqual(['2', '1,000 kg', '2', '1'])

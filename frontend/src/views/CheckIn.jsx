@@ -6,8 +6,7 @@ import { uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { canRenderFmt, normalizeFmt } from '../lib/qr.js'
 import { encodeBars } from '../lib/barcode.js'
-import { scanCode, importCodeFromImage } from '../lib/scan.js'
-import { MOBILE } from '../lib/mobile.js'
+import { scanCode, importCodeFromImage, webScanner } from '../lib/scan.js'
 import Icon from '../components/Icon.jsx'
 import QrCanvas from '../components/QrCanvas.jsx'
 import CameraScan from '../components/CameraScan.jsx'
@@ -209,11 +208,11 @@ function CardSheet({ close, card }) {
     setFmt(f)
   }
 
-  // Camera scan: in the app, hands off to the native scanner; in a browser, opens our own camera
-  // sheet on top of this one. Either way the value drops straight into the form so the user can
-  // still name it before saving.
+  // Camera scan: in the app, hands off to the native scanner; in a browser (and the F-Droid build,
+  // which has no ML Kit), opens our own camera sheet on top of this one. Either way the value
+  // drops straight into the form so the user can still name it before saving.
   const doScan = async () => {
-    if (!MOBILE) {
+    if (await webScanner()) {
       useUI.getState().openSheet(closeCam => <CameraScan
         onCancel={closeCam}
         onFound={code => {

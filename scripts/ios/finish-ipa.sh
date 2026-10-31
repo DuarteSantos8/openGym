@@ -16,7 +16,7 @@
 #   WATCH_WIDGET_PROFILE=<widget.mobileprovision>  once the watch app carries its widget
 #
 # Before: the phone build with the app's animations, from the same commit as the IPA:
-#   cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/backup-hdd/opengym-media/build-appwebp npm run build:mobile
+#   cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/build-fast/from-hdd/opengym-media/build-appwebp npm run build:mobile
 # After: upload the IPA (docs/APP_STORES.md, "Upload").
 set -euo pipefail
 

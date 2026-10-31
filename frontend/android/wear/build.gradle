@@ -15,7 +15,7 @@ apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
 //   versionName  the phone's
 //   versionCode  the phone's + 10000
 // Play keeps one versionCode space per app listing, phone and watch bundles together; the offset
-// keeps the two from ever colliding (the phone is at 29 for 1.4.4), and the watch build of a release
+// keeps the two from ever colliding (the phone is at 30 for 1.4.4), and the watch build of a release
 // is always newer than the watch build of the one before. Docs: docs/WEAR_OS.md "Versions".
 def phoneGradle = rootProject.file('app/build.gradle').text
 def phoneCode = (phoneGradle =~ /versionCode\s+(\d+)/)[0][1] as int

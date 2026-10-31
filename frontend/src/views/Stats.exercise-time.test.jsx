@@ -39,7 +39,7 @@ beforeEach(() => {
 })
 afterEach(() => { act(() => root.unmount()); host.remove() })
 
-const rows = () => [...host.querySelectorAll('.mrow')].map(el => el.textContent)
+const rows = () => [...host.querySelectorAll('.sbar-row')].map(el => el.textContent)
 
 describe('Stats — time per exercise', () => {
   it('lists each exercise’s average a session, longest first, over the last 3 months', () => {
@@ -47,7 +47,7 @@ describe('Stats — time per exercise', () => {
     expect(rows()).toHaveLength(2)
     expect(rows()[0]).toContain('8 min')
     expect(rows()[1]).toContain('2 min')
-    act(() => host.querySelector('.mrow').click())
+    act(() => host.querySelector('.sbar-row').click())
     expect(mocks.history).toHaveBeenCalledWith('0025')
   })
 

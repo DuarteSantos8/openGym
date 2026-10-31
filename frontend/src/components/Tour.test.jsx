@@ -123,6 +123,29 @@ describe('the first-run question', () => {
     expect(tourState()).toBe(null)
     expect(card()).toBe(null)
   })
+  it('also asks how much app this profile wants (Settings → Modules): Everything until a tap, a tap applies it', async () => {
+    useStore.setState(st => ({ S: { ...st.S, modules: undefined } }))
+    await act(async () => { openTour({ kind: 'offer' }) })
+    await render()
+    const radios = [...card().querySelectorAll('[role="radio"]')]
+    expect(radios.map(r => r.querySelector('.tour-tut-t').textContent)).toEqual(['Just training', 'Training and body', 'Everything'])
+    expect(radios.map(r => r.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true'])
+    expect(card().textContent).toContain('Change it anytime in Settings → Modules.')
+    await click(radios[0])
+    expect(useStore.getState().S.modules.body).toBe(false)
+    expect(useStore.getState().S.modules.effort).toBe(true)
+    expect(card().querySelector('[data-preset="training"]').getAttribute('aria-checked')).toBe('true')
+    // the choice holds whichever way the card closes, and the tour question is still there
+    await click(btn('Skip'))
+    expect(useStore.getState().S.modules.body).toBe(false)
+    useStore.setState(st => ({ S: { ...st.S, modules: undefined } }))
+  })
+  it('the halfway card does not ask about modules again', async () => {
+    noteStep('lib-search')
+    await act(async () => { openTour({ kind: 'resume', at: 'lib-search' }) })
+    await render()
+    expect(card().querySelector('[role="radiogroup"]')).toBe(null)
+  })
   it('Show me starts the tour on Home, and Escape is a no as well', async () => {
     await act(async () => { openTour({ kind: 'offer' }) })
     await render()

@@ -92,8 +92,9 @@ describe('workout detail', () => {
     useStore.setState(s => ({ S: { ...s.S, workouts: [w] } }))
     workoutDetailSheet(w)
     const row = mountTopSheet().querySelector('.wd-ex')
-    expect(row.getAttribute('role')).toBe('button')
-    act(() => { row.click() })
+    // the row is no button (it holds the picture's own button): its text is, stretched over it
+    expect(row.getAttribute('role')).toBeNull()
+    act(() => { row.querySelector('.tap-main').click() })
     expect(useUI.getState().sheets).toHaveLength(2)
     const history = mountTopSheet()
     expect(history.textContent).toContain('Exercise history')

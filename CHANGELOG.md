@@ -4,14 +4,60 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
-## Unreleased (v1.4.5)
+## Unreleased
 
-**openGym on your Wear OS watch** (thanks @vampireJSV for the idea and the first take in #673).
-Galaxy Watch, Pixel Watch, TicWatch, OnePlus and friends now get what the Apple Watch has: the
-workout follows you to the wrist, big numbers you turn with the crown, Done, a rest ring that buzzes
-you back to the bar, heart rate on every set, a summary at the end, and a Tile with your streak and
-today's plan. Start today's routine right from the watch. Your phone stays in charge, the watch just
-saves you the walk to the bench where you left it.
+**Modules: as much app as you want.** Settings → Modules switches whole parts of openGym on and
+off: Effort, Plates and warm-ups, Strength levels, Form videos, Watch, Gym check-in, Body, Health,
+Motivation, the AI Coach, Integrations and Seasonal themes. Pick Just training, Training and body or
+Everything, or flip them one by one. A module that's off is gone from Home, Stats, Settings and the
+search, and stops its notifications; health sync, the watch, webhooks and Coach reviews pause until
+it's back. Nothing is ever deleted, and everything stays on after the update. New profiles get the
+choice on their first screen. The idea came from seals187 and Shadowbyte on Discord.
+
+**Integrations, all in one place.** Settings → Integrations is a short list of what openGym can
+talk to, each with whether it's on and the one thing to do next: Apple Health or Health Connect
+(their switches moved here from Data & backup, which still has a way in), the Hevy and file imports,
+the CSV export, the Coach and the MCP server. Nothing new talks to anything until you switch it on,
+and a card only shows where it can do something. Garmin, COROS, Polar, Fitbit, Samsung Health, Oura,
+Withings and Renpho get an honest "works with": they reach openGym through Apple Health or Health
+Connect, no fake Connect button.
+
+**Webhooks** (self-hosted, `INTEGRATIONS=webhook`). Tell Home Assistant, n8n, ntfy or Node-RED when
+you finish a workout, set a record or weigh in, from whichever device you logged it on. Each message
+is signed, retried for about an hour if the other side is down, never sent twice, and a test event
+is one tap away. Home Assistant on your home network needs `INTEGRATIONS_ALLOW_LAN=1` from your
+admin. Payloads and a signature checker are in docs/INTEGRATIONS.md.
+
+**On its way to F-Droid.** A new Android build without anything from Google, made to be built by
+F-Droid from the source: the gym card scanner uses the camera in the app instead of Google's,
+updates come from F-Droid, and Wear OS watches (they need Google Play services) are left out,
+which the app says in Settings → About. Everything else is the same app.
+
+**openGym on Amazfit watches** (Zepp OS 3 and later: Balance, GTR 4, GTS 4, Active, T-Rex, Cheetah,
+Bip 5 and friends). Same deal as Wear OS: start a routine on the wrist, turn the crown (or tap + and
+-) for weight and reps, Done, a rest ring that buzzes, heart rate on every set, a summary, and a
+shortcut card with your streak. It talks to openGym through your own server, so pair it in
+Settings → Zepp OS watch and type the code into the Zepp app. Works with the web app too.
+
+**A fresh coat of paint.** The whole app got a proper look-and-feel pass, the kind where nobody
+can point at what changed but everything sits better. Home's cards all introduce themselves the
+same way now (a small line, a title, one button), so the screen stops sounding like five apps
+talking at once. Stats is in four parts, Overview, Body, Lifts and Effort, with an index that
+sticks to the top and jumps you there; `#/stats?section=lifts` links straight to one. The Library
+keeps its filters in one row: Filters opens a sheet with the type and the equipment, and tapping
+the chosen body part again shows them all. The end of a workout is one tidy list (Add exercise,
+the session note) with Finish under it, the routine editor's Copy, Share and Print sit together
+with Delete on its own and saying what it removes, and an exercise's Delete waits at the bottom
+of its sheet instead of shouting next to Edit. Empty screens put their first button right where
+your stuff will appear. Under the hood: one type scale in rem (your browser's text size and zoom
+now grow the layout too), pinch zoom in the browser and the installed web app (the phone apps
+stay as they were), lifted surfaces for things that float, a readable text shade for your own
+accent colour, and one press feel per kind of control. Same app, better posture.
+The new bits of this release got the same treatment: the set-vs-last arrows sit in a little
+raised chip and stay readable on ticked sets, green and orange have proper light-mode shades,
+the weekly sets and strength cards line up like every other Stats card, Merge into… lives at
+the end of an exercise's sheet (Delete still last), and narrow phones no longer squash the
+muscle names in the ranges sheet.
 
 **openGym on Garmin, almost.** A Connect IQ app for Garmin watches is built and waiting for its
 store listing: Forerunner, fēnix, epix, Venu, vívoactive, Instinct and friends, round or square,
@@ -83,7 +129,13 @@ picture (story or square, dark or light) or save that stretch as the performance
 off gets no card, nobody needs a recap of the sofa. The × puts it away, and Settings → Look & Home →
 Week and month recap switches it off.
 
-## Unreleased
+**openGym on your Wear OS watch, as a beta** (thanks @vampireJSV for the idea and the first take in #673).
+Galaxy Watch, Pixel Watch, TicWatch, OnePlus and friends now get what the Apple Watch has: the
+workout follows you to the wrist, big numbers you turn with the crown, Done, a rest ring that buzzes
+you back to the bar, heart rate on every set, a summary at the end, and a Tile with your streak and
+today's plan. Start today's routine right from the watch. Your phone stays in charge, the watch just
+saves you the walk to the bench where you left it. It's a beta: it shows up as "openGym Beta" on
+the watch and hasn't met many real wrists yet, so tell us on Discord or GitHub what breaks.
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic
 warm-ups: Off (the default, nothing changes), Compound lifts or Every loaded lift. The ramp comes
@@ -408,6 +460,11 @@ Action button, and Siri understands them in the app's languages. On Android, tou
 openGym icon for Start workout, Log weight and Stats, and Google Assistant can open them by voice.
 Settings → Look & Home → Siri & Shortcuts lists what to say.
 
+**Exercise names in European Portuguese and Swedish.** All 5,632 exercises now have their own name in
+Portuguese (Portugal) and Swedish, the way people say them in the gym: supino com barra and
+elevação de gémeos, bänkpress, marklyft and chins. The search finds them with or without the
+accents, and the English name still works too. Brazilian Portuguese keeps its own names.
+
 **Fixes**
 
 - The rest timer starts after the last set of an exercise again, also when the next exercise opens with warm-ups (#853).
@@ -419,6 +476,7 @@ Settings → Look & Home → Siri & Shortcuts lists what to say.
 - Freestyle tells the truth about progression (#910, thanks @soldsawn): adding an exercise says it repeats what you did last time instead of offering "Follow the routine (Linear progression)", and a freestyle exercise's settings mid-workout say No rule and keep your numbers instead of quietly adding a linear step. Pick a rule there and it applies to that workout.
 - AI Coach with newer OpenAI models and Azure OpenAI: no more "400 Unsupported parameter: 'max_tokens'" (#869, thanks @tapanmeena). The OpenAI-compatible endpoint sends max_completion_tokens to OpenAI's reasoning models and Azure, switches field once if an endpoint says otherwise and remembers it, and an Azure Responses URL gets told the base URL that works.
 - The phone's own Coach can talk plain http:// to a model on your home network (#913, thanks @pgavrilov): 192.168.x.x, 10.x, 172.16 to 31.x, Tailscale's 100.x, .local names, localhost and private IPv6. Anything on the internet still needs https://.
+- Cards and rows with a button of their own (the × on Your week, Add to my plan in the exercise list, the picker's quick add) stop fighting it: a tap on or near the × only puts the card away, the rest of the card opens it, the card no longer squishes when you press the ×, and screen readers hear two clear buttons instead of one tucked inside the other.
 
 **Bring your history from more apps** (#862, thanks @Gitoffomalawn). Import from another app now
 reads Liftosaur (the history CSV, or the JSON export, whose programs arrive as routines with their

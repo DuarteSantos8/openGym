@@ -79,11 +79,11 @@ function ShareRoutine({ routine, close }) {
       {t('A link to “{0}”. Your friend taps it and adds it to their own openGym. The routine rides inside the link, no server in between.', name)}
     </div>
     <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', gap: 12 }}>
-      <div><div className="tt" style={{ fontSize: 15 }}>{t('Include my weights')}</div><div className="small dim">{t('Off: just sets, reps and rest. They pick their own weights.')}</div></div>
+      <div><div className="tt" style={{ fontSize: 'var(--fs-subhead)' }}>{t('Include my weights')}</div><div className="small dim">{t('Off: just sets, reps and rest. They pick their own weights.')}</div></div>
       <Switch checked={weights} onChange={setWeights} aria-label={t('Include my weights')} />
     </div>
     <div className="row between" style={{ padding: '10px 2px', borderTop: '1px solid var(--sep)', borderBottom: named ? 'none' : '1px solid var(--sep)', gap: 12 }}>
-      <div><div className="tt" style={{ fontSize: 15 }}>{t('Your name')}</div><div className="small dim">{t('So they know who it’s from.')}</div></div>
+      <div><div className="tt" style={{ fontSize: 'var(--fs-subhead)' }}>{t('Your name')}</div><div className="small dim">{t('So they know who it’s from.')}</div></div>
       <Switch checked={named} onChange={setNamed} aria-label={t('Your name')} />
     </div>
     {named && <input className="input" style={{ margin: '4px 0 12px' }} maxLength={FROM_MAX} value={from}
@@ -122,7 +122,7 @@ function RoutinePreview({ parsed, close }) {
     <div className="list" style={{ marginBottom: 12 }}>
       {r.ex.map((e, i) => <div key={i} className="item">
         <div className="grow">
-          <div className="tt capitalize">{nameOf(e.id)}{e.sg && r.ex[i + 1]?.sg === e.sg ? <Icon name="link" style={{ fontSize: 12, marginInlineStart: 6, opacity: .6 }} /> : null}</div>
+          <div className="tt capitalize">{nameOf(e.id)}{e.sg && r.ex[i + 1]?.sg === e.sg ? <Icon name="link" style={{ fontSize: 'var(--fs-caption)', marginInlineStart: 6, opacity: .6 }} /> : null}</div>
           <div className="ss">{exLine(e, parsed.unit, speedUnit)}</div>
         </div>
       </div>)}

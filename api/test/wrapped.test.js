@@ -26,6 +26,9 @@ test('the summary is a few small facts whatever the state holds', () => {
   assert.deepEqual(sum, { notify: true, phone: 2026, lang: 'en', years: [2029, 2028, 2027] });
   assert.ok(JSON.stringify(sum).length < 100);
   assert.deepEqual(wrappedSummary(null), { notify: true, phone: null, lang: 'en', years: [] });
+  // Settings → Modules: Motivation off is the push off too; on or unset keeps it.
+  assert.equal(wrappedSummary({ modules: { motivation: false } }).notify, false);
+  assert.equal(wrappedSummary({ modules: { motivation: true } }).notify, true);
   assert.equal(wrappedSummary({ wrappedNotify: false }).notify, false);
   assert.equal(wrappedSummary({ wrapped: { phone: '2026' } }).phone, null);
   assert.equal(wrappedSummary({ lang: 'pt-BR' }).lang, 'pt-BR');

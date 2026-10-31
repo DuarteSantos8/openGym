@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { lazyAssets, stampSw } from './scripts/sw-stamp.mjs'
+import { mobileViewport } from './src/lib/viewport-zoom.js'
 
 const backend = process.env.API_TARGET || 'http://127.0.0.1:3000'
 // The API refuses a state-changing request that a browser sent from anywhere other than its own
@@ -80,11 +81,13 @@ const swStamp = {
 // the mobile build and `cap sync` (two builds in one worktree) shipped the web shell inside an
 // APK: no Android-only settings, a service worker, the passkey login. scripts/check-mobile-bundle.mjs
 // reads this tag in the synced copy after `cap sync` and fails the build without it.
+// The phone flavour also keeps zooming off (src/lib/viewport-zoom.js): the web build lets people
+// pinch, the Capacitor apps stay as they were.
 const flavor = {
   name: 'opengym-flavor',
-  transformIndexHtml() {
+  transformIndexHtml(html) {
     if (process.env.VITE_MOBILE !== '1') return
-    return [{ tag: 'meta', attrs: { name: 'opengym-flavor', content: 'mobile' }, injectTo: 'head' }]
+    return { html: mobileViewport(html), tags: [{ tag: 'meta', attrs: { name: 'opengym-flavor', content: 'mobile' }, injectTo: 'head' }] }
   }
 }
 

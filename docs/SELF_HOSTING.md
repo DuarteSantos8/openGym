@@ -794,6 +794,10 @@ end up in every backup you are told to make — an archive like this gets copied
 cloud drives, and a refresh token keeps working wherever it lands. Nothing in `./coach-auth`
 needs backing up: if you lose it, sign the provider in again.
 
+Webhooks (`data/integrations/`) are in the archive too, their URLs and signing secrets encrypted
+with `data/secret` like the Coach's keys: restore both together, or every webhook has to be added
+again.
+
 API keys for the HTTPS providers (Anthropic, OpenAI, Gemini, a compatible endpoint) are the
 other way round: they are in `./data/coach.json`, encrypted with `./data/secret`, so they *are*
 in this archive — and unreadable without the secret next to them, like everything else in it.
@@ -855,6 +859,31 @@ ALLOWED_PRIVATE_IPS=10.0.0.0/8, 192.168.1.50, 172.16.0.1-172.16.0.9, fd00::/8
 - An IPv4 entry also covers the same address written as IPv4-mapped IPv6 (`::ffff:10.1.2.3`).
 - The default is empty: every private address stays blocked. Keep the list as small as you can —
   each address you allow is an address that a signed-in user can make the server connect to.
+
+### Integrations: webhooks (`INTEGRATIONS`)
+
+Settings → Integrations works on every instance for what lives on the phone or in the browser
+(Apple Health, Health Connect, the imports, the CSV export). Webhooks are sent by the server, so
+you switch them on:
+
+```
+INTEGRATIONS=webhook
+```
+
+Each profile can then add up to 10 webhook URLs that get a signed JSON message when a workout is
+finished, a record falls or a weigh-in is logged, from whichever device it was logged on. The URLs
+follow the push endpoint rules above (HTTPS, no private addresses, checked again at connect time,
+no redirects). For Home Assistant or Node-RED on your own network:
+
+```
+INTEGRATIONS_ALLOW_LAN=1
+```
+
+opens the home network's addresses, plain `http://` to them included, never loopback or
+link-local. Every signed-in user can then make the server call into your network, so keep it for
+instances whose users you trust. Connections live in `data/integrations/`, the URL and the signing
+secret encrypted with a key from `data/secret`. Payloads, signatures and retries are in
+[INTEGRATIONS.md](INTEGRATIONS.md).
 
 ## 8. Updating
 

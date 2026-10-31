@@ -8,9 +8,9 @@ import { fmtNum, fmtVol, fmtDateRange } from '../lib/format.js'
 import { recapDue, recapOf } from '../lib/recap.js'
 import { recapCardImage } from '../lib/recap-card.js'
 import { printReport } from '../lib/report-print.js'
-import { tappable } from '../lib/use-sheet-keyboard.js'
 import ShareCardSheet from './ShareCard.jsx'
 import Icon from './Icon.jsx'
+import CardHead from './CardHead.jsx'
 import { Button } from './ui.jsx'
 
 const titleOf = r => (r.kind === 'month' ? t('Your month') : t('Your week'))
@@ -37,19 +37,12 @@ export function RecapHomeCard({ S }) {
   const update = useStore(s => s.update)
   const r = recapDue(S)
   if (!r) return null
-  const dismiss = ev => { ev.stopPropagation(); update(s => { s.recapSeen = r.key }) }
-  return <div className="card tappable recap-card" data-recap={r.kind} style={{ cursor: 'pointer' }} {...tappable(() => recapSheet(r))}>
-    <div className="row between" style={{ gap: 8 }}>
-      <div className="row" style={{ gap: 9, minWidth: 0 }}>
-        <span className="lrow-i" style={{ background: 'var(--purple)' }}><Icon name="chart" /></span>
-        <div style={{ minWidth: 0 }}>
-          <div className="lbl2">{datesOf(r)}</div>
-          <div className="ttl">{titleOf(r)}</div>
-          <div className="ss">{lineOf(r, S.unit)}</div>
-        </div>
-      </div>
-      <button type="button" className="iconbtn" aria-label={t('Put it away')} onClick={dismiss}><Icon name="xmark" /></button>
-    </div>
+  const dismiss = () => update(s => { s.recapSeen = r.key })
+  // The card is not a button: its text is (CardHead open), and the × sits beside it (card dismiss pass).
+  return <div className="card tap-host recap-card" data-recap={r.kind}>
+    <CardHead icon="chart" tint="var(--purple)" eyebrow={datesOf(r)} title={titleOf(r)} sub={lineOf(r, S.unit)}
+      open={{ onClick: () => recapSheet(r), haspopup: 'dialog' }}
+      action={<button type="button" className="iconbtn" aria-label={t('Put it away')} onClick={dismiss}><Icon name="xmark" /></button>} />
   </div>
 }
 
@@ -68,7 +61,7 @@ function RecapSheet({ period, close }) {
     <div className="recap-tiles">
       {tiles.map(tile => <div key={tile.label} className="recap-tile"><div className="recap-v">{tile.value}</div><div className="small muted">{tile.label}</div></div>)}
     </div>
-    {r.top && <div className="small muted" style={{ margin: '4px 0 14px' }}><Icon name="figureStrength" /> {topOf(r)}</div>}
+    {r.top && <div className="small muted recap-most"><Icon name="figureStrength" /><span>{topOf(r)}</span></div>}
     <Button variant="primary" icon="share" onClick={shareImage}>{t('Share as image')}</Button>
     <div style={{ height: 8 }} />
     <Button icon="note" onClick={pdf}>{t('Save as PDF')}</Button>

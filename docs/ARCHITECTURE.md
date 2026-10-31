@@ -55,6 +55,7 @@ in a file in the app's private storage (MOBILE.md explains the modes).
 | `frontend/android/`, `frontend/ios/` | The Capacitor shells and the native plugins (rest alarm, Health Connect, Apple Health, watch, widgets, animation packs) |
 | `api/` | `server.js` (routes, sessions, storage), plus small modules split out so they can be tested alone: `media.js`, `sync-stamps.js`, `queue.js`, `nudge.js`, `rate-limit.js`, `durable.js`, `password.js`, `passkeys-store.js`, `device-link.js` |
 | `api/coach/` | The optional AI Coach. `core/` has no server state and is shared with the phone apps |
+| `api/integrations/` | Settings → Integrations on the server: providers (the webhook first), sealed per-profile connections in `DATA_DIR/integrations/`, a durable outbox with idempotency, backoff and rate limits ([INTEGRATIONS.md](INTEGRATIONS.md)) |
 | `web/` | The nginx image: builds the frontend, adds `catalogue/media`, proxies `/api` |
 | `catalogue/` | The exercise database: one JSON per exercise, translations, the licensed 180 px media |
 | `mcp/` | Optional MCP server for AI clients: reads the data folder, `log_workout` saves through the API |

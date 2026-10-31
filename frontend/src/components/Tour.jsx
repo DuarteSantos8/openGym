@@ -26,6 +26,8 @@ import {
 import { beginWorkout } from '../sheets.jsx'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
+import { PRESETS, presetOf, applyPreset } from '../lib/modules.js'
+import { presetCopy } from '../lib/modules-copy.js'
 import './Tour.css'
 
 // What each stop says. Literal t() calls, so check-source-strings sees every one.
@@ -277,7 +279,10 @@ function useCardKeys(cardRef, onEscape, trap = true) {
 }
 
 /* "Want a 1-minute tour?" after the first setup, or "Finish the tour?" once after it was closed
-   halfway. A small card in the middle; either answer is remembered. */
+   halfway. A small card in the middle; either answer is remembered.
+   The first one also asks how much app this profile wants (Settings → Modules, lib/modules.js):
+   three presets, Everything chosen until another is tapped, so a new profile that skips straight
+   on has every module, like an existing one. A tap applies it at once; both buttons keep it. */
 function Question({ kind, at }) {
   const cardRef = useRef(null)
   const resume = kind === 'resume'
@@ -286,10 +291,23 @@ function Question({ kind, at }) {
   const no = () => { if (resume) markTourDone(); closeTour() }
   const yes = () => openTour({ kind: 'run', at: resume ? at : null })
   useCardKeys(cardRef, no)
+  const S = useStore(s => s.S)
+  const preset = presetOf(S)
+  const pick = id => { if (id !== preset) useStore.getState().update(s => applyPreset(s, id)) }
   return <div className="tour tour-ask">
     <div className="tour-block tour-dim" />
     <div className="tour-card tour-center" ref={cardRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="tour-t" aria-describedby="tour-b">
-      <h2 id="tour-t">{resume ? t('Finish the tour?') : t('Want a 1-minute tour?')}</h2>
+      {!resume && <>
+        <h2 id="tour-m">{t('How much app do you want?')}</h2>
+        <div className="tour-list tour-presets" role="radiogroup" aria-labelledby="tour-m">
+          {PRESETS.map(p => <button key={p.id} type="button" role="radio" aria-checked={preset === p.id} className="tour-tut tour-pick" data-preset={p.id} onClick={() => pick(p.id)}>
+            <span className="tour-tut-m"><span className="tour-tut-t">{presetCopy()[p.id][0]}</span><span className="tour-tut-s">{presetCopy()[p.id][1]}</span></span>
+            <Icon name="check" className="tour-pick-k" aria-hidden="true" />
+          </button>)}
+        </div>
+        <p className="tour-pick-f">{t('Change it anytime in Settings → Modules.')}</p>
+      </>}
+      <h2 id="tour-t" className={resume ? '' : 'tour-q2'}>{resume ? t('Finish the tour?') : t('Want a 1-minute tour?')}</h2>
       <p id="tour-b">{resume ? t('You stopped halfway. Want to see the rest?') : t('We’ll point at the good bits on the real screens. Bail out anytime.')}</p>
       <div className="tour-acts">
         <Button onClick={no}>{resume ? t('No thanks') : t('Skip')}</Button>

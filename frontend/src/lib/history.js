@@ -1,5 +1,6 @@
 // Pure helpers over the state object S (ported 1:1 from the vanilla app).
 import { syncSupersetMeta } from './superset-meta.js'
+import { isOn } from './modules.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
@@ -127,7 +128,9 @@ export const capEffort = (kind, v) =>
 // Which scale a profile logs. `showRir` is the boolean this replaced and is only consulted
 // when the profile has no answer of its own — an explicit 'none' has to win over it, or a
 // backup or another device that still carries the old flag would switch the column back on.
+// Settings → Modules: with Effort off there is no column to rate in; the ratings already logged stay.
 export const effortOf = S => {
+  if (S && !isOn(S, 'effort')) return 'none'
   const e = S && S.effort
   return e === 'none' || EFFORT[e] ? e : (S && S.showRir ? 'rir' : 'none')
 }

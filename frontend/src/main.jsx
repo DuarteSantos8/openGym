@@ -10,8 +10,8 @@ import { startNativeKeyboard } from './lib/native-keyboard.js'
 import './admin.css'
 import './coach.css'
 import './index.css'
-import './insights.css'
 import { hideBoot, handOverFromLaunchScreen } from './lib/boot.js'
+import { guardFocusZoom } from './lib/viewport-zoom.js'
 
 // App.jsx restores per-route scroll itself; the browser's own attempt races it.
 // A script that dies before the app draws would otherwise leave the boot logo lifting forever.
@@ -19,6 +19,9 @@ window.addEventListener('error', hideBoot, { once: true })
 handOverFromLaunchScreen()
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+
+// The web build lets people pinch to zoom; on iOS a focused small field must not zoom the page.
+if (!MOBILE) guardFocusZoom()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode><App /></StrictMode>

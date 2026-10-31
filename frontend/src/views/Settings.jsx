@@ -43,7 +43,7 @@ import { CUSTOM, accentKey, adjustedIn, applyAccent, cleanHex, inkOn, isGrey } f
 import { checkForUpdate, downloadAndInstall, fetchChecksum, forgetDownloadedUpdate, RELEASES_PAGE } from '../lib/update.js'
 import { APK_VARIANT, VARIANT_NAMES } from '../lib/apk-variant.js'
 import { BUILTIN_PX } from '../lib/anim-quality.js'
-import { selfUpdates } from '../lib/channel.js'
+import { getChannel, gymReminderBuilt } from '../lib/channel.js'
 import { forgetCoach } from '../lib/coach-api.js'
 import { coachAvailable } from '../lib/coach.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
@@ -65,6 +65,11 @@ import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './se
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
+import IntegrationsPage from './Integrations.jsx'
+import ZeppSettingsPage from './ZeppSettings.jsx'
+import ModulesPage from './Modules.jsx'
+import { isOn, presetOf } from '../lib/modules.js'
+import { presetCopy } from '../lib/modules-copy.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
@@ -96,7 +101,9 @@ export function SettingsRoute() {
   // `ios` now, not after an async platform check: the Apple Watch page is iPhone only, and a route
   // that did not know yet sent every visit to it straight back to the root.
   // (Unknown counts as yes inside the phone app: the page itself then says there is no watch.)
-  const ctx = { user: useStore(s => s.user), mobile: MOBILE, ios: MOBILE && platformNow() !== 'android' }
+  // The modules (lib/modules.js): a page of a module that is off goes back to the root too.
+  const modules = useStore(s => s.S.modules), checkIn = useStore(s => s.S.checkIn)
+  const ctx = { user: useStore(s => s.user), mobile: MOBILE, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
@@ -194,9 +201,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
   // --- update check state ---
   const [updateInfo, setUpdateInfo] = useState(null) // { hasUpdate, latestVersion, apkUrl, hashUrl } | null
-  const [android, setAndroid] = useState(false)
+  const [android, setAndroid] = useState(() => MOBILE && platformNow() === 'android')
   const [ios, setIos] = useState(() => MOBILE && platformNow() === 'ios')   // the iPhone app: Settings → Apple Watch
   const [selfUpdate, setSelfUpdate] = useState(false)   // the sideloaded APK, which updates itself
+  const [play, setPlay] = useState(false)   // the Google Play build: no donation links (Play payments policy)
+  const [fdroid, setFdroid] = useState(false)   // the F-Droid build: F-Droid updates it, no Wear OS link
+  const [gymReminder, setGymReminder] = useState(true)   // false in a Play build without background location
   const [checking, setChecking] = useState(false)
   // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
   const [backupDir] = useBackupFolder(MOBILE && android && !!S.autoBackup)
@@ -212,8 +222,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     isAndroid().then(async ok => {
       setAndroid(ok)
       setIos(!ok)
-      const own = ok && await selfUpdates()
+      const channel = ok ? await getChannel() : null
+      const own = channel === 'sideload'
       setSelfUpdate(own)
+      setPlay(channel === 'play')
+      setFdroid(channel === 'fdroid')
+      if (ok) gymReminderBuilt().then(setGymReminder)
       // Nothing newer: an update APK still in the cache is the one already installed.
       if (own && page === 'about') checkForUpdate().then(info => { setUpdateInfo(info); if (!info?.hasUpdate) forgetDownloadedUpdate() }).catch(() => {})
     })
@@ -452,11 +466,15 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
-    nfc: nfcOK,
+    nfc: nfcOK, gymReminder,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
+    integrations: config?.integrations?.providers || [],
     rotation: scheduleModeOf(S) === 'rotation' && !externalQ,
     spokenCues: S.spokenCues === true,
+    // Settings → Modules: which feature areas are on (pageVisible and the search ask it).
+    mod: id => isOn(S, id),
   }
+  const on = id => isOn(S, id)
   const mode = scheduleModeOf(S)
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
   const layoutLabel = { cards: t('Cards'), list: t('List'), compact: t('Compact') }[layout]
@@ -471,10 +489,13 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : ownsNoDumbbells(S) ? t('Everything but dumbbells') : t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
+    modules: () => { const p = presetOf(S); return p === 'custom' ? t('Custom') : presetCopy()[p][0] },
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
+    integrations: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
+    zepp: () => '',
   }
 
   const open = id => {
@@ -527,7 +548,13 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     })} />
 
   const pages = {
+    modules: () => <ModulesPage />,
     watch: () => <WatchSettingsPage />,
+    integrations: () => <IntegrationsPage android={android} ios={ios} />,
+    // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
+    'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,
+    'health-connect': () => <HealthPage key="health-connect" S={S} toast={toast} android />,
+    zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
@@ -535,7 +562,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* Warm-ups that build themselves from the work weight (#156, lib/warmup-ramp.js). Off by
           default, so nothing changes until someone asks; an exercise can still pick Auto, its own
           rows or none in its settings, and one with its own number of ramp sets keeps them. */}
-      <Section title={t('Warm-ups')} footer={t('Built from your work weight and rounded to this gym’s plates and dumbbells. An exercise can pick its own in its settings.')}>
+      {on('plates') && <Section title={t('Warm-ups')} footer={t('Built from your work weight and rounded to this gym’s plates and dumbbells. An exercise can pick its own in its settings.')}>
         <SelectRow icon="sunrise" iconTint="var(--orange)" title={t('Automatic warm-ups')}
           value={warmupAutoOf(S)} onChange={v => update(s => { s.warmupAuto = v })}
           options={[
@@ -543,7 +570,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             { value: 'compounds', label: t('Compound lifts'), subtitle: t('Squats, presses, rows and friends get a ramp. Curls and raises start cold.') },
             { value: 'all', label: t('Every loaded lift'), subtitle: t('Heavy lifts get more rungs, light ones one or none.') },
           ]} />
-      </Section>
+      </Section>}
       <Section title={t('Rest')} footer={t('Each exercise can have its own rest too. Set it in the exercise settings of a routine.')}>
         {restRow}
         {warmupRestRow}
@@ -552,12 +579,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       <Section title={t('Logging')}>
         {/* Two names for the same judgement, so the column asks in the scale you already think in.
             The (i) sits before the control: you read it on the way to the choice, not after it. */}
-        <Row icon="gauge" iconTint="var(--purple)" title={t('Effort per set')}>
+        {on('effort') && <Row icon="gauge" iconTint="var(--purple)" title={t('Effort per set')}>
           <button className="helpbtn" aria-label={t('What are RIR and RPE?')} onClick={effortHelpSheet}><Icon name="info" /></button>
           <Segmented className="seg-inline"
             options={[{ value: 'none', label: t('Off') }, { value: 'rir', label: t('RIR') }, { value: 'rpe', label: t('RPE') }]}
             value={effortOf(S)} onChange={v => update(s => { s.effort = v; delete s.showRir })} />
-        </Row>
+        </Row>}
         {/* The line under each exercise that the rows are held against (#173). Tapping the line in
             a workout switches it too; this is where the choice can be found without knowing that. */}
         <SelectRow icon="history" iconTint="var(--blue)" title={t('Shown under each exercise')}
@@ -599,10 +626,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       <Section title={t('Before and during')}>
         {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips
             straight to the session. Home and Stats still log weight by hand. */}
-        <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
+        {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}
           subtitle={t('Asks for your body weight when a workout starts. Off starts the session straight away.')}>
           <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />
-        </Row>
+        </Row>}
         {(wakeOK || !MOBILE) && (
           <Row icon="phoneScreen" iconTint="var(--yellow)" title={t('Keep screen awake')}
             subtitle={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : t('Not supported in this browser.')}>
@@ -757,7 +784,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
             over" and the count of a hold, in the app's language. The phone's own voice in the
             apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
-        <Section title={t('Spoken cues')} footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
+        {/* No group title: it only repeated the switch's own "Spoken cues" (1.4.5 features pass). */}
+        <Section footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
           <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
             subtitle={t('Says your next set, “10 seconds” and “Rest is over”, and counts holds down.')}>
             <Switch aria-label={t('Spoken cues')} checked={S.spokenCues === true} disabled={!speechSupported()}
@@ -769,7 +797,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
                 options={[{ value: 'slow', label: t('Slow') }, { value: 'normal', label: t('Normal') }, { value: 'fast', label: t('Fast') }]}
                 value={speechRateOf(S)} onChange={v => { update(s => { s.speechRate = v }); speak(sampleCue(S.unit), { rate: SPEECH_RATES[v], queue: false }) }} />
             </Row>
-            <Row icon="play" iconTint="var(--green)" title={t('Try it')} accessory="chevron"
+            {/* An action, not a page: no chevron, which promises somewhere to go. */}
+            <Row icon="play" iconTint="var(--green)" title={t('Try it')}
               onClick={() => speak(sampleCue(S.unit), { rate: SPEECH_RATES[speechRateOf(S)], queue: false })} />
           </>}
         </Section>
@@ -778,7 +807,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
     reminders: () => <>
       <NotificationsCard S={S} update={update} toast={toast} />
-      {MOBILE && <Section footer={t('A nudge when you walk into your gym.')}>
+      {MOBILE && gymReminder && <Section footer={t('A nudge when you walk into your gym.')}>
         <Row icon="mapPin" iconTint="var(--green)" title={t('Gym reminder')} value={gymOn ? t('On') : t('Off')} accessory="chevron" onClick={() => nav('/settings/gym')} />
       </Section>}
     </>,
@@ -894,17 +923,17 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             onChange={v => update(s => { s.volumeBodyweight = v })} />
         </Row>
         {/* Sex and year of birth, read only by the strength levels (lib/strength-level.js). */}
-        <Row icon="person" iconTint="var(--teal)" title={t('About you')} subtitle={t('For your strength levels')} accessory="chevron" onClick={aboutYouSheet} />
+        {on('strength') && <Row icon="person" iconTint="var(--teal)" title={t('About you')} subtitle={t('For your strength levels')} accessory="chevron" onClick={aboutYouSheet} />}
         {/* #859: a day can hold several weigh-ins. Which one is the day's number for the chart, the
             trend, the goal line, widgets, Wrapped and the Coach (lib/weigh-ins.js). Morning is the
             default: it is the weight worth comparing from one day to the next. */}
-        <SelectRow icon="scale" iconTint="var(--teal)" title={t('Daily weigh-in value')}
+        {on('body') && <SelectRow icon="scale" iconTint="var(--teal)" title={t('Daily weigh-in value')}
           value={dailyModeOf(S)} onChange={v => update(s => { s.bwDaily = v; settleAll(s, v) })}
           options={[
             { value: 'first', label: t('Morning (first)'), subtitle: t('Before breakfast is the one to compare.') },
             { value: 'avg', label: t('Average'), subtitle: t('Every weigh-in of the day counts the same.') },
             { value: 'last', label: t('Last'), subtitle: t('The most recent one of the day.') },
-          ]} />
+          ]} />}
       </Section>
     </>,
 
@@ -955,49 +984,45 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
       </Section>
       {/* Halloween and whatever comes after it (lib/seasonal.js), on a page of their own. */}
-      <Section>
+      {on('seasonal') && <Section>
         <Row icon="pumpkin" iconTint="var(--orange)" title={t('Seasonal themes')} subtitle={t('Little extras for the time of year.')}
           value={activeSeasonTitle(S)} accessory="chevron" onClick={() => open('themes')} />
-      </Section>
+      </Section>}
       <Section title={t('On Home')}>
-        {/* Membership QR codes on Home (views/CheckIn.jsx); off = no Home card, no route. */}
-        <Row icon="qr" iconTint="var(--blue)" title={t('Gym check-in')}
-          subtitle={t('Show a card on Home with your membership QR codes.')}>
-          <Switch checked={S.checkIn !== false} onChange={v => update(s => { s.checkIn = v })} />
-        </Row>
+        {/* The gym check-in's own switch moved to Settings → Modules (1.4.4, lib/modules.js). */}
         {/* NFC stickers (components/Nfc.jsx): only where the phone or the browser can write one. */}
-        {nfcOK && <Row icon="nfc" iconTint="var(--blue)" title={t('Set up an NFC sticker')}
+        {nfcOK && on('checkin') && <Row icon="nfc" iconTint="var(--blue)" title={t('Set up an NFC sticker')}
           subtitle={t('Tap it at the gym to start your workout or show your code.')} accessory="chevron" onClick={nfcStickerSheet} />}
         {/* Siri & Shortcuts / Assistant (components/VoiceShortcuts.jsx): the phone app only. */}
         {MOBILE && platformNow() && <Row icon="chat" iconTint="var(--purple)" title={voiceRowTitle()}
           subtitle={platformNow() === 'android' ? t('Start a workout or log your weight from the app icon.') : t('Start a workout or log your weight by voice.')} accessory="chevron" onClick={voiceShortcutsSheet} />}
         {/* The Home summary is optional; hiding it leaves weight logging, history and Stats intact. */}
-        <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
+        {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Body weight')}
           subtitle={t('Show the body weight card on Home.')}>
           <Switch checked={S.showWeightCard !== false} onChange={v => update(s => { s.showWeightCard = v })} />
-        </Row>
+        </Row>}
         {/* A small card when a muscle is still recovering or has been left out a while
             (lib/recovery-hint.js). One at a time, and it can be put away for the day. */}
-        <Row icon="figureStrength" iconTint="var(--green)" title={t('Recovery tips')}
+        {on('health') && <Row icon="figureStrength" iconTint="var(--green)" title={t('Recovery tips')}
           subtitle={t('A small hint on Home about what has rested and what is still recovering.')}>
           <Switch aria-label={t('Recovery tips')} checked={S.recoveryHint !== false} onChange={v => update(s => { s.recoveryHint = v })} />
-        </Row>
+        </Row>}
         {/* Three goals a month on Home, sized to how you train (lib/challenges.js). Off: no card,
             no Stats progress; badges already earned stay on the shelf. */}
         {/* Monday's Your week and the 1st's Your month (lib/recap.js). On unless switched off. */}
-        <Row icon="chart" iconTint="var(--purple)" title={t('Week and month recap')}
+        {on('motivation') && <Row icon="chart" iconTint="var(--purple)" title={t('Week and month recap')}
           subtitle={t('A small card when a new week or month starts: what the last one added up to.')}>
           <Switch aria-label={t('Week and month recap')} checked={S.recap !== false} onChange={v => update(s => { s.recap = v })} />
-        </Row>
+        </Row>}
         {/* This week's sets for the muscle with the most room, under the streak (components/WeeklySets.jsx). */}
         <Row icon="figureStrength" iconTint="var(--teal)" title={t('Weekly sets on Home')}
           subtitle={t('The muscle with the most room left this week, under your streak.')}>
           <Switch aria-label={t('Weekly sets on Home')} checked={S.homeMuscleSets === true} onChange={v => update(s => { s.homeMuscleSets = v })} />
         </Row>
-        <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
+        {on('motivation') && <Row icon="target" iconTint="var(--orange)" title={t('Monthly challenges')}
           subtitle={t('Three goals a month on Home, sized to how you train.')}>
           <Switch aria-label={t('Monthly challenges')} checked={S.monthlyChallenges !== false} onChange={v => update(s => { s.monthlyChallenges = v })} />
-        </Row>
+        </Row>}
         {/* The bar at the top that says the app is offline, kept local, or not synced (#369, #330).
             Here and not under Server & sync, which a phone kept local never shows. Switching it on
             also brings back the no-server line its × hid (#454). */}
@@ -1063,7 +1088,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Android only: the system folder picker (#161). iOS shows Documents in Files already. */}
         {MOBILE && android && S.autoBackup && <BackupFolderRow />}
       </Section>
-      {MOBILE && <HealthConnectCard S={S} toast={toast} android={android} />}
+      {/* Apple Health / Health Connect moved to Integrations (1.4.4); the way there stays here. */}
+      {MOBILE && on('health') && <HealthLinkRow android={android} nav={nav} />}
       <Section title={t('Bring data in')}>
         <Row icon="download" iconTint="var(--teal)" title={t('Import backup')} accessory="chevron" onClick={() => fileRef.current.click()} tour="data-import" />
         <Row icon="download" iconTint="var(--teal)" title={t('Import from another app')}
@@ -1088,7 +1114,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           release is newer (checksum verified, see onUpdateRowClick). On the web the app updates
           with its server, so the row points at the APK for the phone instead. iOS and the Google
           Play build are updated by their store. */}
-      <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
+      <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : fdroid ? t('F-Droid installs the updates for this build.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
         {/* The sideloaded APK comes in three kinds that differ only in the animations built in
             (lib/apk-variant.js): which one this is, so nobody has to guess from the file size. */}
         <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__}
@@ -1103,6 +1129,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
               subtitle={t('Download the APK from opengym.ch')} accessory="chevron"
               onClick={() => window.open('https://opengym.ch/#download', '_blank', 'noopener')} />}
       </Section>
+      {/* The F-Droid build has no Wear OS link (it would need Google Play services, which F-Droid
+          leaves out): said here rather than having a watch that silently never connects. */}
+      {fdroid && <Section footer={t('Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.')}>
+        <Row icon="watch" iconTint="var(--grey)" title={t('Wear OS watch')} value={t('Not in this build')} />
+      </Section>}
       {/* Tutorials (components/Tour.jsx): the tour from the top, and the four short guided runs
           its closing card offers. Not over a running workout: the tour's practice session and the
           tutorials' copies would have to stand in for the real one. */}
@@ -1117,16 +1148,23 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         })}
       </Section>
       {/* Support: the project's own donation pages, and on the iPhone a straight line to writing a
-          review. Plain links, no pop-up asking for anything (App Store 5.6.1). */}
-      <Section title={t('Support openGym')} footer={t('openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.')}>
+          review. Plain links, no pop-up asking for anything (App Store 5.6.1). The Google Play build
+          shows only its rating link: Play's payments policy wants Play billing for anything paid
+          inside an app, donations to a project that isn't a registered charity included, so the
+          coffee links stay on the APK, the iPhone and the web (docs/APP_STORES.md). */}
+      <Section title={t('Support openGym')} footer={play ? undefined : t('openGym is free: no ads, no subscriptions, no tracking. A coffee keeps it that way.')}>
         {MOBILE && ios && <Row icon="star" iconTint="var(--orange)" title={t('Rate openGym on the App Store')} accessory="chevron"
           onClick={() => window.open('https://apps.apple.com/app/id6822275400?action=write-review', '_blank', 'noopener')} />}
-        <Row icon="heart" iconTint="var(--pink)" title={t('Buy me a coffee')} subtitle="Buy Me a Coffee" accessory="chevron"
-          onClick={() => window.open('https://buymeacoffee.com/duartesantos', '_blank', 'noopener')} />
-        <Row icon="heart" iconTint="var(--blue)" title="Ko-fi" accessory="chevron"
-          onClick={() => window.open('https://ko-fi.com/opengym', '_blank', 'noopener')} />
-        <Row icon="heart" iconTint="var(--purple)" title="GitHub Sponsors" accessory="chevron"
-          onClick={() => window.open('https://github.com/sponsors/DuarteSantos8', '_blank', 'noopener')} />
+        {play && <Row icon="star" iconTint="var(--orange)" title={t('Rate openGym on Google Play')} accessory="chevron"
+          onClick={() => window.open('https://play.google.com/store/apps/details?id=ch.duartesantos.opengym', '_blank', 'noopener')} />}
+        {!play && <>
+          <Row icon="heart" iconTint="var(--pink)" title={t('Buy me a coffee')} subtitle="Buy Me a Coffee" accessory="chevron"
+            onClick={() => window.open('https://buymeacoffee.com/duartesantos', '_blank', 'noopener')} />
+          <Row icon="heart" iconTint="var(--blue)" title="Ko-fi" accessory="chevron"
+            onClick={() => window.open('https://ko-fi.com/opengym', '_blank', 'noopener')} />
+          <Row icon="heart" iconTint="var(--purple)" title="GitHub Sponsors" accessory="chevron"
+            onClick={() => window.open('https://github.com/sponsors/DuarteSantos8', '_blank', 'noopener')} />
+        </>}
       </Section>
       {/* "Add to Home screen": not inside the phone app, and not once it is installed. Safari's
           Share menu only on Apple (an iPad says Macintosh too); Windows and Linux get Chrome's
@@ -1259,7 +1297,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
   // Only while the server offers the Coach (the flag every Coach screen reads): on a box without
   // it the admin dashboard has no Coach card to land on.
   const config = useStore(s => s.config)
-  const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user)
+  const adminCoach = !MOBILE && !DEMO && !!user?.admin && coachAvailable(config, user) && (!ctx.mod || ctx.mod('coach'))
   return <div className="narrow">
     <div className="sp-nav">
       <button className="sp-back" data-back="/home" onClick={home} aria-label={t('Home')}><Icon name="chevronLeft" /><span>{t('Home')}</span></button>
@@ -1435,6 +1473,8 @@ function MobileReminderCard({ S, update, toast }) {
 // Your year in openGym (lib/wrapped.js): one notification on Dec 1, on unless switched off here.
 // The phone plans it itself; a server sends it as a web push. Off takes back a planned one.
 function WrappedNotifyRow({ S, update }) {
+  // Part of the Motivation module (Settings → Modules): with it off there is nothing to notify.
+  if (!isOn(S, 'motivation')) return null
   const on = S.wrappedNotify !== false
   return <Row icon="sparkles" iconTint="var(--acc)" title={t('Your year in openGym')} subtitle={t('One notification on 1 December when your year is ready.')}>
     <Switch checked={on} onChange={() => update(s => { s.wrappedNotify = !on })} aria-label={t('Your year in openGym')} />
@@ -1817,7 +1857,29 @@ const HEALTH_COPY = {
   }),
 }
 
-function HealthConnectCard({ S, toast, android }) {
+// Settings → Integrations → Apple Health / Health Connect. On a phone without the store, a line
+// that says so instead of an empty page.
+function HealthPage({ S, toast, android }) {
+  if (!MOBILE) return <Section><Row icon="info" iconTint="var(--grey)" title={t('This lives in the openGym phone app.')} /></Section>
+  return <>
+    <HealthConnectCard S={S} toast={toast} android={android} page />
+    <p className="sect-f">{t('Your watch or scale writes here too? Garmin, COROS, Fitbit, Withings, Oura and friends reach openGym this way.')}</p>
+  </>
+}
+
+// Data & backup's way to the health page, shown where the store is.
+function HealthLinkRow({ android, nav }) {
+  const [st, setSt] = useState(null)
+  useEffect(() => { let gone = false; healthStatus().then(s => { if (!gone) setSt(s) }).catch(() => {}); return () => { gone = true } }, [])
+  if (!st || st.status === 'unsupported') return null
+  const ios = st.platform === 'ios' || (!st.platform && !android)
+  return <Section>
+    <Row icon="heart" iconTint="var(--red)" title={ios ? t('Apple Health') : t('Health Connect')} subtitle={t('Now in Integrations')} accessory="chevron"
+      onClick={() => nav('/settings/' + (ios ? 'apple-health' : 'health-connect'))} />
+  </Section>
+}
+
+function HealthConnectCard({ S, toast, android, page = false }) {
   const getState = () => useStore.getState().S
   const [st, setSt] = useState(null)
   const [h, setH] = useState(null)
@@ -1832,7 +1894,10 @@ function HealthConnectCard({ S, toast, android }) {
     return () => { gone = true; off() }
   }, [])
   const ios = st?.platform === 'ios'
-  if (!st || !h || st.status === 'unsupported' || (!android && !ios)) return null
+  if (!st || !h) return null
+  if (st.status === 'unsupported' || (!android && !ios)) {
+    return page ? <Section><Row icon="info" iconTint="var(--grey)" title={t('Not on this phone')} subtitle={t('This phone has no health store openGym can use.')} /></Section> : null
+  }
   const c = HEALTH_COPY[ios ? 'ios' : 'android']()
 
   if (st.status !== 'available') return (

@@ -68,7 +68,7 @@ describe('the routine editor\'s exercise sheet', () => {
       input.dispatchEvent(new Event('input', { bubbles: true }))
     })
     const pick = [...picker.querySelectorAll('.item')].find(el => el.querySelector('.tt')?.textContent === name)
-    act(() => pick.click())
+    act(() => pick.querySelector('.tap-main').click())
     act(() => [...sheet.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === 'Remove “' + exerciseNameText(EXIDX['0047']) + '”').click())
     act(() => save(host))
     expect(onSave.mock.calls[0][0].subs).toEqual(['0289'])

@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "服务器地址"
+
+msgid "code"
+msgstr "配对码"
+
+msgid "how"
+msgstr "在 openGym 里打开设置、Zepp OS 手表、配对手表，把显示的地址和配对码填在这里。"
+
+msgid "pair"
+msgstr "配对"
+
+msgid "pairing"
+msgstr "正在配对…"
+
+msgid "paired"
+msgstr "已与 {0} 配对。在手表上打开 openGym 吧。"
+
+msgid "failed"
+msgstr "没成功。检查一下地址和配对码，配对码十分钟内有效。"
+
+msgid "unpair"
+msgstr "取消配对"
+
+msgid "not_paired_yet"
+msgstr "还没有配对。"

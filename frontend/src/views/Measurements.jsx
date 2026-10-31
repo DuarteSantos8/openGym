@@ -224,7 +224,7 @@ export default function Measurements() {
       <div className="row between" style={{ marginBottom: 10 }}>
         <div>
           <div className="muted small">{field ? t(field.label) : t('Body measurements')}</div>
-          <div className="big" style={{ marginTop: 3 }}>{latest ? <>{fmtNum(latest.y)} <span className="muted" style={{ fontSize: '1rem' }}>{unit}</span></> : '–'}</div>
+          <div className="big" style={{ marginTop: 3 }}>{latest ? <>{fmtNum(latest.y)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{unit}</span></> : '–'}</div>
           {delta != null && delta !== 0 && <div className="small" style={{ marginTop: 3, color: 'var(--label-2)' }}>{delta > 0 ? '+' : ''}{withUnit(delta, unit)} {t('since previous')}</div>}
         </div>
         <Button size="sm" icon="plus" onClick={() => measurementLogSheet()}>{t('Log')}</Button>

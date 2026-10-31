@@ -9,7 +9,7 @@
  * Rules, by field:
  *   - scalars and settings, `week`, `dayPlan`, `wc`, `reminder`, `queue`, `rotation`, …: each from
  *     the copy that changed it last by its own stamp in `edited` (stampEdits; `week`, `dayPlan`,
- *     exNotes and barWeights per day or per exercise, `programmes` per programme), from the copy with the newer `_ts` when
+ *     exNotes and barWeights per day or per exercise, `programmes` per programme, `modules` per module), from the copy with the newer `_ts` when
  *     neither side stamped it or on a tie
  *   - equipProfiles, gymCards: union by id; of an id that both have, field by field as below
  *   - workouts, routines, customEx, equipProfiles, gymCards: of an id that both have, each field
@@ -719,7 +719,9 @@ const OWN_MERGE = new Set([
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar, one programme
 // (lib/programmes.js; the running one, `programme`, is a plain setting).
-const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'programmes'])
+// `modules` (lib/modules.js): one switch per feature area, so Body off on the phone and Seasonal off
+// on the laptop both hold.
+const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'programmes', 'modules'])
 // The order of the routines, as the list shows them, is a choice of its own (`edited.routineOrder`):
 // a reorder on one device was lost to the other's whole copy whenever that one was newer.
 export const ORDER_KEY = 'routineOrder'
@@ -947,7 +949,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
     if (kept) out.exWeights[id] = clone(kept)
     else delete out.exWeights[id]
   }
-  for (const f of ['exNotes', 'barWeights', 'exAliases', 'programmes']) {
+  for (const f of ['exNotes', 'barWeights', 'exAliases', 'programmes', 'modules']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }
   // The plate-loading choices (lib/plates.js) are stamped the same way: an exercise's loading and
@@ -1148,7 +1150,13 @@ export function stampChange(prev, next, wall = Date.now()) {
   for (const w of list(next.workouts)) {
     if (!w || typeof w !== 'object' || w.id == null || w._ts == null) continue
     const old = before.get(w.id)
-    if (old && w._ts !== old._ts) stampEntry(old, w, now)
+    if (!old || w._ts === old._ts) continue
+    // A save that changed nothing is not an edit: it keeps the stamp it had. Re-stamped, the
+    // untouched copy outlived a removal made in between on another device and came back with
+    // whatever field another copy had changed before that removal, but only when those two met
+    // first (sync-merge.property.test.js: three copies, one deleting).
+    if (sameEntry(old, w)) { if (old._ts == null) delete w._ts; else w._ts = old._ts; continue }
+    stampEntry(old, w, now)
   }
   // Settings maps whose entries carry their own stamp (mergeStampedMap): an entry the change
   // re-stamped takes the change's time.

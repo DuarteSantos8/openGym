@@ -23,6 +23,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mocks = vi.hoisted(() => ({
   S: null,
   MOBILE: false,
+  fdroid: false,       // the F-Droid build: an app without ML Kit, scanning the browser's way
   writes: [],          // { push } per update() call, in order
   sheets: [],          // every openSheet render fn, in order
   camera: null,        // the props the browser CameraScan sheet was handed
@@ -60,6 +61,7 @@ vi.mock('../sheets.jsx', () => ({ confirmSheet: (...a) => mocks.confirmSheet(...
 vi.mock('../lib/scan.js', () => ({
   scanCode: (...a) => mocks.scanCode(...a),
   importCodeFromImage: (...a) => mocks.importCodeFromImage(...a),
+  webScanner: async () => !mocks.MOBILE || mocks.fdroid,
 }))
 vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE } }))
 // The browser camera sheet is a device surface; capture its props so a test can answer as the
@@ -80,6 +82,7 @@ let host, root, sheetHost, sheetRoot, camHost, camRoot, widthSpy
 beforeEach(() => {
   mocks.S = { gymCards: [], lastGymCardId: null }
   mocks.MOBILE = false
+  mocks.fdroid = false
   mocks.writes.length = 0
   mocks.sheets.length = 0
   mocks.camera = null
@@ -427,6 +430,19 @@ describe('CheckIn — adding a card', () => {
 
     await tap(sheetBtn('Save card'))
     expect(mocks.S.gymCards[0].value).toBe('WEB-CODE')
+  })
+
+  it('the F-Droid build (no ML Kit) scans with our own camera sheet too', async () => {
+    mocks.MOBILE = true
+    mocks.fdroid = true
+    await openAdd()
+    await tap(sheetBtn('Scan'))
+    expect(mocks.scanCode).not.toHaveBeenCalled()
+    expect(mocks.sheets).toHaveLength(2)
+    const closeCam = vi.fn()
+    act(() => { camRoot.render(mocks.sheets.at(-1)(closeCam)) })
+    await act(async () => { mocks.camera.onFound({ value: 'FDROID-CODE', fmt: 'QR_CODE' }) })
+    expect(sheetHost.querySelector('[data-qr]').getAttribute('data-qr')).toBe('FDROID-CODE')
   })
 
   it('the browser camera closes even when what it found cannot be used', async () => {

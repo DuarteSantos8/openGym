@@ -5,6 +5,10 @@ TicWatch, Fossil Gen 6 and the rest. It is the Apple Watch app's twin: the phone
 of truth, and the watch follows the workout the phone runs, logs sets on it and can start a
 routine by itself.
 
+**Status: beta since v1.4.4.** It builds and its tests pass, but it has met few real watches yet.
+On the watch it is labelled "openGym Beta"; on Google Play it ships to the Wear OS closed-testing
+track first. Drop the label (`app_name` in `wear/wear-strings.mjs`) once testers confirm it.
+
 ## What it does
 
 - **Start**: today's planned routine with one tap, Quick start (the first routine) on a day
@@ -79,8 +83,8 @@ watch with a debug phone, a release watch with a release phone (or the Play-sign
 
 The watch app takes the phone's `versionName` and **`versionCode` = phone versionCode + 10000**
 (read from `app/build.gradle` by `wear/build.gradle`, nothing to bump by hand). Google Play keeps
-one versionCode space per app for every form factor, so the phone (29 for 1.4.4) and the watch
-(10029) never collide, and each release's watch build is newer than the last one's.
+one versionCode space per app for every form factor, so the phone (30 for 1.4.4) and the watch
+(10030) never collide, and each release's watch build is newer than the last one's.
 
 ## Google Play
 
