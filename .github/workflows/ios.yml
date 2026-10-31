@@ -217,24 +217,39 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle empty set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish summary summary-end ended; do
+            for screen in idle idle-rest empty empty-heard set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish overview finish-auto finish-hold finish-hold-full discard summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
             # on (Settings → Apple Watch); the rest as the countdown alone.
             shot "lang-de" set -OpenGymWatchLang de
             shot "lang-de-rest" rest -OpenGymWatchLang de
+            # The start screen: the longest labels (ru), and Always On (wrist down: outlines, no fills).
+            shot "lang-ru-idle" idle -OpenGymWatchLang ru
+            # The Overview and Finish in the longest language (ru), and the discard question in German.
+            shot "lang-ru-overview" overview -OpenGymWatchLang ru
+            shot "lang-ru-finish" finish -OpenGymWatchLang ru
+            shot "lang-de-discard" discard -OpenGymWatchLang de
+            shot "aod-idle" idle -OpenGymWatchAOD
+            shot "aod-idle-rest" idle-rest -OpenGymWatchAOD
+            shot "aod-overview" overview -OpenGymWatchAOD
+            shot "aod-finish" finish -OpenGymWatchAOD
+            shot "aod-rest" rest -OpenGymWatchAOD
+            shot "aod-empty" empty -OpenGymWatchAOD
+            # The start screen scrolled to its end: the last row against the screen's rounded corners.
+            shot "idle-end" idle-end
             shot "show-all" set -OpenGymWatchShow all
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in set side edit-weight weighin rest hold summary summary-end; do
+            for screen in idle idle-end idle-rest empty empty-heard set side edit-weight weighin rest hold overview finish discard summary summary-end; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX
             done
             # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's
-            # process, on the Mac). Always On (wrist down) should cost next to nothing.
+            # process, on the Mac). Always On (wrist down) should cost next to nothing. Compare rest and
+            # set with the run before the Overview: the pager must not tick under the rest layer.
             cpu() { ps -o time= -p "$1" 2>/dev/null | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print 0 }'; }
             # set-noclip: the same screen without the animation, to tell what the animation costs.
-            for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
+            for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD idle-aod:idle:-OpenGymWatchAOD overview:overview overview-aod:overview:-OpenGymWatchAOD; do
               IFS=: read -r file screen flag noclip <<< "$spec"
               if [ "$flag" = noclip ]; then flag=""; noclip=noclip; fi
               KEEP=$CLIP; if [ -n "$noclip" ]; then CLIP=""; fi
