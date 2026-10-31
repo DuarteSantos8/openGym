@@ -122,10 +122,29 @@ describe('Home card', () => {
   })
 })
 
+// On Stats the card is folded to one line (stats redesign); a tap opens the rows and the shelf.
+const unfold = el => {
+  const fold = el.querySelector('.card-fold')
+  if (fold.getAttribute('aria-expanded') !== 'true') act(() => fold.click())
+  return el
+}
+
 describe('Stats', () => {
+  it('folds to the month and how many are done, and opens on a tap', () => {
+    setS({ challenges: { [KEY]: { picked: PICKED, done: [], at: 1 } } })
+    const el = render(Stats)
+    const fold = el.querySelector('.card-fold')
+    expect(fold.getAttribute('aria-expanded')).toBe('false')
+    expect(fold.textContent).toMatch(/^Challenges.+0 of 3/)
+    expect(el.querySelectorAll('.ch-row')).toHaveLength(0)
+    unfold(el)
+    expect(fold.getAttribute('aria-expanded')).toBe('true')
+    expect(el.querySelectorAll('.ch-row').length).toBeGreaterThan(0)
+  })
+
   it('shows this month and the trophy shelf, gold months crowned', () => {
     setS({ challenges: { [KEY]: { picked: PICKED, done: [], at: 1 }, '2026-10': { picked: PICKED, done: ['workouts', 'newex', 'muscles'], at: 1 }, '2026-09': { picked: PICKED, done: ['newex'], at: 1 } } })
-    const el = render(Stats)
+    const el = unfold(render(Stats))
     expect(el.querySelector('[data-challenge-shelf]')).toBeTruthy()
     const months = el.querySelectorAll('.ch-month')
     expect(months).toHaveLength(2)
@@ -141,11 +160,11 @@ describe('Stats', () => {
 
   it('keeps the shelf when switched off, says what it is for when empty', () => {
     setS({ monthlyChallenges: false, challenges: { '2026-10': { picked: PICKED, done: ['newex'], at: 1 } } })
-    let el = render(Stats)
+    let el = unfold(render(Stats))
     expect(el.querySelectorAll('.ch-row')).toHaveLength(0)
     expect(el.querySelectorAll('.ch-month')).toHaveLength(1)
     setS({ monthlyChallenges: true, challenges: undefined })
-    el = render(Stats)
+    el = unfold(render(Stats))
     expect(el.textContent).toContain('Every challenge you finish puts a badge here')
     expect(el.querySelectorAll('.ch-shelf-empty .medal-locked')).toHaveLength(3)
   })

@@ -343,7 +343,7 @@ function MusclesCard({ S, planFocus = false }) {
         {/* A row quotes the exercise's estimated 1RM, so a tap opens the exercise history
             sheet: the curve behind that number plus the last sessions set by set. */}
         {muscleExercises.length ? <div className="sbar-list">{muscleExercises.map(row => (
-          <BarRow key={row.id} className="sbar-2l" fill={row.decay}
+          <BarRow key={row.id} className="sbar-2l" fill={Math.round(row.decay * 100) / 100}
             label={<>
               <span className="sbar-l1"><span className={EXIDX[row.id] ? exerciseNameClass(EXIDX[row.id]) : undefined}>{row.name}</span>
                 <span className="sbar-tag">{row.primary === sel ? t('primary') : t('secondary')}</span></span>
@@ -889,18 +889,6 @@ export default function Stats() {
       <div className="list">{recent.map(w => <WorkoutRow key={w.id} w={w} onClick={() => workoutDetailSheet(w)} />)}</div>
     </>}
 
-    {/* The pages behind Stats as one grouped list (stats redesign): they were four cards with a
-        paragraph and an Open button each, dressed as content. */}
-    <h4 className="sec">{t('More')}</h4>
-    <div className="sect-b stats-links" data-stats-links>
-      {wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
-        className="stats-link" onClick={() => openWrapped(y)} />)}
-      <Row title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
-        value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
-        onClick={() => nav('/measurements')} />
-      {(workouts.length > 0 || dayPhotosOf(S).length > 0) && <Row title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />}
-      {workouts.length > 0 && <Row title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />}
-    </div>
     </section>
 
     <section className="stats-sect" id="stats-body" data-stats-sect="body" aria-labelledby="stats-h-body">
@@ -923,6 +911,18 @@ export default function Stats() {
         <Button size="sm" variant="ghost" trailingIcon="chevronRight" onClick={weighInsSheet}>{t('All weigh-ins')}</Button>
       </div>}
       <SeasonDeco spot="stats-web" />
+    </div>
+    {/* The pages behind Stats as one grouped list (stats redesign): they were four cards with a
+        paragraph and an Open button each, dressed as content. Under Body, where two of them live. */}
+    <h4 className="sec">{t('More')}</h4>
+    <div className="sect-b stats-links" data-stats-links>
+      <Row title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
+        value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
+        onClick={() => nav('/measurements')} />
+      {(workouts.length > 0 || dayPhotosOf(S).length > 0) && <Row title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />}
+      {workouts.length > 0 && <Row title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />}
+      {wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
+        className="stats-link" onClick={() => openWrapped(y)} />)}
     </div>
     </section>
 
