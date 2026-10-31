@@ -180,7 +180,12 @@ describe('Stats redesign: Muscles', () => {
 
   it('lists an untrained muscle once: a row when it is on one, a quiet chip that opens its exercises when not', () => {
     mount(small({ workouts: [done('2026-09-30', 'chest', 8)] }))
+    const fold = muscles().querySelector('.mus-miss')
+    expect(fold.getAttribute('aria-expanded')).toBe('false')
+    expect(muscles().querySelectorAll('.mchip.miss')).toHaveLength(0)
+    click(fold)
     const chips = [...muscles().querySelectorAll('.mchip.miss')]
+    expect(fold.querySelector('.mus-miss-n').textContent).toBe(String(chips.length))
     const onRows = new Set(rows().map(r => r.dataset.muscleVolume))
     expect(chips.length).toBe(MUSCLES.length - 1 - (onRows.size - 1))
     for (const c of chips) expect(onRows.has(c.dataset.muscle)).toBe(false)

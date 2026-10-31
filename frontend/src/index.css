@@ -3127,7 +3127,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .mus-hard.on{color:var(--gold-ink)}
 .mus-key{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;margin-top:8px}
 .mus-key .slegend{margin:0}
-.mus-miss-h{margin:16px 0 8px}
+.mus-miss{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;margin-top:8px;padding:0;border:0;border-top:var(--hair) solid var(--sep);background:none;color:var(--label-2);font:inherit;font-size:var(--fs-footnote);text-align:start;cursor:pointer;transition:background-color var(--fast) var(--ease)}
+.mus-miss:active{background:var(--press-fill)}
+.mus-miss>span:first-child{flex:1;min-width:0}
+.mus-miss-n{color:var(--label);font-variant-numeric:tabular-nums}
+.mus-miss .chev{flex:none}
+.mus-miss+.mchips{margin:2px 0 4px}
 /* the map a size smaller here than on its own: the bars under it carry the figures */
 .muscles-card .bm-v{max-height:min(30vh,200px)}
 

@@ -201,6 +201,7 @@ function MusclesCard({ S, planFocus = false }) {
   const [hard, setHard] = useState(false)
   const [sel, setSel] = useState(null)
   const [more, setMore] = useState(false)
+  const [missOpen, setMissOpen] = useState(false)
   const now = useNow(S)
   const lang = getLang()
   const workouts = S.workouts
@@ -319,10 +320,15 @@ function MusclesCard({ S, planFocus = false }) {
           </div>
         </>}
       {!sel && missed.length > 0 && inWin.length > 0 && <>
-        <h4 className="sec mus-miss-h">{on ? t('No hard sets in this period') : t('Not trained in this period')}</h4>
-        {/* A tap opens the exercises for that muscle (#553). The main muscles are rows above. */}
-        <div className="mchips">{missed.map(m => <button type="button" key={m} className="mchip miss" data-muscle={m}
-          aria-label={t('Exercises for {0}', t(MUSCLE_NAME[m]))} onClick={() => openMuscle(m)}>{t(MUSCLE_NAME[m])}</button>)}</div>
+        {/* Folded to one line with its count, the chips a tap away; a chip opens the exercises
+            for that muscle (#553). A muscle on a row above is not repeated here. */}
+        <button type="button" className="mus-miss" aria-expanded={missOpen} onClick={() => setMissOpen(o => !o)}>
+          <span>{on ? t('No hard sets in this period') : t('Not trained in this period')}</span>
+          <span className="mus-miss-n">{missed.length}</span>
+          <Icon name={missOpen ? 'chevronUp' : 'chevronDown'} className="chev" />
+        </button>
+        {missOpen && <div className="mchips">{missed.map(m => <button type="button" key={m} className="mchip miss" data-muscle={m}
+          aria-label={t('Exercises for {0}', t(MUSCLE_NAME[m]))} onClick={() => openMuscle(m)}>{t(MUSCLE_NAME[m])}</button>)}</div>}
       </>}
     </div> : view === 'fatigue' ? <>
       <BodyMap className="tappable hm-fatigue" load={fatigue} thresholds={FATIGUE_LEVELS} body={S.body} selected={sel} onMuscle={toggleSel} />
