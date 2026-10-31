@@ -39,7 +39,9 @@
 /* The first card's choice of modules (Settings → Modules): the same rows, one of them chosen. A
    chosen row carries a ring and a check in the readable accent, so it never rests on colour alone.
    Rows fill on press (P13); nothing moves. */
-.tour-pick{min-height:44px;transition:background-color var(--fast,.14s) var(--ease,ease),box-shadow var(--fast,.14s) var(--ease,ease)}
+/* On the raised card the rows' own fill can match it (dark: both #2c2c2e), so each row carries a
+   hairline edge of its own; the chosen one trades it for the ring. */
+.tour-pick{min-height:44px;box-shadow:inset 0 0 0 1px var(--sep,rgba(84,84,88,.6));transition:background-color var(--fast,.14s) var(--ease,ease),box-shadow var(--fast,.14s) var(--ease,ease)}
 .tour-pick:active{background:var(--surface-3)}   /* the rows sit on --surface-2, the press fill itself */
 .tour-pick .tour-pick-k{visibility:hidden;color:var(--acc-ink,var(--acc));font-size:var(--fs-subhead)}
 .tour-pick[aria-checked="true"]{box-shadow:inset 0 0 0 2px var(--acc-ink,var(--acc))}

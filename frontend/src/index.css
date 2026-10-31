@@ -3176,6 +3176,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .wsets-home{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;margin-top:8px;padding:6px 0;border:0;border-top:var(--hair) solid var(--sep);
   background:none;color:var(--label-2);font:inherit;font-size:var(--fs-footnote);line-height:var(--lh-small);text-align:start;cursor:pointer;transition:background var(--fast)}
 .wsets-home:active{background:var(--press-fill)}
+/* Motivation off (Settings → Modules): the line is a card of its own, no streak above to divide from. */
+.wsets-solo{padding-block:6px}
+.wsets-solo .wsets-home{margin-top:0;border-top:0}
 .wsets-home .icn:first-child{color:var(--green-ink);flex:none}
 .wsets-home span{flex:1;min-width:0}
 /* the ranges sheet: the name, then low and high; the steppers go under the name when the two
