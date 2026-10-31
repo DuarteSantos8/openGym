@@ -130,6 +130,7 @@ describe('the buttons', () => {
     expect(labels()).toEqual(['Confirm', 'Cancel'])
     expect(btn('Confirm').classList.contains('primary')).toBe(true)
     expect(host.querySelector('.pp-actions').classList.contains('stick')).toBe(true)      // pinned while comparing
+    expect(host.querySelector('.pp-cap')).not.toBeNull()                                  // with the strip above it covered
     expect(btn('Confirm').disabled).toBe(true)
     expect(host.querySelector('.pp-cta')).toBeNull()                 // nothing sticks to the bottom any more
     act(() => host.querySelectorAll('.pp-tile')[0].click())
@@ -139,6 +140,7 @@ describe('the buttons', () => {
     act(() => btn('Cancel').click())
     expect(labels()).toEqual(['Add photos', 'Compare'])
     expect(host.querySelector('.pp-actions').classList.contains('stick')).toBe(false)
+    expect(host.querySelector('.pp-cap')).toBeNull()
     expect(host.querySelectorAll('.pp-selected')).toHaveLength(0)
   })
   it('opens the comparison of the two picked photos with Confirm', () => {
