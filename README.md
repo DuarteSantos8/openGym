@@ -130,6 +130,12 @@ if you want to try it before installing anything.
   rate per set, and complications. No watch? AirPods Pro 3 do the heart rate on iOS 26. Widgets and
   a Live Activity on the iPhone.
 
+**Only what you use**
+
+- [Modules](docs/MODULES.md): switch whole parts of the app on and off in Settings → Modules, from
+  "Just training" to "Everything". Body, Health, Motivation, the Coach, seasonal themes and more
+  each disappear completely while they're off, and nothing is deleted.
+
 **Optional extras, off by default**
 
 - An [AI coach](docs/AI_COACH.md) that drafts a week of routines and later suggests changes based on

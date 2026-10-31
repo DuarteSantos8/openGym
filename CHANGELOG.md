@@ -6,6 +6,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**Modules: as much app as you want.** Settings → Modules switches whole parts of openGym on and
+off: Effort, Plates and warm-ups, Strength levels, Form videos, Watch, Gym check-in, Body, Health,
+Motivation, the AI Coach, Integrations and Seasonal themes. Pick Just training, Training and body or
+Everything, or flip them one by one. A module that's off is gone from Home, Stats, Settings and the
+search, and stops its notifications; health sync, the watch, webhooks and Coach reviews pause until
+it's back. Nothing is ever deleted, and everything stays on after the update. New profiles get the
+choice on their first screen. The idea came from seals187 and Shadowbyte on Discord.
+
 **Integrations, all in one place.** Settings → Integrations is a short list of what openGym can
 talk to, each with whether it's on and the one thing to do next: Apple Health or Health Connect
 (their switches moved here from Data & backup, which still has a way in), the Hevy and file imports,
