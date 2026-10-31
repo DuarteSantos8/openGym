@@ -166,6 +166,11 @@ describe('webhooks', () => {
     await act(async () => { sheetBtn('Add webhook').click() })
     expect(sheetHost.querySelector('[role="alert"]').textContent).toBe('It has to start with https://.')
     expect(mocks.calls.some(c => c[0] === '/api/integrations/connect')).toBe(false)
+    // The problem sits under the URL it is about and is tied to it (Integrations pass, I8).
+    expect(url.getAttribute('aria-invalid')).toBe('true')
+    expect(url.getAttribute('aria-describedby')).toBe(sheetHost.querySelector('[role="alert"]').id)
+    expect(url.nextElementSibling.getAttribute('role')).toBe('alert')
+    expect(sheetHost.querySelector('label[for="intg-url"]').textContent).toBe('Webhook URL')
     await type(url, 'https://ha.example.com/api/webhook/opengym-7f3a')
     await type(name, 'Home Assistant')
     // Records too, on top of the default.
@@ -209,6 +214,11 @@ describe('webhooks', () => {
     expect(sheetHost.textContent).not.toContain('The receiver answered 503.')
     await act(async () => { sheetBtn('Send test event').click() })
     expect(mocks.toast).toHaveBeenCalledWith('Test event delivered')
+    // Disconnect is the last thing in the sheet, a red row in a group of its own (P4, P6).
+    const btns = [...sheetHost.querySelectorAll('button')]
+    expect(btns[btns.length - 1]).toBe(sheetBtn('Disconnect'))
+    expect(sheetBtn('Disconnect').closest('.intg-end')).toBeTruthy()
+    expect(sheetBtn('Disconnect').classList.contains('danger')).toBe(true)
     act(() => sheetBtn('Disconnect').click())
     expect(mocks.confirm.title).toBe('Disconnect this webhook?')
     await act(async () => { await mocks.confirm.onConfirm() })

@@ -2224,11 +2224,15 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
      the same hue in the light one, where #34c759 and #ff9500 are 2:1 on white (1.4.5 features
      pass). 4.5:1 on the page and on a card. Fills and tints keep --green / --orange. */
   --green-ink:var(--green); --orange-ink:var(--orange);
+  /* Red as words (a form's problem line, Integrations pass): the system red in the dark theme;
+     in the light one #ff3b30 is 3.3:1 on the sheet, so the red preset's readable shade. */
+  --red-ink:var(--red);
 }
 :root[data-theme="light"]{
   --streak-ink:#e06a00; --win-ink:#1e9e47; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
   --gold-ink:#8f5e00;
   --green-ink:#1a7f37; --orange-ink:#a85200;
+  --red-ink:#d70015;
 }
 /* The flame: a warm gradient with a light core; three gentle flickers when it appears, then still. */
 .flame{display:inline-block;flex:none;overflow:visible;vertical-align:-.12em}
@@ -2883,31 +2887,66 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* ------------------------------------------------- Integrations (v1.4.4) -- */
 /* A card is a settings row: the icon and words are one button (the detail sheet), the action a
    second one at the end, so the row holds no button inside a button. Flat like every settings
-   page: no shadow, the section's own surface. */
-.intg-intro{margin:-2px 4px 14px;padding:0}
+   page: no shadow, the section's own surface.
+   Integrations pass (REVIEW.md, "## Integrations pass"): text roles instead of px (P1), the row's
+   press on --press-fill (P13), pills and the problem line in the status inks with a plain colour
+   before every color-mix, the sheets' actions as grouped rows with Disconnect last and red (P4/P6). */
+.intg-intro{margin:-2px 4px 14px;padding:0;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
 .lrow.intg-card{padding:0;gap:0}
-.intg-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:11px 14px;text-align:start;color:inherit;background:none;border-radius:0}
-.intg-open:active{background:var(--surface-2)}
+.intg-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:11px 14px;text-align:start;color:inherit;background:none;border-radius:0;
+  transition:background-color var(--fast) var(--ease)}
+.intg-open:active{background:var(--press-fill)}
 .intg-open .lrow-m{min-width:0}
 .intg-act{flex:none;margin-inline-end:12px;min-height:32px}
-.intg-pill{display:inline-flex;align-self:flex-start;margin-top:5px;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600;
-  line-height:1.35;background:var(--surface-2);color:var(--label-2)}
-.intg-pill.connected{background:rgba(48,209,88,.16);color:var(--green)}
-.intg-pill.attention{background:rgba(255,159,10,.18);color:var(--orange)}
+/* A pill sits beside a value (app-screen rule): sentence case, a pale tint, its words in the ink of
+   the same hue. The bare system green and orange were 2:1 as text in the light theme. */
+.intg-pill{display:inline-flex;align-self:flex-start;margin-top:5px;padding:2px 8px;border-radius:99px;font-size:var(--fs-caption);font-weight:600;
+  line-height:1.35;background:var(--surface-2);color:var(--label-2);white-space:nowrap}
+.intg-pill.connected{background:rgba(48,209,88,.16);background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--green-ink)}
+.intg-pill.attention{background:rgba(255,159,10,.18);background:color-mix(in srgb,var(--orange) 18%,transparent);color:var(--orange-ink)}
 .lrow-s .intg-pill{margin-inline-start:6px;margin-top:0;vertical-align:1px}
 .intg-chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px}
-.btn.intg-chip{background:var(--surface-2);color:var(--label);font-weight:500}
+.btn.intg-chip{background:var(--surface-2);color:var(--label);font-weight:500;min-height:32px}
 .btn.intg-chip .icn{font-size:14px;color:var(--label-2)}
+/* The sheets: one header (glyph, name, the state on the same line), a lead in the secondary grey,
+   then the content, then the actions. */
+.intg-head{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-bottom:10px}
+.intg-head .intg-pill{margin-top:0;align-self:center}
+.intg-head .intg-h{margin-bottom:0;min-width:0}
 .intg-h{display:flex;align-items:center;gap:8px}
-.intg-h .icn{flex:none;color:var(--acc)}
-.intg-lead{margin:-4px 0 14px;line-height:1.45}
-.intg-sheet-pill{margin:-8px 0 12px}
-.intg-line{font-size:15px;line-height:1.35}
-.intg-url{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:var(--label-2);overflow-wrap:anywhere}
-.intg-secret{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;padding:12px 14px;margin-bottom:12px;
+.intg-h>span{min-width:0;overflow-wrap:anywhere}
+.intg-h .icn{flex:none;color:var(--acc-ink)}
+.intg-lead{margin:0 0 14px;font-size:var(--fs-subhead);line-height:1.45;color:var(--label-2);text-wrap:pretty}
+.intg-line{font-size:var(--fs-subhead);line-height:1.35}
+.intg-url{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--fs-caption);color:var(--label-2);overflow-wrap:anywhere}
+.intg-secret{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:var(--fs-subhead);padding:12px 14px;margin-bottom:14px;
   background:var(--surface);border-radius:var(--r-sm);overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
-.intg-problem{color:var(--red);font-size:13px;line-height:1.35;margin-top:8px}
-.intg-note{text-align:center;line-height:1.4}
+.intg-btns{display:flex;flex-direction:column;gap:8px}
+.intg-note{text-align:center;line-height:1.4;font-size:var(--fs-footnote);color:var(--label-dim);margin:4px 0 0}
+/* What a card does: lines to read, a check in the green ink before each, no tile. */
+.intg-does{list-style:none;margin:0;padding:6px 16px}
+.intg-does li{display:flex;align-items:flex-start;gap:10px;padding-block:8px;font-size:var(--fs-subhead);line-height:1.35}
+.intg-does li+li{border-top:var(--hair) solid var(--sep)}
+.intg-does .icn{flex:none;font-size:17px;margin-top:1px;color:var(--green-ink);--icon-stroke:2.2}
+/* The sheets' quiet actions: one grouped list, glyphs in the accent ink (as the routine editor's,
+   P4). The destructive one comes last, apart, red. */
+.intg-acts{margin-bottom:22px}
+.intg-acts .lrow+.lrow::before{inset-inline-start:46px}
+.intg-end{margin-top:22px}
+.intg-act-i{flex:none;font-size:var(--fs-title3);color:var(--acc-ink)}
+.intg-end .intg-act-i{color:var(--red)}
+.intg-hook .lrow-m{min-width:0}
+.intg-log .lrow-t{display:flex;align-items:center;gap:8px}
+.intg-log-i{flex:none;font-size:17px}
+.intg-log .ok .intg-log-i{color:var(--green-ink)}
+.intg-log .bad .intg-log-i{color:var(--orange-ink)}
+.intg-log .lrow-s{padding-inline-start:25px}
+.intg-facts .lrow-t{font-weight:600;font-size:var(--fs-subhead)}
+/* The add form: a label you can see over each field, the problem right under the URL. */
+.intg-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.intg-label{font-size:var(--fs-footnote);font-weight:500;color:var(--label-2);padding-inline:4px}
+.intg-problem{color:var(--red-ink);font-size:var(--fs-footnote);line-height:var(--lh-small);padding-inline:4px}
+.intg-field .field[aria-invalid="true"]{box-shadow:inset 0 0 0 1.5px var(--red-ink)}
 @media (max-width:360px){.intg-open{gap:10px;padding-inline:12px}.intg-act{margin-inline-end:10px;padding-inline:8px}}
 
 /* ----------------------------------------------------------- RTL (Arabic) -- */

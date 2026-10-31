@@ -1,6 +1,6 @@
 // Settings → Integrations (v1.4.4): which card shows where, and what it says.
 import { describe, expect, it } from 'vitest'
-import { cardState, directory, webhookUrlProblem, CARDS, WORKS_WITH, PILL } from './integrations.js'
+import { cardState, directory, webhookUrlProblem, normalizeWebhookUrl, CARDS, WORKS_WITH, PILL } from './integrations.js'
 
 const web = { mobile: false, platform: null, user: null, demo: false, health: null, server: null, offered: [] }
 const ids = ctx => directory(ctx).flatMap(c => c.cards.map(x => x.id))
@@ -67,5 +67,16 @@ describe('webhookUrlProblem', () => {
     expect(webhookUrlProblem('http://192.168.1.2:8123/x', { lan: true })).toBeNull()
     expect(webhookUrlProblem('https://ha.example.com/api/webhook/x')).toBeNull()
     expect(webhookUrlProblem('ftp://x.example.com', { lan: true })).toMatch(/http:\/\//)
+  })
+})
+
+describe('normalizeWebhookUrl', () => {
+  it('puts https:// in front of a pasted host and path, and leaves the rest alone', () => {
+    expect(normalizeWebhookUrl(' ha.example.com/api/webhook/x ')).toBe('https://ha.example.com/api/webhook/x')
+    expect(normalizeWebhookUrl('homeassistant.local:8123/api/webhook/x')).toBe('https://homeassistant.local:8123/api/webhook/x')
+    expect(normalizeWebhookUrl('http://192.168.1.5:8123/x')).toBe('http://192.168.1.5:8123/x')
+    expect(normalizeWebhookUrl('ftp://nas/x')).toBe('ftp://nas/x')
+    expect(normalizeWebhookUrl('not a url')).toBe('not a url')
+    expect(normalizeWebhookUrl('')).toBe('')
   })
 })

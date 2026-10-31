@@ -149,6 +149,15 @@ export const WEBHOOK_EVENTS = [
 ]
 
 /** The client's own check of a webhook URL before it asks the server, which has the last word. */
+/** What the person pasted, with https:// in front when it came without a scheme
+ *  ("ha.example.com/api/webhook/x" is what a lot of tools show). Anything with a scheme of its own,
+ *  right or wrong, is left for webhookUrlProblem to judge. */
+export function normalizeWebhookUrl(raw) {
+  const s = String(raw || '').trim()
+  if (!s || /^[a-z][a-z0-9+.-]*:(?!\d)/i.test(s) || /\s/.test(s) || !/^[^/?#]+\.[^/?#]/.test(s) && !/^[^/?#]+:\d/.test(s)) return s
+  return 'https://' + s
+}
+
 export function webhookUrlProblem(raw, { lan = false } = {}) {
   const s = String(raw || '').trim()
   if (!s) return 'Paste the URL your tool gave you.'

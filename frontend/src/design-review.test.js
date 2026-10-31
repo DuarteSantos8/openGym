@@ -129,3 +129,31 @@ describe('1.4.5 features pass', () => {
     expect(rule('.setrow.done .n')).toMatch(/background:var\(--acc\);color:var\(--on-acc\);\s*background:color-mix/)
   })
 })
+
+// The Integrations pass (REVIEW.md, "## Integrations pass"): Settings → Integrations and its sheets,
+// built before the redesign, on its tokens.
+describe('Integrations pass', () => {
+  const intg = [...css.matchAll(/(\.intg-[^{]*)\{([^}]*)\}/g)]
+  it('has its rules', () => expect(intg.length).toBeGreaterThan(25))
+  it('pills and the problem line use the inks, with a plain colour before each color-mix', () => {
+    expect(rule('.intg-pill.connected')).toMatch(/background:rgba\([^)]+\);background:color-mix\([^;]+;color:var\(--green-ink\)/)
+    expect(rule('.intg-pill.attention')).toMatch(/background:rgba\([^)]+\);background:color-mix\([^;]+;color:var\(--orange-ink\)/)
+    expect(rule('.intg-problem')).toMatch(/color:var\(--red-ink\)/)
+    // words never in the bare system colours; a glyph (3:1 is its bar) may match its red row's text
+    for (const [sel, decls] of intg.map(m => [m[1], m[2]])) if (!/-i$/.test(sel.trim())) expect(decls, sel).not.toMatch(/(^|;)color:var\(--(green|orange|red|acc)\)/)
+  })
+  it('the red ink reaches 4.5:1 in the light theme and is the system red in the dark', () => {
+    const ink = css.match(/:root\[data-theme="light"\]\{[^}]*--red-ink:(#[0-9a-f]{6})/i)[1]
+    for (const g of grounds(light)) expect(on(ink, g)).toBeGreaterThanOrEqual(4.5)
+    expect(css).toMatch(/--red-ink:var\(--red\)/)
+  })
+  it('text roles, logical properties, the row press tier', () => {
+    for (const [sel, decls] of intg.map(m => [m[1], m[2]])) {
+      expect(decls, sel).not.toMatch(/(margin|padding)-(left|right)|(^|;)(left|right):/)
+      // px only for a glyph's size
+      if (!/\.icn|-i\b|-i\{|log-i/.test(sel)) expect(decls, sel).not.toMatch(/font-size:\d+px/)
+    }
+    expect(rule('.intg-open:active')).toMatch(/var\(--press-fill\)/)
+    expect(rule('.intg-h .icn')).toMatch(/var\(--acc-ink\)/)
+  })
+})

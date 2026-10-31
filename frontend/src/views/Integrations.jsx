@@ -11,10 +11,11 @@ import { copyText } from '../lib/clipboard.js'
 import { platformNow } from '../lib/platform-now.js'
 import { coachAvailable } from '../lib/coach.js'
 import { healthStatus, loadHealth, onHealthChange, disableHealth, disableRead } from '../lib/health-sync.js'
-import { directory, cardState, CARD, PILL, WORKS_WITH, WEBHOOK_EVENTS, webhookUrlProblem } from '../lib/integrations.js'
+import { directory, cardState, CARD, PILL, WORKS_WITH, WEBHOOK_EVENTS, webhookUrlProblem, normalizeWebhookUrl } from '../lib/integrations.js'
 import { importFromApp, importFromHevy, confirmSheet, menuSheet } from '../sheets.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import Icon from '../components/Icon.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
 
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
@@ -59,6 +60,33 @@ function useHealth() {
 function Pill({ status }) {
   if (!status) return null
   return <span className={'intg-pill ' + status}>{t(PILL[status])}</span>
+}
+
+/* A sheet's header: the glyph and the name, with the state beside it on the same line rather than
+   on a line of its own (Integrations pass, I4). The pill stays out of the h3, so a screen reader
+   hears the heading as the name. */
+function SheetHead({ icon, title, status }) {
+  return <div className="intg-head">
+    <h3 className="intg-h"><Icon name={icon} /><span>{title}</span></h3>
+    <Pill status={status} />
+  </div>
+}
+
+/* The sheets' quiet actions as one grouped list of rows with a bare glyph in the accent ink, the way
+   the routine editor groups Copy / Share / Print (P4), instead of a tinted block and a text link. */
+function ActRow({ icon, label, onClick, disabled }) {
+  return <button type="button" className="lrow tap" onClick={onClick} disabled={disabled}>
+    <Icon name={icon} className="intg-act-i" /><span className="lrow-m"><span className="lrow-t">{label}</span></span>
+  </button>
+}
+
+/* The destructive action: last, in a group of its own, a red row (P4, P6). It still asks. */
+function DangerRow({ label, onClick, disabled }) {
+  return <div className="sect-b intg-end">
+    <button type="button" className="lrow tap danger" onClick={onClick} disabled={disabled}>
+      <Icon name="trash" className="intg-act-i" /><span className="lrow-m"><span className="lrow-t">{label}</span></span>
+    </button>
+  </div>
 }
 
 function Card({ card, onOpen, onAction }) {
@@ -171,7 +199,7 @@ function WorksWith({ platform, nav }) {
     : t('No extra connection needed: they write to Apple Health or Health Connect, and the openGym phone app reads from there.')}>
     <div className="intg-chips">
       {WORKS_WITH.map(w => <button key={w.name} className="btn xs intg-chip" onClick={() => worksWithSheet(w, platform, nav)}>
-        <Icon name={w.glyph} />{w.name}
+        <Icon name={w.glyph} /><span translate="no">{w.name}</span>
       </button>)}
     </div>
   </Section>
@@ -186,17 +214,18 @@ const READS = {
 function worksWithSheet(w, platform, nav) {
   const store = platform === 'ios' ? 'apple-health' : platform === 'android' ? 'health-connect' : null
   sheet(close => <>
-    <h3 className="intg-h"><Icon name={w.glyph} /> {w.name}</h3>
-    <div className="muted small intg-lead">{t('{0} has no direct line to openGym, and it does not need one.', w.name)}</div>
-    <Section>
-      <Row icon="heart" iconTint="var(--red)" title={t('How it gets here')}
+    <SheetHead icon={w.glyph} title={w.name} />
+    <p className="intg-lead">{t('{0} has no direct line to openGym, and it does not need one.', w.name)}</p>
+    {/* Three facts, not three settings: plain rows, no tinted tile on each (Integrations pass, I6). */}
+    <Section className="intg-facts">
+      <Row title={t('How it gets here')}
         subtitle={t('{0} saves to Apple Health on iPhone or Health Connect on Android. openGym reads from there.', w.name)} />
-      <Row icon="check" iconTint="var(--green)" title={t('What openGym reads')} subtitle={t(READS[w.reads])} />
-      <Row icon="info" iconTint="var(--grey)" title={t('What it does not do')} subtitle={t('Workouts logged in openGym go to the health store, not back into {0} itself.', w.name)} />
+      <Row title={t('What openGym reads')} subtitle={t(READS[w.reads])} />
+      <Row title={t('What it does not do')} subtitle={t('Workouts logged in openGym go to the health store, not back into {0} itself.', w.name)} />
     </Section>
     {store
       ? <Button variant="primary" onClick={() => { close(); nav('/settings/' + store) }}>{t('Set up {0}', CARD[store].name)}</Button>
-      : <div className="dim small intg-note">{t('Install the openGym app on your phone to use this.')}</div>}
+      : <p className="intg-note">{t('Install the openGym app on your phone to use this.')}</p>}
   </>)
 }
 
@@ -204,11 +233,12 @@ function worksWithSheet(w, platform, nav) {
 
 function infoSheet(card, message, link) {
   sheet(close => <>
-    <h3 className="intg-h"><Icon name={card.icon} /> {nameOf(card)}</h3>
-    <div className="muted small intg-lead">{message}</div>
-    {link && <Button variant="tinted" onClick={() => window.open(link, '_blank', 'noopener')}>{t('How to set it up')}</Button>}
-    <div style={{ height: 8 }} />
-    <Button variant="plain" onClick={close}>{t('Done')}</Button>
+    <SheetHead icon={card.icon} title={nameOf(card)} status={card.state.status} />
+    <p className="intg-lead">{message}</p>
+    <div className="intg-btns">
+      {link && <Button variant="tinted" onClick={() => window.open(link, '_blank', 'noopener')}>{t('How to set it up')}</Button>}
+      <Button variant="plain" onClick={close}>{t('Done')}</Button>
+    </div>
   </>)
 }
 
@@ -218,10 +248,13 @@ function detailSheet(card, { act, health, onDisconnect, retry }) {
     const go = f => () => { close(); f?.() }
     const trouble = st.status === 'attention'
     return <>
-      <h3 className="intg-h"><Icon name={card.icon} /> {nameOf(card)}</h3>
-      <div className="intg-sheet-pill"><Pill status={st.status} /></div>
+      <SheetHead icon={card.icon} title={nameOf(card)} status={st.status} />
+      {/* What it does, as a short list with a check in the green ink: lines to read, not rows
+          to tap, so no tinted tile on each (Integrations pass, I6). */}
       <Section title={t('What it does')}>
-        {card.syncs.map(line => <Row key={line} icon="check" iconTint="var(--green)" title={<span className="intg-line">{t(line)}</span>} />)}
+        <ul className="intg-does">
+          {card.syncs.map(line => <li key={line}><Icon name="check" />{t(line)}</li>)}
+        </ul>
       </Section>
       {health && <Section>
         <Row icon="clock" iconTint="var(--blue)" title={t('Last sync')} value={health.at ? fmtAgo(health.at) : t('Not yet')} />
@@ -230,8 +263,7 @@ function detailSheet(card, { act, health, onDisconnect, retry }) {
         </Row>}
       </Section>}
       {st.action && <Button variant="primary" onClick={go(act)}>{t(ACTION[st.action])}</Button>}
-      {onDisconnect && <><div style={{ height: 8 }} /><Button variant="danger" onClick={go(onDisconnect)}>{t('Disconnect')}</Button></>}
-      <div style={{ height: 8 }} />
+      {onDisconnect && <DangerRow label={t('Disconnect')} onClick={go(onDisconnect)} />}
     </>
   })
 }
@@ -250,17 +282,27 @@ function WebhookList({ close, server, lan, toast }) {
   const reload = () => server.load().then(d => { if (d) setData(d) })
   const list = (data?.connections || []).filter(c => c.provider === 'webhook')
   const max = (data?.providers || []).find(p => p.id === 'webhook')?.max || 10
+  const add = () => { close(); addWebhookSheet({ server, lan, toast }) }
   return <>
-    <h3 className="intg-h"><Icon name="webhook" /> {t('Webhooks')}</h3>
-    <div className="muted small intg-lead">{t('Your server sends a signed message to each of these when something happens.')}</div>
-    {list.length > 0 && <Section>
-      {list.map(c => <Row key={c.id} icon="webhook" iconTint="var(--indigo)" title={c.label}
-        subtitle={<><span className="intg-url">{c.info?.url}</span><Pill status={statusOf(c)} /></>} accessory="chevron"
-        onClick={() => { close(); webhookSheet(c, { server, lan, toast }) }} />)}
-    </Section>}
-    {list.length < max && <Button variant={list.length ? 'tinted' : 'primary'} icon="plus" onClick={() => { close(); addWebhookSheet({ server, lan, toast }) }}>{t('Add a webhook')}</Button>}
-    <div style={{ height: 8 }} />
-    <Button variant="plain" onClick={() => window.open(INTEGRATIONS_DOCS, '_blank', 'noopener')}>{t('What gets sent')}</Button>
+    <SheetHead icon="webhook" title={t('Webhooks')} />
+    {/* None left (the last one was disconnected): the sentence and the way in together, where the
+        list will be (P9), instead of a lone button under a lead. */}
+    {list.length === 0
+      ? <EmptyState icon="webhook" text={t('Your server sends a signed message to each of these when something happens.')}>
+          <Button variant="primary" icon="plus" onClick={add}>{t('Add a webhook')}</Button>
+        </EmptyState>
+      : <>
+        <p className="intg-lead">{t('Your server sends a signed message to each of these when something happens.')}</p>
+        <Section>
+          {list.map(c => <Row key={c.id} title={c.label} className="intg-hook"
+            subtitle={<><span className="intg-url" translate="no">{c.info?.url}</span><Pill status={statusOf(c)} /></>} accessory="chevron"
+            onClick={() => { close(); webhookSheet(c, { server, lan, toast }) }} />)}
+        </Section>
+      </>}
+    <div className="sect-b intg-acts">
+      {list.length > 0 && list.length < max && <ActRow icon="plus" label={t('Add a webhook')} onClick={add} />}
+      <ActRow icon="info" label={t('What gets sent')} onClick={() => window.open(INTEGRATIONS_DOCS, '_blank', 'noopener')} />
+    </div>
     {/* refresh hook for the tests and for a sheet that outlives a change */}
     <span hidden data-reload onClick={reload} />
   </>
@@ -284,45 +326,58 @@ function AddWebhook({ close, server, lan, toast }) {
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
   const [secret, setSecret] = useState(null)
+  const urlRef = useRef(null)
   const toggle = (id, v) => setEvents(cur => (v ? [...new Set([...cur, id])] : cur.filter(x => x !== id)))
   const add = async () => {
-    const p = webhookUrlProblem(url, { lan })
-    if (p) { setProblem(t(p)); return }
+    // A host pasted without https:// is taken as https (Integrations pass: take the common format
+    // instead of telling people it is not a URL).
+    const full = normalizeWebhookUrl(url)
+    if (full !== url.trim()) setUrl(full)
+    const p = webhookUrlProblem(full, { lan })
+    // Focus goes to the field the problem is about (WIG: focus the first error on submit).
+    if (p) { setProblem(t(p)); urlRef.current?.focus(); return }
     if (!events.length) { setProblem(t('Pick at least one thing to send.')); return }
     setBusy(true); setProblem(null)
     try {
-      const r = await api('/api/integrations/connect', { method: 'POST', body: JSON.stringify({ provider: 'webhook', url: url.trim(), label: label.trim(), events }) })
+      const r = await api('/api/integrations/connect', { method: 'POST', body: JSON.stringify({ provider: 'webhook', url: full, label: label.trim(), events }) })
       setSecret(r?.reveal?.secret || '')
       server.load()
     } catch (e) {
       setProblem(e?.code === 'url' || e?.status === 400 ? t('Your server said no to that URL: {0}', errText(e, t('it is not one it calls.'))) : errText(e, t('Something went wrong')))
+      urlRef.current?.focus()
     }
     setBusy(false)
   }
   if (secret != null) return <>
-    <h3 className="intg-h"><Icon name="checkCircle" /> {t('Webhook added')}</h3>
-    <div className="muted small intg-lead">{t('This is its signing secret. You will see it only now, so paste it into your tool if it checks signatures.')}</div>
-    <div className="intg-secret" aria-label={t('Signing secret')}>{secret}</div>
-    <Button variant="tinted" icon="copy" onClick={async () => { if (await copyText(secret)) toast?.(t('Copied')) }}>{t('Copy secret')}</Button>
-    <div style={{ height: 8 }} />
-    <Button variant="primary" onClick={close}>{t('Done')}</Button>
+    <SheetHead icon="checkCircle" title={t('Webhook added')} />
+    <p className="intg-lead">{t('This is its signing secret. You will see it only now, so paste it into your tool if it checks signatures.')}</p>
+    <div className="intg-secret" role="group" aria-label={t('Signing secret')} translate="no">{secret}</div>
+    <div className="intg-btns">
+      <Button variant="tinted" icon="copy" onClick={async () => { if (await copyText(secret)) toast?.(t('Copied')) }}>{t('Copy secret')}</Button>
+      <Button variant="primary" onClick={close}>{t('Done')}</Button>
+    </div>
   </>
   return <>
-    <h3 className="intg-h"><Icon name="webhook" /> {t('Add a webhook')}</h3>
-    <div className="muted small intg-lead">{lan
+    <SheetHead icon="webhook" title={t('Add a webhook')} />
+    <p className="intg-lead">{lan
       ? t('Paste the URL from Home Assistant, n8n, ntfy or similar. Your home network works too.')
-      : t('Paste the HTTPS URL from Home Assistant, n8n, ntfy or similar.')}</div>
-    <TextField placeholder="https://…" value={url} onChange={e => { setUrl(e.target.value); setProblem(null) }} inputMode="url" autoComplete="off" autoCapitalize="off" spellCheck={false}
-      aria-label={t('Webhook URL')} maxLength={2048} />
-    <div style={{ height: 10 }} />
-    <TextField placeholder={t('Name (optional)')} value={label} onChange={e => setLabel(e.target.value)} maxLength={60} aria-label={t('Name')} />
-    {problem && <div className="intg-problem" role="alert">{problem}</div>}
-    <div style={{ height: 14 }} />
+      : t('Paste the HTTPS URL from Home Assistant, n8n, ntfy or similar.')}</p>
+    {/* Labels you can see over the fields, and the problem right under the URL it is about, tied
+        to it for a screen reader (Integrations pass, I8). It used to sit under the name field. */}
+    <div className="intg-field">
+      <label className="intg-label" htmlFor="intg-url">{t('Webhook URL')}</label>
+      <TextField ref={urlRef} id="intg-url" name="webhook-url" placeholder="https://…" value={url} onChange={e => { setUrl(e.target.value); setProblem(null) }} inputMode="url" type="url" autoComplete="off" autoCapitalize="off" spellCheck={false}
+        aria-label={t('Webhook URL')} aria-invalid={problem ? true : undefined} aria-describedby={problem ? 'intg-url-problem' : undefined} maxLength={2048} />
+      {problem && <div className="intg-problem" id="intg-url-problem" role="alert">{problem}</div>}
+    </div>
+    <div className="intg-field">
+      <label className="intg-label" htmlFor="intg-name">{t('Name')}</label>
+      <TextField id="intg-name" name="webhook-name" autoComplete="off" placeholder={t('Name (optional)')} value={label} onChange={e => setLabel(e.target.value)} maxLength={60} aria-label={t('Name')} />
+    </div>
     <Section title={t('Send when')}>
       <EventSwitches events={events} onToggle={toggle} disabled={busy} />
     </Section>
     <Button variant="primary" disabled={busy} onClick={add}>{busy ? t('Adding…') : t('Add webhook')}</Button>
-    <div style={{ height: 8 }} />
   </>
 }
 
@@ -361,9 +416,8 @@ function WebhookDetail({ close, conn: initial, server, toast }) {
   })
   const trouble = c.status === 'attention'
   return <>
-    <h3 className="intg-h"><Icon name="webhook" /> {c.label}</h3>
-    <div className="intg-url intg-lead">{c.info?.url}</div>
-    <div className="intg-sheet-pill"><Pill status={statusOf(c)} /></div>
+    <SheetHead icon="webhook" title={c.label} status={statusOf(c)} />
+    <p className="intg-url intg-lead" translate="no">{c.info?.url}</p>
     <Section title={t('Send when')}>
       <EventSwitches events={c.events} onToggle={toggle} disabled={busy} />
     </Section>
@@ -377,17 +431,19 @@ function WebhookDetail({ close, conn: initial, server, toast }) {
         {(trouble || c.failed > 0) && <button className="btn xs tinted" disabled={busy} onClick={retry}>{t('Retry')}</button>}
       </Row>}
     </Section>
-    <Button variant="tinted" icon="bolt" disabled={busy} onClick={test}>{t('Send test event')}</Button>
-    <div style={{ height: 8 }} />
-    <Button variant="plain" onClick={() => (log ? setLog(null) : loadLog())}>{log ? t('Hide activity') : t('Show activity')}</Button>
-    {log && <Section title={t('Activity')}>
-      {log.length ? log.slice(0, 50).map((e, i) => <Row key={i} icon={e.ok ? 'checkCircle' : 'warning'} iconTint={e.ok ? 'var(--green)' : 'var(--orange)'}
-        title={<span className="intg-line">{eventName(e.ev)}{e.status ? ' · ' + e.status : ''}</span>} subtitle={[fmtAgo(e.at), e.msg].filter(Boolean).join(' · ')} />)
-        : <Row title={<span className="intg-line">{t('Nothing yet')}</span>} />}
+    <div className="sect-b intg-acts">
+      <ActRow icon="bolt" label={t('Send test event')} disabled={busy} onClick={test} />
+      <ActRow icon="list" label={log ? t('Hide activity') : t('Show activity')} onClick={() => (log ? setLog(null) : loadLog())} />
+    </div>
+    {/* The log reads like a list of what happened: the outcome as a glyph in the status ink, not a
+        tinted tile on every line (Integrations pass, I6). */}
+    {log && <Section title={t('Activity')} className="intg-log">
+      {log.length ? log.slice(0, 50).map((e, i) => <Row key={i} className={e.ok ? 'ok' : 'bad'}
+        title={<><Icon name={e.ok ? 'checkCircle' : 'warning'} className="intg-log-i" /><span className="intg-line">{eventName(e.ev)}{e.status ? ' · ' + e.status : ''}</span></>}
+        subtitle={[fmtAgo(e.at), e.msg].filter(Boolean).join(' · ')} />)
+        : <Row title={<span className="intg-line dim">{t('Nothing yet')}</span>} />}
     </Section>}
-    <div style={{ height: 8 }} />
-    <Button variant="danger" disabled={busy} onClick={disconnect}>{t('Disconnect')}</Button>
-    <div style={{ height: 8 }} />
+    <DangerRow label={t('Disconnect')} disabled={busy} onClick={disconnect} />
   </>
 }
 
