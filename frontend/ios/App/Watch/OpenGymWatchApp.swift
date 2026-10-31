@@ -31,7 +31,13 @@ struct OpenGymWatchApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            Group {
+                if delegate.store.isDemo, let screen = SessionStore.demoScreen, screen.hasPrefix("complication-") {
+                    ComplicationDemo(screen: screen)
+                } else {
+                    RootView()
+                }
+            }
                 .environmentObject(delegate.store)
                 .tint(Theme.accent)
                 .background(Color.black)
@@ -68,6 +74,54 @@ struct DemoEnvironment: ViewModifier {
     }
 }
 
+/// CI's screenshots of the complications (-OpenGymWatchScreen complication-idle …): the real
+/// WidgetView in each family's frame, sizes from Apple's complication table by watch size. The
+/// corner's curved label is the system's and is not drawn here.
+struct ComplicationDemo: View {
+    let screen: String
+
+    private var state: WidgetState {
+        var s: WidgetState
+        switch screen {
+        case "complication-idle": s = .idle; s.unsent = 3
+        case "complication-today": s = WidgetState(mode: "today", title: "Push day", detail: "", restEndsAt: nil, total: 8); s.unsent = 12
+        case "complication-rest":
+            s = WidgetState(mode: "rest", title: "Bench Press", detail: "", restEndsAt: Date().addingTimeInterval(83), done: 3, total: 12); s.unsent = 1
+        default:
+            s = WidgetState(mode: "set", title: "Bench Press", detail: "62.5 kg × 8", restEndsAt: nil, done: 3, total: 12, setLabel: "2/4")
+            s.unsent = screen == "complication-set" ? 2 : 0
+        }
+        s.lang = SessionStore.argument("-OpenGymWatchLang")
+        return s
+    }
+
+    var body: some View {
+        // (screen width up to, rectangular, circular, corner) for 40, 41, 44 and 45/49 mm.
+        let sizes: [(CGFloat, CGSize, CGFloat, CGFloat)] = [
+            (165, CGSize(width: 162, height: 69), 42, 32), (180, CGSize(width: 171.5, height: 73), 44.5, 34),
+            (190, CGSize(width: 184, height: 78), 47, 36), (.infinity, CGSize(width: 193, height: 82), 50, 38),
+        ]
+        let width = WKInterfaceDevice.current().screenBounds.width
+        let (_, rect, circle, corner) = sizes.first { width <= $0.0 } ?? sizes[3]
+        VStack(spacing: 6) {
+            frame(.accessoryRectangular, rect, inset: 6)
+            HStack(spacing: 8) {
+                frame(.accessoryCircular, CGSize(width: circle, height: circle))
+                frame(.accessoryCorner, CGSize(width: corner, height: corner))
+            }
+            frame(.accessoryInline, CGSize(width: rect.width, height: 20), inset: 6)
+        }
+        .environment(\.locale, state.locale)
+    }
+
+    private func frame(_ family: WidgetFamily, _ size: CGSize, inset: CGFloat = 0) -> some View {
+        WidgetView(state: state, date: Date(), demoFamily: family)
+            .padding(.horizontal, inset)
+            .frame(width: size.width, height: size.height)
+            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Theme.dim))
+    }
+}
+
 enum Theme {
     /// The app's default accent (frontend/src/index.css --green, dark).
     static let accent = Color(red: 0x30 / 255, green: 0xd1 / 255, blue: 0x58 / 255)
@@ -84,6 +138,7 @@ func formatNumber(_ v: Double) -> String {
 
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         Group {
@@ -122,11 +177,9 @@ struct RootView: View {
         .onOpenURL { url in
             if url.host == "start", store.workout == nil, let today = store.ready?.today { store.start(today) }
         }
-        .onChange(of: store.widgetState) { state in
-            guard !store.isDemo else { return }
-            state.write()
-            WidgetCenter.shared.reloadAllTimelines()
-        }
+        .onChange(of: store.widgetState) { _ in store.publishWidget() }
+        // A count that went stale while the app was away is fresh again once it is on screen.
+        .onChange(of: scenePhase) { phase in if phase == .active, !store.isDemo { store.updateLink() } }
     }
 }
 

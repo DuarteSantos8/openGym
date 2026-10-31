@@ -32,6 +32,7 @@
 "More" = "বেশি";
 "Effort" = "পরিশ্রম";
 "None" = "কিছু না";
+"Waiting to sync" = "সিঙ্কের অপেক্ষায়";
 "Last time: %@" = "গতবার: %@";
 "No workout running" = "কোনো ওয়ার্কআউট চলছে না";
 "Not synced yet" = "এখনো সিঙ্ক হয়নি";

@@ -32,6 +32,7 @@
 "More" = "أكثر";
 "Effort" = "الجهد";
 "None" = "بدون";
+"Waiting to sync" = "بانتظار المزامنة";
 "Last time: %@" = "المرة السابقة: %@";
 "No workout running" = "لا يوجد تمرين جارٍ";
 "Not synced yet" = "لم تتم المزامنة بعد";

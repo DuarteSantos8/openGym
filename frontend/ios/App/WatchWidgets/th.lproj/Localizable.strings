@@ -32,6 +32,7 @@
 "More" = "มาก";
 "Effort" = "ความหนัก";
 "None" = "ไม่มี";
+"Waiting to sync" = "รอซิงค์";
 "Last time: %@" = "ครั้งก่อน: %@";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";
