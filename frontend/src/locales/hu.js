@@ -1308,7 +1308,6 @@ export default {
   'Overlay: {0}': 'Átfedés: {0}',
   'Retake': 'Újra',
   'Use photo': 'Fotó használata',
-  'Drag to move, pinch to resize.': 'Húzással mozgathatod, csippentéssel átméretezheted.',
   'No camera available here. Add the photo from your gallery instead.': 'Itt nincs elérhető kamera. Add hozzá a fotót a galériádból.',
   'Point the camera at the QR code': 'Irányítsd a kamerát a QR-kódra',
   'No camera available here. Import a photo or type the code instead.': 'Itt nincs elérhető kamera. Importálj inkább egy fotót, vagy írd be a kódot.',

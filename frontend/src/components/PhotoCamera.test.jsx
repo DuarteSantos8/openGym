@@ -17,7 +17,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const ref = n => ({ kind: 'image', hash: String(n).padStart(64, '0'), mime: 'image/jpeg', size: 10, width: 3, height: 4, at: 1 })
 const photos = [{ key: 'a', d: '2026-10-20', m: ref(1) }, { key: 'b', d: '2026-10-01', m: ref(2) }]
 
-let host, root, tracks, getUserMedia, props
+let host, root, tracks, getUserMedia, props, size
 let reported   // what the fake camera says about itself
 const stream = () => { const track = { stop: vi.fn(), getSettings: () => ({ facingMode: reported }) }; tracks.push(track); return { getTracks: () => [track], getVideoTracks: () => [track] } }
 const mount = (extra = {}) => {
@@ -27,7 +27,6 @@ const mount = (extra = {}) => {
 }
 const button = label => [...host.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === label || b.textContent === label)
 const overlay = () => host.querySelector('.pp-cam-overlay')
-const fire = (type, init) => act(() => { host.querySelector('.pp-cam-stage').dispatchEvent(Object.assign(new Event(type, { bubbles: true }), init)) })
 
 beforeEach(() => {
   tracks = []
@@ -37,7 +36,9 @@ beforeEach(() => {
   Object.defineProperty(HTMLMediaElement.prototype, 'srcObject', { set() {}, get() { return null }, configurable: true })   // happy-dom only takes a real MediaStream
   HTMLMediaElement.prototype.play = vi.fn(async () => {})
   URL.createObjectURL = vi.fn(() => 'blob:shot'); URL.revokeObjectURL = vi.fn()
-  Element.prototype.getBoundingClientRect = () => ({ width: 400, height: 600, top: 0, left: 0, right: 400, bottom: 600 })
+  size = [720, 960]
+  Object.defineProperty(HTMLMediaElement.prototype, 'videoWidth', { get() { return size[0] }, configurable: true })
+  Object.defineProperty(HTMLMediaElement.prototype, 'videoHeight', { get() { return size[1] }, configurable: true })
 })
 afterEach(() => { act(() => root.unmount()); host.remove(); delete navigator.mediaDevices })
 
@@ -69,10 +70,11 @@ describe('the camera', () => {
 })
 
 describe('the overlay', () => {
-  it('starts as the latest photo, semi-transparent, and says which', async () => {
+  it('starts as the latest photo, semi-transparent and fixed, and says which', async () => {
     await mount()
     expect(overlay().getAttribute('src')).toBe('blob:' + ref(1).hash)
     expect(overlay().style.opacity).toBe('0.45')
+    expect(overlay().style.transform).toBe('')                       // it is not moved or scaled
     const label = [...host.querySelectorAll('button')].find(b => b.textContent.startsWith('Overlay: ')).textContent
     expect(label).toMatch(/^Overlay: .*20/)                        // the day of the latest photo
   })
@@ -99,30 +101,6 @@ describe('the overlay', () => {
     const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set
     act(() => { set.call(slider, '80'); slider.dispatchEvent(new Event('input', { bubbles: true })) })
     expect(overlay().style.opacity).toBe('0.8')
-  })
-  it('moves with one finger and scales with two', async () => {
-    await mount()
-    expect(overlay().style.transform).toBe('translate(0px, 0px) scale(1.000)')
-    fire('pointerdown', { pointerId: 1, clientX: 100, clientY: 100 })
-    fire('pointermove', { pointerId: 1, clientX: 140, clientY: 80 })
-    expect(overlay().style.transform).toBe('translate(40px, -20px) scale(1.000)')
-    fire('pointerup', { pointerId: 1 })
-    // a second drag carries on from where the first ended
-    fire('pointerdown', { pointerId: 1, clientX: 0, clientY: 0 })
-    fire('pointermove', { pointerId: 1, clientX: 10, clientY: 0 })
-    expect(overlay().style.transform).toBe('translate(50px, -20px) scale(1.000)')
-    fire('pointerup', { pointerId: 1 })
-    // two fingers apart: twice the distance, twice the size
-    fire('pointerdown', { pointerId: 1, clientX: 100, clientY: 300 })
-    fire('pointerdown', { pointerId: 2, clientX: 200, clientY: 300 })
-    fire('pointermove', { pointerId: 2, clientX: 300, clientY: 300 })
-    expect(overlay().style.transform).toContain('scale(2.000)')
-  })
-  it('does not move for a drag that leaves the view far behind', async () => {
-    await mount()
-    fire('pointerdown', { pointerId: 1, clientX: 0, clientY: 0 })
-    fire('pointermove', { pointerId: 1, clientX: 5000, clientY: 0 })
-    expect(overlay().style.transform).toBe('translate(360px, 0px) scale(1.000)')
   })
 })
 
@@ -181,14 +159,6 @@ describe('the front and the rear camera', () => {
     await act(async () => { button('Flip camera').click() })
     expect(video().style.transform).toBe('scaleX(-1)')
   })
-  it('leaves the overlay as the photo looks in the gallery, and a drag goes the way the finger does', async () => {
-    reported = 'user'
-    await mount()
-    expect(overlay().style.transform).toBe('translate(0px, 0px) scale(1.000)')
-    fire('pointerdown', { pointerId: 1, clientX: 100, clientY: 100 })
-    fire('pointermove', { pointerId: 1, clientX: 130, clientY: 100 })
-    expect(overlay().style.transform).toBe('translate(30px, 0px) scale(1.000)')
-  })
 })
 
 describe('before the video plays', () => {
@@ -220,3 +190,57 @@ describe('before the video plays', () => {
     expect(overlay()).not.toBeNull()
   })
 })
+
+describe('the frame', () => {
+  const frame = () => host.querySelector('.pp-cam-frame')
+  it('has the shape of the video, which is the shape of the photo that is kept', async () => {
+    size = [1080, 1440]
+    await mount()
+    expect(frame().style.getPropertyValue('--r')).toBe('0.75')
+  })
+  it('holds the video, the overlay and the picture taken, so all three have that shape', async () => {
+    await mount()
+    expect(frame().contains(host.querySelector('video'))).toBe(true)
+    expect(frame().contains(overlay())).toBe(true)
+    await act(async () => { button('Take photo').click() })
+    expect(frame().contains(host.querySelector('.pp-cam-shot'))).toBe(true)
+  })
+  it('follows the camera when it is flipped to one with another shape', async () => {
+    size = [720, 960]
+    await mount()
+    expect(frame().style.getPropertyValue('--r')).toBe('0.75')
+    size = [1280, 720]
+    await act(async () => { button('Flip camera').click() })
+    expect(Number(frame().style.getPropertyValue('--r'))).toBeCloseTo(16 / 9)
+  })
+  it('follows a video that changes shape, as when the phone turns', async () => {
+    await mount()
+    size = [960, 720]
+    act(() => { host.querySelector('video').dispatchEvent(new Event('resize')) })
+    expect(Number(frame().style.getPropertyValue('--r'))).toBeCloseTo(4 / 3)
+  })
+  it('has no shape of its own until the camera sends a frame', async () => {
+    size = [0, 0]
+    await mount()
+    expect(frame().style.getPropertyValue('--r')).toBe('')
+  })
+  it('does not move when the picture is taken: the live controls keep their place, hidden, and Retake and Use photo sit over them', async () => {
+    await mount()
+    const controls = host.querySelector('.pp-cam-controls')
+    const live = controls.firstElementChild
+    expect(live.style.visibility).toBe('')
+    await act(async () => { button('Take photo').click() })
+    expect(controls.firstElementChild).toBe(live)                  // still in the layout, so the bar keeps its height
+    expect(live.style.visibility).toBe('hidden')
+    expect(controls.querySelector('.pp-cam-actions')).not.toBeNull()
+    act(() => button('Retake').click())
+    expect(live.style.visibility).toBe('')
+    expect(controls.querySelector('.pp-cam-actions')).toBeNull()
+  })
+  it('does not offer to move or resize the overlay', async () => {
+    await mount()
+    expect(host.textContent).not.toContain('pinch')
+    expect(host.querySelector('.pp-cam-stage').getAttribute('data-swipe-ignore')).toBeNull()
+  })
+})
+

@@ -1305,7 +1305,6 @@ export default {
   'Overlay: {0}': 'Nakładka: {0}',
   'Retake': 'Powtórz',
   'Use photo': 'Użyj zdjęcia',
-  'Drag to move, pinch to resize.': 'Przeciągnij, aby przesunąć, ściągnij palce, aby zmienić rozmiar.',
   'No camera available here. Add the photo from your gallery instead.': 'Brak dostępnego aparatu. Dodaj zdjęcie z galerii.',
   'Point the camera at the QR code': 'Skieruj aparat na kod QR',
   'No camera available here. Import a photo or type the code instead.': 'Aparat nie jest tu dostępny. Zaimportuj zdjęcie lub wpisz kod.',

@@ -1141,7 +1141,6 @@ export default {
   'Overlay: {0}': 'تراكب: {0}',
   'Retake': 'إعادة التقاط',
   'Use photo': 'استخدام الصورة',
-  'Drag to move, pinch to resize.': 'اسحب للتحريك، وقرّب الإصبعين أو باعدهما لتغيير الحجم.',
   'No camera available here. Add the photo from your gallery instead.': 'لا توجد كاميرا متاحة هنا. أضف الصورة من معرضك.',
   'Point the camera at the QR code': 'وجّه الكاميرا نحو رمز QR',
   'No camera available here. Import a photo or type the code instead.': 'لا توجد كاميرا متاحة هنا. استورد صورة أو اكتب الرمز بدلًا من ذلك.',

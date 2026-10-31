@@ -1326,7 +1326,6 @@ export default {
   'Overlay: {0}': 'Överlagring: {0}',
   'Retake': 'Ta om',
   'Use photo': 'Använd foto',
-  'Drag to move, pinch to resize.': 'Dra för att flytta, nyp för att ändra storlek.',
   'No camera available here. Add the photo from your gallery instead.': 'Ingen kamera tillgänglig här. Lägg till fotot från ditt galleri.',
   'Point the camera at the QR code': 'Rikta kameran mot QR-koden',
   'No camera available here. Import a photo or type the code instead.': 'Ingen kamera tillgänglig här. Importera ett foto eller skriv in koden i stället.',

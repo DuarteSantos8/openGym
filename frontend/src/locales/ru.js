@@ -1276,7 +1276,6 @@ export default {
   'Overlay: {0}': 'Наложение: {0}',
   'Retake': 'Переснять',
   'Use photo': 'Использовать фото',
-  'Drag to move, pinch to resize.': 'Перетащите, чтобы переместить, сведите пальцы, чтобы изменить размер.',
   'No camera available here. Add the photo from your gallery instead.': 'Камера недоступна. Добавьте фото из галереи.',
   'Point the camera at the QR code': 'Наведите камеру на QR-код',
   'No camera available here. Import a photo or type the code instead.': 'Камера здесь недоступна. Импортируйте фото или введите код.',

@@ -1305,7 +1305,6 @@ export default {
   'Overlay: {0}': 'ओवरले: {0}',
   'Retake': 'दोबारा लें',
   'Use photo': 'फ़ोटो इस्तेमाल करें',
-  'Drag to move, pinch to resize.': 'खिसकाने के लिए खींचें, आकार बदलने के लिए पिंच करें।',
   'No camera available here. Add the photo from your gallery instead.': 'यहाँ कोई कैमरा उपलब्ध नहीं है। अपनी गैलरी से फ़ोटो जोड़ें।',
   'Point the camera at the QR code': 'कैमरे को QR कोड पर रखें',
   'No camera available here. Import a photo or type the code instead.': 'यहाँ कैमरा उपलब्ध नहीं है। इसकी जगह फ़ोटो इम्पोर्ट करें या कोड टाइप करें।',

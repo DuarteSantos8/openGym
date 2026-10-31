@@ -1316,7 +1316,6 @@ export default {
   'Overlay: {0}': 'ซ้อนทับ: {0}',
   'Retake': 'ถ่ายใหม่',
   'Use photo': 'ใช้รูปนี้',
-  'Drag to move, pinch to resize.': 'ลากเพื่อย้าย บีบนิ้วเพื่อปรับขนาด',
   'No camera available here. Add the photo from your gallery instead.': 'ไม่มีกล้องให้ใช้ที่นี่ เพิ่มรูปจากแกลเลอรีแทน',
   'Point the camera at the QR code': 'เล็งกล้องไปที่ QR โค้ด',
   'No camera available here. Import a photo or type the code instead.': 'ใช้กล้องที่นี่ไม่ได้ นำเข้ารูปภาพหรือพิมพ์รหัสแทน',

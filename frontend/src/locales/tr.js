@@ -1305,7 +1305,6 @@ export default {
   'Overlay: {0}': 'Bindirme: {0}',
   'Retake': 'Yeniden çek',
   'Use photo': 'Fotoğrafı kullan',
-  'Drag to move, pinch to resize.': 'Taşımak için sürükle, boyutlandırmak için sıkıştır.',
   'No camera available here. Add the photo from your gallery instead.': 'Burada kamera yok. Fotoğrafı galerinden ekle.',
   'Point the camera at the QR code': 'Kamerayı QR koda tutun',
   'No camera available here. Import a photo or type the code instead.': 'Burada kamera yok. Bunun yerine bir fotoğraf içe aktarın ya da kodu yazın.',

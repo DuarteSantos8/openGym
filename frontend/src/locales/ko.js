@@ -1305,7 +1305,6 @@ export default {
   'Overlay: {0}': '겹쳐 보기: {0}',
   'Retake': '다시 찍기',
   'Use photo': '사진 사용',
-  'Drag to move, pinch to resize.': '끌어서 이동하고, 두 손가락으로 모아 크기를 조절하세요.',
   'No camera available here. Add the photo from your gallery instead.': '여기서는 카메라를 사용할 수 없어요. 갤러리에서 사진을 추가하세요.',
   'Point the camera at the QR code': '카메라를 QR 코드에 맞추세요',
   'No camera available here. Import a photo or type the code instead.': '여기서는 카메라를 사용할 수 없습니다. 사진을 가져오거나 코드를 직접 입력하세요.',

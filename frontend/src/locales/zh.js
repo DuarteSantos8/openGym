@@ -1305,7 +1305,6 @@ export default {
   'Overlay: {0}': '叠加：{0}',
   'Retake': '重拍',
   'Use photo': '使用照片',
-  'Drag to move, pinch to resize.': '拖动以移动，双指捏合以缩放。',
   'No camera available here. Add the photo from your gallery instead.': '此处没有可用的摄像头。请改为从相册添加照片。',
   'Point the camera at the QR code': '将摄像头对准二维码',
   'No camera available here. Import a photo or type the code instead.': '此处无法使用摄像头。请导入照片或手动输入代码。',
