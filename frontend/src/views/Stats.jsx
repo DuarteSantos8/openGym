@@ -396,9 +396,6 @@ function EffortCard({ S }) {
   const [win, setWin] = useState(90)
   const kind = displayScale(S)
   const hd = scaleName(kind)
-  // Settings → Modules (lib/modules.js): a module switched off takes its parts of Stats with it.
-  const on = id => isOn(S, id)
-  const effortOn = on('effort'), bodyOn = on('body'), motivationOn = on('motivation')
   // Every set without a logged rating is estimated (the same precedence fatigue scoring uses:
   // logged effort first, Epley-inverse estimate against the 90-day anchor second), so the
   // average always speaks for the whole training, not just the rated subset. Estimates never
@@ -579,6 +576,9 @@ export default function Stats() {
   const now = Date.now()
   const kind = displayScale(S)
   const hd = scaleName(kind)
+  // Settings → Modules (lib/modules.js): a module switched off takes its parts of Stats with it.
+  const on = id => isOn(S, id)
+  const effortOn = on('effort'), bodyOn = on('body'), motivationOn = on('motivation')
 
   const bwPts = S.bodyweight.filter(b => range === 0 || weighInAt(b) > now - range * 86400000)
     .map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))

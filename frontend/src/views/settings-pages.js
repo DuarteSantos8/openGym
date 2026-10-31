@@ -295,6 +295,8 @@ export function searchSettings(query, ctx, tr = t) {
   }
   for (const e of SEARCH) {
     if (!pageVisible(PAGES[e.page].parent || e.page, ctx)) continue
+    // A page under another that its own module hides (Look & Home → Seasonal themes).
+    if (PAGES[e.page].mod && !pageVisible(e.page, ctx)) continue
     if (e.when && !e.when(ctx)) continue
     if (e.mod && ctx.mod && !ctx.mod(e.mod)) continue
     consider(e, false)
