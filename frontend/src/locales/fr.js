@@ -2603,4 +2603,9 @@ export default {
   'Edit machines': 'Modifier les machines',
   'No machine': 'Aucune machine',
   'Weights are remembered per machine. Add yours.': 'Les charges sont retenues par machine. Ajoute les tiennes.',
+  'More options': 'Plus d’options',
+  'Fewer options': 'Moins d’options',
+  'Simple mode': 'Mode simple',
+  'Only what you need to train': 'Seulement ce qu’il faut pour s’entraîner',
+  'Folds away pyramid sets, drop-sets, warm-up planning, plate loading, progression rules, supersets and the effort column. Nothing is deleted: switch it off to get them back.': 'Masque les séries pyramidales, les drop-sets, la planification des échauffements, le chargement des disques, les règles de progression, les supersets et la colonne d’effort. Rien n’est supprimé : désactive-le pour tout retrouver.',
 }

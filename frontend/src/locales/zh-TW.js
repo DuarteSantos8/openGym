@@ -2596,4 +2596,9 @@ export default {
   'Edit machines': 'Edit machines',
   'No machine': 'No machine',
   'Weights are remembered per machine. Add yours.': 'Weights are remembered per machine. Add yours.',
+  'More options': 'More options',
+  'Fewer options': 'Fewer options',
+  'Simple mode': 'Simple mode',
+  'Only what you need to train': 'Only what you need to train',
+  'Folds away pyramid sets, drop-sets, warm-up planning, plate loading, progression rules, supersets and the effort column. Nothing is deleted: switch it off to get them back.': 'Folds away pyramid sets, drop-sets, warm-up planning, plate loading, progression rules, supersets and the effort column. Nothing is deleted: switch it off to get them back.',
 }

@@ -811,6 +811,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     equipment: () => <EquipmentCard S={S} update={update} />,
 
     look: () => <>
+      <Section footer={t('Folds away pyramid sets, drop-sets, warm-up planning, plate loading, progression rules, supersets and the effort column. Nothing is deleted: switch it off to get them back.')}>
+        <Row icon="slider" iconTint="var(--acc)" title={t('Simple mode')} subtitle={t('Only what you need to train')}>
+          <Switch checked={S.simple === true} onChange={v => update(s => { s.simple = v })} />
+        </Row>
+      </Section>
       <Section footer={DEMO || MOBILE || !user ? undefined : t('synced with your profile')}>
         <Row icon="moon" iconTint="var(--indigo)" title={t('Theme')}>
           <Segmented
