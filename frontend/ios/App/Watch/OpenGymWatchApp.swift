@@ -76,6 +76,68 @@ enum Theme {
     static let dim = Color.white.opacity(0.14)
     /// The smallest a thing a finger has to hit may be.
     static let tap: CGFloat = 44
+    /// What replaces a fill in Always On. White 40 % is 3.7:1 on black; the app's --label-3 is 2.4:1.
+    static let outline = Color.white.opacity(0.4)
+    /// The app's --r: rows.
+    static let radius: CGFloat = 12
+    /// The app's --r-xl: full-width buttons.
+    static let radiusLarge: CGFloat = 22
+    /// The app's --fast: a press.
+    static let fast = 0.14
+    /// Side margin on the 41 mm rounded screen (the old 4 pt is too tight).
+    static let side: CGFloat = 9
+    /// Always On: bright text and strokes drop to this. On black: white 11:1, accent 6:1.
+    static let aod = 0.75
+
+    static func ink(_ c: Color, _ dimmed: Bool) -> Color { dimmed ? c.opacity(aod) : c }
+}
+
+/// The app's .btn:active: 97.5 % in 140 ms, ease-out, no spring. Reduce Motion or wrist down: dim only.
+private struct Press: ViewModifier {
+    let on: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(on && !reduceMotion && !dimmed ? 0.975 : 1)
+            .opacity(on ? 0.8 : 1)
+            .animation(dimmed ? nil : .easeOut(duration: Theme.fast), value: on)
+    }
+}
+
+/// .btn.primary: solid accent, black label, full width, 44 pt. Wrist down: 2 pt accent outline, no fill.
+struct PrimaryButton: ButtonStyle {
+    var minHeight = Theme.tap
+    @Environment(\.isLuminanceReduced) private var dimmed
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.radiusLarge, style: .continuous)
+        let accent = Theme.ink(Theme.accent, dimmed)
+        configuration.label
+            .foregroundStyle(dimmed ? accent : Color.black)
+            .frame(maxWidth: .infinity, minHeight: minHeight)
+            .background(shape.fill(dimmed ? Color.clear : Theme.accent))
+            .overlay(shape.stroke(accent, lineWidth: dimmed ? 2 : 0))
+            .contentShape(shape)
+            .modifier(Press(on: configuration.isPressed))
+    }
+}
+
+/// .btn (secondary): system glass on watchOS 26, the dim fill before. Wrist down: 1 pt outline.
+struct SecondaryButton: ButtonStyle {
+    @Environment(\.isLuminanceReduced) private var dimmed
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.radius, style: .continuous)
+        let row = configuration.label
+            .background { if !dimmed { fill(shape) } }
+            .overlay(shape.stroke(Theme.outline, lineWidth: dimmed ? 1 : 0))
+            .contentShape(shape)
+        // Interactive glass answers a touch by itself; the dim fill, and Always On, get the app's press.
+        if #available(watchOS 26, *), !dimmed { row } else { row.modifier(Press(on: configuration.isPressed)) }
+    }
+    @ViewBuilder private func fill(_ shape: RoundedRectangle) -> some View {
+        if #available(watchOS 26, *) { Color.clear.glassEffect(.regular.interactive(), in: shape) }
+        else { shape.fill(Theme.dim) }
+    }
 }
 
 func formatNumber(_ v: Double) -> String {
@@ -265,6 +327,8 @@ struct CountdownView: View {
 
 struct IdleView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.dynamicTypeSize) private var type
     @State private var debug = false
 
     var body: some View {
@@ -274,59 +338,134 @@ struct IdleView: View {
             .sheet(isPresented: $debug) { DebugView() }
     }
 
+    /// "Exercises 5 · Sets 17", or nothing for a routine without sets. Too wide: a size smaller, then two lines, no dot.
+    @ViewBuilder private func counts(_ session: ReadySession) -> some View {
+        let n = SessionCore.size(session)
+        if n.sets > 0 {
+            let e = "\(store.L("Exercises")) \(n.exercises)", s = "\(store.L("Sets")) \(n.sets)"
+            ViewThatFits(in: .horizontal) {
+                Text(verbatim: "\(e) · \(s)").font(.footnote)
+                Text(verbatim: "\(e) · \(s)").font(.caption)
+                VStack(alignment: .leading, spacing: 0) { Text(verbatim: e); Text(verbatim: s) }.font(.footnote)
+            }
+            .foregroundStyle(.secondary)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: "\(e), \(s)"))
+        }
+    }
+
     @ViewBuilder private var content: some View {
         if let ready = store.ready, ready.today != nil || !ready.others.isEmpty {
-            ScrollView {
-                VStack(spacing: 10) {
-                    if let today = ready.today {
-                        Text(today.name)
-                            .font(.system(.headline, design: .rounded))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.7)
-                            .multilineTextAlignment(.center)
-                        RoundButton(systemImage: "play.fill", label: Text("Start workout")) { store.start(today) }
-                    }
-                    if !ready.others.isEmpty {
-                        VStack(spacing: 4) {
-                            ForEach(Array(ready.others.enumerated()), id: \.offset) { pair in
-                                Button { store.start(pair.element) } label: {
-                                    HStack {
-                                        Text(pair.element.name).lineLimit(1).minimumScaleFactor(0.8)
-                                        Spacer(minLength: 4)
-                                        Image(systemName: "play.fill").font(.caption2).foregroundStyle(.secondary)
-                                    }
-                                    .frame(minHeight: Theme.tap)
-                                    .padding(.horizontal, 10)
-                                    .background(RoundedRectangle(cornerRadius: 12).fill(Theme.dim))
+            // The stack only gives the clock row a word to carry; nothing is pushed.
+            NavigationStack {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 8) {
+                            if let today = ready.today {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(today.name)
+                                        .font(.title3.weight(.semibold)).lineLimit(2).minimumScaleFactor(0.8)
+                                        .foregroundStyle(Theme.ink(.white, dimmed))
+                                    // Largest text: the rows below say it, so Start stays whole on a 40 mm screen.
+                                    if !type.isAccessibilitySize { counts(today) }
                                 }
-                                .buttonStyle(.plain)
+                                .accessibilityElement(children: .combine)
+                                Button { store.startFromTouch(today) } label: {
+                                    // The short word fits beside the glyph in every language; at large text the word stands alone.
+                                    HStack(spacing: 6) {
+                                        if !type.isAccessibilitySize { Image(systemName: "play.fill").accessibilityHidden(true) }
+                                        Text("Start").multilineTextAlignment(.center)
+                                    }
+                                    .font(.headline.weight(.semibold))
+                                    .padding(.horizontal, 6).padding(.vertical, 6)
+                                }
+                                .buttonStyle(PrimaryButton(minHeight: 52))
+                                .accessibilityValue(Text(verbatim: today.name))
+                            }
+                            if !ready.others.isEmpty {
+                                VStack(spacing: 6) {
+                                    if ready.today != nil {
+                                        Text("Routines").font(.footnote).foregroundStyle(.secondary)
+                                            .frame(maxWidth: .infinity, alignment: .leading).padding(.leading, 10)
+                                            .accessibilityAddTraits(.isHeader)
+                                    }
+                                    ForEach(Array(ready.others.enumerated()), id: \.offset) { pair in
+                                        Button { store.startFromTouch(pair.element) } label: {
+                                            // The glyph sits by the name so the counts line below gets the whole row's width.
+                                            VStack(alignment: .leading, spacing: 0) {
+                                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                                    Text(pair.element.name).font(.subheadline.weight(.semibold))
+                                                        .foregroundStyle(Theme.ink(.white, dimmed))
+                                                    Spacer(minLength: 4)
+                                                    if !type.isAccessibilitySize {
+                                                        Image(systemName: "play.fill").font(.caption2.weight(.semibold)).foregroundStyle(.secondary).accessibilityHidden(true)
+                                                    }
+                                                }
+                                                counts(pair.element)
+                                            }
+                                            .padding(.horizontal, 10).padding(.vertical, 4)
+                                            .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
+                                        }
+                                        .buttonStyle(SecondaryButton())
+                                        .accessibilityHint(Text("Start workout"))
+                                    }
+                                }
+                                .id("end")
                             }
                         }
-                        .padding(.top, 6)
+                        .padding(.horizontal, Theme.side)
+                        .padding(.bottom, 12)
+                        .id("top")
+                    }
+                    .scrollBounceBehavior(.basedOnSize)
+                    // Wrist down shows the start screen's top, where Today and Start are (never on a timer).
+                    .onChange(of: dimmed) { _, on in if on { proxy.scrollTo("top", anchor: .top) } }
+                    .onAppear { if SessionStore.demoScreen == "idle-end" { proxy.scrollTo("end", anchor: .bottom) } }
+                    // The stack's content gets the system's luminance, not the screenshots' (CI only).
+                    .modifier(DemoEnvironment())
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        // The same white in both states: the colour marks nothing, the word does.
+                        Text(ready.today != nil ? LocalizedStringKey("Today") : LocalizedStringKey("Routines"))
+                            .foregroundStyle(Theme.ink(.white, dimmed)).accessibilityAddTraits(.isHeader)
                     }
                 }
-                .padding(.horizontal, 4)
             }
         } else {
             // Nothing from the phone yet (it sends only while openGym runs there): say so, rather
             // than a "no workout" that reads as if the two were in touch.
             let fresh = !store.heardFromPhone && store.ready == nil
-            VStack(spacing: 10) {
-                OpenGymLogo()
-                    .fill(Theme.accent)
+            // Centred when it fits; when the text is too big for that, a scroll that gives the words the logo's room.
+            ViewThatFits(in: .vertical) {
+                empty(fresh: fresh, logo: true).frame(maxHeight: .infinity)
+                ScrollView { empty(fresh: fresh, logo: false).padding(.bottom, 12) }
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private func empty(fresh: Bool, logo: Bool) -> some View {
+        VStack(spacing: 10) {
+            if logo {
+                Group {
+                    if dimmed { OpenGymLogo().fill(Theme.accent.opacity(0.5)) } else { OpenGymLogo().fill(Theme.accent) }
+                }
                     .frame(width: 60, height: 30)
                     .accessibilityHidden(true)
-                Text(fresh ? LocalizedStringKey("Not synced yet") : LocalizedStringKey("No workout running"))
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                Text(fresh ? LocalizedStringKey("Open openGym on your iPhone once and your routines show up here.")
-                     : LocalizedStringKey("Start one on your iPhone and it shows up here."))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
             }
-            .padding(.horizontal, 8)
+            Text(fresh ? LocalizedStringKey("Not synced yet") : LocalizedStringKey("No workout running"))
+                .font(.headline)
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .multilineTextAlignment(.center)
+            Text(fresh ? LocalizedStringKey("Open openGym on your iPhone once and your routines show up here.")
+                 : LocalizedStringKey("Start one on your iPhone and it shows up here."))
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
         }
+        .accessibilityElement(children: .combine)
+        .padding(.horizontal, Theme.side)
     }
 }
 
@@ -1086,84 +1225,150 @@ struct HoldView: View {
 struct SummaryView: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.locale) private var locale
+    @Environment(\.isLuminanceReduced) private var dimmed
+    @Environment(\.dynamicTypeSize) private var type
     let summary: WorkoutSummary
 
     var body: some View {
-        ScrollViewReader { reader in
-        ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
-                        .foregroundStyle(Theme.accent)
-                        .accessibilityHidden(true)
-                    Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
-                        .font(.system(.headline, design: .rounded))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Text(verbatim: summary.name).font(.footnote).foregroundStyle(.secondary)
-                if let d = summary.duration { stat(Text("Time"), Text(verbatim: SummaryView.duration(d, locale: locale))) }
-                stat(Text("Sets"), Text(verbatim: "\(summary.sets)"))
-                if summary.volume > 0 {
-                    stat(Text("Volume"), Text(verbatim: "\(summary.volume.formatted(.number.precision(.fractionLength(0)))) \(summary.unit)"))
-                }
-                if let avg = summary.hrAvg, let top = summary.hrMax {
-                    stat(Text("Heart rate"), Text("\(Int(avg)) avg · \(Int(top)) max"), color: .red)
-                }
-                if let kcal = summary.calories {
-                    stat(Text("Calories"), Text(Measurement(value: kcal, unit: UnitEnergy.kilocalories),
-                                                format: .measurement(width: .abbreviated, usage: .asProvided,
-                                                                     numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
-                }
-                if !summary.prs.isEmpty {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill").foregroundStyle(.yellow) }
-                            .font(.caption.weight(.semibold))
-                        ForEach(summary.prs, id: \.self) { name in
-                            Text(verbatim: name).font(.footnote)
+        // The stack keeps the clock row clear: the page starts under it, and what scrolls up fades out there.
+        // (The title is not in the toolbar: it would not fit beside the clock in every language.)
+        NavigationStack {
+            // A stack, not a bottom inset: the scroll view ends above Done, so nothing is ever covered by it.
+            VStack(spacing: 0) {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                status
+                                // Largest text: the title and the numbers keep the room.
+                                if !type.isAccessibilitySize {
+                                    Text(verbatim: summary.name).font(.footnote).foregroundStyle(.secondary).lineLimit(1)
+                                }
+                            }
+                            hero
+                            if let v = summary.volumeText(locale: locale) { row(Text("Volume"), Text(verbatim: v)) }
+                            if !summary.prs.isEmpty { records }
+                            // Heart rate and calories come last: Apple Health returns them a moment after the
+                            // rest, and nothing above them moves when they do.
+                            VStack(alignment: .leading, spacing: 8) {
+                                if let avg = summary.hrAvg, let top = summary.hrMax {
+                                    let hr = String(format: store.L("%lld avg · %lld max"), Int64(avg), Int64(top))
+                                    // Stacked, the two numbers split on the dot, never with it left at a line's end.
+                                    row(Text("Heart rate"), Text(verbatim: hr),
+                                        stacked: Text(verbatim: hr.replacingOccurrences(of: " · ", with: "\n")), color: .red)
+                                }
+                                if let kcal = summary.calories {
+                                    row(Text("Calories"), Text(Measurement(value: kcal, unit: UnitEnergy.kilocalories),
+                                                               format: .measurement(width: .abbreviated, usage: .asProvided,
+                                                                                    numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
+                                }
+                                if store.offline {
+                                    Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .id("end")
                         }
+                        // Full width, so a bare summary (the sets alone) still starts at the left edge.
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Theme.side)
+                        .padding(.bottom, 8)
+                        .id("top")
                     }
-                    .accessibilityElement(children: .combine)
-                    .padding(.top, 2)
-                }
-                if store.offline {
-                    Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    .scrollBounceBehavior(.basedOnSize)
+                    // Wrist down shows the top again (never on a timer).
+                    .onChange(of: dimmed) { _, on in if on { proxy.scrollTo("top", anchor: .top) } }
+                    // CI: the end of the summary too (heart rate, calories, the not-synced line).
+                    .onAppear { if ["summary-end", "summary-offline"].contains(SessionStore.demoScreen) { proxy.scrollTo("end", anchor: .bottom) } }
                 }
                 Button { store.closeSummary() } label: {
-                    Text("Done").frame(maxWidth: .infinity, minHeight: Theme.tap)
+                    Text("Done").font(.headline.weight(.semibold)).padding(.vertical, 6)
                 }
-                .tint(Theme.accent)
-                .padding(.top, 4)
-                .id("done")
+                .buttonStyle(PrimaryButton())
+                // CI's Always On did not reach the button's style here (Done stayed solid); hand it on.
+                .environment(\.isLuminanceReduced, dimmed)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+                .padding(.horizontal, Theme.side)
+                .padding(.top, 4).padding(.bottom, 6)
             }
-            .padding(.horizontal, 4)
-            // The title starts under the clock, not beside it (it ran into the time on 41 mm).
-            .padding(.top, 14)
-        }
-        // CI: the end of the summary too (heart rate, calories, records).
-        .onAppear { if SessionStore.demoScreen == "summary-end" { reader.scrollTo("done", anchor: .bottom) } }
+            .ignoresSafeArea(edges: .bottom)
+            // The stack's content gets the system's luminance, not the screenshots' (CI only).
+            .modifier(DemoEnvironment())
         }
     }
 
-    private func stat(_ label: Text, _ value: Text, color: Color = .white) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            label.font(.caption2).foregroundStyle(.secondary)
-            value.font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit()).foregroundStyle(color)
+    private var status: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            // White, not the accent: the accent is for what a tap does, and Done is the only such thing here.
+            Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
+                .accessibilityHidden(true)
+            Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
                 .fixedSize(horizontal: false, vertical: true)
+        }
+        .font(.headline.weight(.semibold))
+        .foregroundStyle(Theme.ink(.white, dimmed))
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+    }
+
+    /// The time (its unit word is its label) and the sets: side by side, a size down when a long time
+    /// needs it, or stacked. Without a time (no start known) the sets stand alone, bigger.
+    @ViewBuilder private var hero: some View {
+        if summary.durationText(locale: locale) == nil {
+            sets(.title2)
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) { time(.title2); Spacer(minLength: 6); sets(.headline) }
+                HStack(alignment: .firstTextBaseline, spacing: 6) { time(.title3); Spacer(minLength: 6); sets(.headline) }
+                VStack(alignment: .leading, spacing: 0) { time(.title3); sets(.headline) }
+            }
+        }
+    }
+
+    @ViewBuilder private func time(_ style: Font.TextStyle) -> some View {
+        if let t = summary.durationText(locale: locale) {
+            Text(verbatim: t)
+                .font(.system(style, design: .rounded).weight(.semibold).monospacedDigit())
+                .foregroundStyle(Theme.ink(.white, dimmed))
+                .lineLimit(1).minimumScaleFactor(0.7)
+                .accessibilityLabel(Text("Time")).accessibilityValue(Text(verbatim: t))
+        }
+    }
+
+    private func sets(_ style: Font.TextStyle) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 4) {
+            Text("Sets").font(.footnote).foregroundStyle(.secondary)
+            Text(verbatim: "\(summary.sets)").font(.system(style, design: .rounded).monospacedDigit())
+                .foregroundStyle(Theme.ink(.white, dimmed))
         }
         .accessibilityElement(children: .combine)
     }
 
-    /// "52 min", "1 h 5 min", in the watch's language.
-    static func duration(_ seconds: Double, locale: Locale = .current) -> String {
-        let f = DateComponentsFormatter()
-        var calendar = Calendar.current
-        calendar.locale = locale
-        f.calendar = calendar
-        f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
-        f.unitsStyle = .short
-        return f.string(from: max(60, seconds)) ?? ""
+    private var records: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill") }
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.ink(.yellow, dimmed))
+            ForEach(Array(summary.prs.enumerated()), id: \.offset) { _, name in
+                Text(verbatim: name).font(.footnote).foregroundStyle(Theme.ink(.white, dimmed)).lineLimit(2)
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Label and value on one line, or the value under the label when they do not fit (`stacked`: the
+    /// value's wording for that case). Red stays red in Always On: dimmed it falls under 4.5:1.
+    private func row(_ label: Text, _ value: Text, stacked: Text? = nil, color: Color? = nil) -> some View {
+        let label = label.font(.footnote).foregroundStyle(.secondary)
+        let font = Font.system(.headline, design: .rounded).weight(.semibold).monospacedDigit()
+        let ink = color ?? Theme.ink(.white, dimmed)
+        return ViewThatFits(in: .horizontal) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) { label; Spacer(minLength: 6); value.font(font).foregroundStyle(ink) }
+            VStack(alignment: .leading, spacing: 0) { label; value.font(font).foregroundStyle(ink).lineLimit(1) }
+            VStack(alignment: .leading, spacing: 0) { label; (stacked ?? value).font(font).foregroundStyle(ink).fixedSize(horizontal: false, vertical: true) }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 

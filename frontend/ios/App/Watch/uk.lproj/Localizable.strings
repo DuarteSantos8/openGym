@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, uk. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Сьогодні";
+"Routines" = "Програми";
 "Start workout" = "Почати тренування";
+"Start" = "Старт";
 "Done" = "Готово";
 "Warm-up" = "Розминка";
 "Reps" = "Повт.";
@@ -33,6 +35,7 @@
 "Effort" = "Зусилля";
 "None" = "Немає";
 "Last time: %@" = "Минулого разу: %@";
+"Exercises" = "Вправи";
 "No workout running" = "Тренування не триває";
 "Not synced yet" = "Ще не синхронізовано";
 "Open openGym on your iPhone once and your routines show up here." = "Відкрий openGym на iPhone один раз, і твої програми з’являться тут.";

@@ -92,7 +92,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
-    @Published private(set) var summary: WorkoutSummary?
+    @Published private(set) var summary: WorkoutSummary? {
+        // The page arrives by itself (finish, or the phone ended it): a thumb still over Done must not close it unseen.
+        didSet { if oldValue == nil, summary != nil { touchLock.lock(at: Date()) } }
+    }
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
     @Published private(set) var reachable = true
     @Published private(set) var queued = 0
@@ -591,7 +594,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func closeSummary() {
+        guard touchAllowed else { return }
         summary = nil
+        touchLock.lock(at: Date())  // the thumb that hit Done is still over the screen's Start
     }
 
     /* ---------- workouts deleted in openGym, out of Apple Health ---------- */
@@ -629,6 +634,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var weighInFor: ReadySession?
     /// The body weight on the weigh-in's crown.
     @Published var bodyWeight: Double = 70
+
+    /// A thumb on a Start button: ignored just after the screen turned by itself (the complication's Start is not).
+    func startFromTouch(_ session: ReadySession) {
+        if touchAllowed { start(session) }
+    }
 
     /// Starts a ready session here, the phone asleep or not: first the weigh-in, as on the phone,
     /// unless it is switched off there (Settings → During a workout).
@@ -1064,7 +1074,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: screen == "idle" ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
+        switch screen {
+        case "empty", "empty-heard": break
+        case "idle", "idle-end": apply(json: SessionStore.demoReadyJSON)
+        case "idle-rest": apply(json: SessionStore.demoReadyRestJSON)
+        default: apply(json: SessionStore.demoJSON)
+        }
         DispatchQueue.main.async {
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps": self.picked[0] = 2
@@ -1076,6 +1091,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
+            case "empty-heard": self.heardFromPhone = true
             default: break
             }
             // CI: the watch in another language than its own (the app's, as the phone sends it).
@@ -1089,11 +1105,15 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             self.loadTargets()
             if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             if screen == "hold" { self.startHold() }
-            if screen == "offline" { self.reachable = false; self.queued = 3 }
-            if screen == "summary" || screen == "summary-end" || screen == "ended" {
+            if screen == "offline" || screen == "summary-offline" { self.reachable = false; self.queued = 3 }
+            if ["summary", "summary-end", "summary-offline", "ended"].contains(screen) {
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
                                               endedOnPhone: screen == "ended")
+            }
+            // The emptiest real summary: Health off, bodyweight only, no start time.
+            if screen == "summary-bare" {
+                self.summary = WorkoutSummary(name: "Plank day", unit: "kg", duration: nil, sets: 6, volume: 0, prs: [], endedOnPhone: false)
             }
             if let path = SessionStore.demoClip, let frames = SessionStore.frames(of: URL(fileURLWithPath: path)) {
                 self.clips["0025"] = frames
@@ -1102,10 +1122,38 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
+    // The start screen's routines; the rest-day demo reuses two of them.
+    private static let demoPull = """
+    {"routineIds":["r2"],"name":"Pull day","entries":[
+        {"id":"0027","name":"Barbell Row","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0651","name":"Lat Pulldown","mode":"reps","sets":[{"w":50,"r":10,"done":false,"warmup":false},{"w":50,"r":10,"done":false,"warmup":false},{"w":50,"r":10,"done":false,"warmup":false}]},
+        {"id":"0861","name":"Face Pull","mode":"reps","sets":[{"w":20,"r":15,"done":false,"warmup":false},{"w":20,"r":15,"done":false,"warmup":false},{"w":20,"r":15,"done":false,"warmup":false}]},
+        {"id":"0294","name":"Biceps Curl","mode":"reps","sets":[{"w":12,"r":10,"done":false,"warmup":false},{"w":12,"r":10,"done":false,"warmup":false},{"w":12,"r":10,"done":false,"warmup":false}]}]}
+    """
+
+    private static let demoBench = """
+    {"routineIds":["r4"],"name":"Bench only","entries":[
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false}]}]}
+    """
+
     static let demoReadyJSON = """
     {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"today":{"routineIds":["r1"],"name":"Push day","entries":[
-    {"id":"0025","name":"Bench Press","mode":"reps","restSec":120,"last":null,"sets":[{"w":62.5,"r":8,"sec":null,"done":false,"warmup":false}]}]},
-    "others":[{"routineIds":["r2"],"name":"Pull day","entries":[]},{"routineIds":["r3"],"name":"Legs","entries":[]}]}}
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":40,"r":10,"done":false,"warmup":true},{"w":62.5,"r":8,"done":false,"warmup":false},{"w":62.5,"r":8,"done":false,"warmup":false},{"w":62.5,"r":8,"done":false,"warmup":false}]},
+        {"id":"0426","name":"Overhead Press","mode":"reps","sets":[{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false}]},
+        {"id":"0314","name":"Incline Dumbbell Press","mode":"reps","sets":[{"w":22,"r":10,"done":false,"warmup":false},{"w":22,"r":10,"done":false,"warmup":false},{"w":22,"r":10,"done":false,"warmup":false}]},
+        {"id":"0599","name":"Lateral Raise","mode":"reps","sets":[{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false}]},
+        {"id":"0241","name":"Triceps Pushdown","mode":"reps","sets":[{"w":25,"r":12,"done":false,"warmup":false},{"w":25,"r":12,"done":false,"warmup":false},{"w":25,"r":12,"done":false,"warmup":false}]}]},
+    "others":[\(demoPull),
+    {"routineIds":["r3"],"name":"Upper body hypertrophy block B","entries":[
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0027","name":"Barbell Row","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0426","name":"Overhead Press","mode":"reps","sets":[{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false}]}]},
+    \(demoBench)]}}
+    """
+
+    static let demoReadyRestJSON = """
+    {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"others":[\(demoPull),
+    \(demoBench)]}}
     """
 
     static let demoJSON = """
