@@ -9,7 +9,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
-        classpath 'com.google.gms:google-services:4.4.4'
         // Kotlin, Compose and kotlinx.serialization for the Wear OS module (wear/) only; app/ stays
         // Java and builds exactly as before.
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$wear_kotlin_version"
