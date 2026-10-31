@@ -7,7 +7,7 @@ import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { useWrappedUI, openWrapped } from '../lib/wrapped-ui.js'
 import { NOW_KEY } from '../lib/wrapped.js'
-import { WrappedHomeCard, WrappedStatsCard } from './WrappedEntry.jsx'
+import { WrappedHomeCard } from './WrappedEntry.jsx'
 import Wrapped from './Wrapped.jsx'
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn(), useLocation: () => ({ pathname: '/home', search: '' }) }))
@@ -63,21 +63,7 @@ describe('Home: the December card', () => {
   })
 })
 
-describe('Stats: Your year', () => {
-  it('offers every year with workouts, newest first', () => {
-    seed({ workouts: [W('2025-05-05'), W('2026-02-10')] })
-    render(<WrappedStatsCard S={S()} />)
-    const chips = [...host.querySelectorAll('.chip')].map(c => c.textContent)
-    expect(chips).toEqual(['2025'])
-    act(() => host.querySelector('.chip').click())
-    expect(useWrappedUI.getState().year).toBe(2025)
-  })
-  it('is not there without a single workout', () => {
-    seed({ workouts: [] })
-    render(<WrappedStatsCard S={S()} />)
-    expect(host.querySelector('[data-wrapped-stats]')).toBeNull()
-  })
-})
+// Stats' Your year rows (one per year with workouts) are tested with the page: Stats.redesign.test.jsx.
 
 describe('the stories', () => {
   it('open as a labelled dialog, step through with buttons and keys, and close with Escape', async () => {

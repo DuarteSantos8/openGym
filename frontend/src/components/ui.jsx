@@ -363,6 +363,24 @@ export function SelectRow({ icon, iconTint, title, value, options, onChange, she
   )
 }
 
+/** The picker sheet of SelectRow on its own, for a control that is not a row (Stats' menu buttons). */
+export function openSelectSheet({ title, value, options, onChange, search }) {
+  const { openSheet } = require_ui()
+  return openSheet(close => <SelectSheet title={title} value={value} options={options} onChange={onChange} search={search} close={close} />)
+}
+
+/**
+ * A compact button that names the current choice and opens the picker sheet: for a choice that
+ * would overflow a segmented control (Stats: the chart of an exercise, the muscles' period).
+ * The accessible name says what is chosen for what ("Period: Week").
+ */
+export function MenuButton({ title, value, options, onChange, className = '' }) {
+  const cur = options.find(o => o.value === value) || options[0]
+  return <Button size="sm" trailingIcon="chevronDown" className={'menu-btn' + (className ? ' ' + className : '')}
+    aria-haspopup="dialog" aria-label={title + ': ' + (cur?.label ?? '')}
+    onClick={() => openSelectSheet({ title, value, options, onChange })}>{cur?.label}</Button>
+}
+
 function SelectSheet({ title, value, options, onChange, search, close }) {
   const [query, setQuery] = useState('')
   const inputRef = useRef(null)

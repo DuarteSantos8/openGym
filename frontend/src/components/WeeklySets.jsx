@@ -1,5 +1,6 @@
-// Weekly sets per muscle against a target range (lib/muscle-targets.js): the Stats card, the
-// optional Home line, and the sheet that sets each muscle's range.
+// Weekly sets per muscle against a target range (lib/muscle-targets.js): the optional Home line
+// and the sheet that sets each muscle's range. On Stats the ranges are drawn in the Muscles card
+// (Stats.jsx MusclesCard), the bars beside the map.
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
@@ -8,49 +9,6 @@ import { weeklyMuscleSets, mostRoom, targetOf, withTarget, TARGET_MUSCLES, TARGE
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import Icon from './Icon.jsx'
 import { Button, Stepper } from './ui.jsx'
-
-// The status words carry the meaning; the row's class (below / in / above) colours its fill and
-// words from the shared status inks in index.css: grey for room left, green in range, orange past.
-const STATUS = {
-  below: { label: () => t('room for more') },
-  in: { label: () => t('in range') },
-  above: { label: () => t('above range') },
-}
-
-/** One muscle's line: name, "14 / 10–20", and a bar with the range drawn in. */
-function SetsRow({ r }) {
-  const top = Math.max(r.hi * 1.25, r.sets, 1)
-  const pct = v => Math.min(100, (v / top) * 100)
-  const st = STATUS[r.status]
-  return <div className={'wsets-row ' + r.status} role="group"
-    aria-label={t('{0}: {1} sets this week, range {2} to {3}', t(r.name), fmtNum(r.sets), r.lo, r.hi) + ', ' + st.label()}>
-    <div className="wsets-head">
-      <span className="wsets-name">{t(r.name)}</span>
-      <span className="wsets-num"><b>{fmtNum(r.sets)}</b> / {r.lo}–{r.hi}</span>
-    </div>
-    <div className="wsets-bar" aria-hidden="true">
-      <span className="wsets-band" style={{ insetInlineStart: pct(r.lo) + '%', width: (pct(r.hi) - pct(r.lo)) + '%' }} />
-      <span className="wsets-fill" style={{ width: pct(r.sets) + '%' }} />
-    </div>
-    <div className="wsets-st">{st.label()}</div>
-  </div>
-}
-
-/** Stats: every main muscle's working sets this week against its range. */
-export function WeeklySetsCard({ S }) {
-  const rows = weeklyMuscleSets(S, todayISO())
-  const inRange = rows.filter(r => r.status === 'in').length
-  return <div className="card wsets-card" data-weekly-sets>
-    <div className="row between" style={{ marginBottom: 2 }}>
-      <h2 style={{ margin: 0 }}>{t('Sets per muscle this week')}</h2>
-      <Button size="sm" icon="slider" onClick={muscleTargetsSheet}>{t('Ranges')}</Button>
-    </div>
-    <div className="small muted" style={{ marginBottom: 10 }}>
-      {t('In range: {0} of {1} main muscles. A supporting muscle counts as a bit under half a set.', inRange, rows.length)}
-    </div>
-    {rows.map(r => <SetsRow key={r.slug} r={r} />)}
-  </div>
-}
 
 /** Home (Settings → Look & Home → Weekly sets on Home): the muscle with the most room this week. */
 export function WeeklySetsHomeLine({ S, onOpen }) {

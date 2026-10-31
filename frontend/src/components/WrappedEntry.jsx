@@ -1,5 +1,6 @@
 // The ways into Your year (components/Wrapped.jsx), kept small because they sit in the main bundle:
-// Home's card in December and January, the row in Stats for any year with workouts, the December
+// Home's card in December and January, the row in Stats for any year with workouts (Stats.jsx, its
+// list of pages), the December
 // notification on the phones, and #/stats?wrapped=2026. The stories themselves load on first open.
 import { Suspense, lazy, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -24,25 +25,6 @@ export function WrappedHomeCard({ S }) {
       sub={t('Workouts, records and one very honest personality test. Tap to see your year.')}
       action={<button type="button" className="iconbtn wr-x" aria-label={t('Not now')} onClick={() => update(s => { s.wrapped = withYear(s, 'dismissed', year) })}><Icon name="xmark" /></button>} />
     <Button variant="primary" icon="sparkles" onClick={() => openWrapped(year)}>{t('Show me my year')}</Button>
-  </div>
-}
-
-/** Stats: any year with workouts, any day of the year; the year in progress reads "so far". */
-export function WrappedStatsCard({ S }) {
-  const years = wrappedYears(S).slice(0, 4)
-  if (!years.length) return null
-  const now = new Date().getFullYear()
-  return <div className="card" data-wrapped-stats>
-    <div className="row between" style={{ alignItems: 'center', gap: 12 }}>
-      <div style={{ minWidth: 0 }}>
-        <h2 style={{ margin: 0 }}>{t('Your year')}</h2>
-        <div className="muted small" style={{ marginTop: 4 }}>{t('Your year in openGym as stories, every card ready to share.')}</div>
-      </div>
-      <Button size="sm" variant="tinted" icon="sparkles" style={{ flexShrink: 0 }} onClick={() => openWrapped(years[0])}>{years[0] === now ? t('So far') : String(years[0])}</Button>
-    </div>
-    {years.length > 1 && <div className="row" style={{ gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-      {years.slice(1).map(y => <button key={y} type="button" className="chip" onClick={() => openWrapped(y)}>{y}</button>)}
-    </div>}
   </div>
 }
 
