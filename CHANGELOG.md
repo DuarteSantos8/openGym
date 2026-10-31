@@ -452,6 +452,11 @@ Action button, and Siri understands them in the app's languages. On Android, tou
 openGym icon for Start workout, Log weight and Stats, and Google Assistant can open them by voice.
 Settings → Look & Home → Siri & Shortcuts lists what to say.
 
+**Exercise names in European Portuguese and Swedish.** All 5,632 exercises now have their own name in
+Portuguese (Portugal) and Swedish, the way people say them in the gym: supino com barra and
+elevação de gémeos, bänkpress, marklyft and chins. The search finds them with or without the
+accents, and the English name still works too. Brazilian Portuguese keeps its own names.
+
 **Fixes**
 
 - The rest timer starts after the last set of an exercise again, also when the next exercise opens with warm-ups (#853).
