@@ -6,6 +6,8 @@
 // is kept is mirrored the same way: what is on the screen is what is saved. The overlay is the earlier
 // photo as it looks in the gallery, never mirrored.
 //
+// The front camera opens first. Until the video plays the screen is black and the shutter waits, so the
+// earlier photo is never seen alone and then jumps to the size of the live view.
 // Needs getUserMedia, which a browser only gives on HTTPS or localhost. Where it is not there, or
 // the camera is refused, the screen says so in place and the add-photos flow stays the way in.
 // `onTaken(file)` gets the JPEG of the frame once "Use photo" is pressed.
@@ -27,8 +29,9 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
   const stageRef = useRef(null)
   const pointers = useRef(new Map())
   const base = useRef(null)           // where the current gesture started: { pos, point, dist }
-  const [facing, setFacing] = useState('environment')
+  const [facing, setFacing] = useState('user')                // the front camera first, the way a progress photo is usually taken
   const [error, setError] = useState(null)               // null, 'denied' or 'unavailable'
+  const [live, setLive] = useState(false)               // the video is playing: until then nothing but black, so the overlay never shows alone
   const [mirror, setMirror] = useState(false)             // the front camera's preview is shown mirrored, as in any camera app
   const [overlay, setOverlay] = useState(() => defaultOverlay(photos))
   const [choosing, setChoosing] = useState(false)
@@ -42,6 +45,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
   useEffect(() => {
     let stream = null, done = false
     setError(null)
+    setLive(false)
     setMirror(false)
     ;(async () => {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { setError('unavailable'); return }
@@ -58,7 +62,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
       const reported = track && track.getSettings ? track.getSettings().facingMode : undefined
       setMirror(isMirrored(reported, facing))
       v.srcObject = stream
-      try { await v.play() } catch (e) { /* autoplay rules; the frames come once it plays */ }
+      try { await v.play(); if (!done) setLive(true) } catch (e) { /* autoplay rules; onPlaying says when the frames come */ }
     })()
     return () => { done = true; if (stream) stream.getTracks().forEach(tr => tr.stop()) }
   }, [facing])
@@ -126,8 +130,8 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
     {/* A photo has no reading direction, and the fingers move the overlay the same way in Arabic. */}
     <div className="pp-cam-stage" dir="ltr" ref={stageRef} data-swipe-ignore
       onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={endPointer} onPointerCancel={endPointer}>
-      <video ref={videoRef} playsInline muted autoPlay style={mirror ? { transform: 'scaleX(-1)' } : undefined} />
-      {overlayUrl && !error && !shot && <img className="pp-cam-overlay" src={overlayUrl} alt="" draggable={false}
+      <video ref={videoRef} playsInline muted autoPlay onPlaying={() => setLive(true)} style={mirror ? { transform: 'scaleX(-1)' } : undefined} />
+      {overlayUrl && live && !error && !shot && <img className="pp-cam-overlay" src={overlayUrl} alt="" draggable={false}
         style={{ opacity, transform: overlayTransform(pos) }} />}
       {shot && <img className="pp-cam-shot" src={shot.url} alt="" draggable={false} />}
       {error && <div className="pp-cam-error">
@@ -157,7 +161,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
             </label>
             <div className="pp-cam-row">
               <Button variant="tinted" size="sm" onClick={() => setChoosing(c => !c)}>{t('Overlay: {0}', label)}</Button>
-              <button type="button" className="pp-shutter" aria-label={t('Take photo')} disabled={!!error || busy} onClick={snap}><span /></button>
+              <button type="button" className="pp-shutter" aria-label={t('Take photo')} disabled={!!error || !live || busy} onClick={snap}><span /></button>
               <span className="pp-cam-spacer" />
             </div>
             <div className="small dim pp-cam-hint">{t('Drag to move, pinch to resize.')}</div>

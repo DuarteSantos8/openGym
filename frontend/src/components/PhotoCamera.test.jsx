@@ -31,7 +31,7 @@ const fire = (type, init) => act(() => { host.querySelector('.pp-cam-stage').dis
 
 beforeEach(() => {
   tracks = []
-  reported = 'environment'
+  reported = undefined
   getUserMedia = vi.fn(async () => stream())
   Object.defineProperty(navigator, 'mediaDevices', { value: { getUserMedia }, configurable: true })
   Object.defineProperty(HTMLMediaElement.prototype, 'srcObject', { set() {}, get() { return null }, configurable: true })   // happy-dom only takes a real MediaStream
@@ -42,18 +42,18 @@ beforeEach(() => {
 afterEach(() => { act(() => root.unmount()); host.remove(); delete navigator.mediaDevices })
 
 describe('the camera', () => {
-  it('opens the rear camera and stops it when it goes', async () => {
+  it('opens the front camera and stops it when it goes', async () => {
     await mount()
-    expect(getUserMedia).toHaveBeenCalledWith({ video: { facingMode: { ideal: 'environment' } }, audio: false })
+    expect(getUserMedia).toHaveBeenCalledWith({ video: { facingMode: { ideal: 'user' } }, audio: false })
     expect(tracks[0].stop).not.toHaveBeenCalled()
     act(() => root.unmount())
     expect(tracks[0].stop).toHaveBeenCalled()
     root = createRoot(document.createElement('div'))   // for afterEach
   })
-  it('flips to the front camera and stops the first stream', async () => {
+  it('flips to the rear camera and stops the first stream', async () => {
     await mount()
     await act(async () => { button('Flip camera').click() })
-    expect(getUserMedia).toHaveBeenLastCalledWith({ video: { facingMode: { ideal: 'user' } }, audio: false })
+    expect(getUserMedia).toHaveBeenLastCalledWith({ video: { facingMode: { ideal: 'environment' } }, audio: false })
     expect(tracks[0].stop).toHaveBeenCalled()
   })
   it('says so in place when the camera is refused or there is none, and the shutter waits', async () => {
@@ -155,9 +155,10 @@ describe('the shutter', () => {
   })
 })
 
-describe('the front camera', () => {
+describe('the front and the rear camera', () => {
   const video = () => host.querySelector('.pp-cam-stage video')
   it('shows the rear camera as it is, and keeps the frame as it is', async () => {
+    reported = 'environment'
     await mount()
     expect(video().style.transform).toBe('')
     await act(async () => { button('Take photo').click() })
@@ -171,6 +172,15 @@ describe('the front camera', () => {
     expect(props.capture).toHaveBeenCalledWith(video(), { mirror: true })
     expect(host.querySelector('.pp-cam-shot').style.transform).toBe('')     // the picture is already the mirrored one
   })
+  it('mirrors the first camera when it does not say which it is, because it was asked for the front one, and not the rear one after a flip', async () => {
+    reported = undefined
+    await mount()
+    expect(video().style.transform).toBe('scaleX(-1)')
+    await act(async () => { button('Flip camera').click() })
+    expect(video().style.transform).toBe('')
+    await act(async () => { button('Flip camera').click() })
+    expect(video().style.transform).toBe('scaleX(-1)')
+  })
   it('leaves the overlay as the photo looks in the gallery, and a drag goes the way the finger does', async () => {
     reported = 'user'
     await mount()
@@ -179,13 +189,34 @@ describe('the front camera', () => {
     fire('pointermove', { pointerId: 1, clientX: 130, clientY: 100 })
     expect(overlay().style.transform).toBe('translate(30px, 0px) scale(1.000)')
   })
-  it('mirrors after a flip to a front camera that does not say which it is, and back', async () => {
-    reported = undefined
+})
+
+describe('before the video plays', () => {
+  it('shows no overlay and takes no photo until it does, then both', async () => {
+    let release
+    HTMLMediaElement.prototype.play = vi.fn(() => new Promise(res => { release = res }))
     await mount()
-    expect(video().style.transform).toBe('')                     // asked for the rear camera
+    expect(overlay()).toBeNull()
+    expect(button('Take photo').disabled).toBe(true)
+    await act(async () => { release() })
+    expect(overlay()).not.toBeNull()
+    expect(button('Take photo').disabled).toBe(false)
+  })
+  it('also starts when the browser says the video is playing, after an autoplay refusal', async () => {
+    HTMLMediaElement.prototype.play = vi.fn(async () => { throw new Error('NotAllowedError') })
+    await mount()
+    expect(overlay()).toBeNull()
+    act(() => { host.querySelector('.pp-cam-stage video').dispatchEvent(new Event('playing', { bubbles: true })) })
+    expect(overlay()).not.toBeNull()
+  })
+  it('hides the overlay again while the other camera starts', async () => {
+    await mount()
+    expect(overlay()).not.toBeNull()
+    let release
+    HTMLMediaElement.prototype.play = vi.fn(() => new Promise(res => { release = res }))
     await act(async () => { button('Flip camera').click() })
-    expect(video().style.transform).toBe('scaleX(-1)')
-    await act(async () => { button('Flip camera').click() })
-    expect(video().style.transform).toBe('')
+    expect(overlay()).toBeNull()
+    await act(async () => { release() })
+    expect(overlay()).not.toBeNull()
   })
 })
