@@ -44,6 +44,7 @@ import { Button, Segmented, SelectRow, Row, MenuButton } from '../components/ui.
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
+import { isOn } from '../lib/modules.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -395,6 +396,9 @@ function EffortCard({ S }) {
   const [win, setWin] = useState(90)
   const kind = displayScale(S)
   const hd = scaleName(kind)
+  // Settings → Modules (lib/modules.js): a module switched off takes its parts of Stats with it.
+  const on = id => isOn(S, id)
+  const effortOn = on('effort'), bodyOn = on('body'), motivationOn = on('motivation')
   // Every set without a logged rating is estimated (the same precedence fatigue scoring uses:
   // logged effort first, Epley-inverse estimate against the 90-day anchor second), so the
   // average always speaks for the whole training, not just the rated subset. Estimates never
@@ -726,7 +730,7 @@ export default function Stats() {
   // curve of its own, because the two only mean something together: the same weight moved
   // with more left in the tank is progress a weight-only chart draws as a flat line.
   const exRir = exPts.map(p => avgRir(p.sets))
-  const showEff = exRir.filter(v => v != null).length >= 3
+  const showEff = effortOn && exRir.filter(v => v != null).length >= 3
   const effPts = exPts.map((p, i) => (exRir[i] == null ? null : { t: p.t, y: toScale(kind, exRir[i]), d: p.d })).filter(p => p && inExRange(p))
   // Pyramid sets' Max sets: the most reps in one, per workout — the point of a Max set is seeing
   // that number climb, which the top-set weight line does not show.
@@ -835,17 +839,36 @@ export default function Stats() {
     return best || sets[0] || null
   }
 
-  const hasEffortSect = hasEffort(S) || hasEstimableEffort(S) || workouts.some(w => entryTimes(w).length)
+  const effortCard = effortOn && (hasEffort(S) || hasEstimableEffort(S))
+  const timeCard = workouts.some(w => entryTimes(w).length)
+  // With Effort off the time per exercise moves to the end of Lifts, so no part is a lone card.
+  const hasEffortSect = effortCard || (effortOn && timeCard)
   const sections = [
     { value: 'overview', label: t('Overview') },
-    { value: 'body', label: t('Body') },
+    ...(bodyOn ? [{ value: 'body', label: t('Body') }] : []),
     { value: 'lifts', label: t('Lifts') },
     ...(hasEffortSect ? [{ value: 'effort', label: t('Effort') }] : []),
   ]
   const recent = [...workouts].reverse().slice(0, RECENT_ROWS)
-  const wrapped = wrappedYears(S).slice(0, 4)
+  const wrapped = motivationOn ? wrappedYears(S).slice(0, 4) : []
   const thisYear = new Date().getFullYear()
   const exLegend = onSets && !rangeTooShort && perSetChart.ns.length > 0
+  // The pages behind Stats as one grouped list (stats redesign): they were four cards with a
+  // paragraph and an Open button each, dressed as content. Under Body, where two of them live;
+  // with the Body module off, at the end of Lifts, without the two that are Body's.
+  const linkRows = [
+    bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
+      value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
+      onClick={() => nav('/measurements')} />,
+    bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
+    workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
+    ...wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
+      className="stats-link" onClick={() => openWrapped(y)} />),
+  ].filter(Boolean)
+  const statsLinks = linkRows.length > 0 && <>
+    <h4 className="sec">{t('More')}</h4>
+    <div className="sect-b stats-links" data-stats-links>{linkRows}</div>
+  </>
 
   return <>
     <div className="hdr"><SeasonDeco spot="stats-hdr" /><div><h1>{t('Stats')}</h1><div className="sub">{t('Progress & history')}</div></div>
@@ -863,18 +886,18 @@ export default function Stats() {
     {/* The headline numbers as one divided card: three across, the lifetime total under them at
         full width (a few hundred sessions make a long number). The week streak is not a tile any
         more: it is the card right below, once. */}
-    <div className="kpis" data-tour="stats-tiles">
+    <div className={'kpis' + (bodyOn ? '' : ' two')} data-tour="stats-tiles">
       <div className="tile"><div className="l">{t('Workouts')}</div><div className="v">{workouts.length}</div></div>
       <div className="tile"><div className="l">{t('This month')}</div><div className="v">{monthW}</div></div>
-      <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>
+      {bodyOn && <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>}
       {/* Everything ever lifted (Discord): imports included, warm-ups only when the profile
           counts them (#719). */}
       {lifetime > 0 && <div className="tile wide" data-lifetime-volume><SeasonDeco spot="stats-tile" /><div className="l">{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div></div>}
     </div>
 
-    {workouts.length > 0 && <StreakCard info={streak} />}
+    {workouts.length > 0 && motivationOn && <StreakCard info={streak} />}
     {/* The month's challenges and the trophy shelf (lib/challenges.js), folded to one line. */}
-    {workouts.length > 0 && <ChallengesStatsCard S={S} />}
+    {workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} />}
 
     <div className="card">
       <SeasonDeco spot="stats-heatmap" />
@@ -897,7 +920,7 @@ export default function Stats() {
 
     </section>
 
-    <section className="stats-sect" id="stats-body" data-stats-sect="body" aria-labelledby="stats-h-body">
+    {bodyOn && <section className="stats-sect" id="stats-body" data-stats-sect="body" aria-labelledby="stats-h-body">
       <h2 className="stats-sect-h" id="stats-h-body">{t('Body')}</h2>
     <div className="card">
       <div className="row between bw-head" style={{ marginBottom: 8 }}>
@@ -918,19 +941,8 @@ export default function Stats() {
       </div>}
       <SeasonDeco spot="stats-web" />
     </div>
-    {/* The pages behind Stats as one grouped list (stats redesign): they were four cards with a
-        paragraph and an Open button each, dressed as content. Under Body, where two of them live. */}
-    <h4 className="sec">{t('More')}</h4>
-    <div className="sect-b stats-links" data-stats-links>
-      <Row title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
-        value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
-        onClick={() => nav('/measurements')} />
-      {(workouts.length > 0 || dayPhotosOf(S).length > 0) && <Row title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />}
-      {workouts.length > 0 && <Row title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />}
-      {wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
-        className="stats-link" onClick={() => openWrapped(y)} />)}
-    </div>
-    </section>
+      {statsLinks}
+    </section>}
 
     <section className="stats-sect" id="stats-lifts" data-stats-sect="lifts" aria-labelledby="stats-h-lifts">
       <h2 className="stats-sect-h" id="stats-h-lifts">{t('Lifts')}</h2>
@@ -991,7 +1003,7 @@ export default function Stats() {
         </div>}
         <div className="ex-days" data-ex-days>{exList.map((p, i) => {
           const top = topSetOf(p.sets)
-          const rir = top ? rirOf(top) : null
+          const rir = top && effortOn ? rirOf(top) : null
           return <div key={i} className="ex-day" {...tappable(() => exerciseHistorySheet(curEx))}>
             <span className="ex-day-d">{fmtDate(p.d, true)}</span>
             <span className="ex-day-s">{top ? setLabel(curEx, strip(top), p.target, speedUnit) : ''}</span>
@@ -1002,13 +1014,15 @@ export default function Stats() {
     </div>
     {(workouts.length > 0 || Object.keys(loadOfWeeklyPlan(S)).length > 0) && <MusclesCard S={S} planFocus={planFocus} />}
     {/* Beginner to Elite for the main lifts (lib/strength-level.js); hidden without a weigh-in. */}
-    {workouts.length > 0 && <StrengthLevelsCard S={S} />}
+    {workouts.length > 0 && on('strength') && <StrengthLevelsCard S={S} />}
+    {!effortOn && timeCard && <ExerciseTimeCard S={S} />}
+    {!bodyOn && statsLinks}
     </section>
 
     {hasEffortSect && <section className="stats-sect" id="stats-effort" data-stats-sect="effort" aria-labelledby="stats-h-effort">
       <h2 className="stats-sect-h" id="stats-h-effort">{t('Effort')}</h2>
-    {(hasEffort(S) || hasEstimableEffort(S)) && <EffortCard S={S} />}
-    {workouts.some(w => entryTimes(w).length) && <ExerciseTimeCard S={S} />}
+    {effortCard && <EffortCard S={S} />}
+    {timeCard && <ExerciseTimeCard S={S} />}
     </section>}
   </>
 }

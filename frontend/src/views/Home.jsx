@@ -29,6 +29,7 @@ import { SeasonDeco } from '../components/Seasonal.jsx'
 import { WrappedHomeCard } from '../components/WrappedEntry.jsx'
 import RecoveryHint from '../components/RecoveryHint.jsx'
 import { ChallengesCard } from '../components/Challenges.jsx'
+import { isOn } from '../lib/modules.js'
 
 // Home = what to do now + a quick glance. Deep charts & history live in Stats.
 export default function Home() {
@@ -111,6 +112,8 @@ export default function Home() {
   // The streak with its best run and freezes (lib/streak.js), read back from the workouts.
   const todayKey = todayISO()
   const streak = useMemo(() => streakInfo(S, todayKey), [S.workouts, S.weekStart, todayKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Settings → Modules (lib/modules.js): what a module switched off hides here.
+  const on = id => isOn(S, id)
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
 
   // today's session shown right under the week strip
@@ -195,17 +198,17 @@ export default function Home() {
     <SeasonDeco spot="home-advent" />
 
     {/* December and January: the year in openGym is ready (lib/wrapped.js homeCardYear). */}
-    <WrappedHomeCard S={S} />
+    {on('motivation') && <WrappedHomeCard S={S} />}
 
     {/* What has rested and what is still recovering, kindly (lib/recovery-hint.js). */}
-    <RecoveryHint S={S} />
+    {on('health') && <RecoveryHint S={S} />}
 
     {/* This month's three challenges and how far you are (lib/challenges.js). */}
     <ChallengesCard S={S} />
 
     {/* Jump to the gym check-in cards (QR membership codes). Shown here as a quick tap on
         arrival at the gym; folds away per user via the "Gym check-in" switch in Settings. */}
-    {S.checkIn !== false && (
+    {on('checkin') && (
       <div className="card tappable checkin-card" style={{ cursor: 'pointer' }} {...tappable(() => nav('/checkin'))}>
         <CardHead icon="qr" tint="var(--blue)" eyebrow={t('At the gym')} title={t('Check in')} action={<Icon name="chevronRight" className="chev" />} />
       </div>
@@ -219,7 +222,7 @@ export default function Home() {
       </div>
     )}
 
-    {S.showWeightCard !== false && <div className="card">
+    {on('body') && S.showWeightCard !== false && <div className="card">
       {/* one trailing action, Log; the goal lives with the goal line and the weigh-ins below (P2) */}
       <CardHead icon="scale" tint="var(--teal)" title={t('Body weight')} className="bw-head"
         action={<Button size="sm" icon="plus" onClick={() => bwSheet()}>{t('Log')}</Button>} />
@@ -257,7 +260,7 @@ export default function Home() {
       </>}
     </div>}
 
-    <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
+    {on('motivation') ? <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
       <SeasonDeco spot="home-streak" />
       {/* in season, a Santa hat on the flame (components/Seasonal.jsx) */}
       <CardHead className="streak-head" glyph={<span className="streak-flame-wrap"><StreakFlame lit={streak.current > 0} /><SeasonDeco spot="streak-flame" /></span>}
@@ -271,5 +274,7 @@ export default function Home() {
       {/* Straight to Stats → Lifts, where the card is, not to the top of Overview (P5 deep link). */}
       {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={ev => { ev.stopPropagation(); nav('/stats?section=lifts') }} />}
     </div>
+      // Motivation off: no streak card, but the weekly sets line it carried keeps a card of its own.
+      : S.homeMuscleSets === true && <div className="card"><WeeklySetsHomeLine S={S} onOpen={() => nav('/stats?section=lifts')} /></div>}
   </div>
 }

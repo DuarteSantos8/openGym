@@ -13,6 +13,7 @@ import { EXIDX } from '../lib/exercises.js'
 import { strengthLevel, strengthLevels, liftOf, LEVELS, LEVEL_NAME, sexOf } from '../lib/strength-level.js'
 import Icon from './Icon.jsx'
 import { Button, Segmented, Stepper } from './ui.jsx'
+import { isOn } from '../lib/modules.js'
 
 const weightOf = (lv, w, unit) => (lv.perBell ? t('{0} each', fmtNum(w)) : fmtNum(w)) + ' ' + unit
 
@@ -34,7 +35,8 @@ function SexHint({ S }) {
 /** Exercise details: this lift's level, hidden when it has no standard, no estimate or no weigh-in. */
 export function StrengthLevelBlock({ exId }) {
   const S = useStore(s => s.S)
-  if (!liftOf(exId)) return null
+  // Settings → Modules: Strength levels off hides the block; nothing is computed for it.
+  if (!liftOf(exId) || !isOn(S, 'strength')) return null
   const lv = strengthLevel(S, exId)
   if (!lv) return null
   return <div className="slevel" data-strength-level>

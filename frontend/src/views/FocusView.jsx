@@ -26,6 +26,7 @@ import { Button, Stepper } from '../components/ui.jsx'
 import './FocusView.css'
 import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
+import { isOn } from '../lib/modules.js'
 
 const firstIncomplete = entry => {
   const index = entry.sets.findIndex(set => !set.done)
@@ -103,6 +104,7 @@ function PlanBadge({ entry, mode }) {
 }
 
 function PlateBadge({ S, entry, set }) {
+  if (!isOn(S, 'plates')) return null   // Settings → Modules: Plates and warm-ups off
   if (modeOf({ ...(entry.target || {}), id: entry.id }) !== 'reps') return null
   const load = rowLoad(loadKindFor(S, { ...(entry.target || {}), id: entry.id }), set.w, baseWeightFor(S, entry.id), inventoryFor(S))
   if (!load) return null

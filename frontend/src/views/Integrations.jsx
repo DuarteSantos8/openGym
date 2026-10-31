@@ -17,6 +17,7 @@ import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import Icon from '../components/Icon.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
+import { isOn } from '../lib/modules.js'
 
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
    with what it is, whether it is on, and the one thing to do next. The cards are thin on purpose:
@@ -117,8 +118,10 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const server = useServerIntegrations(!!user && !DEMO && offered.length > 0)
   const health = useHealth()
   const platform = MOBILE ? (ios ? 'ios' : android ? 'android' : health?.platform || platformNow()) : null
+  const S = useStore(s => s.S)
   const ctx = {
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
+    mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
   }
   const dir = directory(ctx)

@@ -34,6 +34,7 @@ import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
 import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
+import { isOn } from './lib/modules.js'
 import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
 import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
@@ -332,9 +333,9 @@ function Shell() {
   const view = l => (!authed ? <Login /> : needsMobileOnboarding ? <MobileOnboarding /> : permSteps ? <PermissionSteps /> : (
     <Routes location={l}>
       <Route path="/home" element={<Home />} />
-      {/* Gym check-in — switched off in Settings, the route falls through to the
-          catch-all redirect below. */}
-      {S.checkIn !== false && <Route path="/checkin" element={<CheckIn />} />}
+      {/* A module switched off (Settings → Modules, lib/modules.js) takes its screens with it: the
+          route falls through to the catch-all redirect below. The data stays where it is. */}
+      {isOn(S, 'checkin') && <Route path="/checkin" element={<CheckIn />} />}
       <Route path="/plan" element={<Plan />} />
       <Route path="/plan/r/:id" element={<RoutineEdit />} />
       <Route path="/plan/programmes" element={<Programmes />} />
@@ -345,17 +346,17 @@ function Shell() {
       <Route path="/library" element={<Library />} />
       <Route path="/muscles" element={<Muscles />} />
       <Route path="/structural-balance" element={<StructuralBalance />} />
-      <Route path="/progress-photos" element={<ProgressPhotos />} />
-      <Route path="/measurements" element={<Measurements />} />
+      {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
+      {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
       <Route path="/settings" element={<SettingsRoute />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
-      {/* The Coach screens gate themselves on the instance config; the routes exist
-          unconditionally so a deep link from a notification lands somewhere sane
-          rather than on the catch-all. */}
-      <Route path="/coach" element={<CoachChat />} />
-      <Route path="/coach/intake" element={<CoachIntake />} />
-      <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />
-      <Route path="/coach/setup" element={<CoachSetup />} />
+      {/* The Coach screens gate themselves on the instance config; the routes exist whenever the
+          AI Coach module is on, so a deep link from a notification lands somewhere sane rather
+          than on the catch-all. With the module off, Home is the sane place. */}
+      {isOn(S, 'coach') && <Route path="/coach" element={<CoachChat />} />}
+      {isOn(S, 'coach') && <Route path="/coach/intake" element={<CoachIntake />} />}
+      {isOn(S, 'coach') && <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />}
+      {isOn(S, 'coach') && <Route path="/coach/setup" element={<CoachSetup />} />}
       <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
@@ -388,7 +389,7 @@ function Shell() {
           over a running workout or the first-launch screens. */}
       {authed && !needsMobileOnboarding && !permSteps && <SeasonalLayer hidden={inWorkout || loc.pathname === '/workout'} />}
       {/* Your year in openGym (components/WrappedEntry.jsx): nothing loaded until it is opened. */}
-      {authed && <WrappedLayer ready={setupDone} />}
+      {authed && isOn(S, 'motivation') && <WrappedLayer ready={setupDone} />}
     </>
   )
 }

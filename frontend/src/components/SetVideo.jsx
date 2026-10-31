@@ -30,6 +30,7 @@ import { useMediaPicker } from './CustomMediaField.jsx'
 import { useMediaUrl, CustomThumb } from './CustomMedia.jsx'
 import { Button, Row, Switch } from './ui.jsx'
 import Icon from './Icon.jsx'
+import { isOn } from '../lib/modules.js'
 
 const toast = m => useUI.getState().toast(m)
 const openSheet = (render, opts) => useUI.getState().openSheet(render, opts)
@@ -219,7 +220,13 @@ function SavedVideo({ it, exId, close }) {
  * one, Compare puts two dates side by side (the newest and the oldest to start with). Nothing
  * while the exercise has none.
  */
+// Form videos are a module (Settings → Modules): off, the section is gone; the videos stay.
 export function FormVideosSection({ exId }) {
+  const on = useStore(s => isOn(s.S, 'videos'))
+  return on ? <FormVideosList exId={exId} /> : null
+}
+
+function FormVideosList({ exId }) {
   const S = useStore(s => s.S)
   const items = useMemo(() => formVideosFor(S, exId), [S.workouts, exId])
   const [picking, setPicking] = useState(false)

@@ -3186,6 +3186,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The headline numbers as one divided card (app screens: KPIs are type, not tiles): three across,
    the lifetime total under them at full width. */
 .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px;background:var(--surface);border-radius:var(--r-card)}
+/* Two across when the Body module is off (Settings → Modules): no Weight 30d, no empty third. */
+.kpis.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 .kpis .tile{background:none;border-radius:0;padding:12px 14px;min-width:0;position:relative}
 .kpis .tile+.tile{border-inline-start:var(--hair) solid var(--sep)}
 .kpis .tile.wide{grid-column:1 / -1;border-inline-start:0;border-top:var(--hair) solid var(--sep)}

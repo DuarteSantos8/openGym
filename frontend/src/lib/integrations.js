@@ -133,11 +133,15 @@ export function cardState(id, ctx) {
   }
 }
 
-/** The directory for this device: categories with their visible cards, empty ones left out. */
+// The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', coach: 'coach' }
+
+/** The directory for this device: categories with their visible cards, empty ones left out.
+ *  `ctx.mod(id)` says whether a module is on (absent: all on). */
 export function directory(ctx) {
   return CATEGORIES.map(cat => ({
     ...cat,
-    cards: CARDS.filter(c => c.cat === cat.id).map(c => ({ ...c, state: cardState(c.id, ctx) })).filter(c => c.state),
+    cards: CARDS.filter(c => c.cat === cat.id && !(CARD_MODULE[c.id] && ctx.mod && !ctx.mod(CARD_MODULE[c.id]))).map(c => ({ ...c, state: cardState(c.id, ctx) })).filter(c => c.state),
   })).filter(cat => cat.cards.length)
 }
 
