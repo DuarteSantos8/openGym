@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, pt-BR. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Hoje";
+"Routines" = "Rotinas";
 "Start workout" = "Começar treino";
+"Start" = "Começar";
 "Done" = "Concluído";
 "Warm-up" = "Aquecimento";
 "Reps" = "Reps";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Terminar o treino?";
 "Finish and save" = "Terminar e salvar";
 "Discard workout" = "Descartar treino";
+"Discard workout?" = "Descartar treino?";
+"The sets you logged in this session will be lost." = "As séries registradas nesta sessão serão perdidas.";
 "Continue workout" = "Continuar treino";
 "Cancel" = "Cancelar";
 "Rest’s over. Next set!" = "Acabou o descanso. Próxima série!";
@@ -32,7 +36,13 @@
 "More" = "Mais";
 "Effort" = "Esforço";
 "None" = "Nenhum";
+"Delete" = "Excluir";
+"Planned" = "Planejado";
+"Save" = "Salvar";
+"Previous set" = "Série anterior";
+"Next set" = "Próxima série";
 "Last time: %@" = "Da última vez: %@";
+"Exercises" = "Exercícios";
 "No workout running" = "Nenhum treino em andamento";
 "Not synced yet" = "Ainda não sincronizado";
 "Open openGym on your iPhone once and your routines show up here." = "Abra o openGym uma vez no iPhone e suas rotinas aparecem aqui.";
@@ -48,18 +58,21 @@
 "Start hold" = "Começar";
 "Workout saved" = "Treino salvo";
 "Ended on your iPhone" = "Encerrado no iPhone";
-"Tap a dot to do a skipped set." = "Toque num ponto para fazer uma série pulada.";
+"Go back to do a skipped set." = "Volte para fazer uma série pulada.";
 "Log this one on your iPhone." = "Este você registra no iPhone.";
 "Saved on the watch, syncs later" = "Salvo no relógio, sincroniza depois";
 "All done?" = "Terminou?";
 "Lock" = "Bloquear";
 "Skip this set?" = "Pular esta série?";
 "Turn the Digital Crown to change it." = "Gire a Digital Crown para mudar.";
-"%lld done" = "%lld feitas";
 "%lld avg · %lld max" = "média %lld · máx. %lld";
 "Set %lld of %lld" = "Série %lld de %lld";
 "%lld of %lld sets" = "%lld de %lld séries";
 "Tap to change it." = "Toque para mudar.";
+"Type a number" = "Digitar um número";
+"Tap again to type a number." = "Toque de novo para digitar um número.";
 "Added weight" = "Peso adicional";
 "Your rest, your next set, or today's workout." = "Seu descanso, a próxima série ou o treino de hoje.";
 "Opens openGym." = "Abre o openGym.";
+"Changed on your iPhone" = "Alterado no iPhone";
+"Hold to finish" = "Segure para terminar";

@@ -22,7 +22,9 @@ const LANGS = {
 // The watch's key (what the Swift source says) → the app's key, for words the app already has.
 const FROM_APP = {
   'Today': 'Today',
+  'Routines': 'Routines',
   'Start workout': 'Start workout',
+  'Start': 'Start',
   'Done': 'Done',
   'Warm-up': 'Warm-up',
   'Reps': 'Reps',
@@ -32,6 +34,8 @@ const FROM_APP = {
   'Finish workout?': 'Finish workout?',
   'Finish and save': 'Finish and save',
   'Discard workout': 'Discard workout',
+  'Discard workout?': 'Discard workout?',
+  'The sets you logged in this session will be lost.': 'The sets you logged in this session will be lost.',
   'Continue workout': 'Continue workout',
   'Cancel': 'Cancel',
   'Rest’s over. Next set!': 'Rest’s over. Next set!',
@@ -53,12 +57,24 @@ const FROM_APP = {
   'More': 'More',
   'Effort': 'Effort',
   'None': 'None',
+  'Delete': 'Delete',
+  'Planned': 'Planned',
+  'Save': 'Save',
+  'Previous set': 'Previous set',
+  'Next set': 'Next set',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
 
 // Only the watch says these. %@ is a name, %lld a number, as the Swift source interpolates them.
 const OWN = {
+  // The count on a routine's row ("Exercises 5 · Sets 17"): label first, as the watch has no plurals. The app's
+  // "Exercises" means the library in zh and zh-TW, so these are the watch's own.
+  'Exercises': {
+    de: 'Übungen', fr: 'Exercices', es: 'Ejercicios', it: 'Esercizi', 'pt-PT': 'Exercícios', 'pt-BR': 'Exercícios',
+    pl: 'Ćwiczenia', hu: 'Gyakorlatok', tr: 'Egzersizler', ru: 'Упражнения', uk: 'Вправи', ar: 'التمارين',
+    hi: 'व्यायाम', bn: 'ব্যায়াম', th: 'ท่าออกกำลังกาย', ko: '운동', 'zh-Hans': '动作', 'zh-Hant': '動作',
+  },
   'No workout running': {
     de: 'Kein Training läuft', fr: 'Aucune séance en cours', es: 'Ningún entreno en curso', it: 'Nessun allenamento in corso',
     'pt-PT': 'Nenhum treino a decorrer', 'pt-BR': 'Nenhum treino em andamento', pl: 'Żaden trening nie trwa', hu: 'Nincs folyamatban edzés',
@@ -149,8 +165,8 @@ const OWN = {
   'Ended on your iPhone': {
     de: 'Am iPhone beendet', fr: 'Terminée sur ton iPhone', es: 'Terminado en tu iPhone', it: 'Finito sull’iPhone', 'pt-PT': 'Terminado no iPhone', 'pt-BR': 'Encerrado no iPhone', pl: 'Zakończono na iPhonie', hu: 'Az iPhone-on befejezve', tr: 'iPhone’da bitirildi', ru: 'Завершено на iPhone', uk: 'Завершено на iPhone', ar: 'انتهى على iPhone', hi: 'iPhone पर खत्म हुआ', bn: 'iPhone-এ শেষ হয়েছে', th: 'จบบน iPhone แล้ว', ko: 'iPhone에서 끝났어요', 'zh-Hans': '已在 iPhone 上结束', 'zh-Hant': '已在 iPhone 上結束',
   },
-  'Tap a dot to do a skipped set.': {
-    de: 'Tippe auf einen Punkt, um einen übersprungenen Satz zu machen.', fr: 'Touche un point pour faire une série sautée.', es: 'Toca un punto para hacer una serie saltada.', it: 'Tocca un punto per fare una serie saltata.', 'pt-PT': 'Toca num ponto para fazer uma série saltada.', 'pt-BR': 'Toque num ponto para fazer uma série pulada.', pl: 'Stuknij kropkę, by zrobić pominiętą serię.', hu: 'Koppints egy pöttyre egy kihagyott sorozathoz.', tr: 'Atlanan bir set için bir noktaya dokun.', ru: 'Нажмите на точку, чтобы сделать пропущенный подход.', uk: 'Торкнись точки, щоб зробити пропущений підхід.', ar: 'اضغط نقطة لأداء مجموعة متخطاة.', hi: 'छूटा सेट करने के लिए एक बिंदु टैप करें।', bn: 'বাদ দেওয়া সেট করতে একটি বিন্দুতে ট্যাপ করুন।', th: 'แตะจุดเพื่อทำเซ็ตที่ข้ามไป', ko: '건너뛴 세트를 하려면 점을 탭하세요.', 'zh-Hans': '轻点圆点来做跳过的组。', 'zh-Hant': '輕點圓點來做跳過的組。',
+  'Go back to do a skipped set.': {
+    de: 'Geh zurück, um einen übersprungenen Satz zu machen.', fr: 'Reviens en arrière pour faire une série sautée.', es: 'Vuelve atrás para hacer una serie saltada.', it: 'Torna indietro per fare una serie saltata.', 'pt-PT': 'Volta atrás para fazer uma série saltada.', 'pt-BR': 'Volte para fazer uma série pulada.', pl: 'Cofnij się, by zrobić pominiętą serię.', hu: 'Lépj vissza egy kihagyott sorozathoz.', tr: 'Atlanan bir seti yapmak için geri dön.', ru: 'Вернитесь назад, чтобы сделать пропущенный подход.', uk: 'Повернися назад, щоб зробити пропущений підхід.', ar: 'ارجع للخلف لأداء مجموعة متخطاة.', hi: 'छूटा सेट करने के लिए पीछे जाएँ।', bn: 'বাদ দেওয়া সেট করতে পিছনে যান।', th: 'ย้อนกลับเพื่อทำเซ็ตที่ข้ามไป', ko: '건너뛴 세트를 하려면 뒤로 가세요.', 'zh-Hans': '返回去做跳过的组。', 'zh-Hant': '返回去做跳過的組。',
   },
   'Log this one on your iPhone.': {
     de: 'Das hier trägst du am iPhone ein.', fr: 'Celui-ci se note sur ton iPhone.', es: 'Este se registra en tu iPhone.', it: 'Questo si registra sull’iPhone.', 'pt-PT': 'Este regista-se no iPhone.', 'pt-BR': 'Este você registra no iPhone.', pl: 'To zapisz na iPhonie.', hu: 'Ezt az iPhone-on rögzítsd.', tr: 'Bunu iPhone’da kaydet.', ru: 'Это записывается на iPhone.', uk: 'Це записуй на iPhone.', ar: 'سجّل هذا على iPhone.', hi: 'इसे iPhone पर दर्ज करें।', bn: 'এটা iPhone-এ লিখুন।', th: 'อันนี้บันทึกบน iPhone', ko: '이건 iPhone에서 기록하세요.', 'zh-Hans': '这个请在 iPhone 上记录。', 'zh-Hant': '這個請在 iPhone 上記錄。',
@@ -171,9 +187,6 @@ const OWN = {
   'Turn the Digital Crown to change it.': {
     de: 'Dreh an der Digital Crown, um es zu ändern.', fr: 'Tourne la Digital Crown pour le changer.', es: 'Gira la Digital Crown para cambiarlo.', it: 'Ruota la Digital Crown per cambiarlo.', 'pt-PT': 'Roda a Digital Crown para mudar.', 'pt-BR': 'Gire a Digital Crown para mudar.', pl: 'Obróć Digital Crown, by zmienić.', hu: 'Forgasd a Digital Crownt a módosításhoz.', tr: 'Değiştirmek için Digital Crown’u çevir.', ru: 'Поверните Digital Crown, чтобы изменить.', uk: 'Поверни Digital Crown, щоб змінити.', ar: 'أدر Digital Crown للتغيير.', hi: 'बदलने के लिए Digital Crown घुमाएँ।', bn: 'বদলাতে Digital Crown ঘোরান।', th: 'หมุน Digital Crown เพื่อเปลี่ยน', ko: '바꾸려면 Digital Crown을 돌리세요.', 'zh-Hans': '转动数码表冠来更改。', 'zh-Hant': '轉動數位錶冠來更改。',
   },
-  '%lld done': {
-    de: '%lld erledigt', fr: '%lld faites', es: '%lld hechas', it: '%lld fatte', 'pt-PT': '%lld feitas', 'pt-BR': '%lld feitas', pl: '%lld zrobione', hu: '%lld kész', tr: '%lld tamam', ru: '%lld сделано', uk: '%lld зроблено', ar: '%lld مكتملة', hi: '%lld पूरे', bn: '%lldটি শেষ', th: 'เสร็จ %lld', ko: '%lld개 완료', 'zh-Hans': '已完成 %lld', 'zh-Hant': '已完成 %lld',
-  },
   '%lld avg · %lld max': {
     de: 'Ø %lld · max. %lld', fr: 'moy. %lld · max %lld', es: 'media %lld · máx. %lld', it: 'media %lld · max %lld', 'pt-PT': 'média %lld · máx. %lld', 'pt-BR': 'média %lld · máx. %lld', pl: 'śr. %lld · maks. %lld', hu: 'átl. %lld · max. %lld', tr: 'ort. %lld · maks. %lld', ru: 'ср. %lld · макс. %lld', uk: 'сер. %lld · макс. %lld', ar: 'متوسط %lld · أقصى %lld', hi: 'औसत %lld · अधिकतम %lld', bn: 'গড় %lld · সর্বোচ্চ %lld', th: 'เฉลี่ย %lld · สูงสุด %lld', ko: '평균 %lld · 최대 %lld', 'zh-Hans': '平均 %lld · 最高 %lld', 'zh-Hant': '平均 %lld · 最高 %lld',
   },
@@ -186,6 +199,12 @@ const OWN = {
   'Tap to change it.': {
     de: 'Tippe, um es zu ändern.', fr: 'Touche pour le changer.', es: 'Toca para cambiarlo.', it: 'Tocca per cambiarlo.', 'pt-PT': 'Toca para mudar.', 'pt-BR': 'Toque para mudar.', pl: 'Stuknij, by zmienić.', hu: 'Koppints a módosításhoz.', tr: 'Değiştirmek için dokun.', ru: 'Нажмите, чтобы изменить.', uk: 'Торкнись, щоб змінити.', ar: 'اضغط للتغيير.', hi: 'बदलने के लिए टैप करें।', bn: 'বদলাতে ট্যাপ করুন।', th: 'แตะเพื่อเปลี่ยน', ko: '탭해서 바꾸세요.', 'zh-Hans': '轻点以更改。', 'zh-Hant': '輕點以更改。',
   },
+  'Type a number': {
+    de: 'Zahl eingeben', fr: 'Saisir un nombre', es: 'Escribir un número', it: 'Digita un numero', 'pt-PT': 'Escrever um número', 'pt-BR': 'Digitar um número', pl: 'Wpisz liczbę', hu: 'Szám beírása', tr: 'Sayı gir', ru: 'Ввести число', uk: 'Ввести число', ar: 'إدخال رقم', hi: 'संख्या लिखें', bn: 'সংখ্যা লিখুন', th: 'พิมพ์ตัวเลข', ko: '숫자 입력', 'zh-Hans': '输入数字', 'zh-Hant': '輸入數字',
+  },
+  'Tap again to type a number.': {
+    de: 'Tippe erneut, um eine Zahl einzugeben.', fr: 'Touche encore pour saisir un nombre.', es: 'Toca otra vez para escribir un número.', it: 'Tocca di nuovo per digitare un numero.', 'pt-PT': 'Toca outra vez para escrever um número.', 'pt-BR': 'Toque de novo para digitar um número.', pl: 'Stuknij ponownie, by wpisać liczbę.', hu: 'Koppints újra egy szám beírásához.', tr: 'Sayı girmek için tekrar dokun.', ru: 'Нажмите ещё раз, чтобы ввести число.', uk: 'Торкнись ще раз, щоб ввести число.', ar: 'اضغط مرة أخرى لإدخال رقم.', hi: 'संख्या लिखने के लिए फिर से टैप करें।', bn: 'সংখ্যা লিখতে আবার ট্যাপ করুন।', th: 'แตะอีกครั้งเพื่อพิมพ์ตัวเลข', ko: '다시 탭해서 숫자를 입력하세요.', 'zh-Hans': '再轻点一次以输入数字。', 'zh-Hant': '再輕點一次以輸入數字。',
+  },
   'Added weight': {
     de: 'Zusatzgewicht', fr: 'Poids ajouté', es: 'Peso añadido', it: 'Peso aggiunto', 'pt-PT': 'Peso adicional', 'pt-BR': 'Peso adicional', pl: 'Dodatkowy ciężar', hu: 'Plusz súly', tr: 'Ek ağırlık', ru: 'Доп. вес', uk: 'Додаткова вага', ar: 'وزن إضافي', hi: 'अतिरिक्त वज़न', bn: 'অতিরিক্ত ওজন', th: 'น้ำหนักเพิ่ม', ko: '추가 무게', 'zh-Hans': '附加重量', 'zh-Hant': '附加重量',
   },
@@ -194,6 +213,18 @@ const OWN = {
   },
   'Opens openGym.': {
     de: 'Öffnet openGym.', fr: 'Ouvre openGym.', es: 'Abre openGym.', it: 'Apre openGym.', 'pt-PT': 'Abre o openGym.', 'pt-BR': 'Abre o openGym.', pl: 'Otwiera openGym.', hu: 'Megnyitja az openGymet.', tr: 'openGym’i açar.', ru: 'Открывает openGym.', uk: 'Відкриває openGym.', ar: 'يفتح openGym.', hi: 'openGym खोलता है।', bn: 'openGym খোলে।', th: 'เปิด openGym', ko: 'openGym을 열어요.', 'zh-Hans': '打开 openGym。', 'zh-Hant': '打開 openGym。',
+  },
+  // Fixing a logged set on the set page: the phone changed it meanwhile.
+  'Changed on your iPhone': {
+    de: 'Am iPhone geändert', fr: 'Modifié sur ton iPhone', es: 'Cambiado en tu iPhone', it: 'Modificato sull’iPhone', 'pt-PT': 'Alterado no iPhone', 'pt-BR': 'Alterado no iPhone', pl: 'Zmieniono na iPhonie', hu: 'Az iPhone-on módosítva', tr: 'iPhone’da değiştirildi', ru: 'Изменено на iPhone', uk: 'Змінено на iPhone', ar: 'تم التغيير على iPhone', hi: 'iPhone पर बदला गया', bn: 'iPhone-এ বদলানো হয়েছে', th: 'เปลี่ยนบน iPhone แล้ว', ko: 'iPhone에서 바뀌었어요', 'zh-Hans': '已在 iPhone 上更改', 'zh-Hant': '已在 iPhone 上更改',
+  },
+  // Finish workout is a one-second hold: this is the line under it.
+  'Hold to finish': {
+    de: 'Zum Beenden gedrückt halten', fr: 'Maintiens pour terminer', es: 'Mantén pulsado para terminar', it: 'Tieni premuto per terminare',
+    'pt-PT': 'Mantém premido para terminar', 'pt-BR': 'Segure para terminar', pl: 'Przytrzymaj, aby zakończyć', hu: 'Tartsd lenyomva a befejezéshez',
+    tr: 'Bitirmek için basılı tut', ru: 'Удерживайте, чтобы завершить', uk: 'Утримуй, щоб завершити', ar: 'اضغط مطولًا للإنهاء',
+    hi: 'समाप्त करने के लिए दबाए रखें', bn: 'শেষ করতে চেপে ধরে রাখুন', th: 'กดค้างเพื่อจบ', ko: '길게 눌러 마치기',
+    'zh-Hans': '长按结束', 'zh-Hant': '長按結束',
   },
 }
 
