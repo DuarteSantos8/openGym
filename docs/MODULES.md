@@ -21,7 +21,7 @@ cannot be switched off.
 | **Plates and warm-ups** | The plate line under each set (and the plate badge in Focus view), and automatic warm-ups. Warm-ups you planned yourself stay. Your plates, bars and dumbbells in Equipment stay, as they also round weights. |
 | **Strength levels** | The Strength levels card in Stats, the level in an exercise's detail, the About you row. |
 | **Form videos** | Filming a set, the video badge on a set row, the form videos in an exercise's detail. Videos you filmed stay. |
-| **Watch** | The Apple Watch and Zepp OS pages. A paired Apple Watch, Wear OS or Zepp watch is told there is nothing to show, as with the watch's own off switch. It stays paired. |
+| **Watch** | The Apple Watch and Zepp OS pages. A paired Apple Watch, Wear OS, Zepp or Garmin watch is told there is nothing to show, as with the watch's own off switch. It stays paired. |
 | **Gym check-in** | The check-in card on Home, the check-in screen with your membership codes, NFC stickers. Your cards stay. Before 1.4.4 this had its own switch in Look & Home, which still counts until you set the module. |
 | **Body** | The body weight card on Home, the Body part of Stats (weight chart, goal, measurements, progress photos) and its Weight 30d figure, the weigh-in before a workout, the measurements and photos screens, the weight block of the widgets, the body weight settings. |
 | **Health** | The Apple Health and Health Connect pages and cards, the Works with list, live heart rate during a workout, recovery tips on Home. Syncing with the health app pauses (see below). |

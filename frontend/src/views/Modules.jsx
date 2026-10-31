@@ -12,7 +12,7 @@ import { DEMO } from '../lib/demo.js'
 import { platformNow } from '../lib/platform-now.js'
 import { api } from '../lib/api.js'
 import { MODULES, GROUPS, PRESETS, isOn, presetOf, presetModules, applyPreset, setModule, turnedOff, onCount } from '../lib/modules.js'
-import { readWatchStatus } from '../lib/watch-settings.js'
+import { readWatchStatus, readGarminLink } from '../lib/watch-settings.js'
 import { moduleCopy, groupCopy, presetCopy } from '../lib/modules-copy.js'
 import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, SelectRow, Switch } from '../components/ui.jsx'
@@ -32,7 +32,8 @@ function useConnections() {
       import('../lib/health-sync.js').then(m => m.loadHealth()).then(h => {
         if (h && (h.on || h.readHr || h.readWeight)) put({ health: platformNow() === 'android' ? 'Health Connect' : 'Apple Health' })
       }).catch(() => {})
-      if (readWatchStatus()) put({ watch: true })
+      // An Apple Watch that has reported in, or a Garmin the watch link found (docs/GARMIN.md).
+      if (readWatchStatus() || readGarminLink()) put({ watch: true })
     }
     if (user && !DEMO) {
       import('../lib/watch-relay.js').then(m => m.relayLinks()).then(links => { if (links.length) put({ watch: true }) }).catch(() => {})

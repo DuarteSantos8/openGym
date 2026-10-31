@@ -10,8 +10,9 @@
 //   active.progress       [work sets done, work sets in all], over the whole workout
 //   active.volume         the volume so far (weight × reps of work sets done), in active.unit
 //
-// Pure: the native bridge (the Connect IQ Mobile SDK on the phone) sends what this returns as a
-// Connect IQ dictionary. Not wired up yet: docs/GARMIN.md "Phone side" is the plan.
+// Pure: lib/watch-sync.js makes it with every snapshot when the watch link says a Garmin is there
+// (status `garmin`), and the native bridge (the Connect IQ Mobile SDK on the phone) sends it as a
+// Connect IQ dictionary. That native half is not wired up yet: docs/GARMIN.md "The phone side".
 export const GARMIN_SNAPSHOT_VERSION = 1
 // Connect IQ hands a message to the app as one object in its memory; older watches give a watch
 // app 64 to 128 KB in all. Kept small enough that a parse never runs it out.

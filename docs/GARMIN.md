@@ -4,11 +4,15 @@ A Connect IQ watch app for Garmin watches, the Apple Watch and Wear OS apps' lit
 phone stays the source of truth, the watch follows the workout the phone runs, logs sets on it and
 can start today's routine by itself. Source: `frontend/garmin` (Monkey C).
 
-**Status (v1.4.5):** the watch app is written, its strings are in, its logic has unit tests, and
-`node frontend/garmin/check.mjs` passes. It has **not been compiled yet**: Garmin's compiler needs
-each watch's device files, and those only come through the SDK Manager with a Garmin account
-(see "What the owner does"). The phone side (the Connect IQ Mobile SDK in the Android and iPhone
-apps) is specified below but not wired up, so the watch app does nothing useful until it is.
+**Status (v1.4.4):** the watch app is written, its strings are in, its logic has unit tests, and
+`node frontend/garmin/check.mjs` passes (CI runs it). It **compiles** with Connect IQ SDK 9.2.0
+for a watch of every kind (round AMOLED and MIP, square, black and white, the smallest memory),
+and its unit tests compile, against stand-in device files ("Compile checks without a Garmin
+login" below); the real device files and a run in the simulator are still the owner's (see "What
+the owner does"). On the page, the phone already makes the Garmin snapshot and pauses it with
+Settings → Modules → Watch; the native half of the bridge (the Connect IQ Mobile SDK in the
+Android and iPhone apps) is specified below but not wired up, so the watch app does nothing
+useful with a phone until it is.
 
 ## What it does
 
@@ -96,10 +100,22 @@ Events wait in the watch's storage until `transmit` reports them delivered, so a
 the phone away is sent when it is back; one sent twice is applied once (the page keeps the ids).
 Times are ms since 1970 as `Long`.
 
-### The phone side (to do)
+### The phone side
 
-Nothing on the page changes: the bridge plugs into `WatchBridge`, the plugin both phone apps
-already have, so `startWatchSync` keeps calling `status`, `sendSnapshot`, `drain` and `ack`.
+**The page (done in v1.4.4).** The bridge plugs into `WatchBridge`, the plugin both phone apps
+already have, so `startWatchSync` keeps calling `status`, `sendSnapshot`, `drain` and `ack`. When
+`status()` answers `garmin: true` (with `paired` and `installed`), every `sendSnapshot` also
+carries `garmin: JSON.stringify(garminSnapshot(snap))`, so the cut is made (and tested) in
+JavaScript, not twice in Java and Swift (`watch-sync.garmin.test.js`). With the **Watch module**
+off (Settings → Modules) or the watch's own switch off, that is the empty snapshot, as for every
+other watch: no workout, nothing ready, no streak. The Garmin stays paired, and the Modules page
+asks once before Watch goes off while one is there (it remembers the last `status()` in
+`localStorage` `gym_garmin_link_v1`, `readGarminLink` in lib/watch-settings.js). There is no
+Garmin page in Settings: the watch app's one setting lives in the Connect IQ app, and pairing is
+Garmin Connect's. If the bridge ever needs a page of its own, it takes `mod: 'watch'` in
+views/settings-pages.js like the Apple Watch and Zepp OS pages.
+
+**The native half (to do):**
 
 1. **Android** (`android/app`, play flavour first): the Connect IQ Mobile SDK
    (`com.garmin.connectiq:ciq-companion-app-sdk`, Maven Central, Garmin's licence). On start,
@@ -107,11 +123,9 @@ already have, so `startWatchSync` keeps calling `status`, `sendSnapshot`, `drain
    `getConnectedDevices()` an `IQApp("3c533c63754d40189c000ad529e400b9")` (the manifest id) and
    `registerForAppEvents`. Incoming `events` go into the same `WatchEventQueue` file the Wear OS
    listener writes (the page drains them as it does now); a `hello` instead re-sends the last
-   snapshot. `sendSnapshot({ json })` additionally converts `garminSnapshot(JSON.parse(json))` to
-   `Map`/`List` and calls `sendMessage`. `status()` reports `paired && installed` when a Garmin
-   with the app is connected (`getApplicationInfo`). One addition on the page: `startWatchSync`
-   passes `garmin: JSON.stringify(garminSnapshot(fitted))` with `sendSnapshot`, so the cut is made
-   (and tested) in JavaScript, not twice in Java and Swift.
+   snapshot. `sendSnapshot({ json, garmin })` converts `JSON.parse(garmin)` to `Map`/`List` and
+   calls `sendMessage`. `status()` reports `paired && installed && garmin: true` when a Garmin
+   with the app is connected (`getApplicationInfo`).
 2. **iPhone** (`ios/App/App`): the Connect IQ iOS SDK (`ConnectIQ.xcframework`). It needs a URL
    scheme in Info.plist: `showConnectIQDeviceSelection` hands over to Garmin Connect Mobile, which
    returns the chosen watches through that URL; the app keeps them. Then `register(forAppMessages:)`
@@ -124,7 +138,7 @@ already have, so `startWatchSync` keeps calling `status`, `sendSnapshot`, `drain
    `openApplication` shows a prompt on the watch ("open openGym?"); the Settings → Apple Watch
    "Open on the watch" switch can drive it.
 
-This was left out of v1.4.5 on purpose: adding a closed-source SDK and a second link to both phone
+This was left out of v1.4.4 on purpose: adding a closed-source SDK and a second link to both phone
 builds is the kind of change that wants its own release, a real watch and a review.
 
 ## Garmin Connect and the health apps
@@ -208,6 +222,10 @@ You need the Connect IQ SDK and the device files:
    "$SDK/bin/monkeyc" -f monkey.jungle -y developer_key.der -o bin/openGym.iq -e -r -w
    ```
 
+   The compiler parses with gradual type checking on: a few hundred "Cannot determine if container
+   access is using container type" warnings are expected (the state is plain dictionaries) and
+   harmless; errors are not. The launcher icon (70 × 70) is scaled per watch, with a warning.
+
    On pve: wait for a load under 1.5 and wrap the compiler in
    `systemd-run --scope -q -p CPUQuota=150% -p MemoryMax=4G nice -n 15 ionice -c3 …`. The simulator
    needs a display, so it runs on a desktop, not on pve.
@@ -216,6 +234,15 @@ You need the Connect IQ SDK and the device files:
    `venusq2` (square, touch), `instinct2` (black and white, with the sub-screen), `fr55` (least
    memory), `fenix847mm` (big). To feed it a snapshot without a phone, the simulator can deliver
    phone app messages (the SDK's `samples/Comm` shows how); `test/snapshot.json` is the one to send.
+   **Compile checks without a Garmin login.** The SDK zip downloads without an account, and its
+   `bin/monkeybrains.jar` carries a `devices.xml` with every watch in `manifest.xml` (resolution,
+   colours, palette, Connect IQ version, languages), but not the memory limits.
+   `node frontend/garmin/stand-in-devices.mjs "$SDK" <home>/.Garmin/ConnectIQ/Devices` turns that
+   into stand-in `compiler.json` files, enough for `monkeyc` to compile, type-check and package
+   (`-e`) for every watch; point Java at them with `_JAVA_OPTIONS=-Duser.home=<home>`. That is how v1.4.4 was checked (fr265, fr255, venusq2,
+   instinct2, fr55, plus the unit-test build and the full `-e` package). It proves the code
+   compiles, not that it fits a watch's memory or looks right: the real device files from the SDK
+   Manager stay the ones to build the store package with.
 4. **Sideload** onto your own watch: connect it by USB and copy the `.prg` built for that model
    into `GARMIN/APPS/`. It shows up under Activities & Apps.
 
@@ -229,8 +256,9 @@ changing them there. 17 languages; Connect IQ has no Hindi or Bengali, and one P
    IQ developer agreement at developer.garmin.com.
 2. Install the SDK Manager, sign in, download the SDK and the device files (step 1 above).
 3. Generate the developer key (step 2 above) and store it with the other signing keys.
-4. Build, run the unit tests, and try the six watches above in the simulator. Fix what the compiler
-   says: this code has not met it yet.
+4. Build, run the unit tests, and try the six watches above in the simulator (it needs a desktop;
+   pve has no display and lacks its GTK and WebKit libraries). The code compiles already; what is
+   left to see is memory on the small watches and how each screen looks.
 5. Wire up the phone side ("The phone side (to do)"), then test with a real Garmin: borrow one or
    ask a Garmin owner from Discord for a sideload test.
 6. Publish: apps.garmin.com/developer → Upload an app → `openGym.iq`, with the store listing
@@ -238,5 +266,14 @@ changing them there. 17 languages; Connect IQ has no Hindi or Bengali, and one P
    Fitness), the privacy policy URL (the app sends heart rate only to the user's own phone app),
    and "requires a companion app" pointing at the Play Store and App Store listings. Garmin reviews
    it, usually within a few days. The app id in `manifest.xml` stays the same forever.
-7. Each release after that: `monkeyc … -e` with the same key and a higher `version` in
+7. Each release after that: `monkeyc … -e` with the same key and the new `version` in
    `manifest.xml`, uploaded as a new version of the same app.
+
+### Versions
+
+`manifest.xml` `version` is the release, the same as the phone app's `versionName` and Zepp OS's
+`version.name` (1.4.4 now). Connect IQ has no separate build number to bump (Wear OS derives its
+`versionCode` from the phone's, Zepp OS counts `major*10000 + minor*100 + patch`): the store only
+wants each upload's version higher than the last, which the release number already is.
+`node frontend/garmin/check.mjs` fails when it is not `frontend/package.json`'s, so the release
+bump has to touch it.
