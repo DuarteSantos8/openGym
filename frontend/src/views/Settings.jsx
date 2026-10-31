@@ -1506,7 +1506,7 @@ function EquipmentCard({ S, update }) {
     <Row icon="plate" iconTint="var(--orange)" title={t('Plates')} subtitle={plateSummary} accessory="chevron" onClick={() => plateInventorySheet()} />
     <Row icon="dumbbell" iconTint="var(--teal)" title={t('Dumbbells')} subtitle={dumbbellSummary} accessory="chevron" onClick={() => dumbbellInventorySheet()} />
     <Row icon="barbell" iconTint="var(--blue)" title={t('Your bars')} subtitle={barSummary} accessory="chevron" onClick={() => barDefaultsSheet()} />
-    <Row icon="mapPin" iconTint="var(--red)" title={t('Gyms')} subtitle={gymsOf(S).map(g => g.name).join(' · ') || t('Weights are remembered per gym. Add yours.')} accessory="chevron" onClick={() => gymSheet({ manage: true })} />
+    <Row icon="mapPin" iconTint="var(--red)" title={t('Machines')} subtitle={gymsOf(S).map(g => g.name).join(' · ') || t('Weights are remembered per machine. Add yours.')} accessory="chevron" onClick={() => gymSheet({ manage: true })} />
     {profiles.length > 0 && <Row icon="kettlebell" iconTint="var(--acc)" title={t('Filter by equipment')}>
       <Switch checked={!!S.equipFilterOn} onChange={v => update(s => { s.equipFilterOn = v })} />
     </Row>}

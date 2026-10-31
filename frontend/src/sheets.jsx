@@ -61,8 +61,6 @@ import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet
 import { useAutoMore } from './lib/use-auto-more.js'
 import { isFav, toggleFav, sortFavouritesFirst, sortYoursFirst } from './lib/favourites.js'
 import { buildSessionEntries, buildPlannedEntry, buildSessionEntry, plannedConfigOf } from './lib/session-start.js'
-import { gymsOf } from './lib/gyms.js'
-import { gymSheet } from './components/GymSheet.jsx'
 import { finishCompare, finishCardio } from './lib/finish-compare.js'
 import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
@@ -3112,28 +3110,15 @@ export function DayNoteRow({ iso, note }) {
 // `routineIds` accepts `string | string[] | null` — `[r.id]` for one routine,
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
 export function startFlow(routineIds) {
-  const go = gym => {
-    // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
-    // into the session with no body weight on it, same as "Start without weighing in".
-    if (S().weighIn === false) { beginWorkout(routineIds, null, { gym }); return }
-    bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw, { gym }) })
-  }
-  // Which gym (lib/gyms.js): asked only when two or more are listed, offering the last one
-  // first. One gym is simply the one, and none leaves the workout as it always was.
-  const gyms = gymsOf(S())
-  if (gyms.length > 1) gymSheet({ required: true, current: S().gymLast, onPick: go })
-  else go(gyms.length === 1 ? gyms[0].id : null)
+  // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
+  // into the session with no body weight on it, same as "Start without weighing in".
+  if (S().weighIn === false) { beginWorkout(routineIds, null); return }
+  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
 }
 // `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id,
 // so the sets ticked on it find it, and its start time, however late the phone hears of it.
-export function beginWorkout(routineIds, bw, { id = null, start = null, gym } = {}) {
-  const st0 = S()
-  // The gym this session is in (lib/gyms.js). Not given (the watch, a repeat): the last one used,
-  // when it is still listed. The entries are built from that gym's history, so the weights the
-  // session opens with are the ones its machines took last time.
-  const listed = gymsOf(st0)
-  const gymId = gym !== undefined ? gym : (listed.some(g => g.id === st0.gymLast) ? st0.gymLast : listed.length === 1 ? listed[0].id : null)
-  const st = gymId ? { ...st0, pendingGym: gymId } : st0
+export function beginWorkout(routineIds, bw, { id = null, start = null } = {}) {
+  const st = S()
   const { entries, routineIds: rids, routines } = buildCombinedEntries(st, routineIds)
   const startAt = Number.isFinite(start) && start > 0 ? start : Date.now()
   update(s => {
@@ -3147,9 +3132,7 @@ export function beginWorkout(routineIds, bw, { id = null, start = null, gym } = 
       // Snapshot the layout at start so the header ⋮ can change it for this session only —
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
       workoutView: st.workoutView || 'cards',
-      ...(gymId ? { gym: gymId } : {}),
     }
-    if (gymId) s.gymLast = gymId
   })
   useUI.getState().stopRest()
   navToWorkout()
@@ -3170,7 +3153,6 @@ export function repeatWorkout(w, close) {
         id: uid(), d: todayISO(), start: Date.now(), routineIds: [],
         name: w.name || t('Freestyle'), bw: bw || null, cur: 0, entries,
         workoutView: s.workoutView || 'cards',
-        ...(w.gym && gymsOf(s).some(g => g.id === w.gym) ? { gym: w.gym } : {}),
       }
     })
     useUI.getState().stopRest()

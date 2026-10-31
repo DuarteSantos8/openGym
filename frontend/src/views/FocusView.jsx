@@ -117,7 +117,7 @@ export default function FocusView({
   const speedUnit = speedUnitOf(S)
   const entry = S.active.entries[entryIdx]
   const ex = exOr(entry.id)
-  const last = lastEntryFor(gymHistory(S, entry.id), entry.id)
+  const last = lastEntryFor(gymHistory(S, entry.id, entry.gym || null), entry.id)
   const pinnedNote = pinnedNoteFor(S, entry.id)
   const guidance = progressionGuidance(entry.plan)
   // Exercise operations use indexes, so their local-only epoch discards stale pointers instead

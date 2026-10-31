@@ -2430,7 +2430,7 @@ describe('workout view header menu', () => {
     // No Discard here: it ended this menu as a red trash, right where the exercise ⋯ keeps
     // Remove exercise, and got hit by mistake (#751). The Finish sheet has it.
     expect(menuItemsOf(menu).map(it => it.label)).toEqual([
-      'Workout settings', 'Add exercise', 'Add routine', 'Rename workout', 'Gym', 'Layout', 'Add session note', 'Don’t count for progression',
+      'Workout settings', 'Add exercise', 'Add routine', 'Rename workout', 'Layout', 'Add session note', 'Don’t count for progression',
     ])
     expect(menuItemsOf(menu).some(it => it.danger)).toBe(false)
     expect(item(menu, 'Workout settings').sub).toBe('1:30 rest · Silent')
@@ -3593,7 +3593,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await openMore()
     const groups = lastMenu().sections.map(g => [g.title, g.items.filter(Boolean).map(it => it.label)])
     expect(groups).toEqual([
-      ['Today', ['Swap exercise', 'Add warm-up set', 'Add note', 'Don’t count for progression']],
+      ['Today', ['Swap exercise', 'Machine', 'Add warm-up set', 'Add note', 'Don’t count for progression']],
       ['Look it up', ['History', 'How to do it']],
       ['Settings', ['Exercise settings', 'Rest timer', 'Plate loading']],
       ['Order and supersets', ['Make superset with next', 'Move up', 'Move down']],
@@ -3608,7 +3608,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await openMore()
     const today = lastMenu().sections[0].items.filter(Boolean)
     const name = exerciseNameText(EXIDX['0047'])
-    expect(today.map(it => it.label)).toEqual(['Swap exercise', 'Swap to ' + name, 'Add warm-up set', 'Add note', 'Don’t count for progression'])
+    expect(today.map(it => it.label)).toEqual(['Swap exercise', 'Swap to ' + name, 'Machine', 'Add warm-up set', 'Add note', 'Don’t count for progression'])
     expect(item('Swap to ' + name).sub).toBe('Planned backup, same sets and reps')
     item('Swap to ' + name).onClick()
     expect(mocks.swapActiveWorkoutToBackup).toHaveBeenCalledWith(0, '0047')

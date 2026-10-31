@@ -19,6 +19,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // The debug APK built on GitHub (.github/workflows/android-apk.yml) is signed with this fixed
+    // key instead of a fresh one made on each runner. Android only installs an update over an app
+    // signed with the same key, so this is what lets a new build replace the old one and keep its
+    // data. It is the throwaway debug kind (the standard password), not a secret: it signs sideloaded
+    // test builds, never a store release (those are signed on the release machine).
+    signingConfigs {
+        debug {
+            storeFile file('reta-debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
