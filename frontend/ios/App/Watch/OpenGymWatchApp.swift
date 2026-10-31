@@ -566,7 +566,8 @@ struct ExercisePager: View {
         GeometryReader { g in
             let inset = g.safeAreaInsets
             ScrollView(.vertical) {
-                VStack(spacing: 0) {
+                // Lazy: each change in the store redraws every page that is alive, so only the near ones are.
+                LazyVStack(spacing: 0) {
                     ForEach(Array((store.workout?.entries ?? []).enumerated()), id: \.offset) { pair in
                         ExercisePage(index: pair.offset, covered: covered)
                             .frame(width: g.size.width, height: g.size.height + inset.top + inset.bottom)
@@ -582,7 +583,22 @@ struct ExercisePager: View {
         }
         .onAppear { shown = min(store.fix?.entry ?? store.entryIndex, max(0, n - 1)) }
         .onChange(of: min(store.fix?.entry ?? store.entryIndex, max(0, n - 1))) { _, i in if shown != i { shown = i } }
-        .onChange(of: shown) { _, i in if let i { store.show(entry: i) } }
+        .modifier(SettledPage(shown: shown) { store.show(entry: $0) })
+    }
+}
+
+/// The page swiped to goes to the store once the scroll stops: the store's change redraws the pages, which
+/// mid-swipe stutters the scroll. watchOS 10 has no scroll phase: there it goes at once.
+private struct SettledPage: ViewModifier {
+    let shown: Int?
+    let show: (Int) -> Void
+
+    func body(content: Content) -> some View {
+        if #available(watchOS 11, *) {
+            content.onScrollPhaseChange { _, phase in if phase == .idle, let i = shown { show(i) } }
+        } else {
+            content.onChange(of: shown) { _, i in if let i { show(i) } }
+        }
     }
 }
 
