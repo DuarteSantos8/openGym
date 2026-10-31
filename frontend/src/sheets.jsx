@@ -1107,9 +1107,9 @@ const trainedBy = ex => {
     return slug != null && (weights[slug] || 0) !== 0
   }
 }
-// The detail page's tags: body part, main muscles, equipment, then up to three helpers. A word
-// says once what it says: the body part "Chest" and the main muscle "Chest" of a bench press
-// were two tags (QA 10-06), and a helper never repeats a main muscle.
+// The detail page's tags, in order: equipment, body part, then every involved muscle,
+// primaries first. A word says once what it says: the body part "Chest" and the main muscle
+// "Chest" of a bench press were two tags (QA 10-06), and a helper never repeats a main muscle.
 // Each involved muscle's share of the exercise's total stimulus: the weights are
 // normalised so the involved muscles add up to 100 %.
 export function detailTags(ex) {
@@ -1127,48 +1127,44 @@ export function detailTags(ex) {
     out.push({ key: out.length, label, ...extra })
     return true
   }
-  // A body part that is also a (possibly aliased) muscle carries that muscle's percentage,
-  // so the primary is not printed twice.
+  // 1) equipment, 2) body part (with the muscle's percentage folded in when the two are the
+  //    same word, like "Chest"/"Chest"), 3) every involved muscle, primaries first.
+  add(t(ex.eq), { icon: 'kettlebell' })
   const bpSlug = canonicalMuscle(ex.bp)
-  // Only fold the percentage into the body-part tag when it would otherwise be printed
-  // twice (same word, like "Chest"/"Chest"). Otherwise the muscle tag keeps it.
   const sameWord = bpSlug != null && t(ex.bp).trim().toLocaleLowerCase() === t(MUSCLE_NAME[bpSlug] || bpSlug).trim().toLocaleLowerCase()
   const bpPct = sameWord && bpSlug && (weights[bpSlug] || 0) !== 0 ? ' ' + pctOf(bpSlug) : ''
   add(t(ex.bp) + bpPct, { acc: true }, t(ex.bp))
-  if (ex.bp === 'cardio') {
-    const cardioPct = (weights['cardiovascular system'] || 0) !== 0 ? ' ' + pctOf('cardiovascular system') : ''
-    add(t(MUSCLE_NAME['cardiovascular system']) + cardioPct, { icon: 'figureStrength' }, t(MUSCLE_NAME['cardiovascular system']))
-  }
-  for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : [])).filter(trainedBy(ex))) {
-    const slug = canonicalMuscle(s)
-    if (!slug) continue
-    add(t(MUSCLE_NAME[slug] || slug) + ' ' + pctOf(slug), { icon: 'figureStrength' }, t(MUSCLE_NAME[slug] || slug))
-  }
-  add(t(ex.eq), { icon: 'kettlebell' })
-  // Secondary muscles: at most three tags in total, "Other" included. So when there are
-  // more than three distinct helpers, two are shown individually and the rest are folded
-  // into "Other" (whose percentage is their combined share).
-  const secondarySlugs = []
-  const seenSecondary = new Set()
-  for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex))) {
-    const slug = canonicalMuscle(s)
-    if (!slug) continue
+
+  // One muscle list for the tag limit: primaries then supporting muscles, at most three tags
+  // in total ("Other" counts as one). Three or fewer muscles all get their own tag; more fold
+  // the rest into "Other". Marginal rounding keeps the visible percentages within ±1 of 100.
+  const all = []
+  const pushed = new Set()
+  const push = (raw, primary) => {
+    const slug = canonicalMuscle(raw)
+    if (!slug) return
     const label = t(MUSCLE_NAME[slug] || slug)
-    if (seen.has(label.toLocaleLowerCase()) || seenSecondary.has(label.toLocaleLowerCase())) continue
-    seenSecondary.add(label.toLocaleLowerCase())
-    secondarySlugs.push({ slug, label })
+    const key = label.toLocaleLowerCase()
+    if (pushed.has(key)) return
+    if (!((weights[slug] || 0) > 0)) return
+    pushed.add(key)
+    all.push({ slug, label, primary })
   }
-  const hasOther = secondarySlugs.length > 3
-  const shownSecondaries = hasOther ? secondarySlugs.slice(0, 2) : secondarySlugs.slice(0, 3)
-  const omitted = hasOther ? secondarySlugs.slice(2) : []
-  let otherWeight = 0
-  for (const { slug } of omitted) otherWeight += (weights[slug] || 0)
-  for (const { slug, label } of shownSecondaries) {
-    add(label + ' ' + pctOf(slug), undefined, label)
-  }
-  if (hasOther && otherWeight > 0 && total > 0) {
-    const otherPct = Math.round(otherWeight / total * 100)
-    if (otherPct > 0) add(t('Other') + ' ' + otherPct + '%', { other: omitted.map(({ slug, label }) => ({ slug, label, pct: pctOf(slug) })) })
+  if (ex.bp === 'cardio' && (weights['cardiovascular system'] || 0) > 0) push('cardiovascular system', true)
+  for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : []))) push(s, true)
+  for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex))) push(s, false)
+  const shown = all.length > 3 ? all.slice(0, 2) : all.slice(0, 3)
+  const rest = all.slice(shown.length)
+  for (const m of shown) add(m.label + ' ' + pctOf(m.slug), m.primary ? { icon: 'figureStrength' } : undefined, m.label)
+  if (rest.length) {
+    let restWeight = 0
+    for (const m of rest) restWeight += (weights[m.slug] || 0)
+    const restPct = total > 0 && restWeight > 0 ? Math.round(restWeight / total * 100) : 0
+    if (restPct > 0) {
+      add(t('Other') + ' ' + restPct + '%', {
+        other: rest.map(m => ({ slug: m.slug, label: m.label, pct: pctOf(m.slug) })),
+      })
+    }
   }
   return out
 }
