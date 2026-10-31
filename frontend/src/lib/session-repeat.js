@@ -12,6 +12,7 @@ import { routineFromSession } from './session-routines.js'
 import { buildSets, applyIntensifierPlan, modeOf, setsFromRows } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { dropGrid } from './plates.js'
+import { gymsOf, entryGym } from './gyms.js'
 import { weightIncrement, defaultIncrement } from './progression.js'
 
 const sourceEntries = w => (Array.isArray(w?.entries) ? w.entries : []).filter(entry => entry?.sets?.length)
@@ -43,7 +44,10 @@ export function repeatSessionEntries(st, w, { exists = id => !!EXIDX[id] } = {})
     const only = { ...st, workouts: [{ ...w, entries: [source] }] }
     const sets = applyIntensifierPlan(buildSets(only, cfg, { step, preferLast: true }), cfg, dropGrid(st, cfg))
       .map(row => ({ ...row, done: false }))
-    entries.push({ id: cfg.id, ...(sg ? { sg } : {}), target: { ...cfg }, plan: null, sets })
+    // The machine it was done on that day, while it is still listed.
+    const machine = entryGym(w, source)
+    const gym = machine && gymsOf(st).some(g => g.id === machine) ? machine : null
+    entries.push({ id: cfg.id, ...(sg ? { sg } : {}), ...(gym ? { gym } : {}), target: { ...cfg }, plan: null, sets })
   })
   return { entries: regroup(entries), skipped }
 }

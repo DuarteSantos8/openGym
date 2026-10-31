@@ -85,6 +85,9 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
       // The superset the exercise was done in, so the history can show the pairing. Without it
       // the workout forgot at finish what it had been all session.
       ...(entry.sg ? { sg: entry.sg } : {}),
+      // The machine this exercise was done on (lib/gyms.js). Written only when there is one, so a
+      // profile that never lists a machine saves the shape it always did.
+      ...(entry.gym ? { gym: entry.gym } : {}),
     }
     const snapshot = typeof snapshotFor === 'function' ? snapshotFor(entry) : null
     if (snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot) && Object.keys(snapshot).length) {
