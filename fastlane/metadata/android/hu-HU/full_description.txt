@@ -1,0 +1,33 @@
+Az openGym edzésnapló olyanoktól, akik maguk is edzenek, olyanoknak, akik edzenek. Tervezd meg a hetedet, rögzíts minden sorozatot, és nézd meg, mit csináltál valójában. Fiók, hirdetés, előfizetés és követés nélkül.
+
+TERVEZÉS
+• Több mint 5600 gyakorlat animált bemutatóval, 19 nyelven
+• Négy kezdő terv (Push/Pull/Legs, Felső/Alsó, Teljes test, 5×5), vagy készítsd el a sajátod
+• Egy rutin minden hétköznapra, vagy forgatás (A, B, C, A …), ha a heted nem naptár szerint megy
+• Szuperszettek, bemelegítés, drop setek, rest-pause, időzített tartások, oldalankénti ismétlések
+
+EDZÉS
+• A mai edzés magától elindul, a legutóbbi súlyokkal előre kitöltve
+• Pihenőidő-számláló, ami zárolt képernyővel is csörög
+• Tárcsaszámoló a tárcsákhoz, amik tényleg megvannak neked
+• Progressziós szabályok: lineáris, Greyskull, kettős progresszió és több
+• Jelentkezz be az edzőteremben a tagsági kódod megmutatásával az appból
+
+KÖVETÉS
+• Becsült 1RM-görbék, térfogat izmonként, regenerációs térkép
+• Testsúly a célod mellett, haladási fotók egymás mellett
+• Szerkessz bármilyen korábbi edzést, vagy pótolj egyet, amit papíron vezettél
+
+A TIED
+• Minden a telefonodon marad. Szinkron kell? Csatlakoztasd a saját openGym szervered.
+• Importálás Strongból, Hevyből és FitNotesból, exportálás bármikor
+• Opcionális MI-edző, ami összeállítja a heted, a saját API-kulcsoddal, és csak miután megkérdezett
+• Ingyenes és nyílt forrású (AGPL), nyíltan fejlesztve a közösséggel
+
+ANDROIDON
+• Edzőterem-emlékeztető: add meg a termeidet, és az openGym szól, amikor belépsz, akkor is, ha az app be van zárva. Ehhez a háttérben használja a helyadataidat, csak ha bekapcsolod, és a helyeid sosem hagyják el a telefont
+• Health Connect, ha szeretnéd: a kész edzések és mérések bekerülnek, a pulzus és a mérleg adatai visszajönnek
+• Kezdőképernyő-widget a mai tervvel, és NFC-matricák, amelyek a rack mellett nyitják meg az appot
+• Ebben az F-Droid-változatban a szokásos 180 px-es animációk vannak, Wear OS-kapcsolat nincs, mert az a Google Play-szolgáltatásokat igényli
+
+A gyakorlatok animációi © Gym visual (gymvisual.com), az openGym számára licencelve.
