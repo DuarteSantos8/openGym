@@ -64,3 +64,68 @@ describe('design review 1.4.5: shared rules', () => {
     for (const sel of ['.wday .lbl', '.sethead', '.cal-h']) expect(rule(sel), sel).not.toMatch(/uppercase/)
   })
 })
+
+// The 1.4.5 features pass: the new features' rules live in index.css (insights.css folded in) and
+// follow the redesign's tokens.
+describe('1.4.5 features pass', () => {
+  const lightInk = name => css.match(new RegExp(`:root\\[data-theme="light"\\]\\{[^}]*${name}:(#[0-9a-f]{6})`, 'i'))?.[1]
+  it('the status inks reach 4.5:1 in the light theme and are the system colours in the dark', () => {
+    for (const name of ['--green-ink', '--orange-ink']) {
+      const ink = lightInk(name)
+      expect(ink, name).toBeTruthy()
+      for (const g of grounds(light)) expect(on(ink, g), name).toBeGreaterThanOrEqual(4.5)
+    }
+    expect(css).toMatch(/--green-ink:var\(--green\); --orange-ink:var\(--orange\)/)
+  })
+  it('no separate insights stylesheet any more', async () => {
+    const { existsSync } = await import('node:fs')
+    expect(existsSync(resolve(process.cwd(), 'src/insights.css'))).toBe(false)
+    expect(readFileSync(resolve(process.cwd(), 'src/main.jsx'), 'utf8')).not.toMatch(/insights\.css/)
+  })
+  it('set trends, weekly sets and levels colour text with the inks, never the bare system colours', () => {
+    expect(rule('.settrend.up')).toMatch(/var\(--green-ink\)/)
+    expect(rule('.settrend.down')).toMatch(/var\(--orange-ink\)/)
+    expect(rule('.wsets-row.in .wsets-st')).toMatch(/var\(--green-ink\)/)
+    expect(rule('.wsets-row.above .wsets-st')).toMatch(/var\(--orange-ink\)/)
+    expect(rule('.wsets-st')).toMatch(/var\(--label-2\)/)
+    expect(rule('.slevel-about')).toMatch(/var\(--acc-ink\)/)
+    expect(rule('.wsets-home .icn:first-child')).toMatch(/var\(--green-ink\)/)
+    const feature = [...css.matchAll(/(\.(?:settrend|setnote|wsets|slevel|recap)[^{]*)\{([^}]*)\}/g)]
+    expect(feature.length).toBeGreaterThan(20)
+    for (const [, sel, decls] of feature) expect(decls, sel).not.toMatch(/(^|;)color:var\(--(green|orange|blue|acc)\)/)
+  })
+  it('the trend chip floats on a raised surface and is no smaller than 11px', () => {
+    const chip = rule('.setrow .n .settrend,.setrow-side>.n .settrend')
+    expect(chip).toMatch(/background:var\(--surface-raised\)/)
+    expect(chip).toMatch(/var\(--raised-line\)/)
+    expect(Number(chip.match(/font-size:(\d+)px/)[1])).toBeGreaterThanOrEqual(11)
+  })
+  it('rows divide between themselves, not above the first (no :first-of-type that never matched)', () => {
+    expect(css).not.toMatch(/\.(wsets|slevel)-row:first-of-type/)
+    for (const sel of ['.wsets-row+.wsets-row', '.slevel-row+.slevel-row', '.wsets-edit+.wsets-edit']) expect(rule(sel), sel).toMatch(/border-top:var\(--hair\) solid var\(--sep\)/)
+  })
+  it('tapped lines are finger-sized and press like rows', () => {
+    expect(rule('.setnote-line')).toMatch(/min-height:32px/)
+    expect(rule('.setnote-line::before')).toMatch(/inset:-6px 0/)
+    expect(rule('.setnote-line:active')).toMatch(/var\(--press-fill\)/)
+    expect(rule('.wsets-home')).toMatch(/min-height:44px/)
+    expect(rule('.wsets-home:active')).toMatch(/var\(--press-fill\)/)
+  })
+  it('the weekly-sets band keeps a plain colour before its color-mix, in both themes', () => {
+    expect(rule('.wsets-band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
+    expect(rule(':root[data-theme="light"] .wsets-band')).toMatch(/background:rgba\([^)]+\);background:color-mix/)
+  })
+  it('the features use text roles and logical properties', () => {
+    const feature = [...css.matchAll(/(\.(?:settrend|setnote|wsets|slevel|recap|about-|wkleft)[^{]*)\{([^}]*)\}/g)]
+    for (const [sel, , decls] of feature.map(m => [m[1], null, m[2]])) {
+      expect(decls, sel).not.toMatch(/(margin|padding)-(left|right)|(^|;)(left|right):/)
+      // px font sizes only for a glyph in a fixed box (the chip) or a display figure (a recap tile)
+      if (!/settrend|recap-v/.test(sel)) expect(decls, sel).not.toMatch(/font-size:\d+px/)
+    }
+  })
+  it('a ticked set fades its parts, not the number that carries the arrow', () => {
+    expect(rule('.setrow.done')).toBe('')
+    expect(rule('.setrow.done>*:not(.n)')).toMatch(/opacity:\.45/)
+    expect(rule('.setrow.done .n')).toMatch(/background:var\(--acc\);color:var\(--on-acc\);\s*background:color-mix/)
+  })
+})

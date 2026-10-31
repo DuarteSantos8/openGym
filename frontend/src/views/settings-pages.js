@@ -18,6 +18,7 @@ export const PAGES = {
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)' },
+  zepp: { title: 'Zepp OS watch', icon: 'watch', tint: 'var(--orange)' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
@@ -33,7 +34,7 @@ export const PAGES = {
 export const PAGE_IDS = Object.keys(PAGES)
 
 // The root, top to bottom. Whether a row shows is pageVisible's call.
-export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch'], ['data', 'about']]
+export const ROOT_GROUPS = [['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch', 'zepp'], ['data', 'about']]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -45,6 +46,8 @@ export function pageVisible(page, ctx) {
   if (page === 'coach') return !!ctx.mobile
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
+  // Signed in to a server: a Zepp OS watch reaches openGym through it (lib/watch-relay.js).
+  if (page === 'zepp') return !!ctx.user && !ctx.demo
   // The phone app only: a browser cannot watch where you are with the page closed.
   if (page === 'gym' || page === 'gym-find' || page === 'gym-edit') return !!ctx.mobile && ctx.gymReminder !== false
   return page in PAGES
@@ -177,6 +180,7 @@ export const SEARCH = [
   // Account
   { page: 'account', title: 'Sync now', icon: 'reset', tint: 'var(--acc)', kw: 'server sync upload refresh status connection', when: c => !!c.user && !c.demo && c.synced },
   { page: 'account', title: 'Passkeys', icon: 'fingerprint', tint: 'var(--acc)', kw: 'passkey security login', when: signedInWeb },
+  { page: 'zepp', title: 'Pair a watch', icon: 'watch', tint: 'var(--orange)', kw: 'zepp amazfit watch pair balance gtr gts active t-rex bip cheetah falcon', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Add another device', icon: 'qr', tint: 'var(--blue)', kw: 'device link code phone computer', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Pair the mobile app', icon: 'qr', tint: 'var(--blue)', kw: 'pair phone app android iphone', when: signedInWeb },
   { page: 'account', title: 'Password', icon: 'key', tint: 'var(--orange)', kw: 'password login', when: c => signedInWeb(c) && c.pwOn },

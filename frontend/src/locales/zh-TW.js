@@ -3462,4 +3462,13 @@ export default {
   "Clear filters": "清除篩選",
   "Overview": "總覽",
   "Lifts": "重量動作",
+  // Settings → Zepp OS watch
+  "Zepp OS watch": "Zepp OS 手錶",
+  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Amazfit 和其他 Zepp OS 手錶透過這台伺服器與 openGym 溝通。配對一次，訓練就會出現在你的手腕上。",
+  "Pair a watch": "配對手錶",
+  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "在 Zepp App 裡打開 openGym 手錶 App 的設定，輸入這個位址和配對碼。配對碼十分鐘內有效。",
+  "Server address": "伺服器位址",
+  "Paired watches": "已配對的手錶",
+  "Not heard from yet": "還沒有消息",
+  "Couldn’t reach your server. Try again in a moment.": "連不上你的伺服器，請稍後再試。",
 }

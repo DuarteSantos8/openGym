@@ -3469,4 +3469,13 @@ export default {
   "Clear filters": "필터 지우기",
   "Overview": "개요",
   "Lifts": "리프트",
+  // Settings → Zepp OS watch
+  "Zepp OS watch": "Zepp OS 워치",
+  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Amazfit 등 Zepp OS 워치는 이 서버를 통해 openGym과 연결돼요. 한 번 페어링하면 운동이 손목에 떠요.",
+  "Pair a watch": "워치 페어링",
+  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "Zepp 앱에서 openGym 워치 앱 설정을 열고 이 주소와 코드를 입력하세요. 코드는 10분 동안 유효해요.",
+  "Server address": "서버 주소",
+  "Paired watches": "페어링된 워치",
+  "Not heard from yet": "아직 연결 기록 없음",
+  "Couldn’t reach your server. Try again in a moment.": "서버에 연결할 수 없어요. 잠시 후 다시 시도하세요.",
 }

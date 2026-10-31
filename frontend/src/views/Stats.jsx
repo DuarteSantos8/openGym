@@ -546,6 +546,10 @@ export function StatsIndex({ sections }) {
     const spy = () => {
       raf = 0
       if (Date.now() < quietUntil.current) return
+      // A sheet pins the body (Modals.jsx): scrollY is 0 and the page as tall as the screen, which
+      // read as "at the very bottom" and moved the highlight to Effort behind every sheet opened
+      // from Stats (Ranges, About you). The pinned page has not moved; leave the highlight.
+      if (document.body.style.position === 'fixed') return
       const bar = document.querySelector('.stats-index')
       const line = (bar ? bar.getBoundingClientRect().bottom : 0) + 24
       let on = 'overview'

@@ -47,4 +47,19 @@ describe('strength level per lift', () => {
     expect(useStore.getState().S.sex).toBe('female')
     expect(render(<StrengthLevelBlock exId={BENCH} />).querySelector('.slevel-name').textContent).toBe('Advanced lifter')
   })
+
+  it('the Stats card names the lift in full and in title case, the level on its own line', () => {
+    const row = render(<StrengthLevelsCard S={useStore.getState().S} />).querySelector('.slevel-row')
+    expect(row.querySelector('.slevel-ex').textContent).toBe('Barbell Bench Press')
+    expect(row.querySelector('.slevel-meta').textContent).toBe('Intermediate lifter · 1.25 × body weight')
+  })
+  it('About you: the unset year reads as a suggestion, its hint on one line, the sex choice named', () => {
+    aboutYouSheet()
+    const host = render(useUI.getState().sheets.at(-1).render(() => {}))
+    expect(host.querySelector('.stp.unset')).not.toBeNull()
+    expect(host.querySelector('.about-hint').textContent).toBe('Not set')
+    const seg = host.querySelector('.seg')
+    expect(seg.getAttribute('role')).toBe('group')
+    expect(host.querySelector('#' + seg.getAttribute('aria-labelledby')).textContent).toBe('Sex')
+  })
 })

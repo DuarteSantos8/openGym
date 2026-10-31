@@ -3469,4 +3469,13 @@ export default {
   "Clear filters": "Filtreleri temizle",
   "Overview": "Genel bakış",
   "Lifts": "Kaldırışlar",
+  // Settings → Zepp OS watch
+  "Zepp OS watch": "Zepp OS saat",
+  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Amazfit ve diğer Zepp OS saatler openGym ile bu sunucu üzerinden konuşur. Birini eşle, antrenmanların bileğinde görünsün.",
+  "Pair a watch": "Saat eşle",
+  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "Zepp uygulamasında openGym saat uygulamasının ayarlarını aç, bu adresi ve kodu yaz. Kod on dakika geçerli.",
+  "Server address": "Sunucu adresi",
+  "Paired watches": "Eşlenen saatler",
+  "Not heard from yet": "Henüz ses yok",
+  "Couldn’t reach your server. Try again in a moment.": "Sunucuna ulaşılamadı. Birazdan tekrar dene.",
 }

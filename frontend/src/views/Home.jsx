@@ -145,7 +145,7 @@ export default function Home() {
         <div className="week">{strip}</div>
       </>}
       {/* The week's plan as a countdown (#753, lib/week-left.js): "2 of 4 left this week". */}
-      {left && <div className="small dim wkleft" style={{ textAlign: 'center', margin: '6px 0 2px' }}>
+      {left && <div className={'small dim wkleft' + (left.left > 0 ? '' : ' done')}>
         {left.left > 0 ? tn('{0} of {1} left this week', '{0} of {1} left this week', left.left, left.of) : t('All done this week. Nice.')}
       </div>}
       {/* Once today's session is logged the row stops asking for it. The week strip already
@@ -268,7 +268,8 @@ export default function Home() {
       <StreakParty S={S} info={streak} tally={tally} />
       {/* Settings → Look & Home → Weekly sets on Home (lib/muscle-targets.js): the muscle with
           the most room this week, one tap from the Stats card. */}
-      {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={ev => { ev.stopPropagation(); nav('/stats') }} />}
+      {/* Straight to Stats → Lifts, where the card is, not to the top of Overview (P5 deep link). */}
+      {S.homeMuscleSets === true && <WeeklySetsHomeLine S={S} onOpen={ev => { ev.stopPropagation(); nav('/stats?section=lifts') }} />}
     </div>
   </div>
 }

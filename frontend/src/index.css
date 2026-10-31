@@ -709,7 +709,9 @@ h4.sec{
 .lrow:disabled{opacity:.45;cursor:default}
 /* the exercise sheet's Delete (P6): its own group at the end of the sheet */
 .ex-del{margin-top:24px}
+.ex-del+.ex-del{margin-top:16px}
 .ex-del-i{flex:none;font-size:var(--fs-title3)}
+.ex-merge-i{color:var(--acc-ink)}
 .lrow:disabled:active{background:none}
 /* One column at every width (#277), whatever page it is on. The desktop layout puts the #app
    lists outside a .narrow page in two columns, and before the .narrow rule below won on
@@ -1475,8 +1477,14 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .effpick .effpick-free .stp{flex:none;width:148px}
 .effpick .effpick-free .stp .num{font-size:var(--fs-body);font-weight:600}
 .effpick .effpick-free .stp .num::placeholder{color:var(--label-3);font-weight:500}
-.setrow.done .n{background:var(--acc);color:var(--on-acc)}
-.setrow.done{opacity:.45}
+/* A ticked set fades back. Its parts fade, not the row: the number keeps full opacity and is drawn
+   in the faded colours instead, so the set-vs-last arrow and the failure mark on it stay readable
+   (at .45 the light theme's arrow was 2:1). The look is the same as the old row opacity. */
+.setrow.done>*:not(.n){opacity:.45}
+.setrow.done .n{background:var(--acc);color:var(--on-acc);
+  background:color-mix(in srgb,var(--acc) 45%,var(--surface));color:color-mix(in srgb,var(--on-acc) 45%,var(--surface))}
+/* Safari before 16.2: the number fades as a whole, as the row did before */
+@supports not (color: color-mix(in srgb, red 50%, blue)){.setrow.done .n{color:var(--on-acc);opacity:.45}}
 
 /* Swipe on sets (v1.3.11, components/SwipeRow.jsx). The row slides over two panes: Copy at the
    start of the line, Delete at its end, each as wide as the swipe has gone and zero wide at rest.
@@ -1663,6 +1671,28 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* A set taken to failure: a small "F" on the number's corner, in the colour the effort scale
    gives "nothing left" (effort.js EFFORT_BANDS). */
 .setrow .n .failmark,.setrow-side>.n .failmark{position:absolute;top:-5px;inset-inline-end:-6px;min-width:13px;height:13px;padding:0 2px;border-radius:7px;background:var(--purple);color:#fff;font-size:9px;font-weight:700;line-height:13px;text-align:center;pointer-events:none}
+/* Set vs last time (#907): a small arrow on the set's number, the bottom corner (the failure "F"
+   has the top one). A raised chip with a hairline (P11), so it reads over a ticked number's
+   green; the glyph in the status inks, never the bare system colours (1.4.5 features pass). */
+.setrow .n .settrend,.setrow-side>.n .settrend{position:absolute;bottom:-6px;inset-inline-end:-7px;min-width:15px;height:15px;padding:0 2px;border-radius:8px;
+  background:var(--surface-raised);box-shadow:0 0 0 1px var(--raised-line);font-size:11px;font-weight:700;line-height:15px;text-align:center;pointer-events:none}
+.settrend.inline{display:inline-block;margin-inline-start:3px;font-weight:700;font-size:.95em}
+.settrend.up{color:var(--green-ink)}
+.settrend.same{color:var(--label-2)}
+.settrend.down{color:var(--orange-ink)}
+/* A note on one set: a quiet row under the set, on the plate line's indent, that opens the note.
+   32px tall with a hit area reaching into the gaps around it (44px); a row, so a press fills
+   (P13). In History, a mark after the set and the note under the exercise. */
+.setnote-line{position:relative;display:flex;align-items:center;gap:6px;width:100%;min-height:32px;margin:0 0 2px;padding-block:4px;padding-inline:32px 4px;border:0;border-radius:var(--r-sm);
+  background:none;color:var(--label-2);font:inherit;font-size:var(--fs-caption);line-height:1.3;text-align:start;cursor:pointer;min-width:0;transition:background var(--fast)}
+.setnote-line::before{content:'';position:absolute;inset:-6px 0}
+.setnote-line:active{background:var(--press-fill)}
+.setnote-line .icn{flex:none;font-size:var(--fs-caption);color:var(--gold-ink)}
+.setnote-line span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+@media (max-width:359px){.setnote-line{padding-inline-start:24px}}
+.setnote-mark{display:inline-block;margin-inline-start:3px;font-size:var(--fs-caption2);color:var(--gold-ink);vertical-align:-1px}
+.setnote-hist{margin-top:3px;display:flex;gap:4px;align-items:baseline}
+.setnote-hist .icn{flex:none;font-size:var(--fs-caption2);color:var(--gold-ink);transform:translateY(1px)}
 /* No +/- buttons: the number field takes the whole cell and is the tap target. */
 .stp.plain{grid-template-columns:1fr}
 .stp.plain .val{width:100%}
@@ -2189,10 +2219,16 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 :root{
   --streak-ink:var(--orange); --win-ink:var(--green); --frost:#64d2ff; --frost-soft:rgba(100,210,255,.16);
   --gold-ink:var(--yellow);
+  /* The status greens and oranges as text, a glyph or a thin bar (the set-vs-last arrows, the
+     weekly-sets status, a level's steps): the system colours in the dark theme, a darker shade of
+     the same hue in the light one, where #34c759 and #ff9500 are 2:1 on white (1.4.5 features
+     pass). 4.5:1 on the page and on a card. Fills and tints keep --green / --orange. */
+  --green-ink:var(--green); --orange-ink:var(--orange);
 }
 :root[data-theme="light"]{
   --streak-ink:#e06a00; --win-ink:#1e9e47; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
   --gold-ink:#8f5e00;
+  --green-ink:#1a7f37; --orange-ink:#a85200;
 }
 /* The flame: a warm gradient with a light core; three gentle flickers when it appears, then still. */
 .flame{display:inline-block;flex:none;overflow:visible;vertical-align:-.12em}
@@ -2501,6 +2537,8 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .wd-ex>.grow{flex:1;min-width:0}
 /* the sets under each exercise name: the second voice. .ss had no rule outside .item, so they came
    out at 17px in full ink, as loud as the name above them (design review 1.4.5). */
+/* A saved set, its arrow and its note mark stay on one line. */
+.wd-set{white-space:nowrap}
 .wd-ex .ss{font-size:var(--fs-subhead);line-height:1.35;color:var(--label-2);margin-top:2px}
 .wd-thumb{background:none;border:none;padding:0;cursor:pointer;display:block;flex:none}
 .wd-ex:active{background:var(--press-fill)}
@@ -2939,3 +2977,74 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .wr-home{position:relative;overflow:hidden;background:var(--surface);background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 24%,var(--surface)),var(--surface) 72%)}
 .wr-home>.btn{margin-top:12px}
 .stp .val .stp-word{font-weight:600;min-width:2.5em;text-align:center;display:inline-block}
+
+/* ------------------------------------------------- 1.4.5 insight cards -- */
+/* Weekly sets per muscle (components/WeeklySets.jsx), strength levels (StrengthLevel.jsx) and the
+   week/month recap (Recap.jsx). Folded in from insights.css in the 1.4.5 features pass, on the
+   shared tokens: text roles, the status inks, rows that divide with the list's hairline rule
+   (between rows only, never above the first), 44px rows for what is tapped. */
+
+/* Weekly sets: one muscle per row, the range a band on the bar and the week's sets its fill.
+   Grey for room left, the green ink in range, the orange ink past it: two hues, both with
+   their words under the bar, never a colour on its own. */
+.wsets-row{padding:8px 0}
+.wsets-row+.wsets-row{border-top:var(--hair) solid var(--sep)}
+.wsets-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;min-width:0}
+.wsets-name{font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wsets-num{flex:none;font-variant-numeric:tabular-nums;color:var(--label-2);font-size:var(--fs-subhead)}
+.wsets-num b{color:var(--label);font-weight:600}
+.wsets-bar{position:relative;height:8px;margin:6px 0 4px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.wsets-band{position:absolute;top:0;bottom:0;background:rgba(48,209,88,.22);background:color-mix(in srgb,var(--green-ink) 22%,transparent)}
+:root[data-theme="light"] .wsets-band{background:rgba(26,127,55,.18);background:color-mix(in srgb,var(--green-ink) 18%,transparent)}
+.wsets-fill{position:absolute;top:2px;bottom:2px;inset-inline-start:0;border-radius:3px;background:var(--label-2)}
+.wsets-row.in .wsets-fill{background:var(--green-ink)}
+.wsets-row.above .wsets-fill{background:var(--orange-ink)}
+.wsets-st{font-size:var(--fs-caption);line-height:1.33;color:var(--label-2)}
+.wsets-st::first-letter{text-transform:uppercase}
+.wsets-row.in .wsets-st{color:var(--green-ink)}
+.wsets-row.above .wsets-st{color:var(--orange-ink)}
+/* the Home line under the streak: a row in the card, 44px, filling on a press */
+.wsets-home{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;margin-top:8px;padding:6px 0;border:0;border-top:var(--hair) solid var(--sep);
+  background:none;color:var(--label-2);font:inherit;font-size:var(--fs-footnote);line-height:var(--lh-small);text-align:start;cursor:pointer;transition:background var(--fast)}
+.wsets-home:active{background:var(--press-fill)}
+.wsets-home .icn:first-child{color:var(--green-ink);flex:none}
+.wsets-home span{flex:1;min-width:0}
+/* the ranges sheet: the name, then low and high; the steppers go under the name when the two
+   do not fit beside it (a 320px phone, a long name, a large text size) */
+.wsets-edit{display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;padding:8px 0}
+.wsets-edit+.wsets-edit{border-top:var(--hair) solid var(--sep)}
+.wsets-edit-n{flex:1 1 5.5em;min-width:0;font-weight:500;overflow-wrap:break-word}
+.wsets-edit-r{flex:none;display:flex;align-items:center;gap:6px;margin-inline-start:auto}
+.wsets-edit-r .stp{flex:none;width:108px}
+
+/* Strength level: five steps, the reached ones in the accent's ink (a bar that carries meaning
+   keeps 3:1, as the streak's do). */
+.slevel-name{font-size:var(--fs-title3);font-weight:600;line-height:var(--lh-title);letter-spacing:var(--ls-title)}
+.slevel-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:6px 0}
+.slevel-bar span{height:6px;border-radius:3px;background:var(--surface-2)}
+.slevel-bar span.on{background:var(--acc-ink)}
+/* the Stats card: two-line rows, the lift on line one (it wraps, never cut to "barbell bench…"),
+   the level and the ratio on line two, then the steps */
+.slevel-row{padding:8px 0}
+.slevel-row+.slevel-row{border-top:var(--hair) solid var(--sep)}
+.slevel-ex{font-weight:500;min-width:0;overflow-wrap:break-word}
+.slevel-meta{margin-top:1px;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
+.slevel-meta b{color:var(--label);font-weight:600}
+.slevel-src{margin-top:8px}
+.slevel-about{padding:0;border:0;background:none;color:var(--acc-ink);font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+/* About you: a field's label over it, the "not set" hint on one line with its icon */
+.about-lbl{margin:0 0 6px;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
+.about-hint{display:flex;align-items:center;gap:5px;margin-top:6px}
+.about-hint .icn{flex:none}
+.stp.unset .num{color:var(--label-3)}
+
+/* Your week / Your month: four tiles in the sheet. The figure is a display size in a fixed box. */
+.recap-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.recap-tile{padding:12px;border-radius:var(--r-card);background:var(--surface-2);min-width:0}
+.recap-v{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recap-most{display:flex;align-items:center;gap:6px;margin:4px 0 16px}
+.recap-most .icn{flex:none}
+
+/* Home's week countdown under the strip (#753) */
+.wkleft{margin:6px 0 2px;text-align:center}
+.wkleft.done{color:var(--green-ink)}

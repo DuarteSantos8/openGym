@@ -60,7 +60,7 @@ function RecapSheet({ period, close }) {
     <div className="recap-tiles">
       {tiles.map(tile => <div key={tile.label} className="recap-tile"><div className="recap-v">{tile.value}</div><div className="small muted">{tile.label}</div></div>)}
     </div>
-    {r.top && <div className="small muted" style={{ margin: '4px 0 14px' }}><Icon name="figureStrength" /> {topOf(r)}</div>}
+    {r.top && <div className="small muted recap-most"><Icon name="figureStrength" /><span>{topOf(r)}</span></div>}
     <Button variant="primary" icon="share" onClick={shareImage}>{t('Share as image')}</Button>
     <div style={{ height: 8 }} />
     <Button icon="note" onClick={pdf}>{t('Save as PDF')}</Button>

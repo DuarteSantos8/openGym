@@ -65,6 +65,7 @@ import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './se
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
+import ZeppSettingsPage from './ZeppSettings.jsx'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
@@ -480,6 +481,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     data: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
+    zepp: () => '',
   }
 
   const open = id => {
@@ -533,6 +535,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
   const pages = {
     watch: () => <WatchSettingsPage />,
+    zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
@@ -762,7 +765,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* Spoken cues (lib/spoken-cues.js): the next set as a rest starts, "10 seconds", "Rest is
             over" and the count of a hold, in the app's language. The phone's own voice in the
             apps (music ducks and comes back), the browser's elsewhere. Off by default. */}
-        <Section title={t('Spoken cues')} footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
+        {/* No group title: it only repeated the switch's own "Spoken cues" (1.4.5 features pass). */}
+        <Section footer={speechSupported() ? t('Only while the app is on screen. Music turns down for a moment, it never stops.') : t('This browser can’t speak. Try another one.')}>
           <Row icon="chat" iconTint="var(--teal)" title={t('Spoken cues')} className={speechSupported() ? '' : 'dis'}
             subtitle={t('Says your next set, “10 seconds” and “Rest is over”, and counts holds down.')}>
             <Switch aria-label={t('Spoken cues')} checked={S.spokenCues === true} disabled={!speechSupported()}
@@ -774,7 +778,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
                 options={[{ value: 'slow', label: t('Slow') }, { value: 'normal', label: t('Normal') }, { value: 'fast', label: t('Fast') }]}
                 value={speechRateOf(S)} onChange={v => { update(s => { s.speechRate = v }); speak(sampleCue(S.unit), { rate: SPEECH_RATES[v], queue: false }) }} />
             </Row>
-            <Row icon="play" iconTint="var(--green)" title={t('Try it')} accessory="chevron"
+            {/* An action, not a page: no chevron, which promises somewhere to go. */}
+            <Row icon="play" iconTint="var(--green)" title={t('Try it')}
               onClick={() => speak(sampleCue(S.unit), { rate: SPEECH_RATES[speechRateOf(S)], queue: false })} />
           </>}
         </Section>

@@ -145,6 +145,8 @@ tags:
     description: Passkey (WebAuthn) registration and login, sessions
   - name: pairing
     description: Mobile-app pairing (code from a signed-in browser tab)
+  - name: watch
+    description: The watch relay for Zepp OS watches (docs/ZEPP_OS.md)
   - name: password
     description: >-
       Optional name-and-password sign-in (`PASSWORD_LOGIN=1`). Every route here is a 404
@@ -719,6 +721,222 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "invalid or expired code", code: "pair-invalid" }
+
+  /api/watch/pair:
+    post:
+      tags: [watch]
+      operationId: watchPair
+      summary: A pairing code for a Zepp OS watch
+      description: |
+        A signed-in device asks for a code that the Zepp app's settings page for openGym
+        redeems (`POST /api/watch/redeem`). 12 characters typed as `XXXX-XXXX-XXXX`, one per
+        profile (a new one replaces the last), good for ten minutes, held only as a hash.
+      responses:
+        '200':
+          description: The code and when it expires (ms since the epoch).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string }
+                  exp: { type: integer }
+              example: { code: "K7WQ-2MZP-8RTA", exp: 1761743400000 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/redeem:
+    post:
+      tags: [watch]
+      operationId: watchRedeem
+      summary: Redeem a watch pairing code for a watch token
+      description: |
+        Called by the openGym watch app's Side Service inside the Zepp phone app. The code is
+        the credential (CSRF-exempt, throttled per address like a device link). The answer is a
+        watch token (`ogw_…`) that opens `GET`/`POST /api/watch/box` and nothing else; it ends
+        with "sign out everywhere", a new password, a disabled account, an unlink, or 90 days
+        without use.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+                name: { type: string, description: The watch's name for Settings (40 characters). }
+            example: { code: "K7WQ-2MZP-8RTA", name: "Amazfit Balance" }
+      responses:
+        '200':
+          description: Paired.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  id: { type: string }
+                  name: { type: string, description: The profile's name. }
+        '400':
+          description: Code unknown, used or expired.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Too many wrong codes from this address.
+  /api/watch/links:
+    get:
+      tags: [watch]
+      operationId: watchLinks
+      summary: The profile's paired watches
+      responses:
+        '200':
+          description: Id, name, when paired and when last used.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        name: { type: string }
+                        created: { type: integer }
+                        seen: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/unlink:
+    post:
+      tags: [watch]
+      operationId: watchUnlink
+      summary: Unpair one watch, or every watch
+      description: Without an `id`, every watch of the profile. The mailbox goes with the last one.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: Done; the watches left.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/snapshot:
+    put:
+      tags: [watch]
+      operationId: watchSnapshot
+      summary: The page's snapshot for the profile's watches
+      description: |
+        The JSON text the page sends any watch (`frontend/src/lib/watch-sync.js` buildSnapshot),
+        64 KB at most. 409 `no-watch` while no watch is paired.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [json]
+              properties:
+                json: { type: string }
+      responses:
+        '200':
+          description: Stored.
+        '400':
+          description: Not a snapshot.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: No watch paired.
+  /api/watch/events:
+    get:
+      tags: [watch]
+      operationId: watchEvents
+      summary: What the watches sent, oldest first
+      description: |
+        The events exactly as a watch sent them (watch-sync.js applyEvents), until acknowledged
+        (`POST /api/watch/ack`), for two weeks at most. `paired` counts the watches, `seen` is
+        when one last checked in.
+      responses:
+        '200':
+          description: The queue.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events: { type: array, items: { type: object } }
+                  paired: { type: integer }
+                  seen: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/ack:
+    post:
+      tags: [watch]
+      operationId: watchAck
+      summary: Events applied, out of the queue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids: { type: array, items: { type: string } }
+      responses:
+        '200':
+          description: Done.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/watch/box:
+    get:
+      tags: [watch]
+      operationId: watchBoxRead
+      summary: The watch reads the page's last snapshot
+      description: With the watch token as `Authorization Bearer`. `json` is null before the page sent one.
+      security: []
+      responses:
+        '200':
+          description: The snapshot text and when it came (ms).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  json: { type: string, nullable: true }
+                  at: { type: integer }
+        '401':
+          description: No live watch token (`watch-unpaired`).
+    post:
+      tags: [watch]
+      operationId: watchBoxSend
+      summary: The watch sends its events
+      description: |
+        With the watch token. At most 50 events a request, 4 KB each, of the types the page
+        applies; a queue holds 500. `accepted` names the ids the watch may forget (queued now or
+        before, or refused for good); the rest it sends again. The answer carries the snapshot
+        too, so one request does both.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                events: { type: array, items: { type: object } }
+      responses:
+        '200':
+          description: Accepted ids, and the snapshot.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accepted: { type: array, items: { type: string } }
+                  json: { type: string, nullable: true }
+                  at: { type: integer }
+        '401':
+          description: No live watch token (`watch-unpaired`).
 
   /api/login/password:
     post:

@@ -3473,4 +3473,13 @@ export default {
   "Clear filters": "Сбросить фильтры",
   "Overview": "Обзор",
   "Lifts": "Упражнения",
+  // Settings → Zepp OS watch
+  "Zepp OS watch": "Часы на Zepp OS",
+  "Amazfit and other Zepp OS watches talk to openGym through this server. Pair one and your workouts show up on your wrist.": "Amazfit и другие часы на Zepp OS связываются с openGym через этот сервер. Подключите часы, и тренировки появятся на запястье.",
+  "Pair a watch": "Подключить часы",
+  "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "В приложении Zepp откройте настройки приложения openGym для часов и введите этот адрес и код. Код действует десять минут.",
+  "Server address": "Адрес сервера",
+  "Paired watches": "Подключённые часы",
+  "Not heard from yet": "Пока не выходили на связь",
+  "Couldn’t reach your server. Try again in a moment.": "Не удалось связаться с сервером. Попробуйте чуть позже.",
 }

@@ -6,6 +6,12 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased
 
+**openGym on Amazfit watches** (Zepp OS 3 and later: Balance, GTR 4, GTS 4, Active, T-Rex, Cheetah,
+Bip 5 and friends). Same deal as Wear OS: start a routine on the wrist, turn the crown (or tap + and
+-) for weight and reps, Done, a rest ring that buzzes, heart rate on every set, a summary, and a
+shortcut card with your streak. It talks to openGym through your own server, so pair it in
+Settings → Zepp OS watch and type the code into the Zepp app. Works with the web app too.
+
 **A fresh coat of paint.** The whole app got a proper look-and-feel pass, the kind where nobody
 can point at what changed but everything sits better. Home's cards all introduce themselves the
 same way now (a small line, a title, one button), so the screen stops sounding like five apps
@@ -20,6 +26,11 @@ your stuff will appear. Under the hood: one type scale in rem (your browser's te
 now grow the layout too), pinch zoom in the browser and the installed web app (the phone apps
 stay as they were), lifted surfaces for things that float, a readable text shade for your own
 accent colour, and one press feel per kind of control. Same app, better posture.
+The new bits of this release got the same treatment: the set-vs-last arrows sit in a little
+raised chip and stay readable on ticked sets, green and orange have proper light-mode shades,
+the weekly sets and strength cards line up like every other Stats card, Merge into… lives at
+the end of an exercise's sheet (Delete still last), and narrow phones no longer squash the
+muscle names in the ranges sheet.
 
 **Every set against last time** (#907, thanks @lodepav for the idea and the first version). A
 finished set now wears a small ↑, = or ↓ on its number: the same set last time, weight first and

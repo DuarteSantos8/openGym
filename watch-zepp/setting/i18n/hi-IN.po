@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "सर्वर का पता"
+
+msgid "code"
+msgstr "जोड़ने का कोड"
+
+msgid "how"
+msgstr "openGym में सेटिंग, Zepp OS घड़ी, घड़ी जोड़ें खोलें, और दिखाया गया पता और कोड यहाँ लिखें।"
+
+msgid "pair"
+msgstr "जोड़ें"
+
+msgid "pairing"
+msgstr "जोड़ रहे हैं…"
+
+msgid "paired"
+msgstr "{0} से जुड़ गया। घड़ी पर openGym खोलें।"
+
+msgid "failed"
+msgstr "नहीं हुआ। पता और कोड जाँचें, कोड दस मिनट चलता है।"
+
+msgid "unpair"
+msgstr "अलग करें"
+
+msgid "not_paired_yet"
+msgstr "अभी जुड़ा नहीं है।"

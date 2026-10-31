@@ -50,4 +50,19 @@ describe('weekly sets per muscle', () => {
     act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Back to the defaults').click())
     expect(useStore.getState().S.muscleTargets).toBeUndefined()
   })
+
+  it('colours a row by its status class, not inline, and the sheet keeps both steppers together', () => {
+    const host = render(<WeeklySetsCard S={useStore.getState().S} />)
+    const rows = [...host.querySelectorAll('.wsets-row')]
+    expect(rows[0].classList.contains('in')).toBe(true)
+    expect(rows.some(r => r.classList.contains('below'))).toBe(true)
+    for (const r of rows) {
+      expect(r.querySelector('.wsets-fill').style.background).toBe('')
+      expect(r.querySelector('.wsets-st').getAttribute('style')).toBeNull()
+    }
+    muscleTargetsSheet()
+    const sheet = render(useUI.getState().sheets.at(-1).render(() => {}))
+    const edit = sheet.querySelector('.wsets-edit')
+    expect(edit.querySelectorAll('.wsets-edit-r .stp')).toHaveLength(2)
+  })
 })

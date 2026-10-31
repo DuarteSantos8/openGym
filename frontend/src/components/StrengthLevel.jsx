@@ -3,8 +3,7 @@
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { exerciseNameFor } from '../lib/i18n.js'
-import { fmtNum } from '../lib/format.js'
+import { fmtNum, exerciseNameText } from '../lib/format.js'
 import { dateLocale } from '../lib/i18n-core.js'
 
 // A bodyweight ratio to two decimals whatever the weight decimals are set to: 1.25 is not 1.3.
@@ -60,11 +59,11 @@ export function StrengthLevelsCard({ S }) {
       <h2 style={{ margin: 0 }}>{t('Strength levels')}</h2>
       <Button size="sm" icon="person" onClick={aboutYouSheet}>{t('About you')}</Button>
     </div>
+    {/* Two-line rows: the lift in full (it was cut to "barbell bench…", in the catalogue's lower
+        case, beside a level that wrapped), then the level and the ratio, then the steps. */}
     {rows.map(lv => <div key={lv.lift} className="slevel-row">
-      <div className="row between" style={{ gap: 8 }}>
-        <span className="slevel-ex">{EXIDX[lv.id] ? exerciseNameFor(EXIDX[lv.id]) : lv.id}</span>
-        <span className="small"><b>{t(LEVEL_NAME[lv.name])}</b> · {t('{0} × body weight', fmtRatio(lv.ratio))}</span>
-      </div>
+      <div className="slevel-ex">{EXIDX[lv.id] ? exerciseNameText(EXIDX[lv.id]) : lv.id}</div>
+      <div className="slevel-meta"><b>{t(LEVEL_NAME[lv.name])}</b> · {t('{0} × body weight', fmtRatio(lv.ratio))}</div>
       <LevelBar level={lv.level} />
     </div>)}
     <SexHint S={S} />
@@ -79,17 +78,19 @@ function AboutYou() {
   return <>
     <h3>{t('About you')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{t('Only used to grade your strength levels, on this device. Leave it blank if you like.')}</div>
-    <div className="small muted" style={{ marginBottom: 6 }}>{t('Sex')}</div>
-    <Segmented options={[{ value: '', label: t('Not set') }, { value: 'female', label: t('Female') }, { value: 'male', label: t('Male') }]}
+    <div className="about-lbl" id="about-sex">{t('Sex')}</div>
+    <Segmented ariaLabelledby="about-sex" options={[{ value: '', label: t('Not set') }, { value: 'female', label: t('Female') }, { value: 'male', label: t('Male') }]}
       value={sexOf(S) || ''} onChange={v => update(s => { if (v) s.sex = v; else delete s.sex })} />
     <div style={{ height: 16 }} />
-    <div className="small muted" style={{ marginBottom: 6 }}>{t('Year of birth')}</div>
+    <div className="about-lbl">{t('Year of birth')}</div>
     <div className="row" style={{ gap: 8 }}>
-      <Stepper ariaLabel={t('Year of birth')} value={born ?? year - 30} step={1} min={1920} max={year - 10} decimal={false}
+      {/* Unset, the stepper offers a starting year in the placeholder grey, so it does not read
+          as a saved 1996 above the words "Not set". */}
+      <Stepper ariaLabel={t('Year of birth')} className={born ? '' : 'unset'} value={born ?? year - 30} step={1} min={1920} max={year - 10} decimal={false}
         onChange={v => update(s => { s.birthYear = Math.round(v) })} />
       {born && <Button size="sm" variant="ghost" icon="xmark" onClick={() => update(s => { delete s.birthYear })}>{t('Clear')}</Button>}
     </div>
-    {!born && <div className="small dim" style={{ marginTop: 6 }}><Icon name="info" /> {t('Not set')}</div>}
+    {!born && <div className="small dim about-hint"><Icon name="info" /><span>{t('Not set')}</span></div>}
   </>
 }
 export const aboutYouSheet = () => useUI.getState().openSheet(() => <AboutYou />)
