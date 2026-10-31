@@ -122,5 +122,5 @@ export default defineConfig({
   // lower, scripts/check-bundle-syntax.mjs catches (its test builds the bundle).
   build: { chunkSizeWarningLimit: 1500, target: ['safari15', 'chrome100', 'firefox100', 'edge100'] },
   // Gives happy-dom tests a working localStorage on Node 24+ (#733).
-  test: { setupFiles: ['./src/test-setup.js'] }
+  test: { setupFiles: ['./src/test-setup.js'], env: { VITE_FULL_UI: '1' } }
 })

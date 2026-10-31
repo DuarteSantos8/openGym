@@ -35,13 +35,16 @@ import Icon from '../components/Icon.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
-import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
+import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression, setEntryGym } from '../lib/session-start.js'
+import { gymSheet } from '../components/GymSheet.jsx'
 import { routineChangesFromEntry, updateRoutineFromEntry } from '../lib/routines.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
 import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
+import { gymHistory, gymNameOf } from '../lib/gyms.js'
+import { isSimple } from '../lib/simple.js'
 import { bindLiveActions } from '../lib/live-activity.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
@@ -107,7 +110,7 @@ const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 // enough to turn over, far shorter than the rest the set earns once both sides are held.
 const SWITCH_SIDES_SEC = 10
 
-function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
+function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMachine, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const working = useUI(s => s.work)
@@ -206,9 +209,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // The history the rows were built from: before the session's day when it is logged into the
   // past (sessionHistory), so "last time", the best set and the Best chip are not from later on.
   const H = sessionHistory(S)
+  // Simple mode (lib/simple.js): the set rows, the menus and the lines under the title keep to what is
+  // needed to train. The advanced options are in the exercise settings, behind "More options".
+  const simple = isSimple(S)
   // The routine's own last session of this exercise (or any, for a routine that has none), the
   // same one the rows and the progression line were built from (#216).
-  const last = lastEntryFor(H, entry.id, entry.rid)
+  const last = lastEntryFor(gymHistory(H, entry.id, entry.gym || null), entry.id, entry.rid)
   const standingNote = exNoteFor(S, entry.id)
   // Only worth surfacing while there is still work left: once the exercise is finished, a note
   // telling you what to do in it is behind you, and the block is already long.
@@ -233,7 +239,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // climb, a deload, an added set), or they carry last session's reps ("Your last session").
   // An entry built before plans were stamped, and a freestyle one, has no plan to show.
   const planned = entry.planned && mode !== 'cardio' ? entry.planned : null
-  const planLine = (() => {
+  const planLine = simple ? null : (() => {
     if (!planned) return null
     const today = entry.target || {}
     // A pyramid reads as its targets, as on the routine row: "12 · 8 · 6 · Max · 12", never the
@@ -311,7 +317,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // Effort (RIR or RPE, whichever the profile logs) only makes sense for weighted rep sets,
   // not cardio/timed holds, and is opt-in since it adds a third stepper to every row. `opt`
   // because an unlogged effort is not the same as 0 — RIR 0 says the set went to failure.
-  const kind = effortOf(S)
+  const kind = simple ? 'none' : effortOf(S)
   const eff = EFFORT[kind]
   // The effort column carries the scale key (`eff`) and its field name; unlike weight/reps it
   // is not a stepper — it opens a colour-coded picker (see effortCell). `f` is s.rir or s.rpe.
@@ -359,7 +365,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // The rows and their drop-set sub-rows form one sequence in the order the bar sees them, keyed
   // `i` for a set and `i:dN` for its N-th drop; a rest-pause burst keeps the set's weight, so it
   // is not in the sequence.
-  const plateLoading = mode === 'reps' && !editing
+  const plateLoading = mode === 'reps' && !editing && !simple
   const loadKind = plateLoading ? loadKindFor(S, cfg) : 'none'
   const base = baseWeightFor(S, entry.id)
   const loadSeq = loadKind === 'none' ? [] : (() => {
@@ -423,9 +429,10 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         onSwap && { icon: 'swap', label: t('Swap exercise'), onClick: onSwap, disabled: busy },
         // The slot's planned backups (#649), one tap each: the machine is taken, the plan says what next.
         ...(onSwapBackup ? backups.map(b => ({ icon: 'swap', label: t('Swap to {0}', exerciseNameText(b)), sub: t('Planned backup, same sets and reps'), onClick: () => onSwapBackup(b.id), disabled: busy })) : []),
-        { icon: 'sunrise', label: t('Add warm-up set'), onClick: onAddWarmup },
+        onMachine && { icon: 'mapPin', label: t('Machine'), sub: gymNameOf(S, entry.gym) || t('No machine'), onClick: onMachine, disabled: busy },
+        !simple && { icon: 'sunrise', label: t('Add warm-up set'), onClick: onAddWarmup },
         { icon: 'note', label: entry.note ? t('Edit note') : t('Add note'), sub: entry.note || undefined, onClick: () => exerciseNoteSheet(entryIdx) },
-        onNoProg && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
+        !simple && onNoProg && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('This exercise, this session only'), on: entry.noProg === true, onClick: () => onNoProg(entry.noProg !== true) },
       ] },
       { title: t('Look it up'), items: [
         { icon: 'history', label: t('History'), sub: last ? t('Last time') + ' ' + fmtDate(last.d) : undefined, onClick: () => exerciseHistorySheet(entry.id) },
@@ -435,11 +442,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         onProgressionSettings && { icon: 'slider', label: t('Exercise settings'), sub: guidance ? t(guidance.policyLabel) : t('Sets, reps, rest, progression'), onClick: onProgressionSettings },
         onRest && { icon: 'timer', label: t('Rest timer'), sub: restSub, onClick: onRest },
         plateLoading && { icon: 'plate', label: t('Plate loading'), sub: loadSummary, onClick: () => barWeightSheet(entry.id, cfg) },
-        routineUpdate && { icon: 'clipboard', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
+        !simple && routineUpdate && { icon: 'clipboard', label: t('Update routine'), sub: routineUpdate.sub, onClick: routineUpdate.run },
       ] },
       { title: t('Order and supersets'), items: [
-        onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
-        onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
+        !simple && onPairPrev && { icon: 'link', label: t('Make superset with previous'), onClick: onPairPrev },
+        !simple && onPairNext && { icon: 'link', label: t('Make superset with next'), onClick: onPairNext },
         onMoveUp && { icon: 'chevronUp', label: t('Move up'), onClick: onMoveUp, disabled: busy || !canMoveUp },
         onMoveDown && { icon: 'chevronDown', label: t('Move down'), onClick: onMoveDown, disabled: busy || !canMoveDown },
       ] },
@@ -505,8 +512,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           !editing && { icon: 'timer', label: t('Rest after this set'), sub: ownRestHere == null ? t('Default ({0})', fmtRest(setRestDefault(i))) : ownRestHere === 0 ? t('No timer') : fmtRest(ownRestHere), onClick: () => openSetRest(i) },
         ] },
         { title: t('Add to this set'), items: [
-          !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) },
-          !warm && mode === 'reps' && !isDropSet(s) && { icon: 'bolt', label: t('Rest-pause burst'), sub: t('+ Burst'), onClick: () => addBurstRow(i) },
+          !simple && !warm && mode === 'reps' && !isRestPauseSet(s) && { icon: 'arrowDown', label: t('Drop set'), sub: t('+ Drop'), onClick: () => addDropRow(i) },
+          !simple && !warm && mode === 'reps' && !isDropSet(s) && { icon: 'bolt', label: t('Rest-pause burst'), sub: t('+ Burst'), onClick: () => addBurstRow(i) },
         ] },
         { items: [
           onCopySetAt && { icon: 'copy', label: t('Copy this set'), onClick: () => onCopySetAt(i) },
@@ -693,6 +700,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         <button className="iconbtn" aria-label={t('More')} title={t('More')} onClick={openMore}><Icon name="more" /></button>
       </div>
     </div>
+    {/* The machine this exercise is done on (lib/gyms.js): a full-width button under the title, in
+        every layout, so it cannot be missed. Weights open from the last time on it. */}
+    {!cardio && onMachine && <Button size="sm" variant="tinted" icon="mapPin" trailingIcon="chevronDown" disabled={busy}
+      style={{ width: '100%', justifyContent: 'space-between', marginBottom: 8 }} onClick={onMachine}>
+      {gymNameOf(S, entry.gym) || t('Which machine?')}
+    </Button>}
     {/* Kept out of progression: by hand for this session (the ⋯ menu, with its undo right here),
         or by a deload or rehab routine, which owns that choice and offers no undo. On in every
         view, compact included: it changes what the next session is built from. */}
@@ -733,7 +746,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     {entry.note && <div className="exnote">{entry.note}</div>}
     {planLine}
     {refLine}
-    {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
+    {!simple && guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
       aria-label={t('Open exercise settings')} onClick={onProgressionSettings}>
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' ? 'arrowDown' : 'lightbulb'} />
       <span><strong>{t(guidance.policyLabel)}</strong> · {t(...guidance.why)}</span>
@@ -1418,9 +1431,25 @@ function ActiveWorkout() {
     if (focusMode) focusPointerEpoch.current++
     swapActiveWorkoutExercise(idx)
   }
+  // The machine one exercise is done on (lib/gyms.js). Moving an exercise to another machine
+  // rebuilds its rows from that machine's history when nothing is logged on it yet; a saved
+  // workout opened for editing can be moved to another machine, never to none.
+  const changeMachine = idx => {
+    const entry = useStore.getState().S.active?.entries?.[idx]
+    if (!entry) return
+    const activeId = useStore.getState().S.active.id
+    gymSheet({
+      current: entry.gym || null, allowNone: !editing,
+      onPick: id => update(s => {
+        if (s.active?.id !== activeId || s.active.entries?.[idx]?.id !== entry.id) return
+        setEntryGym(s, idx, id)
+      }),
+    })
+  }
   const blockProps = idx => ({
     editing,
     onSwap: () => swapExercise(idx),
+    onMachine: () => changeMachine(idx),
     onSwapBackup: id => {
       if (focusMode) focusPointerEpoch.current++
       swapActiveWorkoutToBackup(idx, id)
@@ -1586,7 +1615,7 @@ function ActiveWorkout() {
         { icon: 'pencil', label: t('Rename workout'), onClick: renameWorkoutSheet },
         { icon: 'layout', label: t('Layout'), sub: LAYOUT_LABEL[workoutView] || LAYOUT_LABEL.cards, onClick: openLayoutMenu },
         { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
-        noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
+        !isSimple(S) && noProgSwitchable && { icon: 'chartLineSlash', label: t('Don’t count for progression'), sub: t('Every exercise in this workout'), on: sessionNoProg(A), onClick: toggleSessionNoProg },
       ] },
     ],
   })
@@ -1661,7 +1690,7 @@ function ActiveWorkout() {
         // kept in place (done warm-ups first, then done work sets, then the fresh remainder).
         // Without a prescription only in a routine kept out of progression: an exercise kept out
         // by hand keeps its prescription, so its Undo leaves the numbers it should count at.
-        const built = buildPlannedEntry(sessionHistory(s), full, activeRoutine, { noProg: builtOutOfProgression(activeEntry, activeRoutine) })
+        const built = buildPlannedEntry(sessionHistory(s), full, activeRoutine, { noProg: builtOutOfProgression(activeEntry, activeRoutine), gym: activeEntry.gym || null })
         const fresh = built.sets
         // A per-side set with one side ticked is logged work too, not a row to rebuild.
         const logged = x => x.done || x.sides?.L?.done || x.sides?.R?.done

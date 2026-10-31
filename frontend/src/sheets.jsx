@@ -61,6 +61,7 @@ import { useSheetKeyboard, useRevealActiveChip, tappable } from './lib/use-sheet
 import { useAutoMore } from './lib/use-auto-more.js'
 import { isFav, toggleFav, sortFavouritesFirst, sortYoursFirst } from './lib/favourites.js'
 import { buildSessionEntries, buildPlannedEntry, buildSessionEntry, plannedConfigOf } from './lib/session-start.js'
+import { isSimple } from './lib/simple.js'
 import { finishCompare, finishCardio } from './lib/finish-compare.js'
 import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
@@ -1891,6 +1892,9 @@ function BackupsSheet({ ex, subs: initial, onChange, close }) {
 
 function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, initial, saveLabel, backupsEditable }) {
   const st = useStore(s => s.S)
+  // Simple mode (lib/simple.js): the sheet opens on sets, reps, weight, rest and a note; the rest is
+  // behind "More options", and open from the start for an exercise that already uses any of it.
+  const [showAdv, setShowAdv] = useState(false)
   // No warm-up rest of its own: the profile's (Settings > Workout) when it has one, else the work rest.
   const warmAll = typeof st.warmupRestSec === 'number' ? st.warmupRestSec : null
   const warmLikeAll = warmAll === null ? t('Like the work sets') : t('Default ({0})', warmAll > 0 ? fmtRest(warmAll) : t('No timer'))
@@ -1927,6 +1931,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   const warmApplies = warmAll !== null ? warmAll : ownExerciseRest(c) ?? st.restSec
   // Pyramid sets: one rep target per set, in place of the flat Sets × Reps (CONTEXT.md).
   const pyramid = mode === 'reps' && isPyramid({ ...c, mode })
+  const simple = isSimple(st)
+  const hasAdvanced = pyramid || !!c.intensifier?.type || (c.warmupSets || 0) > 0 || perSide || c.lastToFailure === true || c.dbLoad != null
+  const showAdvanced = !simple || showAdv || hasAdvanced
   const setPyramidAt = (i, v) => setC(x => ({ ...x, pyramid: x.pyramid.map((p, j) => (j === i ? v : p)) }))
   const progressionPolicy =policyFor({ ...c, id: ex.id }, routine, mode)
   const progressionStepInvalid = !progressionStepIsValid(progressionStepOf(c, mode, ex, st.unit), progressionPolicy, c.backoff === true && backoffOffered(c, mode, ex, bw), weightlessOf(c, mode, bw))
@@ -2050,11 +2057,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         turns into a translatable label. */}
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0 14px' }}>
       {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
-      <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span><span className="tag">{t(ex.eq)}</span>
-      {!cardio && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
+      <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>{!simple && <span className="tag">{t(ex.eq)}</span>}
+      {!cardio && !simple && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
         .map((s, i) => <span key={i} className="tag dim">{t(MUSCLE_NAME[s] || s)}</span>)}
     </div>
-    {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
+    {!simple && descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     <div style={{ marginBottom: 14 }}>
       <Segmented className="seg-range" value={mode} onChange={setMode}
         options={[...(cardioEx ? [{ value: 'cardio', label: t('Cardio') }] : []), { value: 'reps', label: t('Reps') }, { value: 'time', label: t('Time') }]} />
@@ -2087,6 +2094,10 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {!bw && !pyramid && <Stepper label={t('Weight ({0})', st.unit)} value={c.weight} step={2.5} onChange={v => setC(x => ({ ...x, weight: v }))} />}
       </>}
     </div>
+    {simple && !hasAdvanced && <div style={{ display: 'flex', justifyContent: 'center', margin: '0 0 14px' }}>
+      <Button size="sm" variant="ghost" trailingIcon={showAdv ? 'chevronUp' : 'chevronDown'} onClick={() => setShowAdv(v => !v)}>{showAdv ? t('Fewer options') : t('More options')}</Button>
+    </div>}
+    {showAdvanced && <>
     {/* Pyramid sets: a row per set, each with its own reps or Max, rest and weight. A set left
         at 0 weight starts from that same set last time (buildSets). */}
     {pyramid && <div style={{ marginTop: -10, marginBottom: 18 }}>
@@ -2158,6 +2169,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {mode === 'time' && !bw && <div className="small dim" style={{ marginBottom: 18 }}>
       {t('A timer runs while you hold the set. Leave the weight at 0 for bodyweight holds.')}
     </div>}
+    </>}
     {/* Per-exercise rest (issue #10). Its own full-width row, like the other steppers with an
         explanation under them, and outside every mode branch because a heavy triple, a plank
         and a cardio interval all rest — they just do not all want the same break. */}
@@ -2181,6 +2193,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     <div className="small dim" style={{ marginBottom: 18 }}>
       {t('Rest after each set of this exercise. No timer means no countdown, you go when you’re ready.')}
     </div>
+    {showAdvanced && <>
     {/* The warm-ups' own rest: the profile's or like the work sets (no field, as always), no timer,
         or a time of their own. The last warm-up still rests the full work rest before the first work set. */}
     {!cardio && <>
@@ -2283,6 +2296,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
           : { ...x, ...flatFromPyramid(x.pyramid), pyramidDraft: x.pyramid, pyramid: undefined }))} />
       </Row>}
     </div>}
+    </>}
     {/* A stepper is too wide to sit in a list row next to a label — it squeezes the text to
         one word per line — so added weight gets the same full-width treatment as sets and
         reps, with its explanation underneath. */}
@@ -2295,6 +2309,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         {t('For dips or pull-ups with a belt. Progression then follows the weight.')}
       </div>
     </>}
+    {showAdvanced && <>
     {/* The rep ceiling only means something when there is no load to add instead. */}
     {mode === 'reps' && bw && !(c.weight > 0) && <div className="row cfgrow" style={{ marginBottom: 18 }}>
       <Stepper label={t('Top of the range')} value={c.repsMax || 0} step={1} decimal={false}
@@ -2360,6 +2375,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     {pyramid
       ? <div className="small dim" style={{ marginBottom: 18 }}>{t('Weight is up to you: pyramid sets are not progressed automatically.')}</div>
       : <ProgressionFields ex={ex} mode={mode} c={c} setC={setC} routine={routine} unit={st.unit} perSide={perSide} bw={bw} />}
+    </>}
     <textarea className="input" rows={3} maxLength={500} style={{ marginBottom: 18 }}
       placeholder={t('Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering')}
       value={c.note || ''} onChange={e => setC(x => ({ ...x, note: e.target.value }))} />

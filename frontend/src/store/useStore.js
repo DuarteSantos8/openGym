@@ -89,7 +89,10 @@ const gainedWorkoutMedia = (prev, next) => {
 }
 export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
-  theme: 'dark', accent: 'lime', body: 'male', targetW: null,
+  theme: 'dark', accent: 'red', body: 'male',
+  // Simple mode (lib/simple.js): the advanced options are folded away. On by default; Settings → Look & Home.
+  // The test suite runs with VITE_FULL_UI=1 (vite.config.js) so its older tests keep exercising the full app.
+  simple: import.meta.env.VITE_FULL_UI !== '1', targetW: null,
   // The weekly-rate corridor on the body-weight card (#759, lib/bodyweight.js rateCorridor).
   rateGoal: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},

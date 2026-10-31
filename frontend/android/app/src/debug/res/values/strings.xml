@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <!-- Debug-only overrides so the test build shows a distinct name next to the real app.
-         Merged over src/main/res for the debug variant only; the release build keeps openGym. -->
-    <string name="app_name">OpenGymTest</string>
-    <string name="title_activity_main">OpenGymTest</string>
+    <!-- The APK built by .github/workflows/android-apk.yml is a debug build, so this is the name
+         it shows on the phone. Merged over src/main/res for the debug variant only. -->
+    <string name="app_name">Reta-rpm.fr</string>
+    <string name="title_activity_main">Reta-rpm.fr</string>
 </resources>

@@ -6,6 +6,7 @@ import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
 import { fmtDate, fmtNum, fmtPlate } from '../lib/format.js'
 import { EFFORT, effortOf, modeOf } from '../lib/history.js'
 import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
+import { gymHistory } from '../lib/gyms.js'
 import { effortColor, rirOf } from '../lib/effort.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
 import {
@@ -116,7 +117,7 @@ export default function FocusView({
   const speedUnit = speedUnitOf(S)
   const entry = S.active.entries[entryIdx]
   const ex = exOr(entry.id)
-  const last = lastEntryFor(S, entry.id)
+  const last = lastEntryFor(gymHistory(S, entry.id, entry.gym || null), entry.id)
   const pinnedNote = pinnedNoteFor(S, entry.id)
   const guidance = progressionGuidance(entry.plan)
   // Exercise operations use indexes, so their local-only epoch discards stale pointers instead

@@ -1,13 +1,13 @@
 {
-  "name": "openGym",
-  "short_name": "openGym",
+  "name": "Reta-rpm.fr",
+  "short_name": "Reta-rpm",
   "description": "Personal gym & body weight tracker",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0c0e12",
-  "theme_color": "#0c0e12",
+  "background_color": "#0a0a0b",
+  "theme_color": "#0a0a0b",
   "icons": [
     { "src": "icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
