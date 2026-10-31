@@ -22,7 +22,9 @@ const LANGS = {
 // The watch's key (what the Swift source says) → the app's key, for words the app already has.
 const FROM_APP = {
   'Today': 'Today',
+  'Routines': 'Routines',
   'Start workout': 'Start workout',
+  'Start': 'Start',
   'Done': 'Done',
   'Warm-up': 'Warm-up',
   'Reps': 'Reps',
@@ -32,6 +34,8 @@ const FROM_APP = {
   'Finish workout?': 'Finish workout?',
   'Finish and save': 'Finish and save',
   'Discard workout': 'Discard workout',
+  'Discard workout?': 'Discard workout?',
+  'The sets you logged in this session will be lost.': 'The sets you logged in this session will be lost.',
   'Continue workout': 'Continue workout',
   'Cancel': 'Cancel',
   'Rest’s over. Next set!': 'Rest’s over. Next set!',
@@ -53,12 +57,21 @@ const FROM_APP = {
   'More': 'More',
   'Effort': 'Effort',
   'None': 'None',
+  'Delete': 'Delete',
+  'Planned': 'Planned',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
 
 // Only the watch says these. %@ is a name, %lld a number, as the Swift source interpolates them.
 const OWN = {
+  // The count on a routine's row ("Exercises 5 · Sets 17"): label first, as the watch has no plurals. The app's
+  // "Exercises" means the library in zh and zh-TW, so these are the watch's own.
+  'Exercises': {
+    de: 'Übungen', fr: 'Exercices', es: 'Ejercicios', it: 'Esercizi', 'pt-PT': 'Exercícios', 'pt-BR': 'Exercícios',
+    pl: 'Ćwiczenia', hu: 'Gyakorlatok', tr: 'Egzersizler', ru: 'Упражнения', uk: 'Вправи', ar: 'التمارين',
+    hi: 'व्यायाम', bn: 'ব্যায়াম', th: 'ท่าออกกำลังกาย', ko: '운동', 'zh-Hans': '动作', 'zh-Hant': '動作',
+  },
   'No workout running': {
     de: 'Kein Training läuft', fr: 'Aucune séance en cours', es: 'Ningún entreno en curso', it: 'Nessun allenamento in corso',
     'pt-PT': 'Nenhum treino a decorrer', 'pt-BR': 'Nenhum treino em andamento', pl: 'Żaden trening nie trwa', hu: 'Nincs folyamatban edzés',
@@ -186,6 +199,12 @@ const OWN = {
   'Tap to change it.': {
     de: 'Tippe, um es zu ändern.', fr: 'Touche pour le changer.', es: 'Toca para cambiarlo.', it: 'Tocca per cambiarlo.', 'pt-PT': 'Toca para mudar.', 'pt-BR': 'Toque para mudar.', pl: 'Stuknij, by zmienić.', hu: 'Koppints a módosításhoz.', tr: 'Değiştirmek için dokun.', ru: 'Нажмите, чтобы изменить.', uk: 'Торкнись, щоб змінити.', ar: 'اضغط للتغيير.', hi: 'बदलने के लिए टैप करें।', bn: 'বদলাতে ট্যাপ করুন।', th: 'แตะเพื่อเปลี่ยน', ko: '탭해서 바꾸세요.', 'zh-Hans': '轻点以更改。', 'zh-Hant': '輕點以更改。',
   },
+  'Type a number': {
+    de: 'Zahl eingeben', fr: 'Saisir un nombre', es: 'Escribir un número', it: 'Digita un numero', 'pt-PT': 'Escrever um número', 'pt-BR': 'Digitar um número', pl: 'Wpisz liczbę', hu: 'Szám beírása', tr: 'Sayı gir', ru: 'Ввести число', uk: 'Ввести число', ar: 'إدخال رقم', hi: 'संख्या लिखें', bn: 'সংখ্যা লিখুন', th: 'พิมพ์ตัวเลข', ko: '숫자 입력', 'zh-Hans': '输入数字', 'zh-Hant': '輸入數字',
+  },
+  'Tap again to type a number.': {
+    de: 'Tippe erneut, um eine Zahl einzugeben.', fr: 'Touche encore pour saisir un nombre.', es: 'Toca otra vez para escribir un número.', it: 'Tocca di nuovo per digitare un numero.', 'pt-PT': 'Toca outra vez para escrever um número.', 'pt-BR': 'Toque de novo para digitar um número.', pl: 'Stuknij ponownie, by wpisać liczbę.', hu: 'Koppints újra egy szám beírásához.', tr: 'Sayı girmek için tekrar dokun.', ru: 'Нажмите ещё раз, чтобы ввести число.', uk: 'Торкнись ще раз, щоб ввести число.', ar: 'اضغط مرة أخرى لإدخال رقم.', hi: 'संख्या लिखने के लिए फिर से टैप करें।', bn: 'সংখ্যা লিখতে আবার ট্যাপ করুন।', th: 'แตะอีกครั้งเพื่อพิมพ์ตัวเลข', ko: '다시 탭해서 숫자를 입력하세요.', 'zh-Hans': '再轻点一次以输入数字。', 'zh-Hant': '再輕點一次以輸入數字。',
+  },
   'Added weight': {
     de: 'Zusatzgewicht', fr: 'Poids ajouté', es: 'Peso añadido', it: 'Peso aggiunto', 'pt-PT': 'Peso adicional', 'pt-BR': 'Peso adicional', pl: 'Dodatkowy ciężar', hu: 'Plusz súly', tr: 'Ek ağırlık', ru: 'Доп. вес', uk: 'Додаткова вага', ar: 'وزن إضافي', hi: 'अतिरिक्त वज़न', bn: 'অতিরিক্ত ওজন', th: 'น้ำหนักเพิ่ม', ko: '추가 무게', 'zh-Hans': '附加重量', 'zh-Hant': '附加重量',
   },
@@ -194,6 +213,14 @@ const OWN = {
   },
   'Opens openGym.': {
     de: 'Öffnet openGym.', fr: 'Ouvre openGym.', es: 'Abre openGym.', it: 'Apre openGym.', 'pt-PT': 'Abre o openGym.', 'pt-BR': 'Abre o openGym.', pl: 'Otwiera openGym.', hu: 'Megnyitja az openGymet.', tr: 'openGym’i açar.', ru: 'Открывает openGym.', uk: 'Відкриває openGym.', ar: 'يفتح openGym.', hi: 'openGym खोलता है।', bn: 'openGym খোলে।', th: 'เปิด openGym', ko: 'openGym을 열어요.', 'zh-Hans': '打开 openGym。', 'zh-Hant': '打開 openGym。',
+  },
+  // Finish workout is a one-second hold: this is the line under it.
+  'Hold to finish': {
+    de: 'Zum Beenden gedrückt halten', fr: 'Maintiens pour terminer', es: 'Mantén pulsado para terminar', it: 'Tieni premuto per terminare',
+    'pt-PT': 'Mantém premido para terminar', 'pt-BR': 'Segure para terminar', pl: 'Przytrzymaj, aby zakończyć', hu: 'Tartsd lenyomva a befejezéshez',
+    tr: 'Bitirmek için basılı tut', ru: 'Удерживайте, чтобы завершить', uk: 'Утримуй, щоб завершити', ar: 'اضغط مطولًا للإنهاء',
+    hi: 'समाप्त करने के लिए दबाए रखें', bn: 'শেষ করতে চেপে ধরে রাখুন', th: 'กดค้างเพื่อจบ', ko: '길게 눌러 마치기',
+    'zh-Hans': '长按结束', 'zh-Hant': '長按結束',
   },
 }
 

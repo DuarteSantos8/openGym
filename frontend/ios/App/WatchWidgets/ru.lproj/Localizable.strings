@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, ru. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Сегодня";
+"Routines" = "Программы";
 "Start workout" = "Начать тренировку";
+"Start" = "Старт";
 "Done" = "Готово";
 "Warm-up" = "Разминка";
 "Reps" = "Повт.";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Завершить тренировку?";
 "Finish and save" = "Завершить и сохранить";
 "Discard workout" = "Отменить тренировку";
+"Discard workout?" = "Отменить тренировку?";
+"The sets you logged in this session will be lost." = "Подходы, записанные в этой сессии, будут потеряны.";
 "Continue workout" = "Продолжить тренировку";
 "Cancel" = "Отмена";
 "Rest’s over. Next set!" = "Отдых окончен. Следующий подход!";
@@ -32,7 +36,10 @@
 "More" = "Больше";
 "Effort" = "Усилие";
 "None" = "Нет";
+"Delete" = "Удалить";
+"Planned" = "Запланировано";
 "Last time: %@" = "В прошлый раз: %@";
+"Exercises" = "Упражнения";
 "No workout running" = "Тренировка не идёт";
 "Not synced yet" = "Ещё не синхронизировано";
 "Open openGym on your iPhone once and your routines show up here." = "Откройте openGym на iPhone один раз, и ваши программы появятся здесь.";
@@ -60,6 +67,9 @@
 "Set %lld of %lld" = "Подход %lld из %lld";
 "%lld of %lld sets" = "%lld из %lld подходов";
 "Tap to change it." = "Нажмите, чтобы изменить.";
+"Type a number" = "Ввести число";
+"Tap again to type a number." = "Нажмите ещё раз, чтобы ввести число.";
 "Added weight" = "Доп. вес";
 "Your rest, your next set, or today's workout." = "Отдых, следующий подход или сегодняшняя тренировка.";
 "Opens openGym." = "Открывает openGym.";
+"Hold to finish" = "Удерживайте, чтобы завершить";
