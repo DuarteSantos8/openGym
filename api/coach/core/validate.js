@@ -56,6 +56,26 @@ const isStr = v => typeof v === 'string' && v.trim().length > 0;
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
 const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 const clampStr = (v, n) => String(v == null ? '' : v).slice(0, n);
+
+/* Catalogue ids are zero-padded strings ("0024"), and a model that met an id as "0024" in the
+ * payload routinely re-serializes it as a JSON number (24) or an unpadded string ("24") — to a
+ * language model the quotes and the zeros carry no meaning. Both forms used to fail the
+ * exact-match checks below, and the single repair round was spent re-sending the same number
+ * (temperature 0), so the job failed whatever the model. The numeric forms are read as the
+ * padded id they mean; anything else is judged exactly as it arrived. */
+const asLibraryId = v => {
+  if (typeof v === 'number' && Number.isInteger(v) && v >= 0) v = String(v);
+  return typeof v === 'string' && /^\d{1,5}$/.test(v) ? v.padStart(4, '0') : v;
+};
+// An id that already resolves as sent keeps its identity — the padded reading is only the
+// fallback, so a custom exercise someone really did call "24" is never rewritten to "0024".
+const resolveExId = (id, has) => (typeof id === 'string' && has(id) ? id : asLibraryId(id));
+/* The old "must be an exercise id from the library" said nothing about what arrived, and the
+   repair round cannot fix what it cannot see — a model that sent 24 for "0024" sent 24 again.
+   Name the received value and the exact-copy rule. */
+const BAD_EX_ID = (where, id) =>
+  `${where} ${JSON.stringify(id) ?? 'was missing'} is not an exercise id from the library — `
+  + `copy an id exactly as it appears in the library array, leading zeros included ("0024", not 24)`;
 // The minutes and pace of a cardio exercise a review adds, in the bounds the 'cardio' change
 // holds them to. Without them the app fell back to 20 min at 8 km/h whatever was shown (#640).
 const cardioTarget = e => (e.mode !== 'cardio' ? {} : {
@@ -123,15 +143,18 @@ export function validatePlan(data, ctx = {}) {
     const ex = [];
     (Array.isArray(r.ex) ? r.ex : []).slice(0, MAX_EX_PER_ROUTINE).forEach((e, ei) => {
       const where = `routines[${ri}].ex[${ei}]`;
-      if (!e || !isStr(e.id)) { errors.push(`${where}.id is required`); return; }
+      if (!e || (!isStr(e.id) && !(typeof e.id === 'number' && Number.isInteger(e.id)))) { errors.push(`${where}.id is required`); return; }
+      // The padded reading (asLibraryId) is only the fallback: an id that resolves as sent —
+      // a customEx entry defined in this same answer — keeps its identity.
+      const eid = libraryHas(e.id) || proposedIds.has(e.id) ? e.id : asLibraryId(e.id);
       // FR-16: an id that resolves to nothing invalidates the proposal rather than being
       // dropped into a plan that renders blank the first time it is trained.
-      if (!libraryHas(e.id) && !proposedIds.has(e.id)) {
-        errors.push(`${where}.id "${e.id}" is not in the exercise library and is not one of your own customEx entries — use an id from the library provided in the payload`);
+      if (!libraryHas(eid) && !proposedIds.has(eid)) {
+        errors.push(`${where}.id ${JSON.stringify(e.id)} is not in the exercise library and is not one of your own customEx entries — use an id from the library provided in the payload`);
         return;
       }
-      if (offEquipment(ctx, e.id)) { errors.push(OFF_EQUIPMENT(`${where}.id`, e.id)); return; }
-      const clean = { id: e.id, sets: isInt(e.sets, 1, 10) ? e.sets : 3 };
+      if (offEquipment(ctx, eid)) { errors.push(OFF_EQUIPMENT(`${where}.id`, eid)); return; }
+      const clean = { id: eid, sets: isInt(e.sets, 1, 10) ? e.sets : 3 };
       const mode = MODES.includes(e.mode) ? e.mode : 'reps';
       const perSide = !!e.side;
       if (mode === 'cardio') {
@@ -303,7 +326,9 @@ export function validateReview(data, plan, ctx = {}) {
     let planned = null;
     if (needsEx.includes(c.type)) {
       if (!target.exId) { errors.push(`${where}.target.exId is required for type "${c.type}"`); return; }
-      planned = (routine.ex || []).find(e => e.id === target.exId) || null;
+      // Exact match first, then the padded reading of the id the model sent (see asLibraryId).
+      planned = (routine.ex || []).find(e => e.id === target.exId)
+        || (routine.ex || []).find(e => e.id === asLibraryId(target.exId)) || null;
       if (!planned) {
         errors.push(`${where}.target.exId "${target.exId}" is not in routine "${routine.name}" (routineId "${routine.id}") — `
           + `a change's target.exId must be one of that routine's own exercises: ${exIdsOf(routine)}`); return;
@@ -323,7 +348,9 @@ export function validateReview(data, plan, ctx = {}) {
         // Same reason as `evidence` below: this is copied into the synced log. For add-routine
         // and week nothing above ever looks at routineId, so it is otherwise unbounded.
         ...(isStr(target.routineId) ? { routineId: clampStr(target.routineId, 40) } : {}),
-        ...(isStr(target.exId) ? { exId: clampStr(target.exId, 40) } : {}),
+        // The plan's own spelling of the id, so the client applies against the entry it has —
+        // not against whatever quoting the model happened to send.
+        ...(planned ? { exId: planned.id } : isStr(target.exId) ? { exId: clampStr(target.exId, 40) } : {}),
         ...(isInt(target.weekday, 0, 6) ? { weekday: target.weekday } : {})
       },
       why: clampStr(c.why, 600),
@@ -338,20 +365,21 @@ export function validateReview(data, plan, ctx = {}) {
     // off the plan above, which is the only copy either side should trust.
     switch (c.type) {
       case 'add-exercise': {
+        const a = c.after || {};
+        const aid = resolveExId(a.id, knownEx);
         // The bundle path forbids the same exercise twice in one routine; so must this. A
         // duplicate makes every later reorder unsatisfiable, makes each targeted change resolve
         // to whichever copy comes first, and makes one "drop it" delete both.
-        if ((routine.ex || []).some(e => e.id === (c.after || {}).id)) {
-          dropDuplicate(ALREADY_IN(where, c, routine), where, c); return;
+        if ((routine.ex || []).some(e => e.id === aid)) {
+          dropDuplicate(ALREADY_IN(where, { ...c, after: { ...a, id: aid } }, routine), where, c); return;
         }
-        const a = c.after || {};
-        if (!isStr(a.id) || !knownEx(a.id)) { errors.push(`${where}.after.id must be an exercise id from the library`); return; }
-        if (offEquipment(ctx, a.id)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, a.id)); return; }
+        if (!isStr(aid) || !knownEx(aid)) { errors.push(BAD_EX_ID(`${where}.after.id`, a.id)); return; }
+        if (offEquipment(ctx, aid)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, aid)); return; }
         const perSide = !!a.side;
         if (perSide && isInt(a.reps, 1, 100) && a.reps % 2) { errors.push(ODD_PER_SIDE(`${where}.after.reps`)); return; }
         if (isInt(a.repsMax, 1, 100) && isInt(a.repsMin, 1, 100) && a.repsMax < a.repsMin) { errors.push(INVERTED_RANGE(`${where}.after`)); return; }
         out.after = {
-          id: a.id, name: libraryName(a.id),
+          id: aid, name: libraryName(aid),
           sets: isInt(a.sets, 1, 10) ? a.sets : 3,
           ...(MODES.includes(a.mode) ? { mode: a.mode } : { mode: 'reps' }),
           ...(isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
@@ -369,17 +397,18 @@ export function validateReview(data, plan, ctx = {}) {
         break;
       }
       case 'swap-exercise': {
+        const a = c.after || {};
+        const aid = resolveExId(a.id, knownEx);
         // Same rule, minus the exercise being swapped out — replacing A with B when B is
         // already there is a duplicate, not a swap.
-        if ((routine.ex || []).some(e => e.id === (c.after || {}).id && e.id !== target.exId)) {
-          dropDuplicate(ALREADY_IN(where, c, routine), where, c); return;
+        if ((routine.ex || []).some(e => e.id === aid && e.id !== planned.id)) {
+          dropDuplicate(ALREADY_IN(where, { ...c, after: { ...a, id: aid } }, routine), where, c); return;
         }
-        const a = c.after || {};
-        if (!isStr(a.id) || !knownEx(a.id)) { errors.push(`${where}.after.id must be an exercise id from the library`); return; }
-        if (offEquipment(ctx, a.id)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, a.id)); return; }
-        if (a.id === target.exId) { errors.push(`${where} swaps an exercise for itself`); return; }
+        if (!isStr(aid) || !knownEx(aid)) { errors.push(BAD_EX_ID(`${where}.after.id`, a.id)); return; }
+        if (offEquipment(ctx, aid)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, aid)); return; }
+        if (aid === planned.id) { errors.push(`${where} swaps an exercise for itself`); return; }
         out.after = {
-          id: a.id, name: libraryName(a.id),
+          id: aid, name: libraryName(aid),
           ...(isInt(a.sets, 1, 10) ? { sets: a.sets } : {}),
           ...(isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
           ...(isNum(a.weight) && a.weight > 0 && a.weight <= MAX_WEIGHT ? { weight: a.weight } : {})
@@ -418,9 +447,10 @@ export function validateReview(data, plan, ctx = {}) {
         if (!POLICIES.includes(c.after)) { errors.push(`${where}.after must be one of ${POLICIES.join(', ')}`); return; }
         break;
       case 'reorder': {
-        const order = Array.isArray(c.after) ? c.after : null;
-        if (!order) { errors.push(`${where}.after must be an array of exercise ids in the new order`); return; }
+        if (!Array.isArray(c.after)) { errors.push(`${where}.after must be an array of exercise ids in the new order`); return; }
         const have = (routine.ex || []).map(e => e.id);
+        // Same padded-id tolerance as everywhere else the model names an exercise back.
+        const order = c.after.map(id => (have.includes(id) ? id : asLibraryId(id)));
         // Same ids, each exactly once. Length plus membership is not enough: a list that names
         // one exercise twice and omits another satisfies both, and a reorder is the one change
         // type with nothing to show in the diff column — so it deletes an exercise on apply
@@ -433,12 +463,14 @@ export function validateReview(data, plan, ctx = {}) {
       }
       case 'superset': {
         const a = c.after || {};
-        if (a.link && !isStr(a.with)) { errors.push(`${where}.after.with is required when linking a superset`); return; }
+        if (a.link && !isStr(a.with) && !(typeof a.with === 'number' && Number.isInteger(a.with))) { errors.push(`${where}.after.with is required when linking a superset`); return; }
+        // The partner resolves against the routine's own entries, padded form tolerated.
+        const withId = a.link ? ((routine.ex || []).find(e => e.id === a.with || e.id === asLibraryId(a.with)) || {}).id : null;
         // Supersetting something with itself resolves to a real exercise and passes the
         // membership check below; the apply path then moves the anchor out from under itself.
-        if (a.link && a.with === target.exId) { errors.push(`${where} supersets an exercise with itself`); return; }
-        if (a.link && !(routine.ex || []).some(e => e.id === a.with)) { errors.push(`${where}.after.with "${a.with}" is not in routine "${routine.name}"`); return; }
-        out.after = { link: !!a.link, ...(a.link ? { with: a.with } : {}) };
+        if (a.link && withId === planned.id) { errors.push(`${where} supersets an exercise with itself`); return; }
+        if (a.link && !withId) { errors.push(`${where}.after.with ${JSON.stringify(a.with)} is not in routine "${routine.name}"`); return; }
+        out.after = { link: !!a.link, ...(a.link ? { with: withId } : {}) };
         break;
       }
       case 'add-routine': {
@@ -451,7 +483,9 @@ export function validateReview(data, plan, ctx = {}) {
         const listed = Array.isArray(a.ex) ? a.ex : [];
         // By index: find() hands back the entry itself, and a null in the list was falsy enough
         // to pass this check and crash on the next line instead of going back for repair.
-        const badAt = listed.findIndex(e => !e || typeof e !== 'object' || !isStr(e.id) || !knownEx(e.id));
+        const badAt = listed.findIndex(e => !e || typeof e !== 'object'
+          || (!isStr(e.id) && !(typeof e.id === 'number' && Number.isInteger(e.id)))
+          || !knownEx(resolveExId(e.id, knownEx)));
         if (badAt >= 0) {
           const bad = listed[badAt];
           errors.push(bad && typeof bad === 'object' && isStr(bad.id)
@@ -459,9 +493,11 @@ export function validateReview(data, plan, ctx = {}) {
             : `${where}.after.ex[${badAt}] is not an exercise — each entry needs an id from the library provided in the payload`);
           return;
         }
-        const offEq = listed.find(e => offEquipment(ctx, e.id));
-        if (offEq) { errors.push(OFF_EQUIPMENT(`${where}.after.ex`, offEq.id)); return; }
-        const ex = listed.slice(0, MAX_EX_PER_ROUTINE);
+        const offEq = listed.find(e => offEquipment(ctx, resolveExId(e.id, knownEx)));
+        if (offEq) { errors.push(OFF_EQUIPMENT(`${where}.after.ex`, resolveExId(offEq.id, knownEx))); return; }
+        // The padded reading settled above travels: the applied routine must name the ids the
+        // catalogue actually holds, not the quoting the model happened to send.
+        const ex = listed.slice(0, MAX_EX_PER_ROUTINE).map(e => ({ ...e, id: resolveExId(e.id, knownEx) }));
         if (!ex.length) { errors.push(`${where}.after.ex must list at least one exercise from the library`); return; }
         const odd = ex.find(e => e.side && isInt(e.reps, 1, 100) && e.reps % 2);
         if (odd) { errors.push(ODD_PER_SIDE(`${where}.after.ex "${odd.id}"`)); return; }

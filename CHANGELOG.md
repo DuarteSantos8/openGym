@@ -4,6 +4,16 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased
+
+**The Coach accepts the exercise ids models actually send.** Catalogue ids are zero-padded
+strings ("0024"), and models of every size routinely answer with the number 24 or the string
+"24" instead, which the review and plan validators rejected as "must be an exercise id from the
+library" until the job failed. The validator now reads the numeric forms as the padded id they
+mean, still refuses ids that resolve to nothing, and names the offending value in its error so
+the one repair round can fix it. A custom exercise of yours that really is called "24" keeps
+its identity.
+
 ## v1.4.3 (2026-10-26)
 
 The community release. Most of what's below was asked for on GitHub and Discord or sent in as a
