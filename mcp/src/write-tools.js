@@ -10,9 +10,11 @@
 import { z } from 'zod'
 import { isoDate, entryView, withCustomsIndexed } from './tools.js'
 import { localUid, invalidate } from './state.js'
-import { apiConfig, apiFetch } from './api-client.js'
+import { apiConfig, apiFetch, apiBase, redeemPairingCode } from './api-client.js'
+import { loadCredentials, saveCredentials } from './credentials.js'
 import { buildLoggedWorkout, appendLoggedWorkout, findDuplicate, BODY_PARTS, LOG_LIMITS } from '../../frontend/src/lib/log-workout.js'
 import { friendlyDuration } from './labels.js'
+import { buildRoutine, appendRoutine, editRoutine, applyRoutineEdit, ROUTINE_LIMITS } from '../../frontend/src/lib/log-routine.js'
 
 const localIso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 const hhmm = t => { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') }
@@ -202,4 +204,185 @@ export const logWorkout = {
   },
 }
 
-export const WRITE_TOOLS = [logWorkout]
+/* The plumbing the plan-editing tools share with log_workout's: whose token this is, the
+   profile as the server sent it, the change built on top of that and nothing else, a conditional
+   write, and a rebuild on the document a 409 carries. `build(S, dryRun)` gets a copy of the profile
+   and answers either { early } (problems, a duplicate, a dry run: nothing is written) or
+   { view, log }, having changed `S` in place. */
+async function changeProfile(toolName, { env = process.env, fetchImpl } = {}, dryRun, build) {
+  const cfg = apiConfig(env)
+  const opts = fetchImpl ? { fetchImpl } : {}
+  const now = Date.now()
+  saves = saves.filter(t => now - t < WINDOW_MS)
+  if (!dryRun && saves.length >= WRITE_LIMIT) {
+    throw fail('ERATE', `The MCP already saved ${WRITE_LIMIT} changes in the last hour, the most it takes in one go; nothing was saved. Wait a bit, or do the rest in the app.`)
+  }
+  const me = await apiFetch(cfg, '/api/me', opts)
+  const uid = me.body?.user?.id
+  if (typeof uid !== 'string' || !uid) throw fail('EAPI', 'the openGym server did not say which profile OPENGYM_TOKEN belongs to (GET /api/me); nothing was saved')
+  const local = localUid()
+  if (local && local !== uid) {
+    console.error(`[opengym-mcp] OPENGYM_TOKEN is for profile ${uid}, this server reads ${local}`)
+    throw fail('EPROFILE', 'OPENGYM_TOKEN belongs to another profile than the one this server reads: pair again from the right profile, or set OPENGYM_UID to match (the ids are on the server\'s stderr)')
+  }
+
+  let got = await apiFetch(cfg, '/api/data', opts)
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const doc = got.body?.state
+    if (!doc || typeof doc !== 'object') {
+      throw fail('ENOSTATE', 'this profile has no synced data on the server yet: open openGym and sign in on a device once, then try again')
+    }
+    // The document exactly as the server sent it, plus the change: nothing else in the PUT.
+    const S = structuredClone(doc)
+    const out = withCustomsIndexed(S, () => build(S, dryRun === true))
+    if (out.early) return out.early
+    const put = await apiFetch(cfg, '/api/data', { ...opts, method: 'PUT', body: { state: S, baseRev: got.body.rev ?? 0, ...(typeof doc._wid === 'string' ? { baseWid: doc._wid } : {}) } })
+    if (put.status !== 409) {
+      invalidate()
+      saves.push(now)
+      console.error(`[opengym-mcp] ${toolName} saved ${out.log}, rev ${put.body?.rev ?? '?'}`)
+      return { ...out.view, revision: put.body?.rev ?? null }
+    }
+    if (!put.body?.state || typeof put.body.state !== 'object' || typeof put.body.rev !== 'number') {
+      throw fail('EAPI', 'the openGym server answered 409 without the current profile; nothing was saved')
+    }
+    got = { status: 200, body: { state: put.body.state, rev: put.body.rev } }
+  }
+  throw fail('ECONFLICT', `the profile kept changing on the server (${MAX_ATTEMPTS} attempts); nothing was saved, try again in a moment`)
+}
+
+// A routine as the model reads it back: names beside the ids, so "squat 3 x 12" can be checked.
+const routineView = (S, r, days) => ({
+  routine_id: r.id,
+  name: r.name,
+  ...(r.emoji ? { emoji: r.emoji } : {}),
+  days: days ?? Object.keys(S.week || {}).filter(d => [].concat(S.week[d] || []).includes(r.id)).map(Number).sort(),
+  exercises: (r.ex || []).map(e => ({
+    id: e.id,
+    name: entryView({ id: e.id, sets: [] }, S).name,
+    sets: e.sets,
+    ...(e.mode === 'time' ? { seconds: e.sec } : { reps: e.reps }),
+    ...(e.weight ? { weight: e.weight } : {}),
+    ...(e.restSec ? { rest_sec: e.restSec } : {}),
+  })),
+})
+
+const daysSchema = z.array(z.union([z.number().int().min(0).max(6), z.string().min(3).max(9)])).max(7)
+const exerciseSchema = z.object({
+  exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("squat"), or an exercise id from an earlier answer.'),
+  sets: z.number().int().min(1).max(ROUTINE_LIMITS.maxSets),
+  reps: z.number().int().min(1).max(ROUTINE_LIMITS.maxReps).optional().describe('Target reps per set. Give reps for a rep exercise, or seconds for a hold, never both.'),
+  seconds: z.number().int().min(1).max(ROUTINE_LIMITS.maxSec).optional().describe('Target seconds per set, for a timed exercise (plank, hang, wall sit).'),
+  weight: z.number().min(0).optional().describe('Starting load in the profile\'s unit. Omit or 0 for bodyweight.'),
+  rest_sec: z.number().int().min(1).max(ROUTINE_LIMITS.maxRestSec).optional().describe('This exercise\'s own rest in seconds; omit to use the app\'s timer.'),
+})
+const specOf = e => ({ exercise: e.exercise, sets: e.sets, reps: e.reps, seconds: e.seconds, weight: e.weight, rest_sec: e.rest_sec })
+
+export const createRoutine = {
+  name: 'create_routine',
+  description: [
+    'Create a routine in the user\'s openGym plan (the same list the Plan screen shows) and, if asked, put it on weekdays. It syncs to all their devices.',
+    'Turn what they said into exercises with sets and either reps or seconds: "squat 3 x 12, plank 3 x 25 s" is {exercise: "squat", sets: 3, reps: 12} and {exercise: "plank", sets: 3, seconds: 25}.',
+    'Ask instead of assuming when the sets, the reps or the days are unclear.',
+    'Exercises are matched against the user\'s library by name or id, exactly as log_workout does: when a name matches several exercises, or none, nothing is saved and `problems` lists candidates; ask the user which one, then call again with its id.',
+    'Weekdays are 0 (Sunday) to 6 (Saturday) or English names; days not named keep what they have, and a routine is added to a day that already has one rather than replacing it.',
+    'Call with dry_run: true first when you had to interpret anything, show the user the preview, and create it once they agree.',
+    'A routine with the same name is never added twice. Cardio by time and speed, supersets and progression rules are not set here: the user adds those in the app. To change a routine that exists, use update_routine.',
+  ].join(' '),
+  schema: {
+    name: z.string().min(1).max(80).describe('The routine\'s name, e.g. "Forza corpo libero".'),
+    emoji: z.string().max(8).optional().describe('One emoji for the routine, if the user wants one.'),
+    days: daysSchema.optional().describe('Weekdays to plan it on: 0 (Sunday) to 6 (Saturday) or English names. Omit to leave it off the week.'),
+    exercises: z.array(exerciseSchema).min(1).max(ROUTINE_LIMITS.maxExercises),
+    dry_run: z.boolean().optional().describe('Build and return the preview without saving anything.'),
+  },
+  handler: (params, ctx) => changeProfile('create_routine', ctx, params.dry_run, (S, dry) => {
+    const built = buildRoutine(S, { name: params.name, emoji: params.emoji, days: params.days, exercises: (params.exercises || []).map(specOf) })
+    if (built.problems) return { early: { created: false, problems: built.problems, next: 'Nothing was saved. Settle these with the user (pick a candidate id, fix a number) and call again.' } }
+    if (built.duplicate) return { early: { created: false, duplicate: true, routine_id: built.duplicate.id, message: `A routine called "${built.duplicate.name}" already exists; nothing was added. Use update_routine to change it, or pick another name.` } }
+    const view = routineView({ ...S, week: built.week }, built.routine, built.days)
+    if (dry) return { early: { created: false, dry_run: true, would_create: view } }
+    appendRoutine(S, built)
+    return { view: { created: true, ...view }, log: `${built.routine.id} created (${built.routine.ex.length} exercises, days ${built.days.join(',') || 'none'})` }
+  }),
+}
+
+export const updateRoutine = {
+  name: 'update_routine',
+  description: [
+    'Change a routine that exists in the user\'s openGym plan: rename it, change its emoji, move it to other weekdays, or change its exercises. It syncs to all their devices.',
+    'Find it first with list_routines and read it with get_routine; `routine` is its id or, when only one routine has it, its name.',
+    'Send only what changes. `days` is the routine\'s weekdays from now on (it replaces the old ones; [] takes it off the week; other routines on those days stay). `exercises` is the whole new list in order and replaces the old one: an exercise it already had keeps what you do not mention (its progression rule, its own rest). For a smaller change use `add_exercises` (appended) and `remove_exercises` (names or ids), which cannot come together with `exercises`.',
+    'Exercises are matched against the library by name or id, as in create_routine: an ambiguous or unknown name saves nothing and `problems` lists candidates.',
+    'Call with dry_run: true first, show the user the result, and save once they agree. Deleting a routine is not done here.',
+  ].join(' '),
+  schema: {
+    routine: z.string().min(1).max(120).describe('The routine\'s id, or its exact name when unique.'),
+    name: z.string().min(1).max(80).optional().describe('A new name.'),
+    emoji: z.string().max(8).optional().describe('A new emoji; an empty string removes it.'),
+    days: daysSchema.optional().describe('The routine\'s weekdays from now on: 0 (Sunday) to 6 (Saturday) or English names. [] takes it off the week; omit to leave the week alone.'),
+    exercises: z.array(exerciseSchema).min(1).max(ROUTINE_LIMITS.maxExercises).optional().describe('The whole new exercise list, replacing the old.'),
+    add_exercises: z.array(exerciseSchema).min(1).max(ROUTINE_LIMITS.maxExercises).optional().describe('Exercises to append to the current list.'),
+    remove_exercises: z.array(z.string().min(1).max(120)).min(1).max(ROUTINE_LIMITS.maxExercises).optional().describe('Exercises to take out of the routine, by name or id.'),
+    dry_run: z.boolean().optional().describe('Build and return the result without saving anything.'),
+  },
+  handler: (params, ctx) => changeProfile('update_routine', ctx, params.dry_run, (S, dry) => {
+    const edit = editRoutine(S, {
+      routine: params.routine,
+      name: params.name,
+      emoji: params.emoji,
+      days: params.days,
+      exercises: params.exercises?.map(specOf),
+      add_exercises: params.add_exercises?.map(specOf),
+      remove_exercises: params.remove_exercises,
+    })
+    if (edit.problems) return { early: { updated: false, problems: edit.problems, next: 'Nothing was saved. Settle these with the user (pick a candidate id, fix a number) and call again.' } }
+    if (!edit.changed.length) return { early: { updated: false, unchanged: true, message: 'Nothing to change: send at least one of name, emoji, days, exercises, add_exercises or remove_exercises.' } }
+    const view = { changed: edit.changed, ...routineView({ ...S, week: edit.week }, edit.routine, edit.days ?? undefined) }
+    if (dry) return { early: { updated: false, dry_run: true, would_update: view } }
+    applyRoutineEdit(S, edit)
+    return { view: { updated: true, ...view }, log: `${edit.routine.id} updated (${edit.changed.join(', ')})` }
+  }),
+}
+
+export const pairOpengym = {
+  name: 'pair_opengym',
+  description: [
+    'Connect this MCP server to the user\'s openGym server so the writing tools (log_workout, create_routine, update_routine) work. Do this when one of them says it is not paired, or when the token expired.',
+    'The user opens the app signed in as their profile, Settings, Account, "Pair the mobile app", approves with their passkey or password, and gives you the code it shows (8 letters and digits, good for five minutes, one use). Pass it as `code`.',
+    '`url` is the address they open openGym at (https, or http for localhost or *.localhost); leave it out when this server is already paired and only the token needs renewing.',
+    'The token it gets back is saved in a private file on this machine and is never shown to you or to anyone: you will not see it, and there is nothing to copy or put in a config. No restart is needed.',
+  ].join(' '),
+  schema: {
+    code: z.string().min(4).max(20).describe('The pairing code the app shows, e.g. K7WQ2MZP (dashes and case do not matter).'),
+    url: z.string().max(300).optional().describe('The address openGym is served at, e.g. http://opengym.docker.localhost. Optional when already paired.'),
+  },
+  handler: async (params, { env = process.env, fetchImpl } = {}) => {
+    const code = String(params.code).replace(/[\s-]/g, '').toUpperCase()
+    if (!/^[A-Z0-9]{4,16}$/.test(code)) throw fail('EPAIR', 'that is not a pairing code: it is 8 letters and digits, shown by the app under Settings, Account, "Pair the mobile app"')
+    const known = loadCredentials(env)
+    const where = (params.url || '').trim() || (env.OPENGYM_URL || '').trim() || known?.url || ''
+    if (!where) throw fail('EPAIR', 'which address is openGym at? Pass `url`, the one the user opens it at (for example http://opengym.docker.localhost)')
+    const base = apiBase(where)
+    const { token, user } = await redeemPairingCode(base, code, fetchImpl ? { fetchImpl } : {})
+    // A token for another profile than the one this server reads would be refused on every write;
+    // better to say so now than to save it.
+    const local = localUid()
+    if (local && user?.id && local !== user.id) {
+      console.error(`[opengym-mcp] the code is for profile ${user.id}, this server reads ${local}`)
+      throw fail('EPROFILE', 'that code belongs to another profile than the one this server reads: pair from the app signed in as the right profile (nothing was saved)')
+    }
+    const file = saveCredentials(env, { url: base, token, user: user ? { id: user.id, name: user.name } : null })
+    invalidate()
+    console.error(`[opengym-mcp] paired with ${user?.name || 'your profile'} (${user?.id || '?'}) at ${base}; token kept in ${file}`)
+    return {
+      paired: true,
+      profile: user?.name || null,
+      url: base,
+      saved_in: file,
+      next: 'Done. The writing tools work now, no restart needed. If OPENGYM_TOKEN is set in this server\'s config it takes precedence over the saved one: remove it there.',
+    }
+  },
+}
+
+export const WRITE_TOOLS = [logWorkout, createRoutine, updateRoutine, pairOpengym]

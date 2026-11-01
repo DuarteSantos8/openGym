@@ -67,7 +67,7 @@ the server's stderr.
 
 ## Tools
 
-Nine read-only tools, and one that writes:
+Nine read-only tools, and four that write:
 
 | Tool | What it answers |
 |---|---|
@@ -81,6 +81,9 @@ Nine read-only tools, and one that writes:
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
 | `log_workout` | *Writes.* "I did dumbbell curls, 12 kg, 12/12/10" → a logged session in your history, on every device. Needs pairing: [Logging workouts](#logging-workouts). |
+| `create_routine` | *Writes.* "Make a routine: squat 3 x 12, plank 3 x 25 s, on Tuesday and Friday" → a routine on the Plan screen, planned on those weekdays, on every device. Same pairing as `log_workout`: [Logging workouts](#logging-workouts). |
+| `update_routine` | *Writes.* "Rename Forza A, move it to Monday and Friday, swap the plank for a bird dog" → the routine changed in place: name, emoji, weekdays, and its exercises (replace the list, or add and remove some). What the description does not mention, such as a progression rule or an exercise's own rest, is kept. Same pairing as `log_workout`. |
+| `pair_opengym` | *Writes nothing to your data.* Connects this MCP server to your openGym server with the one-time code from **Pair the mobile app**; the token is kept in a private file, never shown. [Pairing](#pairing). |
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the
 easiest way for a coach to give wrong advice. `get_routine` reports what the routine *stores*.
@@ -122,6 +125,16 @@ Writes go through the api rather than straight into `./data`, because the api is
 phone's sync and this write from overwriting each other. So the MCP server needs your server's
 address and a sign-in:
 
+The easy way, with nothing to copy and no config to edit: in the app, signed in as the profile to
+log into, open **Settings → Account → Pair the mobile app**, approve with your passkey, and tell
+your LLM the code it shows ("pair openGym with K7WQ2MZP at https://gym.example.com"). It calls
+`pair_opengym`, which swaps the code for a token and keeps it in
+`~/.config/opengym-mcp/credentials.json` (mode 0600; `OPENGYM_CREDENTIALS` moves it). The LLM
+never sees the token and no restart is needed. `OPENGYM_URL` and `OPENGYM_TOKEN`, when set in the
+config, take precedence over the saved ones.
+
+To do it by hand instead:
+
 1. In the app, signed in as the profile to log into: **Settings → Account → Pair the mobile app**.
    It shows a one-time code (valid five minutes).
 2. Turn the code into a token:
@@ -144,7 +157,7 @@ Things to know about that token:
 
 - It is a **full sign-in to your profile**, the same kind the paired phone app holds, not a
   workout-only key. Your client's config file holds it in plain text; treat it like a password.
-- `OPENGYM_URL` has to be `https://` (plain `http://` only to `localhost`), so it never crosses a
+- `OPENGYM_URL` has to be `https://` (plain `http://` only to `localhost` and `*.localhost`), so it never crosses a
   network in the clear.
 - It lasts `SESSION_DAYS` (90 days by default). **Sign out everywhere** in Settings ends it at
   once. Either way `log_workout` then says the token was not accepted: pair again.
