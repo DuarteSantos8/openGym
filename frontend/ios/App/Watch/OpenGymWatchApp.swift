@@ -1512,7 +1512,7 @@ struct RestView: View {
                     }
                     // The ring is narrow up here: the label stays small at the large text sizes.
                     .dynamicTypeSize(...DynamicTypeSize.xLarge)
-                    Text(timerInterval: Date()...end, countsDown: true)
+                    Text(timerInterval: min(Date(), end)...end, countsDown: true)
                         .font(.system(size: store.show.restRing ? countdownSize : countdownSize * 1.35, weight: .semibold, design: .rounded).monospacedDigit())
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
@@ -1564,7 +1564,7 @@ struct HoldView: View {
                 CountdownRing(start: store.holdStartedAt ?? end, end: end, color: .cyan)
                 VStack(spacing: 1) {
                     Text(store.entry?.name ?? "").font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
-                    Text(timerInterval: Date()...end, countsDown: true)
+                    Text(timerInterval: min(Date(), end)...end, countsDown: true)
                         .font(.system(size: countdownSize, weight: .semibold, design: .rounded).monospacedDigit())
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
