@@ -268,10 +268,12 @@ struct Tag: View {
 }
 
 /// Whether the sets logged here reached the iPhone (SessionStore.sync): glyph + count + colour, with the words in
-/// the full form. Nothing to tap. The set header has no room for words (compact); the rest header has none
-/// for a capsule either (inline: the glyph and count while sets wait).
+/// the full form. Nothing to tap. The set page shows the glyph alone beside the clock (compact: the count is on the
+/// Overview); the rest header has no room for a capsule (inline: the glyph and count while sets wait).
 struct SyncPill: View {
     enum Form { case compact, inline, full }
+    /// The system clock's digits, about 12 pt on a 187 pt wide screen: the compact pill is that tall.
+    static let clockHeight = 12 * WKInterfaceDevice.current().screenBounds.width / 187
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -294,19 +296,21 @@ struct SyncPill: View {
         let word = store.L(waiting ? "Waiting to sync" : s == .onPhone ? "On your iPhone" : "iPhone out of reach")
         // The count after the words, as a value: in some languages the words would not agree with it before them.
         // (a no-break space keeps the count with the last word when the line wraps)
-        let text = form == .full ? " \(word)" + (waiting ? "\u{A0}\(s.countText)" : "") : (waiting ? " \(s.countText)" : "")
+        let text = form == .full ? " \(word)" + (waiting ? "\u{A0}\(s.countText)" : "") : (waiting && form == .inline ? " \(s.countText)" : "")
         // The glyph is inline in the text, so a second line starts under it.
         let shape = RoundedRectangle(cornerRadius: form == .full ? 11 : 9, style: .continuous)
         return Text("\(Image(systemName: glyph))\(text)")
-            .font(.system(.caption2, design: .rounded).weight(.bold))
+            .font(form == .compact ? .system(size: Self.clockHeight * 0.7, weight: .bold, design: .rounded)
+                                   : .system(.caption2, design: .rounded).weight(.bold))
             .contentTransition(.numericText())
             .foregroundStyle(color)
             .multilineTextAlignment(.leading)
             .lineLimit(form == .full ? 3 : 1)
             .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, form == .full ? 8 : form == .compact ? 5 : 0)
-            .padding(.vertical, form == .full ? 3 : form == .compact ? 1 : 0)
+            .padding(.horizontal, form == .full ? 8 : form == .compact ? 4 : 0)
+            .padding(.vertical, form == .full ? 3 : 0)
             .frame(minHeight: form == .full ? 22 : nil)
+            .frame(height: form == .compact ? Self.clockHeight : nil)
             // Always On: an outline in place of the fill.
             .background { if !dimmed, form != .inline { shape.fill(waiting ? Theme.caution.opacity(0.18) : Theme.dim) } }
             .overlay { if dimmed, form != .inline { shape.stroke(Theme.outline, lineWidth: 1) } }
@@ -625,6 +629,16 @@ struct ExercisePager: View {
             }
         }
         .tabViewStyle(.verticalPage)
+        // Left of the system clock, placed against the screen as the clock is (its spot, measured at 40, 42 and
+        // 49 mm, moves with the screen size). Off the pages, so it does not scroll with them.
+        .overlay {
+            let screen = WKInterfaceDevice.current().screenBounds.size
+            Color.clear.overlay(alignment: .topTrailing) {
+                SyncPill(form: .compact).modifier(DemoEnvironment())
+                    .offset(x: -(55 + (screen.width - 162) * 0.2), y: 16 + (screen.height - 197) * 0.23 - SyncPill.clockHeight / 2)
+            }
+            .ignoresSafeArea()
+        }
     }
 }
 
@@ -657,7 +671,7 @@ struct ExercisePage: View {
             let si = store.setIndex(in: index)
             let current = index == store.entryIndex
             VStack(spacing: 0) {
-                header(entry, pill: !hasTags(entry, si.map { entry.sets[$0] }))
+                header(entry)
                 Spacer(minLength: 2)
                 if let si = si {
                     let row = entry.sets[si]
@@ -752,7 +766,7 @@ struct ExercisePage: View {
         }
     }
 
-    @ViewBuilder private func header(_ entry: Entry, pill: Bool) -> some View {
+    @ViewBuilder private func header(_ entry: Entry) -> some View {
         HStack(alignment: .top, spacing: 6) {
             if store.show.showClip, let clip = store.clips[entry.id] {
                 ClipView(clip: clip, animating: index == store.entryIndex && !covered).frame(width: 30, height: 30)
@@ -767,9 +781,6 @@ struct ExercisePage: View {
                 WorkoutExtras()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            // Below the system clock (the top 28 pt), without making the row taller and clear of the page dots.
-            // With a tag row the page is higher and the pill sits in that row instead.
-            if pill { SyncPill(form: .compact).padding(.trailing, 4).offset(y: 10) }
             if store.show.showHr { HeartRateBadge(health: store.health) }
         }
         // The top row sits just under the clock: it grows less than the numbers do.
@@ -789,7 +800,6 @@ struct ExercisePage: View {
                 if side == "L" { Tag(text: Text("Left"), color: .cyan) }
                 if side == "R" { Tag(text: Text("Right"), color: .cyan) }
                 if entry.group != nil { Tag(text: Text("Superset"), color: .purple) }
-                SyncPill(form: .compact)
             }
             .padding(.bottom, 2)
             .dynamicTypeSize(...DynamicTypeSize.xLarge)
