@@ -255,9 +255,9 @@ export const NUDGE_COPY = {
     "drill": {
       "title": "Perhatian, prajurit!",
       "lines": [
-        "Perkembangan ototmu udah mau cabut. Latihan {0} besok, tanpa alasan!",
+        "Gains-mu udah mau kabur tuh. Latihan {0} besok, tanpa alasan!",
         "{0} nggak bakal jalan sendiri, prajurit. Ayo gerak!",
-        "Berdalih nggak bikin beban terangkat! Hadir untuk {0} besok!",
+        "Banyak alasan nggak bikin beban terangkat! Siap latihan {0} besok!",
         "Ototmu sampai bikin laporan orang hilang. Datang dan selesaikan {0}!"
       ]
     }
