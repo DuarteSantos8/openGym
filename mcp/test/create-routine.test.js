@@ -124,7 +124,7 @@ describe('update_routine writes through the server', () => {
   })
 
   test('add and remove change part of the list, by name', async () => {
-    const r = await update({ routine: 'a', add_exercises: [{ exercise: '1241', sets: 3, reps: 8 }], remove_exercises: ['squat'] })
+    const r = await update({ routine: 'a', add_exercises: [{ exercise: '1241', sets: 3, reps: 8 }], remove_exercises: ['1197'] })
     expect(r.exercises.map(e => e.name)).toEqual(['front plank', 'bird dog'])
     expect(api.doc.routines[0].ex.map(e => e.id)).toEqual(['0463', '1241'])
   })

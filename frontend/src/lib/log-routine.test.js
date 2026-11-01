@@ -138,7 +138,7 @@ describe('editRoutine changes a routine without touching the profile', () => {
   })
 
   it('add_exercises appends, remove_exercises drops by name or id', () => {
-    const e = editRoutine(saved(), { routine: 'a', add_exercises: [{ exercise: '1241', sets: 3, reps: 8 }], remove_exercises: ['squat'] })
+    const e = editRoutine(saved(), { routine: 'a', add_exercises: [{ exercise: '1241', sets: 3, reps: 8 }], remove_exercises: ['1197'] })
     expect(e.routine.ex.map(x => x.id)).toEqual(['0463', '1241'])
   })
 
@@ -154,7 +154,7 @@ describe('editRoutine changes a routine without touching the profile', () => {
   })
 
   it('exercises cannot come with add_exercises or remove_exercises, and a routine is never emptied', () => {
-    expect(editRoutine(saved(), { routine: 'a', exercises: [{ exercise: '1197', sets: 1, reps: 1 }], remove_exercises: ['squat'] }).problems[0].field).toBe('exercises')
+    expect(editRoutine(saved(), { routine: 'a', exercises: [{ exercise: '1197', sets: 1, reps: 1 }], remove_exercises: ['1197'] }).problems[0].field).toBe('exercises')
     expect(editRoutine(saved(), { routine: 'b', remove_exercises: ['incline push-up'] }).problems[0].problem).toMatch(/at least one exercise/)
   })
 
