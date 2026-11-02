@@ -1185,21 +1185,27 @@ struct OverviewPage: View {
     }
 }
 
-/// One exercise: a glyph for its state, its name, the sets done. A tap jumps to it.
+/// One exercise: a glyph for its state, its name, the sets done. A tap jumps to it. When the phone sent the
+/// exercise animations, each row leads with a still of its exercise and the state glyph moves onto its corner.
 struct OverviewRow: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.isLuminanceReduced) private var dimmed
     let row: Overview.Row
     let onPick: () -> Void
 
+    /// Any picture in this workout: then every row keeps the same slot, so the names line up.
+    private var pictures: Bool { store.show.showClip && !store.clips.isEmpty }
+
     var body: some View {
         Button { if store.choose(entry: row.index) { onPick() } } label: {
-            HStack(alignment: .top, spacing: 8) {
-                glyph.font(.body).accessibilityHidden(true)
+            HStack(alignment: pictures ? .center : .top, spacing: 8) {
+                if pictures { thumb } else { glyph.font(.body).accessibilityHidden(true) }
                 VStack(alignment: .leading, spacing: 0) {
                     Text(verbatim: row.name)
                         .font(.subheadline.weight(row.state == .current ? .bold : .semibold))
-                        .lineLimit(2)
+                        // The picture takes width from the name: up to four lines and a little smaller, so a long name is not cut on 40 mm.
+                        .lineLimit(pictures ? 4 : 2)
+                        .minimumScaleFactor(pictures ? 0.85 : 1)
                         .multilineTextAlignment(.leading)
                         .foregroundStyle(row.state == .done ? AnyShapeStyle(.secondary) : AnyShapeStyle(Theme.ink(.white, dimmed)))
                     if row.total > 0 {
@@ -1215,10 +1221,44 @@ struct OverviewRow: View {
             .frame(maxWidth: .infinity, minHeight: Theme.tap, alignment: .leading)
         }
         .buttonStyle(SecondaryButton())
+        // With pictures the current row is found by its outline, not only by the badge's colour.
+        .overlay {
+            if pictures, row.state == .current {
+                RoundedRectangle(cornerRadius: Theme.radius, style: .continuous).stroke(Theme.ink(Theme.accent, dimmed), lineWidth: 1.5)
+            }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(verbatim: row.name))
         .accessibilityValue(row.total > 0 ? Text("\(row.done) of \(row.total) sets") : Text(verbatim: ""))
         .accessibilityAddTraits(row.state == .current ? [.isButton, .isSelected] : .isButton)
+    }
+
+    /// The exercise's first frame, 15% darker so a white drawing does not glow on the black watch, grey once done,
+    /// with the state glyph on a black disc at its corner. No picture, or Always On (no large lit areas): the same
+    /// slot outlined, the glyph inside.
+    private var thumb: some View {
+        let side: CGFloat = 30
+        let shape = RoundedRectangle(cornerRadius: 8, style: .continuous)
+        let aod = dimmed || SessionStore.demoAOD
+        let entries = store.workout?.entries ?? []
+        let still = entries.indices.contains(row.index) ? store.clips[entries[row.index].id]?.images.first : nil
+        return Group {
+            if let img = still, !aod {
+                Image(uiImage: img).resizable().scaledToFill().frame(width: side, height: side)
+                    .background(Color.white)
+                    .overlay(Color.black.opacity(0.15))
+                    .saturation(row.state == .done ? 0 : 1)
+                    .clipShape(shape)
+                    .overlay(alignment: .bottomTrailing) {
+                        glyph.font(.system(size: 14)).background(Circle().fill(.black).padding(-2)).offset(x: 5, y: 5)
+                    }
+            } else {
+                shape.strokeBorder(Theme.outline, lineWidth: 1).frame(width: side, height: side)
+                    .overlay { glyph.font(.system(size: 14)) }
+            }
+        }
+        .padding(.trailing, 4).padding(.bottom, 4)
+        .accessibilityHidden(true)
     }
 
     // Done is white, not green: the accent reads as an action. Shape and weight carry the state too.
