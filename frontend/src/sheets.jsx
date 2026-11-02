@@ -2266,6 +2266,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // in its `mode` (modeOf reads it before the body part).
   const mode = modeOf({ ...c, id: ex.id })
   const cardio = cardioEx && mode === 'cardio'
+  const [showOther, setShowOther] = useState(false)
   // Both default from the dataset and are then whatever the config says — see isBw.
   const bw = !cardio && isBw({ ...c, id: ex.id })
   const perSide = isPerSide(c)
@@ -2407,10 +2408,16 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         metadata name muscles by the map's ids ("forearm", "gluteal"), which only MUSCLE_NAME
         turns into a translatable label. */}
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0 14px' }}>
-      {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
-      <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span><span className="tag">{t(ex.eq)}</span>
-      {!cardio && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
-        .map((s, i) => <span key={i} className="tag dim">{t(MUSCLE_NAME[s] || s)}</span>)}
+      {detailTags(ex).map(tg => {
+        if (tg.other) {
+          if (!showOther) return <button key={tg.key} type="button" className="tag" onClick={() => setShowOther(true)}>{tg.label}</button>
+          return [
+            ...tg.other.map((m, i) => <span key={tg.key + '-o-' + i} className="tag dim">{m.label} {m.pct}</span>),
+            <button key={tg.key + '-close'} type="button" className="tag" onClick={() => setShowOther(false)} aria-label={t('Close')}>×</button>,
+          ]
+        }
+        return <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>
+      })}
     </div>
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     <div style={{ marginBottom: 14 }}>
