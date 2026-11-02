@@ -821,7 +821,7 @@ export default {
   'Discard the running workout': 'Buang sesi latihan yang sedang berjalan',
   // --- v1.2.2: timed sets, progression, estimated 1RM (#16 #17 #18) ---
   'Top set': 'Top set',
-  'Est. 1RM': 'Perkiraan. 1RM',
+  'Est. 1RM': 'Perkiraan 1RM',
   'No sessions logged yet': 'Belum ada sesi yang dicatat',
   '{0} session': '{0} sesi',
   '{0} sessions': '{0} sesi',
@@ -2352,7 +2352,7 @@ export default {
   'Photo removed': 'Foto dihapus',
   // --- set-specific rest ---
   'A breather after one side, before the other. The full rest comes once both sides are done.': 'Jeda napas sejenak sebelum lanjut ke sisi lainnya. Waktu istirahat penuh dimulai setelah kedua sisi selesai.',
-  'Like the work sets': 'Sama seperti set utama',
+  'Like the work sets': 'Ikuti set utama',
   'No timer': 'Tanpa timer',
   'Pick a time': 'Pilih waktu',
   'Rest between sides': 'Istirahat di antara sisi',
@@ -2627,7 +2627,7 @@ export default {
   'The trend through your weigh-ins of the last 3 weeks, so one salty dinner does not move it. Give it a range and the card tells you whether you are on pace.': 'Tren berat badanmu selama 3 minggu terakhir, jadi satu kali makan malam yang gurih tidak akan mengacaukan grafik. Atur rentang target dan kartu ini akan menunjukkan apakah progresmu sesuai target.',
   'Lose': 'Turun',
   'Gain': 'Naik',
-  'Hold': 'Pertahankan',
+  'Hold': 'Tahan',
   '% of body weight': '% dari berat badan',
   'Within ±': 'Dalam ±',
   'Hold within ±{0} a week.': 'Tahan dalam ±{0} seminggu.',
