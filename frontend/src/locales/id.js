@@ -372,7 +372,7 @@ export default {
   'Name or e-mail': 'Nama atau email',
   'Enter your name or e-mail.': 'Masukkan nama atau emailmu.',
   'E-mail (optional)': 'Email (opsional)',
-  'Lets you sign in with it instead of your name. Nothing is ever sent to it.': 'Memungkinkan kamu masuk dengan nama tersebut, bukan dengan namamu. Tidak ada yang pernah dikirim ke sana.',
+  'Lets you sign in with it instead of your name. Nothing is ever sent to it.': 'Memungkinkan kamu masuk dengan alamat email tersebut, bukan dengan namamu. Tidak ada yang pernah dikirim ke sana.',
   'That is not an e-mail address.': 'Itu bukan alamat email.',
   'Another profile already uses this e-mail address.': 'Profil lain sudah menggunakan alamat email ini.',
   'Sign-in e-mail': 'Email masuk',
@@ -2388,7 +2388,7 @@ export default {
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Tidak ada yang menambah beban di sini: naik dalam repetisi, lalu set.',
   // --- #523 skip completed ---
-  'In Cards and Focus, Prev and Next hop over a finished exercise.': 'Di Kartu dan Fokus, Sebelumnya dan Berikutnya lanjutkan latihan yang sudah selesai.',
+  'In Cards and Focus, Prev and Next hop over a finished exercise.': 'Di Kartu dan Fokus, Sebelumnya dan Berikutnya melewati latihan yang sudah selesai.',
   'Skip completed exercises': 'Lewati latihan yang sudah selesai',
   // --- #551 device link from the phone ---
   'This app can’t confirm with a passkey. Make the code in a browser signed in to this profile, or add a password there first.': 'Aplikasi ini tidak dapat mengonfirmasi dengan kunci sandi. Buat kode di browser untuk masuk ke profil ini, atau tambahkan kata sandi di sana terlebih dahulu.',
