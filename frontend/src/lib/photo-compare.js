@@ -1,8 +1,11 @@
 // The rules behind comparing progress photos (#939): how many can be picked at once, which
 // layouts suit how many, and the order they are shown in. Pure, so the screen only draws it.
 
-/** The most photos one comparison takes: past five each one is too small to read in one row on a phone. */
-export const MAX_COMPARE = 5
+/** The most photos one comparison takes: three rows of three. */
+export const MAX_COMPARE = 9
+
+/** The most photos in a row of a side-by-side comparison: more and each is too small to read on a phone. */
+export const PER_ROW = 3
 
 /**
  * Adds `key` to the picked keys, or takes it off if it is already there. With the list full, the
@@ -84,4 +87,16 @@ export function dragPan(pos, dx, dy, overflowX, overflowY) {
 
 /** The pan position a photo starts at: its middle. */
 export const CENTRED = { x: 0.5, y: 0.5 }
+
+/**
+ * How `n` photos lie side by side: rows of at most PER_ROW, the last one with what is left. Every
+ * photo is as wide as one of the `cols` columns (so all are the same size), and a row with fewer is
+ * centred. 4 is 3 and 1, 5 is 3 and 2, 7 is 3, 3 and 1, 9 is 3, 3 and 3.
+ */
+export function rowsOf(n) {
+  const count = Math.max(0, Math.floor(n) || 0)
+  const rows = []
+  for (let left = count; left > 0; left -= PER_ROW) rows.push(Math.min(PER_ROW, left))
+  return { cols: Math.min(Math.max(count, 1), PER_ROW), sizes: rows }
+}
 

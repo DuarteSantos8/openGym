@@ -2,7 +2,7 @@
 // screen offers, drawn on a canvas. compareLayout is pure (sizes in, rectangles out) so it is
 // tested without a canvas; drawCompare and renderCompareImage are the thin part that paints it.
 import { mediaStore } from './media-store.js'
-import { cellRatio, coverCrop } from './photo-compare.js'
+import { cellRatio, coverCrop, rowsOf } from './photo-compare.js'
 
 export const IMAGE_WIDTH = 1500
 const PAD = 40
@@ -41,20 +41,26 @@ export function compareLayout(items, { mode = 'side', pct = 50, title = '' } = {
       ],
     }
   }
-  const n = Math.max(items.length, 1)
-  const cellW = (inner - GAP * (n - 1)) / n
+  // Rows of at most three, every photo the size of one column, a shorter last row centred.
+  const { cols, sizes } = rowsOf(items.length)
+  const cellW = (inner - GAP * (cols - 1)) / cols
   const cellH = cellW * cellRatio(items)           // every photo has the same height; a photo of another shape is cropped to it
   const top = PAD + HEADER
-  const font = n > 3 ? 24 : 28
-  const cells = items.map((it, i) => {
-    const x = PAD + i * (cellW + GAP)
-    return { x, y: top, w: cellW, h: cellH, crop: coverCrop(it.w, it.h, cellW, cellH, it.px, it.py) }
+  const font = 28
+  const cells = []
+  sizes.forEach((size, r) => {
+    const x0 = PAD + (inner - (size * cellW + (size - 1) * GAP)) / 2
+    for (let k = 0; k < size; k++) {
+      const it = items[cells.length]
+      const x = x0 + k * (cellW + GAP), y = top + r * (cellH + GAP)
+      cells.push({ x, y, w: cellW, h: cellH, crop: coverCrop(it.w, it.h, cellW, cellH, it.px, it.py) })
+    }
   })
   return {
-    width, height: Math.round(top + cellH + PAD), title: head, mode: 'side',
+    width, height: Math.round(top + sizes.length * cellH + Math.max(0, sizes.length - 1) * GAP + PAD), title: head, mode: 'side',
     cells, rects: cells.map(c => ({ x: c.x, y: c.y, w: c.w, h: c.h })),
     // the date is a pill on the photo, at its bottom left, like the date pills in the gallery
-    labels: items.map((it, i) => ({ text: it.label, x: cells[i].x + Math.round(font * 0.5), y: top + cellH - Math.round(font * 1.3), align: 'left', font })),
+    labels: items.map((it, i) => ({ text: it.label, x: cells[i].x + Math.round(font * 0.5), y: cells[i].y + cellH - Math.round(font * 1.3), align: 'left', font })),
   }
 }
 

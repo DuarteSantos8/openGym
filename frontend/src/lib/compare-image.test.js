@@ -56,6 +56,31 @@ describe('compareLayout, side by side', () => {
     expect(L.height).toBeCloseTo(L.cells[0].y + L.cells[0].h + 40, 0)
   })
 
+  it('makes rows of three, and centres a shorter last row at the same size', () => {
+    const L = compareLayout([1, 2, 3, 4, 5].map(i => item(300, 400, 'd' + i)))
+    expect(new Set(L.cells.map(c => Math.round(c.w))).size).toBe(1)
+    expect(new Set(L.cells.map(c => Math.round(c.h))).size).toBe(1)
+    expect(L.cells.slice(0, 3).map(c => c.y)).toEqual([L.cells[0].y, L.cells[0].y, L.cells[0].y])
+    expect(L.cells[3].y).toBeGreaterThan(L.cells[0].y + L.cells[0].h)           // the second row is under the first
+    expect(L.cells[3].y).toBe(L.cells[4].y)
+    // the two of the second row are centred: as much room on the left as on the right
+    const left = L.cells[3].x, right = IMAGE_WIDTH - (L.cells[4].x + L.cells[4].w)
+    expect(left).toBeCloseTo(right)
+    expect(left).toBeGreaterThan(L.cells[0].x)
+    // and a row of one in the middle
+    const one = compareLayout([1, 2, 3, 4].map(i => item(300, 400))).cells[3]
+    expect(one.x).toBeCloseTo(IMAGE_WIDTH - (one.x + one.w))
+  })
+
+  it('takes nine photos in three rows, and the picture grows by a row of cells each time', () => {
+    const nine = compareLayout(Array.from({ length: 9 }, () => item(300, 400)))
+    expect(new Set(nine.cells.map(c => c.y)).size).toBe(3)
+    expect(nine.cells[8].y + nine.cells[8].h).toBeLessThanOrEqual(nine.height - 39)
+    const three = compareLayout(Array.from({ length: 3 }, () => item(300, 400)))
+    expect(nine.height).toBeGreaterThan(three.height * 2.5)
+    expect(compareLayout(Array.from({ length: 6 }, () => item(300, 400))).height).toBeGreaterThan(three.height)
+  })
+
   it('treats a slider asked for with more than two photos as side by side', () => {
     expect(compareLayout([item(1, 1), item(1, 1), item(1, 1)], { mode: 'slider' }).mode).toBe('side')
   })

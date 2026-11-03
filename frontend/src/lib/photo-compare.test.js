@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MAX_COMPARE, toggleCompareKey, orderForCompare, modesFor, defaultMode, validMode, spanDays, cellRatio, coverCrop, dragPan, CENTRED } from './photo-compare.js'
+import { MAX_COMPARE, toggleCompareKey, orderForCompare, modesFor, defaultMode, validMode, spanDays, cellRatio, coverCrop, dragPan, CENTRED, rowsOf, PER_ROW } from './photo-compare.js'
 
 describe('toggleCompareKey', () => {
   it('adds a key, and takes it off again on a second tap', () => {
@@ -13,9 +13,9 @@ describe('toggleCompareKey', () => {
   })
 
   it('lets the oldest pick go when the list is full', () => {
-    const full = ['a', 'b', 'c', 'd', 'e']
+    const full = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
     expect(full).toHaveLength(MAX_COMPARE)
-    expect(toggleCompareKey(full, 'f')).toEqual(['b', 'c', 'd', 'e', 'f'])
+    expect(toggleCompareKey(full, 'j')).toEqual(['b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
     expect(toggleCompareKey(['a', 'b'], 'c', 2)).toEqual(['b', 'c'])
   })
 
@@ -63,8 +63,9 @@ describe('modesFor', () => {
   })
 })
 
-it('takes at most five photos', () => {
-  expect(MAX_COMPARE).toBe(5)
+it('takes at most nine photos, three rows of three', () => {
+  expect(MAX_COMPARE).toBe(9)
+  expect(PER_ROW).toBe(3)
 })
 
 describe('spanDays', () => {
@@ -141,6 +142,25 @@ describe('dragPan', () => {
   it('leaves an axis with nothing to drag where it is', () => {
     expect(dragPan({ x: 0.3, y: 0.6 }, 99, 99, 0, 0)).toEqual({ x: 0.3, y: 0.6 })
     expect(dragPan(CENTRED, 10, 20, 0, 40)).toEqual({ x: 0.5, y: 0 })
+  })
+})
+
+describe('rowsOf', () => {
+  it('puts up to three in a row, and what is left in the last row', () => {
+    expect(rowsOf(2)).toEqual({ cols: 2, sizes: [2] })
+    expect(rowsOf(3)).toEqual({ cols: 3, sizes: [3] })
+    expect(rowsOf(4)).toEqual({ cols: 3, sizes: [3, 1] })
+    expect(rowsOf(5)).toEqual({ cols: 3, sizes: [3, 2] })
+    expect(rowsOf(6)).toEqual({ cols: 3, sizes: [3, 3] })
+    expect(rowsOf(7)).toEqual({ cols: 3, sizes: [3, 3, 1] })
+    expect(rowsOf(9)).toEqual({ cols: 3, sizes: [3, 3, 3] })
+  })
+  it('has one column for a single photo, and none to draw for nothing', () => {
+    expect(rowsOf(1)).toEqual({ cols: 1, sizes: [1] })
+    expect(rowsOf(0)).toEqual({ cols: 1, sizes: [] })
+  })
+  it('covers every photo exactly once', () => {
+    for (let n = 1; n <= MAX_COMPARE; n++) expect(rowsOf(n).sizes.reduce((a, b) => a + b, 0)).toBe(n)
   })
 })
 
