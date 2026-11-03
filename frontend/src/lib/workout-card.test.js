@@ -33,7 +33,7 @@ describe('workoutCardModel', () => {
   it('counts the work sets of a migrated workout, which has exposures and no entries', () => {
     const [cw] = canonicalProfile().workouts
     const m = workoutCardModel({ ...cw, start: 0, end: 30 * 60000, vol: 300 }, { unit: 'kg', nameOf })
-    expect(stat(m)).toEqual(['Duration 30 min', 'Sets 1', 'Volume 300 kg'])
+    expect(stat(m)).toEqual(['Duration 30 min', 'Volume 300 kg', 'Sets 1', 'PRs –'])
   })
 
   it('says the name, the dated day, duration, work sets and volume', () => {
