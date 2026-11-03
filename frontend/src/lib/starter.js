@@ -2,12 +2,14 @@
 // written as string literals inside t() calls in sheets.jsx, because check-source-strings.mjs
 // only finds them there — copy parked in here would silently ship English in every language.
 //
-// A routine is [key, name, emoji, [[exerciseId, sets, reps], …]]. The key is what a plan's
+// A routine is [key, name, emoji, [[exerciseId, sets, reps], …]]. A timed exercise (a plank, a
+// hang) is [exerciseId, sets, seconds, 'time'] (#964): three 40 s holds, not three reps. The key is what a plan's
 // schedule points at, so a weekday never depends on the position of a routine in the array.
 // Names stay canonical English — they become ordinary user routines, which are not translated.
 import { uid } from './format.js'
 import { EXIDX } from './exercises.js'
 import { eqAvailable, ALL_EQUIPMENT } from './equipment.js'
+import { defaultConfig } from './history.js'
 
 const PPL = [
   ['push', 'Push Day', 'barbell', [['0025', 4, 8], ['0047', 3, 10], ['0426', 3, 10], ['0334', 3, 12], ['0241', 3, 12], ['0251', 3, 10]]],
@@ -43,8 +45,14 @@ const PLANS = {
   '5x5': { routines: FIVE_BY_FIVE, schedule: [[1, '5x5-a'], [3, '5x5-b'], [5, '5x5-c']] }
 }
 
+// One catalogue line as a routine entry: reps by default, seconds when the line says 'time'.
+export function starterEntry([id, sets, amount, mode]) {
+  if (mode === 'time') return { ...defaultConfig(id, 'time'), id, sets, sec: amount, weight: 0 }
+  return { id, sets, reps: amount, weight: 0 }
+}
+
 const build = routines =>
-  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(([id, sets, reps]) => ({ id, sets, reps, weight: 0 })) }))
+  routines.map(([, name, emoji, list]) => ({ id: uid(), name, emoji, ex: list.map(starterEntry) }))
 
 // Fresh routine objects (new ids) — [push, pull, legs]. The demo build seeds a history on
 // top of exactly these three, so this entry point keeps its shape.
@@ -98,20 +106,21 @@ export const substituteFor = (ex, equipment, taken) => {
 
 // Re-cuts a routine list for an equipment list: what you can already do stays, what you can't
 // is swapped for its closest match, and what has no match is dropped (with its routine, when
-// that leaves it empty). Sets and reps carry over unchanged.
-const fitRoutines = (routines, equipment) => {
+// that leaves it empty). Sets and reps (or seconds) carry over unchanged.
+export const fitRoutines = (routines, equipment) => {
   let swapped = 0, dropped = 0
   const fitted = routines.map(([key, name, emoji, list]) => {
     const taken = new Set(list.map(([id]) => id))
     const out = []
-    for (const [id, sets, reps] of list) {
+    for (const line of list) {
+      const [id, ...plan] = line
       const ex = EXIDX[id]
-      if (!ex || eqAvailable(equipment, ex)) { out.push([id, sets, reps]); continue }
+      if (!ex || eqAvailable(equipment, ex)) { out.push(line); continue }
       const sub = substituteFor(ex, equipment, taken)
       if (!sub) { dropped++; continue }
       taken.add(sub.id)
       swapped++
-      out.push([sub.id, sets, reps])
+      out.push([sub.id, ...plan])
     }
     return [key, name, emoji, out]
   }).filter(([, , , list]) => list.length)
