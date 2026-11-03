@@ -3778,4 +3778,7 @@ export default {
   "The clock and the rest wait for you": "ঘড়ি আর বিশ্রাম তোমার জন্য অপেক্ষা করবে",
   "The clock and the rest wait for you.": "ঘড়ি আর বিশ্রাম তোমার জন্য অপেক্ষা করছে।",
   "Workout paused": "ওয়ার্কআউট থেমে আছে",
+  "Muscle groups": "পেশির গ্রুপ",
+  "All of them": "সবগুলো",
+  "Any of them": "যেকোনোটা",
 }

@@ -150,3 +150,41 @@ describe('MuscleExplorer Favourites chip', () => {
     expect(muscleChip(host, 'Favourites')).toBeUndefined()
   })
 })
+
+// #885, #900: several muscles at once, AND by default, and groups that open into their muscles.
+describe('MuscleExplorer with several muscles and groups', () => {
+  const rows = host => host.querySelectorAll('.list .item').length
+  const count = host => { const c = host.querySelector('.search .search-count'); return c ? Number(c.textContent.replace(/\D/g, '')) : null }
+  const groupChip = (host, name) => [...host.querySelectorAll('.mx-groups .chip')].find(b => b.textContent.trim() === name)
+  it('two muscles show what trains both, and Any of them widens it again', async () => {
+    const { allExercises } = await import('../lib/exercises.js')
+    const { musclesOf } = await import('../lib/muscles.js')
+    const both = allExercises(mocks.S).filter(e => { const w = musclesOf(e); return w.quadriceps > 0 && w.hamstring > 0 }).length
+    const host = render({ onDetail: vi.fn() })
+    act(() => { muscleChip(host, 'Quads').click() })
+    act(() => { muscleChip(host, 'Hamstrings').click() })
+    expect(host.textContent).toContain('Exercises for Quads + Hamstrings')
+    expect(isOn(muscleChip(host, 'Quads'))).toBe(true)
+    expect(isOn(muscleChip(host, 'Hamstrings'))).toBe(true)
+    // several muscles narrow the list, so the live count shows
+    expect(count(host)).toBe(both)
+    act(() => { [...host.querySelectorAll('.seg button')].find(b => b.textContent === 'Any of them').click() })
+    expect(count(host)).toBeGreaterThan(both)
+    expect(host.textContent).toContain('Exercises for Quads / Hamstrings')
+  })
+  it('a group picks all of its muscles and opens them; one of them then stands for itself', () => {
+    const host = render({ onDetail: vi.fn() })
+    act(() => { groupChip(host, 'Legs').click() })
+    expect(isOn(groupChip(host, 'Legs'))).toBe(true)
+    expect(groupChip(host, 'Legs').getAttribute('aria-expanded')).toBe('true')
+    expect(host.textContent).toContain('Exercises for Legs')
+    // the strip below holds only the legs now
+    expect(muscleChip(host, 'Biceps')).toBeUndefined()
+    expect(rows(host)).toBeGreaterThan(0)
+    act(() => { muscleChip(host, 'Calves').click() })
+    expect(isOn(groupChip(host, 'Legs'))).toBe(false)
+    expect(host.textContent).toContain('Exercises for Calves')
+    act(() => { [...host.querySelectorAll('button')].find(b => b.textContent === 'Clear selection').click() })
+    expect(host.textContent).not.toContain('Exercises for')
+  })
+})

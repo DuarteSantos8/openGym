@@ -3699,4 +3699,7 @@ export default {
   "The clock and the rest wait for you": "시계와 휴식이 기다려 줘요",
   "The clock and the rest wait for you.": "시계와 휴식이 기다리고 있어요.",
   "Workout paused": "운동 일시정지됨",
+  "Muscle groups": "근육 그룹",
+  "All of them": "모두",
+  "Any of them": "하나라도",
 }

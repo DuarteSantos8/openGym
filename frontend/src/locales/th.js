@@ -3710,4 +3710,7 @@ export default {
   "The clock and the rest wait for you": "นาฬิกาและเวลาพักจะรอคุณ",
   "The clock and the rest wait for you.": "นาฬิกาและเวลาพักรอคุณอยู่",
   "Workout paused": "หยุดพักการออกกำลังอยู่",
+  "Muscle groups": "กลุ่มกล้ามเนื้อ",
+  "All of them": "ทั้งหมด",
+  "Any of them": "อย่างใดอย่างหนึ่ง",
 }

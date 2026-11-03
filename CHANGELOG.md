@@ -25,6 +25,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Preview before starting: switch it on in Settings → Workout and a routine opens on its exercises, sets and weights first, with Start at the bottom (#976, thanks @b225ccc for the idea).
 - Two routines on one weekday can stay apart: in Plan, tap the day and pick Separately, and Home shows each with its own Start and its own Done, a run in the morning and ankle work at night (#908, thanks @wintersrd for the idea).
 - Pause a workout: ⋯ → Pause workout stops the clock, the rest and a hold, with their alerts, until you tap Resume (or log a set). The pause stays through a reload, the Apple Watch clock stands still with it, and the time paused is not counted in the workout's length (#976, thanks @b225ccc for the idea).
+- Muscles (Exercises → Muscles, and By muscle when adding one): pick several muscles and see what trains all of them, or any of them, and pick a whole group (Chest, Back, Shoulders, Arms, Core, Legs) that opens into its muscles (#885, thanks @rt-oliveira, and #900, thanks @lodepav, for the ideas).
 
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).

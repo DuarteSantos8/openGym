@@ -2488,6 +2488,9 @@ export const PT_BR_OVERRIDES = {
   "The clock and the rest wait for you": "O relógio e o descanso esperam por você",
   "The clock and the rest wait for you.": "O relógio e o descanso esperam por você.",
   "Workout paused": "Treino pausado",
+  "Muscle groups": "Grupos musculares",
+  "All of them": "Todos",
+  "Any of them": "Qualquer um",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

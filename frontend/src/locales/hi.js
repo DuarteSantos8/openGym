@@ -3699,4 +3699,7 @@ export default {
   "The clock and the rest wait for you": "घड़ी और आराम आपका इंतज़ार करेंगे",
   "The clock and the rest wait for you.": "घड़ी और आराम आपका इंतज़ार कर रहे हैं।",
   "Workout paused": "वर्कआउट रुका है",
+  "Muscle groups": "मांसपेशी समूह",
+  "All of them": "सभी",
+  "Any of them": "कोई भी",
 }

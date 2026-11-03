@@ -3699,4 +3699,7 @@ export default {
   "The clock and the rest wait for you": "Il cronometro e il recupero ti aspettano",
   "The clock and the rest wait for you.": "Il cronometro e il recupero ti aspettano.",
   "Workout paused": "Allenamento in pausa",
+  "Muscle groups": "Gruppi muscolari",
+  "All of them": "Tutti",
+  "Any of them": "Almeno uno",
 }

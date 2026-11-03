@@ -1208,6 +1208,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* The bar with the session's volume at its end (#774): 12 px tall where the bar is 4, so it takes
    8 px less margin and the header keeps the exact height it has without it. */
 .wprog-row{display:flex;align-items:center;gap:8px;height:12px;margin-bottom:8px}
+/* The explorer's muscle groups (#900): the chevron says the chip opens into its muscles below. */
+.mx-groups .chip .mx-chev{font-size:.78em;margin-inline-start:4px;vertical-align:-1px;opacity:.7}
 /* A paused workout (#976): one calm line under the header, the clock's own colour, and Resume. */
 .wpause{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 0 12px;border-radius:var(--r-card);
   background:color-mix(in srgb,var(--orange) 14%,var(--surface))}

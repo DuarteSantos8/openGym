@@ -3699,4 +3699,7 @@ export default {
   "The clock and the rest wait for you": "Saat ve dinlenme seni bekler",
   "The clock and the rest wait for you.": "Saat ve dinlenme seni bekliyor.",
   "Workout paused": "Antrenman duraklatıldı",
+  "Muscle groups": "Kas grupları",
+  "All of them": "Hepsi",
+  "Any of them": "Herhangi biri",
 }

@@ -3754,4 +3754,7 @@ export default {
   "The clock and the rest wait for you": "الساعة والراحة تنتظرانك",
   "The clock and the rest wait for you.": "الساعة والراحة تنتظرانك.",
   "Workout paused": "التمرين متوقف مؤقتًا",
+  "Muscle groups": "مجموعات العضلات",
+  "All of them": "كلها",
+  "Any of them": "أيٌّ منها",
 }

@@ -3702,4 +3702,7 @@ export default {
   "The clock and the rest wait for you": "Az óra és a pihenő megvár",
   "The clock and the rest wait for you.": "Az óra és a pihenő megvár.",
   "Workout paused": "Edzés szünetel",
+  "Muscle groups": "Izomcsoportok",
+  "All of them": "Mindegyik",
+  "Any of them": "Bármelyik",
 }

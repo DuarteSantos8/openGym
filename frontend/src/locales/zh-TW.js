@@ -3692,4 +3692,7 @@ export default {
   "The clock and the rest wait for you": "計時和休息都會等你",
   "The clock and the rest wait for you.": "計時和休息都在等你。",
   "Workout paused": "訓練已暫停",
+  "Muscle groups": "肌群",
+  "All of them": "全部都練",
+  "Any of them": "任一即可",
 }

@@ -3696,4 +3696,7 @@ export default {
   "The clock and the rest wait for you": "Годинник і відпочинок зачекають",
   "The clock and the rest wait for you.": "Годинник і відпочинок чекають на вас.",
   "Workout paused": "Тренування на паузі",
+  "Muscle groups": "Групи м’язів",
+  "All of them": "Усі разом",
+  "Any of them": "Будь-який",
 }

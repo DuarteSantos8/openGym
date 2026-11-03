@@ -3746,4 +3746,7 @@ export default {
   "The clock and the rest wait for you": "Klockan och vilan väntar på dig",
   "The clock and the rest wait for you.": "Klockan och vilan väntar på dig.",
   "Workout paused": "Passet är pausat",
+  "Muscle groups": "Muskelgrupper",
+  "All of them": "Alla",
+  "Any of them": "Någon av dem",
 }
