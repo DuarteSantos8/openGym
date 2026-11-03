@@ -3697,4 +3697,9 @@ export default {
   "Train them": "Edzés módja",
   "What are we training?": "Mit edzünk?",
   "warm-ups: {0}": "bemelegítés: {0}",
+  "Resume workout": "Edzés folytatása",
+  "Pause workout": "Edzés szüneteltetése",
+  "The clock and the rest wait for you": "Az óra és a pihenő megvár",
+  "The clock and the rest wait for you.": "Az óra és a pihenő megvár.",
+  "Workout paused": "Edzés szünetel",
 }

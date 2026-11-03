@@ -243,6 +243,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return workout == nil ? nil : workoutSeenAt
     }
 
+    /// When the phone paused the workout (#976), nil while it runs.
+    var workoutPausedAt: Date? {
+        guard let ms = workout?.pausedAt, ms > 0 else { return nil }
+        return Date(timeIntervalSince1970: ms / 1000)
+    }
+
     /// Events wait on the watch for a phone out of reach: "Saved on the watch, syncs later".
     var offline: Bool { queued > 0 && !reachable }
 

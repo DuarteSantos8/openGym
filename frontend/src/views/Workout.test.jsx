@@ -2473,13 +2473,13 @@ describe('workout view header menu', () => {
     const menu = await openMenu()
     // v1.4.4: four rows on show, the once-in-a-while ones in one More fold.
     expect(menu.sections.map(g => g.more ? 'more' : g.items.filter(Boolean).map(it => it.label))).toEqual([
-      ['Workout settings'], ['Add exercise', 'Add session note', 'Layout'], 'more',
+      ['Workout settings'], ['Pause workout', 'Add exercise', 'Add session note', 'Layout'], 'more',
     ])
     expect(menuItemsOf({ sections: menu.sections[2].more }).map(it => it.label)).toEqual(['Add routine', 'Rename workout', 'Don’t count for progression'])
     // No Discard here: it ended this menu as a red trash, right where the exercise ⋯ keeps
     // Remove exercise, and got hit by mistake (#751). The Finish sheet has it.
     expect(menuItemsOf(menu).map(it => it.label)).toEqual([
-      'Workout settings', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Don’t count for progression',
+      'Workout settings', 'Pause workout', 'Add exercise', 'Add session note', 'Layout', 'Add routine', 'Rename workout', 'Don’t count for progression',
     ])
     expect(menuItemsOf(menu).some(it => it.danger)).toBe(false)
     expect(item(menu, 'Workout settings').sub).toBe('1:30 rest · Silent')

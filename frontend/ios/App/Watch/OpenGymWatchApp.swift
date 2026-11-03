@@ -549,7 +549,8 @@ struct WorkoutExtras: View {
         if show.showElapsed || show.showKcal {
             HStack(spacing: 6) {
                 if show.showElapsed, let start = store.workoutStart {
-                    Text(timerInterval: start...Date.distantFuture, countsDown: false)
+                    // Paused on the phone (#976): the clock stands at the pause.
+                    Text(timerInterval: start...Date.distantFuture, pauseTime: store.workoutPausedAt, countsDown: false)
                         .monospacedDigit()
                 }
                 if show.showKcal { CaloriesText(health: store.health) }

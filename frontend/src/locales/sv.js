@@ -3741,4 +3741,9 @@ export default {
   "Train them": "Träna dem",
   "What are we training?": "Vad tränar vi?",
   "warm-ups: {0}": "uppvärmning: {0}",
+  "Resume workout": "Fortsätt passet",
+  "Pause workout": "Pausa passet",
+  "The clock and the rest wait for you": "Klockan och vilan väntar på dig",
+  "The clock and the rest wait for you.": "Klockan och vilan väntar på dig.",
+  "Workout paused": "Passet är pausat",
 }

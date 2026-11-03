@@ -3694,4 +3694,9 @@ export default {
   "Train them": "इन्हें करें",
   "What are we training?": "आज क्या करें?",
   "warm-ups: {0}": "वार्म-अप: {0}",
+  "Resume workout": "वर्कआउट फिर शुरू करें",
+  "Pause workout": "वर्कआउट रोकें",
+  "The clock and the rest wait for you": "घड़ी और आराम आपका इंतज़ार करेंगे",
+  "The clock and the rest wait for you.": "घड़ी और आराम आपका इंतज़ार कर रहे हैं।",
+  "Workout paused": "वर्कआउट रुका है",
 }

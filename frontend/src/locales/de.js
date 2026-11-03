@@ -3714,4 +3714,9 @@ export default {
   "Train them": "So trainieren",
   "What are we training?": "Was trainieren wir?",
   "warm-ups: {0}": "Aufwärmsätze: {0}",
+  "Resume workout": "Training fortsetzen",
+  "Pause workout": "Training pausieren",
+  "The clock and the rest wait for you": "Uhr und Pause warten auf dich",
+  "The clock and the rest wait for you.": "Uhr und Pause warten auf dich.",
+  "Workout paused": "Training pausiert",
 }

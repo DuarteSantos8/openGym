@@ -3694,4 +3694,9 @@ export default {
   "Train them": "练法",
   "What are we training?": "今天练什么？",
   "warm-ups: {0}": "热身：{0}",
+  "Resume workout": "继续训练",
+  "Pause workout": "暂停训练",
+  "The clock and the rest wait for you": "计时和休息都会等你",
+  "The clock and the rest wait for you.": "计时和休息都在等你。",
+  "Workout paused": "训练已暂停",
 }

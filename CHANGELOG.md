@@ -24,6 +24,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Start picks: hold the Start button (or set Settings → Workout → Start button to "Let me pick") for today's plan on top and every other routine below it, unscheduled ones too, plus freestyle. No more calendar detour (#930, thanks @Nour-hash for the idea). Home's "Choose a different workout" opens the same picker.
 - Preview before starting: switch it on in Settings → Workout and a routine opens on its exercises, sets and weights first, with Start at the bottom (#976, thanks @b225ccc for the idea).
 - Two routines on one weekday can stay apart: in Plan, tap the day and pick Separately, and Home shows each with its own Start and its own Done, a run in the morning and ankle work at night (#908, thanks @wintersrd for the idea).
+- Pause a workout: ⋯ → Pause workout stops the clock, the rest and a hold, with their alerts, until you tap Resume (or log a set). The pause stays through a reload, the Apple Watch clock stands still with it, and the time paused is not counted in the workout's length (#976, thanks @b225ccc for the idea).
 
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).

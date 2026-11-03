@@ -2483,6 +2483,11 @@ export const PT_BR_OVERRIDES = {
   "Train them": "Treinar",
   "What are we training?": "O que vamos treinar?",
   "warm-ups: {0}": "aquecimento: {0}",
+  "Resume workout": "Retomar treino",
+  "Pause workout": "Pausar treino",
+  "The clock and the rest wait for you": "O relógio e o descanso esperam por você",
+  "The clock and the rest wait for you.": "O relógio e o descanso esperam por você.",
+  "Workout paused": "Treino pausado",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

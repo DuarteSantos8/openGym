@@ -3694,4 +3694,9 @@ export default {
   "Train them": "운동 방식",
   "What are we training?": "뭘 운동할까요?",
   "warm-ups: {0}": "워밍업: {0}",
+  "Resume workout": "운동 이어가기",
+  "Pause workout": "운동 일시정지",
+  "The clock and the rest wait for you": "시계와 휴식이 기다려 줘요",
+  "The clock and the rest wait for you.": "시계와 휴식이 기다리고 있어요.",
+  "Workout paused": "운동 일시정지됨",
 }

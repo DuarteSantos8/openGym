@@ -41,6 +41,11 @@ ids. On the watch, `acked`:
 - confirms a workout started on the watch (`startId` acked), so if the phone already ended it, it
   ends on the watch too instead of running on.
 
+The running workout may carry `pausedAt` (ms) while it is paused on the phone (#976): the watch's
+clock stands at that moment. On resume the field goes and `start` moves on by the pause, so the
+watch needs nothing else. The rest screen's "Next" shows the next set's weight and reps from the
+set rows the snapshot already holds (#911); nothing new is sent for it.
+
 ## End of a workout
 
 - Finished or discarded on the watch: the event goes through the outbox; the watch never brings

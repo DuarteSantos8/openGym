@@ -3705,4 +3705,9 @@ export default {
   "Train them": "ฝึกแบบ",
   "What are we training?": "วันนี้ฝึกอะไรดี?",
   "warm-ups: {0}": "วอร์มอัพ: {0}",
+  "Resume workout": "ออกกำลังต่อ",
+  "Pause workout": "หยุดพักการออกกำลัง",
+  "The clock and the rest wait for you": "นาฬิกาและเวลาพักจะรอคุณ",
+  "The clock and the rest wait for you.": "นาฬิกาและเวลาพักรอคุณอยู่",
+  "Workout paused": "หยุดพักการออกกำลังอยู่",
 }

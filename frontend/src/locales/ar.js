@@ -3749,4 +3749,9 @@ export default {
   "Train them": "تدرّب عليها",
   "What are we training?": "ماذا سنتمرّن اليوم؟",
   "warm-ups: {0}": "إحماء: {0}",
+  "Resume workout": "استئناف التمرين",
+  "Pause workout": "إيقاف التمرين مؤقتًا",
+  "The clock and the rest wait for you": "الساعة والراحة تنتظرانك",
+  "The clock and the rest wait for you.": "الساعة والراحة تنتظرانك.",
+  "Workout paused": "التمرين متوقف مؤقتًا",
 }

@@ -64,6 +64,7 @@ import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { startOrPreview } from '../components/StartSheets.jsx'
+import { isPaused, canPause, pauseWorkout, resumeWorkout } from '../lib/workout-pause.js'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
@@ -1085,6 +1086,9 @@ function ActiveWorkout() {
   const readyRestEnds = useUI(s => (s.timer?.ready ? s.timer.endsAt : undefined))
   const A = S.active
   const editing = !!A.editingWorkoutId
+  const paused = isPaused(A)
+  // Paused here, by a reload of a paused workout or on another device (#976): the timers hold too.
+  useEffect(() => { if (paused) useUI.getState().pauseAuto() }, [paused])
   // A past workout has no rest to time — the sets were done days ago. The work timer for
   // timed sets stays, since counting a hold is how its duration gets entered.
   const startRest = (A.backfill || editing) ? () => {} : liveRest
@@ -1732,6 +1736,18 @@ function ActiveWorkout() {
   // session away: that is the Finish sheet's (#751).
   // Layout here stays this session's own (s.active.workoutView); the settings sheet's Layout is
   // the saved one.
+  // Pause (#976, lib/workout-pause.js): the workout clock stops, and so do the rest, a hold and its
+  // count-in with their alerts. Resume picks them all up where they stood.
+  const togglePause = () => {
+    const ui = useUI.getState()
+    if (isPaused(useStore.getState().S.active)) {
+      update(s => { if (s.active) resumeWorkout(s.active) })
+      ui.resumeAuto()
+    } else {
+      update(s => { if (s.active) pauseWorkout(s.active) })
+      ui.pauseAuto()
+    }
+  }
   const openViewMenu = () => menuSheet({
     sections: [
       { items: [
@@ -1740,6 +1756,8 @@ function ActiveWorkout() {
           onClick: workoutSettingsSheet },
       ] },
       { items: [
+        canPause(A) && { icon: paused ? 'play' : 'pause', label: paused ? t('Resume workout') : t('Pause workout'),
+          sub: paused ? undefined : t('The clock and the rest wait for you'), onClick: togglePause },
         A.backfill && A.entries.length > 0 && { icon: 'checkCircle', label: t('Mark all sets done'), onClick: markAllDone },
         { icon: 'plusCircle', label: t('Add exercise'), onClick: addExercise },
         { icon: 'note', label: A.note ? t('Edit session note') : t('Add session note'), onClick: sessionNoteSheet },
@@ -1998,6 +2016,8 @@ function ActiveWorkout() {
       // A finished row has no use for a plan set aside by a hold that did not finish.
       if (checked && e.sets[i].planSec != null) delete e.sets[i].planSec
       if (e.sets[i].done && !editing) {
+        // A set logged while paused (#976): you are back, and so is the clock.
+        if (isPaused(s.active)) resumeWorkout(s.active)
         if (!quiet) { beep(S.sound, 1040, 0.12); vibrate(30) }
         // The unit that owns the ticked set — not the marked one. Since !92 the marker no longer
         // follows a finished exercise, and in list mode any exercise can be worked on, so judging
@@ -2401,7 +2421,7 @@ function ActiveWorkout() {
       {editing
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
-      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
+      <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <>{paused && <><Icon name="pause" className="whdr-paused-i" />{t('Paused')} </>}<Elapsed start={A.start} pausedAt={A.pausedAt} /></>} · {t('{0} sets', done + '/' + total)}{!(A.backfill || editing) && isOn(S, 'health') && <LiveHeartRate />}</div>{gymShown && (gymSwitchable
         ? <button type="button" className="whdr-gym" onClick={openGymMenu} aria-label={t('Gym: {0}', gymShown)}><Icon name="house" />{gymShown}</button>
         : <span className="whdr-gym"><Icon name="house" />{gymShown}</span>)}</div>
       {!chipRow && sessionMap}
@@ -2420,6 +2440,13 @@ function ActiveWorkout() {
         anywhere in a long stack. */}
     {listMode && chipRow}
     </div>
+    {/* Paused (#976): said plainly, with the one thing to do about it. Set a set done and it resumes too. */}
+    {paused && <div className="wpause" role="status">
+      <span className="wpause-i" aria-hidden="true"><Icon name="pause" /></span>
+      <div className="wpause-m"><div className="wpause-t">{t('Workout paused')}</div>
+        <div className="small muted">{t('The clock and the rest wait for you.')}</div></div>
+      <Button variant="primary" size="sm" icon="play" onClick={togglePause} style={{ width: 'auto', flex: 'none' }}>{t('Resume')}</Button>
+    </div>}
     {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
 

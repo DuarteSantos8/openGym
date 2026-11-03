@@ -3694,4 +3694,9 @@ export default {
   "Train them": "Nasıl çalışılsın",
   "What are we training?": "Ne çalışıyoruz?",
   "warm-ups: {0}": "ısınma: {0}",
+  "Resume workout": "Antrenmana devam et",
+  "Pause workout": "Antrenmanı duraklat",
+  "The clock and the rest wait for you": "Saat ve dinlenme seni bekler",
+  "The clock and the rest wait for you.": "Saat ve dinlenme seni bekliyor.",
+  "Workout paused": "Antrenman duraklatıldı",
 }

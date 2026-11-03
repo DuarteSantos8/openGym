@@ -53,6 +53,9 @@ struct ActiveWorkout: Codable, Equatable {
     /// When it was last worked on on the phone (ms): a set ticked, an edit, the app opened with it
     /// (#904). The forgotten-workout check counts from it as from a set logged here.
     var activeAt: Double? = nil
+    /// Paused on the phone at this moment (ms, #976): the workout clock stands still until it
+    /// resumes, when `start` moves on by the pause. Older phones never send it.
+    var pausedAt: Double? = nil
 }
 
 struct RestInfo: Codable, Equatable {

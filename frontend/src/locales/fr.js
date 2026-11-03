@@ -3694,4 +3694,9 @@ export default {
   "Train them": "Les faire",
   "What are we training?": "On travaille quoi ?",
   "warm-ups: {0}": "échauffement : {0}",
+  "Resume workout": "Reprendre la séance",
+  "Pause workout": "Mettre la séance en pause",
+  "The clock and the rest wait for you": "Le chrono et le repos t’attendent",
+  "The clock and the rest wait for you.": "Le chrono et le repos t’attendent.",
+  "Workout paused": "Séance en pause",
 }

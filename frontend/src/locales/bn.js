@@ -3773,4 +3773,9 @@ export default {
   "Train them": "এগুলো করো",
   "What are we training?": "আজ কী করব?",
   "warm-ups: {0}": "ওয়ার্ম-আপ: {0}",
+  "Resume workout": "ওয়ার্কআউট আবার চালু করো",
+  "Pause workout": "ওয়ার্কআউট থামাও",
+  "The clock and the rest wait for you": "ঘড়ি আর বিশ্রাম তোমার জন্য অপেক্ষা করবে",
+  "The clock and the rest wait for you.": "ঘড়ি আর বিশ্রাম তোমার জন্য অপেক্ষা করছে।",
+  "Workout paused": "ওয়ার্কআউট থেমে আছে",
 }

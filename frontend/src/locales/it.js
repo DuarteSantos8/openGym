@@ -3694,4 +3694,9 @@ export default {
   "Train them": "Allenali",
   "What are we training?": "Cosa alleniamo?",
   "warm-ups: {0}": "riscaldamento: {0}",
+  "Resume workout": "Riprendi allenamento",
+  "Pause workout": "Metti in pausa",
+  "The clock and the rest wait for you": "Il cronometro e il recupero ti aspettano",
+  "The clock and the rest wait for you.": "Il cronometro e il recupero ti aspettano.",
+  "Workout paused": "Allenamento in pausa",
 }

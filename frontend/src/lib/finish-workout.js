@@ -1,5 +1,6 @@
 // The persisted boundary for a finished session. Keep this pure so compatibility tests can
 // exercise the exact shape the UI writes without mounting React or mutating store state.
+import { stopAt } from './workout-pause.js'
 import { bestWeightForEntry, cleanupSg } from './history.js'
 import { hasCompletedWork, isSideSet } from './workout-model.js'
 
@@ -117,7 +118,8 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     id: active.id,
     d: active.d,
     start: active.start,
-    end,
+    // Finished while paused (#976): it ended at the pause, not while it sat waiting.
+    end: stopAt(active, end),
     routineIds,
     routineId: routineIds[0] ?? null,
     name: active.name,

@@ -209,6 +209,8 @@ export function buildSnapshot(S, { timer = null, ready = null, activeAt = null }
       name: A.name || '',
       // when it started (ms), for the watch's summary at the finish
       ...(num(A.start) ? { start: num(A.start) } : {}),
+      // paused on the phone (#976): the watch's clock stands at this moment (ms) until it resumes
+      ...(num(A.pausedAt) ? { pausedAt: num(A.pausedAt) } : {}),
       unit,
       cur: Math.max(0, Math.min(A.entries.length - 1, A.cur || 0)),
       restSec: num(S.restSec) || 0,
