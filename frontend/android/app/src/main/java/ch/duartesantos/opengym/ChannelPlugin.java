@@ -18,6 +18,8 @@ public class ChannelPlugin extends Plugin {
     public void get(PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("channel", BuildConfig.CHANNEL);
+        // false only in a Play build made with -PplayWithoutBackgroundLocation: no gym reminder.
+        ret.put("backgroundLocation", BuildConfig.BACKGROUND_LOCATION);
         call.resolve(ret);
     }
 }

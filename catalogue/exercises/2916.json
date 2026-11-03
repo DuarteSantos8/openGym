@@ -3,8 +3,9 @@
   "name": "kettlebell goblet carry",
   "bodyPart": "upper legs",
   "equipment": "kettlebell",
-  "target": "glutes",
+  "target": "abs",
   "secondaryMuscles": [
+    "glutes",
     "core",
     "biceps",
     "upper back",

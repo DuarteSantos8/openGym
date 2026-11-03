@@ -147,6 +147,29 @@ final class SessionCoreTests: XCTestCase {
         XCTAssertTrue(SessionCore.discarded("p1", in: try JSONDecoder().decode(Snapshot.self, from: Data(json.utf8))))
     }
 
+    // TestFlight 1.4.4: started here, discarded on the phone before any snapshot said the phone had
+    // it. Kept as unconfirmed, the watch ran on and later saved it to Apple Health.
+    func testStartedHereAndDiscardedOnThePhoneBeforeItConfirmedEndsItHere() {
+        let ready = ReadySession(routineIds: ["r1"], name: "Push", entries: workout("x", sets: [row(60, 8)]).entries)
+        var s = SessionCore.start(SessionState(), ready, wid: "watch-1", at: 100, id: "s1").0
+        var gone = snap(nil)
+        gone.discarded = ["watch-1"]
+        let before = s
+        s = SessionCore.applySnapshot(s, gone)
+        XCTAssertNil(s.workout)
+        XCTAssertNil(s.startedHere)
+        XCTAssertTrue(SessionCore.discarded(before.workout?.id, in: gone), "so SessionStore ends its Apple Health workout unsaved")
+        // Another workout running there, ours discarded: ours goes, theirs is picked up.
+        s = SessionCore.start(SessionState(), ready, wid: "watch-2", at: 100, id: "s2").0
+        var other = snap(workout("phone-1", sets: [row(1, 1)]))
+        other.discarded = ["watch-2"]
+        s = SessionCore.applySnapshot(s, other)
+        XCTAssertEqual(s.workout?.id, "phone-1")
+        // Not named: still kept, as before.
+        s = SessionCore.start(SessionState(), ready, wid: "watch-3", at: 100, id: "s3").0
+        XCTAssertEqual(SessionCore.applySnapshot(s, gone).workout?.id, "watch-3")
+    }
+
     // Discord fuckdv: a set ticked on the phone while the watch runs the session got no heart rate.
     func testFindsTheSetsThePhoneTickedButNotTheWatchsOwn() {
         var s = SessionCore.applySnapshot(SessionState(), snap(workout("p1", sets: [row(60, 8), row(60, 8), row(60, 8)])))

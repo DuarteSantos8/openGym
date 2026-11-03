@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Written by frontend/ios/ci/voice-strings.mjs: change it there. -->
+<resources>
+    <string name="shortcut_start">Antrenmanı başlat</string>
+    <string name="shortcut_weigh">Kilo kaydet</string>
+    <string name="shortcut_stats">İstatistikler</string>
+</resources>

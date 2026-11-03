@@ -34,6 +34,10 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         var nextExercise: String?
         var skipRest: String?
         var openApp: String?
+        // Timed holds that run themselves (lib/auto-holds.js). Optional like the ones above.
+        var hold: String?
+        var getReady: String?
+        var stopAuto: String?
     }
 
     /// One set as the activity shows it, with the rest that follows it.
@@ -67,9 +71,27 @@ struct WorkoutActivityAttributes: ActivityAttributes {
         /// The first open set of the next few exercises, in order (LIVE_VERSION 2), so Next exercise
         /// works while the page sleeps. Always the units after `cur`'s: moving on trims it.
         var unitStarts: [SetInfo]?
+        /// A hold counting down, or the 3-2-1 before one that starts by itself (`holdKind`
+        /// "countin" or "hold"): its end in ms since 1970, or its seconds left while paused.
+        var holdEndsAt: Double?
+        var holdLeft: Double?
+        var holdTotal: Double?
+        var holdKind: String?
+        /// The holds run themselves now: the Lock Screen offers Stop auto beside Log set.
+        var auto: Bool?
 
         /// A rest is counting down or held.
         var resting: Bool { restEndsAt != nil || restLeft != nil }
+        /// A hold or its count-in is counting down or held.
+        var holding: Bool { holdEndsAt != nil || holdLeft != nil }
+
+        /// The running hold (or count-in) as a range Text(timerInterval:) can count down, or nil.
+        var holdRange: ClosedRange<Date>? {
+            guard let end = holdEndsAt else { return nil }
+            let until = Date(timeIntervalSince1970: end / 1000)
+            let from = until.addingTimeInterval(-max(1, holdTotal ?? 1))
+            return from...until
+        }
 
         /// Where Next exercise goes: the first open set of the next exercise, or nil when no other
         /// exercise the activity knows of has sets open.
@@ -113,6 +135,9 @@ enum LiveActivityQueue {
     static let didChange = Notification.Name("OpenGymLiveActivityEvent")
     /// Skip rest was tapped: RestAlertPlugin forgets the alert it would post on leaving the front.
     static let restSkipped = Notification.Name("OpenGymLiveActivityRestSkipped")
+    /// Stop auto was tapped, or a set logged that changes the chain's timing: RestAlertPlugin drops
+    /// the alerts of the chain of holds after the one booked now (the page books again when it wakes).
+    static let autoStopped = Notification.Name("OpenGymLiveActivityAutoStopped")
     private static let lock = NSLock()
 
     static func all() -> [[String: Any]] {
@@ -220,6 +245,26 @@ struct SkipRestIntent: LiveActivityIntent {
     }
 }
 
+/// The Live Activity's Stop auto: holds stop starting by themselves for this workout.
+@available(iOS 17.0, *)
+struct StopAutoIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Stop auto"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Workout") var wid: String
+
+    init() {}
+
+    init(wid: String) {
+        self.wid = wid
+    }
+
+    func perform() async throws -> some IntentResult {
+        await LiveActivityTick.stopAuto(wid: wid)
+        return .result()
+    }
+}
+
 @available(iOS 17.0, *)
 enum LiveActivityTick {
     static let restRequestId = "opengym.rest"   // RestAlertPlugin.requestId: the page's own replaces it
@@ -239,6 +284,15 @@ enum LiveActivityTick {
         next.done = min(state.total, state.done + 1)
         next.unitStarts = state.startsAfter(next.cur)
         next.restLeft = nil
+        // Logged during a hold or its count-in: that clock is over, and the chain's alerts booked
+        // for the old timing go (the page books again when it applies this tap).
+        if state.holding {
+            next.holdEndsAt = nil
+            next.holdLeft = nil
+            next.holdTotal = nil
+            next.holdKind = nil
+            NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil)
+        }
         if cur.restAfter > 0, next.cur != nil {
             let end = now.addingTimeInterval(TimeInterval(cur.restAfter))
             next.restEndsAt = end.timeIntervalSince1970 * 1000
@@ -293,6 +347,27 @@ enum LiveActivityTick {
         center.removePendingNotificationRequests(withIdentifiers: [restRequestId])
         center.removeDeliveredNotifications(withIdentifiers: [restRequestId])
         NotificationCenter.default.post(name: LiveActivityQueue.restSkipped, object: nil)
+        await activity.update(ActivityContent(state: next, staleDate: nil))
+        NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
+    }
+
+    /// Stop auto: the chain ends; a count-in goes with it, a hold running finishes as one started by hand.
+    static func stopAuto(wid: String, now: Date = Date()) async {
+        guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
+        let state = activity.content.state
+        guard state.auto == true else { return }
+        LiveActivityQueue.append([
+            "id": UUID().uuidString, "type": "autoStop", "wid": wid, "at": (now.timeIntervalSince1970 * 1000).rounded(),
+        ])
+        var next = state
+        next.auto = false
+        if state.holdKind == "countin" {
+            next.holdEndsAt = nil
+            next.holdLeft = nil
+            next.holdTotal = nil
+            next.holdKind = nil
+        }
+        NotificationCenter.default.post(name: LiveActivityQueue.autoStopped, object: nil)
         await activity.update(ActivityContent(state: next, staleDate: nil))
         NotificationCenter.default.post(name: LiveActivityQueue.didChange, object: nil)
     }

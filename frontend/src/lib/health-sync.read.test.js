@@ -150,7 +150,9 @@ describe('weigh-ins', () => {
     await hs.enableRead('weight', getState, { apply })
     expect(h.calls[0]).toEqual(['request', { read: ['weight'], write: [] }])
     expect(reads('readWeights')[0][1].since).toBe(NOW - 30 * 24 * 3600e3)
-    expect(S.bodyweight).toEqual([{ d: '2026-10-15', w: 80.4, t: NOW - 2 * 3600e3, src: 'hc' }])
+    expect(S.bodyweight).toHaveLength(1)
+    expect(S.bodyweight[0]).toMatchObject({ d: '2026-10-15', w: 80.4, t: NOW - 2 * 3600e3, src: 'hc' })
+    expect(S.bodyweight[0].ins).toHaveLength(1)
     expect(file().wCursor).toBe(NOW - 2 * 3600e3)
     await hs.readHealth(getState, { force: true, now: NOW + 3 * 60e3, apply })
     expect(reads('readWeights')[1][1].since).toBe(NOW - 2 * 3600e3 - 2 * 24 * 3600e3)
@@ -164,12 +166,13 @@ describe('weigh-ins', () => {
     expect(applied).toBe(1)
   })
 
-  it('leaves a day with a weigh-in typed into openGym alone', async () => {
+  // #859: the scale's weigh-in joins the typed one at its own time; the typed one is not touched.
+  it('keeps a weigh-in typed into openGym that day, the scale\'s beside it', async () => {
     S.bodyweight = [{ d: '2026-10-15', w: 82, t: NOW - 10 * 3600e3 }]
     h.weights = [rec(2, 80.4)]
     await hs.enableRead('weight', getState, { apply })
-    expect(applied).toBe(0)
-    expect(S.bodyweight).toEqual([{ d: '2026-10-15', w: 82, t: NOW - 10 * 3600e3 }])
+    expect(applied).toBe(1)
+    expect(S.bodyweight[0].ins.map(r => [r.id, r.w, r.src || null])).toEqual([['0', 82, null], [S.bodyweight[0].ins[1].id, 80.4, 'hc']])
   })
 
   it('on the iPhone, where Apple Health never says whether reading is allowed, just reads', async () => {

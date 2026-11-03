@@ -162,6 +162,13 @@ describe('set-specific rests (Discord: rest for warm-ups and between sides)', ()
     for (const v of [undefined, null, -5, '60', NaN]) expect(ownSetRest({ restSec: v }), String(v)).toBeNull()
     expect(ownSetRest(undefined)).toBeNull()
   })
+  it('a set\'s own rest is its pause between sides too, before the exercise\'s (#853)', () => {
+    expect(sideRestFor({ sideRestSec: 20 }, { timed: false, ownSec: 45 })).toBe(45)
+    expect(sideRestFor({}, { timed: false, ownSec: 30 })).toBe(30)
+    expect(sideRestFor({ sideRestOff: true }, { timed: false, ownSec: 30 })).toBe(30)
+    expect(sideRestFor({ sideRestSec: 20 }, { timed: false, ownSec: 0 })).toBeNull()
+    expect(sideRestFor({ sideRestSec: 20 }, { timed: false, ownSec: null })).toBe(20)
+  })
   it('"no timer" between sides turns a hold\'s switch pause off, set rest or not (#636)', () => {
     expect(sideRestFor({ sideRestOff: true }, { timed: true, restAfter: 90, switchSec: 10 })).toBeNull()
     expect(sideRestFor({ sideRestOff: true, sideRestSec: 20 }, { timed: true, restAfter: 90, switchSec: 10 })).toBeNull()

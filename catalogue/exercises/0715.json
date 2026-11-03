@@ -3,9 +3,9 @@
   "name": "side plank",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "glutes",
     "shoulders"
   ],

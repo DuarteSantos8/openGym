@@ -3,9 +3,9 @@
   "name": "band standing single arm row",
   "bodyPart": "back",
   "equipment": "band",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids",
     "core"

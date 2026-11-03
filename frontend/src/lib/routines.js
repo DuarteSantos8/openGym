@@ -4,6 +4,8 @@ import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
 import { sessionsFor } from './progression.js'
 import { isWarmupRow } from './workout-model.js'
 import { ownExerciseRest } from './supersetFlow.js'
+import { warmupModeOf, ownRowsOf, ownRowsFromSession, sameOwnRows } from './warmup-ramp.js'
+import { isRungRow } from './warmup-snap.js'
 
 /**
  * Create a deep copy of a routine with a new id and a "(Copy)" suffix.
@@ -194,16 +196,39 @@ export function routineSlotIndex(routine, entries, idx) {
 // A rest reads as one number: its own seconds, 0 for the default, and -1 for "No timer" (restOff).
 const restOf = x => { const own = ownExerciseRest(x); return own === 0 ? -1 : own || 0 }
 
-function setupOf(entry) {
+function setupOf(entry, slot, floor) {
   const target = entry.target || {}
   const out = {
     restSec: restOf(target),
     note: String(target.note || '').trim().slice(0, NOTE_MAX),
   }
   if (modeOf({ ...target, id: entry.id }) !== 'cardio' && target.intensifier?.type !== 'restpause') {
-    out.warmupSets = Math.min(MAX_PLANNED_WARMUPS, (entry.sets || []).filter(isWarmupRow).length)
+    // A slot that chose its warm-ups, or a session whose warm-ups were generated (lib/warmup-ramp.js),
+    // keeps them as a block of rows; only the older ramp-set slots count them.
+    const rows = ownWarmupsChange(slot, entry, floor)
+    if (rows !== undefined) { if (rows) out.warmupRows = rows }
+    else out.warmupSets = Math.min(MAX_PLANNED_WARMUPS, (entry.sets || []).filter(isWarmupRow).length)
   }
   return out
+}
+
+/**
+ * The block of your own a session's warm-ups would save into its slot (#525), or null when there
+ * is nothing new to keep, or undefined for an older ramp-set slot (those keep their count). Only
+ * warm-ups you touched count as yours: a generated block left alone is the generator's, and
+ * saving it would freeze today's rounding. `force` keeps them anyway ("Keep these warm-ups").
+ */
+export function ownWarmupsChange(slot, entry, floor = 0, { force = false } = {}) {
+  const warm = (entry?.sets || []).filter(isWarmupRow)
+  const chose = warmupModeOf(slot)
+  if (!force && !chose && !warm.some(isRungRow)) return undefined
+  const saved = chose === 'own' ? ownRowsOf(slot) : []
+  const touched = warm.some(r => r.edited === true) || (chose === 'own' && warm.length !== saved.length)
+  if (!force && !touched) return null
+  const own = ownRowsFromSession(entry?.sets || [], floor)
+  if (!own) return null
+  if (chose === 'own' && sameOwnRows(saved, own)) return null
+  return own
 }
 
 /**
@@ -216,12 +241,13 @@ function setupOf(entry) {
  * editor does). Sets, reps and weight are not offered: the progression engine moves those every
  * session, and the routine is the plan it reads them against.
  */
-export function routineChangesFromEntry(routine, entries, idx) {
+export function routineChangesFromEntry(routine, entries, idx, floor = 0) {
   const at = routineSlotIndex(routine, entries, idx)
   if (at < 0) return null
   const slot = routine.ex[at]
-  const now = setupOf(entries[idx])
+  const now = setupOf(entries[idx], slot, floor)
   const changes = []
+  if (now.warmupRows) changes.push({ key: 'warmupRows', from: warmupModeOf(slot) === 'own' ? ownRowsOf(slot) : null, to: now.warmupRows })
   for (const key of ['warmupSets', 'restSec', 'note']) {
     if (now[key] === undefined) continue
     const from = key === 'note' ? String(slot.note || '').trim() : key === 'restSec' ? restOf(slot) : Math.max(0, Math.round(Number(slot[key])) || 0)
@@ -235,11 +261,13 @@ export function routineChangesFromEntry(routine, entries, idx) {
  * does: a key is only stored when it has a value, so "no warm-ups" removes it instead of leaving
  * a 0 that no plan file ever had. Returns the changes it applied, or null.
  */
-export function updateRoutineFromEntry(routine, entries, idx) {
-  const found = routineChangesFromEntry(routine, entries, idx)
+export function updateRoutineFromEntry(routine, entries, idx, floor = 0) {
+  const found = routineChangesFromEntry(routine, entries, idx, floor)
   if (!found) return null
   const slot = routine.ex[found.at]
   for (const { key, to } of found.changes) {
+    // A block of your own replaces whatever the slot warmed up with before.
+    if (key === 'warmupRows') { keepOwnWarmups(slot, to); continue }
     // "No timer" is stored as restOff, never as a negative rest an older app would misread.
     if (key === 'restSec') delete slot.restOff
     if (key === 'restSec' && to < 0) { delete slot.restSec; slot.restOff = true }
@@ -247,4 +275,11 @@ export function updateRoutineFromEntry(routine, entries, idx) {
     else delete slot[key]
   }
   return found.changes
+}
+
+/** The slot warms up with `rows` from now on: its own block, the older count gone. */
+export function keepOwnWarmups(slot, rows) {
+  slot.warmup = 'own'
+  slot.warmupRows = rows
+  delete slot.warmupSets
 }

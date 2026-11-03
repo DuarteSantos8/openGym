@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Touch and hold the app icon (v1.4.4, lib/voice.js): Start workout, Log weight, Stats. Each is
+     an opengym:// link the app already follows (lib/widget-links.js), so none does more than a tap
+     in the app would. Declared on every launcher alias in AndroidManifest.xml (AppIconPlugin's
+     icons), since the launcher reads them from the one that is enabled.
+
+     The capabilities are Google Assistant's App Actions: "start my workout in openGym" (the
+     built-in START_EXERCISE) opens today's plan, and "log my weight in openGym" (a custom intent,
+     queries in values/voice_actions.xml) opens the weigh-in sheet with the number in. Saving it
+     is still a tap: Assistant never logs anything by itself. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <capability android:name="actions.intent.START_EXERCISE">
+        <intent android:action="android.intent.action.VIEW">
+            <url-template android:value="opengym://start?today=1" />
+        </intent>
+    </capability>
+
+    <capability
+        android:name="custom.actions.intent.LOG_WEIGHT"
+        app:queryPatterns="@array/voice_log_weight_queries">
+        <intent android:action="android.intent.action.VIEW">
+            <url-template android:value="opengym://weigh-in{?w}" />
+            <parameter
+                android:name="weight"
+                android:key="w"
+                android:mimeType="https://schema.org/Number" />
+        </intent>
+    </capability>
+
+    <shortcut
+        android:shortcutId="start"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_start"
+        android:shortcutShortLabel="@string/shortcut_start"
+        android:shortcutLongLabel="@string/shortcut_start">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="opengym://start?today=1" />
+        <capability-binding android:key="actions.intent.START_EXERCISE" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="weigh-in"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_weigh"
+        android:shortcutShortLabel="@string/shortcut_weigh"
+        android:shortcutLongLabel="@string/shortcut_weigh">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="opengym://weigh-in" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="stats"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_stats"
+        android:shortcutShortLabel="@string/shortcut_stats"
+        android:shortcutLongLabel="@string/shortcut_stats">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="opengym://stats" />
+    </shortcut>
+</shortcuts>

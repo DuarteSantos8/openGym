@@ -65,7 +65,8 @@ public class PrintPlugin extends Plugin {
                     call.resolve();
                 }
             });
-            // baseURL null: the document is fully self-contained (inline <style>, no assets).
+            // baseURL null: the document is fully self-contained (inline <style>, no assets; the
+            // exercise pictures, #817, arrive inline as data: URLs, the 180 px stills only).
             webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
             printView = webView;
         });

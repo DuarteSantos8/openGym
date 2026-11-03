@@ -3,9 +3,9 @@
   "name": "lever row (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids"
   ],

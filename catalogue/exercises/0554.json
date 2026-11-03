@@ -3,9 +3,9 @@
   "name": "kettlebell windmill",
   "bodyPart": "waist",
   "equipment": "kettlebell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders"
   ],
   "category": "strength",

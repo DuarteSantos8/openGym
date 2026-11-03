@@ -1,7 +1,7 @@
-// The home-screen icon of the iPhone app (Settings → Look & Home → App icon). iOS itself keeps the
-// choice, as its alternate icon (AppIconPlugin.swift). Nothing goes into the synced state, so two
-// phones can wear different icons. 1.4.3 has no Android plugin (1.4.4 adds launcher aliases), and
-// a browser has no icon to change: there this answers null and the row stays away.
+// The home-screen icon of the phone app (Settings → Look & Home → App icon). The phone itself keeps
+// the choice: iOS its alternate icon, Android which launcher alias is on (AppIconPlugin.swift /
+// AppIconPlugin.java). Nothing goes into the synced state, so two phones can wear different icons.
+// A browser has no icon to change: there this answers null and the row stays away.
 import { MOBILE } from './mobile.js'
 import { platformNow } from './platform-now.js'
 import { APP_ICON_IDS } from './app-icon-variants.js'
@@ -10,7 +10,7 @@ import { APP_ICON_IDS } from './app-icon-variants.js'
 // settles, so a promise resolved with the bare proxy would hang (the Coach hang, #42).
 let pluginP = null
 const iconPlugin = () => pluginP || (pluginP = (async () => {
-  if (!MOBILE || platformNow() !== 'ios') return null
+  if (!MOBILE || !platformNow()) return null
   const { registerPlugin } = await import('@capacitor/core')
   return { p: registerPlugin('AppIcon') }
 })().catch(() => null))
@@ -29,8 +29,8 @@ export async function appIconState() {
 }
 
 /**
- * Switches the icon. Resolves { name, later }; `later` is for 1.4.4's Android launcher, which only
- * takes the new icon once the app is in the background. Throws when the phone refused.
+ * Switches the icon. Resolves { name, later }: `later` on Android, where the launcher only takes
+ * the new icon once the app is in the background. Throws when the phone refused.
  */
 export async function setAppIcon(name) {
   if (!APP_ICON_IDS.includes(name)) throw new Error('unknown icon')

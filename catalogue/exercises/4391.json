@@ -3,9 +3,9 @@
   "name": "cable low row with rope attachment",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "rhomboids",
     "biceps",
     "rear deltoids",

@@ -11,3 +11,12 @@ test('the API stamps built-in aliases independently per exercise, including a cl
   assert.equal(after.edited['exAliases.b'], 10);
   assert.deepEqual(after.exAliases, { a: [], b: ['Row'] });
 });
+
+test('the API stamps each module on its own (Settings → Modules)', () => {
+  const before = { _ts: 10, modules: { body: true, coach: true }, edited: { 'modules.body': 10, 'modules.coach': 10 } };
+  const after = structuredClone(before);
+  after.modules.body = false;
+  stampPut(before, after, { overRead: true, now: 100 });
+  assert.equal(after.edited['modules.body'], 100);
+  assert.equal(after.edited['modules.coach'], 10);
+});

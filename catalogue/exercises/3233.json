@@ -3,11 +3,11 @@
   "name": "cable seated supine grip row",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
+    "lats",
     "biceps",
     "rhomboids",
-    "upper back",
     "forearms"
   ],
   "category": "strength",

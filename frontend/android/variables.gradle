@@ -15,4 +15,15 @@ ext {
     cordovaAndroidVersion = '14.0.1'
     healthConnectVersion = '1.1.0'
     assetDeliveryVersion = '2.2.2'
+    // The Wearable Data Layer (WatchBridgePlugin, wear/): the phone app and the watch app.
+    playServicesWearableVersion = '19.0.0'
+    // Wear OS 3 and later (every Wear OS watch sold since 2021: Galaxy Watch 4+, Pixel Watch,
+    // TicWatch, OnePlus, Fossil Gen 6+).
+    wearMinSdkVersion = 30
+    wearComposeVersion = '1.5.6'
+    wearHealthServicesVersion = '1.1.0'
+    wearTilesVersion = '1.5.0'
+    wearProtolayoutVersion = '1.3.0'
+    wearOngoingVersion = '1.1.0'
+    wearComplicationsVersion = '1.2.1'
 }

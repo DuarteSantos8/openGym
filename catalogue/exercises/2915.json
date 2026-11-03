@@ -3,8 +3,9 @@
   "name": "barbell zercher carry",
   "bodyPart": "upper legs",
   "equipment": "barbell",
-  "target": "glutes",
+  "target": "abs",
   "secondaryMuscles": [
+    "glutes",
     "quadriceps",
     "core",
     "biceps",
