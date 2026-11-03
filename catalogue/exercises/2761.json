@@ -3,9 +3,9 @@
   "name": "ankle dorsal flexion",
   "bodyPart": "lower legs",
   "equipment": "body weight",
-  "target": "calves",
+  "target": "shins",
   "secondaryMuscles": [
-    "shins",
+    "calves",
     "ankles"
   ],
   "category": "mobility",

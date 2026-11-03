@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
+import DateField from '../components/DateField.jsx'
 import {
   MEASUREMENT_FIELDS, MEASUREMENT_KEYS, emptyMeasurement, enabledMeasurementFields,
   fromMeasurementDisplay, latestMeasurement, measurementEntryHasValues,
@@ -91,7 +92,7 @@ function MeasurementLog({ sourceDate, close }) {
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Fill only what you measured today. Empty fields stay empty.')}</div>
     <label className="measure-date">
       <span>{t('Date')}</span>
-      <input className="field" type="date" value={date} max={todayISO()} onChange={e => setDate(e.target.value)} />
+      <DateField value={date} max={todayISO()} onChange={setDate} label={t('Date')} />
     </label>
     {fields.length ? <div className="measure-form">
       {fields.map(field => <label className="measure-field" key={field.key}>
@@ -223,7 +224,7 @@ export default function Measurements() {
       <div className="row between" style={{ marginBottom: 10 }}>
         <div>
           <div className="muted small">{field ? t(field.label) : t('Body measurements')}</div>
-          <div className="big" style={{ marginTop: 3 }}>{latest ? <>{fmtNum(latest.y)} <span className="muted" style={{ fontSize: '1rem' }}>{unit}</span></> : '–'}</div>
+          <div className="big" style={{ marginTop: 3 }}>{latest ? <>{fmtNum(latest.y)} <span className="muted" style={{ fontSize: 'var(--fs-callout)' }}>{unit}</span></> : '–'}</div>
           {delta != null && delta !== 0 && <div className="small" style={{ marginTop: 3, color: 'var(--label-2)' }}>{delta > 0 ? '+' : ''}{withUnit(delta, unit)} {t('since previous')}</div>}
         </div>
         <Button size="sm" icon="plus" onClick={() => measurementLogSheet()}>{t('Log')}</Button>

@@ -3,8 +3,9 @@
   "name": "band narrow grip high row",
   "bodyPart": "back",
   "equipment": "band",
-  "target": "upper back",
+  "target": "lats",
   "secondaryMuscles": [
+    "upper back",
     "rear deltoids",
     "biceps",
     "rhomboids"

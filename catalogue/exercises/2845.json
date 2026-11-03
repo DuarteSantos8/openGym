@@ -3,9 +3,8 @@
   "name": "hip twist supported arms",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core",
     "hip flexors"
   ],

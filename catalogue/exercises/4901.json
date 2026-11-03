@@ -3,9 +3,9 @@
   "name": "dumbbell standing windmill",
   "bodyPart": "waist",
   "equipment": "dumbbell",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders",
     "hamstrings",
     "lower back"

@@ -3,8 +3,9 @@
   "name": "squat mobilization",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
+    "glutes",
     "adductors",
     "hip flexors",
     "calves",

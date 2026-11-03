@@ -132,12 +132,13 @@ export const isGrey = hex => toHsl(hex)[1] < GREY_SAT
  * (dark theme) or darker (light theme) in small steps of HSL lightness until it does, hue and
  * saturation kept. A grey has to clear the stricter grey bar (THEMES above).
  */
-export function readableIn(hex, theme) {
+export function readableIn(hex, theme, min) {
   const th = THEMES[theme] || THEMES.dark
   const grey = isGrey(hex)
+  const bar = min || th.min
   const ok = c => grey
-    ? worst(c, th.bgs) >= GREY_TEXT && worst(c, th.label2) >= GREY_GAP
-    : worst(c, th.bgs) >= th.min
+    ? worst(c, th.bgs) >= Math.max(GREY_TEXT, bar) && worst(c, th.label2) >= GREY_GAP
+    : worst(c, th.bgs) >= bar
   if (ok(hex)) return hex
   const [h, s, l] = toHsl(hex)
   const up = th.toward === '#ffffff'
@@ -151,6 +152,14 @@ export function readableIn(hex, theme) {
   }
   return th.toward
 }
+
+// The accent as words (links, Add set, the progression line, a focus ring) is 13-17 px text, so it
+// needs the text bar, 4.5:1, where a fill or an icon gets by on 3:1. The presets carry a hand-picked
+// --acc-ink per theme (index.css); the user's own colour gets the same: its readable shade, taken
+// on in the same direction until it reaches 4.5:1 on both the page and a card (redesign 1.4.5, P12).
+export const INK_TEXT = 4.5
+/** The text shade of the user's colour in `theme`: 4.5:1 or better on that theme's page and card. */
+export const inkIn = (hex, theme) => readableIn(readableIn(hex, theme), theme, INK_TEXT)
 
 /** Whether `hex` is drawn differently from itself in `theme` (Settings says so). */
 export const adjustedIn = (hex, theme) => readableIn(hex, theme) !== hex
@@ -175,7 +184,8 @@ const KNOB_RING = 'rgba(0,0,0,.28)'
 
 /**
  * The CSS custom properties for the user's colour in `theme`, the same set a preset defines in
- * index.css: the accent, its pressed shade, the text on it, and the switch knob's ring. The soft
+ * index.css: the accent, its pressed shade, the text on it, the accent as text (4.5:1, inkIn) and
+ * the switch knob's ring. The soft
  * and line tints are mixed from --acc in index.css and follow on their own. null for anything
  * but a valid hex.
  */
@@ -185,7 +195,7 @@ export function customAccentVars(hex, theme) {
   const acc = readableIn(c, theme)
   const acc2 = mix(acc, '#000000', 0.25)
   return {
-    '--acc': acc, '--acc-2': acc2, '--on-acc': inkOnBoth(acc, acc2),
+    '--acc': acc, '--acc-2': acc2, '--on-acc': inkOnBoth(acc, acc2), '--acc-ink': inkIn(acc, theme),
     '--knob-ring': contrast('#ffffff', acc) < 1.5 ? KNOB_RING : 'transparent',
   }
 }
@@ -198,7 +208,7 @@ export function accentPair(v) {
   return { accent: ACCENTS[k], ink: ACCENT_INK[k] }
 }
 
-const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--knob-ring']
+const CUSTOM_VARS = ['--acc', '--acc-2', '--on-acc', '--acc-ink', '--knob-ring']
 
 /**
  * Puts the accent on the page root: a preset by `data-accent` (index.css does the rest), the

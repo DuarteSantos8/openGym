@@ -1,0 +1,33 @@
+openGym est un carnet d'entraînement fait par des gens qui soulèvent, pour des gens qui soulèvent. Planifie ta semaine, note chaque série et vois ce que tu as vraiment fait. Sans compte, sans pub, sans abonnement, sans pistage.
+
+PLANIFIER
+• Plus de 5 600 exercices avec démos animées, en 19 langues
+• Quatre programmes de départ (Push/Pull/Legs, Haut/Bas du corps, Full Body, 5×5), ou crée le tien
+• Une routine par jour de la semaine, ou une rotation (A, B, C, A …) si ta semaine n'a pas d'horaire fixe
+• Supersets, échauffements, drop sets, rest-pause, maintiens chronométrés, répétitions par côté
+
+S'ENTRAÎNER
+• La séance du jour démarre toute seule, avec les charges de la dernière fois déjà remplies
+• Minuteur de repos qui sonne même écran verrouillé
+• Calcul des disques avec les disques que tu as vraiment
+• Règles de progression : linéaire, Greyskull, double progression et plus encore
+• Valide ton entrée à la salle en montrant ton code d'abonné depuis l'appli
+
+SUIVRE
+• Courbes de 1RM estimé, volume par muscle, carte de récupération
+• Poids de corps face à ton objectif, photos de progression côte à côte
+• Modifie n'importe quelle séance passée, ou ajoute-en une faite sur papier
+
+À TOI
+• Tout reste sur ton téléphone. Envie de synchro ? Connecte ton propre serveur openGym.
+• Import depuis Strong, Hevy et FitNotes, export de tout à tout moment
+• Coach IA optionnel qui prépare ta semaine, avec ta propre clé API, et seulement après t'avoir demandé
+• Gratuit et open source (AGPL), développé au grand jour avec la communauté
+
+SUR ANDROID
+• Rappel salle : ajoute tes salles et openGym te fait signe quand tu entres, même app fermée. Il utilise ta position en arrière-plan, seulement si tu l'actives, et tes lieux ne quittent jamais le téléphone
+• Health Connect si tu veux : les séances terminées et les pesées y vont, le rythme cardiaque et les pesées de ta balance reviennent
+• Un widget d'écran d'accueil avec le plan du jour, et des stickers NFC qui ouvrent l'app devant ton rack
+• Cette version F-Droid embarque les animations standard en 180 px, sans liaison Wear OS, car celle-ci a besoin des services Google Play
+
+Animations des exercices © Gym visual (gymvisual.com), sous licence pour openGym.

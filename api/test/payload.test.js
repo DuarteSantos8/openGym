@@ -307,7 +307,7 @@ test('the last few chat lines travel as conversation — user text and Coach ver
     { role: 'coach', kind: 'error', text: 'The Coach couldn’t run.' },
     { role: 'coach', kind: 'nochange', text: 'Nothing to change yet; watch the knee.' },
     { role: 'coach', kind: 'applied', text: 'Applied 2 changes' },
-    { role: 'user', kind: 'text', text: 'x'.repeat(500) },
+    { role: 'user', kind: 'text', text: 'x'.repeat(payload.CONVERSATION_CHARS + 500) },
     { role: 'user', kind: 'text', text: 'and what about that?' }
   ] };
   const p = payload.build(S, { handle: handleFor('u1'), kind: 'review', note: 'and what about that?' });

@@ -3,9 +3,8 @@
   "name": "band twist",
   "bodyPart": "waist",
   "equipment": "band",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "shoulders",
     "core"
   ],

@@ -3,10 +3,10 @@
   "name": "smith toe raise",
   "bodyPart": "lower legs",
   "equipment": "smith machine",
-  "target": "calves",
+  "target": "shins",
   "secondaryMuscles": [
-    "ankles",
-    "shins"
+    "calves",
+    "ankles"
   ],
   "category": "strength",
   "description": "A smith machine toe raise where you rise onto the balls of your feet. It builds the calves and ankle strength.",

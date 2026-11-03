@@ -4,6 +4,14 @@ import { armRestAlert, buildRestAlert, disarmRestAlert, REST_ALERT_ID, REST_CHAN
 describe('buildRestAlert', () => {
   const now = 1_700_000_000_000
 
+  it('carries the chain of a hold that runs itself, and can leave the countdown card out', () => {
+    const alert = buildRestAlert({ at: now + 1000, cues: [{ dt: 3000.4, title: 'Go! Plank' }, { dt: -1, title: 'bad' }, { dt: 33_000, title: 'Hold done: Plank' }], countdown: false, now })
+    expect(alert.cues).toEqual([{ dt: 3000, title: 'Go! Plank' }, { dt: 33_000, title: 'Hold done: Plank' }])
+    expect(alert.countdown).toBe(false)
+    expect(buildRestAlert({ at: now + 1000, now })).toMatchObject({ cues: [], countdown: true })
+    expect(buildRestAlert({ at: now + 1000, cues: Array.from({ length: 40 }, (_, i) => ({ dt: i, title: 'x' })), now }).cues).toHaveLength(16)
+  })
+
   it('schedules a public notification', () => {
     const alert = buildRestAlert({ at: now + 90_000, title: 'Rest’s over. Next set!', sound: true, now })
     expect(alert).toMatchObject({

@@ -3,9 +3,9 @@
   "name": "inverted row with bed sheet",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids",
     "core"

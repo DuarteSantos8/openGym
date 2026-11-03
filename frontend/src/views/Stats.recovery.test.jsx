@@ -191,7 +191,7 @@ async function unmountStats() {
 function muscleCard() {
   return [...container.querySelectorAll('.card')].find(card =>
     [...card.querySelectorAll('.seg button')].some(button =>
-      ['Muscle balance', 'Fatigue', 'Strength'].includes(button.textContent.trim())))
+      ['Sets', 'Fatigue', 'Strength'].includes(button.textContent.trim())))
 }
 
 function buttonWithText(scope, text) {
@@ -202,9 +202,14 @@ function viewButton(text) {
   return buttonWithText(muscleCard(), text)
 }
 
-function balanceRangeButton(text) {
-  return buttonWithText(muscleCard().querySelectorAll('.seg')[1], text)
+// The period of the Sets view is a menu button since the stats redesign ("Period: Week"); it opens
+// the shared picker sheet, mounted here by Modals.
+const periodButton = () => [...muscleCard().querySelectorAll('button')].find(b => (b.getAttribute('aria-label') || '').startsWith('Period:'))
+async function pickPeriod(text) {
+  await click(periodButton())
+  await click([...document.querySelector('#modal-root').querySelectorAll('.sect-b button')].find(b => b.textContent.trim() === text))
 }
+const expectPeriod = text => expect(periodButton()?.getAttribute('aria-label')).toBe('Period: ' + text)
 
 async function click(button) {
   expect(button, `expected a button named ${button?.textContent || 'unknown'}`).toBeTruthy()
@@ -234,10 +239,10 @@ afterEach(async () => {
 describe('Stats muscle recovery view runtime', () => {
   it('dispatches real clicks through Balance, Fatigue, and Strength and preserves selection', async () => {
     await mountStats()
-    expectPressed(viewButton('Muscle balance'))
-    expectPressed(balanceRangeButton('Week'))
+    expectPressed(viewButton('Sets'))
+    expectPeriod('Week')
 
-    await click(balanceRangeButton('30d'))
+    await pickPeriod('30d')
     await click(buttonWithText(muscleCard(), 'All'))
     await click(muscleCard().querySelector('[data-muscle="chest"]'))
     expect(buttonWithText(muscleCard(), 'Hard')).toBeTruthy()
@@ -253,8 +258,8 @@ describe('Stats muscle recovery view runtime', () => {
     expect(lastMap().thresholds.at(-1)).toEqual({ at: 1, level: 4 })
     expect(container.textContent).toContain('Strength shows retained muscle strength. Train again to reset it.')
 
-    await click(viewButton('Muscle balance'))
-    expectPressed(balanceRangeButton('30d'))
+    await click(viewButton('Sets'))
+    expectPeriod('30d')
     expect(buttonWithText(muscleCard(), 'Hard')).toBeTruthy()
     expect(lastMap().selected).toBe('chest')
     expect(lastMap().load.chest).toBe(7)
@@ -262,7 +267,7 @@ describe('Stats muscle recovery view runtime', () => {
 
   it('updates the rendered Fatigue map and Balance window on the real 60-second interval', async () => {
     await mountStats()
-    await click(balanceRangeButton('30d'))
+    await pickPeriod('30d')
     await click(viewButton('Fatigue'))
     await click(muscleCard().querySelector('[data-muscle="chest"]'))
 
@@ -281,7 +286,7 @@ describe('Stats muscle recovery view runtime', () => {
 
     await click(viewButton('Strength'))
     expect(lastMap().load.quadriceps).toBeLessThan(1)
-    await click(viewButton('Muscle balance'))
+    await click(viewButton('Sets'))
     expect(lastMap().load.chest).toBe(6)
   })
 
@@ -365,9 +370,9 @@ describe('Stats muscle recovery view runtime', () => {
     await click(viewButton('Strength'))
     expect(lastMap().load.chest).toBe(1)
     expect(lastMap().load.biceps).toBe(STRENGTH_FLOOR)
-    const bicepsRow = [...muscleCard().querySelectorAll('.mrow')]
-      .find(row => row.querySelector('.nm')?.textContent === 'Biceps')
-    expect(bicepsRow.querySelector('.v').textContent).toContain('not trained')
+    const bicepsRow = [...muscleCard().querySelectorAll('.sbar-row')]
+      .find(row => row.querySelector('.sbar-n')?.textContent === 'Biceps')
+    expect(bicepsRow.querySelector('.sbar-v').textContent).toContain('not trained')
   })
 })
 
@@ -431,14 +436,14 @@ describe('Stats estimated effort', () => {
     // Six imported failures plus estimates for the eighteen unrated sets.
     expect(card.textContent).toContain('6 rated · 18 estimated of 24 sets')
     // The average speaks for the whole training, not just the failures.
-    const [avg, hard] = [...card.querySelectorAll('.stat-v')].map(el => el.textContent.trim())
+    const avg = card.querySelector('.stat-v').textContent.trim()
     expect(avg).toMatch(/RIR$/)
     expect(parseFloat(avg)).toBeGreaterThan(0)
-    expect(hard).not.toBe('100%')
-    // The failures stay a visible spike at the hard end of the histogram.
-    const zeroBin = [...card.querySelectorAll('.mrow')]
-      .find(row => row.querySelector('.nm')?.textContent.trim() === 'RIR 0')
-    expect(zeroBin?.querySelector('.v').textContent).toContain('6')
+    expect(card.querySelector('.effort-sub b').textContent).not.toBe('100%')
+    // The failures stay a visible share at the hard end of the stacked bar's key.
+    const zeroBin = [...card.querySelectorAll('.sstack-legend li')]
+      .find(li => li.querySelector('.slegend-l')?.textContent.trim() === 'RIR 0')
+    expect(zeroBin?.querySelector('.slegend-v').textContent).toMatch(/^6 · /)
 
     // The resolver applies on every window, not just the default 90d.
     await click(buttonWithText(card.querySelector('.seg'), '30d'))
@@ -460,7 +465,7 @@ describe('Stats strength exercise rows', () => {
     await click(viewButton('Strength'))
     await click(muscleCard().querySelector('[data-muscle="chest"]'))
     expect(muscleCard().textContent).toContain('Exercises · Chest')
-    const row = [...muscleCard().querySelectorAll('.mrow[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
+    const row = [...muscleCard().querySelectorAll('.sbar-row[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
     expect(row, 'expected a tappable exercise row for the chest').toBeTruthy()
     expect(row.textContent).toContain('barbell bench press')
 
@@ -482,11 +487,11 @@ describe('Stats strength exercise rows', () => {
     await mountStats()
     await click(viewButton('Strength'))
     await click(muscleCard().querySelector('[data-muscle="chest"]'))
-    const row = [...muscleCard().querySelectorAll('.mrow[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
+    const row = [...muscleCard().querySelectorAll('.sbar-row[role="button"]')].find(el => el.textContent.includes('Est. 1RM'))
     expect(row).toBeTruthy()
-    const pct = row.querySelector('.v').textContent.match(/(\d+)%/)[1]
+    const pct = row.querySelector('.sbar-v').textContent.match(/(\d+)%/)[1]
     expect(Number(pct)).toBeLessThan(100)
-    const fill = row.querySelector('.bar i')
+    const fill = row.querySelector('.sbar-f')
     expect(fill.style.width).toBe(pct + '%')
     expect(fill.getAttribute('style')).not.toMatch(/to right|gradient/)
   })
@@ -546,7 +551,10 @@ describe('Stats exercise progress picker', () => {
     const progressChart = mocks.charts.find(chart => chart.points?.some(point => point.y === 80))
     expect(progressChart?.points).toHaveLength(1)
     expect(progressChart.points[0].y).toBe(80)
-    expect(card.textContent).toContain('60×5  80×5')
+    // the table lists the day once, with its top set (stats redesign)
+    const days = card.querySelectorAll('[data-ex-days] .ex-day')
+    expect(days).toHaveLength(1)
+    expect(days[0].querySelector('.ex-day-s').textContent).toBe('80×5')
   })
 
   it('aggregates repeated assisted occurrences by the lightest load', async () => {

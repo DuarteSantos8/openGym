@@ -3,9 +3,9 @@
   "name": "lever standing leg raise",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
-  "target": "quads",
+  "target": "hip flexors",
   "secondaryMuscles": [
-    "hip flexors",
+    "quadriceps",
     "core"
   ],
   "category": "strength",
