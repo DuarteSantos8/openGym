@@ -62,6 +62,18 @@ const isStr = v => typeof v === 'string' && v.trim().length > 0;
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
 const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 const clampStr = (v, n) => String(v == null ? '' : v).slice(0, n);
+// Prose over the limit (a why, a summary, a note): cut at the last sentence (failing that, word) boundary and mark the cut with
+// an ellipsis, so the lifter never reads a coach's text that stops mid-word.
+const clampText = (v, n) => {
+  const s = String(v == null ? '' : v);
+  if (s.length <= n) return s;
+  const head = s.slice(0, n - 1);
+  const sentence = Math.max(head.lastIndexOf('. '), head.lastIndexOf('! '), head.lastIndexOf('? '), head.lastIndexOf('\n'));
+  if (sentence > n * 0.6) return head.slice(0, sentence + 1).trimEnd();
+  const space = head.lastIndexOf(' ');
+  return (space > n * 0.6 ? head.slice(0, space) : head).trimEnd() + '…';
+};
+// Ids and names keep the plain cut: an id must never grow an ellipsis.
 
 /* Catalogue ids are zero-padded strings ("0024"), and a model that met an id as "0024" in the
  * payload routinely re-serializes it as a JSON number (24) or an unpadded string ("24") — to a
@@ -137,7 +149,7 @@ export function validatePlan(data, ctx = {}) {
   const customEx = (Array.isArray(data.customEx) ? data.customEx : [])
     .filter(c => c && safeId(c.id) && !libraryHas(c.id) && isStr(c.n))
     .slice(0, 20)
-    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampStr(c.desc, 400) } : {}) }));
+    .map(c => ({ id: clampStr(c.id, 40), n: clampStr(c.n, 60), bp: clampStr(c.bp || 'waist', 30), ...(c.desc ? { desc: clampText(c.desc, 1000) } : {}) }));
   // Ids the plan may name: invented in this same answer, or already the user's own.
   const proposedIds = new Set([...customEx.map(c => c.id), ...(ctx.customIds || [])]);
 
@@ -201,7 +213,7 @@ export function validatePlan(data, ctx = {}) {
       if (e.bodyweight != null) clean.bodyweight = !!e.bodyweight;
       if (perSide) clean.side = true;
       if (isStr(e.sg)) clean.sg = clampStr(e.sg, 20);
-      if (isStr(e.why)) clean.why = clampStr(e.why, 400);
+      if (isStr(e.why)) clean.why = clampText(e.why, 1500);
       // The same exercise twice in one routine has no honest reading: `reorder` can never be
       // satisfied again (it demands each id once), and every targeted change resolves to
       // whichever copy comes first.
@@ -224,7 +236,7 @@ export function validatePlan(data, ctx = {}) {
       name: clampStr(r.name || 'Routine', 40),
       emoji: glyphStr(r.emoji),
       ...(POLICIES.includes(r.prog) ? { prog: r.prog } : {}),
-      ...(isStr(r.why) ? { why: clampStr(r.why, 400) } : {}),
+      ...(isStr(r.why) ? { why: clampText(r.why, 1500) } : {}),
       ex
     });
   });
@@ -270,8 +282,8 @@ export function validatePlan(data, ctx = {}) {
     bundle: {
       opengym_plan: 1,
       name: clampStr(data.name || 'Coach plan', 40),
-      summary: clampStr(data.summary || '', 1200),
-      basedOn: clampStr(data.basedOn || '', 400),
+      summary: clampText(data.summary || '', 4000),
+      basedOn: clampText(data.basedOn || '', 1500),
       week, routines, customEx
     }
   };
@@ -287,7 +299,7 @@ export function validatePlan(data, ctx = {}) {
 export function validateReview(data, plan, ctx = {}) {
   if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
   if (data.nochange) {
-    return { ok: true, nochange: true, reading: clampStr(data.reading || data.summary || '', 1200) };
+    return { ok: true, nochange: true, reading: clampText(data.reading || data.summary || '', 4000) };
   }
   const errors = [];
   const routines = new Map((plan?.routines || []).map(r => [r.id, r]));
@@ -365,7 +377,7 @@ export function validateReview(data, plan, ctx = {}) {
         ...(isInt(target.weekday, 0, 6) ? { weekday: target.weekday } : {}),
         ...(c.type === 'programme' && isStr(target.programmeId) ? { programmeId: clampStr(target.programmeId, 64) } : {})
       },
-      why: clampStr(c.why, 600),
+      why: clampText(c.why, 1500),
       // The screen had no way to say WHICH routine: "Remove a routine" was the entire card, and
       // approving one is irreversible from that screen. The name is right here; send it.
       ...(routine ? { routineName: clampStr(routine.name || '', 40) } : {}),
@@ -711,12 +723,12 @@ export function validateReview(data, plan, ctx = {}) {
   if (!kept.length) {
     // An empty change list and "no changes" are the same outcome; treat it as the latter
     // rather than showing someone an empty proposal screen (FR-25).
-    return { ok: true, nochange: true, reading: clampStr(data.summary || data.reading || '', 1200) };
+    return { ok: true, nochange: true, reading: clampText(data.summary || data.reading || '', 4000) };
   }
   return {
     ok: true,
     proposal: {
-      summary: clampStr(data.summary || '', 1200),
+      summary: clampText(data.summary || '', 4000),
       evidence: {
         // Clamped because this is stored verbatim in the synced coach log, and trim() cannot
         // shrink a single oversized entry — one answer could push a profile permanently over
@@ -726,7 +738,7 @@ export function validateReview(data, plan, ctx = {}) {
         sessions: isInt(data.evidence?.sessions, 0, 10000) ? data.evidence.sessions : null
       },
       changes: kept,
-      notes: (Array.isArray(data.notes) ? data.notes : []).filter(isStr).slice(0, 6).map(n => clampStr(n, 600))
+      notes: (Array.isArray(data.notes) ? data.notes : []).filter(isStr).slice(0, 6).map(n => clampText(n, 1500))
     }
   };
 }
@@ -776,7 +788,7 @@ export function validateAsk(data) {
   if (Array.isArray(data.changes) && data.changes.length) errors.push('an answer carries no plan changes — drop "changes" and say it in "answer"');
   if (!isStr(data.answer) || !data.answer.trim()) errors.push('answer is required — reply to the question in plain text');
   if (errors.length) return fail(errors);
-  return { ok: true, proposal: { answer: clampStr(data.answer.trim(), MAX_ANSWER_CHARS) } };
+  return { ok: true, proposal: { answer: clampText(data.answer.trim(), MAX_ANSWER_CHARS) } };
 }
 
 /* =============================== workout debriefs =============================== */
@@ -803,11 +815,11 @@ export function validateDebrief(data) {
   DEBRIEF_LISTS.forEach(k => {
     const v = data[k];
     if (v != null && !Array.isArray(v)) { errors.push(`${k} must be an array of short strings`); lists[k] = []; return; }
-    lists[k] = (v || []).filter(isStr).map(x => clampStr(x.trim(), 300)).slice(0, MAX_DEBRIEF_ITEMS);
+    lists[k] = (v || []).filter(isStr).map(x => clampText(x.trim(), 1000)).slice(0, MAX_DEBRIEF_ITEMS);
   });
   if (!DEBRIEF_LISTS.some(k => lists[k].length)) errors.push('at least one of highlights, watch or nextTime must have an item');
   if (errors.length) return fail(errors);
-  return { ok: true, proposal: { summary: clampStr(data.summary.trim(), 600), score, ...lists } };
+  return { ok: true, proposal: { summary: clampText(data.summary.trim(), 2000), score, ...lists } };
 }
 
 /* =============================== the workout in progress =============================== */
@@ -830,7 +842,7 @@ const doneWork = en => (en?.sets || []).filter(s => !isWarmRow(s) && s.done);
  */
 export function validateAdapt(data, today, ctx = {}) {
   if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
-  if (data.nochange) return { ok: true, nochange: true, reading: clampStr(data.reading || data.summary || '', 600) };
+  if (data.nochange) return { ok: true, nochange: true, reading: clampText(data.reading || data.summary || '', 600) };
   const entries = Array.isArray(today?.entries) ? today.entries : [];
   if (!entries.length) return fail(['there is no workout running to change']);
   const list = Array.isArray(data.changes) ? data.changes : null;
@@ -847,7 +859,7 @@ export function validateAdapt(data, today, ctx = {}) {
     if (!c || typeof c !== 'object') { errors.push(`${where} is not an object`); return; }
     if (!ADAPT_TYPES.includes(c.type)) { errors.push(`${where}.type "${c.type}" is not allowed — use one of: ${ADAPT_TYPES.join(', ')}`); return; }
     if (!isStr(c.why)) { errors.push(`${where}.why is required — say in plain words why this helps today`); return; }
-    const out = { id: 'a' + k, type: c.type, why: clampStr(c.why, 400) };
+    const out = { id: 'a' + k, type: c.type, why: clampText(c.why, 400) };
     let en = null;
     if (ADAPT_ON_ENTRY.includes(c.type)) {
       if (!isInt(c.entry, 0, entries.length - 1)) { errors.push(`${where}.entry must be the index "i" of an exercise in today.entries`); return; }
@@ -920,6 +932,6 @@ export function validateAdapt(data, today, ctx = {}) {
     changes.push(out);
   });
   if (errors.length) return fail(errors);
-  if (!changes.length) return { ok: true, nochange: true, reading: clampStr(data.summary || data.reading || '', 600) };
-  return { ok: true, proposal: { summary: clampStr(data.summary, 600), changes } };
+  if (!changes.length) return { ok: true, nochange: true, reading: clampText(data.summary || data.reading || '', 600) };
+  return { ok: true, proposal: { summary: clampText(data.summary, 600), changes } };
 }
