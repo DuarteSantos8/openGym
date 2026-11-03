@@ -3,9 +3,9 @@
   "name": "band straight leg deadlift",
   "bodyPart": "back",
   "equipment": "band",
-  "target": "spine",
+  "target": "hamstrings",
   "secondaryMuscles": [
-    "hamstrings",
+    "lower back",
     "glutes"
   ],
   "category": "strength",

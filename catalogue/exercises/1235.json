@@ -3,9 +3,9 @@
   "name": "lever one arm seated row (seated row machine)",
   "bodyPart": "back",
   "equipment": "leverage machine",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids"
   ],

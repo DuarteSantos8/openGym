@@ -9,7 +9,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
-const dir = path.join(path.resolve(process.argv[2] || '/mnt/backup-hdd/opengym-media'), 'work/names/out')
+const dir = path.join(path.resolve(process.argv[2] || '/mnt/build-fast/from-hdd/opengym-media'), 'work/names/out')
 const byLang = {}
 for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort()) {
   const lang = f.replace(/-\d+\.json$/, '')

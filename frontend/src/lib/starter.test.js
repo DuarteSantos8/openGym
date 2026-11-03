@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { EXIDX } from './exercises.js'
 import { ALL_EQUIPMENT, eqAvailable } from './equipment.js'
-import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines } from './starter.js'
+import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines, starterProgrammeOptions, buildStarterProgramme } from './starter.js'
+import { normalizeProgramme, programmeRoutineIds } from './programmes.js'
 
 // The approved prescription, written out again rather than imported: a test that reads the
 // same table as the code would pass no matter what that table said. [weekday, name, sets].
@@ -185,5 +186,27 @@ describe('fitting a starter plan to equipment', () => {
     const fitted = buildStarterPlan('5x5', [])
     const have = new Set(fitted.routines.map(r => r.id))
     for (const { routineId } of fitted.schedule) expect(have.has(routineId)).toBe(true)
+  })
+})
+
+describe('starter programmes (#159)', () => {
+  it('each builds routines and a programme over every one of them', () => {
+    const opts = starterProgrammeOptions()
+    expect(opts.map(o => o.id)).toEqual(['strength-4', 'hypertrophy-6', 'linear-12'])
+    for (const { id, weeks } of opts) {
+      const { routines, programme } = buildStarterProgramme(id, 'X', 5)
+      const p = normalizeProgramme(programme)
+      expect(p.weeks).toHaveLength(weeks)
+      expect(p).toMatchObject({ name: 'X', at: 5, src: id })
+      expect(programmeRoutineIds({ routines }, p).sort()).toEqual(routines.map(r => r.id).sort())
+      // Every week as written is a week the model keeps unchanged.
+      expect(p.weeks).toEqual(programme.weeks)
+    }
+    expect(buildStarterProgramme('nope', 'X')).toBeNull()
+  })
+  it('only names exercises its routines hold', () => {
+    const { routines, programme } = buildStarterProgramme('strength-4', 'X')
+    const ids = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
+    for (const w of programme.weeks) for (const k of Object.keys(w.t || {})) expect(ids.has(k)).toBe(true)
   })
 })

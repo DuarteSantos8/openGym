@@ -3,9 +3,8 @@
   "name": "band standing side bend",
   "bodyPart": "waist",
   "equipment": "band",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core"
   ],
   "category": "strength",

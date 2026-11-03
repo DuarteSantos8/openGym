@@ -3,9 +3,9 @@
   "name": "barbell bench lateral step up",
   "bodyPart": "upper legs",
   "equipment": "barbell",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "adductors",
     "hamstrings",
     "calves"

@@ -1,5 +1,7 @@
 import UIKit
 import Capacitor
+// UIScene.ConnectionOptions.shouldHandleActiveWorkoutRecovery (iOS 26) lives here.
+import HealthKitUI
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,6 +19,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        // The app was killed with the iPhone's own workout session running (AirPods heart rate,
+        // #818): iOS kept the session and hands it back now, as in Apple's iPhone workout sample.
+        // The page adopts it for its running workout (lib/phone-workout.js).
+        if #available(iOS 26.0, *), options.shouldHandleActiveWorkoutRecovery {
+            PhoneWorkoutSession.shared.recover()
+        }
         let sceneConfiguration = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
         sceneConfiguration.delegateClass = SceneDelegate.self
         return sceneConfiguration

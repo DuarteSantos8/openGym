@@ -3,9 +3,9 @@
   "name": "cable kneeling single arm horizontal row",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "rhomboids",
     "biceps",
     "core"

@@ -3,9 +3,9 @@
   "name": "dumbbell one arm row (rack support)",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rear deltoids"
   ],

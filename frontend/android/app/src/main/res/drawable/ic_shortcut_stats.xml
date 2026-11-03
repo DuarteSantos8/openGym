@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The long-press shortcut Stats (res/xml/shortcuts.xml): the app's own icon on a green disc. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#FF30D158"
+        android:pathData="M24,0a24,24 0,1 1,0 48a24,24 0,1 1,0 -48Z" />
+    <group android:translateX="12" android:translateY="12">
+        <path
+            android:fillColor="#00000000"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="1.8"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M4.5,20.2V13M9.5,20.2V6.4M14.5,20.2v-5.1M19.5,20.2V9.6" />
+    </group>
+</vector>

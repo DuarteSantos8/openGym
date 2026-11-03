@@ -3,9 +3,9 @@
   "name": "vibrate plate lunge",
   "bodyPart": "upper legs",
   "equipment": "weighted",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings",
     "core"
   ],
