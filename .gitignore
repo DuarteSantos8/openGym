@@ -26,7 +26,25 @@ result-*
 # CI reports (test:* jobs write these next to the suites)
 junit.xml
 coverage/
+test-results.json
+test-results.jsonl
+lcov.info
+/stats/
 frontend/bundle-size.json
 
 # Local planning notes
 docs/superpowers/plans/
+
+# Python and Kotlin build leftovers (scripts/, the Android build)
+__pycache__/
+*.pyc
+.kotlin/
+
+# The maintainer's brand material (logo variants, merch, Buy Me a Coffee covers) sits next to the
+# tracked banner and screenshots but is not part of the repository; keep it out of a `git add -A`
+assets/logo/
+assets/merch/
+assets/tee/
+assets/bmc-cover*
+# scripts/pdf/render-samples.mjs output (npm run pdf:check)
+frontend/pdf-samples/

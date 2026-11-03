@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A larsen press with a close grip: you bench with your feet off the floor, which removes leg drive and puts the work on chest and triceps.",
   "instructions": [
     "Lie on a bench and hold the bar with a close, shoulder-width grip.",

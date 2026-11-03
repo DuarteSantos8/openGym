@@ -9,6 +9,9 @@
     "forearms"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lie back and lower a kettlebell toward your forehead, then extend. It builds the triceps with elbows fixed.",
   "instructions": [
     "Lie on a bench holding a kettlebell above your chest.",

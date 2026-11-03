@@ -120,6 +120,17 @@ describe('a per-side hold', () => {
     expect(tm.total).toBe(useStore.getState().S.restSec)
   })
 
+  it('"no timer" between sides: no switch after the left, the full rest after the right (#636)', () => {
+    const plank = sidePlank()
+    plank.target.sideRestOff = true
+    renderWorkout([plank])
+    holdRow(0)
+    expect(doneOf()).toEqual([true, false, false, false])
+    expect(useUI.getState().timer).toBeNull()
+    holdRow(1)
+    expect(useUI.getState().timer.total).toBe(useStore.getState().S.restSec)
+  })
+
   it('Left and Right pills carry both words, so they are one width (#322)', () => {
     renderWorkout([sidePlank()])
     const pills = [...container.querySelectorAll('.sidepill')]

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { ACCENTS } from './format.js'
 import {
   cleanHex, sanitizeAccent, accentKey, accentValue, contrast, inkOn, readableIn, adjustedIn,
-  customAccentVars, accentPair, applyAccent, THEMES, isGrey, inkOnBoth, mix, GREY_TEXT, GREY_GAP,
+  customAccentVars, accentPair, applyAccent, applyTintFallback, THEMES, isGrey, inkOnBoth, mix, GREY_TEXT, GREY_GAP,
 } from './accent.js'
 import { mergeStates, stampChange } from './sync-merge.js'
 
@@ -176,6 +176,26 @@ describe('CSS for the own colour', () => {
     expect(el.style.getPropertyValue('--knob-ring')).toBe('')
     applyAccent(el, 'url(x)', 'dark')
     expect(el.dataset.accent).toBe('lime')
+  })
+})
+
+// Safari before 16.2: no color-mix(), so the accent's two tints are set as plain rgba on the root.
+describe('the accent tints without color-mix()', () => {
+  it('sets them from the accent where color-mix() is missing, and only there', () => {
+    const el = document.createElement('html')
+    applyTintFallback(el, '#ff00aa', true)
+    expect(el.style.getPropertyValue('--acc-soft')).toBe('rgba(255,0,170,0.16)')
+    expect(el.style.getPropertyValue('--acc-line')).toBe('rgba(255,0,170,0.38)')
+    applyTintFallback(el, '#ff00aa', false)
+    expect(el.style.getPropertyValue('--acc-soft')).toBe('')
+    expect(el.style.getPropertyValue('--acc-line')).toBe('')
+  })
+  it('leaves anything that is not a plain hex alone', () => {
+    const el = document.createElement('html')
+    applyTintFallback(el, ' #30D158 ', true)
+    expect(el.style.getPropertyValue('--acc-soft')).toBe('rgba(48,209,88,0.16)')
+    applyTintFallback(el, 'var(--green)', true)
+    expect(el.style.getPropertyValue('--acc-soft')).toBe('')
   })
 })
 

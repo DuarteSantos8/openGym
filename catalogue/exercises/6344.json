@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A static squat hold that builds endurance in your thighs and glutes and teaches a solid bottom position.",
   "instructions": [
     "Stand with your feet shoulder-width apart.",

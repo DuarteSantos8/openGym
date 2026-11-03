@@ -10,6 +10,7 @@
     "feet"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A standing calf raise held at the top. It builds calf endurance.",
   "instructions": [
     "Stand tall with your feet hip width apart.",

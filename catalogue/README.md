@@ -47,6 +47,13 @@ Open `exercises/<id>.json` (the browse pages link straight to it) and press the 
   and draws the muscle map from them, so a new word needs app support first. Ask in an issue.
 - **description**: one or two sentences on what the movement is and what it trains.
 - **instructions**: 4 to 7 short steps, second person ("Brace your core..."). No em dashes.
+- **hold** (optional): `true` for an exercise that is only ever held, never repeated: a plank, a
+  wall sit, a lever, a hang. Added to a workout or a routine, it starts as a timed hold. Leave it
+  out when the exercise moves (a plank with taps, a Pallof press).
+- **needs** (optional): `["bench"]` and/or `["pull-up bar"]` when the exercise needs one but its
+  name doesn't say so: a dumbbell fly lies on a bench, an inverted row hangs under a bar. A name
+  with "bench", "incline", "pull-up" or "chin-up" already counts, so leave it out there. An
+  equipment profile without that kit hides the exercise.
 - **muscleMap** (optional): a more precise muscle-map drawing with the body map's own muscle names
   and weights from 0 to 1. Only needed when target and secondaryMuscles don't draw it right.
 - **femaleVariant / variantOf**: links the same exercise drawn on a female figure. Leave as is.

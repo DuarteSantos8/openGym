@@ -10,6 +10,7 @@
 // against its SHA-256 by the native Install plugin and handed to the system installer.
 
 import { MOBILE } from './mobile.js'
+import { APK_VARIANTS, APK_VARIANT } from './apk-variant.js'
 
 const REPO = 'DuarteSantos8/openGym'
 const LATEST_URL = `https://api.github.com/repos/${REPO}/releases/latest`
@@ -63,10 +64,30 @@ async function fetchLatest() {
   const latestVersion = String(latest.tag_name || '').replace(/^v/, '')
   if (!latestVersion) return { hasUpdate: false, latestVersion: __APP_VERSION__, apkUrl: null, hashUrl: null }
   const hasUpdate = compareSemver(latestVersion, __APP_VERSION__) > 0
-  const assets = latest.assets || []
-  const apk = assets.find(a => /\.apk$/i.test(a.name))
-  const hash = assets.find(a => /\.apk\.sha256$/i.test(a.name))
+  const { apk, hash } = pickApk(latest.assets || [])
   return { hasUpdate, latestVersion, apkUrl: apk?.browser_download_url || null, hashUrl: hash?.browser_download_url || null }
+}
+
+/**
+ * Since v1.4.2 a release carries three sideloaded APKs, the same app with different animations
+ * built in: Standard (180 px, openGym-<v>.apk), Plus (240 px, openGym-Plus-<v>.apk) and HD
+ * (360 px, openGym-HD-<v>.apk). Each installed APK only ever updates to its own kind, so a phone
+ * that picked HD keeps HD, and nobody is handed a download twice the size they never asked for.
+ * The build says which kind it is (lib/apk-variant.js).
+ * The checksum is the one named after the chosen APK, never just the first .sha256 in the list.
+ * A release without an APK of this kind: no direct download (the update row then opens the
+ * releases page), rather than quietly swapping it for another kind.
+ * Phones from before v1.4.2 take the first .apk of the list, and GitHub sorts assets by name:
+ * "openGym-1…" comes before "openGym-HD-…" and "openGym-Plus-…", so they land on Standard.
+ */
+export { APK_VARIANTS, APK_VARIANT }
+const tagged = (name, tag) => new RegExp(`(^|[-_.])${tag}([-_.]|$)`, 'i').test(name)
+/** Which kind an APK file name is: 'hd', 'plus' or 'standard'. */
+export const apkKind = name => tagged(name, 'hd') ? 'hd' : tagged(name, 'plus') ? 'plus' : 'standard'
+export function pickApk(assets, variant = APK_VARIANT) {
+  const apk = assets.find(a => /\.apk$/i.test(a.name) && apkKind(a.name) === variant) || null
+  const hash = apk ? assets.find(a => a.name === `${apk.name}.sha256`) || null : null
+  return { apk, hash }
 }
 
 /**
@@ -98,10 +119,42 @@ export async function sha256(buffer) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
+const UPDATE_FILE = 'opengym-update.apk'
+
+/**
+ * Resolves once openGym is the app in front. The package installer is an activity, and Android
+ * (10 and later) does not let an app start one from the background: it refuses without a word.
+ * The APK is 300 to 760 MB, plenty of time to switch to another app while it comes down, and then
+ * the download finished, the installer never opened and the progress sheet just closed. So the
+ * installer waits for the person to come back. `app` is @capacitor/app (injected in tests).
+ */
+export async function whenInForeground(app) {
+  const App = app || (await import('@capacitor/app')).App
+  try { if ((await App.getState())?.isActive !== false) return } catch { return }
+  await new Promise(resolve => {
+    let handle = null, done = false
+    const finish = () => { if (done) return; done = true; Promise.resolve(handle).then(h => h?.remove?.()).catch(() => {}); resolve() }
+    // The listener first, then a second look: the app may have come back in between.
+    handle = Promise.resolve(App.addListener('appStateChange', st => { if (st?.isActive) finish() })).catch(() => { finish(); return null })
+    Promise.resolve(App.getState()).then(st => { if (st?.isActive) finish() }).catch(() => {})
+  })
+}
+
+const installPlugin = async () => {
+  const { registerPlugin } = await import('@capacitor/core')
+  // Handed out inside an object: a plugin proxy answers `then`, and a promise resolved with
+  // the bare proxy never settles (#42).
+  return { Install: registerPlugin('Install') }
+}
+
 /**
  * Downloads the APK from `url` into the cache directory, natively and straight to disk, and
  * hands it to the Install plugin, which checks it against `expectedHash` before the installer
  * opens. Only works on the MOBILE (Capacitor) build with Android.
+ *
+ * An APK that already came down and matches the hash (the installer did not show the last time,
+ * or was dismissed) is installed again without downloading it twice. One that does not match is
+ * deleted by the plugin and downloaded afresh.
  *
  * @param {string} url - Direct download URL for the APK
  * @param {string} expectedHash - Expected SHA-256 hex string (from the .sha256 asset)
@@ -113,19 +166,35 @@ export async function downloadAndInstall(url, expectedHash, onProgress = null) {
     return
   }
   if (!/^[0-9a-f]{64}$/i.test(expectedHash || '')) throw new Error('no checksum to verify the download against')
+  const sha256 = expectedHash.toLowerCase()
+  const { Install } = await installPlugin()
+  // The Install plugin streams the file through SHA-256 natively (300 MB never enter the
+  // WebView) and refuses a mismatch, or a missing file, before the installer opens.
+  try {
+    await Install.installApk({ fileName: UPDATE_FILE, sha256 })
+    return
+  } catch { /* nothing usable in the cache yet: download it */ }
   const { Filesystem, Directory } = await import('@capacitor/filesystem')
-  const fileName = 'opengym-update.apk'
   const listener = onProgress
     ? await Filesystem.addListener('progress', p => onProgress(p.bytes, p.contentLength))
     : null
   try {
-    await Filesystem.downloadFile({ url, path: fileName, directory: Directory.Cache, progress: !!onProgress })
+    await Filesystem.downloadFile({ url, path: UPDATE_FILE, directory: Directory.Cache, progress: !!onProgress })
   } finally {
     await listener?.remove()
   }
-  // The Install plugin streams the file through SHA-256 natively (300 MB never enter the
-  // WebView) and refuses a mismatch before the installer opens.
-  const { registerPlugin } = await import('@capacitor/core')
-  const Install = registerPlugin('Install')
-  await Install.installApk({ fileName, sha256: expectedHash.toLowerCase() })
+  await whenInForeground()
+  await Install.installApk({ fileName: UPDATE_FILE, sha256 })
+}
+
+/**
+ * Deletes a downloaded update once there is nothing newer to install: the APK stays in the cache
+ * after the update went in (the new app keeps the old cache), 300 to 760 MB of it.
+ */
+export async function forgetDownloadedUpdate() {
+  if (!MOBILE) return
+  try {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    await Filesystem.deleteFile({ path: UPDATE_FILE, directory: Directory.Cache })
+  } catch { /* none there */ }
 }

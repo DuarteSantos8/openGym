@@ -9,6 +9,9 @@
     "triceps"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying on a bench, you lower the bar behind your head with straight arms and bring it back over the chest. Works the lats and chest.",
   "instructions": [
     "Lie flat on a bench with your head at one end and your feet on the floor.",

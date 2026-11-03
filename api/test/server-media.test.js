@@ -414,7 +414,7 @@ test('folders are 0700 and files 0600, and an admin deleting the profile removes
 test('/api/config carries the caps; MEDIA_UPLOADS=0 takes the block and every route away', async t => {
   const on = await start(t, { MEDIA_QUOTA_MB: '100', MEDIA_VIDEO_MAX_SEC: '30' });
   const cfg = await (await fetch(`${on.api}/api/config`)).json();
-  assert.deepEqual(cfg.media, { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 30, quotaMB: 100, workouts: true });   // `workouts`: a logged workout may carry them too
+  assert.deepEqual(cfg.media, { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 30, quotaMB: 100, workouts: true, days: true });   // `workouts`: a logged workout may carry them too; `days`: a photo filed under a day (#557)
 
   const off = await start(t, { MEDIA_UPLOADS: '0' });
   const cfgOff = await (await fetch(`${off.api}/api/config`)).json();

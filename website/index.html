@@ -28,7 +28,7 @@
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preload" as="image" type="image/webp" imagesrcset="img/home-480.webp 480w, img/home-600.webp 600w, img/home-1170.webp 1170w" imagesizes="(max-width: 700px) 62vw, 300px" fetchpriority="high">
-<link rel="stylesheet" href="styles.css?v=26">
+<link rel="stylesheet" href="styles.css?v=28">
 <!-- Marks that JS is alive before first paint, so the scroll-reveal styles never
      hide content from a browser that will not run them. -->
 <script>
@@ -53,9 +53,9 @@ try {
  "url":"https://opengym.ch/",
  "image":"https://opengym.ch/img/social.jpg",
  "screenshot":["https://opengym.ch/img/home.png","https://opengym.ch/img/workout.png","https://opengym.ch/img/stats.png"],
- "softwareVersion":"1.4.1","datePublished":"2026-07-18","dateModified":"2026-10-10","isAccessibleForFree":true,
+ "softwareVersion":"1.4.3","datePublished":"2026-07-18","dateModified":"2026-10-26","isAccessibleForFree":true,
  "featureList":["Weekly plan with a routine per weekday, or a rotation","Guided workouts with rest timer, supersets, warm-up and timed sets","Progression rules: linear, Greyskull LP, double progression","Estimated 1RM, activity heatmap, muscle balance and fatigue maps","Body-weight tracking with a goal line","Edit saved workouts, with photos and videos","Structural Balance between your lifts","Import from Hevy, Strong, FitNotes and Apple Health","Passkey login and multi-device sync when self-hosted","Standalone Android APK with no account","19 languages, including Arabic right-to-left","Optional AI coach on your own API key"],
- "downloadUrl":"https://opengym.ch/openGym.apk",
+ "downloadUrl":"https://github.com/DuarteSantos8/openGym/releases/latest/download/openGym-1.4.3.apk",
  "author":{"@type":"Person","name":"Duarte Santos","url":"https://duarte-santos.ch"},
  "sameAs":["https://github.com/DuarteSantos8/openGym","https://gitlab.com/DuarteSantos8/opengym","https://discord.gg/e62jY6fwVb"]}
 </script>
@@ -91,6 +91,9 @@ try {
   <symbol id="i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2l1.9 4.9 4.9 1.9-4.9 1.9L12 16.8l-1.9-4.9-4.9-1.9 4.9-1.9z"/><path d="M18.6 15.4l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></symbol>
   <symbol id="i-archive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="4.4" width="17.6" height="4.4" rx="1.6"/><path d="M5 8.8v9.2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.8"/><path d="M9.8 12.6h4.4"/></symbol>
 </defs></svg>
+
+<!-- App Store launch bar (2026-10-23): one line above the nav, scrolls away with the page. -->
+<div class="announce"><a href="https://apps.apple.com/app/id6822275400" rel="noopener"><b>New:</b> openGym is on the App Store<span class="announce-more">, for iPhone and Apple Watch, in every country</span>. <span class="announce-go">Get it&nbsp;→</span></a></div>
 
 <nav><div class="wrap nav-in">
   <a class="brand" href="/">
@@ -170,6 +173,8 @@ try {
       <a class="btn" href="#download">Get openGym</a>
       <a class="link" href="#demo">Try the live demo</a>
     </div>
+    <a class="hero-badge store-badge" href="https://apps.apple.com/app/id6822275400" rel="noopener">
+      <img src="app-store-badge.svg" width="150" height="50" alt="Download on the App Store"></a>
   </div>
   <div class="hero-stage">
     <div class="device">
@@ -438,15 +443,34 @@ try {
           <li class="no">No sync across devices</li>
         </ul>
         <div class="push">
-          <a class="btn" href="openGym.apk" download>Download for Android</a>
-          <p class="meta">v1.4.1 · 305 MB (every animation is inside) · Android 6.0+ · signed APK. Your browser will ask
-             before installing; that is normal outside the Play Store.</p>
-          <p class="meta">Every release is signed and attached to the
+          <!-- Three APKs per release, same app, same key, same data. Each one updates itself and
+               stays the kind it is (lib/update.js pickApk). Bump the file names, sizes and the
+               version on every release: releases/latest/download/<name> only finds the newest one. -->
+          <div class="dl-row">
+            <a class="btn" href="https://github.com/DuarteSantos8/openGym/releases/latest/download/openGym-1.4.3.apk">Standard</a>
+            <a class="btn ghost" href="https://github.com/DuarteSantos8/openGym/releases/latest/download/openGym-Plus-1.4.3.apk">Plus</a>
+            <a class="btn ghost" href="https://github.com/DuarteSantos8/openGym/releases/latest/download/openGym-HD-1.4.3.apk">HD</a>
+          </div>
+          <ul class="dl-sizes">
+            <li><b>Standard</b> · 315 MB · light and quick, right for most phones.</li>
+            <li><b>Plus</b> · 424 MB · crisper animations, still pocket-sized.</li>
+            <li><b>HD</b> · 760 MB · every rep in high definition. Bring storage.</li>
+          </ul>
+          <p class="meta">v1.4.3 · Android 7.0+ · signed APKs. Same app, same data, only the exercise
+             animations differ. Not sure? Standard. Switch any time by installing another one on top.</p>
+          <p class="meta">Your browser will ask before installing; that is normal outside the Play Store.
+             Every release is signed and attached to the
              <a href="https://github.com/DuarteSantos8/openGym/releases" rel="noopener">GitHub
              releases page</a>, checksums and all.</p>
-          <p class="meta"><b>On iPhone?</b> Apple does not allow installs outside the App Store.
-             Use the self-hosted version as a home-screen app instead, or see
-             <a href="docs.html#iphone">the docs</a>.</p>
+          <p class="meta"><b>Google Play?</b> Coming soon. We are rounding up testers first, Google insists.</p>
+          <!-- App Store toggle: set data-appstore="live" once the app is out (and "soon" until then). -->
+          <div class="ios" data-appstore="live">
+            <p class="meta ios-soon"><b>On iPhone?</b> The App Store app is waiting for Apple's thumbs up.
+               Until then, use the self-hosted version as a home-screen app, or see
+               <a href="docs.html#iphone">the docs</a>.</p>
+            <a class="ios-live store-badge" href="https://apps.apple.com/app/id6822275400" rel="noopener">
+              <img src="app-store-badge.svg" width="150" height="50" alt="Download on the App Store"></a>
+          </div>
         </div>
       </div>
       <div class="card rv">
@@ -567,6 +591,22 @@ try {
 </section>
 
 
+<section id="contact">
+  <div class="wrap">
+    <div class="sec-head rv">
+      <p class="eyebrow">Contact &amp; support</p>
+      <h2>Stuck, found a bug, or just want to say hi?</h2>
+    </div>
+    <p class="rv" style="max-width:62ch;line-height:1.6">
+      The quickest answers live on <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>.
+      Bugs and ideas are welcome as <a href="https://github.com/DuarteSantos8/openGym/issues" rel="noopener">GitHub issues</a>,
+      questions in <a href="https://github.com/DuarteSantos8/openGym/discussions" rel="noopener">GitHub Discussions</a>.
+      Rather write an email? <a href="mailto:contact@duarte-santos.ch">contact@duarte-santos.ch</a> reaches me directly.
+      More about who builds this: <a href="https://duarte-santos.ch" rel="noopener">duarte-santos.ch</a>.
+      How your data is handled: <a href="privacy.html">Privacy</a>.
+    </p>
+  </div>
+</section>
 
 </main>
 
@@ -575,6 +615,8 @@ try {
   <div class="links">
     <a href="docs.html">Docs</a>
     <a href="about.html">About</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="#contact">Contact</a>
     <a href="https://github.com/DuarteSantos8/openGym" rel="noopener">GitHub</a>
     <a href="https://gitlab.com/DuarteSantos8/opengym" rel="noopener">GitLab mirror</a>
     <a href="https://discord.gg/e62jY6fwVb" rel="noopener">Discord</a>
@@ -582,6 +624,6 @@ try {
   </div>
 </div></footer>
 
-<script src="site.js?v=26" defer></script>
+<script src="site.js?v=28" defer></script>
 </body>
 </html>

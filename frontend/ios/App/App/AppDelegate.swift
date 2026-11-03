@@ -5,7 +5,12 @@ import Capacitor
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // The background check before a nudge (NudgeCheckPlugin): iOS hands the task only to a
+        // handler registered before launching ends.
+        NudgeCheckPlugin.registerTask()
+        // The gym reminder (GymReminderPlugin): iOS relaunches the app in the background for a
+        // region it watches and delivers the event to the location delegate that exists then.
+        GymReminderCenter.shared.start()
         return true
     }
 

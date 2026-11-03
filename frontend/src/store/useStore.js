@@ -6,8 +6,9 @@ import { registerCustom, healCustomEx } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
+import { stateJson } from '../lib/state-json.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
-import { initHealthSync, syncHealth } from '../lib/health-sync.js'
+import { initHealthSync, syncHealth, readHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
@@ -22,11 +23,13 @@ import { linkTokenFromSearch, stripLinkFromUrl } from '../lib/device-link.js'
 import { loadRemote, chooseLocal, forgetRemote, connect, normalizeServerUrl, renewToken } from '../lib/remote.js'
 import { loadCfAccess } from '../lib/cf-access.js'
 import { loadCoachDevice, saveCoachDevice, coachDeviceSettings } from '../lib/coach-device.js'
+import { initCoachSchedule } from '../lib/coach-schedule.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent } from '../lib/accent.js'
+import { registerExerciseAliases } from '../lib/exercise-aliases.js'
 
 const KEY = 'gym_state_v1'
 // Where the saved copy stands with the server: the revision it descends from, and its own `_ts`
@@ -87,12 +90,14 @@ const gainedWorkoutMedia = (prev, next) => {
 export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
+  // The weekly-rate corridor on the body-weight card (#759, lib/bodyweight.js rateCorridor).
+  rateGoal: null,
   bodyweight: [], routines: [], week: {}, dayPlan: {},
   // A note per day off (#261): { [iso]: { tag, text, _ts } } (lib/day-notes.js). A noted day is
   // excused from the missed-day nudge; each day merges on its own stamp (lib/sync-merge.js).
   dayNotes: {},
-  // Body measurements (#82): one check-in per day, values in cm whatever the weight unit
-  // (lib/measurements.js); merged across devices like weigh-ins (lib/sync-merge.js).
+  // Body measurements (#82, #699): one check-in per day; canonical cm, kg or % according to
+  // the field's unit (lib/measurements.js); merged like weigh-ins (lib/sync-merge.js).
   measurements: [], measurementEnabled: null, customMeasurements: [],
   queue: null,   // a planner's floating week (lib/queue.js) — via the API, or by this rotation feature (below)
   // The in-app rotation's reusable definition — { id, sequence, label } (lib/rotation.js). Never
@@ -106,6 +111,8 @@ export const DEF = {
   exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
   // Stats activity heatmap metric. Profiles without this key continue to open on time.
   heatmapMetric: 'time',
+  // Settings → Units → "Count warm-ups in volume" (#719): off keeps volume to work sets.
+  volumeWarmups: false,
   // How the active workout is laid out — 'cards' (one exercise at a time with Prev/Next),
   // 'list' (every exercise stacked and scrollable) or 'compact' (that stack stripped to just
   // names and set rows — no media, tags, notes, last-time or progression line). Purely
@@ -139,7 +146,7 @@ export const DEF = {
   // Standing per-exercise notes, keyed by exercise id: the gym-specific facts that are true
   // every time you do the movement ("seat 4, pin 7"). Distinct from a routine's `note`, which
   // belongs to one exercise in one plan, and from a session note, which belongs to one day.
-  exNotes: {},
+  exNotes: {}, exAliases: {},
   // Favourite exercise ids (issue #6) — sorted to the top of the picker/Library. Personal, so
   // it syncs with the profile but is never part of a shared plan bundle (lib/favourites.js).
   favEx: [],
@@ -157,6 +164,10 @@ export const DEF = {
   // lib/bar.js). Personal equipment, so it syncs with the account but never travels in a
   // shared plan. Logged weights stay the total — this only feeds the plate math.
   barWeights: {},
+  // Your bars, per unit: { kg: { 'olympic barbell': 15, … }, lb: { … } } (lib/bar.js
+  // ownBarDefault). What every exercise of that bar type without its own barWeights entry
+  // starts from. Not in DEF on purpose: absent means the built-in bars, and a plain setting
+  // like restSec for the sync (stamped as a whole in `edited`).
   // Plate inventory, per unit: { lb: { 45: 1, 35: 1, …, _ts }, kg: { … } } — pairs of each size
   // you own (lib/plates.js), stamped with when the list was last changed so a sync keeps the
   // later one (lib/sync-merge.js). Kept per unit: a 45 lb plate is not a 20.4 kg one, so a unit
@@ -176,6 +187,9 @@ export const DEF = {
   // (lib/dumbbells.js). Single bells, lightest first. Kept per unit and stamped like the plates;
   // absent or empty = no list, and dumbbell lifts step by their increment as before.
   dumbbells: {},
+  // A machine's own weight stack, keyed by exercise id: { unit, weights: [5, 11.3, 18.1, …], _ts }
+  // (lib/dumbbells.js, issue #688). Absent or empty = the increment decides, as before.
+  stackWeights: {},
   // Gym check-in cards (see views/CheckIn.jsx). Each is a membership
   // code shown as a QR/barcode at the gym's turnstile — added by typing it, importing a photo
   // of the card, or scanning it. We only ever keep the code's VALUE, never a photo: the image
@@ -215,9 +229,14 @@ export const DEF = {
   connLocal: true,
   // Where a planned session's reps come from (Settings → During a workout, lib/session-start.js):
   // 'plan' opens at the routine's own sets × reps and lets history and progression decide the
-  // weight; 'last' carries the reps over from the last session, the way it always worked before.
+  // weight; 'last' carries the reps over from the last session, the way it always worked before,
+  // and the weight too for an exercise with progression off (nothing else decides it).
   // Absent reads as 'plan' too, which is what the MCP bridge sees on a raw state file.
   startFrom: 'plan',
+  // Where "last time" is read from (Settings → During a workout, lib/history.js lastAcrossRoutines,
+  // #770): 'routine' is the routine's own last session of the exercise, as it has been since #216;
+  // 'any' is its newest session in any workout. Absent reads as 'routine'.
+  lastFrom: 'routine',
   // Per-language choice for translated exercise names: whether the original English name is
   // shown in parentheses next to the translation. Map { '<lang>': boolean }; a missing key
   // (any profile written before this setting existed) reads as shown.
@@ -239,6 +258,37 @@ export const DEF = {
   balanceTemplate: DEFAULT_TEMPLATE_ID, balanceOverrides: {},
 }
 const clone = o => JSON.parse(JSON.stringify(o))
+
+// The draft an update() hands its producer: a copy of the state in which each top-level field is
+// copied (deep, as clone does) the first time the producer reads or writes it, and every field it
+// never touched stays the very object the previous state holds. A ticked set touches `active` and
+// little else, so it no longer copies the whole history (a full clone of a 400-workout profile was
+// most of the ~200 ms each tick took). The untouched fields are the old state's own objects, which
+// nothing mutates (every change goes through a draft like this one), and keeping them means that
+// what reads them by identity — the stamps (sync-merge stampChange), the watch's ready sessions,
+// a component's selector — sees them as unchanged, which they are. `done()` turns the fields still
+// untouched into plain values; until then reading one copies it, as clone() would have.
+export function draftOf(prev) {
+  const S = {}
+  const plain = (k, value) => Object.defineProperty(S, k, { value, writable: true, enumerable: true, configurable: true })
+  for (const k of Object.keys(prev)) {
+    const v = prev[k]
+    if (v === undefined || typeof v === 'function' || typeof v === 'symbol') continue
+    if (v === null || typeof v !== 'object') { S[k] = typeof v === 'number' && !Number.isFinite(v) ? null : v; continue }
+    Object.defineProperty(S, k, {
+      enumerable: true, configurable: true,
+      get() { const c = clone(v); plain(k, c); return c },
+      set(x) { plain(k, x) },
+    })
+  }
+  return {
+    S,
+    done() {
+      for (const k of Object.keys(S)) if (Object.getOwnPropertyDescriptor(S, k)?.get) plain(k, prev[k])
+      return S
+    },
+  }
+}
 
 // First run on a device whose language renders right-to-left starts in that language
 // rather than English; the boot script in index.html mirrors this check for the
@@ -293,7 +343,7 @@ function loadState() {
 // weigh-ins and custom exercises. A custom exercise is all a new guest may have made — with its
 // photo or video, which the server counts as unreferenced until the state that names it lands —
 // so a profile created from such a copy takes it at once, like one holding a workout.
-const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length)
+const hasData = st => !!((st.workouts || []).length || (st.routines || []).length || (st.bodyweight || []).length || (st.customEx || []).length || (st.measurements || []).length || Object.values(st.exAliases || {}).some(v => Array.isArray(v) && v.length))
 
 // Decide whether a pulled account state may replace the local saved state. A local active workout
 // is deliberately carried forward: the server stores completed/saved state, while the in-progress
@@ -473,7 +523,10 @@ export const useStore = create((set, get) => {
   }
 
   initReminderSync(() => get().S)
-  initHealthSync(() => get().S)
+  // A phone with its own Coach key runs its automatic reviews itself, while the app is open.
+  initCoachSchedule(() => get())
+  // What it reads back from the health hub (heart rate, weigh-ins) goes in as any change does.
+  initHealthSync(() => get().S, fn => get().update(fn))
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,
@@ -493,7 +546,7 @@ export const useStore = create((set, get) => {
   const nativePersist = (now = false) => {
     clearTimeout(saveTm)
     saveTm = null
-    const write = () => { saveTm = null; syncReminder(get().S); syncHealth(get().S).catch(() => {}); return saveMirror() }
+    const write = () => { saveTm = null; syncReminder(get().S); syncHealth(get().S).catch(() => {}); readHealth(() => get().S).catch(() => {}); return saveMirror() }
     if (now) return write()
     saveTm = setTimeout(write, 800)
     return null
@@ -574,6 +627,7 @@ export const useStore = create((set, get) => {
     // goes out with it on the next push, without a stamp of its own (healCustomEx).
     S.customEx = healCustomEx(S.customEx)
     registerCustom(S.customEx)
+    registerExerciseAliases(S.exAliases)
     // A refused write used to take the change with it — Finish looked like it simply did
     // nothing. The copy is kept in memory either way and marked as owed to the server, so a
     // signed-in device still gets it there; and it is said out loud once, because a change that
@@ -583,7 +637,7 @@ export const useStore = create((set, get) => {
       // The marker goes first: a tab that loads the copy in between gets an older base than the
       // copy's, which costs one merge at worst — never a newer one, which would lose data.
       saveMarker(base)
-      localStorage.setItem(KEY, JSON.stringify(S))
+      localStorage.setItem(KEY, stateJson(S))
       localStorage.setItem(WID_OWNER_KEY, seenOwner || '')
       const wid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
       localStorage.setItem(WID_KEY, wid)
@@ -604,11 +658,16 @@ export const useStore = create((set, get) => {
     }
     meta.set(S, { base, owed: owed || !saved || (!!joined && storedOwed()) })
     if (!saved) saveOwed(true)
+    // The running workout changed (a set ticked, a workout started or finished): on a phone it goes
+    // to the file at once rather than after the usual wait. localStorage alone is not enough there:
+    // the WebView writes it to disk on its own schedule, and an app killed within that moment (or
+    // iOS ending it in the background before the page's timers run again) lost the last set.
+    const workoutMoved = MOBILE && JSON.stringify(get()?.S?.active ?? null) !== JSON.stringify(S.active ?? null)
     set({ S })
     // A copy that replaces the last one wholesale and keeps an older stamp — adopted from the
     // server — goes to the file at once. Until it does, the file holds the copy it replaced,
     // which looks newer, and a start in between would take that one back (restoreFromMirror).
-    if (MOBILE) nativePersist(!stamp)
+    if (MOBILE) nativePersist(!stamp || workoutMoved)
     if (push && get().user) {
       // Before boot has pulled, the copy in hand may be older than the server's: a push now
       // would carry it with a stale (or no) baseRev. It waits for finishBoot.
@@ -782,6 +841,9 @@ export const useStore = create((set, get) => {
   }
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush() })
   window.addEventListener('pagehide', flush)   // Safari kills the home-screen app without a visibilitychange at times
+  // The phone app: Capacitor's own "going to the background" too, in case the WebView's
+  // visibilitychange comes late or not at all before iOS suspends the page.
+  document.addEventListener('pause', flush)
 
   // The owner check in setUser only runs in the tab that signs in. Another tab of the same
   // browser still holding the previous profile, or a guest's copy, would keep writing it over the
@@ -852,6 +914,7 @@ export const useStore = create((set, get) => {
     handedOver = false
     meta.set(S, { base: readStoredSync(), owed: storedOwed() })
     registerCustom(S.customEx)
+    registerExerciseAliases(S.exAliases)
     set({ S })
     followSignIn()
     return true
@@ -897,6 +960,7 @@ export const useStore = create((set, get) => {
       merged._ts = Math.max(Number(theirs._ts) || 0, Number(mine._ts) || 0)
       meta.set(merged, { base: readStoredSync(), owed: storedOwed() })
       registerCustom(merged.customEx)
+      registerExerciseAliases(merged.exAliases)
       set({ S: merged })
       return
     }
@@ -1287,6 +1351,7 @@ export const useStore = create((set, get) => {
   const S0 = loadState()
   S0.customEx = healCustomEx(S0.customEx)
   registerCustom(S0.customEx)
+  registerExerciseAliases(S0.exAliases)
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
   if (referencedHashes(S0).size) loadPending()
@@ -1308,6 +1373,11 @@ export const useStore = create((set, get) => {
        always did, and a configured one is the only place any of it appears. */
     config: null,
     needsMobileOnboarding: false,   // mobile build only — set true by boot() on a genuine first launch
+    // Mobile build only: the first-start permission steps (views/PermissionSteps.jsx) are due.
+    // Set when that first launch's choice is made; never persisted, the steps keep their own
+    // once-per-device record (lib/onboarding-perms.js).
+    permSteps: false,
+    finishPermSteps() { set({ permSteps: false }) },
     // A one-time device-link code this page was opened with (?link=, #95), until it is redeemed.
     // Never persisted: the code is good for minutes and belongs to this one visit.
     linkCode: null,
@@ -1320,15 +1390,30 @@ export const useStore = create((set, get) => {
 
     // Mutate a draft of S via producer fn, then persist + schedule sync. Every routine the change
     // touched carries the time of it, for a conflict to keep the version edited last.
+    // The copy as it is now, on disk: the file mirror on a phone (written at once, not after the
+    // usual wait), localStorage everywhere (persist writes it on every change). What hands a change
+    // over from somewhere that keeps its own copy until told (the watch's and the Live Activity's
+    // queues) waits for this before it lets go of it.
+    saveNow() {
+      return MOBILE ? nativePersist(true) : Promise.resolve()
+    },
     update(mut, push = true) {
       const prev = get().S
-      const S = clone(prev)
-      mut(S)
+      // Under test, every change proves it left the previous state as it was: the draft shares
+      // whatever the producer did not touch, so a write into one of those would change history.
+      const prevJson = import.meta.env?.MODE === 'test' ? JSON.stringify(prev) : null
+      const draft = draftOf(prev)
+      mut(draft.S)
+      const S = draft.done()
+      // The stamps below write the change's records into these two maps in place (stampDeletions,
+      // stampEdits); a draft that never touched them still shares them with the previous state.
+      for (const k of ['deleted', 'edited']) if (S[k] && typeof S[k] === 'object' && S[k] === prev[k]) S[k] = clone(S[k])
       // What the change removed, and which routines, workouts, settings and plan days it touched,
       // each with one time that comes after every stamp the copy already carries: a conflict then
       // keeps a removal and the edit made last, even from a device whose clock runs behind
       // (lib/sync-merge.js stampChange).
       S._ts = stampChange(prev, S, Date.now())
+      if (prevJson !== null && JSON.stringify(prev) !== prevJson) throw new Error('update(): the previous state was changed in place')
       persist(S, push)
       // A photo or video added to a workout is a change worth the day's backup too: the one
       // finishing wrote went before the finish screen's pictures (autoBackupNow). Not a removal,
@@ -1399,7 +1484,14 @@ export const useStore = create((set, get) => {
     // them in instead (importBackup). null when there are none, when nobody is signed in, or when
     // the server cannot be asked — the replace then goes as it always has.
     async importConflict(backup) {
-      if (!get().user) return null
+      // No account (a phone in local mode, a guest): this copy is the only one there is, so the
+      // workouts it holds that the backup lacks are asked about the same way, never just replaced.
+      if (!get().user) {
+        const key = w => entryKey('workouts', w)
+        const inBackup = new Set((Array.isArray(backup?.workouts) ? backup.workouts : []).filter(Boolean).map(key))
+        const here = (get().S.workouts || []).filter(w => w && !inBackup.has(key(w))).length
+        return here ? { workouts: here, state: get().S, rev: null, device: true } : null
+      }
       let res
       try { res = await api('/api/data') } catch { return null }
       const state = res?.state
@@ -1436,6 +1528,15 @@ export const useStore = create((set, get) => {
       // so the import keeps it (in the backup's unit). Only with none running does a backup taken
       // mid-workout bring its own session back. Both the replace and "Merge them in" dropped it.
       const running = carryActive(cur, next) || next.active || null
+      // No account: "Merge them in" joins this copy's own entries into the backup's.
+      if (mergeWith?.device && !uid) {
+        const merged = keepReset(cur, Object.assign(clone(DEF), mergeStates(next, cur, { prefer: 'a' })))
+        stampRestore(merged, [cur, next], now)
+        merged._ts = now
+        merged.active = carryActive({ unit: next.unit, active: running }, merged)
+        persist(merged, false)
+        return
+      }
       if (!mergeWith?.state || !uid) {
         stampRestore(next, [cur, server], now)
         // …and like a reset of what it replaces: an unsent change of another device from before it
@@ -1741,7 +1842,7 @@ export const useStore = create((set, get) => {
         if (typeof ask !== 'function') ask = (await import('../sheets.jsx')).askAddDeviceData
         const r = await get().adoptProfile(ask, { alwaysAsk: !!m.alwaysAsk })
         // A phone whose pairing ended here: what connectToServer does after its own adoption.
-        if (MOBILE) { await nativePersist(true); if (get().needsMobileOnboarding) set({ needsMobileOnboarding: false }) }
+        if (MOBILE) { await nativePersist(true); if (get().needsMobileOnboarding) set({ needsMobileOnboarding: false, permSteps: true }) }
         return r
       } catch { return null }
     },
@@ -1773,7 +1874,7 @@ export const useStore = create((set, get) => {
     // asks again.
     async chooseLocalMode() {
       await chooseLocal()
-      set({ needsMobileOnboarding: false })
+      set({ needsMobileOnboarding: false, permSteps: true })
     },
     // Redeems the pairing code shown in the browser (Settings → "Pair the mobile app") and
     // switches this device over to that account, same as signing in on the web does — the same
@@ -1789,7 +1890,9 @@ export const useStore = create((set, get) => {
       await get().refreshConfig()   // what this server offers (the Coach, guest mode) — see boot()
       await get().adoptProfile(ask)
       await nativePersist(true)   // the file holds this account's copy before anything else can happen
-      set({ needsMobileOnboarding: false })
+      // Paired from the first-launch screen: the permission steps come next. From Settings later
+      // on, nothing new is asked here.
+      set(st => ({ needsMobileOnboarding: false, permSteps: st.permSteps || st.needsMobileOnboarding }))
     },
     // Leaves remote mode and drops back to local-only, the way signOut does: never with changes
     // the server has not seen, unless `force` keeps them aside first. Same result as signOut;
@@ -1821,6 +1924,30 @@ export const useStore = create((set, get) => {
       if (!left.owed && !(await stashActive())) return { owed: true, count: 0, stashed: false }
       await clearLocalSession()
       return left.owed ? owedResult(left, { stashed: true }) : { owed: false }
+    },
+
+    // Settings → "Delete my account": the server removes the profile and everything of it
+    // (POST /api/account/delete, `name` typed back to confirm, `proof` the owner's: a passkey
+    // assertion or the current password, from ProveOwner in components/PasswordAuth.jsx), then
+    // this device ends where a sign-out leaves it, and a phone goes back to local-only as a
+    // disconnect does. Nothing is kept aside: there is no account left for kept changes or a
+    // running workout to come back to. The request is not swallowed: refused (the name, the
+    // proof, the last admin) or not answered, nothing here changes and the caller says why.
+    async deleteAccount(name, proof = {}) {
+      const uid = get().user?.id
+      await api('/api/account/delete', { method: 'POST', body: JSON.stringify({ name, ...proof }) })
+      await stopTimers()
+      const all = await readStashes()
+      const key = stashKey(serverBase(), uid)
+      if (all[key]) { delete all[key]; await writeStashes(all) }
+      await clearLocalSession()
+      if (MOBILE) {
+        await forgetRemote()
+        pairedBase = null
+        setSync({ server: null })
+        get().setGuest(true)
+        set({ ready: true })
+      }
     },
 
     // Demo build only: drop the seeded example profile back in (Settings → "Reset demo data").

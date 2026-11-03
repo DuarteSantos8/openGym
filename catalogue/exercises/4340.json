@@ -10,6 +10,9 @@
     "core"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A pullover using a wider grip, which spreads the load across the lats and chest.",
   "instructions": [
     "Lie on a bench with a barbell held wider than shoulder-width above your chest.",

@@ -11,6 +11,7 @@
     "lower abs"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A plank held on the knees. It's an easier version that builds core strength.",
   "instructions": [
     "Kneel and place your forearms on the floor under your shoulders.",

@@ -1,0 +1,6 @@
+/* Written by ios/ci/widget-strings.mjs: change it there. */
+"Today’s workout" = "今日訓練";
+"Your plan for today, the week ahead and your streak." = "今天的計畫、接下來一週和你的連續紀錄。";
+"Streak" = "連續紀錄";
+"Weeks in a row with a workout." = "連續有訓練的週數。";
+"Open openGym once to see your plan here." = "打開一次 openGym，就能在這裡看到你的計畫。";

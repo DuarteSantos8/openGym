@@ -10,6 +10,10 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
+  "needs": [
+    "bench"
+  ],
   "description": "Holding a dumbbell over your chest with bent arms in a pullover position. It keeps the chest and lats under tension.",
   "instructions": [
     "Lie on a bench holding a dumbbell with both hands over your chest.",

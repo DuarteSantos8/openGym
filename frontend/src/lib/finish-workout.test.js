@@ -43,6 +43,16 @@ describe('completed workout boundary', () => {
     expect(JSON.stringify(sets)).not.toContain('planSec')
   })
 
+  // A set's own rest (#609) is picked for this session; the saved workout doesn't carry it, so
+  // a next session started from it rests as the exercise does.
+  it('never stores a set\'s own rest', () => {
+    const active = { id: 'a', d: '2026-10-19', start: 1000, entries: [{ id: '0025', sets: [
+      { done: true, w: 100, r: 5, restSec: 0 }, { done: true, w: 100, r: 5, restSec: 240 }, { done: true, w: 100, r: 5 },
+    ] }] }
+    const sets = buildCompletedWorkout(active, { end: 2000 }).entries[0].sets
+    expect(sets).toEqual([{ done: true, w: 100, r: 5 }, { done: true, w: 100, r: 5 }, { done: true, w: 100, r: 5 }])
+  })
+
   // weightOrigin marks a load typed by hand during the session so a later edit of an earlier set
   // does not cascade over it (#209). History has nothing left to cascade: the saved rows carry
   // only the loads, and the plan the session was built from (`planned`) is kept as it was.

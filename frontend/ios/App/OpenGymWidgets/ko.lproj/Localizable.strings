@@ -1,0 +1,6 @@
+/* Written by ios/ci/widget-strings.mjs: change it there. */
+"Today’s workout" = "오늘의 운동";
+"Your plan for today, the week ahead and your streak." = "오늘의 계획, 다가오는 한 주, 연속 기록.";
+"Streak" = "연속 기록";
+"Weeks in a row with a workout." = "운동한 주가 연속으로 이어진 횟수.";
+"Open openGym once to see your plan here." = "openGym을 한 번 열면 여기에서 계획을 볼 수 있어요.";

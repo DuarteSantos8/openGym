@@ -13,6 +13,53 @@
     document.documentElement.lang = l;
     document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
   } catch (e) {}
+  // Boot watchdog. A chunk this browser cannot parse (1.4.2's regex lookbehind on iOS 15.5 to
+  // 16.3) kills the module graph before any of the app runs, and the logo lifted forever. Here,
+  // outside the bundle and in plain old syntax, so it still runs then: a script that fails to
+  // load or parse, or no app after 10 s, puts the reason and a Reload button where the logo was.
+  // English only, as the packs are in the bundle that did not load. lib/boot.js removes #boot
+  // (message included) once the app draws, so a slow start that gets there still gets there.
+  (function () {
+    var shown = false, last = '';
+    function fail(title, detail) {
+      var b = document.getElementById('boot');
+      // Too early for the boot screen (a script in <head>): say it once the page is there.
+      if (!b && document.readyState === 'loading') return document.addEventListener('DOMContentLoaded', function () { fail(title, detail); });
+      if (shown || !b || b.getAttribute('data-leaving')) return;
+      shown = true;
+      b.className = 'fail';
+      b.removeAttribute('aria-hidden');
+      b.setAttribute('role', 'alert');
+      b.setAttribute('dir', 'ltr');
+      b.innerHTML = '';
+      var box = document.createElement('div'), h = document.createElement('p'), p = document.createElement('p');
+      h.className = 'h';
+      h.textContent = title;
+      p.textContent = 'Reloading often helps. If it keeps happening, please send us this:';
+      var c = document.createElement('code');
+      c.textContent = (detail || 'No error, it just never finished loading.') + ' (' + navigator.userAgent + ')';
+      var r = document.createElement('button');
+      r.type = 'button';
+      r.textContent = 'Reload';
+      r.onclick = function () { location.reload(); };
+      box.appendChild(h); box.appendChild(p); box.appendChild(c); box.appendChild(r);
+      b.appendChild(box);
+    }
+    window.addEventListener('error', function (e) {
+      var t = e && e.target;
+      if (t && t.tagName === 'SCRIPT') return fail('openGym could not start on this browser.', 'Could not load ' + (t.src || 'a script'));
+      if (!e || !e.message) return;
+      last = e.message + (e.filename ? ' at ' + e.filename.split('/').pop() + ':' + e.lineno : '');
+      if (/SyntaxError|Unexpected|Invalid regular expression/i.test(e.message)) fail('openGym could not start on this browser.', last);
+    }, true);
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e && e.reason;
+      if (r) last = String((r && r.message) || r);
+    });
+    setTimeout(function () {
+      fail(last ? 'openGym could not start on this browser.' : 'openGym is taking too long to start.', last);
+    }, 10000);
+  })();
 </script>
 <title>openGym</title>
 <meta name="description" content="Personal gym & body weight tracker">
@@ -29,6 +76,50 @@
 <link rel="icon" type="image/png" href="icon-180.png">
 </head>
 <body>
+<!-- The boot screen: painted with the HTML, before any script runs, so the gap between the
+     native splash and the first real screen is the logo loading its plates instead of a black
+     page. Same dark and lime as the native splash. lib/boot.js takes it away the moment the
+     app can draw, so it never adds a wait. -->
+<style>
+  #boot{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;background:#0c0e12;transition:opacity .22s ease-out}
+  #boot.out{opacity:0;pointer-events:none}
+  #boot svg{width:112px;height:auto;overflow:visible}
+  #boot rect,#boot ellipse{transform-box:fill-box;transform-origin:center}
+  #boot .bar{animation:boot-bar .32s cubic-bezier(.3,.7,.4,1) both}
+  #boot .pl{animation:boot-plate .28s cubic-bezier(.3,.7,.4,1.3) both}
+  #boot .pr{animation:boot-plate-r .28s cubic-bezier(.3,.7,.4,1.3) both}
+  #boot .in{animation-delay:.22s}
+  #boot .outer{animation-delay:.36s}
+  #boot .db{animation:boot-rep 1.25s ease-in-out .75s infinite}
+  #boot ellipse{fill:#a3e635;opacity:.12;animation:boot-shadow 1.25s ease-in-out .75s infinite}
+  @keyframes boot-bar{from{transform:scaleX(0)}}
+  @keyframes boot-plate{from{transform:translateX(-40px);opacity:0}}
+  @keyframes boot-plate-r{from{transform:translateX(40px);opacity:0}}
+  @keyframes boot-rep{50%{transform:translateY(-26px)}}
+  @keyframes boot-shadow{50%{transform:scaleX(.72);opacity:.05}}
+  #boot.fail{place-items:center;padding:24px}
+  #boot.fail div{max-width:340px;font:15px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#e6e8ec;text-align:center}
+  #boot.fail .h{font-size:19px;font-weight:600;margin:0 0 8px}
+  #boot.fail code{display:block;margin:14px 0 18px;padding:10px;border-radius:10px;background:#1a1d24;color:#a9b0bc;font-size:12px;text-align:left;word-break:break-word;-webkit-user-select:text;user-select:text}
+  #boot.fail button{font:inherit;font-weight:600;color:#0c0e12;background:#a3e635;border:0;border-radius:12px;min-height:44px;padding:0 28px}
+  @media (prefers-reduced-motion:reduce){
+    #boot .bar,#boot .pl,#boot .pr,#boot ellipse{animation:none}
+    #boot .db{animation:boot-breathe 1.6s ease-in-out infinite}
+    @keyframes boot-breathe{50%{opacity:.55}}
+  }
+</style>
+<div id="boot" aria-hidden="true">
+  <svg viewBox="80 140 352 250">
+    <ellipse cx="256" cy="372" rx="150" ry="9"/>
+    <g class="db" fill="#a3e635">
+      <rect class="bar" x="80" y="242" width="352" height="28"/>
+      <rect class="pl in" x="131" y="169" width="47" height="174"/>
+      <rect class="pr in" x="334" y="169" width="47" height="174"/>
+      <rect class="pl outer" x="80" y="199" width="36" height="114"/>
+      <rect class="pr outer" x="396" y="199" width="36" height="114"/>
+    </g>
+  </svg>
+</div>
 <div id="root"></div>
 <script type="module" src="/src/main.jsx"></script>
 </body>

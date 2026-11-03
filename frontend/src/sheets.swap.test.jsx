@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 import { LANGS, DERIVED_LOCALES } from './lib/i18n-core.js'
 import { act } from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createRoot } from 'react-dom/client'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { swapActiveWorkoutExercise } from './sheets.jsx'
 import { EXDB } from './lib/exercises.js'
 import { DEF, useStore } from './store/useStore.js'
@@ -9,6 +10,17 @@ import { useUI } from './store/useUI.js'
 
 const clone = value => JSON.parse(JSON.stringify(value))
 const ids = EXDB.slice(0, 3).map(exercise => exercise.id)
+const mounted = []
+
+function renderTop() {
+  const sheet = useUI.getState().sheets.at(-1)
+  const host = document.createElement('div')
+  document.body.appendChild(host)
+  const root = createRoot(host)
+  mounted.push(root)
+  act(() => root.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
+  return host
+}
 
 function entry(id, done = false) {
   return {
@@ -39,12 +51,17 @@ function submitSwap(index, exercise, config) {
 }
 
 beforeEach(() => {
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true
   vi.useFakeTimers()
   localStorage.clear()
   useUI.getState().stopRest()
   useUI.getState().stopWork()
   useUI.setState({ sheets: [], timer: null, work: null })
   installActive()
+})
+
+afterEach(() => {
+  act(() => { mounted.splice(0).forEach(root => root.unmount()) })
 })
 
 describe('active exercise swap sheet flow', () => {
@@ -133,5 +150,13 @@ describe('swap wording', () => {
     const configSheet = useUI.getState().sheets.at(-1)
     const configView = configSheet.render(configSheet.close)
     expect(configView.props.saveLabel).toBe('Use in this workout')
+  })
+
+  it('renders the swap icon on exercise card action buttons (#561)', () => {
+    swapActiveWorkoutExercise(1)
+    const host = renderTop()
+    const icon = host.querySelector('.list .item .iconbtn.chev svg')
+    expect(icon).not.toBeNull()
+    expect(icon?.getAttribute('data-icon')).toBe('swap')
   })
 })

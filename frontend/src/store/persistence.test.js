@@ -81,6 +81,23 @@ describe('persistence — measurements survive the round trips', () => {
     expect(measurementState(after)).toEqual(measurementState(before))
   })
 
+  it('keeps custom percentages and masses through backup, sync and a profile unit change', () => {
+    const before = normalizeMeasurementsState({ ...profile(),
+      customMeasurements: [
+        { id: 'muscle', name: 'Muscle ratio', unit: '%' },
+        { id: 'lean', name: 'Lean mass', unit: 'kg' },
+      ],
+      measurements: [{ d: '2026-10-01', other: [{ id: 'muscle', value: 40.5 }, { id: 'lean', value: 60 }] }],
+    })
+    const after = pullFromServer(pushToServer(importBackup(exportBackup(before))))
+    expect(measurementState(after)).toEqual(measurementState(before))
+    after.unit = 'lb'
+    normalizeMeasurementsState(after)
+    expect(after.measurements[0].other).toEqual(before.measurements[0].other)
+    const stripped = importBackup(exportBackup({ ...before, customMeasurements: [] }))
+    expect(stripped.measurements[0].other).toEqual(before.measurements[0].other)
+  })
+
   it('counts a measurements-only profile as data worth keeping', () => {
     // pullState overwrites local state when hasData() is false. Someone who has logged tape
     // readings but never a workout has a profile that is entirely measurements — if that reads

@@ -62,6 +62,8 @@ describe('Login: a code from another device', () => {
     const sheet = mount(mocks.sheets[0](() => {}))
     expect(sheet.querySelector('h3').textContent).toBe('Add this device')
     expect(sheet.querySelector('input[placeholder="Code from your other device"]')).toBeTruthy()
+    // #551: a phone that keeps everything to itself has no code to give, and the sheet says so.
+    expect(sheet.textContent).toContain('It only has one while it’s connected to this server')
   })
 
   it('is not offered in a browser that cannot make a passkey, with or without passwords', () => {

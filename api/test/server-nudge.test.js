@@ -115,7 +115,7 @@ test('no push subscription, or a workout on screen right now: no nudge', async t
 
   const h = await startServer(t);
   const live = await fetch(`${h.api}/api/activity`, {
-    method: 'POST', headers: { Cookie: `gymsid=${mintSession(UID)}` },
+    method: 'POST', headers: { Cookie: `gymsid=${mintSession(UID)}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ active: true, name: 'Push Day', startedAt: Date.now() })
   });
   assert.equal(live.status, 200);
@@ -123,7 +123,7 @@ test('no push subscription, or a workout on screen right now: no nudge', async t
   await wait(1000);
   assert.equal(firings(h.log), 0, `a session is under way:\n${h.log}`);
   // the session ends without a workout being saved: the nudge is owed again
-  await fetch(`${h.api}/api/activity`, { method: 'POST', headers: { Cookie: `gymsid=${mintSession(UID)}` }, body: JSON.stringify({ active: false }) });
+  await fetch(`${h.api}/api/activity`, { method: 'POST', headers: { Cookie: `gymsid=${mintSession(UID)}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ active: false }) });
   await until(() => firings(h.log) > 0);
   assert.equal(firings(h.log), 1, h.log);
 });

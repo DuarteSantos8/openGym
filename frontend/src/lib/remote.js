@@ -20,7 +20,7 @@ export function normalizeServerUrl(raw) {
   try {
     const u = new URL(withScheme)
     if (!u.hostname) return null
-    return u.origin
+    return u.origin + u.pathname.replace(/\/+$/, '')
   } catch (e) { return null }
 }
 

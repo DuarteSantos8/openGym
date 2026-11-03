@@ -5,5 +5,17 @@
   "backgroundColor": "#0c0e12",
   "android": {
     "allowMixedContent": true
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "disable"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 8000,
+      "launchAutoHide": true,
+      "launchFadeOutDuration": 180,
+      "backgroundColor": "#0c0e12",
+      "showSpinner": false
+    }
   }
 }

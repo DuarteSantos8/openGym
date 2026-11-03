@@ -9,6 +9,9 @@
     "upper chest"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A lateral raise performed lying down using a crossing cable. It isolates the side delts.",
   "instructions": [
     "Lie on a bench with a cable running across your body.",

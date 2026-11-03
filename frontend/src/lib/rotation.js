@@ -1,6 +1,17 @@
 // Rotation — the in-app half of the queue (lib/queue.js).
 //
-//   S.rotation = null | { id: string, sequence: string[], label: string }
+//   S.rotation = null | { id: string, sequence: string[], label: string, at?: number }
+//
+// REST DAYS AND REPEATS (#536) — the sequence may hold a routine more than once (A→B→C→B→D) and
+// 'rest' entries (a day off between two sessions). A pass (S.queue) is still a SET of sessions,
+// done by routine id (queue.js, and api/queue.js for the reminders, which this never touches), so
+// such a loop runs as SEGMENTS: from `at`, the sessions up to the next rest or the next routine
+// already in the segment. A, B, C, rest, B, D runs as the pass [A, B, C], then one day off, then
+// [B, D]. `at` is where the running segment starts in the sequence. A rest day is a pass that
+// starts later: the next segment's startsOn is pushed back one day per 'rest' after the one that
+// just finished, and until then the loop shows nothing for the day (queueView's `waiting`).
+// A sequence with neither (every loop made before #536) is SIMPLE and runs exactly as it always
+// did: one pass of all its routines, rotated after the session that closed it.
 //
 // `S.rotation` is a DEFINITION, never a live queue: what the calendar, the reminders and the MCP
 // resolve is always `S.queue`. `scheduleModeOf` is Home/Plan's own display choice: a live queue
@@ -42,6 +53,42 @@ export const rotationIds = S => {
 
 const newPass = (ids, label, rotationId, startsOn, since) => ({ ids, since, startsOn, label, rotationId })
 
+export const REST = 'rest'
+const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d) }
+
+/**
+ * The saved sequence as the loop runs it (#536): routines that still exist, repeats kept, and
+ * 'rest' entries. Rests are never first in a run of the loop that has no session at all.
+ */
+export const sequenceOf = S => {
+  const seq = Array.isArray(S?.rotation?.sequence) ? S.rotation.sequence : []
+  const routines = Array.isArray(S?.routines) ? S.routines : []
+  const out = seq.filter(id => id === REST || routines.some(r => r.id === id))
+  return out.some(id => id !== REST) ? out : []
+}
+
+/** A loop with no rest day and no routine twice: one pass of all of it, as before #536. */
+export const isSimpleSequence = seq => !seq.includes(REST) && seq.every((id, i) => seq.indexOf(id) === i)
+
+/**
+ * The segment of `seq` that starts at `at` (skipping rests there): `{ start, ids, rest, next }`.
+ * `ids` runs to the next rest, the next routine already in it, or the end of the sequence; `rest`
+ * is how many rest days follow it (round the end of the sequence too); `next` is where the next
+ * segment starts. Null for a sequence without a session.
+ */
+export function segmentAt(seq, at = 0) {
+  const n = seq.length
+  if (!n || !seq.some(id => id !== REST)) return null
+  let start = Number.isInteger(at) && at >= 0 && at < n ? at : 0
+  while (seq[start] === REST) start = (start + 1) % n
+  const ids = []
+  let i = start
+  while (i < n && seq[i] !== REST && !ids.includes(seq[i])) ids.push(seq[i++])
+  let rest = 0, k = i % n
+  for (let c = 0; c < n && seq[k] === REST; c++) { rest++; k = (k + 1) % n }
+  return { start, ids, rest, next: k }
+}
+
 /** Workouts that could have credited `q`'s pass: dated on/after its startsOn, matching one of its ids. */
 const creditWindow = (s, q) => (s.workouts || [])
   .filter(w => String(w.d || '') >= q.startsOn && routineIdsOf(w).some(id => q.ids.includes(id)))
@@ -69,6 +116,13 @@ const sweepPins = (s, ids, today) => {
 
 /** Settings → Rotation with a saved rotation and no queue. False when nothing valid is left to start. */
 export function startPass(s, today = todayISO(), now = Date.now()) {
+  const seq = sequenceOf(s)
+  if (seq.length && !isSimpleSequence(seq)) {
+    const seg = segmentAt(seq, s.rotation.at)
+    s.rotation = { ...s.rotation, at: seg.start }
+    s.queue = newPass(seg.ids, s.rotation.label || '', s.rotation.id, today, now)
+    return true
+  }
   const ids = rotationIds(s)
   if (!ids.length) return false
   s.queue = newPass(ids, s.rotation.label || '', s.rotation.id, today, now)
@@ -83,6 +137,7 @@ export function startPass(s, today = todayISO(), now = Date.now()) {
  */
 export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()) {
   if (!ids.length) return
+  if (!isSimpleSequence(ids)) { saveLoop(s, ids, label, today, now); return }
   const prev = queueOf(s)
   s.rotation = { id: s.rotation?.id ?? uid(), sequence: ids, label }
   s.queue = {
@@ -109,6 +164,46 @@ export function saveRotation(s, ids, label, today = todayISO(), now = Date.now()
     sweepPins(s, q.ids, today)
     s.queue = newPass(rotationIds(s), label, s.rotation.id, last ? dayAfter(last) : today, sinceAfter(s, q, now))
   }
+}
+
+/**
+ * saveRotation for a loop with rest days or repeats (#536): the sequence is saved whole, and the
+ * running pass becomes the segment at `at` (kept while it still starts a segment of the edited
+ * loop, else the loop's first). The pass keeps its since/startsOn, so progress already logged
+ * counts, and a segment the edit left complete rolls on to the next one, as a refill would.
+ */
+function saveLoop(s, seq, label, today, now) {
+  const prev = queueOf(s)
+  const ownPrev = !!prev && !!s.rotation && prev.rotationId === s.rotation.id
+  const at = Number.isInteger(s.rotation?.at) && s.rotation.at < seq.length && seq[s.rotation.at] !== REST ? s.rotation.at : 0
+  s.rotation = { id: s.rotation?.id ?? uid(), sequence: seq, label, at }
+  const seg = segmentAt(seq, at)
+  s.rotation.at = seg.start
+  s.queue = {
+    ids: seg.ids,
+    since: prev?.since ?? now,
+    startsOn: prev?.startsOn ?? today,
+    label,
+    rotationId: s.rotation.id,
+    ...(prev?.strict === true ? { strict: true } : {}),
+  }
+  sweepPins(s, (prev?.ids || []).filter(id => !seg.ids.includes(id)), today)
+  if (prev && ownPrev && queueView(s, today)?.complete) {
+    const q = queueOf(s)
+    const last = lastCreditDay(s)
+    advanceLoop(s, q, last, today, now)
+  }
+}
+
+/** The next segment of a loop with rest days or repeats, after `q`; `bound` is the day it closed. */
+function advanceLoop(s, q, bound, today, now) {
+  const seq = sequenceOf(s)
+  const seg = segmentAt(seq, s.rotation.at)
+  const next = segmentAt(seq, seg.next)
+  sweepPins(s, q.ids, today)
+  s.rotation = { ...s.rotation, at: next.start }
+  const startsOn = addDays(bound ? dayAfter(bound) : today, seg.rest)
+  s.queue = newPass(next.ids, s.rotation.label || '', s.rotation.id, startsOn, sinceAfter(s, q, now))
 }
 
 /**
@@ -162,7 +257,11 @@ const lastCreditDay = s => {
  */
 export function startNewPass(s, today = todayISO(), now = Date.now()) {
   if (!s.rotation) return
-  const ids = rotationIds(s)
+  // A loop with rest days or repeats starts over from its first segment (#536).
+  const seq = sequenceOf(s)
+  const loop = seq.length && !isSimpleSequence(seq) ? segmentAt(seq, 0) : null
+  if (loop) s.rotation = { ...s.rotation, at: loop.start }
+  const ids = loop ? loop.ids : rotationIds(s)
   if (!ids.length) return
   const q = queueOf(s)
   if (q) sweepPins(s, q.ids, today)
@@ -201,6 +300,15 @@ export function refillAfter(s, w, today = todayISO(), now = Date.now()) {
   const q = queueOf(s)
   if (!q?.rotationId || !s.rotation?.id || q.rotationId !== s.rotation.id) return false
   if (!queueView(s, today)?.complete) return false
+  const full = sequenceOf(s)
+  if (full.length && !isSimpleSequence(full)) {
+    // A loop with rest days or repeats (#536): the pass must be the segment at `at`, or the
+    // editor resyncs it on its next save, as for a simple loop that no longer matches.
+    const seg = segmentAt(full, s.rotation.at)
+    if (!seg || seg.ids.length !== q.ids.length || seg.ids.some((id, i) => id !== q.ids[i])) return false
+    advanceLoop(s, q, [w.d, lastCreditDay(s)].filter(Boolean).sort().at(-1), today, now)
+    return true
+  }
   const seq = rotationIds(s)
   if (!isCircular(q.ids, seq)) return false
   const credited = routineIdsOf(w)

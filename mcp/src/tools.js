@@ -7,7 +7,7 @@ import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
 import {
-  modeOf, workoutVolume, setsDone, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
+  modeOf, workoutVolume, setsDone, setUnitsTotal, effectiveRoutine, effectiveRoutineIds, lastEntryFor, workoutAt
 } from '../../frontend/src/lib/history.js'
 import { queueView, queueNext, pinState } from '../../frontend/src/lib/queue.js'
 import { exOr, registerCustom } from '../../frontend/src/lib/exercises.js'
@@ -28,7 +28,7 @@ import { buildSessionEntries, startsFromLast } from '../../frontend/src/lib/sess
 // as a zod refine that is a -32602 at the SDK boundary instead of a confident wrong answer.
 const localIso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
 const todayIso = () => localIso(new Date())
-const isoDate = () => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD').refine(
+export const isoDate = () => z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be YYYY-MM-DD').refine(
   v => { const d = new Date(v + 'T12:00:00'); return !Number.isNaN(d.getTime()) && localIso(d) === v },
   { message: 'not a date the calendar has (YYYY-MM-DD)' }
 )
@@ -46,12 +46,12 @@ const exerciseOf = (id, S) => customOf(id, S) || exOr(id)
 // registers its customs) takes the larger one. It registers the profile's customs for the length
 // of one synchronous build and takes them back out in the same call: nothing else, and no other
 // profile's read, can run in between.
-function withCustomsIndexed(S, build) {
+export function withCustomsIndexed(S, build) {
   registerCustom(Array.isArray(S.customEx) ? S.customEx : [])
   try { return build() } finally { registerCustom([]) }
 }
 
-function entryView(e, S) {
+export function entryView(e, S) {
   const ex = exerciseOf(e.id, S)
   // Spread id into the cfg the way every call site in the app does (Workout.jsx, Stats.jsx,
   // progression.js) — the sheet saves a cardio target as {sets, min, speed} with no id and no
@@ -298,8 +298,8 @@ export const listWorkouts = {
         routine_name: w.name || null,
         exercise_count: (w.entries || []).length,
         sets_done: setsDone(w),
-        sets_planned: plannedSets(w),
-        sets_ratio: ratio(setsDone(w), plannedSets(w)),
+        sets_planned: setUnitsTotal(w.entries),
+        sets_ratio: ratio(setsDone(w), setUnitsTotal(w.entries)),
         volume: workoutVolume(w),
         duration_ms: w.end && w.start ? (w.end - w.start) : null,
         duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
@@ -308,12 +308,6 @@ export const listWorkouts = {
       }))
     }
   }
-}
-
-function plannedSets(w) {
-  let n = 0
-  ;(w.entries || []).forEach(e => { n += (e.sets || []).length })
-  return n
 }
 
 /** get_workout — full entry/set breakdown for one date. */
@@ -364,7 +358,7 @@ export const getWorkout = {
       bodyweight_at_workout: w.bw || null,
       volume: workoutVolume(w),
       sets_done: setsDone(w),
-      sets_planned: plannedSets(w),
+      sets_planned: setUnitsTotal(w.entries),
       duration: w.end && w.start ? friendlyDuration(w.end - w.start) : null,
       prs: (w.prs || []).map(id => {
         const ex = exerciseOf(id, S)
@@ -521,7 +515,13 @@ export const muscleBalance = {
 function sourceOf(S, cfg, plan, field, routine) {
   // Progression off (or a deload routine): the session is built from the routine's own target,
   // exactly as session-start.js does with useTarget — history and the confirmed weight are ignored.
-  if (!plan || plan.kind === 'off') return 'routine_plan'
+  // Except progression off under "start from your last session" (#217): there both the weight and
+  // the reps are last time's, when there is a last time. A deload routine keeps its own numbers.
+  if (!plan) return 'routine_plan'
+  if (plan.kind === 'off') {
+    const fromLast = startsFromLast(S) && routine?.excludeFromProgression !== true
+    return fromLast && lastEntryFor(S, cfg.id, routine && routine.id) ? 'last_session' : 'routine_plan'
+  }
   const decided = plan.kind !== 'first' && plan[field] != null
   // A policy that settles on the routine's own reps or hold — a restart after the plan was
   // edited, a bodyweight hold at the plan's count — is the plan speaking, not an override.

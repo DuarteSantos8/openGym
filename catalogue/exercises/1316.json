@@ -9,6 +9,9 @@
     "chest"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying on a bench, move a barbell in an arc behind your head and back over your chest with soft elbows. It works the lats and chest.",
   "instructions": [
     "Lie flat on a bench with your head at one end and your feet on the floor.",

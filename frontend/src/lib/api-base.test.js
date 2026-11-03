@@ -3,7 +3,7 @@
 // already relative; the API call was not, so it went to the proxy's own root where nothing
 // answers it. The base is read from where the app is being served.
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { appBase, beacon } from './api.js'
+import { api, appBase, beacon } from './api.js'
 import { readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
@@ -77,9 +77,30 @@ describe('the cache lifetime nginx gives an image', () => {
   it('is said once, by the explicit header, with no expires beside it', () => {
     expect(NGINX.replace(/#.*$/gm, '')).not.toMatch(/\bexpires\b/)
     // the exercise media's own block and every other image's
-    const media = blocksOf(NGINX).filter(b => /\bimmutable\b/.test(b))
+    const media = blocksOf(NGINX).filter(b => /\bimmutable\b/.test(b) && !/31536000/.test(b))
     expect(media.length).toBe(2)
     for (const b of media) expect(b).toMatch(/\badd_header\s+Cache-Control\s+"public, max-age=2592000, immutable"\s*;/)
+  })
+})
+
+// A build chunk's name carries its content hash: kept a year without asking again. The shell,
+// sw.js, the manifest and anything without a hash in its name still revalidate every time.
+describe('the cache lifetime nginx gives a build chunk', () => {
+  const at = NGINX.indexOf('location ~* /assets/')
+  it('is a year, immutable, with the same security headers, ahead of the shell rule', () => {
+    expect(at).toBeGreaterThan(-1)
+    expect(at).toBeLessThan(NGINX.indexOf('location ~* \\.(js|css|json|html)$'))
+    const [block] = blocksOf(NGINX.slice(at))
+    expect(block).toMatch(/\badd_header\s+Cache-Control\s+"public, max-age=31536000, immutable"\s*;/)
+    expect(block).toMatch(/\badd_header\s+Content-Security-Policy\s+"X"\s+always\s*;/)
+    expect(block).toMatch(/\badd_header\s+X-Content-Type-Options\s+"nosniff"\s+always\s*;/)
+  })
+  it('matches hashed chunks only', () => {
+    const re = new RegExp(/location ~\* (\S+) \{/.exec(NGINX.slice(at))[1], 'i')
+    for (const u of ['/assets/index-DdAX9ec6.js', '/gym/assets/rolldown-runtime-QTnfLwEv.js', '/assets/index-zMZnqmc9.css', '/assets/pt-BR-p55Y2oCC.js'])
+      expect(re.test(u), u).toBe(true)
+    for (const u of ['/sw.js', '/index.html', '/manifest.json', '/assets/index.js', '/icon-180.png'])
+      expect(re.test(u), u).toBe(false)
   })
 })
 
@@ -174,14 +195,14 @@ describe('what nginx forwards to the API', () => {
 // to @root, and @root sent it back to /g+ym/, forever; the assets and images 404'd.
 describe('the file nginx looks for under BASE_PATH', () => {
   const REWRITE = /\brewrite\s+(\S+)\s+(\S+)\s+break\s*;/g
-  // All five rewrites (the app's prefix block, the two cache blocks, and the exercise media's
+  // All six rewrites (the app's prefix block, the three cache blocks, and the exercise media's
   // block and its nested cache block) give the same answer.
   function onDisk(base, uri) {
     const got = [...render(base).matchAll(REWRITE)].map(([, pattern, to]) => {
       const m = new RegExp(quoted(pattern)).exec(uri)
       return m ? to.replace(/\$(\d)/g, (_, i) => m[i]) : uri
     })
-    expect(got.length).toBe(5)
+    expect(got.length).toBe(6)
     expect(new Set(got).size).toBe(1)
     return got[0]
   }
@@ -257,8 +278,8 @@ describe('the web container refuses a BASE_PATH it cannot serve', () => {
     // master both stay there. The listen port stays 80: compose, the probes and the healthcheck
     // all address NGINX_PORT. The base image's EXPOSE 8080 is only metadata.
     const dockerfile = readFileSync(join(WEB, 'Dockerfile'), 'utf8')
-    expect(dockerfile).toMatch(/^FROM --platform=\$BUILDPLATFORM node:22-alpine AS build$/m)
-    expect(dockerfile).toMatch(/^FROM nginxinc\/nginx-unprivileged:alpine$/m)
+    expect(dockerfile).toMatch(/^FROM --platform=\$BUILDPLATFORM node:22(\.\d+\.\d+)?-alpine AS build$/m)
+    expect(dockerfile).toMatch(/^FROM nginxinc\/nginx-unprivileged:(\d+\.\d+\.\d+-)?alpine$/m)
     const users = [...dockerfile.matchAll(/^USER \S+$/gm)].map(m => m[0])
     expect(users.at(-1)).toBe('USER 101')
     const root = dockerfile.search(/^USER root$/m)
@@ -269,5 +290,70 @@ describe('the web container refuses a BASE_PATH it cannot serve', () => {
     expect(finalUser).toBeGreaterThan(upgrade)
     expect(dockerfile).toMatch(/^ENV NGINX_PORT=80$/m)
     expect(dockerfile).toMatch(/^COPY web\/nginx\.conf\.template \/etc\/nginx\/templates\/default\.conf\.template$/m)
+  })
+})
+
+// A path that begins with two slashes is still served the real app on the real origin: nginx
+// merges the slashes and resolves an encoded "..%2F" before it looks for a file, so
+// https://gym.example//evil.example/..%2F/ is the shell, with its scripts. Taken as-is, that
+// path is a protocol-relative URL, and every API call, the passkey sign-in included, went to
+// evil.example.
+const ORIGIN = 'https://gym.test'
+const lands = base => new URL(base.replace(/\/$/, '') + '/api/login/verify', ORIGIN).origin
+
+describe('the base never leaves the page\'s origin', () => {
+  it.each([
+    ['//evil.example/', '/evil.example/'],
+    ['//evil.example//', '/evil.example/'],
+    ['///evil.example/', '/evil.example/'],
+    ['//evil.example/..%2F/', '/evil.example/..%2F/'],
+    ['/gym//evil.example/', '/gym/evil.example/'],
+    ['//', '/'],
+    ['///', '/'],
+    ['//index.html', '/'],
+    ['/\\evil.example/', '/evil.example/'],
+  ])('%s is the path %s on this origin', (pathname, base) => {
+    expect(at(pathname)).toBe(base)
+    expect(lands(at(pathname))).toBe(ORIGIN)
+  })
+
+  it.each([
+    ['/', '/'],
+    ['/gym/', '/gym/'],
+    ['/gym/index.html', '/gym/'],
+  ])('an ordinary %s is unchanged', (pathname, base) => {
+    expect(at(pathname)).toBe(base)
+    expect(lands(at(pathname))).toBe(ORIGIN)
+  })
+
+  it('a base the URL parser would still read as another host is refused, not used', () => {
+    // A real location never has a raw tab in its path (the parser drops it on the way in), which
+    // is exactly why the last word goes to the parser rather than to the slash rule alone.
+    expect(() => at('/\t/evil.example/')).toThrow(/another site/)
+  })
+})
+
+// The same pages through api() itself. Each is the real shell on the stock web image: "//",
+// "///" and "//index.html" because nginx merges the slashes, "//evil.example/..%2F/" because it
+// also resolves the encoded "..". Read as-is, the first three sent every call to https://api/...
+// and the last one to evil.example.
+describe('api() on a page whose path starts with two slashes', () => {
+  const home = location.href
+  afterEach(() => { vi.unstubAllGlobals(); window.happyDOM.setURL(home) })
+
+  it.each([
+    ['//', '/api/login/options'],
+    ['///', '/api/login/options'],
+    ['//index.html', '/api/login/options'],
+    ['//evil.example/..%2F/', '/evil.example/..%2F/api/login/options'],
+  ])('a page at %s still calls this origin, never the host its path names', async (path, expected) => {
+    window.happyDOM.setURL(ORIGIN + path)
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } }))
+    vi.stubGlobal('fetch', fetchMock)
+    await api('/api/login/options', { method: 'POST', body: '{}' })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const url = fetchMock.mock.calls[0][0]
+    expect(new URL(url, location.href).origin).toBe(ORIGIN)
+    expect(url).toBe(expected)
   })
 })

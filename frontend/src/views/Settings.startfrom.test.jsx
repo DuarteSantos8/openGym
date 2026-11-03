@@ -102,3 +102,34 @@ describe('Settings — planned sessions start from', () => {
     expect(mocks.S.startFrom).toBe('plan')
   })
 })
+
+describe('Settings: last time means (#770)', () => {
+  const lastRow = () => [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Last time means'))
+  const pick = label => {
+    act(() => { lastRow().click() })
+    const box = document.createElement('div')
+    document.body.appendChild(box)
+    const sheetRoot = createRoot(box)
+    act(() => sheetRoot.render(sheet(() => {})))
+    const option = [...box.querySelectorAll('button.lrow')].find(b => b.querySelector('.lrow-t')?.textContent === label)
+    expect(option).toBeTruthy()
+    act(() => { option.click() })
+    act(() => sheetRoot.unmount())
+    box.remove()
+  }
+
+  it('reads an older profile without the setting as this routine', () => {
+    mount()
+    expect(lastRow().textContent).toContain('This routine')
+  })
+
+  it('switches to any workout and back, writing lastFrom to the store', () => {
+    mount()
+    pick('Any workout')
+    expect(mocks.S.lastFrom).toBe('any')
+    mount()
+    expect(lastRow().textContent).toContain('Any workout')
+    pick('This routine')
+    expect(mocks.S.lastFrom).toBe('routine')
+  })
+})

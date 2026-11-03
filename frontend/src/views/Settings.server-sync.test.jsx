@@ -303,3 +303,27 @@ describe('leaving the server', () => {
     expect(mocks.toast).toHaveBeenLastCalledWith('Couldn’t sign out everywhere. You’re still signed in.')
   })
 })
+
+/* "Delete my account" (App Store rule 5.1.1(v)): wherever there is a server account, a paired
+   phone or a signed-in browser, and nowhere there is none. Once it is gone, Settings goes home. */
+describe('deleting the account', () => {
+  it('a paired phone and a signed-in browser both have the row; it goes home once the account is gone', async () => {
+    const phone = mount(<Settings page="account" />)
+    expect(rowByTitle(phone, 'Delete my account')).toBeTruthy()
+
+    mocks.MOBILE = false
+    const page = mount(<Settings page="account" />)
+    act(() => rowByTitle(page, 'Delete my account').click())
+    const done = mocks.sheets.at(-1).render(() => {}).props.done
+    done()
+    expect(mocks.navs).toEqual(['/home'])
+  })
+
+  it('no account, no row: a phone kept local, and a guest in a browser', async () => {
+    mocks.user = null
+    mocks.sync = sync('local', { server: null })
+    expect(rowByTitle(mount(<Settings page="account" />), 'Delete my account')).toBeUndefined()
+    mocks.MOBILE = false
+    expect(rowByTitle(mount(<Settings page="account" />), 'Delete my account')).toBeUndefined()
+  })
+})

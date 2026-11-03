@@ -10,6 +10,7 @@
     "calves"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "The wall sit, a hold that builds endurance in the thighs without any equipment.",
   "instructions": [
     "Stand with your back against a wall and walk your feet forward.",

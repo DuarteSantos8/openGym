@@ -11,6 +11,9 @@
     "trapezius"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying face down, you raise light dumbbells out to the sides. It targets the rear shoulders and upper back.",
   "instructions": [
     "Lie face down on a bench holding a light dumbbell in each hand.",

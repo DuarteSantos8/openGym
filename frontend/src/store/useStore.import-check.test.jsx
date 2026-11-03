@@ -128,3 +128,33 @@ describe('a backup imported while a workout is running', () => {
     expect(useStore.getState().S.active).toEqual(running)
   })
 })
+
+// Data safety (owner, 10-14): without an account this copy is the only one. A workout logged
+// since the backup was made is asked about, and "Merge them in" keeps it; nothing is sent anywhere.
+describe('importing a backup with no account (local mode, a guest)', () => {
+  const local = () => useStore.setState({ S: { ...clone(DEF), _ts: 200, workouts: [workout('w1'), workout('since', '2026-09-28')] }, user: null, ready: true })
+
+  it('names the workouts on this device that the backup lacks, without asking a server', async () => {
+    local()
+    const c = await useStore.getState().importConflict(BACKUP)
+    expect(c).toMatchObject({ workouts: 1, device: true })
+    expect(api).not.toHaveBeenCalled()
+  })
+
+  it('"Merge them in" keeps the backup\'s settings and every workout of both', async () => {
+    local()
+    const c = await useStore.getState().importConflict(BACKUP)
+    useStore.getState().importBackup(BACKUP, { mergeWith: c })
+    const S = useStore.getState().S
+    expect(ids(S.workouts).sort()).toEqual(['since', 'w1', 'w2'])
+    expect(S.restSec).toBe(120)
+    expect(api).not.toHaveBeenCalled()
+  })
+
+  it('"Replace anyway" still replaces', async () => {
+    local()
+    await useStore.getState().importConflict(BACKUP)
+    useStore.getState().importBackup(BACKUP)
+    expect(ids(useStore.getState().S.workouts)).toEqual(['w1', 'w2'])
+  })
+})

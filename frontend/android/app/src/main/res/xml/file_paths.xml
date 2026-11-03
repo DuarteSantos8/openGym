@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- What the share sheet may hand to another app: only the app's own cache folder, where
+     lib/mobile.js writes a backup export just before sharing it. The app shares nothing from
+     shared storage, so that is not exposed. -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="my_images" path="." />
     <cache-path name="my_cache_images" path="." />
 </paths>

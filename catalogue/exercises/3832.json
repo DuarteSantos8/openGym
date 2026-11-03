@@ -11,6 +11,7 @@
     "hands"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A hang from a sloped hangboard hold. It builds finger and forearm strength for climbing.",
   "instructions": [
     "Grip the sloped hold with open hands.",

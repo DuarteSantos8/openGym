@@ -129,6 +129,8 @@ export function stateMediaRefs(state) {
     if (!isObj(w) || !Array.isArray(w.media)) continue
     for (const m of w.media) if (isObj(m)) out.push(m)
   }
+  // Progress photos filed under a day rather than a workout (lib/day-photos.js, #557).
+  if (isObj(state.dayPhotos)) for (const e of Object.values(state.dayPhotos)) if (isObj(e) && isObj(e.m)) out.push(e.m)
   return out
 }
 
@@ -202,14 +204,18 @@ export function cleanUrl(raw) {
   return u.href.length <= MAX_URL ? u.href : null
 }
 
-const LABEL = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/i
+// A label neither starts nor ends with a hyphen. The end is checked in code, not with a (?<!-)
+// lookbehind: Safari only parses those from 16.4, and on iOS 15.5 to 16.3 that one literal kept
+// the whole app on its splash (scripts/check-bundle-syntax.mjs now fails the build on it).
+const LABEL = /^(?!-)[a-z0-9-]{1,63}$/i
+const plausibleLabel = l => LABEL.test(l) && !l.endsWith('-')
 function plausibleHost(host) {
   if (host.startsWith('[') && host.endsWith(']')) return true               // IPv6
   const h = host.replace(/\.$/, '').toLowerCase()
   if (h === 'localhost') return true
   const labels = h.split('.')
   // xn-- names are how the parser writes an international domain, so they pass as letters.
-  return labels.length >= 2 && labels.every(l => LABEL.test(l))
+  return labels.length >= 2 && labels.every(plausibleLabel)
 }
 
 // Hosts whose pages are, in practice, a video: the card then says "Watch video" instead of

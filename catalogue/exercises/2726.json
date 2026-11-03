@@ -11,6 +11,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Holding two heavy weights, arms out, for time to build grip and shoulder endurance.",
   "instructions": [
     "Pick up the weights and stand tall.",

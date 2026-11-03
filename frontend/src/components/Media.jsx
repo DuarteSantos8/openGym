@@ -5,6 +5,7 @@ import { useStore } from '../store/useStore.js'
 import { t, exerciseNameFor } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import CustomMedia, { CustomThumb } from './CustomMedia.jsx'
+import { useAnimSources } from './Animations.jsx'
 
 // An exercise's picture, wherever one shows. A custom exercise goes to CustomMedia.jsx — its own
 // photo, GIF, video or link, from the local media store — and never through imgSrc/gifSrc, which
@@ -31,16 +32,29 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
   const gifSize = useStore(s => s.S.gifSize)
   const body = useStore(s => figureOf(s.S))
   const update = useStore(s => s.update)
-  const clip = ex.gif && isVideoSrc(gifSrc(ex, body)) ? gifSrc(ex, body) : null
+  // In the store apps the animation may come from a downloaded pack at the chosen quality
+  // (Settings → Animation quality, components/Animations.jsx): the sources are the best file
+  // first and the built-in one last, and one that will not load hands over to the next before the
+  // still is shown. 'Still only' asks for no animation at all. Elsewhere: the built-in file.
+  const anim = useAnimSources(ex, body)
+  const sourcesKey = anim.sources.join('|')
+  const [tried, setTried] = useState({ key: sourcesKey, i: 0 })
+  const at = tried.key === sourcesKey ? tried.i : 0
+  const gif = anim.sources[Math.min(at, Math.max(0, anim.sources.length - 1))] || gifSrc(ex, body)
+  const clip = ex.gif && isVideoSrc(gif) ? gif : null
   const clipSrc = useClipInMemory(clip)
   if (!ex.gif) return null
   if (minimizable && gifSize === 'off') return null
   const mini = minimizable && gifSize === 'mini'
   const toggleSize = e => { e.stopPropagation(); update(s => { s.gifSize = mini ? 'full' : 'mini' }) }
-  const showGif = playing && failed == null
-  const onError = () => setFailed(showGif ? 'gif' : 'all')
+  const showGif = playing && failed == null && !anim.still
+  const onError = () => {
+    if (showGif && at < anim.sources.length - 1) { setTried({ key: sourcesKey, i: at + 1 }); return }
+    setFailed(showGif ? 'gif' : 'all')
+  }
   const onTap = () => {
-    if (failed) { setFailed(null); setPlaying(true); return }
+    if (failed) { setFailed(null); setPlaying(true); setTried({ key: sourcesKey, i: 0 }); return }
+    if (anim.still) return
     setPlaying(p => !p)
   }
   return (
@@ -50,18 +64,18 @@ function BuiltinMedia({ ex, id, compact, minimizable }) {
         : showGif && clip && clipSrc
           // No poster: Android's WebView went back to it at every loop and stalled there (the
           // still above stands in while the clip loads, so nothing is lost without it).
-          ? <video ref={autoplayMuted} className="catvid" src={clipSrc} autoPlay muted loop playsInline disablePictureInPicture
+          ? <video ref={autoplayClip} className="catvid" src={clipSrc} autoPlay muted loop playsInline disablePictureInPicture
               aria-label={exerciseNameFor(ex)} onError={onError} />
           : showGif && clip
             // the phone app is still reading the clip into memory: the still holds its place
             ? <img decoding="async" draggable={false} src={imgSrc(ex, body)} alt={exerciseNameFor(ex)} />
-          : <img decoding="async" draggable={false} src={showGif ? gifSrc(ex, body) : imgSrc(ex, body)} alt={exerciseNameFor(ex)} onError={onError} />}
+          : <img decoding="async" draggable={false} src={showGif ? gif : imgSrc(ex, body)} alt={exerciseNameFor(ex)} onError={onError} />}
       {minimizable && (
         <button className="giftoggle" onClick={toggleSize}>
           <Icon name={mini ? 'expand' : 'minimize'} />{mini ? t('Expand') : t('Minimize')}
         </button>
       )}
-      {!mini && !failed && (
+      {!mini && !failed && !anim.still && (
         <span className="gifhint">
           <Icon name={playing ? 'pause' : 'play'} />{playing ? t('tap to pause') : t('tap to play')}
         </span>
@@ -125,6 +139,27 @@ export function autoplayMuted(el) {
   el.setAttribute('muted', '')
   const p = el.play?.()
   if (p && typeof p.catch === 'function') p.catch(() => {})
+}
+
+// An exercise's clip plays while it is on screen. Each one used to loop for as long as it was
+// mounted: in the List layout every exercise of the workout has one, and five clips nobody could
+// see decoded ~28 frames a second each (headless Chrome, synthetic clips). One observer for all of
+// them pauses a clip that scrolls out of view and starts it again just before it comes back.
+// Without IntersectionObserver (old browsers, tests) the clips simply loop as before.
+let clipObserver = null
+const clipsInView = () => clipObserver || (clipObserver = new IntersectionObserver(entries => {
+  for (const e of entries) {
+    const v = e.target
+    if (e.isIntersecting) { const p = v.play?.(); if (p && typeof p.catch === 'function') p.catch(() => {}) }
+    else v.pause?.()
+  }
+}, { rootMargin: '100px 0px' }))
+export function autoplayClip(el) {
+  autoplayMuted(el)
+  if (!el || typeof IntersectionObserver === 'undefined') return
+  const io = clipsInView()
+  io.observe(el)
+  return () => io.unobserve(el)
 }
 
 // A still that will not load (offline and never cached, a lapsed session on a gated instance, a

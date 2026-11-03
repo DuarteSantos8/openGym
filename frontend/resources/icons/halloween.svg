@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <!-- openGym app icon "halloween", drawn by hand (the only one not written by scripts/app-icons.mjs,
+       which renders it). The dumbbell is the glyph of resources/icon.svg in pumpkin orange; around
+       it a purple night, a crescent moon, a cobweb in the corner and its spider. Only rect, circle,
+       line, polyline, polygon and one radialGradient: what the script knows how to draw. -->
+  <defs>
+    <radialGradient id="night" gradientUnits="userSpaceOnUse" cx="256" cy="300" r="380">
+      <stop offset="0" stop-color="#3d1a63"/>
+      <stop offset="1" stop-color="#0d0517"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#night)"/>
+  <!-- the moon: a pale disc with the night bitten out of it -->
+  <circle cx="112" cy="110" r="50" fill="#f7e8b4"/>
+  <circle cx="136" cy="92" r="46" fill="url(#night)"/>
+  <g fill="#f7e8b4">
+    <circle cx="222" cy="72" r="6"/>
+    <circle cx="300" cy="118" r="4"/>
+    <circle cx="66" cy="230" r="4"/>
+  </g>
+  <!-- the cobweb, hung from the top right corner -->
+  <g stroke="#b7a2de" stroke-width="7">
+    <line x1="512" y1="0" x2="448" y2="159"/>
+    <line x1="512" y1="0" x2="390" y2="122"/>
+    <line x1="512" y1="0" x2="353" y2="64"/>
+    <polyline points="512,54 508,50 505,47 501,47 497,48 492,50 490,45 487,41 484,39 479,38 474,38 474,33 473,28 471,25 467,22 462,20 464,15 465,11 465,7 462,4 458,0"/>
+    <polyline points="512,102 505,95 498,89 491,88 483,90 474,95 470,85 465,77 459,73 451,72 440,72 440,61 439,53 435,47 427,42 417,38 422,29 424,21 423,14 417,7 410,0"/>
+    <polyline points="512,148 501,137 492,130 482,128 470,131 457,137 450,123 444,112 435,106 423,105 407,105 407,89 406,77 400,68 389,62 375,55 381,42 384,30 382,20 375,11 364,0"/>
+  </g>
+  <!-- its spider, on a thread, inside the corner iOS rounds off -->
+  <line x1="456" y1="132" x2="456" y2="150" stroke="#b7a2de" stroke-width="4"/>
+  <g stroke="#ecdfff" stroke-width="4.5">
+    <polyline points="449.6,156.4 438.4,148.4 433.6,156.4"/>
+    <polyline points="462.4,156.4 473.6,148.4 478.4,156.4"/>
+    <polyline points="449.6,161.2 435.2,159.6 430.4,169.2"/>
+    <polyline points="462.4,161.2 476.8,159.6 481.6,169.2"/>
+    <polyline points="450.4,166 438.4,170.8 436.8,180.4"/>
+    <polyline points="461.6,166 473.6,170.8 475.2,180.4"/>
+  </g>
+  <g fill="#ecdfff">
+    <circle cx="456" cy="153.2" r="7.2"/>
+    <circle cx="456" cy="166" r="10.4"/>
+  </g>
+  <!-- the dumbbell, pumpkin orange -->
+  <g fill="#ff7a1a">
+    <rect x="80" y="242" width="352" height="28"/>
+    <rect x="80" y="199" width="36" height="114"/>
+    <rect x="131" y="169" width="47" height="174"/>
+    <rect x="334" y="169" width="47" height="174"/>
+    <rect x="396" y="199" width="36" height="114"/>
+  </g>
+  <!-- the big plates carved like jack-o'-lanterns: two eyes and a grin each, lit from inside -->
+  <g fill="#ffd166">
+    <polygon points="136,214 151,214 143.5,198"/>
+    <polygon points="158,214 173,214 165.5,198"/>
+    <polygon points="136,292 154.5,302 173,292 170,310 164,304 154.5,316 145,304 139,310"/>
+    <polygon points="339,214 354,214 346.5,198"/>
+    <polygon points="361,214 376,214 368.5,198"/>
+    <polygon points="339,292 357.5,302 376,292 373,310 367,304 357.5,316 348,304 342,310"/>
+  </g>
+</svg>

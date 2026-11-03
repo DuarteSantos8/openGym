@@ -6,7 +6,6 @@ import { api } from './api.js'
 // worker and `navigator.serviceWorker.ready` never settles — the toggle looked usable and hung.
 const secureOrigin = () => typeof location === 'undefined' || location.protocol === 'https:'
 export const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && secureOrigin()
-export const pushPermission = () => (pushSupported() ? Notification.permission : 'unsupported')
 
 const urlBase64ToUint8Array = b64 => {
   const padded = (b64 + '='.repeat((4 - b64.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/')
@@ -55,7 +54,27 @@ const readyWorker = (ms = 8000) => Promise.race([
   new Promise((_, reject) => setTimeout(() => reject(new Error('Service worker not ready')), ms))
 ])
 
-const register = sub => api('/api/push/subscribe', { method: 'POST', body: JSON.stringify({ subscription: sub.toJSON(), deviceId: deviceId() }) })
+const post = sub => api('/api/push/subscribe', { method: 'POST', body: JSON.stringify({ subscription: sub.toJSON(), deviceId: deviceId() }) })
+
+/* Hands the server this browser's subscription. A 409 means the server has this endpoint filed
+   under another account with keys other than the ones sent, and moves it only for a caller that
+   holds its keys, so sending it again changes nothing. A fresh subscription (a new endpoint and
+   new keys) is this browser's alone, so it is made and sent once more. If that fails too, the
+   fresh one is dropped: a subscription the server does not hold only tells the rest timer that
+   an alert is on its way (useUI's pushArmed) when none is. A retry the server answered is thrown
+   with `refused` set, so Settings shows the switch off with the server's own words. One that
+   never reached it (offline, or the browser would not subscribe) is thrown as it is, and
+   Settings reads the browser's side, which by then holds nothing: off as well. */
+async function register(reg, key, sub) {
+  try { return await post(sub) } catch (e) { if (e.status !== 409) throw e }
+  try {
+    await sub.unsubscribe().catch(() => {})
+    const fresh = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(key) })
+    try { return await post(fresh) } catch (e) { await fresh.unsubscribe().catch(() => {}); throw e }
+  } catch (e) {
+    throw e.status ? Object.assign(e, { refused: true }) : e
+  }
+}
 
 export async function enablePush() {
   if (!pushSupported()) throw new Error('Push notifications are not supported in this browser')
@@ -65,7 +84,7 @@ export async function enablePush() {
   const { key } = await api('/api/push/public-key')
   const subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(key) })
   await shareDeviceId()
-  await register(subscription)
+  await register(reg, key, subscription)
 }
 
 export async function disablePush() {
@@ -87,7 +106,9 @@ export async function disablePush() {
    - the server has it under no device id or another one → sent again with this one, true;
    - the server lost it → re-registered, true;
    - the server's key changed → the old subscription is useless; unsubscribe, subscribe against
-     the new key, register, true.
+     the new key, register, true;
+   - the server has the endpoint under another account → a fresh subscription, sent once more
+     (register above); if that is refused too, it throws with `refused` set.
    Network failures propagate — the caller decides what "unknown" means for it. */
 export async function syncPushSubscription() {
   if (!pushSupported() || Notification.permission !== 'granted') return false
@@ -100,7 +121,7 @@ export async function syncPushSubscription() {
   if (mine && key && bytesToUrlBase64(mine) !== key.replace(/=+$/, '')) {
     await sub.unsubscribe().catch(() => {})
     sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(key) })
-    await register(sub)
+    await register(reg, key, sub)
     return true
   }
   // A row the server stores under no device id, or another one, is sent again with this
@@ -112,7 +133,7 @@ export async function syncPushSubscription() {
   // never reports back would be a db.json write on every boot.
   const { subscribed, deviceId: storedAs } = await api('/api/push/status?endpoint=' + encodeURIComponent(sub.endpoint))
   const id = deviceId()
-  if (!subscribed || (id && storedAs !== undefined && storedAs !== id)) await register(sub)
+  if (!subscribed || (id && storedAs !== undefined && storedAs !== id)) await register(reg, key, sub)
   return true
 }
 

@@ -119,3 +119,48 @@ describe('weigh-ins sheet', () => {
     expect(button(mountTopSheet(), 'All weigh-ins')).toBeUndefined()
   })
 })
+
+// A weigh-in can be logged for an earlier day, the way measurements can.
+describe('log sheet date', () => {
+  const setDate = (host, value) => act(() => {
+    const el = host.querySelector('input[type="date"]')
+    Object.getOwnPropertyDescriptor(el.constructor.prototype, 'value').set.call(el, value)
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+
+  it('logs a weigh-in for an earlier day, in date order', () => {
+    bwSheet()
+    const log = mountTopSheet()
+    setDate(log, '2026-09-05')
+    act(() => { button(log, 'Save').click() })
+    const bw = useStore.getState().S.bodyweight
+    expect(bw.map(b => b.d)).toEqual(['2026-09-01', '2026-09-03', '2026-09-05', '2026-09-07', '2026-09-09', '2026-09-13'])
+    expect(bw.find(b => b.d === '2026-09-05')).toMatchObject({ w: 79 })
+    expect(useUI.getState().sheets).toHaveLength(0)
+  })
+
+  it('leaves an earlier day that already has a weigh-in as it is', () => {
+    bwSheet()
+    const log = mountTopSheet()
+    setDate(log, '2026-09-03')
+    act(() => { button(log, 'Save').click() })
+    expect(useStore.getState().S.bodyweight).toEqual(LOG)
+    expect(useUI.getState().toastMsg).toBe('That date already has a weigh-in. Delete it first.')
+    expect(useUI.getState().sheets).toHaveLength(1)
+  })
+
+  it('does not take a day after today', () => {
+    const d = new Date(); d.setDate(d.getDate() + 1)
+    bwSheet()
+    const log = mountTopSheet()
+    setDate(log, d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'))
+    act(() => { button(log, 'Save').click() })
+    expect(useStore.getState().S.bodyweight).toEqual(LOG)
+    expect(useUI.getState().toastMsg).toBe('Choose a valid date')
+  })
+
+  it('has no date on the weigh-in before a workout', () => {
+    bwSheet({ required: true })
+    expect(mountTopSheet().querySelector('input[type="date"]')).toBeNull()
+  })
+})

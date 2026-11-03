@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  rirOf, toScale, displayScale, avgRir, effortSummary, hasEffort, effortWeeks,
+  rirOf, toScale, displayScale, avgRir, effortSummary, hasEffort, hasEstimableEffort, effortWeeks,
   effortHistogram, isHardSet, HARD_RIR, MIN_RATED,
   effortColor, EFFORT_BANDS, EFFORT_PRESETS
 } from './effort.js'
@@ -141,6 +141,27 @@ describe('hasEffort', () => {
 
   it('ignores sets that were never finished', () => {
     expect(hasEffort(S(W(2, [{ rir: 2, done: false }])))).toBe(false)
+  })
+})
+
+// Imports (Jefit, Hevy) carry loads and reps but no ratings; the estimated-effort card shows up
+// for them only when at least one set could be estimated at all.
+describe('hasEstimableEffort', () => {
+  it('needs one finished set with a load and 1 to 12 reps', () => {
+    expect(hasEstimableEffort(S(W(2, [{}])))).toBe(true)
+    expect(hasEstimableEffort(S(W(2, [{ r: 12 }])))).toBe(true)
+    expect(hasEstimableEffort(S(W(2, [{ r: 13 }, { r: 0 }, { w: 0 }, { w: null }])))).toBe(false)
+    expect(hasEstimableEffort({ workouts: [] })).toBe(false)
+    expect(hasEstimableEffort({})).toBe(false)
+  })
+  it('skips unfinished sets and warm-ups', () => {
+    expect(hasEstimableEffort(S(W(2, [{ done: false }])))).toBe(false)
+    expect(hasEstimableEffort(S(W(2, [{ warmup: true }, { phase: 'warmup' }])))).toBe(false)
+  })
+  it('skips assisted exercises, where a bigger number on the stack means less effort', () => {
+    const w = W(2, [{}])
+    w.entries[0].id = '0017' // assisted pull-up, leverage machine
+    expect(hasEstimableEffort(S(w))).toBe(false)
   })
 })
 

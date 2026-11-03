@@ -10,6 +10,7 @@
     "calves"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A one-legged wall sit that doubles the load on each leg and challenges balance and quad endurance.",
   "instructions": [
     "Lean your back against a wall and slide down into a wall sit.",

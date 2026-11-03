@@ -9,6 +9,9 @@
     "rhomboids"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Chest-down on a bench, you raise dumbbells out to the sides. It targets the rear shoulders and upper back muscles.",
   "instructions": [
     "Lie face down on a flat bench with a dumbbell in each hand, palms facing each other.",

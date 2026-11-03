@@ -14,14 +14,15 @@
  * model verbatim for the one repair round (FR-48) — and a list of six problems produces a
  * better second attempt than the first of them does.
  */
-import { libraryHas, libraryName, equipmentAllows } from './library.js';
+import { libraryHas, libraryName, equipmentAllows, isDumbbellLift } from './library.js';
 
 // A catalogue exercise the person's equipment does not reach, and that was not in the library
 // slice they were offered (which already pins what they train). The prompt says "their
 // equipment"; a model that names a leverage machine anyway is told so on the repair round
 // instead of the plan arriving with a machine they do not own.
-const offEquipment = (ctx, id) => !!ctx.equipment?.length && libraryHas(id)
-  && !(ctx.offered && ctx.offered.has(id)) && !equipmentAllows(ctx.equipment, id);
+// Someone who owns no dumbbells (ctx.noDumbbells) is held to it even with no equipment stated.
+const offEquipment = (ctx, id) => libraryHas(id) && !(ctx.offered && ctx.offered.has(id))
+  && ((!!ctx.equipment?.length && !equipmentAllows(ctx.equipment, id)) || (ctx.noDumbbells === true && isDumbbellLift(id)));
 const OFF_EQUIPMENT = (where, id) => `${where} "${id}" needs equipment the user does not have — use an exercise from the library provided in the payload`;
 import { glyphStr } from './glyphs.js';
 
@@ -55,6 +56,12 @@ const isStr = v => typeof v === 'string' && v.trim().length > 0;
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
 const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 const clampStr = (v, n) => String(v == null ? '' : v).slice(0, n);
+// The minutes and pace of a cardio exercise a review adds, in the bounds the 'cardio' change
+// holds them to. Without them the app fell back to 20 min at 8 km/h whatever was shown (#640).
+const cardioTarget = e => (e.mode !== 'cardio' ? {} : {
+  ...(isInt(e.min, 1, 180) ? { min: e.min } : {}),
+  ...(isNum(e.speed) && e.speed > 0 && e.speed <= MAX_SPEED ? { speed: e.speed } : {})
+});
 // Routine icons: an icon key the app knows or a legacy emoji, never free text (#311).
 export { ROUTINE_GLYPHS } from './glyphs.js';
 
@@ -128,6 +135,10 @@ export function validatePlan(data, ctx = {}) {
       const mode = MODES.includes(e.mode) ? e.mode : 'reps';
       const perSide = !!e.side;
       if (mode === 'cardio') {
+        // Written out like 'time' below: without it every reader falls back to the catalogue,
+        // and a cardio finisher on a non-cardio exercise (kettlebell swings) comes out as reps
+        // with no target at all (#640).
+        clean.mode = 'cardio';
         clean.min = isInt(e.min, 1, 180) ? e.min : 20;
         clean.speed = isNum(e.speed) && e.speed > 0 && e.speed <= MAX_SPEED ? e.speed : 8;
       } else if (mode === 'time') {
@@ -345,6 +356,7 @@ export function validateReview(data, plan, ctx = {}) {
           ...(MODES.includes(a.mode) ? { mode: a.mode } : { mode: 'reps' }),
           ...(isInt(a.reps, 1, 100) ? { reps: a.reps } : {}),
           ...(isInt(a.sec, 5, 3600) ? { sec: a.sec } : {}),
+          ...cardioTarget(a),
           ...(isNum(a.weight) && a.weight > 0 && a.weight <= MAX_WEIGHT ? { weight: a.weight } : {}),
           ...(POLICIES.includes(a.prog) ? { prog: a.prog } : {}),
           ...(isInt(a.repsMin, 1, 100) ? { repsMin: a.repsMin } : {}),
@@ -437,8 +449,16 @@ export function validateReview(data, plan, ctx = {}) {
         // the routine the model asked for minus the exercises it could not have, and hand that
         // to someone as if it were what they were shown.
         const listed = Array.isArray(a.ex) ? a.ex : [];
-        const bad = listed.find(e => !e || !isStr(e.id) || !knownEx(e.id));
-        if (bad) { errors.push(`${where}.after.ex "${bad.id}" is not in the exercise library — use an id from the library provided in the payload`); return; }
+        // By index: find() hands back the entry itself, and a null in the list was falsy enough
+        // to pass this check and crash on the next line instead of going back for repair.
+        const badAt = listed.findIndex(e => !e || typeof e !== 'object' || !isStr(e.id) || !knownEx(e.id));
+        if (badAt >= 0) {
+          const bad = listed[badAt];
+          errors.push(bad && typeof bad === 'object' && isStr(bad.id)
+            ? `${where}.after.ex "${bad.id}" is not in the exercise library — use an id from the library provided in the payload`
+            : `${where}.after.ex[${badAt}] is not an exercise — each entry needs an id from the library provided in the payload`);
+          return;
+        }
         const offEq = listed.find(e => offEquipment(ctx, e.id));
         if (offEq) { errors.push(OFF_EQUIPMENT(`${where}.after.ex`, offEq.id)); return; }
         const ex = listed.slice(0, MAX_EX_PER_ROUTINE);
@@ -454,6 +474,7 @@ export function validateReview(data, plan, ctx = {}) {
             mode: MODES.includes(e.mode) ? e.mode : 'reps',
             ...(isInt(e.reps, 1, 100) ? { reps: e.reps } : {}),
             ...(isInt(e.sec, 5, 3600) ? { sec: e.sec } : {}),
+            ...cardioTarget(e),
             ...(isInt(e.repsMin, 1, 100) ? { repsMin: e.repsMin } : {}),
             ...(isInt(e.repsMax, 1, 100) ? { repsMax: e.repsMax } : {}),
             ...(isInt(e.setsMax, 1, 10) ? { setsMax: e.setsMax } : {}),
@@ -617,6 +638,24 @@ function currentOf(type, routine, planned, plan, target) {
 }
 
 function fail(errors) { return { ok: false, errors }; }
+
+/* =============================== chat answers =============================== */
+
+export const MAX_ANSWER_CHARS = 2000;
+
+/**
+ * Validate an answer to a question in the chat: one non-empty string, and nothing to apply — an
+ * answer that tries to carry plan changes is refused, the way a debrief's is.
+ * Returns { ok, proposal:{ answer } } | { ok:false, errors }.
+ */
+export function validateAsk(data) {
+  if (!data || typeof data !== 'object') return fail(['the answer was not an object']);
+  const errors = [];
+  if (Array.isArray(data.changes) && data.changes.length) errors.push('an answer carries no plan changes — drop "changes" and say it in "answer"');
+  if (!isStr(data.answer) || !data.answer.trim()) errors.push('answer is required — reply to the question in plain text');
+  if (errors.length) return fail(errors);
+  return { ok: true, proposal: { answer: clampStr(data.answer.trim(), MAX_ANSWER_CHARS) } };
+}
 
 /* =============================== workout debriefs =============================== */
 

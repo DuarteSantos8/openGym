@@ -4,7 +4,7 @@ Example manifests for a small cluster, contributed from a K3s setup with the Gat
 cert-manager. Read [SELF_HOSTING.md](SELF_HOSTING.md) first: the passkey requirement (HTTPS,
 `RP_ID`, `ORIGIN`), the settings in `.env.example` and the backup advice apply here unchanged.
 
-openGym is pretty simple — a frontend and an API backend. The API keeps everything in plain JSON
+openGym is pretty simple: a frontend and an API backend. The API keeps everything in plain JSON
 files on a volume. The exercise pictures and animations are part of the web image, so nothing is
 downloaded at start-up. There are only a few resources to create:
 
@@ -16,7 +16,7 @@ downloaded at start-up. There are only a few resources to create:
   works as well), plus a cert-manager Certificate for the hostname.
 
 ```bash
-git clone https://github.com/DuarteSantos8/openGym   # or https://gitlab.com/DuarteSantos8/opengym — same repo
+git clone https://github.com/DuarteSantos8/openGym   # or https://gitlab.com/DuarteSantos8/opengym, same repo
 cd openGym
 # In kubernetes/deployment.yaml, set RP_ID and ORIGIN in spec.template.spec.containers[api].env
 # to your hostname, and the hostname in kubernetes/httproute.yaml.
@@ -37,9 +37,9 @@ Notes:
   [Envoy Gateway](https://gateway.envoyproxy.io) and [cert-manager](https://cert-manager.io).
 - The images are the published `ghcr.io/duartesantos8/opengym-api` and `opengym-web`. The AI
   Coach with an API key works on that same API image; the Claude and Codex sign-in providers
-  need the `coach` build target, which is not published — build it yourself (see
+  need the `coach` build target, which is not published, so build it yourself (see
   [AI_COACH.md](AI_COACH.md)).
-- The images are pinned to a release (`1.4.1`), the API and the web image always to the same
+- The images are pinned to a release (`1.4.3`), the API and the web image always to the same
   one. To update, read the release notes, set the new version on both and apply again; pinning
   to `latest` instead means a restarted pod can come back on a version you never chose.
 - Coming from a version before 1.4.0: the `media-download` initContainer and the `opengym-media`
@@ -52,7 +52,7 @@ Notes:
   not the visitor. So the sign-in throttle, which counts attempts per address, acts on the whole
   instance at once, and the activity log records the gateway's address. `TRUST_PROXY` is left
   off because it would not change that: the API would read the same gateway address from the
-  header — and any pod that reaches port 3000 directly could put its own address there. Getting
+  header, and any pod that reaches port 3000 directly could put its own address there. Getting
   real visitor addresses needs the gateway to preserve them (for example
   `externalTrafficPolicy: Local` on its LoadBalancer Service) and to set a header of its own that
   overwrites whatever a client sent; pass that through with `CF_CONNECTING_IP` on the `web`

@@ -41,11 +41,18 @@ import java.util.regex.Pattern;
  *   await BackupFolder.write({ uri, name, data });
  *   await BackupFolder.prune({ uri, keep, pattern, written }); // keeps the newest `keep`
  *   await BackupFolder.release({ uri });
+ *
+ * write and prune act only on a folder this app still holds a persisted write grant for (the
+ * one the person picked), and only on the app's own dated file names (BACKUP_NAME, the same
+ * rule as lib/mobile.js AUTO_BACKUP_NAME): `pattern` from JS is no longer compiled, so nothing
+ * the WebView sends can widen what is written or deleted there.
  */
 @CapacitorPlugin(name = "BackupFolder")
 public class BackupFolderPlugin extends Plugin {
 
     private static final int RW = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+    // The only files write and prune touch: "opengym-backup-2026-10-15.json", "...-2.json".
+    static final Pattern BACKUP_NAME = Pattern.compile("opengym-backup-\\d{4}-\\d{2}-\\d{2}(-[2-9])?\\.json");
     // Writes and listings go through a content provider, which may be a cloud app: off the main
     // thread, and one at a time so two backups never race for the same name.
     private final ExecutorService io = Executors.newSingleThreadExecutor();
@@ -95,9 +102,17 @@ public class BackupFolderPlugin extends Plugin {
             call.reject("uri, name and data are required");
             return;
         }
+        if (!BACKUP_NAME.matcher(name).matches()) {
+            call.reject("not a backup file name");
+            return;
+        }
+        Uri tree = Uri.parse(uri);
+        if (!held(tree)) {
+            call.reject("this folder is not one the app may write to");
+            return;
+        }
         io.execute(() -> {
             try {
-                Uri tree = Uri.parse(uri);
                 ContentResolver cr = getContext().getContentResolver();
                 Uri doc = childNamed(tree, name);
                 if (doc == null) doc = DocumentsContract.createDocument(cr, root(tree), "application/json", name);
@@ -126,14 +141,17 @@ public class BackupFolderPlugin extends Plugin {
             call.reject("uri, pattern and keep are required");
             return;
         }
+        Uri tree = Uri.parse(uri);
+        if (!held(tree)) {
+            call.reject("this folder is not one the app may write to");
+            return;
+        }
         io.execute(() -> {
             int deleted = 0;
             try {
-                Uri tree = Uri.parse(uri);
-                Pattern only = Pattern.compile(pattern);
                 List<String[]> older = new ArrayList<>();   // { name, document id }
                 for (String[] child : children(tree)) {
-                    if (only.matcher(child[0]).matches() && !child[0].equals(written)) older.add(child);
+                    if (BACKUP_NAME.matcher(child[0]).matches() && !child[0].equals(written)) older.add(child);
                 }
                 // Newest first by the date in the name, as the Documents/openGym prune does.
                 older.sort((a, b) -> b[0].compareTo(a[0]));

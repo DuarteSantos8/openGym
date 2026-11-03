@@ -1,0 +1,243 @@
+/* Halloween (seasonal/halloween.jsx). Loaded only while the theme shows, and scoped to
+   html[data-season="halloween"] so switching it off mid-session leaves nothing behind.
+   Transforms and opacity only; every animation runs a fixed number of times and stops. */
+
+:root[data-season="halloween"]{
+  --hw-bone:#e6dfd1;
+  --hw-moon:#f2e3a2;
+  --hw-ink:#b49ae6;          /* spider, bats, witch on a dark screen: moonlit lavender */
+  --hw-ink-2:#7b5cc0;
+  --hw-thread:rgba(235,235,245,.42);
+  --hw-web:rgba(235,235,245,.26);
+  --hw-face:#ffd04a;
+}
+:root[data-season="halloween"][data-theme="light"]{
+  --hw-bone:#7b7262;
+  --hw-moon:#e3b948;
+  --hw-ink:#33244a;
+  --hw-ink-2:#5b3f8c;
+  --hw-thread:rgba(60,60,67,.38);
+  --hw-web:rgba(60,60,67,.24);
+  --hw-face:#5a2100;
+}
+
+/* ------------------------------------------------------------ cobwebs -- */
+/* In a card's corner, under its content and never in a tap's way. */
+[data-season="halloween"] :is(.card, .sect-b):has(> .hw-web){position:relative}
+[data-season="halloween"] .hw-web{
+  position:absolute;width:52px;height:52px;pointer-events:none;
+  fill:none;stroke:var(--hw-web);stroke-width:.8;stroke-linecap:round;
+}
+[data-season="halloween"] .hw-web-br{right:0;bottom:0;transform:scale(-1,-1);border-end-end-radius:var(--r-card)}
+[data-season="halloween"] .hw-web-tr{right:0;top:0;width:46px;height:46px;transform:scaleX(-1)}
+[dir="rtl"][data-season="halloween"] .hw-web-br{right:auto;left:0;transform:scaleY(-1)}
+[dir="rtl"][data-season="halloween"] .hw-web-tr{right:auto;left:0;transform:none}
+
+/* --------------------------------------------------------- header bats -- */
+[data-season="halloween"] .hdr:has(> .hw-bats){position:relative}
+[data-season="halloween"] .hdr:has(> .hw-bats) > :not(.hw-bats):not(.hw-moon){position:relative;z-index:1}
+[data-season="halloween"] .hw-bats{position:absolute;inset:-6px 0 -4px;overflow:hidden;pointer-events:none;z-index:0}
+.hw-batsvg{display:block;width:100%;height:100%;fill:var(--hw-ink)}
+[data-season="halloween"] .hw-batlane{
+  position:absolute;inset:0;opacity:0;
+  animation:hw-cross 15s cubic-bezier(.45,.05,.55,.95) 3 both;
+}
+[data-season="halloween"] .hw-flap{position:absolute;left:0;display:block;width:28px;height:14px;animation:hw-flap .2s ease-in-out 220 alternate}
+[data-season="halloween"] .hw-lane0{animation-delay:1.2s}
+[data-season="halloween"] .hw-lane0 .hw-flap{top:8px}
+[data-season="halloween"] .hw-lane1{animation-delay:6s;animation-duration:17s}
+[data-season="halloween"] .hw-lane1 .hw-flap{top:30px;width:20px;height:10px;animation-duration:.17s}
+[data-season="halloween"] .hw-lane2{animation-delay:9.5s;animation-duration:19s}
+[data-season="halloween"] .hw-lane2 .hw-flap{top:16px;width:15px;height:8px;animation-duration:.15s}
+@keyframes hw-cross{
+  0%{transform:translate3d(-6%,14px,0);opacity:0}
+  3%{opacity:.65}
+  14%{transform:translate3d(45%,-2px,0)}
+  27%{opacity:.65}
+  30%{transform:translate3d(104%,10px,0);opacity:0}
+  100%{transform:translate3d(104%,10px,0);opacity:0}
+}
+@keyframes hw-flap{from{transform:scaleY(1)}to{transform:scaleY(.5) translateY(2px)}}
+/* Reduced motion: two bats simply sit in the corner of the sky. */
+[data-season="halloween"] .hw-bats-still .hw-batlane{animation:none;opacity:.4}
+[data-season="halloween"] .hw-bats-still .hw-flap{animation:none}
+[data-season="halloween"] .hw-bats-still .hw-lane0 .hw-flap{left:auto;right:64px}
+[data-season="halloween"] .hw-bats-still .hw-lane1 .hw-flap{left:auto;right:92px}
+[data-season="halloween"] .hw-bats-still .hw-lane2{display:none}
+
+/* ------------------------------------------------------------- pumpkin -- */
+/* Behind the top edge of its card: only the stem and the eyes show above it. */
+[data-season="halloween"] .card:has(> .hw-peek){position:relative}
+[data-season="halloween"] .hw-peek{
+  position:absolute;bottom:100%;inset-inline-end:52px;width:44px;height:16px;overflow:hidden;pointer-events:none;
+}
+[data-season="halloween"] .hw-pumpkin{
+  all:unset;position:absolute;left:7px;top:1px;width:30px;height:24px;cursor:pointer;pointer-events:auto;
+  -webkit-tap-highlight-color:transparent;animation:hw-peek .9s cubic-bezier(.3,1.5,.5,1) .6s both;
+}
+[data-season="halloween"] .hw-pumpkin.hw-hop{animation:hw-hop .5s cubic-bezier(.3,1.6,.5,1)}
+.hw-pumpkinsvg{display:block;width:100%;height:auto;overflow:visible}
+.hw-pumpkinsvg .hw-stem{fill:#6c7d2c}
+.hw-pumpkinsvg .hw-vine{fill:none;stroke:#6c7d2c;stroke-width:1.1;stroke-linecap:round}
+.hw-pumpkinsvg .hw-lobes ellipse{stroke:#b9500c;stroke-width:.7}
+.hw-pumpkinsvg .hw-face{fill:var(--hw-face)}
+[data-season="halloween"] .hw-pumpkinsvg .hw-eyes{transform-origin:24px 16px;animation:hw-blink 7s ease-in-out 2.5s 4}
+@keyframes hw-peek{from{transform:translateY(16px)}to{transform:none}}
+@keyframes hw-hop{0%{transform:none}35%{transform:translateY(-7px) rotate(-6deg)}70%{transform:translateY(1px) rotate(3deg)}100%{transform:none}}
+@keyframes hw-blink{0%,94%,100%{transform:none}97%{transform:scaleY(.1)}}
+
+.hw-burst{position:fixed;width:0;height:0;z-index:58;pointer-events:none}
+.hw-burstbat{
+  position:absolute;left:-11px;top:-6px;width:22px;height:11px;opacity:0;
+  animation:hw-burst 1.15s cubic-bezier(.2,.7,.3,1) both;
+}
+@keyframes hw-burst{
+  0%{transform:translate3d(0,0,0) scale(.3) rotate(0);opacity:0}
+  12%{opacity:1}
+  70%{opacity:.9}
+  100%{transform:translate3d(var(--dx),var(--dy),0) scale(1.15) rotate(var(--r));opacity:0}
+}
+
+/* -------------------------------------------------------------- spider -- */
+/* Drops on its thread from the top, swings to a stop, climbs back up. A tap sends it up fast. */
+.hw-spider{
+  /* beside the header's button, on a phone and on the 640px column of a computer alike */
+  position:fixed;top:0;inset-inline-end:max(76px,calc(50vw - 244px));z-index:55;width:26px;height:0;pointer-events:none;
+  transform-origin:50% 0;animation:hw-swing 2.6s ease-in-out .55s both;
+}
+.hw-drop{position:absolute;left:0;top:0;width:26px;animation:hw-drop 4.4s cubic-bezier(.4,0,.3,1) both}
+/* from far above the screen down to the spider's head */
+.hw-thread{
+  position:absolute;left:12.5px;top:-420px;width:1px;height:432px;background:var(--hw-thread);
+}
+.hw-spiderbtn{
+  all:unset;position:absolute;left:-9px;top:-4px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.hw-spidersvg{width:30px;height:30px;overflow:visible}
+.hw-spidersvg .hw-body{fill:var(--hw-ink)}
+.hw-spidersvg .hw-eye{fill:var(--hw-face)}
+.hw-spidersvg .hw-legs{fill:none;stroke:var(--hw-ink);stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.hw-legs-l{transform-origin:9px 14px;animation:hw-legs .3s ease-in-out 6 alternate}
+.hw-legs-r{transform-origin:15px 14px;animation:hw-legs .3s ease-in-out .15s 6 alternate-reverse}
+@keyframes hw-legs{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+/* where it hangs: below the status bar, beside the header's title */
+@keyframes hw-drop{
+  0%{transform:translateY(calc(-40px))}
+  17%{transform:translateY(calc(var(--sat) + 108px))}
+  23%{transform:translateY(calc(var(--sat) + 92px))}
+  29%{transform:translateY(calc(var(--sat) + 100px))}
+  34%,66%{transform:translateY(calc(var(--sat) + 97px))}
+  100%{transform:translateY(-48px)}
+}
+@keyframes hw-swing{
+  0%{transform:rotate(0)}
+  14%{transform:rotate(9deg)}
+  34%{transform:rotate(-6deg)}
+  54%{transform:rotate(3.5deg)}
+  72%{transform:rotate(-1.5deg)}
+  100%{transform:rotate(0)}
+}
+.hw-scurry,.hw-scurry .hw-drop{animation-play-state:paused}
+.hw-scurry .hw-spiderbtn{animation:hw-scurry .45s cubic-bezier(.5,0,.8,.4) forwards}
+.hw-scurry .hw-thread{animation:hw-scurry .45s cubic-bezier(.5,0,.8,.4) forwards}
+.hw-scurry .hw-legs{animation-duration:.08s;animation-iteration-count:8}
+@keyframes hw-scurry{to{transform:translateY(-280px)}}
+/* Reduced motion: no drop, no swing. A small spider sits in the corner for a few seconds. */
+.hw-spider.hw-still{animation:none;top:calc(var(--sat) + var(--conn, 0px) + 6px);inset-inline-end:14px;height:auto}
+.hw-still .hw-spidersvg{width:16px;height:16px}
+.hw-still .hw-legs{animation:none}
+
+/* --------------------------------------------------------------- witch -- */
+.hw-witch{
+  position:fixed;top:calc(var(--sat) + var(--conn, 0px) + 4px);left:0;z-index:40;width:70px;height:40px;pointer-events:none;
+  animation:hw-fly 7.5s linear both;
+}
+.hw-witchsvg{display:block;width:100%;height:100%;fill:var(--hw-ink);opacity:.8}
+@keyframes hw-fly{
+  0%{transform:translate3d(-90px,22px,0) rotate(-5deg)}
+  25%{transform:translate3d(24vw,8px,0) rotate(-2deg)}
+  50%{transform:translate3d(50vw,16px,0) rotate(-4deg)}
+  75%{transform:translate3d(76vw,4px,0) rotate(-1deg)}
+  100%{transform:translate3d(calc(100vw + 30px),-6px,0) rotate(-6deg)}
+}
+
+/* ---------------------------------------------------------------- Stats -- */
+/* The moon sits in the header's quiet middle, left of its buttons, behind the title's text. */
+[data-season="halloween"] .hw-moon{
+  position:absolute;top:2px;inset-inline-end:112px;width:30px;height:30px;z-index:0;pointer-events:none;
+  animation:hw-float 3s ease-in-out 6 alternate;
+}
+.hw-moonsvg{display:block;width:100%;height:100%;fill:var(--hw-moon);opacity:.85}
+.hw-moonwitch{position:absolute;left:-6px;top:11px;width:22px;height:13px;transform:rotate(-8deg)}
+@keyframes hw-float{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+
+/* Spiders hanging into the empty end of a tile, from its top edge. */
+[data-season="halloween"] .tile:has(> .hw-tilespiders){position:relative}
+.hw-tilespiders{position:absolute;top:0;inset-inline-end:20px;width:44px;height:0;pointer-events:none}
+.hw-hang{position:absolute;top:0;right:0;width:14px;animation:hw-bob 2.6s ease-in-out 6 alternate}
+.hw-hang.hw-hang-b{right:26px;animation-duration:3.1s;animation-delay:.8s}
+.hw-hangthread{position:absolute;left:6.5px;top:0;width:1px;height:var(--len);background:var(--hw-thread)}
+.hw-hang .hw-spidersvg{position:absolute;left:0;top:calc(var(--len) - 3px);width:14px;height:14px}
+.hw-hang .hw-legs{animation:none}
+@keyframes hw-bob{from{transform:translateY(0)}to{transform:translateY(3px)}}
+
+/* A skeleton hanging by its hands off the activity card's top edge, beside the title. */
+[data-season="halloween"] .card:has(> .hw-skel){position:relative}
+.hw-skel{
+  position:absolute;top:-3px;inset-inline-end:20px;width:22px;height:38px;pointer-events:none;
+  transform-origin:50% 0;animation:hw-sway 3.2s ease-in-out 4 alternate;
+}
+.hw-skelsvg{display:block;width:100%;height:100%}
+.hw-skelsvg .hw-bones{fill:none;stroke:var(--hw-bone);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.hw-skelsvg .hw-skull{fill:var(--hw-bone)}
+.hw-skelsvg .hw-socket{fill:var(--surface)}
+@keyframes hw-sway{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+
+[data-season="halloween"] .hw-web-bl{left:0;bottom:0;width:46px;height:46px;transform:scaleY(-1)}
+[dir="rtl"][data-season="halloween"] .hw-web-bl{left:auto;right:0;transform:scale(-1,-1)}
+
+/* Two pumpkins peeking over a card's top edge, just to look. */
+[data-season="halloween"] .hw-peek.hw-peek-two{width:64px;inset-inline-end:40px}
+.hw-peek-two .hw-pk{position:absolute;left:4px;top:1px;width:30px;animation:hw-peek .9s cubic-bezier(.3,1.5,.5,1) .6s both}
+.hw-peek-two .hw-pk-s{left:36px;top:5px;width:22px;animation-delay:.85s}
+
+/* --------------------------------------------------------- the workout -- */
+/* Nothing here takes a tap, and nothing moves anything: the web and its spider are drawn under
+   the header's own content (isolation, z-index -1), from the screen's top corner, and the spider
+   hangs in the side gutter, outside every button. */
+[data-season="halloween"] .whdr:has(> .hw-wcorner){isolation:isolate}
+[data-season="halloween"] .whdr:not(.stick):has(> .hw-wcorner){position:relative}
+.hw-wcorner{
+  position:absolute;z-index:-1;pointer-events:none;width:0;height:0;
+  top:calc(-1 * (var(--sat) + var(--conn, 0px) + 8px));inset-inline-start:calc(-1 * var(--pad));
+}
+/* the pinned header (List, Compact) carries the page's top padding itself, and its children are positioned */
+[data-season="halloween"] .whdr.stick > .hw-wcorner{position:absolute;top:0;inset-inline-start:0}
+[data-season="halloween"] .hw-wcorner .hw-web-tl{left:0;top:0;width:48px;height:48px;opacity:.85}
+[dir="rtl"][data-season="halloween"] .hw-wcorner .hw-web-tl{left:auto;right:0;transform:scaleX(-1)}
+.hw-hang.hw-hang-w{right:auto;left:1px;top:calc(var(--sat) + var(--conn, 0px) + 8px);width:12px}
+[dir="rtl"] .hw-hang.hw-hang-w{left:auto;right:1px}
+.hw-hang-w .hw-hangthread{left:5.5px}
+.hw-hang-w .hw-spidersvg{width:12px;height:12px}
+
+/* The rest bar: two bats along its top edge, under its clock and buttons. */
+#timer > .hw-restbats{position:absolute;left:0;right:0;top:4px;height:9px;z-index:-1;pointer-events:none;overflow:hidden}
+.hw-restlane{position:absolute;inset:0;opacity:0;animation:hw-restcross 4.6s cubic-bezier(.45,.05,.55,.95) .4s 1 both}
+.hw-restlane.hw-rl1{animation-delay:1.5s;animation-duration:5.4s}
+.hw-restlane .hw-flap{position:absolute;left:0;top:0;width:16px;height:8px;animation:hw-flap .18s ease-in-out 32 alternate}
+.hw-rl1 .hw-flap{width:12px;height:6px;top:1px}
+@keyframes hw-restcross{
+  0%{transform:translate3d(-8%,0,0);opacity:0}
+  8%,85%{opacity:.55}
+  100%{transform:translate3d(104%,0,0);opacity:0}
+}
+
+/* The finish screen: a pumpkin on each side of the trophy. */
+.hw-finish{position:absolute;inset:0;pointer-events:none}
+.hw-finish .hw-pk{position:absolute;bottom:0;right:calc(50% + 34px);width:28px;animation:hw-hop .6s cubic-bezier(.3,1.6,.5,1) .5s 2}
+.hw-finish .hw-pk-r{right:auto;left:calc(50% + 34px);width:22px;animation-delay:.75s}
+
+@media (prefers-reduced-motion: reduce){
+  .hw-spider:not(.hw-still),.hw-witch,.hw-burst{display:none}
+}

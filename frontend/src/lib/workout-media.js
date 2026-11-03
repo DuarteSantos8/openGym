@@ -63,3 +63,20 @@ export function removeWorkoutMedia(state, w, hash, now = Date.now()) {
   write(rec, left, now)
   return true
 }
+
+/**
+ * Undo of a removal: puts `ref` back on the saved workout `w` at `index` (or at the end), unless
+ * that file is on it again already. The cap is not asked: the photo was there a moment ago.
+ * Returns whether anything changed.
+ */
+export function restoreWorkoutMedia(state, w, ref, index, now = Date.now()) {
+  const rec = recordOf(state, w)
+  if (!rec || !ref || !ref.hash) return false
+  const raw = rawOf(rec)
+  if (raw.some(x => x && x.hash === ref.hash)) return false
+  const list = raw.slice()
+  list.splice(Math.max(0, Math.min(Number.isInteger(index) ? index : list.length, list.length)), 0, ref)
+  write(rec, list, now)
+  return true
+}
+

@@ -10,6 +10,9 @@
     "core"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A pullover with a barbell lying on a bench. It stretches and strengthens the lats and chest.",
   "instructions": [
     "Lie on a bench holding a barbell over your chest with a close grip.",

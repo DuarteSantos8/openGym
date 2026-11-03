@@ -30,13 +30,34 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
         : { type: 'json_object' },
       [maxTokensField]: maxTokens
     }),
+    // The 400 that says the schema is not strict enough gets a strict-schema copy of the same
+    // request once (see strictSchema below); a server that rejects even that, or rejects
+    // schema/JSON mode outright, still gets the plain-JSON fallbacks below.
+    withStrictSchema: body => (body.response_format && body.response_format.type === 'json_schema'
+      ? { ...body, response_format: { ...body.response_format, json_schema: { ...body.response_format.json_schema, schema: strictSchema(body.response_format.json_schema.schema) } } }
+      : body),
     // A server that rejects schema/JSON mode gets the same request once more with plain JSON
     // mode, then without any; the parser copes with a fenced answer and the validator is the
     // gate either way.
     withoutJsonMode: body => (body.response_format && body.response_format.type === 'json_schema'
       ? { ...body, response_format: { type: 'json_object' } }
       : (() => { const { response_format: _rf, ...rest } = body; return rest; })()),
-    errorMessage: data => data && data.error && (typeof data.error === 'string' ? data.error : data.error.message),
+    errorMessage: data => {
+      const e = data && data.error;
+      if (!e || typeof e === 'string') return e || null;
+      // OpenRouter wraps the upstream provider's own error: its message is a generic "Provider
+      // returned error" and the provider's words are in metadata.raw, usually as JSON. Those words
+      // are what an owner needs to see, and what the JSON-mode fallback in http.js matches on.
+      const raw = e.metadata && e.metadata.raw;
+      let inner = null;
+      if (typeof raw === 'string' && raw) {
+        try {
+          const j = JSON.parse(raw);
+          inner = (j && j.error && (typeof j.error === 'string' ? j.error : j.error.message)) || null;
+        } catch { inner = raw; }
+      }
+      return inner && inner !== e.message ? `${e.message}: ${inner}` : e.message;
+    },
     readText: data => {
       const choice = (data.choices || [])[0];
       if (!choice) return { error: 'the answer had no choices' };
@@ -61,6 +82,31 @@ export function chatCompletionsSpec(id, { maxTokensField = 'max_completion_token
 }
 
 const NOT_CHAT = /realtime|audio|tts|transcri|whisper|embedding|image|dall-e|moderation|search|instruct|codex|computer-use|deep-research|-pro(?:-|$)|davinci|babbage|curie|ada/i;
+/* A strict-schema copy of the flat schemas: every node that can be an object gains
+ * `additionalProperties: false`. That is exactly what a hosted validator that enforces strict
+ * JSON Schema asks for — OpenRouter maps chat-completions response_format to its internal
+ * output_config.format.schema and answers the flat shape with
+ *   400 "output_config.format.schema: For 'object' type, 'additionalProperties' must be
+ *   explicitly set to false"
+ * — and exactly what schemas.js leaves out on purpose, because llama.cpp's grammar converter
+ * has a history of choking on additionalProperties (ollama#8444, #8063). So the strict copy is
+ * made only for the wire, only when an endpoint has already proven it wants one; nothing else
+ * moves. `required` stays per-schema and the shape stays flat: a validator that demands more
+ * (every property required, single types) still says no, and the request falls through to
+ * plain JSON mode, where validate.js judges the answer either way.
+ */
+export function strictSchema(node) {
+  if (Array.isArray(node)) return node.map(strictSchema);
+  if (node == null || typeof node !== 'object') return node;
+  const out = {};
+  for (const key of Object.keys(node)) out[key] = strictSchema(node[key]);
+  const type = out.type;
+  if ((type === 'object' || (Array.isArray(type) && type.includes('object'))) && !('additionalProperties' in out)) {
+    out.additionalProperties = false;
+  }
+  return out;
+}
+
 export const isChatModel = id => /^(gpt-|o\d|chatgpt-)/.test(id) && !NOT_CHAT.test(id);
 
 export const openaiSpec = chatCompletionsSpec('openai');

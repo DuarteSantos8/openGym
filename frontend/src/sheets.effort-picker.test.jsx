@@ -126,3 +126,31 @@ describe('the effort picker commits once', () => {
     expect(onPick).not.toHaveBeenCalled()
   })
 })
+
+// Cardio (Discord thehypetrainhobo): the same bands in RPE, worded for a run, not for reps left.
+describe('the effort picker for cardio', () => {
+  it('talks about how it felt and logs RPE', () => {
+    const onPick = vi.fn()
+    effortPickerSheet('rpe', null, onPick, { cardio: true })
+    const sheet = useUI.getState().sheets.at(-1)
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const root = createRoot(host)
+    mounted.push(root)
+    act(() => root.render(sheet.render(() => {})))
+    expect(host.textContent).toContain('How hard did that feel?')
+    expect(host.textContent).toContain('All out, nothing left')
+    expect(host.textContent).toContain('Easy, you could chat the whole way')
+    expect(host.textContent).not.toContain('reps')
+    const rows = presetRows(host)
+    expect(rows[0].textContent).toContain('10')
+    tap(rows.at(-1))
+    expect(onPick).toHaveBeenCalledWith(6)
+  })
+
+  it('a lift keeps its reps-left wording', () => {
+    const p = openPicker('rir', null, vi.fn())
+    expect(p.host.textContent).toContain('How hard was that set?')
+    expect(p.host.textContent).toContain('Two more reps')
+  })
+})

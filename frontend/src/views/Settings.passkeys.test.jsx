@@ -13,7 +13,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const mocks = vi.hoisted(() => {
   // `kept` is one array for good: KeptChangesRows re-asks whenever the function changes, and a
   // fresh [] per answer would re-render it forever.
-  const state = { S: null, user: null, sync: null, config: null, webauthn: true, sheets: [], kept: [] }
+  const state = { S: null, user: null, sync: null, config: null, webauthn: true, sheets: [], kept: [], MOBILE: false }
   state.passkeyLogin = vi.fn(async () => ({ id: 'u1', name: 'andi' }))
   state.list = { passkeys: [{ id: 'k1', name: 'Laptop', created: null, lastUsed: null, transports: [] }, { id: 'k2', name: null, created: null, lastUsed: null, transports: [] }], password: true, lastWayIn: false }
   state.api = vi.fn(async path => path === '/api/account/password' ? { set: true, setAt: null, passkeys: 2, name: 'andi', nameTaken: false }
@@ -44,7 +44,7 @@ vi.mock('../lib/api.js', () => ({
 }))
 vi.mock('../lib/push.js', () => ({ pushSupported: () => false, enablePush: vi.fn(), disablePush: vi.fn(), sendTestPush: vi.fn() }))
 vi.mock('../lib/wakelock.js', () => ({ wakeLockSupported: () => false }))
-vi.mock('../lib/mobile.js', () => ({ MOBILE: false, isAndroid: () => Promise.resolve(false), shareExport: vi.fn(), syncReminder: vi.fn() }))
+vi.mock('../lib/mobile.js', () => ({ get MOBILE() { return mocks.MOBILE }, isAndroid: () => Promise.resolve(false), shareExport: vi.fn(), syncReminder: vi.fn() }))
 vi.mock('./MobileOnboarding.jsx', () => ({ ConnectSheet: () => null }))
 vi.mock('../sheets.jsx', () => ({
   starterPlanSheet: vi.fn(), confirmSheet: vi.fn(), importFromApp: vi.fn(),
@@ -73,6 +73,7 @@ beforeEach(() => {
   mocks.sync = { status: 'ok', offline: false, pending: false, auth: false, lastError: null, lastSynced: Date.now(), server: null }
   mocks.config = { password_login: true }
   mocks.webauthn = true
+  mocks.MOBILE = false
   mocks.sheets.length = 0
   mocks.passkeyLogin.mockClear()
   mocks.api.mockClear()
@@ -92,6 +93,28 @@ describe('Settings: passkeys and another device', () => {
     const order = titles(account)
     expect(order.indexOf('Passkeys')).toBeLessThan(order.indexOf('Pair the mobile app'))
     expect(order.indexOf('Add another device')).toBeLessThan(order.indexOf('Password'))
+  })
+
+  // #551: the code for a computer comes from a phone connected to the server, and a phone that
+  // keeps everything on itself says why it has none instead of leaving you to search for it.
+  it('a paired phone offers a code for another device in its Server & sync block', async () => {
+    mocks.MOBILE = true
+    mocks.sync.server = 'https://gym.example.com'
+    const page = mount(<Settings page="account" />)
+    await settle()
+    expect(titles(section(page, 'Server & sync'))).toContain('Add another device')
+    expect(section(page, 'Your data')).toBeUndefined()
+  })
+
+  it('a local-only phone has no code to give, and says what it takes', async () => {
+    mocks.MOBILE = true
+    mocks.user = null
+    const page = mount(<Settings page="account" />)
+    await settle()
+    const data = section(page, 'Your data')
+    expect(titles(data)).toContain('Connect to my server')
+    expect(titles(page)).not.toContain('Add another device')
+    expect(data.querySelector('.sect-f').textContent).toContain('needs your own server')
   })
 
   it('a guest gets neither, and nothing is asked', async () => {

@@ -11,6 +11,9 @@
     "core"
   ],
   "category": "calisthenics",
+  "needs": [
+    "pull-up bar"
+  ],
   "description": "An inverted row on a high bar, which makes the pull more upright and easier. It builds the back and arms.",
   "instructions": [
     "Set a bar at about chest height and grab it overhand.",

@@ -9,6 +9,9 @@
     "trapezius"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A side-lying neck raise using a head harness with a weight. It builds strength in the muscles at the side of the neck.",
   "instructions": [
     "Lie on your side on a bench with your head just past the edge, wearing a head harness with a light weight.",

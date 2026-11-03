@@ -10,6 +10,10 @@
     "biceps"
   ],
   "category": "isometric",
+  "hold": true,
+  "needs": [
+    "bench"
+  ],
   "description": "A static hold at the bottom of a flat flye. It builds chest tension and control in the stretched position.",
   "instructions": [
     "Lie flat on a bench with a dumbbell in each hand above your chest.",

@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A wide-grip push-up held halfway down. It builds chest strength under tension.",
   "instructions": [
     "Start in a push-up position with hands wider than your shoulders.",

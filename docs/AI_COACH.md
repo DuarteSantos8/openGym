@@ -38,6 +38,25 @@ configuration. (On the server, that is. The phone app's own-key Coach needs `htt
 Nothing here is an environment variable or a restart — the whole point of the admin card is that
 enabling the Coach is a decision you make in the app.
 
+### From zero to a working Coach (self-hosted)
+
+The one thing that does need `.env` is being an admin, because the switch lives in the admin
+dashboard. If **Settings → Account → Admin dashboard** isn't there for you, that's why the Coach
+"isn't showing up".
+
+1. **Be an admin.** Either `FIRST_USER_ADMIN=1` in `.env` *before* you create the very first
+   profile, or, if you already have one, copy **Settings → Account → Account ID** into
+   `ADMIN_UIDS=<that id>`. Then `docker compose up -d` (not `restart`, which keeps the old
+   environment) and reload the app. Details: [SELF_HOSTING.md §4](SELF_HOSTING.md#4-multiple-users).
+2. **Connect a provider.** **Settings → Account → Admin dashboard**, the **AI Coach** card:
+   **Set up the Coach**, pick a provider, paste its API key (or the endpoint, for a local
+   model), **Test the Coach**. Anthropic, OpenAI, Gemini and OpenAI-compatible endpoints work on
+   the default image; leave `API_TARGET` alone unless you want the Claude Agent SDK or Codex
+   (see [below](#with-a-runtime-in-the-container-claude-agent-sdk-codex-cli)).
+3. **Check the switch at the top of the card is on**, and that `COACH_DISABLED` isn't set.
+4. **Open it:** the menu at the top right of **Plan**, last entry, **Coach**. Everyone else on
+   the instance sees it after they reload.
+
 ### Where people find it
 
 The Coach has one door: the **Coach** entry in the **Plan** menu (the button in the top-right
@@ -49,7 +68,8 @@ own (see [On the phone](#on-the-phone)).
 The entry appears only when all of these hold:
 
 - **The master switch is on.** That is **Set up the Coach** on the admin card
-  (**Settings → Account → Admin dashboard**, the **AI Coach** card), and afterwards the toggle at the top
+  (**Settings → Account → Admin dashboard**, the **AI Coach** card; an admin also finds it as
+  **Settings → AI Coach**), and afterwards the toggle at the top
   of the same card. A provider that is connected and passes **Test the Coach** is not enough
   on its own: with the switch off, the server tells every app there is no Coach, and the card
   reads *Off right now — nobody sees it anywhere in the app*.
@@ -161,6 +181,10 @@ API_TARGET=coach docker compose up -d --build api
 claude setup-token
 ```
 
+On Windows, if Claude Code was installed with npm, PowerShell may refuse to run it ("running
+scripts is disabled on this system"). Run `claude.cmd setup-token` instead, or use Command Prompt;
+there's no need to change the execution policy.
+
 Complete its normal browser sign-in and copy the token it prints. openGym never opens or handles
 that flow — it only ever receives the finished token. (Claude also accepts an Anthropic API key
 here, under the same chip; the setup token is the route for a Claude subscription.)
@@ -259,6 +283,21 @@ renders from, so the screen cannot drift from the payload — are:
 | `profile` | the intake answers you gave the Coach, including any limitations |
 | `cohort` (optional) | only with comparison on and your own opt-in: anonymous medians from the other people sharing — never their data, and never yours to them beyond the same medians |
 | `prefs` | unit, language, effort scale |
+
+### Asking before it goes
+
+Before the first request that would send anything to an AI provider, the app asks once: a sheet
+that names the provider (OpenAI, Anthropic, Google Gemini, or the host of a compatible endpoint),
+lists what goes there (the categories above plus whatever you type to the Coach) and says whether
+it goes straight from the phone with your key or through your openGym server to the provider its
+admin picked. "Not now" sends nothing. The intake's own consent screen names the same provider
+and list, so agreeing there counts as this yes and a first-timer is asked once. The answer is kept on that device, per provider and host
+(`frontend/src/lib/coach-consent.js`), so pointing the Coach somewhere else asks again; the Coach
+menu's **AI data sharing** (and Settings → AI Coach on the phone) lists what was allowed and takes
+it back. Switching on automatic reviews asks too, and withdrawing the server's provider switches
+them off. The demo, and a model on your own machine or network (localhost, private and Tailscale
+addresses, `*.local`/`*.lan`), never ask: nothing goes to a third party. `GET /api/coach/disclosure`
+names the host for this, never the rest of the URL.
 
 A review reads a training block, not a training career: the window is capped at **12 weeks or 60
 sessions**. Your profile is identified by a stable pseudonym that is never the user id and never
@@ -448,14 +487,25 @@ The App-Store build has no server of its own, so the Coach there is a choice mad
 - **Use my self-hosted openGym.** Pair the phone with your instance (the same pairing flow as
   syncing — **Settings → Account → Pair the mobile app** on the site, then the address and code on the
   phone). A paired phone is an ordinary profile: the Coach runs on your server with whatever
-  provider the admin configured, under the rules above, and nothing on the phone changes.
+  provider the admin configured, under the rules above, and nothing on the phone changes. The
+  one thing the server cannot do is push to the app, so a suggestion its automatic review left
+  is announced by the app itself, once, when it next comes to the foreground.
 - **Bring my own API key.** The phone calls Anthropic, OpenAI, Gemini or a compatible endpoint
   directly, with a key you paste. It runs the same payload allowlist, the same validator and
   the same single repair round as the server, in the app. The key is kept in the platform's
   secure storage — Keychain on iOS, the Keystore-backed store on Android — and never in the
   app's state, so it cannot ride along in a backup, an export or a sync. You pay: the screen
-  says which host each request goes to and what leaves the device before you choose, and a
-  local daily cap stands in for the one an admin would have set.
+  says which host each request goes to and what leaves the device before you choose. An
+  **Advanced** section on the same screen is the phone's admin card — since there is no
+  instance, you are the admin: the daily cap (0 for no limit), the output-token ceiling a
+  reasoning model needs raised, and the maximum message length, with the same ranges the
+  server clamps to.
+
+  Automatic reviews (weekly, or after every few workouts) run on the phone too, by the server's
+  rule (`api/coach/core/due.js`), but only while the app is open: there is no server to run them
+  and an app does not run JavaScript while it is closed. So a review that is due runs right after
+  the workout that completes the count, or on the first open after the weekly slot, and says
+  something only when it has a suggestion. Up to v1.4.2 nothing ran them on a phone at all.
 
   A compatible endpoint has to be **`https://`** here. Android does not let apps send
   unencrypted `http://` traffic, so a model on your LAN at `http://ollama.lan:11434` cannot be

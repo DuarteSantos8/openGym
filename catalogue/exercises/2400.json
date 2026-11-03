@@ -9,6 +9,9 @@
     "calves"
   ],
   "category": "calisthenics",
+  "needs": [
+    "bench"
+  ],
   "description": "A bodyweight inverse leg curl using a pull-up cable machine setup. Targets the hamstrings.",
   "instructions": [
     "Adjust the cable machine so that the ankle straps are at the lowest setting.",

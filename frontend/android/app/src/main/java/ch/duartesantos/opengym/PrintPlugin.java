@@ -38,6 +38,12 @@ public class PrintPlugin extends Plugin {
             return;
         }
         final String jobName = call.getString("name", "openGym");
+        // The sheet starts on the paper people use where the phone is (lib/print-doc.js paperFor);
+        // it can be changed there. Page numbers and margins come from the document's own @page
+        // rules, which this WebView (Chromium) prints.
+        final PrintAttributes.MediaSize media = "letter".equals(call.getString("paper", "a4"))
+                ? PrintAttributes.MediaSize.NA_LETTER
+                : PrintAttributes.MediaSize.ISO_A4;
 
         getActivity().runOnUiThread(() -> {
             WebView webView = new WebView(getContext());
@@ -54,7 +60,7 @@ public class PrintPlugin extends Plugin {
                     PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(jobName);
                     printManager.print(jobName, adapter,
                             new PrintAttributes.Builder()
-                                    .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                                    .setMediaSize(media)
                                     .build());
                     call.resolve();
                 }

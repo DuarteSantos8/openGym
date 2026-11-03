@@ -456,6 +456,42 @@ test('a job is refused outright when the privilege drop cannot be performed', ()
   }
 });
 
+test('the admin test-run answers to the same privilege gate, and spawns nothing without it', async () => {
+  // "Test the Coach" runs the provider runtime a job would, so without the drop the child would
+  // run as this process and see ./data. It used to skip the gate the job path performs.
+  const { adapterFor } = await import('../coach/adapters/index.js');
+  const adapter = adapterFor('fixture');
+  const real = { check: adapter.check, invoke: adapter.invoke };
+  let calls = 0;
+  adapter.check = async (...a) => { calls++; return real.check(...a); };
+  adapter.invoke = async (...a) => { calls++; return real.invoke(...a); };
+  forcePrivilegeVerdict({ ok: false, dropped: false, why: 'no `coach` user exists in this image' });
+  try {
+    const r = await jobs.testRun();
+    assert.equal(r.ok, false);
+    assert.equal(r.error, 'Coach jobs are disabled: no `coach` user exists in this image');
+    assert.equal(calls, 0, 'neither the version check nor the round trip ran');
+
+    // An HTTPS provider spawns nothing, so the same host still tests it end to end.
+    const https = adapterFor('compatible');
+    const realHttps = { check: https.check, invoke: https.invoke };
+    https.check = async () => ({ ok: true, version: 'stubbed' });
+    https.invoke = async () => ({ code: 0, text: '{"coach_contract":1,"ok":true}', stderr: '' });
+    cfg.save({ provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://swap.test:9292' } }, models: { compatible: 'local-model' } });
+    try {
+      assert.deepEqual(await jobs.testRun(), { ok: true, version: 'stubbed' });
+    } finally {
+      Object.assign(https, realHttps);
+      cfg.save({ provider: 'fixture' });
+    }
+  } finally {
+    forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite' });
+    Object.assign(adapter, real);
+  }
+  // and with the drop available it is the same round trip as before
+  assert.equal((await jobs.testRun()).ok, true);
+});
+
 test('an HTTPS provider is not refused for lacking a privilege drop, and runs end to end through the queue', async () => {
   // A local server speaking OpenAI's Chat Completions shape, answering a valid "no change"
   // review. This is the whole reason the HTTP adapters exist: no runtime, no child process,
@@ -573,5 +609,69 @@ test('a job sends the admin\'s configured output cap, so a reasoning model is no
     forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite' });
     cfg.save({ provider: 'fixture', maxOutputTokens: 16000 });
     server.close();
+  }
+});
+
+test('a job that waited in the queue answers to the gate for the provider it actually runs on', async () => {
+  // enqueue asks about the provider configured at the time. Two jobs run at once, so a third
+  // waits, and it runs against whatever is configured when its turn comes: switched from an
+  // HTTPS provider to a runtime-backed one meanwhile, it used to spawn without the drop.
+  const { adapterFor } = await import('../coach/adapters/index.js');
+  const https = adapterFor('compatible');
+  const fixture = adapterFor('fixture');
+  const real = { https: https.invoke, fixture: fixture.invoke };
+  let release;
+  const held = new Promise(r => { release = r; });
+  https.invoke = async () => { await held; return { code: 0, text: '{"coach_contract":1,"nochange":true,"reading":"held"}', stderr: '' }; };
+  let spawned = 0;
+  fixture.invoke = async () => { spawned++; return { code: 1, text: '', stderr: 'the fixture stub ran' }; };
+  const uids = ['u-late-1', 'u-late-2', 'u-late-3'];
+  for (const uid of uids) writeState(DIR, uid, sampleState());
+  cfg.save({ enabled: true, provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://swap.test:9292' } }, models: { compatible: 'local-model' } });
+  forcePrivilegeVerdict({ ok: false, dropped: false, why: 'no `coach` user exists in this image' });
+  try {
+    for (const uid of uids) jobs.enqueue(uid, { kind: 'review' });
+    assert.equal(jobs.status('u-late-3').job.state, 'queued', 'the third waits behind the two running');
+    cfg.save({ provider: 'fixture' });
+    release();
+    await Promise.all(uids.map(u => settle(u)));
+
+    assert.equal(lastOutcome('u-late-1').outcome, 'nochange', 'the jobs already running on the HTTPS provider finish');
+    assert.equal(lastOutcome('u-late-3').outcome, 'failed');
+    assert.equal(lastOutcome('u-late-3').errorClass, 'unprivileged');
+    assert.equal(spawned, 0, 'the runtime was never started');
+    const logged = cfg.load().log.find(e => e.uid === 'u-late-3');
+    assert.equal(logged.outcome, 'failed');
+    assert.equal(logged.detail, 'Coach jobs are disabled: no `coach` user exists in this image');
+  } finally {
+    release();
+    forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite' });
+    https.invoke = real.https;
+    fixture.invoke = real.fixture;
+    cfg.save({ provider: 'fixture' });
+  }
+});
+
+test('a job refused by the privilege gate does not bind the instance credential', () => {
+  // A personal credential belongs to the first profile that spends it. A refused job spends
+  // nothing, but the bind used to happen before the gate, so the refusal still handed the
+  // owner's account to whichever profile happened to ask first.
+  const uid = 'u-priv-bind';
+  writeState(DIR, uid, sampleState());
+  const prev = cfg.load();
+  cfg.save({
+    provider: 'claude', authMode: 'instance', boundUid: {},
+    auth: { claude: { type: 'cli-token', account: 'owner@example.test', data: cfg.encrypt({ token: 'tok-instance' }) } }
+  });
+  forcePrivilegeVerdict({ ok: false, dropped: false, why: 'no `coach` user exists in this image' });
+  try {
+    assert.throws(() => jobs.enqueue(uid, { kind: 'review' }), e => e.code === 'unprivileged');
+    assert.equal(cfg.boundUidFor(), null, 'the refused profile did not take the credential');
+    // Not vacuous: this is a credential that binds on spend.
+    cfg.bindInstanceCredential(uid);
+    assert.equal(cfg.boundUidFor(), uid);
+  } finally {
+    forcePrivilegeVerdict({ ok: true, dropped: false, why: 'pinned by the test suite' });
+    cfg.save({ provider: prev.provider, authMode: prev.authMode, boundUid: prev.boundUid, auth: prev.auth });
   }
 });

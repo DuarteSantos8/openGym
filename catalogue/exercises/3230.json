@@ -11,6 +11,7 @@
     "trapezius"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A face-down hold with your hands clasped behind you. It trains the back extensors and opens the chest.",
   "instructions": [
     "Lie face down with your hands clasped behind your lower back.",

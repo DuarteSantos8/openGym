@@ -34,13 +34,8 @@ updates:
       frontend-major:
         patterns: ['*']
         update-types: ['major']
-    ignore:
-      # Capacitor 8 needs Node >= 22 (its own `engines` field) and the build host is on 20, and
-      # `frontend/android` + `frontend/ios` are committed, so a major also means migrating the
-      # native projects — Gradle/AGP, the Podfile. That is a deliberate piece of work, not a
-      # dependency bump. Drop this ignore once the build host is on Node 22 and you want it.
-      - dependency-name: '@capacitor/*'
-        update-types: ['version-update:semver-major']
+    # (A Capacitor-major ignore lived here while the build host was on Node 20; the app has been
+    # on Capacitor 8 since 2026-10-11, so a Capacitor 9 PR is now a normal frontend-major PR.)
 
   # Backend — api/package.json (@simplewebauthn/server, web-push)
   - package-ecosystem: npm
@@ -57,6 +52,17 @@ updates:
       api-major:
         patterns: ['*']
         update-types: ['major']
+
+  # MCP bridge — mcp/package.json
+  - package-ecosystem: npm
+    directory: /mcp
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    groups:
+      mcp:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
 
   # Base images — api/Dockerfile (node:22-alpine)
   - package-ecosystem: docker
@@ -89,7 +95,8 @@ updates:
       interval: monthly
     open-pull-requests-limit: 2
     groups:
-      # These are all first-party actions/* and docker/* pinned to a major tag; they update
+      # Pinned to commit SHAs (with the tag in a comment), which Dependabot updates the same way;
+      # mostly first-party actions/* and docker/*, they update
       # in lockstep and none of them is worth a PR of its own.
       actions:
         patterns: ['*']

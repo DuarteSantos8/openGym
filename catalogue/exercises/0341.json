@@ -9,6 +9,9 @@
     "rhomboids"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A face-down one-arm dumbbell raise for the rear delt. You lift the arm up and back, squeezing the shoulder blade.",
   "instructions": [
     "Lie face down on a flat bench with a dumbbell in one hand, palm facing inwards.",

@@ -27,7 +27,7 @@ function render(View = StructuralBalance) {
 
 function setDoneSet(w, r) { return { done: true, w, r } }
 function workoutAt(id, start, sets) {
-  return { d: new Date(start).toISOString(), start, entries: [{ id, sets }] }
+  return { id: 'w-' + id, d: new Date(start).toISOString(), start, entries: [{ id, sets }] }
 }
 
 beforeEach(() => {

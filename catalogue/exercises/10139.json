@@ -9,6 +9,7 @@
     "calves"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Hold a ball under your heels in a curled position. It builds endurance in the back of the thighs.",
   "instructions": [
     "Sit on the floor with legs out and the ball under your heels.",

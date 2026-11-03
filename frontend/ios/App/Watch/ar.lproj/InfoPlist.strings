@@ -1,0 +1,4 @@
+/* openGym on the Apple Watch, ar: Info.plist. Written by ios/ci/watch-strings.mjs. */
+
+"NSHealthShareUsageDescription" = "يعرض openGym نبضك أثناء التمرين وبجانب كل مجموعة.";
+"NSHealthUpdateUsageDescription" = "يحفظ openGym تمارينك في Apple صحتي إذا فعّلت ذلك.";

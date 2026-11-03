@@ -28,7 +28,9 @@ export const HTTP_PROVIDERS = Object.freeze({
     label: 'Google Gemini', runtime: 'HTTPS', http: true,
     apiKeyEnv: 'GEMINI_API_KEY', oauthEnv: null,
     defaultBase: 'https://generativelanguage.googleapis.com',
-    defaultModel: 'gemini-2.5-pro',
+    // Stable and on the free tier, which is where the Discord setup guide sends people. The
+    // 2.5 names are refused for keys made after Google retired them (#758).
+    defaultModel: 'gemini-3.8-flash',
     keyPlaceholder: 'AIza… or AQ.…'
   }),
   // Ollama, LM Studio, vLLM, OpenRouter, a corporate gateway: anything that serves the

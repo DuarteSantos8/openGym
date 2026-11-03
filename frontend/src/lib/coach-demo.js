@@ -18,6 +18,7 @@ import { isWarmupRow } from './workout-model.js'
 import { best1RM } from './onerm.js'
 import { fmtNum } from './format.js'
 import { planHash } from './coach.js'
+import { waitingProposal } from '../../../api/coach/core/pending.js'
 import { t } from './i18n.js'
 
 const DELAY = 2200      // long enough to see "the Coach is thinking…", short enough to forgive
@@ -206,7 +207,13 @@ export const demoDebrief = (S, workoutId) => {
   if (!(S.workouts || []).some(w => w && w.d)) throw Object.assign(new Error(t('There’s no workout to look at yet. Log one first.')), { status: 409, code: 'noworkout' })
   return start('debrief', () => buildDebrief(S, workoutId))
 }
-export const demoResolve = () => { pending = null; return { ok: true } }
+// The demo has no model behind it: a question gets a sample answer that says so.
+export const demoAsk = (S, text) => start('ask', () => ({
+  id: 'demo-ask-' + Date.now().toString(36), kind: 'ask', createdAt: Date.now(), expiresAt: Date.now() + 864e5,
+  planHash: planHash(S), iteration: 1, prev: waitingProposal(pending),
+  answer: t('This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.', String(text || '').slice(0, 80)),
+}))
+export const demoResolve = () => { pending = pending?.kind === 'ask' ? waitingProposal(pending.prev) : null; return { ok: true } }
 export const demoDisclosure = () => ({
   provider: 'demo', providerLabel: t('the configured AI provider'),
   categories: ['plan', 'training', 'bodyweight', 'profile', 'prefs'], version: 1

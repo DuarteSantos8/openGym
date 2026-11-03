@@ -11,6 +11,9 @@
     "adductors"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A glute bridge with your feet raised and a band adding resistance. Targets the glutes with a deep range of motion.",
   "instructions": [
     "Lie on your back with your feet on a bench and a band around your thighs just above the knees.",

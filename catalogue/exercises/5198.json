@@ -9,6 +9,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Holding a glute bridge with one leg straight. It trains the glutes and challenges hip stability.",
   "instructions": [
     "Lie on your back with knees bent.",

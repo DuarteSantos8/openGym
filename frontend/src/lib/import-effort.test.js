@@ -104,7 +104,7 @@ describe('importing effort from another app', () => {
       '2026-01-12,Bench Press,135,lbs,10,8',
     ].join('\n'), { unit: 'kg' })
     const s = setsOf(p)[0]
-    expect(s.w).toBe(61.2)
+    expect(s.w).toBe(61.23)
     expect(s.rpe).toBe(8)
     expect('u' in s).toBe(false)              // the row's unit marker never reaches the set
   })

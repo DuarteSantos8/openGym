@@ -317,10 +317,10 @@ describe('CoachSetup — listing the models', () => {
     expect(host.querySelector('select')).toBe(null)
     expect(btn('Save and use the Coach')).toBeUndefined()
 
-    vi.mocked(localModels).mockResolvedValue({ ok: true, models: ['gemini-2.5-pro'] })
+    vi.mocked(localModels).mockResolvedValue({ ok: true, models: [HTTP_PROVIDERS.gemini.defaultModel] })
     await click(btn('List models')); await settle()
     expect(localModels).toHaveBeenLastCalledWith({ provider: 'gemini', baseUrl: null }, 'sk-1')
-    expect(host.querySelector('select').value).toBe('gemini-2.5-pro')
+    expect(host.querySelector('select').value).toBe(HTTP_PROVIDERS.gemini.defaultModel)
   })
 })
 

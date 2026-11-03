@@ -29,9 +29,10 @@ const MAP_MAX_HEIGHT = 560
  * left out of both, the way they are left out of records and progression everywhere else. A
  * per-side set counts once per side, as the workout screen counts it. `levels` is the finish
  * summary's muscle map for this one session (levelsOf over loadOfWorkouts), null when no set
- * reached a muscle the map can show — a card of only cardio has nothing to shade.
+ * reached a muscle the map can show — a card of only cardio has nothing to shade. `warmups` is the
+ * profile's "Count warm-ups in volume" (#719): the volume counts them then, the sets still do not.
  */
-export function workoutCardModel(w, { unit, nameOf }) {
+export function workoutCardModel(w, { unit, nameOf, warmups = false }) {
   const entries = w.entries || []
   const sets = entries.reduce((n, e) => n + (e.sets || []).reduce((m, s) => m + (isWarmupRow(s) ? 0 : doneUnits(s)), 0), 0)
   // New bests in the order the sheet lists the exercises, each named once — a combined session
@@ -54,7 +55,7 @@ export function workoutCardModel(w, { unit, nameOf }) {
     stats: [
       ...(ms >= 60000 ? [{ label: t('Duration'), value: fmtDur(ms) }] : []),
       { label: t('Sets'), value: fmtNum(sets) },
-      { label: t('Volume'), value: fmtVol(w.vol ?? workoutVolume(w), unit) },
+      { label: t('Volume'), value: fmtVol(warmups ? workoutVolume(w, { warmups }) : (w.vol ?? workoutVolume(w)), unit) },
     ],
     records: records.map(r => r.name),
     levels: MUSCLES.some(m => levels[m] > 0) ? levels : null,

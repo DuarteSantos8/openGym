@@ -28,7 +28,7 @@ vi.mock('../store/useUI.js', () => {
   useUI.getState = snap
   return { useUI }
 })
-vi.mock('react-router-dom', () => ({ useNavigate: () => () => {} }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => () => {}, useLocation: () => ({ state: null }) }))
 vi.mock('../sheets.jsx', () => ({ confirmSheet: vi.fn() }))
 vi.mock('./AdminCoach.jsx', () => ({ default: () => null }))
 
@@ -120,5 +120,33 @@ describe('Admin when the users cannot be loaded', () => {
     await settle()
     expect(text(page)).toContain('The last update failed')
     expect([...page.querySelectorAll('.item')].some(el => el.textContent.includes('Mallory'))).toBe(true)
+  })
+})
+
+// One owner, any number of admins: only the owner sees the role buttons and the log's clear.
+describe('Admin roles', () => {
+  const openMallory = async () => {
+    const page = render(<Admin />)
+    await settle()
+    act(() => [...page.querySelectorAll('.item')].find(el => el.textContent.includes('Mallory')).click())
+    const sheet = render(mocks.sheets[0](() => {}))
+    await settle()
+    return { page, buttons: [...sheet.querySelectorAll('button')].map(b => b.textContent) }
+  }
+  it('the owner can make someone an admin, and clear the log', async () => {
+    mocks.answers['/api/admin/users'].users.push({ id: 'adm', name: 'Admin', admin: true, owner: true, workouts: 0 })
+    mocks.answers['/api/admin/audit'] = { events: [], enabled: true, total: 0, retention: {} }
+    const { page, buttons } = await openMallory()
+    expect(buttons).toContain('Make admin')
+    expect(page.querySelector('[aria-label="clear log"]')).toBeTruthy()
+    expect(page.textContent).toContain('owner')
+  })
+  it('an admin who is not the owner gets neither', async () => {
+    mocks.answers['/api/admin/users'].users.push({ id: 'adm', name: 'Admin', admin: true, owner: false, workouts: 0 })
+    mocks.answers['/api/admin/audit'] = { events: [], enabled: true, total: 0, retention: {} }
+    const { page, buttons } = await openMallory()
+    expect(buttons).not.toContain('Make admin')
+    expect(buttons).toContain('Disable account')
+    expect(page.querySelector('[aria-label="clear log"]')).toBeNull()
   })
 })

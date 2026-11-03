@@ -10,6 +10,9 @@
     "shoulders"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying on a bench, you lower a barbell overhead in an arc and then press it back up. Works the lats, chest and triceps.",
   "instructions": [
     "Lie flat on a bench with your head at one end and your feet on the ground.",

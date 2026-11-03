@@ -152,7 +152,7 @@ describe('a workout\'s photos and videos', () => {
     expect([...media.pendingNow()]).toHaveLength(4)   // two files, each with its poster
   })
 
-  it('a server without media storage: no section while there is nothing; with some, no Add and why', () => {
+  it('a server without media storage: no section while there is nothing; with some, no Add and why', async () => {
     useStore.setState({ user: { id: 'u1', name: 'One' }, config: { passkeys: true } })
     workoutDetailSheet(S().workouts[0])
     expect(renderTop().querySelector('.wmedia')).toBeNull()
@@ -162,9 +162,11 @@ describe('a workout\'s photos and videos', () => {
     expect(host.querySelectorAll('.wmedia-item')).toHaveLength(1)
     expect(host.querySelector('.wmedia-add')).toBeNull()
     expect(host.textContent).toContain('Your server does not store photos and videos yet.')
+    // Let the media store's async answers land inside act, not after the test.
+    await settle()
   })
 
-  it('signed in, Add is offered only when the server says a workout may carry media', () => {
+  it('signed in, Add is offered only when the server says a workout may carry media', async () => {
     const caps = { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200 }
     useStore.setState({ user: { id: 'u1', name: 'One' }, config: { media: caps } })
     expect(render(<WorkoutMediaSection w={S().workouts[0]} hint />).querySelector('.wmedia')).toBeNull()
@@ -176,6 +178,8 @@ describe('a workout\'s photos and videos', () => {
     // A guest is not held to it: the files stay on the device.
     useStore.setState({ user: null, config: { media: caps } })
     expect(render(<WorkoutMediaSection w={S().workouts[0]} />).querySelector('.wmedia-add')).toBeTruthy()
+    // Let the media store's async answers land inside act, not after the test.
+    await settle()
   })
 
   it('a browser that cannot store files shows no empty section', async () => {
@@ -186,16 +190,18 @@ describe('a workout\'s photos and videos', () => {
     expect(host.querySelector('.wmedia')).toBeNull()
   })
 
-  it('signed out, the finish screen\'s section explains itself; where the files live is said once there are some', () => {
+  it('signed out, the finish screen\'s section explains itself; where the files live is said once there are some', async () => {
     const host = render(<WorkoutMediaSection w={S().workouts[0]} hint />)
     expect(host.textContent).toContain('A progress photo or a form-check video, kept with this workout.')
     expect(host.textContent).not.toContain('Kept on this device only')
     useStore.setState(s => ({ S: { ...s.S, workouts: [workout({ media: [refOf(1)] })] } }))
     const withOne = render(<WorkoutMediaSection w={S().workouts[0]} hint />)
     expect(withOne.textContent).toContain('Kept on this device only')
+    // Let the media store's async answers land inside act, not after the test.
+    await settle()
   })
 
-  it('the viewer takes focus, keeps Tab inside, and steps with the arrow keys (mirrored right to left)', () => {
+  it('the viewer takes focus, keeps Tab inside, and steps with the arrow keys (mirrored right to left)', async () => {
     useStore.setState(s => ({ S: { ...s.S, workouts: [workout({ media: [refOf(1), refOf(3), refOf(5)] })] } }))
     const opener = document.createElement('button')
     document.body.appendChild(opener)
@@ -223,14 +229,18 @@ describe('a workout\'s photos and videos', () => {
       key('ArrowRight')
       expect(count()).toBe('2 / 3')
     } finally { document.documentElement.dir = 'ltr' }
+    // Let the media store's async answers land inside act, not after the test.
+    await settle()
   })
 
-  it('Delete workout in the detail sheet says its photos and videos go with it', () => {
+  it('Delete workout in the detail sheet says its photos and videos go with it', async () => {
     useStore.setState(s => ({ S: { ...s.S, workouts: [workout({ media: [refOf(1)] })] } }))
     workoutDetailSheet(S().workouts[0])
     const host = renderTop()
     act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Delete workout').click())
     expect(renderTop().textContent).toContain('This removes it from your history for good. Its photo or video is deleted with it.')
+    // Let the media store's async answers land inside act, not after the test.
+    await settle()
   })
 
   it('Delete workout without any says nothing about them', () => {

@@ -13,6 +13,20 @@ name: Publish Docker images
 on:
   push:
     branches: [main]
+    # A docs, website or workflow-only change ships the same images: 181 edge
+    # builds in three months, many of them for a README line. Anything that ends up in an image
+    # still builds (api/, web/, frontend/, catalogue media through the web build).
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'website/**'
+      # (a change to this workflow alone: run it by hand)
+      - '.github/**'
+      - 'helm/**'
+      - 'kubernetes/**'
+      - 'contrib/**'
+      - 'frontend/ios/**'
+      - 'frontend/android/**'
   release:
     types: [published]
   workflow_dispatch:
@@ -21,9 +35,16 @@ permissions:
   contents: read
   packages: write
 
+# A newer push to main makes an unfinished `edge` build pointless; a release build is never
+# cancelled (each release has its own group).
+concurrency:
+  group: docker-${{ github.event_name == 'release' && github.ref || 'edge' }}
+  cancel-in-progress: ${{ github.event_name == 'push' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       matrix:
         include:
@@ -34,7 +55,11 @@ jobs:
             context: .
             file: ./web/Dockerfile
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Versions agree with the release tag
+        if: github.event_name == 'release'
+        run: node scripts/ci/release-check.mjs "$GITHUB_REF_NAME"
 
       - name: Lowercase owner (registry names must be lowercase)
         id: repo
@@ -53,16 +78,16 @@ jobs:
           echo "VCS_REF=${GITHUB_SHA}" >> $GITHUB_OUTPUT
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
 
-      - uses: docker/setup-qemu-action@v4
-      - uses: docker/setup-buildx-action@v4
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
-      - uses: docker/login-action@v4.6.0
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/metadata-action@v6
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         id: meta
         with:
           images: ghcr.io/${{ steps.repo.outputs.owner }}/opengym-${{ matrix.image }}
@@ -72,7 +97,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - uses: docker/build-push-action@v7
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}

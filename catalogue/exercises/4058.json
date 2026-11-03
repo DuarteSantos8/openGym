@@ -11,6 +11,9 @@
     "core"
   ],
   "category": "calisthenics",
+  "needs": [
+    "bench"
+  ],
   "description": "Advanced core move where the body stays straight while you raise and lower the legs from a bench. It strongly trains the abs.",
   "instructions": [
     "Lie on a bench and grip it behind your head.",

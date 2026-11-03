@@ -58,6 +58,15 @@ const LEADING_VERSION = new RegExp('^' + VERSION_SEGMENT.source, 'i');
 // without the version is remembered so the next request goes there first. A bare host and every
 // base that works today still gets exactly the request it got before.
 const versionlessBases = new Set();
+// What an error answer is allowed to say back: the provider's own JSON error message, never the
+// raw body. The endpoint of a compatible provider is any URL an admin types, so echoing the body
+// would let one admin read the first lines of any page the server can reach (a router, a service
+// on the LAN). A provider that failed says why in JSON; anything else is reported by its status.
+function shownError(spec, data, max = 200) {
+  const m = spec.errorMessage(data);
+  return typeof m === 'string' && m ? trim(m, max) : '(the endpoint sent no error message)';
+}
+
 function candidateUrls(spec, base, path) {
   const url = endpointUrl(base, path);
   if (!spec.versionlessFallback) return [url];
@@ -78,6 +87,23 @@ async function reach(spec, base, path, send) {
   else versionlessBases.add(base);
   return second;
 }
+
+// A model the key cannot call (#758). Google retires names for new keys while old keys keep
+// them (gemini-2.5-pro: "no longer available to new users"), so a default that worked for the
+// person who wrote it 404s for the next one, and a model saved on a phone goes stale the same
+// way. Every provider says it in its own words: 404 with "model" in it, or a 400 that names a
+// model as unknown (OpenRouter: "is not a valid model ID").
+const MODEL_REFUSED = /\bmodels?\b.*(not found|does not exist|no longer available|not available|not supported|not a valid|invalid|unknown)|(unknown|invalid|no such|not a valid) model/i;
+export const isModelGone = (status, msg) => (status === 404 && /\bmodel/i.test(msg)) || (status === 400 && MODEL_REFUSED.test(msg));
+// What a substitute must not be: the listing also carries speech, image and embedding models
+// that answer generateContent or chat with something useless for a plan.
+const NOT_TEXT = /embed|tts|audio|image|imagen|veo|lyria|live|transcri|robotics|aqa|banana|omni|computer-use|deep-research|whisper|dall-e|moderation|realtime|guard/i;
+// The model that answered in place of a refused one, per provider, endpoint and refused name, so
+// the repair round and the next job go straight there instead of paying for the 404 again.
+const substitutes = new Map();
+const substituteKey = (id, base, model) => `${id} ${base} ${model}`;
+/** The model used in place of `model` after the provider refused it, or null. */
+export const modelSubstitute = (id, cfg, model) => substitutes.get(substituteKey(id, baseUrlFor(id, cfg), model)) || null;
 
 /** A fetch, bounded by AbortController. Never throws for HTTP status; throws for transport. */
 async function call(fetchImpl, url, init, timeoutMs, signal) {
@@ -106,6 +132,21 @@ export function httpAdapter(spec) {
   if (!meta) throw new Error(`httpAdapter: unknown provider "${id}"`);
 
   const keyOf = env => (env && env[meta.apiKeyEnv]) || null;
+
+  /** A model to try in place of the refused one, or null when there is nothing better to try. */
+  async function usableModel(refused, { cfg, env, fetchImpl, signal }) {
+    const listed = await adapter.models(cfg, env, { fetch: fetchImpl, signal });
+    const fallback = meta.defaultModel && meta.defaultModel !== refused ? meta.defaultModel : null;
+    if (!listed.ok) return fallback;
+    if (fallback && listed.models.includes(fallback)) return fallback;
+    const text = listed.models.filter(m => m !== refused && !NOT_TEXT.test(m));
+    if (spec.preferModel) return spec.preferModel(text) || null;
+    // Generic: the same family as the refused name (its vendor/ or name- prefix), newest-looking
+    // last in the sorted list, so a stale google/gemini-2.5-pro lands on another Gemini.
+    const family = /^[^/]+\//.exec(refused)?.[0] || /^[^-:]+/.exec(refused)?.[0] || '';
+    const kin = family ? text.filter(m => m.startsWith(family)) : [];
+    return (kin.length ? kin[kin.length - 1] : text[0]) || null;
+  }
 
   const adapter = {
     id,
@@ -144,7 +185,7 @@ export function httpAdapter(spec) {
         return { ok: false, error: e.name === 'AbortError' ? 'timed out' : `could not reach ${hostOf(base)}: ${trim(e.message, 120)}`, models: [] };
       }
       const { data, text } = await readJson(res);
-      if (!res.ok) return { ok: false, error: `${res.status} ${trim(spec.errorMessage(data) || text, 200)}`, models: [] };
+      if (!res.ok) return { ok: false, error: `${res.status} ${shownError(spec, data)}`, models: [] };
       let models;
       try { models = spec.readModels(data); } catch { models = null; }
       if (!Array.isArray(models)) return { ok: false, error: 'unexpected model list shape', models: [] };
@@ -162,10 +203,13 @@ export function httpAdapter(spec) {
       if (!base) return { code: -1, text: '', stderr: `no endpoint configured for ${id}`, spawnError: true };
       const key = keyOf(env);
       if (!key && !meta.keyOptional) return { code: -1, text: '', stderr: `no API key configured for ${id}`, spawnError: true };
-      const chosen = model || meta.defaultModel;
-      if (!chosen) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
+      const asked = model || meta.defaultModel;
+      if (!asked) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
+      let chosen = substitutes.get(substituteKey(id, base, asked)) || asked;
 
       let body = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens });
+      let triedOtherModel = false;
+      let retriedWithStrictSchema = false;
       let retriedWithoutJsonMode = false;
       let transientRetries = 0;
       for (;;) {
@@ -188,19 +232,52 @@ export function httpAdapter(spec) {
             transientRetries++;
             continue;
           }
-          // Some OpenAI-compatible servers reject the JSON-mode flag outright. Once, without it.
-          if (res.status === 400 && spec.withoutJsonMode && !retriedWithoutJsonMode && /response_format|json_schema|json_object|json mode|structured/i.test(msg)) {
+          // A hosted validator that enforces strict JSON Schema refuses the flat schemas on
+          // additionalProperties (OpenRouter, #701). The strict copy is a wire-only change —
+          // local grammar-sampling servers keep getting the flat shape they can convert — and
+          // only after the endpoint itself said no to it, so Ollama, LM Studio and vLLM never
+          // see a request they did not already ask for.
+          if (res.status === 400 && spec.withStrictSchema && !retriedWithStrictSchema
+            && body.response_format && body.response_format.type === 'json_schema'
+            && /additionalProperties|must be explicitly set/i.test(msg)) {
+            body = spec.withStrictSchema(body);
+            retriedWithStrictSchema = true;
+            continue;
+          }
+          // Some OpenAI-compatible servers reject the JSON-mode flag outright, and some providers
+          // reject a schema they cannot serve (Gemini: "the specified schema produces a constraint
+          // that has too many states"). Once, without it: the validator still judges the answer.
+          if (res.status === 400 && spec.withoutJsonMode && !retriedWithoutJsonMode && /response_format|json_schema|json_object|json mode|structured|\bschema\b/i.test(msg)) {
             body = spec.withoutJsonMode(body);
             retriedWithoutJsonMode = true;
             continue;
           }
-          return { code: 1, text: '', stderr: `${res.status} ${trim(msg, 280)}` };
+          // The model is gone for this key: once, with one it can use. The provider's own
+          // default when the key serves it (or the list could not be read), else the first text
+          // model the key lists. Only then is it the job's failure, naming the model.
+          if (isModelGone(res.status, msg) && !triedOtherModel && !(signal && signal.aborted)) {
+            triedOtherModel = true;
+            const next = await usableModel(chosen, { cfg, env, fetchImpl, signal });
+            if (next) {
+              substitutes.set(substituteKey(id, base, asked), next);
+              chosen = next;
+              if ('model' in body) body = { ...body, model: next };
+              transientRetries = 0;
+              continue;
+            }
+          }
+          if (isModelGone(res.status, msg)) {
+            substitutes.delete(substituteKey(id, base, asked));
+            const tried = chosen !== asked ? ` (and neither is "${chosen}")` : '';
+            return { code: 1, text: '', stderr: `${res.status} the model "${asked}" is not available to this key${tried}: ${shownError(spec, data, 200)}. Pick another one in the Coach settings.` };
+          }
+          return { code: 1, text: '', stderr: `${res.status} ${shownError(spec, data, 280)}` };
         }
         let out;
         try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
         if (out.error) return { code: 1, text: '', stderr: out.error };
         if (out.truncated) return { code: 1, text: '', stderr: 'the answer was cut off at the output limit; try a smaller plan or a bigger model' };
-        return { code: 0, text: String(out.text || '').trim(), stderr: '' };
+        return { code: 0, text: String(out.text || '').trim(), stderr: '', ...(chosen !== asked ? { model: chosen } : {}) };
       }
     }
   };

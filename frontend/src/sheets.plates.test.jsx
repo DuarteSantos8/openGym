@@ -8,9 +8,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createRoot } from 'react-dom/client'
 import { useStore, DEF } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
-import { barWeightSheet, plateInventorySheet } from './sheets.jsx'
+import { barWeightSheet, plateInventorySheet, barDefaultsSheet } from './sheets.jsx'
 import { EXIDX } from './lib/exercises.js'
-import { loadKindFor } from './lib/plates.js'
+import { loadKindFor, baseWeightFor } from './lib/plates.js'
+import { barWeightFor } from './lib/bar.js'
 
 const SQUAT = '0043'      // barbell
 const COCOONS = '0260'    // body weight
@@ -207,5 +208,68 @@ describe('plate inventory sheet', () => {
     act(() => dec(stepperOf(host, '45 lb')).click())
     expect(S().plates.lb[45]).toBe(5)
     expect(S().plates.lb[35]).toBe(6)
+  })
+})
+
+// Discord: "Add short olympic bar (15kg)". Quick picks in the editor, and one bar per type for the
+// whole profile (S.barDefaults) that every exercise without its own bar follows.
+describe('your bars', () => {
+  const OLY = Object.values(EXIDX).find(e => e.eq === 'olympic barbell').id
+  const chip = (root, text) => [...root.querySelectorAll('.chip')].find(b => b.textContent.trim() === text)
+  const block = (host, label) => stepperOf(host, label).closest('.cfgrow').parentElement
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    useUI.setState({ sheets: [], toasts: [] })
+    useStore.setState({ S: { ...JSON.parse(JSON.stringify(DEF)), unit: 'lb' }, user: null })
+    document.body.innerHTML = ''
+  })
+  afterEach(() => { act(() => { mounted.splice(0).forEach(root => root.unmount()) }) })
+
+  it('the editor has quick picks; the type\'s own weight takes the override off again', () => {
+    act(() => barWeightSheet(SQUAT))
+    const host = mountTopSheet()
+    expect(['45 lb', '35 lb', '25 lb', '15 lb'].every(t => chip(host, t))).toBe(true)
+    expect(chip(host, '45 lb').classList.contains('on')).toBe(true)
+    act(() => chip(host, '35 lb').click())
+    expect(S().barWeights[SQUAT]).toBe(35)
+    expect(valueOf(stepperOf(host, 'Bar (lb)'))).toBe('35')
+    act(() => chip(host, '45 lb').click())
+    expect(S().barWeights[SQUAT]).toBeUndefined()
+  })
+
+  it('the editor opens Your bars', () => {
+    act(() => barWeightSheet(SQUAT))
+    const host = mountTopSheet()
+    const row = [...host.querySelectorAll('.lrow')].find(r => r.textContent.includes('Your bars'))
+    expect(row).toBeTruthy()
+    act(() => row.click())
+    expect(useUI.getState().sheets).toHaveLength(2)
+    expect(mountTopSheet().querySelector('h3').textContent).toBe('Your bars')
+  })
+
+  it('a bar set once in Your bars is what every exercise of the type starts from', () => {
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg' } }))
+    act(() => barDefaultsSheet())
+    const host = mountTopSheet()
+    expect(host.textContent).not.toContain('Back to the standard bars')
+    act(() => chip(block(host, 'Olympic barbell (kg)'), '15 kg').click())
+    expect(S().barDefaults).toEqual({ kg: { 'olympic barbell': 15 } })
+    expect(barWeightFor(S(), OLY)).toBe(15)
+    expect(baseWeightFor(S(), OLY)).toBe(15)
+    expect(barWeightFor(S(), SQUAT)).toBe(20)          // a plain "barbell" is its own type
+    expect(valueOf(stepperOf(host, 'Olympic barbell (kg)'))).toBe('15')
+
+    act(() => barWeightSheet(OLY))
+    const ed = mountTopSheet()
+    expect(valueOf(stepperOf(ed, 'Bar (kg)'))).toBe('15')
+    expect(chip(ed, '15 kg').classList.contains('on')).toBe(true)
+    expect(ed.textContent).toContain('Your bar for this type, set in Your bars.')
+    act(() => chip(ed, '20 kg').click())              // this one exercise on a full bar
+    expect(S().barWeights[OLY]).toBe(20)
+    expect(ed.textContent).toContain('Set to 0 to go back to the default (15 kg).')
+
+    act(() => button(host, 'Back to the standard bars').click())
+    expect(S().barDefaults).toBeUndefined()
+    expect(barWeightFor({ ...S(), barWeights: {} }, OLY)).toBe(20)
   })
 })

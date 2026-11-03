@@ -1,0 +1,4 @@
+/* openGym on the Apple Watch, th: Info.plist. Written by ios/ci/watch-strings.mjs. */
+
+"NSHealthShareUsageDescription" = "openGym แสดงอัตราการเต้นของหัวใจระหว่างฝึกและข้างแต่ละเซ็ต";
+"NSHealthUpdateUsageDescription" = "openGym บันทึกการฝึกลงใน Apple Health เมื่อคุณเปิดใช้";

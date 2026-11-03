@@ -270,6 +270,14 @@ describe('AdminCoach — removing the stored credential (irreversible: the key i
     expect(sent('/api/admin/coach/disconnect')).toHaveLength(before + 1)
     expect(mocks.toast).toHaveBeenCalledWith('Credential removed')
   })
+
+  // The button wore `danger` as a bare prop, which Button handed to the DOM as an attribute:
+  // no red, and a React warning on every render.
+  it('the Remove button itself is red, like every other destructive button', async () => {
+    await mount()
+    expect(btn('Remove').classList.contains('danger')).toBe(true)
+    expect(btn('Remove').hasAttribute('danger')).toBe(false)
+  })
 })
 
 describe('AdminCoach — switching provider', () => {

@@ -122,7 +122,8 @@ describe('demo seed — the training stream is a fixture', () => {
   let D = null
 
   beforeAll(() => {
-    vi.useFakeTimers({ now: new Date(TODAY + 'T12:00:00Z'), toFake: ['Date'] })
+    // Local noon: 12:00 UTC is already tomorrow east of UTC+12, and the seed counts in local days.
+    vi.useFakeTimers({ now: new Date(TODAY + 'T12:00:00'), toFake: ['Date'] })
     D = buildDemoState()
   })
   afterAll(() => vi.useRealTimers())

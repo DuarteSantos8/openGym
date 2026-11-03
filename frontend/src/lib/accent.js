@@ -209,8 +209,28 @@ export function applyAccent(el, value, theme) {
   if (vars) {
     el.dataset.accent = CUSTOM
     for (const [k, v] of Object.entries(vars)) el.style.setProperty(k, v)
-    return
+  } else {
+    el.dataset.accent = typeof value === 'string' && Object.hasOwn(ACCENTS, value) ? value : DEFAULT_ACCENT
+    for (const k of CUSTOM_VARS) el.style.removeProperty(k)
   }
-  el.dataset.accent = typeof value === 'string' && Object.hasOwn(ACCENTS, value) ? value : DEFAULT_ACCENT
-  for (const k of CUSTOM_VARS) el.style.removeProperty(k)
+  applyTintFallback(el, vars?.['--acc'])
+}
+
+// Safari before 16.2 (the iOS app goes back to 15.5) has no color-mix(), so index.css's two accent
+// tints, --acc-soft and --acc-line, fall back to grey there (its @supports block). Here they get
+// the accent itself at the same strengths, as plain rgba. Everywhere else nothing is set.
+const TINTS = [['--acc-soft', 0.16], ['--acc-line', 0.38]]
+export function lacksColorMix() {
+  try {
+    return typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && !CSS.supports('color', 'color-mix(in srgb, red 50%, blue)')
+  } catch { return false }
+}
+export function applyTintFallback(el, acc, lacks = lacksColorMix()) {
+  for (const [k] of TINTS) el.style.removeProperty(k)
+  if (!lacks) return
+  // A preset's accent is a token that depends on the theme: read what it came to.
+  const hex = cleanHex(acc ?? (typeof getComputedStyle === 'function' ? getComputedStyle(el).getPropertyValue('--acc') : ''))
+  if (!hex) return
+  const n = parseInt(hex.slice(1), 16)
+  for (const [k, a] of TINTS) el.style.setProperty(k, `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`)
 }

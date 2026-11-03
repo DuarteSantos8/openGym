@@ -766,6 +766,40 @@ describe('anchorsByWorkout and resolveSetRir', () => {
     expect(anchors.get(now).get(SINGLE.id)).toBeCloseTo(100 * (1 + 5 / 30), 1)
   })
 
+  it('calibrates the anchor with a logged rating: done plus left is the capacity', () => {
+    const rated = at(SINGLE.id, NOW, [{ done: true, w: 80, r: 8, rir: 2 }])
+    const plain = at(SINGLE.id, NOW, [{ done: true, w: 80, r: 8 }])
+    const failed = at(SINGLE.id, NOW, [{ done: true, w: 80, r: 8, failure: true }])
+    // 80x8 at RIR 2 is a 10RM effort, so it anchors like 80x10.
+    expect(anchorsByWorkout([rated]).get(rated).get(SINGLE.id)).toBeCloseTo(80 * (1 + 10 / 30), 1)
+    expect(anchorsByWorkout([plain]).get(plain).get(SINGLE.id)).toBeCloseTo(80 * (1 + 8 / 30), 1)
+    // A set taken to failure adds nothing - it anchors exactly like an unrated set.
+    expect(anchorsByWorkout([failed]).get(failed).get(SINGLE.id))
+      .toBeCloseTo(anchorsByWorkout([plain]).get(plain).get(SINGLE.id), 5)
+  })
+
+  it('reads an unrated twin of a rated set back at the same RIR', () => {
+    const w = at(SINGLE.id, NOW, [{ done: true, w: 80, r: 8, rir: 2 }, { done: true, w: 80, r: 8 }])
+    const anchors = anchorsByWorkout([w])
+    const twin = resolveSetRir({ done: true, w: 80, r: 8 }, null, { id: SINGLE.id }, w, anchors.get(w), {})
+    expect(twin.source).toBe('estimated')
+    expect(twin.rir).toBeCloseTo(2, 1)
+  })
+
+  it('anchors nothing for an easy rated set past the rep cap', () => {
+    // 60x8 at RIR 6 is a 14RM effort: work capacity, not strength.
+    const w = at(SINGLE.id, NOW, [{ done: true, w: 60, r: 8, rir: 6 }])
+    expect(anchorsByWorkout([w]).get(w).has(SINGLE.id)).toBe(false)
+  })
+
+  it('falls back to the shared rating for unrated sides of a side set', () => {
+    const w = at(SINGLE.id, NOW, [{
+      w: 20, r: 16, done: true, rir: 2,
+      sides: { L: { w: 20, r: 8, done: true }, R: { w: 20, r: 8, done: true } },
+    }])
+    expect(anchorsByWorkout([w]).get(w).get(SINGLE.id)).toBeCloseTo(20 * (1 + 10 / 30), 1)
+  })
+
   it('resolves logged effort first, estimates second, null when unknowable', () => {
     const anchors = new Map([['e1', 110]])
     const entry = { id: 'e1' }

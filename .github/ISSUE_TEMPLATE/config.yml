@@ -2,10 +2,10 @@ blank_issues_enabled: false
 contact_links:
   - name: Question or self-hosting help
     url: https://github.com/DuarteSantos8/openGym/discussions/categories/q-a
-    about: Login/passkey trouble, reverse proxies, Docker, "how do I…" — ask in Q&A, not in an issue.
+    about: Login/passkey trouble, reverse proxies, Docker, "how do I…"? Ask in Q&A, not in an issue.
   - name: Idea or feature request to talk through
     url: https://github.com/DuarteSantos8/openGym/discussions/categories/ideas
-    about: Not sure it belongs in the app yet? Float it in Ideas first — issues are for agreed work.
+    about: Not sure it belongs in the app yet? Float it in Ideas first, issues are for agreed work.
   - name: Show your setup
     url: https://github.com/DuarteSantos8/openGym/discussions/categories/show-and-tell
     about: Running openGym somewhere interesting, or built something on top of it? Show it off.

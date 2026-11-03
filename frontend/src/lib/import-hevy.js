@@ -9,7 +9,7 @@ import { EXIDX, canonicalExId } from './exercises.js'
 import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
-import { daysBetween, importId, priorCustom } from './import-csv.js'
+import { daysBetween, importId, priorCustom, roundWeight } from './import-csv.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
 export const HEVY_API = 'https://api.hevyapp.com'
@@ -204,15 +204,29 @@ function makeResolver(templates, customEx) {
     byId,
     customEx: used => kept(used),
     unmatchedNames: used => [...new Set(kept(used).map(c => titleOf.get(c.id)))].sort(),
+    matchedIds: used => [...matchedIds].filter(id => used.has(id)),
     matchedCount: used => [...matchedIds].filter(id => used.has(id)).length,
     createdCount: used => kept(used).length,
   }
 }
 
+/**
+ * The import sheet's two counts over the parts switched on: each exercise once, by id. An
+ * exercise in both the workouts and the routines is one exercise (the same catalogue id, or the
+ * same custom one), so adding the two parts' counts would show it twice.
+ */
+export function hevySummaryCounts(w, r, { workouts = true, routines = true } = {}) {
+  const parts = [workouts && w, routines && r].filter(Boolean)
+  return {
+    matched: new Set(parts.flatMap(p => p.matchedIds || [])).size,
+    created: new Set(parts.flatMap(p => (p.customEx || []).map(c => c.id))).size,
+  }
+}
+
 const toProfileWeight = (wKg, unit) => {
   if (wKg == null || !isFinite(wKg)) return 0
-  if (unit === 'lb') return Math.round(wKg / LB_TO_KG * 10) / 10
-  return Math.round(wKg * 10) / 10
+  if (unit === 'lb') return roundWeight(wKg / LB_TO_KG)
+  return roundWeight(wKg)
 }
 
 /**
@@ -312,6 +326,7 @@ export function parseHevyWorkouts(workouts, templates, { unit = 'kg', customEx =
     workouts: outWorkouts,
     customEx: R.customEx(used),
     matched: R.matchedCount(used),
+    matchedIds: R.matchedIds(used),
     matchedSets: matched,
     created: R.createdCount(used),
     unmatchedNames: R.unmatchedNames(used),
@@ -399,6 +414,7 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx =
     routines: out,
     customEx: R.customEx(used),
     matched: R.matchedCount(used),
+    matchedIds: R.matchedIds(used),
     created: R.createdCount(used),
     unmatchedNames: R.unmatchedNames(used),
     exerciseCount: out.reduce((n, r) => n + r.ex.length, 0),
@@ -449,8 +465,7 @@ export function parseHevyBodyweight(measurements, { unit = 'kg' } = {}) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue
     let w = Number(m.weight_kg)
     if (!isFinite(w) || w <= 0) continue
-    if (unit === 'lb') w = Math.round(w / LB_TO_KG * 10) / 10
-    else w = Math.round(w * 10) / 10
+    w = roundWeight(unit === 'lb' ? w / LB_TO_KG : w)
     const t = m.created_at ? new Date(m.created_at).getTime() : new Date(d + 'T12:00:00').getTime()
     out.set(d, { d, w, t: isFinite(t) ? t : new Date(d + 'T12:00:00').getTime() })
   }

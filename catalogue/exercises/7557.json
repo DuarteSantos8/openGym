@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Wall sit with feet close together to focus on the quads.",
   "instructions": [
     "Lean your back on a wall with feet close together.",

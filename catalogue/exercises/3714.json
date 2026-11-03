@@ -11,6 +11,7 @@
     "calves"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A simple balance hold on one leg that trains stability in the ankle, hip and core.",
   "instructions": [
     "Stand tall with your feet together.",

@@ -230,6 +230,37 @@ export default function DurationWheel({ value, onChange, min = 0, max = REST_MAX
   )
 }
 
+/**
+ * The same wheels for a longer span in hours and minutes: `value` and `onChange` are minutes,
+ * the minutes wheel steps by `step`. The Coach's session length uses it, so it looks like every
+ * other time picker in the app.
+ */
+export function HourMinuteWheel({ value, onChange, min = 10, max = 235, step = 5, className = '' }) {
+  const clamp = n => Math.max(min, Math.min(max, Math.round((Number(n) || 0) / step) * step))
+  const v = clamp(value)
+  const h = Math.floor(v / 60), mi = (v % 60) / step
+  const [nonce, setNonce] = useState(0)
+  const live = useRef({ h, mi })
+  live.current = { h, mi }
+  const pick = (hh, mm) => {
+    const next = clamp(hh * 60 + mm * step)
+    setNonce(n => n + 1)
+    if (next !== v) onChange(next)
+  }
+  const text = durationText(v * 60)
+  return (
+    <div className={'dw ' + className} data-nodrag="" dir="ltr">
+      <span className="dw-band" aria-hidden="true" />
+      <WheelColumn count={Math.floor(max / 60) + 1} index={h} nonce={nonce} step={1}
+        onPick={i => pick(i, live.current.mi)} label={t('Hours')} unit={t('h')} valueText={text}
+        disabledAt={i => i * 60 > max || i * 60 + 59 < min} />
+      <WheelColumn count={60 / step} index={mi} nonce={nonce} step={3} format={i => pad2(i * step)}
+        onPick={i => pick(live.current.h, i)} label={t('Minutes')} unit={t('min')} valueText={text}
+        disabledAt={i => h * 60 + i * step > max || h * 60 + i * step < min} />
+    </div>
+  )
+}
+
 /* A sheet with the wheel, a read-out of what is set and Done. Nothing is saved until Done:
    closing the sheet any other way leaves the setting as it was. */
 function DurationSheet({ title, value, min, max, off, footer, onDone, close }) {

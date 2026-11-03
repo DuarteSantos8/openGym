@@ -10,6 +10,7 @@
     "shoulders"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "Wall sit holding a dumbbell at the chest for extra load.",
   "instructions": [
     "Hold a dumbbell at your chest and lean on a wall.",

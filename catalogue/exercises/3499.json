@@ -11,6 +11,9 @@
     "shoulders"
   ],
   "category": "calisthenics",
+  "needs": [
+    "pull-up bar"
+  ],
   "description": "A pullover-style move hanging under a bar, with the legs helping a bit. It builds the lats and shoulder strength.",
   "instructions": [
     "Set a sturdy bar at hip height or lower and hang beneath it with an overhand grip.",

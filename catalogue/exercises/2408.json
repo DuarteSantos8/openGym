@@ -9,6 +9,9 @@
     "trapezius"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lying face down with a harness on your head, you lift against added weight to strengthen the muscles at the back of the neck.",
   "instructions": [
     "Lie face down on a bench with your head past the edge and the weighted harness fitted.",

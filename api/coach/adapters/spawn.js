@@ -63,6 +63,18 @@ export function canDropPrivileges() {
 }
 
 /**
+ * The gate every path that may start a provider runtime goes through — a job, the admin's test
+ * run, and the admin card's version check — so the three cannot drift apart. Returns the
+ * refusal, worded the same everywhere, or null when the adapter may run. A provider that spawns
+ * nothing has no process to drop and is never refused for lacking the drop.
+ */
+export function privilegeRefusal(adapter) {
+  if (adapter?.spawns === false) return null;
+  const priv = canDropPrivileges();
+  return priv.ok ? null : `Coach jobs are disabled: ${priv.why}`;
+}
+
+/**
  * Run `cmd argv`, feed `stdin`, resolve { code, stdout, stderr, timedOut }.
  * Never rejects on a non-zero exit: the caller classifies failures, and a CLI that prints a
  * useful error and exits 1 is more informative than a thrown Error with none of it.

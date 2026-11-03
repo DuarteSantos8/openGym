@@ -9,6 +9,9 @@
     "forearms"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "A classic lying extension that isolates the triceps by bending only at the elbows.",
   "instructions": [
     "Lie on a bench holding a dumbbell in each hand above your chest, palms facing in.",

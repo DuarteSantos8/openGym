@@ -8,7 +8,7 @@
 // ankles, "cardiovascular system") maps to null and is dropped rather than guessed at.
 
 import { isWarmupRow } from './workout-model.js'
-import { EXIDX, smOf } from './exercises.js'
+import { EXIDX, smOf, isBuiltinEx } from './exercises.js'
 import { todayISO, weekKey, MONDAY } from './format.js'
 import { queueOf } from './queue.js'
 import { workoutAt } from './history.js'
@@ -37,7 +37,7 @@ export const INERT = ['head', 'hair', 'neck', 'hands', 'feet', 'knees', 'ankles'
 // the cardio pseudo-muscle only under the dataset's own lowercase spelling, and every place
 // that shows it capitalises with CSS — a capitalised key here rendered English everywhere.
 export const MUSCLE_NAME = {
-  trapezius: 'Traps', deltoids: 'Shoulders', chest: 'Chest', 'upper-back': 'Upper back',
+  trapezius: 'Traps', deltoids: 'Shoulders', chest: 'Chest', 'upper-back': 'Lats & upper back',
   serratus: 'Serratus', biceps: 'Biceps', triceps: 'Triceps', forearm: 'Forearms',
   abs: 'Abs', obliques: 'Obliques', 'lower-back': 'Lower back', gluteal: 'Glutes',
   quadriceps: 'Quads', hamstring: 'Hamstrings', adductors: 'Adductors',
@@ -178,8 +178,6 @@ export function muscleGroupsOf(entry) {
   return out
 }
 
-export const normalizeMuscleGroups = muscleGroupsOf
-
 /** True when any requested group matches; an empty request is an intentionally unfiltered query. */
 export function matchesMuscleGroups(ex, requested) {
   const wanted = arrayOf(requested).map(canonicalMuscle).filter(Boolean)
@@ -188,9 +186,24 @@ export function matchesMuscleGroups(ex, requested) {
   return wanted.some(group => groups.has(group))
 }
 
+// Fatigue, strength and the balance map ask for the muscles of every entry of every workout on
+// each Stats render. A catalogue exercise always answers the same, so its answer is kept (and
+// handed out as a copy, since callers are free to change what they get).
+const builtinWeights = new WeakMap()
+const builtinMuscles = new WeakMap()
+
 /** Complete muscle-weight metadata, including explicit zero-credit associations. */
 export function muscleWeightsOf(ex) {
   if (!ex) return {}
+  if (isBuiltinEx(ex)) {
+    let w = builtinWeights.get(ex)
+    if (!w) builtinWeights.set(ex, w = weightsOf(ex))
+    return { ...w }
+  }
+  return weightsOf(ex)
+}
+
+function weightsOf(ex) {
   const sourceEx = metadataOf(ex)
   if (sourceEx !== ex) return muscleWeightsOf(sourceEx)
   if (ex.muscleWeights && typeof ex.muscleWeights === 'object' && !Array.isArray(ex.muscleWeights)) {
@@ -225,8 +238,14 @@ export function muscleWeightsOf(ex) {
 
 /** Muscles one exercise trains: positive effective stimulus only. */
 export function musclesOf(ex) {
-  return Object.fromEntries(Object.entries(muscleWeightsOf(ex)).filter(([, weight]) => weight > 0))
+  if (ex && isBuiltinEx(ex)) {
+    let m = builtinMuscles.get(ex)
+    if (!m) builtinMuscles.set(ex, m = positiveOf(muscleWeightsOf(ex)))
+    return { ...m }
+  }
+  return positiveOf(muscleWeightsOf(ex))
 }
+const positiveOf = weights => Object.fromEntries(Object.entries(weights).filter(([, weight]) => weight > 0))
 
 /** Snapshot display and weighted muscle metadata into a completed history entry. */
 export function exerciseMuscleSnapshot(ex) {
@@ -295,6 +314,33 @@ export const loadOfRoutine = (routine, exercises = {}) =>
   loadOf((routine?.ex || []).map(c => ({ id: c.id, ex: exercises[c.id] || c, sets: c.sets || 1 })))
 
 /**
+ * A running session's muscles (#670): `done` from the sets ticked so far, `planned` from every
+ * working set on the screen, done or not. Warm-ups count for neither, as in the finished
+ * workout's map, so a session that is all ticked shades exactly like its summary.
+ */
+export function sessionLoad(entries) {
+  const of = pick => loadOf((entries || []).map(e => ({
+    id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => !isWarmupRow(s) && pick(s)).length,
+  })))
+  return { done: of(s => s.done), planned: of(() => true) }
+}
+
+/**
+ * Shade steps for the live session map. A muscle still to come gets the faintest step (l1); one
+ * already worked jumps to l3, so the first set reads as "done" even on a 30px body, and to the
+ * full accent (l4) once it has half as many sets as the session's busiest muscle will.
+ */
+export function sessionLevels({ done, planned }) {
+  const max = Math.max(0, ...MUSCLES.map(m => planned[m] || 0), ...MUSCLES.map(m => done[m] || 0))
+  const lv = {}
+  MUSCLES.forEach(m => {
+    const d = done[m] || 0
+    lv[m] = d > 0 ? (d * 2 >= max ? 4 : 3) : (planned[m] || 0) > 0 ? 1 : 0
+  })
+  return lv
+}
+
+/**
  * Effective sets programmed by the live recurring week; overrides and history are not plans.
  * A floating week or rotation (S.queue, lib/queue.js) is the plan too: each of its sessions once,
  * beside your own weekday routines — the same split the Home streak card tallies (weekTally).
@@ -318,10 +364,6 @@ export function loadOfWeeklyPlan(S) {
   }
   return load
 }
-
-/** Load for a workout still in progress — the sets ticked so far. */
-export const loadOfActive = active =>
-  loadOf((active?.entries || []).map(e => ({ id: e.id, ex: e.exercise || e, sets: (e.sets || []).filter(s => s.done && !isWarmupRow(s)).length })))
 
 /**
  * Shade buckets 0–4 per muscle.

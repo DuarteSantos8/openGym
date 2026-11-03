@@ -16,6 +16,29 @@ describe('buildSessionEntries', () => {
     expect(entries[0].sets.filter(s => !isWarmupRow(s)).every(s => s.w === 60)).toBe(true)
   })
 
+  it('an assistance machine warms up with more help than its work sets, not less', () => {
+    // 0017 assisted pull-up: 1.5 × 25 = 37.5, rounded up to the 5 kg step; then halfway down
+    const r = { id: 'r', prog: 'off', ex: [{ id: '0017', sets: 3, reps: 10, weight: 25, inc: 5, warmupSets: 2 }] }
+    expect(buildSessionEntries(st, r)[0].sets.filter(isWarmupRow).map(s => s.w)).toEqual([40, 35])
+    // A normal lift still ramps up toward the work weight
+    const bench = { id: 'r', prog: 'off', ex: [{ id: '0025', sets: 3, reps: 10, weight: 25, inc: 5, warmupSets: 1 }] }
+    expect(buildSessionEntries(st, bench)[0].sets.find(isWarmupRow).w).toBeLessThan(25)
+  })
+
+  it('an assistance machine re-ramps its warm-up toward the prescribed weight, from above', () => {
+    // Every set at the top of 8-12: double progression takes 5 kg of help away (25 → 20), and the
+    // warm-up follows the new work weight: 1.5 × 20 = 30.
+    const cfg = { id: '0017', sets: 3, reps: 12, repsMin: 8, weight: 25, inc: 5, warmupSets: 1 }
+    const done = {
+      unit: 'kg', exWeights: {}, routines: [],
+      workouts: [{ d: '2026-01-01', routineIds: ['r'], entries: [{ id: '0017', target: { ...cfg }, sets: [12, 12, 12].map(r => ({ w: 25, r, done: true })) }] }],
+    }
+    const sets = buildSessionEntries(done, { id: 'r', prog: 'double', ex: [cfg] })[0].sets
+    const work = sets.filter(s => !isWarmupRow(s)).map(s => s.w)
+    expect(work.every(w => w === work[0] && w < 25)).toBe(true)
+    expect(sets.find(isWarmupRow).w).toBe(work[0] * 1.5)
+  })
+
   it('keeps the unit default for timed exercises, whose inc is seconds', () => {
     const r = { id: 'r', prog: 'off', ex: [{ id: '0025', mode: 'time', sets: 2, sec: 30, inc: 10, weight: 0 }] }
     const entries = buildSessionEntries(st, r)

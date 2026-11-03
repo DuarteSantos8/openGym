@@ -81,6 +81,31 @@ const HEVY_HEAD = HEVY_WARMUPS.split('\n')[0]
 const EXPORT_A = [HEVY_HEAD, hevyDay('Day A', '02', 'Zorb Roller', 49, 8), hevyDay('Day A', '02', 'Bench Press (Barbell)', 80, 5)].join('\n')
 const EXPORT_B = [HEVY_HEAD, hevyDay('Day A', '02', 'Zorb Roller', 49, 8), hevyDay('Day B', '09', 'Zorb Roller', 30, 15)].join('\n')
 
+// Hevy's CSV writes a line break inside a note as the two characters `\n`, and a weight read
+// from another unit kept only a tenth, so 45 lb came in as 20.4 kg (44.97 lb).
+describe('Hevy notes and converted weights', () => {
+  const note = (desc, exNote) =>
+    `"Legs","03 Mar 2025, 18:00","03 Mar 2025, 19:00","${desc}","Squat (Barbell)",,"${exNote}",0,normal,100,5,,,`
+
+  it('turns Hevy\'s escaped line breaks back into line breaks', () => {
+    const [w] = parseWorkoutCSV([HEVY_HEAD, note('Felt slow.\\nKnee ok', 'Belt on\\r\\nLast set hard')].join('\n'), { unit: 'kg' }).workouts
+    expect(w.note).toBe('Felt slow.\nKnee ok')
+    expect(w.entries[0].note).toBe('Belt on\nLast set hard')
+  })
+
+  it('leaves another app\'s notes as they are', () => {
+    const [w] = parseWorkoutCSV('Date,Exercise,Weight,Reps,Notes\n2025-03-03,Squat,100,5,a\\nb', { unit: 'kg' }).workouts
+    expect(w.entries[0].note).toBe('a\\nb')
+  })
+
+  it('keeps a converted weight to the hundredth', () => {
+    const p = parseWorkoutCSV('Date,Exercise,Weight,Weight Unit,Reps\n2025-03-03,Squat,45,lbs,5', { unit: 'kg' })
+    expect(p.workouts[0].entries[0].sets[0].w).toBe(20.41)
+    const back = parseWorkoutCSV('Date,Exercise,Weight,Weight Unit,Reps\n2025-03-03,Squat,20.41,kg,5', { unit: 'lb' })
+    expect(back.workouts[0].entries[0].sets[0].w).toBe(45)
+  })
+})
+
 describe('mergeImport and custom exercises', () => {
   const fresh = () => ({ workouts: [], customEx: [], exWeights: {}, bodyweight: [] })
 

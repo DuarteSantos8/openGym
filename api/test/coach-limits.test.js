@@ -103,6 +103,46 @@ test('the instance count is not bounded by the length of the job log', () => {
   return settle(uid);
 });
 
+test('a job the daily caps refuse does not bind the instance credential', () => {
+  // A personal credential belongs to the first profile that spends it. A job refused for the
+  // day spends nothing, but the bind used to come before the caps, so a profile that asked on a
+  // day the caps were already reached took the owner's account with it, and from then on every
+  // other profile was refused as sharing it.
+  const prev = cfg.load();
+  cfg.save({
+    provider: 'claude', authMode: 'instance', boundUid: {},
+    auth: { claude: { type: 'cli-token', account: 'owner@example.test', data: cfg.encrypt({ token: 'tok-instance' }) } }
+  });
+  try {
+    const own = 'u-cap-bind-own';
+    writeState(DIR, own, sampleState());
+    fs.mkdirSync(`${DIR}/coach`, { recursive: true });
+    fs.writeFileSync(userFile(own), JSON.stringify({ daily: { date: today, count: 1 }, history: [] }));
+    cfg.save({ caps: { perProfileDaily: 1, instanceDaily: 0 } });
+    assert.throws(() => jobs.enqueue(own, { kind: 'review' }), e => e.code === 'cap' && e.message === 'daily limit reached');
+    assert.equal(cfg.boundUidFor(), null, 'a profile over its own cap did not take the credential');
+
+    const inst = 'u-cap-bind-inst';
+    writeState(DIR, inst, sampleState());
+    cfg.save({ caps: { perProfileDaily: 10, instanceDaily: 1 }, daily: { date: today, count: 1 } });
+    assert.throws(() => jobs.enqueue(inst, { kind: 'review' }), e => e.code === 'cap' && /instance/.test(e.message));
+    assert.equal(cfg.boundUidFor(), null, 'nor did one the instance cap refused');
+
+    // Not vacuous: this is a credential that binds on spend.
+    cfg.bindInstanceCredential(own);
+    assert.equal(cfg.boundUidFor(), own);
+
+    // The refusals ahead of the caps still come first, caps reached or not: a profile the
+    // credential is bound away from hears that it is someone else's account, and a profile with
+    // no account of its own hears that, rather than "try again tomorrow".
+    assert.throws(() => jobs.enqueue(inst, { kind: 'review' }), e => e.code === 'shared');
+    cfg.save({ authMode: 'profile' });
+    assert.throws(() => jobs.enqueue(inst, { kind: 'review' }), e => e.code === 'off' && e.message === 'this profile has no provider account connected');
+  } finally {
+    cfg.save({ provider: prev.provider, authMode: prev.authMode, boundUid: prev.boundUid, auth: prev.auth, daily: prev.daily, caps: { perProfileDaily: 10, instanceDaily: 0 } });
+  }
+});
+
 /* ---------- scheduled reviews ---------- */
 
 /** startCadence arms a setInterval; take the callback so the tests can tick it by hand. */
@@ -211,6 +251,9 @@ test('a proposal nobody has answered is not replaced by the next scheduled revie
   const first = await settle(uid);
   assert.equal(lastOutcome(uid).outcome, 'ready');
   assert.ok(first.pending, 'a proposal is waiting');
+  // Nobody asked for it, so the phone app (no web push) is told by the status it reads (Discord).
+  assert.equal(first.pending.trigger, 'scheduled');
+  assert.equal(first.last.trigger, 'scheduled');
 
   S.workouts.push(newWorkout('w2'));
   writeState(DIR, uid, S);
@@ -224,6 +267,13 @@ test('a proposal nobody has answered is not replaced by the next scheduled revie
   assert.ok(jobs.status(uid).job, 'the workout since the last review is due');
   await settle(uid);
   assert.equal(jobs.readUser(uid).history.filter(h => h.outcome === 'ready').length, 2);
+
+  // One somebody asked for is not marked.
+  jobs.resolvePending(uid, { dismissed: true });
+  jobs.enqueue(uid, { kind: 'review' });
+  const asked = await settle(uid);
+  assert.equal(asked.pending.trigger, undefined);
+  assert.equal(asked.last.trigger, undefined);
 });
 
 test('a rejected answer tells the admin which rule broke, without quoting the plan', async () => {

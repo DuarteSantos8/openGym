@@ -7,10 +7,10 @@ import Stats from './Stats.jsx'
 
 const NOW = new Date(2026, 8, 30, 12).getTime()
 const press = { id: 'press', n: 'Press', primaries: ['chest'], secondaries: ['triceps'], custom: true }
-const mocks = vi.hoisted(() => ({ S: null, bodyMaps: [] }))
+const mocks = vi.hoisted(() => ({ S: null, bodyMaps: [], nav: null }))
 
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
-vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }))
+vi.mock('react-router-dom', () => ({ useNavigate: () => (...a) => mocks.nav?.(...a) }))
 vi.mock('../sheets.jsx', () => ({
   bwSheet: vi.fn(), goalSheet: vi.fn(), calendarSheet: vi.fn(), workoutDetailSheet: vi.fn(),
   exerciseHistorySheet: vi.fn(), WorkoutRow: () => React.createElement('div'), bwDeltaColor: () => '', weighInsSheet: vi.fn(),
@@ -71,6 +71,8 @@ describe('Stats — weekly planned vs completed volume', () => {
     expect([...comparison().querySelectorAll('[data-muscle-volume]')].map(item => item.dataset.muscleVolume))
       .toEqual(['chest', 'biceps', 'triceps'])
     expect(value('chest').textContent).toBe('8/12 · 67%')
+    // #573: every row's figure is the same fixed-width kind, so the bars line up
+    for (const m of ['chest', 'biceps', 'triceps']) expect(value(m).classList.contains('cmp'), m).toBe(true)
     expect(value('chest').getAttribute('aria-label')).toBe('Completed 8 sets · Planned 12 sets')
     expect(bar('chest').style.width).toBe('67%')
     expect(value('triceps').textContent).toBe('0/4.8 · 0%')
@@ -272,5 +274,59 @@ describe('Stats — weekly planned vs completed volume', () => {
     expect(value('chest').textContent).toBe('2/2 · 100%')
     expect(value('triceps').textContent).toBe('0/1 · 0%')
     expect(row('biceps')).toBeNull()
+  })
+
+  // #553: an untrained muscle opens the exercises that train it.
+  it('a tap on an untrained muscle opens its exercises', () => {
+    mocks.nav = vi.fn()
+    mocks.S = state({
+      routines: [{ id: 'push', name: 'Push', ex: [{ id: 'press', sets: 12 }] }],
+      workouts: [completed('2026-09-30', 'chest', 8)],
+    })
+    mount()
+    const chip = comparison().querySelector('.mchip.miss')
+    expect(chip.tagName).toBe('BUTTON')
+    act(() => chip.click())
+    expect(mocks.nav).toHaveBeenCalledWith('/muscles?m=' + chip.dataset.muscle, { state: { from: '/stats' } })
+    expect(MUSCLES).toContain(chip.dataset.muscle)
+  })
+
+  // #553: picking an untrained muscle on the map itself, not only its chip, leads to its exercises.
+  const find = () => host.querySelector('[data-find-exercises]')
+  const tapChest = () => act(() => host.querySelector('[data-body-map] button[aria-label="Chest"]').click())
+
+  it('an untrained muscle picked on the week map offers its exercises', () => {
+    mocks.nav = vi.fn()
+    mount()
+    expect(find()).toBeNull()
+    tapChest()
+    expect(row('chest')).toBeTruthy()
+    expect(find().dataset.findExercises).toBe('chest')
+    expect(find().getAttribute('aria-label')).toBe('Exercises for Chest')
+    // the row may wrap the chip onto a line of its own on a narrow phone (index.css .has-find)
+    expect(row('chest').classList.contains('has-find')).toBe(true)
+    act(() => find().click())
+    expect(mocks.nav).toHaveBeenCalledWith('/muscles?m=chest', { state: { from: '/stats' } })
+  })
+
+  it('an untrained muscle picked on the 30-day map offers its exercises, a trained one does not', () => {
+    mocks.nav = vi.fn()
+    mount()
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent === '30d').click())
+    tapChest()
+    expect(find().dataset.findExercises).toBe('chest')
+    // says so in words, not "0 sets"
+    expect(host.querySelector('[data-muscle-volume="chest"] .v').textContent).toBe('not trained')
+    expect(host.querySelector('[data-muscle-volume="chest"]').classList.contains('has-find')).toBe(true)
+    act(() => find().click())
+    expect(mocks.nav).toHaveBeenCalledWith('/muscles?m=chest', { state: { from: '/stats' } })
+
+    act(() => root.unmount()); root = createRoot(host)
+    mocks.S = state({ workouts: [completed('2026-09-30', 'chest', 3)] })
+    mount()
+    act(() => [...host.querySelectorAll('button')].find(b => b.textContent === '30d').click())
+    tapChest()
+    expect(host.querySelector('[data-muscle-volume="chest"]')).toBeTruthy()
+    expect(find()).toBeNull()
   })
 })

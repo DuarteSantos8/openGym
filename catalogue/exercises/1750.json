@@ -9,6 +9,9 @@
     "shoulders"
   ],
   "category": "plyometrics",
+  "needs": [
+    "bench"
+  ],
   "description": "An explosive chest throw with a medicine ball while lying on your back. Develops fast pressing power in the triceps and chest.",
   "instructions": [
     "Lie flat on your back on a bench with your knees bent and feet flat on the ground.",

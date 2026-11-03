@@ -13,7 +13,7 @@ const pluginProxy = () => new Proxy({}, {
   get: (_, prop) => {
     if (prop === 'then') return () => new Promise(() => {})
     return async arg => {
-      if (h.fail) throw new Error('"SystemBars" plugin is not implemented on android')
+      if (h.fail) throw new Error('"BarIcons" plugin is not implemented on android')
       h.calls.push([String(prop), arg])
     }
   },
@@ -22,6 +22,7 @@ const pluginProxy = () => new Proxy({}, {
 vi.mock('@capacitor/core', () => ({
   Capacitor: { getPlatform: () => h.platform },
   registerPlugin: () => pluginProxy(),
+  SystemBars: { setStyle: async arg => { h.calls.push(['ios.setStyle', arg]) } },
 }))
 
 beforeEach(() => {
@@ -40,8 +41,16 @@ describe('system bars follow the theme on Android', () => {
     expect(h.calls).toEqual([['setStyle', { light: true }], ['setStyle', { light: false }]])
   })
 
-  it('stays quiet off Android', async () => {
+  it('on iOS, Capacitor\'s SystemBars sets the status bar style', async () => {
     h.platform = 'ios'
+    const { setSystemBarsLight } = await import('./system-bars.js')
+    await setSystemBarsLight(true)
+    await setSystemBarsLight(false)
+    expect(h.calls).toEqual([['ios.setStyle', { style: 'LIGHT' }], ['ios.setStyle', { style: 'DARK' }]])
+  })
+
+  it('stays quiet in a browser shell', async () => {
+    h.platform = 'web'
     const { setSystemBarsLight } = await import('./system-bars.js')
     await setSystemBarsLight(true)
     expect(h.calls).toEqual([])
@@ -58,9 +67,9 @@ describe('system bars follow the theme on Android', () => {
     expect(app).toMatch(/function applyPrefs[\s\S]*?setSystemBarsLight\(de\.dataset\.theme === 'light'\)/)
     const dir = '../../android/app/src/main/java/ch/duartesantos/opengym/'
     const activity = readFileSync(new URL(dir + 'MainActivity.java', import.meta.url), 'utf8')
-    const plugin = readFileSync(new URL(dir + 'SystemBarsPlugin.java', import.meta.url), 'utf8')
-    expect(activity).toMatch(/registerPlugin\(SystemBarsPlugin\.class\);[\s\S]*super\.onCreate/)
-    expect(plugin).toContain('@CapacitorPlugin(name = "SystemBars")')
+    const plugin = readFileSync(new URL(dir + 'BarIconsPlugin.java', import.meta.url), 'utf8')
+    expect(activity).toMatch(/registerPlugin\(BarIconsPlugin\.class\);[\s\S]*super\.onCreate/)
+    expect(plugin).toContain('@CapacitorPlugin(name = "BarIcons")')
     expect(plugin).toMatch(/setAppearanceLightStatusBars\(light\)/)
   })
 })

@@ -47,9 +47,12 @@ describe('exercise configuration progression row', () => {
     const linear = renderConfig({ prog: 'linear' })
     expect(linear.row.querySelectorAll('.stp-w')).toHaveLength(2)
     expect(linear.row.classList.contains('cfgrow-4')).toBe(false)
-    // double on a body-weight exercise: no Epley deload, three steppers
+    // double on a body-weight exercise with nothing added: no Epley deload, and no weight Step
+    // either (#583), so just the rep range
     const bw = renderConfig({ prog: 'double', weight: 0, bodyweight: true })
-    expect(bw.row.querySelectorAll('.stp-w')).toHaveLength(3)
-    expect(bw.row.classList.contains('cfgrow-4')).toBe(false)
+    expect(bw.row).toBeUndefined()
+    const range = [...bw.host.querySelectorAll('.cfgrow')].find(r => r.querySelector('.stp-l')?.textContent === 'Reps from')
+    expect(range.querySelectorAll('.stp-w')).toHaveLength(2)
+    expect(range.classList.contains('cfgrow-4')).toBe(false)
   })
 })

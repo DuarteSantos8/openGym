@@ -10,6 +10,7 @@
     "core"
   ],
   "category": "isometric",
+  "hold": true,
   "description": "A straight-arm plank with feet in the straps and one leg lifted, which challenges core stability.",
   "instructions": [
     "Put your feet in the straps and set a high plank.",

@@ -9,6 +9,9 @@
     "forearms"
   ],
   "category": "strength",
+  "needs": [
+    "bench"
+  ],
   "description": "Lie on a bench and lower an EZ bar toward your forehead, then press back up. It builds the triceps with minimal wrist strain.",
   "instructions": [
     "Lie on a bench holding an EZ bar above your chest.",

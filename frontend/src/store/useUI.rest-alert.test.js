@@ -6,7 +6,7 @@ import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { useUI } from './useUI.js'
 import { useStore } from './useStore.js'
 
-let showNotification, requestPermission, subscription, originalSettings
+let showNotification, getNotifications, requestPermission, subscription, originalSettings
 const hide = hidden => {
   Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden })
   Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => hidden ? 'hidden' : 'visible' })
@@ -24,13 +24,14 @@ beforeEach(() => {
   useStore.setState({ S: { ...originalSettings, sound: false }, user: null })
   useUI.setState({ timer: null })
   showNotification = vi.fn()
+  getNotifications = vi.fn(async () => [])
   requestPermission = vi.fn(async () => 'granted')
   subscription = null
   globalThis.Notification = Object.assign(vi.fn(), { permission: 'granted', requestPermission })
   window.Notification = globalThis.Notification
   Object.defineProperty(navigator, 'serviceWorker', {
     configurable: true,
-    value: { getRegistration: async () => ({ showNotification, pushManager: { getSubscription: async () => subscription } }) },
+    value: { getRegistration: async () => ({ showNotification, getNotifications, pushManager: { getSubscription: async () => subscription } }) },
   })
 })
 afterEach(() => {
@@ -55,6 +56,18 @@ describe('the local rest-over alert follows the Push switch', () => {
     expect(title).toBe('Rest’s over. Next set!')
     expect(opts.tag).toBe('rest-timer')
     expect(opts.body).toBeUndefined()
+  })
+
+  // iOS ignores a tag's replacement (issue #172), so the page closes the previous one by hand
+  // before showing its own — the worker already does this on a push.
+  it('closes the previous rest-timer notification before showing the next', async () => {
+    subscription = { endpoint: 'https://push.example/x' }
+    const order = []
+    getNotifications.mockImplementation(async ({ tag }) => [{ tag, close: () => order.push('close') }])
+    showNotification.mockImplementation(() => order.push('show'))
+    await runOut()
+    expect(getNotifications).toHaveBeenCalledWith({ tag: 'rest-timer' })
+    expect(order).toEqual(['close', 'show'])
   })
 
   it('never asks for the permission by itself — only the switch does', async () => {
