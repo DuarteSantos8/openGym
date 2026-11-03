@@ -53,6 +53,8 @@ object WearStore {
         prefs.getString("state", null)?.let { json ->
             try { _state.value = WireJson.decodeFromString(SessionState.serializer(), json) } catch (_: Exception) {}
         }
+        // Events still waiting from the last run (sent then, never applied on the phone): out again.
+        PhoneLink.flush(app)
         val endsAt = prefs.getLong("restEndsAt", 0)
         if (endsAt > System.currentTimeMillis()) armRest(Rest(endsAt, prefs.getInt("restTotal", 90)))
         setFrom = System.currentTimeMillis()
@@ -83,6 +85,8 @@ object WearStore {
             }
         }
         commit(after)
+        // What the phone has applied leaves the outbox; what it lacks goes out again.
+        PhoneLink.acked(app, snap.acked)
     }
 
     /* ---------- the lifter's actions ---------- */

@@ -15,11 +15,16 @@ class WearListener : WearableListenerService() {
     override fun onDataChanged(events: DataEventBuffer) {
         WearStore.init(this)
         var json: String? = null
+        val stored = mutableListOf<String>()
         for (e in events) {
-            if (e.type != DataEvent.TYPE_CHANGED || e.dataItem.uri.path != Paths.SNAPSHOT) continue
+            val path = e.dataItem.uri.path ?: continue
+            // The phone deleted one of the watch's events: it has it in its queue now.
+            if (e.type == DataEvent.TYPE_DELETED && path.startsWith(Paths.EVENT_PREFIX)) { stored += path.removePrefix(Paths.EVENT_PREFIX); continue }
+            if (e.type != DataEvent.TYPE_CHANGED || path != Paths.SNAPSHOT) continue
             json = DataMapItem.fromDataItem(e.dataItem).dataMap.getString(Paths.KEY_SNAPSHOT) ?: json
         }
         events.release()
+        PhoneLink.delivered(this, stored)
         json?.let { WearStore.applySnapshotJson(it) }
     }
 
