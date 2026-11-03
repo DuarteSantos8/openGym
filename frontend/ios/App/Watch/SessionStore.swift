@@ -4,6 +4,7 @@ import UIKit
 import UserNotifications
 import WatchConnectivity
 import WatchKit
+import WidgetKit
 
 /*
  * The watch's side of a workout, around WatchCore's SessionCore (the session as plain data and
@@ -29,7 +30,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         didSet {
             if !isDemo, state != oldValue { save() }
             // The page changed without a swipe (Done moved on, a snapshot): a moment without taps.
-            if state.entryIndex != oldValue.entryIndex { touchLock.lock(at: Date()) }
+            if state.entryIndex != oldValue.entryIndex {
+                touchLock.lock(at: Date())
+                if SessionCore.atEnd(state) { finishWanted = true }
+            }
             if state.workout?.id != oldValue.workout?.id { watchIdle() }
         }
     }
@@ -93,9 +97,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var holdStartedAt: Date?
     /// The end of the last workout, on one screen, until the lifter is done looking at it.
     @Published private(set) var summary: WorkoutSummary?
-    /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
+    /// Whether the phone is in reach now.
     @Published private(set) var reachable = true
-    @Published private(set) var queued = 0
+    /// Sets logged here whose events the phone has not got yet (Unsent), for the pill and the complications.
+    @Published private(set) var unsent = 0
     /// Whether a snapshot from the phone ever arrived on this watch. The phone sends only while
     /// openGym runs there, so until then the start screen says to open it once.
     @Published private(set) var heardFromPhone = UserDefaults.standard.bool(forKey: SessionStore.heardKey)
@@ -113,7 +118,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var lastTick: Date?
     /// Taps ignored for a second after the watch turns the page by itself (WatchCore's TouchLock).
     private var touchLock = TouchLock()
-    private var touchAllowed: Bool { touchLock.allows(at: Date()) }
+    var touchAllowed: Bool { touchLock.allows(at: Date()) }
     /// When this watch first had the running workout (its start, for a phone that sends none).
     private var workoutSeenAt: Date?
     /// The rest running after a set, for that rest's heart rate once it is over.
@@ -241,8 +246,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return workout == nil ? nil : workoutSeenAt
     }
 
-    /// Events wait on the watch for a phone out of reach: "Saved on the watch, syncs later".
-    var offline: Bool { queued > 0 && !reachable }
+    // lean: a queue stuck while the phone is reachable reads "On your iPhone"; add a linger timer if the wrist test finds one.
+    /// What to say about the sets of the workout on screen (or the summary), see WatchCore's SyncState.
+    var sync: SyncState {
+        SyncState.state(reachable: reachable, unsent: unsent, logged: workout.map(SyncState.anySet) ?? summary.map { $0.sets > 0 })
+    }
 
     func isSkipped(_ exId: String, _ si: Int) -> Bool { SessionCore.isSkipped(state, exId, si) }
 
@@ -267,10 +275,29 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         loadTargets()
     }
 
+    /// The workout is at its end (last set done, or "All done?"): the Overview comes up with Finish in view. The Overview clears it.
+    @Published var finishWanted = false
+
+    func showFinish() {
+        let end = workout?.entries.count ?? 0
+        if state.entryIndex != end { state.entryIndex = end }          // didSet raises finishWanted and locks
+        else { finishWanted = true; touchLock.lock(at: Date()) }
+    }
+
+    /// A row of the Overview: that exercise's set page comes up under the thumb that picked it, so its taps wait a second.
+    /// False when the tap lock refused it.
+    @discardableResult func choose(entry ei: Int) -> Bool {
+        guard touchAllowed else { return false }
+        show(entry: ei)                    // unlocks (a swipe by hand) ...
+        touchLock.lock(at: Date())         // ... so lock again: this arrival was a tap, not a swipe
+        return true
+    }
+
     /// What the complications and the Smart Stack widget show (WidgetState), in the app's language.
     var widgetState: WidgetState {
         var w = widgetStateWithoutLang
         w.lang = state.settings.lang
+        w.unsent = SyncState.count(reachable: reachable, unsent: unsent)
         return w
     }
 
@@ -592,6 +619,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func closeSummary() {
         summary = nil
+        touchLock.lock(at: Date())  // the thumb that hit Done is still over the screen's Start
     }
 
     /* ---------- workouts deleted in openGym, out of Apple Health ---------- */
@@ -629,6 +657,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var weighInFor: ReadySession?
     /// The body weight on the weigh-in's crown.
     @Published var bodyWeight: Double = 70
+
+    /// A thumb on a Start button: ignored just after the screen turned by itself (the complication's Start is not).
+    func startFromTouch(_ session: ReadySession) {
+        if touchAllowed { start(session) }
+    }
 
     /// Starts a ready session here, the phone asleep or not: first the weigh-in, as on the phone,
     /// unless it is switched off there (Settings → During a workout).
@@ -950,6 +983,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let session = WCSession.default
         guard session.activationState == .activated else {
             outbox = Array((outbox + [json]).suffix(500))
+            updateLink()
             return
         }
         // Queued by the system and delivered, in order, even when the phone app is not running.
@@ -965,15 +999,24 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     /// The phone in reach or not, and the events still on their way: the small "syncs later" sign.
-    private func updateLink() {
+    func updateLink() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         let r = session.activationState == .activated && session.isReachable
-        let q = session.outstandingUserInfoTransfers.count
+        let u = Unsent.sets(in: outbox + session.outstandingUserInfoTransfers.compactMap { $0.userInfo["event"] as? String })
         DispatchQueue.main.async {
+            let before = SyncState.count(reachable: self.reachable, unsent: self.unsent) // what the faces show
             if self.reachable != r { self.reachable = r }
-            if self.queued != q { self.queued = q }
+            if self.unsent != u { self.unsent = u }
+            if before != SyncState.count(reachable: r, unsent: u) { self.publishWidget() }
         }
+    }
+
+    /// Written here, not in a view: a transfer finishes when the app may not be on screen.
+    func publishWidget() {
+        guard !isDemo else { return }
+        widgetState.write()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     func sessionReachabilityDidChange(_ session: WCSession) { updateLink() }
@@ -981,6 +1024,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func session(_ session: WCSession, didFinish userInfoTransfer: WCSessionUserInfoTransfer, error: Error?) {
         // A transfer that failed is not tried again by the system: sent again from here, a few
         // times (the phone applies each event once, by its id, so a second copy does no harm).
+        // lean: until the retry below is queued the set is in no list, so the count dips; after 3 tries it is dropped, uncounted.
         if error != nil, let json = userInfoTransfer.userInfo["event"] as? String {
             let tries = (userInfoTransfer.userInfo["tries"] as? Int) ?? 0
             if tries < 3 { DispatchQueue.main.asyncAfter(deadline: .now() + 5) { self.transfer(json, tries: tries + 1) } }
@@ -1061,36 +1105,65 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
+    /// CI: the screens that open on the Overview.
+    static var demoOpensOverview: Bool { ["overview", "overview-offline", "overview-away", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
+
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: screen == "idle" ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
+        switch screen {
+        case "empty", "empty-heard": break
+        case "idle", "idle-end", "idle-offline": apply(json: SessionStore.demoReadyJSON)
+        case "idle-rest": apply(json: SessionStore.demoReadyRestJSON)
+        default: apply(json: SessionStore.demoJSON)
+        }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps": self.picked[0] = 2
+            case "set", "weight", "rest", "rest-offline", "offline", "edit-weight", "edit-reps", "finish-auto": self.picked[0] = 2
             case "hold": self.state.entryIndex = 1
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
-            case "finish": self.state.entryIndex = self.workout?.entries.count ?? 0
+            case "overview", "overview-offline", "overview-away", "finish", "finish-hold", "finish-hold-full", "discard":
+                // The Pull-up done, so the Overview shows all three states.
+                for si in 0..<2 { self.state.workout?.entries[2].sets[si].done = true }
+                if !screen.hasPrefix("overview") { self.state.entryIndex = self.workout?.entries.count ?? 0 }
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
+            case "empty-heard": self.heardFromPhone = true
             default: break
             }
             // CI: the watch in another language than its own (the app's, as the phone sends it).
             if let lang = SessionStore.argument("-OpenGymWatchLang") { self.state.settings.lang = lang }
             if let show = SessionStore.argument("-OpenGymWatchShow") {
                 // "all": every optional thing on, for a look at the fullest screen.
-                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
+                if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring"); self.health.showDemo(heartRate: 128) }
                 if show == "plain" { self.state.settings.show = WatchShow(rest: "plain") }
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen.hasPrefix("rest") { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
             if screen == "hold" { self.startHold() }
-            if screen == "offline" { self.reachable = false; self.queued = 3 }
-            if screen == "summary" || screen == "summary-end" || screen == "ended" {
+            // The phone out of reach: with 3 sets waiting for it, or (the "-away" screens) with none logged yet.
+            if screen.hasSuffix("away"), var w = self.state.workout {
+                for ei in w.entries.indices {
+                    for si in w.entries[ei].sets.indices {
+                        w.entries[ei].sets[si].done = false
+                        w.entries[ei].sets[si].at = nil
+                        w.entries[ei].sets[si].sides?.L.done = false
+                        w.entries[ei].sets[si].sides?.R.done = false
+                    }
+                }
+                self.state.workout = w
+                self.reachable = false
+            }
+            if screen.hasSuffix("offline") {
+                self.reachable = false
+                self.unsent = screen == "idle-offline" ? 2 : 3
+            }
+            if screen == "finish-auto" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.showFinish() } }
+            if screen.hasPrefix("summary") || screen == "ended" {
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
                                               endedOnPhone: screen == "ended")
@@ -1102,10 +1175,38 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
+    // The start screen's routines; the rest-day demo reuses two of them.
+    private static let demoPull = """
+    {"routineIds":["r2"],"name":"Pull day","entries":[
+        {"id":"0027","name":"Barbell Row","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0651","name":"Lat Pulldown","mode":"reps","sets":[{"w":50,"r":10,"done":false,"warmup":false},{"w":50,"r":10,"done":false,"warmup":false},{"w":50,"r":10,"done":false,"warmup":false}]},
+        {"id":"0861","name":"Face Pull","mode":"reps","sets":[{"w":20,"r":15,"done":false,"warmup":false},{"w":20,"r":15,"done":false,"warmup":false},{"w":20,"r":15,"done":false,"warmup":false}]},
+        {"id":"0294","name":"Biceps Curl","mode":"reps","sets":[{"w":12,"r":10,"done":false,"warmup":false},{"w":12,"r":10,"done":false,"warmup":false},{"w":12,"r":10,"done":false,"warmup":false}]}]}
+    """
+
+    private static let demoBench = """
+    {"routineIds":["r4"],"name":"Bench only","entries":[
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false}]}]}
+    """
+
     static let demoReadyJSON = """
     {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"today":{"routineIds":["r1"],"name":"Push day","entries":[
-    {"id":"0025","name":"Bench Press","mode":"reps","restSec":120,"last":null,"sets":[{"w":62.5,"r":8,"sec":null,"done":false,"warmup":false}]}]},
-    "others":[{"routineIds":["r2"],"name":"Pull day","entries":[]},{"routineIds":["r3"],"name":"Legs","entries":[]}]}}
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":40,"r":10,"done":false,"warmup":true},{"w":62.5,"r":8,"done":false,"warmup":false},{"w":62.5,"r":8,"done":false,"warmup":false},{"w":62.5,"r":8,"done":false,"warmup":false}]},
+        {"id":"0426","name":"Overhead Press","mode":"reps","sets":[{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false}]},
+        {"id":"0314","name":"Incline Dumbbell Press","mode":"reps","sets":[{"w":22,"r":10,"done":false,"warmup":false},{"w":22,"r":10,"done":false,"warmup":false},{"w":22,"r":10,"done":false,"warmup":false}]},
+        {"id":"0599","name":"Lateral Raise","mode":"reps","sets":[{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false}]},
+        {"id":"0241","name":"Triceps Pushdown","mode":"reps","sets":[{"w":25,"r":12,"done":false,"warmup":false},{"w":25,"r":12,"done":false,"warmup":false},{"w":25,"r":12,"done":false,"warmup":false}]}]},
+    "others":[\(demoPull),
+    {"routineIds":["r3"],"name":"Upper body hypertrophy block B","entries":[
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0027","name":"Barbell Row","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0426","name":"Overhead Press","mode":"reps","sets":[{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false}]}]},
+    \(demoBench)]}}
+    """
+
+    static let demoReadyRestJSON = """
+    {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"others":[\(demoPull),
+    \(demoBench)]}}
     """
 
     static let demoJSON = """

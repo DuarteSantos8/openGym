@@ -76,15 +76,15 @@ file = embed.add_file_reference(watch.product_reference, true)
 file.settings = { 'ATTRIBUTES' => ['RemoveHeadersOnCopy'] }
 
 # The complications and the Smart Stack widget (ios/App/WatchWidgets), a WidgetKit extension in the
-# watch app (OpenGymWatch.app/PlugIns), reading the state the app writes (Watch/WidgetState.swift,
-# compiled into both) through the App Group group.ch.opengym.app.
+# watch app (OpenGymWatch.app/PlugIns), reading the state the app writes (Watch/WidgetState.swift
+# and the faces in Watch/WidgetViews.swift, compiled into both) through the App Group group.ch.opengym.app.
 WIDGET = 'OpenGymWatchWidgets'
 WIDGET_DIR = 'WatchWidgets'
 widget = proj.new_target(:app_extension, WIDGET, :watchos, '10.0')
 wgroup = proj.main_group.new_group(WIDGET_DIR, WIDGET_DIR)
 wsources = Dir.children(File.join(dir, WIDGET_DIR)).select { |f| f.end_with?('.swift') }.sort.map { |f| wgroup.new_file(f) }
-shared = group.files.find { |f| f.path == 'WidgetState.swift' }
-widget.add_file_references(wsources + [shared].compact)
+shared = group.files.select { |f| %w[WidgetState.swift WidgetViews.swift].include?(f.path) }
+widget.add_file_references(wsources + shared)
 wgroup.new_file('Info.plist')
 Dir.children(File.join(dir, WIDGET_DIR)).select { |f| f.end_with?('.lproj') }.sort.each do |lproj|
   ref = wgroup.new_file(lproj)
