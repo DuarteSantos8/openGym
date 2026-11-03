@@ -3750,4 +3750,7 @@ export default {
   "Apply to all": "সবগুলোতে প্রয়োগ করো",
   "{0} exercise now steps by {1}.": "{0}টি ব্যায়াম এখন {1} করে বাড়ে।",
   "{0} exercises now step by {1}.": "{0}টি ব্যায়াম এখন {1} করে বাড়ে।",
+  "Icons": "আইকন",
+  "Emoji": "ইমোজি",
+  "The flame, the medals and friends.": "আগুনের শিখা, পদক আর তাদের বন্ধুরা।",
 }

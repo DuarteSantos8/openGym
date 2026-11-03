@@ -3671,4 +3671,7 @@ export default {
   "Apply to all": "모두 적용",
   "{0} exercise now steps by {1}.": "이제 운동 {0}개가 {1}씩 올라가요.",
   "{0} exercises now step by {1}.": "이제 운동 {0}개가 {1}씩 올라가요.",
+  "Icons": "아이콘",
+  "Emoji": "이모지",
+  "The flame, the medals and friends.": "불꽃, 메달, 그리고 친구들.",
 }

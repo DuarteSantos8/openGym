@@ -3671,4 +3671,7 @@ export default {
   "Apply to all": "Hepsine uygula",
   "{0} exercise now steps by {1}.": "{0} egzersiz artık {1} artıyor.",
   "{0} exercises now step by {1}.": "{0} egzersiz artık {1} artıyor.",
+  "Icons": "Simgeler",
+  "Emoji": "Emoji",
+  "The flame, the medals and friends.": "Alev, madalyalar ve arkadaşları.",
 }

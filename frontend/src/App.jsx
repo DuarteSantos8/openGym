@@ -166,6 +166,8 @@ function Shell() {
   // (Settings → Look & Home → Seasonal themes); the saved accent itself is never touched.
   const accent = seasonAccent(S) || accentValue(S)
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
+  // Settings → Icons: openGym's own or the emoji (components/Glyph.jsx, index.css .glyph).
+  useEffect(() => { document.documentElement.dataset.icons = S.icons === 'emoji' ? 'emoji' : 'opengym' }, [S.icons])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
   // isn't consulted for those.

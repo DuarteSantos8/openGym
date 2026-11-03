@@ -3726,4 +3726,7 @@ export default {
   "Apply to all": "طبّق على الكل",
   "{0} exercise now steps by {1}.": "تمرين واحد ({0}) يزيد الآن بمقدار {1}.",
   "{0} exercises now step by {1}.": "{0} تمارين تزيد الآن بمقدار {1}.",
+  "Icons": "الأيقونات",
+  "Emoji": "إيموجي",
+  "The flame, the medals and friends.": "الشعلة والميداليات ورفاقها.",
 }

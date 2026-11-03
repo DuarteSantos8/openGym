@@ -2460,6 +2460,9 @@ export const PT_BR_OVERRIDES = {
   "Apply to all": "Aplicar a todos",
   "{0} exercise now steps by {1}.": "{0} exercício agora sobe {1} por vez.",
   "{0} exercises now step by {1}.": "{0} exercícios agora sobem {1} por vez.",
+  "Icons": "Ícones",
+  "Emoji": "Emoji",
+  "The flame, the medals and friends.": "A chama, as medalhas e companhia.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -3674,4 +3674,7 @@ export default {
   "Apply to all": "Mindre alkalmaz",
   "{0} exercise now steps by {1}.": "{0} gyakorlat most {1} lépéssel nő.",
   "{0} exercises now step by {1}.": "{0} gyakorlat most {1} lépéssel nő.",
+  "Icons": "Ikonok",
+  "Emoji": "Emodzsi",
+  "The flame, the medals and friends.": "A láng, az érmek és a többiek.",
 }

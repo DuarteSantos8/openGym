@@ -3682,4 +3682,7 @@ export default {
   "Apply to all": "ใช้กับทั้งหมด",
   "{0} exercise now steps by {1}.": "ตอนนี้ {0} ท่าเพิ่มทีละ {1}",
   "{0} exercises now step by {1}.": "ตอนนี้ {0} ท่าเพิ่มทีละ {1}",
+  "Icons": "ไอคอน",
+  "Emoji": "อีโมจิ",
+  "The flame, the medals and friends.": "เปลวไฟ เหรียญ และผองเพื่อน",
 }

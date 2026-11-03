@@ -3671,4 +3671,7 @@ export default {
   "Apply to all": "सब पर लागू करें",
   "{0} exercise now steps by {1}.": "{0} व्यायाम अब {1} से बढ़ता है।",
   "{0} exercises now step by {1}.": "{0} व्यायाम अब {1} से बढ़ते हैं।",
+  "Icons": "आइकन",
+  "Emoji": "इमोजी",
+  "The flame, the medals and friends.": "लौ, मेडल और उनके साथी।",
 }

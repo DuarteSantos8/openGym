@@ -202,6 +202,9 @@ const P = {
   webhook: <><circle cx="12" cy="6.4" r="2.6" /><circle cx="6.2" cy="16.8" r="2.6" /><circle cx="17.8" cy="16.8" r="2.6" /><path d="M10.7 8.7 7.5 14.5M13.3 8.7l3.2 5.8M8.8 16.8h6.4" /></>,
   ring: <><circle cx="12" cy="13.8" r="6.4" /><path d="m9.7 5.4 2.3-1.8 2.3 1.8-2.3 1.8Z" /></>,
   chat: <path d="M5.6 4.8h12.8a2.2 2.2 0 0 1 2.2 2.2v8a2.2 2.2 0 0 1-2.2 2.2H11l-4.4 3.4v-3.4h-1a2.2 2.2 0 0 1-2.2-2.2V7a2.2 2.2 0 0 1 2.2-2.2Z" />,
+  // The seasonal set (v1.4.5): the advent calendar's tree, and its little joke of the day.
+  tree: <path d="M12 3.4 7.6 9.4h2.3l-3.5 4.8h2.7L5.6 19h12.8l-3.5-4.8h2.7l-3.5-4.8h2.3ZM12 19v2" />,
+  smile: <><circle cx="12" cy="12" r="8.2" /><path d="M8.7 14a3.9 3.9 0 0 0 6.6 0M9.4 9.7v.4M14.6 9.7v.4" /></>,
 }
 
 export const ICON_NAMES = Object.keys(P)

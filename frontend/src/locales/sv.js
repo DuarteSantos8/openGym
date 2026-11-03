@@ -3718,4 +3718,7 @@ export default {
   "Apply to all": "Använd för alla",
   "{0} exercise now steps by {1}.": "{0} övning ökar nu med {1}.",
   "{0} exercises now step by {1}.": "{0} övningar ökar nu med {1}.",
+  "Icons": "Ikoner",
+  "Emoji": "Emoji",
+  "The flame, the medals and friends.": "Flamman, medaljerna och deras kompisar.",
 }

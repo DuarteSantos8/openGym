@@ -253,6 +253,16 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 
+/* A glyph (components/Glyph.jsx): openGym's icon by default, the system emoji with Settings →
+   Icons on Emoji (data-icons on <html>, set by App.jsx). Both sit in the page, one shows. */
+.glyph{display:inline-flex;align-items:center;vertical-align:-.125em;line-height:1}
+.glyph > svg{display:block}
+.glyph-e{display:none;font-style:normal}
+:root[data-icons="emoji"] .glyph-e{display:inline}
+:root[data-icons="emoji"] .glyph > svg{display:none}
+/* The streak flame and the medals (components/Streak.jsx) carry their emoji inside the svg. */
+:root[data-icons="emoji"] .glyph-svg > :not(.glyph-e){display:none}
+
 /* ------------------------------------------------------------ type scale -- */
 /* The roles are the --fs-* tokens at the top. These classes carry a role's size, leading and
    tracking as one set, for text that has no component rule of its own (P1, redesign 1.4.5: the

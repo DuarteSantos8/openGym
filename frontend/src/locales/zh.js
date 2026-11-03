@@ -3671,4 +3671,7 @@ export default {
   "Apply to all": "全部应用",
   "{0} exercise now steps by {1}.": "{0} 个动作现在每次加 {1}。",
   "{0} exercises now step by {1}.": "{0} 个动作现在每次加 {1}。",
+  "Icons": "图标",
+  "Emoji": "表情符号",
+  "The flame, the medals and friends.": "火苗、奖牌和它们的小伙伴。",
 }

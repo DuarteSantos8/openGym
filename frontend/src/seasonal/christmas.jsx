@@ -14,6 +14,7 @@ import { exerciseNameText, fmtNum, fmtVol, uid } from '../lib/format.js'
 import { shownWeight, exUnitOf } from '../lib/ex-unit.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import Icon from '../components/Icon.jsx'
+import Glyph, { splitEmoji } from '../components/Glyph.jsx'
 import { Button } from '../components/ui.jsx'
 import { doorFor, STRETCH } from './advent-doors.js'
 import './christmas.css'
@@ -359,7 +360,7 @@ function AdventCard() {
   return <div className="card tappable xm-advent" data-advent-home style={{ cursor: 'pointer' }} {...tappable(() => openAdvent())}>
     <div className="row between">
       <div className="row" style={{ gap: 9, minWidth: 0 }}>
-        <span className="lrow-i xm-advent-i" aria-hidden="true">🎄</span>
+        <span className="lrow-i xm-advent-i" aria-hidden="true"><Glyph icon="tree" emoji="🎄" /></span>
         <div style={{ minWidth: 0 }}>
           <div className="lbl2">{t('Advent calendar')}</div>
           <div className="ttl">{title}</div>
@@ -373,15 +374,17 @@ function AdventCard() {
   </div>
 }
 
+// Each door's picture: openGym's own icon, or the emoji with Settings → Icons on Emoji (Glyph).
 const KIND = {
-  fact: ['💡', 'Fun fact'],
-  joke: ['😄', 'A little joke'],
-  tip: ['🏋️', 'Training tip'],
-  challenge: ['💪', 'Mini challenge'],
-  stretch: ['🧘', 'Cosy stretch'],
-  stat: ['📊', 'Stat of the day'],
-  special: ['⭐', 'Merry everything!'],
+  fact: [['lightbulb', '💡'], 'Fun fact'],
+  joke: [['smile', '😄'], 'A little joke'],
+  tip: [['dumbbell', '🏋️'], 'Training tip'],
+  challenge: [['arm', '💪'], 'Mini challenge'],
+  stretch: [['stretch', '🧘'], 'Cosy stretch'],
+  stat: [['chart', '📊'], 'Stat of the day'],
+  special: [['starFill', '⭐'], 'Merry everything!'],
 }
+const kindGlyph = ([icon, emoji]) => <Glyph icon={icon} emoji={emoji} />
 
 function AdventCalendar({ close, initial }) {
   const S = useStore(s => s.S)
@@ -398,7 +401,7 @@ function AdventCalendar({ close, initial }) {
     const st = doorState(S, day, now)
     if (st === 'locked') {
       setShake(day)
-      useUI.getState().toast(t('No peeking 👀'))
+      useUI.getState().toast(S.icons === 'emoji' ? t('No peeking 👀') : splitEmoji(t('No peeking 👀')).text)
       return
     }
     if (st === 'open') { setShown(day); return }
@@ -410,7 +413,7 @@ function AdventCalendar({ close, initial }) {
   }
   if (shown) return <DoorView day={shown} year={year} back={() => setShown(null)} close={close} />
   return <div className="xm-cal">
-    <h3>🎄 {t('Advent calendar')}</h3>
+    <h3><Glyph icon="tree" emoji="🎄" className="xm-h-g" /> {t('Advent calendar')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>{t('One door a day until the 24th. Missed one? It waits for you.')}</div>
     <div className="xm-grid">
       {LAYOUT.map(day => {
@@ -420,9 +423,9 @@ function AdventCalendar({ close, initial }) {
         return <button key={day} type="button" data-door={day} aria-label={label}
           className={'xm-door xm-' + st + ' xm-paper' + (day % 3) + (shake === day ? ' xm-shake' : '')}
           onClick={() => tap(day)} onAnimationEnd={e => { if (e.animationName === 'xm-shake') setShake(null) }}>
-          <span className="xm-door-in" aria-hidden="true">{KIND[kind][0]}</span>
+          <span className="xm-door-in" aria-hidden="true">{kindGlyph(KIND[kind][0])}</span>
           <span className="xm-flap" aria-hidden="true"><span className="xm-num">{day}</span></span>
-          {a.done.includes(day) && <span className="xm-done" aria-hidden="true">🏅</span>}
+          {a.done.includes(day) && <span className="xm-done" aria-hidden="true"><Glyph icon="medal" emoji="🏅" /></span>}
         </button>
       })}
     </div>
@@ -451,13 +454,13 @@ function DoorView({ day, year, back, close }) {
     <button type="button" className="btn ghost sm xm-back" onClick={back}><Icon name="chevronLeft" /><span>{t('Back to the calendar')}</span></button>
     <div className={'xm-reveal xm-k-' + door.kind} data-door-open={day}>
       <div className="xm-reveal-top"><span className="xm-reveal-day">{date}</span><span className="xm-reveal-kind">{t(title)}</span></div>
-      <div className="xm-reveal-icon" aria-hidden="true">{icon}</div>
+      <div className="xm-reveal-icon" aria-hidden="true">{kindGlyph(icon)}</div>
       {door.text && <p className="xm-reveal-text">{t(door.text)}</p>}
       {door.kind === 'stat' && <StatDoor S={S} stat={door.stat} year={year} />}
       {door.kind === 'stretch' && <StretchDoor close={close} />}
       {door.kind === 'special' && <SpecialDoor />}
       {door.kind === 'challenge' && (done
-        ? <div className="xm-badge">🏅 {t('Done! Badge earned.')}</div>
+        ? <div className="xm-badge"><Glyph icon="medal" emoji="🏅" /> {t('Done! Badge earned.')}</div>
         : <span ref={btn} style={{ display: 'inline-block' }}><Button variant="primary" icon="check" onClick={tick}>{t('I did it')}</Button></span>)}
     </div>
     {burst && <Confetti at={burst} />}

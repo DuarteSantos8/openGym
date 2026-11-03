@@ -3664,4 +3664,7 @@ export default {
   "Apply to all": "全部套用",
   "{0} exercise now steps by {1}.": "{0} 個動作現在每次加 {1}。",
   "{0} exercises now step by {1}.": "{0} 個動作現在每次加 {1}。",
+  "Icons": "圖示",
+  "Emoji": "表情符號",
+  "The flame, the medals and friends.": "火苗、獎牌和它們的小夥伴。",
 }

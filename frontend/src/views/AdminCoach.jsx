@@ -93,7 +93,7 @@ export default function AdminCoach() {
       // longer than api()'s default for a request; a slow local model must still get its answer.
       const r = await api('/api/admin/coach/test', { method: 'POST', body: '{}', timeout: 150000 })
       setTestResult(r)
-      toast(r.ok ? 'Coach test passed ✅' : 'Test failed')
+      toast(r.ok ? 'Coach test passed' : 'Test failed')
       await load()
     } catch (e) { setTestResult({ ok: false, error: e.message }); toast(e.message) }
     setBusy(false)
@@ -454,7 +454,7 @@ function SetupTokenSheet({ close, onDone, label }) {
     try {
       const r = await api('/api/admin/coach/connect', { method: 'POST', body: JSON.stringify({ type: 'cli-token', token: token.trim(), account: account.trim() }) })
       setToken('')
-      toast(r.test?.ok ? 'Connected ✅' : 'Token saved')
+      toast(r.test?.ok ? 'Connected' : 'Token saved')
       close(); onDone()
     } catch (e) { toast(e.message); setBusy(false) }
   }
@@ -481,7 +481,7 @@ function ApiKeySheet({ close, onDone, label, placeholder, optional }) {
     setBusy(true)
     try {
       const r = await api('/api/admin/coach/connect', { method: 'POST', body: JSON.stringify({ type: 'apikey', token: key.trim() }) })
-      toast(r.test?.ok ? 'Key saved ✅' : 'Key saved')
+      toast(r.test?.ok ? 'Key saved and tested' : 'Key saved')
       close(); onDone()
     } catch (e) { toast(e.message); setBusy(false) }
   }

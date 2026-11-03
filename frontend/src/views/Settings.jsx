@@ -985,6 +985,15 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <span className="lrow-v">{accentLabel(S)}</span>
           <AccentSwatches S={S} update={update} />
         </div>
+        {/* The little pictures in the app (the streak flame, medals, freezes, the advent calendar):
+            openGym's own icons by default, which follow the accent and the theme, or the phone's
+            emoji for those who like them (components/Glyph.jsx). Synced like the theme. */}
+        <Row icon="sparkles" iconTint="var(--orange)" title={t('Icons')} subtitle={t('The flame, the medals and friends.')}>
+          <Segmented className="seg-inline"
+            options={[{ value: 'opengym', label: 'openGym' }, { value: 'emoji', label: t('Emoji') }]}
+            value={S.icons === 'emoji' ? 'emoji' : 'opengym'}
+            onChange={v => update(s => { if (v === 'emoji') s.icons = 'emoji'; else delete s.icons })} />
+        </Row>
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
@@ -1087,7 +1096,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       })}
       {/* Christmas: the advent calendar, for all of December (lib/advent.js), from the theme's chunk. */}
       {activeSeason(S) === 'christmas' && adventOpenable() && <Section>
-        <Row icon="calendar" iconTint="var(--green)" title={'🎄 ' + t('Advent calendar')}
+        <Row icon="tree" iconTint="var(--green)" title={t('Advent calendar')}
           subtitle={t('{0} of 24 doors open', adventOf(S).opened.length)} accessory="chevron"
           onClick={() => openSeasonal('christmas', 'advent')} />
       </Section>}

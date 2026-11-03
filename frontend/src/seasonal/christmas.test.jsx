@@ -174,7 +174,7 @@ describe('the calendar', () => {
     expect(door(2).className).toContain('xm-ready')
     expect(door(6).className).toContain('xm-locked')
     act(() => door(6).click())
-    expect(ui.toast).toHaveBeenCalledWith('No peeking 👀')
+    expect(ui.toast).toHaveBeenCalledWith('No peeking')   // its 👀 only with Settings → Icons on Emoji
     expect(store.S.advent).toBeUndefined()
     expect(door(6).className).toContain('xm-shake')
   })

@@ -3671,4 +3671,7 @@ export default {
   "Apply to all": "Aplicar a todos",
   "{0} exercise now steps by {1}.": "{0} exercício sobe agora {1} de cada vez.",
   "{0} exercises now step by {1}.": "{0} exercícios sobem agora {1} de cada vez.",
+  "Icons": "Ícones",
+  "Emoji": "Emoji",
+  "The flame, the medals and friends.": "A chama, as medalhas e companhia.",
 }

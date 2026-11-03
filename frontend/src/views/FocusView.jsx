@@ -22,6 +22,7 @@ import { ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView } from '../lib/gym-inventory.js'
 import { exView } from '../lib/ex-unit.js'
 import Icon from '../components/Icon.jsx'
+import Glyph from '../components/Glyph.jsx'
 import { Button, Stepper } from '../components/ui.jsx'
 import './FocusView.css'
 import { youtubeSearchUrl } from '../lib/youtube.js'
@@ -310,7 +311,7 @@ export default function FocusView({
       <header className="focus-card-header">
         <h2>{exerciseNameFor(ex)}</h2>
         <button className="iconbtn" aria-label={t('Details')} onClick={() => exerciseDetailSheet(ex)}><Icon name="info" /></button>
-        {isWarmupRow(set) && <span className="focus-warmup" aria-label={t('Warm-up')}>🔥</span>}
+        {isWarmupRow(set) && <Glyph icon="flame" emoji="🔥" className="focus-warmup" label={t('Warm-up')} />}
         {isFailureSet(set) && <span className="focus-failure" role="img" aria-label={t('Taken to failure')}>{t('F')}</span>}
         <button className="iconbtn" aria-label={t('More')} onClick={openExerciseMenu}><Icon name="more" /></button>
       </header>
