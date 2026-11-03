@@ -997,15 +997,19 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         let ids = items.map { $0.id }
         editBox { o in o = OutboxCore.sent(o, ids, now: SessionStore.nowMs()) }
         guard session.isReachable else { transferAll(items); return }
-        session.sendMessage(["events": items.map { $0.json }], replyHandler: { [weak self] reply in
-            guard let self = self else { return }
-            let got = Set((reply["got"] as? [String]) ?? [])
-            if !got.isEmpty { self.editBox { o in o = OutboxCore.delivered(o, Array(got)) } }
-            let missed = items.filter { !got.contains($0.id) }
-            if !missed.isEmpty { self.transferAll(missed) }
-        }, errorHandler: { [weak self] _ in
-            self?.transferAll(items)
-        })
+        // A message holds some 65 KB: a long backlog goes in batches.
+        for start in stride(from: 0, to: items.count, by: 40) {
+            let batch = Array(items[start..<min(start + 40, items.count)])
+            session.sendMessage(["events": batch.map { $0.json }], replyHandler: { [weak self] reply in
+                guard let self = self else { return }
+                let got = Set((reply["got"] as? [String]) ?? [])
+                if !got.isEmpty { self.editBox { o in o = OutboxCore.delivered(o, Array(got)) } }
+                let missed = batch.filter { !got.contains($0.id) }
+                if !missed.isEmpty { self.transferAll(missed) }
+            }, errorHandler: { [weak self] _ in
+                self?.transferAll(batch)
+            })
+        }
     }
 
     /// Queued with the system, each once: an event whose transfer is still outstanding is not
