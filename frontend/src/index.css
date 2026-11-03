@@ -3272,3 +3272,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .kpis .tile{padding:10px 11px}
   .kpis .tile .v{font-size:var(--fs-title3)}
 }
+
+/* Values keep their normal geometry; the accent appears only during a held scrub. */
+.scrubby-shell,.effort-empty-shell{display:contents}
+.scrubby-number{display:block;position:relative;flex:1;min-width:0;align-self:stretch;width:100%}
+.scrubby-hit{position:absolute;inset:0;cursor:text;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.scrubby-number:focus-within>.scrubby-hit{pointer-events:none}
+.scrubby{-webkit-touch-callout:none}
+.scrubby>input,.scrubby>button{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.scrubby>input:focus{user-select:text;-webkit-user-select:text}
+.stp .scrubby.scrubbing>.num,.scrubby.scrubbing>button{outline:2px solid var(--acc-ink);outline-offset:-2px;border-radius:6px;cursor:ns-resize}
+.setrow .effcell-stp.adjusting,.effcell-stp.adjusting,.scrubby.scrubbing>button{transition:none}
+.effcell-stp .scrubby.scrubbing>.val:active{background:none}

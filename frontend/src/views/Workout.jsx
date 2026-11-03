@@ -10,7 +10,7 @@ import { EXIDX, exOr, betterWeight, isAssisted } from '../lib/exercises.js'
 import { bestsFor, lastRowFor, oddValues } from '../lib/typo-check.js'
 import { usesBar } from '../lib/bar.js'
 import { loadKindFor, baseWeightFor, inventoryFor, rowLoad, sameLoad, plateDelta, dropGrid } from '../lib/plates.js'
-import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, stepEffort, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
+import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, bestWeightForEntry, freestyleConfig, pickedExerciseConfig, setsDoneActive, setUnitsTotal, supersetUnits, unitOf, setLabel, modeOf, isBw, isPerSide, repStep, EFFORT, effortOf, capEffort, cascadeWeight, liveReramp, insertWarmupRow, barFloor, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, copyRowAt, copySpanAt, insertRowAt, pairAdjacent, unpairSuperset, cleanupSg, applyIntensifierPlan, pinnedNoteFor, exNoteFor, setsRepsOf, sessionVolume } from '../lib/history.js'
 import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { clampIncline, hasIncline, inclineFits, inclineFrom, INCLINE_STEP } from '../lib/incline.js'
@@ -36,10 +36,11 @@ import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
 import { startFlow, exercisePicker, exConfigSheet, exerciseDetailSheet, finishWorkout, exitWorkoutEdit, workoutCompleteSheet, confirmSheet, exerciseNoteSheet, sessionNoteSheet, renameWorkoutSheet, swapActiveWorkoutExercise, barWeightSheet, menuSheet, effortPickerSheet, exerciseHistorySheet, addRoutineToSessionSheet, finishWorkoutSheet, finishWorkoutNow, swapActiveWorkoutToBackup, setNoteSheet } from '../sheets.jsx'
 import { afterScrollRestore, scrollRestorePending } from '../components/Modals.jsx'
-import { effortColor } from '../lib/effort.js'
 import Elapsed from '../components/Elapsed.jsx'
 import LiveHeartRate from '../components/LiveHeartRate.jsx'
 import Icon from '../components/Icon.jsx'
+import ScrubbyInput from '../components/ScrubbyInput.jsx'
+import EffortInput from '../components/EffortInput.jsx'
 import { Button, Check, NumberField } from '../components/ui.jsx'
 import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progression.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
@@ -123,6 +124,18 @@ function rerampOpen(s, e, i) {
 // A set-row column's number as it is shown. Most columns show what is stored; one with a `view`
 // (cardio speed, stored in km/h) converts it for the screen.
 const viewOf = (col, value) => (col.view && value != null && value !== '' ? col.view(value) : value)
+
+// Shared by the row layouts and Focus so side loads cascade and reramp just like a
+// whole-row load, regardless of whether the edit came from typing, +/- or scrubbing.
+function editSide(s, entryIdx, i, side, field, v) {
+  inEntryUnit(s, entryIdx, e => {
+    e.sets[i] = markWarmupEdited(setSideField(e.sets[i], side, field, v), field)
+    if (field !== 'w') return
+    e.sets[i].sides[side].weightOrigin = WEIGHT_ORIGIN_MANUAL
+    e.sets = cascadeWeight(e.sets, i, v, side, e.target?.backoffStep)
+    rerampOpen(s, e, i)
+  })
+}
 
 // Arabic and Hebrew letters, the presentation forms included. A set summary with one in it is a
 // per-side set in Arabic ("يسار 15×8 · يمين 15×7"): forced left to right, its side words stood
@@ -218,14 +231,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // stays right. The done tick goes through onToggleSide → toggle() instead, so ticking a side
   // still fires the rest timer / auto-advance / workout-complete flow.
   const setSide = (i, side, field, v) => {
-    if (field !== 'w') return mutSet(i, row => markWarmupEdited(setSideField(row, side, field, v), field))
-    update(s => inEntryUnit(s, entryIdx, e => {
-      const row = setSideField(e.sets[i], side, field, v)
-      row.sides[side].weightOrigin = WEIGHT_ORIGIN_MANUAL
-      e.sets[i] = markWarmupEdited(row, field)
-      e.sets = cascadeWeight(e.sets, i, v, side, e.target?.backoffStep)
-      rerampOpen(s, e, i)
-    }), true)
+    update(s => editSide(s, entryIdx, i, side, field, v), true)
   }
   // Drop/burst edits accept an optional `side` ('L'|'R'): present for a per-side row (edits that
   // one limb's drop/burst), absent for a straight row (edits the row's own).
@@ -395,11 +401,16 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // workout → Workout controls). The lean default keeps the sets and one "more" button; each
   // switch brings one of the old always-visible button rows back.
   const wc = workoutControls(S)
+  const scrubProps = { enabled: wc.scrubby, revision: live, isValid: () => useStore.getState().S === live }
+  const numericStep = (v, step, dir) => Math.max(0, Math.round(((v || 0) + dir * step) * 100) / 100)
   const cell = (s, i, col, cls) => (
     <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
       {wc.steppers && <button aria-label={t('Decrease')} onClick={() => bump(s, i, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} nullable={col.opt} value={viewOf(col, s[col.f]) ?? ''}
-        onChange={v => onField(i, col.f, col.store ? col.store(v) : v)} /></span>
+      <span className="val"><ScrubbyInput numeric {...scrubProps} enabled={wc.scrubby && (col.f === 'w' || col.f === 'r')}
+        value={viewOf(col, s[col.f]) ?? ''} next={(v, dir) => col.f === 'w' && mode === 'reps' ? stepLoad(v, col.step, dir) : numericStep(v, col.step, dir)}
+        onCommit={v => onField(i, col.f, col.store ? col.store(v) : v)}>{v =>
+        <NumberField decimal={col.dec} nullable={col.opt} value={v}
+          onChange={v => onField(i, col.f, col.store ? col.store(v) : v)} />}</ScrubbyInput></span>
       {wc.steppers && <button aria-label={t('Increase')} onClick={() => bump(s, i, col, 1)}><Icon name="plus" /></button>}
     </div>
   )
@@ -609,8 +620,6 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // rating is just the tinted value, which still opens the picker.
   const effortCell = (s, i, col) => {
     const v = s[col.f] ?? null
-    const rir = col.eff === 'rpe' ? (v == null ? null : 10 - v) : v
-    const color = effortColor(rir)
     // Logging an effort concludes the set (issue #64): once you rate how a set felt, it is done —
     // so picking a value also ticks the set and starts the rest timer, sparing the redundant
     // second confirmation. Clearing a rating (null) never un-ticks: ending a set stays a manual
@@ -623,18 +632,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       if (fresh && !fresh.done) onToggle(i)
     }
     const open = () => effortPickerSheet(col.eff, v, pickEffort)
-    if (v == null) return (
-      <button className="effcell is-empty" aria-label={col.hd} onClick={open}>{col.hd}</button>
-    )
-    const step = dir => onField(i, col.f, stepEffort(col.eff, v, dir))
-    return (
-      <div className={'stp effcell-stp' + (wc.steppers ? '' : ' plain')}
-        style={color ? { color, borderColor: color, background: `color-mix(in srgb, ${color} 20%, var(--surface-2))` } : undefined}>
-        {wc.steppers && <button aria-label={t('Decrease')} onClick={() => step(-1)}><Icon name="minus" /></button>}
-        <button className="val" aria-label={col.hd} onClick={open}>{fmtNum(v)}</button>
-        {wc.steppers && <button aria-label={t('Increase')} onClick={() => step(1)}><Icon name="plus" /></button>}
-      </div>
-    )
+    return <EffortInput kind={col.eff} value={v} label={col.hd} scrubby={scrubProps} steppers={wc.steppers}
+      onChange={nv => onField(i, col.f, nv)} onOpen={open} />
   }
   // Per-side versions of the weight/reps stepper and the effort picker. Same markup and stepping
   // rules as the row-level `cell`/`effortCell`, but bound to one side of a unilateral row and
@@ -652,30 +651,22 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const sideCell = (sd, i, side, col, cls) => (
     <div className={'stp ' + cls + (wc.steppers ? '' : ' plain')}>
       {wc.steppers && <button aria-label={t('Decrease')} onClick={() => sideBump(i, side, col, -1)}><Icon name="minus" /></button>}
-      <span className="val"><NumberField decimal={col.dec} value={sd[col.f] ?? ''}
-        onChange={v => setSide(i, side, col.f, v)} /></span>
+      <span className="val"><ScrubbyInput numeric {...scrubProps} value={sd[col.f] ?? ''}
+        next={(v, dir) => col.f === 'w' ? stepLoad(v, col.step, dir) : numericStep(v, col.f === 'r' ? 1 : col.step, dir)}
+        onCommit={v => setSide(i, side, col.f, v)}>{v => <NumberField decimal={col.dec} value={v}
+          onChange={v => setSide(i, side, col.f, v)} />}</ScrubbyInput></span>
       {wc.steppers && <button aria-label={t('Increase')} onClick={() => sideBump(i, side, col, 1)}><Icon name="plus" /></button>}
     </div>
   )
   const sideEffortCell = (sd, i, side, col) => {
     const v = sd[col.f] ?? null
-    const rir = col.eff === 'rpe' ? (v == null ? null : 10 - v) : v
-    const color = effortColor(rir)
     const open = () => effortPickerSheet(col.eff, v, nv => {
       setSide(i, side, col.f, nv)
       const fresh = useStore.getState().S.active?.entries[entryIdx]?.sets[i]?.sides?.[side]
       if (nv != null && fresh && !fresh.done) onToggleSide(i, side)
     })
-    if (v == null) return <button className="effcell is-empty" aria-label={col.hd} onClick={open}>{col.hd}</button>
-    const step = dir => setSide(i, side, col.f, stepEffort(col.eff, v, dir))
-    return (
-      <div className={'stp effcell-stp' + (wc.steppers ? '' : ' plain')}
-        style={color ? { color, borderColor: color, background: `color-mix(in srgb, ${color} 20%, var(--surface-2))` } : undefined}>
-        {wc.steppers && <button aria-label={t('Decrease')} onClick={() => step(-1)}><Icon name="minus" /></button>}
-        <button className="val" aria-label={col.hd} onClick={open}>{fmtNum(v)}</button>
-        {wc.steppers && <button aria-label={t('Increase')} onClick={() => step(1)}><Icon name="plus" /></button>}
-      </div>
-    )
+    return <EffortInput kind={col.eff} value={v} label={col.hd} scrubby={scrubProps} steppers={wc.steppers}
+      onChange={nv => setSide(i, side, col.f, nv)} onOpen={open} />
   }
   // One side's row: the L or R badge, then the same weight/reps/effort controls as a straight
   // row but bound to that side, and the side's own done tick.
@@ -716,10 +707,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // A smaller stepper for a drop's weight/reps or a burst's reps — editing what the plan (or a
   // live "+ Drop"/"+ Burst" tap) already put on the row, not typing into a fresh field.
   const miniStepper = (value, step, dec, onChange, snapWeightStep = false) => (
-    <div className="stp mini">
-      <button aria-label={t('Decrease')} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, -1) : Math.max(0, Math.round(((value || 0) - step) * 100) / 100))}><Icon name="minus" /></button>
-      <span className="val"><NumberField decimal={dec} value={value ?? ''} onChange={onChange} /></span>
-      <button aria-label={t('Increase')} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, 1) : Math.max(0, Math.round(((value || 0) + step) * 100) / 100))}><Icon name="plus" /></button>
+    <div className={'stp mini' + (wc.steppers ? '' : ' plain')}>
+      {wc.steppers && <button aria-label={t('Decrease')} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, -1) : Math.max(0, Math.round(((value || 0) - step) * 100) / 100))}><Icon name="minus" /></button>}
+      <span className="val"><ScrubbyInput numeric {...scrubProps} value={value ?? ''}
+        next={(v, dir) => snapWeightStep ? stepLoad(v, step, dir) : numericStep(v, step, dir)} onCommit={onChange}>
+        {v => <NumberField decimal={dec} value={v} onChange={onChange} />}</ScrubbyInput></span>
+      {wc.steppers && <button aria-label={t('Increase')} onClick={() => onChange(snapWeightStep ? stepLoad(value, step, 1) : Math.max(0, Math.round(((value || 0) + step) * 100) / 100))}><Icon name="plus" /></button>}
     </div>
   )
   // A plain set row (anything but a reps L/R stack). Its own function since a timed per-side
@@ -1569,6 +1562,7 @@ function ActiveWorkout() {
     onToggle: (i, onFocusProgress) => checkedToggle(idx, i, undefined, { onFocusProgress }),
     onToggleSide: (i, side, onFocusProgress) => checkedToggle(idx, i, side, { onFocusProgress }),
     onField: (i, f, v) => setField(idx, i, f, v),
+    onSideField: (i, side, f, v) => update(s => editSide(s, idx, i, side, f, v)),
     onMutateSet: (i, fn) => mutEntry(idx, entry => { entry.sets[i] = fn(entry.sets[i]) }),
     onAddSet: () => addSet(idx),
     onRemoveSet: () => removeSet(idx),

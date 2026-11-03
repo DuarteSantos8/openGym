@@ -4,6 +4,7 @@
 // Lives in its own module so views can read it without the store — the store's DEF only
 // references it.
 export const WC_DEFAULT = Object.freeze({
+  scrubby: false,        // long-press a workout value, then drag vertically to edit
   steppers: true,         // +/- buttons on every weight/reps/effort field
   setShortcuts: false,    // "+ Drop" / "+ Burst" chips on every set and the warm-up/remove/add row
   pairButtons: false,     // "Make superset with previous/next" in the exercise header
