@@ -217,24 +217,67 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle empty set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish summary summary-end ended; do
+            for screen in idle idle-rest empty empty-heard set warmup armed-weight armed-reps armed-hold keypad-weight keypad-typed keypad-over keypad-reps keypad-hold keypad-lb weighin rest hold hold-set bodyweight side superset all-done fix fix-armed fix-changed fix-keypad future fix-hold fix-side fix-effort fix-stale rest-fix offline finish overview finish-auto finish-hold finish-hold-full discard metrics metrics-wait metrics-nohealth metrics-hrhidden metrics-big metrics-early metrics-lb music summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
             # on (Settings → Apple Watch); the rest as the countdown alone.
             shot "lang-de" set -OpenGymWatchLang de
             shot "lang-de-rest" rest -OpenGymWatchLang de
+            # The set page in the longest labels (ru, es).
+            shot "lang-ru-side" side -OpenGymWatchLang ru
+            shot "lang-es-set" set -OpenGymWatchLang es
+            shot "lang-ru-bodyweight" bodyweight -OpenGymWatchLang ru
+            shot "lang-pl-bodyweight" bodyweight -OpenGymWatchLang pl
+            # A box armed for the Crown in the longest labels (ru), and the keypad in Spanish.
+            shot "lang-ru-armed" armed-reps -OpenGymWatchLang ru
+            shot "lang-es-keypad" keypad-typed -OpenGymWatchLang es
+            # The start screen: the longest labels (ru), and Always On (wrist down: outlines, no fills).
+            shot "lang-ru-idle" idle -OpenGymWatchLang ru
+            # The Overview and Finish in the longest language (ru), and the discard question in German.
+            # A logged set on the set page to fix it, in German and in the longest labels (ru, a per-side set).
+            shot "lang-de-fix" fix -OpenGymWatchLang de
+            shot "lang-ru-fix-side" fix-side -OpenGymWatchLang ru
+            shot "lang-ru-overview" overview -OpenGymWatchLang ru
+            shot "lang-ru-finish" finish -OpenGymWatchLang ru
+            shot "lang-de-discard" discard -OpenGymWatchLang de
+            # The Metrics page in German and in Russian (the longest units), and in Always On (outlines, dimmed numbers).
+            shot "lang-de-metrics" metrics -OpenGymWatchLang de
+            shot "lang-ru-metrics" metrics -OpenGymWatchLang ru
+            shot "aod-metrics" metrics -OpenGymWatchAOD
+            shot "aod-metrics-big" metrics-big -OpenGymWatchAOD
+            shot "aod-idle" idle -OpenGymWatchAOD
+            shot "aod-idle-rest" idle-rest -OpenGymWatchAOD
+            shot "aod-overview" overview -OpenGymWatchAOD
+            shot "aod-finish" finish -OpenGymWatchAOD
+            shot "aod-rest" rest -OpenGymWatchAOD
+            # The set page in Always On: the same layout, outlines only (a short name and a two-line one).
+            shot "aod-set" set -OpenGymWatchAOD
+            shot "aod-side" side -OpenGymWatchAOD
+            shot "aod-side-rir" side -OpenGymWatchAOD -OpenGymWatchEffort rir
+            # Wrist down disarms: a box armed in the demo shows no ring in Always On.
+            shot "aod-armed-weight" armed-weight -OpenGymWatchAOD
+            shot "aod-fix-effort" fix-effort -OpenGymWatchAOD
+            shot "aod-rest-fix" rest-fix -OpenGymWatchAOD
+            shot "aod-keypad-typed" keypad-typed -OpenGymWatchAOD
+            shot "aod-keypad-over" keypad-over -OpenGymWatchAOD
+            shot "aod-empty" empty -OpenGymWatchAOD
+            # The start screen scrolled to its end: the last row against the screen's rounded corners.
+            shot "idle-end" idle-end
             shot "show-all" set -OpenGymWatchShow all
+            shot "overview-all" overview -OpenGymWatchShow all
+            shot "set-rpe" set -OpenGymWatchEffort rpe
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in set side edit-weight weighin rest hold summary summary-end; do
+            for screen in idle idle-end idle-rest empty empty-heard set side superset hold-set armed-weight armed-hold fix fix-side rest-fix keypad-typed keypad-over keypad-lb weighin rest hold overview finish discard metrics metrics-big summary summary-end; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX
             done
             # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's
-            # process, on the Mac). Always On (wrist down) should cost next to nothing.
+            # process, on the Mac). Always On (wrist down) should cost next to nothing. Compare rest and
+            # set with the run before the Overview: the pager must not tick under the rest layer.
             cpu() { ps -o time= -p "$1" 2>/dev/null | awk -F'[:.]' '{ if (NF==3) print $1*60+$2+$3/100; else print 0 }'; }
             # set-noclip: the same screen without the animation, to tell what the animation costs.
-            for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD; do
+            for spec in idle:idle set:set set-noclip:set:noclip rest:rest hold:hold set-aod:set:-OpenGymWatchAOD set-aod-noclip:set:-OpenGymWatchAOD:noclip rest-aod:rest:-OpenGymWatchAOD idle-aod:idle:-OpenGymWatchAOD overview:overview overview-aod:overview:-OpenGymWatchAOD metrics:metrics metrics-aod:metrics:-OpenGymWatchAOD; do
               IFS=: read -r file screen flag noclip <<< "$spec"
               if [ "$flag" = noclip ]; then flag=""; noclip=noclip; fi
               KEEP=$CLIP; if [ -n "$noclip" ]; then CLIP=""; fi
@@ -286,7 +329,7 @@ jobs:
             promo 1-start idle
             promo 2-set set -OpenGymWatchShow noclip
             [ -n "$CLIP" ] && promo 2b-set-with-clip set -OpenGymWatchDemoClip "$CLIP"
-            promo 3-edit-weight edit-weight -OpenGymWatchShow noclip
+            promo 3-armed-weight armed-weight -OpenGymWatchShow noclip
             promo 4-rest rest
             promo 5-superset superset
             promo 6-weigh-in weighin
