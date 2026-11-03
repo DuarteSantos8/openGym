@@ -106,7 +106,7 @@ export function createMediaSync(deps = {}) {
     if (!cfg?.media) { await publishPending({ usage: null }); return }
     // A set's form video kept on its phone, or any set video on a server that does not keep
     // them (media.sets), is neither asked about nor sent (media-refs.js uploadableFiles).
-    const files = uploadableFiles(st.S, { sets: !!cfg.media.sets })
+    const files = uploadableFiles(st.S, { sets: !!cfg.media.sets, sounds: !!cfg.media.sounds })
     const refs = files.map(f => f.hash)
     // Nothing referenced (a reset, everything deleted) forgets the last run: the same files coming
     // back from a backup within ten minutes are new to the server again, not a repeat of that run.

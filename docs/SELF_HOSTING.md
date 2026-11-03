@@ -724,6 +724,7 @@ set in `.env`:
 | `MEDIA_GIF_MAX_MB` | `8` | an animated GIF |
 | `MEDIA_VIDEO_MAX_MB` | `100` | a video as kept: the app first shrinks one over 12 MB to 1280 px where the browser can write MP4 (Safari, Chrome), and one over this cap where it can only write WebM; a clip it cannot shrink goes up as recorded |
 | `MEDIA_VIDEO_MAX_SEC` | `60` | a video's length |
+| `MEDIA_AUDIO_MAX_MB` | `2` | a sound of one's own for the rest timer: the app keeps it as a WAV of at most 30 s (1.3 MB) |
 | `MEDIA_GC_GRACE_DAYS` | `14` | how long a file nobody uses any more is kept |
 | `MEDIA_UPLOADS_PER_HOUR` | `600` | uploads per profile per hour; at most two run at once |
 | `MEDIA_MIN_FREE_MB` | `512` | uploads are refused while the disk under `./data` has less free; `0` = no floor |

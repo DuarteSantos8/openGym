@@ -120,9 +120,50 @@ export function beep(enabled, freq, dur, when) {
 // one of these, number for number. The table itself is lib/rest-sounds.js, which has no audio in
 // it, so the store and the native alarm can read the choice without this module.
 export { CHIME_PEAK, REST_SOUNDS, REST_SOUND_IDS, restSoundOf } from './rest-sounds.js'
-// `kind` is a REST_SOUNDS id; `true` (the old "classic" switch) still means the classic beeps.
+// A sound of one's own (lib/user-sounds.js): 'u:' and the sha-256 of its WAV in the media store.
+// Decoded once per context and kept; a file this device does not have (yet) plays the chime.
+const USER_TONE = /^u:([0-9a-f]{64})$/
+const ownBuffers = new Map()
+let ownCtx = null
+let loadOwnBlob = async hash => {
+  const { mediaStore } = await import('./media-store.js')
+  return mediaStore.get(hash)
+}
+/** Test seam: where a sound of one's own comes from. */
+export function _setOwnSoundSource(fn) { loadOwnBlob = fn; ownBuffers.clear() }
+async function playOwn(hash) {
+  const ctx = wake()
+  if (ownCtx !== ctx) { ownCtx = ctx; ownBuffers.clear() }
+  let buf = ownBuffers.get(hash)
+  if (!buf) {
+    const got = await loadOwnBlob(hash)
+    const blob = got && typeof got.arrayBuffer === 'function' ? got : got?.blob
+    if (!blob) throw new Error('no file')
+    const bytes = await blob.arrayBuffer()
+    buf = await new Promise((resolve, reject) => { const p = ctx.decodeAudioData(bytes, resolve, reject); if (p && p.then) p.then(resolve, reject) })
+    ownBuffers.set(hash, buf)
+  }
+  const src = ctx.createBufferSource()
+  src.buffer = buf
+  src.connect(ctx.destination)
+  src.start(ctx.currentTime)
+  sleepAfter(buf.duration)
+}
+/** Plays a sound of one's own now; resolves false when it could not (no file, no decoder). */
+export function playUserTone(enabled, tone) {
+  const m = USER_TONE.exec(tone || '')
+  if (!enabled || !m) return Promise.resolve(false)
+  return playOwn(m[1]).then(() => true, () => false)
+}
+
+// `kind` is a REST_SOUNDS id; `true` (the old "classic" switch) still means the classic beeps;
+// 'u:<hash>' a sound of one's own, with the chime when that cannot be played.
 export function chime(enabled, kind) {
   if (!enabled) return
+  if (typeof kind === 'string' && USER_TONE.test(kind)) {
+    playUserTone(true, kind).then(ok => { if (!ok) chime(true, 'chime') })
+    return
+  }
   const id = kind === true ? 'classic' : kind
   const snd = Object.hasOwn(REST_SOUNDS, id) ? REST_SOUNDS[id] : REST_SOUNDS.chime
   try {

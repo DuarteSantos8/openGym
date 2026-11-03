@@ -3296,3 +3296,10 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .kpis .tile{padding:10px 11px}
   .kpis .tile .v{font-size:var(--fs-title3)}
 }
+
+/* Settings → Sound, a sound of one's own (components/OwnSounds.jsx): the row is two buttons, the
+   pick (everything but the bin) and the bin. */
+.own-snd{padding-block:6px}
+.own-snd-pick{display:flex;align-items:center;gap:12px;flex:1;min-width:0;min-height:34px;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.own-snd-pick:active{opacity:.7}
+.own-snd-pick:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:8px}

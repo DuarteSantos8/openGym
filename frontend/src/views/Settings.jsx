@@ -18,6 +18,8 @@ import { effortOf } from '../lib/history.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
+import { setSlot, slotChoice, slotSound, toneFor } from '../lib/user-sounds.js'
+import OwnSounds from '../components/OwnSounds.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
@@ -747,7 +749,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
               is not an improvement for everyone: louder is a cost with headphones or in a quiet
               room, and some want a sound that feels like theirs (#306). The chime by default; the
               sheet plays each one as you tap it (restSoundSheet). */}
-          {S.sound && <Row icon="speaker" iconTint="var(--pink)" title={t('Sound')} value={t(REST_SOUND_LABEL[restSoundOf(S)])}
+          {S.sound && <Row icon="speaker" iconTint="var(--pink)" title={t('Sound')} value={slotSound(S, 'rest')?.name || t(REST_SOUND_LABEL[restSoundOf(S)])}
             accessory="chevron" onClick={restSoundSheet} />}
           {/* iOS only (WebKit's audio-session API, iOS 17+): with it off the ring/silent switch
               mutes the timer. On, in Safari the phone treats the timer like a music player
@@ -1422,22 +1424,34 @@ const REST_SOUND_HINT = {
   whistle: 'Coach wants you back on the bar.',
   soft: 'Gentle, for headphones or a quiet room.',
 }
-export function pickRestSound(id) {
+export function pickRestSound(id, slot = 'rest') {
   unlock(true)
-  useStore.getState().update(s => { s.restSound = id; s.classicChime = id === 'classic' })
+  useStore.getState().update(s => { setSlot(s, slot, id) })
   chime(true, id)
 }
+// Two slots (v1.4.5): the end of a rest, and the end of a timed hold, which follows the rest until
+// it is given a sound of its own. Each can be a built-in sound or one of your own (components/
+// OwnSounds.jsx, lib/user-sounds.js).
 export function RestSoundSheet({ close }) {
   const S = useStore(s => s.S)
-  const cur = restSoundOf(S)
+  const [slot, setSlotShown] = useState('rest')
+  const cur = slotChoice(S, slot)
+  const holdOwn = slot === 'hold' && S.holdSound != null && S.holdSound !== ''
   return <>
     <h3>{t('Sound')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Tap one to hear it.')}</div>
+    <div style={{ marginBottom: 12 }}>
+      <Segmented value={slot} onChange={setSlotShown}
+        options={[{ value: 'rest', label: t('End of a rest') }, { value: 'hold', label: t('End of a hold') }]} />
+    </div>
     <Section>
-      {REST_SOUND_IDS.map(id => <Row key={id} icon={id === cur ? 'speaker' : 'play'} iconTint="var(--pink)" title={t(REST_SOUND_LABEL[id])}
-        subtitle={REST_SOUND_HINT[id] ? t(REST_SOUND_HINT[id]) : null} accessory={id === cur ? 'check' : 'none'}
-        onClick={() => pickRestSound(id)} />)}
+      {slot === 'hold' && <Row icon={!holdOwn ? 'speaker' : 'play'} iconTint="var(--pink)" title={t('Same as the rest')}
+        accessory={!holdOwn ? 'check' : 'none'} onClick={() => { useStore.getState().update(s => { delete s.holdSound }); unlock(true); chime(true, toneFor(useStore.getState().S, 'rest')) }} />}
+      {REST_SOUND_IDS.map(id => { const on = id === cur && (slot === 'rest' || holdOwn); return <Row key={id} icon={on ? 'speaker' : 'play'} iconTint="var(--pink)" title={t(REST_SOUND_LABEL[id])}
+        subtitle={REST_SOUND_HINT[id] ? t(REST_SOUND_HINT[id]) : null} accessory={on ? 'check' : 'none'}
+        onClick={() => pickRestSound(id, slot)} /> })}
     </Section>
+    <OwnSounds slot={slot} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>

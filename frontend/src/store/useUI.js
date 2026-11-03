@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { uid } from '../lib/format.js'
 import { beep, chime, vibrate, alertBuzz } from '../lib/sound.js'
 import { restSoundOf } from '../lib/rest-sounds.js'
+import { toneFor } from '../lib/user-sounds.js'
 import { api } from '../lib/api.js'
 import { t } from '../lib/i18n.js'
 import { deviceId } from '../lib/push.js'
@@ -68,7 +69,8 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
     })
 }
 
-const alertPrefs = S => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: restSoundOf(S), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
+// `tone`: the rest's sound, a built-in one or one of one's own (lib/user-sounds.js toneFor).
+const alertPrefs = S => ({ accent: accentValue(S), sound: !!S.sound, classic: restSoundOf(S) === 'classic', tone: toneFor(S, 'rest'), vibrate: S.vibrate !== false, alarmBuzz: S.vibrate !== false && !!S.vibrateOnSilent })
 const autoForecast = owner => { try { return autoHooks?.forecast?.(owner) || [] } catch { return [] } }
 // The count-in and the hold of a chain, booked with the phone the same way (no countdown card:
 // that one is the rest's, with the rest's buttons). Only the phone app, and not the tour.
@@ -158,7 +160,7 @@ const runWork = (set, get) => {
     if (!document.hidden) pageHiddenAt = null
     if (left === wk.left) return
     const { S: st } = useStore.getState()
-    const snd = st.sound, endSound = restSoundOf(st)
+    const snd = st.sound, endSound = toneFor(st, 'hold')   // a timed hold's own slot (lib/user-sounds.js)
     if (left <= 0) {
       if (seenLive && !wk.alerted) {
         endTone(snd, endSound)
@@ -222,7 +224,7 @@ const runRest = (set, get) => {
     if (!document.hidden) pageHiddenAt = null
     if (left === tm.left) return
     const { S: st } = useStore.getState()
-    const snd = st.sound, endSound = restSoundOf(st)
+    const snd = st.sound, endSound = toneFor(st, 'rest')
     // The rest before a hold that starts by itself: no Ready, no chime, the count-in is next and
     // says so itself. From the rest's own end, so a phone that was locked catches up from there.
     if (left <= 0 && get().autoAfterRest(tm.endsAt)) return

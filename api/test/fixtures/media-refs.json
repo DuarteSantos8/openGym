@@ -1,5 +1,5 @@
 {
-  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash the same two of every entry of workouts[].media, of every set's own workouts[].entries[].sets[].media (a form video, v1.4.4) and of every dayPhotos entry's `m` count on its own when it matches /^[0-9a-f]{64}$/ \u2014 deliberately looser than normalizeMediaRef, because this set decides what is kept.",
+  "about": "Which blob hashes a state references. api/media.js referencedHashes() and frontend/src/lib/media-refs.js referencedHashes() must both give `expect` (compared as sorted lists) for every `state` here: the server keeps and the client keeps exactly this set. Each of customEx[].media.hash, customEx[].media.poster.hash the same two of every entry of workouts[].media, of every set's own workouts[].entries[].sets[].media (a form video, v1.4.4) of every dayPhotos entry's `m` and of every sounds[] entry's `m` (a sound of one's own, v1.4.5) count on its own when it matches /^[0-9a-f]{64}$/ — deliberately looser than normalizeMediaRef, because this set decides what is kept.",
   "referencedHashes": [
     {
       "name": "no state at all",
@@ -1095,6 +1095,43 @@
         "workouts": []
       },
       "expect": []
+    },
+    {
+      "name": "a sound of one's own for the rest timer, and a malformed sounds list entry",
+      "state": {
+        "sounds": [
+          {
+            "id": "s1",
+            "name": "Gong",
+            "m": {
+              "kind": "audio",
+              "hash": "5555555555555555555555555555555555555555555555555555555555555555",
+              "mime": "audio/wav",
+              "size": 40000,
+              "width": 1,
+              "height": 1,
+              "dur": 1.2,
+              "at": 1
+            }
+          },
+          {
+            "id": "s2",
+            "name": "broken",
+            "m": "nope"
+          },
+          null,
+          {
+            "id": "s3",
+            "name": "short hash",
+            "m": {
+              "hash": "abc"
+            }
+          }
+        ]
+      },
+      "expect": [
+        "5555555555555555555555555555555555555555555555555555555555555555"
+      ]
     }
   ]
 }

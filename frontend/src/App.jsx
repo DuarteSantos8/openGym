@@ -168,6 +168,13 @@ function Shell() {
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // Settings → Icons: openGym's own or the emoji (components/Glyph.jsx, index.css .glyph).
   useEffect(() => { document.documentElement.dataset.icons = S.icons === 'emoji' ? 'emoji' : 'opengym' }, [S.icons])
+  // Sounds of one's own (lib/user-sounds.js) are wanted at the end of a rest, maybe with no
+  // network and the screen off: their files come down to this device as soon as they are known,
+  // not when they are first played. A missing one plays the chime meanwhile.
+  useEffect(() => {
+    if (!ready || !Array.isArray(S.sounds) || !S.sounds.length) return
+    import('./lib/user-sounds-files.js').then(m => m.ensureSoundFiles(S)).catch(() => {})
+  }, [ready, S.sounds])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
   // isn't consulted for those.

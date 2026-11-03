@@ -2465,6 +2465,16 @@ export const PT_BR_OVERRIDES = {
   "The flame, the medals and friends.": "A chama, as medalhas e companhia.",
   "Shrinking the video… {0}%": "Diminuindo o vídeo… {0}%",
   "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "O vídeo continua grande demais mesmo comprimido. Máximo de {0} MB, então um clipe mais curto cabe.",
+  "Add a sound": "Adicionar um som",
+  "Added and picked. Tap it any time to hear it.": "Adicionado e escolhido. Toque nele quando quiser para ouvir.",
+  "End of a hold": "Fim de uma isometria",
+  "End of a rest": "Fim de um descanso",
+  "Same as the rest": "Igual ao descanso",
+  "Sound removed.": "Som removido.",
+  "That file is all silence. Nothing to play.": "Esse arquivo é só silêncio. Nada para tocar.",
+  "This sound cannot be read here. Try an MP3, M4A, WAV or OGG file.": "Este som não pode ser lido aqui. Tente um MP3, M4A, WAV ou OGG.",
+  "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "Até 30 segundos, de um arquivo MP3, M4A, WAV ou OGG. O silêncio nas pontas é cortado.",
+  "Your own sounds": "Seus próprios sons",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
