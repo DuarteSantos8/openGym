@@ -233,6 +233,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "id": {
+    "friendly": {
+      "title": "Semuanya aman?",
+      "lines": [
+        "{0} masih nungguin nih. Ada kendala apa?",
+        "Nggak sempat {0} hari ini? Sesi singkat besok pun tetap berarti.",
+        "Hari yang melelahkan? {0} bisa menunggu. Besok kita mulai lagi.",
+        "Hei, jadwal {0} terlewat hari ini. Semuanya baik-baik saja?"
+      ]
+    },
+    "guilt": {
+      "title": "Kangen latihan bareng",
+      "lines": [
+        "{0} nungguin di dekat pintu semalaman. Demi kamu lho.",
+        "Barbel sempat nanyain kamu hari ini. Bingung mau jawab apa.",
+        "Ada yang salah ya? {0} kangen kamu nih.",
+        "Udah disiapin tempat di bangku latihan. Tapi masih kosong."
+      ]
+    },
+    "drill": {
+      "title": "Perhatian, prajurit!",
+      "lines": [
+        "Gains-mu udah mau kabur tuh. Latihan {0} besok, tanpa alasan!",
+        "{0} nggak bakal jalan sendiri, prajurit. Ayo gerak!",
+        "Banyak alasan nggak bikin beban terangkat! Siap latihan {0} besok!",
+        "Ototmu sampai bikin laporan orang hilang. Datang dan selesaikan {0}!"
+      ]
+    }
+  },
   "it": {
     "friendly": {
       "title": "Tutto bene?",
