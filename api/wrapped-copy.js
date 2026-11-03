@@ -33,6 +33,10 @@ export const WRAPPED_COPY = {
     "title": "Elkészült az éved az openGymben: {0} 🎉",
     "body": "Edzések, rekordok és egy nagyon őszinte személyiségteszt. Koppints, és nézd meg az évedet."
   },
+  "id": {
+    "title": "Tahun {0}-mu di openGym sudah siap 🎉",
+    "body": "Sesi latihan, rekor, dan satu tes kepribadian yang sangat jujur. Ketuk untuk melihat kilas balik tahunmu."
+  },
   "it": {
     "title": "Il tuo {0} su openGym è pronto 🎉",
     "body": "Allenamenti, record e un test della personalità molto onesto. Tocca per vedere il tuo anno."
