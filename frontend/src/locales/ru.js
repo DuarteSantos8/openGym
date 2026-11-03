@@ -2314,6 +2314,8 @@ export default {
   'Your backups': 'Ваши замены',
   'Swap to {0}': 'Заменить на {0}',
   'Planned backup, same sets and reps': 'Запланированная замена, те же подходы и повторы',
+  'Planned backup, with its own plan': 'Запланированная замена, со своим планом',
+  'Same plan as this exercise. Tap to give it its own.': 'Тот же план, что и у этого упражнения. Нажмите, чтобы задать ему свой.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Здесь нечего добавлять в весе: растут повторения, потом подходы.',
   // --- #523 skip completed ---

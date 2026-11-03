@@ -2310,6 +2310,8 @@ export default {
   'Your backups': 'Yedeklerin',
   'Swap to {0}': '{0} ile değiştir',
   'Planned backup, same sets and reps': 'Planlı yedek, aynı set ve tekrarlar',
+  'Planned backup, with its own plan': 'Planlı yedek, kendi planıyla',
+  'Same plan as this exercise. Tap to give it its own.': 'Bu egzersizle aynı plan. Kendine ait bir plan için dokun.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Burada eklenecek ağırlık yok: önce tekrar, sonra set artar.',
   // --- #523 skip completed ---

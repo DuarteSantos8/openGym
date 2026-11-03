@@ -2365,6 +2365,8 @@ export default {
   'Your backups': 'بدائلك',
   'Swap to {0}': 'التبديل إلى {0}',
   'Planned backup, same sets and reps': 'بديل مخطط، بنفس المجموعات والتكرارات',
+  'Planned backup, with its own plan': 'بديل مخطط، بخطته الخاصة',
+  'Same plan as this exercise. Tap to give it its own.': 'نفس خطة هذا التمرين. انقر لتمنحه خطة خاصة به.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'لا وزن يُضاف هنا: يزيد التمرين بالتكرارات ثم بالمجموعات.',
   // --- #523 skip completed ---

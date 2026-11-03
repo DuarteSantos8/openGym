@@ -2310,6 +2310,8 @@ export default {
   'Your backups': '내 대체 운동',
   'Swap to {0}': '{0}(으)로 바꾸기',
   'Planned backup, same sets and reps': '계획된 대체 운동, 같은 세트와 반복',
+  'Planned backup, with its own plan': '계획된 대체 운동, 자체 계획 있음',
+  'Same plan as this exercise. Tap to give it its own.': '이 운동과 같은 계획이에요. 탭해서 따로 정해 보세요.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': '여기엔 더할 무게가 없어요. 반복 수를 늘리고, 그다음 세트를 늘려요.',
   // --- #523 skip completed ---

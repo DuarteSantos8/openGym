@@ -2310,6 +2310,8 @@ export default {
   'Your backups': 'Twoje zamienniki',
   'Swap to {0}': 'Zamień na {0}',
   'Planned backup, same sets and reps': 'Zaplanowany zamiennik, te same serie i powtórzenia',
+  'Planned backup, with its own plan': 'Zaplanowany zamiennik, z własnym planem',
+  'Same plan as this exercise. Tap to give it its own.': 'Ten sam plan co to ćwiczenie. Stuknij, aby dać mu własny.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Tu nie ma czego dokładać w ciężarze: rosną powtórzenia, potem serie.',
   // --- #523 skip completed ---

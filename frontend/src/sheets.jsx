@@ -7,7 +7,7 @@ import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
@@ -26,7 +26,8 @@ import LineChart from './components/LineChart.jsx'
 import Stepper from './components/Stepper.jsx'
 import DateField from './components/DateField.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
-import { cleanBackups, withBackups, MAX_BACKUPS, backupSlotConfig } from './lib/routine-backups.js'
+import { cleanBackups, cleanBackupConfigs, withBackups, MAX_BACKUPS, backupSlotConfig } from './lib/routine-backups.js'
+import { replaceSlotExercise } from './lib/routines.js'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
@@ -1887,7 +1888,15 @@ export function swapActiveWorkoutExercise(index) {
   // The "+" on a picker row commits with the default config, exactly as it does in the add
   // flows; tapping the row still opens the config sheet first.
   // Worded for the session, not the routine: a swap changes today's workout only.
-  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, pickedExerciseConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, null, null, t('Use in this workout'), { freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
+  // One of the slot's planned backups opens at its plan (its own, #978, else the slot's), the way
+  // the ⋯ menu's one-tap swap does; anything else at its defaults.
+  const asBackup = ex => {
+    const cur = S().active?.entries?.[index]
+    return cur && (cur.target?.subs || []).includes(ex.id)
+      ? backupSlotConfig({ ...plannedConfigOf(cur), id: cur.id }, ex.id, S(), cur.rid, id => !!EXIDX[id])
+      : null
+  }
+  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, asBackup(ex) || pickedExerciseConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, asBackup(ex), null, t('Use in this workout'), { freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
   function swapTo(ex, cfg) {
     // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
     // the workout. (The add flow deliberately leaves it open.)
@@ -2149,23 +2158,47 @@ const intensifierToSave = x => (x.type === 'dropset'
     : x)
 
 // The slot's planned substitutes: listed, each removable, and added from the library (the same
-// picker a swap uses, opened on the same muscle).
-function BackupsSheet({ ex, subs: initial, onChange, close }) {
+// picker a swap uses, opened on the same muscle). A tap on one sets its own plan (#978): sets,
+// reps, weight, rest and progression, as for any exercise; until then it takes the slot's.
+function BackupsSheet({ ex, slot, routine, subs: initial, configs: initialConfigs, onChange, close }) {
+  const live = useStore(s => s.S)
   const [subs, setSubs] = useState(() => cleanBackups(initial, ex.id, id => !!EXIDX[id]))
-  const set = next => { setSubs(next); onChange(next) }
+  const [configs, setConfigs] = useState(() => cleanBackupConfigs(initialConfigs, subs))
+  // The newest list, for a plan saved from the sheet stacked over this one.
+  const latest = useRef({ subs, configs })
+  const set = (nextSubs, nextConfigs = latest.current.configs) => {
+    const kept = cleanBackupConfigs(nextConfigs, nextSubs)
+    latest.current = { subs: nextSubs, configs: kept }
+    setSubs(nextSubs); setConfigs(kept); onChange(nextSubs, kept)
+  }
   const add = () => {
     const picker = exercisePicker((pick) => {
       picker.close()
-      set(cleanBackups([...subs, pick.id], ex.id, id => !!EXIDX[id]))
+      set(cleanBackups([...latest.current.subs, pick.id], ex.id, id => !!EXIDX[id]))
     }, { title: t('Add a backup'), like: ex.id })
+  }
+  const configure = b => {
+    const own = latest.current.configs[b.id]
+    // Opened on what it would do today: its own plan, else the slot's carried over as a swap would.
+    const start = own ? { ...own } : replaceSlotExercise({ ...(slot || {}), id: ex.id }, b.id, useStore.getState().S, routine?.id)
+    exConfigSheet(b, start, cfg => set(latest.current.subs, { ...latest.current.configs, [b.id]: cfg }), null, routine)
   }
   return <>
     <h3>{t('Backups for {0}', exerciseNameText(ex))}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.')}</div>
     {subs.length > 0 && <div className="sect-b" style={{ marginBottom: 12 }}>
-      {subs.map(id => EXIDX[id]).filter(Boolean).map(b => <Row key={b.id} title={exerciseNameText(b)} subtitle={t(b.eq)}>
-        <button type="button" className="iconbtn" aria-label={t('Remove “{0}”', exerciseNameText(b))} onClick={() => set(subs.filter(x => x !== b.id))}><Icon name="xmark" /></button>
-      </Row>)}
+      {subs.map(id => EXIDX[id]).filter(Boolean).map(b => <div key={b.id} className="lrow backup-row">
+        <button type="button" className="backup-open" onClick={() => configure(b)}>
+          <span className="lrow-m">
+            <span className="lrow-t">{exerciseNameText(b)}</span>
+            <span className="lrow-s">{configs[b.id]
+              ? exLine(viewTarget(live, b.id, { ...configs[b.id], id: b.id }), exUnitOf(live, b.id), speedUnitOf(live))
+              : t('Same plan as this exercise. Tap to give it its own.')}</span>
+          </span>
+          <Icon name="chevronRight" className="lrow-c" />
+        </button>
+        <button type="button" className="iconbtn" aria-label={t('Remove “{0}”', exerciseNameText(b))} onClick={() => set(latest.current.subs.filter(x => x !== b.id))}><Icon name="xmark" /></button>
+      </div>)}
     </div>}
     {subs.length < MAX_BACKUPS
       ? <Button icon="plus" onClick={add}>{t('Add a backup')}</Button>
@@ -2292,7 +2325,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // exact shape and rests as it always did (lib/supersetFlow.js warmupRestSecFor, sideRestFor).
     // Planned substitutes (lib/routine-backups.js): kept whenever the slot has them, whichever
     // sheet saves it, so an edit here never drops them; only real exercises, never itself.
-    const withSubs = withBackups(c.subs, ex.id, id => !!EXIDX[id])
+    const withSubs = withBackups(c.subs, ex.id, id => !!EXIDX[id], c.subCfg)
     const withSetRests = {
       ...(c.warmupRestOff === true ? { warmupRestOff: true } : c.warmupRestSec > 0 ? { warmupRestSec: Math.round(c.warmupRestSec) } : {}),
       ...(perSide && mode === 'time' && c.sideRestOff === true ? { sideRestOff: true }
@@ -2538,7 +2571,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         <Row icon="swap" iconTint="var(--teal)" title={t('Backups')} accessory="chevron"
           value={(c.subs || []).length ? String((c.subs || []).filter(id => EXIDX[id]).length) : t('None')}
           subtitle={(c.subs || []).map(id => EXIDX[id]).filter(Boolean).map(exerciseNameFor).join(', ') || undefined}
-          onClick={() => ui().openSheet(done => <BackupsSheet ex={ex} subs={c.subs || []} onChange={subs => setC(x => ({ ...x, subs }))} close={done} />)} />
+          onClick={() => ui().openSheet(done => <BackupsSheet ex={ex} slot={c} routine={routine} subs={c.subs || []} configs={c.subCfg} onChange={(subs, subCfg) => setC(x => ({ ...x, subs, subCfg }))} close={done} />)} />
       </div>
       <div className="small dim" style={{ marginBottom: 18 }}>
         {t('Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.')}

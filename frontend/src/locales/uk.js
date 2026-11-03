@@ -2307,6 +2307,8 @@ export default {
   'Your backups': 'Ваші заміни',
   'Swap to {0}': 'Замінити на {0}',
   'Planned backup, same sets and reps': 'Запланована заміна, ті самі підходи й повтори',
+  'Planned backup, with its own plan': 'Запланована заміна, зі своїм планом',
+  'Same plan as this exercise. Tap to give it its own.': 'Той самий план, що й у цієї вправи. Торкніться, щоб дати їй власний.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Тут нічого додавати у вазі: ростуть повторення, потім підходи.',
   // --- #523 skip completed ---

@@ -2303,6 +2303,8 @@ export default {
   'Your backups': '你的備選動作',
   'Swap to {0}': '換成{0}',
   'Planned backup, same sets and reps': '計畫好的備選，組數和次數不變',
+  'Planned backup, with its own plan': '計畫好的備選，有自己的計畫',
+  'Same plan as this exercise. Tap to give it its own.': '和這個動作的計畫相同。點一下給它設一個自己的。',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': '這裡不用加重量：先加次數，再加組數。',
   // --- #523 skip completed ---

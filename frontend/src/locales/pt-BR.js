@@ -1484,6 +1484,8 @@ export const PT_BR_OVERRIDES = {
   'Remove “{0}”': 'Remover “{0}”',
   'Your backups': 'Seus substitutos',
   'Planned backup, same sets and reps': 'Substituto planejado, as mesmas séries e repetições',
+  'Planned backup, with its own plan': 'Substituto planejado, com plano próprio',
+  'Same plan as this exercise. Tap to give it its own.': 'O mesmo plano deste exercício. Toque para dar um só dele.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Aqui não há peso para acrescentar: sobe em repetições e depois em séries.',
   // --- #523 skip completed ---

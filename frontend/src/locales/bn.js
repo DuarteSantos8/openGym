@@ -2389,6 +2389,8 @@ export default {
   'Your backups': 'আপনার বিকল্প',
   'Swap to {0}': '{0}-এ বদলান',
   'Planned backup, same sets and reps': 'পরিকল্পিত বিকল্প, একই সেট ও রেপ',
+  'Planned backup, with its own plan': 'পরিকল্পিত বিকল্প, নিজের পরিকল্পনাসহ',
+  'Same plan as this exercise. Tap to give it its own.': 'এই ব্যায়ামের মতোই পরিকল্পনা। নিজস্ব একটি দিতে ট্যাপ করুন।',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'এখানে ওজন যোগ করার কিছু নেই: আগে রেপ বাড়বে, তারপর সেট।',
   // --- #523 skip completed ---

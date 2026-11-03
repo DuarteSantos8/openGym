@@ -2330,6 +2330,8 @@ export default {
   'Your backups': 'Deine Ausweichübungen',
   'Swap to {0}': 'Zu {0} wechseln',
   'Planned backup, same sets and reps': 'Geplante Ausweichübung, gleiche Sätze und Wiederholungen',
+  'Planned backup, with its own plan': 'Geplante Ausweichübung, mit eigenem Plan',
+  'Same plan as this exercise. Tap to give it its own.': 'Gleicher Plan wie diese Übung. Tippen für einen eigenen.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Hier kommt kein Gewicht dazu: Es geht über Wiederholungen nach oben, dann über Sätze.',
   // --- #523 skip completed ---

@@ -2310,6 +2310,8 @@ export default {
   'Your backups': 'Tus sustitutos',
   'Swap to {0}': 'Cambiar a {0}',
   'Planned backup, same sets and reps': 'Sustituto planificado, mismas series y repeticiones',
+  'Planned backup, with its own plan': 'Sustituto planificado, con su propio plan',
+  'Same plan as this exercise. Tap to give it its own.': 'Mismo plan que este ejercicio. Toca para darle uno propio.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Aquí no hay peso que sumar: sube en repeticiones y luego en series.',
   // --- #523 skip completed ---

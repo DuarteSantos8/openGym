@@ -2321,6 +2321,8 @@ export default {
   'Your backups': 'ท่าสำรองของคุณ',
   'Swap to {0}': 'เปลี่ยนเป็น {0}',
   'Planned backup, same sets and reps': 'ท่าสำรองที่วางไว้ เซ็ตและครั้งเท่าเดิม',
+  'Planned backup, with its own plan': 'ท่าสำรองที่วางไว้ พร้อมแผนของตัวเอง',
+  'Same plan as this exercise. Tap to give it its own.': 'แผนเดียวกับท่านี้ แตะเพื่อตั้งแผนของมันเอง',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'ท่านี้ไม่ต้องเพิ่มน้ำหนัก: เพิ่มจำนวนครั้งก่อน แล้วค่อยเพิ่มเซ็ต',
   // --- #523 skip completed ---

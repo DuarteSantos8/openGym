@@ -2310,6 +2310,8 @@ export default {
   'Your backups': 'आपके विकल्प',
   'Swap to {0}': '{0} पर बदलें',
   'Planned backup, same sets and reps': 'योजना में रखा विकल्प, वही सेट और रेप्स',
+  'Planned backup, with its own plan': 'योजना में रखा विकल्प, अपनी योजना के साथ',
+  'Same plan as this exercise. Tap to give it its own.': 'इस एक्सरसाइज़ जैसी ही योजना। इसकी अपनी योजना के लिए टैप करें।',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'यहाँ वज़न जोड़ने की ज़रूरत नहीं: पहले रेप्स बढ़ेंगे, फिर सेट।',
   // --- #523 skip completed ---

@@ -2341,6 +2341,8 @@ export default {
   'Your backups': 'Dina reserver',
   'Swap to {0}': 'Byt till {0}',
   'Planned backup, same sets and reps': 'Planerad reserv, samma set och reps',
+  'Planned backup, with its own plan': 'Planerad reserv, med egen plan',
+  'Same plan as this exercise. Tap to give it its own.': 'Samma plan som den här övningen. Tryck för att ge den en egen.',
 
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Ingen vikt att lägga på här: det ökar i reps, sedan i set.',

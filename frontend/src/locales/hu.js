@@ -2313,6 +2313,8 @@ export default {
   'Your backups': 'A helyettesítőid',
   'Swap to {0}': 'Csere erre: {0}',
   'Planned backup, same sets and reps': 'Tervezett helyettesítő, ugyanazok a sorozatok és ismétlések',
+  'Planned backup, with its own plan': 'Tervezett helyettesítő, saját tervvel',
+  'Same plan as this exercise. Tap to give it its own.': 'Ugyanaz a terv, mint ennél a gyakorlatnál. Koppints, hogy sajátot kapjon.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Itt nincs mit súlyban hozzáadni: előbb az ismétlések nőnek, aztán a sorozatok.',
   // --- #523 skip completed ---
