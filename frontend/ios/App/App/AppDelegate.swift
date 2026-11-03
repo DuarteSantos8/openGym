@@ -13,6 +13,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // The gym reminder (GymReminderPlugin): iOS relaunches the app in the background for a
         // region it watches and delivers the event to the location delegate that exists then.
         GymReminderCenter.shared.start()
+        // No shake to undo (#921): iOS offers "Undo Typing" on a shake after any text was typed in
+        // the page, and a phone carried in a pocket or jostled between sets shakes. The alert then
+        // waited on screen at the next unlock, an Undo nobody asked for. Nothing in openGym undoes
+        // by shaking; its own Undo buttons stay where they are.
+        application.applicationSupportsShakeToEdit = false
         return true
     }
 
