@@ -16,7 +16,9 @@ let
 
   defaultOpengymPkgs = if opengymPkgs != null then opengymPkgs else hostOpengymPkgs;
 
-  packages = cfg.package;
+  # The default set carries every component; a user-supplied partial set (e.g. only a cached
+  # opengym-api) is merged over it, so overriding one package never drops the others.
+  packages = defaultOpengymPkgs // cfg.package;
 
   apiEnv = lib.filterAttrs (_: v: v != null) {
     PORT = toString cfg.apiPort;
@@ -27,6 +29,10 @@ let
     SESSION_DAYS = toString cfg.sessionDays;
     ALLOW_GUEST = if cfg.allowGuest then "1" else "0";
     INVITE_ONLY = if cfg.inviteOnly then "1" else "0";
+    TRUST_PROXY = if cfg.trustProxy then "1" else "0";
+    PASSWORD_LOGIN = if cfg.passwordLogin then "1" else "0";
+    FIRST_USER_ADMIN = if cfg.firstUserAdmin then "1" else "0";
+    DEFAULT_LANG = if cfg.defaultLang != "" then cfg.defaultLang else null;
     AUDIT_LOG = if cfg.auditLog then "1" else "0";
     AUDIT_MAX = toString cfg.auditMax;
     AUDIT_DAYS = toString cfg.auditDays;
@@ -132,6 +138,30 @@ in
     };
 
     inviteOnly = lib.mkEnableOption "require invite code for new signups";
+
+    passwordLogin = lib.mkEnableOption "offer name-and-password sign-in next to passkeys (PASSWORD_LOGIN)";
+
+    firstUserAdmin = lib.mkEnableOption "grant the first profile created on an empty instance admin access (FIRST_USER_ADMIN)";
+
+    trustProxy = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Let the sign-in throttle and audit log read the client address from the headers a proxy
+        sets (TRUST_PROXY). Defaults to true because this module always fronts the API with a
+        reverse proxy. Set false only if the API port is directly reachable, where those headers
+        could be spoofed.
+      '';
+    };
+
+    defaultLang = lib.mkOption {
+      type = lib.types.str;
+      default = "";
+      description = ''
+        Default language for the sign-in screen and new profiles, as a language tag such as
+        `pt-BR` or `de` (DEFAULT_LANG). An empty string keeps the browser default.
+      '';
+    };
 
     allowGuest = lib.mkOption {
       type = lib.types.bool;
