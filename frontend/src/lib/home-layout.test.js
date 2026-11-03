@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cardShown, homeOrderOf, moveCard } from './home-layout.js'
+import { cardAvailable, cardShown, homeOrderOf, moveCard, moveListed } from './home-layout.js'
 
 describe('Home cards below the week', () => {
   it('a profile that never arranged them gets the default order', () => {
@@ -19,5 +19,25 @@ describe('Home cards below the week', () => {
     expect(moveCard(o, 'health', -1)).toEqual(['checkin', 'health', 'weight', 'streak'])
     expect(moveCard(o, 'checkin', -1)).toBe(o)
     expect(moveCard(o, 'streak', 1)).toBe(o)
+  })
+})
+
+describe('modules (Settings → Modules)', () => {
+  it('a card whose module is off is not shown, whatever its own switch says', () => {
+    expect(cardShown({ modules: { body: false } }, 'weight')).toBe(false)
+    expect(cardShown({ modules: { health: false } }, 'health')).toBe(false)
+    expect(cardShown({ modules: { checkin: false } }, 'checkin')).toBe(false)
+    expect(cardAvailable({ modules: { checkin: false } }, 'checkin')).toBe(false)
+    expect(cardShown({ modules: { checkin: true }, showCheckinCard: false }, 'checkin')).toBe(false)
+    expect(cardShown({ modules: { checkin: true }, checkIn: false }, 'checkin')).toBe(true)
+  })
+  it('the streak card stays in the list with Motivation off (its weekly sets line lives on)', () => {
+    expect(cardAvailable({ modules: { motivation: false } }, 'streak')).toBe(true)
+  })
+  it('moving a card skips the ones its module hides, which keep their places', () => {
+    const order = ['checkin', 'weight', 'health', 'streak']
+    const listed = ['checkin', 'health', 'streak']
+    expect(moveListed(order, listed, 'health', -1)).toEqual(['health', 'weight', 'checkin', 'streak'])
+    expect(moveListed(order, listed, 'checkin', -1)).toBe(order)
   })
 })

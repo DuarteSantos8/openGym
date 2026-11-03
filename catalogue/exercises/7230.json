@@ -3,9 +3,9 @@
   "name": "kettlebell gorilla row",
   "bodyPart": "back",
   "equipment": "kettlebell",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "grip muscles",
     "core"

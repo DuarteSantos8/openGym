@@ -161,6 +161,11 @@ jobs:
       - name: Untranslated strings in src (report only)
         run: node scripts/check-source-strings.mjs
         working-directory: frontend
+      # The Garmin watch app (frontend/garmin, Monkey C): brackets, strings in every language,
+      # keywords used as names, the manifest version. No Connect IQ SDK needed (docs/GARMIN.md).
+      - name: Garmin watch app check
+        run: node garmin/check.mjs
+        working-directory: frontend
       # The fatigue model must never read higher after a rest day than before it.
       # Property probe over ~108k comparisons; too slow for the unit suite, cheap here.
       - name: Fatigue model property probe
@@ -447,9 +452,13 @@ jobs:
       - name: Phone bundle + cap sync
         run: npm run build:mobile
         working-directory: frontend
-      - name: JVM unit tests, sideload APK, play flavour compiles
+      - name: JVM unit tests, sideload APK, play flavour compiles, F-Droid APK
         working-directory: frontend/android
-        run: ./gradlew --no-daemon testSideloadDebugUnitTest assembleSideloadDebug compilePlayDebugJavaWithJavac
+        run: ./gradlew --no-daemon testSideloadDebugUnitTest assembleSideloadDebug compilePlayDebugJavaWithJavac assembleFdroidRelease
+      # The build F-Droid makes from this source (unsigned here, as on F-Droid's server): nothing
+      # from Google Play services, Firebase or ML Kit in it.
+      - name: F-Droid build is free of Google Play services
+        run: scripts/android/check-fdroid.sh
       - name: Stats
         if: always()
         working-directory: frontend/android
@@ -458,6 +467,9 @@ jobs:
             echo "### Android"
             for a in app/build/outputs/apk/sideload/debug/*.apk; do
               [ -f "$a" ] && echo "- debug sideload APK: $(numfmt --to=iec "$(stat -c %s "$a")") ($(basename "$a"))"
+            done
+            for a in app/build/outputs/apk/fdroid/release/*.apk; do
+              [ -f "$a" ] && echo "- F-Droid APK (unsigned): $(numfmt --to=iec "$(stat -c %s "$a")") ($(basename "$a"))"
             done
             cat app/build/test-results/testSideloadDebugUnitTest/*.xml 2>/dev/null \
               | grep -o '<testsuite [^>]*' | sed -E 's/.*name="([^"]*)".*tests="([0-9]+)".*failures="([0-9]+)".*/- JVM: \1: \2 tests, \3 failed/' || true

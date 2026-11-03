@@ -1,0 +1,13 @@
+# openGym on Garmin: build with the Connect IQ SDK (docs/GARMIN.md).
+project.manifest = manifest.xml
+
+# Colour watches build the (:color) drawing helpers (source/Ui.mc), the black-and-white ones
+# (Instinct MIP) the (:mono) ones. Unit tests ((:test)) only go into monkeyc -t builds.
+base.excludeAnnotations = mono
+instinct2.excludeAnnotations = color
+instinct2s.excludeAnnotations = color
+instinct2x.excludeAnnotations = color
+instinct3solar45mm.excludeAnnotations = color
+instinctcrossover.excludeAnnotations = color
+instincte40mm.excludeAnnotations = color
+instincte45mm.excludeAnnotations = color

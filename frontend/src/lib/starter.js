@@ -135,3 +135,35 @@ export const buildStarterPlan = (id, equipment) => {
     ...(fit && { fit: { swapped: fit.swapped, dropped: fit.dropped } })
   }
 }
+
+// Starter programmes (#159): a starter plan's routines run as a block, as data. Generic shapes
+// written for this app, not any published programme: the weeks are the numbers, the names and
+// descriptions live in t() calls in views/Programmes.jsx for the same reason as the plans'. A
+// target is keyed by exercise id (lib/programmes.js), a %1RM only on the barbell lifts.
+const BARBELL = ['0043', '0025', '0027', '0085', '0047']
+const pcts = (pct, rpe) => ({ rpe, t: Object.fromEntries(BARBELL.map(id => [id, { pct }])) })
+const PROGRAMMES = {
+  // Four weeks on the 5×5 routines: heavier each week, then a light one to come back fresh.
+  'strength-4': { plan: '5x5', weeks: [pcts(72.5, 7), pcts(77.5, 8), pcts(82.5, 8.5), { ...pcts(60, 6), deload: true }] },
+  // Six weeks of upper/lower by effort only: the policy keeps the weights, the RPE climbs.
+  'hypertrophy-6': { plan: 'upper-lower', weeks: [{ rpe: 7 }, { rpe: 7.5 }, { rpe: 8 }, { rpe: 8.5 }, { rpe: 9 }, { rpe: 6, deload: true }] },
+  // Twelve weeks of plain linear progression on the 5×5 routines, a deload every fourth week.
+  'linear-12': { plan: '5x5', weeks: Array.from({ length: 12 }, (_, i) => ((i + 1) % 4 === 0 ? { deload: true } : {})) },
+}
+
+/** [{ id, weeks, days }] for the chooser. */
+export const starterProgrammeOptions = () =>
+  Object.entries(PROGRAMMES).map(([id, p]) => ({ id, weeks: p.weeks.length, days: PLANS[p.plan].schedule.length }))
+
+/**
+ * Fresh routines and the programme over them (not saved, not started), or null for an unknown id.
+ * `name` is what the chooser showed, in the language on screen.
+ */
+export const buildStarterProgramme = (id, name, now = Date.now()) => {
+  const def = PROGRAMMES[id]
+  const plan = def && buildStarterPlan(def.plan)
+  if (!plan) return null
+  const days = {}
+  for (const { day, routineId } of plan.schedule) (days[day] = days[day] || []).push(routineId)
+  return { routines: plan.routines, programme: { id: uid(), name, at: now, src: id, days, weeks: JSON.parse(JSON.stringify(def.weeks)) } }
+}

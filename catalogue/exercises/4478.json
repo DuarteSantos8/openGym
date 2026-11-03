@@ -3,9 +3,8 @@
   "name": "roll ball external oblique",
   "bodyPart": "waist",
   "equipment": "massage ball",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core"
   ],
   "category": "mobility",

@@ -8,14 +8,15 @@
 // Pure: lib/health-sync.js reads the hub and hands the records over; this decides what goes into
 // the log. The rules:
 //   - a set that already has a heart rate keeps it (the Apple Watch measured it live);
-//   - a day with a weigh-in typed into openGym keeps it: an imported one never replaces it, and
-//     one typed in later replaces the imported one (lib/sync-merge.js mergeBodyweight);
+//   - a weigh-in read in joins the day's others with its own time (lib/weigh-ins.js), never
+//     replacing one typed into openGym; the daily-value setting picks the day's number;
 //   - openGym's own records in the hub (what it wrote there itself) are never read back as new;
 //   - an imported weigh-in carries `src` and is never written back to the hub (no ping-pong:
 //     lib/health-connect.js healthRecords leaves it out).
 import { hrFromSamples, sanitizeHr } from './heart-rate.js'
 import { stampWorkout } from './sync-merge.js'
 import { isoOf } from './format.js'
+import { addWeighIn, readingsOf, timeOf, hashId } from './weigh-ins.js'
 
 export const LB_PER_KG = 2.2046226218
 // Weigh-ins outside this are a typo or another person's profile in the hub, not a body weight.
@@ -69,42 +70,50 @@ export function lacksHeartRate(w) {
   return (w.entries || []).some(e => (e?.sets || []).some(s => s && (s.done === true || s.sides) && !sanitizeHr(s.hr)))
 }
 
+/** The id a hub sample gets among a day's weigh-ins: the same on every phone that reads it. */
+export function hubReadingId(r) {
+  return 'h' + hashId(String(r?.id || r?.t || ''))
+}
+
 /**
  * Weigh-ins from the hub (`records`: [{ t, kg, id, origin, clientId }]) put into the log `S`
- * (mutated), at most one per day: the latest of that day. `seen` is this phone's memo of what it
- * imported ({ [day]: { id, t } }), updated in place, which makes a second read of the same records
- * a no-op. A day is left alone when it has a weigh-in typed into openGym, when the weigh-in was
- * deleted in openGym after the record was taken, or when the record is not newer than the one
- * already imported for it. Weights go in in the profile's unit. Returns the days changed.
+ * (mutated), each with its time (#859): a scale that weighs you morning and evening gives the day
+ * two readings, and the profile's daily value (lib/weigh-ins.js) picks the one the charts use.
+ * `seen` is this phone's memo of what it imported ({ [reading id]: { id, t } }), updated in place,
+ * which makes a second read of the same records a no-op. A sample is left out when the day already
+ * has it (by the hub's id) or another weigh-in at the same minute (typed in, or read by another
+ * phone), when it was removed in openGym, or when its whole day was deleted in openGym after it
+ * was taken. Weights go in in the profile's unit. Returns the days changed.
  */
 export function mergeWeighIns(S, records, { src, seen = {} } = {}) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
-  const latest = new Map()
+  const fresh = []
   for (const r of Array.isArray(records) ? records : []) {
     if (!r || isOwnRecord(r)) continue
     const t = Number(r.t), kg = Number(r.kg)
     if (!(t > 0) || !(kg >= KG_MIN && kg <= KG_MAX)) continue
-    const d = isoOf(new Date(t))
-    const cur = latest.get(d)
-    if (!cur || t > cur.t) latest.set(d, { t, kg, id: r.id || null })
+    fresh.push({ t, kg, id: r.id || null })
   }
-  if (!latest.size) return []
+  if (!fresh.length) return []
+  fresh.sort((a, b) => a.t - b.t)
   if (!Array.isArray(S.bodyweight)) S.bodyweight = []
   const deleted = S.deleted?.bodyweight && typeof S.deleted.bodyweight === 'object' ? S.deleted.bodyweight : {}
-  const days = []
-  for (const [d, r] of latest) {
-    const ex = S.bodyweight.find(b => b && b.d === d)
-    if (ex && !ex.src) continue                           // typed in: it wins
-    if (Number(deleted[d]) > r.t && !ex) continue         // removed in openGym after it was taken
-    const before = seen[d] ? Number(seen[d].t) : ex ? Number(ex.t) || 0 : 0
-    if (ex && !(r.t > before)) continue
-    if (!ex && seen[d] && !(r.t > Number(seen[d].t))) continue
+  const days = new Set()
+  for (const r of fresh) {
+    const rid = hubReadingId(r)
+    if (seen[rid]) continue
+    const d = isoOf(new Date(r.t)), at = timeOf(r.t)
+    const day = S.bodyweight.find(b => b && b.d === d)
+    if (!day && Number(deleted[d]) > r.t) continue        // the day was removed in openGym after it was taken
+    if (day) {
+      const rs = readingsOf(day)
+      const removed = Number(day.gone?.[rid]) > 0
+      if (removed || rs.some(x => x.id === rid || (x.at && x.at === at))) { seen[rid] = { id: r.id, t: r.t }; continue }
+    }
     const w = Math.round((unit === 'lb' ? r.kg * LB_PER_KG : r.kg) * 10) / 10
-    if (ex) { ex.w = w; ex.t = r.t; ex.src = src }
-    else S.bodyweight.push({ d, w, t: r.t, src })
-    seen[d] = { id: r.id, t: r.t }
-    days.push(d)
+    addWeighIn(S, { d, at, w, t: r.t, id: rid, src, sid: r.id })
+    seen[rid] = { id: r.id, t: r.t }
+    days.add(d)
   }
-  if (days.length) S.bodyweight.sort((a, b) => (a.d < b.d ? -1 : 1))
-  return days
+  return [...days].sort()
 }

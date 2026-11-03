@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
   <!-- openGym app icon "halloween", drawn by hand (the only one not written by scripts/app-icons.mjs,
        which renders it). The dumbbell is the glyph of resources/icon.svg in pumpkin orange; around
-       it a purple night, a crescent moon, a cobweb in the corner and its spider. Only rect, circle,
+       it a purple night, a crescent moon, a cobweb near the corner and its spider. Only rect, circle,
        line, polyline, polygon and one radialGradient: what the script knows how to draw. -->
   <defs>
     <radialGradient id="night" gradientUnits="userSpaceOnUse" cx="256" cy="300" r="380">
@@ -10,36 +10,44 @@
     </radialGradient>
   </defs>
   <rect width="512" height="512" fill="url(#night)"/>
+  <!-- Everything that matters stays within 228 of the centre: Android cuts the art to a circle and
+       only promises the middle 66 dp of its 72, and iOS rounds the corners off. -->
   <!-- the moon: a pale disc with the night bitten out of it -->
-  <circle cx="112" cy="110" r="50" fill="#f7e8b4"/>
-  <circle cx="136" cy="92" r="46" fill="url(#night)"/>
+  <circle cx="128" cy="128" r="46" fill="#f7e8b4"/>
+  <circle cx="150" cy="112" r="42" fill="url(#night)"/>
   <g fill="#f7e8b4">
     <circle cx="222" cy="72" r="6"/>
-    <circle cx="300" cy="118" r="4"/>
-    <circle cx="66" cy="230" r="4"/>
+    <circle cx="246" cy="164" r="4"/>
+    <circle cx="66" cy="236" r="4"/>
   </g>
-  <!-- the cobweb, hung from the top right corner -->
-  <g stroke="#b7a2de" stroke-width="7">
-    <line x1="512" y1="0" x2="448" y2="159"/>
-    <line x1="512" y1="0" x2="390" y2="122"/>
-    <line x1="512" y1="0" x2="353" y2="64"/>
-    <polyline points="512,54 508,50 505,47 501,47 497,48 492,50 490,45 487,41 484,39 479,38 474,38 474,33 473,28 471,25 467,22 462,20 464,15 465,11 465,7 462,4 458,0"/>
-    <polyline points="512,102 505,95 498,89 491,88 483,90 474,95 470,85 465,77 459,73 451,72 440,72 440,61 439,53 435,47 427,42 417,38 422,29 424,21 423,14 417,7 410,0"/>
-    <polyline points="512,148 501,137 492,130 482,128 470,131 457,137 450,123 444,112 435,106 423,105 407,105 407,89 406,77 400,68 389,62 375,55 381,42 384,30 382,20 375,11 364,0"/>
+  <!-- the cobweb, its hub pulled in from the top right corner; only the moorings run off the edge -->
+  <g stroke="#b7a2de" stroke-width="4">
+    <line x1="412" y1="100" x2="512" y2="44"/>
+    <line x1="412" y1="100" x2="468" y2="0"/>
   </g>
-  <!-- its spider, on a thread, inside the corner iOS rounds off -->
-  <line x1="456" y1="132" x2="456" y2="150" stroke="#b7a2de" stroke-width="4"/>
+  <g stroke="#b7a2de" stroke-width="6">
+    <line x1="412" y1="100" x2="282" y2="100"/>
+    <line x1="412" y1="100" x2="307.9" y2="143.1"/>
+    <line x1="412" y1="100" x2="349" y2="163"/>
+    <line x1="412" y1="100" x2="382.9" y2="170.2"/>
+    <line x1="412" y1="100" x2="412" y2="172"/>
+    <polyline points="365.2,100 371.9,103.5 375.8,106.7 376.1,110.5 374.5,115.5 381.6,115.6 386.1,116.4 388.2,118.8 389.3,122.7 394.3,121 397.8,120.6 399.8,122.2 401.5,125.3 404.9,122.9 407.5,122 409.6,123.2 412,125.9"/>
+    <polyline points="324.9,100 337.4,106.5 344.6,112.4 345.2,119.5 342.2,128.9 355.4,129 363.9,130.6 367.8,135 369.8,142.2 379.1,139.1 385.5,138.4 389.3,141.3 392.5,147 398.8,142.6 403.6,141 407.6,143.2 412,148.2"/>
+    <polyline points="282,100 300.7,109.7 311.3,118.5 312.4,129.1 307.9,143.1 327.5,143.3 340.2,145.6 346,152.3 349,163 362.9,158.4 372.4,157.3 378.2,161.6 382.9,170.2 392.4,163.6 399.5,161.1 405.5,164.5 412,172"/>
+  </g>
+  <!-- its spider, on a thread from the web, clear of the plates -->
+  <line x1="294" y1="106" x2="294" y2="162" stroke="#b7a2de" stroke-width="4"/>
   <g stroke="#ecdfff" stroke-width="4.5">
-    <polyline points="449.6,156.4 438.4,148.4 433.6,156.4"/>
-    <polyline points="462.4,156.4 473.6,148.4 478.4,156.4"/>
-    <polyline points="449.6,161.2 435.2,159.6 430.4,169.2"/>
-    <polyline points="462.4,161.2 476.8,159.6 481.6,169.2"/>
-    <polyline points="450.4,166 438.4,170.8 436.8,180.4"/>
-    <polyline points="461.6,166 473.6,170.8 475.2,180.4"/>
+    <polyline points="287.6,168.4 276.4,160.4 271.6,168.4"/>
+    <polyline points="300.4,168.4 311.6,160.4 316.4,168.4"/>
+    <polyline points="287.6,173.2 273.2,171.6 268.4,181.2"/>
+    <polyline points="300.4,173.2 314.8,171.6 319.6,181.2"/>
+    <polyline points="288.4,178 276.4,182.8 274.8,192.4"/>
+    <polyline points="299.6,178 311.6,182.8 313.2,192.4"/>
   </g>
   <g fill="#ecdfff">
-    <circle cx="456" cy="153.2" r="7.2"/>
-    <circle cx="456" cy="166" r="10.4"/>
+    <circle cx="294" cy="165.2" r="7.2"/>
+    <circle cx="294" cy="178" r="10.4"/>
   </g>
   <!-- the dumbbell, pumpkin orange -->
   <g fill="#ff7a1a">

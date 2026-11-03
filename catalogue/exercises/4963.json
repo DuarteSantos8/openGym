@@ -3,9 +3,9 @@
   "name": "kettlebell box squat",
   "bodyPart": "upper legs",
   "equipment": "kettlebell",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "glutes",
     "hamstrings",
     "core"
   ],

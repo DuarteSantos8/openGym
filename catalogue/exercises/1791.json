@@ -3,8 +3,9 @@
   "name": "trap and neck stretch",
   "bodyPart": "neck",
   "equipment": "body weight",
-  "target": "traps",
+  "target": "levator scapulae",
   "secondaryMuscles": [
+    "traps",
     "sternocleidomastoid",
     "trapezius"
   ],

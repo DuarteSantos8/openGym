@@ -3,9 +3,9 @@
   "name": "incline twisting sit up v. 2",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "hip flexors"
   ],
   "category": "calisthenics",

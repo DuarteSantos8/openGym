@@ -3,9 +3,8 @@
   "name": "cable twist (down up)",
   "bodyPart": "waist",
   "equipment": "cable",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "shoulders",
     "core"
   ],
