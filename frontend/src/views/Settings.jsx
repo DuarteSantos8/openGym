@@ -627,6 +627,20 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         </Row>
       </Section>
       <Section title={t('Before and during')}>
+        {/* #930: the Start button starts today's plan in one tap (the default), or asks which
+            workout every time. A long press on it always asks. */}
+        <Row icon="play" iconTint="var(--green)" title={t('Start button')}
+          subtitle={t('A long press on Start always lets you pick.')}>
+          <Segmented className="seg-inline"
+            options={[{ value: 'today', label: t('Today’s plan') }, { value: 'ask', label: t('Let me pick') }]}
+            value={S.startPick === 'ask' ? 'ask' : 'today'} onChange={v => update(s => { if (v === 'ask') s.startPick = 'ask'; else delete s.startPick })} />
+        </Row>
+        {/* #976: a planned session opens on what it holds, with Start at its foot. */}
+        <Row icon="list" iconTint="var(--blue)" title={t('Preview before starting')}
+          subtitle={t('See the exercises and weights first, then tap Start.')}>
+          <Switch aria-label={t('Preview before starting')} checked={S.previewStart === true}
+            onChange={v => update(s => { if (v) s.previewStart = true; else delete s.previewStart })} />
+        </Row>
         {/* The quick weigh-in that opens on Start (sheets.jsx startFlow, issue #137); off skips
             straight to the session. Home and Stats still log weight by hand. */}
         {on('body') && <Row icon="scale" iconTint="var(--green)" title={t('Weigh in before workouts')}

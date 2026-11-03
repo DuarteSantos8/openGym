@@ -6,6 +6,7 @@ import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipme
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
+import { withDayApart } from './lib/day-sessions.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
@@ -3085,6 +3086,17 @@ function DayAssign({ day, close }) {
         </div>
       })}
     </div>
+    {/* Two or more on one day (#908): one combined session, or each its own session with its own
+        Start on Home (a run in the morning, the ankle work at night). */}
+    {cur.length > 1 && <div style={{ marginTop: 14 }}>
+      <div className="small muted" style={{ marginBottom: 6 }}>{t('Train them')}</div>
+      <Segmented value={st.weekApart?.[day] === true ? 'apart' : 'together'}
+        onChange={v => update(s => { s.weekApart = withDayApart(s.weekApart, day, v === 'apart') })}
+        options={[{ value: 'together', label: t('Together') }, { value: 'apart', label: t('Separately') }]} />
+      <div className="small dim" style={{ marginTop: 6 }}>
+        {st.weekApart?.[day] === true ? t('Each one is its own workout, with its own Start on Home.') : t('One workout, one after the other.')}
+      </div>
+    </div>}
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>

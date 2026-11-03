@@ -21,6 +21,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Plates: add the sizes your gym really has (3 and 4 kg, 0.25 kg micro plates, anything on a quarter step) and take them out again, per gym. Plate loading and the "X kg short" hint only reach for what is on your list (#886, thanks @rt-oliveira for the idea).
 - Apple Watch and Wear OS: the rest screen shows the next set's weight and reps under Next, so you can load the bar while you breathe (#911, thanks @rhjensen79 for the idea).
 - An exercise can go by one of its other names everywhere: give it "Pec deck" under Other names, pick it under Shown as, and the workout, routines, history and stats say Pec deck. Exports and the API keep the catalogue title (#903, thanks @lodepav for the idea).
+- Start picks: hold the Start button (or set Settings → Workout → Start button to "Let me pick") for today's plan on top and every other routine below it, unscheduled ones too, plus freestyle. No more calendar detour (#930, thanks @Nour-hash for the idea). Home's "Choose a different workout" opens the same picker.
+- Preview before starting: switch it on in Settings → Workout and a routine opens on its exercises, sets and weights first, with Start at the bottom (#976, thanks @b225ccc for the idea).
+- Two routines on one weekday can stay apart: in Plan, tap the day and pick Separately, and Home shows each with its own Start and its own Done, a run in the morning and ankle work at night (#908, thanks @wintersrd for the idea).
 
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).

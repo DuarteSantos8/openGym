@@ -1,7 +1,9 @@
+import { useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { effectiveRoutineIds, effectiveRoutines } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
+import { dayApart, nextSessionIds } from '../lib/day-sessions.js'
 import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import Elapsed from './Elapsed.jsx'
@@ -20,8 +22,12 @@ function Tab({ active, icon, label, onClick, dot, tour }) {
   )
 }
 
-export default function TabBar({ onStart }) {
+// How long a press on Start is held before it opens the picker instead (#930).
+export const START_HOLD_MS = 450
+
+export default function TabBar({ onStart, onPick }) {
   const nav = useNavigate()
+  const hold = useRef(null)
   const loc = useLocation()
   const S = useStore(s => s.S)
   const user = useStore(s => s.user)
@@ -45,13 +51,33 @@ export default function TabBar({ onStart }) {
 
   const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
   const startWorkout = () => {
+    // The press was held: the picker is open already, and this click is its release.
+    if (hold.current === 'fired') { hold.current = null; return }
     if (!S.active) {
+      // Settings → Workout → Start button (#930): every tap asks which workout.
+      if (S.startPick === 'ask' && onPick) { onPick(); return }
+      // A day trained separately (#908) starts its next session not done yet.
+      if (dayApart(S, todayISO())) {
+        const ids = nextSessionIds(S, todayISO())
+        if (ids) { onStart(ids); return }
       // A weekday can hold several routines; start the combined session if any of them has
       // exercises, otherwise fall through to the picker.
-      if (effectiveRoutines(S, todayISO()).some(r => r.ex.length)) { onStart(effectiveRoutineIds(S, todayISO())); return }
+      } else if (effectiveRoutines(S, todayISO()).some(r => r.ex.length)) { onStart(effectiveRoutineIds(S, todayISO())); return }
     }
     nav('/workout')
   }
+  // A long press on Start opens the picker (#930): today's plan on top, everything else below.
+  // A tap still does what Start always did. Only with no workout running.
+  const holdStart = () => {
+    if (S.active || !onPick) return
+    clearTimeout(hold.current)
+    hold.current = setTimeout(() => {
+      hold.current = 'fired'
+      try { navigator.vibrate?.(10) } catch { /* no vibration here */ }
+      onPick()
+    }, START_HOLD_MS)
+  }
+  const holdEnd = () => { if (hold.current !== 'fired') { clearTimeout(hold.current); hold.current = null } }
 
   return (
     <nav id="tabbar">
@@ -65,6 +91,8 @@ export default function TabBar({ onStart }) {
           button still named Resume; a past workout being edited or logged after the fact has no
           clock to run. */}
       <button data-tour="start" className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
+        onPointerDown={holdStart} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}
+        onContextMenu={e => { if (!S.active && onPick) e.preventDefault() }}
         aria-label={running ? t('Resume') : undefined}>
         <span className="cir"><Icon name="play" /></span>
         {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
