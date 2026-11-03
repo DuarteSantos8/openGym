@@ -3,9 +3,9 @@
   "name": "dumbbell lying rear delt row",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "upper back",
+  "target": "delts",
   "secondaryMuscles": [
-    "shoulders",
+    "upper back",
     "biceps"
   ],
   "category": "strength",

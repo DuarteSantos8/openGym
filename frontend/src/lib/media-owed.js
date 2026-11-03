@@ -59,6 +59,24 @@ export function pendingRefCount(S) {
   return seen.size
 }
 
+/**
+ * How many of the photos and videos pendingRefCount counts are set videos kept on the phone that
+ * filmed them (`local: true`, lib/set-videos.js): they are never uploaded, so Settings does not
+ * call them waiting. They still count as owed for a sign-out, which keeps them aside (the stash)
+ * rather than wiping the only copy.
+ */
+export function localOnlyRefCount(S) {
+  const refs = stateMediaRefs(S).filter(m => m && m.local === true)
+  if (!refs.length) return 0
+  watch()
+  const seen = new Set()
+  for (const m of refs) {
+    const main = typeof m.hash === 'string' && HASH_RE.test(m.hash) ? m.hash : null
+    if (main && pending.has(main)) seen.add(main)
+  }
+  return seen.size
+}
+
 /** lib/media-sync.js, once started: { settle() } — one more forced run, bounded in time. */
 export function registerMediaRunner(r) { runner = r }
 

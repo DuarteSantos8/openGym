@@ -6,6 +6,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Stats from './Stats.jsx'
+import { pickFrom } from './stats-pick.test-util.js'
 
 const mocks = vi.hoisted(() => ({ charts: [], S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
@@ -39,8 +40,8 @@ function mount(workouts) {
   root = createRoot(host)
   act(() => root.render(<Stats />))
 }
-// The exercise card's chart is the last one drawn; the body weight chart has no colour of its own.
-const exChart = () => mocks.charts.filter(c => c.color === 'var(--blue)' || c.series).at(-1)
+// The exercise card's chart (150 tall) is the last one drawn; Body weight's is 160 and Effort's 140.
+const exChart = () => mocks.charts.filter(c => c.h === 150).at(-1)
 const exCard = () => [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Exercise progress')
 const press = (scope, label) => act(() => [...scope.querySelectorAll('.seg button')].find(b => b.textContent === label).click())
 
@@ -48,7 +49,8 @@ describe('Stats: exercise progress date range', () => {
   it('starts on All and cuts the top-set line to the picked range, Best staying all-time', () => {
     mount([session(400, 100), session(200, 90), session(60, 70), session(10, 75), session(3, 80)])
     const card = exCard()
-    expect([...card.querySelectorAll('.seg button.on')].map(b => b.textContent)).toEqual(['Top set', 'All'])
+    expect([...card.querySelectorAll('.seg button.on')].map(b => b.textContent)).toEqual(['All'])
+    expect([...card.querySelectorAll('.lrow-v')].map(v => v.textContent)).toContain('Top set')
     expect(exChart().points.map(p => p.y)).toEqual([100, 90, 70, 75, 80])
 
     press(card, '1M')
@@ -61,12 +63,12 @@ describe('Stats: exercise progress date range', () => {
   it('applies to the other chart modes too', () => {
     mount([session(400, 100), session(200, 90), session(60, 70), session(10, 75), session(3, 80)])
     const card = exCard()
-    press(card, 'Est. 1RM')
+    pickFrom(card, 'Chart', 'Est. 1RM')
     const all = exChart().points.length
     press(card, '1M')
     expect(all).toBe(5)
     expect(exChart().points).toHaveLength(2)
-    press(card, 'Per set')
+    pickFrom(card, 'Chart', 'Per set')
     const chart = exChart()
     expect(chart.points).toHaveLength(2)
     expect(chart.series.every(s => s.points.length === 2)).toBe(true)

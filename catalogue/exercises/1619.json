@@ -3,10 +3,10 @@
   "name": "dumbbell incline one arm hammer press",
   "bodyPart": "upper arms",
   "equipment": "dumbbell",
-  "target": "triceps",
+  "target": "pectorals",
   "secondaryMuscles": [
-    "shoulders",
-    "chest"
+    "triceps",
+    "shoulders"
   ],
   "category": "strength",
   "description": "A one-arm neutral-grip press on an incline bench. It trains the triceps and upper chest on one side at a time.",

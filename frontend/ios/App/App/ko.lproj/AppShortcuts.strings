@@ -1,0 +1,9 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start my workout in ${applicationName}" = "${applicationName}에서 운동 시작해 줘";
+"Start a workout with ${applicationName}" = "${applicationName}로 운동 시작";
+"Log my weight in ${applicationName}" = "${applicationName}에 내 체중 기록해 줘";
+"Log a weigh-in in ${applicationName}" = "${applicationName}에 체중 추가";
+"What's my workout today in ${applicationName}" = "${applicationName}에서 오늘 운동 뭐야";
+"What's planned today in ${applicationName}" = "${applicationName}에서 오늘 계획 알려 줘";
+"How's my streak in ${applicationName}" = "${applicationName}에서 내 연속 기록 어때";
+"What's my ${applicationName} streak" = "내 ${applicationName} 연속 기록 몇 주야";

@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "ওয়ার্কআউট শুরু করুন";
+"Starts today’s planned workout, or opens the one already running." = "আজকের প্ল্যান করা ওয়ার্কআউট শুরু করে, বা চলতি ওয়ার্কআউট খোলে।";
+"Log weight" = "ওজন লিখুন";
+"Logs your body weight without opening openGym." = "openGym না খুলেই আপনার ওজন লিখে রাখে।";
+"Weight" = "ওজন";
+"What’s your weight?" = "আপনার ওজন কত?";
+"Today’s workout" = "আজকের ওয়ার্কআউট";
+"Tells you what’s planned for today." = "আজ কী প্ল্যান আছে তা জানায়।";
+"Week streak" = "সপ্তাহের স্ট্রিক";
+"Tells you how many weeks in a row you trained." = "টানা কত সপ্তাহ ট্রেনিং করেছেন তা জানায়।";
+"Open openGym once, then ask me again." = "openGym একবার খুলুন, তারপর আবার জিজ্ঞেস করুন।";
+"You’re in the middle of %@." = "আপনি এখন %@ করছেন।";
+"You’re in the middle of a workout." = "আপনি এখন ওয়ার্কআউট করছেন।";
+"Your workout" = "আপনার ওয়ার্কআউট";
+"%@ is done for today. Nice work." = "আজকের %@ শেষ। দারুণ।";
+"Today: %@." = "আজ: %@।";
+"Rest day today. Next up: %@ on %@." = "আজ বিশ্রামের দিন। এরপর: %@, %@।";
+"Nothing planned today." = "আজ কিছু প্ল্যান নেই।";
+"No streak yet. One workout this week starts one." = "এখনও কোনো স্ট্রিক নেই। এই সপ্তাহে একটা ওয়ার্কআউটেই শুরু হবে।";
+"Week streak: %d. This week already counts." = "সপ্তাহের স্ট্রিক: %d। এই সপ্তাহ আগেই গোনা হয়ে গেছে।";
+"Week streak: %d. One workout this week keeps it going." = "সপ্তাহের স্ট্রিক: %d। এই সপ্তাহে একটা ওয়ার্কআউটে এটা চালু থাকবে।";
+"That doesn’t sound like a weight. Try again?" = "এটা ওজনের মতো শোনাচ্ছে না। আবার চেষ্টা করবেন?";
+"Logged %@." = "%@ লেখা হয়েছে।";

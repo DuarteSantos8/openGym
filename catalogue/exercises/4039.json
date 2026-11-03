@@ -3,9 +3,9 @@
   "name": "landmine one arm bent over bench row",
   "bodyPart": "back",
   "equipment": "landmine",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "rhomboids",
     "biceps",
     "rear deltoids"

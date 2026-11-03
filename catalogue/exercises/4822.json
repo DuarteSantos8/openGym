@@ -3,9 +3,9 @@
   "name": "dumbbell rdl to jump shrug",
   "bodyPart": "full body",
   "equipment": "dumbbell",
-  "target": "glutes",
+  "target": "hamstrings",
   "secondaryMuscles": [
-    "hamstrings",
+    "glutes",
     "trapezius",
     "calves",
     "quadriceps",

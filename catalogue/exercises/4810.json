@@ -3,9 +3,8 @@
   "name": "standing side bend v. 2",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core"
   ],
   "category": "calisthenics",
