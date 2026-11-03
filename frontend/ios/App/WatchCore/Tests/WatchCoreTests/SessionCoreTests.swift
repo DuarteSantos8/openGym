@@ -192,4 +192,31 @@ final class SessionCoreTests: XCTestCase {
         after.entries[0].sets[0] = SessionCore.markSide(w.entries[0].sets[0], "L", w: 20, r: 10, at: 2000)
         XCTAssertEqual(SessionCore.phoneTicks(before, after).map(\.at), [2000])
     }
+
+    func testASessionsSizeCountsExercisesAndWorkingSets() {
+        var side = row(20, 0)
+        side.sides = Sides(L: SideRow(w: 20, r: 10, done: false), R: SideRow(w: 20, r: 10, done: false))
+        let warm = SetRow(w: 20, r: 10, sec: nil, done: false, warmup: true, at: nil)
+        let session = ReadySession(routineIds: ["r1"], name: "Push", entries: [
+            Entry(id: "0025", name: "Bench Press", mode: "reps", restSec: nil, last: nil, sets: [warm, row(60, 8), row(60, 8), row(60, 8)]),
+            Entry(id: "0426", name: "Split Squat", mode: "reps", restSec: nil, last: nil, sets: [side, row(20, 10)])])
+        let n = SessionCore.size(session)
+        XCTAssertEqual(n.exercises, 2)
+        XCTAssertEqual(n.sets, 5, "the warm-up is not a set, a per-side set counts once")
+    }
+
+    func testAnEmptyRoutineHasNoSize() {
+        let n = SessionCore.size(ReadySession(routineIds: [], name: "Empty", entries: []))
+        XCTAssertEqual(n.exercises, 0)
+        XCTAssertEqual(n.sets, 0)
+    }
+
+    func testExercisesWithoutWorkingSetsHaveNoSets() {
+        let warm = SetRow(w: 20, r: 10, sec: nil, done: false, warmup: true, at: nil)
+        let n = SessionCore.size(ReadySession(routineIds: [], name: "Odd", entries: [
+            Entry(id: "0025", name: "Bench Press", mode: "reps", restSec: nil, last: nil, sets: []),
+            Entry(id: "0426", name: "Split Squat", mode: "reps", restSec: nil, last: nil, sets: [warm])]))
+        XCTAssertEqual(n.exercises, 2)
+        XCTAssertEqual(n.sets, 0, "the start screen hides the line when there are no sets")
+    }
 }
