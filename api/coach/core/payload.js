@@ -333,7 +333,8 @@ export function canonicalPlan(S) {
   };
 }
 
-export function cleanPlan(S) {
+// `now` dates a running programme's week (the job's clock, so a payload is the same whenever it is built).
+export function cleanPlan(S, now) {
   // Names are typed by the person, so they are cut like the profile's text. The icon is held to
   // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
   // the client's state, and free text in it would ride into every prompt.
@@ -346,7 +347,7 @@ export function cleanPlan(S) {
   // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
   [1, 2, 3, 4, 5, 6, 0].forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]).map(ident); });
-  const programmes = programmesOut(S);
+  const programmes = programmesOut(S, now);
   return { routines, week, ...(programmes.length ? { programmes } : {}) };
 }
 
@@ -623,7 +624,7 @@ export function build(S, opts = {}) {
       today: iso(new Date(now))
     },
     coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
-    plan: cleanPlan(S)
+    plan: cleanPlan(S, now)
   };
   // The newer picture (core/context.js): weekly sets and recovery per muscle, the active gym's
   // loading, this month's challenges. Each only when there is something in it; a debrief reads
