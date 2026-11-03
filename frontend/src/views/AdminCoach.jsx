@@ -430,6 +430,12 @@ const failureTitle = cls => ({
   timeout: 'The provider took longer than the job budget (COACH_JOB_TIMEOUT_MS, default 5 minutes)',
   missing: 'The provider runtime or key is missing',
   auth: 'The provider rejected the credential',
+  // The four ways a provider call fails that used to be one line, "The provider returned an
+  // error", on this card and in the chat. Each has its own fix; naming it is the point.
+  quota: 'The provider is out of quota, or rate limiting this instance',
+  schema: 'The provider would not serve the request shape we send (try another model)',
+  outage: 'The provider was having an outage (5xx after its own retries)',
+  unreachable: 'The provider could not be reached at all (network, DNS or the endpoint)',
   provider: 'The provider returned an error',
   unusable: 'The model answered, but not in a shape the app could use',
   restart: 'The server restarted while a job was running',

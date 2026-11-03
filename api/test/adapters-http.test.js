@@ -428,9 +428,9 @@ test('a missing key is "missing", like an absent CLI — no request is made', as
   assert.equal(cls.errorClass, 'missing');
 });
 
-test('401 and 403 reach the pipeline as "auth"; other statuses as "provider"', async () => {
+test('a failed status reaches the pipeline as its class: auth, quota or outage', async () => {
   const payload = { plan: { routines: [], week: {} } };
-  for (const [status, expect] of [[401, 'auth'], [403, 'auth'], [429, 'provider'], [500, 'provider']]) {
+  for (const [status, expect] of [[401, 'auth'], [403, 'auth'], [429, 'quota'], [500, 'outage'], [503, 'outage']]) {
     const f = fakeFetch([{ status, body: { error: { message: 'nope' } } }]);
     const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f, retryDelayMs: 0 });
     assert.equal(r.code, 1);

@@ -4691,7 +4691,20 @@ components:
                 outcome: { type: string, enum: [ready, nochange, applied, dismissed, expired, failed] }
                 errorClass:
                   oneOf: [{ type: string }, { type: 'null' }]
-                  description: e.g. `provider`, `unusable`, `restart`, `forgotten`, `consent`, `noworkout`.
+                  description: |
+                    Why a failed job failed. Provider failures are sorted by cause:
+                    `auth` (the credential was refused), `quota` (out of quota or rate limited),
+                    `schema` (the endpoint will not serve the request shape), `outage` (5xx past
+                    the retries), `unreachable` (nothing answered), `timeout` (no answer in the
+                    job budget), `missing` (no key or runtime), `provider` (anything else it
+                    refused), `unusable` (it answered outside the contract). Job-level classes:
+                    `restart`, `forgotten`, `consent`, `noworkout`, `toolarge`, `nostate`, `off`.
+                message:
+                  type: string
+                  description: |
+                    The short user-facing line for that failure, when the class has one. Present
+                    only on failures a provider caused; a client that has its own translated
+                    line for `errorClass` may prefer it. Never contains provider detail.
                 at: { type: integer, description: Epoch ms. }
                 trigger: { type: string, enum: [scheduled], description: Present when it was an automatic review. }
                 reading: { type: string, description: "Present on `nochange`: why there was nothing to change." }
