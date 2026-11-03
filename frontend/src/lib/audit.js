@@ -66,6 +66,8 @@ const LABELS = {
   'admin.user.disable': 'Disabled an account',
   'admin.user.enable': 'Re-enabled an account',
   'admin.user.delete': 'Deleted an account',
+  'admin.user.plan': 'Sent a plan to a student',
+  'admin.user.teacher': 'Changed a student’s teacher',
   'admin.password.reset': 'Issued a password reset code',
   'admin.role.grant': 'Made someone an admin',
   'admin.role.revoke': 'Removed someone as admin',

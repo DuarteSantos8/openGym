@@ -3,6 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
+import { buildPlanBundle } from '../lib/plan-share.js'
+import { studentProgress } from '../lib/student-progress.js'
+import { filterStudents, filterCounts, quietDays } from '../lib/student-filter.js'
+import { t } from '../lib/i18n.js'
 import { fmtDate, fmtNum, fmtVol, fmtDur } from '../lib/format.js'
 import { auditCat, auditLine, fmtWhen } from '../lib/audit.js'
 import { workoutVolume, setsDone } from '../lib/history.js'
@@ -13,8 +17,9 @@ import AdminCoach from './AdminCoach.jsx'
 import '../admin.css'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
-// Deliberately English-only — it isn't part of the translated end-user surface, so it stays
-// out of the per-language string packs.
+// Mostly English-only — it isn't part of the translated end-user surface. The teacher side (finding
+// a student, picking a teacher, sending a plan, following progress) is the exception: a teacher
+// and their students may not read English, so those strings go through t() and the packs.
 //
 // One page of cards, each opening with a sentence that says what it is for. An operator who
 // looks at this twice a year should not have to remember what "synced 3d ago" or an invite
@@ -54,6 +59,27 @@ function RecoveryCodeSheet({ name, code, expires, close }) {
     <button className="adm-code" style={{ fontSize: 'var(--fs-title2)', width: '100%', padding: '14px 0' }} onClick={copy} aria-label="copy code">{code}</button>
     <div style={{ height: 12 }} />
     <Button variant="primary" onClick={close}>Done</Button>
+  </>
+}
+
+// The owner picks which admin (teacher) a student belongs to; that teacher then sees them, and only
+// them. The owner can also pick one for themself (`self`): a teacher then follows their training.
+function TeacherSheet({ student, self, onChanged, close }) {
+  const toast = useUI(s => s.toast)
+  const [admins, setAdmins] = useState(null)
+  useEffect(() => { api('/api/admin/users').then(r => setAdmins(r.users.filter(x => x.admin && !x.disabled && x.id !== student.id))).catch(e => toast(e.message)) }, [])
+  const set = (a, msg) => api('/api/admin/user/teacher', { method: 'POST', body: JSON.stringify({ id: student.id, teacher: a ? a.id : null }) })
+    .then(() => { toast(msg); onChanged(); close() }).catch(e => toast(e.message))
+  return <>
+    <h3>{self ? t('My teacher') : t('Teacher for {0}', student.name)}</h3>
+    <div className="adm-lead">{self
+      ? t('Only this teacher can see your training and send you a plan.')
+      : t('Only this teacher (and you) can see {0}’s training and send them a plan.', student.name)}</div>
+    {!admins ? <div className="muted small">{t('Loading…')}</div> : admins.map(a => <button key={a.id} className={'btn' + (student.teacher === a.id ? ' primary' : '')} style={{ marginBottom: 8 }}
+      onClick={() => set(a, self ? t('You are now a student of {0}', a.name) : t('{0} now belongs to {1}', student.name, a.name))}>{a.name}{a.owner ? ' ' + t('(you)') : ''}</button>)}
+    {admins && !admins.length && <div className="adm-empty">{t('There is no other teacher yet. Make someone an admin first.')}</div>}
+    {self && student.teacher && <button className="btn" style={{ marginBottom: 8 }} onClick={() => set(null, t('You no longer have a teacher'))}>{t('No teacher')}</button>}
+    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
   </>
 }
 
@@ -126,6 +152,21 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       .then(r => { onChanged(); close(); openSheet(done => <RecoveryCodeSheet name={r.name} code={r.code} expires={r.expires} close={done} />, { locked: true }) })
       .catch(e => toast(e.message)),
   })
+  // The teacher's own routines and weekly schedule, as the plan file carries them, into the
+  // student's inbox: they accept it on their phone (sheets.jsx checkPlanInbox).
+  const sendPlan = () => {
+    const bundle = buildPlanBundle(useStore.getState().S, t('Plan from {0}', me?.name || t('your teacher')))
+    if (!bundle.routines.some(r => r.ex.length)) return toast(t('Build the plan in your own Plan tab first, then send it from here.'))
+    confirmSheet({
+      title: t('Send your plan to {0}?', u.name),
+      message: t('{0} routine(s) and your weekly schedule. They choose whether to add it. Nothing of theirs is changed until they do.', bundle.routines.length),
+      confirmText: t('Send plan'),
+      onConfirm: () => api('/api/admin/user/plan', { method: 'POST', body: JSON.stringify({ id: u.id, bundle }) })
+        .then(r => toast(t('Sent. {0} waiting for {1}.', r.pending, u.name))).catch(e => toast(e.message))
+    })
+  }
+  const prog = studentProgress(d)
+  const delta = (x, unit) => x?.delta == null ? '' : ' (' + (x.delta > 0 ? '+' : '') + x.delta + unit + ')'
   return <>
     <h3 className="capitalize">{u.name}</h3>
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '8px 0 12px' }}>
@@ -146,11 +187,25 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <div className="tile"><div className="l">Routines</div><div className="v v-sm">{d.routines.length}</div></div>
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: 'var(--fs-subhead)' }}>{rel(d.lastSync)}</div></div>
     </div>
+    <h4 className="sec">{t('Progress')}</h4>
+    <div className="tiles" style={{ textAlign: 'start' }}>
+      <div className="tile"><div className="l">{t('Weight')}</div><div className="v" style={{ fontSize: '.95rem' }}>{prog.weight ? prog.weight.last + ' ' + d.unit + delta(prog.weight, '') : '–'}</div></div>
+      <div className="tile"><div className="l">{t('Body fat')}</div><div className="v" style={{ fontSize: '.95rem' }}>{prog.bodyFat ? prog.bodyFat.last + '%' + delta(prog.bodyFat, ' pts') : '–'}</div></div>
+      <div className="tile"><div className="l">{t('Workouts, 30 days')}</div><div className="v" style={{ fontSize: '.95rem' }}>{prog.last30.count} <span className="dim">{t('vs {0} before', prog.prev30.count)}</span></div></div>
+      <div className="tile"><div className="l">{t('Volume, 30 days')}</div><div className="v" style={{ fontSize: '.95rem' }}>{fmtVol(prog.last30.volume, d.unit)}</div></div>
+      <div className="tile"><div className="l">{t('PRs, 30 days')}</div><div className="v" style={{ fontSize: '.95rem' }}>{prog.last30.prs}</div></div>
+    </div>
+    <button className="btn primary" style={{ margin: '12px 0 4px' }} onClick={sendPlan}>{t('Send my plan')}</button>
+    <div className="adm-hint">{t('Sends your routines and weekly schedule to {0}. They add it with one tap.', u.name)}</div>
+    {viewerOwner && (!u.admin || u.owner) && <>
+      <button className="btn" style={{ margin: '12px 0 4px' }} onClick={() => openSheet(done => <TeacherSheet student={u} self={u.owner} onChanged={onChanged} close={done} />)}>{t('Teacher: {0}', u.teacherName || t('none'))}</button>
+      <div className="adm-hint">{t('Teachers see only their own students. A student who joins with a teacher’s invite code is theirs automatically.')}</div>
+    </>}
     {viewerOwner && !u.owner && !u.disabled && <>
       <button className="btn" style={{ margin: '12px 0 4px' }}
         onClick={() => u.admin
           ? confirmSheet({ title: 'Remove ' + u.name + ' as admin?', message: 'They keep their account and data, but lose this page.', confirmText: 'Remove admin', danger: true, onConfirm: () => setRole(false) })
-          : confirmSheet({ title: 'Make ' + u.name + ' an admin?', message: 'They can see everyone on this instance, disable accounts, hand out invites and set up the Coach. Only you can add or remove admins.', confirmText: 'Make admin', onConfirm: () => setRole(true) })}>
+          : confirmSheet({ title: 'Make ' + u.name + ' an admin?', message: 'They become a teacher: they see only the students you assign to them or who join with their invite codes. They also set up the Coach. Only you can add or remove admins.', confirmText: 'Make admin', onConfirm: () => setRole(true) })}>
         {u.admin ? 'Remove admin' : 'Make admin'}</button>
       <div className="adm-hint">{u.admin ? 'Admins run the instance with you. Remove the role to delete or disable their account.' : 'Admins help run the instance. You stay the owner.'}</div>
       {u.admin && <>
@@ -308,6 +363,14 @@ function AuditCard({ tick, owner }) {
   </div>
 }
 
+// A nudge on the row of someone a teacher has not heard from in a week (or ever).
+const quietPill = u => {
+  if (u.disabled || u.live || u.admin) return null
+  const d = quietDays(u)
+  if (d != null && d < 7) return null
+  return <span className="adm-pill" style={{ marginInlineStart: 4 }}>{d == null ? t('never synced') : t('{0} days away', d)}</span>
+}
+
 export default function Admin() {
   const nav = useNavigate()
   // Opened from Settings → AI Coach (the hosted app's way to the Coach, which is the server's):
@@ -326,6 +389,9 @@ export default function Admin() {
   const [invites, setInvites] = useState(null)
   const [inviteOnly, setInviteOnly] = useState(false)
   const [tick, setTick] = useState(0)          // the ↻ button; the activity log listens to it
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState('all')
+  const [sort, setSort] = useState('recent')
 
   // A failed load, or an answer without a list, used to leave the page on "Loading…" for good —
   // with a toast every 15 seconds from the poll, or with nothing at all when the answer was
@@ -348,6 +414,13 @@ export default function Admin() {
   const liveUsers = (users || []).filter(u => u.live)
   const activeCount = (users || []).filter(u => u.lastSync && Date.now() - u.lastSync < 7 * 86400000).length
   const disabledCount = (users || []).filter(u => u.disabled).length
+  const counts = filterCounts(users || [], user.id)
+  const shown = filterStudents(users || [], { query, filter, sort, me: user.id })
+  const meRow = (users || []).find(u => u.id === user.id)
+  // Everyone but the owner is somebody's student, so "My students" only means something to a teacher
+  // who has any; the owner always gets it, to see who they teach.
+  const filters = [['all', t('All')], ['live', t('Training now')], ['quiet', t('Inactive 7+ days')], ['mine', t('My students')], ['disabled', t('Disabled')]]
+    .filter(([id]) => id === 'all' || id === filter || counts[id] > 0)
 
   return <div className="narrow">
     <div className="hdr">
@@ -391,20 +464,37 @@ export default function Admin() {
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
 
+    {viewerOwner && meRow && <div className="card">
+      <h2 style={{ margin: 0 }}>{t('My teacher')}</h2>
+      <div className="adm-lead">{t('You can be a student too. Pick a teacher and they will see your training and can send you a plan. Nobody else can.')}</div>
+      <button className="btn" onClick={() => openSheet(done => <TeacherSheet student={meRow} self onChanged={loadUsers} close={done} />)}>{meRow.teacherName ? t('Teacher: {0}', meRow.teacherName) : t('Pick a teacher')}</button>
+    </div>}
+
     <div className="card">
       <h2 style={{ margin: 0 }}>Users</h2>
       <div className="adm-lead">Everyone with a profile on this instance. Tap one to see their activity, to disable the account (nothing is deleted) or to delete it with all their data for good.</div>
+      <div className="search-row" style={{ marginBottom: 8 }}><div className={'search' + (query ? ' has-clear' : '')}><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+        <input className="input" type="search" placeholder={t('Search by name or e-mail…')} aria-label={t('Search by name or e-mail…')} value={query} onChange={e => setQuery(e.target.value)} />
+        {query && <button className="clear" onClick={() => setQuery('')} aria-label={t('Clear')}><Icon name="xmark" /></button>}</div></div>
+      <div className="chips" style={{ marginBottom: 6 }}>
+        {filters.map(([id, l]) => <button key={id} className={'chip' + (filter === id ? ' on' : '')} onClick={() => setFilter(id)}>{l} · {counts[id]}</button>)}
+      </div>
+      <div className="chips" style={{ marginBottom: 10 }} role="group" aria-label={t('Sort by')}>
+        {[['recent', t('Recent')], ['name', t('A–Z')], ['quiet', t('Inactive first')]].map(([id, l]) => <button key={id} className={'chip' + (sort === id ? ' on' : '')} onClick={() => setSort(id)}>{l}</button>)}
+      </div>
       <div className="list">
-        {(users || []).map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
-          <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? 'owner' : 'admin'}</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}</div>
+        {shown.map(u => <div key={u.id} className="item" onClick={() => openUser(u.id)} style={u.disabled ? { opacity: .55 } : null}>
+          <div className="grow"><div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? 'owner' : 'admin'}</span>}{u.disabled && <span className="adm-pill bad" style={{ marginInlineStart: 4 }}>disabled</span>}{quietPill(u)}</div>
             <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
+            {viewerOwner && u.teacherName && u.teacher !== user.id && <div className="ss">{t('Teacher: {0}', u.teacherName)}</div>}
             {u.email && <div className="ss" title="sign-in e-mail">{u.email}</div>}</div>
           {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 'var(--fs-subhead)', color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
         </div>)}
         {users && !users.length && <div className="adm-empty">No users yet.</div>}
+        {users && users.length > 0 && !shown.length && <div className="adm-empty">{t('No one matches. Try another name or filter.')}</div>}
       </div>
     </div>
 
-    <div style={{ marginTop: 14 }}><AuditCard tick={tick} owner={viewerOwner} /></div>
+    {viewerOwner && <div style={{ marginTop: 14 }}><AuditCard tick={tick} owner={viewerOwner} /></div>}
   </div>
 }

@@ -36,7 +36,7 @@ import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { isOn } from './lib/modules.js'
 import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
-import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet } from './sheets.jsx'
+import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, checkPlanInbox } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import ScrollTopButton from './components/ScrollTopButton.jsx'
@@ -196,6 +196,11 @@ function Shell() {
   useEffect(() => {
     if (MOBILE || !user || !ready) return
     syncPushSubscription().catch(() => {})
+  }, [user?.id, ready])
+  // A plan the teacher sent from the Admin screen: offered once per signed-in boot (sheets.jsx).
+  useEffect(() => {
+    if (!user || !ready) return
+    checkPlanInbox()
   }, [user?.id, ready])
   // Opened from a device-link QR code (#95): once boot knows who is here, the sheet that redeems
   // it opens by itself — over the sign-in screen, or over the app for a guest or a signed-in

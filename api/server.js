@@ -100,6 +100,7 @@ const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
 // baked into each cookie when it's issued, so lowering this never cuts an existing session short.
 const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
 const MAX_BODY = 5 * 1024 * 1024;
+const PLAN_INBOX_MAX = 5, PLAN_INBOX_BYTES = 512 * 1024;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
@@ -175,6 +176,15 @@ function ownerId() {
   return db.users.find(isAdmin)?.id || null;
 }
 const isOwner = user => !!user && isAdmin(user) && user.id === ownerId();
+// A teacher (a non-owner admin) works with their own students only. A student's teacher is the one
+// who made the invite they joined with, unless the owner reassigned them (`teacher`: an admin's id,
+// or null for "the owner's"). The owner sees everyone; nobody but the owner sees another admin,
+// except that the owner may pick a teacher for themself and that teacher then sees them as a student.
+const teacherOf = u => 'teacher' in u ? u.teacher : (db.invites.find(i => i.code === u.invitedBy)?.createdBy || null);
+const canSee = (admin, u) => isOwner(admin) || u.id === admin.id || ((!isAdmin(u) || isOwner(u)) && teacherOf(u) === admin.id);
+// The action routes hide a student who is not theirs; an admin target falls through to each route's
+// own refusal (only the owner touches an admin), which says why instead of pretending it is not there.
+const canAct = (admin, u) => canSee(admin, u) || isAdmin(u);
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
 // Once the new version is on disk, a second copy of it goes to db.json.bak, the same durable
@@ -1582,7 +1592,7 @@ const passwordRoutes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
     if (isAdmin(u)) return json(res, 400, { error: 'an admin sets their own password in Settings' });
     if (nameTaken(u.name, u.id)) return json(res, 409, { error: 'another profile already signs in with this name', code: 'name-taken' });
     const code = makeResetCode();
@@ -2526,6 +2536,24 @@ const routes = {
     json(res, 200, { date, done, nudge, rev: doc._rev || 0 });
   },
 
+  // A plan a teacher (an admin) sent to this profile, waiting for the person to accept it. The
+  // server only holds it: merging into the routines happens on the device (lib/plan-share.js
+  // mergePlan), so the sync stamps stay the client's business and nothing is copied here.
+  'GET /api/plan-inbox': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { plans: Array.isArray(user.planInbox) ? user.planInbox : [] });
+  },
+  // Accepted or dismissed: either way it leaves the inbox.
+  'POST /api/plan-inbox/done': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    user.planInbox = (Array.isArray(user.planInbox) ? user.planInbox : []).filter(p => p.id !== body.id);
+    saveDb();
+    json(res, 200, { ok: true });
+  },
+
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
@@ -2759,14 +2787,15 @@ const routes = {
   /* ---------- admin dashboard ---------- */
   // One row per user, cheap enough for a personal instance (reads each state file once).
   'GET /api/admin/users': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
-    const users = db.users.map(u => {
+    const viewer = requireAdmin(req, res); if (!viewer) return;
+    const users = db.users.filter(u => canSee(viewer, u)).map(u => {
       const S = readState(u.id) || {};
       const workouts = records(S.workouts);
       const last = workouts[workouts.length - 1];
       return {
         id: u.id, name: u.name, created: u.created || null,
         disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null,
+        teacher: teacherOf(u), teacherName: db.users.find(x => x.id === teacherOf(u))?.name || null,
         workouts: workouts.length,
         lastWorkout: last ? last.d : null,
         lastSync: lastSyncOf(u, S),
@@ -2782,14 +2811,14 @@ const routes = {
 
   // Drill-down: full workout history + body-weight log for one user.
   'GET /api/admin/user': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    const viewer = requireAdmin(req, res); if (!viewer) return;
     const id = new URL(req.url, 'http://x').searchParams.get('id');
     const u = db.users.find(x => x.id === id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canSee(viewer, u)) return json(res, 404, { error: 'no such user' });
     const S = readState(u.id) || {};
     json(res, 200, {
       user: {
-        id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null,
+        id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null, teacher: teacherOf(u), teacherName: db.users.find(x => x.id === teacherOf(u))?.name || null,
         // Only on an instance with password sign-in: whether they have one, and until when an
         // unused reset code is good.
         ...(PASSWORD_LOGIN ? { password: hasPassword(u), email: u.email || null, resetUntil: u.pwReset?.exp > Date.now() ? u.pwReset.exp : null } : {}),
@@ -2800,6 +2829,7 @@ const routes = {
       lastSync: lastSyncOf(u, S),
       routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length })),
       bodyweight: records(S.bodyweight),
+      measurements: records(S.measurements),   // body check-ins, bioimpedance body fat included
       // records() already copied, so this reverse is ours: newest first for display. A workout's
       // photos and videos are the owner's own: the admin view gets no refs to them.
       workouts: records(S.workouts).reverse().map(({ media, ...w }) => w)
@@ -2816,7 +2846,7 @@ const routes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
     if (u.id === admin.id) return json(res, 400, { error: 'you are signed in: add a passkey in Settings instead', code: 'self' });
     if (isOwner(u)) return json(res, 403, { error: 'the owner recovers with the server command (recover.js)', code: 'owner' });
     if (isAdmin(u) && !isOwner(admin)) { audit(req, 'admin.denied', { ok: false, user: admin, target: u, msg: 'recovery' }); return json(res, 403, { error: 'only the owner can make a recovery code for an admin' }); }
@@ -2825,11 +2855,49 @@ const routes = {
     json(res, 200, { ok: true, name: u.name, code, expires: link.exp });
   },
 
+  // A teacher's plan for a student: any admin to any other profile (an admin already reads their
+  // whole log, see the drill-down above). Held in the student's inbox until they accept it.
+  // Bounded: a few pending plans of a few hundred KB, so an inbox cannot grow the db unbounded.
+  'POST /api/admin/user/plan': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
+    const b = body.bundle;
+    if (!b || typeof b !== 'object' || !b.opengym_plan || !Array.isArray(b.routines) || !b.routines.length) {
+      return json(res, 400, { error: 'not a plan' });
+    }
+    if (JSON.stringify(b).length > PLAN_INBOX_BYTES) return json(res, 413, { error: 'plan too large' });
+    const inbox = Array.isArray(u.planInbox) ? u.planInbox : [];
+    if (inbox.length >= PLAN_INBOX_MAX) return json(res, 400, { error: 'the inbox is full: they have plans waiting', code: 'inbox-full' });
+    inbox.push({ id: crypto.randomBytes(6).toString('hex'), from: admin.name, at: Date.now(), name: String(b.name || '').slice(0, 80), bundle: b });
+    u.planInbox = inbox;
+    saveDb();
+    audit(req, 'admin.user.plan', { user: admin, target: u });
+    json(res, 200, { ok: true, pending: inbox.length });
+  },
+
+  // Who a student belongs to (owner only): an admin's id, or null for the owner's own. The owner
+  // can also name a teacher for themself (null: none); no other admin can be anyone's student.
+  'POST /api/admin/user/teacher': async (req, res) => {
+    const owner = requireOwner(req, res); if (!owner) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u || (isAdmin(u) && !isOwner(u))) return json(res, 404, { error: 'no such student' });
+    const t = body.teacher == null ? null : db.users.find(x => x.id === body.teacher && isAdmin(x) && !x.disabled);
+    if (body.teacher != null && !t) return json(res, 400, { error: 'teacher must be an admin' });
+    if (t && t.id === u.id) return json(res, 400, { error: 'a teacher cannot be their own student' });
+    u.teacher = t ? t.id : null;
+    saveDb();
+    audit(req, 'admin.user.teacher', { user: owner, target: u, msg: t ? t.name : null });
+    json(res, 200, { ok: true, teacher: u.teacher });
+  },
+
   'POST /api/admin/user/disable': async (req, res) => {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
     if (isAdmin(u)) return json(res, 400, { error: 'cannot disable an admin' });
     u.disabled = !!body.disabled;
     if (u.disabled) presence.delete(u.id);   // drop them off "training now" at once
@@ -2850,7 +2918,7 @@ const routes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
     if (u.id === admin.id) return json(res, 400, { error: 'you cannot delete your own account' });
     if (isAdmin(u) && db.users.filter(isAdmin).length <= 1) return json(res, 400, { error: 'cannot delete the last admin' });
     if (isOwner(u)) return json(res, 400, { error: 'the owner cannot be deleted; hand the role to another admin first' });
@@ -2890,15 +2958,16 @@ const routes = {
     if (!isAdmin(u) || u.disabled) return json(res, 400, { error: 'make them an admin first' });
     for (const x of db.users) delete x.owner;
     u.owner = true;
+    delete u.teacher;   // a teacher picked while they were a student does not carry over to the owner
     saveDb();
     audit(req, 'admin.owner.transfer', { user: owner, target: u });
     json(res, 200, { ok: true, id: u.id });
   },
 
   'GET /api/admin/invites': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    const viewer = requireAdmin(req, res); if (!viewer) return;
     // resolve usedBy uid → name for display
-    const invites = db.invites.map(i => ({
+    const invites = db.invites.filter(i => isOwner(viewer) || i.createdBy === viewer.id).map(i => ({
       ...i, usedByName: i.usedBy ? (db.users.find(u => u.id === i.usedBy) || {}).name || null : null
     }));
     json(res, 200, { invites, invite_only: INVITE_ONLY });
@@ -2924,7 +2993,7 @@ const routes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const inv = db.invites.find(i => i.code === text(body.code).toUpperCase());
-    if (!inv) return json(res, 404, { error: 'no such code' });
+    if (!inv || !(isOwner(admin) || inv.createdBy === admin.id)) return json(res, 404, { error: 'no such code' });
     if (inv.usedBy) return json(res, 400, { error: 'already used, cannot revoke' });
     db.invites = db.invites.filter(i => i.code !== inv.code);
     saveDb();
@@ -2937,8 +3006,9 @@ const routes = {
   // offset cursor would repeat a row whenever an event lands between two pages; and not by
   // timestamp, because two events can share a millisecond. auditKeep() runs on read as well as
   // on the hourly compaction, so nothing past its retention is ever served.
+  // Owner only: it names every profile and every failed sign-in, which a teacher has no part in.
   'GET /api/admin/audit': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    if (!requireOwner(req, res)) return;
     const q = new URL(req.url, 'http://x').searchParams;
     const limit = Math.max(1, Math.min(200, +q.get('limit') || 100));
     const before = +q.get('before') || Infinity;

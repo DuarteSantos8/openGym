@@ -2,6 +2,7 @@ import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
+import { api } from './lib/api.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
@@ -2829,12 +2830,24 @@ export function importPlanFile(f, onRead) {
   rd.readAsText(f)
 }
 
-export const planImportSheet = bundle => ui().openSheet(close => <PlanImport bundle={bundle} close={close} />)
+export const planImportSheet = (bundle, inbox) => ui().openSheet(close => <PlanImport bundle={bundle} inbox={inbox} close={close} />)
 
-function PlanImport({ bundle, close }) {
+// A plan the teacher sent from the Admin screen (POST /api/admin/user/plan) waits in the server's
+// inbox; this opens the same import sheet for the first one. Closing the sheet leaves it waiting.
+export async function checkPlanInbox() {
+  try {
+    const { plans } = await api('/api/plan-inbox')
+    const p = (plans || [])[0]
+    if (p) planImportSheet(parsePlan(p.bundle, S().unit || 'kg'), p)
+  } catch { /* offline, not signed in, or a plan this build cannot read: nothing to offer */ }
+}
+const inboxDone = p => p && api('/api/plan-inbox/done', { method: 'POST', body: JSON.stringify({ id: p.id }) }).catch(() => {})
+
+function PlanImport({ bundle, inbox, close }) {
   const [schedule, setSchedule] = useState(false)
   const apply = () => {
     update(s => mergePlan(s, bundle, { schedule }))
+    inboxDone(inbox)
     close()
     toast(tn('Added {0} routine to your plan', 'Added {0} routines to your plan', bundle.routineCount))
     nav('/plan')
@@ -2861,7 +2874,7 @@ function PlanImport({ bundle, close }) {
     </div>}
     <Button variant="primary" onClick={apply}>{t('Add to my plan')}</Button>
     <div style={{ height: 8 }} />
-    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+    <Button variant="ghost" className="dim" onClick={() => { if (inbox) inboxDone(inbox); close() }}>{inbox ? t('Dismiss') : t('Cancel')}</Button>
   </>
 }
 

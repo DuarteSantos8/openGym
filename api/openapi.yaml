@@ -2856,6 +2856,143 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "no such user" }
 
+  /api/admin/user/plan:
+    post:
+      tags: [admin]
+      operationId: adminUserPlan
+      summary: 'Admin: send a plan to a student'
+      description: |
+        Puts a plan file (the bundle `Export plan file` makes) in the user's inbox. Nothing of
+        theirs changes until they accept it on their device. At most 5 waiting plans of 512 KB
+        each per user. Audited as `admin.user.plan`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, bundle]
+              properties:
+                id: { type: string, description: The user id. }
+                bundle: { type: object, description: 'A plan bundle: `opengym_plan` and a non-empty `routines`.' }
+      responses:
+        '200':
+          description: In their inbox.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  pending: { type: integer }
+        '400':
+          description: 'Not a plan, or the inbox is full (code inbox-full).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '413':
+          description: The plan is over 512 KB.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/plan-inbox:
+    get:
+      tags: [data]
+      operationId: planInbox
+      summary: Plans a teacher sent to the signed-in user
+      responses:
+        '200':
+          description: The waiting plans, oldest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plans:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        from: { type: string, description: The sender's name. }
+                        at: { type: integer, description: Epoch ms. }
+                        name: { type: string }
+                        bundle: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/plan-inbox/done:
+    post:
+      tags: [data]
+      operationId: planInboxDone
+      summary: Remove a plan from the inbox (accepted or dismissed)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: Removed (also when it was already gone).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/admin/user/teacher:
+    post:
+      tags: [admin]
+      operationId: adminUserTeacher
+      summary: 'Owner: set which teacher a student belongs to'
+      description: |
+        A non-owner admin (a teacher) sees and acts on their own students only: those who joined
+        with an invite code the teacher made, or that the owner assigned here. The owner sees
+        everyone. The owner can also pick a teacher for themself (`id` is their own): that teacher
+        then sees them as a student, and `teacher: null` takes it back. No other admin can be
+        anyone's student. Owner only. Audited as `admin.user.teacher`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, teacher]
+              properties:
+                id: { type: string, description: The student's user id. }
+                teacher: { type: [string, 'null'], description: An admin's user id, or null for the owner's own (for the owner themself, none). }
+      responses:
+        '200':
+          description: Assigned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  teacher: { type: [string, 'null'] }
+        '400':
+          description: The teacher is not an admin, or is the student.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such student.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
   /api/admin/user/disable:
     post:
       tags: [admin]
@@ -4510,6 +4647,8 @@ components:
         invitedBy:
           oneOf: [{ type: string }, { type: 'null' }]
           description: The invite code this account was created with.
+        teacher: { oneOf: [{ type: string }, { type: 'null' }], description: The admin (teacher) this profile belongs to. }
+        teacherName: { oneOf: [{ type: string }, { type: 'null' }] }
         workouts: { type: integer, description: Total logged workouts. }
         lastWorkout:
           oneOf: [{ type: string }, { type: 'null' }]
@@ -4553,6 +4692,8 @@ components:
             owner: { type: boolean, description: The one admin who manages the others. }
             admin: { type: boolean }
             invitedBy: { oneOf: [{ type: string }, { type: 'null' }] }
+            teacher: { oneOf: [{ type: string }, { type: 'null' }], description: The admin (teacher) this profile belongs to. }
+            teacherName: { oneOf: [{ type: string }, { type: 'null' }] }
             password: { type: boolean, description: PASSWORD_LOGIN instances only. }
             email:
               oneOf: [{ type: string }, { type: 'null' }]
