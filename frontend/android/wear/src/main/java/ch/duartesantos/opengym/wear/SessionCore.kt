@@ -359,6 +359,13 @@ object OutboxCore {
         it.sentAt == 0L || now - it.sentAt >= (if (it.delivered) REDELIVER_MS else RESEND_MS) || now < it.sentAt
     }.sortedBy { it.seq }
 
-    /** Everything not applied yet, oldest first: what a reconnect sends again. */
-    fun waiting(o: Outbox): List<OutItem> = o.items.sortedBy { it.seq }
+    /** The phone is back in reach: everything not delivered goes again, whenever it last went out,
+     *  and what is due besides. */
+    fun onReconnect(o: Outbox, now: Long): List<OutItem> {
+        val soon = due(o, now).map { it.id }.toSet()
+        return o.items.filter { !it.delivered || it.id in soon }.sortedBy { it.seq }
+    }
+
+    /** Events the phone's side has not stored yet: the small "syncs later" count. */
+    fun waiting(o: Outbox): Int = o.items.count { !it.delivered }
 }

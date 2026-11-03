@@ -41,7 +41,7 @@ object PhoneLink {
     private fun save(ctx: Context, o: Outbox) {
         // commit, not apply: the outbox is the event's only copy until the Data Layer has it.
         prefs(ctx).edit().putString(OUTBOX, WireJson.encodeToString(Outbox.serializer(), o)).putLong("seq", o.seq).commit()
-        waiting.value = o.items.count { !it.delivered }
+        waiting.value = OutboxCore.waiting(o)
     }
 
     private fun <T> edit(ctx: Context, fn: (Outbox) -> Pair<Outbox, T>): T = synchronized(this) {
@@ -69,11 +69,13 @@ object PhoneLink {
         if (ids.isNotEmpty()) edit(ctx.applicationContext) { o -> OutboxCore.delivered(o, ids) to Unit }
     }
 
-    /** What is due goes out (at launch, on a snapshot); `all`: everything waiting (the phone is back). */
+    /** What is due goes out (at launch, on a snapshot); `all`: the phone is back, all not delivered goes. */
     fun flush(ctx: Context, all: Boolean = false) {
         val app = ctx.applicationContext
-        val items = synchronized(this) { load(app).let { if (all) OutboxCore.waiting(it) else OutboxCore.due(it, System.currentTimeMillis()) } }
-        if (items.isEmpty()) { waiting.value = synchronized(this) { load(app).items.count { !it.delivered } }; return }
+        val now = System.currentTimeMillis()
+        val (items, left) = synchronized(this) { load(app).let { (if (all) OutboxCore.onReconnect(it, now) else OutboxCore.due(it, now)) to OutboxCore.waiting(it) } }
+        waiting.value = left
+        if (items.isEmpty()) return
         io.launch { put(app, items) }
     }
 

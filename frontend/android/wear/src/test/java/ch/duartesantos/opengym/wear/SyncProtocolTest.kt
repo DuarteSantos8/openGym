@@ -53,7 +53,17 @@ class SyncProtocolTest {
         // the snapshot says the phone applied a and b
         o = OutboxCore.ack(o, listOf("a", "b", "zz"))
         assertEquals(listOf("c"), o.items.map { it.id })
-        assertEquals(listOf("c"), OutboxCore.waiting(o).map { it.id })
+        assertEquals(1, OutboxCore.waiting(o))
+    }
+
+    @Test fun aReconnectSendsWhatIsNotDeliveredWhateverItsTime() {
+        var o = Outbox()
+        for (id in listOf("a", "b")) o = OutboxCore.add(o, ev(id))!!.first
+        o = OutboxCore.sent(o, listOf("a", "b"), 1000)
+        o = OutboxCore.delivered(o, listOf("a"))
+        assertTrue(OutboxCore.due(o, 1001).isEmpty())
+        assertEquals(listOf("b"), OutboxCore.onReconnect(o, 1001).map { it.id })
+        assertEquals(listOf("a", "b"), OutboxCore.onReconnect(o, 1000 + OutboxCore.REDELIVER_MS).map { it.id })
     }
 
     @Test fun theOutboxSurvivesARestart() {
