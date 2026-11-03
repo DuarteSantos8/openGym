@@ -2453,6 +2453,13 @@ export const PT_BR_OVERRIDES = {
   "Follow phone": "Como o celular",
   "Portrait": "Vertical",
   "Landscape": "Horizontal",
+  "Add several at once": "Adicionar vários de uma vez",
+  "Add all": "Adicionar todos",
+  "Weights ({0})": "Pesos ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "Um por linha, ou assim: 5; 11,3; 18,1",
+  "Added to the list": "Adicionados à lista",
+  "Add an even run on top:": "Adicione uma série regular por cima:",
+  "Add these": "Adicionar",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

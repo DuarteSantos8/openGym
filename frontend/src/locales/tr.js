@@ -3664,4 +3664,11 @@ export default {
   "Follow phone": "Telefona göre",
   "Portrait": "Dikey",
   "Landscape": "Yatay",
+  "Add several at once": "Birkaçını birden ekle",
+  "Add all": "Hepsini ekle",
+  "Weights ({0})": "Ağırlıklar ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "Her satıra bir tane ya da şöyle: 5; 11,3; 18,1",
+  "Added to the list": "Listeye eklendi",
+  "Add an even run on top:": "Üstüne eşit aralıklı bir dizi ekle:",
+  "Add these": "Ekle",
 }

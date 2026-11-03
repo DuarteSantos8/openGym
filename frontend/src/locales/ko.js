@@ -3664,4 +3664,11 @@ export default {
   "Follow phone": "휴대폰 따라",
   "Portrait": "세로",
   "Landscape": "가로",
+  "Add several at once": "한 번에 여러 개 추가",
+  "Add all": "모두 추가",
+  "Weights ({0})": "무게 ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "한 줄에 하나씩, 또는 이렇게: 5, 11.3, 18.1",
+  "Added to the list": "목록에 추가했어요",
+  "Add an even run on top:": "위에 일정한 간격으로 더하기:",
+  "Add these": "추가",
 }

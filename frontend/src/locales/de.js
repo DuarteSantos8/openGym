@@ -3684,4 +3684,11 @@ export default {
   "Follow phone": "Wie Handy",
   "Portrait": "Hochformat",
   "Landscape": "Querformat",
+  "Add several at once": "Mehrere auf einmal",
+  "Add all": "Alle hinzufügen",
+  "Weights ({0})": "Gewichte ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "Eins pro Zeile, oder so: 5; 11,3; 18,1",
+  "Added to the list": "Zur Liste hinzugefügt",
+  "Add an even run on top:": "Eine gleichmäßige Reihe obendrauf:",
+  "Add these": "Hinzufügen",
 }

@@ -57,7 +57,7 @@ import { setNoteOf, withSetNote, SET_NOTE_MAX } from './lib/set-notes.js'
 import { StrengthLevelBlock } from './components/StrengthLevel.jsx'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
-import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep } from './lib/dumbbells.js'
+import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep, parseWeightList } from './lib/dumbbells.js'
 import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { isBackoff, backoffWeights } from './lib/backoff.js'
@@ -1011,6 +1011,32 @@ function DbLoadPicker({ ex, cfg, value, onChange }) {
   </>
 }
 
+// Several weights in one go (#926): typed one per line, or pasted from a list or a sheet, comma
+// or space separated (lib/dumbbells.js parseWeightList). Folded away behind one button until
+// wanted, so the single field stays the simple way in.
+const decimalComma = () => { try { return new Intl.NumberFormat(dateLocale()).format(1.5).includes(',') } catch { return false } }
+function WeightListPaste({ unit, onAdd }) {
+  const [open, setOpen] = useState(false)
+  const [text, setText] = useState('')
+  if (!open) return <Button variant="ghost" icon="list" onClick={() => setOpen(true)} style={{ marginBottom: 8 }}>{t('Add several at once')}</Button>
+  const add = () => {
+    const ws = parseWeightList(text, decimalComma())
+    if (!ws.length) { toast(t('Enter a valid weight')); return }
+    onAdd(ws)
+    setText('')
+    setOpen(false)
+    toast(t('Added to the list'))
+  }
+  return <div style={{ marginBottom: 8 }}>
+    <textarea className="input" rows={4} autoFocus inputMode="decimal" value={text} onChange={e => setText(e.target.value)}
+      aria-label={t('Weights ({0})', unit)} placeholder={t('One per line, or like this: 5, 11.3, 18.1')} style={{ marginBottom: 8 }} />
+    <div className="row" style={{ gap: 8 }}>
+      <Button variant="ghost" className="dim" onClick={() => { setOpen(false); setText('') }}>{t('Cancel')}</Button>
+      <Button variant="primary" icon="plus" onClick={add}>{t('Add all')}</Button>
+    </div>
+  </div>
+}
+
 // A machine's own weight stack (issue #688, lib/dumbbells.js): the weights its pin really
 // selects, for this exercise everywhere. With a list, progression, deloads, warm-ups, drops and the
 // + and − buttons land on these instead of on the increment, like the dumbbell list (#376). Tap a
@@ -1031,10 +1057,13 @@ function StackEditor({ ex }) {
     save([...list, w])
     setDraft(null)
   }
+  // The quick fill stays after the first block (#926): a stack with a second, finer run on top
+  // (LifeFitness and friends) is two fills, the second one added to the first.
   const fill = () => {
     const ws = stackFromStep(first, step, count || 10)
     if (!ws.length) { toast(t('Enter a valid weight')); return }
-    save(ws)
+    save(list.length ? [...list, ...ws] : ws)
+    if (list.length) { setFirst(null); setStep(null); setCount(null) }
   }
   return <>
     <GymOfList kind="stackWeights" exId={ex.id} />
@@ -1052,17 +1081,20 @@ function StackEditor({ ex }) {
         aria-label={t('Weight ({0})', unit)} placeholder={t('Weight ({0})', unit)} onKeyDown={e => { if (e.key === 'Enter') add() }} />
       <Button icon="plus" onClick={add} style={{ flex: '0 0 auto', width: 'auto' }}>{t('Add')}</Button>
     </div>
-    {/* An evenly spaced stack in three numbers, to fix the odd ones on after. */}
-    {list.length === 0 && <>
+    <WeightListPaste unit={unit} onAdd={ws => save([...list, ...ws])} />
+    {/* An evenly spaced stack in three numbers, to fix the odd ones on after; with a list already
+        there, the same three numbers add a run on top of it. */}
+    {list.length > 0 && <div className="small dim" style={{ margin: '6px 0 8px' }}>{t('Add an even run on top:')}</div>}
+    <>
       <div className="row" style={{ gap: 8, marginBottom: 8 }}>
         <NumberField className="input" decimal value={first ?? ''} onChange={setFirst} aria-label={t('First ({0})', unit)} placeholder={t('First ({0})', unit)} />
         <NumberField className="input" decimal value={step ?? ''} onChange={setStep} aria-label={t('Step ({0})', unit)} placeholder={t('Step ({0})', unit)} />
       </div>
       <div className="row" style={{ gap: 8, marginBottom: 8 }}>
         <NumberField className="input" value={count ?? ''} onChange={setCount} aria-label={t('How many')} placeholder={t('How many')} />
-        <Button onClick={fill} style={{ flex: '0 0 auto', width: 'auto' }}>{t('Fill in')}</Button>
+        <Button onClick={fill} style={{ flex: '0 0 auto', width: 'auto' }}>{list.length ? t('Add these') : t('Fill in')}</Button>
       </div>
-    </>}
+    </>
     {list.length > 0 && <Button variant="danger" onClick={() => save([])} style={{ marginBottom: 8 }}>{t('Clear the list')}</Button>}
     <div style={{ height: 10 }} />
   </>
@@ -1192,6 +1224,7 @@ function DumbbellInventorySheet({ close }) {
           aria-label={t('Weight ({0})', unit)} placeholder={t('Weight ({0})', unit)} onKeyDown={e => { if (e.key === 'Enter') add() }} />
         <Button icon="plus" onClick={add} style={{ flex: '0 0 auto', width: 'auto' }}>{t('Add')}</Button>
       </div>
+      <WeightListPaste unit={unit} onAdd={ws => save([...list, ...ws])} />
       <Button onClick={() => save(preset)} style={{ marginBottom: 8 }}>
         {t('Fill in {0} to {1} {2}, every {3}', fmtPlate(preset[0]), fmtPlate(preset.at(-1)), unit, fmtPlate(preset[1] - preset[0]))}
       </Button>

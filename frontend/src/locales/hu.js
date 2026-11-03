@@ -3667,4 +3667,11 @@ export default {
   "Follow phone": "Mint a telefon",
   "Portrait": "Álló",
   "Landscape": "Fekvő",
+  "Add several at once": "Több egyszerre",
+  "Add all": "Mind hozzáadása",
+  "Weights ({0})": "Súlyok ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "Soronként egy, vagy így: 5; 11,3; 18,1",
+  "Added to the list": "Hozzáadva a listához",
+  "Add an even run on top:": "Egyenletes sor hozzáadása felülre:",
+  "Add these": "Hozzáadás",
 }

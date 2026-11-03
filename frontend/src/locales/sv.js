@@ -3711,4 +3711,11 @@ export default {
   "Follow phone": "Som telefonen",
   "Portrait": "Stående",
   "Landscape": "Liggande",
+  "Add several at once": "Lägg till flera på en gång",
+  "Add all": "Lägg till alla",
+  "Weights ({0})": "Vikter ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "En per rad, eller så här: 5; 11,3; 18,1",
+  "Added to the list": "Tillagda i listan",
+  "Add an even run on top:": "Lägg till en jämn serie ovanpå:",
+  "Add these": "Lägg till",
 }

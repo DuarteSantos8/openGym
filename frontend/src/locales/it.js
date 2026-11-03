@@ -3664,4 +3664,11 @@ export default {
   "Follow phone": "Come il telefono",
   "Portrait": "Verticale",
   "Landscape": "Orizzontale",
+  "Add several at once": "Aggiungine diversi insieme",
+  "Add all": "Aggiungi tutti",
+  "Weights ({0})": "Pesi ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "Uno per riga, o così: 5; 11,3; 18,1",
+  "Added to the list": "Aggiunti alla lista",
+  "Add an even run on top:": "Aggiungi una serie regolare sopra:",
+  "Add these": "Aggiungi",
 }

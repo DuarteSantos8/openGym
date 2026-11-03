@@ -3657,4 +3657,11 @@ export default {
   "Follow phone": "跟隨手機",
   "Portrait": "直向",
   "Landscape": "橫向",
+  "Add several at once": "一次新增多個",
+  "Add all": "全部新增",
+  "Weights ({0})": "重量（{0}）",
+  "One per line, or like this: 5, 11.3, 18.1": "每行一個，或這樣：5, 11.3, 18.1",
+  "Added to the list": "已加入清單",
+  "Add an even run on top:": "在上面再加一串等差重量：",
+  "Add these": "新增",
 }

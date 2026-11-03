@@ -3743,4 +3743,11 @@ export default {
   "Follow phone": "ফোনের মতো",
   "Portrait": "খাড়া",
   "Landscape": "আড়াআড়ি",
+  "Add several at once": "একসাথে কয়েকটা যোগ করো",
+  "Add all": "সব যোগ করো",
+  "Weights ({0})": "ওজনগুলো ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "প্রতি লাইনে একটা, বা এভাবে: 5, 11.3, 18.1",
+  "Added to the list": "তালিকায় যোগ হলো",
+  "Add an even run on top:": "ওপরে সমান ধাপের একটা সারি যোগ করো:",
+  "Add these": "এগুলো যোগ করো",
 }

@@ -3719,4 +3719,11 @@ export default {
   "Follow phone": "مثل الهاتف",
   "Portrait": "عمودي",
   "Landscape": "أفقي",
+  "Add several at once": "أضف عدة أوزان دفعة واحدة",
+  "Add all": "أضف الكل",
+  "Weights ({0})": "الأوزان ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "واحد في كل سطر، أو هكذا: 5، 11.3، 18.1",
+  "Added to the list": "أُضيفت إلى القائمة",
+  "Add an even run on top:": "أضف سلسلة متساوية فوقها:",
+  "Add these": "أضف هذه",
 }

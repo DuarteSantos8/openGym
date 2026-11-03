@@ -3664,4 +3664,11 @@ export default {
   "Follow phone": "跟随手机",
   "Portrait": "竖屏",
   "Landscape": "横屏",
+  "Add several at once": "一次添加多个",
+  "Add all": "全部添加",
+  "Weights ({0})": "重量（{0}）",
+  "One per line, or like this: 5, 11.3, 18.1": "每行一个，或这样：5, 11.3, 18.1",
+  "Added to the list": "已加入列表",
+  "Add an even run on top:": "在上面再加一串等差重量：",
+  "Add these": "添加",
 }

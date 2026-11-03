@@ -17,6 +17,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **New**
 - Android: Settings → Workout → Screen orientation keeps openGym upright (or sideways) while the rest of your phone rotates as it likes (#821, thanks @snike79 for the idea).
+- A machine's weight stack and your dumbbells take a whole list at once: type one per line or paste "5, 11.3, 18.1". The quick fill stays around after the first block, so a stack with a finer run on top is two fills (#926, thanks @johannes1984 for the idea).
 
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).

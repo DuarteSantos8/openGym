@@ -3664,4 +3664,11 @@ export default {
   "Follow phone": "फ़ोन जैसा",
   "Portrait": "खड़ा",
   "Landscape": "आड़ा",
+  "Add several at once": "एक साथ कई जोड़ें",
+  "Add all": "सब जोड़ें",
+  "Weights ({0})": "वज़न ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "हर लाइन में एक, या ऐसे: 5, 11.3, 18.1",
+  "Added to the list": "सूची में जुड़ गए",
+  "Add an even run on top:": "ऊपर बराबर कदमों वाली एक कतार जोड़ें:",
+  "Add these": "इन्हें जोड़ें",
 }

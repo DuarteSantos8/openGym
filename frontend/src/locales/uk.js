@@ -3661,4 +3661,11 @@ export default {
   "Follow phone": "Як телефон",
   "Portrait": "Книжкова",
   "Landscape": "Альбомна",
+  "Add several at once": "Додати кілька одразу",
+  "Add all": "Додати всі",
+  "Weights ({0})": "Ваги ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "По одному в рядку або так: 5; 11,3; 18,1",
+  "Added to the list": "Додано до списку",
+  "Add an even run on top:": "Додати рівний ряд зверху:",
+  "Add these": "Додати",
 }

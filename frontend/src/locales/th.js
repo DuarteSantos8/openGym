@@ -3675,4 +3675,11 @@ export default {
   "Follow phone": "ตามโทรศัพท์",
   "Portrait": "แนวตั้ง",
   "Landscape": "แนวนอน",
+  "Add several at once": "เพิ่มหลายค่าพร้อมกัน",
+  "Add all": "เพิ่มทั้งหมด",
+  "Weights ({0})": "น้ำหนัก ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "บรรทัดละหนึ่งค่า หรือแบบนี้: 5, 11.3, 18.1",
+  "Added to the list": "เพิ่มในรายการแล้ว",
+  "Add an even run on top:": "เพิ่มชุดที่ห่างเท่ากันต่อด้านบน:",
+  "Add these": "เพิ่ม",
 }

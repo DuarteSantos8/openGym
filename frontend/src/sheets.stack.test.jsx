@@ -59,6 +59,27 @@ describe('weight stack editor', () => {
     expect(S().stackWeights[FLY]).toEqual({ _ts: expect.any(Number) })
   })
 
+  it('takes a pasted list, and the quick fill adds a second run once there is a list (#926)', () => {
+    act(() => barWeightSheet(FLY, { id: FLY }))
+    const host = mountTopSheet()
+    act(() => button(host, 'Add several at once').click())
+    const area = host.querySelector('textarea[aria-label="Weights (kg)"]')
+    act(() => {
+      const set = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set
+      set.call(area, '5\n11.3\n18.1, 25')
+      area.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    act(() => button(host, 'Add all').click())
+    expect(S().stackWeights[FLY].weights).toEqual([5, 11.3, 18.1, 25])
+    expect(host.querySelector('textarea')).toBeNull()
+    expect(button(host, 'Fill in')).toBeUndefined()
+    type(field(host, 'First (kg)'), '30')
+    type(field(host, 'Step (kg)'), '5')
+    type(field(host, 'How many'), '3')
+    act(() => button(host, 'Add these').click())
+    expect(S().stackWeights[FLY].weights).toEqual([5, 11.3, 18.1, 25, 30, 35, 40])
+  })
+
   it('is not offered on a barbell or an assistance machine', () => {
     act(() => barWeightSheet(SQUAT, { id: SQUAT }))
     expect(mountTopSheet().textContent).not.toContain('Weight stack')

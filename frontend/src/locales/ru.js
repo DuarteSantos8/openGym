@@ -3668,4 +3668,11 @@ export default {
   "Follow phone": "Как телефон",
   "Portrait": "Книжная",
   "Landscape": "Альбомная",
+  "Add several at once": "Добавить несколько сразу",
+  "Add all": "Добавить все",
+  "Weights ({0})": "Веса ({0})",
+  "One per line, or like this: 5, 11.3, 18.1": "По одному в строке или так: 5; 11,3; 18,1",
+  "Added to the list": "Добавлено в список",
+  "Add an even run on top:": "Добавить ровный ряд сверху:",
+  "Add these": "Добавить",
 }
