@@ -45,7 +45,9 @@ vi.mock('@capacitor/core', () => ({
   }),
 }))
 
-const NOW = Date.UTC(2026, 9, 15, 20, 0, 0)
+// 20:00 on the 15th on the machine's clock: a weigh-in's day is the local one, so the fixture
+// days hold in any time zone (the audit runs this in UTC+14 and Los Angeles too).
+const NOW = new Date(2026, 9, 15, 20, 0, 0).getTime()
 const s = sec => NOW - 3600e3 + sec * 1000
 const dense = (from, to, bpm) => { const out = []; for (let x = from; x <= to; x++) out.push([s(x), bpm]); return out }
 const workout = (id, endSec = 600, extra = {}) => ({ id, d: '2026-10-15', name: 'Push', start: s(0), end: s(endSec), entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: true, at: s(100) }] }], ...extra })
@@ -65,7 +67,8 @@ beforeEach(async () => {
   hs = await import('./health-sync.js')
 })
 
-afterEach(() => { vi.useRealTimers() })
+// restoreAllMocks: the history tests spy on registerPlugin, which outlived them in a shuffled order.
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks() })
 
 describe('switched off (the default)', () => {
   it('reads nothing at all', async () => {

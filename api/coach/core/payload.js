@@ -333,6 +333,7 @@ export function canonicalPlan(S) {
   };
 }
 
+// `now` dates a running programme's week (the job's clock, so a payload is the same whenever it is built).
 export function cleanPlan(S, now) {
   // Names are typed by the person, so they are cut like the profile's text. The icon is held to
   // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
