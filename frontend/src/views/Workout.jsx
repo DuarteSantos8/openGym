@@ -58,6 +58,7 @@ import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
+import { bindWidgetActions } from '../lib/widget-logger.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
@@ -2190,6 +2191,16 @@ function ActiveWorkout() {
   // is the rest's start.
   const liveToggleRef = useRef(toggle)
   liveToggleRef.current = toggle
+  // Log set on the Home Screen widget: the same tick, once the widget's numbers are in the row
+  // (lib/widget-logger.js puts them there first).
+  useEffect(() => bindWidgetActions({
+    setDone: (idx, i, { at }) => {
+      const A = useStore.getState().S.active
+      if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
+      liveToggleRef.current(idx, i, null, { quiet: true })
+      if (at) mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
+    },
+  }), [])
   useEffect(() => bindLiveActions({
     setDone: (idx, i, { at }) => {
       const A = useStore.getState().S.active

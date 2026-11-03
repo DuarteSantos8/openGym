@@ -18,6 +18,9 @@
 // three with their progress, as words, and "challenges" is one more thing a widget can show. Null
 // when they are switched off.
 //
+// Since v1.4.5 it also has `logger`: the running workout's next sets, so the widget can log one
+// (lib/widget-logger.js).
+//
 // Phone app only. Nothing here runs on the web.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX } from './exercises.js'
@@ -34,6 +37,7 @@ import { accentPair, accentValue } from './accent.js'
 import { speedUnitOf } from './speed.js'
 import { isOn } from './modules.js'
 import { viewTarget, exUnitOf, shownWeight } from './ex-unit.js'
+import { buildLogger } from './widget-logger.js'
 
 export const WIDGET_SNAPSHOT_VERSION = 2
 // What the weight goal's little curve draws: the last weigh-ins.
@@ -233,6 +237,9 @@ export function buildWidgetSnapshot (S, { today = todayISO() } = {}) {
     streak,
     lastPR: lastPrOf(st),
     active: activeOf(st),
+    // v1.4.5: the set to log from the widget, with what its − and + step through (lib/widget-logger.js).
+    // Null with no workout running; a widget from before ignores it.
+    logger: (() => { try { return buildLogger(st) } catch { return null } })(),
     // v 2: the configurable widget's blocks.
     streakInfo: streakX,
     // Settings → Modules: Body off leaves the weight block empty (the widget skips a null);

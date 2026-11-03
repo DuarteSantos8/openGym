@@ -28,6 +28,7 @@ import { startPhoneWorkout } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
+import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync } from './lib/live-activity.js'
@@ -488,6 +489,8 @@ export default function App() {
     const stops = [], gone = { v: false }
     const keep = fn => { if (gone.v) fn(); else stops.push(fn) }
     startWidgetSync({ useStore }).then(keep).catch(() => {})
+    // Sets logged from the widget while the app was away (lib/widget-logger.js).
+    startWidgetActions({ useStore }).then(keep).catch(() => {})
     startLiveActivitySync({ useStore, useUI }).then(keep).catch(() => {})
     return () => { gone.v = true; stops.forEach(fn => fn()) }
   }, [])
