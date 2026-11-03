@@ -32,3 +32,16 @@ export function restSoundOf(S) {
   return Object.hasOwn(REST_SOUNDS, k) && k !== 'classic' ? k : 'chime'
 }
 
+/**
+ * The kinds of rest that can each have a sound of their own (Settings → Sound): the rest before
+ * the next set of the same exercise, before the next round of a superset, and before the next
+ * exercise (supersetFlow.restKind). `S.restSoundByKind` holds only the kinds given one, as
+ * REST_SOUNDS ids; a kind without one plays the profile's sound (restSoundOf). The switch-sides
+ * pause and the end of a hold are not kinds of rest and play that sound too.
+ */
+export const REST_KINDS = ['set', 'round', 'block']
+
+export function restSoundFor(S, kind) {
+  const k = REST_KINDS.includes(kind) ? S?.restSoundByKind?.[kind] : undefined
+  return Object.hasOwn(REST_SOUNDS, k) ? k : restSoundOf(S)
+}
