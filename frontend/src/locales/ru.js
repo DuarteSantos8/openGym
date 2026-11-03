@@ -1980,6 +1980,8 @@ export default {
   'Choose measurement': 'Выбрать замер',
   'Choose the measurements you want to track, then log your first check-in.': 'Выбери замеры, которые хочешь отслеживать, и запиши первый.',
   'Keep the logging form focused on the measurements you actually track.': 'Оставь в форме только те замеры, которые действительно ведёшь.',
+  'Lengths in': 'Длины в',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Удаляет поле и все записанные в нём значения. Остальные замеры остаются.',
   'Fill only what you measured today. Empty fields stay empty.': 'Заполни только сегодняшние замеры. Пустые поля останутся пустыми.',
   'Choose at least one measurement first.': 'Сначала выбери хотя бы один замер.',
   'Enter at least one measurement': 'Введи хотя бы один замер',

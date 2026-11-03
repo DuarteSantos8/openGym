@@ -2016,6 +2016,8 @@ export default {
   'Choose measurement': 'মাপ বেছে নিন',
   'Choose the measurements you want to track, then log your first check-in.': 'যেসব মাপ ট্র্যাক করতে চান বেছে নিন, তারপর প্রথম চেক-ইন লগ করুন।',
   'Keep the logging form focused on the measurements you actually track.': 'লগিং ফর্মে শুধু সেই মাপগুলোই রাখুন যেগুলো আপনি সত্যিই ট্র্যাক করেন।',
+  'Lengths in': 'দৈর্ঘ্যের একক',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'ঘরটি এবং এতে লেখা সব মাপ মুছে দেয়। বাকি মাপগুলো থাকে।',
   'Fill only what you measured today. Empty fields stay empty.': 'আজ যা মেপেছেন শুধু সেটুকুই পূরণ করুন। ফাঁকা ঘর ফাঁকাই থাকবে।',
   'Choose at least one measurement first.': 'আগে অন্তত একটি মাপ বেছে নিন।',
   'Enter at least one measurement': 'অন্তত একটি মাপ লিখুন',

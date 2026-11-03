@@ -1995,6 +1995,8 @@ export default {
   'Choose measurement': 'Méret kiválasztása',
   'Choose the measurements you want to track, then log your first check-in.': 'Válaszd ki, mit szeretnél követni, aztán rögzítsd az első mérést.',
   'Keep the logging form focused on the measurements you actually track.': 'A rögzítő űrlapon csak azok a méretek maradjanak, amiket tényleg követsz.',
+  'Lengths in': 'Hosszak mértékegysége',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Törli a mezőt és minden benne rögzített értéket. A többi méret marad.',
   'Fill only what you measured today. Empty fields stay empty.': 'Csak azt töltsd ki, amit ma mértél. Az üres mezők üresek maradnak.',
   'Choose at least one measurement first.': 'Előbb válassz ki legalább egy méretet.',
   'Enter at least one measurement': 'Adj meg legalább egy méretet',

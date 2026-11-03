@@ -1976,6 +1976,8 @@ export default {
   'Choose measurement': '측정 항목 선택',
   'Choose the measurements you want to track, then log your first check-in.': '추적할 항목을 고르고 첫 측정값을 기록해 보세요.',
   'Keep the logging form focused on the measurements you actually track.': '실제로 재는 항목만 입력 폼에 남겨 두세요.',
+  'Lengths in': '길이 단위',
+  'Removes the field and every reading logged in it. The other measurements stay.': '이 항목과 기록된 모든 값을 지워요. 다른 치수는 그대로예요.',
   'Fill only what you measured today. Empty fields stay empty.': '오늘 잰 것만 입력하세요. 빈 칸은 비워 둡니다.',
   'Choose at least one measurement first.': '먼저 항목을 하나 이상 선택하세요.',
   'Enter at least one measurement': '측정값을 하나 이상 입력하세요',

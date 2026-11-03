@@ -1976,6 +1976,8 @@ export default {
   'Choose measurement': 'Escolher medida',
   'Choose the measurements you want to track, then log your first check-in.': 'Escolhe as medidas que queres acompanhar e faz a tua primeira medição.',
   'Keep the logging form focused on the measurements you actually track.': 'Mantém o formulário focado nas medidas que realmente acompanhas.',
+  'Lengths in': 'Comprimentos em',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Remove o campo e todos os valores registados nele. As outras medidas ficam.',
   'Fill only what you measured today. Empty fields stay empty.': 'Preenche só o que mediste hoje. Os campos vazios ficam vazios.',
   'Choose at least one measurement first.': 'Escolhe primeiro pelo menos uma medida.',
   'Enter at least one measurement': 'Introduz pelo menos uma medida',

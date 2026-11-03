@@ -1997,6 +1997,8 @@ export default {
   'Choose measurement': 'Välj mått',
   'Choose the measurements you want to track, then log your first check-in.': 'Välj de mått du vill följa och logga sedan din första mätning.',
   'Keep the logging form focused on the measurements you actually track.': 'Håll loggningsformuläret fokuserat på de mått du faktiskt följer.',
+  'Lengths in': 'Längder i',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Tar bort fältet och alla värden i det. De andra måtten finns kvar.',
   'Fill only what you measured today. Empty fields stay empty.': 'Fyll bara i det du mätt idag. Tomma fält förblir tomma.',
   'Choose at least one measurement first.': 'Välj minst ett mått först.',
   'Enter at least one measurement': 'Ange minst ett mått',

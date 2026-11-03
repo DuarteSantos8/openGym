@@ -2003,6 +2003,8 @@ export default {
   'Choose measurement': 'เลือกการวัด',
   'Choose the measurements you want to track, then log your first check-in.': 'เลือกสิ่งที่อยากติดตาม แล้วบันทึกเช็กอินครั้งแรก',
   'Keep the logging form focused on the measurements you actually track.': 'ให้ฟอร์มบันทึกมีเฉพาะสิ่งที่คุณติดตามจริง ๆ',
+  'Lengths in': 'หน่วยความยาว',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'ลบช่องนี้และค่าที่บันทึกไว้ทั้งหมด สัดส่วนอื่นยังอยู่',
   'Fill only what you measured today. Empty fields stay empty.': 'กรอกเฉพาะสิ่งที่วัดวันนี้ ช่องว่างจะยังว่างอยู่',
   'Choose at least one measurement first.': 'เลือกอย่างน้อยหนึ่งรายการก่อน',
   'Enter at least one measurement': 'ใส่การวัดอย่างน้อยหนึ่งรายการ',

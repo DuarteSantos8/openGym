@@ -2361,6 +2361,8 @@ export const PT_BR_OVERRIDES = {
   "In the Zepp app, open the openGym watch app’s settings and type in this address and code. The code lasts ten minutes.": "No aplicativo Zepp, abra as configurações do app openGym do relógio e digite este endereço e este código. O código vale por dez minutos.",
   "Paired watches": "Relógios pareados",
   "Couldn’t reach your server. Try again in a moment.": "Não foi possível acessar seu servidor. Tente de novo daqui a pouco.",
+  'Lengths in': 'Comprimentos em',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Remove o campo e todos os valores registrados nele. As outras medidas ficam.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

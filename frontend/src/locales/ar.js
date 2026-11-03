@@ -2047,6 +2047,8 @@ export default {
   'Choose measurement': 'اختيار القياس',
   'Choose the measurements you want to track, then log your first check-in.': 'اختر القياسات التي تريد تتبعها، ثم سجّل أول متابعة لك.',
   'Keep the logging form focused on the measurements you actually track.': 'أبقِ نموذج التسجيل مركّزًا على القياسات التي تتبعها فعلًا.',
+  'Lengths in': 'الأطوال بـ',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'يحذف الحقل وكل القراءات المسجلة فيه. تبقى القياسات الأخرى.',
   'Fill only what you measured today. Empty fields stay empty.': 'املأ ما قسته اليوم فقط. تبقى الحقول الفارغة فارغة.',
   'Choose at least one measurement first.': 'اختر قياسًا واحدًا على الأقل أولًا.',
   'Enter at least one measurement': 'أدخل قياسًا واحدًا على الأقل',

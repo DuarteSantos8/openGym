@@ -1969,6 +1969,8 @@ export default {
   'Choose measurement': '選擇測量項目',
   'Choose the measurements you want to track, then log your first check-in.': '選擇想追蹤的項目，然後記錄第一次檢測。',
   'Keep the logging form focused on the measurements you actually track.': '讓記錄表單只留下你真正會追蹤的項目。',
+  'Lengths in': '長度單位',
+  'Removes the field and every reading logged in it. The other measurements stay.': '刪除這個欄位和其中記錄的所有數值。其他圍度不受影響。',
   'Fill only what you measured today. Empty fields stay empty.': '只填今天量了的欄位，空白欄位會維持空白。',
   'Choose at least one measurement first.': '請先選擇至少一個測量項目。',
   'Enter at least one measurement': '請至少輸入一項測量',

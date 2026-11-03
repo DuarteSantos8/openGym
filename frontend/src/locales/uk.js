@@ -1989,6 +1989,8 @@ export default {
   'Choose measurement': 'Вибрати вимір',
   'Choose the measurements you want to track, then log your first check-in.': 'Оберіть виміри, які хочете відстежувати, і запишіть перший замір.',
   'Keep the logging form focused on the measurements you actually track.': 'Нехай форма показує лише ті виміри, які ви справді відстежуєте.',
+  'Lengths in': 'Довжини в',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Видаляє поле й усі записані в ньому значення. Інші виміри лишаються.',
   'Fill only what you measured today. Empty fields stay empty.': 'Заповніть лише те, що виміряли сьогодні. Порожні поля лишаються порожніми.',
   'Choose at least one measurement first.': 'Спершу оберіть хоча б один вимір.',
   'Enter at least one measurement': 'Введіть хоча б один вимір',

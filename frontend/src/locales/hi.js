@@ -1976,6 +1976,8 @@ export default {
   'Choose measurement': 'माप चुनें',
   'Choose the measurements you want to track, then log your first check-in.': 'जिन मापों को ट्रैक करना है उन्हें चुनें, फिर अपना पहला माप दर्ज करें।',
   'Keep the logging form focused on the measurements you actually track.': 'फ़ॉर्म में सिर्फ़ वही माप रखें जिन्हें आप वाकई ट्रैक करते हैं।',
+  'Lengths in': 'लंबाई की इकाई',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'यह फ़ील्ड और उसमें दर्ज हर माप हटा देता है। बाकी माप बने रहते हैं।',
   'Fill only what you measured today. Empty fields stay empty.': 'आज जो मापा है वही भरें। खाली फ़ील्ड खाली रहते हैं।',
   'Choose at least one measurement first.': 'पहले कम से कम एक माप चुनें।',
   'Enter at least one measurement': 'कम से कम एक माप दर्ज करें',

@@ -1976,6 +1976,8 @@ export default {
   'Choose measurement': 'Ölçü seç',
   'Choose the measurements you want to track, then log your first check-in.': 'Takip etmek istediğin ölçüleri seç, sonra ilk kaydını gir.',
   'Keep the logging form focused on the measurements you actually track.': 'Formu gerçekten takip ettiğin ölçülerle sınırlı tut.',
+  'Lengths in': 'Uzunluk birimi',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Alanı ve içindeki tüm kayıtları siler. Diğer ölçüler kalır.',
   'Fill only what you measured today. Empty fields stay empty.': 'Sadece bugün ölçtüklerini gir. Boş alanlar boş kalır.',
   'Choose at least one measurement first.': 'Önce en az bir ölçü seç.',
   'Enter at least one measurement': 'En az bir ölçü gir',
