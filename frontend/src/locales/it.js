@@ -1007,6 +1007,7 @@ export default {
   'Most reps in a set per workout': 'Più rip. in una serie per allenamento',
   'Warm-up sets': 'Serie di riscaldamento',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Vengono aggiunte prima delle serie di lavoro e non contano per volume, record e progressione. Ognuna dimezza la distanza dal peso di lavoro, senza mai scendere sotto il bilanciere scarico negli esercizi con bilanciere, e puoi comunque modificarle durante la sessione.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Aggiunte prima delle tue serie di lavoro ed escluse da volume, record e progressione. Su una macchina assistita, ognuna ha più aiuto della serie di lavoro e scende gradualmente verso di essa, e puoi comunque modificarle durante l’allenamento.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Serie di avvicinamento prima delle serie di lavoro, così non devi aggiungerle a mano ogni volta.',
   'Note': 'Nota',
   'This session': 'Questa sessione',
@@ -1457,7 +1458,7 @@ export default {
   'Save as routine?': 'Salvare come routine?',
   'Save as routine': 'Salva come routine',
   'Create an independent routine from these exercise targets. Your workout history is kept.': 'Crea una routine indipendente da questi obiettivi. La cronologia degli allenamenti resta invariata.',
-  'Pause': 'Metti in pausa',
+  'Pause': 'Pausa',
   'Keep timing after target': 'Continua a cronometrare dopo l’obiettivo',
   'Timed sets continue up to 15 extra minutes. Tap Done to log the actual duration.': 'Le serie a tempo continuano fino a 15 minuti extra. Tocca Fine per registrare la durata effettiva.',
   'Edit workout': 'Modifica allenamento',
@@ -1975,6 +1976,8 @@ export default {
   'Choose measurement': 'Scegli la misura',
   'Choose the measurements you want to track, then log your first check-in.': 'Scegli le misure che vuoi seguire, poi registra il primo rilevamento.',
   'Keep the logging form focused on the measurements you actually track.': 'Tieni il modulo sulle misure che segui davvero.',
+  'Lengths in': 'Lunghezze in',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Rimuove il campo e tutti i valori registrati. Le altre misure restano.',
   'Fill only what you measured today. Empty fields stay empty.': 'Compila solo ciò che hai misurato oggi. I campi vuoti restano vuoti.',
   'Choose at least one measurement first.': 'Scegli prima almeno una misura.',
   'Enter at least one measurement': 'Inserisci almeno una misura',
@@ -2264,6 +2267,7 @@ export default {
   'Not downloaded': 'Non scaricate',
   'On this device': 'Su questo dispositivo',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Le animazioni più nitide non sono ancora disponibili su questo dispositivo. Quelle integrate funzionano ovunque.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Le animazioni più nitide arrivano solo dagli store. Questo APK tiene quelle già incluse.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Le animazioni più nitide si scaricano una volta per figura. Nel frattempo vedi quelle integrate, quindi non resta mai niente vuoto.',
   'Still only': 'Solo immagine fissa',
   'Waiting for Wi-Fi': 'In attesa del Wi-Fi',
@@ -2308,6 +2312,8 @@ export default {
   'Your backups': 'I tuoi sostituti',
   'Swap to {0}': 'Passa a {0}',
   'Planned backup, same sets and reps': 'Sostituto previsto, stesse serie e ripetizioni',
+  'Planned backup, with its own plan': 'Sostituto previsto, con il suo piano',
+  'Same plan as this exercise. Tap to give it its own.': 'Stesso piano di questo esercizio. Tocca per dargliene uno suo.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Qui non c’è peso da aggiungere: si sale con le ripetizioni, poi con le serie.',
   // --- #523 skip completed ---
@@ -2543,6 +2549,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} deve essere tra 0 e 100%.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Vengono aggiunte prima delle serie di lavoro. Contano nel tuo volume (Impostazioni), ma non per record e progressione. Ognuna dimezza la distanza dal peso di lavoro, senza mai scendere sotto il bilanciere scarico negli esercizi con bilanciere, e puoi comunque modificarle durante la sessione.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Vengono aggiunte prima delle serie di lavoro. Contano nel tuo volume (Impostazioni), ma non per record e progressione. Su una macchina assistita, ognuna ha più aiuto della serie di lavoro e scende gradualmente verso di essa, e puoi comunque modificarle durante la sessione.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Pesata eliminata",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

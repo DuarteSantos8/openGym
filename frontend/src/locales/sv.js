@@ -1026,6 +1026,7 @@ export default {
   'Most reps in a set per workout': 'Flest reps i ett set per pass',
   'Warm-up sets': 'Uppvärmningsset',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Läggs till före dina arbetsset och räknas inte in i volym, rekord eller progression. Varje set halverar avståndet till arbetsvikten, aldrig under stången i en skivstångsövning, och du kan fortfarande ändra dem under passet.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Läggs till före dina arbetsset och räknas inte in i volym, rekord eller progression. I en assisterad maskin har varje set mer hjälp än arbetsseten och trappas ner mot dem, och du kan fortfarande ändra dem under passet.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Stegrande set som läggs till före arbetsseten, så att du slipper lägga till dem för hand varje pass.',
   'Note': 'Anteckning',
   'This session': 'Det här passet',
@@ -1996,6 +1997,8 @@ export default {
   'Choose measurement': 'Välj mått',
   'Choose the measurements you want to track, then log your first check-in.': 'Välj de mått du vill följa och logga sedan din första mätning.',
   'Keep the logging form focused on the measurements you actually track.': 'Håll loggningsformuläret fokuserat på de mått du faktiskt följer.',
+  'Lengths in': 'Längder i',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Tar bort fältet och alla värden i det. De andra måtten finns kvar.',
   'Fill only what you measured today. Empty fields stay empty.': 'Fyll bara i det du mätt idag. Tomma fält förblir tomma.',
   'Choose at least one measurement first.': 'Välj minst ett mått först.',
   'Enter at least one measurement': 'Ange minst ett mått',
@@ -2289,6 +2292,7 @@ export default {
   'Not downloaded': 'Inte nedladdad',
   'On this device': 'På den här enheten',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Skarpare animationer finns inte för den här enheten än. De inbyggda fungerar överallt.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Skarpare animationer kommer bara via appbutikerna. Den här APK:n behåller de inbyggda.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Skarpare animationer laddas ner en gång per figur. Tills de är här ser du de inbyggda, så inget blir någonsin tomt.',
   'Still only': 'Bara stillbild',
   'Waiting for Wi-Fi': 'Väntar på wifi',
@@ -2339,6 +2343,8 @@ export default {
   'Your backups': 'Dina reserver',
   'Swap to {0}': 'Byt till {0}',
   'Planned backup, same sets and reps': 'Planerad reserv, samma set och reps',
+  'Planned backup, with its own plan': 'Planerad reserv, med egen plan',
+  'Same plan as this exercise. Tap to give it its own.': 'Samma plan som den här övningen. Tryck för att ge den en egen.',
 
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Ingen vikt att lägga på här: det ökar i reps, sedan i set.',
@@ -2587,6 +2593,7 @@ export default {
 
   // --- warm-ups counted in volume (#719) ---
   'Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Läggs till före dina arbetsset. De räknas i din volym (Inställningar), men hålls utanför rekord och progression. Varje set tar halva steget upp mot arbetsvikten, aldrig under stången på ett skivstångslyft, och du kan fortfarande ändra vilket som helst av dem mitt i passet.',
+  'Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Läggs till före dina arbetsset. De räknas i din volym (Inställningar), men hålls utanför rekord och progression. I en assisterad maskin har varje set mer hjälp än arbetsseten och trappas ner mot dem, och du kan fortfarande ändra dem under passet.',
 
   // --- weigh-in undo (#756) ---
   'Weigh-in deleted': 'Vägningen borttagen',

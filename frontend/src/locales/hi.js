@@ -1007,6 +1007,7 @@ export default {
   'Most reps in a set per workout': 'प्रति कसरत एक सेट में सबसे ज़्यादा रेप्स',
   'Warm-up sets': 'वार्म-अप सेट',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'ये आपके वर्क सेट से पहले जुड़ते हैं और वॉल्यूम, रिकॉर्ड तथा प्रोग्रेशन में नहीं गिने जाते। हर सेट वर्क वज़न तक बची दूरी को आधा कर देता है, बारबेल लिफ़्ट में कभी खाली बार से हल्का नहीं होता, और कसरत के बीच भी आप इनमें से किसी को बदल सकते हैं।',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'वर्क सेट से पहले जुड़ते हैं और वॉल्यूम, रिकॉर्ड और प्रोग्रेशन में नहीं गिने जाते। असिस्टेड मशीन पर हर सेट में वर्क सेट से ज़्यादा मदद होती है और वह धीरे-धीरे उसकी ओर घटती जाती है, और वर्कआउट के दौरान आप किसी भी सेट को बदल सकते हैं।',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'वर्क सेट से पहले जुड़ने वाले तैयारी सेट, ताकि हर बार खुद जोड़ना न पड़े।',
   'Note': 'नोट',
   'This session': 'यह कसरत',
@@ -1975,6 +1976,8 @@ export default {
   'Choose measurement': 'माप चुनें',
   'Choose the measurements you want to track, then log your first check-in.': 'जिन मापों को ट्रैक करना है उन्हें चुनें, फिर अपना पहला माप दर्ज करें।',
   'Keep the logging form focused on the measurements you actually track.': 'फ़ॉर्म में सिर्फ़ वही माप रखें जिन्हें आप वाकई ट्रैक करते हैं।',
+  'Lengths in': 'लंबाई की इकाई',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'यह फ़ील्ड और उसमें दर्ज हर माप हटा देता है। बाकी माप बने रहते हैं।',
   'Fill only what you measured today. Empty fields stay empty.': 'आज जो मापा है वही भरें। खाली फ़ील्ड खाली रहते हैं।',
   'Choose at least one measurement first.': 'पहले कम से कम एक माप चुनें।',
   'Enter at least one measurement': 'कम से कम एक माप दर्ज करें',
@@ -2264,6 +2267,7 @@ export default {
   'Not downloaded': 'डाउनलोड नहीं हुआ',
   'On this device': 'इस डिवाइस पर',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'ज़्यादा साफ़ एनिमेशन इस डिवाइस पर अभी उपलब्ध नहीं हैं। बिल्ट-इन एनिमेशन हर जगह चलते हैं।',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'ज़्यादा साफ़ एनिमेशन सिर्फ़ ऐप स्टोर के ज़रिए मिलते हैं। यह APK अपने अंदर वाले एनिमेशन ही रखता है।',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'ज़्यादा साफ़ एनिमेशन हर आकृति के लिए एक बार डाउनलोड होते हैं। तब तक आप बिल्ट-इन देखते हैं, इसलिए कुछ भी खाली नहीं रहता।',
   'Still only': 'सिर्फ़ स्थिर तस्वीर',
   'Waiting for Wi-Fi': 'Wi-Fi का इंतज़ार',
@@ -2308,6 +2312,8 @@ export default {
   'Your backups': 'आपके विकल्प',
   'Swap to {0}': '{0} पर बदलें',
   'Planned backup, same sets and reps': 'योजना में रखा विकल्प, वही सेट और रेप्स',
+  'Planned backup, with its own plan': 'योजना में रखा विकल्प, अपनी योजना के साथ',
+  'Same plan as this exercise. Tap to give it its own.': 'इस एक्सरसाइज़ जैसी ही योजना। इसकी अपनी योजना के लिए टैप करें।',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'यहाँ वज़न जोड़ने की ज़रूरत नहीं: पहले रेप्स बढ़ेंगे, फिर सेट।',
   // --- #523 skip completed ---
@@ -2543,6 +2549,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} का मान 0 से 100% के बीच होना चाहिए।",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "ये आपके वर्क सेट से पहले जुड़ते हैं। ये आपके वॉल्यूम में गिने जाते हैं (सेटिंग्स), लेकिन रिकॉर्ड और प्रोग्रेशन में नहीं। हर सेट वर्क वज़न तक बची दूरी को आधा कर देता है, बारबेल लिफ़्ट में कभी खाली बार से हल्का नहीं होता, और कसरत के बीच भी आप इनमें से किसी को बदल सकते हैं।",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "ये आपके वर्क सेट से पहले जुड़ते हैं। ये आपके वॉल्यूम में गिने जाते हैं (सेटिंग्स), लेकिन रिकॉर्ड और प्रोग्रेशन में नहीं। असिस्टेड मशीन पर हर सेट में वर्क सेट से ज़्यादा मदद होती है और वह धीरे-धीरे उसकी ओर घटती जाती है, और कसरत के बीच भी आप इनमें से किसी को बदल सकते हैं।",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "वज़न हटाया गया",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

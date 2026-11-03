@@ -999,6 +999,7 @@ export default {
   'Most reps in a set per workout': '每次訓練單組最高次數',
   'Warm-up sets': '熱身組',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': '排在正式組之前，不列入總訓練量、個人紀錄與漸進計算。每組都會把與正式重量的差距縮小一半，槓鈴動作不會低於空槓，訓練中仍可隨時修改任何一組。',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': '加在正式組之前，不計入訓練量、紀錄和進階。在輔助器械上，每組的輔助都比正式組更多，並逐步向正式組靠近，訓練中仍可隨時調整。',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': '在正式組前自動加入遞增熱身組，免除每次手動新增的麻煩。',
   'Note': '備忘錄',
   'This session': '本次筆記',
@@ -1968,6 +1969,8 @@ export default {
   'Choose measurement': '選擇測量項目',
   'Choose the measurements you want to track, then log your first check-in.': '選擇想追蹤的項目，然後記錄第一次檢測。',
   'Keep the logging form focused on the measurements you actually track.': '讓記錄表單只留下你真正會追蹤的項目。',
+  'Lengths in': '長度單位',
+  'Removes the field and every reading logged in it. The other measurements stay.': '刪除這個欄位和其中記錄的所有數值。其他圍度不受影響。',
   'Fill only what you measured today. Empty fields stay empty.': '只填今天量了的欄位，空白欄位會維持空白。',
   'Choose at least one measurement first.': '請先選擇至少一個測量項目。',
   'Enter at least one measurement': '請至少輸入一項測量',
@@ -2257,6 +2260,7 @@ export default {
   'Not downloaded': '未下載',
   'On this device': '此裝置上',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': '此裝置暫時無法使用更清晰的動畫。內建動畫在哪裡都能用。',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': '更清晰的動畫只能透過應用程式商店取得。此 APK 使用內建的動畫。',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': '更清晰的動畫每種體型下載一次。下載好之前會顯示內建動畫，所以永遠不會空白。',
   'Still only': '僅靜態圖',
   'Waiting for Wi-Fi': '等待 Wi-Fi',
@@ -2301,6 +2305,8 @@ export default {
   'Your backups': '你的備選動作',
   'Swap to {0}': '換成{0}',
   'Planned backup, same sets and reps': '計畫好的備選，組數和次數不變',
+  'Planned backup, with its own plan': '計畫好的備選，有自己的計畫',
+  'Same plan as this exercise. Tap to give it its own.': '和這個動作的計畫相同。點一下給它設一個自己的。',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': '這裡不用加重量：先加次數，再加組數。',
   // --- #523 skip completed ---
@@ -2536,6 +2542,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0}必須介於 0% 到 100% 之間。",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "排在正式組之前。會列入你的總訓練量（設定），但不列入個人紀錄與漸進計算。每組都會把與正式重量的差距縮小一半，槓鈴動作不會低於空槓，訓練中仍可隨時修改任何一組。",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "排在正式組之前。會列入你的總訓練量（設定），但不列入個人紀錄與漸進計算。在輔助器械上，每組的輔助都比正式組更多，並逐步向正式組靠近，訓練中仍可隨時修改任何一組。",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "已刪除體重紀錄",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

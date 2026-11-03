@@ -544,6 +544,13 @@ h4.sec{
 .lrow-c{color:var(--label);font-size:var(--fs-subhead);flex:none;--icon-stroke:2.4}
 .lrow-k{color:var(--acc-ink);font-size:var(--fs-body);flex:none;--icon-stroke:2.4}
 .lrow.danger,.lrow.danger .lrow-t{color:var(--red)}
+/* A routine slot's backup (#978): the name and plan open its own settings, the cross beside it
+   removes it. Two buttons side by side, since a button may not hold another. */
+.backup-row{padding-block:0;gap:4px}
+.backup-open{display:flex;align-items:center;gap:12px;flex:1;min-width:0;min-height:46px;padding:11px 0;
+  background:none;border:0;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.backup-open:active{opacity:.6}
+.backup-open:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
 /* A warning under a settings row reads at subtitle size: a sentence, not a row title. */
 .lrow.backup-lost .lrow-t{font-size:var(--fs-footnote);line-height:1.3;color:var(--label-2);letter-spacing:0}
 /* The Stats exercise name gets its own line so long names cannot run into the title.

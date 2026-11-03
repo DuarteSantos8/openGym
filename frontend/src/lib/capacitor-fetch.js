@@ -49,3 +49,11 @@ function abortOf(signal) {
     signal.addEventListener('abort', err, { once: true })
   })
 }
+
+/** Whether this is the Android app, where the WebView and the app's own network stack differ. */
+export async function inAndroidApp() {
+  try {
+    const cap = await import('@capacitor/core')
+    return !!(cap?.Capacitor?.isNativePlatform?.() && cap.Capacitor.getPlatform() === 'android')
+  } catch { return false }
+}

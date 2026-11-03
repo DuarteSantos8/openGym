@@ -345,10 +345,37 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
 
     /* ---------- delegates ---------- */
 
-    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {}
+    func workoutSession(_ workoutSession: HKWorkoutSession, didChangeTo toState: HKWorkoutSessionState, from fromState: HKWorkoutSessionState, date: Date) {
+        guard toState == .ended || toState == .stopped else { return }
+        DispatchQueue.main.async { self.lost(workoutSession) }
+    }
 
     func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: Error) {
-        DispatchQueue.main.async { self.running = false }
+        DispatchQueue.main.async { self.lost(workoutSession) }
+    }
+
+    /// The system ended or failed the session while the workout still runs (another workout app,
+    /// an error). It used to stay in `session`, so start() never made a new one: the rest of the
+    /// workout ran without a session, nothing kept the app in front, and a timed set or a rest
+    /// running out dropped you on the watch face (#883, #936). What it measured is saved, and the
+    /// next set or hold starts a fresh one. A session we ended ourselves is already gone from `session`.
+    private func lost(_ s: HKWorkoutSession) {
+        guard let current = session, current === s else { return }
+        let b = builder
+        session = nil
+        builder = nil
+        prepared = false
+        paused = false
+        tagged = nil
+        if let q = query { store.stop(q); query = nil }
+        if let b = b {
+            let endAt = Date()
+            b.endCollection(withEnd: max(endAt, b.startDate ?? endAt)) { _, _ in b.finishWorkout { _, _ in } }
+        }
+        running = false
+        heartRate = nil
+        // No restart from here: a session the system keeps refusing would loop. The next thing the
+        // lifter does (a set, a hold, a rest from the phone) goes through start() and makes one.
     }
 
     func workoutBuilderDidCollectEvent(_ workoutBuilder: HKLiveWorkoutBuilder) {}

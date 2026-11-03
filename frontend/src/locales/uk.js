@@ -816,6 +816,7 @@ export default {
   'Most reps in a set per workout': 'Найбільше повт. в підході за тренування',
   'Warm-up sets': 'Розминкові підходи',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Додаються перед робочими підходами і не враховуються в обсязі, рекордах і прогресії. Кожен удвічі скорочує розрив до робочої ваги, але у вправах зі штангою ніколи не легший за порожній гриф, і будь-який із них можна змінити під час тренування.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Додаються перед робочими підходами й не враховуються в обсязі, рекордах і прогресії. У гравітроні кожен із них дає більше допомоги, ніж робочий підхід, і поступово наближається до нього, а під час тренування будь-який можна змінити.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Підвідні підходи перед робочими, щоб не додавати їх вручну щоразу.',
   'Note': 'Нотатка',
   'This session': 'Це тренування',
@@ -1988,6 +1989,8 @@ export default {
   'Choose measurement': 'Вибрати вимір',
   'Choose the measurements you want to track, then log your first check-in.': 'Оберіть виміри, які хочете відстежувати, і запишіть перший замір.',
   'Keep the logging form focused on the measurements you actually track.': 'Нехай форма показує лише ті виміри, які ви справді відстежуєте.',
+  'Lengths in': 'Довжини в',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Видаляє поле й усі записані в ньому значення. Інші виміри лишаються.',
   'Fill only what you measured today. Empty fields stay empty.': 'Заповніть лише те, що виміряли сьогодні. Порожні поля лишаються порожніми.',
   'Choose at least one measurement first.': 'Спершу оберіть хоча б один вимір.',
   'Enter at least one measurement': 'Введіть хоча б один вимір',
@@ -2261,6 +2264,7 @@ export default {
   'Not downloaded': 'Не завантажено',
   'On this device': 'На цьому пристрої',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Чіткіші анімації на цьому пристрої поки недоступні. Вбудовані працюють усюди.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Чіткіші анімації доступні лише через магазини застосунків. У цьому APK залишаються вбудовані.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Чіткіші анімації завантажуються один раз для кожної фігури. Поки їх немає, ви бачите вбудовані, тож порожньо не буває.',
   'Still only': 'Лише зображення',
   'Waiting for Wi-Fi': 'Чекаємо на Wi-Fi',
@@ -2305,6 +2309,8 @@ export default {
   'Your backups': 'Ваші заміни',
   'Swap to {0}': 'Замінити на {0}',
   'Planned backup, same sets and reps': 'Запланована заміна, ті самі підходи й повтори',
+  'Planned backup, with its own plan': 'Запланована заміна, зі своїм планом',
+  'Same plan as this exercise. Tap to give it its own.': 'Той самий план, що й у цієї вправи. Торкніться, щоб дати їй власний.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Тут нічого додавати у вазі: ростуть повторення, потім підходи.',
   // --- #523 skip completed ---
@@ -2540,6 +2546,7 @@ export default {
   "{0} must be between 0 and 100%.": "Значення «{0}» має бути від 0 до 100%.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Додаються перед робочими підходами. Вони враховуються у твоєму обсязі (Налаштування), але не в рекордах і прогресії. Кожен удвічі скорочує розрив до робочої ваги, але у вправах зі штангою ніколи не легший за порожній гриф, і будь-який із них можна змінити під час тренування.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Додаються перед робочими підходами. Вони враховуються у твоєму обсязі (Налаштування), але не в рекордах і прогресії. У гравітроні кожен із них дає більше допомоги, ніж робочий підхід, і поступово наближається до нього, а будь-який із них можна змінити під час тренування.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Зважування видалено",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

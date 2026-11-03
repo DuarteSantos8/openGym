@@ -1084,6 +1084,7 @@ export default {
   'reps': 'রেপ',
   'Most reps in a set per workout': 'প্রতি ওয়ার্কআউটে এক সেটে সর্বাধিক রেপ',
   'Warm-up sets': 'ওয়ার্ম-আপ সেট',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'ওয়ার্কিং সেটের আগে যোগ হয় এবং ভলিউম, রেকর্ড ও প্রগ্রেশনে গণ্য হয় না। অ্যাসিস্টেড মেশিনে প্রতিটি সেটে ওয়ার্কিং সেটের চেয়ে বেশি সহায়তা থাকে এবং ধীরে ধীরে সেটির দিকে কমে আসে, আর ওয়ার্কআউটের মাঝেও যেকোনোটি বদলাতে পারো।',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'ওয়ার্কিং সেটের আগে ধাপে ধাপে বাড়ানো সেট যোগ হয়, তাই প্রতি সেশনে হাতে যোগ করতে হয় না।',
   'Note': 'নোট',
   'This session': 'এই সেশন',
@@ -2015,6 +2016,8 @@ export default {
   'Choose measurement': 'মাপ বেছে নিন',
   'Choose the measurements you want to track, then log your first check-in.': 'যেসব মাপ ট্র্যাক করতে চান বেছে নিন, তারপর প্রথম চেক-ইন লগ করুন।',
   'Keep the logging form focused on the measurements you actually track.': 'লগিং ফর্মে শুধু সেই মাপগুলোই রাখুন যেগুলো আপনি সত্যিই ট্র্যাক করেন।',
+  'Lengths in': 'দৈর্ঘ্যের একক',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'ঘরটি এবং এতে লেখা সব মাপ মুছে দেয়। বাকি মাপগুলো থাকে।',
   'Fill only what you measured today. Empty fields stay empty.': 'আজ যা মেপেছেন শুধু সেটুকুই পূরণ করুন। ফাঁকা ঘর ফাঁকাই থাকবে।',
   'Choose at least one measurement first.': 'আগে অন্তত একটি মাপ বেছে নিন।',
   'Enter at least one measurement': 'অন্তত একটি মাপ লিখুন',
@@ -2343,6 +2346,7 @@ export default {
   'Not downloaded': 'ডাউনলোড হয়নি',
   'On this device': 'এই ডিভাইসে',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'আরও স্পষ্ট অ্যানিমেশন এই ডিভাইসে এখনও নেই। অন্তর্ভুক্তগুলো সব জায়গায় চলে।',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'আরও স্পষ্ট অ্যানিমেশন শুধু অ্যাপ স্টোরের মাধ্যমে আসে। এই APK তার ভেতরের অ্যানিমেশনগুলোই রাখে।',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'আরও স্পষ্ট অ্যানিমেশন প্রতিটি অবয়বের জন্য একবার ডাউনলোড হয়। ততক্ষণ অন্তর্ভুক্তগুলো দেখবেন, তাই কিছুই ফাঁকা থাকে না।',
   'Still only': 'শুধু স্থির ছবি',
   'Waiting for Wi-Fi': 'Wi-Fi-র অপেক্ষায়',
@@ -2387,6 +2391,8 @@ export default {
   'Your backups': 'আপনার বিকল্প',
   'Swap to {0}': '{0}-এ বদলান',
   'Planned backup, same sets and reps': 'পরিকল্পিত বিকল্প, একই সেট ও রেপ',
+  'Planned backup, with its own plan': 'পরিকল্পিত বিকল্প, নিজের পরিকল্পনাসহ',
+  'Same plan as this exercise. Tap to give it its own.': 'এই ব্যায়ামের মতোই পরিকল্পনা। নিজস্ব একটি দিতে ট্যাপ করুন।',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'এখানে ওজন যোগ করার কিছু নেই: আগে রেপ বাড়বে, তারপর সেট।',
   // --- #523 skip completed ---
@@ -2622,6 +2628,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} অবশ্যই ০ থেকে ১০০%-এর মধ্যে হতে হবে।",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "ওয়ার্ক সেটের আগে যোগ হয়। আপনার ভলিউমে গোনা হয় (সেটিংস), কিন্তু রেকর্ড আর প্রগ্রেশনে নয়। প্রতিটি ওয়ার্ক ওয়েটের দূরত্বের অর্ধেক কমায়, বারবেল লিফটে বারের নিচে কখনো নামে না, আর সেশনের মাঝেও যেকোনোটা বদলাতে পারবেন।",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "ওয়ার্ক সেটের আগে যোগ হয়। আপনার ভলিউমে গোনা হয় (সেটিংস), কিন্তু রেকর্ড আর প্রগ্রেশনে নয়। অ্যাসিস্টেড মেশিনে প্রতিটি সেটে ওয়ার্ক সেটের চেয়ে বেশি সহায়তা থাকে এবং ধীরে ধীরে সেটির দিকে কমে আসে, আর সেশনের মাঝেও যেকোনোটা বদলাতে পারবেন।",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "ওজন মুছে ফেলা হয়েছে",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

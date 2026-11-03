@@ -841,6 +841,7 @@ export default {
   'How it went, what to change. Saved with today’s workout.': 'Hogyan ment, min változtatnál. A mai edzéssel együtt mentve.',
   'This session': 'Ez az edzés',
   'Note': 'Megjegyzés',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'A munkasorozatok előtt kerülnek be, és nem számítanak bele a volumenbe, a rekordokba és a progresszióba. Segítséggel működő gépen mindegyik több segítséget ad, mint a munkasorozat, és fokozatosan közelít hozzá, az edzés közben pedig bármelyiket módosíthatod.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Fokozatosan növekvő sorozatok a munkasorozatok elé, hogy ne kelljen minden edzésen kézzel hozzáadnod őket.',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'A munkasorozatok elé kerülnek, és kimaradnak a volumenből, a rekordokból és a progresszióból. Mindegyik a felére zárja a különbséget a munkasúlyhoz, rúddal végzett gyakorlatnál soha nem könnyebb az üres rúdnál, és edzés közben is bármelyiket módosíthatod.',
   'Warm-up sets': 'Bemelegítő sorozatok',
@@ -1994,6 +1995,8 @@ export default {
   'Choose measurement': 'Méret kiválasztása',
   'Choose the measurements you want to track, then log your first check-in.': 'Válaszd ki, mit szeretnél követni, aztán rögzítsd az első mérést.',
   'Keep the logging form focused on the measurements you actually track.': 'A rögzítő űrlapon csak azok a méretek maradjanak, amiket tényleg követsz.',
+  'Lengths in': 'Hosszak mértékegysége',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Törli a mezőt és minden benne rögzített értéket. A többi méret marad.',
   'Fill only what you measured today. Empty fields stay empty.': 'Csak azt töltsd ki, amit ma mértél. Az üres mezők üresek maradnak.',
   'Choose at least one measurement first.': 'Előbb válassz ki legalább egy méretet.',
   'Enter at least one measurement': 'Adj meg legalább egy méretet',
@@ -2267,6 +2270,7 @@ export default {
   'Not downloaded': 'Nincs letöltve',
   'On this device': 'Ezen az eszközön',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Élesebb animációk ezen az eszközön még nem érhetők el. A beépítettek mindenhol működnek.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Az élesebb animációk csak az alkalmazásboltokon keresztül érhetők el. Ez az APK a beépítetteket használja.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Az élesebb animációk figuránként egyszer töltődnek le. Addig a beépítetteket látod, így semmi sem marad üres.',
   'Still only': 'Csak állókép',
   'Waiting for Wi-Fi': 'Wi-Fire vár',
@@ -2311,6 +2315,8 @@ export default {
   'Your backups': 'A helyettesítőid',
   'Swap to {0}': 'Csere erre: {0}',
   'Planned backup, same sets and reps': 'Tervezett helyettesítő, ugyanazok a sorozatok és ismétlések',
+  'Planned backup, with its own plan': 'Tervezett helyettesítő, saját tervvel',
+  'Same plan as this exercise. Tap to give it its own.': 'Ugyanaz a terv, mint ennél a gyakorlatnál. Koppints, hogy sajátot kapjon.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Itt nincs mit súlyban hozzáadni: előbb az ismétlések nőnek, aztán a sorozatok.',
   // --- #523 skip completed ---
@@ -2546,6 +2552,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} értékének 0 és 100% között kell lennie.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "A munkasorozatok elé kerülnek. Beleszámítanak a volumenedbe (Beállítások), de a rekordokból és a progresszióból kimaradnak. Mindegyik a felére zárja a különbséget a munkasúlyhoz, rúddal végzett gyakorlatnál soha nem könnyebb az üres rúdnál, és edzés közben is bármelyiket módosíthatod.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "A munkasorozatok elé kerülnek. Beleszámítanak a volumenedbe (Beállítások), de a rekordokból és a progresszióból kimaradnak. Segítséggel működő gépen mindegyik több segítséget ad, mint a munkasorozat, és fokozatosan közelít hozzá, edzés közben pedig bármelyiket módosíthatod.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Mérés törölve",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

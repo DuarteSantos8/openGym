@@ -1007,6 +1007,7 @@ export default {
   'Most reps in a set per workout': '운동당 한 세트 최다 횟수',
   'Warm-up sets': '워밍업 세트',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': '작업 세트 앞에 추가되며 볼륨, 기록, 진행에는 포함되지 않습니다. 각 세트는 작업 중량까지의 차이를 절반으로 줄이고 바벨 운동에서는 빈 바보다 가벼워지지 않으며, 운동 중에도 언제든 바꿀 수 있어요.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': '작업 세트 앞에 추가되며 볼륨, 기록, 점진적 증량에는 포함되지 않습니다. 어시스트 머신에서는 각 세트가 작업 세트보다 보조 무게가 크고 점차 작업 세트 쪽으로 줄어들며, 운동 중에도 언제든 바꿀 수 있습니다.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': '작업 세트 앞에 넣는 준비 세트로, 매번 직접 추가하지 않아도 됩니다.',
   'Note': '메모',
   'This session': '이번 운동',
@@ -1975,6 +1976,8 @@ export default {
   'Choose measurement': '측정 항목 선택',
   'Choose the measurements you want to track, then log your first check-in.': '추적할 항목을 고르고 첫 측정값을 기록해 보세요.',
   'Keep the logging form focused on the measurements you actually track.': '실제로 재는 항목만 입력 폼에 남겨 두세요.',
+  'Lengths in': '길이 단위',
+  'Removes the field and every reading logged in it. The other measurements stay.': '이 항목과 기록된 모든 값을 지워요. 다른 치수는 그대로예요.',
   'Fill only what you measured today. Empty fields stay empty.': '오늘 잰 것만 입력하세요. 빈 칸은 비워 둡니다.',
   'Choose at least one measurement first.': '먼저 항목을 하나 이상 선택하세요.',
   'Enter at least one measurement': '측정값을 하나 이상 입력하세요',
@@ -2264,6 +2267,7 @@ export default {
   'Not downloaded': '다운로드 안 됨',
   'On this device': '이 기기에 있음',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': '이 기기에서는 아직 더 선명한 애니메이션을 쓸 수 없어요. 기본 내장 애니메이션은 어디서나 돼요.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': '더 선명한 애니메이션은 앱 스토어를 통해서만 제공됩니다. 이 APK는 내장된 애니메이션을 사용합니다.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': '더 선명한 애니메이션은 체형마다 한 번씩 다운로드돼요. 그전까지는 기본 내장 애니메이션이 보여서 빈칸이 생기지 않아요.',
   'Still only': '정지 이미지만',
   'Waiting for Wi-Fi': 'Wi-Fi 기다리는 중',
@@ -2308,6 +2312,8 @@ export default {
   'Your backups': '내 대체 운동',
   'Swap to {0}': '{0}(으)로 바꾸기',
   'Planned backup, same sets and reps': '계획된 대체 운동, 같은 세트와 반복',
+  'Planned backup, with its own plan': '계획된 대체 운동, 자체 계획 있음',
+  'Same plan as this exercise. Tap to give it its own.': '이 운동과 같은 계획이에요. 탭해서 따로 정해 보세요.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': '여기엔 더할 무게가 없어요. 반복 수를 늘리고, 그다음 세트를 늘려요.',
   // --- #523 skip completed ---
@@ -2543,6 +2549,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} 값은 0~100% 사이여야 합니다.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "작업 세트 앞에 추가됩니다. 볼륨에는 포함되지만(설정), 기록과 진행에는 포함되지 않습니다. 각 세트는 작업 중량까지의 차이를 절반으로 줄이고 바벨 운동에서는 빈 바보다 가벼워지지 않으며, 운동 중에도 언제든 바꿀 수 있어요.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "작업 세트 앞에 추가됩니다. 볼륨에는 포함되지만(설정), 기록과 진행에는 포함되지 않습니다. 어시스트 머신에서는 각 세트가 작업 세트보다 보조 무게가 크고 점차 작업 세트 쪽으로 줄어들며, 운동 중에도 언제든 바꿀 수 있어요.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "체중 기록 삭제됨",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

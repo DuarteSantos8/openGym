@@ -737,6 +737,7 @@ export default {
   'Most reps in a set per workout': 'أكثر تكرارات في مجموعة لكل تمرين',
   'Warm-up sets': 'مجموعات الإحماء',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'تُضاف قبل مجموعات العمل ولا تُحتسب في الحجم أو الأرقام القياسية أو التدرج. كل واحدة تقلص الفجوة إلى وزن العمل إلى النصف، ولا تقل أبدًا عن وزن البار في تمارين البار، ويمكنك تعديل أي منها أثناء الجلسة.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'تُضاف قبل مجموعات العمل ولا تُحتسب في الحجم أو الأرقام القياسية أو التقدّم. في جهاز المساعدة، تحمل كل مجموعة مساعدة أكبر من مجموعة العمل وتتناقص تدريجيًا نحوها، ويمكنك تعديل أي منها أثناء التمرين.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'مجموعات إحماء تصاعدية تُضاف قبل مجموعات العمل، حتى لا تضطر لإضافتها يدويًا في كل جلسة.',
   'Note': 'ملاحظة',
   'This session': 'هذه الجلسة',
@@ -2046,6 +2047,8 @@ export default {
   'Choose measurement': 'اختيار القياس',
   'Choose the measurements you want to track, then log your first check-in.': 'اختر القياسات التي تريد تتبعها، ثم سجّل أول متابعة لك.',
   'Keep the logging form focused on the measurements you actually track.': 'أبقِ نموذج التسجيل مركّزًا على القياسات التي تتبعها فعلًا.',
+  'Lengths in': 'الأطوال بـ',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'يحذف الحقل وكل القراءات المسجلة فيه. تبقى القياسات الأخرى.',
   'Fill only what you measured today. Empty fields stay empty.': 'املأ ما قسته اليوم فقط. تبقى الحقول الفارغة فارغة.',
   'Choose at least one measurement first.': 'اختر قياسًا واحدًا على الأقل أولًا.',
   'Enter at least one measurement': 'أدخل قياسًا واحدًا على الأقل',
@@ -2319,6 +2322,7 @@ export default {
   'Not downloaded': 'لم يتم التنزيل',
   'On this device': 'على هذا الجهاز',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'الرسوم الأوضح غير متاحة على هذا الجهاز بعد. الرسوم المدمجة تعمل في كل مكان.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'الرسوم المتحركة الأوضح متاحة فقط عبر متاجر التطبيقات. يحتفظ ملف APK هذا بالرسوم المدمجة فيه.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'تُنزَّل الرسوم الأوضح مرة واحدة لكل هيئة. وحتى تصل ترى الرسوم المدمجة، فلا يبقى شيء فارغًا.',
   'Still only': 'صورة ثابتة فقط',
   'Waiting for Wi-Fi': 'بانتظار Wi-Fi',
@@ -2363,6 +2367,8 @@ export default {
   'Your backups': 'بدائلك',
   'Swap to {0}': 'التبديل إلى {0}',
   'Planned backup, same sets and reps': 'بديل مخطط، بنفس المجموعات والتكرارات',
+  'Planned backup, with its own plan': 'بديل مخطط، بخطته الخاصة',
+  'Same plan as this exercise. Tap to give it its own.': 'نفس خطة هذا التمرين. انقر لتمنحه خطة خاصة به.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'لا وزن يُضاف هنا: يزيد التمرين بالتكرارات ثم بالمجموعات.',
   // --- #523 skip completed ---
@@ -2598,6 +2604,7 @@ export default {
   "{0} must be between 0 and 100%.": "يجب أن تكون قيمة {0} بين 0 و100٪.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "تُضاف قبل مجموعات العمل. تُحتسب في حجمك (الإعدادات)، لكنها لا تُحتسب في الأرقام القياسية أو التدرج. كل واحدة تقلص الفجوة إلى وزن العمل إلى النصف، ولا تقل أبدًا عن وزن البار في تمارين البار، ويمكنك تعديل أي منها أثناء الجلسة.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "تُضاف قبل مجموعات العمل. تُحتسب في حجمك (الإعدادات)، لكنها لا تُحتسب في الأرقام القياسية أو التدرج. في جهاز المساعدة، تحمل كل مجموعة مساعدة أكبر من مجموعة العمل وتتناقص تدريجيًا نحوها، ويمكنك تعديل أي منها أثناء الجلسة.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "تم حذف الوزن",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

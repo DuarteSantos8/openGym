@@ -13,15 +13,20 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.ArrayMap;
+import android.util.SizeF;
 import android.view.View;
 import android.widget.RemoteViews;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
 import org.json.JSONObject;
 
 /**
- * openGym's Home Screen widget on Android: one thing big at 2x1 and 2x2, two side by side at 4x2,
+ * openGym's Home Screen widget on Android: a row when it is one cell tall, one thing big at 2x2,
+ * two side by side at 4x2 (Shape),
  * each picked when the widget is placed (OpenGymWidgetConfigure): the streak, the weight goal, this
  * week, the next workout, records or volume (WidgetContent). What it shows is the snapshot the app
  * wrote (WidgetBridgePlugin, lib/widgets.js), in the app's language and accent; light or dark with
@@ -81,12 +86,39 @@ public class OpenGymWidgetProvider extends AppWidgetProvider {
         }
     }
 
+    /** The widget's three shapes. Which one shows is the size it has on the Home Screen. */
+    enum Shape { ROW, SMALL, WIDE }
+
+    // The sizes (dp) each shape starts at: a row under 90 dp tall at any width (a 4x1 too: the
+    // wide layout's two columns do not fit in one cell's height), two things side by side from
+    // 220 dp wide, else one thing big.
+    static final float ROW_MIN_W = 110, ROW_MIN_H = 40, SMALL_MIN_H = 90, WIDE_MIN_W = 220;
+
+    /** The shape for a widget minW x minH dp in size (0 when the launcher has not said). */
+    static Shape shapeFor(int minW, int minH) {
+        if (minH > 0 && minH < SMALL_MIN_H) return Shape.ROW;
+        return minW >= WIDE_MIN_W ? Shape.WIDE : Shape.SMALL;
+    }
+
     static RemoteViews build(Context context, AppWidgetManager mgr, int id) {
+        // Android 12 and later: every shape at once, and the launcher picks the one that fits while
+        // the widget is being resized, with no round trip through the app (#981). Before that, the
+        // one for the size the launcher reports.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Map<SizeF, RemoteViews> shapes = new ArrayMap<>();
+            shapes.put(new SizeF(ROW_MIN_W, ROW_MIN_H), shape(context, id, Shape.ROW));
+            shapes.put(new SizeF(ROW_MIN_W, SMALL_MIN_H), shape(context, id, Shape.SMALL));
+            shapes.put(new SizeF(WIDE_MIN_W, SMALL_MIN_H), shape(context, id, Shape.WIDE));
+            return new RemoteViews(shapes);
+        }
         Bundle opts = mgr.getAppWidgetOptions(id);
         int minW = opts == null ? 0 : opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0);
         int minH = opts == null ? 0 : opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0);
-        boolean wide = minW >= 220;
-        boolean row = !wide && minH > 0 && minH < 90;
+        return shape(context, id, shapeFor(minW, minH));
+    }
+
+    /** One shape of widget `id`, filled with what it shows. */
+    static RemoteViews shape(Context context, int id, Shape shape) {
         SharedPreferences p = prefs(context);
         String first = WidgetContent.validKind(p.getString(kindKey(id), null));
         String second = WidgetContent.validKind(p.getString(secondKey(id), WidgetContent.defaultSecond(first)));
@@ -94,13 +126,14 @@ public class OpenGymWidgetProvider extends AppWidgetProvider {
         String today = today();
         String empty = context.getString(R.string.widget_empty);
         int accent = accentOf(snap);
+        boolean row = shape == Shape.ROW;
 
-        int layout = wide ? R.layout.widget_medium : row ? R.layout.widget_row : R.layout.widget_small;
+        int layout = shape == Shape.WIDE ? R.layout.widget_medium : row ? R.layout.widget_row : R.layout.widget_small;
         RemoteViews v = new RemoteViews(context.getPackageName(), layout);
         WidgetContent a = WidgetContent.of(first, snap, today, empty);
         fill(context, v, a, accent, row, R.id.icon_a, R.id.title_a, R.id.value_a, R.id.caption_a, R.id.trend_a);
         v.setOnClickPendingIntent(R.id.widget_root, open(context, a.link, id * 4));
-        if (wide) {
+        if (shape == Shape.WIDE) {
             WidgetContent b = WidgetContent.of(second, snap, today, empty);
             fill(context, v, b, accent, false, R.id.icon_b, R.id.title_b, R.id.value_b, R.id.caption_b, R.id.trend_b);
             v.setOnClickPendingIntent(R.id.col_a, open(context, a.link, id * 4 + 1));

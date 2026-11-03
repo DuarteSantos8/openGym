@@ -987,6 +987,7 @@ export default {
   'Most reps in a set per workout': 'Больше всего повт. в подходе за тренировку',
   'Warm-up sets': 'Разминочные подходы',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Добавляются перед рабочими подходами и не учитываются в объёме, рекордах и прогрессии. Каждый вдвое сокращает разрыв до рабочего веса, но в упражнениях со штангой никогда не легче пустого грифа, и любой из них можно изменить прямо во время тренировки.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Добавляются перед рабочими подходами и не учитываются в объёме, рекордах и прогрессии. В гравитроне каждый из них даёт больше помощи, чем рабочий подход, и постепенно приближается к нему, а во время тренировки любой можно изменить.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Подводящие подходы перед рабочими, чтобы не добавлять их вручную каждый раз.',
   'Note': 'Заметка',
   'This session': 'Эта тренировка',
@@ -1979,6 +1980,8 @@ export default {
   'Choose measurement': 'Выбрать замер',
   'Choose the measurements you want to track, then log your first check-in.': 'Выбери замеры, которые хочешь отслеживать, и запиши первый.',
   'Keep the logging form focused on the measurements you actually track.': 'Оставь в форме только те замеры, которые действительно ведёшь.',
+  'Lengths in': 'Длины в',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Удаляет поле и все записанные в нём значения. Остальные замеры остаются.',
   'Fill only what you measured today. Empty fields stay empty.': 'Заполни только сегодняшние замеры. Пустые поля останутся пустыми.',
   'Choose at least one measurement first.': 'Сначала выбери хотя бы один замер.',
   'Enter at least one measurement': 'Введи хотя бы один замер',
@@ -2268,6 +2271,7 @@ export default {
   'Not downloaded': 'Не загружено',
   'On this device': 'На этом устройстве',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Более чёткие анимации на этом устройстве пока недоступны. Встроенные работают везде.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Более чёткие анимации доступны только через магазины приложений. В этом APK остаются встроенные.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Более чёткие анимации загружаются один раз для каждой фигуры. Пока их нет, вы видите встроенные, так что пусто не бывает.',
   'Still only': 'Только картинка',
   'Waiting for Wi-Fi': 'Ждём Wi-Fi',
@@ -2312,6 +2316,8 @@ export default {
   'Your backups': 'Ваши замены',
   'Swap to {0}': 'Заменить на {0}',
   'Planned backup, same sets and reps': 'Запланированная замена, те же подходы и повторы',
+  'Planned backup, with its own plan': 'Запланированная замена, со своим планом',
+  'Same plan as this exercise. Tap to give it its own.': 'Тот же план, что и у этого упражнения. Нажмите, чтобы задать ему свой.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Здесь нечего добавлять в весе: растут повторения, потом подходы.',
   // --- #523 skip completed ---
@@ -2547,6 +2553,7 @@ export default {
   "{0} must be between 0 and 100%.": "Значение «{0}» должно быть от 0 до 100%.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Добавляются перед рабочими подходами. Они учитываются в вашем объёме (Настройки), но не в рекордах и прогрессии. Каждый вдвое сокращает разрыв до рабочего веса, но в упражнениях со штангой никогда не легче пустого грифа, и любой из них можно изменить прямо во время тренировки.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Добавляются перед рабочими подходами. Они учитываются в вашем объёме (Настройки), но не в рекордах и прогрессии. В гравитроне каждый из них даёт больше помощи, чем рабочий подход, и постепенно приближается к нему, а любой из них можно изменить прямо во время тренировки.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Взвешивание удалено",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

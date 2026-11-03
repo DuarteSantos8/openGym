@@ -41,7 +41,12 @@ export const measurementUnitLabel = unit => unit === 'none' ? '' : unit
 // A unit where 0 is a reading, not an empty field: 0 % or a score of 0.
 export const zeroIsReading = unit => unit === '%' || unit === 'none'
 
-export const measurementUnit = (unit, field) => field?.key === 'bodyFat' ? '%' : unitOf(field) || (unit === 'lb' ? 'in' : 'cm')
+// The unit lengths are shown in: the body-measurement sheet's own choice (`measureUnit`, #932),
+// else the one that goes with the weight unit (lb → in). Someone weighing in pounds may still
+// measure their waist in centimetres. Readings are stored in cm either way.
+export const lengthUnitOf = S => S?.measureUnit === 'cm' || S?.measureUnit === 'in' ? S.measureUnit : S?.unit === 'lb' ? 'in' : 'cm'
+// `unit`: a length unit (lengthUnitOf), or the profile's kg/lb as older callers pass it.
+export const measurementUnit = (unit, field) => field?.key === 'bodyFat' ? '%' : unitOf(field) || (unit === 'lb' || unit === 'in' ? 'in' : 'cm')
 export const toMeasurementDisplay = (value, unit, field) => {
   if (value == null) return null
   const display = measurementUnit(unit, field)
@@ -154,7 +159,7 @@ export function enabledMeasurementFields(state) {
 
 export function measurementSeries(state, key, range = 0, now = Date.now()) {
   const cutoff = range ? now - range * 86400000 : -Infinity
-  const unit = state.unit || 'kg'
+  const unit = lengthUnitOf(state)
   const field = key.startsWith('other:')
     ? (state.customMeasurements || []).find(c => c.id === key.slice(6)) || { key }
     : { key }

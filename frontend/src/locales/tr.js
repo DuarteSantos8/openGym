@@ -1007,6 +1007,7 @@ export default {
   'Most reps in a set per workout': 'Antrenman başına bir sette en çok tekrar',
   'Warm-up sets': 'Isınma setleri',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Çalışma setlerinden önce eklenir; hacim, rekor ve ilerlemeye sayılmaz. Her biri çalışma ağırlığına kalan farkı yarıya indirir, halter hareketlerinde boş barın altına hiç inmez ve antrenman sırasında hâlâ istediğini değiştirebilirsin.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Çalışma setlerinden önce eklenir; hacme, rekorlara ve ilerlemeye sayılmaz. Destekli makinede her biri çalışma setinden daha fazla destek sağlar ve ona doğru kademeli olarak azalır; antrenman sırasında hepsini yine değiştirebilirsin.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Çalışma setlerinden önce eklenen hazırlık setleri, böylece her antrenmanda elle eklemen gerekmez.',
   'Note': 'Not',
   'This session': 'Bu antrenman',
@@ -1975,6 +1976,8 @@ export default {
   'Choose measurement': 'Ölçü seç',
   'Choose the measurements you want to track, then log your first check-in.': 'Takip etmek istediğin ölçüleri seç, sonra ilk kaydını gir.',
   'Keep the logging form focused on the measurements you actually track.': 'Formu gerçekten takip ettiğin ölçülerle sınırlı tut.',
+  'Lengths in': 'Uzunluk birimi',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Alanı ve içindeki tüm kayıtları siler. Diğer ölçüler kalır.',
   'Fill only what you measured today. Empty fields stay empty.': 'Sadece bugün ölçtüklerini gir. Boş alanlar boş kalır.',
   'Choose at least one measurement first.': 'Önce en az bir ölçü seç.',
   'Enter at least one measurement': 'En az bir ölçü gir',
@@ -2264,6 +2267,7 @@ export default {
   'Not downloaded': 'İndirilmedi',
   'On this device': 'Bu cihazda',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Daha net animasyonlar bu cihazda henüz yok. Yerleşik olanlar her yerde çalışır.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Daha net animasyonlar yalnızca uygulama mağazaları üzerinden gelir. Bu APK yerleşik olanları kullanır.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Daha net animasyonlar her figür için bir kez iner. Gelene kadar yerleşik olanları görürsün, yani hiçbir şey boş kalmaz.',
   'Still only': 'Yalnızca sabit resim',
   'Waiting for Wi-Fi': 'Wi-Fi bekleniyor',
@@ -2308,6 +2312,8 @@ export default {
   'Your backups': 'Yedeklerin',
   'Swap to {0}': '{0} ile değiştir',
   'Planned backup, same sets and reps': 'Planlı yedek, aynı set ve tekrarlar',
+  'Planned backup, with its own plan': 'Planlı yedek, kendi planıyla',
+  'Same plan as this exercise. Tap to give it its own.': 'Bu egzersizle aynı plan. Kendine ait bir plan için dokun.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Burada eklenecek ağırlık yok: önce tekrar, sonra set artar.',
   // --- #523 skip completed ---
@@ -2543,6 +2549,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0}, %0 ile %100 arasında olmalı.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Çalışma setlerinden önce eklenir. Hacmine sayılır (Ayarlar), ama rekor ve ilerlemeye sayılmaz. Her biri çalışma ağırlığına kalan farkı yarıya indirir, halter hareketlerinde boş barın altına hiç inmez ve antrenman sırasında hâlâ istediğini değiştirebilirsin.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Çalışma setlerinden önce eklenir. Hacmine sayılır (Ayarlar), ama rekor ve ilerlemeye sayılmaz. Destekli makinede her biri çalışma setinden daha fazla destek sağlar ve ona doğru kademeli olarak azalır; antrenman sırasında hâlâ istediğini değiştirebilirsin.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Tartım silindi",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

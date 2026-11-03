@@ -1007,6 +1007,7 @@ export default {
   'Most reps in a set per workout': 'Plus de reps dans une série par séance',
   'Warm-up sets': 'Séries d’échauffement',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'Ajoutées avant tes séries de travail et exclues du volume, des records et de la progression. Chacune réduit de moitié l’écart avec la charge de travail, sans jamais descendre sous la barre à vide pour un exercice à la barre, et tu peux toujours les modifier pendant la séance.',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'Ajoutées avant tes séries de travail et exclues du volume, des records et de la progression. Sur une machine à assistance, chacune offre plus d’aide que la série de travail, en diminuant progressivement jusqu’à elle, et tu peux toujours les modifier pendant la séance.',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'Séries de montée en charge avant les séries de travail, pour ne pas les ajouter à la main chaque fois.',
   'Note': 'Note',
   'This session': 'Cette séance',
@@ -1975,6 +1976,8 @@ export default {
   'Choose measurement': 'Choisir la mesure',
   'Choose the measurements you want to track, then log your first check-in.': 'Choisis les mesures que tu veux suivre, puis note ton premier relevé.',
   'Keep the logging form focused on the measurements you actually track.': 'Garde le formulaire limité aux mesures que tu suis vraiment.',
+  'Lengths in': 'Longueurs en',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'Supprime le champ et toutes ses valeurs. Les autres mesures restent.',
   'Fill only what you measured today. Empty fields stay empty.': 'Ne remplis que ce que tu as mesuré aujourd’hui. Les champs vides restent vides.',
   'Choose at least one measurement first.': 'Choisis d’abord au moins une mesure.',
   'Enter at least one measurement': 'Saisis au moins une mesure',
@@ -2264,6 +2267,7 @@ export default {
   'Not downloaded': 'Pas téléchargées',
   'On this device': 'Sur cet appareil',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'Les animations plus nettes ne sont pas encore disponibles sur cet appareil. Les intégrées marchent partout.',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'Les animations plus nettes ne passent que par les magasins d’applications. Cet APK garde celles qu’il contient.',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'Les animations plus nettes se téléchargent une fois par silhouette. En attendant, tu vois les intégrées, donc rien ne reste vide.',
   'Still only': 'Image fixe seulement',
   'Waiting for Wi-Fi': 'En attente du Wi-Fi',
@@ -2308,6 +2312,8 @@ export default {
   'Your backups': 'Tes remplaçants',
   'Swap to {0}': 'Passer à {0}',
   'Planned backup, same sets and reps': 'Remplaçant prévu, mêmes séries et répétitions',
+  'Planned backup, with its own plan': 'Remplaçant prévu, avec son propre plan',
+  'Same plan as this exercise. Tap to give it its own.': 'Même plan que cet exercice. Touchez pour lui donner le sien.',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'Pas de poids à ajouter ici : ça monte en répétitions, puis en séries.',
   // --- #523 skip completed ---
@@ -2543,6 +2549,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} doit être compris entre 0 et 100 %.",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "Ajoutées avant tes séries de travail. Elles comptent dans ton volume (Réglages), mais restent exclues des records et de la progression. Chacune réduit de moitié l’écart avec la charge de travail, sans jamais descendre sous la barre à vide pour un exercice à la barre, et tu peux toujours les modifier pendant la séance.",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "Ajoutées avant tes séries de travail. Elles comptent dans ton volume (Réglages), mais restent exclues des records et de la progression. Sur une machine à assistance, chacune offre plus d’aide que la série de travail, en diminuant progressivement jusqu’à elle, et tu peux toujours les modifier pendant la séance.",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "Pesée supprimée",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---

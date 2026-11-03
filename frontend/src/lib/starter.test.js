@@ -210,3 +210,18 @@ describe('starter programmes (#159)', () => {
     for (const w of programme.weeks) for (const k of Object.keys(w.t || {})) expect(ids.has(k)).toBe(true)
   })
 })
+
+// #964: the catalogue could only say sets × reps, so a plank or a hang had no way in.
+describe('timed exercises in a starter plan (#964)', async () => {
+  const { starterEntry, buildStarterPlan: build } = await import('./starter.js')
+  it('[id, sets, seconds, \'time\'] is a timed entry; three numbers stay reps', () => {
+    expect(starterEntry(['0463', 3, 40, 'time'])).toMatchObject({ id: '0463', sets: 3, sec: 40, mode: 'time', weight: 0 })
+    expect(starterEntry(['0463', 3, 40, 'time']).reps).toBeUndefined()
+    expect(starterEntry(['0025', 4, 8])).toEqual({ id: '0025', sets: 4, reps: 8, weight: 0 })
+  })
+  it('a timed line keeps its seconds when a gym swaps the exercise', async () => {
+    const { fitRoutines } = await import('./starter.js')
+    const [[, , , list]] = fitRoutines([['k', 'K', 'x', [['0463', 3, 40, 'time'], ['0025', 3, 8]]]], ['body weight']).routines
+    expect(list[0]).toEqual(['0463', 3, 40, 'time'])
+  })
+})

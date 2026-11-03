@@ -2,7 +2,7 @@
 import { t } from './i18n-core.js'
 import { MOBILE } from './mobile.js'
 import { appBase } from './app-base.js'
-import { nativeFetch } from './capacitor-fetch.js'
+import { nativeFetch, inAndroidApp } from './capacitor-fetch.js'
 
 export const IS_APPLE = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
 export const IS_ANDROID = /Android/.test(navigator.userAgent)
@@ -93,8 +93,30 @@ async function request(url, init, ms) {
 // auth proxy's login page, a proxy that sends /api/* to the app's index.html. Reading it as {}
 // made a push look accepted by a server "from before revisions" — the change was marked synced
 // and dropped from the queue. It is an error, with the status it came with.
+// Servers the Android WebView could not reach and the app's own network stack could (#870):
+// requests to them go the native way for the rest of the run. The WebView is a browser with rules
+// of its own: newer ones keep a page from reaching addresses on the home network, and a private
+// CA or plain http can be refused there while the app itself, under its network security config,
+// talks to the same server fine. Only a request that never got an answer is retried; an answer of
+// any kind, or an abort, stands.
+const viaNative = new Set()
+export const _viaNativeForTests = viaNative
+async function transport(url, init) {
+  const origin = /^https?:\/\//i.test(url) ? originOf(url) : ''
+  if (origin && viaNative.has(origin)) return nativeFetch(url, init)
+  try {
+    return await fetch(url, init)
+  } catch (e) {
+    if (!origin || e?.name === 'AbortError' || init?.signal?.aborted || !(await inAndroidApp())) throw e
+    let r
+    try { r = await nativeFetch(url, init) } catch { throw e }   // unreachable both ways: the WebView's error explains it
+    viaNative.add(origin)
+    return r
+  }
+}
+
 async function exchange(url, init) {
-  const r = await fetch(url, init)
+  const r = await transport(url, init)
   let data
   let parsed = true
   try { data = await r.json() } catch { parsed = false }

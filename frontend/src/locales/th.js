@@ -881,6 +881,7 @@ export default {
   'Most reps in a set per workout': 'จำนวนครั้งมากที่สุดในหนึ่งเซ็ตต่อการออกกำลังกาย',
   'Warm-up sets': 'เซ็ตวอร์มอัพ',
   'Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.': 'เพิ่มไว้ก่อนเซ็ตหลัก และไม่นับรวมในปริมาณงาน สถิติ หรือการเพิ่มน้ำหนัก แต่ละเซ็ตจะลดช่องว่างไปครึ่งหนึ่งจนถึงน้ำหนักเซ็ตหลัก ท่าบาร์เบลจะไม่เบากว่าบาร์เปล่า และยังปรับเปลี่ยนได้ระหว่างออกกำลังกาย',
+  'Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.': 'เพิ่มก่อนเซ็ตหลัก และไม่นับรวมในปริมาณ สถิติ และการเพิ่มน้ำหนัก ในเครื่องช่วยพยุง แต่ละเซ็ตจะช่วยมากกว่าเซ็ตหลักและค่อย ๆ ลดลงเข้าใกล้เซ็ตหลัก และยังแก้ไขแต่ละเซ็ตได้ระหว่างเล่น',
   'Ramp-up sets added before the work sets, so you do not have to add them by hand each session.': 'เพิ่มเซ็ตไต่ระดับไว้ก่อนเซ็ตหลัก จะได้ไม่ต้องเพิ่มเองทุกครั้ง',
   'Note': 'บันทึก',
   'This session': 'รอบนี้',
@@ -2002,6 +2003,8 @@ export default {
   'Choose measurement': 'เลือกการวัด',
   'Choose the measurements you want to track, then log your first check-in.': 'เลือกสิ่งที่อยากติดตาม แล้วบันทึกเช็กอินครั้งแรก',
   'Keep the logging form focused on the measurements you actually track.': 'ให้ฟอร์มบันทึกมีเฉพาะสิ่งที่คุณติดตามจริง ๆ',
+  'Lengths in': 'หน่วยความยาว',
+  'Removes the field and every reading logged in it. The other measurements stay.': 'ลบช่องนี้และค่าที่บันทึกไว้ทั้งหมด สัดส่วนอื่นยังอยู่',
   'Fill only what you measured today. Empty fields stay empty.': 'กรอกเฉพาะสิ่งที่วัดวันนี้ ช่องว่างจะยังว่างอยู่',
   'Choose at least one measurement first.': 'เลือกอย่างน้อยหนึ่งรายการก่อน',
   'Enter at least one measurement': 'ใส่การวัดอย่างน้อยหนึ่งรายการ',
@@ -2275,6 +2278,7 @@ export default {
   'Not downloaded': 'ยังไม่ได้ดาวน์โหลด',
   'On this device': 'ในอุปกรณ์นี้',
   'Sharper animations aren’t available on this device yet. The built-in ones work everywhere.': 'ภาพเคลื่อนไหวที่คมชัดกว่ายังไม่มีในอุปกรณ์นี้ ภาพในตัวแอปใช้ได้ทุกที่',
+  'Sharper animations come only through the app stores. This APK keeps the ones built into it.': 'แอนิเมชันที่คมชัดกว่ามีให้ผ่านสโตร์แอปเท่านั้น APK นี้ใช้แอนิเมชันที่ติดมาในตัว',
   'Sharper animations download once per figure. Until they’re here you see the built-in ones, so nothing ever goes blank.': 'ภาพเคลื่อนไหวที่คมชัดกว่าจะดาวน์โหลดครั้งเดียวต่อรูปร่าง ระหว่างนั้นคุณจะเห็นภาพในตัวแอป จึงไม่มีช่องว่างเลย',
   'Still only': 'ภาพนิ่งเท่านั้น',
   'Waiting for Wi-Fi': 'รอ Wi-Fi',
@@ -2319,6 +2323,8 @@ export default {
   'Your backups': 'ท่าสำรองของคุณ',
   'Swap to {0}': 'เปลี่ยนเป็น {0}',
   'Planned backup, same sets and reps': 'ท่าสำรองที่วางไว้ เซ็ตและครั้งเท่าเดิม',
+  'Planned backup, with its own plan': 'ท่าสำรองที่วางไว้ พร้อมแผนของตัวเอง',
+  'Same plan as this exercise. Tap to give it its own.': 'แผนเดียวกับท่านี้ แตะเพื่อตั้งแผนของมันเอง',
   // --- #583 bodyweight step ---
   'Nothing to add in weight here: it goes up in reps, then sets.': 'ท่านี้ไม่ต้องเพิ่มน้ำหนัก: เพิ่มจำนวนครั้งก่อน แล้วค่อยเพิ่มเซ็ต',
   // --- #523 skip completed ---
@@ -2554,6 +2560,7 @@ export default {
   "{0} must be between 0 and 100%.": "{0} ต้องอยู่ระหว่าง 0 ถึง 100%",
   // --- warm-ups counted in volume (#719) ---
   "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.": "เพิ่มไว้ก่อนเซ็ตหลัก นับรวมในปริมาณงานของคุณ (การตั้งค่า) แต่ไม่นับในสถิติหรือการเพิ่มน้ำหนัก แต่ละเซ็ตจะลดช่องว่างไปครึ่งหนึ่งจนถึงน้ำหนักเซ็ตหลัก ท่าบาร์เบลจะไม่เบากว่าบาร์เปล่า และยังปรับเปลี่ยนได้ระหว่างออกกำลังกาย",
+  "Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.": "เพิ่มไว้ก่อนเซ็ตหลัก นับรวมในปริมาณงานของคุณ (การตั้งค่า) แต่ไม่นับในสถิติหรือการเพิ่มน้ำหนัก ในเครื่องช่วยพยุง แต่ละเซ็ตจะช่วยมากกว่าเซ็ตหลักและค่อย ๆ ลดลงเข้าใกล้เซ็ตหลัก และยังปรับเปลี่ยนได้ระหว่างออกกำลังกาย",
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "ลบการชั่งน้ำหนักแล้ว",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---
