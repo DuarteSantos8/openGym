@@ -29,8 +29,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         didSet {
             if !isDemo, state != oldValue { save() }
             // The page changed without a swipe (Done moved on, a snapshot): a moment without taps.
-            if state.entryIndex != oldValue.entryIndex { touchLock.lock(at: Date()) }
-            if state.workout?.id != oldValue.workout?.id { watchIdle() }
+            if state.entryIndex != oldValue.entryIndex {
+                touchLock.lock(at: Date())
+                if SessionCore.atEnd(state) { finishWanted = true }
+            }
+            if state.workout?.id != oldValue.workout?.id { fix = nil; watchIdle() }      // a fix belongs to its workout
         }
     }
 
@@ -70,7 +73,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         return bundle.localizedString(forKey: key, value: key, table: nil)
     }
-    var crownStartsOnWeight: Bool { state.settings.crown == "weight" }
 
     /// Apple Health: the workout session, its heart rate, and the switch (WorkoutManager).
     let health = WorkoutManager()
@@ -80,7 +82,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var clipLog: [String] = []
     @Published var weight: Double = 0 { didSet { if weight != oldValue { ackRestOver() } } }
     @Published var reps: Double = 0 { didSet { if reps != oldValue { ackRestOver() } } }
-    /// A hold's seconds, for the set up next (the crown turns it).
+    /// A hold's seconds, for the set up next.
     @Published var seconds: Double = 0 { didSet { if seconds != oldValue { ackRestOver() } } }
     /// The effort rated for the set up next (RPE or RIR, the profile's scale), nil until rated.
     /// It belongs to that one set: another set coming up starts empty again (loadTargets).
@@ -88,6 +90,17 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var effortFor: String?
     /// The scale the phone's profile logs, when it logs one ("rpe" / "rir"): the set page offers it.
     var effortKind: String? { Effort.notches(state.settings.effort) != nil ? state.settings.effort : nil }
+    /// The box the Crown turns (tapped to arm), the direction of the last step (for the number's slide),
+    /// and the Crown's own count. Edits go straight into weight, reps and seconds; only Done sends them.
+    @Published private(set) var arm = CrownArm()
+    @Published private(set) var rising = true
+    private var gate = CrownGate()          // not published: a tick does not redraw the app
+    private var draft = SetDraft()
+    var crownTotal: Double { gate.last }
+    var crownAllowed: Bool { touchLock.allowsCrown(at: Date()) }
+    var armedField: ValueField? { arm.armed(at: Date(), key: editKey) }
+    /// A logged set on the set page to fix it (WatchCore's SetFix): the Crown, the keypad and the effort edit it, not the set up next.
+    @Published private(set) var fix: SetFix?
     /// A hold running: when it ends, and when it started.
     @Published private(set) var holdEndsAt: Date?
     @Published private(set) var holdStartedAt: Date?
@@ -113,7 +126,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var lastTick: Date?
     /// Taps ignored for a second after the watch turns the page by itself (WatchCore's TouchLock).
     private var touchLock = TouchLock()
-    private var touchAllowed: Bool { touchLock.allows(at: Date()) }
+    var touchAllowed: Bool { touchLock.allows(at: Date()) }
     /// When this watch first had the running workout (its start, for a phone that sends none).
     private var workoutSeenAt: Date?
     /// The rest running after a set, for that rest's heart rate once it is over.
@@ -253,18 +266,39 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func pick(set si: Int, in ei: Int) {
+        disarm()
         ackRestOver()
         picked[ei] = si
         if ei == entryIndex { loadTargets() }
     }
 
-    /// Paging to another exercise (a vertical swipe).
+    /// Paging to another exercise (a vertical swipe). A set being fixed is let go, unsaved.
     func show(entry ei: Int) {
+        guard ei != fix?.entry else { return }      // the page a fix brought up, not a swipe
+        fix = nil
         guard ei != state.entryIndex else { return }
         ackRestOver()
         state.entryIndex = ei
         touchLock.unlock()          // swiped by hand: the page is the lifter's own choice
         loadTargets()
+    }
+
+    /// The workout is at its end (last set done, or "All done?"): the Overview comes up with Finish in view. The Overview clears it.
+    @Published var finishWanted = false
+
+    func showFinish() {
+        let end = workout?.entries.count ?? 0
+        if state.entryIndex != end { state.entryIndex = end }          // didSet raises finishWanted and locks
+        else { finishWanted = true; touchLock.lock(at: Date()) }
+    }
+
+    /// A row of the Overview: that exercise's set page comes up under the thumb that picked it, so its taps wait a second.
+    /// False when the tap lock refused it.
+    @discardableResult func choose(entry ei: Int) -> Bool {
+        guard touchAllowed else { return false }
+        show(entry: ei)                    // unlocks (a swipe by hand) ...
+        touchLock.lock(at: Date())         // ... so lock again: this arrival was a tap, not a swipe
+        return true
     }
 
     /// What the complications and the Smart Stack widget show (WidgetState), in the app's language.
@@ -380,33 +414,150 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
-    /// The set up next, as the effort remembers it (exercise, set, side).
-    private var setKey: String? {
+    /// The set up next, as the effort and the draft remember it (exercise, set, side).
+    var setKey: String? {
         guard let e = entry, let si = setIndex else { return nil }
         return SessionCore.key(e.id, si, e.sets[si].sideUp)
     }
 
-    /// The effort for the set up next, from its editor; nil clears it.
+    /// The set the boxes edit: the one being fixed, else the set up next.
+    var editKey: String? { fix?.key ?? setKey }
+    var editEntry: Entry? { fix.flatMap { f in workout?.entries.indices.contains(f.entry) == true ? workout?.entries[f.entry] : nil } ?? entry }
+    var editEffort: Double? { fix == nil ? effort : fix?.effort }
+
+    /// The effort for the set up next (or the one being fixed), from its editor; nil clears it.
     func rate(_ v: Double?) {
+        if fix != nil { fix?.effort = v; return }
         ackRestOver()
         effort = v
         effortFor = v == nil ? nil : setKey
     }
 
-    /// The weight and reps the crown starts from: the set's own target.
+    /// The weight and reps the crown starts from: the set's own target, except the numbers the
+    /// lifter already changed on this set (a snapshot must not take them back).
     func loadTargets() {
         // A rating stays with its set through snapshots; another set starts unrated.
         if effortFor != setKey { effort = nil; effortFor = nil }
+        draft.follow(setKey)
         guard let e = entry else { return }
         let s = setIndex.map { e.sets[$0] } ?? e.sets.last
+        var w = s?.w ?? 0, r = s?.r ?? 0
         if let row = s, let side = row.sideUp, let one = row.sides?[side] {
-            weight = one.w ?? row.w ?? 0
-            reps = one.r ?? 0
-        } else {
-            weight = s?.w ?? 0
-            reps = s?.r ?? 0
+            w = one.w ?? row.w ?? 0
+            r = one.r ?? 0
         }
-        seconds = s?.sec ?? 30
+        if !draft.keeps(.weight) { weight = w }
+        if !draft.keeps(.reps) { reps = r }
+        if !draft.keeps(.seconds) { seconds = s?.sec ?? 30 }
+    }
+
+    /* ---------- editing the numbers: the Crown, the keypad, VoiceOver ---------- */
+
+    func spec(_ f: ValueField) -> ValueSpec? { editEntry.map { .of(f, step: $0.step, unit: $0.weightUnit(unit)) } }
+
+    func current(_ f: ValueField) -> Double {
+        if let fix { return fix.value(f) }
+        switch f { case .weight: return weight; case .reps: return reps; case .seconds: return seconds }
+    }
+
+    private func write(_ f: ValueField, _ v: Double) {
+        if fix != nil { fix?.set(f, v); return }
+        _ = draft.touch(f, key: setKey)
+        switch f { case .weight: weight = v; case .reps: reps = v; case .seconds: seconds = v }
+    }
+
+    /// A tap on a box arms it; a tap on the armed one asks for the keypad (true). A tap in the lock window does nothing.
+    func tapBox(_ f: ValueField) -> Bool {
+        guard touchAllowed, let k = editKey else { return false }
+        ackRestOver()
+        return arm.tap(f, key: k, at: Date()) == .keypad
+    }
+
+    /// The Crown's count changed: whole steps on the armed box; unarmed (or just after the page turned) swallowed.
+    func turn(to total: Double) {
+        let f = armedField
+        let n = gate.steps(to: total, at: Date(), allowed: crownAllowed && f != nil)
+        guard n != 0, let f, let s = spec(f) else { return }
+        rising = n > 0
+        arm.touch(at: Date())
+        write(f, s.turned(current(f), by: n))
+    }
+
+    /// VoiceOver's adjust: one step, then the box is let go.
+    func nudge(_ f: ValueField, by n: Int) {
+        guard let s = spec(f) else { return }
+        rising = n > 0
+        write(f, s.turned(current(f), by: n))
+        arm.disarm()
+    }
+
+    /// The keypad's ✓: the typed value as typed, only if the set is still the one it was opened on.
+    func setValue(_ f: ValueField, _ v: Double, key: String?) {
+        guard key == editKey else { return }
+        write(f, v)
+        arm.disarm()
+    }
+
+    func disarm() { if arm.field != nil { arm.disarm() } }
+
+    /// The idle timer ran out: let go, unless a tap or turn came since.
+    func disarmIfIdle() { if arm.field != nil, armedField == nil { arm.disarm() } }
+
+    /* ---------- the arrows: fixing a logged set, a set ahead ---------- */
+
+    private var resting: Bool { restEndsAt.map { $0 > Date() } ?? false }
+
+    /// The set on exercise `ei`'s page: the one being fixed there, else the one up, else the set count ("All sets done").
+    func shownSet(in ei: Int) -> Int {
+        if let f = fix, f.entry == ei { return f.set }
+        return setIndex(in: ei) ?? workout.map { $0.entries.indices.contains(ei) ? $0.entries[ei].sets.count : 0 } ?? 0
+    }
+
+    private func arrow(_ ei: Int, by d: Int) -> SetNav.Move? {
+        guard let w = workout, w.entries.indices.contains(ei) else { return nil }
+        return SetNav.move(w.entries[ei], from: shownSet(in: ei), by: d, fixing: fix?.entry == ei, live: ei == entryIndex && !resting)
+    }
+
+    func canMove(_ ei: Int, by d: Int) -> Bool { arrow(ei, by: d) != nil }
+
+    /// ‹ or › on a set page. Sends nothing and leaves a rest running as it is; what was changed and not saved is dropped.
+    func move(_ ei: Int, by d: Int) {
+        guard touchAllowed, let m = arrow(ei, by: d) else { return }
+        disarm()
+        switch m {
+        case .fix(let si): fix = SetFix.open(state, entry: ei, set: si)
+        case .pick(let si): fix = nil; pick(set: si, in: ei)
+        case .home: fix = nil
+        }
+    }
+
+    /// The rest's ‹: the set just logged, on its own page, with the rest running on.
+    var canFixLast: Bool { SetNav.last(state) != nil }
+
+    func fixLast() {
+        guard touchAllowed, let l = SetNav.last(state) else { return }
+        disarm()
+        fix = SetFix.open(state, entry: l.entry, set: l.set)
+    }
+
+    /// The other side of a per-side set; what was changed on this one is kept until Save or a move away.
+    func fixSide(_ side: String) { disarm(); fix?.side = side }
+
+    /// Changed on the phone (or gone) since it opened: Save is off.
+    var fixStale: Bool { fix.map { !$0.still(state) } ?? false }
+
+    /// Save: the set's setDone again, later (SetFix.save). The set stays on screen, as saved; no rest starts or stops.
+    func saveFix() {
+        guard let f = fix else { return }
+        let (next, events) = f.save(state, at: Date().timeIntervalSince1970 * 1000, id: { UUID().uuidString }, effort: effortKind)
+        guard !events.isEmpty else { return }
+        for e in events { send(event: e) }       // sent first, saved second, as completeSet
+        state = next
+        Haptics.done()
+        noteActivity()
+        disarm()
+        fix = SetFix.open(state, entry: f.entry, set: f.set)
+        fix?.side = f.side
     }
 
     /* ---------- what the lifter does here ---------- */
@@ -456,6 +607,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if rest && restFor > 0 && to < (workout?.entries.count ?? 0) {
             startRest(until: now.addingTimeInterval(restFor), notify: true)
             restAfter = (e.id, ei, si, w.id ?? "", now)
+            touchLock.lock(at: now)         // the rest comes up under the thumb that hit Done
             rested = true
         }
         if to != ei { state.entryIndex = to }
@@ -512,7 +664,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The rest is over (or a hold ended with none after it): with the phone's "Timed holds start
     /// by themselves" on and a timed set up next, a 3-2-1 with a tap each second, then the hold.
     func autoHoldIfDue() {
-        guard state.settings.autoHolds == true, workout != nil, entry?.isTimed == true, setIndex != nil,
+        // Not while a logged set is being fixed (the rest's ‹): no count-in takes that page away.
+        guard state.settings.autoHolds == true, workout != nil, fix == nil, entry?.isTimed == true, setIndex != nil,
               holdEndsAt == nil, restEndsAt == nil, holdCountFrom == nil, seconds > 0 else { return }
         let from = Date()
         holdCountFrom = from
@@ -592,6 +745,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func closeSummary() {
         summary = nil
+        touchLock.lock(at: Date())  // the thumb that hit Done is still over the screen's Start
     }
 
     /* ---------- workouts deleted in openGym, out of Apple Health ---------- */
@@ -629,6 +783,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var weighInFor: ReadySession?
     /// The body weight on the weigh-in's crown.
     @Published var bodyWeight: Double = 70
+
+    /// A thumb on a Start button: ignored just after the screen turned by itself (the complication's Start is not).
+    func startFromTouch(_ session: ReadySession) {
+        if touchAllowed { start(session) }
+    }
 
     /// Starts a ready session here, the phone asleep or not: first the weigh-in, as on the phone,
     /// unless it is switched off there (Settings → During a workout).
@@ -827,6 +986,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         dropClips()
         send(event: ev)
         state = next
+        draft.follow(nil)        // the next workout starts from its plan, not from an edit of this one
         Haptics.finished()
     }
 
@@ -843,6 +1003,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         send(event: ev)
         state = next
         summary = nil
+        draft.follow(nil)
         Haptics.discarded()
     }
 
@@ -1061,25 +1222,69 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// CI: as in Always On (wrist down), for what it costs to keep the screen up to date.
     static var demoAOD: Bool { ProcessInfo.processInfo.arguments.contains("-OpenGymWatchAOD") }
 
+    /// CI: the screens that open the keypad on a box, with what is typed.
+    static var demoKeypad: (field: ValueField, text: String)? {
+        switch demoScreen {
+        case "keypad-weight": return (.weight, "")
+        case "keypad-typed": return (.weight, "62.5")
+        case "keypad-over": return (.weight, "800")
+        case "keypad-reps": return (.reps, "")
+        case "keypad-hold": return (.seconds, "")
+        case "keypad-lb": return (.weight, "1500.25")
+        case "fix-keypad": return (.reps, "7")
+        default: return nil
+        }
+    }
+
+    /// CI: the screens that open on the Overview.
+    static var demoOpensOverview: Bool { ["overview", "finish", "finish-hold", "finish-hold-full", "discard"].contains(demoScreen ?? "") }
+
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: screen == "idle" ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
+        switch screen {
+        case "empty", "empty-heard": break
+        case "idle", "idle-end": apply(json: SessionStore.demoReadyJSON)
+        case "idle-rest": apply(json: SessionStore.demoReadyRestJSON)
+        default: apply(json: SessionStore.demoJSON)
+        }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps": self.picked[0] = 2
-            case "hold": self.state.entryIndex = 1
+            case "set", "weight", "rest", "offline", "armed-weight", "armed-reps", "keypad-weight", "keypad-reps",
+                 "keypad-typed", "keypad-over", "finish-auto": self.picked[0] = 2
+            case "keypad-lb":
+                self.picked[0] = 2
+                self.state.workout?.entries[0].unit = "lb"
+            case "hold", "hold-set", "armed-hold", "keypad-hold": self.state.entryIndex = 1
+            case "fix", "fix-armed", "fix-changed", "fix-keypad", "fix-effort", "fix-stale", "rest-fix": self.picked[0] = 2
+            case "future": self.picked[0] = 3
+            case "fix-hold":
+                self.state.entryIndex = 1
+                self.state.workout?.entries[1].sets[0].done = true
+                self.state.workout?.entries[1].sets[0].at = 1
+            case "fix-side":
+                self.state.entryIndex = 3
+                self.state.workout?.entries[3].sets[0].sides?.R.done = true
+                self.state.workout?.entries[3].sets[0].done = true
+                self.state.workout?.entries[3].sets[0].at = 1
+            case "all-done": for si in self.state.workout?.entries[0].sets.indices ?? 0..<0 { self.state.workout?.entries[0].sets[si].done = true }
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
-            case "finish": self.state.entryIndex = self.workout?.entries.count ?? 0
+            case "overview", "finish", "finish-hold", "finish-hold-full", "discard":
+                // The Pull-up done, so the Overview shows all three states.
+                for si in 0..<2 { self.state.workout?.entries[2].sets[si].done = true }
+                if screen != "overview" { self.state.entryIndex = self.workout?.entries.count ?? 0 }
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
+            case "empty-heard": self.heardFromPhone = true
             default: break
             }
             // CI: the watch in another language than its own (the app's, as the phone sends it).
             if let lang = SessionStore.argument("-OpenGymWatchLang") { self.state.settings.lang = lang }
+            // CI: the profile rates effort ("rpe" or "rir"), so the disc beside Done shows.
+            if let effort = SessionStore.argument("-OpenGymWatchEffort") { self.state.settings.effort = effort }
             if let show = SessionStore.argument("-OpenGymWatchShow") {
                 // "all": every optional thing on, for a look at the fullest screen.
                 if show == "all" { self.state.settings.show = WatchShow(clip: true, hr: true, last: true, elapsed: true, kcal: true, next: true, rest: "ring") }
@@ -1087,25 +1292,77 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            // CI: a box armed (it never times out, the shot is taken seconds later).
+            if screen.hasPrefix("armed-"), let k = self.setKey {
+                self.arm = CrownArm(idle: .infinity)
+                _ = self.arm.tap(screen == "armed-weight" ? .weight : screen == "armed-reps" ? .reps : .seconds, key: k, at: Date())
+            }
+            // CI: a logged set on the set page to fix it (Bench Press set 1, the Plank's first hold, the split squat's first set).
+            if screen.hasPrefix("fix") {
+                if screen == "fix-effort" { self.state.settings.effort = "rpe"; self.state.rated = ["0025#1": 8] }
+                self.fix = SetFix.open(self.state, entry: self.state.entryIndex, set: screen == "fix-hold" || screen == "fix-side" ? 0 : 1)
+                if screen == "fix-hold" { self.fix?.set(.seconds, 50) }
+                if screen == "fix-changed" { self.fix?.set(.reps, 7) }
+                if screen == "fix-side" { self.fix?.side = "R"; self.fix?.set(.reps, 7) }
+                if screen == "fix-armed", let k = self.fix?.key {
+                    self.arm = CrownArm(idle: .infinity)
+                    _ = self.arm.tap(.reps, key: k, at: Date())
+                }
+                if screen == "fix-stale" { self.state.workout?.entries[0].sets[1].at = 2 }
+            }
+            if screen == "rest" || screen == "rest-fix" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen == "rest-fix" { self.fixLast() }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3 }
+            if screen == "finish-auto" { DispatchQueue.main.asyncAfter(deadline: .now() + 2) { self.showFinish() } }
             if screen == "summary" || screen == "summary-end" || screen == "ended" {
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,
                                               endedOnPhone: screen == "ended")
             }
+            // The widest band: 1:02:34 on the clock and a heart rate and calories (CI shows no sensor).
+            self.workoutSeenAt = Date(timeIntervalSinceNow: -3754)
+            self.health.demoReadings(hr: 142, kcal: 187)
             if let path = SessionStore.demoClip, let frames = SessionStore.frames(of: URL(fileURLWithPath: path)) {
                 self.clips["0025"] = frames
+                self.clips["split"] = frames        // a two-line name with the animation before it
                 self.log("demo clip: \(frames.images.count) frames")
             }
         }
     }
 
+    // The start screen's routines; the rest-day demo reuses two of them.
+    private static let demoPull = """
+    {"routineIds":["r2"],"name":"Pull day","entries":[
+        {"id":"0027","name":"Barbell Row","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0651","name":"Lat Pulldown","mode":"reps","sets":[{"w":50,"r":10,"done":false,"warmup":false},{"w":50,"r":10,"done":false,"warmup":false},{"w":50,"r":10,"done":false,"warmup":false}]},
+        {"id":"0861","name":"Face Pull","mode":"reps","sets":[{"w":20,"r":15,"done":false,"warmup":false},{"w":20,"r":15,"done":false,"warmup":false},{"w":20,"r":15,"done":false,"warmup":false}]},
+        {"id":"0294","name":"Biceps Curl","mode":"reps","sets":[{"w":12,"r":10,"done":false,"warmup":false},{"w":12,"r":10,"done":false,"warmup":false},{"w":12,"r":10,"done":false,"warmup":false}]}]}
+    """
+
+    private static let demoBench = """
+    {"routineIds":["r4"],"name":"Bench only","entries":[
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false}]}]}
+    """
+
     static let demoReadyJSON = """
     {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"today":{"routineIds":["r1"],"name":"Push day","entries":[
-    {"id":"0025","name":"Bench Press","mode":"reps","restSec":120,"last":null,"sets":[{"w":62.5,"r":8,"sec":null,"done":false,"warmup":false}]}]},
-    "others":[{"routineIds":["r2"],"name":"Pull day","entries":[]},{"routineIds":["r3"],"name":"Legs","entries":[]}]}}
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":40,"r":10,"done":false,"warmup":true},{"w":62.5,"r":8,"done":false,"warmup":false},{"w":62.5,"r":8,"done":false,"warmup":false},{"w":62.5,"r":8,"done":false,"warmup":false}]},
+        {"id":"0426","name":"Overhead Press","mode":"reps","sets":[{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false}]},
+        {"id":"0314","name":"Incline Dumbbell Press","mode":"reps","sets":[{"w":22,"r":10,"done":false,"warmup":false},{"w":22,"r":10,"done":false,"warmup":false},{"w":22,"r":10,"done":false,"warmup":false}]},
+        {"id":"0599","name":"Lateral Raise","mode":"reps","sets":[{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false}]},
+        {"id":"0241","name":"Triceps Pushdown","mode":"reps","sets":[{"w":25,"r":12,"done":false,"warmup":false},{"w":25,"r":12,"done":false,"warmup":false},{"w":25,"r":12,"done":false,"warmup":false}]}]},
+    "others":[\(demoPull),
+    {"routineIds":["r3"],"name":"Upper body hypertrophy block B","entries":[
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0027","name":"Barbell Row","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0426","name":"Overhead Press","mode":"reps","sets":[{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false}]}]},
+    \(demoBench)]}}
+    """
+
+    static let demoReadyRestJSON = """
+    {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"others":[\(demoPull),
+    \(demoBench)]}}
     """
 
     static let demoJSON = """

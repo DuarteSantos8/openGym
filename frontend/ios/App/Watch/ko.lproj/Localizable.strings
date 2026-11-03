@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, ko. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "오늘";
+"Routines" = "루틴";
 "Start workout" = "운동 시작";
+"Start" = "시작";
 "Done" = "완료";
 "Warm-up" = "워밍업";
 "Reps" = "횟수";
@@ -11,6 +13,8 @@
 "Finish workout?" = "운동을 마칠까요?";
 "Finish and save" = "마치고 저장";
 "Discard workout" = "운동 버리기";
+"Discard workout?" = "운동을 버릴까요?";
+"The sets you logged in this session will be lost." = "이 세션에서 기록한 세트가 사라집니다.";
 "Continue workout" = "운동 계속하기";
 "Cancel" = "취소";
 "Rest’s over. Next set!" = "휴식 끝. 다음 세트!";
@@ -32,7 +36,13 @@
 "More" = "많음";
 "Effort" = "강도";
 "None" = "없음";
+"Delete" = "삭제";
+"Planned" = "예정됨";
+"Save" = "저장";
+"Previous set" = "이전 세트";
+"Next set" = "다음 세트";
 "Last time: %@" = "지난번: %@";
+"Exercises" = "운동";
 "No workout running" = "진행 중인 운동이 없어요";
 "Not synced yet" = "아직 동기화되지 않았어요";
 "Open openGym on your iPhone once and your routines show up here." = "iPhone에서 openGym을 한 번 열면 루틴이 여기에 나타나요.";
@@ -48,18 +58,21 @@
 "Start hold" = "시작";
 "Workout saved" = "운동 저장됨";
 "Ended on your iPhone" = "iPhone에서 끝났어요";
-"Tap a dot to do a skipped set." = "건너뛴 세트를 하려면 점을 탭하세요.";
+"Go back to do a skipped set." = "건너뛴 세트를 하려면 뒤로 가세요.";
 "Log this one on your iPhone." = "이건 iPhone에서 기록하세요.";
 "Saved on the watch, syncs later" = "워치에 저장됨, 나중에 동기화돼요";
 "All done?" = "다 끝났나요?";
 "Lock" = "잠금";
 "Skip this set?" = "이 세트를 건너뛸까요?";
 "Turn the Digital Crown to change it." = "바꾸려면 Digital Crown을 돌리세요.";
-"%lld done" = "%lld개 완료";
 "%lld avg · %lld max" = "평균 %lld · 최대 %lld";
 "Set %lld of %lld" = "%lld/%lld세트";
 "%lld of %lld sets" = "%lld/%lld세트";
 "Tap to change it." = "탭해서 바꾸세요.";
+"Type a number" = "숫자 입력";
+"Tap again to type a number." = "다시 탭해서 숫자를 입력하세요.";
 "Added weight" = "추가 무게";
 "Your rest, your next set, or today's workout." = "휴식, 다음 세트, 또는 오늘의 운동.";
 "Opens openGym." = "openGym을 열어요.";
+"Changed on your iPhone" = "iPhone에서 바뀌었어요";
+"Hold to finish" = "길게 눌러 마치기";
