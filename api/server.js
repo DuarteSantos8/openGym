@@ -248,6 +248,28 @@ function forClient(S) {
 // there is the honest reading of such a file — what was dropped carried nothing to show.
 const record = x => !!x && typeof x === 'object' && !Array.isArray(x);
 const records = v => (Array.isArray(v) ? v.filter(record) : []);
+// A workout's key in the removal records: its id, or day|start for one an older app saved without
+// (the same rule as sync-stamps.js).
+const workoutKey = w => (w?.id != null ? w.id : `${w?.d}|${w?.start}`);
+const ARCHIVE_MAX = 5000;
+// The ids an admin route was asked about: 1 to 200 strings, de-duplicated; null when it is not that.
+const workoutIdsOf = v => {
+  if (!Array.isArray(v) || !v.length || v.length > 200 || !v.every(x => typeof x === 'string' && x && x.length <= 80)) return null;
+  return [...new Set(v)];
+};
+// `S` without the workouts named, each recorded in `deleted.workouts` at `now`. Pure: returns a copy.
+function removeWorkouts(S, ids, now) {
+  const gone = new Set(ids);
+  const all = Array.isArray(S.workouts) ? S.workouts : [];
+  const keep = all.filter(w => !(record(w) && gone.has(String(workoutKey(w)))));
+  const removed = all.length - keep.length;
+  if (!removed) return { state: S, removed: 0 };
+  const del = S.deleted && typeof S.deleted === 'object' && !Array.isArray(S.deleted) ? { ...S.deleted } : {};
+  const mark = { ...(del.workouts && typeof del.workouts === 'object' ? del.workouts : {}) };
+  for (const w of all) if (record(w) && gone.has(String(workoutKey(w)))) mark[workoutKey(w)] = now;
+  del.workouts = mark;
+  return { state: { ...S, workouts: keep, deleted: del }, removed };
+}
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
 const vapidFile = path.join(DATA, 'vapid.json');
@@ -2828,11 +2850,13 @@ const routes = {
       unit: S.unit || 'kg',
       lastSync: lastSyncOf(u, S),
       routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length })),
+      // Weekdays the plan puts a routine on: what "sessions a week" is measured against.
+      plannedDays: record(S.week) ? [0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week[d] || []).length).length : 0,
       bodyweight: records(S.bodyweight),
       measurements: records(S.measurements),   // body check-ins, bioimpedance body fat included
       // records() already copied, so this reverse is ours: newest first for display. A workout's
       // photos and videos are the owner's own: the admin view gets no refs to them.
-      workouts: records(S.workouts).reverse().map(({ media, ...w }) => w)
+      workouts: records(S.workouts).reverse().map(({ media, ...w }) => (u.archived?.[workoutKey(w)] ? { ...w, archived: true } : w))
     });
   },
 
@@ -2891,6 +2915,60 @@ const routes = {
     saveDb();
     audit(req, 'admin.user.teacher', { user: owner, target: u, msg: t ? t.name : null });
     json(res, 200, { ok: true, teacher: u.teacher });
+  },
+
+  // Take workouts out of a profile for good: a teacher for a student, the owner for anyone. Written
+  // the way a device would write it (the entry gone, a removal on record with the time, the
+  // revision moved), so the person's phone reads the new document and the removal wins the next
+  // merge instead of the workout coming back. A teacher cannot do this to an admin's profile, the
+  // owner-as-a-student included: archiving (below) is the way there, and it touches nothing.
+  'POST /api/admin/user/workouts/delete': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
+    if (isAdmin(u) && u.id !== admin.id && !isOwner(admin)) { audit(req, 'admin.denied', { ok: false, user: admin, target: u, msg: 'workouts' }); return json(res, 403, { error: 'only the owner can delete an admin\'s workouts' }); }
+    const ids = workoutIdsOf(body.workouts);
+    if (!ids) return json(res, 400, { error: 'workouts must be 1 to 200 ids' });
+    const cur = readStateStrict(u.id);
+    if (cur === UNREADABLE) return json(res, 503, { error: 'state unreadable' });
+    const now = Date.now();
+    const next = removeWorkouts(cur || {}, ids, now);
+    if (!next.removed) return json(res, 200, { ok: true, removed: 0 });
+    next.state._rev = (cur?._rev || 0) + 1;
+    next.state._wids = [...(Array.isArray(cur?._wids) ? cur._wids : []), ...(cur?._wid ? [cur._wid] : [])].filter(x => typeof x === 'string').slice(-WID_KEEP);
+    next.state._wid = crypto.randomBytes(8).toString('hex');
+    atomicWrite(stateFile(u.id), JSON.stringify(next.state));
+    stateCache.delete(u.id);
+    if (MEDIA_ON) { try { MEDIA.noteState(u.id, next.state); } catch (e) { console.error('media noteState', e); } }
+    if (u.archived) { for (const k of ids) delete u.archived[k]; saveDb(); }
+    audit(req, 'admin.user.workouts.delete', { user: admin, target: u, msg: String(next.removed) });
+    json(res, 200, { ok: true, removed: next.removed });
+  },
+
+  // Archive: the teacher's own way to put a workout aside without touching the student's record.
+  // It stays in the history, comes back with `archived: false`, and the Admin view leaves it out
+  // of the performance numbers while it is archived.
+  'POST /api/admin/user/workouts/archive': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
+    if (typeof body.archived !== 'boolean') return json(res, 400, { error: 'archived must be true or false' });
+    const ids = workoutIdsOf(body.workouts);
+    if (!ids) return json(res, 400, { error: 'workouts must be 1 to 200 ids' });
+    const have = new Set(records((readState(u.id) || {}).workouts).map(workoutKey));
+    const known = ids.filter(k => have.has(k));
+    const map = u.archived && typeof u.archived === 'object' ? u.archived : {};
+    const now = Date.now();
+    for (const k of known) { if (body.archived) map[k] = now; else delete map[k]; }
+    // Bounded like every other list in db.json: the oldest archive marks fall off first.
+    const keys = Object.keys(map);
+    if (keys.length > ARCHIVE_MAX) for (const k of keys.sort((a, b) => map[a] - map[b]).slice(0, keys.length - ARCHIVE_MAX)) delete map[k];
+    if (Object.keys(map).length) u.archived = map; else delete u.archived;
+    saveDb();
+    audit(req, body.archived ? 'admin.user.workouts.archive' : 'admin.user.workouts.restore', { user: admin, target: u, msg: String(known.length) });
+    json(res, 200, { ok: true, changed: known.length });
   },
 
   'POST /api/admin/user/disable': async (req, res) => {

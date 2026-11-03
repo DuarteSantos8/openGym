@@ -1,0 +1,5199 @@
+{
+  "overrides": 2358,
+  "inherited": 1298,
+  "fingerprint": "1411e38b117391a3fa231b06def31df1dacbaff59e37264e9d2f5658ae6d9ca7",
+  "entries": [
+    [
+      "%1RM for {0}",
+      "%1RM para {0}"
+    ],
+    [
+      "%1RM per lift",
+      "%1RM por exercício"
+    ],
+    [
+      "+ Burst",
+      "+ Rajada"
+    ],
+    [
+      "+ Drop",
+      "+ Queda"
+    ],
+    [
+      "0.25",
+      "0,25"
+    ],
+    [
+      "0.5",
+      "0,5"
+    ],
+    [
+      "1 day a week",
+      "1 dia por semana"
+    ],
+    [
+      "1RM formula",
+      "Fórmula de 1RM"
+    ],
+    [
+      "20 squats while the kettle boils.",
+      "20 agachamentos enquanto a chaleira ferve."
+    ],
+    [
+      "3 months",
+      "3 meses"
+    ],
+    [
+      "4 weeks",
+      "4 semanas"
+    ],
+    [
+      "5×5",
+      "5×5"
+    ],
+    [
+      "7 days",
+      "7 dias"
+    ],
+    [
+      "A blend of seven formulas: calculated from one set, not a tested max.",
+      "Uma mistura de sete fórmulas: calculada a partir de uma série, não é um máximo testado."
+    ],
+    [
+      "A breather after one side, before the other. The full rest comes once both sides are done.",
+      "Uma pausa curta depois de um lado, antes do outro. O descanso completo vem quando os dois lados estiverem feitos."
+    ],
+    [
+      "A custom measurement with that name already exists.",
+      "Já existe uma medida personalizada com esse nome."
+    ],
+    [
+      "A day off before the next one",
+      "Um dia de folga antes do próximo"
+    ],
+    [
+      "A deload routine opens at the numbers set here, so the progression above does not apply to it.",
+      "Uma rotina de deload começa com os valores definidos aqui, por isso a progressão acima não se aplica a ela."
+    ],
+    [
+      "A fresh plan from your answers; your workouts stay",
+      "Um plano novo a partir das tuas respostas; os teus treinos ficam"
+    ],
+    [
+      "A local model can take longer.",
+      "Um modelo local pode demorar mais."
+    ],
+    [
+      "A number of ramp sets",
+      "Um número de séries de subida"
+    ],
+    [
+      "A photo or video",
+      "Uma foto ou vídeo"
+    ],
+    [
+      "A pull for every press, so the shoulders stay balanced.",
+      "Uma puxada para cada empurrão, para os ombros ficarem equilibrados."
+    ],
+    [
+      "A set left at 0 rest uses the exercise’s rest.",
+      "Uma série com descanso 0 usa o descanso do exercício."
+    ],
+    [
+      "A set left at 0 weight starts from that set’s weight last time.",
+      "Uma série com peso 0 começa com o peso dessa série da última vez."
+    ],
+    [
+      "AI & API",
+      "IA e API"
+    ],
+    [
+      "API key",
+      "Chave de API"
+    ],
+    [
+      "About & updates",
+      "Sobre e atualizações"
+    ],
+    [
+      "Abs",
+      "Abdominais"
+    ],
+    [
+      "Accent color",
+      "Cor de destaque"
+    ],
+    [
+      "Account",
+      "Conta"
+    ],
+    [
+      "Account ID",
+      "ID da conta"
+    ],
+    [
+      "Account ID copied",
+      "ID da conta copiado"
+    ],
+    [
+      "Account name",
+      "Nome da conta"
+    ],
+    [
+      "Account, devices and sync",
+      "Conta, dispositivos e sincronização"
+    ],
+    [
+      "Active days",
+      "Dias ativos"
+    ],
+    [
+      "Activity",
+      "Atividade"
+    ],
+    [
+      "Activity (last 12 months)",
+      "Atividade (últimos 12 meses)"
+    ],
+    [
+      "Add a backup",
+      "Adicionar um substituto"
+    ],
+    [
+      "Add a card",
+      "Adicionar um cartão"
+    ],
+    [
+      "Add a warm-up",
+      "Adicionar um aquecimento"
+    ],
+    [
+      "Add a webhook",
+      "Adicionar um webhook"
+    ],
+    [
+      "Add another name",
+      "Adicionar outro nome"
+    ],
+    [
+      "Add as second workout",
+      "Adicionar como segundo treino"
+    ],
+    [
+      "Add exercise",
+      "Adicionar exercício"
+    ],
+    [
+      "Add exercises",
+      "Adicionar exercícios"
+    ],
+    [
+      "Add note",
+      "Adicionar nota"
+    ],
+    [
+      "Add photo or video",
+      "Adicionar foto ou vídeo"
+    ],
+    [
+      "Add photos",
+      "Adicionar fotos"
+    ],
+    [
+      "Add session note",
+      "Adicionar nota da sessão"
+    ],
+    [
+      "Add set",
+      "Adicionar série"
+    ],
+    [
+      "Add them",
+      "Adicionar"
+    ],
+    [
+      "Add time",
+      "Aumentar o tempo"
+    ],
+    [
+      "Add to favourites",
+      "Adicionar aos favoritos"
+    ],
+    [
+      "Add to routine",
+      "Adicionar à rotina"
+    ],
+    [
+      "Add warm-up set",
+      "Adicionar série de aquecimento"
+    ],
+    [
+      "Add webhook",
+      "Adicionar webhook"
+    ],
+    [
+      "Add {0}",
+      "Adicionar {0}"
+    ],
+    [
+      "Add {0} photo",
+      "Adicionar {0} foto"
+    ],
+    [
+      "Add {0} photos",
+      "Adicionar {0} fotos"
+    ],
+    [
+      "Added",
+      "Adicionado"
+    ],
+    [
+      "Added ({0})",
+      "Extra ({0})"
+    ],
+    [
+      "Added to favourites",
+      "Adicionado aos favoritos"
+    ],
+    [
+      "Added with {0} new routine.",
+      "Adicionado com {0} rotina nova."
+    ],
+    [
+      "Added with {0} new routines.",
+      "Adicionado com {0} rotinas novas."
+    ],
+    [
+      "Additional muscle groups",
+      "Grupos musculares adicionais"
+    ],
+    [
+      "Adductors",
+      "Adutores"
+    ],
+    [
+      "Admin",
+      "Admin"
+    ],
+    [
+      "Admin dashboard",
+      "Painel de administração"
+    ],
+    [
+      "Advent calendar",
+      "Calendário do Advento"
+    ],
+    [
+      "After every few workouts",
+      "A cada alguns treinos"
+    ],
+    [
+      "After how many workouts",
+      "A cada quantos treinos"
+    ],
+    [
+      "Again, a bit heavier",
+      "Outra vez, um pouco mais pesado"
+    ],
+    [
+      "All",
+      "Todos"
+    ],
+    [
+      "All 24 doors open. Merry everything!",
+      "As 24 portas abertas. Boas festas!"
+    ],
+    [
+      "All optional. The more the Coach knows, the less it guesses.",
+      "Tudo opcional. Quanto mais o Treinador souber, menos tem de adivinhar."
+    ],
+    [
+      "All sets at the same weight.",
+      "Todas as séries com o mesmo peso."
+    ],
+    [
+      "All sets done",
+      "Todas as séries feitas"
+    ],
+    [
+      "All synced",
+      "Tudo sincronizado"
+    ],
+    [
+      "All three done. Gold month!",
+      "Os três feitos. Mês de ouro!"
+    ],
+    [
+      "All weigh-ins",
+      "Todas as pesagens"
+    ],
+    [
+      "All workouts",
+      "Todos os treinos"
+    ],
+    [
+      "Already worked",
+      "Já trabalhado"
+    ],
+    [
+      "Also called {0}",
+      "Também conhecido como {0}"
+    ],
+    [
+      "Also during workouts",
+      "Também durante os treinos"
+    ],
+    [
+      "Also on fixed days",
+      "Também em dias fixos"
+    ],
+    [
+      "Always for this exercise",
+      "Sempre neste exercício"
+    ],
+    [
+      "An invite code is required",
+      "É necessário um código de convite"
+    ],
+    [
+      "Animation quality",
+      "Qualidade das animações"
+    ],
+    [
+      "Any equipment",
+      "Qualquer equipamento"
+    ],
+    [
+      "Any type",
+      "Qualquer tipo"
+    ],
+    [
+      "Any workout",
+      "Qualquer treino"
+    ],
+    [
+      "Anything else?",
+      "Mais alguma coisa?"
+    ],
+    [
+      "Anything to work around?",
+      "Algo a contornar?"
+    ],
+    [
+      "Apple Health",
+      "Apple Saúde"
+    ],
+    [
+      "Apple Health or Health Connect, heart rate and recovery tips.",
+      "Apple Health ou Health Connect, frequência cardíaca e dicas de recuperação."
+    ],
+    [
+      "Apple Health permission not granted",
+      "Permissão do Apple Saúde não concedida"
+    ],
+    [
+      "Applies to every exercise in this routine that does not set its own rule.",
+      "Aplica-se a todos os exercícios desta rotina que não definam a sua própria regra."
+    ],
+    [
+      "Apply nothing",
+      "Não aplicar nada"
+    ],
+    [
+      "Apr",
+      "Abr"
+    ],
+    [
+      "April",
+      "Abril"
+    ],
+    [
+      "Arrows compare with the {0} days before.",
+      "As setas comparam com os {0} dias anteriores."
+    ],
+    [
+      "Ask for a review",
+      "Pedir uma revisão"
+    ],
+    [
+      "Ask for a weight on every set.",
+      "Pedir um peso em cada série."
+    ],
+    [
+      "Ask the Coach",
+      "Perguntar ao Treinador"
+    ],
+    [
+      "Assistant & shortcuts",
+      "Assistente e atalhos"
+    ],
+    [
+      "Attention, recruit!",
+      "Sentido, recruta!"
+    ],
+    [
+      "Aug",
+      "Ago"
+    ],
+    [
+      "August",
+      "Agosto"
+    ],
+    [
+      "Auto",
+      "Auto"
+    ],
+    [
+      "Auto ({0})",
+      "Auto ({0})"
+    ],
+    [
+      "Auto holds off for this workout",
+      "Isometrias automáticas desligadas neste treino"
+    ],
+    [
+      "Automatic reviews",
+      "Revisões automáticas"
+    ],
+    [
+      "Automatic warm-ups",
+      "Aquecimentos automáticos"
+    ],
+    [
+      "Automation",
+      "Automação"
+    ],
+    [
+      "Average",
+      "Média"
+    ],
+    [
+      "Average effort per workout",
+      "Esforço médio por treino"
+    ],
+    [
+      "Average sets a week",
+      "Séries por semana, em média"
+    ],
+    [
+      "Average {0}",
+      "Média {0}"
+    ],
+    [
+      "Avoid: {0}",
+      "Evitar: {0}"
+    ],
+    [
+      "Back online and synced with the server.",
+      "De volta online e sincronizado com o servidor."
+    ],
+    [
+      "Back to my plan",
+      "Voltar ao meu plano"
+    ],
+    [
+      "Back to the calendar",
+      "Voltar ao calendário"
+    ],
+    [
+      "Back to the standard set",
+      "Voltar ao conjunto padrão"
+    ],
+    [
+      "Back to top",
+      "Voltar ao topo"
+    ],
+    [
+      "Back to weekly plan",
+      "Voltar ao plano semanal"
+    ],
+    [
+      "Back-off sets",
+      "Séries descendentes"
+    ],
+    [
+      "Backups",
+      "Substitutos"
+    ],
+    [
+      "Backups for {0}",
+      "Substitutos para {0}"
+    ],
+    [
+      "Bar ({0})",
+      "Barra ({0})"
+    ],
+    [
+      "Bar only",
+      "Só a barra"
+    ],
+    [
+      "Bar {0}",
+      "Barra {0}"
+    ],
+    [
+      "Barcode",
+      "Código de barras"
+    ],
+    [
+      "Base weight ({0})",
+      "Peso base ({0})"
+    ],
+    [
+      "Based on the training already in this demo profile.",
+      "Com base no treino que já existe neste perfil de demonstração."
+    ],
+    [
+      "Before and during",
+      "Antes e durante"
+    ],
+    [
+      "Before the Coach’s changes",
+      "Antes das alterações do Treinador"
+    ],
+    [
+      "Before the Coach’s plan",
+      "Antes do plano do Treinador"
+    ],
+    [
+      "Best estimate from {0} on {1}. An estimate, not a tested max.",
+      "Melhor estimativa a partir de {0} em {1}. É uma estimativa, não um máximo testado."
+    ],
+    [
+      "Best estimated 1RM:",
+      "Melhor 1RM estimado:"
+    ],
+    [
+      "Best set",
+      "Melhor série"
+    ],
+    [
+      "Best set weight per workout",
+      "Melhor peso por treino"
+    ],
+    [
+      "Best:",
+      "Melhor:"
+    ],
+    [
+      "Biceps",
+      "Bíceps"
+    ],
+    [
+      "Blend of all",
+      "Mistura de todas"
+    ],
+    [
+      "Body",
+      "Corpo"
+    ],
+    [
+      "Body and health",
+      "Corpo e saúde"
+    ],
+    [
+      "Body diagram",
+      "Diagrama do corpo"
+    ],
+    [
+      "Body fat",
+      "Gordura corporal"
+    ],
+    [
+      "Body fat must be between 0 and 100%.",
+      "A gordura corporal tem de estar entre 0 e 100 %."
+    ],
+    [
+      "Body measurements",
+      "Medidas corporais"
+    ],
+    [
+      "Body part",
+      "Parte do corpo"
+    ],
+    [
+      "Body weight",
+      "Peso corporal"
+    ],
+    [
+      "Body weight & measurements (CSV)",
+      "Peso corporal e medidas (CSV)"
+    ],
+    [
+      "Bodyweight",
+      "Peso do corpo"
+    ],
+    [
+      "Boo! The bats were not part of the warm-up.",
+      "Bu! Os morcegos não faziam parte do aquecimento."
+    ],
+    [
+      "Both",
+      "Ambos"
+    ],
+    [
+      "Both ({0})",
+      "Ambos ({0})"
+    ],
+    [
+      "Bring another routine into this session",
+      "Trazer outra rotina para esta sessão"
+    ],
+    [
+      "Bring data in",
+      "Trazer dados"
+    ],
+    [
+      "Build me a fresh plan from my answers.",
+      "Faz-me um plano novo a partir das minhas respostas."
+    ],
+    [
+      "Built from your work weight when the workout starts.",
+      "Feitos a partir do peso de trabalho quando o treino começa."
+    ],
+    [
+      "Built in ({0} px)",
+      "Incluídas ({0} px)"
+    ],
+    [
+      "Burst {0}",
+      "Rajada {0}"
+    ],
+    [
+      "Buttons, timed sets",
+      "Botões, séries por tempo"
+    ],
+    [
+      "COROS",
+      "COROS"
+    ],
+    [
+      "CSV exported",
+      "CSV exportado"
+    ],
+    [
+      "Calves",
+      "Panturrilhas"
+    ],
+    [
+      "Cancel",
+      "Cancelar"
+    ],
+    [
+      "Card added",
+      "Cartão adicionado"
+    ],
+    [
+      "Card updated",
+      "Cartão atualizado"
+    ],
+    [
+      "Cardio",
+      "Cardio"
+    ],
+    [
+      "Cards",
+      "Cartões"
+    ],
+    [
+      "Challenges",
+      "Desafios"
+    ],
+    [
+      "Challenges done: {0}",
+      "Desafios concluídos: {0}"
+    ],
+    [
+      "Change duration",
+      "Alterar duração"
+    ],
+    [
+      "Change what’s planned on one day",
+      "Mudar o que está planeado num dia"
+    ],
+    [
+      "Chart",
+      "Gráfico"
+    ],
+    [
+      "Charts, totals and every workout of the last days or weeks.",
+      "Gráficos, totais e cada treino dos últimos dias ou semanas."
+    ],
+    [
+      "Check for updates",
+      "Procurar atualizações"
+    ],
+    [
+      "Check in",
+      "Check-in"
+    ],
+    [
+      "Checking…",
+      "A verificar…"
+    ],
+    [
+      "Checksum not available, so not installing",
+      "Soma de verificação indisponível, por isso não foi instalado"
+    ],
+    [
+      "Chest",
+      "Peito"
+    ],
+    [
+      "Chime (louder)",
+      "Carrilhão (mais alto)"
+    ],
+    [
+      "Choose measurement",
+      "Escolher medida"
+    ],
+    [
+      "Choose measurements",
+      "Escolher medidas"
+    ],
+    [
+      "Chosen",
+      "Escolhidos"
+    ],
+    [
+      "Chosen folder",
+      "Pasta escolhida"
+    ],
+    [
+      "Christmas",
+      "Natal"
+    ],
+    [
+      "Circumference & composition",
+      "Perímetros e composição"
+    ],
+    [
+      "Classic beeps",
+      "Bipes clássicos"
+    ],
+    [
+      "Clear rating",
+      "Limpar avaliação"
+    ],
+    [
+      "Clear the list",
+      "Limpar a lista"
+    ],
+    [
+      "Close",
+      "Fechar"
+    ],
+    [
+      "Cloudflare Access",
+      "Cloudflare Access"
+    ],
+    [
+      "Coach",
+      "Treinador"
+    ],
+    [
+      "Coach programme",
+      "Programa do Treinador"
+    ],
+    [
+      "Compact",
+      "Compacta"
+    ],
+    [
+      "Compare photos",
+      "Comparar fotos"
+    ],
+    [
+      "Compare two dates",
+      "Comparar duas datas"
+    ],
+    [
+      "Compound lifts",
+      "Exercícios compostos"
+    ],
+    [
+      "Confirm",
+      "Confirmar"
+    ],
+    [
+      "Consistency",
+      "Regularidade"
+    ],
+    [
+      "Continue",
+      "Continuar"
+    ],
+    [
+      "Continue without account",
+      "Continuar sem conta"
+    ],
+    [
+      "Continue workout",
+      "Continuar treino"
+    ],
+    [
+      "Convert the numbers",
+      "Converter os números"
+    ],
+    [
+      "Convert to {0}?",
+      "Converter para {0}?"
+    ],
+    [
+      "Copied",
+      "Copiado"
+    ],
+    [
+      "Copied. One more like that one.",
+      "Copiada. Mais uma igual."
+    ],
+    [
+      "Copy as text",
+      "Copiar como texto"
+    ],
+    [
+      "Copy set",
+      "Copiar"
+    ],
+    [
+      "Copy this set",
+      "Copiar esta série"
+    ],
+    [
+      "Cosy stretch",
+      "Alongamento aconchegante"
+    ],
+    [
+      "Could not apply those changes",
+      "Não foi possível aplicar essas alterações"
+    ],
+    [
+      "Could not ask the Coach",
+      "Não foi possível consultar o Treinador"
+    ],
+    [
+      "Could not copy",
+      "Não foi possível copiar"
+    ],
+    [
+      "Could not remove it from Apple Health",
+      "Não foi possível remover do Apple Saúde"
+    ],
+    [
+      "Count it as a working set",
+      "Contar como série de trabalho"
+    ],
+    [
+      "Count warm-ups in volume",
+      "Contar aquecimentos no volume"
+    ],
+    [
+      "Create PDF",
+      "Criar PDF"
+    ],
+    [
+      "Create exercise",
+      "Criar exercício"
+    ],
+    [
+      "Create profile",
+      "Criar perfil"
+    ],
+    [
+      "Current",
+      "Atual"
+    ],
+    [
+      "Current location",
+      "Localização atual"
+    ],
+    [
+      "Custom measurement",
+      "Medida personalizada"
+    ],
+    [
+      "Daily weigh-in value",
+      "Valor diário da pesagem"
+    ],
+    [
+      "Dark",
+      "Escuro"
+    ],
+    [
+      "Date",
+      "Data"
+    ],
+    [
+      "Date & time",
+      "Data e hora"
+    ],
+    [
+      "Day",
+      "Dia"
+    ],
+    [
+      "Day average {0}",
+      "Média do dia {0}"
+    ],
+    [
+      "Days per week",
+      "Dias por semana"
+    ],
+    [
+      "Dec",
+      "Dez"
+    ],
+    [
+      "December",
+      "Dezembro"
+    ],
+    [
+      "Default",
+      "Predefinido"
+    ],
+    [
+      "Default (auto)",
+      "Predefinido (automático)"
+    ],
+    [
+      "Default (none)",
+      "Predefinido (nenhum)"
+    ],
+    [
+      "Delete measurements?",
+      "Eliminar medidas?"
+    ],
+    [
+      "Deload 1RM (%)",
+      "1RM de deload (%)"
+    ],
+    [
+      "Deload routine",
+      "Rotina de deload"
+    ],
+    [
+      "Deload week",
+      "Semana de deload"
+    ],
+    [
+      "Demo",
+      "Demo"
+    ],
+    [
+      "Details",
+      "Detalhes"
+    ],
+    [
+      "Discard",
+      "Descartar"
+    ],
+    [
+      "Discard this plan?",
+      "Descartar este plano?"
+    ],
+    [
+      "Discard workout?",
+      "Descartar treino?"
+    ],
+    [
+      "Dismiss",
+      "Descartar"
+    ],
+    [
+      "Dismiss all",
+      "Descartar tudo"
+    ],
+    [
+      "Dismiss these suggestions?",
+      "Descartar estas sugestões?"
+    ],
+    [
+      "Do {0} last",
+      "{0} no fim"
+    ],
+    [
+      "Do {0} next",
+      "{0} a seguir"
+    ],
+    [
+      "Done",
+      "Concluído"
+    ],
+    [
+      "Don’t count for progression",
+      "Não contar para a progressão"
+    ],
+    [
+      "Door {0}",
+      "Porta {0}"
+    ],
+    [
+      "Door {0}, locked",
+      "Porta {0}, fechada"
+    ],
+    [
+      "Door {0}, open",
+      "Porta {0}, aberta"
+    ],
+    [
+      "Double progression",
+      "Progressão dupla"
+    ],
+    [
+      "Down on last time",
+      "Abaixo da última vez"
+    ],
+    [
+      "Download the APK from opengym.ch",
+      "Descarrega o APK em opengym.ch"
+    ],
+    [
+      "Drill sergeant",
+      "Sargento instrutor"
+    ],
+    [
+      "Drop and burst shortcuts on every set",
+      "Atalhos de drop e rajada em cada série"
+    ],
+    [
+      "Drop set",
+      "Drop set"
+    ],
+    [
+      "Drop {0}",
+      "Queda {0}"
+    ],
+    [
+      "Drop-set",
+      "Série decrescente"
+    ],
+    [
+      "Drop-set / rest-pause",
+      "Séries decrescentes / rest-pause"
+    ],
+    [
+      "Drops",
+      "Quedas"
+    ],
+    [
+      "Duplicate",
+      "Duplicar"
+    ],
+    [
+      "Duration",
+      "Duração"
+    ],
+    [
+      "Duration (min)",
+      "Duração (min)"
+    ],
+    [
+      "Duration changed",
+      "Duração alterada"
+    ],
+    [
+      "Each",
+      "Cada"
+    ],
+    [
+      "Each ({0})",
+      "Cada ({0})"
+    ],
+    [
+      "Each one closes half the gap to the work weight.",
+      "Cada uma fecha metade da distância ao peso de trabalho."
+    ],
+    [
+      "Each photo goes on the day it was taken.",
+      "Cada foto vai para o dia em que foi tirada."
+    ],
+    [
+      "Each set one step lighter than the one before. The weight above is the first set.",
+      "Cada série um passo mais leve do que a anterior. O peso acima é a primeira série."
+    ],
+    [
+      "Easy, warm-up territory",
+      "Fácil, zona de aquecimento"
+    ],
+    [
+      "Edit",
+      "Editar"
+    ],
+    [
+      "Edit a workout",
+      "Editar um treino"
+    ],
+    [
+      "Edit card",
+      "Editar cartão"
+    ],
+    [
+      "Edit custom exercise",
+      "Editar exercício personalizado"
+    ],
+    [
+      "Edit measurements",
+      "Editar medidas"
+    ],
+    [
+      "Edit note",
+      "Editar nota"
+    ],
+    [
+      "Edit session note",
+      "Editar nota da sessão"
+    ],
+    [
+      "Edit weigh-in",
+      "Editar pesagem"
+    ],
+    [
+      "Effort",
+      "Esforço"
+    ],
+    [
+      "Effort for the week",
+      "Esforço da semana"
+    ],
+    [
+      "Effort per set",
+      "Esforço por série"
+    ],
+    [
+      "End programme",
+      "Terminar programa"
+    ],
+    [
+      "End “{0}”?",
+      "Terminar “{0}”?"
+    ],
+    [
+      "Endpoint",
+      "Endpoint"
+    ],
+    [
+      "Enter at least one measurement",
+      "Introduz pelo menos uma medida"
+    ],
+    [
+      "Equipment",
+      "Equipamento"
+    ],
+    [
+      "Est. 1RM",
+      "1RM est."
+    ],
+    [
+      "Estimate",
+      "Estimativa"
+    ],
+    [
+      "Estimated 1RM",
+      "1RM estimado"
+    ],
+    [
+      "Estimated 1RM as a share of body weight, per workout",
+      "1RM estimado como proporção do peso corporal, por treino"
+    ],
+    [
+      "Estimated 1RM per workout",
+      "1RM estimado por treino"
+    ],
+    [
+      "Estimated 1RM, top lifts",
+      "1RM estimado, exercícios principais"
+    ],
+    [
+      "Every exercise in this workout",
+      "Todos os exercícios deste treino"
+    ],
+    [
+      "Every loaded lift",
+      "Cada exercício com carga"
+    ],
+    [
+      "Every muscle group at least once",
+      "Cada grupo muscular pelo menos uma vez"
+    ],
+    [
+      "Every muscle group got at least one hard set in this period.",
+      "Todos os grupos musculares tiveram pelo menos uma série dura neste período."
+    ],
+    [
+      "Every muscle group got some work in this period.",
+      "Todos os grupos musculares foram trabalhados neste período."
+    ],
+    [
+      "Every rep last time. {0} {1} less help.",
+      "Todas as repetições da última vez. Menos {0} {1} de ajuda."
+    ],
+    [
+      "Every rep last time. {0} {1} more.",
+      "Todas as repetições da última vez. Mais {0} {1}."
+    ],
+    [
+      "Every set, weigh-in and measurement, for Excel and friends.",
+      "Cada série, pesagem e medida, para o Excel e companhia."
+    ],
+    [
+      "Every weigh-in",
+      "Cada pesagem"
+    ],
+    [
+      "Every weigh-in of the day counts the same.",
+      "Todas as pesagens do dia contam o mesmo."
+    ],
+    [
+      "Everything",
+      "Tudo"
+    ],
+    [
+      "Everything else",
+      "Todo o resto"
+    ],
+    [
+      "Everything okay?",
+      "Está tudo bem?"
+    ],
+    [
+      "Exact {0}",
+      "{0} exato"
+    ],
+    [
+      "Example data, only in this browser.",
+      "Dados de exemplo, só neste navegador."
+    ],
+    [
+      "Exercise",
+      "Exercício"
+    ],
+    [
+      "Exercise animations",
+      "Animações dos exercícios"
+    ],
+    [
+      "Exercise drawings",
+      "Desenhos dos exercícios"
+    ],
+    [
+      "Exercise history",
+      "Histórico do exercício"
+    ],
+    [
+      "Exercise instructions aren't translated into this language yet, so they stay in English.",
+      "As instruções dos exercícios ainda não estão traduzidas para este idioma, por isso ficam em inglês."
+    ],
+    [
+      "Exercise name",
+      "Nome do exercício"
+    ],
+    [
+      "Exercise progress",
+      "Progresso por exercício"
+    ],
+    [
+      "Exercise {0} / {1}",
+      "Exercício {0} / {1}"
+    ],
+    [
+      "Exercises",
+      "Exercícios"
+    ],
+    [
+      "Exercises matched",
+      "Exercícios reconhecidos"
+    ],
+    [
+      "Expand",
+      "Ampliar"
+    ],
+    [
+      "Experience",
+      "Experiência"
+    ],
+    [
+      "Export",
+      "Exportar"
+    ],
+    [
+      "Export & import",
+      "Exportar e importar"
+    ],
+    [
+      "Extras",
+      "Extras"
+    ],
+    [
+      "F",
+      "F"
+    ],
+    [
+      "F-Droid installs the updates for this build.",
+      "As atualizações desta versão são instaladas pelo F-Droid."
+    ],
+    [
+      "Fatigue",
+      "Fadiga"
+    ],
+    [
+      "Fatigue shows how recently each muscle was trained. High means rest.",
+      "A fadiga mostra há quanto tempo cada músculo foi treinado. Um nível elevado significa que é preciso descansar."
+    ],
+    [
+      "Fatigued",
+      "Fatigado"
+    ],
+    [
+      "Favourites",
+      "Favoritos"
+    ],
+    [
+      "Feb",
+      "Fev"
+    ],
+    [
+      "February",
+      "Fevereiro"
+    ],
+    [
+      "Feeling great",
+      "Em grande forma"
+    ],
+    [
+      "Female",
+      "Feminino"
+    ],
+    [
+      "Festive colors",
+      "Cores festivas"
+    ],
+    [
+      "Fields",
+      "Campos"
+    ],
+    [
+      "Fill in",
+      "Preencher"
+    ],
+    [
+      "Fill in {0} to {1} {2}, every {3}",
+      "Preencher de {0} a {1} {2}, a cada {3}"
+    ],
+    [
+      "Fill only what you measured today. Empty fields stay empty.",
+      "Preenche só o que mediste hoje. Os campos vazios ficam vazios."
+    ],
+    [
+      "Film a set",
+      "Filmar uma série"
+    ],
+    [
+      "Film this set",
+      "Filmar esta série"
+    ],
+    [
+      "Film {0}",
+      "Filmar {0}"
+    ],
+    [
+      "Fine-tuning",
+      "Ajustes finos"
+    ],
+    [
+      "Finish",
+      "Terminar"
+    ],
+    [
+      "Finish anyway",
+      "Terminar mesmo assim"
+    ],
+    [
+      "Finish early?",
+      "Terminar mais cedo?"
+    ],
+    [
+      "Finish workout",
+      "Terminar treino"
+    ],
+    [
+      "Finish workout early · {0} exercises",
+      "Terminar mais cedo · {0} exercícios"
+    ],
+    [
+      "Finish workout?",
+      "Terminar o treino?"
+    ],
+    [
+      "Finished workouts and weigh-ins go to Apple Health.",
+      "Treinos terminados e pesagens vão para o Apple Health."
+    ],
+    [
+      "Finished workouts and weigh-ins go to Health Connect.",
+      "Treinos terminados e pesagens vão para o Health Connect."
+    ],
+    [
+      "First ({0})",
+      "Primeiro ({0})"
+    ],
+    [
+      "First time",
+      "Primeira vez"
+    ],
+    [
+      "Fitbit",
+      "Fitbit"
+    ],
+    [
+      "Five sets of five on the main barbell lifts.",
+      "Cinco séries de cinco nos básicos com barra."
+    ],
+    [
+      "Fix a weigh-in",
+      "Corrigir uma pesagem"
+    ],
+    [
+      "Flash",
+      "Piscar"
+    ],
+    [
+      "Follow the routine ({0})",
+      "Seguir a rotina ({0})"
+    ],
+    [
+      "For dips or pull-ups with a belt. Progression then follows the weight.",
+      "Para dips ou pull-ups com cinto. A progressão passa então a seguir o peso."
+    ],
+    [
+      "For lunges, single-arm rows and the like.",
+      "Para afundos, remadas a um braço e afins."
+    ],
+    [
+      "For side planks, single-arm holds and the like. Trains each side on its own.",
+      "Para prancha lateral, isometrias com um braço e afins. Treina cada lado separadamente."
+    ],
+    [
+      "For this workout",
+      "Para este treino"
+    ],
+    [
+      "Forearms",
+      "Antebraços"
+    ],
+    [
+      "Form video",
+      "Vídeo da técnica"
+    ],
+    [
+      "Form video: {0}",
+      "Vídeo da técnica: {0}"
+    ],
+    [
+      "Form videos",
+      "Vídeos da técnica"
+    ],
+    [
+      "Freestyle",
+      "Livre"
+    ],
+    [
+      "Fri",
+      "Sex"
+    ],
+    [
+      "Friday",
+      "Sexta-feira"
+    ],
+    [
+      "Friendly",
+      "Amigável"
+    ],
+    [
+      "From",
+      "De"
+    ],
+    [
+      "From {0}:",
+      "De {0}:"
+    ],
+    [
+      "Full",
+      "Grande"
+    ],
+    [
+      "Full Body",
+      "Corpo inteiro"
+    ],
+    [
+      "Full body A",
+      "Corpo inteiro A"
+    ],
+    [
+      "Full body B",
+      "Corpo inteiro B"
+    ],
+    [
+      "Fun fact",
+      "Curiosidade"
+    ],
+    [
+      "Garmin",
+      "Garmin"
+    ],
+    [
+      "Generous, especially at high reps.",
+      "Generosa, sobretudo com muitas repetições."
+    ],
+    [
+      "Get the Android app",
+      "Obter a app Android"
+    ],
+    [
+      "Glutes",
+      "Glúteos"
+    ],
+    [
+      "Go!",
+      "Já!"
+    ],
+    [
+      "Go! {0}",
+      "Já! {0}"
+    ],
+    [
+      "Goal",
+      "Meta"
+    ],
+    [
+      "Goal removed",
+      "Meta removida"
+    ],
+    [
+      "Goal set: {0}",
+      "Meta definida: {0}"
+    ],
+    [
+      "Goal, days, equipment, limits",
+      "Objetivo, dias, equipamento, limitações"
+    ],
+    [
+      "Gold month",
+      "Mês de ouro"
+    ],
+    [
+      "Google Assistant can open them by voice too.",
+      "O Assistente Google também os abre por voz."
+    ],
+    [
+      "Greyskull LP",
+      "Greyskull LP"
+    ],
+    [
+      "Guilt trip",
+      "Chantagem emocional"
+    ],
+    [
+      "Halloween",
+      "Halloween"
+    ],
+    [
+      "Halloween, Christmas and the advent calendar. Spooky, festive, optional.",
+      "Halloween, Natal e o calendário do Advento. Assustador, festivo, opcional."
+    ],
+    [
+      "Hamstrings",
+      "Isquiotibiais"
+    ],
+    [
+      "Hard",
+      "Duras"
+    ],
+    [
+      "Harder",
+      "Mais difícil"
+    ],
+    [
+      "Health",
+      "Saúde"
+    ],
+    [
+      "Health & devices",
+      "Saúde e dispositivos"
+    ],
+    [
+      "Heart rate during your workouts",
+      "Frequência cardíaca durante os treinos"
+    ],
+    [
+      "Heart rate from your watch",
+      "Frequência cardíaca do relógio"
+    ],
+    [
+      "Heart rate from your watch fills in each set.",
+      "A frequência cardíaca do relógio entra em cada série."
+    ],
+    [
+      "Heavier means every %1RM goes up {0} points.",
+      "Mais pesado quer dizer que cada %1RM sobe {0} pontos."
+    ],
+    [
+      "Heaviest set as a share of body weight, per workout",
+      "Série mais pesada como proporção do peso corporal, por treino"
+    ],
+    [
+      "Heavy lifts get more rungs, light ones one or none.",
+      "O que é pesado tem mais degraus, o leve um ou nenhum."
+    ],
+    [
+      "Hevy",
+      "Hevy"
+    ],
+    [
+      "Hi {0}",
+      "Olá {0}"
+    ],
+    [
+      "Hidden",
+      "Oculta"
+    ],
+    [
+      "Hide for today",
+      "Ocultar hoje"
+    ],
+    [
+      "Hip flexors",
+      "Flexores do quadril"
+    ],
+    [
+      "Hips",
+      "Ancas"
+    ],
+    [
+      "History",
+      "Histórico"
+    ],
+    [
+      "Hold done: {0}",
+      "Feito: {0}"
+    ],
+    [
+      "Home",
+      "Início"
+    ],
+    [
+      "Horizontal pressing, the other half of the session.",
+      "Empurrão horizontal, a outra metade da sessão."
+    ],
+    [
+      "Hours",
+      "Horas"
+    ],
+    [
+      "How hard a set was, logged next to weight and reps. Two scales for the same judgement, counted from opposite ends.",
+      "O quão dura foi uma série, ao lado do peso e das repetições. Duas escalas para o mesmo juízo, contadas de pontas opostas."
+    ],
+    [
+      "How hard was that set?",
+      "Quão dura foi a série?"
+    ],
+    [
+      "How it felt",
+      "Como se sentiu"
+    ],
+    [
+      "How it gets here",
+      "Como chega aqui"
+    ],
+    [
+      "How long is a session?",
+      "Quanto dura uma sessão?"
+    ],
+    [
+      "How many",
+      "Quantos"
+    ],
+    [
+      "How many days a week?",
+      "Quantos dias por semana?"
+    ],
+    [
+      "How precisely weights are shown.",
+      "Com que precisão os pesos são mostrados."
+    ],
+    [
+      "How to",
+      "Como fazer"
+    ],
+    [
+      "How to set it up",
+      "Como configurar"
+    ],
+    [
+      "I have a code",
+      "Tenho um código"
+    ],
+    [
+      "Import",
+      "Importar"
+    ],
+    [
+      "Import failed: {0}",
+      "Importação falhou: {0}"
+    ],
+    [
+      "Import from {0}",
+      "Importar de {0}"
+    ],
+    [
+      "Import history",
+      "Importar histórico"
+    ],
+    [
+      "Import photo",
+      "Importar foto"
+    ],
+    [
+      "Import this plan",
+      "Importar este plano"
+    ],
+    [
+      "Integrations",
+      "Integrações"
+    ],
+    [
+      "Intensifier",
+      "Intensificador"
+    ],
+    [
+      "Intervals",
+      "Intervalos"
+    ],
+    [
+      "Invite code",
+      "Código de convite"
+    ],
+    [
+      "It hurts",
+      "Dói"
+    ],
+    [
+      "It hurts, it’s taken, no time, feeling great",
+      "Dói, ocupado, sem tempo, em grande forma"
+    ],
+    [
+      "It pinches, so the sets you have left go to a movement that loads the same muscle from a kinder angle.",
+      "Incomoda, por isso as séries que faltam passam para um movimento que trabalha o mesmo músculo num ângulo mais amigável."
+    ],
+    [
+      "Its own page",
+      "Página própria"
+    ],
+    [
+      "Its photo or video moves to the new workout.",
+      "A foto ou o vídeo dele passa para o novo treino."
+    ],
+    [
+      "Its routines stay.",
+      "As rotinas ficam."
+    ],
+    [
+      "Its {0} photos or videos move to the new workout.",
+      "As {0} fotos ou vídeos dele passam para o novo treino."
+    ],
+    [
+      "It’s already back.",
+      "Já voltou."
+    ],
+    [
+      "Jan",
+      "Jan"
+    ],
+    [
+      "January",
+      "Janeiro"
+    ],
+    [
+      "Jul",
+      "Jul"
+    ],
+    [
+      "July",
+      "Julho"
+    ],
+    [
+      "Jun",
+      "Jun"
+    ],
+    [
+      "June",
+      "Junho"
+    ],
+    [
+      "Just training",
+      "Só treino"
+    ],
+    [
+      "Keep profile as is",
+      "Manter o perfil como está"
+    ],
+    [
+      "Keep the logging form focused on the measurements you actually track.",
+      "Mantém o formulário focado nas medidas que realmente acompanhas."
+    ],
+    [
+      "L",
+      "E"
+    ],
+    [
+      "Label",
+      "Etiqueta"
+    ],
+    [
+      "Language",
+      "Idioma"
+    ],
+    [
+      "Large",
+      "Grande"
+    ],
+    [
+      "Last",
+      "Última"
+    ],
+    [
+      "Last 3 months",
+      "Últimos 3 meses"
+    ],
+    [
+      "Last 4 weeks",
+      "Últimas 4 semanas"
+    ],
+    [
+      "Last 7 days",
+      "Últimos 7 dias"
+    ],
+    [
+      "Last PR",
+      "Último recorde"
+    ],
+    [
+      "Last sync",
+      "Última sincronização"
+    ],
+    [
+      "Last synced: {0}",
+      "Última sincronização: {0}"
+    ],
+    [
+      "Last time",
+      "Da última vez"
+    ],
+    [
+      "Last time and next time",
+      "Da última vez e da próxima"
+    ],
+    [
+      "Last time means",
+      "\"Da última vez\" é"
+    ],
+    [
+      "Last value {0}",
+      "Último valor {0}"
+    ],
+    [
+      "Last {0} sessions",
+      "Últimas {0} sessões"
+    ],
+    [
+      "Lats & upper back",
+      "Dorsais e costas superiores"
+    ],
+    [
+      "Left",
+      "Esquerda"
+    ],
+    [
+      "Left ankle",
+      "Tornozelo esquerdo"
+    ],
+    [
+      "Left calf",
+      "Gémeo esquerdo"
+    ],
+    [
+      "Left forearm",
+      "Antebraço esquerdo"
+    ],
+    [
+      "Left thigh",
+      "Coxa esquerda"
+    ],
+    [
+      "Left upper arm",
+      "Braço esquerdo"
+    ],
+    [
+      "Left wrist",
+      "Pulso esquerdo"
+    ],
+    [
+      "Legs today?",
+      "Pernas hoje?"
+    ],
+    [
+      "Less",
+      "Menos"
+    ],
+    [
+      "Less time",
+      "Menos"
+    ],
+    [
+      "Less volume",
+      "Menos volume"
+    ],
+    [
+      "Lifted in total",
+      "Levantado no total"
+    ],
+    [
+      "Lifted in total: {0}",
+      "Total levantado: {0}"
+    ],
+    [
+      "Liftoscript progressions come along as notes on the exercises. openGym doesn’t run them.",
+      "As progressões do Liftoscript chegam como notas nos exercícios. O openGym não as executa."
+    ],
+    [
+      "Light",
+      "Claro"
+    ],
+    [
+      "Lighter weights, and its sessions do not count toward progression.",
+      "Pesos mais leves, e as sessões não contam para a progressão."
+    ],
+    [
+      "Like the work sets",
+      "Como as séries de trabalho"
+    ],
+    [
+      "Likes: {0}",
+      "Gosta: {0}"
+    ],
+    [
+      "Limits",
+      "Limitações"
+    ],
+    [
+      "Limits: {0}",
+      "Limitações: {0}"
+    ],
+    [
+      "Linear 5×5 style, 12 weeks",
+      "Linear estilo 5×5, 12 semanas"
+    ],
+    [
+      "Linear progression",
+      "Progressão linear"
+    ],
+    [
+      "List",
+      "Lista"
+    ],
+    [
+      "List models",
+      "Listar modelos"
+    ],
+    [
+      "Live demo. Everything stays in this browser.",
+      "Demo ao vivo. Tudo fica neste navegador."
+    ],
+    [
+      "Load plan",
+      "Carregar plano"
+    ],
+    [
+      "Load starter plan",
+      "Carregar plano inicial"
+    ],
+    [
+      "Load {0}",
+      "Carregar {0}"
+    ],
+    [
+      "Load {0}?",
+      "Carregar {0}?"
+    ],
+    [
+      "Log measurements",
+      "Registar medidas"
+    ],
+    [
+      "Longest exercise rest",
+      "Descanso de exercício mais longo"
+    ],
+    [
+      "Longest hold per workout",
+      "Isometria mais longa por treino"
+    ],
+    [
+      "MCP server",
+      "Servidor MCP"
+    ],
+    [
+      "Machine’s taken",
+      "Máquina ocupada"
+    ],
+    [
+      "Made with openGym",
+      "Feito com openGym"
+    ],
+    [
+      "Make it a warm-up set",
+      "Tornar série de aquecimento"
+    ],
+    [
+      "Make superset with next",
+      "Fazer superset com o próximo"
+    ],
+    [
+      "Make superset with previous",
+      "Fazer superset com o anterior"
+    ],
+    [
+      "Make the box bigger",
+      "Aumentar a caixa"
+    ],
+    [
+      "Make the box smaller",
+      "Diminuir a caixa"
+    ],
+    [
+      "Male",
+      "Masculino"
+    ],
+    [
+      "Mar",
+      "Mar"
+    ],
+    [
+      "March",
+      "Março"
+    ],
+    [
+      "Mark all sets done",
+      "Marcar todas as séries como feitas"
+    ],
+    [
+      "Max",
+      "Máx"
+    ],
+    [
+      "Max reps",
+      "Reps Máx"
+    ],
+    [
+      "May",
+      "Mai"
+    ],
+    [
+      "Maybe half a rep left",
+      "Talvez meia repetição em reserva"
+    ],
+    [
+      "Measurement",
+      "Medida"
+    ],
+    [
+      "Measurement history",
+      "Histórico de medidas"
+    ],
+    [
+      "Measurements and photos",
+      "Medidas e fotos"
+    ],
+    [
+      "Measurements saved",
+      "Medidas guardadas"
+    ],
+    [
+      "Medium",
+      "Média"
+    ],
+    [
+      "Merry everything!",
+      "Boas festas!"
+    ],
+    [
+      "Mini challenge",
+      "Mini desafio"
+    ],
+    [
+      "Minimize",
+      "Minimizar"
+    ],
+    [
+      "Minutes",
+      "Minutos"
+    ],
+    [
+      "Model",
+      "Modelo"
+    ],
+    [
+      "Modules",
+      "Módulos"
+    ],
+    [
+      "Mon",
+      "Seg"
+    ],
+    [
+      "Monday",
+      "Segunda-feira"
+    ],
+    [
+      "Mono",
+      "Mono"
+    ],
+    [
+      "Monthly challenges",
+      "Desafios mensais"
+    ],
+    [
+      "More",
+      "Mais"
+    ],
+    [
+      "More conservative above five reps.",
+      "Mais conservadora acima de cinco repetições."
+    ],
+    [
+      "More time",
+      "Mais"
+    ],
+    [
+      "More volume",
+      "Mais volume"
+    ],
+    [
+      "Morning (first)",
+      "Manhã (primeira)"
+    ],
+    [
+      "Morning value {0}",
+      "Valor da manhã {0}"
+    ],
+    [
+      "Most days in a row",
+      "Mais dias seguidos"
+    ],
+    [
+      "Motivation",
+      "Motivação"
+    ],
+    [
+      "Move left",
+      "Mover para a esquerda"
+    ],
+    [
+      "Move right",
+      "Mover para a direita"
+    ],
+    [
+      "Move {0}",
+      "Mover {0}"
+    ],
+    [
+      "Move, swap and remove below act on the exercise marked {0}.",
+      "Mover, trocar e remover abaixo atuam sobre o exercício marcado como {0}."
+    ],
+    [
+      "Muscle balance",
+      "Equilíbrio muscular"
+    ],
+    [
+      "Muscle map at the top",
+      "Mapa muscular no topo"
+    ],
+    [
+      "Muscles",
+      "Músculos"
+    ],
+    [
+      "My own",
+      "Os meus"
+    ],
+    [
+      "Name (optional)",
+      "Nome (opcional)"
+    ],
+    [
+      "Name and rest of this superset",
+      "Nome e descanso desta supersérie"
+    ],
+    [
+      "Name, muscles, equipment and a photo",
+      "Nome, músculos, equipamento e uma foto"
+    ],
+    [
+      "Needs attention",
+      "Precisa de atenção"
+    ],
+    [
+      "New",
+      "Nova"
+    ],
+    [
+      "New PR:",
+      "Novo recorde:"
+    ],
+    [
+      "New best",
+      "Novo recorde"
+    ],
+    [
+      "New bests",
+      "Novos recordes"
+    ],
+    [
+      "New in this workout",
+      "Novo neste treino"
+    ],
+    [
+      "New month, new challenges.",
+      "Mês novo, desafios novos."
+    ],
+    [
+      "New personal record",
+      "Novo recorde pessoal"
+    ],
+    [
+      "New programme",
+      "Novo programa"
+    ],
+    [
+      "New programme “{0}”",
+      "Novo programa “{0}”"
+    ],
+    [
+      "New routine",
+      "Nova rotina"
+    ],
+    [
+      "Next session: {0}, {1}",
+      "Próxima sessão: {0}, {1}"
+    ],
+    [
+      "Nice!",
+      "Boa!"
+    ],
+    [
+      "No automatic progression",
+      "Sem progressão automática"
+    ],
+    [
+      "No bar",
+      "Sem barra"
+    ],
+    [
+      "No code found in that image",
+      "Nenhum código encontrado nessa imagem"
+    ],
+    [
+      "No data yet",
+      "Ainda sem dados"
+    ],
+    [
+      "No exercises with an estimated 1RM yet.",
+      "Ainda não há exercícios com 1RM estimado."
+    ],
+    [
+      "No exercises yet.",
+      "Ainda sem exercícios."
+    ],
+    [
+      "No explicit muscle group",
+      "Nenhum grupo muscular explícito"
+    ],
+    [
+      "No hard sets in this period",
+      "Sem séries duras neste período"
+    ],
+    [
+      "No match",
+      "Sem resultados"
+    ],
+    [
+      "No measurements yet",
+      "Ainda sem medidas"
+    ],
+    [
+      "No muscle work in this period.",
+      "Sem trabalho muscular neste período."
+    ],
+    [
+      "No rated sets in this period.",
+      "Nenhuma série avaliada neste período."
+    ],
+    [
+      "No rest timer",
+      "Sem temporizador"
+    ],
+    [
+      "No routines yet.",
+      "Ainda sem rotinas."
+    ],
+    [
+      "No weigh-ins",
+      "Sem pesagens"
+    ],
+    [
+      "No workouts in this period yet.",
+      "Ainda sem treinos neste período."
+    ],
+    [
+      "No workouts in this period.",
+      "Sem treinos neste período."
+    ],
+    [
+      "No workouts this month",
+      "Sem treinos este mês"
+    ],
+    [
+      "No workouts yet. Your first one will land here.",
+      "Ainda sem treinos. O primeiro vai aparecer aqui."
+    ],
+    [
+      "None",
+      "Nenhum"
+    ],
+    [
+      "Not an openGym answer (HTTP {0})",
+      "Não é uma resposta do openGym (HTTP {0})"
+    ],
+    [
+      "Not available on this device",
+      "Não disponível neste dispositivo"
+    ],
+    [
+      "Not counted for progression",
+      "Não conta para a progressão"
+    ],
+    [
+      "Not heard from yet",
+      "Ainda sem notícias"
+    ],
+    [
+      "Not in this build",
+      "Não nesta versão"
+    ],
+    [
+      "Not now",
+      "Agora não"
+    ],
+    [
+      "Not on iPhone",
+      "Não no iPhone"
+    ],
+    [
+      "Not scored",
+      "Sem avaliação"
+    ],
+    [
+      "Not supported in this browser.",
+      "Não suportado neste navegador."
+    ],
+    [
+      "Not synced with this server yet",
+      "Ainda não sincronizado com este servidor"
+    ],
+    [
+      "Not trained in this period",
+      "Sem treino neste período"
+    ],
+    [
+      "Not trained:",
+      "Não treinados:"
+    ],
+    [
+      "Not yet",
+      "Ainda não"
+    ],
+    [
+      "Note",
+      "Nota"
+    ],
+    [
+      "Note (optional): loading cues, \"bar only, then +1 plate/side each set\", anything worth remembering",
+      "Nota (opcional): dicas de carga, \"só a barra, depois +1 anilha por lado a cada série\", o que valer a pena lembrar"
+    ],
+    [
+      "Notes",
+      "Notas"
+    ],
+    [
+      "Nothing at {0} {1}: that one starts cold.",
+      "Nada com {0} {1}: esse começa a frio."
+    ],
+    [
+      "Nothing new to import",
+      "Nada de novo para importar"
+    ],
+    [
+      "Nothing set, progression as usual",
+      "Nada definido, progressão como sempre"
+    ],
+    [
+      "Nothing to change right now: {0}",
+      "Nada a mudar por agora: {0}"
+    ],
+    [
+      "Nothing yet",
+      "Nada ainda"
+    ],
+    [
+      "Notifications",
+      "Notificações"
+    ],
+    [
+      "Notifications off",
+      "Notificações desativadas"
+    ],
+    [
+      "Notifications on",
+      "Notificações ativadas"
+    ],
+    [
+      "Nov",
+      "Nov"
+    ],
+    [
+      "November",
+      "Novembro"
+    ],
+    [
+      "Now in Integrations",
+      "Agora em Integrações"
+    ],
+    [
+      "Now in Stats, next to Muscle balance",
+      "Agora em Estatísticas, ao lado do equilíbrio muscular"
+    ],
+    [
+      "Nudge tone",
+      "Tom do aviso"
+    ],
+    [
+      "Obliques",
+      "Oblíquos"
+    ],
+    [
+      "Oct",
+      "Out"
+    ],
+    [
+      "October",
+      "Outubro"
+    ],
+    [
+      "Off",
+      "Não"
+    ],
+    [
+      "Off to Plan",
+      "Rumo ao Plano"
+    ],
+    [
+      "Off, even in season. Fair enough.",
+      "Desligado, mesmo na época. Justo."
+    ],
+    [
+      "On",
+      "Sim"
+    ],
+    [
+      "On Home",
+      "No Início"
+    ],
+    [
+      "On all year round. Bold choice.",
+      "Ligado o ano inteiro. Corajoso."
+    ],
+    [
+      "On this device",
+      "Neste dispositivo"
+    ],
+    [
+      "One more",
+      "Só mais um"
+    ],
+    [
+      "One more rep in the tank",
+      "Mais uma repetição de margem"
+    ],
+    [
+      "One row per set, plus body weight and measurements.",
+      "Uma linha por série, mais peso corporal e medidas."
+    ],
+    [
+      "One session in this period.",
+      "Uma sessão neste período."
+    ],
+    [
+      "One set less keeps the session doable today and still counts.",
+      "Uma série a menos mantém o treino possível hoje e conta na mesma."
+    ],
+    [
+      "One weigh-in",
+      "Uma pesagem"
+    ],
+    [
+      "Open Apple Health",
+      "Abrir o Apple Saúde"
+    ],
+    [
+      "Open a workout",
+      "Abrir um treino"
+    ],
+    [
+      "Open in Apple Maps",
+      "Abrir no Apple Maps"
+    ],
+    [
+      "Options: copy, remove",
+      "Opções: copiar, remover"
+    ],
+    [
+      "Original",
+      "Original"
+    ],
+    [
+      "Other names",
+      "Outros nomes"
+    ],
+    [
+      "Other routines",
+      "Outras rotinas"
+    ],
+    [
+      "Oura",
+      "Oura"
+    ],
+    [
+      "PRs",
+      "Recordes"
+    ],
+    [
+      "Page {0} of {1}",
+      "Página {0} de {1}"
+    ],
+    [
+      "Pairing code",
+      "Código de emparelhamento"
+    ],
+    [
+      "Pause",
+      "Pausar"
+    ],
+    [
+      "Pause both",
+      "Pausar os dois"
+    ],
+    [
+      "Per side",
+      "Por lado"
+    ],
+    [
+      "Performance report",
+      "Relatório de desempenho"
+    ],
+    [
+      "Performance report (PDF)",
+      "Relatório de desempenho (PDF)"
+    ],
+    [
+      "Period",
+      "Período"
+    ],
+    [
+      "Permission withdrawn",
+      "Permissão retirada"
+    ],
+    [
+      "Photo",
+      "Foto"
+    ],
+    [
+      "Photo or video {0} of {1}",
+      "Foto ou vídeo {0} de {1}"
+    ],
+    [
+      "Photo removed",
+      "Foto removida"
+    ],
+    [
+      "Pick a time",
+      "Escolher um tempo"
+    ],
+    [
+      "Pick equipment",
+      "Escolher equipamento"
+    ],
+    [
+      "Plan",
+      "Plano"
+    ],
+    [
+      "Plan options",
+      "Opções do plano"
+    ],
+    [
+      "Plan restored",
+      "Plano restaurado"
+    ],
+    [
+      "Plan: {0}",
+      "Plano: {0}"
+    ],
+    [
+      "Play a sound",
+      "Tocar um som"
+    ],
+    [
+      "Play both",
+      "Reproduzir os dois"
+    ],
+    [
+      "Playback speed",
+      "Velocidade de reprodução"
+    ],
+    [
+      "Polar",
+      "Polar"
+    ],
+    [
+      "Prev",
+      "Anterior"
+    ],
+    [
+      "Previous",
+      "Anterior"
+    ],
+    [
+      "Previous year",
+      "Ano anterior"
+    ],
+    [
+      "Primary muscle groups",
+      "Grupos musculares primários"
+    ],
+    [
+      "Profile default ({0})",
+      "Como o perfil ({0})"
+    ],
+    [
+      "Programme",
+      "Programa"
+    ],
+    [
+      "Programme done",
+      "Programa concluído"
+    ],
+    [
+      "Programmes",
+      "Programas"
+    ],
+    [
+      "Progress & history",
+      "Progresso e histórico"
+    ],
+    [
+      "Progress photos",
+      "Fotos de progresso"
+    ],
+    [
+      "Progression",
+      "Progressão"
+    ],
+    [
+      "Push notifications",
+      "Notificações push"
+    ],
+    [
+      "Push, pull and legs each get their own day.",
+      "Empurrar, puxar e pernas, cada um no seu dia."
+    ],
+    [
+      "Pyramid sets",
+      "Séries em pirâmide"
+    ],
+    [
+      "Quads",
+      "Quadríceps"
+    ],
+    [
+      "Quick check-in",
+      "Check-in rápido"
+    ],
+    [
+      "R",
+      "D"
+    ],
+    [
+      "RIR",
+      "RIR"
+    ],
+    [
+      "RPE",
+      "RPE"
+    ],
+    [
+      "Ramped from the work weight: more rungs when it is heavy, fewer when it is light.",
+      "Em degraus a partir do peso de trabalho: mais quando é pesado, menos quando é leve."
+    ],
+    [
+      "Rate openGym on Google Play",
+      "Avaliar o openGym no Google Play"
+    ],
+    [
+      "Rate openGym on the App Store",
+      "Avaliar o openGym na App Store"
+    ],
+    [
+      "Ready",
+      "Pronto"
+    ],
+    [
+      "Ready {0}",
+      "Pronto {0}"
+    ],
+    [
+      "Recent workouts",
+      "Treinos recentes"
+    ],
+    [
+      "Record a video",
+      "Gravar um vídeo"
+    ],
+    [
+      "Record: {0} rep",
+      "Recorde: {0} rep"
+    ],
+    [
+      "Record: {0} rep at {1}",
+      "Recorde: {0} rep com {1}"
+    ],
+    [
+      "Record: {0} reps",
+      "Recorde: {0} reps"
+    ],
+    [
+      "Record: {0} reps at {1}",
+      "Recorde: {0} reps com {1}"
+    ],
+    [
+      "Recovering",
+      "Em recuperação"
+    ],
+    [
+      "Recovering {0}",
+      "Em recuperação {0}"
+    ],
+    [
+      "Recovery",
+      "Recuperação"
+    ],
+    [
+      "Recovery tips",
+      "Dicas de recuperação"
+    ],
+    [
+      "Reload openGym",
+      "Recarregar openGym"
+    ],
+    [
+      "Reminder time",
+      "Hora do lembrete"
+    ],
+    [
+      "Reminders",
+      "Lembretes"
+    ],
+    [
+      "Remove",
+      "Remover"
+    ],
+    [
+      "Remove a routine",
+      "Remover uma rotina"
+    ],
+    [
+      "Remove burst",
+      "Remover rajada"
+    ],
+    [
+      "Remove drop",
+      "Remover queda"
+    ],
+    [
+      "Remove exercise",
+      "Remover exercício"
+    ],
+    [
+      "Remove from favourites",
+      "Remover dos favoritos"
+    ],
+    [
+      "Remove from routine",
+      "Remover da rotina"
+    ],
+    [
+      "Remove goal",
+      "Remover meta"
+    ],
+    [
+      "Remove set",
+      "Remover série"
+    ],
+    [
+      "Remove this card?",
+      "Remover este cartão?"
+    ],
+    [
+      "Remove this photo or video?",
+      "Remover esta foto ou vídeo?"
+    ],
+    [
+      "Remove this set",
+      "Remover esta série"
+    ],
+    [
+      "Remove this video?",
+      "Remover este vídeo?"
+    ],
+    [
+      "Remove video",
+      "Remover vídeo"
+    ],
+    [
+      "Remove warm-up {0}",
+      "Remover aquecimento {0}"
+    ],
+    [
+      "Remove {0}",
+      "Tirar {0}"
+    ],
+    [
+      "Remove {0}?",
+      "Remover {0}?"
+    ],
+    [
+      "Removed",
+      "Removido"
+    ],
+    [
+      "Removed from favourites",
+      "Removido dos favoritos"
+    ],
+    [
+      "Rename workout",
+      "Renomear treino"
+    ],
+    [
+      "Renpho",
+      "Renpho"
+    ],
+    [
+      "Reorder exercises",
+      "Reordenar exercícios"
+    ],
+    [
+      "Repeat today",
+      "Repetir hoje"
+    ],
+    [
+      "Replace",
+      "Substituir"
+    ],
+    [
+      "Replace exercise",
+      "Substituir exercício"
+    ],
+    [
+      "Reps",
+      "Reps"
+    ],
+    [
+      "Reps from",
+      "Reps a partir de"
+    ],
+    [
+      "Rescheduled",
+      "Reagendado"
+    ],
+    [
+      "Rest",
+      "Descanso"
+    ],
+    [
+      "Rest (s)",
+      "Descanso (s)"
+    ],
+    [
+      "Rest after this set",
+      "Descanso depois desta série"
+    ],
+    [
+      "Rest between sides",
+      "Descanso entre lados"
+    ],
+    [
+      "Rest between warm-ups",
+      "Descanso entre aquecimentos"
+    ],
+    [
+      "Rest day",
+      "Dia de descanso"
+    ],
+    [
+      "Rest day. The loop goes on {0}.",
+      "Dia de descanso. O ciclo continua {0}."
+    ],
+    [
+      "Rest timer",
+      "Temporizador de descanso"
+    ],
+    [
+      "Rest-pause",
+      "Rest-pause"
+    ],
+    [
+      "Rest-pause burst",
+      "Rajada rest-pause"
+    ],
+    [
+      "Rest-pause reps",
+      "Repetições rest-pause"
+    ],
+    [
+      "Rest-pause rest",
+      "Descanso rest-pause"
+    ],
+    [
+      "Rest-timer alerts, even if openGym is closed.",
+      "Alertas do temporizador de descanso, mesmo com o openGym fechado."
+    ],
+    [
+      "Restart",
+      "Recomeçar"
+    ],
+    [
+      "Restart both",
+      "Recomeçar os dois"
+    ],
+    [
+      "Rest’s over. Next set!",
+      "Acabou o descanso. Próxima série!"
+    ],
+    [
+      "Resume",
+      "Retomar"
+    ],
+    [
+      "Retry",
+      "Tentar de novo"
+    ],
+    [
+      "Revise programme “{0}”",
+      "Rever o programa “{0}”"
+    ],
+    [
+      "Revision {0}",
+      "Revisão {0}"
+    ],
+    [
+      "Right",
+      "Direita"
+    ],
+    [
+      "Right ankle",
+      "Tornozelo direito"
+    ],
+    [
+      "Right calf",
+      "Gémeo direito"
+    ],
+    [
+      "Right forearm",
+      "Antebraço direito"
+    ],
+    [
+      "Right thigh",
+      "Coxa direita"
+    ],
+    [
+      "Right upper arm",
+      "Braço direito"
+    ],
+    [
+      "Right wrist",
+      "Pulso direito"
+    ],
+    [
+      "Rough day? {0} will keep. Tomorrow is a fresh start.",
+      "Dia difícil? {0} pode esperar. Amanhã é um novo começo."
+    ],
+    [
+      "Round complete",
+      "Volta concluída"
+    ],
+    [
+      "Rounded to whole sets. A set counts fully for its main muscle and partly for the ones that help, so the muscles add up to more than your work sets.",
+      "Arredondado a séries inteiras. Uma série conta por inteiro para o músculo principal e em parte para os que ajudam, por isso os músculos somam mais do que as séries de trabalho."
+    ],
+    [
+      "Routine",
+      "Rotina"
+    ],
+    [
+      "Routine name",
+      "Nome da rotina"
+    ],
+    [
+      "Routine progression",
+      "Progressão da rotina"
+    ],
+    [
+      "Rule",
+      "Regra"
+    ],
+    [
+      "Run it again",
+      "Repetir"
+    ],
+    [
+      "Running on empty",
+      "Sem energia"
+    ],
+    [
+      "Same as last time",
+      "Igual à última vez"
+    ],
+    [
+      "Same as last week, a bit heavier",
+      "Como na semana passada, um pouco mais pesado"
+    ],
+    [
+      "Same day",
+      "No mesmo dia"
+    ],
+    [
+      "Same muscle: {0}",
+      "Mesmo músculo: {0}"
+    ],
+    [
+      "Same pattern, higher reps than day A.",
+      "O mesmo padrão, mais repetições do que no dia A."
+    ],
+    [
+      "Samsung Health",
+      "Samsung Health"
+    ],
+    [
+      "Saturday",
+      "Sábado"
+    ],
+    [
+      "Save card",
+      "Guardar cartão"
+    ],
+    [
+      "Schedule",
+      "Horário"
+    ],
+    [
+      "Seasonal themes",
+      "Temas da época"
+    ],
+    [
+      "Seconds",
+      "Segundos"
+    ],
+    [
+      "Send",
+      "Enviar"
+    ],
+    [
+      "Send test event",
+      "Enviar evento de teste"
+    ],
+    [
+      "Send test notification",
+      "Enviar notificação de teste"
+    ],
+    [
+      "Send when",
+      "Enviar quando"
+    ],
+    [
+      "Sending",
+      "Envio"
+    ],
+    [
+      "Sent only to {0}, never to another server.",
+      "Enviado só para {0}, nunca para outro servidor."
+    ],
+    [
+      "Sep",
+      "Set"
+    ],
+    [
+      "September",
+      "Setembro"
+    ],
+    [
+      "Serratus",
+      "Serrátil"
+    ],
+    [
+      "Server & sync",
+      "Servidor e sincronização"
+    ],
+    [
+      "Server address",
+      "Endereço do servidor"
+    ],
+    [
+      "Server address (e.g. gym.example.com)",
+      "Endereço do servidor (ex. gym.example.com)"
+    ],
+    [
+      "Server address unknown",
+      "Endereço do servidor desconhecido"
+    ],
+    [
+      "Server error (HTTP {0})",
+      "Erro do servidor (HTTP {0})"
+    ],
+    [
+      "Session length",
+      "Duração da sessão"
+    ],
+    [
+      "Session note",
+      "Nota da sessão"
+    ],
+    [
+      "Sessions and timed sets",
+      "Sessões e séries por tempo"
+    ],
+    [
+      "Set current",
+      "Marcar como atual"
+    ],
+    [
+      "Set up {0}",
+      "Configurar {0}"
+    ],
+    [
+      "Set {0}",
+      "Série {0}"
+    ],
+    [
+      "Set {0} ({1})",
+      "Série {0} ({1})"
+    ],
+    [
+      "Set {0} ({1}) done",
+      "Série {0} ({1}) concluída"
+    ],
+    [
+      "Set {0} done",
+      "Série {0} concluída"
+    ],
+    [
+      "Set {0} of {1}",
+      "Série {0} de {1}"
+    ],
+    [
+      "Sets",
+      "Séries"
+    ],
+    [
+      "Sets from",
+      "Séries a partir de"
+    ],
+    [
+      "Sets per muscle",
+      "Séries por músculo"
+    ],
+    [
+      "Sets up to",
+      "Séries até"
+    ],
+    [
+      "Short on time",
+      "Pouco tempo"
+    ],
+    [
+      "Shoulders",
+      "Ombros"
+    ],
+    [
+      "Show activity",
+      "Mostrar atividade"
+    ],
+    [
+      "Show less",
+      "Mostrar menos"
+    ],
+    [
+      "Show more",
+      "Mostrar mais"
+    ],
+    [
+      "Show this next time",
+      "Mostrar da próxima vez"
+    ],
+    [
+      "Show where I am",
+      "Mostrar onde estou"
+    ],
+    [
+      "Signing secret",
+      "Segredo de assinatura"
+    ],
+    [
+      "Silent",
+      "Silencioso"
+    ],
+    [
+      "Similar exercises",
+      "Exercícios semelhantes"
+    ],
+    [
+      "Single stack",
+      "Pilha única"
+    ],
+    [
+      "Siri & Shortcuts",
+      "Siri e Atalhos"
+    ],
+    [
+      "Skip the rest of {0}",
+      "Saltar o resto de {0}"
+    ],
+    [
+      "Small",
+      "Pequena"
+    ],
+    [
+      "Something else",
+      "Outra coisa"
+    ],
+    [
+      "Sound",
+      "Som"
+    ],
+    [
+      "Source code",
+      "Código-fonte"
+    ],
+    [
+      "Speed (km/h)",
+      "Velocidade (km/h)"
+    ],
+    [
+      "Speed (mph)",
+      "Velocidade (mph)"
+    ],
+    [
+      "Speed unit",
+      "Unidade de velocidade"
+    ],
+    [
+      "Spooky colors",
+      "Cores assustadoras"
+    ],
+    [
+      "Start",
+      "Começar"
+    ],
+    [
+      "Start a new plan",
+      "Começar um plano novo"
+    ],
+    [
+      "Start from",
+      "Começar por"
+    ],
+    [
+      "Start programme",
+      "Começar programa"
+    ],
+    [
+      "Start set",
+      "Iniciar série"
+    ],
+    [
+      "Start the demo",
+      "Iniciar a demo"
+    ],
+    [
+      "Start the loop",
+      "Iniciar o ciclo"
+    ],
+    [
+      "Start the loop over",
+      "Recomeçar o ciclo"
+    ],
+    [
+      "Start time",
+      "Hora de início"
+    ],
+    [
+      "Start workout",
+      "Começar treino"
+    ],
+    [
+      "Start {0}",
+      "Começar {0}"
+    ],
+    [
+      "Start “{0}”?",
+      "Começar “{0}”?"
+    ],
+    [
+      "Starter programmes",
+      "Programas iniciais"
+    ],
+    [
+      "Stat of the day",
+      "Número do dia"
+    ],
+    [
+      "Stats",
+      "Estatísticas"
+    ],
+    [
+      "Step (seconds)",
+      "Incremento (segundos)"
+    ],
+    [
+      "Step ({0})",
+      "Incremento ({0})"
+    ],
+    [
+      "Still only",
+      "Só imagem fixa"
+    ],
+    [
+      "Still to come",
+      "Ainda por vir"
+    ],
+    [
+      "Stop auto",
+      "Parar auto"
+    ],
+    [
+      "Straight into the work sets.",
+      "Direto às séries de trabalho."
+    ],
+    [
+      "Strength",
+      "Força"
+    ],
+    [
+      "Strength block, 4 weeks",
+      "Bloco de força, 4 semanas"
+    ],
+    [
+      "Strong, FitNotes, Hevy CSV, GymMane or an Apple Health export.",
+      "Strong, FitNotes, CSV do Hevy, GymMane ou uma exportação do Apple Health."
+    ],
+    [
+      "Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health",
+      "Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT e outras, ou o peso da Apple Saúde"
+    ],
+    [
+      "Suggest a fix for this exercise",
+      "Sugerir uma correção para este exercício"
+    ],
+    [
+      "Suggestions",
+      "Sugestões"
+    ],
+    [
+      "Sunday",
+      "Domingo"
+    ],
+    [
+      "Superset buttons in the exercise header",
+      "Botões de superset no cabeçalho do exercício"
+    ],
+    [
+      "Superset position {0}",
+      "Posição na supersérie {0}"
+    ],
+    [
+      "Superset {0} with {1}",
+      "Supersérie de {0} com {1}"
+    ],
+    [
+      "Support openGym",
+      "Apoiar o openGym"
+    ],
+    [
+      "Swap session",
+      "Trocar sessão"
+    ],
+    [
+      "Swap to {0}",
+      "Trocar para {0}"
+    ],
+    [
+      "Swap {0} for {1}",
+      "Trocar {0} por {1}"
+    ],
+    [
+      "Switch off",
+      "Desligar"
+    ],
+    [
+      "Switch off {0}?",
+      "Desligar {0}?"
+    ],
+    [
+      "Switch these off?",
+      "Desligar estes?"
+    ],
+    [
+      "Sync needs a look",
+      "A sincronização precisa de atenção"
+    ],
+    [
+      "Sync now",
+      "Sincronizar agora"
+    ],
+    [
+      "System",
+      "Sistema"
+    ],
+    [
+      "Target range",
+      "Intervalo-alvo"
+    ],
+    [
+      "Target weight",
+      "Peso alvo"
+    ],
+    [
+      "Test event",
+      "Evento de teste"
+    ],
+    [
+      "Test event delivered",
+      "Evento de teste entregue"
+    ],
+    [
+      "Test failed",
+      "Teste falhou"
+    ],
+    [
+      "Test failed: {0}",
+      "O teste falhou: {0}"
+    ],
+    [
+      "That date already has measurements. Edit it instead.",
+      "Essa data já tem medidas — edita-as em vez disso."
+    ],
+    [
+      "That invite code is not valid.",
+      "Esse código de convite não é válido."
+    ],
+    [
+      "That proposal can’t be read.",
+      "Essa proposta não pode ser lida."
+    ],
+    [
+      "That's the whole workout!",
+      "Era o treino todo!"
+    ],
+    [
+      "That’s plenty of backups.",
+      "Já chega de substitutos."
+    ],
+    [
+      "The Coach is off",
+      "Treinador desligado"
+    ],
+    [
+      "The Coach is on",
+      "Treinador ligado"
+    ],
+    [
+      "The Coach is switched off on this instance for safety reasons.",
+      "O Treinador está desativado nesta instância por motivos de segurança."
+    ],
+    [
+      "The Coach isn’t installed properly on this instance.",
+      "O Treinador não está instalado corretamente nesta instância."
+    ],
+    [
+      "The Coach isn’t set up on this instance.",
+      "O Treinador não está configurado nesta instância."
+    ],
+    [
+      "The common one. A bit generous at higher reps.",
+      "A mais comum. Um pouco generosa com mais repetições."
+    ],
+    [
+      "The exercise library",
+      "A biblioteca de exercícios"
+    ],
+    [
+      "The icon could not be changed.",
+      "Não foi possível mudar o ícone."
+    ],
+    [
+      "The key is used for this import and then forgotten.",
+      "A chave é usada nesta importação e depois esquecida."
+    ],
+    [
+      "The loop",
+      "O ciclo"
+    ],
+    [
+      "The main lower-body driver, where most of the strength comes from.",
+      "O motor principal da parte inferior do corpo, de onde vem a maior parte da força."
+    ],
+    [
+      "The most conservative of the classics.",
+      "A mais conservadora dos clássicos."
+    ],
+    [
+      "The quieter three-beep sound from before 1.3.9, instead of the louder chime.",
+      "O som mais suave de três bipes de antes da 1.3.9, em vez do som mais alto."
+    ],
+    [
+      "The same patterns, different variations: enough overlap to progress, enough difference to stay fresh.",
+      "Os mesmos padrões, variações diferentes: sobreposição suficiente para progredir, diferença suficiente para não cansar."
+    ],
+    [
+      "The server answered with something other than openGym data.",
+      "O servidor respondeu com algo que não são dados do openGym."
+    ],
+    [
+      "The server did not answer in time.",
+      "O servidor não respondeu a tempo."
+    ],
+    [
+      "The server refuses this browser",
+      "O servidor recusa este navegador"
+    ],
+    [
+      "The short break between the bursts of a rest-pause set.",
+      "A pausa curta entre os blocos de uma série rest-pause."
+    ],
+    [
+      "The web app updates together with your server. The Android app installs its own updates from here.",
+      "A app web atualiza-se com o teu servidor. A app Android instala as suas atualizações a partir daqui."
+    ],
+    [
+      "The weight you log is all plates.",
+      "O peso que registas são só discos."
+    ],
+    [
+      "The weights this machine really has, odd steps and all. Progression, deloads, warm-ups and the + and − buttons land only on these.",
+      "Os pesos que esta máquina tem mesmo, saltos estranhos incluídos. A progressão, as descargas, os aquecimentos e os botões + e − só caem nestes."
+    ],
+    [
+      "Theme",
+      "Tema"
+    ],
+    [
+      "There is already a workout on that day.",
+      "Já existe um treino nesse dia."
+    ],
+    [
+      "These warm-ups come before the work sets every session, as a share of the work weight, so they grow with it.",
+      "Estes aquecimentos vêm antes das séries de trabalho em cada treino, como parte do peso de trabalho, por isso crescem com ele."
+    ],
+    [
+      "This account has been disabled.",
+      "Esta conta foi desativada."
+    ],
+    [
+      "This device, before the update",
+      "Este dispositivo, antes da atualização"
+    ],
+    [
+      "This exercise, this session only",
+      "Só este exercício, só nesta sessão"
+    ],
+    [
+      "This looks like a {0} export, but we couldn’t read it. Nothing was imported.",
+      "Parece uma exportação do {0}, mas não conseguimos lê-la. Nada foi importado."
+    ],
+    [
+      "This month",
+      "Este mês"
+    ],
+    [
+      "This month’s challenges",
+      "Desafios do mês"
+    ],
+    [
+      "This programme is gone.",
+      "Este programa já não existe."
+    ],
+    [
+      "This routine",
+      "Esta rotina"
+    ],
+    [
+      "This session",
+      "Esta sessão"
+    ],
+    [
+      "This usually takes a minute or two.",
+      "Costuma demorar um ou dois minutos."
+    ],
+    [
+      "This video isn’t on this device",
+      "Este vídeo não está neste dispositivo"
+    ],
+    [
+      "This week",
+      "Esta semana"
+    ],
+    [
+      "Three days of plain linear progression, with a deload every fourth week.",
+      "Três dias de progressão linear simples, com um deload a cada quarta semana."
+    ],
+    [
+      "Three days on the 5×5 routines, a little heavier every week, then a light week to bounce back.",
+      "Três dias nas rotinas 5×5, um pouco mais pesado cada semana, depois uma semana leve para recuperar."
+    ],
+    [
+      "Three more reps",
+      "Mais três repetições"
+    ],
+    [
+      "Three sessions, the whole body each time.",
+      "Três sessões, o corpo todo de cada vez."
+    ],
+    [
+      "Thursday",
+      "Quinta-feira"
+    ],
+    [
+      "Time",
+      "Tempo"
+    ],
+    [
+      "Timer alerts",
+      "Alertas do temporizador"
+    ],
+    [
+      "Tip",
+      "Dica"
+    ],
+    [
+      "To",
+      "Até"
+    ],
+    [
+      "Today",
+      "Hoje"
+    ],
+    [
+      "Today's plan",
+      "Plano de hoje"
+    ],
+    [
+      "Top of the rep range in every set. {0} {1} less help, back to {2} reps.",
+      "Topo do intervalo em todas as séries. Menos {0} {1} de ajuda, de volta a {2} repetições."
+    ],
+    [
+      "Top set",
+      "Melhor série"
+    ],
+    [
+      "Top speed per workout",
+      "Velocidade máxima por treino"
+    ],
+    [
+      "Torso",
+      "Tronco"
+    ],
+    [
+      "Trained",
+      "Treinado"
+    ],
+    [
+      "Training",
+      "Treino"
+    ],
+    [
+      "Training and body",
+      "Treino e corpo"
+    ],
+    [
+      "Training plan",
+      "Plano de treino"
+    ],
+    [
+      "Training time",
+      "Tempo de treino"
+    ],
+    [
+      "Training tip",
+      "Dica de treino"
+    ],
+    [
+      "Traps",
+      "Trapézio"
+    ],
+    [
+      "Triceps",
+      "Tríceps"
+    ],
+    [
+      "Triple progression",
+      "Progressão tripla"
+    ],
+    [
+      "Trophy shelf",
+      "Prateleira de troféus"
+    ],
+    [
+      "Try it",
+      "Experimentar"
+    ],
+    [
+      "Try the Christmas icon",
+      "Experimentar o ícone de Natal"
+    ],
+    [
+      "Tuesday",
+      "Terça-feira"
+    ],
+    [
+      "Tutorials",
+      "Tutoriais"
+    ],
+    [
+      "Two more reps",
+      "Mais duas repetições"
+    ],
+    [
+      "Units & language",
+      "Unidades e idioma"
+    ],
+    [
+      "Unknown exercise",
+      "Exercício desconhecido"
+    ],
+    [
+      "Unlink superset on {0}",
+      "Desfazer a supersérie de {0}"
+    ],
+    [
+      "Up on last time",
+      "Acima da última vez"
+    ],
+    [
+      "Up one level",
+      "Subir um nível"
+    ],
+    [
+      "Up to {0} photos or videos per workout.",
+      "Até {0} fotos ou vídeos por treino."
+    ],
+    [
+      "Up to {0} set videos per workout.",
+      "Até {0} vídeos de séries por treino."
+    ],
+    [
+      "Update failed: {0}",
+      "Falha na atualização: {0}"
+    ],
+    [
+      "Update to openGym v{0}",
+      "Atualizar para o openGym v{0}"
+    ],
+    [
+      "Update to {0}?",
+      "Atualizar para {0}?"
+    ],
+    [
+      "Upper / Lower",
+      "Superior / Inferior"
+    ],
+    [
+      "Upper / lower by effort, 6 weeks",
+      "Superior / inferior por esforço, 6 semanas"
+    ],
+    [
+      "Upper body today?",
+      "Parte de cima hoje?"
+    ],
+    [
+      "Upper body twice, lower body twice.",
+      "Tronco superior duas vezes, inferior duas vezes."
+    ],
+    [
+      "Use on this device",
+      "Usar neste dispositivo"
+    ],
+    [
+      "Use this weekly schedule",
+      "Usar este horário semanal"
+    ],
+    [
+      "Usually about {0} min.",
+      "Costuma demorar cerca de {0} min."
+    ],
+    [
+      "Usually under a minute.",
+      "Costuma demorar menos de um minuto."
+    ],
+    [
+      "Version",
+      "Versão"
+    ],
+    [
+      "Vertical pressing.",
+      "Empurrão vertical."
+    ],
+    [
+      "Vibrate",
+      "Vibração"
+    ],
+    [
+      "Volume",
+      "Volume"
+    ],
+    [
+      "Volume per day",
+      "Volume por dia"
+    ],
+    [
+      "Volume per month",
+      "Volume por mês"
+    ],
+    [
+      "Volume per week",
+      "Volume por semana"
+    ],
+    [
+      "Waist",
+      "Cintura"
+    ],
+    [
+      "Warm-up",
+      "Aquecimento"
+    ],
+    [
+      "Warm-up sets",
+      "Séries de aquecimento"
+    ],
+    [
+      "Warm-up {0}",
+      "Aquecimento {0}"
+    ],
+    [
+      "Warm-ups",
+      "Aquecimentos"
+    ],
+    [
+      "Watch",
+      "Relógio"
+    ],
+    [
+      "Wear OS watch",
+      "Relógio Wear OS"
+    ],
+    [
+      "Webhook added",
+      "Webhook adicionado"
+    ],
+    [
+      "Webhook removed",
+      "Webhook removido"
+    ],
+    [
+      "Webhooks",
+      "Webhooks"
+    ],
+    [
+      "Webhooks for Home Assistant and friends, and the MCP server.",
+      "Webhooks para o Home Assistant e companhia, e o servidor MCP."
+    ],
+    [
+      "Wed",
+      "Qua"
+    ],
+    [
+      "Wednesday",
+      "Quarta-feira"
+    ],
+    [
+      "Week",
+      "Semana"
+    ],
+    [
+      "Week by week",
+      "Semana a semana"
+    ],
+    [
+      "Week of {0}",
+      "Semana de {0}"
+    ],
+    [
+      "Week schedule",
+      "Horário semanal"
+    ],
+    [
+      "Week starts on",
+      "Início da semana"
+    ],
+    [
+      "Week streak",
+      "Sequência semanal"
+    ],
+    [
+      "Week {0}",
+      "Semana {0}"
+    ],
+    [
+      "Week {0} of {1}",
+      "Semana {0} de {1}"
+    ],
+    [
+      "Week {0} of {1}: deload week",
+      "Semana {0} de {1}: semana de deload"
+    ],
+    [
+      "Weekly",
+      "Semanal"
+    ],
+    [
+      "Weekly Training Plan",
+      "Plano de treino semanal"
+    ],
+    [
+      "Weekly average",
+      "Média semanal"
+    ],
+    [
+      "Weekly plan:",
+      "Plano semanal:"
+    ],
+    [
+      "Weeks",
+      "Semanas"
+    ],
+    [
+      "Weeks since training: {0}",
+      "Treino: há {0} sem."
+    ],
+    [
+      "Weigh-in updated",
+      "Pesagem atualizada"
+    ],
+    [
+      "Weigh-ins",
+      "Pesagens"
+    ],
+    [
+      "Weight ({0})",
+      "Peso ({0})"
+    ],
+    [
+      "Weight 30d",
+      "Peso 30 d"
+    ],
+    [
+      "Weight and reps buttons",
+      "Botões +/− de peso e repetições"
+    ],
+    [
+      "Weight decimals",
+      "Casas decimais do peso"
+    ],
+    [
+      "Weight drop (%)",
+      "Queda de peso (%)"
+    ],
+    [
+      "Weight means",
+      "O peso é"
+    ],
+    [
+      "Weight stack",
+      "Bloco de pesos"
+    ],
+    [
+      "Weight unit",
+      "Unidade de peso"
+    ],
+    [
+      "Welcome back, {0}",
+      "Bem-vindo de volta, {0}"
+    ],
+    [
+      "Welcome!",
+      "Bem-vindo!"
+    ],
+    [
+      "Welcome, {0}",
+      "Bem-vindo, {0}"
+    ],
+    [
+      "What are RIR and RPE?",
+      "O que são RIR e RPE?"
+    ],
+    [
+      "What gets sent",
+      "O que é enviado"
+    ],
+    [
+      "What it does",
+      "O que faz"
+    ],
+    [
+      "What it does not do",
+      "O que não faz"
+    ],
+    [
+      "What it reads",
+      "O que lê"
+    ],
+    [
+      "What openGym reads",
+      "O que o openGym lê"
+    ],
+    [
+      "What this session hits",
+      "O que esta sessão trabalha"
+    ],
+    [
+      "When",
+      "Quando"
+    ],
+    [
+      "Where the sets land",
+      "Onde caem as séries"
+    ],
+    [
+      "Where, and what movement hurts? (optional)",
+      "Onde, e em que movimento dói? (opcional)"
+    ],
+    [
+      "Which day is this photo from?",
+      "De que dia é esta foto?"
+    ],
+    [
+      "With pictures",
+      "Com imagens"
+    ],
+    [
+      "With {0} {1} today: {2}",
+      "Com {0} {1} hoje: {2}"
+    ],
+    [
+      "Withings",
+      "Withings"
+    ],
+    [
+      "Without one, the superset rests as long as its longest exercise rest.",
+      "Sem isto, a supersérie descansa tanto como o descanso mais longo dos seus exercícios."
+    ],
+    [
+      "Work sets only, warm-ups left out.",
+      "Só séries de trabalho, sem aquecimento."
+    ],
+    [
+      "Workout complete!",
+      "Treino concluído!"
+    ],
+    [
+      "Workout day",
+      "Dia de treino"
+    ],
+    [
+      "Workout day reminder",
+      "Lembrete de dia de treino"
+    ],
+    [
+      "Workout done",
+      "Treino concluído"
+    ],
+    [
+      "Workout finished",
+      "Treino terminado"
+    ],
+    [
+      "Workout options",
+      "Opções do treino"
+    ],
+    [
+      "Workout title",
+      "Título do treino"
+    ],
+    [
+      "Workouts",
+      "Treinos"
+    ],
+    [
+      "Workouts (CSV)",
+      "Treinos (CSV)"
+    ],
+    [
+      "Workouts and weigh-ins out, heart rate and scale readings in.",
+      "Treinos e pesagens saem, frequência cardíaca e balança entram."
+    ],
+    [
+      "Workouts and weigh-ins saved to Apple Health",
+      "Treinos e pesagens no Apple Saúde"
+    ],
+    [
+      "Workouts in {0} so far",
+      "Treinos em {0} até agora"
+    ],
+    [
+      "Workouts per week",
+      "Treinos por semana"
+    ],
+    [
+      "Workouts, body weight and measurements",
+      "Treinos, peso corporal e medidas"
+    ],
+    [
+      "Workouts, routines and weigh-ins, once.",
+      "Treinos, rotinas e pesagens, uma vez."
+    ],
+    [
+      "Workouts, weigh-ins and what can be fixed",
+      "Treinos, pesagens e o que dá para corrigir"
+    ],
+    [
+      "Works with",
+      "Funciona com"
+    ],
+    [
+      "You have the latest version.",
+      "Tens a versão mais recente."
+    ],
+    [
+      "You have v{0}",
+      "Tens a v{0}"
+    ],
+    [
+      "Zepp OS watch",
+      "Relógio Zepp OS"
+    ],
+    [
+      "abdominals",
+      "abdominais"
+    ],
+    [
+      "abductors",
+      "abdutores"
+    ],
+    [
+      "about {0}",
+      "cerca de {0}"
+    ],
+    [
+      "abs",
+      "abdominais"
+    ],
+    [
+      "adductors",
+      "adutores"
+    ],
+    [
+      "already added",
+      "já adicionado"
+    ],
+    [
+      "already in",
+      "já incluído"
+    ],
+    [
+      "ankle stabilizers",
+      "estabilizadores do tornozelo"
+    ],
+    [
+      "ankles",
+      "tornozelos"
+    ],
+    [
+      "applied",
+      "aplicado"
+    ],
+    [
+      "assisted",
+      "assistido"
+    ],
+    [
+      "at {0} {1} or harder",
+      "a {0} {1} ou mais duro"
+    ],
+    [
+      "average effort",
+      "esforço médio"
+    ],
+    [
+      "back",
+      "costas"
+    ],
+    [
+      "barbell",
+      "barra"
+    ],
+    [
+      "biceps",
+      "bíceps"
+    ],
+    [
+      "body weight",
+      "peso corporal"
+    ],
+    [
+      "bosu ball",
+      "bosu"
+    ],
+    [
+      "brachialis",
+      "braquial"
+    ],
+    [
+      "by hard sets",
+      "por séries duras"
+    ],
+    [
+      "by sets worked",
+      "por séries trabalhadas"
+    ],
+    [
+      "cable",
+      "cabo"
+    ],
+    [
+      "calisthenics",
+      "calistenia"
+    ],
+    [
+      "cardio",
+      "cardio"
+    ],
+    [
+      "cardiovascular system",
+      "sistema cardiovascular"
+    ],
+    [
+      "changed for this day",
+      "alterado para este dia"
+    ],
+    [
+      "chest",
+      "peito"
+    ],
+    [
+      "combat",
+      "combate"
+    ],
+    [
+      "custom",
+      "próprio"
+    ],
+    [
+      "custom color picker",
+      "cor própria personalizada seletor de cor"
+    ],
+    [
+      "declined",
+      "recusado"
+    ],
+    [
+      "deload",
+      "deload"
+    ],
+    [
+      "deload included",
+      "com descarga"
+    ],
+    [
+      "deltoids",
+      "deltoides"
+    ],
+    [
+      "delts",
+      "deltoides"
+    ],
+    [
+      "dumbbell",
+      "haltere"
+    ],
+    [
+      "elliptical machine",
+      "elíptica"
+    ],
+    [
+      "estimated",
+      "estimado"
+    ],
+    [
+      "ez barbell",
+      "barra EZ"
+    ],
+    [
+      "feet",
+      "pés"
+    ],
+    [
+      "floor",
+      "mínimo"
+    ],
+    [
+      "forearms",
+      "antebraços"
+    ],
+    [
+      "free & open source (AGPL v3)",
+      "gratuito e open source (AGPL v3)"
+    ],
+    [
+      "full",
+      "completo"
+    ],
+    [
+      "full body",
+      "corpo inteiro"
+    ],
+    [
+      "glutes",
+      "glúteos"
+    ],
+    [
+      "grip muscles",
+      "músculos de preensão"
+    ],
+    [
+      "groin",
+      "virilha"
+    ],
+    [
+      "h",
+      "h"
+    ],
+    [
+      "hammer",
+      "martelo"
+    ],
+    [
+      "hamstrings",
+      "isquiotibiais"
+    ],
+    [
+      "hands",
+      "mãos"
+    ],
+    [
+      "how close to failure",
+      "quão perto da falha"
+    ],
+    [
+      "iPhone only",
+      "Só no iPhone"
+    ],
+    [
+      "inner thighs",
+      "interior das coxas"
+    ],
+    [
+      "instructions in English",
+      "instruções em inglês"
+    ],
+    [
+      "isometric",
+      "isométrico"
+    ],
+    [
+      "it is not one it calls.",
+      "não é um que ele chame."
+    ],
+    [
+      "kettlebell",
+      "kettlebell"
+    ],
+    [
+      "landmine",
+      "landmine"
+    ],
+    [
+      "last",
+      "último"
+    ],
+    [
+      "latissimus dorsi",
+      "grande dorsal"
+    ],
+    [
+      "lats",
+      "dorsais"
+    ],
+    [
+      "leverage machine",
+      "máquina de alavanca"
+    ],
+    [
+      "lighter",
+      "um pouco mais leve"
+    ],
+    [
+      "lower abs",
+      "abdominais inferiores"
+    ],
+    [
+      "lower arms",
+      "antebraços"
+    ],
+    [
+      "massage ball",
+      "bola de massagem"
+    ],
+    [
+      "medicine ball",
+      "bola medicinal"
+    ],
+    [
+      "min",
+      "min"
+    ],
+    [
+      "mobility",
+      "mobilidade"
+    ],
+    [
+      "neck",
+      "pescoço"
+    ],
+    [
+      "no exercises",
+      "sem exercícios"
+    ],
+    [
+      "no hard sets",
+      "sem séries duras"
+    ],
+    [
+      "no sets",
+      "sem séries"
+    ],
+    [
+      "not trained",
+      "sem treino"
+    ],
+    [
+      "obliques",
+      "oblíquos"
+    ],
+    [
+      "olympic barbell",
+      "barra olímpica"
+    ],
+    [
+      "openGym can read it back in later.",
+      "O openGym pode voltar a lê-lo mais tarde."
+    ],
+    [
+      "openGym reads only while it is open: heart rate for workouts of the last day, weigh-ins of the last 30 days. Older workouts stay as they are.",
+      "O openGym só lê enquanto está aberto: frequência cardíaca dos treinos do último dia, pesagens dos últimos 30 dias. Os treinos mais antigos ficam como estão."
+    ],
+    [
+      "pairs",
+      "pares"
+    ],
+    [
+      "pectorals",
+      "peitorais"
+    ],
+    [
+      "per side",
+      "por lado"
+    ],
+    [
+      "pilates",
+      "pilates"
+    ],
+    [
+      "plyometrics",
+      "pliometria"
+    ],
+    [
+      "primary",
+      "primário"
+    ],
+    [
+      "quadriceps",
+      "quadríceps"
+    ],
+    [
+      "quads",
+      "quadríceps"
+    ],
+    [
+      "reached!",
+      "alcançado!"
+    ],
+    [
+      "rear deltoids",
+      "deltoides posteriores"
+    ],
+    [
+      "rehab",
+      "reabilitação"
+    ],
+    [
+      "reps",
+      "reps"
+    ],
+    [
+      "rescheduled",
+      "reagendado"
+    ],
+    [
+      "rest day, but no one’s stopping you",
+      "dia de descanso, mas ninguém te impede"
+    ],
+    [
+      "rhomboids",
+      "romboides"
+    ],
+    [
+      "roller",
+      "rolo"
+    ],
+    [
+      "rope",
+      "corda"
+    ],
+    [
+      "routine",
+      "rotina"
+    ],
+    [
+      "same again",
+      "mais uma vez igual"
+    ],
+    [
+      "sandbag",
+      "saco de areia"
+    ],
+    [
+      "scheduled on {0} day",
+      "agendado em {0} dia"
+    ],
+    [
+      "scheduled on {0} days",
+      "agendado em {0} dias"
+    ],
+    [
+      "sec",
+      "s"
+    ],
+    [
+      "secondary",
+      "secundário"
+    ],
+    [
+      "serratus anterior",
+      "serrátil anterior"
+    ],
+    [
+      "shoulders",
+      "ombros"
+    ],
+    [
+      "since previous",
+      "desde a anterior"
+    ],
+    [
+      "skierg machine",
+      "SkiErg"
+    ],
+    [
+      "sled machine",
+      "trenó"
+    ],
+    [
+      "smith machine",
+      "máquina Smith"
+    ],
+    [
+      "spine",
+      "coluna"
+    ],
+    [
+      "stability ball",
+      "bola de estabilidade"
+    ],
+    [
+      "stationary bike",
+      "bicicleta estática"
+    ],
+    [
+      "step up",
+      "subir um degrau"
+    ],
+    [
+      "sternocleidomastoid",
+      "esternocleidomastóideo"
+    ],
+    [
+      "strength",
+      "força"
+    ],
+    [
+      "suspension trainer",
+      "treino em suspensão"
+    ],
+    [
+      "swipe gesture",
+      "deslizar gesto"
+    ],
+    [
+      "this week",
+      "esta semana"
+    ],
+    [
+      "tire",
+      "pneu"
+    ],
+    [
+      "today is {0}",
+      "hoje é {0}"
+    ],
+    [
+      "today {0}",
+      "hoje {0}"
+    ],
+    [
+      "trap bar",
+      "barra hexagonal"
+    ],
+    [
+      "trapezius",
+      "trapézio"
+    ],
+    [
+      "traps",
+      "trapézios"
+    ],
+    [
+      "triceps",
+      "tríceps"
+    ],
+    [
+      "upper arms",
+      "braços"
+    ],
+    [
+      "upper back",
+      "costas superiores"
+    ],
+    [
+      "upper chest",
+      "peito superior"
+    ],
+    [
+      "upper legs",
+      "pernas"
+    ],
+    [
+      "week start",
+      "início da semana"
+    ],
+    [
+      "weight plate",
+      "disco de peso"
+    ],
+    [
+      "weighted",
+      "com peso extra"
+    ],
+    [
+      "wheel roller",
+      "roda abdominal"
+    ],
+    [
+      "wrist extensors",
+      "extensores do punho"
+    ],
+    [
+      "wrist flexors",
+      "flexores do punho"
+    ],
+    [
+      "wrists",
+      "punhos"
+    ],
+    [
+      "yesterday",
+      "ontem"
+    ],
+    [
+      "yoga",
+      "yoga"
+    ],
+    [
+      "{0} %",
+      "{0} %"
+    ],
+    [
+      "{0} (done)",
+      "{0} (concluído)"
+    ],
+    [
+      "{0} APK, animations at {1} px",
+      "APK {0}, animações a {1} px"
+    ],
+    [
+      "{0} MB",
+      "{0} MB"
+    ],
+    [
+      "{0} added ({1})",
+      "{0} adicionado ({1})"
+    ],
+    [
+      "{0} change",
+      "{0} alteração"
+    ],
+    [
+      "{0} changes",
+      "{0} alterações"
+    ],
+    [
+      "{0} day apart",
+      "{0} dia de diferença"
+    ],
+    [
+      "{0} days",
+      "{0} dias"
+    ],
+    [
+      "{0} days a week",
+      "{0} dias por semana"
+    ],
+    [
+      "{0} days apart",
+      "{0} dias de diferença"
+    ],
+    [
+      "{0} days per week",
+      "{0} dias por semana"
+    ],
+    [
+      "{0} each",
+      "{0} cada"
+    ],
+    [
+      "{0} exercise",
+      "{0} exercício"
+    ],
+    [
+      "{0} exercises",
+      "{0} exercícios"
+    ],
+    [
+      "{0} exercises with animations",
+      "{0} exercícios com animações"
+    ],
+    [
+      "{0} formula: calculated from one set, not a tested max.",
+      "Fórmula {0}: calculada a partir de uma série, não é um máximo testado."
+    ],
+    [
+      "{0} lift at a %1RM",
+      "{0} exercício com %1RM"
+    ],
+    [
+      "{0} lifts at a %1RM",
+      "{0} exercícios com %1RM"
+    ],
+    [
+      "{0} loaded",
+      "{0} carregado"
+    ],
+    [
+      "{0} measurement",
+      "{0} medida"
+    ],
+    [
+      "{0} measurements",
+      "{0} medidas"
+    ],
+    [
+      "{0} min",
+      "{0} min"
+    ],
+    [
+      "{0} min per session",
+      "{0} min por sessão"
+    ],
+    [
+      "{0} minute",
+      "{0} minuto"
+    ],
+    [
+      "{0} minute of cardio",
+      "{0} minuto de cardio"
+    ],
+    [
+      "{0} minutes",
+      "{0} minutos"
+    ],
+    [
+      "{0} minutes of cardio",
+      "{0} minutos de cardio"
+    ],
+    [
+      "{0} of 24 doors open",
+      "{0} de 24 portas abertas"
+    ],
+    [
+      "{0} of {1} done",
+      "{0} de {1} feitos"
+    ],
+    [
+      "{0} of {1} done this round.",
+      "{0} de {1} feitas nesta volta."
+    ],
+    [
+      "{0} of {1} finished sets rated",
+      "{0} de {1} séries concluídas avaliadas"
+    ],
+    [
+      "{0} of {1} modules on.",
+      "{0} de {1} módulos ligados."
+    ],
+    [
+      "{0} per side",
+      "{0} por lado"
+    ],
+    [
+      "{0} photo",
+      "{0} foto"
+    ],
+    [
+      "{0} photo added",
+      "{0} foto adicionada"
+    ],
+    [
+      "{0} photo knows its day and goes there. The others go on the day below.",
+      "{0} foto sabe o seu dia e vai para lá. As outras vão para o dia abaixo."
+    ],
+    [
+      "{0} photo or video",
+      "{0} foto ou vídeo"
+    ],
+    [
+      "{0} photos",
+      "{0} fotos"
+    ],
+    [
+      "{0} photos added",
+      "{0} fotos adicionadas"
+    ],
+    [
+      "{0} photos know their day and go there. The others go on the day below.",
+      "{0} fotos sabem o seu dia e vão para lá. As outras vão para o dia abaixo."
+    ],
+    [
+      "{0} photos or videos",
+      "{0} fotos ou vídeos"
+    ],
+    [
+      "{0} programme",
+      "{0} programa"
+    ],
+    [
+      "{0} programmes",
+      "{0} programas"
+    ],
+    [
+      "{0} push-up this month",
+      "{0} flexão este mês"
+    ],
+    [
+      "{0} push-ups this month",
+      "{0} flexões este mês"
+    ],
+    [
+      "{0} px",
+      "{0} px"
+    ],
+    [
+      "{0} rated · {1} estimated of {2} sets",
+      "{0} avaliadas · {1} estimadas de {2} séries"
+    ],
+    [
+      "{0} rest",
+      "{0} de descanso"
+    ],
+    [
+      "{0} result",
+      "{0} resultado"
+    ],
+    [
+      "{0} results",
+      "{0} resultados"
+    ],
+    [
+      "{0} routine",
+      "{0} rotina"
+    ],
+    [
+      "{0} routine imported",
+      "{0} rotina importada"
+    ],
+    [
+      "{0} routine is already here and will be left alone.",
+      "{0} rotina já existe e fica como está."
+    ],
+    [
+      "{0} routines",
+      "{0} rotinas"
+    ],
+    [
+      "{0} routines are already here and will be left alone.",
+      "{0} rotinas já existem e ficam como estão."
+    ],
+    [
+      "{0} row skipped (couldn’t read it)",
+      "{0} linha ignorada (não deu para ler)"
+    ],
+    [
+      "{0} rows skipped (couldn’t read them)",
+      "{0} linhas ignoradas (não deu para ler)"
+    ],
+    [
+      "{0} saves to Apple Health on iPhone or Health Connect on Android. openGym reads from there.",
+      "{0} guarda no Apple Health no iPhone ou no Health Connect no Android. O openGym lê de lá."
+    ],
+    [
+      "{0} second",
+      "{0} segundo"
+    ],
+    [
+      "{0} seconds",
+      "{0} segundos"
+    ],
+    [
+      "{0} session",
+      "{0} sessão"
+    ],
+    [
+      "{0} sessions",
+      "{0} sessões"
+    ],
+    [
+      "{0} set",
+      "{0} série"
+    ],
+    [
+      "{0} set brings an {1} with it.",
+      "{0} série traz um {1}."
+    ],
+    [
+      "{0} set to rest",
+      "{0} marcado como descanso"
+    ],
+    [
+      "{0} set · {1} work",
+      "{0} série · {1} trabalho"
+    ],
+    [
+      "{0} sets",
+      "{0} séries"
+    ],
+    [
+      "{0} sets bring an {1} with them.",
+      "{0} séries trazem um {1}."
+    ],
+    [
+      "{0} sets · {1} work",
+      "{0} séries · {1} trabalho"
+    ],
+    [
+      "{0} short",
+      "{0} a menos"
+    ],
+    [
+      "{0} to go",
+      "faltam {0}"
+    ],
+    [
+      "{0} total",
+      "{0} no total"
+    ],
+    [
+      "{0} week",
+      "{0} semana"
+    ],
+    [
+      "{0} week streak",
+      "sequência de {0} semanas"
+    ],
+    [
+      "{0} weeks",
+      "{0} semanas"
+    ],
+    [
+      "{0} weigh-in",
+      "{0} pesagem"
+    ],
+    [
+      "{0} weigh-in imported",
+      "{0} pesagem importada"
+    ],
+    [
+      "{0} weigh-ins",
+      "{0} pesagens"
+    ],
+    [
+      "{0} weigh-ins imported",
+      "{0} pesagens importadas"
+    ],
+    [
+      "{0} workout",
+      "{0} treino"
+    ],
+    [
+      "{0} workout imported",
+      "{0} treino importado"
+    ],
+    [
+      "{0} workout this month",
+      "{0} treino este mês"
+    ],
+    [
+      "{0} workout total",
+      "{0} treino no total"
+    ],
+    [
+      "{0} workouts",
+      "{0} treinos"
+    ],
+    [
+      "{0} workouts imported",
+      "{0} treinos importados"
+    ],
+    [
+      "{0} workouts this month",
+      "{0} treinos este mês"
+    ],
+    [
+      "{0} workouts total",
+      "{0} treinos no total"
+    ],
+    [
+      "{0} × {1}",
+      "{0} × {1}"
+    ],
+    [
+      "{0} × {1} on {2}",
+      "{0} × {1} em {2}"
+    ],
+    [
+      "{0} × {1} s",
+      "{0} × {1} s"
+    ],
+    [
+      "{0}, paused",
+      "{0}, em pausa"
+    ],
+    [
+      "{0}/side",
+      "{0}/lado"
+    ],
+    [
+      "{0}: duration & pace",
+      "{0}: duração e ritmo"
+    ],
+    [
+      "{0}: load step",
+      "{0}: incremento de carga"
+    ],
+    [
+      "{0}: no more sets today",
+      "{0}: sem mais séries hoje"
+    ],
+    [
+      "{0}: no rest timer",
+      "{0}: sem temporizador de descanso"
+    ],
+    [
+      "{0}: progression",
+      "{0}: progressão"
+    ],
+    [
+      "{0}: rep-range ceiling",
+      "{0}: máximo do intervalo de repetições"
+    ],
+    [
+      "{0}: rep-range floor",
+      "{0}: mínimo do intervalo de repetições"
+    ],
+    [
+      "{0}: reps",
+      "{0}: repetições"
+    ],
+    [
+      "{0}: rest {1}",
+      "{0}: descanso {1}"
+    ],
+    [
+      "{0}: sets",
+      "{0}: séries"
+    ],
+    [
+      "{0}: warm-ups",
+      "{0}: aquecimentos"
+    ],
+    [
+      "{0}: weight {1}",
+      "{0}: peso {1}"
+    ],
+    [
+      "{0}: {1} of {2} challenges",
+      "{0}: {1} de {2} desafios"
+    ],
+    [
+      "{0}: {1} reps a set",
+      "{0}: {1} reps por série"
+    ],
+    [
+      "{0}: {1} sets left instead of {2}",
+      "{0}: faltam {1} séries em vez de {2}"
+    ],
+    [
+      "{0}h {1}m",
+      "{0} h {1} min"
+    ],
+    [
+      "{0}’s plan",
+      "Plano de {0}"
+    ],
+    [
+      "“{0}” is done. Nicely lifted. What next?",
+      "“{0}” está concluído. Bem levantado. E agora?"
+    ]
+  ]
+}

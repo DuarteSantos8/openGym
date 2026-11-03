@@ -2993,6 +2993,92 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/workouts/delete:
+    post:
+      tags: [admin]
+      operationId: adminUserWorkoutsDelete
+      summary: 'Admin: delete workouts from a profile'
+      description: |
+        Removes workouts from a profile for good: a teacher for one of their students, the owner for
+        anyone. The change is written the way a device writes it (the entry gone, a removal on
+        record, the revision moved), so the person's phone reads it and the removal holds. Ids that
+        match no workout are ignored. A teacher cannot do this to an admin's profile, the owner as a
+        student included (403); archiving is the way there. Audited as `admin.user.workouts.delete`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, workouts]
+              properties:
+                id: { type: string, description: The user id. }
+                workouts: { type: array, minItems: 1, maxItems: 200, items: { type: string }, description: Workout ids. }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  removed: { type: integer }
+        '400':
+          description: 'workouts is not 1 to 200 ids.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or not one of yours.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/workouts/archive:
+    post:
+      tags: [admin]
+      operationId: adminUserWorkoutsArchive
+      summary: 'Admin: archive or restore workouts of a student'
+      description: |
+        Puts workouts aside for the teacher without touching the student's record: they stay in the
+        history, the drill-down marks them `archived: true`, and the Admin view leaves them out of
+        the performance numbers until restored with `archived: false`. Ids that match no workout are
+        ignored. Audited as `admin.user.workouts.archive` / `.restore`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, workouts, archived]
+              properties:
+                id: { type: string, description: The user id. }
+                workouts: { type: array, minItems: 1, maxItems: 200, items: { type: string }, description: Workout ids. }
+                archived: { type: boolean }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  changed: { type: integer }
+        '400':
+          description: 'workouts is not 1 to 200 ids, or archived is not a boolean.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or not one of yours.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
   /api/admin/user/disable:
     post:
       tags: [admin]
@@ -4706,6 +4792,7 @@ components:
               description: Expiry (ms) of an unused recovery code (POST /api/admin/user/recovery, recover.js).
         unit: { type: string, enum: [kg, lb] }
         lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
+        plannedDays: { type: integer, minimum: 0, maximum: 7, description: Weekdays the plan puts a routine on. }
         routines:
           type: array
           items:

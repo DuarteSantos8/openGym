@@ -69,7 +69,7 @@ test('only an admin sends, and only a real plan, to a real user, within the limi
 });
 
 /* Teachers see only their own students; the owner sees everyone. */
-async function startScoped(t) {
+async function startScoped(t, states = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-scope-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({
@@ -82,6 +82,7 @@ async function startScoped(t) {
     creds: [], subs: [],
     invites: [{ code: 'CODEA', createdBy: 'tA', usedBy: 'sA' }, { code: 'CODEB', createdBy: 'tB', usedBy: 'sB' }, { code: 'CODEO', createdBy: 'owner', usedBy: 'sO' }]
   }));
+  for (const [uid, st] of Object.entries(states)) fs.writeFileSync(path.join(dataDir, `state-${uid}.json`), JSON.stringify(st));
   const child = spawn(process.execPath, ['server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost' }
@@ -152,4 +153,53 @@ test('a teacher cannot be their own student, and no other admin can be anyone\'s
   assert.equal((await call('owner', 'POST', '/api/admin/user/teacher', { id: 'owner', teacher: 'owner' })).status, 400);
   assert.equal((await call('owner', 'POST', '/api/admin/user/teacher', { id: 'tB', teacher: 'tA' })).status, 404);
   assert.equal((await call('owner', 'POST', '/api/admin/user/teacher', { id: 'owner', teacher: 'sA' })).status, 400);
+});
+
+/* Deleting and archiving a student's workouts. */
+const wk = (id, d) => ({ id, d, name: id, start: Date.parse(d + 'T10:00:00Z'), end: Date.parse(d + 'T11:00:00Z'), entries: [{ id: '0001', sets: [{ w: 50, r: 8, done: true }] }] });
+const states = () => ({
+  sA: { _rev: 3, _ts: 1000, workouts: [wk('w1', '2026-10-01'), wk('w2', '2026-10-02')], routines: [] },
+  sB: { _rev: 1, workouts: [wk('x1', '2026-10-01')], routines: [] },
+  owner: { _rev: 1, workouts: [wk('o1', '2026-10-01')], routines: [] }
+});
+
+test('a teacher deletes a student\'s workout the way a device would: removal on record, revision moved', async t => {
+  const call = await startScoped(t, states());
+  const r = await call('tA', 'POST', '/api/admin/user/workouts/delete', { id: 'sA', workouts: ['w1'] });
+  assert.deepEqual([r.status, r.body.removed], [200, 1]);
+  const d = (await call('tA', 'GET', '/api/admin/user?id=sA')).body;
+  assert.deepEqual(d.workouts.map(w => w.id), ['w2']);
+  const mine = await call('sA', 'GET', '/api/data');
+  assert.equal(mine.body.rev, 4);
+  assert.ok(mine.body.state.deleted.workouts.w1 > 0);
+  assert.equal(mine.body.state._ts, 1000, 'the student\'s last sync is not touched');
+  assert.equal((await call('tA', 'POST', '/api/admin/user/workouts/delete', { id: 'sA', workouts: ['nope'] })).body.removed, 0);
+});
+
+test('delete is scoped: not another teacher\'s student, not an admin\'s record unless the owner asks', async t => {
+  const call = await startScoped(t, states());
+  assert.equal((await call('tA', 'POST', '/api/admin/user/workouts/delete', { id: 'sB', workouts: ['x1'] })).status, 404);
+  assert.equal((await call('sB', 'POST', '/api/admin/user/workouts/delete', { id: 'sA', workouts: ['w1'] })).status, 403);
+  assert.equal((await call('owner', 'POST', '/api/admin/user/teacher', { id: 'owner', teacher: 'tA' })).status, 200);
+  assert.equal((await call('tA', 'POST', '/api/admin/user/workouts/delete', { id: 'owner', workouts: ['o1'] })).status, 403);
+  assert.equal((await call('owner', 'POST', '/api/admin/user/workouts/delete', { id: 'sB', workouts: ['x1'] })).body.removed, 1);
+  assert.equal((await call('owner', 'POST', '/api/admin/user/workouts/delete', { id: 'owner', workouts: ['o1'] })).body.removed, 1);
+  for (const bad of [[], 'w1', Array(201).fill('a'), [1]]) {
+    assert.equal((await call('owner', 'POST', '/api/admin/user/workouts/delete', { id: 'sA', workouts: bad })).status, 400);
+  }
+});
+
+test('archiving flags a workout for the teacher and leaves the student\'s record alone', async t => {
+  const call = await startScoped(t, states());
+  const a = await call('tA', 'POST', '/api/admin/user/workouts/archive', { id: 'sA', workouts: ['w1', 'ghost'], archived: true });
+  assert.deepEqual([a.status, a.body.changed], [200, 1]);
+  const d = (await call('tA', 'GET', '/api/admin/user?id=sA')).body;
+  assert.deepEqual(d.workouts.map(w => [w.id, !!w.archived]).sort(), [['w1', true], ['w2', false]]);
+  const mine = await call('sA', 'GET', '/api/data');
+  assert.equal(mine.body.rev, 3);
+  assert.equal(mine.body.state.workouts.length, 2);
+  assert.equal((await call('tA', 'POST', '/api/admin/user/workouts/archive', { id: 'sA', workouts: ['w1'], archived: false })).body.changed, 1);
+  assert.ok(!(await call('tA', 'GET', '/api/admin/user?id=sA')).body.workouts.some(w => w.archived));
+  assert.equal((await call('tA', 'POST', '/api/admin/user/workouts/archive', { id: 'sB', workouts: ['x1'], archived: true })).status, 404);
+  assert.equal((await call('tA', 'POST', '/api/admin/user/workouts/archive', { id: 'sA', workouts: ['w1'] })).status, 400);
 });
