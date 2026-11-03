@@ -21,8 +21,8 @@ const COPY = {
   id: {
     restTitle: 'Istirahat selesai 💪',
     restBody: 'Saatnya set berikutnya.',
-    testBody: 'Notifikasi uji coba ✅ Ini adalah tampilan pemberitahuan.',
-    dayFallbackTitle: 'Latihan direncanakan hari ini',
+    testBody: 'Notifikasi uji coba ✅ Begini tampilan notifikasinya.',
+    dayFallbackTitle: 'Jadwal latihan hari ini',
     dayRoutineSuffix: 'hari ini',
     dayBody: 'Sudah ada di jadwalmu. Ayo mulai latihan 💪',
   },
