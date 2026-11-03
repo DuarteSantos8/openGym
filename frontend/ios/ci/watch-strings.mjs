@@ -195,6 +195,10 @@ const OWN = {
   'Opens openGym.': {
     de: 'Öffnet openGym.', fr: 'Ouvre openGym.', es: 'Abre openGym.', it: 'Apre openGym.', 'pt-PT': 'Abre o openGym.', 'pt-BR': 'Abre o openGym.', pl: 'Otwiera openGym.', hu: 'Megnyitja az openGymet.', tr: 'openGym’i açar.', ru: 'Открывает openGym.', uk: 'Відкриває openGym.', ar: 'يفتح openGym.', hi: 'openGym खोलता है।', bn: 'openGym খোলে।', th: 'เปิด openGym', ko: 'openGym을 열어요.', 'zh-Hans': '打开 openGym。', 'zh-Hant': '打開 openGym。',
   },
+  // The 3-2-1 ends with it (the phone app has no such word; "Los" is its Start button in German).
+  'Go!': {
+    de: 'Los!', fr: 'Go\u00a0!', es: '¡Ya!', it: 'Via!', 'pt-PT': 'Já!', 'pt-BR': 'Vai!', pl: 'Start!', hu: 'Rajt!', tr: 'Başla!', ru: 'Старт!', uk: 'Старт!', ar: 'هيا!', hi: 'चलो!', bn: 'চলো!', th: 'ลุย!', ko: '시작!', 'zh-Hans': '开始！', 'zh-Hant': '開始！',
+  },
 }
 
 // Info.plist's own (the Apple Health permission prompts), into InfoPlist.strings.

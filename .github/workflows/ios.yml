@@ -217,13 +217,17 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle empty set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish summary summary-end ended; do
+            for screen in idle empty countdown-go set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish summary summary-end ended; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
             # on (Settings → Apple Watch); the rest as the countdown alone.
             shot "lang-de" set -OpenGymWatchLang de
             shot "lang-de-rest" rest -OpenGymWatchLang de
+            # GO! at the end of the 3-2-1, held for the camera: Always On, and the widest words and
+            # scripts (Cyrillic, French with its no-break space, Thai marks, Arabic right to left).
+            shot "countdown-go-aod" countdown-go -OpenGymWatchAOD
+            for lang in ru fr th ar; do shot "countdown-go-$lang" countdown-go -OpenGymWatchLang $lang; done
             shot "show-all" set -OpenGymWatchShow all
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
