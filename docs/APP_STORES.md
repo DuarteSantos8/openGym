@@ -81,7 +81,7 @@ own widget. Each is a separate bundle id with its own App Store provisioning pro
    exercise media, and stamps the commit into the zip (`ci-commit.txt`). Download the
    `ios-unsigned-ipa` artifact of the release commit (`gh run download <run> -n ios-unsigned-ipa`).
 2. **Phone bundle with the animations**, from the same commit, on the release machine:
-   `cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/backup-hdd/opengym-media/build-appwebp npm run build:mobile`
+   `cd frontend && VITE_CLIP_EXT=webp VITE_BUILTIN_CLIP_PX=<px> APP_MEDIA_DIR=<media>/quality/<px> npm run build:mobile`
 3. **Finish and sign** (`scripts/ios/finish-ipa.sh`, no Mac needed, `rcodesign` signs on Linux):
    ```sh
    EXT_PROFILE=downloader.mobileprovision WIDGETS_PROFILE=widgets.mobileprovision \
