@@ -130,6 +130,43 @@ describe('the Coach on a phone with its own key', () => {
     expect((await loadCoachDevice()).model).toBe(next)
   })
 
+  it('a gateway that refuses with a 400 that names nothing gets a simpler request, and the phone keeps it (#804)', async () => {
+    const GENERIC = 'The request could not be processed. Please check the request parameters.'
+    device.data = { mode: 'byok', provider: 'compatible', model: 'gpt-6.1-sol', baseUrl: 'https://gw.test/v1' }
+    // A reasoning model behind a strict gateway: no temperature, no schema it cannot check.
+    wire.answer = (n, url, init) => {
+      const b = JSON.parse(init.body)
+      return 'temperature' in b || b.response_format?.type === 'json_schema' ? { status: 400, body: { error: { message: GENERIC } } } : chat(JSON.stringify(review))
+    }
+    await local.localReview(state())
+    let s = await settle()
+    expect(s.lastError).toBeNull()
+    expect(s.pending?.kind).toBe('review')
+    const kept = (await loadCoachDevice()).compat
+    expect(kept).toMatchObject({ provider: 'compatible', base: 'https://gw.test/v1', model: 'gpt-6.1-sol' })
+    expect(kept.steps).toEqual(expect.arrayContaining(['json_object', 'temperature']))
+
+    // A fresh launch: the in-memory lesson is gone, the device file still has it.
+    const { rememberCompatProfile } = await import('../../../api/coach/core/adapters/http.js')
+    rememberCompatProfile('compatible', { providerOptions: { compatible: { baseUrl: 'https://gw.test/v1' } } }, 'gpt-6.1-sol', [])
+    local._resetLocal(); wire.calls = []
+    await saveCoachDevice({ pending: null })
+    await local.localReview(state())
+    s = await settle()
+    expect(s.lastError).toBeNull()
+    expect(wire.calls).toHaveLength(1)
+
+    // Nothing works any more: the gateway's own words reach the person holding the phone.
+    local._resetLocal(); wire.calls = []
+    await saveCoachDevice({ pending: null })
+    wire.answer = { status: 400, body: { error: { message: GENERIC } } }
+    await local.localReview(state())
+    s = await settle()
+    expect(s.lastError.errorClass).toBe('provider')
+    expect(s.lastError.detail).toContain(GENERIC)
+    expect((await loadCoachDevice()).compat).toBeNull()
+  })
+
   it('a 401 is an auth failure, and never a proposal', async () => {
     wire.answer = { status: 401, body: { error: { message: 'bad key' } } }
     await local.localReview(state())
@@ -282,5 +319,36 @@ describe('timeouts on the phone', () => {
     expect(timeoutFor('compatible')).toBe(LOCAL_ENDPOINT_TIMEOUT_MS)
     expect(LOCAL_ENDPOINT_TIMEOUT_MS).toBeGreaterThanOrEqual(20 * 60000)
     for (const p of ['anthropic', 'openai', 'gemini']) expect(timeoutFor(p)).toBe(TIMEOUT_MS)
+  })
+})
+
+describe('Ask the Coach mid-workout, on a phone with its own key', () => {
+  beforeEach(async () => {
+    _resetCoachDevice(); local._resetLocal()
+    device.data = { mode: 'byok', provider: 'openai', model: 'gpt-t', baseUrl: null }
+    wire.calls = []; secret.key = 'sk-test-1'
+  })
+
+  it('sends the running session and the exercise, and the answer waits for that workout', async () => {
+    const S = state()
+    const today = { name: 'A', minutes: 10, entries: [
+      { id: EX, target: { sets: 3, reps: 8 }, sets: [{ done: true, w: 40, r: 8 }, { done: false, w: 40, r: 8 }, { done: false, w: 40, r: 8 }] },
+      { id: EX2, target: { sets: 3, reps: 10 }, sets: [{ done: false, w: 20, r: 10 }] }
+    ] }
+    wire.answer = chat(JSON.stringify({ coach_contract: 1, summary: 'Short day: one set less.', changes: [{ type: 'sets', entry: 0, exId: EX, sets: 1, why: 'Ten minutes left.' }] }))
+    await local.localAdapt(S, { today, entry: 0, reason: 'short', text: '10 min left', activeId: 'act-9' })
+    const s = await settle()
+    expect(s.pending?.kind).toBe('adapt')
+    expect(s.pending.activeId).toBe('act-9')
+    expect(s.pending.focus).toMatchObject({ entry: 0, exId: EX, reason: 'short' })
+    expect(s.pending.changes).toEqual([expect.objectContaining({ type: 'sets', entry: 0, sets: 1, before: 2 })])
+    const sent = wire.calls[0].body
+    expect(sent.messages[0].content).toContain('# Task: adapt the workout in progress')
+    expect(sent.messages[1].content).toContain('"focus":{"entry":0')
+    expect(sent.messages[1].content).toContain('"userNote":"10 min left"')
+    expect(sent.response_format?.json_schema?.schema?.properties?.changes).toBeTruthy()
+    // Read: the slot gives back what was waiting before the question.
+    await local.localResolve({ accepted: ['a0'] })
+    expect((await local.localStatus()).pending).toBeNull()
   })
 })

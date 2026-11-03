@@ -7,14 +7,16 @@ import { t } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import Elapsed from './Elapsed.jsx'
 import { useConnectionTrouble } from './SyncBanner.jsx'
+import { retapTab } from '../lib/scroll-top.js'
+import { isOn } from '../lib/modules.js'
 
 // Module scope, not TabBar's render body. Declared inside it, `Tab` was a new function on every
 // render, so React saw a different component type each time and threw the button away and built a
 // fresh one — on a bar that is fixed on screen, and once a second for the whole of a rest. The
 // state it took with it is the DOM node itself: focus, the :active tint, any in-flight transition.
-function Tab({ active, icon, label, onClick, dot }) {
+function Tab({ active, icon, label, onClick, dot, tour }) {
   return (
-    <button className={active ? 'on' : ''} onClick={onClick} aria-label={dot ? label + ', ' + t('Connection problem') : undefined}>
+    <button className={active ? 'on' : ''} onClick={onClick} data-tour={tour} aria-label={dot ? label + ', ' + t('Connection problem') : undefined}>
       <span className="tab-ic"><Icon name={icon} />{dot && <span className="tab-dot" aria-hidden="true" />}</span><span className="tab-l">{label}</span>
     </button>
   )
@@ -59,18 +61,22 @@ export default function TabBar({ onStart }) {
   // connection lives (#369, #330).
   const trouble = useConnectionTrouble()
   const barRef = useRef(null)
-  useFitLabels(barRef, [t('Home'), t('Plan'), t('Stats'), t('Health'), t('Exercises'), t('Settings')].join('|'))
+  // The Health tab goes with the Health module (Settings → Modules, lib/modules.js).
+  const healthOn = isOn(S, 'health')
+  useFitLabels(barRef, [t('Home'), t('Plan'), t('Stats'), healthOn ? t('Health') : '', t('Exercises'), t('Settings')].join('|'))
   if (!user && !isGuest) return null
   const cur = loc.pathname.split('/')[1] || 'home'
-  // A screen without a tab of its own lights the tab it is opened from (Muscles from both).
-  // Settings has a tab of its own here.
+  // A screen without a tab of its own lights the tab it is opened from (Muscles from both). Settings
+  // and Health have tabs of their own here.
   const PARENT = { history: 'stats', 'structural-balance': 'stats', 'progress-photos': 'stats', measurements: 'stats', checkin: 'home', muscles: 'library' }
   const parent = cur === 'muscles' && loc.state?.from === '/stats' ? 'stats' : PARENT[cur]
   const on = k => cur === k || parent === k
 
-  // Root tabs are peers, not another level to unwind with Android Back.
+  // Root tabs are peers, not another level to unwind with Android Back. The tab you are already
+  // on takes you to the top of its page instead (lib/scroll-top.js).
   const switchTab = path => {
     if (loc.pathname !== path || loc.search) nav(path, { replace: true })
+    else retapTab(path)
   }
 
   const running = !!S.active && cur !== 'workout' && !S.active.editingWorkoutId && !S.active.backfill && S.active.start > 0
@@ -87,9 +93,9 @@ export default function TabBar({ onStart }) {
     <nav id="tabbar" ref={barRef}>
       {/* Three tabs, Start in the middle, three tabs: Settings has its own place instead of a gear
           on Home. */}
-      <Tab active={on('home')} icon="house" label={t('Home')} onClick={() => switchTab('/home')} />
-      <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => switchTab('/plan')} />
-      <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} />
+      <Tab active={on('home')} icon="house" label={t('Home')} onClick={() => switchTab('/home')} tour="tab-home" />
+      <Tab active={on('plan')} icon="calendar" label={t('Plan')} onClick={() => switchTab('/plan')} tour="tab-plan" />
+      <Tab active={on('stats')} icon="chart" label={t('Stats')} onClick={() => switchTab('/stats')} tour="tab-stats" />
       {/* On the workout screen itself there is nothing to resume, so the button reads as the
           tab it is and stays lit (#29); anywhere else it brings you back to the exercise you
           were on — the marker is kept in S.active.cur and never moves on its own (#21). The
@@ -97,15 +103,15 @@ export default function TabBar({ onStart }) {
           A live session you stepped away from shows its running time instead of a word, the
           button still named Resume; a past workout being edited or logged after the fact has no
           clock to run. */}
-      <button className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
+      <button data-tour="start" className={'start' + (S.active ? ' rec' : '') + (S.active && cur === 'workout' ? ' on' : '')} onClick={startWorkout}
         aria-label={running ? t('Resume') : undefined}>
         <span className="cir"><Icon name="play" /></span>
         {running ? <span className="tab-time"><Elapsed start={S.active.start} /></span>
           : <span>{S.active ? (cur === 'workout' ? t('Workout') : S.active.editingWorkoutId ? t('Edit workout') : t('Resume')) : t('Start')}</span>}
       </button>
-      <Tab active={on('health')} icon="heart" label={t('Health')} onClick={() => switchTab('/health')} />
-      <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} />
-      <Tab active={on('settings')} icon="gear" label={t('Settings')} dot={trouble} onClick={() => switchTab('/settings')} />
+      {healthOn && <Tab active={on('health')} icon="heart" label={t('Health')} onClick={() => switchTab('/health')} />}
+      <Tab active={on('library')} icon="dumbbell" label={t('Exercises')} onClick={() => switchTab('/library')} tour="tab-library" />
+      <Tab active={on('settings')} icon="gear" label={t('Settings')} dot={trouble} onClick={() => switchTab('/settings')} tour="tab-settings" />
     </nav>
   )
 }

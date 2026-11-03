@@ -380,7 +380,8 @@ describe('a save this device refuses', () => {
 
   it('a profile past the quota because of its health readings keeps the recent ones on the device, and says nothing', async () => {
     toast.mockClear()
-    const day = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10) }
+    // The local day, as the app files a reading and as lib/storage-slim.js cuts them (UTC+14 found it).
+    const day = n => { const d = new Date(); d.setDate(d.getDate() - n); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-') }
     // Two years of a day's steps: the readings are what does not fit, as on a phone with Apple Health.
     const health = Array.from({ length: 730 }, (_, n) => ({ id: 'apple-health:steps:' + day(n), type: 'steps', v: 8000, u: 'count', t: Date.now() - n * 864e5, d: day(n), src: 'apple-health', sid: 'steps:' + day(n), c: 1, _ts: 1 }))
     useStore.setState({ S: { ...clone(DEF), health }, user: { id: 'user-1' }, ready: true })

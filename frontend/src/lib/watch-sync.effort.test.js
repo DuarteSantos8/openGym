@@ -11,6 +11,9 @@ describe('the scale the watch is told about', () => {
   it('only a profile that tracks effort gets the effort tile', () => {
     expect(watchExtras({ effort: 'rpe' }).effort).toBe('rpe')
     expect(watchExtras({ effort: 'rir' }).effort).toBe('rir')
+    // Timed holds that start by themselves: the watch's holds count in too, only when switched on.
+    expect(watchExtras({ autoHolds: true }).autoHolds).toBe(true)
+    expect('autoHolds' in watchExtras({})).toBe(false)
     expect(watchExtras({ showRir: true }).effort).toBe('rir')
     expect('effort' in watchExtras({ effort: 'none' })).toBe(false)
     expect('effort' in watchExtras({})).toBe(false)

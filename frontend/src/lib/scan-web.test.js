@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { generate } from 'lean-qr'
 import { decodeImageData } from './scan-web.js'
+import { encodeBars } from './barcode.js'
 
 // Round trip through the two libraries the browser path relies on: lean-qr draws a code (the
 // same renderer the card view uses), jsQR reads it back. Pixels are built by hand from
@@ -33,6 +34,17 @@ describe('decodeImageData', () => {
     const value = 'https://checkin.example.com/m/8f3a1c?v=2'
     const hit = await decodeImageData(rasterize(generate(value)))
     expect(hit?.value).toBe(value)
+  })
+
+  it('falls back to the 1D reader when there is no QR, which is what iOS Safari relies on', async () => {
+    const mods = encodeBars('5901234123457', 'ean13')
+    const scale = 3, width = mods.length * scale, height = 40
+    const data = new Uint8ClampedArray(width * height * 4)
+    for (let i = 0; i < width * height; i++) {
+      const v = mods[Math.floor((i % width) / scale)] ? 0 : 255
+      data[i * 4] = data[i * 4 + 1] = data[i * 4 + 2] = v; data[i * 4 + 3] = 255
+    }
+    expect(await decodeImageData({ data, width, height })).toEqual({ value: '5901234123457', fmt: 'ean13' })
   })
 
   it('returns null for blank pixels and for junk input', async () => {

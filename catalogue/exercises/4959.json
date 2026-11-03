@@ -3,9 +3,9 @@
   "name": "lunge thighs (form check)",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "quads",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "quadriceps",
     "hamstrings"
   ],
   "category": "calisthenics",

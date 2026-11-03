@@ -3,10 +3,10 @@
   "name": "dumbbell unilateral scapula raise",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "traps",
+  "target": "upper back",
   "secondaryMuscles": [
+    "traps",
     "rhomboids",
-    "upper back",
     "shoulders"
   ],
   "category": "strength",

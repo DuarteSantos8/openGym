@@ -3,8 +3,9 @@
   "name": "weighted lying neck extension",
   "bodyPart": "neck",
   "equipment": "weighted",
-  "target": "traps",
+  "target": "levator scapulae",
   "secondaryMuscles": [
+    "traps",
     "upper back",
     "trapezius",
     "sternocleidomastoid"

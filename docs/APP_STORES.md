@@ -6,6 +6,7 @@ openGym ships to phones three ways, all from the same code and the same version 
 |---|---|---|---|
 | Android APK | GitHub release, opengym.ch | the app itself (Settings → About) | release machine |
 | Android, Google Play | Play Store | Google Play | release machine |
+| Android, F-Droid | F-Droid (planned, see below) | F-Droid | F-Droid's build server, from the public source |
 | iPhone (+ Apple Watch) | App Store, TestFlight beta | the App Store | Mac runner (compile) + release machine (finish, sign, upload) |
 
 The two Android builds are flavours of one Gradle project (`frontend/android/app/build.gradle`):
@@ -32,10 +33,15 @@ ever sees the repo's 180 px media.
   (`ios/App/App/PrivacyInfo.xcprivacy`): no tracking, no data collected. No non-exempt
   encryption (`ITSAppUsesNonExemptEncryption = NO`, HTTPS only). The Coach asks before anything
   is sent to an AI provider and names it (App Review Guideline 5.1.2(i), November 2025).
-- **Both:** no account, no ads, no analytics in the app, and nothing to buy. Settings → About &
-  updates links to Buy Me a Coffee, Ko-fi and GitHub Sponsors: plain links that open in the
-  browser, unlock nothing, and never pop up on their own. On the iPhone the same section has a
-  link to writing an App Store review (no review prompt, App Review 5.6.1).
+- **Both:** no account, no ads, no analytics in the app, and nothing to buy. On the iPhone,
+  the APK and the web, Settings → About & updates links to Buy Me a Coffee, Ko-fi and GitHub
+  Sponsors: plain links that open in the browser, unlock nothing, and never pop up on their own.
+  On the iPhone the same section has a link to writing an App Store review (no review prompt,
+  App Review 5.6.1). **The Google Play build has no donation links**, only "Rate openGym on
+  Google Play": Play's Payments policy (section 4) says an app "may not lead users to a payment
+  method other than Google Play's billing system", and its exceptions (section 3) cover
+  "tax exempt donations" only, which a one-person open-source project is not. The listing and the
+  website may still mention the project's donation pages; the app doesn't link them.
 
 ## Every release
 
@@ -61,14 +67,26 @@ Each is built from its own phone build: the **Standard** APK with the box-free 1
 built in (`quality/180`, about 315 MB), the **Plus** APK with 240 px (`quality/240`, about
 424 MB; `PLUS_PX=0` none), the **HD** APK with 360 px (`quality/360`, about 760 MB; `HD_PX=0`
 none), the bundle with 180 px (`quality/180`, like the App Store app) and an asset
-pack for every quality above 180 that has a folder in `/mnt/backup-hdd/opengym-media/quality/`
+pack for every quality above 180 that has a folder in `/mnt/build-fast/from-hdd/opengym-media/quality/`
 (`scripts/android/make-asset-packs.mjs`, the same drawings per pack as the iPhone's); the pack
 modules are generated into `frontend/android/` for the build and removed after, never committed.
 To try packs on an emulator: `make-asset-packs.mjs --px 240 --builtin 180 --limit 30`, then
 `./gradlew bundlePlayDebug` and `bundletool build-apks --local-testing` + `install-apks`.
 
-Upload the `.aab` in Play Console → Test and release → Production (or a testing track first),
-with the release notes from the changelog.
+Only the bundle: `AAB_ONLY=1`. Only some packs: `PACK_PX=240,360` (the 1.4.4 closed test had
+180 built in plus 240 and 360 as packs, 2.0 GB to upload; the full set 240 to 1080 is about
+13 GB). On a box that must not run hot: `GRADLE_ARGS=-Dorg.gradle.workers.max=2` and
+`nice -n 19 ionice -c3`. `BUNDLETOOL=/path/bundletool.jar` validates the bundle at the end.
+
+**Version codes.** One `versionCode` per version, shared by the APKs and the Play bundle
+(1.4.3 = 28, 1.4.4 = 30: 29 went to the 1.4.4 closed test, ...), so the same version from either source installs
+over the other. Google Play refuses a code it has seen: if a Play bundle of a version has to be
+uploaded twice, the second one takes the next code and the APK of that version gets it too.
+
+The very first bundle of the app goes up by hand in Play Console (the API cannot create an app).
+After that, `node /root/homelab/scripts/play/upload-aab.mjs <aab> --track internal|alpha|production`
+uploads it through the Google Play Developer API with a service account, release notes per
+language from a folder (`--notes`). `alpha` is Play's name for the closed testing track.
 
 ### iPhone
 
@@ -81,7 +99,7 @@ own widget. Each is a separate bundle id with its own App Store provisioning pro
    exercise media, and stamps the commit into the zip (`ci-commit.txt`). Download the
    `ios-unsigned-ipa` artifact of the release commit (`gh run download <run> -n ios-unsigned-ipa`).
 2. **Phone bundle with the animations**, from the same commit, on the release machine:
-   `cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/backup-hdd/opengym-media/build-appwebp npm run build:mobile`
+   `cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/build-fast/from-hdd/opengym-media/build-appwebp npm run build:mobile`
 3. **Finish and sign** (`scripts/ios/finish-ipa.sh`, no Mac needed, `rcodesign` signs on Linux):
    ```sh
    EXT_PROFILE=downloader.mobileprovision WIDGETS_PROFILE=widgets.mobileprovision \
@@ -128,7 +146,49 @@ do, not with every release, and are uploaded once per change, separate from the 
 
 The full-quality files only ever travel from the release machine to Apple, like the IPA (licence).
 
-## One-time setup (owner)
+## F-Droid
+
+The third Android flavour, `fdroid`, is the one F-Droid builds from the public source on its own
+server. F-Droid accepts only free software, so this build carries nothing from Google:
+
+| In the APK and the Play build | In the F-Droid build |
+|---|---|
+| Wear OS link (`play-services-wearable`, the Wearable Data Layer) | left out: `WatchBridgePlugin` and `WatchListenerService` live in `src/gms` (sideload + play only); `src/fdroid` has a `WatchBridgePlugin` that answers "no watch", and Settings → About says why |
+| Gym card scanner: ML Kit (`@capacitor-mlkit/barcode-scanning`, with Play services code scanner, Firebase components, datatransport) | left out (excluded from the flavour's configurations and from its copy of `capacitor.plugins.json`); the scanner and photo import go the browser's way, the WebView's camera with jsQR / `BarcodeDetector` (`lib/scan.js`, `components/CameraScan.jsx`) |
+| Play Asset Delivery (play) | none; the repository's 180 px animations are built in, as in a self-hosted server |
+| In-app updater (sideload) | none; F-Droid updates the app (`lib/channel.js` → `fdroid`) |
+| Gym reminder | the same: the platform's proximity alerts (`LocationManager`), no Play services |
+| Donation links | the same as the APK (F-Droid allows them) |
+
+The unused `google-services` Gradle plugin (FCM push, never set up) is gone from all builds.
+Health Connect (`androidx.health.connect`, Apache 2.0 AndroidX) stays: it only talks to the
+system's Health Connect, which is part of Android 14 and later.
+
+**Build** (what F-Droid's recipe runs, no keys, no private files, no network beyond npm, Google's
+and Maven Central's repositories):
+
+```sh
+cd frontend && npm ci && npm run build:mobile          # 180 px media from catalogue/media, cap sync
+cd android && ./gradlew :app:assembleFdroidRelease     # unsigned APK, about 210 MB
+../../scripts/android/check-fdroid.sh                  # nothing non-free in classpath, manifest, plugin list
+```
+
+CI runs the last two in the `android` job. Two clean builds in different directories gave the same
+APK byte for byte (JDK 21, build-tools 36), so F-Droid's reproducible-build check against an APK we
+sign ourselves is within reach. Same `applicationId` and `versionCode` as the APK.
+
+**Signing.** F-Droid signs with its own key unless its build matches an APK we publish, signed with
+ours (reproducible builds, `Binaries:` in the recipe). With F-Droid's key the app cannot be
+updated from or to the GitHub APK or Google Play without uninstalling (and losing local data
+unless exported first).
+
+**Media.** Only the 180 px media in `catalogue/media` go in, the same files as the repository
+(Gym visual licence, Part A). The F-Droid listing marks the app `NonFreeAssets`, since the media
+are not under a free licence (NOTICE.md).
+
+**Listing** texts and images: `fastlane/metadata/android/<locale>/` (F-Droid and IzzyOnDroid read
+it from the tagged source). The changelog for a version is `changelogs/<versionCode>.txt`.
+
 
 ### Google Play
 
@@ -143,14 +203,27 @@ The full-quality files only ever travel from the release machine to Apple, like 
    separate apps on a phone. This cannot be changed later.
 4. Store listing, content rating questionnaire (no violence, no user content shared with
    others: "Everyone"), target audience 13+ or 16+, Data safety (below).
-5. Declarations Play asks for:
-   - **Health Connect** (write exercise, write weight): the in-app reason screen exists; the
-     form asks what the data is used for: "writes finished workouts and weigh-ins, reads nothing".
-   - **Foreground service, special use:** the rest countdown in the notification shade
-     (`RestTimerService`). Play may ask for a short screen recording of a rest running.
-   - **Exact alarms:** only the user-granted `SCHEDULE_EXACT_ALARM` (reminder to the minute),
-     no `USE_EXACT_ALARM`.
-   - **Camera:** scanning the gym membership code and photos of your own exercises.
+5. Declarations Play asks for (the texts to paste are in the owner's Play Console notes):
+   - **Health Connect:** write exercise and weight (finished workouts and weigh-ins), read heart
+     rate (shown next to the sets of a workout just logged) and weight (weigh-ins from a scale
+     app), and `READ_HEALTH_DATA_HISTORY` (the first weigh-in read goes back a year instead of
+     30 days). Foreground only, no `READ_HEALTH_DATA_IN_BACKGROUND`. Use case: fitness, wellness
+     and coaching. The in-app reason screen exists (`ViewPermissionUsageActivity`).
+   - **Foreground services:** `specialUse` for the rest countdown in the notification shade
+     (`RestTimerService`), `location` for the gym reminder's short arrival check
+     (`GymScanService`, use case geofencing). Each needs a description, the user impact and a
+     video.
+   - **Background location** (`ACCESS_BACKGROUND_LOCATION`, the gym reminder): a declaration with
+     a video of the in-app explainer, the system prompt and the reminder firing. Play allows it
+     only for a feature that matters to the app; if it refuses, build with
+     `-PplayWithoutBackgroundLocation` (app/build.gradle): the Play build then asks for no
+     background location at all and hides the gym reminder (ChannelPlugin, `lib/channel.js`).
+   - **Exact alarms:** only the user-granted `SCHEDULE_EXACT_ALARM` (reminder to the minute, the
+     rest-over fallback alarm), no `USE_EXACT_ALARM` (that one is for alarm clock and calendar
+     apps).
+   - **Camera:** scanning the gym membership code and photos of your own exercises (a normal
+     runtime permission, no form). "Film this set" hands over to the camera app, so the app
+     itself never asks for the microphone.
 
 **Data safety answers:** no data collected, no data shared. Data stays on the device; the
 optional sync goes to a server the user runs or picks themselves (not the developer's), and

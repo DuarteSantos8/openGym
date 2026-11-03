@@ -26,7 +26,8 @@ describe('reading from a source', () => {
   let S
   const getState = () => S
   const update = fn => fn(S)
-  beforeEach(() => { S = { unit: 'kg', health: [], bodyweight: [] }; fake.fetchMeasurements.mockReset() })
+  // Each test starts with no source connected, whatever ran before it (a shuffled run found the leak).
+  beforeEach(() => { S = { unit: 'kg', health: [], bodyweight: [] }; fake.fetchMeasurements.mockReset(); for (const k of Object.keys(files)) delete files[k] })
 
   it('keeps what the system left out off the list, and folds each batch in as it comes', async () => {
     const seen = []
@@ -47,6 +48,8 @@ describe('reading from a source', () => {
   })
 
   it('a failed read keeps the reason, and the next good one clears it', async () => {
+    fake.fetchMeasurements.mockResolvedValueOnce([])
+    expect(await connectSource('apple-health', getState, update)).toMatchObject({ ok: true })
     fake.fetchMeasurements.mockRejectedValueOnce(new Error('Missing com.apple.developer.healthkit entitlement.'))
     const r = await syncSource('apple-health', getState, update)
     expect(r).toMatchObject({ ok: false, error: 'failed', detail: 'Missing com.apple.developer.healthkit entitlement.' })
