@@ -107,6 +107,7 @@ jobs:
               - 'frontend/package*.json'
               - 'frontend/capacitor.config.json'
               - 'frontend/scripts/check-mobile-bundle.mjs'
+              - 'frontend/scripts/check-app-media.mjs'
               - 'scripts/android/**'
               - 'scripts/catalogue/stage-media.mjs'
             catalogue:
