@@ -42,6 +42,23 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Warm-ups on an assistance machine explain themselves the right way round (thanks @radu781 in #864).
 - Apple Watch: the end of a rest or a timed set keeps you in the app instead of dropping you on the watch face, and the rest countdown no longer crashes at 0:00 (#936, #883, thanks @cubetes in #955).
 
+**Community: new languages, a sharper catalogue and a calmer Coach**
+- Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856). What the app learnt since they were written is translated too.
+- Chinese: every exercise has its Chinese name, description and steps now (thanks @nine-orders in #959), and no two exercises share a name any more (thanks @daoshi818-crypto in #629).
+- French: descriptions and steps for 40 everyday gym exercises (thanks @Neoko-First in #935).
+- Exercise details show each muscle's share in percent, the rest folded into a tappable Other (thanks @sg41 in #954).
+- An exercise you pick starts the way you logged it last time: as a timed hold, per side, or both (thanks @lodepav in #902).
+- A search filtered by your gym says how many matches it hid, with one tap to show all equipment (thanks @lodepav in #905).
+- Catalogue: the dumbbell neutral grip bench press is the triceps press its drawing shows (#918), and half knee bends are the cardio knee lift their drawing shows, not a squat (#559).
+- Coach: MiniMax is one of the providers you can pick (thanks @octo-patch in #912).
+- Coach: a failed job says what actually failed: the key, the quota, the request format, an outage or the network, each with its own line (thanks @omeliorator in #971).
+- Coach: OpenRouter with Claude works again instead of "the answer had no choices": an error that arrives inside a 200 answer now gets the same fallbacks as any other (#973).
+- Coach: a plan's week is spelled out day by day, so strict JSON Schema endpoints (Codex OAuth gateways, #828) no longer hand back an empty week, and Gemini gets a schema it can read (thanks @omeliorator in #970).
+- Coach: an endpoint with a key is never pinged to keep warm, since that costs money and warms nothing (thanks @omeliorator in #968).
+- Coach: exercise ids sent as 24 or "24" are read as "0024" (thanks @dagov42 in #963), reasoning models' <think> blocks are skipped (thanks @polidisio in #929), and MiniMax's schema complaint falls back to plain JSON (thanks @polidisio in #928).
+- Coach: longer answers before a cut, and a cut lands on a sentence or a word (thanks @maliv2 in #937).
+- Coach: "swap it for what you suggested" finds what was suggested, and a clear request is acted on even without a stall (thanks @joshiparth1000 in #819).
+
 ## v1.4.4 (2026-11-03)
 
 **Modules: as much app as you want.** Settings → Modules switches whole parts of openGym on and
