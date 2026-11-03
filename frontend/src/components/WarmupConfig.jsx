@@ -8,6 +8,7 @@ import { MAX_PLANNED_WARMUPS, barFloor, isBw, modeOf } from '../lib/history.js'
 import { dropGrid } from '../lib/plates.js'
 import { warmupAutoOf, warmupModeOf, warmupBlock, isCompoundEx, ownRowsOf, autoRungs, MAX_OWN_WARMUPS, OWN_PCT_MAX } from '../lib/warmup-ramp.js'
 import { isWarmupRow } from '../lib/workout-model.js'
+import { isAssisted } from '../lib/exercises.js'
 
 const LB_KG = 0.45359237
 
@@ -94,8 +95,12 @@ export default function WarmupConfig({ st, ex, c, setC }) {
       {preview ? t('With {0} {1} today: {2}', fmtNum(work), unit, preview)
         : choice === 'count'
           ? st.volumeWarmups === true
-            ? t('Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
-            : t('Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
+            ? isAssisted({ ...c, id: ex.id })
+              ? t('Added before your work sets. They count in your volume (Settings), but stay out of records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.')
+              : t('Added before your work sets. They count in your volume (Settings), but stay out of records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
+            : isAssisted({ ...c, id: ex.id })
+              ? t('Added before your work sets and left out of volume, records and progression. On an assistance machine each one has more help than the work set, stepping down toward it, and you can still change any of them mid-session.')
+              : t('Added before your work sets and left out of volume, records and progression. Each one closes half the gap to the work weight, never below the bar on a barbell lift, and you can still change any of them mid-session.')
           : choice === 'none' || (choice === 'default' && !followsAuto) ? t('Ramp-up sets added before the work sets, so you do not have to add them by hand each session.')
             : t('Built from your work weight when the workout starts.')}
     </div>
