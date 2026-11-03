@@ -16,6 +16,8 @@ import { onGymReminderOpen } from './lib/gym-reminder.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { workoutVolume } from './lib/history.js'
 import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
+import { applyProfileSteps, profileStep } from './lib/weight-step.js'
+import { stepPlaces } from './lib/progression.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
@@ -179,7 +181,13 @@ function Shell() {
   const lang = effectiveLang(S, config)
   useEffect(() => { setLang(lang, S.enParens?.[baseLang(lang)] ?? true, S.enOnly?.[baseLang(lang)] === true) }, [lang, S.enParens, S.enOnly])
   // Same shape as the language: a module-level display setting, pushed when it changes (#139).
-  useEffect(() => { setWeightDecimals(S.wdec) }, [S.wdec])
+  // The profile's weight step (Settings → Weight step, lib/weight-step.js) stands in for each lift's
+  // default step. Set while the shell renders, before the screens under it work out a step, and
+  // cheap enough to repeat. A step that needs two places (0.25) shows weights with two as well, or
+  // 52.25 would read 52.3.
+  applyProfileSteps(S)
+  const ownStep = profileStep(S)
+  useEffect(() => { setWeightDecimals(ownStep && stepPlaces(ownStep) >= 2 ? 2 : S.wdec) }, [S.wdec, ownStep])
   useEffect(() => { document.documentElement.lang = lang }, [langV, lang])
   // Forward navigation starts at the top; going back lands where you left off.
   // The position is recorded from scroll events rather than read at route

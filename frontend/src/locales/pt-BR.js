@@ -2448,6 +2448,18 @@ export const PT_BR_OVERRIDES = {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
   'Lengths in': 'Comprimentos em',
   'Removes the field and every reading logged in it. The other measurements stay.': 'Remove o campo e todos os valores registrados nele. As outras medidas ficam.',
+  "Weight step": "Incremento de peso",
+  "Automatic": "Automático",
+  "Each lift steps by its usual amount, a bigger one for legs.": "Cada exercício sobe o incremento de sempre, as pernas um maior.",
+  "Apply to all exercises": "Aplicar a todos os exercícios",
+  "{0} exercise has a step of its own.": "{0} exercício tem um incremento próprio.",
+  "{0} exercises have a step of their own.": "{0} exercícios têm um incremento próprio.",
+  "Use {0} for every exercise?": "Usar {0} em todos os exercícios?",
+  "{0} exercise in your routines changes to it. You can still give any of them its own step later.": "{0} exercício das suas rotinas passa a usá-lo. Você ainda pode dar a qualquer um o próprio incremento.",
+  "{0} exercises in your routines change to it. You can still give any of them its own step later.": "{0} exercícios das suas rotinas passam a usá-lo. Você ainda pode dar a qualquer um o próprio incremento.",
+  "Apply to all": "Aplicar a todos",
+  "{0} exercise now steps by {1}.": "{0} exercício agora sobe {1} por vez.",
+  "{0} exercises now step by {1}.": "{0} exercícios agora sobem {1} por vez.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -22,7 +22,7 @@ describe('plan-share units', () => {
     expect(bundle.unit).toBe('kg')
     const imported = parsePlan(bundle, 'lb')
     expect(imported.unit).toBe('lb')
-    expect(imported.routines[0].ex[0]).toMatchObject({ weight: 132.5, inc: 5.5 })
+    expect(imported.routines[0].ex[0]).toMatchObject({ weight: 132.5, inc: 5 })
     expect(imported.routines[0].ex[1]).toMatchObject({ weight: 44, inc: 5 })
   })
 
@@ -34,7 +34,7 @@ describe('plan-share units', () => {
     const bundle = buildPlanBundle(source, 'Strength')
     const target = { unit: 'kg', routines: [], customEx: [], week: {} }
     mergePlan(target, bundle)
-    expect(target.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 4.5 })
+    expect(target.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 5 })
   })
 
   it('keeps valid legacy bundles without a unit in their destination-unit semantics', () => {
@@ -54,7 +54,7 @@ describe('plan-share units', () => {
       routines: [{ id: 'r', name: 'Strength', ex: [{ id: '0025', sets: 3, reps: 5, weight: 135, inc: 10 }] }],
     }
     const parsed = parsePlan(legacy, 'kg')
-    expect(parsed.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 4.5 })
+    expect(parsed.routines[0].ex[0]).toMatchObject({ weight: 61.25, inc: 5 })
     expect(parsed.week).toEqual({})
     expect(parsed.customEx).toEqual([])
   })

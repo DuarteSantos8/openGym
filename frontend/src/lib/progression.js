@@ -110,11 +110,20 @@ export function policyFor(cfg, routine, mode, fallback = 'linear') {
 }
 
 const round1 = v => Math.round(v * 10) / 10
+// The places a step needs: one at least, three at most. A 0.25 kg step lands on .25 and .75,
+// which one place stored as .3 and .8; a 0.1 step multiplied out leaves float dust
+// (52.300000000000004) that this rounds away.
+export const stepPlaces = step => {
+  const s = String(Number(step) || 0)
+  const i = s.indexOf('.')
+  return i < 0 || /e/i.test(s) ? 1 : Math.min(3, Math.max(1, s.length - i - 1))
+}
+export const roundToStep = (v, step) => { const p = 10 ** stepPlaces(step); return Math.round(v * p) / p + 0 }
 // Snap to a loadable multiple of the step. Manual weight controls use this same normalization
 // so fractional increments produce the same number as automatic progression.
 export function snapWeight(v, step) {
   if (!(step > 0)) return round1(v)
-  return round1(Math.round(v / step) * step)
+  return roundToStep(Math.round(v / step) * step, step)
 }
 // A tap moves by one step. Snapping to the grid keeps the number identical to what progression
 // would prescribe (61.3 → 62.5 with a 1.25 step, not 62.55) — but only when the current value
@@ -125,9 +134,11 @@ export function snapWeight(v, step) {
 // a 10 lb step goes to 407, not to the grid's 410.
 export function addStep(w, step, inc) {
   const v = +w || 0
-  const onGrid = inc > 0 && Math.abs(v - Math.round(v / inc) * inc) <= 0.1
+  // "On the grid" within a tenth (61.3 is 61.25 as one place stored it), or within a quarter of a
+  // step finer than 0.4: with a 0.1 step everything is within a tenth of the grid.
+  const onGrid = inc > 0 && Math.abs(v - Math.round(v / inc) * inc) <= Math.min(0.1, inc / 4) + 1e-9
   const next = v + step
-  return Math.max(0, onGrid ? snapWeight(next, inc) : round1(next))
+  return Math.max(0, onGrid ? snapWeight(next, inc) : roundToStep(next, Math.abs(step) || inc))
 }
 export function stepWeight(value, step, direction) {
   const v = Number(value) || 0

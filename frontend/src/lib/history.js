@@ -1037,7 +1037,8 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
 // list of dumbbells the profile owns (lib/dumbbells.js ownedWeightsFor, issue #376) — the
 // heaviest bell at or under it.
 // A function is the gym's own plates (plates.js dropGrid), the heaviest load at or under `x`.
-const rungDown = (x, step) => (typeof step === 'function' ? step(x) : Array.isArray(step) ? ownedFloor(step, x) : Math.floor(x / step) * step)
+// 1e-9 and the rounding: with a 0.1 step, 52.3 / 0.1 is 522.999… and 3 × 0.1 is 0.30000000000000004.
+const rungDown = (x, step) => (typeof step === 'function' ? step(x) : Array.isArray(step) ? ownedFloor(step, x) : Math.round(Math.floor(x / step + 1e-9) * step * 1000) / 1000)
 
 // An assistance machine (exercises.js isAssisted) ramps from the other side: the stack carries
 // part of your body weight, so less load is harder, and halving it made the warm-up harder than
@@ -1050,7 +1051,7 @@ function assistedRung(from, to, step) {
   if (!(top > to)) return to
   const x = to + (top - to) / 2
   if (Array.isArray(step) || typeof step === 'function') return x
-  return Math.max(to, Math.ceil(x / step - 1e-9) * step)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
+  return Math.max(to, Math.round(Math.ceil(x / step - 1e-9) * step * 1000) / 1000)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
 }
 
 // `keep` says which rows stay as they are: a logged one always (rewriting performed work is data

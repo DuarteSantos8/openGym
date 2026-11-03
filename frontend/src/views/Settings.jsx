@@ -61,6 +61,7 @@ import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
+import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
@@ -885,6 +886,31 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             options={[{ value: 1, label: t('0.5') }, { value: 2, label: t('0.25') }]}
             value={S.wdec === 2 ? 2 : 1} onChange={v => update(s => { s.wdec = v })} />
         </Row>
+        {/* One step for every exercise (lib/weight-step.js): Automatic is each lift's own default
+            (2.5 kg, 5 for the legs). Kept per unit, like the plates. An exercise's own Step still
+            wins; "Apply to all exercises" clears those after asking, naming how many change. */}
+        <SelectRow icon="steps" iconTint="var(--teal)" title={t('Weight step')} sheetTitle={t('Weight step')}
+          value={profileStep(S) ?? 0}
+          onChange={v => update(s => { s.wstep = { ...(s.wstep || {}), [S.unit === 'lb' ? 'lb' : 'kg']: v > 0 ? v : 0 } })}
+          options={[{ value: 0, label: t('Automatic'), subtitle: t('Each lift steps by its usual amount, a bigger one for legs.') },
+            ...STEPS[S.unit === 'lb' ? 'lb' : 'kg'].map(v => ({ value: v, label: fmtStepLabel(v, S.unit) }))]} />
+        {(() => {
+          const step = profileStep(S)
+          const n = step ? stepOverrides(S, step) : 0
+          if (!n) return null
+          return <Row icon="repeat" iconTint="var(--teal)" title={t('Apply to all exercises')}
+            subtitle={tn('{0} exercise has a step of its own.', '{0} exercises have a step of their own.', n)} accessory="chevron"
+            onClick={() => confirmSheet({
+              title: t('Use {0} for every exercise?', fmtStepLabel(step, S.unit)),
+              message: tn('{0} exercise in your routines changes to it. You can still give any of them its own step later.',
+                '{0} exercises in your routines change to it. You can still give any of them its own step later.', n),
+              confirmText: t('Apply to all'),
+              onConfirm: () => {
+                update(s => { Object.assign(s, applyStepToAll(s)) })
+                toast(tn('{0} exercise now steps by {1}.', '{0} exercises now step by {1}.', n, fmtStepLabel(step, S.unit)))
+              },
+            })} />
+        })()}
         {/* Cardio speed (Discord "miles per hour"). Unlike the weight unit this converts nothing:
             speeds stay stored in km/h and only what is shown and typed follows it (lib/speed.js).
             Until chosen it follows the weight unit, so a profile in pounds already reads mph. */}

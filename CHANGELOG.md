@@ -8,6 +8,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **New**
 - Selected text and the typing cursor wear your accent colour now, also the little selection handles on Android (#980).
+- One weight step for everything: Settings → Units → Weight step sets it for every exercise at once (0.1 up to 5 kg or 10 lb), and Apply to all exercises tells you how many own steps it replaces before it does. Any exercise can still have its own, now down to 0.1, and fine steps stay clean numbers (52.3, never 52.300000001).
 
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).

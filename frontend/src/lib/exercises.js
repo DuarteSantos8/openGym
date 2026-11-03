@@ -281,7 +281,18 @@ const HEAVY_BP = ['upper legs', 'lower legs', 'back', 'hips', 'glutes']
 // Default load step. Lower-body lifts take the bigger jump — that is the "lift-specific
 // increment" a linear program lives on; an exercise can override it with cfg.inc.
 // (progression.js re-exports this; it lives here so history.js can reach it without a cycle.)
+// The profile's own default step (Settings → Weight step, lib/weight-step.js), one per unit, read
+// here rather than passed through every caller, the way format.js reads the weight decimals;
+// App.jsx pushes it whenever `S.wstep` changes. Nothing set keeps the per-lift default below.
+let profileSteps = {}
+export const setProfileSteps = map => {
+  const out = {}
+  for (const u of ['kg', 'lb']) { const v = Number(map?.[u]); if (v > 0 && v <= 50) out[u] = v }
+  profileSteps = out
+}
 export function defaultIncrement(exId, unit) {
+  const own = profileSteps[unit === 'lb' ? 'lb' : 'kg']
+  if (own) return own
   const ex = EXIDX[exId]
   const heavy = ex && HEAVY_BP.includes(ex.bp)
   if (unit === 'lb') return heavy ? 10 : 5
