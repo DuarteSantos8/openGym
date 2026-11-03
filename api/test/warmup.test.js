@@ -34,3 +34,24 @@ test('warmup pings the compatible endpoint once per chat kind, with the real rul
   cfgStore.save({ provider: 'anthropic' });
   assert.equal((await warmOnce({ log: quiet, fetch: fakeFetch })).skipped, true, 'cloud providers are never pinged');
 });
+
+test('a keyed endpoint is never warmed', async t => {
+  cfgStore.reset();
+  cfgStore.save({ enabled: true, provider: 'compatible', models: { compatible: 'm1' }, providerOptions: { compatible: { baseUrl: 'http://gateway.test:4000' } } });
+  cfgStore.saveAuth('compatible', { type: 'apikey', data: cfgStore.encrypt({ token: 'sk-test' }) });
+  let calls = 0;
+  const r = await warmOnce({ log: { log: () => {} }, fetch: async () => { calls++; return new Response('{}'); } });
+  assert.equal(r.skipped, true);
+  assert.equal(calls, 0, 'no request may leave when the endpoint wants a key');
+  t.after(() => cfgStore.reset());
+});
+
+test('per-profile credentials are never warmed', async t => {
+  cfgStore.reset();
+  cfgStore.save({ enabled: true, provider: 'compatible', authMode: 'profile', models: { compatible: 'm1' }, providerOptions: { compatible: { baseUrl: 'http://gateway.test:4000' } } });
+  let calls = 0;
+  const r = await warmOnce({ log: { log: () => {} }, fetch: async () => { calls++; return new Response('{}'); } });
+  assert.equal(r.skipped, true);
+  assert.equal(calls, 0);
+  t.after(() => cfgStore.reset());
+});
