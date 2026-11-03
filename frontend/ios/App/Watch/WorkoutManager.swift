@@ -23,6 +23,9 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         didSet { UserDefaults.standard.set(enabled, forKey: WorkoutManager.enabledKey) }
     }
     @Published private(set) var heartRate: Double?
+    /// When the heart rate shown was measured: the Metrics page shows "–" once it is older than 15 s.
+    /// Not @Published: the page reads it on its own once-a-second timeline.
+    private(set) var heartAt: Date?
     @Published private(set) var running = false
     /// A session runs and no reading has come yet.
     var measuring: Bool { running && heartRate == nil }
@@ -151,6 +154,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             builder = b
             samples = []
             heartRate = nil
+            heartAt = nil
             calories = nil
             paused = false
             return true
@@ -278,6 +282,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
         guard let last = samples.last?.1 else { return }
         let now = Date()
         if heartRate == nil || abs((heartRate ?? 0) - last) >= 5 || now.timeIntervalSince(shownAt) >= 4 {
+            heartAt = samples.last?.0
             if heartRate != last { heartRate = last }
             shownAt = now
         }
@@ -340,7 +345,13 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
             guard self.session == nil else { return }
             self.running = false
             self.heartRate = nil
+            self.heartAt = nil
         }
+    }
+
+    /// CI's screenshots (SessionStore.startDemo): a reading that never goes stale.
+    func demo(heartRate hr: Double?, calories kcal: Double?, running: Bool) {
+        heartRate = hr; heartAt = hr == nil ? nil : .distantFuture; calories = kcal; self.running = running
     }
 
     /* ---------- delegates ---------- */
