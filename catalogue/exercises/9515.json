@@ -3,10 +3,9 @@
   "name": "dumbbell sitting good morning",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "spine",
+  "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",
-    "hamstrings",
     "lower back",
     "upper back"
   ],

@@ -131,6 +131,7 @@ const TAGS = {
   meta: { title: 'Meta', side: 'Health &amp; public config' },
   auth: { title: 'Auth', side: 'Passkeys &amp; sessions' },
   pairing: { title: 'Pairing', side: 'Connect the mobile app' },
+  watch: { title: 'Watch relay', side: 'Zepp OS watches' },
   password: { title: 'Password', side: 'Optional name &amp; password (PASSWORD_LOGIN)' },
   passkeys: { title: 'Passkeys', side: 'More passkeys &amp; device links' },
   data: { title: 'Data', side: 'State sync' },
@@ -142,6 +143,7 @@ const TAGS = {
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   health: { title: 'Health', side: 'Apple Health readings from an iPhone Shortcut' },
   music: { title: 'Music', side: 'Spotify on the account, for the workout' },
+  integrations: { title: 'Integrations', side: 'Webhooks (INTEGRATIONS)' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }
 }
 

@@ -43,3 +43,9 @@ test('every directory server.js imports from is copied whole', () => {
   const missing = [...used].filter(d => !copied.has(d));
   assert.deepEqual(missing, [], `add COPY ${missing.join(', ')} to api/Dockerfile`);
 });
+
+test('the integrations directory is copied whole, like coach/', () => {
+  const lines = read('Dockerfile').split('\n');
+  assert.ok(lines.some(l => /^COPY\s+integrations\s+\.\/integrations\s*$/.test(l)), 'COPY integrations ./integrations in api/Dockerfile');
+  assert.match(read('server.js'), /from '\.\/integrations\/index\.js'/);
+});

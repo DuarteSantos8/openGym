@@ -3,9 +3,9 @@
   "name": "dumbbell bent over single arm row v. 2",
   "bodyPart": "back",
   "equipment": "dumbbell",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "rhomboids",
     "biceps",
     "rear deltoids",

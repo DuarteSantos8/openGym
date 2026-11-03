@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Server address"
+
+msgid "code"
+msgstr "Pairing code"
+
+msgid "how"
+msgstr "In openGym, open Settings, Zepp OS watch, Pair a watch, and type the address and code it shows here."
+
+msgid "pair"
+msgstr "Pair"
+
+msgid "pairing"
+msgstr "Pairing…"
+
+msgid "paired"
+msgstr "Paired with {0}. Open openGym on your watch."
+
+msgid "failed"
+msgstr "That didn’t work. Check the address and the code, a code lasts ten minutes."
+
+msgid "unpair"
+msgstr "Unpair"
+
+msgid "not_paired_yet"
+msgstr "Not paired yet."

@@ -65,7 +65,8 @@ describe('a custom exercise stored without the flag', () => {
     seed(ex)
     exerciseDetailSheet(ex)
     const host = renderTop()
-    expect(buttons(host)).toEqual(expect.arrayContaining(['Edit', 'Delete']))
+    // Delete is the red row at the end of the sheet since 1.4.5 (P6)
+    expect(buttons(host)).toEqual(expect.arrayContaining(['Edit', 'Delete exercise']))
   })
 
   it('Edit opens the form filled in with it', () => {
@@ -86,7 +87,8 @@ describe('a custom exercise stored without the flag', () => {
       workouts: [{ d: '2026-09-01', entries: [{ id: 'cx1', sets: [{ r: 8, w: 40, done: true }] }] }],
     })
     exerciseDetailSheet(ex)
-    click(renderTop(), 'button', 'Delete')
+    // a red row at the end of the sheet since 1.4.5 (P6), still with its confirmation
+    click(renderTop(), 'button', 'Delete exercise')
     click(renderTop(), 'button', 'Delete')   // the confirmation
     expect(S().customEx).toEqual([])
     expect(S().routines[0].ex.map(e => e.id)).toEqual(['0027'])

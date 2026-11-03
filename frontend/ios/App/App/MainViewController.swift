@@ -25,11 +25,15 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(AnimationPacksPlugin())
         bridge?.registerPluginInstance(NudgeCheckPlugin())
         bridge?.registerPluginInstance(GymReminderPlugin())
+        bridge?.registerPluginInstance(GymMapPickerPlugin())
         bridge?.registerPluginInstance(WatchBridgePlugin())
         bridge?.registerPluginInstance(AppleHealthPlugin())
+        bridge?.registerPluginInstance(PhoneWorkoutPlugin())
         bridge?.registerPluginInstance(WidgetBridgePlugin())
         bridge?.registerPluginInstance(LiveActivityPlugin())
         bridge?.registerPluginInstance(AppIconPlugin())
+        bridge?.registerPluginInstance(NfcTagsPlugin())
+        bridge?.registerPluginInstance(VoiceBridgePlugin())
         // Reading Apple Health into the health area (lib/health/apple-health.js), beside
         // AppleHealthPlugin, which writes workouts and weigh-ins to it.
         bridge?.registerPluginInstance(HealthKitPlugin())

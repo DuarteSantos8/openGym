@@ -6,7 +6,7 @@
 // licence, Part B), and Google Play delivers these packs itself.
 //
 //   node scripts/android/make-asset-packs.mjs [--px 360,480,720,1080] [--builtin 240]
-//        [--src-root /mnt/backup-hdd/opengym-media/quality] [--src 480=/other/480] [--limit N]
+//        [--src-root /mnt/build-fast/from-hdd/opengym-media/quality] [--src 480=/other/480] [--limit N]
 //   node scripts/android/make-asset-packs.mjs --clean
 //   ... --dry-run   only says what it would make
 //
@@ -145,7 +145,7 @@ function main(argv) {
   const opt = name => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : null }
   if (argv.includes('--clean')) { clean(); console.log('asset packs removed from the Android project'); return }
   const builtin = Number(opt('--builtin') || 240)
-  const srcRoot = opt('--src-root') || '/mnt/backup-hdd/opengym-media/quality'
+  const srcRoot = opt('--src-root') || '/mnt/build-fast/from-hdd/opengym-media/quality'
   const overrides = Object.fromEntries(argv.flatMap((a, i) => (a === '--src' ? [argv[i + 1].split('=')] : [])).map(([px, dir]) => [Number(px), dir]))
   const srcFor = px => overrides[px] || path.join(srcRoot, String(px))
   const asked = opt('--px') ? opt('--px').split(',').map(Number) : PACK_QUALITIES

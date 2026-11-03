@@ -3,9 +3,9 @@
   "name": "weighted sandbag row",
   "bodyPart": "back",
   "equipment": "sandbag",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids",
     "grip muscles",

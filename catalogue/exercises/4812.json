@@ -3,9 +3,8 @@
   "name": "side crunch v. 3",
   "bodyPart": "waist",
   "equipment": "body weight",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
     "core"
   ],
   "category": "calisthenics",

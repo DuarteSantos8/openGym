@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The long-press shortcut Start workout (res/xml/shortcuts.xml): the app's own icon on a green disc. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#FF30D158"
+        android:pathData="M24,0a24,24 0,1 1,0 48a24,24 0,1 1,0 -48Z" />
+    <group android:translateX="12" android:translateY="12">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="1.6"
+            android:strokeLineJoin="round"
+            android:pathData="M8.6,6.4l9.2,5.6l-9.2,5.6Z" />
+    </group>
+</vector>
