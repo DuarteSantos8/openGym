@@ -96,6 +96,24 @@ picture (story or square, dark or light) or save that stretch as the performance
 off gets no card, nobody needs a recap of the sofa. The × puts it away, and Settings → Look & Home →
 Week and month recap switches it off.
 
+**Fixes from your reports**
+- A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
+- Android widget: it loads at every size again instead of "Unable to load widget" when stretched, and its "What to show" screen is wide enough to read (#981).
+- Body measurements: lengths in cm or inches whatever your weight unit (#932), and a custom measurement can be deleted.
+- iPhone: no more surprise "Undo" alert after carrying the phone around (shake to undo is off, #921).
+- Workout: Set current keeps the List view you picked instead of flipping back to Cards (#641).
+- Sheets close on a real pull down from the very top, not while you scroll a how-to back up (#897).
+- Starter plans can have timed exercises: `[id, sets, seconds, 'time']` (#964, thanks @navid24601).
+- iPhone release: the build check now counts the animations themselves, so an App Store build can no longer ship with stills only (#962).
+- Android: a self-hosted server the app's web view cannot reach (home network, private certificate) is paired and synced through the app's own connection (#870).
+- The APK's Animation quality says sharper animations come through the stores, instead of "not on this device yet" (#863, thanks @TheBlackSide243 in #878).
+- Apple Health and Health Connect: workouts imported from Hevy, Strong and friends are no longer written a second time, and the copies written before are taken out (#881).
+- Sync: saving a workout without changing anything no longer brings back one deleted on another device (thanks @cubetes in #925).
+- Admin: the back arrow steps back the way you came instead of looping (thanks @cubetes in #924).
+- Italian: Pause fits next to Skip again (thanks @DomHeadroom in #969).
+- Warm-ups on an assistance machine explain themselves the right way round (thanks @radu781 in #864).
+- Apple Watch: the end of a rest or a timed set keeps you in the app instead of dropping you on the watch face, and the rest countdown no longer crashes at 0:00 (#936, #883, thanks @cubetes in #955).
+
 ## Unreleased
 
 **Warm-ups that build themselves** (#156, thanks @giulioleuci). Settings → Workout → Automatic
