@@ -8,12 +8,14 @@
  * copy is checked for
  *   - the flavour tag the mobile build writes into index.html (vite.config.js, `opengym-flavor`),
  *   - every script and stylesheet index.html loads, present beside it,
- *   - a stamped service worker (no `__BUILD__` left in sw.js).
+ *   - a stamped service worker (no `__BUILD__` left in sw.js),
+ *   - every exercise still and animation the bundle asks for, by name (check-app-media.mjs, #962).
  *
  * Usage: node scripts/check-mobile-bundle.mjs [frontend dir]   — exit code 1 on any problem. */
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { checkAppMedia, loadCatalogue } from './check-app-media.mjs'
 
 const COPIES = [
   'dist',
@@ -41,9 +43,15 @@ export function checkMobileBundle(root) {
   return copies.flatMap(checkCopy)
 }
 
+/** The exercise media of every copy, against the catalogue (check-app-media.mjs). */
+export function checkMobileMedia(root, exdb) {
+  return COPIES.map(rel => join(root, rel)).filter(existsSync).flatMap(dir => checkAppMedia(dir, exdb))
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = resolve(process.argv[2] || join(dirname(fileURLToPath(import.meta.url)), '..'))
   const problems = checkMobileBundle(root)
+  if (!problems.length) problems.push(...checkMobileMedia(root, await loadCatalogue()))
   if (problems.length) {
     for (const p of problems) console.error('✗ ' + p)
     process.exit(1)

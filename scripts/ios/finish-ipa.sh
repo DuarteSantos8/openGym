@@ -40,6 +40,9 @@ CLIPS=$(find "$PUBLIC/exercise-media/clip" -name '*.webp' 2>/dev/null | wc -l)
 [ "$CLIPS" -gt 6000 ] || { echo "$PUBLIC has $CLIPS WebP animations: build with VITE_CLIP_EXT=webp and APP_MEDIA_DIR" >&2; exit 1; }
 MP4S=$(find "$PUBLIC/exercise-media/clip" -name '*.mp4' 2>/dev/null | wc -l)
 [ "$MP4S" -eq 0 ] || { echo "$PUBLIC mixes $MP4S MP4 animations with the WebP ones: build with VITE_CLIP_EXT=webp" >&2; exit 1; }
+# And by name: every still and animation the bundle itself asks for (its clip extension and
+# built-in size), for both figures, is in the package (#962).
+node "$FRONT/scripts/check-app-media.mjs" "$PUBLIC" || { echo "the phone build would ship without some of its exercise media" >&2; exit 1; }
 
 unzip -q "$IPA" -d "$WORK/ipa"
 APP="$WORK/ipa/Payload/App.app"

@@ -19,6 +19,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Sheets close on a real pull down from the very top, not while you scroll a how-to back up (#897).
 - Starter plans can have timed exercises: `[id, sets, seconds, 'time']` (#964, thanks @navid24601).
 - iPhone release: the build check now counts the animations themselves, so an App Store build can no longer ship with stills only (#962).
+- iPhone and Android release: the build now checks every animation and picture by name against what the app will ask for, both figures, right size, so a package missing even one refuses to be built instead of reaching your phone frozen (#962).
 - Android: a self-hosted server the app's web view cannot reach (home network, private certificate) is paired and synced through the app's own connection (#870).
 - The APK's Animation quality says sharper animations come through the stores, instead of "not on this device yet" (#863, thanks @TheBlackSide243 in #878).
 - Apple Health and Health Connect: workouts imported from Hevy, Strong and friends are no longer written a second time, and the copies written before are taken out (#881).
