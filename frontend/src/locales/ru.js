@@ -3675,4 +3675,7 @@ export default {
   "Added to the list": "Добавлено в список",
   "Add an even run on top:": "Добавить ровный ряд сверху:",
   "Add these": "Добавить",
+  "Plates come in steps of 0.25. Try another size.": "Блины идут с шагом 0,25. Попробуйте другой размер.",
+  "That size is already on the list.": "Этот размер уже есть в списке.",
+  "Another size ({0})": "Другой размер ({0})",
 }

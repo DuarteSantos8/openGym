@@ -3671,4 +3671,7 @@ export default {
   "Added to the list": "सूची में जुड़ गए",
   "Add an even run on top:": "ऊपर बराबर कदमों वाली एक कतार जोड़ें:",
   "Add these": "इन्हें जोड़ें",
+  "Plates come in steps of 0.25. Try another size.": "प्लेटें 0.25 के कदमों में आती हैं। कोई और साइज़ आज़माएँ।",
+  "That size is already on the list.": "यह साइज़ पहले से सूची में है।",
+  "Another size ({0})": "दूसरा साइज़ ({0})",
 }

@@ -3671,4 +3671,7 @@ export default {
   "Added to the list": "목록에 추가했어요",
   "Add an even run on top:": "위에 일정한 간격으로 더하기:",
   "Add these": "추가",
+  "Plates come in steps of 0.25. Try another size.": "원판은 0.25 단위예요. 다른 크기를 넣어 보세요.",
+  "That size is already on the list.": "이미 목록에 있는 크기예요.",
+  "Another size ({0})": "다른 크기 ({0})",
 }

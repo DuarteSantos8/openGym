@@ -3671,4 +3671,7 @@ export default {
   "Added to the list": "Añadidos a la lista",
   "Add an even run on top:": "Añade una serie regular encima:",
   "Add these": "Añadir",
+  "Plates come in steps of 0.25. Try another size.": "Los discos van de 0,25 en 0,25. Prueba otro tamaño.",
+  "That size is already on the list.": "Ese tamaño ya está en la lista.",
+  "Another size ({0})": "Otro tamaño ({0})",
 }

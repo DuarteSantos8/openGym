@@ -3671,4 +3671,7 @@ export default {
   "Added to the list": "Dodano do listy",
   "Add an even run on top:": "Dołóż równy ciąg na górze:",
   "Add these": "Dodaj",
+  "Plates come in steps of 0.25. Try another size.": "Talerze idą co 0,25. Spróbuj innego rozmiaru.",
+  "That size is already on the list.": "Ten rozmiar już jest na liście.",
+  "Another size ({0})": "Inny rozmiar ({0})",
 }

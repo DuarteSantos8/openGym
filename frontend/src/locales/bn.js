@@ -3750,4 +3750,7 @@ export default {
   "Added to the list": "তালিকায় যোগ হলো",
   "Add an even run on top:": "ওপরে সমান ধাপের একটা সারি যোগ করো:",
   "Add these": "এগুলো যোগ করো",
+  "Plates come in steps of 0.25. Try another size.": "প্লেট আসে 0.25-এর ধাপে। অন্য একটা মাপ দাও।",
+  "That size is already on the list.": "এই মাপটা তালিকায় আগেই আছে।",
+  "Another size ({0})": "অন্য মাপ ({0})",
 }

@@ -3718,4 +3718,7 @@ export default {
   "Added to the list": "Tillagda i listan",
   "Add an even run on top:": "Lägg till en jämn serie ovanpå:",
   "Add these": "Lägg till",
+  "Plates come in steps of 0.25. Try another size.": "Viktskivor finns i steg om 0,25. Testa en annan storlek.",
+  "That size is already on the list.": "Den storleken finns redan i listan.",
+  "Another size ({0})": "Annan storlek ({0})",
 }

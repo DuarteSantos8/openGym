@@ -3668,4 +3668,7 @@ export default {
   "Added to the list": "Додано до списку",
   "Add an even run on top:": "Додати рівний ряд зверху:",
   "Add these": "Додати",
+  "Plates come in steps of 0.25. Try another size.": "Млинці йдуть із кроком 0,25. Спробуйте інший розмір.",
+  "That size is already on the list.": "Цей розмір уже є в списку.",
+  "Another size ({0})": "Інший розмір ({0})",
 }

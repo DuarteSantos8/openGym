@@ -3671,4 +3671,7 @@ export default {
   "Added to the list": "Aggiunti alla lista",
   "Add an even run on top:": "Aggiungi una serie regolare sopra:",
   "Add these": "Aggiungi",
+  "Plates come in steps of 0.25. Try another size.": "I dischi vanno a passi di 0,25. Prova un’altra misura.",
+  "That size is already on the list.": "Questa misura è già nella lista.",
+  "Another size ({0})": "Altra misura ({0})",
 }

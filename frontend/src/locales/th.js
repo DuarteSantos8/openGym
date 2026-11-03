@@ -3682,4 +3682,7 @@ export default {
   "Added to the list": "เพิ่มในรายการแล้ว",
   "Add an even run on top:": "เพิ่มชุดที่ห่างเท่ากันต่อด้านบน:",
   "Add these": "เพิ่ม",
+  "Plates come in steps of 0.25. Try another size.": "แผ่นน้ำหนักมีทีละ 0.25 ลองขนาดอื่นดู",
+  "That size is already on the list.": "ขนาดนี้มีในรายการแล้ว",
+  "Another size ({0})": "ขนาดอื่น ({0})",
 }

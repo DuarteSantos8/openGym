@@ -3671,4 +3671,7 @@ export default {
   "Added to the list": "Listeye eklendi",
   "Add an even run on top:": "Üstüne eşit aralıklı bir dizi ekle:",
   "Add these": "Ekle",
+  "Plates come in steps of 0.25. Try another size.": "Plakalar 0,25'lik adımlarla gelir. Başka bir boyut dene.",
+  "That size is already on the list.": "Bu boyut zaten listede.",
+  "Another size ({0})": "Başka boyut ({0})",
 }

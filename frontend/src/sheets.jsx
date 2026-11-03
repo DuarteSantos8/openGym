@@ -9,7 +9,7 @@ import { autoGymHere } from './lib/gym-auto.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
-import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
+import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
@@ -1158,6 +1158,18 @@ function PlateInventorySheet({ close }) {
   const own = ownsPlates(st)
   const setPairs = (w, n) => update(s => { s.plates = withPlatePairs({ unit, plates: s.plates }, w, n) })
   const reset = () => update(s => { s.plates = withStandardPlates({ unit, plates: s.plates }) })
+  // A size of the gym's own (#886): 3 and 4 kg plates, 0.25 kg micro plates. It joins the list
+  // with a rack's worth of pairs, to count down from, and a size of its own can be taken out again.
+  const [draft, setDraft] = useState(null)
+  const sizes = plateSizesFor(st)
+  const addSize = () => {
+    const w = Number(draft)
+    if (!isPlateSize(w)) { toast(t('Plates come in steps of 0.25. Try another size.')); return }
+    if (sizes.includes(w) && pairsOf(st, w) > 0) { toast(t('That size is already on the list.')); return }
+    setPairs(w, DEFAULT_PAIRS)
+    setDraft(null)
+  }
+  const removeSize = w => update(s => { s.plates = withoutPlateSize({ unit, plates: s.plates }, w) })
   return <>
     <h3>{t('Plates')}</h3>
     <GymOfList kind="plates" />
@@ -1165,11 +1177,18 @@ function PlateInventorySheet({ close }) {
     <div className="muted small" style={{ marginBottom: 14 }}>
       {t('Pairs of each size you own. Every set row loads from this list, so a home gym with one pair of 45s is never told to use two.')}
     </div>
-    {PLATE_SIZES[unit].map(w => (
-      <div className="row cfgrow" key={w} style={{ marginBottom: 6 }}>
+    {sizes.map(w => (
+      <div className="row cfgrow" key={w} style={{ marginBottom: 6, alignItems: 'center', gap: 4 }}>
         <Stepper label={fmtPlate(w) + ' ' + unit} value={pairsOf(st, w)} step={1} decimal={false} unit={t('pairs')} onChange={n => setPairs(w, n)} />
+        {!isStandardPlate(st, w) && <button type="button" className="iconbtn" aria-label={t('Remove {0}', fmtPlate(w) + ' ' + unit)}
+          onClick={() => removeSize(w)}><Icon name="xmark" /></button>}
       </div>
     ))}
+    <div className="row" style={{ gap: 8, margin: '10px 0 6px' }}>
+      <NumberField className="input" decimal value={draft ?? ''} onChange={setDraft}
+        aria-label={t('Another size ({0})', unit)} placeholder={t('Another size ({0})', unit)} onKeyDown={e => { if (e.key === 'Enter') addSize() }} />
+      <Button icon="plus" onClick={addSize} style={{ flex: '0 0 auto', width: 'auto' }}>{t('Add')}</Button>
+    </div>
     <div className="small dim" style={{ margin: '4px 0 14px' }}>
       {own ? t('Your own list for {0}.', unit) : t('The standard set, plenty of each. Change any count to make it yours.')}
     </div>

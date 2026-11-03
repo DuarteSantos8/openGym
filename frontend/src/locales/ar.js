@@ -3726,4 +3726,7 @@ export default {
   "Added to the list": "أُضيفت إلى القائمة",
   "Add an even run on top:": "أضف سلسلة متساوية فوقها:",
   "Add these": "أضف هذه",
+  "Plates come in steps of 0.25. Try another size.": "الأقراص تأتي بخطوات 0.25. جرّب حجمًا آخر.",
+  "That size is already on the list.": "هذا الحجم موجود في القائمة بالفعل.",
+  "Another size ({0})": "حجم آخر ({0})",
 }

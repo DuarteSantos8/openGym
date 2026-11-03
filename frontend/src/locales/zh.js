@@ -3671,4 +3671,7 @@ export default {
   "Added to the list": "已加入列表",
   "Add an even run on top:": "在上面再加一串等差重量：",
   "Add these": "添加",
+  "Plates come in steps of 0.25. Try another size.": "杠铃片以 0.25 为单位，换个尺寸试试。",
+  "That size is already on the list.": "这个尺寸已经在列表里了。",
+  "Another size ({0})": "其他尺寸（{0}）",
 }

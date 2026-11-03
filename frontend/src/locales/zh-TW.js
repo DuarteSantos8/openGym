@@ -3664,4 +3664,7 @@ export default {
   "Added to the list": "已加入清單",
   "Add an even run on top:": "在上面再加一串等差重量：",
   "Add these": "新增",
+  "Plates come in steps of 0.25. Try another size.": "槓片以 0.25 為單位，換個尺寸試試。",
+  "That size is already on the list.": "這個尺寸已經在清單裡了。",
+  "Another size ({0})": "其他尺寸（{0}）",
 }
