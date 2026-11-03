@@ -4,7 +4,7 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
-## Unreleased
+## v1.4.4 (2026-11-03)
 
 **Modules: as much app as you want.** Settings → Modules switches whole parts of openGym on and
 off: Effort, Plates and warm-ups, Strength levels, Form videos, Watch, Gym check-in, Body, Health,
@@ -464,6 +464,8 @@ Settings → Look & Home → Siri & Shortcuts lists what to say.
 Portuguese (Portugal) and Swedish, the way people say them in the gym: supino com barra and
 elevação de gémeos, bänkpress, marklyft and chins. The search finds them with or without the
 accents, and the English name still works too. Brazilian Portuguese keeps its own names.
+
+**Safer servers.** Two hardening fixes for self-hosted servers, found in our own security review: push subscriptions are capped in size and checked before they are kept (an oversized one already saved is dropped once at start), and the workout nudge no longer stalls a server on a very large saved state. Update your server when you can; details follow in the security advisories.
 
 **Fixes**
 
