@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { startFlow } from '../sheets.jsx'
-import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
+import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { exCount, todayISO, DAYN } from '../lib/format.js'
 import { setLabel } from '../lib/history.js'
 import { isWarmupRow } from '../lib/workout-model.js'
@@ -79,7 +79,7 @@ function setsLine(entry, speedUnit) {
   const warm = sets.length - work.length
   const labels = work.map(s => setLabel(entry.id, s, entry.target, speedUnit))
   const same = labels.length > 0 && labels.every(l => l === labels[0])
-  const body = !labels.length ? '' : same ? `${labels.length} × ${labels[0]}` : labels.join(', ')
+  const body = !labels.length ? '' : same ? `${tn('{0} set', '{0} sets', labels.length)} · ${labels[0]}` : labels.join(', ')
   return [body, warm ? t('warm-ups: {0}', String(warm)) : ''].filter(Boolean).join(' · ')
 }
 

@@ -82,7 +82,7 @@ describe('the preview (#976)', () => {
     expect(host.querySelector('h3').textContent).toBe('Push')
     const items = [...host.querySelectorAll('.preview-list li')]
     expect(items).toHaveLength(1)
-    expect(items[0].querySelector('.lrow-s').textContent).toMatch(/^3 × /)
+    expect(items[0].querySelector('.lrow-s').textContent).toMatch(/^3 sets · /)
     click('Start Push')
     expect(started).toEqual([['push'], ['push']])
   })

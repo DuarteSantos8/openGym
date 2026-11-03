@@ -1209,14 +1209,15 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    8 px less margin and the header keeps the exact height it has without it. */
 .wprog-row{display:flex;align-items:center;gap:8px;height:12px;margin-bottom:8px}
 /* The explorer's muscle groups (#900): the chevron says the chip opens into its muscles below. */
-.mx-groups .chip .mx-chev{font-size:.78em;margin-inline-start:4px;vertical-align:-1px;opacity:.7}
+.mx-groups .chip{display:inline-flex;align-items:center;gap:4px}
+.mx-groups .chip .mx-chev{display:inline-block;font-size:.78em;opacity:.7}
 /* A paused workout (#976): one calm line under the header, the clock's own colour, and Resume. */
 .wpause{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 0 12px;border-radius:var(--r-card);
   background:color-mix(in srgb,var(--orange) 14%,var(--surface))}
 .wpause-i{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:99px;background:var(--orange);color:#000;font-size:var(--fs-subhead)}
 .wpause-m{flex:1;min-width:0}
 .wpause-t{font-weight:600}
-.whdr-paused-i{color:var(--orange);margin-inline-end:3px;vertical-align:-1px}
+.whdr-paused{color:var(--orange);font-weight:600}
 .wprog-row .wprog,.whdr.stick .wprog-row .wprog{flex:1;min-width:0;margin-bottom:0}
 .whdr.stick .wprog-row{margin-bottom:2px}
 .wvol{flex:none;font-size:var(--fs-caption);line-height:12px;color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
