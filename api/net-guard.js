@@ -99,7 +99,10 @@ export function guardedLookup(hostname, options, cb) {
 // Cheap pre-check so a bad endpoint is refused at subscribe time with a useful message, rather
 // than silently never delivering. For a hostname PUSH_AGENT is what actually enforces the address
 // rule; for a literal address this is the check, which is why sendPush runs it again.
+// The size limit belongs to the same check (GHSA-g65f-rj2m-6wj9, see MAX_PUSH_* in server.js).
+export const MAX_PUSH_ENDPOINT = 2048;
 export function pushEndpointError(raw) {
+  if (typeof raw !== 'string' || raw.length > MAX_PUSH_ENDPOINT) return 'endpoint is too long';
   let u;
   try { u = new URL(String(raw || '')); } catch { return 'endpoint is not a valid URL'; }
   if (u.protocol !== 'https:') return 'endpoint must be an https:// URL';
