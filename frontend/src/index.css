@@ -1213,7 +1213,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .mx-groups .chip .mx-chev{display:inline-block;font-size:.78em;opacity:.7}
 /* A paused workout (#976): one calm line under the header, the clock's own colour, and Resume. */
 .wpause{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 0 12px;border-radius:var(--r-card);
-  background:color-mix(in srgb,var(--orange) 14%,var(--surface))}
+  background:var(--surface);background:color-mix(in srgb,var(--orange) 14%,var(--surface))}
 .wpause-i{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:99px;background:var(--orange);color:#000;font-size:var(--fs-subhead)}
 .wpause-m{flex:1;min-width:0}
 .wpause-t{font-weight:600}
