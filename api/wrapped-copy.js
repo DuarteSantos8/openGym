@@ -13,6 +13,10 @@ export const WRAPPED_COPY = {
     "title": "openGym-এ আপনার {0} তৈরি 🎉",
     "body": "ওয়ার্কআউট, রেকর্ড আর একটা খুবই সৎ পার্সোনালিটি টেস্ট। আপনার বছর দেখতে ট্যাপ করুন।"
   },
+  "cs": {
+    "title": "Tvůj rok {0} v openGym je připravený 🎉",
+    "body": "Tréninky, rekordy a jeden velmi upřímný test osobnosti. Klepni a podívej se na svůj rok."
+  },
   "de": {
     "title": "Dein {0} in openGym ist fertig 🎉",
     "body": "Trainings, Rekorde und ein sehr ehrlicher Persönlichkeitstest. Tipp, um dein Jahr zu sehen."
@@ -76,6 +80,10 @@ export const WRAPPED_COPY = {
   "uk": {
     "title": "Твій {0} в openGym готовий 🎉",
     "body": "Тренування, рекорди й один дуже чесний тест на характер. Торкнись, щоб побачити свій рік."
+  },
+  "vi": {
+    "title": "Năm {0} của bạn với openGym đã sẵn sàng 🎉",
+    "body": "Buổi tập, kỷ lục và một bài trắc nghiệm tính cách rất thật thà. Chạm để xem năm của bạn."
   },
   "zh": {
     "title": "你在 openGym 的 {0} 年已准备好 🎉",
