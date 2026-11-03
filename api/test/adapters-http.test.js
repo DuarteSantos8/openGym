@@ -18,7 +18,7 @@ const { attemptOnce } = await import('../coach/core/pipeline.js');
 const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders, isPrivateHost, phoneMayCall } = await import('../coach/core/providers.js');
 const { modelSubstitute } = await import('../coach/core/adapters/http.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
-const { REVIEW_SCHEMA } = await import('../coach/core/schemas.js');
+const { REVIEW_SCHEMA, CREATE_SCHEMA } = await import('../coach/core/schemas.js');
 
 /** A fetch that records what it was asked and answers from a script. Like the real one, it
  *  refuses an already-aborted signal without putting anything on the wire. */
@@ -92,6 +92,35 @@ test('Gemini: generateContent with the key as a header — never ?key= — and J
   assert.equal(c.body.generationConfig.responseMimeType, 'application/json');
   assert.equal(c.body.systemInstruction.parts[0].text, SYSTEM_PROMPT);
   assert.equal(c.body.contents[0].parts[0].text, 'P');
+});
+
+test('Gemini: a schema its subset can express travels as responseSchema, minus the keywords it 400s on', async () => {
+  const f = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  const r = await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', schema: CREATE_SCHEMA, fetch: f });
+  assert.equal(r.code, 0);
+  const gen = f.calls[0].body.generationConfig;
+  assert.ok(gen.responseSchema, 'the create shape is expressible in Gemini\'s subset');
+  assert.equal(gen.responseSchema.properties.week.required.length, 7);
+  // The measured 400: `Unknown name "maxItems" at generation_config.response_schema…`.
+  assert.equal(JSON.stringify(f.calls[0].body).includes('maxItems'), false);
+  assert.equal(JSON.stringify(f.calls[0].body).includes('additionalProperties'), false);
+});
+
+test('Gemini: a schema it cannot express (review\'s union types) is not sent at all', async () => {
+  const f = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', schema: REVIEW_SCHEMA, fetch: f });
+  const gen = f.calls[0].body.generationConfig;
+  assert.equal('responseSchema' in gen, false);
+  assert.equal(gen.responseMimeType, 'application/json');
+});
+
+test('OpenAI: the schema goes out exactly as schemas.js states it — the Gemini copy is Gemini\'s only', async () => {
+  const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-x', schema: CREATE_SCHEMA, fetch: f });
+  const sent = f.calls[0].body.response_format.json_schema.schema;
+  assert.equal(sent.properties.routines.maxItems, 7);
+  assert.equal(sent.properties.week.additionalProperties, false);
+  assert.equal(sent.properties.week.required.length, 7);
 });
 
 test('compatible: the configured base URL, max_tokens, and no Authorization header when there is no key', async () => {
