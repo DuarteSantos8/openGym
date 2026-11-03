@@ -25,6 +25,10 @@ export const WRAPPED_COPY = {
     "title": "Tu {0} en openGym está listo 🎉",
     "body": "Entrenos, récords y un test de personalidad muy sincero. Toca para ver tu año."
   },
+  "fa": {
+    "title": "{0} شما در openGym آماده است 🎉",
+    "body": "تمرینات، رکوردها و یک تست شخصیت خیلی صادقانه. بزنید تا سالتان را ببینید."
+  },
   "fr": {
     "title": "Ton année {0} sur openGym est prête 🎉",
     "body": "Séances, records et un test de personnalité très honnête. Touche pour voir ton année."
