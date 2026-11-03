@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, fr. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Aujourd'hui";
+"Routines" = "Routines";
 "Start workout" = "Démarrer la séance";
+"Start" = "Démarrer";
 "Done" = "Terminé";
 "Warm-up" = "Échauffement";
 "Reps" = "Reps";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Terminer la séance ?";
 "Finish and save" = "Terminer et enregistrer";
 "Discard workout" = "Abandonner la séance";
+"Discard workout?" = "Abandonner la séance ?";
+"The sets you logged in this session will be lost." = "Les séries notées dans cette session seront perdues.";
 "Continue workout" = "Continuer la séance";
 "Cancel" = "Annuler";
 "Rest’s over. Next set!" = "Repos terminé. Série suivante !";
@@ -32,14 +36,21 @@
 "More" = "Plus";
 "Effort" = "Effort";
 "None" = "Aucun";
+"How hard was that set?" = "Cette série, c’était dur comment ?";
+"Nothing left, went to failure" = "Plus rien dans le réservoir, jusqu’à l’échec";
+"One more rep in the tank" = "Encore une répétition en réserve";
+"Two more reps" = "Encore deux répétitions";
+"Three more reps" = "Encore trois répétitions";
+"Planned" = "Prévu";
+"Up next" = "À suivre";
 "Last time: %@" = "La dernière fois: %@";
+"Exercises" = "Exercices";
 "No workout running" = "Aucune séance en cours";
 "Not synced yet" = "Pas encore synchronisé";
 "Open openGym on your iPhone once and your routines show up here." = "Ouvre openGym une fois sur ton iPhone et tes routines apparaissent ici.";
 "Start one on your iPhone and it shows up here." = "Lance-en une sur ton iPhone et elle apparaît ici.";
 "All sets done" = "Toutes les séries faites";
 "measuring" = "mesure …";
-"Next: %@, set %lld" = "Ensuite : %@, série %lld";
 "%@, set %lld" = "%@, série %lld";
 "Calories" = "Calories";
 "Heart rate" = "Pouls";
@@ -63,3 +74,4 @@
 "Added weight" = "Poids ajouté";
 "Your rest, your next set, or today's workout." = "Ton repos, ta prochaine série ou la séance du jour.";
 "Opens openGym." = "Ouvre openGym.";
+"Hold to finish" = "Maintiens pour terminer";

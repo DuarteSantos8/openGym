@@ -356,6 +356,7 @@ final class WorkoutManager: NSObject, ObservableObject, HKWorkoutSessionDelegate
     /// Active calories so far, for the workout screen when it shows them (at most every 10 s).
     @Published private(set) var calories: Double?
     private var caloriesAt = Date.distantPast
+    func demoReadings(hr: Double, kcal: Double) { heartRate = hr; calories = kcal; running = true }     // CI's screenshots
 
     func workoutBuilder(_ workoutBuilder: HKLiveWorkoutBuilder, didCollectDataOf collectedTypes: Set<HKSampleType>) {
         if let kcalType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned), collectedTypes.contains(kcalType),

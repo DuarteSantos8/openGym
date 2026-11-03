@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, pl. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Dziś";
+"Routines" = "Plany treningowe";
 "Start workout" = "Zacznij trening";
+"Start" = "Trenuj";
 "Done" = "Gotowe";
 "Warm-up" = "Rozgrzewka";
 "Reps" = "Powt.";
@@ -11,6 +13,8 @@
 "Finish workout?" = "Zakończyć trening?";
 "Finish and save" = "Zakończ i zapisz";
 "Discard workout" = "Odrzuć trening";
+"Discard workout?" = "Odrzucić trening?";
+"The sets you logged in this session will be lost." = "Serie zapisane w tej sesji zostaną utracone.";
 "Continue workout" = "Kontynuuj trening";
 "Cancel" = "Anuluj";
 "Rest’s over. Next set!" = "Koniec przerwy. Następna seria!";
@@ -32,14 +36,21 @@
 "More" = "Więcej";
 "Effort" = "Wysiłek";
 "None" = "Brak";
+"How hard was that set?" = "Jak ciężka była ta seria?";
+"Nothing left, went to failure" = "Nic nie zostało, do upadku";
+"One more rep in the tank" = "Jeszcze jedno powtórzenie w zapasie";
+"Two more reps" = "Jeszcze dwa powtórzenia";
+"Three more reps" = "Jeszcze trzy powtórzenia";
+"Planned" = "Zaplanowano";
+"Up next" = "Następny";
 "Last time: %@" = "Ostatnio: %@";
+"Exercises" = "Ćwiczenia";
 "No workout running" = "Żaden trening nie trwa";
 "Not synced yet" = "Jeszcze nie zsynchronizowano";
 "Open openGym on your iPhone once and your routines show up here." = "Otwórz raz openGym na iPhonie, a twoje plany pojawią się tutaj.";
 "Start one on your iPhone and it shows up here." = "Zacznij trening na iPhonie, a pojawi się tutaj.";
 "All sets done" = "Wszystkie serie zrobione";
 "measuring" = "mierzę …";
-"Next: %@, set %lld" = "Dalej: %@, seria %lld";
 "%@, set %lld" = "%@, seria %lld";
 "Calories" = "Kalorie";
 "Heart rate" = "Tętno";
@@ -63,3 +74,4 @@
 "Added weight" = "Dodatkowy ciężar";
 "Your rest, your next set, or today's workout." = "Twoja przerwa, następna seria albo dzisiejszy trening.";
 "Opens openGym." = "Otwiera openGym.";
+"Hold to finish" = "Przytrzymaj, aby zakończyć";
