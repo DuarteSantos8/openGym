@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, zh-Hans. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "今天";
+"Routines" = "训练计划";
 "Start workout" = "开始训练";
+"Start" = "开始";
 "Done" = "完成";
 "Warm-up" = "热身";
 "Reps" = "次数";
@@ -33,6 +35,7 @@
 "Effort" = "强度";
 "None" = "无";
 "Last time: %@" = "上次: %@";
+"Exercises" = "动作";
 "No workout running" = "没有进行中的训练";
 "Not synced yet" = "尚未同步";
 "Open openGym on your iPhone once and your routines show up here." = "在 iPhone 上打开一次 openGym，你的训练计划就会出现在这里。";

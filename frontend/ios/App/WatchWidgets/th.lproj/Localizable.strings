@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, th. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "วันนี้";
+"Routines" = "รูทีน";
 "Start workout" = "เริ่มออกกำลังกาย";
+"Start" = "เริ่ม";
 "Done" = "เสร็จแล้ว";
 "Warm-up" = "วอร์มอัพ";
 "Reps" = "ครั้ง";
@@ -33,6 +35,7 @@
 "Effort" = "ความหนัก";
 "None" = "ไม่มี";
 "Last time: %@" = "ครั้งก่อน: %@";
+"Exercises" = "ท่าออกกำลังกาย";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";
 "Open openGym on your iPhone once and your routines show up here." = "เปิด openGym บน iPhone สักครั้ง แล้วรูทีนของคุณจะแสดงที่นี่";

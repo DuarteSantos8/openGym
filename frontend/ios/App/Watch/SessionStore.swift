@@ -592,6 +592,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func closeSummary() {
         summary = nil
+        touchLock.lock(at: Date())  // the thumb that hit Done is still over the screen's Start
     }
 
     /* ---------- workouts deleted in openGym, out of Apple Health ---------- */
@@ -630,12 +631,18 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The body weight on the weigh-in's crown.
     @Published var bodyWeight: Double = 70
 
+    /// A thumb on a Start button: ignored just after the screen turned by itself (the complication's Start is not).
+    func startFromTouch(_ session: ReadySession) {
+        if touchAllowed { start(session) }
+    }
+
     /// Starts a ready session here, the phone asleep or not: first the weigh-in, as on the phone,
     /// unless it is switched off there (Settings → During a workout).
     func start(_ session: ReadySession) {
         if state.settings.weighIn != false && !isDemo {
             bodyWeight = state.settings.lastBw ?? (unit == "lb" ? 160 : 70)
             weighInFor = session
+            touchLock.lock(at: Date())  // the thumb that hit Start is still over Save & start
             return
         }
         countIn(session, bw: nil)
@@ -644,7 +651,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The weigh-in answered: saved (a weigh-in for the phone, and the session's body weight) or
     /// skipped; the workout starts either way. `nil` session: cancelled, nothing starts.
     func finishWeighIn(save: Bool) {
-        guard let session = weighInFor else { return }
+        guard touchAllowed, let session = weighInFor else { return }
         weighInFor = nil
         var bw: Double? = nil
         if save, let ev = SessionCore.weighIn(bodyWeight, at: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString) {
@@ -1064,7 +1071,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: screen == "idle" ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
+        switch screen {
+        case "empty", "empty-heard": break
+        case "idle", "idle-end", "weighin", "weighin-tenth", "weighin-lb": apply(json: SessionStore.demoReadyJSON)
+        case "idle-rest": apply(json: SessionStore.demoReadyRestJSON)
+        default: apply(json: SessionStore.demoJSON)
+        }
         DispatchQueue.main.async {
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps": self.picked[0] = 2
@@ -1073,9 +1085,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
             case "finish": self.state.entryIndex = self.workout?.entries.count ?? 0
-            case "weighin":
-                self.bodyWeight = 81.4
+            case "weighin", "weighin-tenth", "weighin-lb":
+                self.bodyWeight = screen == "weighin-lb" ? 176.4 : 81.4
+                if screen == "weighin-lb" { self.state.unit = "lb" }
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
+            case "empty-heard": self.heardFromPhone = true
             default: break
             }
             // CI: the watch in another language than its own (the app's, as the phone sends it).
@@ -1102,10 +1116,38 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
+    // The start screen's routines; the rest-day demo reuses two of them.
+    private static let demoPull = """
+    {"routineIds":["r2"],"name":"Pull day","entries":[
+        {"id":"0027","name":"Barbell Row","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0651","name":"Lat Pulldown","mode":"reps","sets":[{"w":50,"r":10,"done":false,"warmup":false},{"w":50,"r":10,"done":false,"warmup":false},{"w":50,"r":10,"done":false,"warmup":false}]},
+        {"id":"0861","name":"Face Pull","mode":"reps","sets":[{"w":20,"r":15,"done":false,"warmup":false},{"w":20,"r":15,"done":false,"warmup":false},{"w":20,"r":15,"done":false,"warmup":false}]},
+        {"id":"0294","name":"Biceps Curl","mode":"reps","sets":[{"w":12,"r":10,"done":false,"warmup":false},{"w":12,"r":10,"done":false,"warmup":false},{"w":12,"r":10,"done":false,"warmup":false}]}]}
+    """
+
+    private static let demoBench = """
+    {"routineIds":["r4"],"name":"Bench only","entries":[
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false},{"w":62.5,"r":5,"done":false,"warmup":false}]}]}
+    """
+
     static let demoReadyJSON = """
     {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"today":{"routineIds":["r1"],"name":"Push day","entries":[
-    {"id":"0025","name":"Bench Press","mode":"reps","restSec":120,"last":null,"sets":[{"w":62.5,"r":8,"sec":null,"done":false,"warmup":false}]}]},
-    "others":[{"routineIds":["r2"],"name":"Pull day","entries":[]},{"routineIds":["r3"],"name":"Legs","entries":[]}]}}
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":40,"r":10,"done":false,"warmup":true},{"w":62.5,"r":8,"done":false,"warmup":false},{"w":62.5,"r":8,"done":false,"warmup":false},{"w":62.5,"r":8,"done":false,"warmup":false}]},
+        {"id":"0426","name":"Overhead Press","mode":"reps","sets":[{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false}]},
+        {"id":"0314","name":"Incline Dumbbell Press","mode":"reps","sets":[{"w":22,"r":10,"done":false,"warmup":false},{"w":22,"r":10,"done":false,"warmup":false},{"w":22,"r":10,"done":false,"warmup":false}]},
+        {"id":"0599","name":"Lateral Raise","mode":"reps","sets":[{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false},{"w":8,"r":15,"done":false,"warmup":false}]},
+        {"id":"0241","name":"Triceps Pushdown","mode":"reps","sets":[{"w":25,"r":12,"done":false,"warmup":false},{"w":25,"r":12,"done":false,"warmup":false},{"w":25,"r":12,"done":false,"warmup":false}]}]},
+    "others":[\(demoPull),
+    {"routineIds":["r3"],"name":"Upper body hypertrophy block B","entries":[
+        {"id":"0025","name":"Bench Press","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0027","name":"Barbell Row","mode":"reps","sets":[{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false},{"w":60,"r":8,"done":false,"warmup":false}]},
+        {"id":"0426","name":"Overhead Press","mode":"reps","sets":[{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false},{"w":40,"r":8,"done":false,"warmup":false}]}]},
+    \(demoBench)]}}
+    """
+
+    static let demoReadyRestJSON = """
+    {"v":1,"unit":"kg","restSec":90,"active":null,"ready":{"others":[\(demoPull),
+    \(demoBench)]}}
     """
 
     static let demoJSON = """

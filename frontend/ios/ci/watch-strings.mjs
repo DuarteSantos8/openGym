@@ -22,7 +22,9 @@ const LANGS = {
 // The watch's key (what the Swift source says) → the app's key, for words the app already has.
 const FROM_APP = {
   'Today': 'Today',
+  'Routines': 'Routines',
   'Start workout': 'Start workout',
+  'Start': 'Start',
   'Done': 'Done',
   'Warm-up': 'Warm-up',
   'Reps': 'Reps',
@@ -59,6 +61,13 @@ const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
 
 // Only the watch says these. %@ is a name, %lld a number, as the Swift source interpolates them.
 const OWN = {
+  // The count on a routine's row ("Exercises 5 · Sets 17"): label first, as the watch has no plurals. The app's
+  // "Exercises" means the library in zh and zh-TW, so these are the watch's own.
+  'Exercises': {
+    de: 'Übungen', fr: 'Exercices', es: 'Ejercicios', it: 'Esercizi', 'pt-PT': 'Exercícios', 'pt-BR': 'Exercícios',
+    pl: 'Ćwiczenia', hu: 'Gyakorlatok', tr: 'Egzersizler', ru: 'Упражнения', uk: 'Вправи', ar: 'التمارين',
+    hi: 'व्यायाम', bn: 'ব্যায়াম', th: 'ท่าออกกำลังกาย', ko: '운동', 'zh-Hans': '动作', 'zh-Hant': '動作',
+  },
   'No workout running': {
     de: 'Kein Training läuft', fr: 'Aucune séance en cours', es: 'Ningún entreno en curso', it: 'Nessun allenamento in corso',
     'pt-PT': 'Nenhum treino a decorrer', 'pt-BR': 'Nenhum treino em andamento', pl: 'Żaden trening nie trwa', hu: 'Nincs folyamatban edzés',
