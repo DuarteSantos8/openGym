@@ -6,6 +6,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Watch sync, rebuilt to not lose a single set**
+- Apple Watch and Wear OS keep every set, start, finish and discard in an outbox of their own and send it again until the phone confirms it applied it. A failed transfer, a killed app or a phone that was off all day no longer eats a set.
+- Apple Watch: sets reach the iPhone in a moment while it is near, instead of whenever the system felt like it, so logging on both devices back and forth stays in step (#882).
+- iPhone: the watch link now starts with the app, even when iOS wakes it in the background, so sets land while the phone sleeps in your pocket and not only once you open openGym.
+- A set unticked or edited on the phone stays that way on the watch, instead of the watch insisting on its own copy.
+- A workout started on the watch and ended on the phone before the watch heard about it no longer keeps running on the wrist.
+- Sets logged on the watch after you saved the workout on the phone join the saved workout, even for an exercise the phone had left empty.
+- A late copy of a watch workout's start no longer starts it all over again, and a watch workout started while another one ran on the phone waits its turn instead of being thrown away.
+
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
 - Android widget: it loads at every size again instead of "Unable to load widget" when stretched, and its "What to show" screen is wide enough to read (#981).

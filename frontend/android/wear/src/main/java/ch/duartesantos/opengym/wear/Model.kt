@@ -31,6 +31,8 @@ data class Snapshot(
     val discarded: List<String>? = null,
     /** The week streak (lib/streak.js), for the Tile and the complication. Wear OS only so far. */
     val streak: Streak? = null,
+    /** The ids of the watch's events the phone has applied lately: the outbox lets go of them. */
+    val acked: List<String>? = null,
 ) {
     companion object {
         fun parse(json: String): Snapshot? = try { WireJson.decodeFromString(serializer(), json) } catch (_: Exception) { null }

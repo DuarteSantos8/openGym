@@ -19,6 +19,9 @@ struct Snapshot: Codable, Equatable {
     /// Workouts discarded on the phone lately (their ids): one of these that leaves the snapshot
     /// was not finished, so the watch drops its Apple Health workout instead of saving it (#776).
     var discarded: [String]?
+    /// The ids of this watch's events the phone has applied lately (1.4.5): the outbox lets go of
+    /// them, and the watch's own copy of a set it ticked gives way to the phone's.
+    var acked: [String]?
 }
 
 /// What the watch can start by itself: today's planned session and a few other routines.
