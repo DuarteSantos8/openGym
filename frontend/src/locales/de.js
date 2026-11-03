@@ -976,6 +976,7 @@ export default {
   // --- equipment profiles ---
   'Showing all equipment': 'Alle Geräte werden angezeigt',
   'Showing what you have in "{0}"': 'Angezeigt wird, was du in „{0}“ hast',
+  'Not in "{0}": {1} more': 'Nicht in „{0}“: {1} weitere',
   'Show all equipment': 'Alle Geräte zeigen',
   'Filter by "{0}"': 'Nach „{0}“ filtern',
   'Edit profile': 'Profil bearbeiten',
