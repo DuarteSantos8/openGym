@@ -977,6 +977,7 @@ export default {
   // --- equipment profiles ---
   'Showing all equipment': 'Visar all utrustning',
   'Showing what you have in "{0}"': 'Visar det du har i ”{0}”',
+  'Not in "{0}": {1} more': 'Inte i ”{0}”: {1} till',
   'Show all equipment': 'Visa all utrustning',
   'Filter by "{0}"': 'Filtrera efter ”{0}”',
   'Edit profile': 'Redigera profil',

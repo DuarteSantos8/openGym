@@ -958,6 +958,7 @@ export default {
   // --- equipment profiles ---
   'Showing all equipment': 'सभी उपकरण दिखाए जा रहे हैं',
   'Showing what you have in "{0}"': '“{0}” में आपके पास जो है वह दिखाया जा रहा है',
+  'Not in "{0}": {1} more': '“{0}” में नहीं: {1} और',
   'Show all equipment': 'सभी उपकरण दिखाएँ',
   'Filter by "{0}"': '“{0}” से फ़िल्टर करें',
   'Edit profile': 'प्रोफ़ाइल संपादित करें',

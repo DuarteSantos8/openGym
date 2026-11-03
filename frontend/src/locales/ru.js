@@ -938,6 +938,7 @@ export default {
   // --- equipment profiles ---
   'Showing all equipment': 'Показан весь инвентарь',
   'Showing what you have in "{0}"': 'Показано то, что есть в «{0}»',
+  'Not in "{0}": {1} more': 'Нет в «{0}»: ещё {1}',
   'Show all equipment': 'Показать весь инвентарь',
   'Filter by "{0}"': 'Фильтровать по «{0}»',
   'Edit profile': 'Изменить профиль',
