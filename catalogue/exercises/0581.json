@@ -3,8 +3,9 @@
   "name": "lever high row",
   "bodyPart": "back",
   "equipment": "leverage machine",
-  "target": "upper back",
+  "target": "lats",
   "secondaryMuscles": [
+    "upper back",
     "biceps",
     "rear deltoids"
   ],

@@ -7,14 +7,16 @@ import { EXIDX } from './exercises.js'
 import { hasCompletedWork, isWarmupRow } from './workout-model.js'
 import { fmtDate, fmtNum, fmtVol, durPart, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
+import { viewEntry, exUnitTag } from './ex-unit.js'
 
 /**
  * `unit` is the profile's, `nameOf(entry)` the exercise's display name, `speedUnit` the one cardio
  * is shown in (lib/speed.js; km/h when absent). Blocks are separated by a blank line: the heading,
  * then each exercise (a superset's under one "Superset" line, its members together), then the
- * session note.
+ * session note. `state`, when given, is the profile: an exercise in a weight unit of its own
+ * (#657) is then written in it, its unit after its sets.
  */
-export function workoutText(w, { unit, nameOf, speedUnit, warmups = false }) {
+export function workoutText(w, { unit, nameOf, speedUnit, warmups = false, state = null }) {
   const facts = [
     ...durPart((w.end || 0) - (w.start || 0)),
     // `warmups`: the profile counts warm-ups in volume (#719); the set list below stays work sets.
@@ -25,13 +27,14 @@ export function workoutText(w, { unit, nameOf, speedUnit, warmups = false }) {
   // Work sets only: the text is what you trained, the work the volume above counts. Warm-ups are
   // left out of volume, records and progression everywhere else, and listed here with nothing to
   // tell them apart they would read as sets of their own.
-  const lines = entry => {
+  const lines = stored => {
+    const entry = state ? viewEntry(state, stored) : stored
     const sets = (entry.sets || []).filter(s => hasCompletedWork(s) && !isWarmupRow(s))
     if (!sets.length) return null
     // Title case the way the screen shows it (exerciseNameClass): an English name gets it, a
     // translated one keeps its own casing, which German's capitalised nouns depend on.
     const name = nameOf(entry)
-    return [exerciseNameClass(EXIDX[entry.id]) ? capWords(name) : name, sets.map(s => setLabel(entry.id, s, entry.target, speedUnit)).join(', '), ...(entry.note ? [entry.note] : [])]
+    return [exerciseNameClass(EXIDX[entry.id]) ? capWords(name) : name, sets.map(s => setLabel(entry.id, s, entry.target, speedUnit)).join(', ') + (state ? exUnitTag(state, entry.id) : ''), ...(entry.note ? [entry.note] : [])]
   }
   // Grouped the way the detail sheet groups it (sessionSections): per routine first, so a
   // superset is only ever paired inside one routine's section, in the order the sheet lists them.

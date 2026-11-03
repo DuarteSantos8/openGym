@@ -21,6 +21,7 @@
 import { mergeHeartRate, mergeWeighIns, lacksHeartRate } from './health-read.js'
 import { MOBILE, nativePlatform, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds, goneIds } from './health-connect.js'
+import { isOn } from './modules.js'
 import { exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
@@ -93,6 +94,9 @@ export function syncHealth(S) {
   // Not read yet: initHealthSync reads it at launch and syncs then, which covers a save made
   // before that; the save path itself never waits on the file.
   if (!cached || !cached.on) return Promise.resolve(cached)
+  // Settings → Modules: Health off pauses the sync. Nothing is disconnected; switched back on, the
+  // next save writes everything that changed meanwhile (planSync compares with what was written).
+  if (S && !isOn(S, 'health')) return Promise.resolve(cached)
   if (running) { again = S; return running }
   again = null
   running = (async () => {
@@ -287,6 +291,7 @@ export async function disableRead(kind) {
  */
 export function readHealth(getState, { force = false, now = Date.now(), apply = null } = {}) {
   if (!MOBILE || !cached || !(cached.readHr || cached.readWeight)) return Promise.resolve(cached)
+  if (!isOn(getState?.(), 'health')) return Promise.resolve(cached)   // paused with the Health module
   if (readRunning) return readRunning
   readRunning = readOnce(getState, force, now, apply || applyRef).finally(() => { readRunning = null })
   return readRunning

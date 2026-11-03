@@ -48,4 +48,60 @@ describe('menuSheet sections', () => {
     expect([...host.querySelectorAll('.menu-item .tt')].map(e => e.textContent)).toEqual(['One', 'Two'])
     expect(host.querySelector('.menu-sec')).toBeNull()
   })
+
+  // v1.4.4 ("the ⋯ menu has a lot lot lot"): the rarely used rows fold under one More row.
+  describe('the More fold', () => {
+    const remove = { icon: 'trash', label: 'Remove exercise', danger: true }
+    const fold = more => menuSheet({ title: 'Bench', sections: [
+      { items: [{ label: 'Add note' }, { label: 'Swap exercise' }] },
+      { more },
+      { items: [remove] },
+    ] })
+    const labels = () => [...host.querySelectorAll('.menu-item .tt')].map(e => e.textContent)
+
+    it('shows one More row naming what is inside, and opens the groups in its place, Remove still last', () => {
+      const moveUp = vi.fn()
+      fold([
+        { title: 'Exercise', items: [{ label: 'Exercise settings' }, null, { label: 'How to do it' }] },
+        { title: 'Order and supersets', items: [{ label: 'Move up', onClick: moveUp }] },
+        { title: 'Empty', items: [false] },
+      ])
+      show()
+      expect(labels()).toEqual(['Add note', 'Swap exercise', 'More', 'Remove exercise'])
+      const more = host.querySelector('.menu-more')
+      expect(more.getAttribute('role')).toBe('button')
+      expect(more.getAttribute('aria-expanded')).toBe('false')
+      expect(more.querySelector('.ss').textContent).toBe('Exercise settings, How to do it, Move up')
+      act(() => more.click())
+      // Opening it is not a pick: the sheet stays.
+      expect(useUI.getState().sheets.length).toBe(1)
+      expect(host.querySelector('.menu-more')).toBeNull()
+      expect(labels()).toEqual(['Add note', 'Swap exercise', 'Exercise settings', 'How to do it', 'Move up', 'Remove exercise'])
+      expect([...host.querySelectorAll('.menu-sec')].map(e => e.textContent)).toEqual(['Exercise', 'Order and supersets'])
+      // Focus lands on the first row it revealed, for the keyboard and the screen reader.
+      expect(document.activeElement?.querySelector('.tt')?.textContent).toBe('Exercise settings')
+      act(() => [...host.querySelectorAll('.menu-item')].find(e => e.textContent.includes('Move up')).click())
+      expect(moveUp).toHaveBeenCalledOnce()
+      expect(useUI.getState().sheets).toEqual([])
+    })
+
+    it('opens from the keyboard too', () => {
+      fold([{ items: [{ label: 'One' }, { label: 'Two' }] }])
+      show()
+      act(() => host.querySelector('.menu-more').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })))
+      expect(labels()).toEqual(['Add note', 'Swap exercise', 'One', 'Two', 'Remove exercise'])
+    })
+
+    it('shows a lone folded row as it is, and leaves an empty fold out', () => {
+      fold([{ items: [null, { label: 'Rename workout' }] }, { items: [false] }])
+      show()
+      expect(host.querySelector('.menu-more')).toBeNull()
+      expect(labels()).toEqual(['Add note', 'Swap exercise', 'Rename workout', 'Remove exercise'])
+      act(() => root.render(null))
+      useUI.setState({ sheets: [] })
+      fold([{ items: [null] }])
+      show()
+      expect(labels()).toEqual(['Add note', 'Swap exercise', 'Remove exercise'])
+    })
+  })
 })

@@ -5,8 +5,6 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
-import dns from 'node:dns';
-import net from 'node:net';
 import { pipeline } from 'node:stream/promises';
 import {
   generateRegistrationOptions, verifyRegistrationResponse,
@@ -31,12 +29,20 @@ import {
   transportsOf,
 } from './passkeys-store.js';
 import { createDeviceLink, findDeviceLink, burnDeviceLink, dropDeviceLinks, recoveryLinkOf, RECOVERY_TTL_MS } from './device-link.js';
+import {
+  createWatchCode, takeWatchCode, dropWatchCodes, createWatchLink, findWatchLink, touchWatchLink, listWatchLinks,
+  dropWatchLinks, boxOf, putSnapshot, pushEvents, queuedEvents, ackEvents
+} from './watch-relay.js';
 import { startAdminSocket } from './admin-socket.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { effectiveRoutineId } from './queue.js';
 import { stampPut } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
+import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT } from './net-guard.js';
+import { createIntegrations } from './integrations/index.js';
+import { integrationRoutes } from './integrations/routes.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
+import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -116,6 +122,9 @@ const lock = f => { try { fs.chmodSync(path.join(DATA, f), 0o600); } catch { /* 
 const secretFile = path.join(DATA, 'secret');
 if (!fs.existsSync(secretFile)) fs.writeFileSync(secretFile, crypto.randomBytes(32).toString('hex'), { mode: 0o600 });
 const SECRET = fs.readFileSync(secretFile, 'utf8').trim();
+// Integrations (integrations/, docs/INTEGRATIONS.md): off unless INTEGRATIONS names some. Their
+// connections live in DATA_DIR/integrations/, sealed with a key derived from SECRET.
+const integrations = createIntegrations({ dataDir: DATA, secret: SECRET, version: '1' });
 
 const dbFile = path.join(DATA, 'db.json');
 // Every account, passkey and invite. Only a missing file starts empty: an unreadable one (a write
@@ -185,6 +194,9 @@ function atomicWrite(file, content, mode) { durableWrite(file, content, mode); }
 // synced more writes ago than this merges on its next pull instead of taking the server's copy.
 const WID_KEEP = 50;
 const stateFile = uid => path.join(DATA, 'state-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
+// The watch relay's mailbox of a profile (watch-relay.js): the page's last snapshot and what its
+// Zepp OS watches sent. Small, rewritten whole like the state file.
+const watchFile = uid => path.join(DATA, 'watch-' + uid.replace(/[^a-zA-Z0-9_-]/g, '') + '.json');
 // When a profile last fetched its document (GET /api/data). The document's own `_ts` moves only
 // on a push, so a device that only ever read — a second phone, a profile that trains elsewhere
 // and just looks — showed "last sync never" in the admin dashboard (QA 1.3.9). Kept on the user
@@ -254,116 +266,30 @@ const PUSH_TIMEOUT_MS = 10000;
 const PUSH_CONCURRENCY = 6;
 const MAX_SUBS_PER_USER = 20;
 
-function parseAllowedPrivateIps(raw) {
-  const list = new net.BlockList();
-  for (const entry of String(raw || '').split(/[\s,]+/).filter(Boolean)) {
-    const [from, to] = entry.split('-');
-    const [addr, prefix] = entry.split('/');
-    const family = net.isIPv6(addr) || net.isIPv6(from) ? 'ipv6' : 'ipv4';
-    try {
-      if (to !== undefined) list.addRange(from, to, family);
-      else if (prefix !== undefined && /^\d{1,3}$/.test(prefix)) list.addSubnet(addr, +prefix, family);
-      else if (net.isIP(entry)) list.addAddress(entry, family);
-      else throw new Error('not an address, range or CIDR block');
-    } catch {
-      console.warn(`ALLOWED_PRIVATE_IPS entry "${entry.slice(0, 60)}" is not a valid address, range or CIDR block — ignored`);
-    }
-  }
-  return list;
-}
-const ALLOWED_PRIVATE_IPS = parseAllowedPrivateIps(process.env.ALLOWED_PRIVATE_IPS);
-
-function isAllowedPrivateAddr(v) {
-  const family = net.isIPv6(v) ? 'ipv6' : net.isIPv4(v) ? 'ipv4' : null;
-  return family !== null && ALLOWED_PRIVATE_IPS.check(v.replace(/%.*$/, ''), family);
-}
-
-function isPrivateAddr(ip) {
-  const v = String(ip).toLowerCase();
-  if (isAllowedPrivateAddr(v)) return false;
-  const m4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(v);
-  if (m4) {
-    const a = +m4[1], b = +m4[2];
-    if (a === 0 || a === 10 || a === 127) return true;            // this-network, private, loopback
-    if (a === 169 && b === 254) return true;                      // link-local (cloud metadata)
-    if (a === 172 && b >= 16 && b <= 31) return true;             // private
-    if (a === 192 && b === 168) return true;                      // private
-    if (a === 192 && b === 0) return true;                        // 192.0.0.0/24, 192.0.2.0/24
-    if (a === 100 && b >= 64 && b <= 127) return true;            // CGNAT
-    if (a === 198 && (b === 18 || b === 19)) return true;         // benchmarking 198.18.0.0/15
-    if (a >= 224) return true;                                    // multicast + reserved
-    return false;
-  }
-  // IPv6 is judged on its eight groups, never on the text: the same address arrives as
-  // `::ffff:127.0.0.1` from dns.lookup, as `::ffff:7f00:1` from new URL, and in whatever
-  // spelling a caller chose, and a rule keyed to one spelling misses the others.
-  const g = ipv6Groups(v);
-  if (!g) return false;
-  if (g.slice(0, 5).every(x => x === 0) && g[5] === 0xffff) {     // IPv4-mapped IPv6
-    return isPrivateAddr(`${g[6] >> 8}.${g[6] & 255}.${g[7] >> 8}.${g[7] & 255}`);
-  }
-  if (g.slice(0, 7).every(x => x === 0) && g[7] <= 1) return true; // unspecified, loopback
-  if ((g[0] & 0xffc0) === 0xfe80) return true;                    // link-local fe80::/10
-  if ((g[0] & 0xffc0) === 0xfec0) return true;                    // site-local fec0::/10 (deprecated, still routed by some)
-  if ((g[0] & 0xfe00) === 0xfc00) return true;                    // unique local fc00::/7
-  if ((g[0] & 0xff00) === 0xff00) return true;                    // multicast ff00::/8
-  // The forms that carry an IPv4 address inside: on a host with NAT64 or a 6to4 relay they reach
-  // that IPv4 address, so they are judged by it. 64:ff9b:1::/48 is the local-use NAT64 prefix,
-  // which only ever translates into a network of the operator's own.
-  const v4 = (hi, lo) => isPrivateAddr(`${hi >> 8}.${hi & 255}.${lo >> 8}.${lo & 255}`);
-  if (g.slice(0, 6).every(x => x === 0)) return v4(g[6], g[7]);          // IPv4-compatible ::a.b.c.d
-  if (g[0] === 0x64 && g[1] === 0xff9b && g.slice(2, 6).every(x => x === 0)) return v4(g[6], g[7]); // NAT64 64:ff9b::/96
-  if (g[0] === 0x64 && g[1] === 0xff9b && g[2] === 1) return true;       // local-use NAT64 64:ff9b:1::/48
-  if (g[0] === 0x2002) return v4(g[1], g[2]);                            // 6to4 2002::/16
-  return false;
-}
-
-// The eight 16-bit groups of an IPv6 literal in any textual form — compressed, zero-padded,
-// upper-case, with a dotted IPv4 tail — or null when the string is not one.
-function ipv6Groups(v) {
-  if (!net.isIPv6(v)) return null;
-  let s = v.replace(/%.*$/, '');                                  // zone id
-  const m4 = /:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(s);
-  if (m4) {
-    const [a, b, c, d] = m4[1].split('.').map(Number);
-    s = s.slice(0, -m4[1].length) + ((a << 8) | b).toString(16) + ':' + ((c << 8) | d).toString(16);
-  }
-  const [head, tail = ''] = s.split('::');
-  const groups = head ? head.split(':') : [];
-  const rest = tail ? tail.split(':') : [];
-  if (s.includes('::')) while (groups.length + rest.length < 8) groups.push('0');
-  return groups.concat(rest).map(x => parseInt(x, 16));
-}
-
-// Same shape as dns.lookup, so https.Agent can use it directly.
-function guardedLookup(hostname, options, cb) {
-  dns.lookup(hostname, options, (err, address, family) => {
-    if (err) return cb(err);
-    const list = Array.isArray(address) ? address : [{ address, family }];
-    if (list.some(a => isPrivateAddr(a.address))) {
-      return cb(Object.assign(new Error('refusing to connect to a private address: ' + hostname), { code: 'EPUSHBLOCKED' }));
-    }
-    cb(null, address, family);
-  });
-}
+// Same shape as dns.lookup (net-guard.js guardedLookup), so https.Agent can use it directly.
 const PUSH_AGENT = new https.Agent({ lookup: guardedLookup, keepAlive: false });
 
-// Cheap pre-check so a bad endpoint is refused at subscribe time with a useful message, rather
-// than silently never delivering. For a hostname PUSH_AGENT is what actually enforces the address
-// rule; for a literal address this is the check, which is why sendPush runs it again.
-function pushEndpointError(raw) {
-  let u;
-  try { u = new URL(String(raw || '')); } catch { return 'endpoint is not a valid URL'; }
-  if (u.protocol !== 'https:') return 'endpoint must be an https:// URL';
-  if (u.username || u.password) return 'endpoint must not carry credentials';
-  // A literal address is judged right here — and only here: Node hands a literal straight to
-  // connect() without consulting the Agent's lookup. Hostnames are left to PUSH_AGENT, which is
-  // the check that has to hold against rebinding.
-  const host = u.hostname.replace(/^\[|\]$/g, '');
-  if (/^[0-9.]+$/.test(host) || host.includes(':')) {
-    if (isPrivateAddr(host)) return 'endpoint must not point at a private address';
-  }
+// Real push services hand out endpoints of a few hundred characters (FCM, Mozilla, Apple are all
+// well under 1 KB) and keys of 87 (p256dh, a 65-byte point) and 22 (auth, 16 bytes) base64url
+// characters. Everything here lands in db.json, which every save rewrites whole, so nothing bigger
+// is ever stored (GHSA-g65f-rj2m-6wj9).
+// MAX_PUSH_ENDPOINT comes from net-guard.js, next to the endpoint check itself.
+const MAX_PUSH_KEY = 256;
+const PUSH_KEY_RE = /^[A-Za-z0-9_\-+/]+={0,2}$/;
+function pushKeyError(v) {
+  if (typeof v !== 'string' || !v || v.length > MAX_PUSH_KEY || !PUSH_KEY_RE.test(v)) return 'invalid subscription keys';
   return null;
+}
+
+// A db.json from before these limits may already carry an oversized row: drop it once at boot,
+// before the next save has to write it again.
+if (Array.isArray(db.subs)) {
+  const n = db.subs.length;
+  const tooBig = v => typeof v === 'string' && v.length > MAX_PUSH_KEY;
+  // Only size decides here: a row is never dropped for its format, just for being too big to keep.
+  db.subs = db.subs.filter(s => !(String(s?.endpoint ?? '').length > MAX_PUSH_ENDPOINT
+    || tooBig(s?.keys?.p256dh) || tooBig(s?.keys?.auth)));
+  if (db.subs.length !== n) { console.error(`push: dropped ${n - db.subs.length} oversized subscription(s)`); saveDb(); }
 }
 
 // `deviceId` narrows the send to the subscriptions one browser registered (the rest-timer alert
@@ -556,11 +482,24 @@ function stateSummary(uid) {
     rem: r && typeof r === 'object' ? { on: !!r.on, tz: r.tz, time: r.time, nudge: !!r.nudge } : { on: false },
     consent: !!S?.coach?.consent?.agreedAt,
     settled: '',   // a local date the reminder was found to owe nothing on, for this file
+    wrapped: wrappedSummary(S),   // the December push (wrapped.js): a flag, a year, a few years
   };
   stateSummaries.set(uid, sum);
   return sum;
 }
+// "Your year in openGym" (wrapped.js): once per user and year, on Dec 1 from 18:00 server time.
+// The year it went out for is written to db.json before the send, so a crash after it, a restart
+// or the next tick cannot send it twice. Read from the summary only: no state is parsed for it.
+function wrappedTick(user, sum, year) {
+  if (!wrappedPushOwed(user, sum.wrapped, year)) return;
+  console.log('wrapped push firing', user.id, year);
+  user.wrappedPush = year;
+  saveDb();
+  sendPush(user.id, wrappedPush(sum.wrapped.lang, year));
+}
 setInterval(() => {
+  // Server time, read through Date.now() so the tests' clock moves it too.
+  const wrappedYear = wrappedPushYear(new Date(Date.now()));
   for (const user of db.users) {
     if (user.disabled) continue;            // locked out everywhere, reminders included
     if (!db.subs.some(s => s.userId === user.id)) continue;
@@ -569,6 +508,7 @@ setInterval(() => {
     // PUT /api/data refuses the obvious shapes, but a file already on disk answers to nobody.
     try {
       const sum = stateSummary(user.id);
+      if (wrappedYear && sum && user.wrappedPush !== wrappedYear) wrappedTick(user, sum, wrappedYear);
       if (!sum?.rem.on) continue;
       const now = userNow(sum.rem.tz || 'UTC');
       if (!now) continue;
@@ -743,7 +683,9 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // The password routes are deliberately NOT exempt. A name and a password are a credential too,
 // but one a hostile page can know — its own — so an exempt POST /api/login/password would let
 // any site sign a visitor into the attacker's account and collect what they log (login CSRF).
-const CSRF_EXEMPT = new Set(['POST /api/pair/redeem']);
+// The watch relay's two routes for the watch are the same kind: the code in the body, or a watch
+// token in the Authorization header, which no browser attaches on its own.
+const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -839,6 +781,25 @@ function makePairCode() {
   return code;
 }
 setInterval(() => { for (const [k, v] of pairings) if (v.exp < Date.now()) pairings.delete(k); }, 60000).unref();
+
+/* ---------- the watch relay (watch-relay.js, docs/ZEPP_OS.md) ---------- */
+// Pairing codes for watches, in memory like the phone's: hashed, one per profile, ten minutes.
+const watchCodes = new Map();
+setInterval(() => { const now = Date.now(); for (const [k, v] of watchCodes) if (v.exp <= now) watchCodes.delete(k); }, 60000).unref();
+const readBox = uid => { try { return boxOf(JSON.parse(fs.readFileSync(watchFile(uid), 'utf8'))); } catch { return boxOf(null); } };
+const writeBox = (uid, box) => durableWrite(watchFile(uid), JSON.stringify(box), 0o600);
+// The watch link a request carries (`Authorization: Bearer ogw_…`), or null. Never a session: an
+// account that may not sign in, or whose sessions were all ended since, has no live links either.
+function watchLinkFor(req) {
+  const auth = req.headers.authorization || '';
+  if (!auth.startsWith('Bearer ')) return null;
+  const link = findWatchLink(db, auth.slice(7).trim(), uid => {
+    const u = db.users.find(x => x.id === uid);
+    return u && !u.disabled ? sessionVersion(u) : null;
+  });
+  if (link && touchWatchLink(link)) saveDb();
+  return link;
+}
 
 /* ---------- helpers ---------- */
 function json(res, code, obj, extraHeaders) {
@@ -1090,6 +1051,8 @@ const THROTTLED = {
   'POST /api/account/passkeys/options': null, 'POST /api/account/device-link': null,
   // Pairing a phone: the same, for the password that may prove it.
   'POST /api/pair/create': null,
+  // A watch's pairing code (watch-relay.js): a wrong one counts like a wrong device link.
+  'POST /api/watch/redeem': 'watch', 'POST /api/watch/pair': null,
   'DELETE /api/account/passkeys': null,
   // Deleting the account: the same, for the password that may prove it.
   'POST /api/account/delete': null
@@ -1377,12 +1340,17 @@ function removeAccount(u) {
   db.creds = (db.creds || []).filter(c => c.userId !== u.id);
   db.subs = (db.subs || []).filter(x => x.userId !== u.id);
   dropDeviceLinks(db, u.id);
+  dropWatchLinks(db, u.id);
+  dropWatchCodes(watchCodes, u.id);
   presence.delete(u.id);
   // The training history and any Coach credential of theirs, both outside db.json.
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
+  try { fs.unlinkSync(watchFile(u.id)); } catch { /* never had a watch */ }
   try { coachConfig.clearProfileAuth(u.id); } catch { /* nothing stored */ }
   // Their photos and videos — the one place a profile's folder under uploads/ is removed.
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
+  // Their integrations: connections, sealed secrets and anything still waiting to be sent.
+  try { integrations.removeUser(u.id); } catch (e) { console.error('integrations: could not remove', u.id, e.message); }
   saveDb();
 }
 
@@ -2144,7 +2112,10 @@ const routes = {
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
-      ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {})
+      ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {}),
+      // Which integrations this server offers (only to a session, like the Coach block). Absent
+      // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
+      ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {})
     });
   },
 
@@ -2413,6 +2384,92 @@ const routes = {
     json(res, 200, { token: makeSession(user), user: publicUser(user) });
   },
 
+  // The watch relay (watch-relay.js, docs/ZEPP_OS.md). A signed-in device asks for a code, the
+  // Zepp app's settings page for openGym redeems it for a watch token, and from then on the page
+  // and the watch's Side Service meet in this profile's mailbox. A watch token opens the two
+  // /api/watch/box routes and nothing else, so a session is all that minting one asks; "sign out
+  // everywhere" and a new password end every watch link with the sessions (their version).
+  'POST /api/watch/pair': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const { code, exp } = createWatchCode(watchCodes, user.id);
+    audit(req, 'auth.watch.pair', { user });
+    json(res, 200, { code, exp });
+  },
+  'POST /api/watch/redeem': async (req, res) => {
+    const body = await readBody(req);
+    if (addressPaused(req, res, 'watch')) return;
+    const uid = takeWatchCode(watchCodes, text(body.code));
+    const user = uid && db.users.find(u => u.id === uid);
+    if (!user || user.disabled) {
+      strikeAddress(req, 'watch');
+      auditFail(req, 'auth.watch.fail', { ok: false, msg: 'code-invalid' });
+      return json(res, 400, { error: 'invalid or expired code', code: 'pair-invalid' });
+    }
+    const { token, link } = createWatchLink(db, user.id, sessionVersion(user), text(body.name));
+    saveDb();
+    audit(req, 'auth.watch.ok', { user, msg: link.name });
+    json(res, 200, { token, id: link.id, name: user.name || '' });
+  },
+  'GET /api/watch/links': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { links: listWatchLinks(db, user.id) });
+  },
+  'POST /api/watch/unlink': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const id = text(body.id) || null;
+    if (dropWatchLinks(db, user.id, id)) saveDb();
+    // The last watch gone: nothing is left to read the mailbox.
+    if (!listWatchLinks(db, user.id).length) { try { fs.unlinkSync(watchFile(user.id)); } catch { /* none */ } }
+    audit(req, 'auth.watch.unlink', { user });
+    json(res, 200, { ok: true, links: listWatchLinks(db, user.id) });
+  },
+  // The page's side: its snapshot for the watches, and what they sent.
+  'PUT /api/watch/snapshot': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    if (!listWatchLinks(db, user.id).length) return json(res, 409, { error: 'no watch paired', code: 'no-watch' });
+    const box = readBox(user.id);
+    if (!putSnapshot(box, body.json)) return json(res, 400, { error: 'not a snapshot' });
+    writeBox(user.id, box);
+    json(res, 200, { ok: true });
+  },
+  'GET /api/watch/events': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const links = listWatchLinks(db, user.id);
+    const seen = links.reduce((m, l) => Math.max(m, l.seen || 0), 0);
+    json(res, 200, { events: links.length ? queuedEvents(readBox(user.id)) : [], paired: links.length, seen });
+  },
+  'POST /api/watch/ack': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    const box = readBox(user.id);
+    if (ackEvents(box, body.ids)) writeBox(user.id, box);
+    json(res, 200, { ok: true });
+  },
+  // The watch's side (its Side Service, with the watch token): the snapshot, and its events.
+  'GET /api/watch/box': async (req, res) => {
+    const link = watchLinkFor(req);
+    if (!link) return json(res, 401, { error: 'not paired', code: 'watch-unpaired' });
+    const box = readBox(link.userId);
+    json(res, 200, { json: box.snapshot, at: box.snapAt });
+  },
+  'POST /api/watch/box': async (req, res) => {
+    const link = watchLinkFor(req);
+    if (!link) return json(res, 401, { error: 'not paired', code: 'watch-unpaired' });
+    const body = await readBody(req);
+    const box = readBox(link.userId);
+    const accepted = pushEvents(box, body.events);
+    if (accepted.length) writeBox(link.userId, box);
+    json(res, 200, { accepted, json: box.snapshot, at: box.snapAt });
+  },
+
   // Absent entirely while PASSWORD_LOGIN is off, so each of them is a plain 404.
   ...(PASSWORD_LOGIN ? passwordRoutes : {}),
 
@@ -2564,6 +2621,9 @@ const routes = {
     if (MEDIA_ON) {
       try { MEDIA.noteState(user.id, body.state); } catch (e) { console.error('media noteState', e); }
     }
+    // A finished workout, a record or a weigh-in the profile's integrations asked to hear about:
+    // queued for delivery (integrations/outbox.js), never sent from inside this request.
+    try { integrations.onStateWrite(user.id, cur, body.state); } catch (e) { console.error('integrations onStateWrite', e); }
     json(res, 200, { ok: true, ts: body.state._ts || null, rev: curRev + 1, wid: body.state._wid });
   },
 
@@ -2575,7 +2635,7 @@ const routes = {
     const body = await readBody(req);
     const sub = body.subscription;
     if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) return json(res, 400, { error: 'invalid subscription' });
-    const bad = pushEndpointError(sub.endpoint);
+    const bad = pushEndpointError(sub.endpoint) || pushKeyError(sub.keys.p256dh) || pushKeyError(sub.keys.auth);
     if (bad) return json(res, 400, { error: bad });
     // Only the two keys the push protocol needs are kept: `sub` is caller-supplied and would
     // otherwise put arbitrary fields into db.json, which every admin route reads back out.
@@ -2915,6 +2975,11 @@ const routes = {
   // a cycle. Every one of them is inert while the feature is unconfigured.
   ...coachRoutes({ json, readBody, readSession, requireAdmin }),
 
+  /* ---------- integrations ---------- */
+  // integrations/routes.js, handed the same helpers. With INTEGRATIONS unset they answer an empty
+  // list (GET) or 404 "off", so the routes exist on every server and the app can tell.
+  ...integrationRoutes({ json, readBody, readSession, hub: integrations, audit }),
+
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature
   // answers, and the client already treats that as "this server does not store them".
@@ -2936,6 +3001,7 @@ coachJobs.setProposalHook((uid, pending) => {
     tag: 'coach-proposal', url: '#/coach'
   });
 });
+integrations.start();
 startCadence({ users: () => db.users.filter(u => !u.disabled), userNow, skip: uid => !stateSummary(uid)?.consent });
 startWarmup();
 

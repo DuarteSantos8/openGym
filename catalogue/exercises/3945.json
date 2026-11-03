@@ -3,11 +3,11 @@
   "name": "smith single arm bent over row",
   "bodyPart": "back",
   "equipment": "smith machine",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
+    "lats",
     "biceps",
-    "rhomboids",
-    "upper back"
+    "rhomboids"
   ],
   "category": "strength",
   "description": "A one-arm row against the Smith bar for a stable path. It builds the lats and upper back, one side at a time.",

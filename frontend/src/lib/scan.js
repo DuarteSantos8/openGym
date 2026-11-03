@@ -7,16 +7,26 @@
 // The app build (MOBILE) decodes with @capacitor-mlkit/barcode-scanning (Apache-2.0, see
 // NOTICE.md), dynamic-imported so it never lands in the web bundle. In a browser — the PWA on a
 // phone is the common case — photo import goes through lib/scan-web.js (BarcodeDetector where the
-// browser has one, jsQR otherwise). scanCode() itself is app-only: ML Kit brings its own camera
+// browser has one, jsQR and lib/barcode.js otherwise). scanCode() itself is app-only: ML Kit brings its own camera
 // UI, the browser path is a React sheet and lives with the view.
+// The F-Droid build has no ML Kit (Google's, closed source; app/build.gradle leaves the plugin
+// out), so there the app takes the browser's way for both: webScanner() says which.
 //
 // What comes back is a normalized { value, fmt } (or null when the user cancels / nothing was
 // found). `value` is the code's machine-readable content; `fmt` is a lower-cased symbology token
 // matching lib/qr.js's normalizeFmt. The caller checks canRenderFmt(fmt) before saving — we can
-// read many barcode kinds but only redraw QR, so a non-QR code is reported and refused there, not
-// silently stored.
+// read many barcode kinds but only redraw QR and a few 1D ones, so any other code is reported and
+// refused there, not silently stored.
 import { MOBILE } from './mobile.js'
 import { normalizeFmt } from './qr.js'
+import { nativeScanner } from './channel.js'
+
+/** True where scanning goes the browser's way (CameraScan + lib/scan-web.js): the web, and the
+ *  F-Droid build, which has no ML Kit. */
+export async function webScanner() {
+  if (!MOBILE) return true
+  try { return !(await nativeScanner()) } catch { return false }
+}
 
 // A found barcode from either path → our stored shape. mlkit gives rawValue (machine-readable,
 // what a turnstile actually reads) and a BarcodeFormat; we keep rawValue and fold the format.
@@ -51,7 +61,7 @@ export async function scanCode() {
 // path, decode, then delete the temp file. Returns the first barcode, or null if none was found.
 export async function importCodeFromImage(file) {
   if (!file) return null
-  if (!MOBILE) return (await import('./scan-web.js')).importCodeFromImageWeb(file)
+  if (await webScanner()) return (await import('./scan-web.js')).importCodeFromImageWeb(file)
   const { BarcodeScanner } = await import('@capacitor-mlkit/barcode-scanning')
   const { Filesystem, Directory } = await import('@capacitor/filesystem')
 

@@ -3,9 +3,9 @@
   "name": "cable seated row with v bar",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids"
   ],

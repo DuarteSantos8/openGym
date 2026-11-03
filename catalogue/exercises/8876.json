@@ -3,9 +3,9 @@
   "name": "cable lying hip flexion (reverse squat)",
   "bodyPart": "upper legs",
   "equipment": "cable",
-  "target": "quads",
+  "target": "hip flexors",
   "secondaryMuscles": [
-    "hip flexors",
+    "quadriceps",
     "glutes",
     "core"
   ],
