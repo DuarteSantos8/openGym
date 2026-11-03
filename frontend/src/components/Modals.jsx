@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useUI } from '../store/useUI.js'
 import { keyboardOpen } from '../lib/viewport-guard.js'
+import { dismissesOnRelease, scrolledAboveTop } from '../lib/sheet-dismiss.js'
 
 // Putting the page back after a sheet closes takes up to three goes (see the un-pin below): now,
 // next frame, and once the keyboard's dismiss animation is over. Anything else that wants to
@@ -61,7 +62,8 @@ function Sheet({ sheet }) {
   const begin = (target, x, y) => {
     const el = ref.current
     if (target.closest && target.closest(NODRAG)) { drag.current = idle(); return }
-    if (el.scrollTop > 0) { drag.current = idle(); return }
+    // Only from the very top: the sheet, and anything scrollable inside it, at rest (#897).
+    if (scrolledAboveTop(target, el)) { drag.current = idle(); return }
     drag.current = { ...idle(), startX: x, startY: y, lastY: y, lastT: performance.now() }
   }
   const move = (e, x, y) => {
@@ -70,9 +72,10 @@ function Sheet({ sheet }) {
     // synthetic events (tests) may carry no x at all: treat that as straight down
     const dx = Number.isFinite(x) ? x - d.startX : 0, dy = y - d.startY
     if (d.axis === null) {
-      // axis lock after ~8px: clearly-more-vertical wins the sheet, anything else is a scroll
-      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return
-      d.axis = Math.abs(dy) > Math.abs(dx) * 1.2 ? 'y' : 'x'
+      // axis lock after ~10px: clearly-more-vertical wins the sheet, anything else is a scroll.
+      // A first move up is a scroll of the content, and the rest of that touch stays one.
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+      d.axis = Math.abs(dy) > Math.abs(dx) * 1.2 && dy > 0 ? 'y' : 'x'
       if (d.axis === 'x') return
     }
     if (d.axis === 'x') return
@@ -98,9 +101,10 @@ function Sheet({ sheet }) {
     const el = ref.current, d = drag.current
     if (d.startY === null) return
     el.style.transition = 'transform .2s'
-    // a long pull, or a short but fast flick, dismisses
-    const flick = d.delta > 30 && d.vy > 0.6
-    if ((d.delta > 90 || flick) && !sheet.locked) { el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180) }
+    // Where the pull was going decides, not where it was let go (lib/sheet-dismiss.js, #897).
+    // A release that has not moved for a moment carries no speed.
+    const vy = performance.now() - d.lastT > 80 ? 0 : d.vy
+    if (dismissesOnRelease({ delta: d.delta, vy, height: el.offsetHeight }) && !sheet.locked) { el.style.transform = 'translateY(110%)'; setTimeout(() => closeSheet(sheet.id), 180) }
     else el.style.transform = ''
     drag.current = idle()
   }
