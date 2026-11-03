@@ -337,6 +337,14 @@ enum SessionCore {
         return (all.filter { $0.done }.count, all.count)
     }
 
+    /// After the last exercise: the Overview's Finish is what is next.
+    static func atEnd(_ s: SessionState) -> Bool { s.workout.map { s.entryIndex >= $0.entries.count } ?? false }
+
+    /// A routine's size for its row on the start screen: exercises and working sets (warm-ups are not counted).
+    static func size(_ r: ReadySession) -> (exercises: Int, sets: Int) {
+        (r.entries.count, r.entries.flatMap(\.sets).filter { !$0.warmup }.count)
+    }
+
     /// The workout as the summary shows it at its end (here, or on the phone).
     static func summary(_ w: ActiveWorkout, end: Double, startedAt: Double? = nil, endedOnPhone: Bool = false) -> WorkoutSummary {
         var sets = 0, volume = 0.0
@@ -402,11 +410,18 @@ struct WorkoutSummary: Codable, Equatable {
 /// otherwise land on the new one and log a set nobody did. A swipe by hand unlocks it at once.
 struct TouchLock: Equatable {
     static let seconds: TimeInterval = 1
+    /// The Crown comes back sooner: it needs no second tap's worth of doubt, only the page's own settling.
+    static let crownSeconds: TimeInterval = 0.6
     private(set) var until = Date.distantPast
+    private(set) var crownUntil = Date.distantPast
 
-    mutating func lock(at t: Date) { until = t.addingTimeInterval(TouchLock.seconds) }
-    mutating func unlock() { until = .distantPast }
+    mutating func lock(at t: Date) {
+        until = t.addingTimeInterval(TouchLock.seconds)
+        crownUntil = t.addingTimeInterval(TouchLock.crownSeconds)
+    }
+    mutating func unlock() { until = .distantPast; crownUntil = .distantPast }
     func allows(at t: Date) -> Bool { t >= until }
+    func allowsCrown(at t: Date) -> Bool { t >= crownUntil }
 }
 
 /// The 3-2-1 before a workout started on the watch: the heart-rate sensor warms up meanwhile (it

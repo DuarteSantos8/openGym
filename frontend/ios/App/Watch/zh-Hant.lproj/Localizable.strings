@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, zh-Hant. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "今天";
+"Routines" = "訓練課表";
 "Start workout" = "開始訓練";
+"Start" = "開始";
 "Done" = "完成";
 "Warm-up" = "熱身組";
 "Reps" = "次數";
@@ -11,6 +13,8 @@
 "Finish workout?" = "結束訓練？";
 "Finish and save" = "結束並儲存";
 "Discard workout" = "捨棄本次訓練";
+"Discard workout?" = "捨棄本次訓練？";
+"The sets you logged in this session will be lost." = "本次訓練已記錄的組數將全數遺失。";
 "Continue workout" = "繼續訓練";
 "Cancel" = "取消";
 "Rest’s over. Next set!" = "休息結束，下一組！";
@@ -32,7 +36,10 @@
 "More" = "較多";
 "Effort" = "強度表現";
 "None" = "無";
+"Delete" = "刪除";
+"Planned" = "已排定";
 "Last time: %@" = "上次: %@";
+"Exercises" = "動作";
 "No workout running" = "沒有進行中的訓練";
 "Not synced yet" = "尚未同步";
 "Open openGym on your iPhone once and your routines show up here." = "在 iPhone 上打開一次 openGym，你的訓練計畫就會出現在這裡。";
@@ -60,6 +67,9 @@
 "Set %lld of %lld" = "第 %lld 組，共 %lld 組";
 "%lld of %lld sets" = "%lld / %lld 組";
 "Tap to change it." = "輕點以更改。";
+"Type a number" = "輸入數字";
+"Tap again to type a number." = "再輕點一次以輸入數字。";
 "Added weight" = "附加重量";
 "Your rest, your next set, or today's workout." = "你的休息、下一組或今天的訓練。";
 "Opens openGym." = "打開 openGym。";
+"Hold to finish" = "長按結束";
