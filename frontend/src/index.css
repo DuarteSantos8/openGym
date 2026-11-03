@@ -3281,6 +3281,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .scrubby{-webkit-touch-callout:none}
 .scrubby>input,.scrubby>button{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .scrubby>input:focus{user-select:text;-webkit-user-select:text}
-.stp .scrubby.scrubbing>.num,.scrubby.scrubbing>button{outline:2px solid var(--acc-ink);outline-offset:-2px;border-radius:6px;cursor:ns-resize}
+.stp .scrubby.scrubbing>.num{outline:2px solid var(--acc-ink);outline-offset:-2px;border-radius:6px;cursor:ns-resize}
+.scrubby.scrubbing>button{outline:none;cursor:ns-resize}
 .setrow .effcell-stp.adjusting,.effcell-stp.adjusting,.scrubby.scrubbing>button{transition:none}
 .effcell-stp .scrubby.scrubbing>.val:active{background:none}

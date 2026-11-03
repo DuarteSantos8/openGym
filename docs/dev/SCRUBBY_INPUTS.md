@@ -43,7 +43,8 @@ remain disabled. Duration, speed and incline keep their existing input methods.
 
 `EffortInput.jsx` owns one tint derived from the currently displayed RIR/RPE value. Row
 layouts put it on the whole effort group; Focus and empty fields put it on the button.
-Scrub feedback is an outline only. Inner pressed backgrounds and color transitions are
+Weight/reps use an accent outline during scrubbing. Effort uses its rating color alone,
+without an additional accent ring. Inner pressed backgrounds and color transitions are
 disabled during the scrub, so the original and preview tint cannot overlap. Cancellation
 restores the original tint. The control stays mounted when a rating is created or cleared.
 
