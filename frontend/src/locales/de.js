@@ -3694,4 +3694,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "Scheiben gibt es in 0,25er-Schritten. Versuch eine andere Größe.",
   "That size is already on the list.": "Diese Größe steht schon auf der Liste.",
   "Another size ({0})": "Andere Größe ({0})",
+  "Shown as": "Angezeigt als",
 }

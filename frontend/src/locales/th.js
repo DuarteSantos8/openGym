@@ -3685,4 +3685,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "แผ่นน้ำหนักมีทีละ 0.25 ลองขนาดอื่นดู",
   "That size is already on the list.": "ขนาดนี้มีในรายการแล้ว",
   "Another size ({0})": "ขนาดอื่น ({0})",
+  "Shown as": "แสดงเป็น",
 }

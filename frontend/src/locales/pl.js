@@ -3674,4 +3674,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "Talerze idą co 0,25. Spróbuj innego rozmiaru.",
   "That size is already on the list.": "Ten rozmiar już jest na liście.",
   "Another size ({0})": "Inny rozmiar ({0})",
+  "Shown as": "Wyświetlaj jako",
 }

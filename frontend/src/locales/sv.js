@@ -3721,4 +3721,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "Viktskivor finns i steg om 0,25. Testa en annan storlek.",
   "That size is already on the list.": "Den storleken finns redan i listan.",
   "Another size ({0})": "Annan storlek ({0})",
+  "Shown as": "Visas som",
 }

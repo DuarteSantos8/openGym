@@ -159,7 +159,7 @@ export const DEF = {
   // Standing per-exercise notes, keyed by exercise id: the gym-specific facts that are true
   // every time you do the movement ("seat 4, pin 7"). Distinct from a routine's `note`, which
   // belongs to one exercise in one plan, and from a session note, which belongs to one day.
-  exNotes: {}, exAliases: {},
+  exNotes: {}, exAliases: {}, exShownName: {},
   // Favourite exercise ids (issue #6) — sorted to the top of the picker/Library. Personal, so
   // it syncs with the profile but is never part of a shared plan bundle (lib/favourites.js).
   favEx: [],
@@ -657,7 +657,7 @@ export const useStore = create((set, get) => {
     // goes out with it on the next push, without a stamp of its own (healCustomEx).
     S.customEx = healCustomEx(S.customEx)
     registerCustom(S.customEx)
-    registerExerciseAliases(S.exAliases)
+    registerExerciseAliases(S.exAliases, S.exShownName)
     // A refused write used to take the change with it — Finish looked like it simply did
     // nothing. The copy is kept in memory either way and marked as owed to the server, so a
     // signed-in device still gets it there; and it is said out loud once, because a change that
@@ -946,7 +946,7 @@ export const useStore = create((set, get) => {
     handedOver = false
     meta.set(S, { base: readStoredSync(), owed: storedOwed() })
     registerCustom(S.customEx)
-    registerExerciseAliases(S.exAliases)
+    registerExerciseAliases(S.exAliases, S.exShownName)
     set({ S })
     followSignIn()
     return true
@@ -993,7 +993,7 @@ export const useStore = create((set, get) => {
       merged._ts = Math.max(Number(theirs._ts) || 0, Number(mine._ts) || 0)
       meta.set(merged, { base: readStoredSync(), owed: storedOwed() })
       registerCustom(merged.customEx)
-      registerExerciseAliases(merged.exAliases)
+      registerExerciseAliases(merged.exAliases, merged.exShownName)
       set({ S: merged })
       return
     }
@@ -1384,7 +1384,7 @@ export const useStore = create((set, get) => {
   const S0 = loadState()
   S0.customEx = healCustomEx(S0.customEx)
   registerCustom(S0.customEx)
-  registerExerciseAliases(S0.exAliases)
+  registerExerciseAliases(S0.exAliases, S0.exShownName)
   // Which photos and videos are still waiting for the server, known before the first sign-out
   // check has to ask (lib/media-owed.js). A copy without any leaves the media store unopened.
   if (keptHashes(S0).size) loadPending()

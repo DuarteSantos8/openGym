@@ -3674,4 +3674,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "杠铃片以 0.25 为单位，换个尺寸试试。",
   "That size is already on the list.": "这个尺寸已经在列表里了。",
   "Another size ({0})": "其他尺寸（{0}）",
+  "Shown as": "显示为",
 }

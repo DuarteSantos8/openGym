@@ -3753,4 +3753,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "প্লেট আসে 0.25-এর ধাপে। অন্য একটা মাপ দাও।",
   "That size is already on the list.": "এই মাপটা তালিকায় আগেই আছে।",
   "Another size ({0})": "অন্য মাপ ({0})",
+  "Shown as": "যে নামে দেখাবে",
 }

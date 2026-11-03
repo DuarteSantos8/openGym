@@ -2463,6 +2463,7 @@ export const PT_BR_OVERRIDES = {
   "Plates come in steps of 0.25. Try another size.": "As anilhas vão de 0,25 em 0,25. Tente outro tamanho.",
   "That size is already on the list.": "Esse tamanho já está na lista.",
   "Another size ({0})": "Outro tamanho ({0})",
+  "Shown as": "Mostrado como",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

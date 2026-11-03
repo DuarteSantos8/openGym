@@ -3678,4 +3678,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "Блины идут с шагом 0,25. Попробуйте другой размер.",
   "That size is already on the list.": "Этот размер уже есть в списке.",
   "Another size ({0})": "Другой размер ({0})",
+  "Shown as": "Показывать как",
 }

@@ -3671,4 +3671,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "Млинці йдуть із кроком 0,25. Спробуйте інший розмір.",
   "That size is already on the list.": "Цей розмір уже є в списку.",
   "Another size ({0})": "Інший розмір ({0})",
+  "Shown as": "Показувати як",
 }

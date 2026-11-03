@@ -3674,4 +3674,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "Les disques vont de 0,25 en 0,25. Essaie une autre taille.",
   "That size is already on the list.": "Cette taille est déjà dans la liste.",
   "Another size ({0})": "Autre taille ({0})",
+  "Shown as": "Affiché comme",
 }

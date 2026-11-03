@@ -12,6 +12,8 @@ export const LANGS = {
 // Languages with exercise instructions / names, generated from catalogue/i18n by
 // scripts/catalogue/build.mjs. A pack can be partial; what it lacks shows in English.
 import { INSTR_LANGS, EXERCISE_NAME_LANGS } from './catalogue-langs.js'
+// Other names an exercise may be shown by (#903).
+import { shownNameOf } from './exercise-aliases.js'
 export { INSTR_LANGS, EXERCISE_NAME_LANGS }
 // Languages rendered right-to-left; i18n.js setLang applies the direction from this.
 export const RTL_LANGS = new Set(['ar'])
@@ -213,7 +215,11 @@ export function _setDetails(newEnInstr, newEnDescs, newDescs, forLang = lang) {
 // be complete: German covers the equipment exercises and not the body-weight ones, and an
 // exercise the pack has no entry for keeps its English title, one exercise at a time.
 // User-created exercises have no entry in the pack and keep their exact chosen name.
-export const exerciseNameFor = ex => {
+// An exercise shown by one of its other names (#903) carries that name everywhere, as typed.
+export const exerciseNameFor = ex => shownNameOf(ex) || exerciseOwnName(ex)
+
+/** The exercise's own name in the active language, whatever other name it is shown by. */
+export const exerciseOwnName = ex => {
   // A language that chose "English names only" sees the canonical catalogue title, not the
   // translation — and never the parenthetical either. Custom exercises keep their exact name.
   if (enOnly) return ex?.n || ''
@@ -255,7 +261,8 @@ export const CASED_NAME_LANGS = ['de']
 // exercise while "English names only" is on, since exerciseNameFor then shows the English title.
 // Callers spread this onto the element that holds exerciseNameFor(ex)'s output, nothing else —
 // muscle and equipment labels next to it are t() strings and keep their own capitalize.
-export const exerciseNameClass = ex => (!enOnly && exerciseNames && ex && exerciseNames[ex.id]
+export const exerciseNameClass = ex => (shownNameOf(ex) ? '' : exerciseOwnNameClass(ex))
+export const exerciseOwnNameClass = ex => (!enOnly && exerciseNames && ex && exerciseNames[ex.id]
   && CASED_NAME_LANGS.includes(baseLang(lang)) ? '' : 'capitalize')
 
 // Search both the localized and canonical English title without changing persisted data.

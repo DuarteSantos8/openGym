@@ -3674,4 +3674,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "원판은 0.25 단위예요. 다른 크기를 넣어 보세요.",
   "That size is already on the list.": "이미 목록에 있는 크기예요.",
   "Another size ({0})": "다른 크기 ({0})",
+  "Shown as": "표시 이름",
 }

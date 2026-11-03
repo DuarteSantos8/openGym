@@ -3729,4 +3729,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "الأقراص تأتي بخطوات 0.25. جرّب حجمًا آخر.",
   "That size is already on the list.": "هذا الحجم موجود في القائمة بالفعل.",
   "Another size ({0})": "حجم آخر ({0})",
+  "Shown as": "يظهر باسم",
 }

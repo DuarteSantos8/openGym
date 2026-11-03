@@ -3677,4 +3677,5 @@ export default {
   "Plates come in steps of 0.25. Try another size.": "A tárcsák 0,25-ös lépésekben jönnek. Próbálj másik méretet.",
   "That size is already on the list.": "Ez a méret már a listán van.",
   "Another size ({0})": "Másik méret ({0})",
+  "Shown as": "Így jelenjen meg",
 }
