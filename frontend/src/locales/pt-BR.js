@@ -2441,6 +2441,11 @@ export const PT_BR_OVERRIDES = {
   "Your watch stops getting workouts while Watch is off. It stays paired.": "Seu relógio para de receber treinos enquanto “Relógio” estiver desligado. Continua pareado.",
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
+  // --- Coach → latest N workouts (the cadence switch) ---
+  'Read only the latest {0} workouts': 'Analisar só os últimos {0} treinos',
+  // --- Coach → token use under "After how many workouts" ---
+  'Token use shows here after the first review.': 'O uso de tokens aparece aqui depois da primeira análise.',
+  'Average of your last {0} reviews: about {1} tokens sent and {2} received per review, {3} provider calls each.': 'Média das suas últimas {0} análises: cerca de {1} tokens enviados e {2} recebidos por análise, {3} chamadas ao provedor em cada uma.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

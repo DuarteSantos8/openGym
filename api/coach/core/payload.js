@@ -333,7 +333,7 @@ export function canonicalPlan(S) {
   };
 }
 
-export function cleanPlan(S) {
+export function cleanPlan(S, now) {
   // Names are typed by the person, so they are cut like the profile's text. The icon is held to
   // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
   // the client's state, and free text in it would ride into every prompt.
@@ -346,7 +346,7 @@ export function cleanPlan(S) {
   // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
   [1, 2, 3, 4, 5, 6, 0].forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]).map(ident); });
-  const programmes = programmesOut(S);
+  const programmes = programmesOut(S, now);
   return { routines, week, ...(programmes.length ? { programmes } : {}) };
 }
 
@@ -378,6 +378,14 @@ export function reviewWindow(S, since) {
   if (!day || day <= cutoff) return recent.slice(-MAX_SESSIONS);
   const fresh = recent.filter(w => w.d >= day);
   return (fresh.length >= MIN_REVIEW_SESSIONS ? fresh : recent.slice(-MIN_REVIEW_SESSIONS)).slice(-MAX_SESSIONS);
+}
+
+/** The newest N workouts, for a review the person asked to read only the latest N (the every-N
+ *  cadence with `latestOnly` on). N is held to the same 1 to 10 the setting allows. */
+export function latestWindow(S, n) {
+  const all = (S.workouts || []).filter(w => w && w.d);
+  const k = Math.min(10, Math.max(1, Math.round(Number(n) || 1)));
+  return all.slice(-k);
 }
 
 function aggregates(S, workouts) {
@@ -623,7 +631,7 @@ export function build(S, opts = {}) {
       today: iso(new Date(now))
     },
     coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
-    plan: cleanPlan(S)
+    plan: cleanPlan(S, now)
   };
   // The newer picture (core/context.js): weekly sets and recovery per muscle, the active gym's
   // loading, this month's challenges. Each only when there is something in it; a debrief reads
@@ -721,7 +729,13 @@ export function build(S, opts = {}) {
       keep: (today?.entries || []).map(en => en.id), max: 36
     });
   } else if (opts.kind === 'review') {
-    const workouts = reviewWindow(S, coach.lastReview?.at);
+    // The every-N cadence can ask for only its latest N workouts; otherwise the window runs back
+    // to the last review (or 12 weeks). The last review's time goes in as given: reviewWindow
+    // reads both epoch ms and an ISO string, and slicing it would break the epoch form.
+    const cad = coach.cadence && typeof coach.cadence === 'object' ? coach.cadence : null;
+    const workouts = cad?.everyWorkouts && cad.latestOnly === true
+      ? latestWindow(S, cad.everyWorkouts)
+      : reviewWindow(S, coach.lastReview?.at);
     const detailFrom = Math.max(0, workouts.length - FULL_DETAIL_SESSIONS);
     p.window = {
       from: day(workouts[0]?.d),
