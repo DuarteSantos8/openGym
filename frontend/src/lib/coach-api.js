@@ -221,6 +221,11 @@ export const JOB_ERRORS = {
   get auth() { return t('The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.') },
   get missing() { return t('The Coach isn’t installed properly on this instance.') },
   get provider() { return t('The Coach couldn’t run. The instance owner needs to check its setup.') },
+  // The causes api/coach/core/failure.js sorts a provider failure into, each with its own fix.
+  get quota() { return t('The Coach hit its AI provider’s limit. Try again later, or the instance owner needs to check the plan or key.') },
+  get schema() { return t('The Coach’s AI provider rejected the request format. The instance owner needs to try another model.') },
+  get outage() { return t('The Coach’s AI provider is having an outage. Try again in a little while.') },
+  get unreachable() { return t('The Coach couldn’t reach its AI provider. The instance owner needs to check the endpoint and the network.') },
   get unusable() { return t('The Coach answered with something the app couldn’t use.') },
   get restart() { return t('The server restarted while the Coach was thinking.') },
   get nostate() { return t('The Coach couldn’t read your training data.') },
@@ -257,10 +262,11 @@ const PROVIDER_CLASSES = new Set(['auth', 'quota', 'schema', 'outage', 'unreacha
  */
 export function jobErrorText(cls, detail, serverText) {
   const own = LOCAL()
-  const base = (own && BYOK_ERRORS[cls]) || JOB_ERRORS[cls]
-    || (own
-      ? (PROVIDER_CLASSES.has(cls) ? BYOK_ERRORS.provider : BYOK_ERRORS.internal)
-      : (serverText || JOB_ERRORS.internal))
+  // On a phone with its own key the instance-owner lines for the provider causes would point at
+  // somebody who isn't there: the provider line plus the provider's own words says it better.
+  const base = own
+    ? (BYOK_ERRORS[cls] || (PROVIDER_CLASSES.has(cls) && !['timeout', 'missing'].includes(cls) ? BYOK_ERRORS.provider : JOB_ERRORS[cls]) || BYOK_ERRORS.internal)
+    : (JOB_ERRORS[cls] || serverText || JOB_ERRORS.internal)
   const why = own && detail ? String(detail).trim().slice(0, 300) : ''
   return why ? `${base}\n${why}` : base
 }
