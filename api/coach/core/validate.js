@@ -766,7 +766,7 @@ export function validateDebrief(data) {
   });
   if (!DEBRIEF_LISTS.some(k => lists[k].length)) errors.push('at least one of highlights, watch or nextTime must have an item');
   if (errors.length) return fail(errors);
-  return { ok: true, proposal: { summary: clampStr(data.summary.trim(), 600), score, ...lists } };
+  return { ok: true, proposal: { summary: clampStr(data.summary.trim(), 2000), score, ...lists } };
 }
 
 /* =============================== the workout in progress =============================== */
