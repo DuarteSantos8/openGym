@@ -217,7 +217,7 @@ jobs:
               sleep 6
               xcrun simctl io "$UDID" screenshot "build/watch/$size-$file.png" >/dev/null
             }
-            for screen in idle empty set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish summary summary-end ended; do
+            for screen in idle empty set warmup edit-weight edit-reps weighin rest hold bodyweight side superset offline finish summary summary-end ended complication-idle complication-today complication-set complication-rest complication-none; do
               shot "$screen" "$screen"
             done
             # The app's language, not the watch's (the phone in German here); every optional thing
@@ -227,7 +227,7 @@ jobs:
             shot "show-all" set -OpenGymWatchShow all
             shot "rest-plain" rest -OpenGymWatchShow plain
             # The largest text size (accessibility XXXL) on the screens with the most on them.
-            for screen in set side edit-weight weighin rest hold summary summary-end; do
+            for screen in set side edit-weight weighin rest hold summary summary-end complication-idle complication-set complication-rest; do
               shot "ax-$screen" "$screen" -OpenGymWatchAX
             done
             # What each screen costs: the app's CPU time over 20 s once it is up (the simulator's

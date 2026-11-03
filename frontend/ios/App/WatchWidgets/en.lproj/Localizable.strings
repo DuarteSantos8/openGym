@@ -32,6 +32,7 @@
 "More" = "More";
 "Effort" = "Effort";
 "None" = "None";
+"Waiting to sync" = "Waiting to sync";
 "Last time: %@" = "Last time: %@";
 "No workout running" = "No workout running";
 "Not synced yet" = "Not synced yet";

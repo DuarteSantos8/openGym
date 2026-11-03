@@ -32,6 +32,7 @@
 "More" = "Çok";
 "Effort" = "Zorluk";
 "None" = "Yok";
+"Waiting to sync" = "Eşitlenmeyi bekliyor";
 "Last time: %@" = "Geçen sefer: %@";
 "No workout running" = "Devam eden antrenman yok";
 "Not synced yet" = "Henüz eşitlenmedi";
