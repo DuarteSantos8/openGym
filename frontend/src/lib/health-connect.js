@@ -143,11 +143,18 @@ function localMorning(iso) {
   return new Date(y, m - 1, d, 8, 0, 0, 0).getTime()
 }
 
+// A workout brought in from another app's export (lib/import-csv.js and lib/import-hevy.js name
+// every one 'iw' + a hash of its content; the app's own ids are a timestamp, which has not begun
+// with 'iw' since 2016). That app was there when it was done, and most of them wrote it to Apple
+// Health or Health Connect already: written again, every past workout was there twice (#881).
+// Treated like an imported weigh-in, then: never written, and a copy written before is taken out.
+export const isImportedWorkout = w => w?.src === 'import' || /^iw[0-9a-z]+$/.test(String(w?.id || ''))
+
 /** Everything the state has to give Health Connect: { sessions, weights }. */
 export function healthRecords(S, { nameOf, speedUnit }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   return {
-    sessions: (S?.workouts || []).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
+    sessions: (S?.workouts || []).filter(w => !isImportedWorkout(w)).map(w => sessionRecord(w, { unit, nameOf, speedUnit })).filter(Boolean),
     // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
     // Every weigh-in of a day with several (lib/weigh-ins.js), each at its own time.
     weights: (S?.bodyweight || []).flatMap(b => (Array.isArray(b?.ins)
@@ -184,6 +191,9 @@ export function goneIds(S) {
   const out = new Set()
   const del = S?.deleted && typeof S.deleted === 'object' ? S.deleted : {}
   for (const [k, at] of Object.entries(del.workouts || {})) if (Number(at) > 0) out.add('opengym-w-' + k)
+  // The copies of imported workouts written before #881: openGym's own, so they go again (the
+  // other app's copy, the original, stays).
+  for (const w of S?.workouts || []) if (isImportedWorkout(w)) out.add('opengym-w-' + w.id)
   // A removed day takes all its weigh-ins with it (planSync matches the `*`); one weigh-in
   // removed from a day that keeps others is on record in that day's `gone`.
   for (const [k, at] of Object.entries(del.bodyweight || {})) if (Number(at) > 0) { out.add('opengym-bw-' + k); out.add('opengym-bw-' + k + '-*') }

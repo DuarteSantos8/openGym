@@ -247,3 +247,34 @@ describe('writtenIds', () => {
       .toEqual({ sessions: ['a'], weights: ['b'] })
   })
 })
+
+// #881: Hevy history imported on the iPhone was written to Apple Health again, beside Hevy's own.
+describe('imported workouts and the health hub (#881)', async () => {
+  const { isImportedWorkout } = await import('./health-connect.js')
+  const { parseImport, mergeImport } = await import('./import-csv.js')
+  const opts = { nameOf: () => 'x' }
+  const mine = { id: 'mh2k3j4abcd', d: '2026-10-01', start: 1000, end: 4000000, entries: [] }
+  it('a workout from another app\'s export is never written; one done here is', () => {
+    const imported = { id: 'iw3k2j1h0g', d: '2026-09-01', start: 1000, end: 4000000, entries: [] }
+    expect(isImportedWorkout(imported)).toBe(true)
+    expect(isImportedWorkout(mine)).toBe(false)
+    expect(healthRecords({ workouts: [imported, mine] }, opts).sessions.map(s => s.id)).toEqual(['opengym-w-' + mine.id])
+  })
+  it('what an import really brings carries the mark', () => {
+    const S = { workouts: [], customEx: [], exWeights: {}, bodyweight: [] }
+    const csv = 'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE\n2026-09-01 18:00:00,Push,1h,Bench Press (Barbell),1,60,8,0,0,,,'
+    const parsed = parseImport(csv, {})
+    expect(parsed.kind).toBe('workouts')
+    mergeImport(S, parsed)
+    expect(S.workouts.length).toBe(1)
+    expect(S.workouts.every(isImportedWorkout)).toBe(true)
+    expect(healthRecords(S, opts).sessions).toEqual([])
+  })
+  it('a copy written before is taken out, and only openGym\'s own', () => {
+    const imported = { id: 'iwabc', d: '2026-09-01', start: 1000, end: 4000000, entries: [] }
+    const S = { workouts: [imported, mine] }
+    const written = { 'opengym-w-iwabc': { k: 'session', h: 'x' }, ['opengym-w-' + mine.id]: { k: 'session', h: 'y' } }
+    const plan = planSync(healthRecords(S, opts), written, goneIds(S))
+    expect(plan.remove.sessions).toEqual(['opengym-w-iwabc'])
+  })
+})
