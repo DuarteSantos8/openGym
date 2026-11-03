@@ -15,7 +15,7 @@ const barsPlugin = () => pluginP || (pluginP = (async () => {
   const platform = Capacitor.getPlatform()
   if (platform === 'android') {
     const icons = registerPlugin('BarIcons')
-    return { setLight: light => icons.setStyle({ light }) }
+    return { setLight: light => icons.setStyle({ light }), setAccent: accent => icons.setAccent({ accent }) }
   }
   if (platform === 'ios' && SystemBars) {
     return { setLight: light => SystemBars.setStyle({ style: light ? 'LIGHT' : 'DARK' }) }
@@ -33,5 +33,20 @@ export async function setSystemBarsLight(light) {
     if (p) await p.setLight(light)
   } catch {
     // An older APK without the plugin: the bars stay as they were.
+  }
+}
+
+// The accent for what Android draws itself on top of the page: the text selection handles and a
+// native field's caret (#980; BarIconsPlugin.setAccent, AccentTheme.java). A preset key or the
+// user's own '#rrggbb'. iOS takes the page's caret-color and ::selection as they are.
+let lastAccent = null
+export async function setSystemAccent(accent) {
+  if (typeof accent !== 'string' || lastAccent === accent) return
+  lastAccent = accent
+  try {
+    const p = await barsPlugin()
+    if (p?.setAccent) await p.setAccent(accent)
+  } catch {
+    // An APK from before setAccent: the handles keep the theme's green.
   }
 }

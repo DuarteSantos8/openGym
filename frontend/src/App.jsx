@@ -15,7 +15,7 @@ import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen } from './lib/gym-reminder.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { workoutVolume } from './lib/history.js'
-import { setSystemBarsLight } from './lib/system-bars.js'
+import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
@@ -119,7 +119,7 @@ function applyPrefs(theme, accent) {
   applyAccent(de, accent, de.dataset.theme)
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) meta.content = de.dataset.theme === 'light' ? '#f2f2f7' : '#000000'
-  if (MOBILE) setSystemBarsLight(de.dataset.theme === 'light')
+  if (MOBILE) { setSystemBarsLight(de.dataset.theme === 'light'); setSystemAccent(accent) }
 }
 
 function Shell() {

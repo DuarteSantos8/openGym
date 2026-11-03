@@ -6,6 +6,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**New**
+- Selected text and the typing cursor wear your accent colour now, also the little selection handles on Android (#980).
+
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
 - Android widget: it loads at every size again instead of "Unable to load widget" when stretched, and its "What to show" screen is wide enough to read (#981).

@@ -41,6 +41,9 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(WidgetBridgePlugin.class);
         registerPlugin(WatchBridgePlugin.class);
         super.onCreate(savedInstanceState);
+        // After super: BridgeActivity swaps the splash theme for the app's own there, and the
+        // overlay has to go on top of that one (AccentTheme.java, #980).
+        AccentTheme.apply(this);
         passSystemBarsToPage();
     }
 

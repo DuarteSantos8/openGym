@@ -172,6 +172,13 @@
 :root[data-theme="light"][data-accent="violet"],
 :root[data-theme="light"][data-accent="pink"],
 :root[data-theme="light"][data-accent="red"]   { --on-acc:#fff }
+/* Selected text and the text caret wear the accent too (#980), in both themes. The highlight is the
+   38 % accent line, so the text on it stays the text colour and reads in light and dark alike;
+   old Safari without color-mix() gets --acc-line's own stand-in (the @supports block below). The
+   Android app's native selection handles follow it from the native side (BarIconsPlugin). */
+::selection{background:var(--acc-line);color:inherit}
+:root{caret-color:var(--acc-ink)}
+input,textarea,[contenteditable]{caret-color:var(--acc-ink)}
 
 /* Increase Contrast (iOS, macOS) and the other platforms' high-contrast settings. Apple's HIG
    asks custom colours to supply a "significantly more differentiated increased contrast option";
