@@ -31,6 +31,12 @@ import Foundation
  *       the phone writes them into the saved workout.
  *   started on the watch while the phone was away
  *       kept until the phone reports it back running; a snapshot without it does not end it.
+ *   the phone names the events it applied (`acked`, 1.4.5)
+ *       a tick it applied is the phone's from then on (an untick or edit there sticks here too);
+ *       a start it applied counts as reported back, so a workout the phone started and ended
+ *       before any snapshot showed it running does not go on here as a zombie.
+ *   every event, whatever the link does
+ *       kept in the Outbox (Outbox.swift) until the phone has applied it, and sent again until then.
  */
 
 struct PendingTick: Codable, Equatable {
@@ -39,6 +45,8 @@ struct PendingTick: Codable, Equatable {
     var at: Double
     /// A hold's seconds.
     var sec: Double?
+    /// The event that carried it: once the phone has applied that (`acked`), the phone's copy counts.
+    var id: String? = nil
 }
 
 struct SessionState: Codable, Equatable {
@@ -49,6 +57,8 @@ struct SessionState: Codable, Equatable {
     var restSec: Double = 90
     /// A session started here that the phone has not reported back running yet.
     var startedHere: String?
+    /// The id of that session's start event: once the phone has applied it, it is reported back.
+    var startId: String?
     /// Sessions finished here that the phone may still report running for a while.
     var finishedHere: [String] = []
     /// Ticks made here, by "exerciseId#setIndex", until a snapshot shows them.
@@ -75,6 +85,17 @@ enum SessionCore {
         if let r = snap.restSec, r > 0 { s.restSec = r }
         if let st = snap.settings { s.settings = st }
 
+        let acked = Set(snap.acked ?? [])
+        // The phone applied the start: it had this workout, whatever its snapshot shows now.
+        if s.startedHere != nil, let sid = s.startId, acked.contains(sid) { s.startedHere = nil; s.startId = nil }
+        // Ticks the phone applied: its copy of those sets is the one that counts from now on.
+        if !acked.isEmpty {
+            s.pending = s.pending.filter { item in
+                guard let id = item.value.id else { return true }
+                return !acked.contains(id)
+            }
+        }
+
         // A session started here that the phone has not reported back yet stays, whatever it sends,
         // unless the phone says it discarded it: it had it after all, and dropped it.
         let droppedThere = discarded(s.workout?.id, in: snap)
@@ -88,7 +109,7 @@ enum SessionCore {
             return s
         }
         let same = next.id != nil && next.id == s.workout?.id
-        if next.id != nil && next.id == s.startedHere { s.startedHere = nil }
+        if next.id != nil && next.id == s.startedHere { s.startedHere = nil; s.startId = nil }
         if !same && unconfirmed {
             // The phone runs a different workout than the one started here and not yet confirmed:
             // the watch keeps its own; the phone keeps its own (frontend: a start while another runs).
@@ -171,7 +192,7 @@ enum SessionCore {
             workout.entries[ei].sets[si].at = at
         }
         s.workout = workout
-        s.pending[key(e.id, si, oneSide)] = PendingTick(w: w, r: r, at: at, sec: sec)
+        s.pending[key(e.id, si, oneSide)] = PendingTick(w: w, r: r, at: at, sec: sec, id: id)
         var event: Event = [
             "id": id, "type": "setDone", "wid": workout.id ?? "", "exId": e.id,
             "entryIdx": ei, "setIdx": si, "at": at,
@@ -297,6 +318,7 @@ enum SessionCore {
         var s = s0
         s.workout = ActiveWorkout(id: wid, name: session.name, unit: s.unit, cur: 0, restSec: s.restSec, rest: nil, entries: session.entries, start: at, healthType: session.healthType)
         s.startedHere = wid
+        s.startId = id
         s.pending = [:]
         s.skipped = nil
         s.entryIndex = 0
@@ -315,6 +337,7 @@ enum SessionCore {
         s.pending = [:]
         s.skipped = nil
         s.startedHere = nil
+        s.startId = nil
         if let wid = w.id { s.finishedHere = Array((s.finishedHere + [wid]).suffix(5)) }
         var event: Event = ["id": id, "type": discard ? "discard" : "finish", "wid": w.id ?? "", "at": at]
         if idle && !discard { event["idle"] = true }

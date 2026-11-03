@@ -6,6 +6,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Watch sync, rebuilt to not lose a single set**
+- Apple Watch and Wear OS keep every set, start, finish and discard in an outbox of their own and send it again until the phone confirms it applied it. A failed transfer, a killed app or a phone that was off all day no longer eats a set.
+- Apple Watch: sets reach the iPhone in a moment while it is near, instead of whenever the system felt like it, so logging on both devices back and forth stays in step (#882).
+- iPhone: the watch link now starts with the app, even when iOS wakes it in the background, so sets land while the phone sleeps in your pocket and not only once you open openGym.
+- A set unticked or edited on the phone stays that way on the watch, instead of the watch insisting on its own copy.
+- A workout started on the watch and ended on the phone before the watch heard about it no longer keeps running on the wrist.
+- Sets logged on the watch after you saved the workout on the phone join the saved workout, even for an exercise the phone had left empty.
+- A late copy of a watch workout's start no longer starts it all over again, and a watch workout started while another one ran on the phone waits its turn instead of being thrown away.
+
 **New**
 - Selected text and the typing cursor wear your accent colour now, also the little selection handles on Android (#980).
 - One weight step for everything: Settings → Units → Weight step sets it for every exercise at once (0.1 up to 5 kg or 10 lb), and Apply to all exercises tells you how many own steps it replaces before it does. Any exercise can still have its own, now down to 0.1, and fine steps stay clean numbers (52.3, never 52.300000001).

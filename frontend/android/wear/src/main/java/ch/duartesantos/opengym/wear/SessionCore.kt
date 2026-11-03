@@ -20,11 +20,15 @@ import kotlin.math.min
  *     later; until then the snapshot's copy of the set is replaced by the watch's;
  *   - the same set changed on both sides: the later tick (`at`) wins, on both sides;
  *   - finished here: gone at once, a stale snapshot that still shows it does not bring it back;
- *   - started here: kept until the phone reports it back, a snapshot without it does not end it.
+ *   - started here: kept until the phone reports it back, a snapshot without it does not end it;
+ *   - the phone names the events it has applied (`acked`): a tick it applied is the phone's from
+ *     then on (an untick or an edit there sticks), and a start it applied counts as reported back,
+ *     so a workout the phone started and ended before any snapshot showed it does not run on here.
+ * Every event also goes into the Outbox below until the phone has applied it (docs/WATCH_SYNC.md).
  */
 
 @Serializable
-data class PendingTick(val w: Double? = null, val r: Double? = null, val at: Double, val sec: Double? = null)
+data class PendingTick(val w: Double? = null, val r: Double? = null, val at: Double, val sec: Double? = null, val id: String? = null)
 
 @Serializable
 data class SessionState(
@@ -35,6 +39,8 @@ data class SessionState(
     val restSec: Double = 90.0,
     /** A session started here that the phone has not reported back running yet. */
     val startedHere: String? = null,
+    /** The id of that session's start event: once the phone has applied it, it is reported back. */
+    val startId: String? = null,
     /** Sessions finished here that the phone may still report running for a while. */
     val finishedHere: List<String> = emptyList(),
     /** Ticks made here, by "exerciseId#setIndex", until a snapshot shows them. */
@@ -76,6 +82,11 @@ object SessionCore {
         snap.settings?.let { s = s.copy(settings = it) }
         snap.streak?.let { s = s.copy(streak = it) }
 
+        val acked = snap.acked?.toSet() ?: emptySet()
+        // The phone applied the start: it had this workout, whatever its snapshot shows now.
+        if (s.startedHere != null && s.startId != null && s.startId in acked) s = s.copy(startedHere = null, startId = null)
+        // Ticks the phone applied: its copy of those sets is the one that counts from now on.
+        if (acked.isNotEmpty()) s = s.copy(pending = s.pending.filterValues { it.id == null || it.id !in acked })
         val wid = s.workout?.id
         val droppedThere = wid != null && snap.discarded?.contains(wid) == true
         if (droppedThere && wid == s.startedHere) s = s.copy(startedHere = null)
@@ -87,7 +98,7 @@ object SessionCore {
             return s.copy(workout = null, pending = emptyMap())
         }
         val same = next0.id != null && next0.id == wid
-        if (next0.id != null && next0.id == s.startedHere) s = s.copy(startedHere = null)
+        if (next0.id != null && next0.id == s.startedHere) s = s.copy(startedHere = null, startId = null)
         // The phone runs a different workout than the one started here: the watch keeps its own.
         if (!same && unconfirmed) return s
         if (!same) s = s.copy(pending = emptyMap(), skipped = emptyList(), entryIndex = next0.cur)
@@ -146,7 +157,7 @@ object SessionCore {
         entries[ei] = e.copy(sets = e.sets.toMutableList().also { it[si] = newRow })
         val s = s0.copy(
             workout = workout.copy(entries = entries),
-            pending = s0.pending + (key(e.id, si, oneSide) to PendingTick(w, r, at, sec)),
+            pending = s0.pending + (key(e.id, si, oneSide) to PendingTick(w, r, at, sec, id)),
         )
         val event = buildJsonObject {
             put("id", id); put("type", "setDone"); put("wid", workout.id ?: ""); put("exId", e.id)
@@ -211,7 +222,7 @@ object SessionCore {
     fun start(s0: SessionState, session: ReadySession, wid: String, at: Double, id: String): Pair<SessionState, Event> {
         val workout = ActiveWorkout(id = wid, name = session.name, unit = s0.unit, cur = 0, restSec = s0.restSec,
             entries = session.entries, start = at, healthType = session.healthType)
-        val s = s0.copy(workout = workout, startedHere = wid, pending = emptyMap(), skipped = emptyList(), entryIndex = 0)
+        val s = s0.copy(workout = workout, startedHere = wid, startId = id, pending = emptyMap(), skipped = emptyList(), entryIndex = 0)
         val event = buildJsonObject {
             put("id", id); put("type", "start")
             put("routineIds", JsonArray(session.routineIds.map { JsonPrimitive(it) }))
@@ -224,7 +235,7 @@ object SessionCore {
     fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false): Pair<SessionState, Event?> {
         val w = s0.workout ?: return s0 to null
         val s = s0.copy(
-            workout = null, pending = emptyMap(), skipped = emptyList(), startedHere = null,
+            workout = null, pending = emptyMap(), skipped = emptyList(), startedHere = null, startId = null,
             finishedHere = if (w.id != null) (s0.finishedHere + w.id).takeLast(5) else s0.finishedHere,
         )
         val event = buildJsonObject {
@@ -290,4 +301,71 @@ object SessionCore {
     }
 
     fun stepReps(r: Double?, steps: Int) = min(999.0, max(0.0, (r ?: 0.0) + steps))
+}
+
+/** One event on its way to the phone: its JSON (with its `seq`), when it last went out, and whether
+ *  the phone's side has stored it (the Data Layer item deleted there; on iOS, the transfer done). */
+@Serializable
+data class OutItem(val id: String, val seq: Long, val json: String, val sentAt: Long = 0, val delivered: Boolean = false)
+
+@Serializable
+data class Outbox(val items: List<OutItem> = emptyList(), val seq: Long = 0)
+
+/*
+ * The watch's outbox, as pure functions (ios/App/WatchCore Outbox in SessionCore.swift is its twin):
+ * every event goes in before it is sent, numbered in the order it happened (`seq`, also written
+ * into the event for the phone to sort by), and stays until the phone has applied it (its id in a
+ * snapshot's `acked`). Until then it is sent again: soon while nothing says it got there, rarely
+ * once it did (the phone's page may simply not have run yet), always on reconnect and at launch.
+ */
+object OutboxCore {
+    const val MAX = 1000
+    /** Not delivered yet: sent again after this long. */
+    const val RESEND_MS = 20_000L
+    /** Delivered to the phone's queue but not applied by its page: once more after this long. */
+    const val REDELIVER_MS = 10 * 60_000L
+
+    /** The outbox with `event` added (unsent), and that event as it goes out, with its seq. */
+    fun add(o: Outbox, event: Event): Pair<Outbox, OutItem>? {
+        val id = (event["id"] as? JsonPrimitive)?.content?.takeIf { it.isNotEmpty() } ?: return null
+        o.items.firstOrNull { it.id == id }?.let { return o to it }
+        val seq = o.seq + 1
+        val json = JsonObject(event + ("seq" to JsonPrimitive(seq))).toString()
+        val item = OutItem(id, seq, json)
+        return Outbox((o.items + item).takeLast(MAX), seq) to item
+    }
+
+    /** Without the events the phone has applied. */
+    fun ack(o: Outbox, ids: Collection<String>?): Outbox {
+        if (ids.isNullOrEmpty()) return o
+        val set = ids.toSet()
+        return o.copy(items = o.items.filter { it.id !in set })
+    }
+
+    /** These went out now. */
+    fun sent(o: Outbox, ids: Collection<String>, now: Long): Outbox {
+        val set = ids.toSet()
+        return o.copy(items = o.items.map { if (it.id in set) it.copy(sentAt = now) else it })
+    }
+
+    /** These are stored on the phone (not applied yet). */
+    fun delivered(o: Outbox, ids: Collection<String>): Outbox {
+        val set = ids.toSet()
+        return o.copy(items = o.items.map { if (it.id in set) it.copy(delivered = true) else it })
+    }
+
+    /** What to send now, oldest first: never sent, or sent and not heard of for a while. */
+    fun due(o: Outbox, now: Long): List<OutItem> = o.items.filter {
+        it.sentAt == 0L || now - it.sentAt >= (if (it.delivered) REDELIVER_MS else RESEND_MS) || now < it.sentAt
+    }.sortedBy { it.seq }
+
+    /** The phone is back in reach: everything not delivered goes again, whenever it last went out,
+     *  and what is due besides. */
+    fun onReconnect(o: Outbox, now: Long): List<OutItem> {
+        val soon = due(o, now).map { it.id }.toSet()
+        return o.items.filter { !it.delivered || it.id in soon }.sortedBy { it.seq }
+    }
+
+    /** Events the phone's side has not stored yet: the small "syncs later" count. */
+    fun waiting(o: Outbox): Int = o.items.count { !it.delivered }
 }

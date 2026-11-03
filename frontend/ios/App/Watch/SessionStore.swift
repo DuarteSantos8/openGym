@@ -9,8 +9,10 @@ import WatchKit
  * The watch's side of a workout, around WatchCore's SessionCore (the session as plain data and
  * every change to it as a pure, tested function; its header lists the sync cases). This class
  * only feeds it what arrives (snapshots from the phone, taps), saves the result after every change
- * so a relaunch mid-workout loses nothing, and sends the events it returns with transferUserInfo,
- * which the system queues and delivers even when the phone app is not running.
+ * so a relaunch mid-workout loses nothing, and sends the events it returns through the outbox
+ * (WatchCore Outbox.swift): saved first, then a message while the phone is in reach, else
+ * transferUserInfo (queued by the system, delivered even when the phone app is not running), and
+ * sent again until a snapshot says the phone applied it.
  *
  * Exercise animations: never part of the watch app. The phone sends the running workout's own,
  * as small GIF files (WatchBridgePlugin.sendClips); they are kept only while that workout runs and
@@ -375,6 +377,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if end != self.restEndsAt { self.startRest(until: end, notify: true) }
             }
             self.health.syncSetting(next.settings.health)
+            // What the phone has applied leaves the outbox; what it lacks goes again.
+            if !self.isDemo { self.phoneApplied(snap.acked) }
             self.removeDeletedFromHealth(snap.healthGone)
             self.loadTargets()
         }
@@ -933,59 +937,151 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         completionHandler(notification.request.identifier == SessionStore.restNotificationId ? [] : [.banner, .sound])
     }
 
+    /// One event for the phone: into the outbox first (saved, WatchCore's Outbox.swift), then out.
+    /// It stays in the outbox until the phone has applied it (its id in a snapshot's `acked`).
     private func send(event: [String: Any]) {
-        guard !isDemo, WCSession.isSupported(),
-              let data = try? JSONSerialization.data(withJSONObject: event),
-              let json = String(data: data, encoding: .utf8) else { return }
-        transfer(json)
-    }
-
-    /// Events made before the session was up (a tap right after launch) wait here, saved, and go out
-    /// once it is: transferUserInfo before activation would lose them.
-    private static let outboxKey = "outbox"
-    private var outbox: [String] {
-        get { UserDefaults.standard.stringArray(forKey: SessionStore.outboxKey) ?? [] }
-        set { UserDefaults.standard.set(newValue, forKey: SessionStore.outboxKey) }
-    }
-
-    private func transfer(_ json: String, tries: Int = 0) {
-        let session = WCSession.default
-        guard session.activationState == .activated else {
-            outbox = Array((outbox + [json]).suffix(500))
-            return
+        guard !isDemo, WCSession.isSupported() else { return }
+        let item: OutItem? = editBox { o in
+            guard let added = OutboxCore.add(o, event) else { return nil }
+            o = added.0
+            return added.1
         }
-        // Queued by the system and delivered, in order, even when the phone app is not running.
-        session.transferUserInfo(["event": json, "tries": tries])
+        if let item = item { deliver([item]) }
+    }
+
+    /* ---------- the outbox (1.4.5) ---------- */
+
+    /// The events not applied on the phone yet, saved: they outlive a killed app, a failed
+    /// transfer and a phone that was off all day. ("outbox" held the old list of events waiting
+    /// for the session to start; carried over once, in flushOutbox.)
+    private static let outboxKey = "outbox2"
+    private static let oldOutboxKey = "outbox"
+    private let boxLock = NSLock()
+
+    private var box: Outbox {
+        guard let data = UserDefaults.standard.data(forKey: SessionStore.outboxKey),
+              let o = try? JSONDecoder().decode(Outbox.self, from: data) else { return Outbox() }
+        return o
+    }
+
+    /// The outbox changed under the lock (WatchConnectivity calls back on its own threads), saved.
+    @discardableResult
+    private func editBox<T>(_ change: (inout Outbox) -> T) -> T {
+        boxLock.lock()
+        var o = box
+        let out = change(&o)
+        if let data = try? JSONEncoder().encode(o) { UserDefaults.standard.set(data, forKey: SessionStore.outboxKey) }
+        boxLock.unlock()
+        updateLink()
+        return out
+    }
+
+    private static func nowMs() -> Double { Date().timeIntervalSince1970 * 1000 }
+
+    /// The id inside an event's JSON (a transfer queued by an older build carries no "id" of its own).
+    private static func eventId(_ json: String?) -> String? {
+        guard let data = json?.data(using: .utf8),
+              let ev = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return nil }
+        return ev["id"] as? String
+    }
+
+    /// Out to the phone, in order: as one message while it is in reach (there in a moment, #882;
+    /// the phone answers with the ids it stored), else, or when that fails, with transferUserInfo,
+    /// which the system keeps and delivers later, even to a phone app that is not running. An older
+    /// phone app answers the message with nothing: the transfer carries it then.
+    private func deliver(_ items: [OutItem]) {
+        guard !items.isEmpty, !isDemo, WCSession.isSupported() else { return }
+        let session = WCSession.default
+        // Not before the session is up: activationDidComplete sends what waits.
+        guard session.activationState == .activated else { return }
+        let ids = items.map { $0.id }
+        editBox { o in o = OutboxCore.sent(o, ids, now: SessionStore.nowMs()) }
+        guard session.isReachable else { transferAll(items); return }
+        // A message holds some 65 KB: a long backlog goes in batches.
+        for start in stride(from: 0, to: items.count, by: 40) {
+            let batch = Array(items[start..<min(start + 40, items.count)])
+            session.sendMessage(["events": batch.map { $0.json }], replyHandler: { [weak self] reply in
+                guard let self = self else { return }
+                let got = Set((reply["got"] as? [String]) ?? [])
+                if !got.isEmpty { self.editBox { o in o = OutboxCore.delivered(o, Array(got)) } }
+                let missed = batch.filter { !got.contains($0.id) }
+                if !missed.isEmpty { self.transferAll(missed) }
+            }, errorHandler: { [weak self] _ in
+                self?.transferAll(batch)
+            })
+        }
+    }
+
+    /// Queued with the system, each once: an event whose transfer is still outstanding is not
+    /// queued a second time.
+    private func transferAll(_ items: [OutItem]) {
+        let session = WCSession.default
+        guard session.activationState == .activated else { return }
+        let outstanding = Set(session.outstandingUserInfoTransfers.compactMap { $0.userInfo["id"] as? String })
+        for item in items where !outstanding.contains(item.id) {
+            session.transferUserInfo(["event": item.json, "id": item.id])
+        }
         updateLink()
     }
 
-    private func flushOutbox() {
-        let waiting = outbox
-        guard !waiting.isEmpty, WCSession.default.activationState == .activated else { return }
-        outbox = []
-        waiting.forEach { transfer($0) }
+    /// What is due goes out: at launch, when the phone comes back in reach, when a snapshot shows
+    /// the phone up. `reconnect`: everything not delivered yet, however recently it went out.
+    private func flush(reconnect: Bool = false) {
+        guard !isDemo, WCSession.isSupported(), WCSession.default.activationState == .activated else { return }
+        migrateOldOutbox()
+        let o = box
+        deliver(reconnect ? OutboxCore.onReconnect(o, now: SessionStore.nowMs()) : OutboxCore.due(o, now: SessionStore.nowMs()))
     }
 
-    /// The phone in reach or not, and the events still on their way: the small "syncs later" sign.
+    private func flushOutbox() { flush(reconnect: true) }
+
+    /// Events an older build left waiting for the session (plain JSON strings): into the outbox.
+    private func migrateOldOutbox() {
+        let old = UserDefaults.standard.stringArray(forKey: SessionStore.oldOutboxKey) ?? []
+        guard !old.isEmpty else { return }
+        UserDefaults.standard.removeObject(forKey: SessionStore.oldOutboxKey)
+        editBox { o in
+            for json in old {
+                guard let data = json.data(using: .utf8),
+                      let ev = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+                      let added = OutboxCore.add(o, ev) else { continue }
+                o = added.0
+            }
+        }
+    }
+
+    /// The phone applied these (a snapshot's `acked`): out of the outbox; then what it lacks goes again.
+    private func phoneApplied(_ ids: [String]?) {
+        if let ids = ids, !ids.isEmpty { editBox { o in o = OutboxCore.ack(o, ids) } }
+        flush()
+    }
+
+    /// The phone in reach or not, and the events it has not stored yet: the small "syncs later" sign.
     private func updateLink() {
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         let r = session.activationState == .activated && session.isReachable
-        let q = session.outstandingUserInfoTransfers.count
+        let q = OutboxCore.waiting(box)
         DispatchQueue.main.async {
             if self.reachable != r { self.reachable = r }
             if self.queued != q { self.queued = q }
         }
     }
 
-    func sessionReachabilityDidChange(_ session: WCSession) { updateLink() }
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        updateLink()
+        // Back in reach: what it may have missed goes now, quickly, as a message.
+        if session.isReachable { DispatchQueue.main.async { self.flush(reconnect: true) } }
+    }
 
     func session(_ session: WCSession, didFinish userInfoTransfer: WCSessionUserInfoTransfer, error: Error?) {
-        // A transfer that failed is not tried again by the system: sent again from here, a few
-        // times (the phone applies each event once, by its id, so a second copy does no harm).
-        if error != nil, let json = userInfoTransfer.userInfo["event"] as? String {
-            let tries = (userInfoTransfer.userInfo["tries"] as? Int) ?? 0
-            if tries < 3 { DispatchQueue.main.asyncAfter(deadline: .now() + 5) { self.transfer(json, tries: tries + 1) } }
+        let id = (userInfoTransfer.userInfo["id"] as? String) ?? SessionStore.eventId(userInfoTransfer.userInfo["event"] as? String)
+        if error == nil, let id = id {
+            // On the phone now (its queue file): only rarely sent again, kept until applied.
+            editBox { o in o = OutboxCore.delivered(o, [id]) }
+        } else if error != nil {
+            // Not tried again by the system: the outbox sends it again in a while.
+            DispatchQueue.main.asyncAfter(deadline: .now() + OutboxCore.resendMs / 1000 + 1) { self.flush() }
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { self.updateLink() }
     }
