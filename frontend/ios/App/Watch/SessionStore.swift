@@ -254,6 +254,33 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return e.sets[si].sideUp
     }
 
+    /// The weight and reps of the set up next, for the rest screen's "Next" (#911): "60 kg × 8",
+    /// "+10 kg × 8", "× 12" or "45 s", the side's own numbers on a per-side set. Nil for cardio,
+    /// or when the set has nothing to say. Read from the snapshot's set rows, nothing new sent.
+    var nextSetNumbers: String? {
+        guard let w = workout, let e = entry, let si = setIndex, e.sets.indices.contains(si) else { return nil }
+        let s = e.sets[si]
+        var weight = s.w
+        var reps = s.r
+        if let side = s.sideUp, let sides = s.sides {
+            weight = sides[side].w ?? weight
+            reps = sides[side].r ?? reps
+        }
+        if e.isCardio { return nil }
+        if e.isTimed {
+            guard let sec = s.sec, sec > 0 else { return nil }
+            return "\(formatNumber(sec)) s"
+        }
+        let unit = e.weightUnit(w.unit)
+        let times: String? = (reps ?? 0) > 0 ? "× \(formatNumber(reps ?? 0))" : nil
+        let load = weight ?? 0
+        if load > 0 {
+            let kg = e.isBodyweight ? "+\(formatNumber(load)) \(unit)" : "\(formatNumber(load)) \(unit)"
+            return times.map { "\(kg) \($0)" } ?? kg
+        }
+        return times
+    }
+
     func pick(set si: Int, in ei: Int) {
         ackRestOver()
         picked[ei] = si

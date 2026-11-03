@@ -1017,6 +1017,14 @@ struct RestView: View {
                         .lineLimit(2)
                         .minimumScaleFactor(0.7)
                         .multilineTextAlignment(.center)
+                        // What to load during the rest (#911): the next set's weight and reps,
+                        // brighter than the line above, the thing you walk to the rack for.
+                        if let numbers = store.nextSetNumbers {
+                            Text(verbatim: numbers)
+                                .font(.caption.weight(.semibold).monospacedDigit())
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
+                        }
                     }
                     if store.offline {
                         Text("Saved on the watch, syncs later")

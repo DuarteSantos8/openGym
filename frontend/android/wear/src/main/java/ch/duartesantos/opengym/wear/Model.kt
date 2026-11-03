@@ -159,3 +159,29 @@ data class WatchShow(
     val showLast get() = last ?: true
     val showNext get() = next ?: true
 }
+
+/**
+ * The weight and reps of set `si` of `e`, for the rest screen's "Next" (#911): "60 kg × 8",
+ * "+10 kg × 8", "× 12" or "45 s", the side's own numbers on a per-side set. Null for cardio or a
+ * set with nothing to say. The same line the Apple Watch shows (SessionStore.nextSetNumbers).
+ */
+fun nextSetNumbers(e: Entry, si: Int, workoutUnit: String): String? {
+    val s = e.sets.getOrNull(si) ?: return null
+    if (e.isCardio) return null
+    if (e.isTimed) return s.sec?.takeIf { it > 0 }?.let { "${fmtNum(it)} s" }
+    val side = s.sideUp
+    val weight = (if (side != null) s.sides?.get(side)?.w else null) ?: s.w
+    val reps = (if (side != null) s.sides?.get(side)?.r else null) ?: s.r
+    val times = reps?.takeIf { it > 0 }?.let { "× ${fmtNum(it)}" }
+    val load = weight ?: 0.0
+    if (load > 0) {
+        val kg = (if (e.isBodyweight) "+" else "") + fmtNum(load) + " " + e.weightUnit(workoutUnit)
+        return if (times != null) "$kg $times" else kg
+    }
+    return times
+}
+
+private fun fmtNum(v: Double): String {
+    val r = Math.round(v * 100) / 100.0
+    return if (r == Math.floor(r)) r.toLong().toString() else r.toString().trimEnd('0').trimEnd('.')
+}

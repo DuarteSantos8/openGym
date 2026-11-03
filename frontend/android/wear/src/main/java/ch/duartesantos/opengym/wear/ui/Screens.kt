@@ -64,6 +64,7 @@ import ch.duartesantos.opengym.wear.SessionCore
 import ch.duartesantos.opengym.wear.SessionState
 import ch.duartesantos.opengym.wear.WearStore
 import ch.duartesantos.opengym.wear.WorkoutSummary
+import ch.duartesantos.opengym.wear.nextSetNumbers
 import kotlinx.coroutines.delay
 import kotlin.math.abs
 
@@ -407,6 +408,8 @@ fun RestScreen(s: SessionState, rest: Rest, hr: Int?) {
             if (s.settings.show?.showNext != false && ne != null && nsi != null) {
                 Quiet(stringResource(R.string.next_set, ne.name, ne.sets.take(nsi + 1).count { !it.warmup }.coerceAtLeast(1)), 11.sp,
                     Modifier.padding(horizontal = 28.dp))
+                // What to load during the rest (#911), brighter than the line above.
+                nextSetNumbers(ne, nsi, w?.unit ?: "kg")?.let { Text(it, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1) }
             }
             if (hr != null) Text("♥ $hr", color = Og.Red, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))

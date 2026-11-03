@@ -19,6 +19,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Android: Settings → Workout → Screen orientation keeps openGym upright (or sideways) while the rest of your phone rotates as it likes (#821, thanks @snike79 for the idea).
 - A machine's weight stack and your dumbbells take a whole list at once: type one per line or paste "5, 11.3, 18.1". The quick fill stays around after the first block, so a stack with a finer run on top is two fills (#926, thanks @johannes1984 for the idea).
 - Plates: add the sizes your gym really has (3 and 4 kg, 0.25 kg micro plates, anything on a quarter step) and take them out again, per gym. Plate loading and the "X kg short" hint only reach for what is on your list (#886, thanks @rt-oliveira for the idea).
+- Apple Watch and Wear OS: the rest screen shows the next set's weight and reps under Next, so you can load the bar while you breathe (#911, thanks @rhjensen79 for the idea).
 
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
