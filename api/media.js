@@ -70,7 +70,7 @@ export function mediaLimits(env = process.env) {
     quotaMB: num('MEDIA_QUOTA_MB', 200, 0),              // 0 = no cap
     imageMB: num('MEDIA_IMAGE_MAX_MB', 2, 0.001),
     gifMB: num('MEDIA_GIF_MAX_MB', 8, 0.001),
-    videoMB: num('MEDIA_VIDEO_MAX_MB', 40, 0.001),
+    videoMB: num('MEDIA_VIDEO_MAX_MB', 100, 0.001),   // v1.4.5: 40 before; the app shrinks big videos first
     videoSec: num('MEDIA_VIDEO_MAX_SEC', 60, 1),
     gcGraceDays: num('MEDIA_GC_GRACE_DAYS', 14, 0),
     uploadsPerHour: Math.floor(num('MEDIA_UPLOADS_PER_HOUR', 600, 1)),

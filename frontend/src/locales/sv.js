@@ -3721,4 +3721,6 @@ export default {
   "Icons": "Ikoner",
   "Emoji": "Emoji",
   "The flame, the medals and friends.": "Flamman, medaljerna och deras kompisar.",
+  "Shrinking the video… {0}%": "Krymper videon… {0} %",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "Videon är för stor även efter krympning. Max {0} MB, så ett kortare klipp får plats.",
 }

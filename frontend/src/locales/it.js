@@ -3674,4 +3674,6 @@ export default {
   "Icons": "Icone",
   "Emoji": "Emoji",
   "The flame, the medals and friends.": "La fiamma, le medaglie e compagnia.",
+  "Shrinking the video… {0}%": "Rimpicciolisco il video… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "Il video è ancora troppo grande anche compresso. Massimo {0} MB, una clip più corta ci sta.",
 }

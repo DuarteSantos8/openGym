@@ -48,7 +48,7 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
     # ingress-nginx allows 1m request bodies by default. Photo and video uploads need more:
-    nginx.ingress.kubernetes.io/proxy-body-size: 48m
+    nginx.ingress.kubernetes.io/proxy-body-size: 112m
   hosts:
     - host: gym.example.com
       paths:

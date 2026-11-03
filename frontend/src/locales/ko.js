@@ -3674,4 +3674,6 @@ export default {
   "Icons": "아이콘",
   "Emoji": "이모지",
   "The flame, the medals and friends.": "불꽃, 메달, 그리고 친구들.",
+  "Shrinking the video… {0}%": "동영상 줄이는 중… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "줄여도 동영상이 너무 커요. 최대 {0}MB라서 더 짧은 클립이면 들어가요.",
 }

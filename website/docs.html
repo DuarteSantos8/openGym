@@ -603,7 +603,7 @@ location /gym/ {
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
-    client_max_body_size 48m;
+    client_max_body_size 112m;
     proxy_read_timeout 300s;
 }
 

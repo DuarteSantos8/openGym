@@ -63,5 +63,5 @@ services:
       # that strips the prefix needs nothing set (docs/SELF_HOSTING.md §5).
       - BASE_PATH=${BASE_PATH:-}
       # The largest photo or video upload nginx passes to the API. Keep it above
-      # MEDIA_VIDEO_MAX_MB (40 by default), which the api service reads from .env.
-      - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-48m}
+      # MEDIA_VIDEO_MAX_MB (100 by default), which the api service reads from .env.
+      - MEDIA_UPLOAD_MAX=${MEDIA_UPLOAD_MAX:-112m}

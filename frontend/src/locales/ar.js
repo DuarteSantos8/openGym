@@ -3729,4 +3729,6 @@ export default {
   "Icons": "الأيقونات",
   "Emoji": "إيموجي",
   "The flame, the medals and friends.": "الشعلة والميداليات ورفاقها.",
+  "Shrinking the video… {0}%": "جارٍ تصغير الفيديو… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "الفيديو ما زال كبيرًا حتى بعد ضغطه. الحد {0} م.ب، فمقطع أقصر سيناسب.",
 }

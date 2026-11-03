@@ -3677,4 +3677,6 @@ export default {
   "Icons": "Ikonok",
   "Emoji": "Emodzsi",
   "The flame, the medals and friends.": "A láng, az érmek és a többiek.",
+  "Shrinking the video… {0}%": "Videó kicsinyítése… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "A videó tömörítve is túl nagy. Legfeljebb {0} MB, egy rövidebb klip belefér.",
 }

@@ -3685,4 +3685,6 @@ export default {
   "Icons": "ไอคอน",
   "Emoji": "อีโมจิ",
   "The flame, the medals and friends.": "เปลวไฟ เหรียญ และผองเพื่อน",
+  "Shrinking the video… {0}%": "กำลังย่อวิดีโอ… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "วิดีโอยังใหญ่เกินแม้บีบแล้ว สูงสุด {0} MB คลิปที่สั้นกว่าจะพอดี",
 }

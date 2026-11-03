@@ -3674,4 +3674,6 @@ export default {
   "Icons": "Simgeler",
   "Emoji": "Emoji",
   "The flame, the medals and friends.": "Alev, madalyalar ve arkadaşları.",
+  "Shrinking the video… {0}%": "Video küçültülüyor… %{0}",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "Video sıkıştırıldıktan sonra bile çok büyük. En fazla {0} MB, daha kısa bir klip sığar.",
 }

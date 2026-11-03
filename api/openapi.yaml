@@ -103,7 +103,7 @@ info:
       lets a webhook reach the home network (http too), never loopback or link-local.
     - `MEDIA_UPLOADS` (default on; `0` removes the `media` routes and the `media` block of
       `GET /api/config`), `MEDIA_QUOTA_MB` (200 per profile, `0` = no cap),
-      `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (40),
+      `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (100),
       `MEDIA_VIDEO_MAX_SEC` (60), `MEDIA_GC_GRACE_DAYS` (14), `MEDIA_UPLOADS_PER_HOUR` (600
       per profile), `MEDIA_MIN_FREE_MB` (512, `0` = no floor): photos and videos of custom
       exercises (tag `media`). Every MB here is 2^20 bytes.
@@ -326,7 +326,7 @@ paths:
                     allow_guest: false
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
                 passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
-                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
+                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 60, quotaMB: 200, workouts: true } } }
 
   /api/me:
     get:
@@ -4369,7 +4369,7 @@ components:
             This instance also keeps the files of a form video filmed for one set
             (`workouts[].entries[].sets[].media`, v1.4.4). Absent on an instance from before; the
             app then keeps a set's video on the phone that filmed it and never uploads it.
-      example: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true, days: true, sets: true }
+      example: { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 60, quotaMB: 200, workouts: true, days: true, sets: true }
 
     MediaUsage:
       type: object

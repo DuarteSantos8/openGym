@@ -3671,4 +3671,6 @@ export default {
   "Icons": "Значки",
   "Emoji": "Емодзі",
   "The flame, the medals and friends.": "Вогник, медалі й компанія.",
+  "Shrinking the video… {0}%": "Зменшуємо відео… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "Відео завелике навіть після стиснення. Максимум {0} МБ, коротший ролик влізе.",
 }

@@ -3674,4 +3674,6 @@ export default {
   "Icons": "आइकन",
   "Emoji": "इमोजी",
   "The flame, the medals and friends.": "लौ, मेडल और उनके साथी।",
+  "Shrinking the video… {0}%": "वीडियो छोटा हो रहा है… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "दबाने के बाद भी वीडियो बहुत बड़ा है। अधिकतम {0} MB, तो छोटी क्लिप आ जाएगी।",
 }

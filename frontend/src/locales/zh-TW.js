@@ -3667,4 +3667,6 @@ export default {
   "Icons": "圖示",
   "Emoji": "表情符號",
   "The flame, the medals and friends.": "火苗、獎牌和它們的小夥伴。",
+  "Shrinking the video… {0}%": "正在壓縮影片… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "影片壓縮後還是太大。上限 {0} MB，短一點的片段就行。",
 }

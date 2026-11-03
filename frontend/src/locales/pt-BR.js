@@ -2463,6 +2463,8 @@ export const PT_BR_OVERRIDES = {
   "Icons": "Ícones",
   "Emoji": "Emoji",
   "The flame, the medals and friends.": "A chama, as medalhas e companhia.",
+  "Shrinking the video… {0}%": "Diminuindo o vídeo… {0}%",
+  "That video is still too big after squeezing it. Max {0} MB, so a shorter clip will fit.": "O vídeo continua grande demais mesmo comprimido. Máximo de {0} MB, então um clipe mais curto cabe.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
