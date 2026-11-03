@@ -1,7 +1,9 @@
 /* openGym on the Apple Watch, it. Written by ios/ci/watch-strings.mjs: change that, not this. */
 
 "Today" = "Oggi";
+"Routines" = "Routine";
 "Start workout" = "Inizia allenamento";
+"Start" = "Inizia";
 "Done" = "Fatto";
 "Warm-up" = "Riscaldamento";
 "Reps" = "Rip.";
@@ -33,6 +35,7 @@
 "Effort" = "Sforzo";
 "None" = "Nessuno";
 "Last time: %@" = "L'ultima volta: %@";
+"Exercises" = "Esercizi";
 "No workout running" = "Nessun allenamento in corso";
 "Not synced yet" = "Non ancora sincronizzato";
 "Open openGym on your iPhone once and your routines show up here." = "Apri openGym una volta sull’iPhone e le tue routine compariranno qui.";
