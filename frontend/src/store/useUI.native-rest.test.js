@@ -171,6 +171,28 @@ describe('the server push in the Android app', () => {
   })
 })
 
+// The rest after a hold that ran out while the app was hidden has been counting since the hold
+// ended (Workout.jsx holdDone moves it back, useUI.backdateRest): the alarm is set for that end,
+// and called off once it passed.
+describe('the rest after a hold that ran out unseen', () => {
+  it('is armed for its true end, with its whole length', () => {
+    const since = Date.now() - 30_000
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    useUI.getState().backdateRest(since)
+    expect(armRestAlert).toHaveBeenLastCalledWith(since + 90_000, expect.objectContaining({ totalSec: 90 }))
+  })
+
+  it('is not left armed when it is over too', () => {
+    useUI.getState().startRest(90, 0, { kind: 'set' })
+    armRestAlert.mockClear(); disarmRestAlert.mockClear()
+    useUI.getState().backdateRest(Date.now() - 120_000)
+    expect(useUI.getState().timer).toMatchObject({ ready: true })
+    expect(armRestAlert).not.toHaveBeenCalled()
+    expect(disarmRestAlert).toHaveBeenCalled()
+    expect(api).not.toHaveBeenCalledWith('/api/push/rest-timer', expect.anything())
+  })
+})
+
 describe('the notification’s own buttons', () => {
   it('Pause holds the bar in the app, and Resume runs it out from the notification’s end', () => {
     useUI.getState().startRest(90, 2)

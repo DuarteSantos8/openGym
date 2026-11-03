@@ -43,6 +43,7 @@ const mocks = vi.hoisted(() => {
     nav: vi.fn(),
     setNoteSheet: vi.fn(),
     addRest: vi.fn(),
+    backdateRest: vi.fn(),
     live: null,
   }
   state.stopRest = vi.fn(() => { state.timer = null })
@@ -64,6 +65,7 @@ const mocks = vi.hoisted(() => {
     stopWork: state.stopWork,
     shiftRestOwner: vi.fn(),
     addRest: state.addRest,
+    backdateRest: state.backdateRest,
     startWork: state.startWork,
     toast: state.toast,
   })
@@ -939,6 +941,45 @@ describe('a hold a rest displaced', () => {
 
     expect(mocks.S.active.entries[0].sets[0]).toMatchObject({ sec: 30, done: true })
     expect(mocks.S.active.entries[0].sets[0].planSec).toBeUndefined()
+  })
+})
+
+// A hold that ran out while the page was hidden says when it ended (useUI runWork), and the rest
+// it earned, a switch-sides pause included, is moved back to then (useUI.backdateRest).
+describe('a hold that ran out unseen', () => {
+  const hold = (id, extra = {}) => exercise(id, [], { target: { mode: 'time', sec: 30, weight: 0 }, sets: [{ sec: 30, w: 0, done: false }, { sec: 30, w: 0, done: false }, { sec: 30, w: 0, done: false }], ...extra })
+  const pressStart = async row => {
+    const btn = container.querySelectorAll('.setrow .setgo')[row]
+    expect(btn).toBeTruthy()
+    await act(async () => { btn.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+  }
+  // The rest a tick starts is there for holdDone to move back, as the real store's is.
+  beforeEach(() => { mocks.startRest.mockImplementation((sec, forIdx, opts) => { mocks.timer = { left: sec, total: sec, endsAt: Date.now() + sec * 1000, forIdx, ...opts } }) })
+  afterEach(() => { mocks.startRest.mockReset() })
+
+  it('hands its end to the rest it earned, and so does one side of a per-side hold', async () => {
+    await mount([hold('plank')])
+    await pressStart(0)
+    const endedAt = Date.now() - 30_000
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, { chimed: false, endedAt }) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, { kind: 'set', forSet: 0 })
+    expect(mocks.backdateRest).toHaveBeenLastCalledWith(endedAt)
+
+    await unmount(); vi.clearAllMocks(); mocks.timer = null
+    await mount([hold('side-plank', { sets: [{ sec: 30, w: 0, side: 'L', done: false }, { sec: 30, w: 0, side: 'R', done: false }] })])
+    await pressStart(0)
+    const sideEnded = Date.now() - 5000
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, { chimed: false, endedAt: sideEnded }) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(10, 0, { kind: 'switch', forSet: 0 })
+    expect(mocks.backdateRest).toHaveBeenLastCalledWith(sideEnded)
+  })
+
+  it('a hold that ended on screen starts its rest from now', async () => {
+    await mount([hold('plank')])
+    await pressStart(0)
+    await act(async () => { mocks.startWork.mock.calls[0][2](30, { chimed: true, endedAt: Date.now() }) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, 0, { kind: 'set', forSet: 0 })
+    expect(mocks.backdateRest).not.toHaveBeenCalled()
   })
 })
 

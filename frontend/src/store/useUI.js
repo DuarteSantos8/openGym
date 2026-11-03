@@ -42,8 +42,30 @@ const autoMustWait = () => {
 // before the local timer completes. No-ops for guests / offline. The device id keeps the
 // timer this browser's own: a desktop tab finishing its rest on screen used to cancel the
 // alert the phone in the gym was waiting for, because the server held one timer per account.
-const pushRestTimer = sec => { if (useStore.getState().user) api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: sec, deviceId: deviceId() }) }).catch(() => {}) }
-const cancelPushRestTimer = () => { if (useStore.getState().user && !useStore.getState().tourSandbox) api('/api/push/rest-timer/cancel', { method: 'POST', body: JSON.stringify({ deviceId: deviceId() }) }).catch(() => {}) }
+// One request at a time, in the order the app made them. The server keeps one timer per device
+// and takes a booking or a cancel as it arrives, and two sent in the same moment could arrive the
+// other way round: a rest that the end of a hold moves back (backdateRest) is booked as it starts,
+// then booked again, or called off when it is over already, and a cancel that overtook its booking
+// left a "rest over" to ring at an end that was called off. So each request waits for the one
+// before it to settle. A booking still waiting when a later booking or cancel is made is not sent
+// at all, and its seconds are counted as it goes out, from the end it is for.
+let restPushTail = null
+let restPushSeq = 0
+const inOrder = send => {
+  const go = () => { try { return Promise.resolve(send()).catch(() => {}) } catch { return Promise.resolve() } }
+  const p = restPushTail ? restPushTail.then(go) : go()
+  restPushTail = p
+  p.then(() => { if (restPushTail === p) restPushTail = null })
+}
+const pushRestTimer = endsAt => {
+  if (!useStore.getState().user) return
+  const seq = ++restPushSeq
+  inOrder(() => seq === restPushSeq && api('/api/push/rest-timer', { method: 'POST', body: JSON.stringify({ seconds: Math.max(1, Math.round((endsAt - Date.now()) / 1000)), deviceId: deviceId() }) }))
+}
+const cancelPushRestTimer = () => {
+  restPushSeq++
+  if (useStore.getState().user && !useStore.getState().tourSandbox) inOrder(() => api('/api/push/rest-timer/cancel', { method: 'POST', body: JSON.stringify({ deviceId: deviceId() }) }))
+}
 
 // Books the end of a rest with whatever can announce it while the app is not looking: in the
 // Android app a native alarm and the countdown notification, everywhere else (and wherever that
@@ -56,7 +78,7 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
   // The tour's practice workout (useStore enterTourSandbox) rests on screen only.
   if (useStore.getState().tourSandbox) return
   const switching = kind === 'switch'
-  if (!MOBILE) { if (!switching) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000))); return }
+  if (!MOBILE) { if (!switching) pushRestTimer(endsAt); return }
   const { S } = useStore.getState()
   // The rest before a hold that starts by itself: its end is the count-in, and the alerts after
   // it (go, hold done, the next ones) are booked with it, for a phone that stays locked.
@@ -70,7 +92,7 @@ const bookRestEnd = (endsAt, totalSec, kind) => {
     .then(ok => {
       // Only for the rest that asked: one skipped or moved since then has booked its own end.
       const tm = useUI.getState().timer
-      if (!ok && !switching && tm && !tm.paused && !tm.ready && tm.endsAt === endsAt) pushRestTimer(Math.max(1, Math.round((endsAt - Date.now()) / 1000)))
+      if (!ok && !switching && tm && !tm.paused && !tm.ready && tm.endsAt === endsAt) pushRestTimer(endsAt)
     })
 }
 
@@ -560,7 +582,10 @@ export const useUI = create((set, get) => ({
     const endsAt = startedAt + tm.total * 1000
     if (endsAt >= tm.endsAt) return
     set({ timer: { ...tm, endsAt } })
+    // Booked for the true end while it is ahead. One that is over already has nothing to book: the
+    // alarm the full rest booked as it started is called off with it (the push goes at Ready).
     if (endsAt > Date.now()) bookRestEnd(endsAt, tm.total, tm.kind)
+    else disarmRestAlert()
     // The count-in queued for the full rest moves with the end; with nothing left it is called off.
     countdown(useStore.getState().S.sound, secsTo(endsAt))
     timerTick?.()
@@ -599,11 +624,13 @@ export const useUI = create((set, get) => ({
      purpose: the two mean opposite things, they must never run together, and a work set is
      something you are watching — so it gets no server push (that endpoint says "rest over",
      and a plank does not need a notification you are staring at anyway).
-     `onDone(elapsedSec, { chimed, abandoned })` is called both when the countdown reaches zero and
-     on an early finish; the elapsed time is what actually gets logged, so stopping at 0:38 of a
-     0:45 hold records 0:38 rather than crediting the full target. `chimed` is true when the
+     `onDone(elapsedSec, { chimed, abandoned, endedAt })` is called both when the countdown reaches
+     zero and on an early finish; the elapsed time is what actually gets logged, so stopping at 0:38
+     of a 0:45 hold records 0:38 rather than crediting the full target. `chimed` is true when the
      countdown ran out in front of you and the end chime and buzz have just played; `abandoned`
-     when a rest displaced the hold (abandonWork).
+     when a rest displaced the hold (abandonWork); `endedAt` when it ran out: the moment it did by
+     the clock, which a hold that ran out while the page was hidden is only finished long after,
+     on the first tick back (the workout screen moves the rest it earned back to then, backdateRest).
      `owner` ({ idx, i, id }: the active entry and set being held) lets a hold outlive a reload or
      the app being killed (restoreWork below). onDone is a closure and cannot be kept, so the owner
      says where the time goes, and the workout screen binds its handler again (bindWork). */

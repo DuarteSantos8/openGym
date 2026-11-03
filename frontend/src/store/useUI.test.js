@@ -909,9 +909,12 @@ describe('a timer that runs while the page is hidden', () => {
     expect(useUI.getState().work).toMatchObject({ overtime: true, left: -3 })
   })
 
-  it('a hidden hold finishes on the first tick back, at its full length and without its chime', () => {
+  // It still finishes on the first tick back, at its full length, and says when it ended: the rest
+  // it earned has been counting since then (Workout.jsx holdDone moves it back, useUI.backdateRest,
+  // store/useUI.hidden-hold.test.js).
+  it('a hidden hold finishes on the first tick back, at its full length, saying when it really ended', () => {
     const done = vi.fn()
-    const t0 = Date.now()
+    const endsAt = Date.now() + 2000
     useUI.getState().startWork(2, 'Plank', done)
     goHidden()
     vi.advanceTimersByTime(10_000)
@@ -919,8 +922,13 @@ describe('a timer that runs while the page is hidden', () => {
     expect(done).not.toHaveBeenCalled()
     goVisible()
     expect(useUI.getState().work).toBe(null)
-    // `endedAt`: when it really ran out, for the rest it earned (Workout.jsx holdDone, backdateRest).
-    expect(done).toHaveBeenCalledWith(2, { chimed: false, endedAt: t0 + 2000 })
+    expect(done).toHaveBeenCalledWith(2, { chimed: false, endedAt: endsAt })
+    // On screen it says when it ended too, which is now: nothing for the rest to make up.
+    const seen = vi.fn()
+    const seenEnds = Date.now() + 2000
+    useUI.getState().startWork(2, 'Plank', seen)
+    vi.advanceTimersByTime(2000)
+    expect(seen).toHaveBeenCalledWith(2, { chimed: true, endedAt: seenEnds })
   })
 })
 

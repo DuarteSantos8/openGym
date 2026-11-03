@@ -54,14 +54,17 @@ describe('pausing the rest timer', () => {
     expect(chime).toHaveBeenCalledTimes(1)
   })
 
-  it('cancels the push booked for the old end and books it again on resume', () => {
+  // Each request goes out once the one before it has landed (useUI's push line), hence the awaits.
+  it('cancels the push booked for the old end and books it again on resume', async () => {
     useUI.getState().startRest(90)
     expect(posts('/api/push/rest-timer').map(b => b.seconds)).toEqual([90])
-    vi.advanceTimersByTime(20000)
+    await vi.advanceTimersByTimeAsync(20000)
     useUI.getState().pauseRest()
+    await vi.advanceTimersByTimeAsync(0)
     expect(posts('/api/push/rest-timer/cancel')).toHaveLength(1)
-    vi.advanceTimersByTime(60000)
+    await vi.advanceTimersByTimeAsync(60000)
     useUI.getState().resumeRest()
+    await vi.advanceTimersByTimeAsync(0)
     expect(posts('/api/push/rest-timer').map(b => b.seconds)).toEqual([90, 70])
   })
 
