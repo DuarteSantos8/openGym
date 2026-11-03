@@ -3702,4 +3702,7 @@ export default {
   "Muscle groups": "Kas grupları",
   "All of them": "Hepsi",
   "Any of them": "Herhangi biri",
+  "Distance ({0})": "Mesafe ({0})",
+  "Log speed instead": "Bunun yerine hız gir",
+  "Log distance instead": "Bunun yerine mesafe gir",
 }

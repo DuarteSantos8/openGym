@@ -3699,4 +3699,7 @@ export default {
   "Muscle groups": "Групи м’язів",
   "All of them": "Усі разом",
   "Any of them": "Будь-який",
+  "Distance ({0})": "Дистанція ({0})",
+  "Log speed instead": "Записувати швидкість",
+  "Log distance instead": "Записувати дистанцію",
 }

@@ -108,6 +108,11 @@ describe('the workout CSV', () => {
     expect(hold[col('reps')]).toBe('')
   })
 
+  it('writes a set logged by its distance as that distance (#887)', () => {
+    const rows = parseCSV(workoutsCSV({ unit: 'kg', workouts: [{ id: 'c', d: '2026-03-04', start: 1, entries: [{ id: '3666', sets: [{ min: 31, km: 5, speed: 9.68, done: true }] }] }] }))
+    expect(rows[1][col('distance_km')]).toBe('5')
+  })
+
   it('rounds the distance instead of writing float noise, but never so far the speed changes', () => {
     const km = sets => parseCSV(workoutsCSV({ unit: 'kg', workouts: [{ id: 'c', d: '2026-03-04', start: 1, entries: [{ id: '3666', sets }] }] }))
       .slice(1).map(r => r[col('distance_km')])

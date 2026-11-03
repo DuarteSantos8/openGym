@@ -3702,4 +3702,7 @@ export default {
   "Muscle groups": "Grupos musculares",
   "All of them": "Todos",
   "Any of them": "Cualquiera",
+  "Distance ({0})": "Distancia ({0})",
+  "Log speed instead": "Anotar la velocidad",
+  "Log distance instead": "Anotar la distancia",
 }

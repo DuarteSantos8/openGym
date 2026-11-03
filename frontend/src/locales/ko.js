@@ -3702,4 +3702,7 @@ export default {
   "Muscle groups": "근육 그룹",
   "All of them": "모두",
   "Any of them": "하나라도",
+  "Distance ({0})": "거리 ({0})",
+  "Log speed instead": "대신 속도 기록",
+  "Log distance instead": "대신 거리 기록",
 }

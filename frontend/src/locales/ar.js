@@ -3757,4 +3757,7 @@ export default {
   "Muscle groups": "مجموعات العضلات",
   "All of them": "كلها",
   "Any of them": "أيٌّ منها",
+  "Distance ({0})": "المسافة ({0})",
+  "Log speed instead": "سجّل السرعة بدلًا من ذلك",
+  "Log distance instead": "سجّل المسافة بدلًا من ذلك",
 }

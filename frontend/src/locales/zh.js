@@ -3702,4 +3702,7 @@ export default {
   "Muscle groups": "肌群",
   "All of them": "全部都练",
   "Any of them": "任一即可",
+  "Distance ({0})": "距离（{0}）",
+  "Log speed instead": "改记速度",
+  "Log distance instead": "改记距离",
 }

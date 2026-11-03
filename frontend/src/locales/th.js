@@ -3713,4 +3713,7 @@ export default {
   "Muscle groups": "กลุ่มกล้ามเนื้อ",
   "All of them": "ทั้งหมด",
   "Any of them": "อย่างใดอย่างหนึ่ง",
+  "Distance ({0})": "ระยะทาง ({0})",
+  "Log speed instead": "บันทึกความเร็วแทน",
+  "Log distance instead": "บันทึกระยะทางแทน",
 }

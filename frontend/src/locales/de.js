@@ -3722,4 +3722,7 @@ export default {
   "Muscle groups": "Muskelgruppen",
   "All of them": "Alle davon",
   "Any of them": "Einer davon",
+  "Distance ({0})": "Strecke ({0})",
+  "Log speed instead": "Stattdessen Tempo eintragen",
+  "Log distance instead": "Stattdessen Strecke eintragen",
 }

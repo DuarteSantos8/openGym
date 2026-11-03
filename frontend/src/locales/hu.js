@@ -3705,4 +3705,7 @@ export default {
   "Muscle groups": "Izomcsoportok",
   "All of them": "Mindegyik",
   "Any of them": "Bármelyik",
+  "Distance ({0})": "Táv ({0})",
+  "Log speed instead": "Inkább sebességet írok",
+  "Log distance instead": "Inkább távot írok",
 }

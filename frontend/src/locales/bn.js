@@ -3781,4 +3781,7 @@ export default {
   "Muscle groups": "পেশির গ্রুপ",
   "All of them": "সবগুলো",
   "Any of them": "যেকোনোটা",
+  "Distance ({0})": "দূরত্ব ({0})",
+  "Log speed instead": "বরং গতি লিখো",
+  "Log distance instead": "বরং দূরত্ব লিখো",
 }

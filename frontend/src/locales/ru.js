@@ -3706,4 +3706,7 @@ export default {
   "Muscle groups": "Группы мышц",
   "All of them": "Все сразу",
   "Any of them": "Любая",
+  "Distance ({0})": "Дистанция ({0})",
+  "Log speed instead": "Записывать скорость",
+  "Log distance instead": "Записывать дистанцию",
 }

@@ -1407,6 +1407,12 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .sethead .n-sp{width:24px;flex:none}
 .sethead .w-sp{flex:1.4;text-align:center}
 .sethead .r-sp{flex:1;text-align:center}
+/* Cardio's second heading switches Speed and Distance (#887): it reads as the heading it is,
+   with a small swap glyph, and a hit area as tall as the row of headings. */
+.sethead .hd-swap{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:3px;
+  min-height:24px;padding:0 4px;border-radius:6px;color:inherit;font:inherit;text-decoration:underline dotted;text-underline-offset:3px}
+.sethead .hd-swap svg{font-size:.85em;opacity:.7}
+.sethead .hd-swap:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
 .sethead .eff-sp{text-align:center}
 .sethead .ck-sp{width:30px;flex:none}
 .setrow{display:flex;align-items:center;gap:8px;padding:7px 0;position:relative}

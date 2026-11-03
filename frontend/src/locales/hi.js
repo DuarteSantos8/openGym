@@ -3702,4 +3702,7 @@ export default {
   "Muscle groups": "मांसपेशी समूह",
   "All of them": "सभी",
   "Any of them": "कोई भी",
+  "Distance ({0})": "दूरी ({0})",
+  "Log speed instead": "इसके बजाय गति लिखें",
+  "Log distance instead": "इसके बजाय दूरी लिखें",
 }

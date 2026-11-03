@@ -55,6 +55,8 @@ const stamp = ms => {
  * gets more, as many as our importer needs to read the same speed back (it rounds to 0.01 km/h).
  */
 function distanceKm(s) {
+  // Logged by distance (#887): that distance, as typed.
+  if (Number(s.km) > 0) return n(Math.round(Number(s.km) * 10000) / 10000)
   const min = Number(s.min) || 0, speed = Number(s.speed) || 0
   const km = speed * min / 60
   if (!(km > 0)) return '0'

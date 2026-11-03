@@ -3749,4 +3749,7 @@ export default {
   "Muscle groups": "Muskelgrupper",
   "All of them": "Alla",
   "Any of them": "Någon av dem",
+  "Distance ({0})": "Distans ({0})",
+  "Log speed instead": "Logga fart i stället",
+  "Log distance instead": "Logga distans i stället",
 }

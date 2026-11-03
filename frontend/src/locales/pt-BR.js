@@ -2491,6 +2491,9 @@ export const PT_BR_OVERRIDES = {
   "Muscle groups": "Grupos musculares",
   "All of them": "Todos",
   "Any of them": "Qualquer um",
+  "Distance ({0})": "Distância ({0})",
+  "Log speed instead": "Registrar a velocidade",
+  "Log distance instead": "Registrar a distância",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
