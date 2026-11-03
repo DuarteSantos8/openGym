@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Адреса сервера"
+
+msgid "code"
+msgstr "Код під’єднання"
+
+msgid "how"
+msgstr "В openGym відкрий Налаштування, Годинник на Zepp OS, Під’єднати годинник, і введи тут адресу та код."
+
+msgid "pair"
+msgstr "Під’єднати"
+
+msgid "pairing"
+msgstr "Під’єдную…"
+
+msgid "paired"
+msgstr "Під’єднано до {0}. Відкрий openGym на годиннику."
+
+msgid "failed"
+msgstr "Не вийшло. Перевір адресу й код, код діє десять хвилин."
+
+msgid "unpair"
+msgstr "Від’єднати"
+
+msgid "not_paired_yet"
+msgstr "Ще не під’єднано."

@@ -85,7 +85,10 @@ export function mediaLimits(env = process.env) {
 // `days: true`: it keeps the files of progress photos filed under a day (`dayPhotos`, a photo for
 // a day without a workout, #557) too. An older server would sweep those, so the app files a photo
 // under a day only where this says so.
-export const mediaConfig = l => ({ imageMB: l.imageMB, gifMB: l.gifMB, videoMB: l.videoMB, videoSec: l.videoSec, quotaMB: l.quotaMB, workouts: true, days: true });
+// `sets: true`: it keeps the form videos filmed for one set too (workouts[].entries[].sets[].media,
+// v1.4.4). An older server would sweep those, so there the app keeps a set's video on the phone
+// that filmed it and never uploads it.
+export const mediaConfig = l => ({ imageMB: l.imageMB, gifMB: l.gifMB, videoMB: l.videoMB, videoSec: l.videoSec, quotaMB: l.quotaMB, workouts: true, days: true, sets: true });
 
 /* ---------------------------------------------------------------- errors */
 
@@ -282,7 +285,8 @@ export function mp4Info(fd, size) {
 
 /**
  * Every blob a state refers to: customEx[].media.hash and .poster.hash, and the same two of every
- * entry of workouts[].media (the photos and videos of a logged workout). Deliberately loose —
+ * entry of workouts[].media (the photos and videos of a logged workout) and of every set's own
+ * media list, workouts[].entries[].sets[].media (a form video filmed for that set). Deliberately loose —
  * each field counts on its own as long as it is a well-formed hash, even when the rest of the ref
  * would not pass the client's normalizeMediaRef, and a workout's list counts past the client's
  * cap of six. This set decides what is KEPT, so erring towards more is the safe direction.
@@ -302,6 +306,14 @@ export function referencedHashes(state) {
   for (const w of Array.isArray(state.workouts) ? state.workouts : []) {
     if (!isObj(w) || !Array.isArray(w.media)) continue;
     for (const m of w.media) if (isObj(m)) ref(m);
+  }
+  // A set's own form video (v1.4.4): every entry of every set's `media` list, by the same rule.
+  for (const w of Array.isArray(state.workouts) ? state.workouts : []) {
+    if (!isObj(w) || !Array.isArray(w.entries)) continue;
+    for (const e of w.entries) {
+      if (!isObj(e) || !Array.isArray(e.sets)) continue;
+      for (const st of e.sets) if (isObj(st) && Array.isArray(st.media)) for (const m of st.media) if (isObj(m)) ref(m);
+    }
   }
   // Progress photos filed under a day rather than a workout (frontend lib/day-photos.js):
   // dayPhotos[<hash>] = { d, m, _ts }, a cleared one only { _ts }.

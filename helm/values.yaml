@@ -123,6 +123,8 @@ api:
     AUDIT_DAYS: ""           # default 90
     AUDIT_IP: ""             # off | net | full
     MEDIA_UPLOADS: ""        # "0" = off
+    INTEGRATIONS: ""         # "webhook" = Settings → Integrations → Webhooks (docs/INTEGRATIONS.md)
+    INTEGRATIONS_ALLOW_LAN: ""  # "1" = webhooks may reach the home network
     MEDIA_QUOTA_MB: ""
     MEDIA_IMAGE_MAX_MB: ""
     MEDIA_GIF_MAX_MB: ""

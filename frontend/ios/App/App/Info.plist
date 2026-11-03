@@ -18,6 +18,18 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<!-- opengym:// links: a widget tap opens the screen it is about (lib/widget-links.js), and opengym.ch/nfc hands a read sticker to the app as opengym://nfc?... (NfcTagsPlugin), and opengym.ch/r a friend's routine as opengym://r#... (RoutineShare.jsx). -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>ch.opengym.app.widgets</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>opengym</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -75,9 +87,9 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Used to reach your own openGym server or AI model on your home network, when you connect one.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Used to scan your gym membership QR code, and to take a photo or video of an exercise you add yourself.</string>
+	<string>Used to scan your gym membership QR code, to take a photo or video of an exercise you add yourself, and to film a set so you can check your form.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Used to record the sound of a video you take of an exercise you add yourself.</string>
+	<string>Used to record the sound of a video you take of an exercise you add yourself or of a set you film.</string>
 	<key>BAAppGroupID</key>
 	<string>group.ch.opengym.app</string>
 	<key>BAHasManagedAssetPacks</key>
@@ -88,22 +100,29 @@
 	<array>
 		<string>ch.opengym.app.nudge-check</string>
 	</array>
+	<!-- processing: as in Apple's iPhone workout sample ("Building a workout app for iPhone and
+	     iPad", WWDC25 322) for the iPhone's own workout session (#818, AirPods heart rate, iOS 26).
+	     Not watchOS's workout-processing, which Apple lists for the watch only. -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
+		<string>processing</string>
 	</array>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Used to show your heart rate on your Apple Watch while you train, and, when you switch it on, to add the heart rate your watch saved and weigh-ins from other apps to your log.</string>
+	<string>Used to show your heart rate while you train, measured by your Apple Watch or by AirPods that track it, and, when you switch it on, to add the heart rate your watch saved and weigh-ins from other apps to your log.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Used to save your finished workouts and weigh-ins to Apple Health, when you switch it on.</string>
+	<string>Used to save your finished workouts (with the heart rate measured during them) and weigh-ins to Apple Health, when you switch it on.</string>
 	<!-- Gym reminder (#614): off until switched on in Settings. Region monitoring needs Always,
 	     but no background location mode (UIBackgroundModes stays without "location"). -->
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Used to put a gym on the map where you are standing, for the gym reminder. Your location stays on this iPhone.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Lets the gym reminder notice when you arrive at a gym you added, even with openGym closed. iOS only watches those places, and your location never leaves this iPhone.</string>
+	<!-- NFC stickers (NfcTagsPlugin.swift): Core NFC's own sheet, only when you write one. -->
+	<key>NFCReaderUsageDescription</key>
+	<string>Used to write openGym links onto your own NFC stickers, so a tap can start your workout or open an exercise.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Used to make sure it’s really you before your account is deleted.</string>
 </dict>

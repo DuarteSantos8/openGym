@@ -133,6 +133,45 @@ const LANGS = {
       [/medicine ball/iu, /bola medicinal/iu],
     ],
   },
+  // European Portuguese and Swedish came in v1.4.4 for the whole catalogue at once, so their
+  // rules hold on every exercise, not only the v1.3 ones. The shared vocabulary is in
+  // catalogue/i18n-glossary-pt-sv.md.
+  pt: {
+    covers: EXDB,
+    loanword: true,
+    // Brazilian forms (pt-BR has its own pack) and English left untranslated.
+    forbid: /(?:^|[^\p{L}])(?:em pé|pegada|rosca|levantamento terra|panturrilha|quadril|barra fixa|crucifixo|halter|sumô|no cabo|barbell|dumbbell|cable|stability ball|medicine ball|assisted|weighted|standing|seated|lying)(?=$|[^\p{L}])/iu,
+    keep: [
+      [/assisted/iu, /assistid/iu],
+      [MALE, /masculin/iu],
+      [FEMALE, /feminin/iu],
+      [/(?<!ez[\s-])(?<!olympic )barbell/iu, /barra/iu],
+      [/dumbbell/iu, /haltere/iu],
+      [/kettlebell/iu, /kettlebell/iu],
+      [/smith/iu, /smith/iu],
+      [/stability ball/iu, /bola de pilates/iu],
+      [/medicine ball/iu, /bola medicinal/iu],
+      [/ez[\s-]?bar/iu, /barra EZ/u],
+    ],
+  },
+  sv: {
+    covers: EXDB,
+    loanword: true,
+    forbid: /(?:^|[^\p{L}])(?:barbell|dumbbell|cable|standing|seated|lying|kneeling|stability ball|medicine ball|assisted|weighted|with)(?=$|[^\p{L}])/iu,
+    keep: [
+      // "Assisted" by a partner, a stick or a ball reads as "med ... som stöd" or "-assistans".
+      [/assisted/iu, /assist|stöd|hjälp/iu],
+      [MALE, /\(man\)|(?:^|[^\p{L}])man(?=$|[^\p{L}])/iu],
+      [FEMALE, /kvinn/iu],
+      [/(?<!ez[\s-])(?<!olympic )barbell/iu, /skivstång/iu],
+      [/dumbbell/iu, /hantl|hantel/iu],
+      [/kettlebell/iu, /kettlebell/iu],
+      [/smith/iu, /smith/iu],
+      [/stability ball/iu, /pilatesboll/iu],
+      [/medicine ball/iu, /medicinboll/iu],
+      [/ez[\s-]?bar/iu, /EZ-stång/u],
+    ],
+  },
   ru: {
     covers: legacy,
     // Cyrillic somewhere in the title: a name left in English would otherwise pass every other

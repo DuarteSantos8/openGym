@@ -15,7 +15,7 @@ const list = s => s.split(',').map(x => x.trim()).filter(Boolean)
 // the body map can draw, an equipment chip with a translation), so it is added here on purpose.
 export const BODY_PARTS = list('back, cardio, chest, lower arms, lower legs, neck, shoulders, upper arms, upper legs, waist, full body')
 export const EQUIPMENT = list('body weight, dumbbell, cable, barbell, leverage machine, band, smith machine, kettlebell, weighted, stability ball, ez barbell, assisted, sled machine, medicine ball, rope, roller, massage ball, resistance band, bosu ball, olympic barbell, wheel roller, upper body ergometer, skierg machine, hammer, stationary bike, tire, trap bar, elliptical machine, stepmill machine, suspension trainer, sandbag, landmine, weight plate, clubbell, macebell')
-export const TARGETS = list('abs, pectorals, biceps, glutes, delts, triceps, upper back, lats, calves, quads, forearms, cardiovascular system, hamstrings, spine, traps, adductors, serratus anterior, abductors, levator scapulae')
+export const TARGETS = list('abs, pectorals, biceps, glutes, delts, triceps, upper back, lats, calves, quads, forearms, cardiovascular system, hamstrings, spine, traps, adductors, serratus anterior, abductors, levator scapulae, obliques, hip flexors, shins')
 export const SECONDARY = list('shoulders, deltoids, rear deltoids, rotator cuff, chest, upper chest, triceps, biceps, brachialis, forearms, wrists, wrist flexors, wrist extensors, grip muscles, back, upper back, lats, latissimus dorsi, rhomboids, trapezius, traps, lower back, core, abdominals, obliques, lower abs, hip flexors, glutes, quadriceps, hamstrings, adductors, inner thighs, groin, calves, soleus, shins, ankles, ankle stabilizers, feet, hands, sternocleidomastoid')
 export const CATEGORIES = list('strength, stretching, mobility, plyometrics, cardio, olympic, calisthenics, pilates, yoga, combat, isometric, rehab')
 export const MUSCLES = list('trapezius, deltoids, chest, upper-back, serratus, biceps, triceps, forearm, abs, obliques, lower-back, gluteal, quadriceps, hamstring, adductors, hip-flexors, calves, tibialis')
@@ -23,7 +23,7 @@ export const MUSCLES = list('trapezius, deltoids, chest, upper-back, serratus, b
 // dumbbell fly also needs a bench, an inverted row a bar. The app's profile checklist has these
 // two (frontend/src/lib/equipment.js ACCESSORIES), and reads most of them off the name.
 export const NEEDS = list('bench, pull-up bar')
-export const LANGS = list('ar, bn, de, es, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, th, tr, uk, zh, zh-TW')
+export const LANGS = list('ar, bn, de, es, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, sv, th, tr, uk, zh, zh-TW')
 const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'target', 'secondaryMuscles', 'category', 'hold', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
 const I18N_KEYS = ['name', 'description', 'instructions']
 

@@ -1,0 +1,26 @@
+msgid "server"
+msgstr "Endereço do servidor"
+
+msgid "code"
+msgstr "Código de emparelhamento"
+
+msgid "how"
+msgstr "No openGym, abre Definições, Relógio Zepp OS, Emparelhar um relógio, e escreve aqui o endereço e o código."
+
+msgid "pair"
+msgstr "Emparelhar"
+
+msgid "pairing"
+msgstr "A emparelhar…"
+
+msgid "paired"
+msgstr "Emparelhado com {0}. Abre o openGym no relógio."
+
+msgid "failed"
+msgstr "Não resultou. Verifica o endereço e o código, um código dura dez minutos."
+
+msgid "unpair"
+msgstr "Desemparelhar"
+
+msgid "not_paired_yet"
+msgstr "Ainda não emparelhado."

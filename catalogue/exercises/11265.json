@@ -3,9 +3,9 @@
   "name": "cable standing hip flexion v. 3",
   "bodyPart": "upper legs",
   "equipment": "cable",
-  "target": "quads",
+  "target": "hip flexors",
   "secondaryMuscles": [
-    "hip flexors",
+    "quadriceps",
     "core"
   ],
   "category": "strength",

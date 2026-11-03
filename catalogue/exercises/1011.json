@@ -3,9 +3,9 @@
   "name": "band seated twist",
   "bodyPart": "waist",
   "equipment": "band",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques"
+    "abdominals"
   ],
   "category": "strength",
   "description": "A seated twist with a band around the waist. It trains the abs and obliques.",

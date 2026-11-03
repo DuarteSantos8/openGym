@@ -19,7 +19,13 @@
 <a href="https://github.com/DuarteSantos8/openGym/releases/latest"><img src="assets/readme/badge-android.svg" alt="Download the Android APK" height="40"></a>
 <a href="docs/SELF_HOSTING.md"><img src="assets/readme/badge-selfhost.svg" alt="Self-host with Docker" height="40"></a>
 
-[Website](https://opengym.ch) · [Live demo](https://opengym.ch/demo/) · [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md) · [Buy Me a Coffee](https://buymeacoffee.com/duartesantos) · [Ko-fi](https://ko-fi.com/opengym)
+<a href="https://trendshift.io/repositories/88268?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-88268" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/88268" alt="DuarteSantos8%2FopenGym | Trendshift" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/88268?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-88268" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/88268/weekly?language=JavaScript" alt="DuarteSantos8%2FopenGym | Trendshift" width="250" height="55"/></a>
+
+[Website](https://opengym.ch) · [Live demo](https://opengym.ch/demo/) · [Roadmap](ROADMAP.md) · [Changelog](CHANGELOG.md)
+
+<a href="https://buymeacoffee.com/duartesantos"><img src="assets/readme/badge-coffee.svg" alt="Buy me a coffee" height="40"></a>
+<a href="https://ko-fi.com/opengym"><img src="assets/readme/badge-kofi.svg" alt="Support openGym on Ko-fi" height="40"></a>
 
 </div>
 
@@ -64,11 +70,16 @@ if you want to try it before installing anything.
   list view. Switches in Settings bring the old button rows back if you liked them.
 - Optional effort column as RIR or RPE, colour-coded, with a plain-language line per level.
 - Plate math for barbell, EZ bar, trap bar and Smith machine, worked out from the plates you own.
+  Train in more than one place? Each gym keeps its own plates, dumbbells, bars and machine stacks,
+  and the phone can switch to the gym you just walked into.
 - Bodyweight exercises know they carry no load: log reps, add a dip belt if you use one.
 - Per-side reps for lunges and single-arm work, the screen stays awake while you train, and a
   rest-timer alert can flash the screen for loud gyms.
 - Swipe a set left to delete it (with Undo) or right to copy it. Pyramid sets with their own reps
-  and rest per set, and a scroll wheel for any rest time up to 15 minutes.
+  and rest per set, and a scroll wheel for any rest time up to 15 minutes, or no timer at all.
+- Machine taken? A planned backup exercise swaps in with one tap and keeps the slot's sets and reps.
+  Machines can carry their real weight stack, odd steps included, and progression sticks to it.
+- The session's volume runs live at the end of the progress bar.
 
 **Progress**
 
@@ -79,8 +90,9 @@ if you want to try it before installing anything.
   ATG), a year-long activity heatmap.
 - A muscle map in three modes: where your volume went, what is still recovering, and what has gone
   untrained.
-- Body-weight chart against a goal line, and progress photos on a timeline with a before/after
-  slider.
+- Body-weight chart against a goal line, with your weekly rate and an optional lose, gain or hold
+  range, and progress photos on a timeline with a before/after slider.
+- Lifts as a percentage of body weight, and a running total of everything you've ever lifted.
 - Edit any saved workout after the fact, log one you did on paper, or move it to the right date.
   Records are re-read from the corrected history.
 
@@ -91,7 +103,7 @@ if you want to try it before installing anything.
 - Two devices editing at once merge field by field instead of overwriting each other (see
   [sync](#how-sync-works)).
 - Import from FitNotes, Strong, Hevy (CSV or API key) and Apple Health weight exports. Export
-  everything as one JSON file whenever you like.
+  everything as one JSON file, or your workouts and body data as a spreadsheet (CSV).
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.
 - 20 languages, including right-to-left Arabic and Traditional Chinese. Exercise names and
@@ -100,19 +112,33 @@ if you want to try it before installing anything.
 **On the phone and the wrist**
 
 - Apps for iPhone, iPad and Android that work on their own (no server, no account) or connected to
-  yours. Rest timer in the notification shade, reminders, and Health Connect or Apple Health.
+  yours. Rest timer in the notification shade, reminders, and Health Connect or Apple Health in both
+  directions: workouts go out, weigh-ins and heart rate per set come back in.
 - A gym reminder, off by default: walk into one of your gyms and the phone nudges you to hit
   Start. Once a day at most, never after you trained, and your gyms stay on the phone.
-- An Apple Watch app: tick off sets with the Digital Crown, a full-screen rest countdown, heart
-  rate per set, and complications. Widgets and a Live Activity on the iPhone.
+- An Apple Watch app: tick off sets with the Digital Crown, RPE or RIR right on the wrist, a
+  full-screen rest countdown, heart rate per set, a Lock button against stray crown presses, and
+  complications. No watch? AirPods Pro 3 do the heart rate on iOS 26.
+- Widgets and a Live Activity on the iPhone: log a set, skip the rest or jump to the next exercise
+  from the Lock Screen without opening the app.
+
+**Only what you use**
+
+- [Modules](docs/MODULES.md): switch whole parts of the app on and off in Settings → Modules, from
+  "Just training" to "Everything". Body, Health, Motivation, the Coach, seasonal themes and more
+  each disappear completely while they're off, and nothing is deleted.
 
 **Optional extras, off by default**
 
 - An [AI coach](docs/AI_COACH.md) that drafts a week of routines and later suggests changes based on
-  what you logged. You approve every change. It runs on your server with your own provider key
-  (Anthropic, OpenAI, Gemini or any OpenAI-compatible endpoint, Ollama included).
+  what you logged, and answers questions about your training. You approve every change. It runs
+  on your server, or on the phone alone, with your own provider key (Anthropic, OpenAI, Gemini or
+  any OpenAI-compatible endpoint, Ollama included).
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
   training history, and log a workout you describe to it. Local; not part of the Docker build.
+- [Integrations](docs/INTEGRATIONS.md) in one place: Apple Health, Health Connect (Garmin, Fitbit,
+  Withings and friends come in through them), imports, and signed webhooks to Home Assistant, n8n or
+  ntfy when you finish a workout, set a record or weigh in.
 
 The full list of what changed release by release is in the [changelog](CHANGELOG.md).
 
@@ -166,6 +192,8 @@ Traefik and nginx, and there are separate guides for
 | `AUDIT_DAYS` | Days kept in the activity log; `0` keeps until `AUDIT_MAX` | `90` |
 | `AUDIT_IP` | Record the caller's address: `off`, `net` (network only) or `full` | `off` |
 | `ALLOWED_PRIVATE_IPS` | Private addresses push endpoints may resolve to (FakeDNS, split-horizon DNS): comma-separated IPs, `a-b` ranges or CIDR blocks | *(none)* |
+| `INTEGRATIONS` | Server integrations to offer, comma-separated: `webhook` ([integrations](docs/INTEGRATIONS.md)) | *(none)* |
+| `INTEGRATIONS_ALLOW_LAN` | `1`: webhooks may reach your home network (Home Assistant), http included; never loopback | *(off)* |
 | `VAPID_SUBJECT` | Contact URL sent with push notifications | your `ORIGIN` |
 | `API_TARGET` | API image to build: `default`, or `coach` with the Claude Agent SDK and Codex CLI | `default` |
 | `COACH_DISABLED` | `1` forces the AI coach off instance-wide | *(unset)* |
@@ -281,9 +309,6 @@ plan is in [ROADMAP.md](ROADMAP.md), and the issues sit in the
 | later | dates are guesses | Search and catalogue, accounts, a trainer role, skins, Garmin, database storage |
 
 ## Community
-
-<a href="https://trendshift.io/repositories/88268?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-88268" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/88268" alt="DuarteSantos8%2FopenGym | Trendshift" width="250" height="55"/></a>
-<a href="https://trendshift.io/repositories/88268?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-88268" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/88268/weekly?language=JavaScript" alt="DuarteSantos8%2FopenGym | Trendshift" width="250" height="55"/></a>
 
 - **[Discord](https://discord.gg/e62jY6fwVb)** for release announcements, self-hosting help and
   quick back-and-forth. Usually the fastest way to get an answer.

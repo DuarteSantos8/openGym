@@ -198,8 +198,34 @@ describe('planSync', () => {
       deleted: { workouts: { a: 5, b: -6 }, bodyweight: { '2026-09-01': 7 }, routines: { r: 9 } },
       resetIds: { workouts: ['c'], bodyweight: ['2026-09-02|123', '2026-09-03|'] },
     })
-    expect([...ids].sort()).toEqual(['opengym-bw-2026-09-01', 'opengym-bw-2026-09-02', 'opengym-bw-2026-09-03', 'opengym-w-a', 'opengym-w-c'])
+    expect([...ids].sort()).toEqual(['opengym-bw-2026-09-01', 'opengym-bw-2026-09-01-*', 'opengym-bw-2026-09-02', 'opengym-bw-2026-09-02-*', 'opengym-bw-2026-09-03', 'opengym-bw-2026-09-03-*', 'opengym-w-a', 'opengym-w-c'])
     expect(goneIds(null).size).toBe(0)
+  })
+
+  // #859: each weigh-in of a day is its own record, at its own time.
+  describe('several weigh-ins a day', () => {
+    const S = {
+      unit: 'kg',
+      bodyweight: [
+        { d: '2026-09-17', w: 80, t: 3, ins: [{ id: '0', at: '07:10', w: 80, t: 1 }, { id: 'ab', at: '21:30', w: 81, t: 2 }, { id: 'hx', at: '12:00', w: 80.5, t: 3, src: 'health' }], gone: { cd: 3 } },
+        { d: '2026-09-18', w: 79, t: 1 },
+      ],
+      deleted: { bodyweight: { '2026-09-10': 9 } },
+    }
+    it('writes every typed weigh-in at its time, the old day keeping its id', () => {
+      const w = healthRecords(S, { nameOf: x => x }).weights
+      expect(w.map(r => r.id)).toEqual(['opengym-bw-2026-09-17', 'opengym-bw-2026-09-17-ab', 'opengym-bw-2026-09-18'])
+      expect(new Date(w[1].time).getHours()).toBe(21)
+      expect(new Date(w[1].time).getMinutes()).toBe(30)
+    })
+    it('takes out a removed weigh-in, and every weigh-in of a removed day', () => {
+      const gone = goneIds(S)
+      expect(gone.has('opengym-bw-2026-09-17-cd')).toBe(true)
+      const written = { 'opengym-bw-2026-09-17-cd': { k: 'weight', h: 'x' }, 'opengym-bw-2026-09-10-zz': { k: 'weight', h: 'y' }, 'opengym-bw-2026-09-11-zz': { k: 'weight', h: 'z' } }
+      const plan = planSync({ sessions: [], weights: [] }, written, gone)
+      expect(plan.remove.weights.sort()).toEqual(['opengym-bw-2026-09-10-zz', 'opengym-bw-2026-09-17-cd'])
+      expect(plan.written['opengym-bw-2026-09-11-zz']).toBeTruthy()
+    })
   })
   it('writes one record for two workouts that share an id', () => {
     const twice = { sessions: [...records().sessions, { ...records().sessions[0], title: 'Copy' }], weights: [] }

@@ -113,6 +113,6 @@ describe('pausing the rest timer', () => {
     useUI.getState().startWork(30, 'Plank', done)
     expect(useUI.getState().timer).toBeNull()
     vi.advanceTimersByTime(30000)
-    expect(done).toHaveBeenCalledExactlyOnceWith(30, { chimed: true })
+    expect(done).toHaveBeenCalledExactlyOnceWith(30, expect.objectContaining({ chimed: true }))
   })
 })
