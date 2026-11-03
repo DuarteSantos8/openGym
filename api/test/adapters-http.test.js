@@ -702,3 +702,29 @@ test('validateHeaders: small maps pass, framing names and junk do not', () => {
   const many = {}; for (let i = 0; i < 9; i++) many['x-h-' + i] = 'v';
   assert.equal(validateHeaders(many).ok, false);
 });
+
+// #973: OpenRouter holds a slow non-streamed call open with whitespace, so a refusal from the
+// model behind it arrives as "200 OK" with { error } and no choices. It is the 400 it names.
+test('compatible: an error in a 200 body runs the fallbacks the status it names would', async () => {
+  const f = fakeFetch(n => n === 1
+    ? ok({ error: { message: 'Schema is too complex.', code: 400, metadata: { error_type: 'invalid_request' } } })
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema: CREATE_SCHEMA, env: {}, model: 'anthropic/claude-sonnet-973', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.deepEqual(f.calls.at(-1).body.response_format, { type: 'json_object' });
+});
+
+test('an error in a 200 body with no code reads as a 502 in the provider’s own words', async () => {
+  const f = fakeFetch([ok({ error: { message: 'upstream went away' } })]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f, retryDelayMs: 0 });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /^502 upstream went away/);
+  assert.doesNotMatch(r.stderr, /no choices/);
+});
+
+test('a normal answer that happens to carry an error field next to its choices is still the answer', async () => {
+  const f = fakeFetch([ok({ error: null, choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+});

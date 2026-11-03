@@ -157,6 +157,19 @@ async function call(fetchImpl, url, init, timeoutMs, signal) {
   }
 }
 
+/* The status an answer failed with, or 0 when it is an answer. Usually that is the HTTP status,
+ * but a gateway that holds a slow request open (OpenRouter keeps a non-streamed call alive with
+ * whitespace) has already sent "200 OK" by the time the model behind it refuses, so the refusal
+ * arrives as a 200 whose body is { error: { message, code } } and has no answer in it (#973).
+ * That is read as the error it is, with the code it names (502 when it names none), so the
+ * fallbacks below (the schema rungs above all) run instead of "the answer had no choices". */
+export function embeddedErrorStatus(res, data) {
+  if (!res.ok) return res.status;
+  if (!data || typeof data !== 'object' || !data.error || data.choices || data.candidates || data.content) return 0;
+  const code = Number(data.error.code ?? data.error.status);
+  return Number.isInteger(code) && code >= 400 && code < 600 ? code : 502;
+}
+
 async function readJson(res) {
   const text = await res.text();
   try { return { data: JSON.parse(text), text }; } catch { return { data: null, text }; }
@@ -280,9 +293,10 @@ export function httpAdapter(spec) {
           return { code: 1, text: '', stderr: `could not reach ${hostOf(base)}: ${trim(e.message, 200)}` };
         }
         const { data, text } = await readJson(res);
-        if (!res.ok) {
+        const status = embeddedErrorStatus(res, data);
+        if (status) {
           const msg = spec.errorMessage(data) || trim(text, 200);
-          if (RETRY_STATUSES.has(res.status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
+          if (RETRY_STATUSES.has(status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
             await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[transientRetries], signal);
             transientRetries++;
             continue;
@@ -291,12 +305,12 @@ export function httpAdapter(spec) {
           // without JSON mode; a reasoning model's output-limit field or temperature) goes to the
           // rung for it. A rung that changes nothing (a complaint about a temperature this request
           // never sent) is no retry: asking again would be asking the same wrong thing.
-          const named = res.status === 400 ? namedRungs(msg) : null;
+          const named = status === 400 ? namedRungs(msg) : null;
           let rung = named ? nextRung(named, true) : null;
           // A 400 that names nothing walks the ladder, on an endpoint that opted in (#804).
-          if (!rung && res.status === 400 && !named && spec.compatLadder && !isModelGone(res.status, msg)) rung = nextRung(COMPAT_STEPS);
+          if (!rung && status === 400 && !named && spec.compatLadder && !isModelGone(status, msg)) rung = nextRung(COMPAT_STEPS);
           if (rung && !(signal && signal.aborted)) {
-            if (!firstRefusal) firstRefusal = `${res.status} ${shownError(spec, data, 280)}`;
+            if (!firstRefusal) firstRefusal = `${status} ${shownError(spec, data, 280)}`;
             steps = rung.steps;
             body = rung.body;
             transientRetries = 0;
@@ -305,7 +319,7 @@ export function httpAdapter(spec) {
           // The model is gone for this key: once, with one it can use. The provider's own
           // default when the key serves it (or the list could not be read), else the first text
           // model the key lists. Only then is it the job's failure, naming the model.
-          if (isModelGone(res.status, msg) && !triedOtherModel && !(signal && signal.aborted)) {
+          if (isModelGone(status, msg) && !triedOtherModel && !(signal && signal.aborted)) {
             triedOtherModel = true;
             const next = await usableModel(chosen, { cfg, env, fetchImpl, signal });
             if (next) {
@@ -318,19 +332,19 @@ export function httpAdapter(spec) {
               continue;
             }
           }
-          if (isModelGone(res.status, msg)) {
+          if (isModelGone(status, msg)) {
             substitutes.delete(substituteKey(id, base, asked));
             const tried = chosen !== asked ? ` (and neither is "${chosen}")` : '';
-            return { code: 1, text: '', stderr: `${res.status} the model "${asked}" is not available to this key${tried}: ${shownError(spec, data, 200)}. Pick another one in the Coach settings.` };
+            return { code: 1, text: '', stderr: `${status} the model "${asked}" is not available to this key${tried}: ${shownError(spec, data, 200)}. Pick another one in the Coach settings.` };
           }
           // Every rung refused too: the gateway's own first words are the ones worth reading, and
           // what was learnt for this endpoint is dropped rather than kept half-right.
           if (spec.compat && firstRefusal) {
             compatProfiles.delete(compatKey(id, base, chosen));
-            const last = `${res.status} ${shownError(spec, data, 200)}`;
+            const last = `${status} ${shownError(spec, data, 200)}`;
             return { code: 1, text: '', stderr: last === firstRefusal ? `${firstRefusal} (also tried ${steps.length} compatibility fallbacks)` : `${firstRefusal} (fallbacks tried: ${steps.join(', ')}; last answer: ${last})`.slice(0, 600) };
           }
-          return { code: 1, text: '', stderr: `${res.status} ${shownError(spec, data, 280)}` };
+          return { code: 1, text: '', stderr: `${status} ${shownError(spec, data, 280)}` };
         }
         let out;
         try { out = spec.readText(data); } catch (e) { out = { error: `unexpected response shape: ${trim(e.message, 100)}` }; }
