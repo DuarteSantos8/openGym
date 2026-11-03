@@ -3659,4 +3659,9 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "“Entegrasyonlar” kapalıyken webhook'ların bir şey göndermez. Kurulu kalırlar.",
   "{0} of {1} modules on.": "{1} modülden {0} tanesi açık.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "“Sağlık” kapalıyken {0} eşitlemeyi durdurur. Hiçbir bağlantı kesilmez, “Sağlık” geri gelince her şeyi yakalar.",
+  "Screen orientation": "Ekran yönü",
+  "Only for openGym. Your phone’s auto-rotate stays as it is.": "Sadece openGym için. Telefonunun otomatik döndürmesi olduğu gibi kalır.",
+  "Follow phone": "Telefona göre",
+  "Portrait": "Dikey",
+  "Landscape": "Yatay",
 }

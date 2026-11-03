@@ -80,6 +80,7 @@ import { openSeasonal } from '../components/Seasonal.jsx'
 import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
 import { dailyModeOf, settleAll } from '../lib/weigh-ins.js'
 import { voiceShortcutsSheet, voiceRowTitle } from '../components/VoiceShortcuts.jsx'
+import { readOrientation, setOrientation } from '../lib/orientation.js'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -150,6 +151,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const importRef = useRef(null)
   const body = useRef(null)
   const wakeOK = wakeLockSupported()
+  // Per device (lib/orientation.js), so local state and not S.
+  const [orient, setOrient] = useState(readOrientation)
   // The gym reminder's switch lives on its own page and on this device only (lib/gym-reminder.js).
   const gymOn = MOBILE && readGymConfig().on
 
@@ -635,6 +638,16 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             subtitle={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : t('Not supported in this browser.')}>
             <Switch checked={wakeOK && S.keepAwake !== false} disabled={!wakeOK}
               onChange={v => update(s => { s.keepAwake = v })} />
+          </Row>
+        )}
+        {/* Android (#821): openGym alone stays upright or sideways, the phone's auto-rotate untouched.
+            This device's choice, never synced. */}
+        {MOBILE && android && (
+          <Row icon="phoneScreen" iconTint="var(--indigo)" title={t('Screen orientation')}
+            subtitle={t('Only for openGym. Your phone’s auto-rotate stays as it is.')}>
+            <Segmented className="seg-inline"
+              options={[{ value: 'auto', label: t('Follow phone') }, { value: 'portrait', label: t('Portrait') }, { value: 'landscape', label: t('Landscape') }]}
+              value={orient} onChange={v => { setOrient(v); setOrientation(v) }} />
           </Row>
         )}
         {/* 'full'/'mini' is also what the tap-toggle on the workout animation writes; 'off' hides

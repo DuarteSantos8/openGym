@@ -15,6 +15,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Sets logged on the watch after you saved the workout on the phone join the saved workout, even for an exercise the phone had left empty.
 - A late copy of a watch workout's start no longer starts it all over again, and a watch workout started while another one ran on the phone waits its turn instead of being thrown away.
 
+**New**
+- Android: Settings → Workout → Screen orientation keeps openGym upright (or sideways) while the rest of your phone rotates as it likes (#821, thanks @snike79 for the idea).
+
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
 - Android widget: it loads at every size again instead of "Unable to load widget" when stretched, and its "What to show" screen is wide enough to read (#981).

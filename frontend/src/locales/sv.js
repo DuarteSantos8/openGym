@@ -3706,4 +3706,9 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Dina webhooks skickar inget medan ”Integrationer” är av. De förblir inställda.",
   "{0} of {1} modules on.": "{0} av {1} moduler på.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} slutar synka medan ”Hälsa” är av. Inget kopplas bort, och allt kommer ikapp när ”Hälsa” är tillbaka.",
+  "Screen orientation": "Skärmorientering",
+  "Only for openGym. Your phone’s auto-rotate stays as it is.": "Bara för openGym. Telefonens autorotering förblir som den är.",
+  "Follow phone": "Som telefonen",
+  "Portrait": "Stående",
+  "Landscape": "Liggande",
 }

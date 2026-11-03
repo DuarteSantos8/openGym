@@ -111,6 +111,7 @@ export const SEARCH = [
   { page: 'workout', title: 'Skip completed exercises', icon: 'skipForward', tint: 'var(--teal)', kw: 'skip jump done finished completed exercises cards focus next previous' },
   { page: 'workout', title: 'Weigh in before workouts', icon: 'scale', tint: 'var(--green)', mod: 'body', kw: 'body weight weigh scale start' },
   { page: 'workout', title: 'Keep screen awake', icon: 'phoneScreen', tint: 'var(--yellow)', kw: 'wake lock screen sleep display on', when: c => c.wakeOK || !c.mobile },
+  { page: 'workout', title: 'Screen orientation', icon: 'phoneScreen', tint: 'var(--indigo)', kw: 'orientation rotate rotation portrait landscape lock auto-rotate sideways upright turn', opts: ['Follow phone', 'Portrait', 'Landscape'], when: c => c.android },
   { page: 'workout', title: 'Exercise animations', icon: 'image', tint: 'var(--teal)', kw: 'gif animation video media pictures images', opts: ['Full', 'Small', 'Hidden'] },
   { page: 'workout', title: 'Animation quality', icon: 'image', tint: 'var(--indigo)', kw: 'animation quality resolution sharp hd download pack still px', when: c => c.mobile },
   { page: 'workout', title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', kw: 'advanced more options' },

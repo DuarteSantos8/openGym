@@ -2448,6 +2448,11 @@ export const PT_BR_OVERRIDES = {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
   'Lengths in': 'Comprimentos em',
   'Removes the field and every reading logged in it. The other measurements stay.': 'Remove o campo e todos os valores registrados nele. As outras medidas ficam.',
+  "Screen orientation": "Orientação da tela",
+  "Only for openGym. Your phone’s auto-rotate stays as it is.": "Só para o openGym. A rotação automática do celular fica como está.",
+  "Follow phone": "Como o celular",
+  "Portrait": "Vertical",
+  "Landscape": "Horizontal",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

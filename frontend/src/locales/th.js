@@ -3670,4 +3670,9 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "เว็บฮุกจะหยุดส่งระหว่างที่ \"การเชื่อมต่อ\" ปิดอยู่ แต่ยังตั้งค่าไว้เหมือนเดิม",
   "{0} of {1} modules on.": "เปิดอยู่ {0} จาก {1} โมดูล",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} จะหยุดซิงก์ระหว่างที่ \"สุขภาพ\" ปิดอยู่ ไม่มีอะไรถูกตัดการเชื่อมต่อ และจะตามทันเมื่อเปิด \"สุขภาพ\" อีกครั้ง",
+  "Screen orientation": "การหมุนหน้าจอ",
+  "Only for openGym. Your phone’s auto-rotate stays as it is.": "เฉพาะ openGym การหมุนอัตโนมัติของโทรศัพท์ยังเหมือนเดิม",
+  "Follow phone": "ตามโทรศัพท์",
+  "Portrait": "แนวตั้ง",
+  "Landscape": "แนวนอน",
 }

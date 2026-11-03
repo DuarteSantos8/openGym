@@ -40,6 +40,9 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NfcTagsPlugin.class);
         registerPlugin(WidgetBridgePlugin.class);
         registerPlugin(WatchBridgePlugin.class);
+        registerPlugin(OrientationPlugin.class);
+        // Settings → Screen orientation (#821), before the first frame: no turn on the way in.
+        OrientationPlugin.applySaved(this);
         super.onCreate(savedInstanceState);
         passSystemBarsToPage();
     }

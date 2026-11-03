@@ -16,6 +16,7 @@ import { onGymReminderOpen } from './lib/gym-reminder.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { workoutVolume } from './lib/history.js'
 import { setSystemBarsLight } from './lib/system-bars.js'
+import { applyOrientation } from './lib/orientation.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
@@ -145,6 +146,8 @@ function Shell() {
   const permSteps = useStore(s => s.permSteps)
   const langV = useLang()   // re-renders the whole shell when the language (pack) changes
   useEffect(() => { setNav(navigate) }, [navigate])
+  // Android: Settings → Screen orientation (#821), this device's own choice.
+  useEffect(() => { if (MOBILE) applyOrientation() }, [])
   const lastEditPath = useRef(loc.pathname)
   // Any in-app route exit, browser back included, returns to the persisted draft and asks for a
   // save decision. Reload needs no prompt because the draft itself is already in local storage.
