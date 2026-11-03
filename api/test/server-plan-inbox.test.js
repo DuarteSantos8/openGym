@@ -158,7 +158,7 @@ test('a teacher cannot be their own student, and no other admin can be anyone\'s
 /* Deleting and archiving a student's workouts. */
 const wk = (id, d) => ({ id, d, name: id, start: Date.parse(d + 'T10:00:00Z'), end: Date.parse(d + 'T11:00:00Z'), entries: [{ id: '0001', sets: [{ w: 50, r: 8, done: true }] }] });
 const states = () => ({
-  sA: { _rev: 3, _ts: 1000, workouts: [wk('w1', '2026-10-01'), wk('w2', '2026-10-02')], routines: [] },
+  sA: { _rev: 3, _ts: 1000, workouts: [wk('w1', '2026-10-01'), wk('w2', '2026-10-02')], routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 10 }] }, { id: 'r2', name: 'B', ex: [] }], week: { 1: ['r1', 'r2'], 3: ['r1'] }, dayPlan: { '2026-11-10': 'r1', '2026-11-11': 'r2' } },
   sB: { _rev: 1, workouts: [wk('x1', '2026-10-01')], routines: [] },
   owner: { _rev: 1, workouts: [wk('o1', '2026-10-01')], routines: [] }
 });
@@ -202,4 +202,24 @@ test('archiving flags a workout for the teacher and leaves the student\'s record
   assert.ok(!(await call('tA', 'GET', '/api/admin/user?id=sA')).body.workouts.some(w => w.archived));
   assert.equal((await call('tA', 'POST', '/api/admin/user/workouts/archive', { id: 'sB', workouts: ['x1'], archived: true })).status, 404);
   assert.equal((await call('tA', 'POST', '/api/admin/user/workouts/archive', { id: 'sA', workouts: ['w1'] })).status, 400);
+});
+
+test('a teacher deletes or archives a student\'s plan (ficha), and the weekdays that held it let go', async t => {
+  const call = await startScoped(t, states());
+  const gone = await call('tA', 'POST', '/api/admin/user/routines/delete', { id: 'sA', routines: ['r1'] });
+  assert.deepEqual([gone.status, gone.body.removed], [200, 1]);
+  const mine = (await call('sA', 'GET', '/api/data')).body;
+  assert.equal(mine.rev, 4);
+  assert.deepEqual(mine.state.routines.map(r => r.id), ['r2']);
+  assert.deepEqual(mine.state.week, { 1: ['r2'] });
+  assert.deepEqual(mine.state.dayPlan, { '2026-11-11': 'r2' });
+  assert.ok(mine.state.deleted.routines.r1 > 0);
+
+  const arch = await call('tA', 'POST', '/api/admin/user/routines/archive', { id: 'sA', routines: ['r2', 'ghost'], archived: true });
+  assert.equal(arch.body.changed, 1);
+  const d = (await call('tA', 'GET', '/api/admin/user?id=sA')).body;
+  assert.deepEqual(d.routines.map(r => [r.id, !!r.archived]), [['r2', true]]);
+  assert.equal((await call('sA', 'GET', '/api/data')).body.rev, 4, 'archiving leaves the student\'s record alone');
+  assert.equal((await call('tA', 'POST', '/api/admin/user/routines/delete', { id: 'sB', routines: ['x'] })).status, 404);
+  assert.equal((await call('tA', 'POST', '/api/admin/user/routines/delete', { id: 'sA', routines: [] })).status, 400);
 });

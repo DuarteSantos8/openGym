@@ -190,6 +190,23 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       canDeleteWorkouts && { icon: 'trash', label: t('Delete'), danger: true, onClick: () => removeWorkouts([String(w.id)]) }
     ]
   })
+  // The same two actions for a plan (a ficha): archive marks it for the teacher, delete removes it
+  // from the student's own plan, and the weekdays that held it, on their phone too.
+  const archiveRoutine = (r, archived) => act('/api/admin/user/routines/archive', { routines: [String(r.id)], archived },
+    x => toast(archived ? t('{0} archived', x.changed) : t('{0} restored', x.changed)))
+  const removeRoutine = r => confirmSheet({
+    title: t('Delete “{0}”?', r.name),
+    message: t('The plan is removed from {0}’s own plan too, on their phone as well, and this cannot be undone. Archive it instead to keep it.', u.name),
+    confirmText: t('Delete'), danger: true,
+    onConfirm: () => act('/api/admin/user/routines/delete', { routines: [String(r.id)] }, x => toast(t('{0} deleted', x.removed)))
+  })
+  const routineMenu = r => menuSheet({
+    title: r.name,
+    items: [
+      { icon: r.archived ? 'reset' : 'folder', label: r.archived ? t('Restore') : t('Archive'), sub: r.archived ? t('Not archived any more') : t('Marks it as archived for you; the student keeps it'), onClick: () => archiveRoutine(r, !r.archived) },
+      canDeleteWorkouts && { icon: 'trash', label: t('Delete'), danger: true, onClick: () => removeRoutine(r) }
+    ]
+  })
   const prog = studentProgress(d)
   const perf = studentPerformance(d)
   const delta = (x, unit) => x?.delta == null ? '' : ' (' + (x.delta > 0 ? '+' : '') + x.delta + unit + ')'
@@ -295,6 +312,14 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <div className="adm-hint">Lost every device and passkey? A one-time code gives a new device a passkey for this profile. Works with or without password sign-in.</div>
     </>}
     {u.owner && u.id !== me?.id && <div className="adm-hint" style={{ marginTop: 14 }}>A locked-out owner gets a recovery code from the server itself: <code>docker compose exec api node recover.js "{u.name}"</code></div>}
+    <h4 className="sec">{t('Plans')}</h4>
+    {d.routines.length ? <div className="list" style={{ gap: 0 }}>
+      {d.routines.map(r => <div key={r.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)', opacity: r.archived ? .55 : 1 }}>
+        <div className="grow"><div className="small" style={{ fontWeight: 600 }}>{r.emoji ? r.emoji + ' ' : ''}{r.name}{r.archived && <span className="adm-pill" style={{ marginInlineStart: 6 }}>{t('archived')}</span>}</div>
+          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{t('{0} exercises', r.count)}</div></div>
+        <button className="iconbtn adm-iconbtn" onClick={() => routineMenu(r)} aria-label={t('Plan options')}><Icon name="more" /></button>
+      </div>)}
+    </div> : <div className="adm-empty">{t('No plans yet.')}</div>}
     <div className="row between"><h4 className="sec" style={{ margin: 0 }}>Workout history</h4>
       {workouts.length > 0 && <button className="btn" style={{ padding: '4px 10px' }} onClick={() => setPicked(picked ? null : [])}>{picked ? t('Done') : t('Select')}</button>}</div>
     {perf.archived > 0 && <button className="chip" style={{ margin: '8px 0' }} aria-pressed={showArchived} onClick={() => setShowArchived(v => !v)}>{showArchived ? t('Hide archived') : t('Show archived ({0})', perf.archived)}</button>}

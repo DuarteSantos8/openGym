@@ -4,6 +4,11 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "Marks it as archived for you; the student keeps it": "Marca como arquivada para você; o aluno continua com ela",
+  "No plans yet.": "Ainda não há fichas.",
+  "Not archived any more": "Não está mais arquivada",
+  "Plans": "Fichas",
+  "The plan is removed from {0}’s own plan too, on their phone as well, and this cannot be undone. Archive it instead to keep it.": "A ficha também some do plano de {0}, inclusive no celular, e isso não pode ser desfeito. Arquive para guardá-la.",
   "Name of this routine": "Nome da rotina",
   "Add at least one exercise first.": "Adicione pelo menos um exercício primeiro.",
   "Adherence": "Aderência",

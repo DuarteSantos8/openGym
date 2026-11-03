@@ -3079,6 +3079,91 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/routines/delete:
+    post:
+      tags: [admin]
+      operationId: adminUserRoutinesDelete
+      summary: 'Admin: delete routines from a profile'
+      description: |
+        Removes routines (a student's plan, their fichas) from a profile for good: a teacher for one of their students, the owner for
+        anyone. The change is written the way a device writes it (the entry gone, a removal on
+        record, the revision moved), so the person's phone reads it and the removal holds. Ids that
+        match no routine are ignored. A teacher cannot do this to an admin's profile, the owner as a
+        student included (403); archiving is the way there. Audited as `admin.user.routines.delete`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, routines]
+              properties:
+                id: { type: string, description: The user id. }
+                routines: { type: array, minItems: 1, maxItems: 200, items: { type: string }, description: Routine ids. }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  removed: { type: integer }
+        '400':
+          description: 'routines is not 1 to 200 ids.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or not one of yours.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/routines/archive:
+    post:
+      tags: [admin]
+      operationId: adminUserRoutinesArchive
+      summary: 'Admin: archive or restore routines of a student'
+      description: |
+        Puts routines aside for the teacher without touching the student's record: they stay in the
+        plan, the drill-down marks them `archived: true`, until restored with `archived: false`. Ids that match no workout are
+        ignored. Audited as `admin.user.routines.archive` / `.restore`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, routines, archived]
+              properties:
+                id: { type: string, description: The user id. }
+                routines: { type: array, minItems: 1, maxItems: 200, items: { type: string }, description: Routine ids. }
+                archived: { type: boolean }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  changed: { type: integer }
+        '400':
+          description: 'routines is not 1 to 200 ids, or archived is not a boolean.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or not one of yours.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
   /api/admin/user/disable:
     post:
       tags: [admin]
