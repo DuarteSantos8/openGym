@@ -120,6 +120,10 @@ export function strictSchema(node) {
   const out = {};
   for (const key of Object.keys(node)) out[key] = strictSchema(node[key]);
   const type = out.type;
+  // Only added when the node has none: a schema that already says `additionalProperties` (schemas.js
+  // states it on `week`, where the keys are the data) keeps exactly what it says, and a second
+  // pass over an already-strict copy is the same object again — strictSchema(strictSchema(x)) is
+  // strictSchema(x), so the retry cannot nest two different answers.
   if ((type === 'object' || (Array.isArray(type) && type.includes('object'))) && !('additionalProperties' in out)) {
     out.additionalProperties = false;
   }

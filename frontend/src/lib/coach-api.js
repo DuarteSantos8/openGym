@@ -221,6 +221,11 @@ export const JOB_ERRORS = {
   get auth() { return t('The Coach couldn’t sign in to its provider. The instance owner needs to check its setup.') },
   get missing() { return t('The Coach isn’t installed properly on this instance.') },
   get provider() { return t('The Coach couldn’t run. The instance owner needs to check its setup.') },
+  // The causes api/coach/core/failure.js sorts a provider failure into, each with its own fix.
+  get quota() { return t('The Coach hit its AI provider’s limit. Try again later, or the instance owner needs to check the plan or key.') },
+  get schema() { return t('The Coach’s AI provider rejected the request format. The instance owner needs to try another model.') },
+  get outage() { return t('The Coach’s AI provider is having an outage. Try again in a little while.') },
+  get unreachable() { return t('The Coach couldn’t reach its AI provider. The instance owner needs to check the endpoint and the network.') },
   get unusable() { return t('The Coach answered with something the app couldn’t use.') },
   get restart() { return t('The server restarted while the Coach was thinking.') },
   get nostate() { return t('The Coach couldn’t read your training data.') },
@@ -242,10 +247,26 @@ export const BYOK_ERRORS = {
   get internal() { return t('Something went wrong on this phone.') }
 }
 
-/** The line the person sees for a failed job — with the reason attached where they can act on it. */
-export function jobErrorText(cls, detail) {
+// The classes that mean the provider call itself failed, as opposed to the app or the server.
+// A phone with its own key has one line for all of them ("Your AI provider couldn't answer.")
+// and the provider's own words attached under it, which is the part its operator can act on.
+const PROVIDER_CLASSES = new Set(['auth', 'quota', 'schema', 'outage', 'unreachable', 'timeout', 'missing', 'provider'])
+
+/** The line the person sees for a failed job — with the reason attached where they can act on it.
+ *
+ *  `serverText` is the API's own short line for a failure class this build has no translated line
+ *  for. The server sorts a provider failure by cause now (quota, schema, outage, unreachable), and
+ *  a class the app has never heard of used to fall back on "Something went wrong on the server.",
+ *  which is both untrue and useless. The app's own line still wins wherever there is one, so a
+ *  translated build keeps translating; the server's English is only the last resort.
+ */
+export function jobErrorText(cls, detail, serverText) {
   const own = LOCAL()
-  const base = (own && BYOK_ERRORS[cls]) || JOB_ERRORS[cls] || (own ? BYOK_ERRORS.internal : JOB_ERRORS.internal)
+  // On a phone with its own key the instance-owner lines for the provider causes would point at
+  // somebody who isn't there: the provider line plus the provider's own words says it better.
+  const base = own
+    ? (BYOK_ERRORS[cls] || (PROVIDER_CLASSES.has(cls) && !['timeout', 'missing'].includes(cls) ? BYOK_ERRORS.provider : JOB_ERRORS[cls]) || BYOK_ERRORS.internal)
+    : (JOB_ERRORS[cls] || serverText || JOB_ERRORS.internal)
   const why = own && detail ? String(detail).trim().slice(0, 300) : ''
   return why ? `${base}\n${why}` : base
 }

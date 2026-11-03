@@ -18,7 +18,7 @@ const { attemptOnce } = await import('../coach/core/pipeline.js');
 const { HTTP_PROVIDERS, validateBaseUrl, validateHeaders, isPrivateHost, phoneMayCall } = await import('../coach/core/providers.js');
 const { modelSubstitute } = await import('../coach/core/adapters/http.js');
 const { SYSTEM_PROMPT } = await import('../coach/core/system-prompt.js');
-const { REVIEW_SCHEMA } = await import('../coach/core/schemas.js');
+const { REVIEW_SCHEMA, CREATE_SCHEMA } = await import('../coach/core/schemas.js');
 
 /** A fetch that records what it was asked and answers from a script. Like the real one, it
  *  refuses an already-aborted signal without putting anything on the wire. */
@@ -92,6 +92,35 @@ test('Gemini: generateContent with the key as a header — never ?key= — and J
   assert.equal(c.body.generationConfig.responseMimeType, 'application/json');
   assert.equal(c.body.systemInstruction.parts[0].text, SYSTEM_PROMPT);
   assert.equal(c.body.contents[0].parts[0].text, 'P');
+});
+
+test('Gemini: a schema its subset can express travels as responseSchema, minus the keywords it 400s on', async () => {
+  const f = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  const r = await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', schema: CREATE_SCHEMA, fetch: f });
+  assert.equal(r.code, 0);
+  const gen = f.calls[0].body.generationConfig;
+  assert.ok(gen.responseSchema, 'the create shape is expressible in Gemini\'s subset');
+  assert.equal(gen.responseSchema.properties.week.required.length, 7);
+  // The measured 400: `Unknown name "maxItems" at generation_config.response_schema…`.
+  assert.equal(JSON.stringify(f.calls[0].body).includes('maxItems'), false);
+  assert.equal(JSON.stringify(f.calls[0].body).includes('additionalProperties'), false);
+});
+
+test('Gemini: a schema it cannot express (review\'s union types) is not sent at all', async () => {
+  const f = fakeFetch([ok({ candidates: [{ content: { parts: [{ text: ANSWER }] }, finishReason: 'STOP' }] })]);
+  await gemini.invoke({ cfg: {}, prompt: 'P', env, model: 'gemini-z', schema: REVIEW_SCHEMA, fetch: f });
+  const gen = f.calls[0].body.generationConfig;
+  assert.equal('responseSchema' in gen, false);
+  assert.equal(gen.responseMimeType, 'application/json');
+});
+
+test('OpenAI: the schema goes out exactly as schemas.js states it — the Gemini copy is Gemini\'s only', async () => {
+  const f = fakeFetch([ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  await openai.invoke({ cfg: {}, prompt: 'P', env, model: 'gpt-x', schema: CREATE_SCHEMA, fetch: f });
+  const sent = f.calls[0].body.response_format.json_schema.schema;
+  assert.equal(sent.properties.routines.maxItems, 7);
+  assert.equal(sent.properties.week.additionalProperties, false);
+  assert.equal(sent.properties.week.required.length, 7);
 });
 
 test('compatible: the configured base URL, max_tokens, and no Authorization header when there is no key', async () => {
@@ -234,6 +263,33 @@ test('compatible: a schema the provider cannot serve, wrapped by OpenRouter, is 
   assert.equal(f.calls.length, 2);
   assert.equal(f.calls[0].body.response_format.type, 'json_schema');
   assert.deepEqual(f.calls[1].body.response_format, { type: 'json_object' });
+});
+
+// MiniMax's chat endpoint refuses a schema with a union type (["number","string"]) without ever
+// saying "schema": the only words are "invalid params" and a type mismatch at some offset.
+test('compatible: MiniMax refusing a union type in the schema is retried once in plain JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: 'invalid params, Mismatch type string with value array "at index 19932: mismatched type with value"' } } }
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const schema = { type: 'object', properties: { after: { type: ['number', 'string'] } } };
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema, env: {}, model: 'MiniMax-M2', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.deepEqual(f.calls[1].body.response_format, { type: 'json_object' });
+});
+
+test('compatible: an "invalid params" 400 that is not a type mismatch keeps the JSON mode', async () => {
+  const f = fakeFetch(n => n === 1
+    ? { status: 400, body: { error: { message: 'invalid params, temperature out of range' } } }
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const schema = { type: 'object', properties: { a: { type: 'string' } } };
+  // Another model name: what the test above learnt for MiniMax-M2 is remembered per model.
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema, env: {}, model: 'MiniMax-M2-temp', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  // The temperature rung of the compatibility ladder, not the JSON-mode one.
+  assert.equal(f.calls[1].body.response_format.type, 'json_schema');
+  assert.ok(!('temperature' in f.calls[1].body));
 });
 
 test('a provider error wrapped by OpenRouter reaches stderr in the provider’s own words', async () => {
@@ -399,9 +455,9 @@ test('a missing key is "missing", like an absent CLI — no request is made', as
   assert.equal(cls.errorClass, 'missing');
 });
 
-test('401 and 403 reach the pipeline as "auth"; other statuses as "provider"', async () => {
+test('a failed status reaches the pipeline as its class: auth, quota or outage', async () => {
   const payload = { plan: { routines: [], week: {} } };
-  for (const [status, expect] of [[401, 'auth'], [403, 'auth'], [429, 'provider'], [500, 'provider']]) {
+  for (const [status, expect] of [[401, 'auth'], [403, 'auth'], [429, 'quota'], [500, 'outage'], [503, 'outage']]) {
     const f = fakeFetch([{ status, body: { error: { message: 'nope' } } }]);
     const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f, retryDelayMs: 0 });
     assert.equal(r.code, 1);
@@ -645,4 +701,30 @@ test('validateHeaders: small maps pass, framing names and junk do not', () => {
   assert.equal(validateHeaders([['a', 'b']]).ok, false);
   const many = {}; for (let i = 0; i < 9; i++) many['x-h-' + i] = 'v';
   assert.equal(validateHeaders(many).ok, false);
+});
+
+// #973: OpenRouter holds a slow non-streamed call open with whitespace, so a refusal from the
+// model behind it arrives as "200 OK" with { error } and no choices. It is the 400 it names.
+test('compatible: an error in a 200 body runs the fallbacks the status it names would', async () => {
+  const f = fakeFetch(n => n === 1
+    ? ok({ error: { message: 'Schema is too complex.', code: 400, metadata: { error_type: 'invalid_request' } } })
+    : ok({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }));
+  const r = await compatible.invoke({ cfg: cfgCompat, prompt: 'P', schema: CREATE_SCHEMA, env: {}, model: 'anthropic/claude-sonnet-973', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(f.calls[0].body.response_format.type, 'json_schema');
+  assert.deepEqual(f.calls.at(-1).body.response_format, { type: 'json_object' });
+});
+
+test('an error in a 200 body with no code reads as a 502 in the provider’s own words', async () => {
+  const f = fakeFetch([ok({ error: { message: 'upstream went away' } })]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f, retryDelayMs: 0 });
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /^502 upstream went away/);
+  assert.doesNotMatch(r.stderr, /no choices/);
+});
+
+test('a normal answer that happens to carry an error field next to its choices is still the answer', async () => {
+  const f = fakeFetch([ok({ error: null, choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
+  const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
+  assert.equal(r.code, 0, r.stderr);
 });

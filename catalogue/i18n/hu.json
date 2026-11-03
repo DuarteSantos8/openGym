@@ -8920,14 +8920,7 @@
     ]
   },
   "3221": {
-    "name": "féltérdhajlítás",
-    "instructions": [
-      "Állj vállszélességű terpeszbe.",
-      "Hajlítsd be a térdedet, és ereszkedj le, mintha egy székre ülnél le.",
-      "Tartsd fent a mellkasodat, és a súlyod a sarkadon legyen.",
-      "Tarts egy rövid szünetet a mozdulat alján, majd a sarkadon keresztül nyomd magad vissza a kiindulási helyzetbe.",
-      "Ismételd a kívánt ismétlésszámban."
-    ]
+    "name": "féltérdhajlítás"
   },
   "3222": {
     "name": "félguggolásos ugrás",

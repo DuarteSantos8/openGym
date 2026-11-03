@@ -44,6 +44,9 @@ public class MainActivity extends BridgeActivity {
         // Settings → Screen orientation (#821), before the first frame: no turn on the way in.
         OrientationPlugin.applySaved(this);
         super.onCreate(savedInstanceState);
+        // After super: BridgeActivity swaps the splash theme for the app's own there, and the
+        // overlay has to go on top of that one (AccentTheme.java, #980).
+        AccentTheme.apply(this);
         passSystemBarsToPage();
     }
 

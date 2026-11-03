@@ -45,6 +45,56 @@ final class RestTone {
         return render(classic ? "classic" : "chime");
     }
 
+    /**
+     * A sound of the user's own (v1.4.5, lib/user-sounds.js): "u:" and the sha-256 of its file,
+     * which the page keeps in the app's media folder (lib/media-store-fs.js) as a 16-bit mono WAV
+     * at RATE (lib/sound-ingest.js wrote it). Null for anything else.
+     */
+    static String userHash(String kind) {
+        return kind != null && kind.matches("u:[0-9a-f]{64}") ? kind.substring(2) : null;
+    }
+
+    /** The samples of a WAV the page wrote: 16-bit PCM, mono, RATE. Null for any other file. */
+    static short[] fromWav(byte[] b) {
+        if (b == null || b.length < 44) return null;
+        java.nio.ByteBuffer bb = java.nio.ByteBuffer.wrap(b).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        if (bb.getInt(0) != 0x46464952 || bb.getInt(8) != 0x45564157) return null;   // "RIFF", "WAVE"
+        int pos = 12;
+        boolean fmtOk = false;
+        while (pos + 8 <= b.length) {
+            int id = bb.getInt(pos), size = bb.getInt(pos + 4);
+            if (size < 0 || pos + 8 + (long) size > b.length) return null;
+            if (id == 0x20746d66) {   // "fmt "
+                fmtOk = size >= 16 && bb.getShort(pos + 8) == 1 && bb.getShort(pos + 10) == 1
+                        && bb.getInt(pos + 12) == RATE && bb.getShort(pos + 22) == 16;
+                if (!fmtOk) return null;
+            } else if (id == 0x61746164 && fmtOk) {   // "data"
+                short[] out = new short[size / 2];
+                for (int i = 0; i < out.length; i++) out[i] = bb.getShort(pos + 8 + i * 2);
+                return out;
+            }
+            pos += 8 + size + (size & 1);
+        }
+        return null;
+    }
+
+    /** A sound of the user's own from the app's media folder, with the tail; null when it cannot be read. */
+    static short[] renderUser(java.io.File filesDir, String kind) {
+        String hash = userHash(kind);
+        if (hash == null || filesDir == null) return null;
+        java.io.File f = new java.io.File(new java.io.File(filesDir, "opengym-media"), hash + ".wav");
+        if (!f.isFile() || f.length() > 4L * 1024 * 1024) return null;
+        try (java.io.FileInputStream in = new java.io.FileInputStream(f)) {
+            byte[] b = new byte[(int) f.length()];
+            int off = 0;
+            while (off < b.length) { int n = in.read(b, off, b.length - off); if (n < 0) break; off += n; }
+            short[] s = fromWav(b);
+            return s == null ? null : withTail(s);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /** The sound named `kind`, with its silent tail; a name it does not know plays the chime. */
     static short[] render(String kind) {
         String k = kind == null ? "chime" : kind;

@@ -309,7 +309,7 @@ describe('AdminCoach — the connection test', () => {
     expect(host.textContent).toContain('Asking the provider…')
     await act(async () => { release(); await new Promise(r => setTimeout(r, 0)) })
     expect(host.textContent).toContain('Passed')
-    expect(mocks.toast).toHaveBeenCalledWith('Coach test passed ✅')
+    expect(mocks.toast).toHaveBeenCalledWith('Coach test passed')
   })
 
   it('a provider refusal keeps its own reason on screen, where the toast cannot outrun it', async () => {
@@ -583,7 +583,7 @@ describe('AdminCoach — Claude Code setup token sheet', () => {
     await openToken()
     await blurWith(sheetFields()[0], 'sk-ant-oat-secret')
     await tap(sheetBtn('Save token'))
-    expect(mocks.toast).toHaveBeenLastCalledWith('Connected ✅')
+    expect(mocks.toast).toHaveBeenLastCalledWith('Connected')
   })
 
   // The sheet clears `busy` only by going away: the success path closes instead of resetting it.
@@ -620,7 +620,7 @@ describe('AdminCoach — API key sheet', () => {
     await openKey()
     await blurWith(sheetFields()[0], 'sk-good')
     await tap(sheetBtn('Save key'))
-    expect(mocks.toast).toHaveBeenLastCalledWith('Key saved ✅')
+    expect(mocks.toast).toHaveBeenLastCalledWith('Key saved and tested')
   })
 
   it('a refused key keeps the sheet open and the key in the box', async () => {

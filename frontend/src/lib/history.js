@@ -227,13 +227,28 @@ export function defaultConfig(id, mode) {
   if (m === 'time') return { sets: 3, sec: 45, weight: 0, mode: 'time', ...bw }
   return { sets: 3, reps: 10, weight: 0, mode: 'reps', ...bw }
 }
+// How `id` was logged last time, for the next time it is picked: `time` when its work sets were
+// all timed holds (no reps, a time), `side` when they were all per side. Read from the sets, not
+// the settings, so an imported history counts too. Both false with no history, or for cardio.
+export function lastLoggedShape(S, id) {
+  // lastEntryFor keeps the done work sets only.
+  const work = (S && id && !isCardio(id) ? lastEntryFor(S, id)?.sets : null) || []
+  if (!work.length) return { time: false, side: false }
+  return {
+    time: work.every(s => !(s.r > 0)) && work.some(s => s.sec > 0),
+    side: work.every(isSideSet),
+  }
+}
 // What an exercise picked from the library starts with: `defaultConfig`, and per side for a
 // one-arm or one-leg exercise, at ten reps a side (per-side reps are both sides' total). Kept out
 // of `defaultConfig` itself, which is also spread under saved targets: a lift switched off per
-// side is stored without the flag, and must not get it back.
-export function pickedExerciseConfig(id, mode) {
-  const cfg = defaultConfig(id, mode)
-  if (!isOneLimb(id) || !('mode' in cfg)) return cfg
+// side is stored without the flag, and must not get it back. With the profile's state `S`, an
+// exercise also starts the way it was logged last time (`lastLoggedShape`): a timed hold, per
+// side, or both, unless `mode` names the mode.
+export function pickedExerciseConfig(id, mode, S) {
+  const last = lastLoggedShape(S, id)
+  const cfg = defaultConfig(id, mode || (last.time ? 'time' : undefined))
+  if (!(isOneLimb(id) || last.side) || !('mode' in cfg)) return cfg
   return { ...cfg, side: true, ...(cfg.mode === 'reps' ? { reps: 20 } : {}) }
 }
 // A double-progression range is stored as its top (`reps`) and its bottom (`repsMin`), and
@@ -1043,7 +1058,8 @@ export function cascadeWeight(rows, from, value, side, backoffStep = 0) {
 // list of dumbbells the profile owns (lib/dumbbells.js ownedWeightsFor, issue #376) — the
 // heaviest bell at or under it.
 // A function is the gym's own plates (plates.js dropGrid), the heaviest load at or under `x`.
-const rungDown = (x, step) => (typeof step === 'function' ? step(x) : Array.isArray(step) ? ownedFloor(step, x) : Math.floor(x / step) * step)
+// 1e-9 and the rounding: with a 0.1 step, 52.3 / 0.1 is 522.999… and 3 × 0.1 is 0.30000000000000004.
+const rungDown = (x, step) => (typeof step === 'function' ? step(x) : Array.isArray(step) ? ownedFloor(step, x) : Math.round(Math.floor(x / step + 1e-9) * step * 1000) / 1000)
 
 // An assistance machine (exercises.js isAssisted) ramps from the other side: the stack carries
 // part of your body weight, so less load is harder, and halving it made the warm-up harder than
@@ -1056,7 +1072,7 @@ function assistedRung(from, to, step) {
   if (!(top > to)) return to
   const x = to + (top - to) / 2
   if (Array.isArray(step) || typeof step === 'function') return x
-  return Math.max(to, Math.ceil(x / step - 1e-9) * step)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
+  return Math.max(to, Math.round(Math.ceil(x / step - 1e-9) * step * 1000) / 1000)   // 1e-9: 37.5 / 2.5 must stay 15, not 16
 }
 
 // `keep` says which rows stay as they are: a logged one always (rewriting performed work is data

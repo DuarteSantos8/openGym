@@ -236,7 +236,8 @@ describe('found in review', () => {
 
 describe('limits and the trail a write leaves', () => {
   beforeEach(async () => { api = await stubApi(DOC()) })
-  const day = n => { const d = new Date(Date.now() - n * 86400000); return { ...CURLS, start: '07:00', date: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') } }
+  // Calendar days back, at noon: n × 24 h lands on the same date twice across a DST change.
+  const day = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return { ...CURLS, start: '07:00', date: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') } }
 
   test('a client looping on log_workout is stopped after WRITE_LIMIT saves, before it even reads the profile', async () => {
     for (let i = 1; i <= WRITE_LIMIT; i++) expect((await call(day(i))).logged).toBe(true)

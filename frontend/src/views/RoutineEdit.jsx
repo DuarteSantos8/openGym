@@ -434,7 +434,7 @@ export default function RoutineEdit() {
 
   const addExercise = () => exercisePicker((ex, quick) => {
     if (quick) {
-      edit(x => x.push({ id: ex.id, ...pickedExerciseConfig(ex.id) }))
+      edit(x => x.push({ id: ex.id, ...pickedExerciseConfig(ex.id, undefined, useStore.getState().S) }))
       toast(t('“{0}” added to {1}', exerciseNameText(ex), r.name))
     } else {
       exConfigSheet(ex, null, cfg => edit(x => { x.push({ id: ex.id, ...cfg }) }), null, r, null, null, undefined, { backups: true })

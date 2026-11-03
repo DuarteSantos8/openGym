@@ -51,7 +51,8 @@ export function buildCues(cues) {
 export function buildRestAlert({ at, title, countdownTitle, totalSec, accent, sound = true, classic = false, tone = null, vibrate = true, alarmBuzz = false, cues = null, countdown = true, now = Date.now() } = {}) {
   if (typeof at !== 'number' || !(at > now)) return null
   // Settings → Sound (#306): one of lib/sound.js REST_SOUNDS; without one, `classic` decides, as before.
-  const kind = Object.hasOwn(REST_SOUNDS, tone) ? tone : classic === true ? 'classic' : 'chime'
+  // 'u:<hash>': a sound of one's own (lib/user-sounds.js), which the native side plays from its file.
+  const kind = Object.hasOwn(REST_SOUNDS, tone) || /^u:[0-9a-f]{64}$/.test(tone || '') ? tone : classic === true ? 'classic' : 'chime'
   const totalMs = Math.max(1000, Math.round((totalSec > 0 ? totalSec : (at - now) / 1000) * 1000))
   const colors = accentColors(accent)
   return {

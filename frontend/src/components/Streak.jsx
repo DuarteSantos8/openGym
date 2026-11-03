@@ -20,7 +20,7 @@ import { SeasonDeco } from './Seasonal.jsx'
  */
 export function StreakFlame ({ className = '', style, lit = true }) {
   const id = 'fl' + useId().replace(/[^a-zA-Z0-9]/g, '')
-  return <svg className={'flame' + (lit ? ' lit' : ' out') + (className ? ' ' + className : '')} style={style} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">
+  return <svg className={'flame' + (lit ? ' lit glyph-svg' : ' out') + (className ? ' ' + className : '')} style={style} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id={id + 'o'} x1="0" y1="1" x2="0" y2="0">
         <stop offset="0" className="flame-s1" />
@@ -38,6 +38,7 @@ export function StreakFlame ({ className = '', style, lit = true }) {
     <g className="flame-i">
       <path fill={`url(#${id}i)`} d="M12.1 22c-2.1 0-3.6-1.4-3.6-3.3 0-1.8 1-3 2.2-4.1.1 1 .6 1.7 1.2 2-.1-1.8.6-3.3 1.9-4.4.1 1.6.8 2.5 1.5 3.4.6.8 1 1.6 1 2.8 0 2.2-1.7 3.6-4.2 3.6Z" />
     </g>
+    {lit && svgEmoji('🔥')}
   </svg>
 }
 
@@ -47,8 +48,15 @@ export const TIERS = ['bronze', 'silver', 'gold', 'platinum', 'legend']
 
 /** A medal on its ribbon, coloured by tier (index.css .medal-*), or `locked` for one still to earn.
     Decorative: the row it sits in says what it is. */
+// The emoji a medal is with Settings → Icons on Emoji (components/Glyph.jsx: the drawing hides and
+// the emoji, drawn in the same box, shows). One still to earn stays drawn.
+const MEDAL_EMOJI = { bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '🏅', legend: '🏆' }
+// The emoji inside an svg of ours, in its 24×24 box, shown only with emoji chosen (index.css).
+const svgEmoji = e => <text className="glyph-e" x="12" y="19.5" textAnchor="middle" fontSize="19">{e}</text>
+
 export function Medal ({ tier = 'gold', className = '' }) {
-  return <svg className={'medal medal-' + tier + (className ? ' ' + className : '')} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">
+  const emoji = MEDAL_EMOJI[tier]
+  return <svg className={'medal medal-' + tier + (emoji ? ' glyph-svg' : '') + (className ? ' ' + className : '')} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">
     {/* Two straps crossing into a V: the right one is the left one mirrored, drawn first and a shade
         darker so it reads as the strap behind (it used to be a lopsided five-cornered patch). */}
     <path className="medal-rib medal-rib-back" d="M17 2.4h-3.7l-2.5 6.4 3.4 1.7Z" />
@@ -56,6 +64,7 @@ export function Medal ({ tier = 'gold', className = '' }) {
     <circle className="medal-disc" cx="12" cy="15.2" r="6.3" />
     <circle className="medal-ring" cx="12" cy="15.2" r="4.3" />
     <path className="medal-star" d="m12 12.6.8 1.6 1.8.3-1.3 1.2.3 1.8-1.6-.8-1.6.8.3-1.8-1.3-1.2 1.8-.3Z" />
+    {emoji && svgEmoji(emoji)}
   </svg>
 }
 
@@ -78,7 +87,7 @@ export function Burst () {
 export function Freezes ({ n, className = '' }) {
   const label = t('Streak freezes: {0} of {1}', n, FREEZE_MAX)
   return <span className={'streak-freezes ' + className} role="img" aria-label={label} title={label}>
-    {Array.from({ length: FREEZE_MAX }, (_, i) => <span key={i} className={'frz' + (i < n ? ' on' : '')}><Icon name="snowflake" className={i < n ? 'on' : ''} /></span>)}
+    {Array.from({ length: FREEZE_MAX }, (_, i) => <span key={i} className={'frz' + (i < n ? ' on' : '') + (i < n ? ' glyph' : '')}><Icon name="snowflake" className={i < n ? 'on' : ''} />{i < n && <span className="glyph-e">❄️</span>}</span>)}
   </span>
 }
 

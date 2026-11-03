@@ -40,10 +40,11 @@ import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberFie
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
 import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
+import GymHiddenLine from './components/GymHiddenLine.jsx'
 import ExerciseViewToggle from './components/ExerciseViewToggle.jsx'
 import { sameMuscleFirst, swapMuscleOf } from './lib/similar-exercises.js'
 import { suggestedSubstitutes, relatedSubstitutes } from './lib/exercise-substitutes.js'
-import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder } from './lib/muscles.js'
+import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle } from './lib/muscles.js'
 import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
 import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
@@ -59,6 +60,7 @@ import { StrengthLevelBlock } from './components/StrengthLevel.jsx'
 import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep, parseWeightList } from './lib/dumbbells.js'
+import { nextStep } from './lib/weight-step.js'
 import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { isBackoff, backoffWeights } from './lib/backoff.js'
@@ -1326,28 +1328,71 @@ function OneRM({ ex }) {
 
 // A muscle the catalogue credits with nothing (a bench press's biceps, #359) is not one it trains,
 // so it is not shown as a tag either; "By muscle" already leaves the exercise out.
-const trainedBy = ex => { const weights = muscleWeightsOf(ex); return slug => weights[slug] !== 0 }
-// The detail page's tags: body part, main muscles, equipment, then up to three helpers. A word
-// says once what it says: the body part "Chest" and the main muscle "Chest" of a bench press
-// were two tags (QA 10-06), and a helper never repeats a main muscle.
+const trainedBy = ex => {
+  const weights = muscleWeightsOf(ex)
+  return name => {
+    const slug = canonicalMuscle(name)
+    return slug != null && (weights[slug] || 0) !== 0
+  }
+}
+// The detail page's tags, in order: equipment, body part, then every involved muscle,
+// primaries first. A word says once what it says: the body part "Chest" and the main muscle
+// "Chest" of a bench press were two tags (QA 10-06), and a helper never repeats a main muscle.
+// Each involved muscle's share of the exercise's total stimulus: the weights are
+// normalised so the involved muscles add up to 100 %.
 export function detailTags(ex) {
+  const weights = muscleWeightsOf(ex)
+  const total = Object.values(weights).reduce((sum, w) => sum + ((w || 0) > 0 ? (w || 0) : 0), 0)
+  const pctOf = slug => total > 0 ? Math.round(((weights[slug] || 0) / total * 100)) + '%' : '0%'
   const seen = new Set()
   const out = []
-  const add = (label, extra) => {
-    const k = String(label || '').trim().toLocaleLowerCase()
+  // `key` lets a label that carries extra text (a percentage) still dedupe on the
+  // underlying word, so "Chest 100 %" and "Chest 40 %" never both appear.
+  const add = (label, extra, key) => {
+    const k = String(key != null ? key : label || '').trim().toLocaleLowerCase()
     if (!k || seen.has(k)) return false
     seen.add(k)
     out.push({ key: out.length, label, ...extra })
     return true
   }
-  add(t(ex.bp), { acc: true })
-  if (ex.bp === 'cardio') add(t(MUSCLE_NAME['cardiovascular system']), { icon: 'figureStrength' })
-  else for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : [])).filter(trainedBy(ex))) add(t(MUSCLE_NAME[s] || s), { icon: 'figureStrength' })
+  // 1) equipment, 2) body part (with the muscle's percentage folded in when the two are the
+  //    same word, like "Chest"/"Chest"), 3) every involved muscle, primaries first.
   add(t(ex.eq), { icon: 'kettlebell' })
-  let helpers = 0
-  for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex))) {
-    if (helpers >= 3) break
-    if (add(t(MUSCLE_NAME[s] || s))) helpers++
+  const bpSlug = canonicalMuscle(ex.bp)
+  const sameWord = bpSlug != null && t(ex.bp).trim().toLocaleLowerCase() === t(MUSCLE_NAME[bpSlug] || bpSlug).trim().toLocaleLowerCase()
+  const bpPct = sameWord && bpSlug && (weights[bpSlug] || 0) !== 0 ? ' ' + pctOf(bpSlug) : ''
+  add(t(ex.bp) + bpPct, { acc: true }, t(ex.bp))
+
+  // One muscle list for the tag limit: primaries then supporting muscles, at most three tags
+  // in total ("Other" counts as one). Three or fewer muscles all get their own tag; more fold
+  // the rest into "Other". Marginal rounding keeps the visible percentages within ±1 of 100.
+  const all = []
+  const pushed = new Set()
+  const push = (raw, primary) => {
+    const slug = canonicalMuscle(raw)
+    if (!slug) return
+    const label = t(MUSCLE_NAME[slug] || slug)
+    const key = label.toLocaleLowerCase()
+    if (pushed.has(key)) return
+    if (!((weights[slug] || 0) > 0)) return
+    pushed.add(key)
+    all.push({ slug, label, primary })
+  }
+  if (ex.bp === 'cardio' && (weights['cardiovascular system'] || 0) > 0) push('cardiovascular system', true)
+  for (const s of (ex.primaries?.length ? ex.primaries : (ex.tg ? [ex.tg] : []))) push(s, true)
+  for (const s of (ex.secondaries?.length ? ex.secondaries : smOf(ex))) push(s, false)
+  const shown = all.length > 3 ? all.slice(0, 2) : all.slice(0, 3)
+  const rest = all.slice(shown.length)
+  for (const m of shown) add(m.label + ' ' + pctOf(m.slug), m.primary ? { icon: 'figureStrength' } : undefined, m.label)
+  if (rest.length) {
+    let restWeight = 0
+    for (const m of rest) restWeight += (weights[m.slug] || 0)
+    const restPct = total > 0 && restWeight > 0 ? Math.round(restWeight / total * 100) : 0
+    if (restPct > 0) {
+      add(t('Other') + ' ' + restPct + '%', {
+        other: rest.map(m => ({ slug: m.slug, label: m.label, pct: pctOf(m.slug) })),
+      })
+    }
   }
   return out
 }
@@ -1363,6 +1408,7 @@ function ExerciseDetail({ ex, close }) {
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
+  const [showOther, setShowOther] = useState(false)
   const flipFav = () => {
     let on = false
     update(s => { on = toggleFav(s, ex.id) })
@@ -1378,7 +1424,18 @@ function ExerciseDetail({ ex, close }) {
     </div>
     <Media ex={ex} />
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
-      {detailTags(ex).map(tg => <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>)}
+      {detailTags(ex).map(tg => {
+        if (tg.other) {
+          if (!showOther) {
+            return <button key={tg.key} type="button" className="tag" onClick={() => setShowOther(true)}>{tg.label}</button>
+          }
+          return [
+            ...tg.other.map((m, i) => <span key={tg.key + '-o-' + i} className="tag dim">{m.label} {m.pct}</span>),
+            <button key={tg.key + '-close'} type="button" className="tag" onClick={() => setShowOther(false)} aria-label={t('Close')}>×</button>,
+          ]
+        }
+        return <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>
+      })}
     </div>
     <ExerciseAliasesEditor key={ex.id} ex={ex} />
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
@@ -1800,6 +1857,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups }) {
   // narrowed away is ignored for this view, not forgotten.
   const { opts: catOpts, on: catOn, list: base } = byCategory(inPart, cat)
   const eqFiltered = (profile && !showAll) ? base.filter(e => exAvailable(gymS, e)) : base
+  // What a search found that the gym leaves out, counted under the results.
+  const gymHidden = q.trim() ? base.length - eqFiltered.length : 0
   const eqOpts = equipmentOf(eqFiltered)
   // Drop the equipment filter if the search narrowed it away, so you never hit a dead end.
   const eqOn = eqOpts.includes(eq) ? eq : ''
@@ -1922,6 +1981,7 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups }) {
       {f.length === 0 && !special && <div className="empty">{t('No matches. Try another search or equipment profile.')}</div>}
       {f.length === 0 && bp === '★' && <div className="empty">{t('Nothing picked yet. Add some exercises and they’ll show up here.')}</div>}
       {f.length === 0 && bp === '☆' && <div className="empty">{t('No favourites yet. Tap the star on an exercise to add one.')}</div>}
+      {remaining.length <= shown && <GymHiddenLine count={gymHidden} profile={profile} onShowAll={() => setShowAll(true)} />}
       {similar.length > 0 && <h4 className="sec similar-label">{f.length ? t('Similar exercises') : t('No exact match. These come close:')}</h4>}
       {similar.map(pickRow)}
     </div>
@@ -1951,7 +2011,7 @@ export function swapActiveWorkoutExercise(index) {
       ? backupSlotConfig({ ...plannedConfigOf(cur), id: cur.id }, ex.id, S(), cur.rid, id => !!EXIDX[id])
       : null
   }
-  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, asBackup(ex) || pickedExerciseConfig(ex.id)) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, asBackup(ex), null, t('Use in this workout'), { freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
+  const picker = exercisePicker((ex, quick) => quick ? swapTo(ex, asBackup(ex) || pickedExerciseConfig(ex.id, undefined, S())) : exConfigSheet(ex, null, cfg => swapTo(ex, cfg), null, null, asBackup(ex), null, t('Use in this workout'), { freestyle: (S().routines || []).some(r => r.id === active.entries[index].rid) ? false : 'add' }), { title: t('Swap exercise'), like: active.entries[index].id, backups: active.entries[index].target?.subs })
   function swapTo(ex, cfg) {
     // The picker is a chooser here, not a stack you keep adding from: one swap, then back to
     // the workout. (The add flow deliberately leaves it open.)
@@ -2167,6 +2227,7 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
     {(active !== 'off' || backoff) && (!weightless || climbsRange(active) || active === 'triple') && <div className={'row cfgrow' + ((active === 'double' && epleyEligible) || active === 'triple' ? ' cfgrow-4' : '')} style={{ marginBottom: 18 }}>
       {!weightless && <Stepper label={mode === 'time' ? t('Step (seconds)') : t('Step ({0})', unit)} value={inc}
         step={mode === 'time' ? 5 : 1.25} decimal={mode !== 'time'} invalid={invalid} className={invalid ? 'invalid' : ''}
+        onStep={mode === 'time' ? undefined : (v, _s, dir) => nextStep(v, dir, unit)}
         onChange={v => setC(x => ({ ...x, inc: v }))} />}
       {climbsRange(active) && <>
         {/* The draft stays as typed: normalising on every keystroke turned "12" into 92 (the
@@ -2279,7 +2340,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // or timed like any other (#678). A saved duration/speed plan keeps its cardio form even after
   // the catalogue moved its exercise out of cardio (jumping jacks, #717).
   const speedUnit = speedUnitOf(st)
-  const seedStored = existing || initial || pickedExerciseConfig(ex.id)
+  const seedStored = existing || initial || pickedExerciseConfig(ex.id, undefined, live)
   const seed = viewTarget(live, ex.id, seedStored)
   const cardioEx = isCardio(ex.id) || modeOf({ ...seed, id: ex.id }) === 'cardio'
   const [c, setC] = useState(() => {
@@ -2297,6 +2358,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // in its `mode` (modeOf reads it before the body part).
   const mode = modeOf({ ...c, id: ex.id })
   const cardio = cardioEx && mode === 'cardio'
+  const [showOther, setShowOther] = useState(false)
   // Both default from the dataset and are then whatever the config says — see isBw.
   const bw = !cardio && isBw({ ...c, id: ex.id })
   const perSide = isPerSide(c)
@@ -2438,10 +2500,16 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         metadata name muscles by the map's ids ("forearm", "gluteal"), which only MUSCLE_NAME
         turns into a translatable label. */}
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0 14px' }}>
-      {cardio && <span className="tag acc"><Icon name="figureRun" />{t('Cardio')}</span>}
-      <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span><span className="tag">{t(ex.eq)}</span>
-      {!cardio && (ex.secondaries?.length ? ex.secondaries : smOf(ex)).filter(trainedBy(ex)).slice(0, 3)
-        .map((s, i) => <span key={i} className="tag dim">{t(MUSCLE_NAME[s] || s)}</span>)}
+      {detailTags(ex).map(tg => {
+        if (tg.other) {
+          if (!showOther) return <button key={tg.key} type="button" className="tag" onClick={() => setShowOther(true)}>{tg.label}</button>
+          return [
+            ...tg.other.map((m, i) => <span key={tg.key + '-o-' + i} className="tag dim">{m.label} {m.pct}</span>),
+            <button key={tg.key + '-close'} type="button" className="tag" onClick={() => setShowOther(false)} aria-label={t('Close')}>×</button>,
+          ]
+        }
+        return <span key={tg.key} className={'tag' + (tg.acc ? ' acc' : '')}>{tg.icon && <Icon name={tg.icon} />}{tg.label}</span>
+      })}
     </div>
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     <div style={{ marginBottom: 14 }}>

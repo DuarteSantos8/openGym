@@ -640,7 +640,9 @@ public final class RestAlert {
     }
 
     private static void playSound(Context ctx, String tone) {
-        playClip(ctx, RestTone.render(tone));
+        // A sound of the user's own (RestTone.renderUser), or the chime when its file is gone.
+        short[] own = RestTone.userHash(tone) != null ? RestTone.renderUser(ctx.getFilesDir(), tone) : null;
+        playClip(ctx, own != null ? own : RestTone.render(tone));
     }
 
     /**

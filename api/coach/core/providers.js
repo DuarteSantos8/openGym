@@ -33,6 +33,13 @@ export const HTTP_PROVIDERS = Object.freeze({
     defaultModel: 'gemini-3.8-flash',
     keyPlaceholder: 'AIza… or AQ.…'
   }),
+  minimax: Object.freeze({
+    label: 'MiniMax API', runtime: 'HTTPS', http: true,
+    apiKeyEnv: 'MINIMAX_API_KEY', oauthEnv: null,
+    defaultBase: 'https://api.minimax.io/v1',
+    defaultModel: 'MiniMax-M3.1-Flash',
+    keyPlaceholder: 'sk-…'
+  }),
   // Ollama, LM Studio, vLLM, OpenRouter, a corporate gateway: anything that serves the
   // Chat Completions shape. The base URL is the whole configuration; a key is optional
   // because a model on your own LAN usually has none.

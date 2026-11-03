@@ -15,7 +15,9 @@ import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
 import { onGymReminderOpen } from './lib/gym-reminder.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { workoutVolume } from './lib/history.js'
-import { setSystemBarsLight } from './lib/system-bars.js'
+import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
+import { applyProfileSteps, profileStep } from './lib/weight-step.js'
+import { stepPlaces } from './lib/progression.js'
 import { applyOrientation } from './lib/orientation.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
@@ -27,6 +29,7 @@ import { startPhoneWorkout } from './lib/phone-workout.js'
 import { stampWorkout } from './lib/sync-merge.js'
 import { logWeighIn } from './lib/bodyweight.js'
 import { startWidgetSync } from './lib/widgets.js'
+import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync } from './lib/live-activity.js'
@@ -121,7 +124,7 @@ function applyPrefs(theme, accent) {
   applyAccent(de, accent, de.dataset.theme)
   const meta = document.querySelector('meta[name="theme-color"]')
   if (meta) meta.content = de.dataset.theme === 'light' ? '#f2f2f7' : '#000000'
-  if (MOBILE) setSystemBarsLight(de.dataset.theme === 'light')
+  if (MOBILE) { setSystemBarsLight(de.dataset.theme === 'light'); setSystemAccent(accent) }
 }
 
 function Shell() {
@@ -167,6 +170,15 @@ function Shell() {
   // (Settings → Look & Home → Seasonal themes); the saved accent itself is never touched.
   const accent = seasonAccent(S) || accentValue(S)
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
+  // Settings → Icons: openGym's own or the emoji (components/Glyph.jsx, index.css .glyph).
+  useEffect(() => { document.documentElement.dataset.icons = S.icons === 'emoji' ? 'emoji' : 'opengym' }, [S.icons])
+  // Sounds of one's own (lib/user-sounds.js) are wanted at the end of a rest, maybe with no
+  // network and the screen off: their files come down to this device as soon as they are known,
+  // not when they are first played. A missing one plays the chime meanwhile.
+  useEffect(() => {
+    if (!ready || !Array.isArray(S.sounds) || !S.sounds.length) return
+    import('./lib/user-sounds-files.js').then(m => m.ensureSoundFiles(S)).catch(() => {})
+  }, [ready, S.sounds])
   // 'system' needs to react live if the OS theme flips while the app is open, not just on
   // the next mount — a fixed 'dark'/'light' choice never re-fires this since matchMedia
   // isn't consulted for those.
@@ -183,7 +195,13 @@ function Shell() {
   const lang = effectiveLang(S, config)
   useEffect(() => { setLang(lang, S.enParens?.[baseLang(lang)] ?? true, S.enOnly?.[baseLang(lang)] === true) }, [lang, S.enParens, S.enOnly])
   // Same shape as the language: a module-level display setting, pushed when it changes (#139).
-  useEffect(() => { setWeightDecimals(S.wdec) }, [S.wdec])
+  // The profile's weight step (Settings → Weight step, lib/weight-step.js) stands in for each lift's
+  // default step. Set while the shell renders, before the screens under it work out a step, and
+  // cheap enough to repeat. A step that needs two places (0.25) shows weights with two as well, or
+  // 52.25 would read 52.3.
+  applyProfileSteps(S)
+  const ownStep = profileStep(S)
+  useEffect(() => { setWeightDecimals(ownStep && stepPlaces(ownStep) >= 2 ? 2 : S.wdec) }, [S.wdec, ownStep])
   useEffect(() => { document.documentElement.lang = lang }, [langV, lang])
   // Forward navigation starts at the top; going back lands where you left off.
   // The position is recorded from scroll events rather than read at route
@@ -484,6 +502,8 @@ export default function App() {
     const stops = [], gone = { v: false }
     const keep = fn => { if (gone.v) fn(); else stops.push(fn) }
     startWidgetSync({ useStore }).then(keep).catch(() => {})
+    // Sets logged from the widget while the app was away (lib/widget-logger.js).
+    startWidgetActions({ useStore }).then(keep).catch(() => {})
     startLiveActivitySync({ useStore, useUI }).then(keep).catch(() => {})
     return () => { gone.v = true; stops.forEach(fn => fn()) }
   }, [])

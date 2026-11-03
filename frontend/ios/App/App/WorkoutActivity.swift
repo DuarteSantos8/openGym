@@ -2,6 +2,7 @@ import ActivityKit
 import AppIntents
 import Foundation
 import UserNotifications
+import WidgetKit
 
 /*
  * The running workout's Live Activity: what it carries, and its buttons (Log set, and Next exercise
@@ -269,15 +270,17 @@ struct StopAutoIntent: LiveActivityIntent {
 enum LiveActivityTick {
     static let restRequestId = "opengym.rest"   // RestAlertPlugin.requestId: the page's own replaces it
 
-    static func tick(wid: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date()) async {
+    /// `queue` false: the set was logged on the Home Screen widget, which queued it for the page
+    /// itself (WidgetLogger); the activity only moves on with it.
+    static func tick(wid: String, exId: String, entryIdx: Int, setIdx: Int, now: Date = Date(), queue: Bool = true) async {
         guard let activity = Activity<WorkoutActivityAttributes>.activities.first(where: { $0.attributes.wid == wid }) else { return }
         let state = activity.content.state
         // A button from a state already moved on (two quick taps): that set is ticked already.
         guard let cur = state.cur, cur.exId == exId, cur.entryIdx == entryIdx, cur.setIdx == setIdx else { return }
-        LiveActivityQueue.append([
+        if queue { LiveActivityQueue.append([
             "id": UUID().uuidString, "type": "setDone", "wid": wid, "exId": exId,
             "entryIdx": entryIdx, "setIdx": setIdx, "at": (now.timeIntervalSince1970 * 1000).rounded(),
-        ])
+        ]) }
         var next = state
         next.cur = state.ahead.first
         next.ahead = Array(state.ahead.dropFirst())
@@ -379,5 +382,220 @@ enum LiveActivityTick {
         content.interruptionLevel = .active
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, at.timeIntervalSinceNow), repeats: false)
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: restRequestId, content: content, trigger: trigger))
+    }
+}
+
+// MARK: - logging a set from the Home Screen widget (v1.4.5)
+
+/**
+ * The Home Screen widget's set buttons while a workout runs (lib/widget-logger.js): the snapshot
+ * carries the next sets, each with what − and + walk through (weights already on the exercise's
+ * step or the bells you own, reps with their step, seconds), so nothing here knows about plates or
+ * units. The widget's own copy, { base, pos, wi, r, sec }, lives in the App Group: `base` names the
+ * snapshot it was made from (a new one starts over), `pos` the set shown, the rest the numbers
+ * changed on it. Log set queues { id, type: "setDone", wid, exId, entryIdx, setIdx, w, r, sec, at }
+ * for the page (WidgetBridgePlugin drain/ack) and moves on. Android does the same in WidgetLogger.java.
+ */
+enum WidgetLogger {
+    static let stateKey = "widgetLoggerState"
+    static let eventsKey = "widgetEvents"
+    static let eventsMax = 200
+    static let didChange = Notification.Name("OpenGymWidgetEvent")
+    private static let lock = NSLock()
+
+    /// What the widget shows for the set now.
+    struct Shown: Hashable {
+        var name = ""
+        var line = ""
+        var weight: String?
+        var reps: Int?
+        var seconds: Int?
+        var wLabel = ""
+        var rLabel = ""
+        var secLabel = ""
+        var allDone = false
+        var allDoneText = ""
+        var logSet = "Log set"
+        var less = "Decrease"
+        var more = "Increase"
+    }
+
+    static func logger() -> [String: Any]? {
+        guard let url = OpenGymGroup.container?.appendingPathComponent("widget.json"),
+              let data = try? Data(contentsOf: url),
+              let snap = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let lg = snap["logger"] as? [String: Any], lg["sets"] is [Any] else { return nil }
+        return lg
+    }
+
+    private static func sets(_ lg: [String: Any]) -> [[String: Any]] { (lg["sets"] as? [[String: Any]]) ?? [] }
+
+    private static func base(_ lg: [String: Any]) -> String {
+        "\((lg["wid"] as? String) ?? "")|\((sets(lg).first?["k"] as? String) ?? "")"
+    }
+
+    static func state(for lg: [String: Any], stored: [String: Any]?) -> [String: Any] {
+        let b = base(lg)
+        if let st = stored, (st["base"] as? String) == b { return st }
+        return ["base": b, "pos": 0]
+    }
+
+    private static func int(_ v: Any?) -> Int? { (v as? NSNumber)?.intValue }
+
+    static func current(_ lg: [String: Any], _ st: [String: Any]) -> [String: Any]? {
+        let all = sets(lg)
+        let pos = int(st["pos"]) ?? 0
+        return pos >= 0 && pos < all.count ? all[pos] : nil
+    }
+
+    static func weightIndex(_ set: [String: Any], _ st: [String: Any]) -> Int? {
+        guard let w = set["w"] as? [String: Any], let v = w["v"] as? [Any], !v.isEmpty else { return nil }
+        let i = int(st["wi"]) ?? int(w["i"]) ?? 0
+        return max(0, min(v.count - 1, i))
+    }
+
+    static func reps(_ set: [String: Any], _ st: [String: Any]) -> Int? {
+        guard let r = set["r"] as? [String: Any] else { return nil }
+        return max(0, int(st["r"]) ?? int(r["v"]) ?? 0)
+    }
+
+    static func seconds(_ set: [String: Any], _ st: [String: Any]) -> Int? {
+        guard let s = set["sec"] as? [String: Any] else { return nil }
+        return max(0, int(st["sec"]) ?? int(s["v"]) ?? 0)
+    }
+
+    static func storedState() -> [String: Any]? {
+        guard let data = OpenGymGroup.defaults.data(forKey: stateKey) else { return nil }
+        return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    }
+
+    /// The set the widget shows now, or nil with no workout running (or none for today).
+    static func shown() -> Shown? {
+        guard let lg = logger() else { return nil }
+        let st = state(for: lg, stored: storedState())
+        let labels = (lg["labels"] as? [String: Any]) ?? [:]
+        var out = Shown()
+        out.logSet = (labels["logSet"] as? String) ?? out.logSet
+        out.less = (labels["less"] as? String) ?? out.less
+        out.more = (labels["more"] as? String) ?? out.more
+        guard let set = current(lg, st) else {
+            out.allDone = true
+            out.allDoneText = ((lg["more"] as? Bool) == true ? labels["openApp"] : labels["allDone"]) as? String ?? ""
+            return out
+        }
+        out.name = (set["name"] as? String) ?? ""
+        out.line = (set["line"] as? String) ?? ""
+        if let i = weightIndex(set, st), let t = (set["w"] as? [String: Any])?["t"] as? [String], i < t.count { out.weight = t[i] }
+        out.reps = reps(set, st)
+        out.seconds = seconds(set, st)
+        out.wLabel = (set["wLabel"] as? String) ?? ""
+        out.rLabel = (set["rLabel"] as? String) ?? ""
+        out.secLabel = (set["secLabel"] as? String) ?? ""
+        return out
+    }
+
+    /// One button ("w-", "w+", "r-", "r+", "s-", "s+", "log"). Returns the queued event for Log set.
+    @discardableResult
+    static func press(_ op: String, now: Date = Date()) -> [String: Any]? {
+        lock.lock(); defer { lock.unlock() }
+        guard let lg = logger() else { return nil }
+        var st = state(for: lg, stored: storedState())
+        guard let set = current(lg, st) else { return nil }
+        var event: [String: Any]?
+        switch op {
+        case "w-", "w+":
+            if let i = weightIndex(set, st), let v = (set["w"] as? [String: Any])?["v"] as? [Any] {
+                st["wi"] = max(0, min(v.count - 1, i + (op == "w+" ? 1 : -1)))
+            }
+        case "r-", "r+":
+            if let r = reps(set, st) {
+                let step = max(1, int((set["r"] as? [String: Any])?["step"]) ?? 1)
+                st["r"] = max(0, r + (op == "r+" ? step : -step))
+            }
+        case "s-", "s+":
+            if let s = seconds(set, st) {
+                let step = max(1, int((set["sec"] as? [String: Any])?["step"]) ?? 5)
+                st["sec"] = max(step, s + (op == "s+" ? step : -step))
+            }
+        case "log":
+            var ev: [String: Any] = [
+                "id": UUID().uuidString, "type": "setDone", "src": "widget", "wid": (lg["wid"] as? String) ?? "",
+                "exId": (set["exId"] as? String) ?? "", "entryIdx": int(set["entryIdx"]) ?? 0, "setIdx": int(set["setIdx"]) ?? 0,
+                "at": (now.timeIntervalSince1970 * 1000).rounded(),
+            ]
+            if let i = weightIndex(set, st), let v = (set["w"] as? [String: Any])?["v"] as? [NSNumber], i < v.count { ev["w"] = v[i] }
+            if let r = reps(set, st) { ev["r"] = r }
+            if let s = seconds(set, st) { ev["sec"] = s }
+            var list = events()
+            list.append(ev)
+            if list.count > eventsMax { list.removeFirst(list.count - eventsMax) }
+            writeEvents(list)
+            st["pos"] = (int(st["pos"]) ?? 0) + 1
+            st.removeValue(forKey: "wi")
+            st.removeValue(forKey: "r")
+            st.removeValue(forKey: "sec")
+            event = ev
+        default:
+            break
+        }
+        if let data = try? JSONSerialization.data(withJSONObject: st) { OpenGymGroup.defaults.set(data, forKey: stateKey) }
+        return event
+    }
+
+    static func events() -> [[String: Any]] {
+        guard let data = OpenGymGroup.defaults.data(forKey: eventsKey),
+              let list = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return [] }
+        return list
+    }
+
+    private static func writeEvents(_ list: [[String: Any]]) {
+        if let data = try? JSONSerialization.data(withJSONObject: list) { OpenGymGroup.defaults.set(data, forKey: eventsKey) }
+    }
+
+    static func remove(ids: Set<String>) {
+        lock.lock(); defer { lock.unlock() }
+        writeEvents(events().filter { !ids.contains(($0["id"] as? String) ?? "") })
+    }
+}
+
+/// The widget's − and +: they change the widget's own copy of the set, in the widget extension.
+@available(iOS 17.0, *)
+struct WidgetStepIntent: AppIntent {
+    static let title: LocalizedStringResource = "Change the set"
+    static let isDiscoverable = false
+
+    @Parameter(title: "Button") var op: String
+
+    init() {}
+    init(op: String) { self.op = op }
+
+    func perform() async throws -> some IntentResult {
+        WidgetLogger.press(op)
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
+    }
+}
+
+/**
+ * The widget's Log set. A LiveActivityIntent, so iOS runs it in the app (started in the background
+ * if it has to be): the set is queued for the page, the Live Activity moves on with it, and a page
+ * that is awake applies it at once (WidgetBridgePlugin hears didChange).
+ */
+@available(iOS 17.0, *)
+struct WidgetLogSetIntent: LiveActivityIntent {
+    static let title: LocalizedStringResource = "Log set"
+    static let isDiscoverable = false
+
+    init() {}
+
+    func perform() async throws -> some IntentResult {
+        if let ev = WidgetLogger.press("log") {
+            if let wid = ev["wid"] as? String, let exId = ev["exId"] as? String, let e = ev["entryIdx"] as? Int, let s = ev["setIdx"] as? Int {
+                await LiveActivityTick.tick(wid: wid, exId: exId, entryIdx: e, setIdx: s, queue: false)
+            }
+            NotificationCenter.default.post(name: WidgetLogger.didChange, object: nil)
+        }
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
     }
 }

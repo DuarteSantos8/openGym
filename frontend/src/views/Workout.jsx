@@ -59,6 +59,7 @@ import { markAllSetsDone, sessionHistory } from '../lib/backfill.js'
 import { bindWatchActions, markDiscarded } from '../lib/watch-sync.js'
 import { bestSetFor } from '../lib/exercise-history.js'
 import { bindLiveActions } from '../lib/live-activity.js'
+import { bindWidgetActions } from '../lib/widget-logger.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL, markWarmupEdited } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
@@ -1690,7 +1691,7 @@ function ActiveWorkout() {
     // Freestyle has no routine prescription to apply: show the last target in the config
     // sheet and carry its completed rows forward. A planned session uses its configured
     // target when progression is off, while progression-enabled sessions keep their path.
-    const seed = freestyle ? freestyleConfig(sessionHistory(S), { id: ex.id, ...pickedExerciseConfig(ex.id) }) : null
+    const seed = freestyle ? freestyleConfig(sessionHistory(S), { id: ex.id, ...pickedExerciseConfig(ex.id, undefined, S) }) : null
     const commit = cfg => {
       if (focusMode) focusPointerEpoch.current++
       update(s => {
@@ -1709,7 +1710,7 @@ function ActiveWorkout() {
     // button. Quick-add commits with the same default (or, freestyle, last-session) config
     // the sheet would have opened with; tapping the row still opens that sheet for anyone
     // who wants to set sets/reps first.
-    if (quick) { commit(seed || pickedExerciseConfig(ex.id)); useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
+    if (quick) { commit(seed || pickedExerciseConfig(ex.id, undefined, S)); useUI.getState().toast(t('“{0}” added to {1}', exerciseNameText(ex), routine ? routine.name : t('Freestyle'))) }
     // The confirm names what it changes: this workout, never the routine behind it.
     else exConfigSheet(ex, null, commit, null, routine, seed, null, t('Add to this workout'), { freestyle: freestyle ? 'add' : false })
   })
@@ -2228,6 +2229,16 @@ function ActiveWorkout() {
   // is the rest's start.
   const liveToggleRef = useRef(toggle)
   liveToggleRef.current = toggle
+  // Log set on the Home Screen widget: the same tick, once the widget's numbers are in the row
+  // (lib/widget-logger.js puts them there first).
+  useEffect(() => bindWidgetActions({
+    setDone: (idx, i, { at }) => {
+      const A = useStore.getState().S.active
+      if (!A || A.editingWorkoutId || A.entries?.[idx]?.sets?.[i]?.done) return
+      liveToggleRef.current(idx, i, null, { quiet: true })
+      if (at) mutEntry(idx, en => { const set = en.sets[i]; if (set?.done) set.at = at })
+    },
+  }), [])
   useEffect(() => bindLiveActions({
     setDone: (idx, i, { at }) => {
       const A = useStore.getState().S.active

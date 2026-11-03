@@ -18,6 +18,22 @@ const COPY = {
     dayRoutineSuffix: 'hoje',
     dayBody: 'Está no seu plano. Bora treinar 💪',
   },
+  id: {
+    restTitle: 'Istirahat selesai 💪',
+    restBody: 'Saatnya set berikutnya.',
+    testBody: 'Notifikasi uji coba ✅ Begini tampilan notifikasinya.',
+    dayFallbackTitle: 'Jadwal latihan hari ini',
+    dayRoutineSuffix: 'hari ini',
+    dayBody: 'Sudah ada di jadwalmu. Ayo mulai latihan 💪',
+  },
+  cs: {
+    restTitle: 'Pauza skončila 💪',
+    restBody: 'Čas na další sérii.',
+    testBody: 'Testovací oznámení ✅ Takhle vypadají upozornění.',
+    dayFallbackTitle: 'Dnes máš v plánu trénink',
+    dayRoutineSuffix: 'dnes',
+    dayBody: 'Je to v plánu. Jdeme na to 💪',
+  },
 };
 
 const copyFor = lang => COPY[lang] || COPY.en;

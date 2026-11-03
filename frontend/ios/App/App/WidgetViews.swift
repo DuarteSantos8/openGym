@@ -108,6 +108,9 @@ struct WidgetModel {
     var weekPlanned: Int { snap?.week?.planned ?? 0 }
     var streak: Int { snap?.streak ?? 0 }
     var accent: Color { Color(hex: snap?.accent) ?? Color(red: 0.19, green: 0.82, blue: 0.35) }
+    var ink: Color { Color(hex: snap?.ink) ?? .black }
+    /// The set to log from the widget while a workout runs today (v1.4.5, WidgetLogger), or nil.
+    var logger: WidgetLogger.Shown? { active != nil ? WidgetLogger.shown() : nil }
 }
 
 @available(iOS 17.0, *)
@@ -260,11 +263,90 @@ struct WidgetEmpty: View {
     }
 }
 
+// MARK: - logging a set from the widget (v1.4.5)
+
+/// One number with its − and +: they change the widget's copy of the set (WidgetStepIntent).
+@available(iOS 17.0, *)
+struct LoggerStepRow: View {
+    let label: String
+    let value: String
+    let field: String
+    let shown: WidgetLogger.Shown
+    let accent: Color
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Button(intent: WidgetStepIntent(op: field + "-")) {
+                Image(systemName: "minus").font(.caption.weight(.bold)).frame(maxWidth: 26, maxHeight: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(accent)
+            .accessibilityLabel(Text("\(shown.less) \(label)"))
+            Text(value)
+                .font(.headline)
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .frame(maxWidth: .infinity)
+                .accessibilityLabel(Text("\(label): \(value)"))
+            Button(intent: WidgetStepIntent(op: field + "+")) {
+                Image(systemName: "plus").font(.caption.weight(.bold)).frame(maxWidth: 26, maxHeight: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(accent)
+            .accessibilityLabel(Text("\(shown.more) \(label)"))
+        }
+        .controlSize(.small)
+    }
+}
+
+/// The set to do now, its numbers with − and +, and Log set (WidgetLogSetIntent).
+@available(iOS 17.0, *)
+struct LoggerView: View {
+    let model: WidgetModel
+    let shown: WidgetLogger.Shown
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if shown.allDone {
+                Image(systemName: "checkmark.circle.fill").font(.title2).foregroundStyle(model.accent)
+                Text(shown.allDoneText).font(.subheadline.weight(.semibold)).lineLimit(3)
+                Spacer(minLength: 0)
+            } else {
+                Text(shown.name).font(.subheadline.weight(.semibold)).lineLimit(1)
+                Text(shown.line).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                Spacer(minLength: 2)
+                if let w = shown.weight {
+                    LoggerStepRow(label: shown.wLabel, value: w, field: "w", shown: shown, accent: model.accent)
+                }
+                if let r = shown.reps {
+                    LoggerStepRow(label: shown.rLabel, value: "\(r)", field: "r", shown: shown, accent: model.accent)
+                }
+                if let sec = shown.seconds {
+                    LoggerStepRow(label: shown.secLabel, value: "\(sec) s", field: "s", shown: shown, accent: model.accent)
+                }
+                Button(intent: WidgetLogSetIntent()) {
+                    Label(shown.logSet, systemImage: "checkmark")
+                        .font(.caption.weight(.semibold))
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity)
+                        .foregroundStyle(model.ink)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(model.accent)
+                .controlSize(.small)
+                .accessibilityHint(Text([shown.name, shown.line].filter { !$0.isEmpty }.joined(separator: ", ")))
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+}
+
 @available(iOS 17.0, *)
 struct SmallWidgetView: View {
     let model: WidgetModel
     var body: some View {
-        if model.snap == nil { WidgetEmpty() } else {
+        if let lg = model.logger { LoggerView(model: model, shown: lg) } else if model.snap == nil { WidgetEmpty() } else {
             VStack(alignment: .leading, spacing: 0) {
                 TodayHeader(model: model)
                 Spacer(minLength: 4)
@@ -281,6 +363,7 @@ struct MediumWidgetView: View {
     var body: some View {
         if model.snap == nil { WidgetEmpty() } else {
             HStack(alignment: .top, spacing: 14) {
+                // While a workout runs, the left half is the set to log (SmallWidgetView shows it).
                 SmallWidgetView(model: model)
                 VStack(spacing: 8) {
                     Text(model.labels.thisWeek ?? "This week").font(.caption2.weight(.semibold)).textCase(.uppercase).foregroundStyle(.secondary).lineLimit(1)
@@ -297,7 +380,15 @@ struct MediumWidgetView: View {
 struct LargeWidgetView: View {
     let model: WidgetModel
     var body: some View {
-        if model.snap == nil { WidgetEmpty() } else {
+        if model.snap == nil { WidgetEmpty() } else if let lg = model.logger {
+            VStack(alignment: .leading, spacing: 10) {
+                TodayHeader(model: model)
+                LoggerView(model: model, shown: lg)
+                Divider()
+                StreakLine(model: model)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        } else {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 4) {
@@ -582,6 +673,14 @@ struct KindWidgetView: View {
                 WidgetEmpty()
             } else {
                 switch family {
+                case .systemSmall where model.logger != nil:
+                    LoggerView(model: model, shown: model.logger!)
+                case .systemMedium where model.logger != nil:
+                    HStack(spacing: 14) {
+                        LoggerView(model: model, shown: model.logger!)
+                        Divider()
+                        Link(destination: c.url) { KindBlock(model: model, c: c) }
+                    }
                 case .systemMedium:
                     HStack(spacing: 14) {
                         Link(destination: c.url) { KindBlock(model: model, c: c) }

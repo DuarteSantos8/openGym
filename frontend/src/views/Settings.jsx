@@ -18,6 +18,8 @@ import { effortOf } from '../lib/history.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
+import { setSlot, slotChoice, slotSound, toneFor } from '../lib/user-sounds.js'
+import OwnSounds from '../components/OwnSounds.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
@@ -61,6 +63,7 @@ import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
+import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
@@ -773,7 +776,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
               is not an improvement for everyone: louder is a cost with headphones or in a quiet
               room, and some want a sound that feels like theirs (#306). The chime by default; the
               sheet plays each one as you tap it (restSoundSheet). */}
-          {S.sound && <Row icon="speaker" iconTint="var(--pink)" title={t('Sound')} value={t(REST_SOUND_LABEL[restSoundOf(S)])}
+          {S.sound && <Row icon="speaker" iconTint="var(--pink)" title={t('Sound')} value={slotSound(S, 'rest')?.name || t(REST_SOUND_LABEL[restSoundOf(S)])}
             accessory="chevron" onClick={restSoundSheet} />}
           {/* iOS only (WebKit's audio-session API, iOS 17+): with it off the ring/silent switch
               mutes the timer. On, in Safari the phone treats the timer like a music player
@@ -912,6 +915,31 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             options={[{ value: 1, label: t('0.5') }, { value: 2, label: t('0.25') }]}
             value={S.wdec === 2 ? 2 : 1} onChange={v => update(s => { s.wdec = v })} />
         </Row>
+        {/* One step for every exercise (lib/weight-step.js): Automatic is each lift's own default
+            (2.5 kg, 5 for the legs). Kept per unit, like the plates. An exercise's own Step still
+            wins; "Apply to all exercises" clears those after asking, naming how many change. */}
+        <SelectRow icon="steps" iconTint="var(--teal)" title={t('Weight step')} sheetTitle={t('Weight step')}
+          value={profileStep(S) ?? 0}
+          onChange={v => update(s => { s.wstep = { ...(s.wstep || {}), [S.unit === 'lb' ? 'lb' : 'kg']: v > 0 ? v : 0 } })}
+          options={[{ value: 0, label: t('Automatic'), subtitle: t('Each lift steps by its usual amount, a bigger one for legs.') },
+            ...STEPS[S.unit === 'lb' ? 'lb' : 'kg'].map(v => ({ value: v, label: fmtStepLabel(v, S.unit) }))]} />
+        {(() => {
+          const step = profileStep(S)
+          const n = step ? stepOverrides(S, step) : 0
+          if (!n) return null
+          return <Row icon="repeat" iconTint="var(--teal)" title={t('Apply to all exercises')}
+            subtitle={tn('{0} exercise has a step of its own.', '{0} exercises have a step of their own.', n)} accessory="chevron"
+            onClick={() => confirmSheet({
+              title: t('Use {0} for every exercise?', fmtStepLabel(step, S.unit)),
+              message: tn('{0} exercise in your routines changes to it. You can still give any of them its own step later.',
+                '{0} exercises in your routines change to it. You can still give any of them its own step later.', n),
+              confirmText: t('Apply to all'),
+              onConfirm: () => {
+                update(s => { Object.assign(s, applyStepToAll(s)) })
+                toast(tn('{0} exercise now steps by {1}.', '{0} exercises now step by {1}.', n, fmtStepLabel(step, S.unit)))
+              },
+            })} />
+        })()}
         {/* Cardio speed (Discord "miles per hour"). Unlike the weight unit this converts nothing:
             speeds stay stored in km/h and only what is shown and typed follows it (lib/speed.js).
             Until chosen it follows the weight unit, so a profile in pounds already reads mph. */}
@@ -986,6 +1014,15 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <span className="lrow-v">{accentLabel(S)}</span>
           <AccentSwatches S={S} update={update} />
         </div>
+        {/* The little pictures in the app (the streak flame, medals, freezes, the advent calendar):
+            openGym's own icons by default, which follow the accent and the theme, or the phone's
+            emoji for those who like them (components/Glyph.jsx). Synced like the theme. */}
+        <Row icon="sparkles" iconTint="var(--orange)" title={t('Icons')} subtitle={t('The flame, the medals and friends.')}>
+          <Segmented className="seg-inline"
+            options={[{ value: 'opengym', label: 'openGym' }, { value: 'emoji', label: t('Emoji') }]}
+            value={S.icons === 'emoji' ? 'emoji' : 'opengym'}
+            onChange={v => update(s => { if (v === 'emoji') s.icons = 'emoji'; else delete s.icons })} />
+        </Row>
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
@@ -1088,7 +1125,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       })}
       {/* Christmas: the advent calendar, for all of December (lib/advent.js), from the theme's chunk. */}
       {activeSeason(S) === 'christmas' && adventOpenable() && <Section>
-        <Row icon="calendar" iconTint="var(--green)" title={'🎄 ' + t('Advent calendar')}
+        <Row icon="tree" iconTint="var(--green)" title={t('Advent calendar')}
           subtitle={t('{0} of 24 doors open', adventOf(S).opened.length)} accessory="chevron"
           onClick={() => openSeasonal('christmas', 'advent')} />
       </Section>}
@@ -1414,22 +1451,34 @@ const REST_SOUND_HINT = {
   whistle: 'Coach wants you back on the bar.',
   soft: 'Gentle, for headphones or a quiet room.',
 }
-export function pickRestSound(id) {
+export function pickRestSound(id, slot = 'rest') {
   unlock(true)
-  useStore.getState().update(s => { s.restSound = id; s.classicChime = id === 'classic' })
+  useStore.getState().update(s => { setSlot(s, slot, id) })
   chime(true, id)
 }
+// Two slots (v1.4.5): the end of a rest, and the end of a timed hold, which follows the rest until
+// it is given a sound of its own. Each can be a built-in sound or one of your own (components/
+// OwnSounds.jsx, lib/user-sounds.js).
 export function RestSoundSheet({ close }) {
   const S = useStore(s => s.S)
-  const cur = restSoundOf(S)
+  const [slot, setSlotShown] = useState('rest')
+  const cur = slotChoice(S, slot)
+  const holdOwn = slot === 'hold' && S.holdSound != null && S.holdSound !== ''
   return <>
     <h3>{t('Sound')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Tap one to hear it.')}</div>
+    <div style={{ marginBottom: 12 }}>
+      <Segmented value={slot} onChange={setSlotShown}
+        options={[{ value: 'rest', label: t('End of a rest') }, { value: 'hold', label: t('End of a hold') }]} />
+    </div>
     <Section>
-      {REST_SOUND_IDS.map(id => <Row key={id} icon={id === cur ? 'speaker' : 'play'} iconTint="var(--pink)" title={t(REST_SOUND_LABEL[id])}
-        subtitle={REST_SOUND_HINT[id] ? t(REST_SOUND_HINT[id]) : null} accessory={id === cur ? 'check' : 'none'}
-        onClick={() => pickRestSound(id)} />)}
+      {slot === 'hold' && <Row icon={!holdOwn ? 'speaker' : 'play'} iconTint="var(--pink)" title={t('Same as the rest')}
+        accessory={!holdOwn ? 'check' : 'none'} onClick={() => { useStore.getState().update(s => { delete s.holdSound }); unlock(true); chime(true, toneFor(useStore.getState().S, 'rest')) }} />}
+      {REST_SOUND_IDS.map(id => { const on = id === cur && (slot === 'rest' || holdOwn); return <Row key={id} icon={on ? 'speaker' : 'play'} iconTint="var(--pink)" title={t(REST_SOUND_LABEL[id])}
+        subtitle={REST_SOUND_HINT[id] ? t(REST_SOUND_HINT[id]) : null} accessory={on ? 'check' : 'none'}
+        onClick={() => pickRestSound(id, slot)} /> })}
     </Section>
+    <OwnSounds slot={slot} />
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>

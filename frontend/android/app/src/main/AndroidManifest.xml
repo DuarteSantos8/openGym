@@ -286,6 +286,12 @@
             </intent-filter>
         </receiver>
 
+        <!-- The widget's set buttons while a workout runs (v1.4.5): − and +, and Log set, which
+             queues the set for the app (WidgetActionReceiver). Only the widget's own intents. -->
+        <receiver
+            android:name=".WidgetActionReceiver"
+            android:exported="false" />
+
         <!-- The Home Screen widget (v1.4.4): what it shows comes from the app (WidgetBridgePlugin),
              a tap opens the app at that screen. The configure screen picks what it shows; it
              only ever writes this app's own widget settings. -->

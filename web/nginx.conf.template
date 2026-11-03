@@ -85,7 +85,7 @@ server {
     # Photos and videos of custom exercises (PUT and GET under api/media/). Nginx picks the
     # longest matching prefix, so this block takes those requests from the one above wherever it
     # sits. Same upstream, resolver and headers; what differs is the body. A video may be tens of
-    # MB, so the cap is MEDIA_UPLOAD_MAX (48m by default; keep it above MEDIA_VIDEO_MAX_MB)
+    # MB, so the cap is MEDIA_UPLOAD_MAX (112m by default; keep it above MEDIA_VIDEO_MAX_MB)
     # instead of 5m. The upload is passed to the API as it arrives rather than spooled to a temp
     # file here first: the API checks size, hash and type while it streams and answers a refusal
     # before the rest is sent, and spooling would double the disk writes and hide the progress.

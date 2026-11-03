@@ -652,7 +652,7 @@ location /gym/ {
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
-    client_max_body_size 48m;           # photos and videos of custom exercises
+    client_max_body_size 112m;           # photos and videos of custom exercises
     proxy_read_timeout 300s;            # a Coach request can take minutes
 }
 ```
@@ -675,7 +675,7 @@ location /gym/ {
     proxy_http_version 1.1;
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-Proto $scheme;
-    client_max_body_size 48m;
+    client_max_body_size 112m;
     proxy_read_timeout 300s;
 }
 ```
@@ -722,12 +722,13 @@ set in `.env`:
 | `MEDIA_QUOTA_MB` | `200` | space per profile; `0` = no cap |
 | `MEDIA_IMAGE_MAX_MB` | `2` | a photo after the app shrank it to 1600 px, and every thumbnail |
 | `MEDIA_GIF_MAX_MB` | `8` | an animated GIF |
-| `MEDIA_VIDEO_MAX_MB` | `40` | a video, as recorded — the app does not re-encode videos |
+| `MEDIA_VIDEO_MAX_MB` | `100` | a video as kept: the app first shrinks one over 12 MB to 1280 px where the browser can write MP4 (Safari, Chrome), and one over this cap where it can only write WebM; a clip it cannot shrink goes up as recorded |
 | `MEDIA_VIDEO_MAX_SEC` | `60` | a video's length |
+| `MEDIA_AUDIO_MAX_MB` | `2` | a sound of one's own for the rest timer: the app keeps it as a WAV of at most 30 s (1.3 MB) |
 | `MEDIA_GC_GRACE_DAYS` | `14` | how long a file nobody uses any more is kept |
 | `MEDIA_UPLOADS_PER_HOUR` | `600` | uploads per profile per hour; at most two run at once |
 | `MEDIA_MIN_FREE_MB` | `512` | uploads are refused while the disk under `./data` has less free; `0` = no floor |
-| `MEDIA_UPLOAD_MAX` | `48m` | the web container's body limit on `/api/media/` (nginx syntax); keep it above `MEDIA_VIDEO_MAX_MB` |
+| `MEDIA_UPLOAD_MAX` | `112m` | the web container's body limit on `/api/media/` (nginx syntax); keep it above `MEDIA_VIDEO_MAX_MB` |
 
 Every MB here is 1024 × 1024 bytes. The API reads the `MEDIA_*` caps; the app gets them from
 `/api/config` and refuses a file the server would refuse before uploading it.

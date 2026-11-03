@@ -768,7 +768,7 @@ describe('active workout weight controls', () => {
     await mount([exercise('plain-bench', [false], { target, sets: [{ w: 60, r: 5, done: false }] })])
     await press('Increase', '.setrow .stp.w')
 
-    expect(automatic.weight).toBe(61.3)
+    expect(automatic.weight).toBe(61.25)   // the quarter kept, one place stored it as 61.3
     expect(mocks.S.active.entries[0].sets[0].w).toBe(automatic.weight)
   })
 

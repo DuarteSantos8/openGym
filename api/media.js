@@ -37,7 +37,7 @@ const MOOV_MAX = 8 * MB;          // a real moov for a 60 s clip is well under 1
 const MAX_BOXES = 10000;
 export const MAX_INFLIGHT = 2;    // concurrent uploads per profile
 
-/* The seven types that are ever stored. `category` is what the client may not lie about: a
+/* The eight types that are ever stored. `category` is what the client may not lie about: a
    JPEG declared as a GIF is still a still image and is stored as the JPEG it is, but a video
    declared as an image would slip past the image cap, so that mismatch is refused. */
 export const MEDIA_TYPES = {
@@ -47,10 +47,13 @@ export const MEDIA_TYPES = {
   'image/gif': { kind: 'gif', category: 'still', ext: 'gif' },
   'video/mp4': { kind: 'video', category: 'video', ext: 'mp4' },
   'video/quicktime': { kind: 'video', category: 'video', ext: 'mov' },
-  'video/webm': { kind: 'video', category: 'video', ext: 'webm' }
+  'video/webm': { kind: 'video', category: 'video', ext: 'webm' },
+  // A sound of the user's own for the rest timer (v1.4.5): always the 16-bit PCM WAV the app wrote
+  // from what was picked (frontend lib/sound-ingest.js), at most 30 s.
+  'audio/wav': { kind: 'audio', category: 'audio', ext: 'wav' }
 };
 const EXT_MIME = Object.fromEntries(Object.entries(MEDIA_TYPES).map(([mime, t]) => [t.ext, mime]));
-const FILE_RE = /^([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|mov|webm)$/;
+const FILE_RE = /^([0-9a-f]{64})\.(jpg|png|webp|gif|mp4|mov|webm|wav)$/;
 
 /* ---------------------------------------------------------------- limits */
 
@@ -70,8 +73,9 @@ export function mediaLimits(env = process.env) {
     quotaMB: num('MEDIA_QUOTA_MB', 200, 0),              // 0 = no cap
     imageMB: num('MEDIA_IMAGE_MAX_MB', 2, 0.001),
     gifMB: num('MEDIA_GIF_MAX_MB', 8, 0.001),
-    videoMB: num('MEDIA_VIDEO_MAX_MB', 40, 0.001),
+    videoMB: num('MEDIA_VIDEO_MAX_MB', 100, 0.001),   // v1.4.5: 40 before; the app shrinks big videos first
     videoSec: num('MEDIA_VIDEO_MAX_SEC', 60, 1),
+    audioMB: num('MEDIA_AUDIO_MAX_MB', 2, 0.001),        // a sound of one's own: 30 s of WAV is 1.3 MB
     gcGraceDays: num('MEDIA_GC_GRACE_DAYS', 14, 0),
     uploadsPerHour: Math.floor(num('MEDIA_UPLOADS_PER_HOUR', 600, 1)),
     minFreeMB: num('MEDIA_MIN_FREE_MB', 512, 0)          // 0 = no floor
@@ -88,7 +92,9 @@ export function mediaLimits(env = process.env) {
 // `sets: true`: it keeps the form videos filmed for one set too (workouts[].entries[].sets[].media,
 // v1.4.4). An older server would sweep those, so there the app keeps a set's video on the phone
 // that filmed it and never uploads it.
-export const mediaConfig = l => ({ imageMB: l.imageMB, gifMB: l.gifMB, videoMB: l.videoMB, videoSec: l.videoSec, quotaMB: l.quotaMB, workouts: true, days: true, sets: true });
+// `sounds: true`: it keeps the sounds of one's own for the rest timer (state.sounds, v1.4.5). An
+// older server would refuse and sweep them, so there the app keeps them on the device that has them.
+export const mediaConfig = l => ({ imageMB: l.imageMB, gifMB: l.gifMB, videoMB: l.videoMB, videoSec: l.videoSec, audioMB: l.audioMB, quotaMB: l.quotaMB, workouts: true, days: true, sets: true, sounds: true });
 
 /* ---------------------------------------------------------------- errors */
 
@@ -171,6 +177,8 @@ export function sniffMedia(head) {
   if (at(0, 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)) return as('image/png');
   if (ascii(0, 6) === 'GIF87a' || ascii(0, 6) === 'GIF89a') return as('image/gif');
   if (ascii(0, 4) === 'RIFF' && ascii(8, 4) === 'WEBP') return as('image/webp');
+  // A WAV of plain PCM ("fmt " right after the header, format 1): the only sound ever stored.
+  if (ascii(0, 4) === 'RIFF' && ascii(8, 4) === 'WAVE') return ascii(12, 4) === 'fmt ' && b.length >= 22 && b.readUInt16LE(20) === 1 ? as('audio/wav') : null;
   if (ascii(4, 4) === 'ftyp') {
     const brand = ascii(8, 4);
     if (brand === 'qt  ') return as('video/quicktime');
@@ -318,6 +326,8 @@ export function referencedHashes(state) {
   // Progress photos filed under a day rather than a workout (frontend lib/day-photos.js):
   // dayPhotos[<hash>] = { d, m, _ts }, a cleared one only { _ts }.
   if (isObj(state.dayPhotos)) for (const e of Object.values(state.dayPhotos)) if (isObj(e) && isObj(e.m)) ref(e.m);
+  // Sounds of one's own (frontend lib/user-sounds.js): sounds[] = { id, name, m, _ts }.
+  for (const e of Array.isArray(state.sounds) ? state.sounds : []) if (isObj(e) && isObj(e.m)) ref(e.m);
   return out;
 }
 
@@ -426,9 +436,9 @@ function streamToFile(req, file, { max, maxMB, idleMs }) {
 export function createMediaStore({ dir, limits, now = Date.now, readState = () => null, idleMs = 60000, log = console } = {}) {
   const L = { ...mediaLimits({}), ...(limits || {}) };
   const quotaBytes = L.quotaMB > 0 ? Math.round(L.quotaMB * MB) : 0;
-  const capMB = kind => (kind === 'video' ? L.videoMB : kind === 'gif' ? L.gifMB : L.imageMB);
+  const capMB = kind => (kind === 'video' ? L.videoMB : kind === 'gif' ? L.gifMB : kind === 'audio' ? L.audioMB : L.imageMB);
   const capOf = kind => Math.round(capMB(kind) * MB);
-  const maxCap = Math.max(capOf('image'), capOf('gif'), capOf('video'));
+  const maxCap = Math.max(capOf('image'), capOf('gif'), capOf('video'), capOf('audio'));
   const users = new Map();          // safe uid -> { dir, bytes, count, reserved, inflight, hashes }
   const orphansLogged = new Set();
 

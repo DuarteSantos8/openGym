@@ -128,6 +128,13 @@ public class OpenGymWidgetProvider extends AppWidgetProvider {
         int accent = accentOf(snap);
         boolean row = shape == Shape.ROW;
 
+        // A workout running today: the set to log, with its buttons (WidgetLogger), whatever the
+        // widget shows otherwise. One from a day gone by is stale (the app ends it when it opens).
+        JSONObject logger = WidgetLogger.loggerOf(snap);
+        if (logger != null && snap != null && today.equals(snap.optString("today", ""))) {
+            return logger(context, id, shape, logger, accent);
+        }
+
         int layout = shape == Shape.WIDE ? R.layout.widget_medium : row ? R.layout.widget_row : R.layout.widget_small;
         RemoteViews v = new RemoteViews(context.getPackageName(), layout);
         WidgetContent a = WidgetContent.of(first, snap, today, empty);
@@ -140,6 +147,51 @@ public class OpenGymWidgetProvider extends AppWidgetProvider {
             v.setOnClickPendingIntent(R.id.col_b, open(context, b.link, id * 4 + 2));
         }
         return v;
+    }
+
+    /** The running workout's set, with − and + and Log set (WidgetActionReceiver runs them). */
+    static RemoteViews logger(Context context, int id, Shape shape, JSONObject logger, int accent) {
+        boolean row = shape == Shape.ROW;
+        RemoteViews v = new RemoteViews(context.getPackageName(), row ? R.layout.widget_logger_row : R.layout.widget_logger);
+        JSONObject stored = null;
+        try {
+            String st = prefs(context).getString(WidgetLogger.STATE, null);
+            stored = st == null ? null : new JSONObject(st);
+        } catch (Exception e) {
+            stored = null;
+        }
+        WidgetLogger.View m = WidgetLogger.view(logger, WidgetLogger.stateFor(logger, stored));
+        v.setOnClickPendingIntent(R.id.widget_root, open(context, "opengym://start", id * 4 + 3));
+        v.setTextViewText(R.id.lg_log, m.allDone ? "" : m.logSet);
+        v.setTextColor(R.id.lg_log, accent);
+        v.setViewVisibility(R.id.lg_log, m.allDone ? View.GONE : View.VISIBLE);
+        if (m.allDone) {
+            v.setTextViewText(R.id.lg_name, m.allDoneText);
+            v.setTextViewText(R.id.lg_line, "");
+        } else {
+            v.setTextViewText(R.id.lg_name, m.name);
+            String nums = m.time ? m.secText : (m.weight ? m.wText : "") + (m.weight && m.reps ? " \u00d7 " : "") + (m.reps ? m.rText : "");
+            v.setTextViewText(R.id.lg_line, row ? m.line + " \u00b7 " + nums : m.line);
+            v.setOnClickPendingIntent(R.id.lg_log, WidgetActionReceiver.intent(context, id, "log"));
+            v.setContentDescription(R.id.lg_log, m.logSet + ": " + m.name + ", " + nums);
+        }
+        if (row) return v;
+        stepRow(context, v, id, R.id.lg_row_w, R.id.lg_w, R.id.lg_w_minus, R.id.lg_w_plus, "w", !m.allDone && m.weight, m.wText, m.wLabel, m);
+        stepRow(context, v, id, R.id.lg_row_r, R.id.lg_r, R.id.lg_r_minus, R.id.lg_r_plus, "r", !m.allDone && m.reps, m.rText, m.rLabel, m);
+        stepRow(context, v, id, R.id.lg_row_s, R.id.lg_s, R.id.lg_s_minus, R.id.lg_s_plus, "s", !m.allDone && m.time, m.secText, m.secLabel, m);
+        return v;
+    }
+
+    private static void stepRow(Context context, RemoteViews v, int id, int row, int value, int minus, int plus, String f,
+                                boolean shown, String text, String label, WidgetLogger.View m) {
+        v.setViewVisibility(row, shown ? View.VISIBLE : View.GONE);
+        if (!shown) return;
+        v.setTextViewText(value, text);
+        v.setContentDescription(value, label + ": " + text);
+        v.setContentDescription(minus, m.less + " " + label);
+        v.setContentDescription(plus, m.more + " " + label);
+        v.setOnClickPendingIntent(minus, WidgetActionReceiver.intent(context, id, f + "-"));
+        v.setOnClickPendingIntent(plus, WidgetActionReceiver.intent(context, id, f + "+"));
     }
 
     private static void fill(Context context, RemoteViews v, WidgetContent c, int accent, boolean row,

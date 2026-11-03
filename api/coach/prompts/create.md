@@ -19,7 +19,7 @@ Design a complete plan from `coachProfile` (their intake answers) and, if presen
   "name": "<short plan name>",
   "summary": "<2-4 sentences: the shape of the plan and why it fits what they asked for>",
   "basedOn": "<what you used — e.g. 'your last 12 weeks' or 'no history yet'>",
-  "week": { "1": "r1", "3": "r2", "5": "r3" },
+  "week": { "0": "rest", "1": "r1", "2": "rest", "3": "r2", "4": "rest", "5": "r3", "6": "rest" },
   "routines": [
     {
       "id": "r1",
@@ -46,7 +46,9 @@ Design a complete plan from `coachProfile` (their intake answers) and, if presen
 }
 ```
 
-- `week` keys are weekday numbers as strings, values are `routines[].id` from this same answer.
+- `week` lists **all seven** weekdays, `"0"` (Sunday) to `"6"` (Saturday). A day that trains holds
+  `routines[].id` from this same answer; a day that does not holds `"rest"`. Exactly
+  `coachProfile.daysPerWeek` days carry an id.
 - `mode` is `reps` (use `reps`), `time` (use `sec`), or `cardio` (use `min` and `speed`).
 - `prog` on a routine is its default; on an exercise it overrides. `inc` is the load step in `meta.unit`; `repsMin` only matters for `double`.
 - `sg`: give two exercises the same short string to superset them. They must be adjacent in the list.

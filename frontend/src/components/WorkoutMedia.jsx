@@ -56,7 +56,7 @@ export default function WorkoutMediaSection({ w, hint = false }) {
   const update = useStore(s => s.update)
   const user = useStore(s => s.user)
   const config = useStore(s => s.config)
-  const { pick, busy, warning, note, storable, showAdd: pickerShowsAdd, canAdd: pickerCanAdd } = useMediaPicker()
+  const { pick, busy, busyLabel, warning, note, storable, showAdd: pickerShowsAdd, canAdd: pickerCanAdd } = useMediaPicker()
   const fileRef = useRef(null)
   if (!rec) return null
   const list = workoutMediaOf(rec)
@@ -113,7 +113,7 @@ export default function WorkoutMediaSection({ w, hint = false }) {
       {showAdd && room > 0 && (
         <button type="button" className="wmedia-add" disabled={!canAdd} onClick={() => fileRef.current?.click()}>
           <Icon name={busy ? 'image' : 'plus'} />
-          <span>{busy ? t('Loading…') : t('Add photo or video')}</span>
+          <span>{busy ? busyLabel : t('Add photo or video')}</span>
         </button>
       )}
     </div>}

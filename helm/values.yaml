@@ -47,8 +47,8 @@ ingress:
   className: ""
   annotations: {}
     # cert-manager.io/cluster-issuer: letsencrypt
-    # ingress-nginx caps request bodies at 1m; uploads need MEDIA_UPLOAD_MAX (48m):
-    # nginx.ingress.kubernetes.io/proxy-body-size: 48m
+    # ingress-nginx caps request bodies at 1m; uploads need MEDIA_UPLOAD_MAX (112m):
+    # nginx.ingress.kubernetes.io/proxy-body-size: 112m
   hosts:
     - host: opengym.example.com
       paths:
@@ -164,7 +164,7 @@ web:
   # by the chart.
   env:
     BASE_PATH: ""            # "/gym" if your proxy passes a subpath prefix through
-    MEDIA_UPLOAD_MAX: ""     # default 48m, keep above MEDIA_VIDEO_MAX_MB
+    MEDIA_UPLOAD_MAX: ""     # default 112m, keep above MEDIA_VIDEO_MAX_MB
     CF_CONNECTING_IP: ""     # "$http_cf_connecting_ip" only behind Cloudflare
   resources:
     requests:

@@ -173,7 +173,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         // ducking keeps it from stopping the music, which only turns down for the tone.
         let onSilent = call.getBool("onSilent") ?? false
         DispatchQueue.global(qos: .userInitiated).async {
-            guard let url = RestTone.soundFile(kind) else {
+            guard let url = RestTone.soundFile(kind) ?? RestTone.soundFile("chime") else {
                 call.reject("no sound file")
                 return
             }
@@ -321,8 +321,10 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             let content = UNMutableNotificationContent()
             content.title = title
             if p.sound {
-                content.sound = RestTone.soundFile(p.tone) != nil
-                    ? UNNotificationSound(named: UNNotificationSoundName(RestTone.soundName(p.tone)))
+                // A sound of one's own whose file is not on this phone yet rings the chime.
+                let tone = RestTone.soundFile(p.tone) != nil ? p.tone : "chime"
+                content.sound = RestTone.soundFile(tone) != nil
+                    ? UNNotificationSound(named: UNNotificationSoundName(RestTone.soundName(tone)))
                     : .default
             }
             if #available(iOS 15.0, *) { content.interruptionLevel = .active }

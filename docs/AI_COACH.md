@@ -19,6 +19,7 @@ rest of this document applies to you.
 | **Anthropic API** | plain HTTPS to `api.anthropic.com` | an API key | default |
 | **OpenAI API** | plain HTTPS to `api.openai.com` | an API key | default |
 | **Google Gemini** | plain HTTPS to `generativelanguage.googleapis.com` | an API key | default |
+| **MiniMax API** | plain HTTPS to `api.minimax.io` | an API key | default |
 | **OpenAI-compatible endpoint** | plain HTTPS to a URL you give it — Ollama, LM Studio, vLLM, OpenRouter, a gateway of your own | an API key, optional | default |
 | **Claude (Anthropic)** | the Claude Agent SDK, inside the container | a `claude setup-token` | `coach` |
 | **Codex (OpenAI)** | the Codex CLI, inside the container | Codex's own device sign-in | `coach` |
@@ -148,7 +149,13 @@ a week and coming back to the local one restores exactly what was set before.
 The Coach's rules ride as a byte-identical system prompt, so a llama.cpp/Ollama endpoint can
 keep them in its prefix cache and only ever re-process the payload — and the api warms that
 cache itself at boot and every half hour, so the expensive first read happens off everyone's
-clock. Measured on a 4-core, no-GPU VM with `qwen2.5:3b`: a review costs about **a minute**
+clock. This only applies to a keyless endpoint. Once a credential is saved for the
+OpenAI-compatible provider, the api leaves it alone — and a stored credential means the
+endpoint is not a model on this machine: it is a hosted API or a gateway in front of one,
+whether you point the base URL straight at the vendor or at the gateway. Either way every
+request is billed, and the prefix cache is the vendor's, not ours to keep warm, so a ping
+there spends money and warms nothing.
+Measured on a 4-core, no-GPU VM with `qwen2.5:3b`: a review costs about **a minute**
 warm, versus ~8 minutes before the cache and slimmer payload existed. Three things keep it
 that way:
 

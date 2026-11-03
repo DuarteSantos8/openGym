@@ -98,9 +98,9 @@ ENV CF_CONNECTING_IP=""
 # the prefix needs nothing here — the app derives the API address from its own URL.
 ENV BASE_PATH=""
 # The largest upload nginx lets through to the API's photo and video route (nginx size syntax).
-# Above the API's own video cap (MEDIA_VIDEO_MAX_MB, 40 by default) so the API, which says why,
+# Above the API's own video cap (MEDIA_VIDEO_MAX_MB, 100 by default) so the API, which says why,
 # is the one that refuses a file — raise both together.
-ENV MEDIA_UPLOAD_MAX=48m
+ENV MEDIA_UPLOAD_MAX=112m
 # Sent on every page and file. Scripts run only from this origin, plus the one inline script in
 # frontend/index.html by its hash (src/lib/csp.test.js keeps the two in step). The only frame
 # allowed is the privacy-enhanced YouTube player (youtube-nocookie.com) an exercise's video link
@@ -109,7 +109,7 @@ ENV MEDIA_UPLOAD_MAX=48m
 # device talks to the provider the person chose, an Ollama on their LAN included, and the update
 # check asks GitHub. Behind a proxy that injects a script of its own (analytics), set this to a
 # policy that allows it, or to "frame-ancestors 'none'" for the old header.
-ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-xUZtZS1nWJaAyUqA7ZKgkLhjdEisnY0MiRmax16aGFg='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+ENV CONTENT_SECURITY_POLICY="default-src 'self'; script-src 'self' 'sha256-G6hveK3W3qL6wotsg9mMbpCvPnzXurSHhi8Jb3TS2Vc='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https: http:; worker-src 'self'; manifest-src 'self'; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
 # Probe the port nginx was actually told to listen on (NGINX_PORT is configurable, so a
 # hardcoded http://localhost/ breaks on any instance that changed it), and address it as

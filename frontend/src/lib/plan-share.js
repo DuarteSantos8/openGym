@@ -20,7 +20,7 @@ import { dbLoadOf } from './dumbbells.js'
 import { MAX_TRIPLE_SETS } from './progression.js'
 import { uid, todayISO, DAYN, weekOrder, weekStartOf, exCount, routineCount } from './format.js'
 import { t, exerciseNameFor, exerciseNameClass } from './i18n-core.js'
-import { convertWeight } from './units.js'
+import { convertStep, convertWeight } from './units.js'
 import { exUnitPin, withExUnit, viewTarget, exUnitOf } from './ex-unit.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { clampIncline, hasIncline } from './incline.js'
@@ -60,7 +60,7 @@ function convertedExercise(e, sourceUnit, destinationUnit) {
   const out = { ...e }
   if (out.weight != null) out.weight = convertWeight(out.weight, sourceUnit, destinationUnit)
   // A timed increment is seconds, not a load. Rep-mode increments are load overrides.
-  if (modeOf(out) === 'reps' && out.inc > 0) out.inc = convertWeight(out.inc, sourceUnit, destinationUnit)
+  if (modeOf(out) === 'reps' && out.inc > 0) out.inc = convertStep(out.inc, sourceUnit, destinationUnit, 2)
   if (Array.isArray(out.pyramidWeight)) out.pyramidWeight = out.pyramidWeight.map(w => (w > 0 ? convertWeight(w, sourceUnit, destinationUnit) : w))
   return out
 }

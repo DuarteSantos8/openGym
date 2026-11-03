@@ -228,7 +228,7 @@ describe('Settings — which sound', () => {
     // the mocked store does not re-render on its own: render again to read the new tick
     const render = () => act(() => root.render(<RestSoundSheet close={close} />))
     render()
-    expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual(['Chime (louder)', 'Classic beeps', 'Bell', 'Beep-beep', 'Whistle', 'Soft'])
+    expect([...host.querySelectorAll('.lrow-t')].map(e => e.textContent)).toEqual(['Chime (louder)', 'Classic beeps', 'Bell', 'Beep-beep', 'Whistle', 'Soft', 'Add a sound'])   // and a sound of your own (v1.4.5)
     expect(rowTitled('Chime (louder)').querySelector('.lrow-k')).toBeTruthy()
 
     act(() => { rowTitled('Bell').click() })

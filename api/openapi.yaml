@@ -103,8 +103,8 @@ info:
       lets a webhook reach the home network (http too), never loopback or link-local.
     - `MEDIA_UPLOADS` (default on; `0` removes the `media` routes and the `media` block of
       `GET /api/config`), `MEDIA_QUOTA_MB` (200 per profile, `0` = no cap),
-      `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (40),
-      `MEDIA_VIDEO_MAX_SEC` (60), `MEDIA_GC_GRACE_DAYS` (14), `MEDIA_UPLOADS_PER_HOUR` (600
+      `MEDIA_IMAGE_MAX_MB` (2), `MEDIA_GIF_MAX_MB` (8), `MEDIA_VIDEO_MAX_MB` (100),
+      `MEDIA_VIDEO_MAX_SEC` (60), `MEDIA_AUDIO_MAX_MB` (2), `MEDIA_GC_GRACE_DAYS` (14), `MEDIA_UPLOADS_PER_HOUR` (600
       per profile), `MEDIA_MIN_FREE_MB` (512, `0` = no floor): photos and videos of custom
       exercises (tag `media`). Every MB here is 2^20 bytes.
 
@@ -326,7 +326,7 @@ paths:
                     allow_guest: false
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
                 passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
-                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true } } }
+                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 60, audioMB: 2, quotaMB: 200, workouts: true, sounds: true } } }
 
   /api/me:
     get:
@@ -2040,6 +2040,7 @@ paths:
             video/mp4: { schema: { type: string, format: binary } }
             video/quicktime: { schema: { type: string, format: binary } }
             video/webm: { schema: { type: string, format: binary } }
+            audio/wav: { schema: { type: string, format: binary } }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404':
           description: Not in the caller's folder. Never uploaded, removed by the sweep, or someone else's.
@@ -2052,16 +2053,16 @@ paths:
       operationId: putMedia
       summary: Upload one photo, GIF or video
       description: |
-        The body is the raw file; `Content-Type` must be one of the seven types below and
+        The body is the raw file; `Content-Type` must be one of the eight types below and
         `Content-Length` is optional (chunked uploads are capped while they stream). The path
         names the SHA-256 of the bytes, and the file is stored only if they hash to it.
         Idempotent: uploading a file the server already has answers 200 with `existed: true`.
 
         What is stored is decided by the file's first bytes, not by the declared type. The
         declared type only has to be in the same category, a still (JPEG, PNG, WebP, GIF) or a
-        video (MP4, MOV, WebM): a JPEG declared as a GIF is stored as the JPEG it is, a video
+        video (MP4, MOV, WebM), or a sound (a 16-bit PCM WAV, `audio/wav`): a JPEG declared as a GIF is stored as the JPEG it is, a video
         declared as an image is refused. The cap of the kind the bytes turned out to be applies
-        (`MEDIA_IMAGE_MAX_MB`, `MEDIA_GIF_MAX_MB`, `MEDIA_VIDEO_MAX_MB`), and an MP4 or MOV must
+        (`MEDIA_IMAGE_MAX_MB`, `MEDIA_GIF_MAX_MB`, `MEDIA_VIDEO_MAX_MB`, `MEDIA_AUDIO_MAX_MB`), and an MP4 or MOV must
         be a well-formed file no longer than `MEDIA_VIDEO_MAX_SEC` (+1 s), read from its
         headers. HEIC/AVIF, SVG, HTML and every other type are refused; the app converts HEIC
         photos before uploading. The server never decodes or alters a file: the app has already
@@ -2087,6 +2088,7 @@ paths:
           video/mp4: { schema: { type: string, format: binary } }
           video/quicktime: { schema: { type: string, format: binary } }
           video/webm: { schema: { type: string, format: binary } }
+          audio/wav: { schema: { type: string, format: binary } }
       responses:
         '201':
           description: Stored.
@@ -4318,9 +4320,9 @@ components:
         for `MEDIA_GC_GRACE_DAYS` after.
       required: [kind, hash, mime, size, width, height, at]
       properties:
-        kind: { type: string, enum: [image, gif, video], description: '`gif` means animated; a one-frame GIF is an `image`.' }
+        kind: { type: string, enum: [image, gif, video, audio], description: '`gif` means animated; a one-frame GIF is an `image`. `audio` is a sound of the user''s own (`sounds`); its width and height are 1.' }
         hash: { type: string, pattern: '^[0-9a-f]{64}$', description: SHA-256 of the stored file. }
-        mime: { type: string, enum: [image/webp, image/jpeg, image/png, image/gif, video/mp4, video/quicktime, video/webm] }
+        mime: { type: string, enum: [image/webp, image/jpeg, image/png, image/gif, video/mp4, video/quicktime, video/webm, audio/wav] }
         size: { type: integer, minimum: 1 }
         width: { type: integer, minimum: 1, maximum: 16384 }
         height: { type: integer, minimum: 1, maximum: 16384 }
@@ -4347,7 +4349,14 @@ components:
         gifMB: { type: number }
         videoMB: { type: number }
         videoSec: { type: number }
+        audioMB: { type: number, description: 'A sound of the user''s own (a WAV of at most 30 s).' }
         quotaMB: { type: number, description: Per profile; 0 = no cap. }
+        sounds:
+          type: boolean
+          const: true
+          description: >-
+            This instance keeps the sounds of the user's own for the rest timer (`sounds`,
+            v1.4.5). Absent on an instance from before; the app then keeps them on the device.
         workouts:
           type: boolean
           const: true
@@ -4369,7 +4378,7 @@ components:
             This instance also keeps the files of a form video filmed for one set
             (`workouts[].entries[].sets[].media`, v1.4.4). Absent on an instance from before; the
             app then keeps a set's video on the phone that filmed it and never uploads it.
-      example: { imageMB: 2, gifMB: 8, videoMB: 40, videoSec: 60, quotaMB: 200, workouts: true, days: true, sets: true }
+      example: { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 60, quotaMB: 200, workouts: true, days: true, sets: true }
 
     MediaUsage:
       type: object
@@ -4682,7 +4691,20 @@ components:
                 outcome: { type: string, enum: [ready, nochange, applied, dismissed, expired, failed] }
                 errorClass:
                   oneOf: [{ type: string }, { type: 'null' }]
-                  description: e.g. `provider`, `unusable`, `restart`, `forgotten`, `consent`, `noworkout`.
+                  description: |
+                    Why a failed job failed. Provider failures are sorted by cause:
+                    `auth` (the credential was refused), `quota` (out of quota or rate limited),
+                    `schema` (the endpoint will not serve the request shape), `outage` (5xx past
+                    the retries), `unreachable` (nothing answered), `timeout` (no answer in the
+                    job budget), `missing` (no key or runtime), `provider` (anything else it
+                    refused), `unusable` (it answered outside the contract). Job-level classes:
+                    `restart`, `forgotten`, `consent`, `noworkout`, `toolarge`, `nostate`, `off`.
+                message:
+                  type: string
+                  description: |
+                    The short user-facing line for that failure, when the class has one. Present
+                    only on failures a provider caused; a client that has its own translated
+                    line for `errorClass` may prefer it. Never contains provider detail.
                 at: { type: integer, description: Epoch ms. }
                 trigger: { type: string, enum: [scheduled], description: Present when it was an automatic review. }
                 reading: { type: string, description: "Present on `nochange`: why there was nothing to change." }
@@ -4703,7 +4725,7 @@ components:
         planHash: { type: string, description: The plan this was written against. A later edit makes it stale. }
         iteration: { type: integer, description: "1, or higher after a refine." }
         trigger: { type: string, enum: [scheduled], description: "Present when an automatic review made it, which nobody was watching for." }
-        summary: { type: string, maxLength: 1200 }
+        summary: { type: string, maxLength: 4000 }
         changes:
           type: array
           description: A review's change-set, each one applied or rejected on its own.

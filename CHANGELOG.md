@@ -27,6 +27,12 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Pause a workout: ⋯ → Pause workout stops the clock, the rest and a hold, with their alerts, until you tap Resume (or log a set). The pause stays through a reload, the Apple Watch clock stands still with it, and the time paused is not counted in the workout's length (#976, thanks @b225ccc for the idea).
 - Muscles (Exercises → Muscles, and By muscle when adding one): pick several muscles and see what trains all of them, or any of them, and pick a whole group (Chest, Back, Shoulders, Arms, Core, Legs) that opens into its muscles (#885, thanks @rt-oliveira, and #900, thanks @lodepav, for the ideas).
 - Cardio by distance: tap the Speed heading on a cardio exercise to log the distance instead (km, or miles with mph). The speed and the pace are worked out from the distance and the time, and the history, the CSV and FIT exports and the Health Connect notes carry the distance you typed (#887, thanks @rt-oliveira for the idea).
+- Selected text and the typing cursor wear your accent colour now, also the little selection handles on Android (#980).
+- One weight step for everything: Settings → Units → Weight step sets it for every exercise at once (0.1 up to 5 kg or 10 lb), and Apply to all exercises tells you how many own steps it replaces before it does. Any exercise can still have its own, now down to 0.1, and fine steps stay clean numbers (52.3, never 52.300000001).
+- Log a set from the Home Screen widget, on Android and iPhone: during a workout it shows the set you're on with − and + for the weight and reps (or seconds), stepping the way that exercise does (its own step, your dumbbells, twos per side), and a Log set button. The app picks the set up the next time it runs, or right away when it's open, never twice, and the Lock Screen's Live Activity moves on with it.
+- Our own icons instead of the phone's emoji, wherever the app still had some: the warm-up flame in Focus view, the trophy on share cards and in Wrapped, the advent calendar's doors and medals, the heart rate. They take your accent and look the same on every phone. Prefer the emoji? Settings → Look & Home → Icons → Emoji brings them back, also for the streak flame, the freezes and the medals.
+- Form and exercise videos can be bigger: a clip over 12 MB is shrunk on your phone first (to 1280 px, the button counts up while it works), and the server takes up to 100 MB instead of 40. Self-hosting? MEDIA_VIDEO_MAX_MB and MEDIA_UPLOAD_MAX (now 112m) set it, see docs/SELF_HOSTING.md.
+- Your own sounds: Settings → Sound → Add a sound takes an MP3, M4A, WAV or OGG, trims the silence, keeps up to 30 seconds and plays it at the end of a rest, or of a hold (each can have its own). It rings in the app, on the locked phone and in the iPhone notification, and comes along to your other devices.
 
 **Fixes from your reports**
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
@@ -46,6 +52,23 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Italian: Pause fits next to Skip again (thanks @DomHeadroom in #969).
 - Warm-ups on an assistance machine explain themselves the right way round (thanks @radu781 in #864).
 - Apple Watch: the end of a rest or a timed set keeps you in the app instead of dropping you on the watch face, and the rest countdown no longer crashes at 0:00 (#936, #883, thanks @cubetes in #955).
+
+**Community: new languages, a sharper catalogue and a calmer Coach**
+- Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856). What the app learnt since they were written is translated too.
+- Chinese: every exercise has its Chinese name, description and steps now (thanks @nine-orders in #959), and no two exercises share a name any more (thanks @daoshi818-crypto in #629).
+- French: descriptions and steps for 40 everyday gym exercises (thanks @Neoko-First in #935).
+- Exercise details show each muscle's share in percent, the rest folded into a tappable Other (thanks @sg41 in #954).
+- An exercise you pick starts the way you logged it last time: as a timed hold, per side, or both (thanks @lodepav in #902).
+- A search filtered by your gym says how many matches it hid, with one tap to show all equipment (thanks @lodepav in #905).
+- Catalogue: the dumbbell neutral grip bench press is the triceps press its drawing shows (#918), and half knee bends are the cardio knee lift their drawing shows, not a squat (#559).
+- Coach: MiniMax is one of the providers you can pick (thanks @octo-patch in #912).
+- Coach: a failed job says what actually failed: the key, the quota, the request format, an outage or the network, each with its own line (thanks @omeliorator in #971).
+- Coach: OpenRouter with Claude works again instead of "the answer had no choices": an error that arrives inside a 200 answer now gets the same fallbacks as any other (#973).
+- Coach: a plan's week is spelled out day by day, so strict JSON Schema endpoints (Codex OAuth gateways, #828) no longer hand back an empty week, and Gemini gets a schema it can read (thanks @omeliorator in #970).
+- Coach: an endpoint with a key is never pinged to keep warm, since that costs money and warms nothing (thanks @omeliorator in #968).
+- Coach: exercise ids sent as 24 or "24" are read as "0024" (thanks @dagov42 in #963), reasoning models' <think> blocks are skipped (thanks @polidisio in #929), and MiniMax's schema complaint falls back to plain JSON (thanks @polidisio in #928).
+- Coach: longer answers before a cut, and a cut lands on a sentence or a word (thanks @maliv2 in #937).
+- Coach: "swap it for what you suggested" finds what was suggested, and a clear request is acted on even without a stall (thanks @joshiparth1000 in #819).
 
 ## v1.4.4 (2026-11-03)
 

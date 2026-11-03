@@ -157,6 +157,7 @@ export const SEARCH = [
   { page: 'units', title: 'English names only', icon: 'globe', tint: 'var(--purple)', kw: 'exercise names english translation', when: c => c.nameLang },
   { page: 'units', title: 'Weight unit', icon: 'scale', tint: 'var(--teal)', kw: 'kg lb lbs pounds kilos kilograms unit' },
   { page: 'units', title: 'Weight decimals', icon: 'ruler', tint: 'var(--teal)', kw: 'decimals precision microplates rounding' },
+  { page: 'units', title: 'Weight step', icon: 'steps', tint: 'var(--teal)', kw: 'step increment microplates 0.1 0.25 every exercise all exercises at once' },
   { page: 'units', title: 'Speed unit', icon: 'figureRun', tint: 'var(--teal)', kw: 'speed mph kmh km/h miles cardio' },
   { page: 'units', title: '1RM formula', icon: 'chart', tint: 'var(--teal)', kw: '1rm one rep max epley brzycki lombardi formula estimate' },
   { page: 'units', title: 'Daily weigh-in value', icon: 'scale', tint: 'var(--teal)', mod: 'body', kw: 'weigh-in body weight morning first average last several day trend chart', opts: ['Morning (first)', 'Average', 'Last'] },
@@ -172,6 +173,7 @@ export const SEARCH = [
   // Look & Home
   { page: 'look', title: 'Theme', icon: 'moon', tint: 'var(--indigo)', kw: 'dark mode light mode theme appearance night', opts: ['Dark', 'Light', 'System'] },
   { page: 'look', title: 'Accent color', icon: 'palette', tint: 'var(--purple)', kw: 'color colour accent tint custom own picker hex rgb', opts: [...Object.values(ACCENT_NAMES), 'Your own color'], tkw: () => t('custom color picker') },
+  { page: 'look', title: 'Icons', icon: 'sparkles', tint: 'var(--orange)', kw: 'emoji icons flame medal snowflake pictures' },
   { page: 'look', title: 'App icon', icon: 'grid', tint: 'var(--indigo)', kw: 'app icon home screen launcher logo dark light', when: c => !!c.appIcons },
   { page: 'look', title: 'Body diagram', icon: 'figureStrength', tint: 'var(--teal)', kw: 'muscle map body male female', opts: ['Male', 'Female'] },
   { page: 'look', title: 'Exercise drawings', icon: 'figureStrength', tint: 'var(--teal)', kw: 'figure male female woman man picture', opts: ['Male', 'Female'] },

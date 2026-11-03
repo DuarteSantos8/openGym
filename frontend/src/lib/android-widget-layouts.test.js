@@ -13,8 +13,8 @@ const ALLOWED = new Set(['FrameLayout', 'LinearLayout', 'RelativeLayout', 'GridL
 
 describe('the Android widget (#981)', () => {
   const layouts = readdirSync(new URL('layout/', res)).filter(f => f.startsWith('widget_'))
-  it('has its three layouts', () => {
-    expect(layouts.sort()).toEqual(['widget_medium.xml', 'widget_row.xml', 'widget_small.xml'])
+  it('has its layouts (three shapes, and the set logger in two, v1.4.5)', () => {
+    expect(layouts.sort()).toEqual(['widget_logger.xml', 'widget_logger_row.xml', 'widget_medium.xml', 'widget_row.xml', 'widget_small.xml'])
   })
   it.each(layouts)('%s holds only what RemoteViews can inflate', f => {
     const xml = readFileSync(new URL('layout/' + f, res), 'utf8').replace(/<!--[\s\S]*?-->/g, '')

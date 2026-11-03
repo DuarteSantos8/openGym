@@ -317,3 +317,14 @@
   .xm-snowfall,.xm-sleigh,.xm-burst{display:none}
   .xm-flap,.xm-door.xm-today .xm-flap,.xm-door.xm-shake,.xm-reveal,.xm-reveal-icon,.xm-hang,.xm-ginger-hang,.xm-bulb{animation:none;transition:none}
 }
+
+/* The advent calendar's pictures are openGym's icons (components/Glyph.jsx), in the season's
+   colours; with Settings → Icons on Emoji they are the emoji they replaced. */
+.xm-advent-i .icn{color:var(--xm-green)}
+.xm-door-in .icn{color:var(--xm-red)}
+.xm-reveal-icon .glyph{justify-content:center}
+.xm-reveal-icon .icn{color:var(--xm-red);--icon-stroke:1.5}
+.xm-k-tip .xm-reveal-icon .icn,.xm-k-challenge .xm-reveal-icon .icn,.xm-k-stretch .xm-reveal-icon .icn{color:var(--xm-green)}
+.xm-k-special .xm-reveal-icon .icn,.xm-k-fact .xm-reveal-icon .icn,.xm-done .icn,.xm-badge .icn{color:var(--xm-gold)}
+.xm-k-special .xm-reveal-icon .icn{fill:currentColor}
+.xm-h-g .icn{color:var(--xm-green)}

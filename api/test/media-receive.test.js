@@ -200,7 +200,7 @@ test('a third upload at once is refused as busy', async t => {
 });
 
 test('a refused upload is drained up to twice the largest cap, then cut off', async t => {
-  const h = setup(t, { imageMB: 0.001, gifMB: 0.001, videoMB: 0.01 });
+  const h = setup(t, { imageMB: 0.001, gifMB: 0.001, videoMB: 0.01, audioMB: 0.001 });
   const small = M.jpeg(15000);                       // under 2 × 10 KB: read to its end
   const a = M.fakeReq(small);
   h.store.discard(a);
@@ -220,4 +220,17 @@ test('the disk floor refuses an upload with 507 and holds no reservation afterwa
   const bytes = M.jpeg();
   await assert.rejects(h.store.receive('u1', M.sha(bytes), M.fakeReq(bytes)), isMediaError(507, 'storage-full'));
   assert.deepEqual(h.tmpFiles('u1'), []);
+});
+
+test('a sound of one\'s own: a PCM WAV is stored as audio, under its own cap, and not as a picture', async t => {
+  const h = setup(t, { audioMB: 0.05 });
+  const snd = M.wav(2205);
+  const ok = await h.store.receive('u1', M.sha(snd), M.fakeReq(snd, { declare: 'audio/wav' }));
+  assert.equal(ok.body.mime, 'audio/wav');
+  assert.deepEqual(h.files('u1'), [`${M.sha(snd)}.wav`]);
+  // Declared as a picture, it is refused: a sound is its own category.
+  const other = M.wav(1000);
+  await assert.rejects(h.store.receive('u1', M.sha(other), M.fakeReq(other, { declare: 'image/jpeg' })), isMediaError(415, 'media-type'));
+  const big = M.wav(40000);
+  await assert.rejects(h.store.receive('u1', M.sha(big), M.fakeReq(big, { declare: 'audio/wav' })), isMediaError(413, 'media-too-large'));
 });

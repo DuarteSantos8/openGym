@@ -59,6 +59,33 @@ const EX_SCHEMA = {
   required: ['id', 'sets']
 };
 
+/* The week, spelled out day by day.
+ *
+ * It used to be a bare `{ type: 'object' }`, and that is a schema a constrained decoder can only
+ * answer with `{}`: strict JSON Schema (and the grammar sampling llama.cpp/xgrammar do, which
+ * enforces the same schema inside the sampler) will not let a key appear unless `properties`
+ * declares it, and adding `additionalProperties: false` on top — which strictSchema() does for
+ * the endpoints that demand it — leaves exactly one legal value, the empty object. A model asked
+ * for a three-day plan therefore answered with a perfectly-formed empty week, and validate.js
+ * could only reject it ("the week schedules 0 days but 3 were asked for") after a wasted
+ * generation and a repair round.
+ *
+ * So every weekday is declared and all seven are required: `{}` is no longer representable, and
+ * a day with no training says so with "rest" (validate.js skips it, so it neither schedules a day
+ * nor counts against daysPerWeek). The value of a training day stays what it always was — one
+ * routine id, the same map payload.js reads — so nothing downstream changes shape.
+ *
+ * additionalProperties is stated here rather than left to strictSchema() because these keys are
+ * data, not a fixed field list: a decoder free to add keys also adds "7", which validate.js can
+ * only reject. It is the one object in this file that says it.
+ */
+const WEEK_SCHEMA = {
+  type: 'object',
+  properties: { 0: STR, 1: STR, 2: STR, 3: STR, 4: STR, 5: STR, 6: STR },
+  required: ['0', '1', '2', '3', '4', '5', '6'],
+  additionalProperties: false
+};
+
 // `week` and `routines[].id` are required, not optional: the week is the only thing that says
 // which day trains which routine, and it points at a routine by id. A schema that leaves either
 // out lets a small local model answer with routines that have no id and a week naming "r1" —
@@ -71,7 +98,7 @@ export const CREATE_SCHEMA = {
     name: STR,
     summary: STR,
     basedOn: STR,
-    week: { type: 'object' },
+    week: WEEK_SCHEMA,
     // The caps are the validator's own (MAX_ROUTINES, MAX_EX_PER_ROUTINE), stated here as well
     // because "1-7 routines, each 3-12 exercises" in create.md is only a request. A small model
     // that starts repeating itself does not stop at a request: qwen2.5:3b walks the library id by

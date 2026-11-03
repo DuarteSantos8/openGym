@@ -93,7 +93,7 @@ export default function AdminCoach() {
       // longer than api()'s default for a request; a slow local model must still get its answer.
       const r = await api('/api/admin/coach/test', { method: 'POST', body: '{}', timeout: 150000 })
       setTestResult(r)
-      toast(r.ok ? 'Coach test passed ✅' : 'Test failed')
+      toast(r.ok ? 'Coach test passed' : 'Test failed')
       await load()
     } catch (e) { setTestResult({ ok: false, error: e.message }); toast(e.message) }
     setBusy(false)
@@ -430,6 +430,12 @@ const failureTitle = cls => ({
   timeout: 'The provider took longer than the job budget (COACH_JOB_TIMEOUT_MS, default 5 minutes)',
   missing: 'The provider runtime or key is missing',
   auth: 'The provider rejected the credential',
+  // The four ways a provider call fails that used to be one line, "The provider returned an
+  // error", on this card and in the chat. Each has its own fix; naming it is the point.
+  quota: 'The provider is out of quota, or rate limiting this instance',
+  schema: 'The provider would not serve the request shape we send (try another model)',
+  outage: 'The provider was having an outage (5xx after its own retries)',
+  unreachable: 'The provider could not be reached at all (network, DNS or the endpoint)',
   provider: 'The provider returned an error',
   unusable: 'The model answered, but not in a shape the app could use',
   restart: 'The server restarted while a job was running',
@@ -454,7 +460,7 @@ function SetupTokenSheet({ close, onDone, label }) {
     try {
       const r = await api('/api/admin/coach/connect', { method: 'POST', body: JSON.stringify({ type: 'cli-token', token: token.trim(), account: account.trim() }) })
       setToken('')
-      toast(r.test?.ok ? 'Connected ✅' : 'Token saved')
+      toast(r.test?.ok ? 'Connected' : 'Token saved')
       close(); onDone()
     } catch (e) { toast(e.message); setBusy(false) }
   }
@@ -481,7 +487,7 @@ function ApiKeySheet({ close, onDone, label, placeholder, optional }) {
     setBusy(true)
     try {
       const r = await api('/api/admin/coach/connect', { method: 'POST', body: JSON.stringify({ type: 'apikey', token: key.trim() }) })
-      toast(r.test?.ok ? 'Key saved ✅' : 'Key saved')
+      toast(r.test?.ok ? 'Key saved and tested' : 'Key saved')
       close(); onDone()
     } catch (e) { toast(e.message); setBusy(false) }
   }

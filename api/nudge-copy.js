@@ -88,6 +88,35 @@ export const NUDGE_COPY = {
       ]
     }
   },
+  "cs": {
+    "friendly": {
+      "title": "Všechno v pořádku?",
+      "lines": [
+        "Sestava {0} pořád čeká. Co se děje?",
+        "Dnes bez sestavy {0}? Zítra se počítá i krátký trénink.",
+        "Náročný den? Sestava {0} počká. Zítra je nový začátek.",
+        "Hele, sestava {0} dneska nevyšla. Je všechno v pohodě?"
+      ]
+    },
+    "guilt": {
+      "title": "Stýská se mi",
+      "lines": [
+        "Sestava {0} čekala celý večer u dveří. Na tebe.",
+        "Činka se po tobě dneska ptala. Nevěděl jsem, co jí říct.",
+        "Řekl jsem něco špatně? Sestavě {0} se po tobě stýská.",
+        "Držel jsem ti místo na lavici. Pořád je prázdné."
+      ]
+    },
+    "drill": {
+      "title": "Pozor, bažante!",
+      "lines": [
+        "Tvoje forma si balí kufry. Zítra {0}, žádné výmluvy!",
+        "Sestava {0} se sama neodcvičí, bažante. Pohyb!",
+        "Výmluvy činky nezvednou. Zítra se hlásíš na {0}!",
+        "Tvoje svaly po tobě vyhlásily pátrání. Nástup na {0}!"
+      ]
+    }
+  },
   "de": {
     "friendly": {
       "title": "Alles okay?",
@@ -143,6 +172,35 @@ export const NUDGE_COPY = {
         "{0} no se hace solo, recluta. ¡Muévete!",
         "Las excusas no levantan pesas. ¡Mañana te presentas a {0}!",
         "Tus músculos pusieron una denuncia por desaparición. ¡Preséntate a {0}!"
+      ]
+    }
+  },
+  "fa": {
+    "friendly": {
+      "title": "همه چیز خوبه؟",
+      "lines": [
+        "{0} هنوز منتظره. چه خبر؟",
+        "امروز خبری از {0} نیست؟ حتی یه جلسه کوتاه فردا هم ارزش داره.",
+        "روز سختی بود؟ {0} منتظر می‌مونه. فردا یه شروع تازه‌ست.",
+        "امروز {0} انجام نشد. همه چیز خوبه؟"
+      ]
+    },
+    "guilt": {
+      "title": "دلم برات تنگ شده",
+      "lines": [
+        "{0} تمام عصر کنار در منتظرت موند. فقط برای تو.",
+        "هالتر امروز سراغت رو گرفت. نمی‌دونستم چی بگم.",
+        "چیزی گفتم ناراحت شدی؟ {0} دلتنگته.",
+        "یه جا روی نیمکت برات نگه داشتم. هنوز خالیه."
+      ]
+    },
+    "drill": {
+      "title": "خبردار، سرباز!",
+      "lines": [
+        "عضله‌هات دارن چمدون می‌بندن. فردا {0}، بدون بهانه!",
+        "{0} خودبه‌خود انجام نمی‌شه، سرباز. حرکت کن!",
+        "بهانه‌ها وزنه بلند نمی‌کنن. فردا برای {0} حاضر باش!",
+        "عضله‌هات اعلام مفقودی کردن. برای {0} خودت رو برسون!"
       ]
     }
   },
@@ -230,6 +288,35 @@ export const NUDGE_COPY = {
         "A(z) {0} nem csinálja meg magát, újonc. Mozgás!",
         "A kifogások nem emelnek súlyt. Holnap jelentkezel: {0}!",
         "Az izmaid eltűntként jelentettek. Jelentkezz: {0}!"
+      ]
+    }
+  },
+  "id": {
+    "friendly": {
+      "title": "Semuanya aman?",
+      "lines": [
+        "{0} masih nungguin nih. Ada kendala apa?",
+        "Nggak sempat {0} hari ini? Sesi singkat besok pun tetap berarti.",
+        "Hari yang melelahkan? {0} bisa menunggu. Besok kita mulai lagi.",
+        "Hei, jadwal {0} terlewat hari ini. Semuanya baik-baik saja?"
+      ]
+    },
+    "guilt": {
+      "title": "Kangen latihan bareng",
+      "lines": [
+        "{0} nungguin di dekat pintu semalaman. Demi kamu lho.",
+        "Barbel sempat nanyain kamu hari ini. Bingung mau jawab apa.",
+        "Ada yang salah ya? {0} kangen kamu nih.",
+        "Udah disiapin tempat di bangku latihan. Tapi masih kosong."
+      ]
+    },
+    "drill": {
+      "title": "Perhatian, prajurit!",
+      "lines": [
+        "Gains-mu udah mau kabur tuh. Latihan {0} besok, tanpa alasan!",
+        "{0} nggak bakal jalan sendiri, prajurit. Ayo gerak!",
+        "Banyak alasan nggak bikin beban terangkat! Siap latihan {0} besok!",
+        "Ototmu sampai bikin laporan orang hilang. Datang dan selesaikan {0}!"
       ]
     }
   },
@@ -520,6 +607,35 @@ export const NUDGE_COPY = {
         "Тренування «{0}» саме себе не зробить, новобранцю. Ворушися!",
         "Відмовки не піднімають ваги. Завтра з’явитися на «{0}»!",
         "Твої м’язи заявили про твоє зникнення. З’явитися на «{0}»!"
+      ]
+    }
+  },
+  "vi": {
+    "friendly": {
+      "title": "Mọi thứ ổn chứ?",
+      "lines": [
+        "{0} vẫn đang đợi đấy. Có chuyện gì thế?",
+        "Hôm nay không tập {0} sao? Ngày mai chỉ cần một buổi ngắn cũng tính nhé.",
+        "Một ngày vất vả sao? {0} vẫn sẽ đợi bạn. Ngày mai sẽ là khởi đầu mới.",
+        "Này, hôm nay không thấy bạn tập {0}. Mọi thứ vẫn ổn chứ?"
+      ]
+    },
+    "guilt": {
+      "title": "Nhớ bạn quá",
+      "lines": [
+        "{0} đã đứng đợi ở cửa suốt cả buổi tối. Chỉ để chờ bạn.",
+        "Hôm nay thanh đòn cứ hỏi thăm bạn mãi. Tôi chẳng biết phải trả lời thế nào.",
+        "Có phải tôi đã lỡ lời gì không? {0} nhớ bạn đấy.",
+        "Tôi đã giữ chỗ cho bạn trên ghế bench. Nó vẫn đang trống kìa."
+      ]
+    },
+    "drill": {
+      "title": "Tân binh, chú ý!",
+      "lines": [
+        "Cơ bắp của bạn đang dọn đồ ra đi đấy. Ngày mai tập {0}, không viện cớ!",
+        "{0} không tự hoàn thành đâu, tân binh. Nhấc người lên mau!",
+        "Lý do lý trấu không nâng được tạ. Báo danh tập {0} vào ngày mai ngay!",
+        "Cơ bắp của bạn đã nộp đơn báo mất tích rồi đấy. Xuất hiện ở buổi {0} ngay!"
       ]
     }
   },

@@ -199,10 +199,14 @@ uses the same file input, ingest, folder and sync as the photos above; what is p
   Android the camera app may also keep its own copy in the gallery; that copy is the camera
   app's, not openGym's.
 - **Length and size:** the server's `videoSec` and `videoMB` from `/api/config`, or 60 s and
-  40 MB in local mode. A longer or bigger video is refused before it is kept. There is no
-  transcoding or compression: neither platform offers it to the WebView without a native plugin,
-  and the app does not add one, so the camera's own file is what is kept. A long clip filmed in
-  4K can hit the size cap; 1080p is plenty to judge depth.
+  100 MB in local mode. A longer video is refused before it is kept. A big one is first made
+  smaller on the device (lib/video-shrink.js, v1.4.5): it plays once, unseen, onto a canvas at
+  most 1280 px on its long side, and the WebView's own MediaRecorder writes it again at a bitrate
+  that fits the cap, without the sound, so it takes as long as the clip (the button counts up the
+  percent). MP4 (H.264) where the WebView can write it (iOS, Chrome 126+ WebViews): any clip over
+  12 MB. Where only WebM can be written, only a clip over the cap, since a WebM does not play
+  everywhere. A clip that cannot be shrunk (no recorder, no length) is kept as filmed, and one
+  still over the cap after shrinking is refused with a line saying a shorter clip will fit.
 - **Where it lives:** on the set, `set.media = [ref]`, one per set and at most 24 per workout. In
   local mode only in `opengym-media/`. Paired, it goes up with the workout once it is saved,
   unless **Keep videos on this phone only** was on when it was filmed (the ref then says
