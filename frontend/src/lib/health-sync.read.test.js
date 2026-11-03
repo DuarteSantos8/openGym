@@ -67,7 +67,8 @@ beforeEach(async () => {
   hs = await import('./health-sync.js')
 })
 
-afterEach(() => { vi.useRealTimers() })
+// restoreAllMocks: the history tests spy on registerPlugin, which outlived them in a shuffled order.
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks() })
 
 describe('switched off (the default)', () => {
   it('reads nothing at all', async () => {
