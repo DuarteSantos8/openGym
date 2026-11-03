@@ -1391,6 +1391,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .pp-shutter span{flex:1;border-radius:99px;background:#fff}
 .pp-shutter:active span{transform:scale(.9)}
 .pp-shutter:disabled{opacity:.4}
+.pp-shutter.timing span{background:var(--red);transform:scale(.55)}
+.pp-cam-timer{justify-self:end;display:inline-flex;align-items:center;gap:4px;min-width:44px;height:44px;padding:0 10px;justify-content:center;border:0;border-radius:99px;background:rgba(255,255,255,.14);color:#fff;font:inherit;font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums}
+.pp-cam-timer.on{background:var(--acc);color:var(--on-acc,#000)}
+.pp-cam-timer:disabled{opacity:.4}
+.pp-cam-count{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:min(40cqw,160px);font-weight:700;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.6);pointer-events:none;font-variant-numeric:tabular-nums}
 .pp-cam-choose{flex:none;display:flex;gap:8px;overflow-x:auto;padding:8px 16px;scrollbar-width:none}
 .pp-cam-choose::-webkit-scrollbar{display:none}
 .pp-cam-none,.pp-cam-pick{position:relative;flex:none;width:64px;aspect-ratio:3/4;border:0;padding:0;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:13px}

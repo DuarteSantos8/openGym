@@ -1344,6 +1344,7 @@ export default {
   'Take photo': 'Ta foto',
   'Flip camera': 'Byt kamera',
   'Opacity': 'Opacitet',
+  'Self-timer': 'Självutlösare',
   'Overlay: {0}': 'Överlagring: {0}',
   'Retake': 'Ta om',
   'Use photo': 'Använd foto',

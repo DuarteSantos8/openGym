@@ -1158,6 +1158,7 @@ export default {
   'Take photo': 'التقاط صورة',
   'Flip camera': 'تبديل الكاميرا',
   'Opacity': 'العتامة',
+  'Self-timer': 'مؤقّت ذاتي',
   'Overlay: {0}': 'تراكب: {0}',
   'Retake': 'إعادة التقاط',
   'Use photo': 'استخدام الصورة',

@@ -1334,6 +1334,7 @@ export default {
   'Take photo': 'ถ่ายรูป',
   'Flip camera': 'สลับกล้อง',
   'Opacity': 'ความทึบ',
+  'Self-timer': 'ตั้งเวลาถ่าย',
   'Overlay: {0}': 'ซ้อนทับ: {0}',
   'Retake': 'ถ่ายใหม่',
   'Use photo': 'ใช้รูปนี้',

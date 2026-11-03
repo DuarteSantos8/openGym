@@ -1323,6 +1323,7 @@ export default {
   'Take photo': 'Scatta foto',
   'Flip camera': 'Cambia fotocamera',
   'Opacity': 'Opacità',
+  'Self-timer': 'Timer di scatto',
   'Overlay: {0}': 'Sovrapposizione: {0}',
   'Retake': 'Scatta di nuovo',
   'Use photo': 'Usa foto',

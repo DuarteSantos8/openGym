@@ -1343,6 +1343,7 @@ export default {
   'Take photo': 'Foto aufnehmen',
   'Flip camera': 'Kamera wechseln',
   'Opacity': 'Deckkraft',
+  'Self-timer': 'Selbstauslöser',
   'Overlay: {0}': 'Überlagerung: {0}',
   'Retake': 'Neu aufnehmen',
   'Use photo': 'Foto verwenden',

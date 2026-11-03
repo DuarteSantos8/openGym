@@ -1382,6 +1382,7 @@ export default {
   'Take photo': 'ছবি তুলুন',
   'Flip camera': 'ক্যামেরা বদলান',
   'Opacity': 'অস্বচ্ছতা',
+  'Self-timer': 'সেলফ-টাইমার',
   'Overlay: {0}': 'ওভারলে: {0}',
   'Retake': 'আবার তুলুন',
   'Use photo': 'ছবি ব্যবহার করুন',

@@ -1294,6 +1294,7 @@ export default {
   'Take photo': 'Сделать фото',
   'Flip camera': 'Сменить камеру',
   'Opacity': 'Непрозрачность',
+  'Self-timer': 'Таймер',
   'Overlay: {0}': 'Наложение: {0}',
   'Retake': 'Переснять',
   'Use photo': 'Использовать фото',

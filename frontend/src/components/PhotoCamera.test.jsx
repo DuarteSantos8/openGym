@@ -242,5 +242,54 @@ describe('the frame', () => {
     expect(host.textContent).not.toContain('pinch')
     expect(host.querySelector('.pp-cam-stage').getAttribute('data-swipe-ignore')).toBeNull()
   })
+  describe('the self-timer', () => {
+    const timerBtn = () => host.querySelector('.pp-cam-timer')
+    const tick = async n => { for (let k = 0; k < n; k++) await act(async () => { vi.advanceTimersByTime(1000) }) }
+    beforeEach(() => { vi.useFakeTimers() })
+    afterEach(() => { vi.useRealTimers() })
+
+    it('goes off, 5, 10, 20 seconds and back to off, beside the shutter', async () => {
+      await mount()
+      expect(timerBtn().getAttribute('aria-label')).toBe('Self-timer')
+      const seen = []
+      for (let k = 0; k < 4; k++) { act(() => timerBtn().click()); seen.push(timerBtn().getAttribute('aria-label')) }
+      expect(seen).toEqual(['Self-timer: 5 seconds', 'Self-timer: 10 seconds', 'Self-timer: 20 seconds', 'Self-timer'])
+    })
+    it('counts down on the screen and takes the photo at zero, not before', async () => {
+      await mount()
+      act(() => timerBtn().click())
+      act(() => { button('Take photo').click() })
+      expect(host.querySelector('.pp-cam-count').textContent).toBe('5')
+      await tick(4)
+      expect(host.querySelector('.pp-cam-count').textContent).toBe('1')
+      expect(props.capture).not.toHaveBeenCalled()
+      await tick(1)
+      expect(props.capture).toHaveBeenCalledTimes(1)
+      expect(host.querySelector('.pp-cam-count')).toBeNull()
+      expect(host.querySelector('.pp-cam-shot')).not.toBeNull()
+    })
+    it('is stopped by the shutter pressed again, and takes nothing', async () => {
+      await mount()
+      act(() => timerBtn().click())
+      act(() => { button('Take photo').click() })
+      await tick(2)
+      act(() => { button('Cancel').click() })
+      expect(host.querySelector('.pp-cam-count')).toBeNull()
+      await tick(10)
+      expect(props.capture).not.toHaveBeenCalled()
+    })
+    it('keeps the timer and the camera still while it counts', async () => {
+      await mount()
+      act(() => timerBtn().click())
+      act(() => { button('Take photo').click() })
+      expect(timerBtn().disabled).toBe(true)
+      expect(button('Flip camera').disabled).toBe(true)
+    })
+    it('with the timer off the shutter takes the photo at once', async () => {
+      await mount()
+      await act(async () => { button('Take photo').click() })
+      expect(props.capture).toHaveBeenCalledTimes(1)
+    })
+  })
 })
 

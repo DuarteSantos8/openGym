@@ -1323,6 +1323,7 @@ export default {
   'Take photo': '拍照',
   'Flip camera': '切换摄像头',
   'Opacity': '不透明度',
+  'Self-timer': '自拍计时',
   'Overlay: {0}': '叠加：{0}',
   'Retake': '重拍',
   'Use photo': '使用照片',

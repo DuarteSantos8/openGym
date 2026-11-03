@@ -1323,6 +1323,7 @@ export default {
   'Take photo': 'Fotoğraf çek',
   'Flip camera': 'Kamerayı değiştir',
   'Opacity': 'Opaklık',
+  'Self-timer': 'Zamanlayıcı',
   'Overlay: {0}': 'Bindirme: {0}',
   'Retake': 'Yeniden çek',
   'Use photo': 'Fotoğrafı kullan',

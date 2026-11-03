@@ -1314,6 +1314,7 @@ export default {
   'Take photo': '拍照',
   'Flip camera': '切換鏡頭',
   'Opacity': '不透明度',
+  'Self-timer': '自拍計時',
   'Overlay: {0}': '疊加：{0}',
   'Retake': '重拍',
   'Use photo': '使用照片',

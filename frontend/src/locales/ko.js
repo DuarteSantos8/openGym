@@ -1323,6 +1323,7 @@ export default {
   'Take photo': '사진 찍기',
   'Flip camera': '카메라 전환',
   'Opacity': '불투명도',
+  'Self-timer': '셀프 타이머',
   'Overlay: {0}': '겹쳐 보기: {0}',
   'Retake': '다시 찍기',
   'Use photo': '사진 사용',

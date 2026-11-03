@@ -13,7 +13,7 @@
 // the camera is refused, the screen says so in place and the add-photos flow stays the way in.
 // `onTaken(file)` gets the JPEG of the frame once "Use photo" is pressed.
 import { useEffect, useRef, useState } from 'react'
-import { t } from '../lib/i18n.js'
+import { t, tn } from '../lib/i18n.js'
 import { fmtDate, todayISO } from '../lib/format.js'
 import { frameToBlob } from '../lib/camera-capture.js'
 import { defaultOverlay, DEFAULT_OPACITY, frameRatio, isMirrored, photoFileName } from '../lib/camera-overlay.js'
@@ -23,6 +23,8 @@ import { Button } from './ui.jsx'
 
 // How many recent photos the overlay choice offers.
 const CHOICES = 24
+// The self-timer's steps, in seconds: off, then the delays the shutter can wait.
+const TIMERS = [0, 5, 10, 20]
 
 export default function PhotoCamera({ photos, onTaken, close, capture = frameToBlob }) {
   const videoRef = useRef(null)
@@ -36,6 +38,8 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
   const [opacity, setOpacity] = useState(DEFAULT_OPACITY)
   const [shot, setShot] = useState(null)                 // { blob, url } once the shutter is pressed
   const [busy, setBusy] = useState(false)
+  const [timer, setTimer] = useState(0)                 // seconds the shutter waits before it takes the photo; 0 is off
+  const [count, setCount] = useState(null)               // seconds left while the timer runs, else null
   const overlayUrl = useMediaUrl(overlay ? overlay.m : null).url
 
   // The camera, again when it is flipped; the stream is stopped whenever it goes.
@@ -82,6 +86,19 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
       if (blob) setShot({ blob, url: URL.createObjectURL(blob) })
     } finally { setBusy(false) }
   }
+  // The shutter with the timer on counts down on the screen and takes the photo at zero; pressed
+  // again, or on closing, flipping or retaking, it stops. A second goes by per render of `count`.
+  useEffect(() => {
+    if (count === null) return undefined
+    if (count === 0) { setCount(null); snap(); return undefined }
+    const id = setTimeout(() => setCount(count - 1), 1000)
+    return () => clearTimeout(id)
+  }, [count])
+  const press = () => {
+    if (count !== null) setCount(null)
+    else if (timer) setCount(timer)
+    else snap()
+  }
   const use = () => {
     if (!shot) return
     const file = new File([shot.blob], photoFileName(todayISO()), { type: 'image/jpeg', lastModified: Date.now() })
@@ -94,7 +111,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
     <div className="mviewer-bar">
       <button type="button" className="iconbtn" aria-label={t('Close')} onClick={close}><Icon name="xmark" /></button>
       <span className="mviewer-count">{t('Take photo')}</span>
-      <button type="button" className="iconbtn" aria-label={t('Flip camera')} disabled={!!shot} onClick={() => setFacing(f => (f === 'environment' ? 'user' : 'environment'))}><Icon name="repeat" /></button>
+      <button type="button" className="iconbtn" aria-label={t('Flip camera')} disabled={!!shot || count !== null} onClick={() => setFacing(f => (f === 'environment' ? 'user' : 'environment'))}><Icon name="repeat" /></button>
     </div>
     {/* The frame has the shape of the video, which is the shape of the photo that is kept; the video,
         the overlay and the picture taken all fill it. A photo has no reading direction, so it stays ltr. */}
@@ -103,6 +120,7 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
         <video ref={videoRef} playsInline muted autoPlay onPlaying={() => setLive(true)} style={mirror ? { transform: 'scaleX(-1)' } : undefined} />
         {overlayUrl && live && !error && !shot && <img className="pp-cam-overlay" src={overlayUrl} alt="" draggable={false} style={{ opacity }} />}
         {shot && <img className="pp-cam-shot" src={shot.url} alt="" draggable={false} />}
+        {count !== null && count > 0 && <div className="pp-cam-count" aria-live="assertive">{count}</div>}
       </div>
       {error && <div className="pp-cam-error">
         {error === 'denied'
@@ -128,12 +146,16 @@ export default function PhotoCamera({ photos, onTaken, close, capture = frameToB
         </label>
         <div className="pp-cam-row">
           <Button variant="tinted" size="sm" onClick={() => setChoosing(c => !c)}>{t('Overlay: {0}', label)}</Button>
-          <button type="button" className="pp-shutter" aria-label={t('Take photo')} disabled={!!error || !live || busy} onClick={snap}><span /></button>
-          <span className="pp-cam-spacer" />
+          <button type="button" className={'pp-shutter' + (count !== null ? ' timing' : '')} aria-label={count !== null ? t('Cancel') : t('Take photo')} disabled={!!error || !live || busy} onClick={press}><span /></button>
+          <button type="button" className={'pp-cam-timer' + (timer ? ' on' : '')} disabled={count !== null}
+            aria-label={t('Self-timer') + (timer ? ': ' + tn('{0} second', '{0} seconds', timer) : '')}
+            onClick={() => setTimer(TIMERS[(TIMERS.indexOf(timer) + 1) % TIMERS.length])}>
+            <Icon name="timer" />{timer > 0 && <span>{timer}</span>}
+          </button>
         </div>
       </div>
       {shot && <div className="pp-cam-actions">
-        <Button variant="tinted" onClick={() => setShot(null)}>{t('Retake')}</Button>
+        <Button variant="tinted" onClick={() => { setCount(null); setShot(null) }}>{t('Retake')}</Button>
         <Button variant="primary" onClick={use}>{t('Use photo')}</Button>
       </div>}
     </div>

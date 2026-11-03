@@ -1107,6 +1107,7 @@ export default {
   'Take photo': 'Зробити фото',
   'Flip camera': 'Змінити камеру',
   'Opacity': 'Непрозорість',
+  'Self-timer': 'Таймер',
   'Overlay: {0}': 'Накладання: {0}',
   'Retake': 'Перезняти',
   'Use photo': 'Використати фото',

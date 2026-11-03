@@ -1323,6 +1323,7 @@ export default {
   'Take photo': 'फ़ोटो खींचें',
   'Flip camera': 'कैमरा बदलें',
   'Opacity': 'अपारदर्शिता',
+  'Self-timer': 'सेल्फ़-टाइमर',
   'Overlay: {0}': 'ओवरले: {0}',
   'Retake': 'दोबारा लें',
   'Use photo': 'फ़ोटो इस्तेमाल करें',

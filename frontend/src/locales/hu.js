@@ -1326,6 +1326,7 @@ export default {
   'Take photo': 'Fotó készítése',
   'Flip camera': 'Kamera váltása',
   'Opacity': 'Átlátszatlanság',
+  'Self-timer': 'Önkioldó',
   'Overlay: {0}': 'Átfedés: {0}',
   'Retake': 'Újra',
   'Use photo': 'Fotó használata',
