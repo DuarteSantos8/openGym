@@ -125,6 +125,21 @@ describe('the numbers', () => {
     expect(build(profile(), { date: TODAY, exercises: [{ exercise: '0025', sets: [{ reps: 5, rpe: 3 }] }] }).problems).toBeDefined()
   })
 
+  it('lengthened partials ride on the row and mark the set as failure; short-of-failure ratings, warm-ups and holds are refused', () => {
+    const sets = s => ({ date: TODAY, exercises: [{ exercise: '0025', sets: [s] }] })
+    const ok = build(profile(), sets({ reps: 8, weight: 100, lengthenedPartials: 4 }))
+    expect(ok.workout.entries[0].sets).toEqual([{ w: 100, r: 8, done: true, failure: true, lp: 4 }])
+    // partials are never volume
+    expect(ok.workout.vol).toBe(800)
+    expect(build(profile(), sets({ reps: 8, weight: 100, rir: 0, lengthenedPartials: 3 })).workout.entries[0].sets[0]).toEqual({ w: 100, r: 8, done: true, rir: 0, lp: 3 })
+    expect(build(profile(), sets({ reps: 8, weight: 100, rpe: 10, lengthenedPartials: 3 })).workout.entries[0].sets[0]).toEqual({ w: 100, r: 8, done: true, rpe: 10, lp: 3 })
+    expect(build(profile(), sets({ reps: 8, weight: 100, rir: 2, lengthenedPartials: 3 })).problems).toBeDefined()
+    expect(build(profile(), sets({ reps: 8, weight: 100, rpe: 8, lengthenedPartials: 3 })).problems).toBeDefined()
+    expect(build(profile(), sets({ reps: 8, weight: 100, warmup: true, lengthenedPartials: 3 })).problems).toBeDefined()
+    expect(build(profile(), sets({ reps: 8, weight: 100, lengthenedPartials: 0 })).problems).toBeDefined()
+    expect(build(profile(), { date: TODAY, exercises: [{ exercise: '0463', sets: [{ seconds: 30, lengthenedPartials: 3 }] }] }).problems).toBeDefined()
+  })
+
   it('a set with nothing measured, a mix of reps and seconds, or half a rep is refused, all at once', () => {
     const r = build(profile(), {
       date: TODAY,

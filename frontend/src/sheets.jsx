@@ -7,7 +7,7 @@ import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
-import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
+import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, countsPartials, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { PLATE_SIZES, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
 import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
@@ -66,7 +66,7 @@ import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incline.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
-import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
+import { isWarmupRow, hasCompletedWork, PARTIAL_REP_WEIGHT } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { entryTimes } from './lib/exercise-time.js'
 import { saveSessionAsRoutine, routineFromSession, routineAdditions, addToRoutine } from './lib/session-routines.js'
@@ -1397,7 +1397,7 @@ function ExerciseHistory({ exId }) {
   // session is this exercise's own, so it follows the same unit.
   const st = exView(useStore(s => s.S), exId)
   const ex = exOr(exId)
-  const h = useMemo(() => exerciseHistory(st, exId), [st.workouts, exId, st.volumeWarmups])
+  const h = useMemo(() => exerciseHistory(st, exId), [st.workouts, exId, st.volumeWarmups, st.partials, st.effort])
   const [curve, setCurve] = useState('top')
   // Against body weight, as in Stats: the estimated 1RM (body weight included for bodyweight and
   // assisted work) as a % of the body weight then. Only for rep work, and only once two sessions
@@ -2785,6 +2785,34 @@ function EffortPicker({ kind, value, onPick, close, cardio = false }) {
 export const effortPickerSheet = (kind, value, onPick, { cardio = false } = {}) =>
   ui().openSheet(close => <EffortPicker kind={kind} value={value} onPick={onPick} close={close} cardio={cardio} />)
 
+// Lengthened partials: the reps done in the stretched half of the range straight after the last
+// full rep. `value` is the count on the set (0 = none); onPick receives the new count (0 clears).
+// The caller marks the set as failure for a positive count (workout-model withPartials).
+function PartialsPicker({ value, onPick, close }) {
+  const [v, setV] = useState(value || 0)
+  const commit = n => { close(); onPick(Math.max(0, Math.min(99, Math.floor(Number(n) || 0)))) }
+  return <>
+    <h3 style={{ marginBottom: 2 }}>{t('Lengthened partials')}</h3>
+    <div className="muted small" style={{ marginBottom: 10 }}>{t('Only after the last full rep, with no rest. Each one counts {0}% of a rep in the volume.', Math.round(PARTIAL_REP_WEIGHT * 100))}</div>
+    <div className="list menu-list effpick">
+      <div className="item menu-item effpick-free">
+        <div className="grow"><div className="tt">{t('Partial reps')}</div></div>
+        <div className="stp effcell-stp">
+          <button aria-label={t('Decrease')} onClick={() => setV(x => Math.max(0, (x || 0) - 1))}><Icon name="minus" /></button>
+          <span className="val"><NumberField value={v || ''} placeholder="0" onChange={nv => setV(Math.max(0, Math.floor(Number(nv) || 0)))} /></span>
+          <button aria-label={t('Increase')} onClick={() => setV(x => Math.min(99, (x || 0) + 1))}><Icon name="plus" /></button>
+        </div>
+      </div>
+    </div>
+    <div style={{ height: 10 }} />
+    {v !== (value || 0) && <Button icon="check" onClick={() => commit(v)}>{t('Done')}</Button>}
+    {(value || 0) > 0 && <Button variant="ghost" className="dim" icon="xmark" onClick={() => commit(0)}>{t('Remove partials')}</Button>}
+    <div style={{ height: 4 }} />
+  </>
+}
+export const partialsPickerSheet = (value, onPick) =>
+  ui().openSheet(close => <PartialsPicker value={value} onPick={onPick} close={close} />)
+
 /* ============================ share / print / import a plan ============================ */
 // What the Plan menu does with a plan: export it, print it, import a friend's.
 export const planHasRoutines = st => (st.routines || []).some(r => r.ex && r.ex.length)
@@ -3175,7 +3203,7 @@ function WorkoutDetail({ w, close }) {
   // Copied with the note as it stands in the box, which may not be saved yet.
   const copyAsText = async () => {
     const rec = { ...(st.workouts.find(x => sameWorkout(x, w)) || w), note: note.trim() }
-    toast(await copyText(workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st), state: st })) ? t('Copied') : t('Could not copy'))
+    toast(await copyText(workoutText(rec, { unit: st.unit, nameOf, speedUnit: speedUnitOf(st), warmups: countsWarmups(st), partials: countsPartials(st), state: st })) ? t('Copied') : t('Could not copy'))
   }
   // A Garmin .fit activity (#447) of the saved record, for Garmin Connect's Import Data.
   const exportFit = () => {
@@ -3260,7 +3288,7 @@ function WorkoutDetail({ w, close }) {
       const r = g.rid ? st.routines.find(x => x.id === g.rid) : null
       const items = g.items.map(i => w.entries[i])
       const setN = items.reduce((n, e) => n + e.sets.filter(s => s.done && !isWarmupRow(s)).length, 0)
-      const vol = workoutVolume({ entries: items }, { warmups: countsWarmups(st) })
+      const vol = workoutVolume({ entries: items }, { warmups: countsWarmups(st), partials: countsPartials(st) })
       return <div key={g.rid || '__none'}>
         <div className="row between" style={{ margin: '2px 0 8px', paddingBottom: 6, borderBottom: '1px solid var(--sep)' }}>
           <div className="row" style={{ gap: 7, fontWeight: 600 }}>
@@ -3316,8 +3344,9 @@ function ShareWorkoutImage({ w, close }) {
   const update = useStore(s => s.update)
   const withMap = st.shareMap !== false
   const warmups = countsWarmups(st)
+  const partials = countsPartials(st)
   const day = workoutDay(w) || todayISO()
-  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf: shareNameOf, warmups, streak: streakInfo(st, day).current }), [w, st.unit, warmups, st.workouts, st.weekStart, day]) // eslint-disable-line react-hooks/exhaustive-deps
+  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf: shareNameOf, warmups, partials, streak: streakInfo(st, day).current }), [w, st.unit, warmups, partials, st.workouts, st.weekStart, day]) // eslint-disable-line react-hooks/exhaustive-deps
   return <ShareCardSheet title={t('Share workout')} close={close} toast={toast}
     name={'opengym-workout-' + day + '.png'} shareTitle={w.name || 'openGym'}
     deps={[model, withMap, st.body]}

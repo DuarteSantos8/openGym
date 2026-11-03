@@ -333,7 +333,7 @@ export function canonicalPlan(S) {
   };
 }
 
-export function cleanPlan(S) {
+export function cleanPlan(S, now) {
   // Names are typed by the person, so they are cut like the profile's text. The icon is held to
   // what the validator lets a plan carry (an icon key or a legacy emoji, core/glyphs.js): it is
   // the client's state, and free text in it would ride into every prompt.
@@ -346,7 +346,7 @@ export function cleanPlan(S) {
   // A weekday holds routine ids, so each entry is bounded like one.
   const week = {};
   [1, 2, 3, 4, 5, 6, 0].forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]).map(ident); });
-  const programmes = programmesOut(S);
+  const programmes = programmesOut(S, now);
   return { routines, week, ...(programmes.length ? { programmes } : {}) };
 }
 
@@ -450,7 +450,7 @@ const fmtSet = s => {
   const eff = s.rir != null ? '@RIR' + s.rir : s.rpe != null ? '@RPE' + s.rpe : s.failure === true && !isWarmupSet(s) ? '@failure' : '';
   if (s.sec != null) return s.sec + 's' + eff;
   if (s.min != null) return s.min + 'min' + (s.speed != null ? '/' + s.speed : '') + eff;
-  return (s.w != null ? s.w + 'x' : '') + (s.r != null ? s.r : '?') + eff;
+  return (s.w != null ? s.w + 'x' : '') + (s.r != null ? s.r : '?') + (num(s.lp) > 0 && s.r != null ? '+' + s.lp + 'p' : '') + eff;
 };
 
 /** One logged set, its numbers only. */
@@ -458,7 +458,17 @@ function cleanSet(s) {
   const o = { done: !!s.done };
   if (isWarmupSet(s)) o.warmup = true;
   else if (s.failure === true) o.failure = true;
-  for (const k of ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe']) if (num(s[k]) !== undefined) o[k] = s[k];
+  for (const k of ['w', 'r', 'sec', 'min', 'speed', 'rir', 'rpe', 'lp']) if (num(s[k]) !== undefined) o[k] = s[k];
+  // A unilateral set carries each side's own numbers, partials included (a side's `lp` is its own).
+  if (s.sides && typeof s.sides === 'object') {
+    o.sides = {};
+    for (const k of ['L', 'R']) if (s.sides[k] && typeof s.sides[k] === 'object') o.sides[k] = cleanSide(s.sides[k]);
+  }
+  return o;
+}
+function cleanSide(x) {
+  const o = { done: !!x.done };
+  for (const k of ['w', 'r', 'rir', 'rpe', 'lp']) if (num(x[k]) !== undefined) o[k] = x[k];
   return o;
 }
 const entriesOf = w => list(w.entries).filter(en => en && typeof en === 'object');
@@ -623,7 +633,7 @@ export function build(S, opts = {}) {
       today: iso(new Date(now))
     },
     coachProfile: profile && typeof profile === 'object' ? cleanProfile(profile) : null,
-    plan: cleanPlan(S)
+    plan: cleanPlan(S, now)
   };
   // The newer picture (core/context.js): weekly sets and recovery per muscle, the active gym's
   // loading, this month's challenges. Each only when there is something in it; a debrief reads

@@ -28,7 +28,7 @@ import {
   MEASUREMENT_FIELDS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
 } from './measurements.js'
-import { isWarmupRow, completedVolumeOf, syncSideAggregate } from './workout-model.js'
+import { isWarmupRow, completedVolumeOf, syncSideAggregate, partialsAllowed } from './workout-model.js'
 import { HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { clampIncline, inclineFrom } from './incline.js'
 
@@ -102,6 +102,8 @@ const COLUMNS = [
   ['distanceUnit', ['distance unit']],
   // gravl writes a treadmill's grade per set; "Incline (%)" normalises to the same name.
   ['incline', ['incline', 'incline percent']],
+  // Lengthened partials after a set taken to failure (our own export's column).
+  ['partials', ['partials', 'lengthened partials', 'partial reps']],
   ['seconds', ['seconds', 'duration seconds', 'set duration sec', 'duration s']],
   ['time', ['time', 'duration']],
   // Strong's current export: the whole workout's length, in seconds, on every row.
@@ -792,6 +794,11 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       const rpe = rir == null ? effortNum(cell(r, 'rpe'), false) : null
       if (rir != null) { set.rir = rir; rirSets++ }
       else if (rpe != null) { set.rpe = rpe; rpeSets++ }
+      // Lengthened partials (our own column): only on a failure set - marked F, or rated RIR 0 /
+      // RPE 10 - the rule the app itself keeps (workout-model partialsAllowed). Anything else is
+      // read as a set without them rather than a set the app could not show them on.
+      const lp = Math.floor(num(cell(r, 'partials')))
+      if (lp > 0 && lp <= 99 && !warmup && partialsAllowed(set)) set.lp = lp
     }
 
     // Strong and Hevy write the workout's start on every row, so two sessions on one day are
@@ -828,7 +835,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       continue
     }
     if (own && (side === 'L' || side === 'R') && !isCardio && !timed) {
-      const half = { w, r: reps || 0, done: true, ...(set.rir != null ? { rir: set.rir } : {}), ...(set.rpe != null ? { rpe: set.rpe } : {}) }
+      const half = { w, r: reps || 0, done: true, ...(set.rir != null ? { rir: set.rir } : {}), ...(set.rpe != null ? { rpe: set.rpe } : {}), ...(set.lp ? { lp: set.lp } : {}) }
       // The other side of the set the previous row started: same set number, side not yet filled.
       if (prev && prev._sides && prev._no === setNo && !prev._sides.includes(side)) {
         prev.sides[side] = half

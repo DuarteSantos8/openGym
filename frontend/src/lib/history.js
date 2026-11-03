@@ -6,7 +6,7 @@ import { fmtSpeed } from './speed.js'
 import { hasIncline, inclineFrom } from './incline.js'
 import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
 import { barWeightFor } from './bar.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, partialsOf, sidePartialsOf, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
 import { dbLoadOf, bellsIn, volumeFactor, historyAs, ownedFloor } from './dumbbells.js'
 import { isRungRow, rungWeight } from './warmup-snap.js'
@@ -160,7 +160,9 @@ export function setLabel(id, s, cfg, speedUnit) {
   if (mode === 'cardio') return `${s.min || 0} min @ ${fmtSpeed(s.speed || 0, speedUnit)}` + (hasIncline(s) ? ' · ' + t('{0}% incline', fmtNum(Number(s.incline))) : '')
   // A set taken to failure carries its "F" behind the numbers, the mark lifting logs use for it;
   // the history, the text export and the set menu all read it from here.
-  const fail = isFailureSet(s) ? ' ' + t('F') : ''
+  // Lengthened partials follow it ("F+4"): they only exist after failure, so they ride on the mark.
+  const lp = partialsOf(s)
+  const fail = isFailureSet(s) || lp ? ' ' + t('F') + (lp ? '+' + lp : '') : ''
   if (mode === 'time') return fmtSec(s.sec) + (s.w > 0 ? ` · ${fmtNum(s.w)}` : '') + fail
   const bw = isBw(c)
   // A dumbbell weight that says what it means (lib/dumbbells.js, issue #474) says it here too:
@@ -203,7 +205,9 @@ export function setLabel(id, s, cfg, speedUnit) {
     const partial = s.sides.L.done !== s.sides.R.done
     return ['L', 'R'].map(key => {
       const side = s.sides[key]
-      return `${t(key)} ${partial && !side.done ? '–' : oneSide(side) + effortTail(side)}`
+      // A side's partials ride on its own numbers ("L 38×6 F+2 (RIR 0)"), counted on that side.
+      const lp = sidePartialsOf(s, key)
+      return `${t(key)} ${partial && !side.done ? '–' : oneSide(side) + (lp ? ' ' + t('F') + '+' + lp : '') + effortTail(side)}`
     }).join(' · ') + fail
   }
   // Bodyweight reads as what you did — "12", or "+10 × 12" once there is a belt involved —
@@ -760,7 +764,7 @@ function shapeRows(sets, cfg, grid) {
   }
   return [warmup, work]
 }
-export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
+export function workoutVolume(w, { warmups = false, bodyweight = 0, partials = false } = {}) {
   let v = 0
   // Count each completed limb at its own load, including drops. A rest-pause side's r already
   // includes its bursts. Unchecked limbs and warm-ups contribute no volume.
@@ -785,9 +789,9 @@ export function workoutVolume(w, { warmups = false, bodyweight = 0 } = {}) {
       if (!warmups && isWarmupRow(s)) return
       if (body && modeForSet(s, e.target) === 'reps') {
         v += body.assisted
-          ? completedVolumeOf(withLoad(s, x => Math.max(0, own - x)))
-          : completedVolumeOf(s) * f + completedVolumeOf(withLoad(s, () => own))
-      } else v += completedVolumeOf(s) * f
+          ? completedVolumeOf(withLoad(s, x => Math.max(0, own - x)), { partials })
+          : completedVolumeOf(s, { partials }) * f + completedVolumeOf(withLoad(s, () => own), { partials })
+      } else v += completedVolumeOf(s, { partials }) * f
     })
   })
   return v
@@ -807,13 +811,27 @@ export { countsBodyweight }
 // work sets only whatever it says, so the switch only changes what screens show and can be
 // flipped back without rewriting a single workout.
 export const countsWarmups = S => S?.volumeWarmups === true
+// Settings → Workout → "Partial reps" (lengthened partials): off / fold / open. Off is the
+// default and also what an Effort per set of Off reads as, since partials only follow a set taken
+// to failure and that is judged by the effort scale. 'fold' counts them and lets a finished
+// exercise fold as usual; 'open' counts them and keeps the last exercise open (no fold, no
+// scroll on, no finish sheet) so a late addition is easy. Anything else reads as off.
+export const PARTIALS_MODES = Object.freeze(['off', 'fold', 'open'])
+export const partialsModeOf = S => {
+  if (effortOf(S) === 'none') return 'off'
+  return S?.partials === 'fold' || S?.partials === 'open' ? S.partials : 'off'
+}
+// Partials add load x partial reps x 0.2 (workout-model partialVolumeOf) to the volume screens
+// show whenever the feature is on. The saved `vol` never includes them, so switching it off again
+// loses nothing; the recovery map reads the rows' own partials either way.
+export const countsPartials = S => partialsModeOf(S) !== 'off'
 // The volume a screen shows for one session: counted from its sets, so units and the warm-up
 // switch always apply. A legacy record without entries only has its cached number.
 // With "Count body weight in bodyweight lifts" on (#794) the session's body weight goes in too.
 export function sessionVolume(w, S) {
   if (Array.isArray(w?.entries)) {
     const bodyweight = countsBodyweight(S) ? bodyweightFor(w, S) : 0
-    return Math.max(0, Number(workoutVolume(w, { warmups: countsWarmups(S), bodyweight })) || 0)
+    return Math.max(0, Number(workoutVolume(w, { warmups: countsWarmups(S), bodyweight, partials: countsPartials(S) })) || 0)
   }
   const v = Number(w?.vol)
   return Number.isFinite(v) ? Math.max(0, v) : 0
@@ -1195,7 +1213,7 @@ export function setSpanAt(rows, i) {
 // above it like any inherited row) and the drop/burst sub-rows, which belong to the set that was
 // actually done, and so does the set's form video (lib/set-videos.js). Weight, reps, time,
 // speed, effort, the warm-up phase, a pyramid's Max and the side layout all come along.
-const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters', 'media']
+const NOT_COPIED = ['done', 'at', 'planSec', 'weightOrigin', 'type', 'drops', 'clusters', 'media', 'lp']
 const bare = src => {
   const out = { ...src }
   for (const k of NOT_COPIED) delete out[k]

@@ -206,3 +206,47 @@ failure. It is not a `type`, because a drop-set or a rest-pause set can be taken
   timed per-side pair) of a freshly built exercise. Choosing Greyskull in the sheet turns it on.
 - Imports: a Hevy or CSV "failure" set type becomes `failure: true`.
 
+## Lengthened partials
+
+Extra reps in the stretched half of the range, done straight after the last full rep of a failure
+set, with no rest. They are part of that set, not a set of their own: `lp: <count>` on the row,
+written only when above zero, like `drops` and `clusters`.
+
+- Full sets only. Never on a warm-up set (`partialsAllowed` and `sidePartialsAllowed` both refuse one,
+  and the UI does not offer the chip or the menu entry there).
+- Per-side rows: each side carries its own `lp` in `sides.L` / `sides.R` (`setSidePartials`,
+  `sidePartialsOf`), with its own "+ Partials" under the side's row. The side's partials follow the
+  row's failure, or that side's own RIR 0 / RPE 10, and are dropped when that side is rated short
+  (`settlePartials`). Volume and recovery add both sides (`partialsTotalOf`, `sidePartialVolumeOf`).
+- Drop sets: the partials count at the weight of the last drop reached (`partialLoadOf`), since the
+  partials follow the last full rep of the failure. The drops themselves never carry `lp`, and the
+  chip sits under the drops. The UI does not say this; it is documented here and in the changelog.
+- Never planned. Added live, from the set menu or the "+ Partials" chip under a done set
+  (`PartialsPicker`, `withPartials`). In the app a set must already be a failure set (F, or rated
+  RIR 0 / RPE 10) and not rated short of it (`partialsAllowed`); otherwise the chip is greyed out
+  and says why. The MCP is the exception: partials on an unrated set mark it as failure.
+- `partialsOf(set)` reads 0 for a set that is not allowed them, so every reader (label, engine,
+  MCP, coach) ignores leftovers. `settlePartials` drops `lp` when an edit ends the failure (a
+  rating above RIR 0, the F switched off).
+- `w`/`r` stay the full-ROM work: volume, records, 1RM and progression never see `lp`. Only the
+  recovery engine adds them back (`partialSetsOf`: 0.2 of a rep each against the set's reps, at
+  most one extra set, `recovery.js sessionEffSets`).
+- Shown as `F+N` on the set number, the focus card and in `setLabel` (history, export, MCP labels).
+- MCP: `log_workout` takes `lengthened_partials` per set; `get_workout` returns it.
+- Coach: `lp` is passed through on a set (`coach-context.js`, `api/coach/core/payload.js`).
+- CSV: the export has a `partials` column (after `incline`); the importer reads it back, only on a
+  failure set (`partialsAllowed`). Hevy has no such field, so a Hevy import never carries them.
+- Setting: Settings → Workout → "Partial reps", right under Effort per set, with an (i) that
+  explains them. Tri-state in `S.partials`: `off` (default; no chip, no menu entry, nothing counted),
+  `fold` (on; a finished exercise folds as usual) and `open` (on; the exercise you just left stays
+  open, the screen does not scroll on, and the finish sheet does not come up after the last set).
+  `partialsModeOf(S)` is the one reader: it reads `off` for an absent or unknown value and while
+  Effort per set is Off, since partials follow a set judged to be at failure. The row is greyed out
+  then and the choice is kept for when an effort scale is back. This replaced the two switches
+  "Count partials in volume" and "Keep the last exercise open".
+- Volume: with the setting on (`countsPartials`), load x partials x 0.2 (`partialVolumeOf`) is added
+  wherever a volume is shown (`sessionVolume`, `workoutVolume({ partials })`, exercise history, the
+  print report, copy as text, the share card, the MCP). The saved `vol` never includes them, like the
+  warm-up switch (#719). Set counts stay whole sets: a set is a set. The recovery map reads the
+  rows' own partials whatever the setting says: it is real effort, and `off` only hides the feature.
+
