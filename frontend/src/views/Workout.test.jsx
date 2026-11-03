@@ -2178,16 +2178,17 @@ describe('workout list view', () => {
     expect(focusButton(units()[0])).toBeTruthy()
   })
 
-  it('goes back to cards on Set current when the list was only opened for this session (#260)', async () => {
+  it('stays in the list on Set current when the list was only opened for this session (#641)', async () => {
     await mount([exercise('plain-bench', [false]), exercise('plain-row', [false])], 0, {
       workoutView: 'cards', active: { workoutView: 'list' },
     })
 
     await act(async () => { focusButton(units()[1]).dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    // Picking the exercise to look at next is all the tap is for, and cards are where one
-    // exercise is front and centre, so it does not take a second trip through the ⋮ menu.
+    // The list was picked from the ⋮ menu on purpose: the tap moves the mark and nothing else.
     expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.S.active.workoutView).toBe('cards')
+    expect(mocks.S.active.workoutView).toBe('list')
+    await rerender()
+    expect(units()[1].textContent).toContain('Current')
   })
 
   it('stays in the list on Set current when the exercise buttons act on the current exercise', async () => {
