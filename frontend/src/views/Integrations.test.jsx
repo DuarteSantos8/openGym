@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mocks = vi.hoisted(() => ({
-  user: null, config: null, MOBILE: false, health: null, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
+  user: null, config: null, MOBILE: false, health: null, sources: null, sheets: [], navs: [], toast: null, calls: [], answers: {}, confirm: null, menu: null,
 }))
 vi.mock('../store/useStore.js', () => {
   const snap = () => ({ S: {}, user: mocks.user, config: mocks.config, coachLocal: null })
@@ -41,6 +41,10 @@ vi.mock('../lib/health-sync.js', () => ({
   disableHealth: vi.fn(async () => ({})),
   disableRead: vi.fn(async () => ({})),
 }))
+vi.mock('../lib/health/sync.js', () => ({
+  loadSources: () => Promise.resolve(mocks.sources || { providers: {} }),
+  onSourcesChange: () => () => {},
+}))
 vi.mock('../lib/clipboard.js', () => ({ copyText: vi.fn(async () => true) }))
 vi.mock('../sheets.jsx', () => ({
   importFromApp: vi.fn(), importFromHevy: vi.fn(),
@@ -55,7 +59,7 @@ import { searchSettings } from './settings-pages.js'
 
 let host, root, sheetHost, sheetRoot
 beforeEach(() => {
-  Object.assign(mocks, { user: null, config: null, MOBILE: false, health: null, sheets: [], navs: [], calls: [], answers: {}, confirm: null, menu: null, toast: vi.fn() })
+  Object.assign(mocks, { user: null, config: null, MOBILE: false, health: null, sources: null, sheets: [], navs: [], calls: [], answers: {}, confirm: null, menu: null, toast: vi.fn() })
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
   sheetHost = document.createElement('div'); document.body.appendChild(sheetHost); sheetRoot = createRoot(sheetHost)
 })
@@ -86,9 +90,12 @@ describe('the cards', () => {
   it('a guest in a browser: the health stores live in the phone app, webhooks need a server, nothing fake to connect', async () => {
     await mount()
     expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'Automation', 'AI & API'])
-    expect(pill('apple-health')).toBe('Not available on this device')
+    // Apple Health opens its export and the Shortcut in a browser.
+    expect(pill('apple-health')).toBeUndefined()
+    expect(action('apple-health').textContent).toBe('Open')
+    act(() => action('apple-health').click())
+    expect(mocks.navs).toEqual([['/settings/apple-health']])
     expect(pill('health-connect')).toBe('Not available on this device')
-    expect(action('apple-health')).toBeNull()
     expect(pill('webhook')).toBe('Needs your server')
     expect(action('webhook')).toBeNull()
     expect(card('coach')).toBeNull()
@@ -143,6 +150,14 @@ describe('the cards', () => {
     act(() => action('webhook').click())
     await showSheet()
     expect(sheetHost.textContent).toContain('INTEGRATIONS=webhook')
+  })
+
+  it('on iPhone, the Health area reading Apple Health counts as connected', async () => {
+    mocks.MOBILE = true
+    mocks.health = { status: 'available', platform: 'ios', on: false }
+    mocks.sources = { providers: { 'apple-health': { on: true } } }
+    await mount({ ios: true })
+    expect(pill('apple-health')).toBe('Connected')
   })
 })
 
