@@ -18,7 +18,7 @@ export const RTL_LANGS = new Set(['ar'])
 export const DATE_LOCALES = {
   en: 'en-GB', de: 'de-DE', 'de-CH': 'de-CH', es: 'es-ES', fr: 'fr-FR', it: 'it-IT',
   pt: 'pt-PT', 'pt-BR': 'pt-BR',
-  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD-u-nu-latn', th: 'th-TH', hu: 'hu-HU', sv: 'sv-SE', ar: 'ar-u-nu-latn'
+  pl: 'pl-PL', tr: 'tr-TR', ru: 'ru-RU', uk: 'uk-UA', zh: 'zh-CN', 'zh-TW': 'zh-TW', ko: 'ko-KR', hi: 'hi-IN', bn: 'bn-BD', th: 'th-TH', hu: 'hu-HU', sv: 'sv-SE', ar: 'ar-u-nu-latn'
 }
 
 // Locales derived from another language by a pure text transform rather than carried as their
@@ -73,6 +73,43 @@ let version = 0                 // bumped on every setLang; drives the React sub
 export const getLang = () => lang
 export const dateLocale = () => DATE_LOCALES[lang] || 'en-GB'
 export const getVersion = () => version
+
+// The digits a locale writes numbers in, '0123456789' style, or null when they are the ASCII ones.
+// Bengali reads ০১২৩ (DATE_LOCALES.bn is plain bn-BD, so Intl formats its dates and numbers that
+// way). Every other locale here writes ASCII digits, Arabic on purpose (-u-nu-latn).
+const digitCache = new Map()
+export function nativeDigitsFor(loc) {
+  if (!digitCache.has(loc)) {
+    let d = null
+    try {
+      const f = new Intl.NumberFormat(loc, { useGrouping: false })
+      const s = Array.from({ length: 10 }, (_, i) => f.format(i)).join('')
+      if (s !== '0123456789' && [...s].length === 10) d = s
+    } catch { /* a locale Intl does not know writes ASCII digits */ }
+    digitCache.set(loc, d)
+  }
+  return digitCache.get(loc)
+}
+export const nativeDigits = () => nativeDigitsFor(dateLocale())
+
+// Display text with its ASCII digits in the language's own. Display only: stored values, exports
+// and the API keep ASCII. A run with a Latin letter in it stays as written (1RM, NTAG213, H.264,
+// v1.4.4, 192.168.x.x, a URL), and so do {0} placeholders. Without native digits, unchanged.
+const DIGIT_RUN = /[A-Za-z0-9._:\/-]+/g
+export function localDigits(s, digits = nativeDigits()) {
+  if (!digits || typeof s !== 'string' || !/[0-9]/.test(s)) return s
+  const d = [...digits]
+  return s.split(/(\{\d+\})/).map((part, i) => i % 2 ? part
+    : part.replace(DIGIT_RUN, run => /[A-Za-z]/.test(run) ? run : run.replace(/[0-9]/g, c => d[c]))).join('')
+}
+
+// The other way: digits typed on a Bangla, Arabic, Devanagari… keypad, as ASCII.
+const DIGIT_ZEROS = [0x660, 0x6f0, 0x966, 0x9e6, 0xa66, 0xae6, 0xb66, 0xbe6, 0xc66, 0xce6, 0xd66, 0xe50, 0xed0, 0xf20, 0x1040, 0xff10]
+export const asciiDigits = s => String(s).replace(/\p{Nd}/gu, c => {
+  const cp = c.codePointAt(0)
+  const zero = DIGIT_ZEROS.find(z => cp >= z && cp <= z + 9)
+  return zero === undefined ? c : String(cp - zero)
+})
 
 // Translate a source string; {0},{1}… are replaced with args (also on the English fallback).
 export function t(s, ...args) {
