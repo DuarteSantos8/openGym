@@ -212,6 +212,11 @@ export function validatePlan(data, ctx = {}) {
   Object.entries(data.week || {}).forEach(([d, rid]) => {
     const day = +d;
     if (!isInt(day, 0, 6)) { errors.push(`week key "${d}" is not a weekday number 0-6`); return; }
+    // The create schema asks for all seven weekdays, because a schema cannot say "exactly
+    // daysPerWeek of these keys" — the model marks the rest with "rest" (or leaves it empty).
+    // That is not a routine id and not a scheduled day: skip it before the lookup, so a plan with
+    // three training days is still three days here.
+    if (rid === 'rest' || rid === '') return;
     if (!known.has(rid)) { errors.push(`week[${d}] points at "${rid}", which is not one of the routines in this plan`); return; }
     week[day] = rid;
   });
