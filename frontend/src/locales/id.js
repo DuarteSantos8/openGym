@@ -3752,4 +3752,9 @@ export default {
   "Weeks in a row with at least one workout.": "Minggu berturut-turut dengan minimal satu latihan.",
   "You trained, so this week counts. Streak: {0}.": "Kamu latihan, jadi minggu ini terhitung. Streak: {0}.",
   "openGym icons": "Ikon openGym",
+  "Missed plan": "Rencana terlewat",
+  "Open this day": "Buka hari ini",
+  "Planned, not trained. Any other day this week still counts.": "Direncanakan, tidak latihan. Hari lain minggu ini masih terhitung.",
+  "Planned, not trained. Any workout that week would have counted.": "Direncanakan, tidak latihan. Latihan apa pun di minggu itu akan terhitung.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Direncanakan, tidak latihan. Tidak apa-apa: kamu latihan di hari lain, jadi minggu itu tetap terhitung.",
 };

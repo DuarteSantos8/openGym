@@ -3788,4 +3788,9 @@ export default {
   "Weeks in a row with at least one workout.": "En az bir antrenmanla üst üste geçen haftalar.",
   "You trained, so this week counts. Streak: {0}.": "Antrenman yaptın, bu hafta sayılır. Seri: {0}.",
   "openGym icons": "openGym simgeleri",
+  "Missed plan": "Kaçan plan",
+  "Open this day": "Bu günü aç",
+  "Planned, not trained. Any other day this week still counts.": "Planlandı, yapılmadı. Bu haftanın başka herhangi bir günü hâlâ sayılır.",
+  "Planned, not trained. Any workout that week would have counted.": "Planlandı, yapılmadı. O hafta herhangi bir antrenman sayılırdı.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planlandı, yapılmadı. Sorun değil: başka bir gün antrenman yaptın, hafta yine sayılır.",
 }

@@ -3792,4 +3792,9 @@ export default {
   "Weeks in a row with at least one workout.": "Недель подряд хотя бы с одной тренировкой.",
   "You trained, so this week counts. Streak: {0}.": "Ты тренировался, так что эта неделя засчитана. Серия: {0}.",
   "openGym icons": "Значки openGym",
+  "Missed plan": "План пропущен",
+  "Open this day": "Открыть этот день",
+  "Planned, not trained. Any other day this week still counts.": "Запланировано, но без тренировки. Любой другой день этой недели ещё засчитается.",
+  "Planned, not trained. Any workout that week would have counted.": "Запланировано, но без тренировки. Засчиталась бы любая тренировка на той неделе.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Запланировано, но без тренировки. Не страшно: ты тренировался в другой день, так что неделя засчитана.",
 }

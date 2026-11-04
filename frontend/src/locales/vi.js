@@ -3753,4 +3753,9 @@ export default {
   "Weeks in a row with at least one workout.": "Số tuần liên tiếp có ít nhất một buổi tập.",
   "You trained, so this week counts. Streak: {0}.": "Bạn đã tập, nên tuần này được tính. Chuỗi: {0}.",
   "openGym icons": "Biểu tượng openGym",
+  "Missed plan": "Lỡ kế hoạch",
+  "Open this day": "Mở ngày này",
+  "Planned, not trained. Any other day this week still counts.": "Đã lên lịch, chưa tập. Bất kỳ ngày nào khác trong tuần này vẫn được tính.",
+  "Planned, not trained. Any workout that week would have counted.": "Đã lên lịch, chưa tập. Tập bất kỳ buổi nào trong tuần đó cũng sẽ được tính.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Đã lên lịch, chưa tập. Không sao: bạn đã tập vào ngày khác, nên tuần đó vẫn được tính.",
 };

@@ -3545,7 +3545,11 @@ function Calendar({ start, close, help = false }) {
   // to count: a mark at the end of each row, the frozen weeks washed, one tapped week explained.
   const streakOn = isOn(st, 'motivation') && st.workouts.length > 0
   const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart]) // eslint-disable-line react-hooks/exhaustive-deps
-  const [selWk, setSelWk] = useState(null)
+  const [selWk, setSelWkRaw] = useState(null)
+  // A tapped missed planned day (its line in WeekNote); a week and a day are never both picked.
+  const [selDay, setSelDay] = useState(null)
+  const setSelWk = wk => { setSelDay(null); setSelWkRaw(wk) }
+  const today = todayISO()
   // A day as 'YYYY-MM-DD' is read at local noon: new Date('2026-09-01') is UTC midnight, which is
   // still August west of UTC, so a tap on the 1st in Stats opened the month before (found by the
   // weekly run in America/Los_Angeles, .github/workflows/audit.yml).
@@ -3572,11 +3576,19 @@ function Calendar({ start, close, help = false }) {
     // A day off with a note on it (#261) shows the note's dot instead of the plan's, and its
     // note as the tooltip; tapping it opens the day sheet, where the note is.
     const note = !ws && dayNoteOf(st, iso)
-    const dotCls = ws ? 'done' : note ? 'noted' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
+    // A planned day gone by without a workout is missed, not still planned (Discord 11-04: it
+    // looked like a day still to come). Only the week counts for the streak; the day says so.
+    const missed = !ws && !note && planned && iso < today
+    // A trained day that was moved keeps a hint of the orange (index.css .cal-d i.moved).
+    const moved = !!ws && ovr && st.dayPlan[iso] !== 'rest'
+    const dotCls = ws ? (moved ? 'done moved' : 'done') : note ? 'noted' : missed ? 'miss' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
     const wkOf = weeks ? weekKey(iso, weekStartOf(st)) : null
     const frozenDay = !!wkOf && weeks.log.get(wkOf)?.s === 'frozen'
-    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (frozenDay ? ' wk-frozen' : '') + (iso === todayISO() ? ' today' : '')}
-      title={note ? dayNoteLine(note, t) : undefined} onClick={() => {
+    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (missed ? ' missed' : '') + (selDay === iso ? ' sel-day' : '') + (frozenDay ? ' wk-frozen' : '') + (iso === today ? ' today' : '')}
+      title={note ? dayNoteLine(note, t) : undefined} aria-pressed={missed && weeks ? selDay === iso : undefined}
+      aria-label={missed ? fmtDate(iso, true) + ': ' + t('Missed plan') : undefined} onClick={() => {
+      // With the streak shown, a missed planned day first says what it meant; its line has the way in.
+      if (missed && weeks) { setSelWkRaw(null); setSelDay(selDay === iso ? null : iso); return }
       if (!ws) { close(); dayOverrideSheet(iso); return }
       if (ws.length === 1) { close(); workoutDetailSheet(ws[0]); return }
       close(); ui().openSheet(c2 => <><h3>{fmtDate(iso, true)}</h3><div className="list">{ws.map(w => <WorkoutRow key={w.id} w={w} onClick={() => { c2(); workoutDetailSheet(w) }} />)}</div></>)
@@ -3599,10 +3611,13 @@ function Calendar({ start, close, help = false }) {
       <span><i style={{ background: 'var(--acc)' }} />{t('Trained')}</span>
       <span><i style={{ background: 'var(--label-3)' }} />{t('Planned')}</span>
       <span><i style={{ background: 'var(--orange)' }} />{t('Rescheduled')}</span>
+      <span><i className="miss" />{t('Missed plan')}</span>
       {Object.keys(st.dayNotes || {}).some(k => k.startsWith(y + '-' + String(mo + 1).padStart(2, '0')) && dayNoteOf(st, k)) &&
         <span><i style={{ background: 'var(--indigo)' }} />{t('Day note')}</span>}
     </div>
-    {weeks && <><StreakLegend /><WeekNote wk={selWk} entry={selWk ? weeks.log.get(selWk) : null} /></>}
+    {weeks && <><StreakLegend /><WeekNote wk={selWk} day={selDay}
+      entry={selDay ? weeks.log.get(weekKey(selDay, weekStartOf(st))) : selWk ? weeks.log.get(selWk) : null}
+      onOpenDay={iso => { close(); dayOverrideSheet(iso) }} /></>}
     <div className="small dim" style={{ textAlign: 'center', marginTop: 10 }}>{t('Tap a trained day for details · tap any other day to plan a session')}</div>
   </>
 }

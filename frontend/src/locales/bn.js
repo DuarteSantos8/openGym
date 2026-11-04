@@ -3867,4 +3867,9 @@ export default {
   "Weeks in a row with at least one workout.": "টানা যত সপ্তাহে অন্তত একটি ওয়ার্কআউট হয়েছে।",
   "You trained, so this week counts. Streak: {0}.": "আপনি ট্রেনিং করেছেন, তাই এই সপ্তাহ গোনা হলো। স্ট্রিক: {0}।",
   "openGym icons": "openGym আইকন",
+  "Missed plan": "বাদ পড়া পরিকল্পনা",
+  "Open this day": "এই দিনটি খুলুন",
+  "Planned, not trained. Any other day this week still counts.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। এই সপ্তাহের অন্য যেকোনো দিন এখনো গোনা হবে।",
+  "Planned, not trained. Any workout that week would have counted.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। সেই সপ্তাহে যেকোনো ওয়ার্কআউট গোনা হতো।",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। সমস্যা নেই: আপনি অন্য দিন ট্রেনিং করেছেন, তাই সপ্তাহটি তবুও গোনা হয়েছে।",
 }

@@ -3843,4 +3843,9 @@ export default {
   "Weeks in a row with at least one workout.": "أسابيع متتالية فيها تمرين واحد على الأقل.",
   "You trained, so this week counts. Streak: {0}.": "تمرنت، لذا يُحتسب هذا الأسبوع. السلسلة: {0}.",
   "openGym icons": "أيقونات openGym",
+  "Missed plan": "خطة فائتة",
+  "Open this day": "افتح هذا اليوم",
+  "Planned, not trained. Any other day this week still counts.": "مخطط له، دون تمرين. أي يوم آخر هذا الأسبوع ما زال يُحتسب.",
+  "Planned, not trained. Any workout that week would have counted.": "مخطط له، دون تمرين. أي تمرين في ذلك الأسبوع كان سيُحتسب.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "مخطط له، دون تمرين. لا بأس: تمرنت في يوم آخر، فالأسبوع يُحتسب على أي حال.",
 }

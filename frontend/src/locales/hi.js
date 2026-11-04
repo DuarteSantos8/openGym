@@ -3788,4 +3788,9 @@ export default {
   "Weeks in a row with at least one workout.": "लगातार हफ़्ते, जिनमें कम से कम एक वर्कआउट हुआ।",
   "You trained, so this week counts. Streak: {0}.": "आपने ट्रेनिंग की, इसलिए यह हफ़्ता गिना गया। स्ट्रीक: {0}।",
   "openGym icons": "openGym आइकन",
+  "Missed plan": "छूटी योजना",
+  "Open this day": "यह दिन खोलें",
+  "Planned, not trained. Any other day this week still counts.": "योजना थी, ट्रेनिंग नहीं हुई। इस हफ़्ते का कोई भी दूसरा दिन अब भी गिना जाएगा।",
+  "Planned, not trained. Any workout that week would have counted.": "योजना थी, ट्रेनिंग नहीं हुई। उस हफ़्ते कोई भी वर्कआउट गिना जाता।",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "योजना थी, ट्रेनिंग नहीं हुई। कोई बात नहीं: आपने उस हफ़्ते किसी और दिन ट्रेनिंग की, इसलिए हफ़्ता फिर भी गिना गया।",
 }

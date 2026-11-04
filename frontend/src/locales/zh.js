@@ -3788,4 +3788,9 @@ export default {
   "Weeks in a row with at least one workout.": "连续至少练一次的周数。",
   "You trained, so this week counts. Streak: {0}.": "你练了，所以这周算数。连续：{0}。",
   "openGym icons": "openGym 图标",
+  "Missed plan": "错过计划",
+  "Open this day": "打开这一天",
+  "Planned, not trained. Any other day this week still counts.": "计划了，没练。这周其他任何一天练都还算。",
+  "Planned, not trained. Any workout that week would have counted.": "计划了，没练。那周任何一天练一次都会算。",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "计划了，没练。没关系：你那周别的天练了，所以这周照样算。",
 }

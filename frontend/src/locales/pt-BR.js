@@ -2546,6 +2546,10 @@ export const PT_BR_OVERRIDES = {
   "The colors around it follow your pick, in light and dark.": "As cores ao redor seguem a sua escolha, no claro e no escuro.",
   "Type or paste an emoji": "Digite ou cole um emoji",
   "You trained, so this week counts. Streak: {0}.": "Você treinou, então esta semana conta. Sequência: {0}.",
+  "Missed plan": "Plano perdido",
+  "Planned, not trained. Any other day this week still counts.": "Planejado, não treinado. Qualquer outro dia desta semana ainda conta.",
+  "Planned, not trained. Any workout that week would have counted.": "Planejado, não treinado. Qualquer treino naquela semana teria contado.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planejado, não treinado. Sem problema: você treinou em outro dia, então a semana conta do mesmo jeito.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

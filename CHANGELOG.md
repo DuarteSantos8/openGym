@@ -36,6 +36,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **The streak, explained (and yours to style)**
 - The calendar now shows how your streak counted, week by week: a flame for a week that counts, a freeze for a missed week a freeze covered (that week gets a frosty wash too), a ring for a missed one and a dashed ring for this week, still open. Tap a mark and it tells you why.
+- A planned day that went by without a workout gets a hollow dot (Missed plan) instead of looking like a day still to come. Tap it and it says what that meant for the week, which still counts if you trained another day. A trained day that was moved keeps a little orange ring.
 - On top of the calendar: what the number counts (weeks in a row with at least one workout), your freezes and how the next one is earned, and the first time, four short lines on how it all works. Stats → Week streak says it too, with How streaks work one tap away.
 - Settings → Look & Home → Icons: pick your own streak flame and freeze, from openGym's icons or any emoji. The colors around it (the flame's glow and bar, the frozen week, the freeze chips) follow its color in light and dark mode, and Reset to default is right there. Syncs like the rest of your settings; the watches and widgets keep their own flame.
 

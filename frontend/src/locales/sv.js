@@ -3835,4 +3835,9 @@ export default {
   "Weeks in a row with at least one workout.": "Veckor i rad med minst ett pass.",
   "You trained, so this week counts. Streak: {0}.": "Du tränade, så den här veckan räknas. Streak: {0}.",
   "openGym icons": "openGym-ikoner",
+  "Missed plan": "Missad plan",
+  "Open this day": "Öppna dagen",
+  "Planned, not trained. Any other day this week still counts.": "Planerat, inte tränat. Vilken annan dag som helst den här veckan räknas fortfarande.",
+  "Planned, not trained. Any workout that week would have counted.": "Planerat, inte tränat. Vilket pass som helst den veckan hade räknats.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planerat, inte tränat. Ingen fara: du tränade en annan dag, så veckan räknas ändå.",
 }

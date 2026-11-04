@@ -3799,4 +3799,9 @@ export default {
   "Weeks in a row with at least one workout.": "จำนวนสัปดาห์ติดต่อกันที่ฝึกอย่างน้อยหนึ่งครั้ง",
   "You trained, so this week counts. Streak: {0}.": "คุณได้ฝึกแล้ว สัปดาห์นี้จึงนับ สถิติ: {0}",
   "openGym icons": "ไอคอน openGym",
+  "Missed plan": "พลาดแผน",
+  "Open this day": "เปิดวันนี้",
+  "Planned, not trained. Any other day this week still counts.": "วางแผนไว้แต่ไม่ได้ฝึก วันอื่นในสัปดาห์นี้ยังนับได้",
+  "Planned, not trained. Any workout that week would have counted.": "วางแผนไว้แต่ไม่ได้ฝึก ฝึกวันไหนก็ได้ในสัปดาห์นั้นก็จะนับ",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "วางแผนไว้แต่ไม่ได้ฝึก ไม่เป็นไร คุณฝึกวันอื่นแล้ว สัปดาห์นั้นจึงยังนับ",
 }

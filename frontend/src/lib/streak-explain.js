@@ -37,3 +37,15 @@ export function freezeLine (info) {
   if (info.freezes >= FREEZE_MAX) return t('Freezes full. A missed week uses one, no harm done.')
   return tn('One more week with a workout earns a freeze.', '{0} more weeks with a workout earn a freeze.', info.toNextFreeze || FREEZE_EVERY)
 }
+
+/**
+ * The line for a planned day that went by without a workout (the calendar's hollow dot). Only
+ * the week decides the streak, so this says what that week made of it: `weekEntry` is the log's
+ * record for the day's week, or null with the streak off.
+ */
+export function explainMissedDay (weekEntry) {
+  const s = weekEntry?.s
+  if (s === 'on') return t('Planned, not trained. No harm done: you trained another day that week, so it still counts.')
+  if (s === 'open') return t('Planned, not trained. Any other day this week still counts.')
+  return t('Planned, not trained. Any workout that week would have counted.')
+}

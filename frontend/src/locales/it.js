@@ -3788,4 +3788,9 @@ export default {
   "Weeks in a row with at least one workout.": "Settimane di fila con almeno un allenamento.",
   "You trained, so this week counts. Streak: {0}.": "Ti sei allenato, quindi questa settimana conta. Serie: {0}.",
   "openGym icons": "Icone di openGym",
+  "Missed plan": "Piano saltato",
+  "Open this day": "Apri questo giorno",
+  "Planned, not trained. Any other day this week still counts.": "Pianificato, non fatto. Qualsiasi altro giorno di questa settimana conta ancora.",
+  "Planned, not trained. Any workout that week would have counted.": "Pianificato, non fatto. Un allenamento qualsiasi quella settimana avrebbe contato.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Pianificato, non fatto. Nessun problema: ti sei allenato un altro giorno, quindi la settimana conta lo stesso.",
 }
