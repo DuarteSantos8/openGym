@@ -46,29 +46,50 @@ public class PrintPlugin extends Plugin {
                 : PrintAttributes.MediaSize.ISO_A4;
 
         getActivity().runOnUiThread(() -> {
-            WebView webView = new WebView(getContext());
-            webView.setWebViewClient(new WebViewClient() {
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    PrintManager printManager =
-                            (PrintManager) getContext().getSystemService(Context.PRINT_SERVICE);
-                    if (printManager == null) {
-                        printView = null;
-                        call.reject("printing is not available on this device");
-                        return;
-                    }
-                    PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(jobName);
-                    printManager.print(jobName, adapter,
-                            new PrintAttributes.Builder()
-                                    .setMediaSize(media)
-                                    .build());
-                    call.resolve();
+            try {
+                Context context = getContext();
+                if (context == null) {
+                    call.reject("printing is not available right now");
+                    return;
                 }
-            });
-            // baseURL null: the document is fully self-contained (inline <style>, no assets; the
-            // exercise pictures, #817, arrive inline as data: URLs, the 180 px stills only).
-            webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
-            printView = webView;
+                // new WebView() throws on a device whose WebView provider is missing, disabled
+                // or mid-update — the try/catch turns that into a failed printout instead of
+                // a killed process (the JS side treats a rejection like a dismissed sheet).
+                WebView webView = new WebView(context);
+                webView.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public void onPageFinished(WebView view, String url) {
+                        try {
+                            Context ctx = getContext();
+                            PrintManager printManager = ctx == null ? null
+                                    : (PrintManager) ctx.getSystemService(Context.PRINT_SERVICE);
+                            if (printManager == null) {
+                                printView = null;
+                                call.reject("printing is not available on this device");
+                                return;
+                            }
+                            PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(jobName);
+                            printManager.print(jobName, adapter,
+                                    new PrintAttributes.Builder()
+                                            .setMediaSize(media)
+                                            .build());
+                            call.resolve();
+                        } catch (Throwable e) {
+                            // The page finished after the activity went away, or the print
+                            // framework refused the job: fail this printout, never the app.
+                            printView = null;
+                            call.reject("printing failed: " + e.getMessage());
+                        }
+                    }
+                });
+                // baseURL null: the document is fully self-contained (inline <style>, no assets; the
+                // exercise pictures, #817, arrive inline as data: URLs, the 180 px stills only).
+                webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
+                printView = webView;
+            } catch (Throwable e) {
+                printView = null;
+                call.reject("printing failed: " + e.getMessage());
+            }
         });
     }
 }
