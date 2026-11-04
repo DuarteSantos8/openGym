@@ -74,19 +74,103 @@ describe('the snow', () => {
   })
 })
 
-describe('the sleigh', () => {
-  it('crosses at most once a day, never with reduced motion', async () => {
+describe('Santa and his reindeer', () => {
+  const timers = () => {
     vi.useRealTimers()
     vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] }); vi.setSystemTime(new Date(2026, 11, 5, 9))
-    let { Layer } = await load()
-    render(<Layer hidden={false} fresh={false} />)
-    act(() => { vi.advanceTimersByTime(60000) })
-    expect(host.querySelector('.xm-sleigh')).not.toBeNull()
+  }
+  const visit = hash => act(() => { window.location.hash = hash; window.dispatchEvent(new HashChangeEvent('hashchange')) })
+
+  it('fly across once a screen visit, after a pause: all nine reindeer, Rudolph\'s nose in front, nothing to tap', async () => {
+    timers()
+    const m = await load()
+    m._resetFlightForTests()
+    render(<m.Layer hidden={false} fresh={false} />)
+    act(() => { vi.advanceTimersByTime(3000) })
+    expect(host.querySelector('.xm-flight')).toBeNull()           // a pause first
+    act(() => { vi.advanceTimersByTime(8000) })
+    const f = host.querySelector('.xm-flight')
+    expect(f).not.toBeNull()
+    expect(f.getAttribute('aria-hidden')).toBe('true')
+    expect(f.querySelectorAll('.xm-deer')).toHaveLength(9)
+    expect(f.querySelector('.xm-rudolph')).not.toBeNull()
+    expect(f.querySelector('button, a, [tabindex]')).toBeNull()
+    act(() => f.dispatchEvent(new Event('animationend', { bubbles: true })))
+    expect(host.querySelector('.xm-flight')).toBeNull()           // one pass, then gone
+  })
+
+  it('a touch anywhere and he steps aside at once', async () => {
+    timers()
+    const m = await load()
+    m._resetFlightForTests()
+    render(<m.Layer hidden={false} fresh={false} />)
+    act(() => { vi.advanceTimersByTime(11000) })
+    act(() => { window.dispatchEvent(new Event('pointerdown')) })
+    const f = host.querySelector('.xm-flight')
+    expect(f.className).toContain('xm-leave')
+    act(() => f.dispatchEvent(new Event('transitionend', { bubbles: true })))
+    expect(host.querySelector('.xm-flight')).toBeNull()
+  })
+
+  it('not again within a minute and a half, however many screens; then again on the next one', async () => {
+    timers()
+    const m = await load()
+    m._resetFlightForTests()
+    render(<m.Layer hidden={false} fresh={false} />)
+    act(() => { vi.advanceTimersByTime(11000) })
+    act(() => host.querySelector('.xm-flight').dispatchEvent(new Event('animationend', { bubbles: true })))
+    visit('#/stats')
+    act(() => { vi.advanceTimersByTime(11000) })
+    expect(host.querySelector('.xm-flight')).toBeNull()
+    act(() => { vi.advanceTimersByTime(90000) })
+    visit('#/plan')
+    act(() => { vi.advanceTimersByTime(11000) })
+    expect(host.querySelector('.xm-flight')).not.toBeNull()
+  })
+
+  it('never on the workout screen, never with reduced motion', async () => {
+    timers()
+    let m = await load()
+    m._resetFlightForTests()
+    render(<m.Layer hidden fresh={false} workout />)
+    act(() => { vi.advanceTimersByTime(20000) })
+    expect(host.querySelector('.xm-flight')).toBeNull()
     act(() => root.unmount()); root = createRoot(host)
-    ;({ Layer } = await load())                    // a new start, the same day
-    render(<Layer hidden={false} fresh={false} />)
-    act(() => { vi.advanceTimersByTime(60000) })
-    expect(host.querySelector('.xm-sleigh')).toBeNull()
+    reduce = true
+    m = await load()
+    m._resetFlightForTests()
+    render(<m.Layer hidden={false} fresh={false} />)
+    act(() => { vi.advanceTimersByTime(20000) })
+    expect(host.querySelector('.xm-flight')).toBeNull()
+  })
+})
+
+describe('Rudolph', () => {
+  it('hides his nose in one spot a day, a different one the next day', async () => {
+    const m = await load()
+    const spots = new Set()
+    for (let d = 1; d <= 8; d++) spots.add(m.noseSpotOf(new Date(2026, 11, d, 9)))
+    expect([...spots].sort()).toEqual([...m.NOSE_SPOTS].sort())
+    expect(m.noseSpotOf(new Date(2026, 11, 5, 9))).not.toBe(m.noseSpotOf(new Date(2026, 11, 6, 9)))
+    render(<>{m.NOSE_SPOTS.map(sp => <div key={sp} className="card"><m.Deco spot={sp} /></div>)}</>)
+    const noses = host.querySelectorAll('[data-rudolph]')
+    expect(noses).toHaveLength(1)
+    expect(noses[0].getAttribute('data-rudolph')).toBe(m.noseSpotOf())
+    expect(noses[0].getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('found with a tap: a buzz, a hello, and he is gone until tomorrow', async () => {
+    reduce = true
+    const m = await load()
+    const card = vi.fn()
+    render(<div onClick={card}><m.Deco spot={m.noseSpotOf()} /></div>)
+    act(() => host.querySelector('.xm-nose').click())
+    expect(buzz.vibrate).toHaveBeenCalledTimes(1)
+    expect(ui.toast.mock.calls[0][0]).toMatch(/Rudolph/)
+    expect(card).not.toHaveBeenCalled()
+    expect(host.querySelector('[data-rudolph]')).toBeNull()
+    render(<m.Deco spot={m.noseSpotOf()} key="again" />)
+    expect(host.querySelector('[data-rudolph]')).toBeNull()      // the same day: still hiding
   })
 })
 
@@ -108,16 +192,17 @@ describe('the present', () => {
 })
 
 describe('the spots', () => {
-  it('Santa hat, holly, baubles, gingerbread and snowman: all decoration, none in the way', async () => {
+  it('Santa hat, holly, trees, a gingerbread house, baubles, gingerbread and snowman: all decoration, none in the way', async () => {
     const { Deco } = await load()
-    render(<>{['streak-flame', 'home-hero', 'stats-hdr', 'stats-tile', 'stats-heatmap', 'stats-web', 'stats-peek', 'workout-hdr', 'finish'].map(s => <Deco key={s} spot={s} />)}</>)
-    for (const sel of ['.xm-hat', '.xm-holly', '.xm-lights', '.xm-baubles', '.xm-ginger-hang', '.xm-peek-snowman', '.xm-wcorner', '.xm-finish']) {
+    render(<>{['streak-flame', 'home-hero', 'plan-card', 'stats-hdr', 'stats-tile', 'stats-heatmap', 'stats-web', 'stats-peek', 'workout-hdr', 'finish'].map(s => <Deco key={s} spot={s} />)}</>)
+    for (const sel of ['.xm-hat', '.xm-holly', '.xm-peek-house', '.xm-plandeco', '.xm-lights', '.xm-baubles', '.xm-ginger-hang', '.xm-peek-snowman', '.xm-wcorner', '.xm-wtree', '.xm-finish']) {
       const el = host.querySelector(sel)
       expect(el, sel).not.toBeNull()
       expect(el.closest('[aria-hidden="true"]'), sel).not.toBeNull()
     }
-    expect(host.querySelector('button, a, input, [tabindex]')).toBeNull()
-    render(<Deco spot="plan-card" />)
+    // the only thing that takes a tap is Rudolph's nose, out of the keyboard's way
+    expect([...host.querySelectorAll('button, a, input, [tabindex]')].every(el => el.classList.contains('xm-nose') && el.tabIndex === -1)).toBe(true)
+    render(<Deco spot="plan-ideas" />)
     expect(host.innerHTML).toBe('')
   })
 

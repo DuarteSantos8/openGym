@@ -33,8 +33,9 @@ import './christmas.css'
 /* Christmas (v1.4.4), fetched only while the theme shows (components/Seasonal.jsx), with the
    advent calendar (lib/advent.js, seasonal/advent-doors.js). Like Halloween: hand-drawn inline
    SVG, moved with transforms and opacity only, every animation with an end, and everything
-   aria-hidden and letting taps through except the present and the calendar. The snow and the
-   sleigh go behind the page (z-index -1), so they can never sit on a button. */
+   aria-hidden and letting taps through except the present, Rudolph's nose and the calendar. The
+   snow goes behind the page (z-index -1), so it can never sit on a button; Santa's team flies
+   over it for a few seconds now and then, lets every tap through and leaves at the first touch. */
 
 /* ---------------------------------------------------------------- art -- */
 
@@ -106,20 +107,60 @@ const Bauble = ({ gold = false }) => (
   </svg>
 )
 
-// Santa's sleigh and two reindeer, the front one with the famous nose, as one silhouette.
-const Sleigh = () => (
-  <svg className="xm-sleighsvg" viewBox="0 0 120 40" aria-hidden="true" focusable="false">
-    <path className="xm-ink" d="M5 24h30c3.2 0 5.6-2 6.6-5.2l1.8-6.4h-5.6l-1.8 4.2H13c-3.4 0-6.6 2.6-8 7.4Z" />
-    <path className="xm-line" d="M1.6 31.6h35.6c4.2 0 6.6-2 7.4-5M12 25v6.4M32 25v6.4" />
-    <path className="xm-ink" d="M16.4 16.6c0-5.4 3-8.8 7-8.8s7 3.4 7 8.8Z" />
-    <circle className="xm-ink" cx="23.4" cy="6.4" r="3.2" />
-    <path className="xm-ink" d="M20.2 4.8c.8-3 3.6-4.6 6.8-3.4l2.6 2.8-2.8.4Z" />
-    <path className="xm-line xm-reins" d="M42 13.6 63 16.8M66 15.4 89 16.8" />
-    <path className="xm-ink" d="M61.6 15.4c2.6-2.4 10-2.6 15-1l4-5.8 2.4.8-2.6 7.4c-.6 2.6-3.8 4-9.4 4.2-6 .2-9.8-1.2-9.4-5.6Z" />
-    <path className="xm-line" d="M64.6 19.6 61 26.4M68 20.4l-1.2 6.6M75.4 20.4l2.6 6.2M78.6 19.4l3.8 5.2M81.6 8.4l-1.4-4M80.8 6l-2.4-1M83.6 8.8l1.4-4.2M84.6 6.2l2.4-1" />
-    <path className="xm-ink" d="M87.6 15.4c2.6-2.4 10-2.6 15-1l4-5.8 2.4.8-2.6 7.4c-.6 2.6-3.8 4-9.4 4.2-6 .2-9.8-1.2-9.4-5.6Z" />
-    <path className="xm-line" d="M90.6 19.6 87 26.4M94 20.4l-1.2 6.6M101.4 20.4l2.6 6.2M104.6 19.4l3.8 5.2M107.6 8.4l-1.4-4M106.8 6l-2.4-1M109.6 8.8l1.4-4.2M110.6 6.2l2.4-1" />
-    <circle className="xm-nose" cx="109.4" cy="10.4" r="1.7" />
+// One reindeer, facing right: body, legs and antlers. The team below draws it nine times.
+const DEER = <>
+  <path className="xm-deer" d="M.6 15.4c2.6-2.4 10-2.6 15-1l4-5.8 2.4.8-2.6 7.4c-.6 2.6-3.8 4-9.4 4.2-6 .2-9.8-1.2-9.4-5.6Z" />
+  <path className="xm-deerline" d="M3.6 19.6 0 26.4M7 20.4l-1.2 6.6M14.4 20.4l2.6 6.2M17.6 19.4l3.8 5.2" />
+  <path className="xm-antler" d="M20.6 8.4l-1.4-4M19.8 6l-2.4-1M22.6 8.8l1.4-4.2M23.6 6.2l2.4-1" />
+</>
+
+/* Santa in his sleigh with all nine reindeer: Dasher, Dancer, Prancer and Vixen, Comet, Cupid,
+   Donner and Blitzen in pairs, and Rudolph out in front with the nose that lights the way. The
+   pair's far reindeer sits a little higher and lighter, for depth. */
+const PAIRS = [62, 96, 130, 164]
+const SantaTeam = () => (
+  <svg className="xm-teamsvg" viewBox="0 0 232 42" aria-hidden="true" focusable="false">
+    <path className="xm-reins" d="M42 14.6C80 11 150 12 206 15.6" />
+    {PAIRS.map((x, i) => <g key={i} className="xm-pair" style={{ animationDelay: i * 0.08 + 's' }}>
+      <g className="xm-far" transform={`translate(${x + 7} 9) scale(.86)`}>{DEER}</g>
+      <g transform={`translate(${x} 12)`}>{DEER}</g>
+    </g>)}
+    <g className="xm-pair" transform="translate(198 10)">{DEER}<circle className="xm-rudolph" cx="21.8" cy="10.4" r="2" /></g>
+    <g className="xm-sleighg">
+      <path className="xm-sack" d="M8.4 16.8c-1-5.4 1.6-9.6 6-10.4 3.6-.6 5.6 2.2 5.4 5.4l-.6 5Z" />
+      <path className="xm-santa" d="M16.4 16.6c0-5.4 3-8.8 7-8.8s7 3.4 7 8.8Z" />
+      <circle className="xm-beard" cx="24.6" cy="7.8" r="3" />
+      <path className="xm-santa" d="M21.2 5.4c.8-3 3.6-4.6 6.8-3.4l2.6 2.8-2.8.4Z" />
+      <circle className="xm-beard" cx="30.6" cy="4.6" r="1.1" />
+      <path className="xm-sled" d="M5 24h30c3.2 0 5.6-2 6.6-5.2l1.8-6.4h-5.6l-1.8 4.2H13c-3.4 0-6.6 2.6-8 7.4Z" />
+      <path className="xm-runner" d="M1.6 31.6h35.6c4.2 0 6.6-2 7.4-5M12 25v6.4M32 25v6.4" />
+    </g>
+  </svg>
+)
+
+// A little decorated tree with its star, for a card's edge and the workout's quiet corner.
+const DecoTree = () => (
+  <svg className="xm-decotree" viewBox="0 0 30 40" aria-hidden="true" focusable="false">
+    <path className="xm-tree-c" d="M15 4 8 14h14Z" /><path className="xm-tree-c xm-tree-b" d="M15 10 5.5 23h19Z" /><path className="xm-tree-c" d="M15 17 3 33h24Z" />
+    <rect className="xm-trunk" x="12.6" y="33" width="4.8" height="5" rx="1" />
+    <path className="xm-garland" d="M10.6 12.6q4.4 2 8.8 0M8 20.6q7 3 14 0M5.6 29q9.4 3.6 18.8 0" />
+    <circle className="xm-b1" cx="12.4" cy="15.4" r="1.4" /><circle className="xm-b2" cx="18" cy="19" r="1.4" /><circle className="xm-b3" cx="10" cy="24.6" r="1.5" />
+    <circle className="xm-b1" cx="20.4" cy="27.4" r="1.5" /><circle className="xm-b2" cx="14.6" cy="30" r="1.4" />
+    <path className="xm-tstar" d="m15 .4 1.1 2.3 2.5.3-1.8 1.7.4 2.5L15 6l-2.2 1.2.4-2.5-1.8-1.7 2.5-.3Z" />
+  </svg>
+)
+
+// A gingerbread house: icing on the roof, a candy on every corner, smoke from the chimney optional.
+const GingerHouse = () => (
+  <svg className="xm-housesvg" viewBox="0 0 40 34" aria-hidden="true" focusable="false">
+    <rect className="xm-ginger" x="29" y="3" width="4.4" height="9" rx=".8" />
+    <rect className="xm-ginger" x="6" y="15" width="28" height="18" rx="1.6" />
+    <path className="xm-ginger xm-roof" d="M2 17.6 20 3l18 14.6Z" />
+    <path className="xm-icing" d="M2.6 17.4 20 3.6l17.4 13.8M3.4 17.6q1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0 1.6 2.4 3.2 0" />
+    <rect className="xm-door" x="16.6" y="22.4" width="6.8" height="10.6" rx="3.4" />
+    <rect className="xm-window" x="8.6" y="20.4" width="5.4" height="5.4" rx="1" /><rect className="xm-window" x="26" y="20.4" width="5.4" height="5.4" rx="1" />
+    <path className="xm-icing" d="M11.3 20.4v5.4M8.6 23.1h5.4M28.7 20.4v5.4M26 23.1h5.4" />
+    <circle className="xm-gumdrop" cx="20" cy="9.6" r="1.4" /><circle className="xm-gumdrop xm-g2" cx="13.8" cy="13.4" r="1.2" /><circle className="xm-gumdrop xm-g3" cx="26.2" cy="13.4" r="1.2" />
   </svg>
 )
 
@@ -139,15 +180,24 @@ if (typeof document !== 'undefined') {
     if (away) onReturn.forEach(fn => fn())
   })
 }
-let sleighPlan = null
+
+/* Santa's flight: an occasional pass of the whole team across the screen, over the page but under
+   every bar and sheet, letting taps through and fading away at the first touch. At
+   most one per screen visit, a few seconds after it opens, and never again within FLIGHT_GAP_MS,
+   so it stays a treat and not a screensaver. Never on the workout screen, never with reduced
+   motion, never while the app is in the background. */
+export const FLIGHT_GAP_MS = 90 * 1000
+export const FLIGHT_PAUSE_MS = 6000
+let lastFlight = 0
+export const _resetFlightForTests = () => { lastFlight = 0 }
 
 /**
- * The snow and, once a day, the sleigh. On the workout screen (`hidden`) only the snow, and only
- * with "Also during workouts" on (`workout`); with reduced motion, neither.
+ * The snow and Santa's flights. On the workout screen (`hidden`) only the snow, and only with
+ * "Also during workouts" on (`workout`); with reduced motion, neither.
  */
 export function Layer({ hidden, fresh, workout }) {
   const [snow, setSnow] = useState(0)        // 0: no snow; each new number is a new fall
-  const [sleigh, setSleigh] = useState(false)
+  const [flight, setFlight] = useState(0)    // 0: Santa is elsewhere; each new number is a pass
   const show = !hidden || !!workout
   useEffect(() => {
     const fall = () => { if (!reducedMotion()) setSnow(n => n + 1) }
@@ -159,14 +209,34 @@ export function Layer({ hidden, fresh, workout }) {
     return () => { onReturn.delete(fall) }
   }, [fresh])
   useEffect(() => {
-    if (hidden || reducedMotion() || doneToday('sleigh')) return
-    if (sleighPlan === null) sleighPlan = 12000 + Math.random() * 30000
-    const tm = setTimeout(() => { if (onceToday('sleigh')) setSleigh(true) }, sleighPlan)
-    return () => clearTimeout(tm)
+    if (hidden) return
+    let tm = null
+    const plan = () => {
+      clearTimeout(tm)
+      tm = setTimeout(() => {
+        if (reducedMotion() || document.hidden || Date.now() - lastFlight < FLIGHT_GAP_MS) return
+        lastFlight = Date.now()
+        setFlight(n => n + 1)
+      }, FLIGHT_PAUSE_MS + Math.random() * 4000)
+    }
+    plan()
+    window.addEventListener('hashchange', plan)
+    return () => { clearTimeout(tm); window.removeEventListener('hashchange', plan) }
   }, [hidden])
+  // A touch anywhere while he flies: he steps aside at once instead of crossing what you tap.
+  const [leaving, setLeaving] = useState(false)
+  useEffect(() => {
+    if (!flight) return
+    setLeaving(false)
+    const away = () => setLeaving(true)
+    window.addEventListener('pointerdown', away, true)
+    return () => window.removeEventListener('pointerdown', away, true)
+  }, [flight])
   return <>
     {snow > 0 && show && !reducedMotion() && <Snow key={snow} few={hidden} onGone={() => setSnow(0)} />}
-    {sleigh && !hidden && <div className="xm-sleigh" aria-hidden="true" onAnimationEnd={() => setSleigh(false)}><Sleigh /></div>}
+    {flight > 0 && !hidden && <div key={flight} className={'xm-flight' + (leaving ? ' xm-leave' : '')} aria-hidden="true"
+      onAnimationEnd={e => { if (e.target === e.currentTarget) setFlight(0) }}
+      onTransitionEnd={e => { if (e.target === e.currentTarget && leaving) setFlight(0) }}><SantaTeam /></div>}
   </>
 }
 
@@ -195,12 +265,18 @@ function Snow({ few, onGone }) {
 
 /** Decoration for one place in a view. Unknown spots draw nothing. */
 export function Deco({ spot }) {
+  return <>{art(spot)}{NOSE_SPOTS.includes(spot) && <Nose spot={spot} />}</>
+}
+function art(spot) {
   switch (spot) {
     case 'header-bats': return <Lights />
-    case 'home-hero': return <Holly className="xm-holly-br" />
+    // Home: holly in the hero's corner, a gingerbread house peeking over its top edge.
+    case 'home-hero': return <><Holly className="xm-holly-br" /><span className="xm-peek xm-peek-house" aria-hidden="true"><span className="xm-pk"><GingerHouse /></span></span></>
     case 'home-streak': return <PeekPresent />
     case 'streak-flame': return <FlameHat />
     case 'home-advent': return <><IconSuggest /><AdventCard /></>
+    // Plan: a decorated tree and a present in the empty top corner of How you train.
+    case 'plan-card': return <span className="xm-plandeco" aria-hidden="true"><span className="xm-pk"><DecoTree /></span><span className="xm-pk xm-pk-gift"><Present hue={1} /></span></span>
     // Stats: lights along the header, two baubles in the lifetime tile, a gingerbread person
     // hanging off the activity card, holly in a corner and a snowman peeking over a card.
     case 'stats-hdr': return <Lights />
@@ -208,14 +284,50 @@ export function Deco({ spot }) {
     case 'stats-heatmap': return <span className="xm-ginger-hang" aria-hidden="true"><Gingerbread /></span>
     case 'stats-web': return <Holly className="xm-holly-bl" />
     case 'stats-peek': return <span className="xm-peek xm-peek-snowman" aria-hidden="true"><span className="xm-pk"><Snowman /></span></span>
-    // The workout screen: a bauble in the side gutter, two flakes along the rest bar's top edge,
-    // presents beside the finish screen's trophy. Nothing on a set, a button or a timer.
-    case 'workout-hdr': return <span className="xm-wcorner" aria-hidden="true"><HangingBauble len={20} className="xm-hang-w" /></span>
+    // The workout screen: a bauble in one side gutter, a little tree in the other, two flakes along
+    // the rest bar's top edge, presents beside the finish screen's trophy. Nothing on a set, a
+    // button or a timer.
+    case 'workout-hdr': return <><span className="xm-wcorner" aria-hidden="true"><HangingBauble len={20} className="xm-hang-w" /></span><span className="xm-wcorner xm-wcorner-e" aria-hidden="true"><span className="xm-wtree"><DecoTree /></span></span></>
     case 'rest-timer': return <RestFlakes />
     case 'streak-party':
     case 'finish': return <span className="xm-finish" aria-hidden="true"><span className="xm-pk"><Present hue={0} /></span><span className="xm-pk xm-pk-r"><Present hue={1} /></span></span>
     default: return null
   }
+}
+
+/* Rudolph hides somewhere every day: only his nose shows, glowing over the top edge of one card
+   (on Plan: from behind the little tree), a different spot each day (NOSE_SPOTS, by the day of
+   the year). Found (a tap), he says hi with a
+   sparkle and a buzz, and stays hidden until tomorrow. Per device, like the present. */
+export const NOSE_SPOTS = ['home-hero', 'plan-card', 'stats-tile', 'stats-web']
+const dayOfYear = d => Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(d.getFullYear(), 0, 1)) / 864e5)
+export const noseSpotOf = (now = seasonNow()) => NOSE_SPOTS[dayOfYear(now) % NOSE_SPOTS.length]
+
+function Nose({ spot }) {
+  const ref = useRef(null)
+  const [gone, setGone] = useState(() => doneToday('rudolph'))
+  const [burst, setBurst] = useState(null)
+  useEffect(() => {
+    if (!burst) return
+    const tm = setTimeout(() => { setBurst(null); setGone(true) }, 1100)
+    return () => clearTimeout(tm)
+  }, [burst])
+  if (spot !== noseSpotOf() || (gone && !burst)) return null
+  const tap = e => {
+    e.stopPropagation()
+    if (!onceToday('rudolph')) { setGone(true); return }
+    vibrate([10, 30, 10, 30, 24])
+    useUI.getState().toast(t('You found Rudolph! He says hi and hides again. New spot tomorrow.'))
+    const r = ref.current?.getBoundingClientRect()
+    if (r && !reducedMotion()) setBurst({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
+    else setGone(true)
+  }
+  return <>
+    {!burst && <span className={'xm-nose-peek' + (spot === 'plan-card' ? ' xm-nose-tree' : '')} aria-hidden="true" data-rudolph={spot}>
+      <button type="button" ref={ref} className="xm-nose" tabIndex={-1} aria-hidden="true" onClick={tap} onKeyDown={e => e.stopPropagation()}><i /></button>
+    </span>}
+    {burst && <Confetti at={burst} />}
+  </>
 }
 
 // The Santa hat on the streak flame, unless the flame is the festive one, which has its own.
