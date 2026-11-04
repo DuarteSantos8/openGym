@@ -253,6 +253,14 @@ session it belongs to; once that workout is finished it can only be dismissed. E
 a line in the Coach's history. Changes are flat scalar fields rather than one `after` of many
 shapes, so a provider that closes every object for a strict schema (#804) can still write them.
 
+Once applied, the sheet offers what those changes would mean for the routine
+(`frontend/src/lib/coach-adapt-routine.js`): a swap kept, the order kept, an added exercise kept.
+Sets, reps, weight and rest stay with today; the routine is the plan, and a session never edits
+its numbers. A swap is offered only into an exercise logged the same way, a reorder only from a
+session that was still in the routine's order, an addition next to its slot. Each goes through the
+Coach's own change-set (`applyChangeSet`), so a snapshot is taken first and Undo in the Coach puts
+the routine back; the last review's window is left alone, since this is not a review.
+
 The running session is sent the way a question sends it (`today`): exercise ids, targets and the
 sets' numbers, no notes, no media, and never the form videos of a set.
 

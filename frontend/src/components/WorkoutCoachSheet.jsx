@@ -1,7 +1,9 @@
 // "Ask the Coach" on an exercise in the middle of a workout (the `adapt` job): say what is going
 // on (it hurts, the rack is taken, short on time, feeling great, running on empty), and the Coach
 // suggests a few changes to what is left of the session, as cards you tick. Nothing changes until
-// you apply them; logged sets and the routine are never touched (lib/coach-adapt.js).
+// you apply them; logged sets and the routine are never touched (lib/coach-adapt.js). Applied, the
+// sheet offers what they would mean for the routine (lib/coach-adapt-routine.js): a swap kept, the
+// order kept, an added exercise kept, each through the Coach's own change-set and its Undo.
 //
 // It goes through the same door as every Coach job (lib/coach-api.js): the data-sharing question
 // first, the same polling, the same failures in the app's voice.
@@ -10,9 +12,10 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
 import { fmtRest } from '../lib/duration.js'
-import { exTitle, appendLog } from '../lib/coach.js'
+import { exTitle, appendLog, applyChangeSet, changeTitle } from '../lib/coach.js'
 import { useCoachStatus, requestAdapt, resolvePending, jobErrorText, isDeclined } from '../lib/coach-api.js'
 import { adaptFor, markAdaptStale, applyAdapt, adaptLogEntry } from '../lib/coach-adapt.js'
+import { routineChangesFor, sessionBefore } from '../lib/coach-adapt-routine.js'
 import Icon from './Icon.jsx'
 import { Button, Check, TextField } from './ui.jsx'
 import '../coach.css'
@@ -43,8 +46,12 @@ export function adaptTitle(c) {
   }
 }
 
-/** The proposal as tickable cards: in the sheet during the workout, and in the Coach's chat. */
-export function AdaptProposal({ p, onDone }) {
+/**
+ * The proposal as tickable cards: in the sheet during the workout, and in the Coach's chat. With
+ * `onApplied`, what the applied changes would mean for the routine is handed over instead of
+ * closing, when there is anything to offer.
+ */
+export function AdaptProposal({ p, onDone, onApplied }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const toast = useUI(s => s.toast)
@@ -63,9 +70,13 @@ export function AdaptProposal({ p, onDone }) {
     const rest = ui.timer
     const owner = rest?.forIdx != null ? S.active?.entries?.[rest.forIdx]?.id : null
     let applied = []
+    let routine = []
     update(s => {
+      const before = sessionBefore(s.active)
       applied = applyAdapt(s, p, ids).applied
-      if (applied.length) appendLog(s, adaptLogEntry(p, applied))
+      if (!applied.length) return
+      appendLog(s, adaptLogEntry(p, applied))
+      if (onApplied) routine = routineChangesFor(p.changes.filter(c => applied.includes(c.id)), s.routines || [], before, s.active)
     })
     if (owner) {
       const at = (useStore.getState().S.active?.entries || []).findIndex(e => e.id === owner)
@@ -73,6 +84,7 @@ export function AdaptProposal({ p, onDone }) {
     }
     resolvePending({ accepted: applied, rejected: marked.filter(c => !applied.includes(c.id)).map(c => c.id) }).catch(() => {})
     toast(applied.length ? tn('{0} change made to this workout', '{0} changes made to this workout', applied.length) : t('Nothing could be applied any more.'))
+    if (routine.length) { onApplied({ proposalId: p.id, routine }); return }
     finish()
   }
   const dismiss = () => {
@@ -106,7 +118,50 @@ export function AdaptProposal({ p, onDone }) {
   </div>
 }
 
-/** The sheet: the question, the wait, the answer. */
+/** After the changes are applied: what they would mean for the routine, as cards you tick. */
+export function RoutineOffer({ offer, close }) {
+  const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  const toast = useUI(s => s.toast)
+  const [picked, setPicked] = useState(() => new Set())
+  const toggle = id => setPicked(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+  // Through the Coach's own change-set: a snapshot first, so the Coach's Undo puts the routine back.
+  const apply = () => {
+    const chosen = offer.routine.filter(c => picked.has(c.id))
+    if (!chosen.length) return
+    try {
+      update(s => {
+        const lastReview = s.coach?.lastReview ?? null
+        applyChangeSet(s, { id: offer.proposalId, summary: t('Routine changes from today’s workout.'), changes: chosen }, chosen.map(c => c.id))
+        // Not a review: the next one still reads everything trained since the last.
+        s.coach.lastReview = lastReview
+      })
+    } catch {
+      toast(t('Your routine changed since then, so nothing was updated.'))
+      close(); return
+    }
+    toast(t('Routine updated'))
+    close()
+  }
+  return <div className="pcard adapt-card">
+    <div className="pcard-hd">
+      <h2 className="pcard-h">{t('Update your routine too?')}</h2>
+    </div>
+    {offer.routine.map(c => <div key={c.id} className="pcard-chg">
+      <div className="grow">
+        <div className="pcard-chg-t">{changeTitle(c, S)}</div>
+        <div className="pcard-chg-w">{c.why}</div>
+      </div>
+      <Check checked={picked.has(c.id)} onChange={() => toggle(c.id)} label={changeTitle(c, S)} />
+    </div>)}
+    <div className="pcard-ft">
+      <Button variant="primary" icon="check" onClick={apply} disabled={!picked.size}>{t('Update routine')}</Button>
+      <Button onClick={close}>{t('Not now')}</Button>
+    </div>
+  </div>
+}
+
+/** The sheet: the question, the wait, the answer, and what it would mean for the routine. */
 export default function WorkoutCoachSheet({ entryIdx, close }) {
   const S = useStore(s => s.S)
   const entry = S.active?.entries?.[entryIdx]
@@ -116,6 +171,7 @@ export default function WorkoutCoachSheet({ entryIdx, close }) {
   const [sent, setSent] = useState(null)        // the job this sheet started
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const [offer, setOffer] = useState(null)   // routine changes offered once the Coach's were applied
   const mine = pending?.kind === 'adapt' && adaptFor(S, pending) ? pending : null
 
   // The sheet started a job and it ended without a proposal: say what came back.
@@ -134,7 +190,8 @@ export default function WorkoutCoachSheet({ entryIdx, close }) {
     } finally { setBusy(false) }
   }
 
-  if (mine) return <div className="workout-coach"><AdaptProposal p={mine} onDone={close} /></div>
+  if (offer) return <div className="workout-coach"><RoutineOffer offer={offer} close={close} /></div>
+  if (mine) return <div className="workout-coach"><AdaptProposal p={mine} onDone={close} onApplied={setOffer} /></div>
   const name = entry ? exTitle(entry.id) : ''
   return <div className="workout-coach">
     <div className="pcard-eyebrow"><Icon name="sparkles" /> {t('Ask the Coach')}</div>
