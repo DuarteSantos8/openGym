@@ -184,12 +184,13 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
       // Policy, end policy, references and amends apply from the next attempt with no prescription and no work.
       applies = e => (startedAt != null ? e.t <= startedAt : !closedWindow || periodAt(e.t) <= k)
       def = amends.filter(applies).at(-1)?.def ?? run.def
-      // A repair (spec 7.1): an attempt held up by a gone occurrence takes the latest definition,
-      // which rebinds or drops it; the next attempt then starts after that amend.
+      // A repair (spec 7.1): an attempt held up by a gone occurrence takes the first later amend
+      // that rebinds or drops it, when that amend came while its window was still open. A window
+      // that closed unrepaired keeps the closure it had: the occurrence is read as having been there.
       const gone = s => !!routines && !routines.find(r => r.id === s.rid)?.ex?.some(o => o.occurrenceId === s.oid)
       const stuck = d => { const tr = d.tracks.find(t => t.id === id); return !!tr && slotsOf(run, d, tr, k).some(s => s.required && gone(s) && !credit.has(`${id}|${s.id}`) && !dispositionOf(s.id)) }
-      const repair = routines && latest !== def && stuck(def) && !stuck(latest) ? amends.at(-1) : null
-      if (repair) def = latest
+      const fix = routines && stuck(def) ? amends.find(e => !applies(e) && !stuck(e.def)) : null
+      if (fix && periodAt(fix.t) <= k) def = fix.def
       const track = def.tracks.find(t => t.id === id)
       known = track ?? known
       tm ??= rt.tm ?? (track?.tm ? { value: track.tm.value, unit: track.tm.unit } : null)
@@ -226,11 +227,11 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
         const j = track.stages.findIndex(s => s.id === off[0].x.programme.stage)
         if (j >= 0) { i = j; stage = track.stages[j]; attempt = tries[stage.id] = off[0].x.programme.attempt }
       }
-      const blocked = bound.some(s => s.required && gone(s) && !credit.has(`${id}|${s.id}`) && !dispositionOf(s.id))
+      const blocked = !closedWindow && bound.some(s => s.required && gone(s) && !credit.has(`${id}|${s.id}`) && !dispositionOf(s.id))
       // R: when the evidence arrived. Work started for this window and finished later, or a later
       // disposition or resolve, moves the effective close to its time (spec 7.4); a correction
       // assigned afterwards is history and does not. `early` is each slot as the window left it.
-      let R = -Infinity, base = -Infinity, settled = repair ? repair.t : -Infinity
+      let R = -Infinity, base = -Infinity, settled = -Infinity
       const credits = []
       const read = (stage.kind === 'rest' ? [] : bound).map(s => {
         const key = `${id}|${s.id}`
@@ -239,7 +240,7 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
         let d = c || act ? null : dispositionOf(s.id)
         // Work recomputed away awaits its redo, or a resolve: it is never read as unattempted.
         const redo = !c && !act && !d && works(s).length > 0
-        if (!c && !act && !d && !redo && closedWindow && !gone(s)) d = { type: 'close' }
+        if (!c && !act && !d && !redo && closedWindow) d = { type: 'close' }
         const o0 = redo ? { outcome: closedWindow ? 'unknown' : 'pending', reasons: ['recomputed'] }
           : c && !c.p ? { outcome: 'unknown', reasons: ['missing_prescription'] } : slotOutcome({ prescription: c?.p, exposure: c?.x ?? null, disposition: d, active: act })
         const r = resolved.get(s.id)
@@ -263,7 +264,7 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
       const reasons = reasonsOf(x => x.slot.outcome)
       const pending = required.some(x => x.slot.outcome === 'pending')
       R = Math.max(R, settled)
-      const late = !!repair || required.some(x => x.early !== x.slot.outcome)
+      const late = required.some(x => x.early !== x.slot.outcome)
       const policy = of('policy').filter(e => e.trackId === id && applies(e)).at(-1)?.policy ?? rt.policy ?? track.policy ?? REPEAT
       const free = stage.kind === 'rest' || (stage.kind === 'recovery' && stage.close === 'calendar')
       const repeat = (reasons.failed.length > 0 && policy.onFailure === 'repeat') || (reasons.skipped.length > 0 && policy.onSkipped === 'repeat')
@@ -278,7 +279,7 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
       const goal = i === lastWork && success
       const quiet = !late && required.length > 0 && required.every(x => x.slot.reasons[0] === 'close')
       push(decisions, decision(goal ? 'achieve' : action, weekly && periodAt(R) > k ? dateIn(R, tz) : endOf(R)), quiet)
-      // In a rotation a round's own exposures close it on time, whatever their completedAt: only a later resolve or repair defers.
+      // In a rotation a round's own exposures close it on time, whatever their completedAt: only a later resolve defers.
       const next = Math.max(k + 1, periodAt(weekly ? R : settled) + 1)
       if (action === 'repeat') { tries[stage.id] = attempt + 1; k = next; continue }
       // Advance: a success commits what the attempt earned; a miss keeps the entry values (spec 8.4).
