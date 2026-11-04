@@ -63,60 +63,90 @@
           ];
         };
 
+        # A user who runs their own nginx: the module must leave services.nginx as it found
+        # it rather than force it off. Regression guard for the removed mkForce.
+        ownNginxConfig = nixpkgs.lib.nixosSystem {
+          inherit system;
+          modules = [
+            opengymNixOSModule
+            {
+              services.opengym.enable = true;
+              services.nginx = {
+                enable = true;
+                virtualHosts."gym.example.com".root = "/srv/gym";
+              };
+              system.stateVersion = "25.05";
+            }
+          ];
+        };
+
         check = pkgs.runCommand "opengym-module-check" { } ''
           set -euo pipefail
-          # Verify the module evaluated correctly
-          echo "services.opengym.enable = ${if cfg.enable then "true" else "false"}"
-          echo "services.opengym.apiPort = ${toString cfg.apiPort}"
-          echo "services.opengym.rpId = ${cfg.rpId}"
-          echo "services.opengym.origin = ${cfg.origin}"
 
-          # Verify systemd service exists
-          echo "systemd.services.opengym-api exists = ${
-            if testConfig.config.systemd.services ? opengym-api then "true" else "false"
-          }"
+          # Compare an actual against an expected value, or fail: a check that only echoes
+          # its results passes a build that has silently stopped asserting anything.
+          check_eq() {
+            if [ "$2" != "$3" ]; then
+              echo "FAIL: $1: expected '$3', got '$2'" >&2
+              exit 1
+            fi
+          }
 
-          # Verify extra environment is applied to the API unit
-          echo "opengym-api env MY_FLAG = ${
-            if testConfig.config.systemd.services.opengym-api.environment ? MY_FLAG then
-              testConfig.config.systemd.services.opengym-api.environment.MY_FLAG
-            else
-              "missing"
-          }"
+          # Module options round-trip into the evaluated system.
+          check_eq "services.opengym.enable" "${if cfg.enable then "1" else "0"}" "1"
+          check_eq "services.opengym.apiPort" "${toString cfg.apiPort}" "3000"
+          check_eq "services.opengym.rpId" "${cfg.rpId}" "localhost"
+          check_eq "services.opengym.origin" "${cfg.origin}" "http://localhost:8080"
 
-          # Verify nginx is disabled by default (system uses Caddy)
-          echo "services.nginx.enable (default) = ${if nginxEnabled then "true" else "false"}"
+          # systemd unit is created, and extra environment reaches it.
+          check_eq "systemd opengym-api exists" "${
+            if testConfig.config.systemd.services ? opengym-api then "1" else "0"
+          }" "1"
+          check_eq "opengym-api env MY_FLAG" "${
+            testConfig.config.systemd.services.opengym-api.environment.MY_FLAG or "missing"
+          }" "1"
+          check_eq "opengym-api env TRUST_PROXY (default)" "${
+            testConfig.config.systemd.services.opengym-api.environment.TRUST_PROXY or "missing"
+          }" "1"
+          check_eq "opengym-api env PASSWORD_LOGIN (default)" "${
+            testConfig.config.systemd.services.opengym-api.environment.PASSWORD_LOGIN or "missing"
+          }" "0"
 
-          # Verify the optional managed nginx vhost gets configured
-          echo "services.nginx.enable (nginx.enable) = ${
-            if nginxTestConfig.config.services.nginx.enable then "true" else "false"
-          }"
-          echo "nginx vhost for 'localhost' = ${
-            if nginxTestConfig.config.services.nginx.virtualHosts ? localhost then "true" else "false"
-          }"
-          echo "nginx /api proxyPass = ${
+          # nginx is untouched unless the module is asked to manage a vhost (the module owns no
+          # web server of its own, so a user's services.nginx must never be forced off).
+          check_eq "services.nginx.enable (default)" "${if nginxEnabled then "1" else "0"}" "0"
+          check_eq "services.nginx.enable (nginx.enable)" "${
+            if nginxTestConfig.config.services.nginx.enable then "1" else "0"
+          }" "1"
+          check_eq "services.nginx.enable (user's own)" "${
+            if ownNginxConfig.config.services.nginx.enable then "1" else "0"
+          }" "1"
+          check_eq "user's own nginx vhost survives" "${
+            if ownNginxConfig.config.services.nginx.virtualHosts ? "gym.example.com" then "1" else "0"
+          }" "1"
+          check_eq "nginx vhost for localhost" "${
+            if nginxTestConfig.config.services.nginx.virtualHosts ? localhost then "1" else "0"
+          }" "1"
+          check_eq "nginx /api proxyPass" "${
             nginxTestConfig.config.services.nginx.virtualHosts."localhost".locations."/api/".proxyPass
               or "missing"
-          }"
-          echo "nginx /exercise-media location = ${
+          }" "http://127.0.0.1:3000"
+          check_eq "nginx /exercise-media location" "${
             if
               nginxTestConfig.config.services.nginx.virtualHosts."localhost".locations ? "/exercise-media/"
             then
-              "true"
+              "1"
             else
-              "false"
-          }"
+              "0"
+          }" "1"
 
-          # Verify frontend/media store paths are exposed for a web server
-          echo "services.opengym.web.root = ${cfg.web.root}"
-          echo "services.opengym.media.root = ${cfg.media.root}"
+          # Store paths exposed for a web server, and the system user exists.
+          check_eq "services.opengym.web.root" "${cfg.web.root}" "${opengymPackages.opengym-frontend}/share/opengym"
+          check_eq "services.opengym.media.root" "${cfg.media.root}" "${opengymPackages.opengym-frontend}/share/opengym/exercise-media"
+          check_eq "users.users.opengym exists" "${
+            if testConfig.config.users.users ? opengym then "1" else "0"
+          }" "1"
 
-          # Verify user exists
-          echo "users.users.opengym exists = ${
-            if testConfig.config.users.users ? opengym then "true" else "false"
-          }"
-
-          # All checks passed
           touch $out
         '';
       in
@@ -127,6 +157,7 @@
 
         apps.opengym = {
           type = "app";
+          meta.description = "Run the full openGym local stack (API + frontend + media behind a throwaway Caddy)";
           # Runs the full local stack: API + frontend (exercise media included) behind a throwaway
           # Caddy. Defaults to http://localhost:8080; env vars override ports/data/rp.
           program = "${pkgs.writeShellScript "opengym" ''
@@ -141,6 +172,7 @@
             export DATA_DIR
             export RP_ID=''${OPENGYM_RP_ID:-localhost}
             export ORIGIN=''${OPENGYM_ORIGIN:-http://localhost:$WEB_PORT}
+            export TRUST_PROXY=''${TRUST_PROXY:-1}
             export ALLOW_GUEST=''${ALLOW_GUEST:-1}
 
             ${opengymPackages.opengym-api}/bin/opengym-api &
@@ -180,16 +212,16 @@
 
         apps.default = self.apps.${system}.opengym;
 
-        checks = {
+        checks = pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          # Evaluates the module against a smoke-test config and asserts the resulting
+          # services/users/nginx state and extra environment.
           nixos-module-eval = check;
-        }
-        // (pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           # Boots a NixOS VM and exercises the full HTTP contract (API + nginx vhost + SPA).
           opengym-nixos-test = import ./tests.nix {
             inherit pkgs;
             modules = [ opengymNixOSModule ];
           };
-        });
+        };
 
         formatter = pkgs.nixfmt;
 
@@ -219,10 +251,8 @@
         };
       nixosModules.default = self.nixosModules.opengym;
 
-      # Conventional NixOS test output (boots a VM; also wired into checks on Linux).
-      nixosTests.opengym = import ./tests.nix {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        modules = [ self.nixosModules.opengym ];
-      };
+      # The VM integration test is exposed per-system as `checks.opengym-nixos-test` (Linux),
+      # not as a top-level `nixosTests` output — Nix does not recognise that output name and
+      # emits a warning for it.
     };
 }
