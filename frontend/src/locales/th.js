@@ -3812,4 +3812,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "นี่ไม่ใช่รูปภาพ ลองใช้ JPEG, PNG, WebP หรือ HEIC",
   "Use this photo": "ใช้รูปนี้",
   "Zoom": "ซูม",
+  "Missed plan": "พลาดแผน",
+  "Open this day": "เปิดวันนี้",
+  "Planned, not trained. Any other day this week still counts.": "วางแผนไว้แต่ไม่ได้ฝึก วันอื่นในสัปดาห์นี้ยังนับได้",
+  "Planned, not trained. Any workout that week would have counted.": "วางแผนไว้แต่ไม่ได้ฝึก ฝึกวันไหนก็ได้ในสัปดาห์นั้นก็จะนับ",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "วางแผนไว้แต่ไม่ได้ฝึก ไม่เป็นไร คุณฝึกวันอื่นแล้ว สัปดาห์นั้นจึงยังนับ",
 }

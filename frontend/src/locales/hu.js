@@ -3804,4 +3804,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "Ez nem fotó. Próbáld JPEG, PNG, WebP vagy HEIC formátumban.",
   "Use this photo": "Ezt a fotót használom",
   "Zoom": "Nagyítás",
+  "Missed plan": "Kihagyott terv",
+  "Open this day": "Nap megnyitása",
+  "Planned, not trained. Any other day this week still counts.": "Tervezve, de nem volt edzés. A hét bármelyik másik napja még beszámít.",
+  "Planned, not trained. Any workout that week would have counted.": "Tervezve, de nem volt edzés. Bármelyik edzés azon a héten beszámított volna.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Tervezve, de nem volt edzés. Semmi baj: egy másik napon edzettél, így a hét beszámít.",
 }

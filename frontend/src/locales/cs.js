@@ -3766,4 +3766,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "Tohle není fotka. Zkus JPEG, PNG, WebP nebo HEIC.",
   "Use this photo": "Použít tuto fotku",
   "Zoom": "Přiblížení",
+  "Missed plan": "Plán vynechán",
+  "Open this day": "Otevřít tento den",
+  "Planned, not trained. Any other day this week still counts.": "Naplánováno, neodcvičeno. Kterýkoli jiný den tohoto týdne se ještě počítá.",
+  "Planned, not trained. Any workout that week would have counted.": "Naplánováno, neodcvičeno. Jakýkoli trénink v tom týdnu by se započítal.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Naplánováno, neodcvičeno. Nevadí: trénoval jsi jiný den, takže týden se počítá.",
 }

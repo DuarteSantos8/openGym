@@ -11,6 +11,8 @@ import { calendarSheet } from '../sheets.jsx'
 import { todayISO, weekKey } from '../lib/format.js'
 import { StreakFlame, Freezes } from './Streak.jsx'
 import { StreakIconPicker } from './StreakIconPicker.jsx'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const mounted = []
@@ -76,6 +78,44 @@ describe('the calendar explains the streak', () => {
     calendarSheet(); const el = renderTop()
     expect(el.querySelector('.cal-grid.with-wk')).toBe(null)
     expect(el.querySelector('.cal-wk')).toBe(null)
+  })
+})
+
+describe('missed and moved planned days', () => {
+  // Two weeks back: Push planned Mon and Wed, trained Mon, Wed missed; Thu was moved Push, trained.
+  const mon = plus(thisWeek, -14)
+  const planState = () => ({ ...seeded(), routines: [{ id: 'r1', name: 'Push', ex: [] }], week: { 1: ['r1'], 3: ['r1'] },
+    dayPlan: { [plus(mon, 3)]: 'r1' },
+    workouts: [...seeded().workouts, { id: 'p1', d: mon, start: 1, end: 2, name: 'Push', routineId: 'r1', entries: [] }, { id: 'p2', d: plus(mon, 3), start: 3, end: 4, name: 'Push', routineId: 'r1', entries: [] }] })
+
+  it('a planned day gone by is a hollow dot, and says the week still counts', () => {
+    useStore.setState({ S: planState() })
+    calendarSheet(mon)
+    const el = renderTop()
+    const wed = [...el.querySelectorAll('.cal-d')].find(b => b.querySelector('span')?.textContent === String(Number(plus(mon, 2).slice(8))))
+    expect(wed.classList.contains('missed')).toBe(true)
+    expect(wed.querySelector('i').className).toBe('miss')
+    expect(wed.getAttribute('aria-label')).toMatch(/Missed plan$/)
+    expect(el.querySelector('.cal-legend').textContent).toContain('Missed plan')
+    act(() => wed.click())
+    // It stays on the calendar: the line explains, and opens the day on request.
+    expect(useUI.getState().sheets).toHaveLength(1)
+    expect(wed.getAttribute('aria-pressed')).toBe('true')
+    expect(el.querySelector('[data-wk-note]').textContent).toMatch(/Planned, not trained\. No harm done/)
+    act(() => el.querySelector('.wk-note-a').click())
+    expect(useUI.getState().sheets.length).toBeGreaterThan(0)
+  })
+
+  it('a moved day that was trained keeps an orange hint, the others plain', () => {
+    useStore.setState({ S: planState() })
+    calendarSheet(mon)
+    const el = renderTop()
+    const thu = [...el.querySelectorAll('.cal-d.has')].find(b => b.querySelector('span')?.textContent === String(Number(plus(mon, 3).slice(8))))
+    expect(thu.querySelector('i').className).toBe('done moved')
+    expect(el.querySelectorAll('.cal-d i.done:not(.moved)').length).toBeGreaterThan(0)
+    const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+    expect(css).toMatch(/\.cal-d i\.miss[^{]*\{[^}]*box-shadow/)
+    expect(css).toMatch(/\.cal-d i\.moved\{outline/)
   })
 })
 

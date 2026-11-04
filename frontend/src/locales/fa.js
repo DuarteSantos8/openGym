@@ -3766,4 +3766,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "این عکس نیست. JPEG، PNG، WebP یا HEIC را امتحان کن.",
   "Use this photo": "همین عکس",
   "Zoom": "بزرگ‌نمایی",
+  "Missed plan": "برنامهٔ جاافتاده",
+  "Open this day": "باز کردن این روز",
+  "Planned, not trained. Any other day this week still counts.": "برنامه‌ریزی شده، تمرین نشد. هر روز دیگر این هفته هنوز حساب می‌شود.",
+  "Planned, not trained. Any workout that week would have counted.": "برنامه‌ریزی شده، تمرین نشد. هر تمرینی در آن هفته حساب می‌شد.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "برنامه‌ریزی شده، تمرین نشد. اشکالی ندارد: روز دیگری تمرین کردی، پس آن هفته حساب می‌شود.",
 }

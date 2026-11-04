@@ -3856,4 +3856,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "هذه ليست صورة. جرّب JPEG أو PNG أو WebP أو HEIC.",
   "Use this photo": "استخدم هذه الصورة",
   "Zoom": "تكبير",
+  "Missed plan": "خطة فائتة",
+  "Open this day": "افتح هذا اليوم",
+  "Planned, not trained. Any other day this week still counts.": "مخطط له، دون تمرين. أي يوم آخر هذا الأسبوع ما زال يُحتسب.",
+  "Planned, not trained. Any workout that week would have counted.": "مخطط له، دون تمرين. أي تمرين في ذلك الأسبوع كان سيُحتسب.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "مخطط له، دون تمرين. لا بأس: تمرنت في يوم آخر، فالأسبوع يُحتسب على أي حال.",
 }

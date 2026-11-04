@@ -2559,6 +2559,10 @@ export const PT_BR_OVERRIDES = {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "Isso não é uma foto. Tente JPEG, PNG, WebP ou HEIC.",
   "Use this photo": "Usar esta foto",
   "Zoom": "Zoom",
+  "Missed plan": "Plano perdido",
+  "Planned, not trained. Any other day this week still counts.": "Planejado, não treinado. Qualquer outro dia desta semana ainda conta.",
+  "Planned, not trained. Any workout that week would have counted.": "Planejado, não treinado. Qualquer treino naquela semana teria contado.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planejado, não treinado. Sem problema: você treinou em outro dia, então a semana conta do mesmo jeito.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

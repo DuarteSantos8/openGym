@@ -3880,4 +3880,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "এটি ছবি নয়। JPEG, PNG, WebP বা HEIC চেষ্টা করুন।",
   "Use this photo": "এই ছবিটি নিন",
   "Zoom": "জুম",
+  "Missed plan": "বাদ পড়া পরিকল্পনা",
+  "Open this day": "এই দিনটি খুলুন",
+  "Planned, not trained. Any other day this week still counts.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। এই সপ্তাহের অন্য যেকোনো দিন এখনো গোনা হবে।",
+  "Planned, not trained. Any workout that week would have counted.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। সেই সপ্তাহে যেকোনো ওয়ার্কআউট গোনা হতো।",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। সমস্যা নেই: আপনি অন্য দিন ট্রেনিং করেছেন, তাই সপ্তাহটি তবুও গোনা হয়েছে।",
 }

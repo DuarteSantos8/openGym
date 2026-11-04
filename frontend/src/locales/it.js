@@ -3801,4 +3801,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "Questa non è una foto. Prova con JPEG, PNG, WebP o HEIC.",
   "Use this photo": "Usa questa foto",
   "Zoom": "Zoom",
+  "Missed plan": "Piano saltato",
+  "Open this day": "Apri questo giorno",
+  "Planned, not trained. Any other day this week still counts.": "Pianificato, non fatto. Qualsiasi altro giorno di questa settimana conta ancora.",
+  "Planned, not trained. Any workout that week would have counted.": "Pianificato, non fatto. Un allenamento qualsiasi quella settimana avrebbe contato.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Pianificato, non fatto. Nessun problema: ti sei allenato un altro giorno, quindi la settimana conta lo stesso.",
 }

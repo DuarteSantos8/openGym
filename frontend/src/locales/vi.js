@@ -3766,4 +3766,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "Đó không phải ảnh. Hãy thử JPEG, PNG, WebP hoặc HEIC.",
   "Use this photo": "Dùng ảnh này",
   "Zoom": "Thu phóng",
+  "Missed plan": "Lỡ kế hoạch",
+  "Open this day": "Mở ngày này",
+  "Planned, not trained. Any other day this week still counts.": "Đã lên lịch, chưa tập. Bất kỳ ngày nào khác trong tuần này vẫn được tính.",
+  "Planned, not trained. Any workout that week would have counted.": "Đã lên lịch, chưa tập. Tập bất kỳ buổi nào trong tuần đó cũng sẽ được tính.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Đã lên lịch, chưa tập. Không sao: bạn đã tập vào ngày khác, nên tuần đó vẫn được tính.",
 };

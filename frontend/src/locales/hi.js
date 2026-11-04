@@ -3801,4 +3801,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "यह फ़ोटो नहीं है। JPEG, PNG, WebP या HEIC आज़माएँ।",
   "Use this photo": "यही फ़ोटो लें",
   "Zoom": "ज़ूम",
+  "Missed plan": "छूटी योजना",
+  "Open this day": "यह दिन खोलें",
+  "Planned, not trained. Any other day this week still counts.": "योजना थी, ट्रेनिंग नहीं हुई। इस हफ़्ते का कोई भी दूसरा दिन अब भी गिना जाएगा।",
+  "Planned, not trained. Any workout that week would have counted.": "योजना थी, ट्रेनिंग नहीं हुई। उस हफ़्ते कोई भी वर्कआउट गिना जाता।",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "योजना थी, ट्रेनिंग नहीं हुई। कोई बात नहीं: आपने उस हफ़्ते किसी और दिन ट्रेनिंग की, इसलिए हफ़्ता फिर भी गिना गया।",
 }

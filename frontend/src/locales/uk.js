@@ -3798,4 +3798,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "Це не фото. Спробуй JPEG, PNG, WebP або HEIC.",
   "Use this photo": "Взяти це фото",
   "Zoom": "Масштаб",
+  "Missed plan": "План пропущено",
+  "Open this day": "Відкрити цей день",
+  "Planned, not trained. Any other day this week still counts.": "Заплановано, але без тренування. Будь-який інший день цього тижня ще зарахується.",
+  "Planned, not trained. Any workout that week would have counted.": "Заплановано, але без тренування. Зарахувалося б будь-яке тренування того тижня.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Заплановано, але без тренування. Не страшно: ти тренувався іншого дня, тож тиждень зараховано.",
 }

@@ -3801,4 +3801,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "사진이 아니에요. JPEG, PNG, WebP 또는 HEIC를 써 보세요.",
   "Use this photo": "이 사진 쓰기",
   "Zoom": "확대",
+  "Missed plan": "놓친 계획",
+  "Open this day": "이 날 열기",
+  "Planned, not trained. Any other day this week still counts.": "계획했지만 운동하지 않았어요. 이번 주 다른 날에 해도 인정돼요.",
+  "Planned, not trained. Any workout that week would have counted.": "계획했지만 운동하지 않았어요. 그 주에 아무 날이나 운동했으면 인정됐을 거예요.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "계획했지만 운동하지 않았어요. 괜찮아요: 다른 날 운동해서 그 주는 인정돼요.",
 }

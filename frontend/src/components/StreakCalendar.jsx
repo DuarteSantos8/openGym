@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t } from '../lib/i18n.js'
 import { fmtDate } from '../lib/format.js'
-import { explainWeek, freezeLine } from '../lib/streak-explain.js'
+import { explainWeek, explainMissedDay, freezeLine } from '../lib/streak-explain.js'
 import { StreakFlame, Freezes, FreezeGlyph } from './Streak.jsx'
 import Icon from './Icon.jsx'
 import { Button } from './ui.jsx'
@@ -33,13 +33,21 @@ export function WeekMark ({ wk, entry, selected, onSelect }) {
   </button>
 }
 
-/** Under the grid: the tapped week and why, or the hint to tap one. Read out when it changes. */
-export function WeekNote ({ wk, entry }) {
+/**
+ * Under the grid: the tapped week and why, or a tapped missed planned day (`day`, its week's
+ * record in `entry`) with what its week made of it and a way to the day itself, or the hint.
+ * Read out when it changes.
+ */
+export function WeekNote ({ wk, entry, day = null, onOpenDay }) {
   return <div className="wk-note small" aria-live="polite" data-wk-note>
-    {wk && entry
-      ? <><span className="wk-note-g" aria-hidden="true"><MarkGlyph s={entry.s} /></span>
-        <span><b>{t('Week of {0}', fmtDate(wk))}.</b> {explainWeek(entry)}</span></>
-      : <span className="muted">{t("Tap a week's mark to see how it counted.")}</span>}
+    {day
+      ? <><span className="wk-note-g" aria-hidden="true"><span className="wk-ring miss" /></span>
+        <span className="grow"><b>{fmtDate(day, true)}.</b> {explainMissedDay(entry)}
+          {onOpenDay && <button type="button" className="wk-note-a" onClick={() => onOpenDay(day)}>{t('Open this day')}</button>}</span></>
+      : wk && entry
+        ? <><span className="wk-note-g" aria-hidden="true"><MarkGlyph s={entry.s} /></span>
+          <span><b>{t('Week of {0}', fmtDate(wk))}.</b> {explainWeek(entry)}</span></>
+        : <span className="muted">{t("Tap a week's mark to see how it counted.")}</span>}
   </div>
 }
 

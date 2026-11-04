@@ -2592,6 +2592,13 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .cal-d i.plan{background:var(--label-3)}
 .cal-d i.ovr{background:var(--orange)}
 .cal-d i.noted{background:var(--indigo)}
+/* A planned day gone by without a workout: a hollow ring, not the plan's grey dot (that one is a
+   day still to come). A trained day that was moved: the trained dot with an orange ring round it. */
+.cal-d i.miss,.cal-legend i.miss{background:transparent;box-shadow:inset 0 0 0 1.3px var(--label-2)}
+.cal-d i.moved{outline:1.4px solid var(--orange-ink);outline-offset:1.4px}
+.cal-d.sel-day{box-shadow:inset 0 0 0 1.5px var(--label-3)}
+.wk-ring.miss{width:.5em;height:.5em;box-shadow:inset 0 0 0 1.5px var(--label-2)}
+.wk-note-a{display:block;margin-top:6px;padding:0;border:0;background:none;color:var(--acc-ink);font:inherit;font-weight:500;cursor:pointer;min-height:24px}
 .cal-legend{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:var(--fs-caption);color:var(--label-3)}
 .cal-legend i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-inline-end:5px}
 /* The streak in the calendar (components/StreakCalendar.jsx): an eighth column with each week's

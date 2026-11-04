@@ -3848,4 +3848,9 @@ export default {
   "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "Det där är inget foto. Prova JPEG, PNG, WebP eller HEIC.",
   "Use this photo": "Använd det här fotot",
   "Zoom": "Zoom",
+  "Missed plan": "Missad plan",
+  "Open this day": "Öppna dagen",
+  "Planned, not trained. Any other day this week still counts.": "Planerat, inte tränat. Vilken annan dag som helst den här veckan räknas fortfarande.",
+  "Planned, not trained. Any workout that week would have counted.": "Planerat, inte tränat. Vilket pass som helst den veckan hade räknats.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planerat, inte tränat. Ingen fara: du tränade en annan dag, så veckan räknas ändå.",
 }
