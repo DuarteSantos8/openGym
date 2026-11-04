@@ -9,7 +9,7 @@ import { machinePickerSheet, NotHereButton } from './components/MachinePicker.js
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
-import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -103,6 +103,8 @@ import { cardPalette } from './lib/card-draw.js'
 import { makeCanvas, toPng, currentAccent, isRtl } from './lib/share-image.js'
 import ShareCardSheet from './components/ShareCard.jsx'
 import { streakInfo } from './lib/streak.js'
+import { streakWeeks } from './lib/streak-explain.js'
+import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/StreakCalendar.jsx'
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
@@ -3555,8 +3557,13 @@ function mediaGoesToo(rec) {
 export const workoutDetailSheet = w => ui().openSheet(close => <WorkoutDetail w={w} close={close} />)
 
 /* ============================ calendar ============================ */
-function Calendar({ start, close }) {
+function Calendar({ start, close, help = false }) {
   const st = useStore(s => s.S)
+  // The streak's week by week (components/StreakCalendar.jsx), with Motivation on and a workout
+  // to count: a mark at the end of each row, the frozen weeks washed, one tapped week explained.
+  const streakOn = isOn(st, 'motivation') && st.workouts.length > 0
+  const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart]) // eslint-disable-line react-hooks/exhaustive-deps
+  const [selWk, setSelWk] = useState(null)
   // A day as 'YYYY-MM-DD' is read at local noon: new Date('2026-09-01') is UTC midnight, which is
   // still August west of UTC, so a tap on the 1st in Stats opened the month before (found by the
   // weekly run in America/Los_Angeles, .github/workflows/audit.yml).
@@ -3584,21 +3591,28 @@ function Calendar({ start, close }) {
     // note as the tooltip; tapping it opens the day sheet, where the note is.
     const note = !ws && dayNoteOf(st, iso)
     const dotCls = ws ? 'done' : note ? 'noted' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
-    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (iso === todayISO() ? ' today' : '')}
+    const wkOf = weeks ? weekKey(iso, weekStartOf(st)) : null
+    const frozenDay = !!wkOf && weeks.log.get(wkOf)?.s === 'frozen'
+    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (frozenDay ? ' wk-frozen' : '') + (iso === todayISO() ? ' today' : '')}
       title={note ? dayNoteLine(note, t) : undefined} onClick={() => {
       if (!ws) { close(); dayOverrideSheet(iso); return }
       if (ws.length === 1) { close(); workoutDetailSheet(ws[0]); return }
       close(); ui().openSheet(c2 => <><h3>{fmtDate(iso, true)}</h3><div className="list">{ws.map(w => <WorkoutRow key={w.id} w={w} onClick={() => { c2(); workoutDetailSheet(w) }} />)}</div></>)
     }}><span>{d}</span><i className={dotCls} /></button>)
+    // The week's mark closes its row (the last row too, short as it may be: it sits in column 8).
+    if (weeks && ((startOffset + d) % 7 === 0 || d === daysIn)) {
+      cells.push(<WeekMark key={'w' + wkOf} wk={wkOf} entry={weeks.log.get(wkOf)} selected={selWk === wkOf} onSelect={setSelWk} />)
+    }
   }
   return <>
+    {weeks && <StreakSummary info={weeks.info} help={help} />}
     <div className="row between" style={{ marginBottom: 2 }}>
       <button className="iconbtn" onClick={() => setCur(new Date(y, mo - 1, 1))} aria-label={t('Previous month')}><Icon name="chevronLeft" /></button>
       <h3 style={{ margin: 0 }}>{t(MONTHS_LONG[mo])} {y}</h3>
       <button className="iconbtn" onClick={() => setCur(new Date(y, mo + 1, 1))} aria-label={t('Next month')}><Icon name="chevronRight" /></button>
     </div>
     <div className="small muted" style={{ textAlign: 'center' }}>{monthWs.length ? `${tn('{0} workout', '{0} workouts', monthWs.length)} · ${fmtDur(monthMs)} · ${fmtVol(monthVol, st.unit)}` : t('No workouts this month')}</div>
-    <div className="cal-grid">{weekOrder(ws).map(d => <div key={d} className="cal-h">{t(DAYS[d])}</div>)}{cells}</div>
+    <div className={'cal-grid' + (weeks ? ' with-wk' : '')}>{weekOrder(ws).map(d => <div key={d} className="cal-h">{t(DAYS[d])}</div>)}{weeks && <div className="cal-h" aria-hidden="true" />}{cells}</div>
     <div className="cal-legend">
       <span><i style={{ background: 'var(--acc)' }} />{t('Trained')}</span>
       <span><i style={{ background: 'var(--label-3)' }} />{t('Planned')}</span>
@@ -3606,10 +3620,12 @@ function Calendar({ start, close }) {
       {Object.keys(st.dayNotes || {}).some(k => k.startsWith(y + '-' + String(mo + 1).padStart(2, '0')) && dayNoteOf(st, k)) &&
         <span><i style={{ background: 'var(--indigo)' }} />{t('Day note')}</span>}
     </div>
+    {weeks && <><StreakLegend /><WeekNote wk={selWk} entry={selWk ? weeks.log.get(selWk) : null} /></>}
     <div className="small dim" style={{ textAlign: 'center', marginTop: 10 }}>{t('Tap a trained day for details · tap any other day to plan a session')}</div>
   </>
 }
-export const calendarSheet = start => ui().openSheet(close => <Calendar start={start} close={close} />)
+// `help` opens the streak's how-to even after "Got it" (Stats → the streak card's link).
+export const calendarSheet = (start, { help = false } = {}) => ui().openSheet(close => <Calendar start={start} close={close} help={help} />)
 
 /* shared small workout row (used in lists) */
 export function WorkoutRow({ w, onClick, tour }) {
