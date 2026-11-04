@@ -3197,9 +3197,36 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .slevel-bar span.on{background:var(--acc-ink)}
 /* the Stats card: one line a lift (stats redesign): the lift, then its level and ratio at the end
    of the line; on a narrow phone or a long name the level wraps under it, never cut. */
-.slevel-row{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 12px;padding:9px 0}
+.slevel-row{display:flex;flex-direction:column;gap:5px;padding:9px 0}
 .slevel-row+.slevel-row{border-top:var(--hair) solid var(--sep)}
+/* the table: the lift, then its level, its ratio to body weight and its estimated 1RM in columns */
+.slevel-top{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:baseline;gap:2px 12px}
+.slevel-lvl,.slevel-num{font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.slevel-num{text-align:end}
+.slevel-scale{max-width:240px;margin:0 0 8px}
+/* each band is a button: tinted, filled to the lifter's place, ringed when selected. The ring is
+   an outline, so selecting a band moves nothing. */
+.slevel-track>button{position:relative;overflow:hidden;height:100%;padding:0;border:0;border-radius:6px;background:color-mix(in srgb,var(--lv) 22%,transparent);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.slevel-track>button:active{background:color-mix(in srgb,var(--lv) 38%,transparent)}
+.slevel-track>button.sel{outline:2px solid var(--label-2);outline-offset:1px}
+.slevel-track>button:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
+.slevel-track>button i{position:absolute;top:0;bottom:0;left:0;width:calc(var(--f,0) * 100%);background:var(--lv)}
+/* the info line under the bar holds three lines (name, ranges, and up to two lines of what it takes)
+   at a fixed minimum height, so tapping a band never reflows the card. Longer text is clamped. */
+.slevel-info{min-height:70px;margin-top:6px;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
+.slevel-info b{color:var(--label);font-weight:600}
+.slevel-info .dim{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:var(--fs-caption2);line-height:1.25}
+.slevel-ticks{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin-top:2px;font-size:var(--fs-caption2);line-height:1.2;color:var(--label-dim);font-variant-numeric:tabular-nums;white-space:nowrap}
 .slevel-ex{flex:1 1 9em;font-size:var(--fs-subhead);font-weight:500;min-width:0;overflow-wrap:break-word}
+/* The level bar: five bands in their level's colour, the fill running through them to where the
+   lifter stands. The band is a faint tint, the fill the full colour. */
+.slevel-lv-0{--lv:#8e8e93}
+.slevel-lv-1{--lv:#30d158}
+.slevel-lv-2{--lv:#0a84ff}
+.slevel-lv-3{--lv:#bf5af2}
+.slevel-lv-4{--lv:#ffd60a}
+.slevel-track{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;height:28px;margin-top:2px}
+.slevel-todo{padding:7px 0}
 .slevel-meta{flex:none;margin-inline-start:auto;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2);font-variant-numeric:tabular-nums}
 .slevel-meta b{color:var(--label);font-weight:600}
 .slevel-src{margin-top:8px}

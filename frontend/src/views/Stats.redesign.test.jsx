@@ -248,16 +248,22 @@ describe('Stats redesign: Lifts and Effort on the example profile', () => {
     expect(mocks.history).toHaveBeenCalledTimes(1)
   })
 
-  it('shows five strength levels, one line each, then Show more', () => {
+  it('lists every logged strength level on one line each with its colour bar, untried lifts under Not tried yet', () => {
     mount(demo())
     const lv = card('[data-strength-levels]')
-    if (!lv) return
-    const n = lv.querySelectorAll('.slevel-row').length
-    expect(n).toBeLessThanOrEqual(5)
-    const more = btn(lv, 'Show more')
-    if (more) { click(more); expect(lv.querySelectorAll('.slevel-row').length).toBeGreaterThan(5) }
+    expect(lv).toBeTruthy()
+    const rows = lv.querySelectorAll('.slevel-row')
+    expect(rows.length).toBeGreaterThan(0)
+    expect(btn(lv, 'Show more')).toBeFalsy()
+    rows.forEach(r => expect(r.querySelector('.slevel-track > button')).toBeTruthy())
+    const todo = btn(lv, 'Not tried yet')
+    expect(todo.getAttribute('aria-expanded')).toBe('false')
+    expect(lv.querySelectorAll('.slevel-todo')).toHaveLength(0)
+    click(todo)
+    expect(lv.querySelectorAll('.slevel-todo').length).toBeGreaterThan(0)
     expect(lv.querySelector('.slevel-bar')).toBeNull()
   })
+
 
   it('effort: the average leads in ink, harder is up in words, the spread is one stacked bar', () => {
     mount(demo())
