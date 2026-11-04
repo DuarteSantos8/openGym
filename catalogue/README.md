@@ -54,6 +54,12 @@ Open `exercises/<id>.json` (the browse pages link straight to it) and press the 
   name doesn't say so: a dumbbell fly lies on a bench, an inverted row hangs under a bar. A name
   with "bench", "incline", "pull-up" or "chin-up" already counts, so leave it out there. An
   equipment profile without that kit hides the exercise.
+- **machineKind**: required when the equipment is a machine (leverage machine, sled machine, smith
+  machine, assisted), and only then. It names the machine you need, so an equipment profile can say
+  "leg press yes, leg extension no": `leg-press` covers the lever and the 45° sled ones alike, a
+  Smith leg press is `smith`. The list is `MACHINE_KINDS` in
+  [`scripts/catalogue/validate.mjs`](../scripts/catalogue/validate.mjs); `other` is for a machine
+  no card fits, `none` for an "assisted" exercise that needs no machine (a partner, a band).
 - **muscleMap** (optional): a more precise muscle-map drawing with the body map's own muscle names
   and weights from 0 to 1. Only needed when target and secondaryMuscles don't draw it right.
 - **femaleVariant / variantOf**: links the same exercise drawn on a female figure. Leave as is.

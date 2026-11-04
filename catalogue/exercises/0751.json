@@ -3,6 +3,7 @@
   "name": "smith close-grip bench press",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",

@@ -11,7 +11,7 @@
  * and appearance settings, and every other profile's everything.
  */
 import { glyphStr } from './glyphs.js';
-import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells } from './library.js';
+import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells, gymMachines } from './library.js';
 import { muscleLoad, gymOf, challengesOf } from './context.js';
 
 export const CONTRACT = 1;
@@ -645,6 +645,10 @@ export function build(S, opts = {}) {
   }
   // Owning no dumbbells (the app's switch) wins over an equipment answer that lists them: they go
   // from what the model is told it has, and the validator turns a dumbbell lift away (noDumbbells).
+  // The gym's machine list (#923) narrows the machine exercises the same way, in the library slice
+  // and in the validator: a leg extension the gym does not have is not proposed.
+  const machines = gymMachines(S);
+  if (machines) p.machines = machines;
   if (ownsNoDumbbells(S)) {
     p.noDumbbells = true;
     if (p.coachProfile) p.coachProfile.equipment = p.coachProfile.equipment.filter(e => e.toLowerCase() !== 'dumbbell');

@@ -36,6 +36,9 @@ import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan,
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
+import { EXIDX } from '../lib/exercises.js'
+import { activeProfile } from '../lib/equipment.js'
+import { NotHereButton } from '../components/MachinePicker.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
@@ -462,6 +465,9 @@ function ReviewCard({ p, S, update, toast, refresh }) {
       {marked.changes.map(c => {
         const stale = c.status === 'stale'
         return <ChangeRow key={c.id} c={c} S={S} stale={stale}>
+          {/* A machine the gym does not have (#923): one tap takes it off the gym's list and this suggestion with it. */}
+          {!stale && (c.type === 'add-exercise' || c.type === 'swap-exercise') && <NotHereButton profile={activeProfile(S)} ex={EXIDX[c.after?.id]}
+            onDone={() => { if (accepted.has(c.id)) toggle(c.id) }} />}
           {!stale && <Check checked={accepted.has(c.id)} onChange={() => toggle(c.id)} />}
         </ChangeRow>
       })}

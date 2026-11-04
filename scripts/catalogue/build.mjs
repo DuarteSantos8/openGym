@@ -43,6 +43,7 @@ const rows = exercises
       img: e.id + '.webp', gif: e.id + '.mp4',
     }
     if (e.category) row.cat = e.category
+    if (e.machineKind) row.mk = e.machineKind
     if (e.hold) row.hd = 1
     if (e.needs) row.nd = e.needs
     if (e.femaleVariant) row.fv = e.femaleVariant

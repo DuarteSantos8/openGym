@@ -3,6 +3,7 @@
   "name": "lever one arm shoulder press",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
+  "machineKind": "shoulder-press",
   "target": "delts",
   "secondaryMuscles": [
     "triceps",

@@ -4,6 +4,8 @@ import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTa
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
+import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
+import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
@@ -241,7 +243,7 @@ const PLAN_COPY = {
 // nothing at all. planId is deliberately required — a default invites `onClick={loadStarterPlan}`,
 // which hands the click event in as the plan and silently loads nothing.
 export function loadStarterPlan(planId, profile) {
-  const plan = buildStarterPlan(planId, profile ? profileEquipment(profile) : undefined)
+  const plan = buildStarterPlan(planId, profile ? profileEquipment(profile) : undefined, profileMachines(profile))
   if (!plan) return false
   update(st => {
     // Loading the same plan again reuses the routines it added last time (same name, same
@@ -1895,6 +1897,8 @@ function ExercisePicker({ onPick, title, close, like, actionIcon, backups }) {
         <Thumb ex={e} /><button type="button" className="grow item-open tap-main" onClick={() => onPick(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(st, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
         {/* Accent tag = already in a routine/log ("Chosen"); the yellow star by the name = favourite. */}
         {usage[e.id] && <span className="tag acc"><Icon name="starFill" /></span>}
+        {/* "Not at my gym" (#923): takes this machine out of the gym the list is filtered for. */}
+        {profile && !showAll && <NotHereButton profile={profile} ex={e} />}
         {/* A "+" or "swap" glyph reads as "commit this now" — it used to just open the same detail sheet as
             tapping the row, so it added nothing until you'd scrolled past the sets/reps config
             and found the real button. Now it does what it looks like: commits with the default
@@ -2112,24 +2116,35 @@ function EquipmentProfileSheet({ profile, close }) {
   const update = useStore(s => s.update)
   const nameRef = useRef(null)
   const [checked, setChecked] = useState(new Set(profile ? profileEquipment(profile) : []))
+  // The machines (#923) are cards of their own, one sheet deeper: null until they are edited
+  // there, so a profile saved without touching them keeps its machine fields exactly as they were.
+  const [kinds, setKinds] = useState(null)
   const toggle = k => setChecked(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
+  const draft = { equipment: [...checked], machines: kinds ?? profileMachines(profile) }
+  const openMachines = () => machinePickerSheet({
+    gymName: (nameRef.current?.value || '').trim() || profile?.name || '',
+    initial: kinds ?? machinesOf(draft),
+    onDone: picked => setKinds(picked),
+  })
   const save = () => {
     const name = (nameRef.current.value || '').trim()
     if (!name) { return }
     update(s => {
       s.equipProfiles = s.equipProfiles || []
-      const equipment = [...checked]
+      const fields = kinds ? machineFields([...checked], kinds) : { equipment: [...checked] }
       if (profile) {
         const p = s.equipProfiles.find(x => x.id === profile.id)
-        if (p) { p.name = name; p.equipment = equipment; p.accV = ACC_V }
+        if (p) { p.name = name; p.equipment = fields.equipment; p.accV = ACC_V; if (fields.machines) p.machines = fields.machines }
       } else {
-        const p = newProfile(name); p.equipment = equipment
+        const p = newProfile(name); p.equipment = fields.equipment
+        if (fields.machines?.length) p.machines = fields.machines
         s.equipProfiles.push(p)
         if (!s.activeEquipId) s.activeEquipId = p.id
       }
     })
     close()
   }
+  const summaryOf = kinds ? machinesSummary(machineFields([...checked], kinds)) : machinesSummary(draft)
   return <>
     <h3>{profile ? t('Edit profile') : t('New equipment profile')}</h3>
     <div className="muted small" style={{ marginBottom: 14 }}>
@@ -2138,9 +2153,12 @@ function EquipmentProfileSheet({ profile, close }) {
     <TextField ref={nameRef} defaultValue={profile?.name || ''} placeholder={t('Profile name')} maxLength={40} />
     <div style={{ height: 12 }} />
     <div className="chips">
-      {ALL_EQUIPMENT.map(k => (
+      {ALL_EQUIPMENT.filter(k => !MACHINE_EQ.includes(k)).map(k => (
         <button key={k} className={'chip' + (checked.has(k) ? ' on' : '')} onClick={() => toggle(k)}>{t(k)}</button>
       ))}
+    </div>
+    <div className="sect-b" style={{ marginTop: 14 }}>
+      <Row icon="machine" iconTint="var(--indigo)" title={t('Machines')} subtitle={summaryOf} accessory="chevron" onClick={openMachines} />
     </div>
     <div className="dim small" style={{ marginTop: 10 }}>
       {t('Body-weight exercises are always available, unless they need a pull-up bar or a bench.')}

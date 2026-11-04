@@ -3,6 +3,7 @@
   "name": "lever decline chest press",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",

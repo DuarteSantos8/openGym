@@ -3,6 +3,7 @@
   "name": "smith seated calf raise",
   "bodyPart": "lower legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "calves",
   "secondaryMuscles": [
     "soleus",

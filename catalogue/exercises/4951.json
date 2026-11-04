@@ -3,6 +3,7 @@
   "name": "lever pendulum squat (plate loaded)",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "squat-machine",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

@@ -3,6 +3,7 @@
   "name": "smith incline reverse-grip press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",

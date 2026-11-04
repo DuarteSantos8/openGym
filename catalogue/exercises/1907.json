@@ -3,6 +3,7 @@
   "name": "assisted lying adductors stretch",
   "bodyPart": "upper legs",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "adductors",
   "secondaryMuscles": [
     "inner thighs",

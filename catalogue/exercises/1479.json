@@ -3,6 +3,7 @@
   "name": "lever incline chest press v. 2",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",

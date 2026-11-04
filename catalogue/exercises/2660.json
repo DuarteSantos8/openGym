@@ -3,6 +3,7 @@
   "name": "lever preacher curl (plate loaded) v. 2",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "biceps-curl",
   "target": "biceps",
   "secondaryMuscles": [
     "brachialis",

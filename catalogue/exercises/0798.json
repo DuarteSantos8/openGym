@@ -3,6 +3,7 @@
   "name": "stationary bike walk",
   "bodyPart": "cardio",
   "equipment": "leverage machine",
+  "machineKind": "cardio",
   "target": "cardiovascular system",
   "secondaryMuscles": [
     "quadriceps",

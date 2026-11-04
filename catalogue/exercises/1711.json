@@ -3,6 +3,7 @@
   "name": "assisted oblique glute minimus and medius stretch",
   "bodyPart": "upper legs",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "abductors",
   "secondaryMuscles": [
     "obliques",

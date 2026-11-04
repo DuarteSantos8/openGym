@@ -3,6 +3,7 @@
   "name": "smith one leg floor calf raise",
   "bodyPart": "lower legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "calves",
   "secondaryMuscles": [
     "hamstrings",

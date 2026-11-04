@@ -3,6 +3,7 @@
   "name": "power sled push",
   "bodyPart": "full body",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

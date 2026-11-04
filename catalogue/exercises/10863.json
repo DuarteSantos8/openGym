@@ -3,6 +3,7 @@
   "name": "smith seated single arm neutral grip shoulders press",
   "bodyPart": "shoulders",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "delts",
   "secondaryMuscles": [
     "triceps",

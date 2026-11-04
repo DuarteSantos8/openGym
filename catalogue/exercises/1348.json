@@ -3,6 +3,7 @@
   "name": "lever reverse grip vertical row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",

@@ -3,6 +3,7 @@
   "name": "assisted sitting reverse shoulder stretch",
   "bodyPart": "shoulders",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "delts",
   "secondaryMuscles": [
     "chest",

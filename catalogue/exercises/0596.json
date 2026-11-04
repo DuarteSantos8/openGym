@@ -3,6 +3,7 @@
   "name": "lever seated fly",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "pec-deck",
   "target": "pectorals",
   "secondaryMuscles": [
     "deltoids",

@@ -3,6 +3,7 @@
   "name": "smith one leg deadlift",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

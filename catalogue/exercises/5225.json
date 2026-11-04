@@ -3,6 +3,7 @@
   "name": "smith back wide shrug",
   "bodyPart": "back",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "traps",
   "secondaryMuscles": [
     "rhomboids",

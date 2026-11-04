@@ -3,6 +3,7 @@
   "name": "lever leg extension (inward toes)",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-extension",
   "target": "quads",
   "secondaryMuscles": [
     "hip flexors",

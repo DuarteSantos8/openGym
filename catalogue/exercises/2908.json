@@ -3,6 +3,7 @@
   "name": "power sled anti rotation forward walk",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "abs",
   "secondaryMuscles": [
     "glutes",

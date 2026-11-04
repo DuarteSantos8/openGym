@@ -3,6 +3,7 @@
   "name": "burpee power sled push",
   "bodyPart": "full body",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "cardiovascular system",
   "secondaryMuscles": [
     "quadriceps",

@@ -3,6 +3,7 @@
   "name": "smith behind neck press",
   "bodyPart": "shoulders",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "delts",
   "secondaryMuscles": [
     "triceps",

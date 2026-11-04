@@ -3,6 +3,7 @@
   "name": "lever pec deck fly",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "pec-deck",
   "target": "pectorals",
   "secondaryMuscles": [
     "shoulders",

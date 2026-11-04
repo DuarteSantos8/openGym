@@ -3,6 +3,7 @@
   "name": "pilates machine lying running",
   "bodyPart": "lower legs",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "calves",
   "secondaryMuscles": [
     "quadriceps",

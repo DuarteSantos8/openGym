@@ -3,6 +3,7 @@
   "name": "walking on incline treadmill",
   "bodyPart": "cardio",
   "equipment": "leverage machine",
+  "machineKind": "cardio",
   "target": "cardiovascular system",
   "secondaryMuscles": [
     "quadriceps",

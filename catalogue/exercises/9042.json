@@ -3,6 +3,7 @@
   "name": "smith elevated split squat",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

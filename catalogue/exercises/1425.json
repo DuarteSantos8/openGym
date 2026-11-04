@@ -3,6 +3,7 @@
   "name": "sled 45 degrees one leg press",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "leg-press",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",
