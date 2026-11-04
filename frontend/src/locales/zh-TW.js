@@ -2216,7 +2216,7 @@ export default {
   'Health': '健康',
   'Heart': '心臟',
   'Last read {0}': '上次讀取 {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': '記錄一次身體組成測量，或在 設定 → 健康 中連接資料來源，你的讀數會連同趨勢顯示在這裡。',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': '記錄一次身體組成測量，或在 設定 → 整合 中連接資料來源，你的讀數會連同趨勢顯示在這裡。',
   'Manage permissions': '管理權限',
   'Measurement deleted': '測量已刪除',
   'Measurement saved': '測量已儲存',
@@ -4036,4 +4036,6 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "「整合」關閉期間，你的 Webhook 不會傳送。設定仍會保留。",
   "{0} of {1} modules on.": "已開啟 {0}/{1} 個模組。",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "「健康」關閉期間，{0} 會停止同步。不會中斷任何連線，「健康」重新開啟後會自動補上。",
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': '身體組成、活動、心臟和睡眠資料會進入健康。',
 }

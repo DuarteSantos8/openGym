@@ -11,6 +11,7 @@ import { copyText } from '../lib/clipboard.js'
 import { platformNow } from '../lib/platform-now.js'
 import { coachAvailable } from '../lib/coach.js'
 import { healthStatus, loadHealth, onHealthChange, disableHealth, disableRead } from '../lib/health-sync.js'
+import { loadSources, onSourcesChange } from '../lib/health/sync.js'
 import { directory, cardState, CARD, PILL, WORKS_WITH, WEBHOOK_EVENTS, webhookUrlProblem, normalizeWebhookUrl } from '../lib/integrations.js'
 import { importFromApp, importFromHevy, confirmSheet, menuSheet } from '../sheets.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
@@ -56,6 +57,20 @@ function useHealth() {
     return () => { gone = true; off() }
   }, [])
   return h
+}
+
+// The Health area's own reading of the phone's store (Settings → Integrations → Apple Health).
+function useReads() {
+  const [reads, setReads] = useState(null)
+  useEffect(() => {
+    if (!MOBILE) return
+    let gone = false
+    const set = f => { if (!gone) setReads(Object.fromEntries(Object.entries(f?.providers || {}).map(([id, p]) => [id, !!p.on]))) }
+    loadSources().then(set, () => {})
+    const off = onSourcesChange(set)
+    return () => { gone = true; off() }
+  }, [])
+  return reads
 }
 
 function Pill({ status }) {
@@ -117,10 +132,11 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const offered = config?.integrations?.providers || []
   const server = useServerIntegrations(!!user && !DEMO && offered.length > 0)
   const health = useHealth()
+  const reads = useReads()
   const platform = MOBILE ? (ios ? 'ios' : android ? 'android' : health?.platform || platformNow()) : null
   const S = useStore(s => s.S)
   const ctx = {
-    mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
+    mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, reads, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
   }

@@ -3718,7 +3718,7 @@ export default {
   'From a body composition scale or analyser. Fill only what it measured.': 'Från en våg eller analysator för kroppssammansättning. Fyll bara i det den mätte.',
   'Heart': 'Hjärta',
   'Last read {0}': 'Senast läst {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'Logga en mätning av kroppssammansättningen, eller anslut en källa under Inställningar → Hälsa, så visas dina värden här med sina trender.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'Logga en mätning av kroppssammansättningen, eller anslut en källa under Inställningar → Integrationer, så visas dina värden här med sina trender.',
   'Manage permissions': 'Hantera behörigheter',
   'Measurement deleted': 'Mätningen togs bort',
   'Measurement saved': 'Mätningen sparades',
@@ -4084,4 +4084,6 @@ export default {
   'Cycle tracking': 'Menscykel',
   'Symptoms': 'Symtom',
   'Mindfulness': 'Mindfulness',
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'Kroppssammansättning, aktivitet, hjärta och sömn kommer in i Hälsa.',
 }

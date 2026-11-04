@@ -2223,7 +2223,7 @@ export default {
   'Health': 'Salute',
   'Heart': 'Cuore',
   'Last read {0}': 'Ultima lettura {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'Registra una misurazione della composizione corporea, o collega una sorgente in Impostazioni → Salute: i tuoi dati compariranno qui con il loro andamento.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'Registra una misurazione della composizione corporea, o collega una sorgente in Impostazioni → Integrazioni: i tuoi dati compariranno qui con il loro andamento.',
   'Manage permissions': 'Gestisci autorizzazioni',
   'Measurement deleted': 'Misurazione eliminata',
   'Measurement saved': 'Misurazione salvata',
@@ -4043,4 +4043,6 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "I tuoi webhook smettono di inviare mentre «Integrazioni» è disattivato. Restano configurati.",
   "{0} of {1} modules on.": "{0} moduli attivi su {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} smette di sincronizzare mentre «Salute» è disattivato. Non si scollega niente e recupera tutto quando «Salute» torna attivo.",
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'Composizione corporea, attività, cuore e sonno arrivano in Salute.',
 }

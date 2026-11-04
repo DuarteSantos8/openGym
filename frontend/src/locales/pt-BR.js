@@ -1426,7 +1426,7 @@ export const PT_BR_OVERRIDES = {
   'Health': 'Saúde',
   'Heart': 'Coração',
   'Last read {0}': 'Última leitura {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'Salve uma medição de composição corporal, ou conecte uma fonte em Configurações → Saúde, e seus valores aparecem aqui com a evolução.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'Salve uma medição de composição corporal, ou conecte uma fonte em Configurações → Integrações, e seus valores aparecem aqui com a evolução.',
   'Manage permissions': 'Gerenciar permissões',
   'Measurement deleted': 'Medição excluída',
   'Measurement saved': 'Medição salva',
@@ -2833,6 +2833,8 @@ export const PT_BR_OVERRIDES = {
   "Your watch stops getting workouts while Watch is off. It stays paired.": "Seu relógio para de receber treinos enquanto “Relógio” estiver desligado. Continua pareado.",
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Seus webhooks param de enviar enquanto “Integrações” estiver desligado. Continuam configurados.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} para de sincronizar enquanto “Saúde” estiver desligado. Nada fica desconectado, e ele se atualiza quando “Saúde” voltar.",
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'Composição corporal, atividade, coração e sono chegam em Saúde.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -2227,7 +2227,7 @@ export default {
   'Health': 'Здоровье',
   'Heart': 'Сердце',
   'Last read {0}': 'Последнее чтение {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'Добавьте измерение состава тела или подключите источник в Настройки → Здоровье, и ваши данные появятся здесь вместе с динамикой.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'Добавьте измерение состава тела или подключите источник в Настройки → Интеграции, и ваши данные появятся здесь вместе с динамикой.',
   'Manage permissions': 'Управлять разрешениями',
   'Measurement deleted': 'Измерение удалено',
   'Measurement saved': 'Измерение сохранено',
@@ -4047,4 +4047,6 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Пока «Интеграции» выключены, твои вебхуки ничего не отправляют. Они остаются настроенными.",
   "{0} of {1} modules on.": "Включено модулей: {0} из {1}.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "Пока «Здоровье» выключено, {0} не синхронизируется. Ничего не отключается, и всё догонится, когда «Здоровье» вернётся.",
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'Состав тела, активность, сердце и сон попадают в раздел «Здоровье».',
 }
