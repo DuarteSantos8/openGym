@@ -11,7 +11,9 @@ import { z } from 'zod'
 import { isoDate, entryView, withCustomsIndexed } from './tools.js'
 import { localUid, invalidate } from './state.js'
 import { apiConfig, apiFetch } from './api-client.js'
-import { buildLoggedWorkout, appendLoggedWorkout, findDuplicate, BODY_PARTS, LOG_LIMITS } from '../../frontend/src/lib/log-workout.js'
+import { buildLoggedWorkout, appendLoggedWorkout, previewLoggedWorkout, BODY_PARTS, LOG_LIMITS } from '../../frontend/src/lib/log-workout.js'
+import { speedUnitOf, toSpeed, speedLabel } from '../../frontend/src/lib/speed.js'
+import { INCLINE_MAX } from '../../frontend/src/lib/incline.js'
 import { friendlyDuration } from './labels.js'
 
 const localIso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
@@ -40,12 +42,13 @@ const inputOf = p => ({
   name: p.name,
   note: p.note,
   unit: p.unit,
+  speedUnit: p.speed_unit,
   exercises: (p.exercises || []).map(ex => ({
     exercise: ex.exercise,
     createCustom: ex.create_custom,
     bodyPart: ex.body_part,
     note: ex.note,
-    sets: (ex.sets || []).map(s => ({ reps: s.reps, seconds: s.seconds, weight: s.weight, warmup: s.warmup, failure: s.failure, rir: s.rir, rpe: s.rpe })),
+    sets: (ex.sets || []).map(s => ({ reps: s.reps, seconds: s.seconds, weight: s.weight, warmup: s.warmup, failure: s.failure, rir: s.rir, rpe: s.rpe, minutes: s.minutes, speed: s.speed, distance: s.distance, incline: s.incline })),
   })),
 })
 
@@ -53,6 +56,9 @@ const inputOf = p => ({
 // check it in the words the app uses ("12 × 12 kg", "1:00").
 function viewOf(w, S, resolved) {
   const withCustoms = { ...S, customEx: [...(S.customEx || []), ...resolved.customEx] }
+  // A speed reads back in the unit it was given in, and the label in the one the phone shows.
+  const asked = resolved.speedUnit || speedUnitOf(S), shown = speedUnitOf(S)
+  const round2 = x => Math.round(x * 100) / 100
   return {
     workout_id: w.id,
     date: w.d,
@@ -64,7 +70,7 @@ function viewOf(w, S, resolved) {
     ...(w.note ? { note: w.note } : {}),
     prs: (w.prs || []).map(id => resolved.resolved.find(r => r.id === id)?.name || id),
     exercises: w.entries.map(e => {
-      const v = entryView(e, withCustoms)
+      const v = entryView(e, withCustoms, shown)
       const r = resolved.resolved.find(x => x.id === e.id)
       return {
         id: e.id,
@@ -74,7 +80,18 @@ function viewOf(w, S, resolved) {
         ...(r?.weightMeans ? { weight_means: r.weightMeans === 'each' ? 'per dumbbell' : 'both dumbbells together' } : {}),
         // The numbers spelled out next to the app's own label ("12×10 F": 12 kg, 10 reps, to
         // failure), so reading it back to the user cannot swap the weight and the reps.
-        sets: e.sets.map((row, i) => ({
+        sets: e.sets.map((row, i) => v.mode === 'cardio' ? {
+          // Speed and distance in the unit the user gave, stored in km/h; the distance is the
+          // speed over the minutes (a row keeps no distance of its own), for a sanity check.
+          label: v.sets[i].label,
+          minutes: row.min,
+          // No speed given is stored as 0, as the importers store it, and reads back as none.
+          speed: row.speed > 0 ? toSpeed(row.speed, asked) : null,
+          speed_unit: speedLabel(asked),
+          ...(row.speed > 0 ? { [asked === 'mph' ? 'distance_mi' : 'distance_km']: round2(toSpeed(row.speed, asked) * row.min / 60) } : {}),
+          ...(row.incline ? { incline: row.incline } : {}),
+          ...(row.rpe != null ? { rpe: row.rpe } : {}),
+        } : {
           label: v.sets[i].label,
           weight: Number(row.w) || 0,
           ...(row.sec != null ? { seconds: row.sec } : { reps: row.r }),
@@ -82,7 +99,7 @@ function viewOf(w, S, resolved) {
           ...(row.failure ? { failure: true } : {}),
           ...(row.rir != null ? { rir: row.rir } : {}),
           ...(row.rpe != null ? { rpe: row.rpe } : {}),
-        })),
+        }),
         ...(e.note ? { note: e.note } : {}),
       }
     }),
@@ -96,7 +113,11 @@ const setSchema = z.object({
   warmup: z.boolean().optional().describe('A warm-up set: kept out of volume, PRs and the next suggested weight.'),
   failure: z.boolean().optional().describe('Taken to failure.'),
   rir: z.number().min(0).max(10).optional().describe('Reps in reserve, if the user said it. Not with rpe.'),
-  rpe: z.number().min(6).max(10).optional().describe('RPE, if the user said it. Not with rir.'),
+  rpe: z.number().min(6).max(10).optional().describe('RPE, if the user said it. Not with rir. The only effort a cardio set takes.'),
+  minutes: z.number().int().min(1).max(LOG_LIMITS.maxCardioMin).optional().describe('Minutes of a cardio interval (treadmill, bike, rower, elliptical). Cardio sets carry minutes instead of reps or seconds, and no weight.'),
+  speed: z.number().min(0).optional().describe('Cardio speed in `speed_unit`, if the user said it. One speed per set: a range ("3 to 4") is a question, or two intervals. Not with distance.'),
+  distance: z.number().positive().optional().describe('Distance of a cardio set, in km (miles with speed_unit mph), when the user gave a distance instead of a speed.'),
+  incline: z.number().min(0).max(INCLINE_MAX).optional().describe('Treadmill, stair or walking grade in percent, to the half percent. Not on a bike or rower.'),
 })
 
 export const logWorkout = {
@@ -108,7 +129,8 @@ export const logWorkout = {
     'Exercises are matched against the user\'s library by name or id. A common name resolves to the library\'s default variant ("shoulder press" is the barbell one): when the reply\'s `name` differs from `you_said` and the variant matters (dumbbell vs barbell, machine vs cable), confirm with the user, or pass an id. If a name matches several exercises, or none, nothing is saved and `problems` lists candidates: ask the user which one, then call again with its id.',
     'Only set create_custom for an exercise the user confirms is not in the library.',
     'Call with dry_run: true first when you had to interpret anything, show the user the preview, and log it once they agree.',
-    'Calling again with the same description does not log it twice. Cardio (time and speed) and supersets are not supported here.',
+    'Cardio is minutes at a speed: "20 min treadmill walk, 3.5 mph, incline 7" is one set {minutes: 20, speed: 3.5, incline: 7} with speed_unit mph; ask for the unit when it is not clear, and for one speed when the user gave a range.',
+    'Calling again with the same description does not log it twice. Supersets and per-side sets are not supported here.',
   ].join(' '),
   schema: {
     date: isoDate().optional().describe('YYYY-MM-DD the session was done; defaults to today. Not in the future.'),
@@ -117,6 +139,7 @@ export const logWorkout = {
     name: z.string().max(80).optional().describe('A name for the session, e.g. "Arms" or "Push day". Defaults to "Workout".'),
     note: z.string().max(500).optional().describe('A note on the whole session.'),
     unit: z.enum(['kg', 'lb']).optional().describe('The unit the user gave weights in; defaults to the profile\'s. Converted when it differs.'),
+    speed_unit: z.enum(['kmh', 'mph']).optional().describe('The unit the user gave cardio speeds and distances in; defaults to the profile\'s speed unit (mph for a profile in lb that never chose). Stored in km/h.'),
     exercises: z.array(z.object({
       exercise: z.string().min(1).max(120).describe('Exercise name as the user said it ("dumbbell curl"), or an exercise id from an earlier answer.'),
       create_custom: z.boolean().optional().describe('Create this as the user\'s own exercise when the library has nothing matching. Only after the user confirms.'),
@@ -152,7 +175,7 @@ export const logWorkout = {
     let got = await apiFetch(cfg, '/api/data', opts)
     // A description without a unit is in the profile's, as the profile was when first read: a
     // retry after another device switched kg ↔ lb reads the same numbers the same way.
-    let unit = null, meanings = null
+    let unit = null, speedUnit = null, meanings = null
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       const doc = got.body?.state
       if (!doc || typeof doc !== 'object') {
@@ -162,18 +185,21 @@ export const logWorkout = {
       // a default filled in here — would be stamped as an edit made now and land on every device.
       const S = structuredClone(doc)
       unit = unit || (S.unit === 'lb' ? 'lb' : 'kg')
+      speedUnit = speedUnit || speedUnitOf(S)
       // The profile's own exercises indexed for the build, as the app has them: a custom one-arm
       // dumbbell press counts one bell, a custom assisted machine folds towards less help.
-      const built = withCustomsIndexed(S, () => buildLoggedWorkout(S, input, { now, unit, meanings }))
+      const built = withCustomsIndexed(S, () => buildLoggedWorkout(S, input, { now, unit, speedUnit, meanings }))
       if (built.problems) {
         return { logged: false, problems: built.problems, next: 'Nothing was saved. Settle these with the user (pick a candidate id, fix a set) and call again.' }
       }
       // What each dumbbell weight meant on the first read stays what it means on a retry.
       meanings = meanings || Object.fromEntries(built.workout.entries.map(e => [e.id, e.target?.dbLoad || 'as']))
-      const preview = viewOf(built.workout, S, built)
       if (params.dry_run) {
-        const dup = findDuplicate(S, built.workout)
-        return { logged: false, dry_run: true, would_log: preview, ...(dup && (dup.sameRequest || !params.allow_duplicate) ? { duplicate_of: dup.workout.id } : {}) }
+        // Filed into a throw-away copy, so the preview carries the PR badges the save would give;
+        // a duplicate the save would refuse previews as described, with what it repeats.
+        const p = withCustomsIndexed({ customEx: [...(S.customEx || []), ...built.customEx] }, () =>
+          previewLoggedWorkout(S, built, { now, allowDuplicate: params.allow_duplicate === true }))
+        return { logged: false, dry_run: true, would_log: viewOf(p.workout, S, built), ...(p.duplicateOf ? { duplicate_of: p.duplicateOf } : {}) }
       }
       const added = withCustomsIndexed({ customEx: [...(S.customEx || []), ...built.customEx] }, () =>
         appendLoggedWorkout(S, built, { now, allowDuplicate: params.allow_duplicate === true }))

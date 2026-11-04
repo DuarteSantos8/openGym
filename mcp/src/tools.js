@@ -55,7 +55,7 @@ export function withCustomsIndexed(S, build) {
   try { return build() } finally { registerCustom([]) }
 }
 
-export function entryView(e, S) {
+export function entryView(e, S, speedUnit) {
   const ex = exerciseOf(e.id, S)
   // Spread id into the cfg the way every call site in the app does (Workout.jsx, Stats.jsx,
   // progression.js) — the sheet saves a cardio target as {sets, min, speed} with no id and no
@@ -70,7 +70,7 @@ export function entryView(e, S) {
     target: e.target || null,
     sets: (e.sets || []).map(s => ({
       done: !!s.done,
-      label: setLabel(e.id, { ...s, done: undefined }, cfg),
+      label: setLabel(e.id, { ...s, done: undefined }, cfg, speedUnit),
       // Taken to failure (the app's "F"): RIR 0 for effort when nothing was rated by hand.
       ...(isFailureSet(s) ? { failure: true } : {}),
       w: Number(s.w) || 0,
