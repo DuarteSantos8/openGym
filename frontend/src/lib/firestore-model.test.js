@@ -56,3 +56,42 @@ describe('firestore-model', () => {
     expect(lists.workouts.get('w')).toEqual({ id: 'w' })
   })
 })
+
+// Two workouts with no id and the same day+start used to share the fallback key
+// `${d}|${start}` and collapse into a single Firestore doc: 2 workouts in, 1 doc
+// out. The first keeps the plain key; repeats take an occurrence suffix. Keys
+// for id-carrying workouts are untouched.
+const noId = (note) => ({ d: '2026-10-20', start: '18:00', entries: [], ...(note ? { note } : {}) })
+
+describe('splitState workout doc keys', () => {
+  it('a lone id-less workout keeps the plain fallback key', () => {
+    const { lists } = splitState({ workouts: [noId()] })
+    expect([...lists.workouts.keys()]).toEqual(['2026-10-20|18:00'])
+  })
+
+  it('two id-less workouts with the same day+start stay two docs', () => {
+    const { lists } = splitState({ workouts: [noId('first'), noId('second')] })
+    expect([...lists.workouts.keys()]).toEqual(['2026-10-20|18:00', '2026-10-20|18:00#2'])
+    expect(lists.workouts.get('2026-10-20|18:00').note).toBe('first')
+    expect(lists.workouts.get('2026-10-20|18:00#2').note).toBe('second')
+    const back = joinDocs(splitState({ workouts: [noId('first'), noId('second')] }))
+    expect(back.workouts).toHaveLength(2)
+    expect(back.workouts.map(w => w.note).sort()).toEqual(['first', 'second'])
+  })
+
+  it('even fully identical id-less workouts stay separate docs', () => {
+    const { lists } = splitState({ workouts: [noId(), noId(), noId()] })
+    expect([...lists.workouts.keys()]).toEqual(['2026-10-20|18:00', '2026-10-20|18:00#2', '2026-10-20|18:00#3'])
+  })
+
+  it('id-carrying workouts keep their exact keys, duplicates included', () => {
+    const { lists } = splitState({ workouts: [{ id: 'w1', note: 'a' }, { id: 'w1', note: 'b' }] })
+    expect([...lists.workouts.keys()]).toEqual(['w1'])
+    expect(lists.workouts.get('w1').note).toBe('b') // overwrite by id, as before
+  })
+
+  it('an id-less workout next to an id-carrying one on the same day is unaffected', () => {
+    const { lists } = splitState({ workouts: [{ id: 'w9', d: '2026-10-20', start: '18:00', entries: [] }, noId()] })
+    expect([...lists.workouts.keys()].sort()).toEqual(['2026-10-20|18:00', 'w9'])
+  })
+})

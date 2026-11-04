@@ -58,8 +58,21 @@ export function splitState(S) {
     const m = new Map()
     for (const x of Array.isArray(S?.[field]) ? S[field] : []) {
       if (!x || typeof x !== 'object') continue
-      const k = key(x)
+      let k = key(x)
       if (k == null || k === 'undefined' || k === '') continue
+      // Two id-less workouts on the same day at the same start share the fallback
+      // key `${d}|${start}` above and used to overwrite each other in this map:
+      // two workouts in, one Firestore doc out, one of them silently gone from
+      // the cloud. The first keeps the plain key it has always had; the later
+      // ones take an occurrence suffix (`#2`, `#3`, ...) instead. Only the
+      // fallback case is suffixed: id-carrying entries keep the plain
+      // overwrite-by-id behaviour, and a lone id-less workout's key (and doc)
+      // is exactly what it was before.
+      if (m.has(k) && field === 'workouts' && x.id == null) {
+        let n = 2
+        while (m.has(`${k}#${n}`)) n++
+        k = `${k}#${n}`
+      }
       m.set(k, sanitize(x))
     }
     lists[coll] = m

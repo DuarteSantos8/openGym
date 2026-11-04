@@ -34,6 +34,21 @@ import { mergeStates } from './sync-merge.js'
 
 const USERNAME_KEY = 'gym_fb_username'
 const PUSH_DEBOUNCE_MS = 800
+const PUSH_RETRY_MS = 30000 // the one backoff retry for an owed push (see runPush in attach)
+const PUSH_CHUNK = 400 // Firestore batches cap at 500 operations; pushes commit in slices under it
+
+const usernameKeyFor = uid => `${USERNAME_KEY}:${uid}`
+/** The passkey username cached for ONE account on this device. The cache used to be
+ *  a single device-global key, so on a shared device one account's cached name was
+ *  served as every account's. The legacy key is deliberately never read again. */
+function cachedUsername(uid) {
+  if (!uid) return ''
+  try { return localStorage.getItem(usernameKeyFor(uid)) || '' } catch { return '' }
+}
+function cacheUsername(uid, name) {
+  if (!uid || !name) return
+  try { localStorage.setItem(usernameKeyFor(uid), name) } catch { /* storage unavailable: the name is a nicety */ }
+}
 
 // ---- tiny auth-state pub/sub for the UI (components/FirebaseAccount.jsx, views/Login.jsx)
 let fbUser = null // { uid, username, email, displayName, provider, providers } | null:
@@ -58,7 +73,7 @@ function describeUser(user) {
   if (!user) return null
   return {
     uid: user.uid,
-    username: localStorage.getItem(USERNAME_KEY) || '',
+    username: cachedUsername(user.uid),
     email: user.email || '',
     displayName: user.displayName || '',
     provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || '',
@@ -124,8 +139,8 @@ export async function fbRegister(username) {
   const { options, challengeId } = await postJSON('/api/passkey/register-options', { username: name }, idToken)
   const response = await startRegistration({ optionsJSON: options })
   const out = await postJSON('/api/passkey/register-verify', { username: name, challengeId, response }, idToken)
-  localStorage.setItem(USERNAME_KEY, out.username || name)
   await signInWithToken(out.token)
+  cacheUsername(auth.currentUser?.uid, out.username || name)
   return out
 }
 
@@ -138,8 +153,8 @@ export async function fbLogin(username) {
   const { options, challengeId } = await postJSON('/api/passkey/login-options', { username: name || undefined })
   const response = await startAuthentication({ optionsJSON: options })
   const out = await postJSON('/api/passkey/login-verify', { challengeId, response })
-  if (out.username) localStorage.setItem(USERNAME_KEY, out.username)
   await signInWithToken(out.token)
+  if (out.username) cacheUsername(auth.currentUser?.uid, out.username)
   return out
 }
 
@@ -243,7 +258,7 @@ export async function fbAddPasskeyLinked(username) {
   const { options, challengeId } = await postJSON('/api/passkey/link-options', { username: name || undefined }, token)
   const response = await startRegistration({ optionsJSON: options })
   const out = await postJSON('/api/passkey/link-verify', { challengeId, response }, token)
-  if (out.username) localStorage.setItem(USERNAME_KEY, out.username)
+  if (out.username) cacheUsername(auth.currentUser?.uid, out.username)
   return out
 }
 
@@ -260,7 +275,7 @@ export async function fbRemovePasskey(credentialId) {
 export async function fbAddPasskey() {
   await ensureFirebase()
   if (!auth.currentUser) throw new Error('Sign in first')
-  const name = localStorage.getItem(USERNAME_KEY) || ''
+  const name = cachedUsername(auth.currentUser?.uid)
   if (!name) throw new Error('No username saved on this device')
   return fbRegister(name) // register-options accepts it: the bearer token proves the account
 }
@@ -275,6 +290,7 @@ export async function fbSignOut() {
 export function startFirestoreSync(useStore) {
   if (started) return
   started = true
+  syncStore = useStore
   ensureFirebase().then(() => {
     const { onAuthStateChanged } = authModCache
     // A Google redirect (sign-in or account link) lands back on this page; its result
@@ -306,15 +322,42 @@ export function startFirestoreSync(useStore) {
 let authModCache = null
 
 let session = null // per-sign-in sync session, see attach()
+let syncStore = null // the store startFirestoreSync was given, for wake-triggered re-attach
+let wakeAttachInFlight = false // a wake-triggered re-attach is already running (see attach)
 function detach() {
   if (!session) return
-  for (const off of session.unsubs) { try { off() } catch { /* already gone */ } }
-  if (session.pushTm) clearTimeout(session.pushTm)
-  if (session.storeOff) session.storeOff()
-  session = null
+  const sess = session
+  // A push that was scheduled (debounce still pending) or is owed (an earlier attempt
+  // failed) must not be discarded with the timer: fire one immediate flush attempt
+  // with the session's own push machinery BEFORE teardown. Fire-and-forget: sign-out
+  // never waits on the network. A session that never became ready (initial load
+  // failed) has nothing safely flushable and is skipped.
+  if (sess.ready && (sess.pushTm || sess.pushOwed) && typeof sess.flushPush === 'function') {
+    try { void sess.flushPush() } catch { /* a failed flush is a lost retry, not a blocked sign-out */ }
+  }
+  for (const off of sess.unsubs) { try { off() } catch { /* already gone */ } }
+  if (sess.pushTm) clearTimeout(sess.pushTm)
+  if (sess.backoffTm) clearTimeout(sess.backoffTm)
+  if (sess.wakeOff) { try { sess.wakeOff() } catch { /* already gone */ } }
+  if (sess.storeOff) sess.storeOff()
+  if (session === sess) session = null
 }
 
+/** attach() entry: a failure during the initial load must not leave the session
+ *  silently dead. The half-built session stays current, marked attachFailed, with
+ *  its wake triggers (installed in attachSession before the load runs) armed, so
+ *  the next 'online' / return-to-visible event re-runs attach for this uid. The
+ *  error still propagates to the caller's console.warn. */
 async function attach(useStore, uid) {
+  try {
+    await attachSession(useStore, uid)
+  } catch (e) {
+    if (session && session.uid === uid) session.attachFailed = true
+    throw e
+  }
+}
+
+async function attachSession(useStore, uid) {
   detach()
   const S = () => useStore.getState().S
   const userRef = fs.doc(db, 'users', uid)
@@ -325,6 +368,13 @@ async function attach(useStore, uid) {
     ready: false, // initial load done, pushes/listeners only count from here
     known: null, // splitHashes of what the cloud is believed to hold right now
     remote: null, // latest assembled cloud state (joinDocs form), for echo checks
+    pushOwed: false, // a local change has not been proven pushed (debounce pending or a push failed)
+    attachFailed: false, // the initial load threw, wake triggers re-run attach (set by attach())
+    snapshotFailed: false, // a snapshot listener errored, wake triggers re-check (re-attach)
+    backoffTm: null, // the ONE scheduled backoff retry for an owed push
+    backoffUsed: false, // that backoff has already fired for the current owed push
+    wakeOff: null, // removes this session's online/visibility listeners (detach)
+    flushPush: null, // one immediate push attempt, for detach() to flush a pending push
   }
 
   const readAll = async () => {
@@ -342,28 +392,103 @@ async function attach(useStore, uid) {
     return { exists: metaSnap.exists(), split: { meta: metaSnap.exists() ? metaSnap.data() : {}, lists }, joined: joinDocs({ meta: metaSnap.exists() ? metaSnap.data() : {}, lists }) }
   }
 
-  // Write the diff between the cloud's believed state (sess.known) and `state`.
+  // Write the diff between the cloud's believed state (sess.known) and `state`,
+  // committed in slices of PUSH_CHUNK: a first sync of a long history is thousands
+  // of docs, and one unchunked batch dies on Firestore's 500-operation limit,
+  // taking the whole push with it.
   const push = async state => {
     if (!sess.ready || session !== sess) return
     const split = splitState(state)
     const hashes = splitHashes(split)
-    const batch = fs.writeBatch(db)
-    let ops = 0
+    const ops = []
     if (hashes.meta !== sess.known.meta) {
-      batch.set(userRef, { ...split.meta, _fbUpdatedAt: fs.serverTimestamp() }); ops++
+      ops.push({ ref: userRef, v: { ...split.meta, _fbUpdatedAt: fs.serverTimestamp() } })
     }
     for (const [coll, m] of Object.entries(split.lists)) {
       const knownMap = sess.known.lists[coll] || new Map()
       for (const [k, v] of m) {
-        if (knownMap.get(k) !== entryHash(v)) { batch.set(fs.doc(collRef(coll), docIdFor(k)), v); ops++ }
+        if (knownMap.get(k) !== entryHash(v)) ops.push({ ref: fs.doc(collRef(coll), docIdFor(k)), v })
       }
       for (const k of knownMap.keys()) {
-        if (!m.has(k)) { batch.delete(fs.doc(collRef(coll), docIdFor(k))); ops++ }
+        if (!m.has(k)) ops.push({ ref: fs.doc(collRef(coll), docIdFor(k)), del: true })
       }
     }
-    if (!ops) { sess.known = hashes; return }
-    await batch.commit()
+    if (!ops.length) { sess.known = hashes; return }
+    for (let i = 0; i < ops.length; i += PUSH_CHUNK) {
+      const batch = fs.writeBatch(db)
+      for (const op of ops.slice(i, i + PUSH_CHUNK)) {
+        if (op.del) batch.delete(op.ref); else batch.set(op.ref, op.v)
+      }
+      await batch.commit()
+    }
     sess.known = hashes
+  }
+
+  // ---- owed-push retry: a failed push is remembered, never silently dropped
+  // A push failure used to be console.warn only: sync stayed dead until the user
+  // happened to edit again. Now a failure marks the push owed, and it is re-attempted
+  // (a) once on a backoff timer (~30 s), and (b) whenever the window reports 'online'
+  // or the document returns to visible. No interval, no retry when nothing is owed:
+  // the backoff is one per owed episode (backoffUsed), and the wake triggers below
+  // check pushOwed first. A success clears the debt and any pending backoff.
+  const schedulePushBackoff = () => {
+    if (sess.backoffTm || sess.backoffUsed) return
+    sess.backoffTm = setTimeout(() => {
+      sess.backoffTm = null
+      sess.backoffUsed = true
+      if (session !== sess || !sess.pushOwed) return
+      void runPush()
+    }, PUSH_RETRY_MS)
+  }
+  const runPush = async () => {
+    if (!sess.ready || session !== sess) return
+    try {
+      await push(S())
+      // A newer edit may have landed while this push was in flight: it has its own
+      // debounce timer pending, and its debt is that timer's to clear.
+      if (!sess.pushTm) {
+        sess.pushOwed = false
+        sess.backoffUsed = false
+        if (sess.backoffTm) { clearTimeout(sess.backoffTm); sess.backoffTm = null }
+      }
+    } catch (e) {
+      console.warn('[fb-sync] push failed', e)
+      if (session !== sess) return // detached mid-flight: the debt died with the session
+      sess.pushOwed = true
+      schedulePushBackoff()
+    }
+  }
+  // detach()'s sign-out flush: the raw push, once, with no retry bookkeeping: the
+  // session is going away, so an owed-mark or a backoff would have nothing to serve.
+  sess.flushPush = () => push(S()).catch(e => console.warn('[fb-sync] push failed', e))
+
+  // ---- wake triggers: 'online' and return-to-visible re-check a hurt session
+  // Installed BEFORE the initial load, so a load that throws still leaves them armed
+  // on the half-built session (attach() marks it attachFailed). Removed by detach(),
+  // so a signed-out or replaced session is never resurrected by an event.
+  const onWake = () => {
+    if (session !== sess) return
+    if (sess.attachFailed || sess.snapshotFailed) {
+      // The initial load never finished, or a snapshot listener died: the only sound
+      // re-check is a fresh attach for the same uid (it detaches this session first).
+      if (wakeAttachInFlight || !syncStore) return
+      wakeAttachInFlight = true
+      attach(syncStore, sess.uid)
+        .catch(e => console.warn('[fb-sync] attach failed', e))
+        .finally(() => { wakeAttachInFlight = false })
+      return
+    }
+    if (sess.pushOwed) void runPush()
+  }
+  const onVisible = () => {
+    if (typeof document !== 'undefined' && document.visibilityState && document.visibilityState !== 'visible') return
+    onWake()
+  }
+  if (typeof globalThis.addEventListener === 'function') globalThis.addEventListener('online', onWake)
+  if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') document.addEventListener('visibilitychange', onVisible)
+  sess.wakeOff = () => {
+    if (typeof globalThis.removeEventListener === 'function') globalThis.removeEventListener('online', onWake)
+    if (typeof document !== 'undefined' && typeof document.removeEventListener === 'function') document.removeEventListener('visibilitychange', onVisible)
   }
 
   // ---- initial load: upload-on-first-sign-in, else merge cloud into local
@@ -395,17 +520,24 @@ async function attach(useStore, uid) {
     const merged = mergeStates(fresh.joined, local)
     merged.active = local.active
     if (entryHash(merged) !== entryHash(local)) useStore.getState().replaceState(merged, false)
-    await push(useStore.getState().S) // converge: local-only extras go up, tombstoned docs go away
+    await runPush() // converge: local-only extras go up, tombstoned docs go away
   }
-  sess.unsubs.push(fs.onSnapshot(userRef, onSnap, () => {}))
+  const onSnapError = e => {
+    // A dead listener used to be swallowed by an empty callback: sync looked live
+    // while nothing arrived. Mark it; the wake triggers re-check by re-attaching.
+    console.warn('[fb-sync] snapshot error', e)
+    sess.snapshotFailed = true
+  }
+  sess.unsubs.push(fs.onSnapshot(userRef, onSnap, onSnapError))
   for (const c of ['workouts', 'routines', 'exercises', 'bodyweight', 'measurements']) {
-    sess.unsubs.push(fs.onSnapshot(collRef(c), onSnap, () => {}))
+    sess.unsubs.push(fs.onSnapshot(collRef(c), onSnap, onSnapError))
   }
 
   // ---- local changes go up, debounced, doc-diffed (in push)
   sess.storeOff = useStore.subscribe(() => {
     if (!sess.ready || session !== sess) return
+    sess.pushOwed = true // owed from this moment until a push is proven to have landed
     clearTimeout(sess.pushTm)
-    sess.pushTm = setTimeout(() => { push(S()).catch(e => console.warn('[fb-sync] push failed', e)) }, PUSH_DEBOUNCE_MS)
+    sess.pushTm = setTimeout(() => { sess.pushTm = null; void runPush() }, PUSH_DEBOUNCE_MS)
   })
 }
