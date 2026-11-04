@@ -51,10 +51,26 @@ let
     PrivateDevices = true;
     ProtectKernelTunables = true;
     ProtectKernelModules = true;
+    ProtectKernelLogs = true;
     ProtectControlGroups = true;
+    ProtectHostname = true;
+    ProtectClock = true;
     RestrictNamespaces = true;
     RestrictSUIDSGID = true;
+    RestrictRealtime = true;
     LockPersonality = true;
+    RemoveIPC = true;
+    UMask = "0077";
+    CapabilityBoundingSet = "";
+    SystemCallArchitectures = "native";
+    # The API is a network service: it needs TCP/UDP sockets for HTTP and DNS, Unix sockets
+    # for nothing here, and netlink for glibc's interface enumeration.
+    RestrictAddressFamilies = [
+      "AF_INET"
+      "AF_INET6"
+      "AF_UNIX"
+      "AF_NETLINK"
+    ];
     SystemCallFilter = [
       "@system-service"
       "~@privileged"
