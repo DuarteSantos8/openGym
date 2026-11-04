@@ -20,3 +20,4 @@ export { auditExecution, missingReference, normalizeEffort, summarizeActual } fr
 export { advanceProgression, initialProgressionState, verdictOf } from './advance.js'
 export { legacyEntriesOf } from './performance.js'
 export { migrateOccurrence, migrateWarmups, planWarmupRows, validateWarmup, warmupClass, warmupMaxCount, warmupSteps } from './warmup.js'
+export { OPTION_CLASSES, slotOutcome, stageRule, validateProgramme, weeklyTemplate } from './programme.js'
