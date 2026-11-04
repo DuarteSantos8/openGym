@@ -1,3 +1,4 @@
+import CallKit
 import Capacitor
 import UIKit
 import UserNotifications
@@ -42,6 +43,46 @@ class MainViewController: CAPBridgeViewController {
     }
 
     /**
+     * The iPhone Duo closed writes the time and the battery in a block at the top of its right
+     * column, under the island, and the whole block moves down a long way while the island is
+     * taller. iOS tells an app neither how tall that block is nor what another app shows in the
+     * island, but two of the reasons it grows it does tell: the screen being recorded
+     * (UIScreen.isCaptured) and a call going on, a phone call or any app's (CallKit). While one
+     * is, the page gets `island-tall` on its root and the tab bar's icons in that column move down
+     * below the block (index.css body.tabbar-status).
+     */
+    private let calls = CXCallObserver()
+    private var islandTall: Bool?
+    private var watchingIsland = false
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if !watchingIsland {
+            watchingIsland = true
+            calls.setDelegate(self, queue: .main)
+            for name in [UIScreen.capturedDidChangeNotification, UIApplication.didBecomeActiveNotification] {
+                NotificationCenter.default.addObserver(self, selector: #selector(reportIsland), name: name, object: nil)
+            }
+            if #available(iOS 17.0, *) {
+                registerForTraitChanges([UITraitSceneCaptureState.self]) { (vc: MainViewController, _: UITraitCollection) in vc.reportIsland() }
+            }
+        }
+        reportIsland()
+    }
+
+    private var recording: Bool {
+        if #available(iOS 17.0, *) { return view.traitCollection.sceneCaptureState == .active }
+        return view.window?.windowScene?.screen.isCaptured ?? false
+    }
+
+    @objc private func reportIsland() {
+        let tall = recording || calls.calls.contains { !$0.hasEnded }
+        guard tall != islandTall, let web = webView else { return }
+        islandTall = tall
+        web.evaluateJavaScript("document.documentElement.classList.toggle('island-tall',\(tall))")
+    }
+
+    /**
      * For the UI tests only (ios/App/AppUITests): launched with this argument, the app shows the
      * ids of the local notifications iOS holds for it, as a tiny label a test can read. A UI test
      * runs in its own process and cannot ask UNUserNotificationCenter about another app, and this
@@ -82,4 +123,8 @@ class MainViewController: CAPBridgeViewController {
             }
         }
     }
+}
+
+extension MainViewController: CXCallObserverDelegate {
+    func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) { reportIsland() }
 }
