@@ -2454,6 +2454,23 @@ export const PT_BR_OVERRIDES = {
   "Your workouts. Your weights. Every device.": "Seus treinos. Seus pesos. Em cada dispositivo.",
   "you": "você",
   "Continue with Google": "Continuar com o Google",
+  "Sign-in methods": "Métodos de login",
+  "The ways you can sign in to this account. Your plan and workouts stay the same whichever you use.": "As formas de entrar nesta conta. Seu plano e seus treinos continuam os mesmos, use a que usar.",
+  "Google": "Google",
+  "Linked": "Vinculado",
+  "Not linked": "Não vinculado",
+  "Link Google": "Vincular o Google",
+  "Unlink": "Desvincular",
+  "Unlink Google?": "Desvincular o Google?",
+  "You will not be able to sign in with Google any more.": "Você não poderá mais entrar com o Google.",
+  "You will not be able to sign in with this passkey any more.": "Você não poderá mais entrar com esta chave de acesso.",
+  "Synced passkey": "Chave de acesso sincronizada",
+  "Choose a username for your passkey. You will sign in with this name when you use the passkey.": "Escolha um nome de usuário para a sua chave de acesso. Você usará esse nome ao entrar com a chave de acesso.",
+  "This is your only way in, so it cannot be removed.": "É a sua única forma de entrar, então não pode ser removida.",
+  "Google linked": "Google vinculado",
+  "Google unlinked": "Google desvinculado",
+  "That Google account is already used by another account.": "Essa conta do Google já é usada por outra conta.",
+  "Google is already linked to this account.": "O Google já está vinculado a esta conta.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

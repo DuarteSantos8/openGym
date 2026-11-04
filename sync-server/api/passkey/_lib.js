@@ -72,6 +72,32 @@ export async function credsOf(db, username) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
+/** Every passkey credential owned by a Firebase uid (the account-linking view: a
+ *  Google-first account has credentials but the client cannot be trusted to name them). */
+export async function credsOfUid(db, uid) {
+  const snap = await db.collection('passkeys').where('uid', '==', uid).get()
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
+
+/** The passkeyUsers record owned by a Firebase uid, or null: { username, uid, userHandle }.
+ *  The collection is keyed by username, so this is a lookup by the uid field. */
+export async function usernameOfUid(db, uid) {
+  const snap = await db.collection('passkeyUsers').where('uid', '==', uid).limit(1).get()
+  if (snap.empty) return null
+  const d = snap.docs[0]
+  return { username: d.id, ...d.data() }
+}
+
+/** The provider ids on a Firebase Auth user (e.g. ['google.com']), via the Admin SDK.
+ *  This is the server's ground truth for "is Google linked", which the remove-passkey
+ *  lockout guard counts: a client claim about it is never trusted. */
+export async function providerIdsOf(auth, uid) {
+  try {
+    const user = await auth.getUser(uid)
+    return (user.providerData || []).map(p => p.providerId)
+  } catch { return [] }
+}
+
 /** The Firebase uid behind a request's bearer ID token, or null. */
 export async function bearerUid(req, auth) {
   const h = req.headers?.authorization || ''

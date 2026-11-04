@@ -36,9 +36,10 @@ const USERNAME_KEY = 'gym_fb_username'
 const PUSH_DEBOUNCE_MS = 800
 
 // ---- tiny auth-state pub/sub for the UI (components/FirebaseAccount.jsx, views/Login.jsx)
-let fbUser = null // { uid, username, email, displayName, provider } | null — username is
-// the passkey account name saved on this device; email/displayName/provider come from
-// the Firebase user itself, which is what a Google session carries.
+let fbUser = null // { uid, username, email, displayName, provider, providers } | null:
+// username is the passkey account name saved on this device; email/displayName/provider
+// come from the Firebase user itself, which is what a Google session carries. providers
+// is every provider id on the account (Settings → Sign-in methods reads it).
 let fbReady = false
 const authListeners = new Set()
 export function onFbAuthChange(fn) {
@@ -52,6 +53,24 @@ function setFbUser(u) {
   for (const fn of [...authListeners]) fn({ user: fbUser, ready: fbReady })
 }
 export const currentFbUser = () => fbUser
+
+function describeUser(user) {
+  if (!user) return null
+  return {
+    uid: user.uid,
+    username: localStorage.getItem(USERNAME_KEY) || '',
+    email: user.email || '',
+    displayName: user.displayName || '',
+    provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || '',
+    providers: (user.providerData || []).map(p => p.providerId),
+  }
+}
+
+/** Re-publish the current Firebase user (after a link/unlink changed its providers:
+ *  the auth-state listener is not guaranteed to refire for those). */
+function refreshFbUser() {
+  if (auth) setFbUser(describeUser(auth.currentUser))
+}
 
 // ---- Firebase handles (filled by ensureFirebase)
 let app, auth, db
@@ -124,30 +143,117 @@ export async function fbLogin(username) {
   return out
 }
 
-/** Sign in with Google — native Firebase Auth, no project server function involved.
- *  The session it creates is an ordinary Firebase session, so the sync engine's
- *  onAuthStateChanged path treats it exactly like a passkey custom-token session and
- *  the account's data lives under users/{uid} like everyone else's.
- *
- *  Redirect or popup: an installed PWA (and mobile Safari generally) cannot be trusted
- *  with a popup — it opens in a separate browser context and the result is lost — so
- *  standalone displays and mobile user agents go through signInWithRedirect, whose
- *  result startFirestoreSync collects via getRedirectResult, and desktop browsers get
- *  the popup. A redirect return value means the page is about to navigate away. */
-export async function fbGoogleLogin() {
-  await ensureFirebase()
-  const authMod = authModCache || (await import('firebase/auth'))
-  const provider = new authMod.GoogleAuthProvider()
+/** Redirect or popup for a Google flow: an installed PWA (and mobile Safari generally)
+ *  cannot be trusted with a popup — it opens in a separate browser context and the
+ *  result is lost — so standalone displays and mobile user agents go through the
+ *  redirect, whose result startFirestoreSync collects via getRedirectResult, and
+ *  desktop browsers get the popup. */
+function redirectPreferred() {
   const standalone = (typeof window !== 'undefined' && typeof window.matchMedia === 'function'
       && window.matchMedia('(display-mode: standalone)').matches)
     || (typeof navigator !== 'undefined' && navigator.standalone === true)
   const mobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
-  if (standalone || mobile) {
+  return standalone || mobile
+}
+
+/** Sign in with Google — native Firebase Auth, no project server function involved.
+ *  The session it creates is an ordinary Firebase session, so the sync engine's
+ *  onAuthStateChanged path treats it exactly like a passkey custom-token session and
+ *  the account's data lives under users/{uid} like everyone else's. A redirect return
+ *  value means the page is about to navigate away. */
+export async function fbGoogleLogin() {
+  await ensureFirebase()
+  const authMod = authModCache || (await import('firebase/auth'))
+  const provider = new authMod.GoogleAuthProvider()
+  if (redirectPreferred()) {
     await authMod.signInWithRedirect(auth, provider)
     return { redirect: true }
   }
   await authMod.signInWithPopup(auth, provider)
   return { redirect: false }
+}
+
+// ---- account linking (Settings → Sign-in methods)
+const LINK_REDIRECT_KEY = 'gym_fb_link_redirect'
+let redirectOutcomePromise = null // set by startFirestoreSync from getRedirectResult
+
+/** Link Google to the signed-in account. The uid does not change, so the account's
+ *  data under users/{uid} is untouched; this only adds a way in. On the redirect
+ *  path a flag is left behind so the returning page can tell the collected redirect
+ *  outcome (fbLinkOutcome) belongs to a link, not a sign-in. */
+export async function fbLinkGoogle() {
+  await ensureFirebase()
+  if (!auth.currentUser) throw new Error('Sign in first')
+  const authMod = authModCache || (await import('firebase/auth'))
+  const provider = new authMod.GoogleAuthProvider()
+  if (redirectPreferred()) {
+    try { sessionStorage.setItem(LINK_REDIRECT_KEY, '1') } catch { /* the outcome is a nicety, the link itself still lands */ }
+    await authMod.linkWithRedirect(auth.currentUser, provider)
+    return { redirect: true }
+  }
+  await authMod.linkWithPopup(auth.currentUser, provider)
+  refreshFbUser()
+  return { redirect: false }
+}
+
+/** The outcome of a Google LINK redirect once this page has come back from it:
+ *  { ok: true } | { error: true, code, message } | null when no link redirect is
+ *  pending. Consumed by the Sign-in methods card, once per return. */
+export async function fbLinkOutcome() {
+  let flagged = false
+  try {
+    flagged = sessionStorage.getItem(LINK_REDIRECT_KEY) === '1'
+    if (flagged) sessionStorage.removeItem(LINK_REDIRECT_KEY)
+  } catch { /* storage unavailable: nothing to collect */ }
+  if (!flagged || !redirectOutcomePromise) return null
+  return redirectOutcomePromise
+}
+
+/** Unlink Google from the signed-in account. The passkey guard lives in the UI and,
+ *  for passkey removal, on the server; Firebase itself also refuses to unlink an
+ *  account's only provider. */
+export async function fbUnlinkGoogle() {
+  await ensureFirebase()
+  if (!auth.currentUser) throw new Error('Sign in first')
+  const authMod = authModCache || (await import('firebase/auth'))
+  await authMod.unlink(auth.currentUser, 'google.com')
+  refreshFbUser()
+}
+
+/** The account's sign-in methods, from the project's own server (the passkey
+ *  collections are Admin-SDK-only, so the client cannot read them directly). */
+export async function fbSignInMethods() {
+  await ensureFirebase()
+  const token = auth.currentUser ? await auth.currentUser.getIdToken() : null
+  if (!token) throw new Error('Sign in first')
+  return postJSON('/api/passkey/list', {}, token)
+}
+
+/** Add a passkey to the signed-in account through the LINK ceremony
+ *  (/api/passkey/link-*): the server binds the credential, and, for a Google-first
+ *  user picking their first username, the username record, to the uid from the ID
+ *  token. No new Auth user, no custom token, the session never changes hands.
+ *  `username` is only needed when the account has no passkey username yet. */
+export async function fbAddPasskeyLinked(username) {
+  await ensureFirebase()
+  if (!auth.currentUser) throw new Error('Sign in first')
+  const token = await auth.currentUser.getIdToken()
+  const name = (username || '').trim()
+  const { startRegistration } = await import('@simplewebauthn/browser')
+  const { options, challengeId } = await postJSON('/api/passkey/link-options', { username: name || undefined }, token)
+  const response = await startRegistration({ optionsJSON: options })
+  const out = await postJSON('/api/passkey/link-verify', { challengeId, response }, token)
+  if (out.username) localStorage.setItem(USERNAME_KEY, out.username)
+  return out
+}
+
+/** Remove one of the account's own passkey credentials. The server checks ownership
+ *  and refuses to remove the account's last remaining sign-in method. */
+export async function fbRemovePasskey(credentialId) {
+  await ensureFirebase()
+  const token = auth.currentUser ? await auth.currentUser.getIdToken() : null
+  if (!token) throw new Error('Sign in first')
+  return postJSON('/api/passkey/remove', { credentialId }, token)
 }
 
 /** Add another passkey to the signed-in account (new phone/browser). */
@@ -171,21 +277,22 @@ export function startFirestoreSync(useStore) {
   started = true
   ensureFirebase().then(() => {
     const { onAuthStateChanged } = authModCache
-    // A Google redirect sign-in lands back on this page; its result (or its failure)
-    // arrives here. The session itself is picked up by onAuthStateChanged below either
-    // way, so this only surfaces an error the redirect would otherwise swallow.
+    // A Google redirect (sign-in or account link) lands back on this page; its result
+    // (or its failure) arrives here. The session itself is picked up by
+    // onAuthStateChanged below either way, so this only keeps the outcome — an error
+    // in particular, like a link whose Google account belongs to another account —
+    // for whoever asked for it (fbLinkOutcome, read by Settings → Sign-in methods).
     if (typeof authModCache.getRedirectResult === 'function') {
-      authModCache.getRedirectResult(auth).catch(e => console.warn('[fb-sync] redirect sign-in failed', e))
+      redirectOutcomePromise = authModCache.getRedirectResult(auth)
+        .then(r => (r ? { ok: true } : null))
+        .catch(e => {
+          console.warn('[fb-sync] redirect failed', e)
+          return { error: true, code: e?.code || '', message: e?.message || '' }
+        })
     }
     onAuthStateChanged(auth, user => {
       if (user) {
-        setFbUser({
-          uid: user.uid,
-          username: localStorage.getItem(USERNAME_KEY) || '',
-          email: user.email || '',
-          displayName: user.displayName || '',
-          provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || '',
-        })
+        setFbUser(describeUser(user))
         attach(useStore, user.uid).catch(e => console.warn('[fb-sync] attach failed', e))
       } else {
         detach()

@@ -9,7 +9,7 @@ import { Button } from './ui.jsx'
 // render nothing until it loads, and they only mount when lib/firebase-config says Firebase
 // mode is on, so a local/demo build is untouched by them.
 
-function useFb() {
+export function useFb() {
   const [mod, setMod] = useState(null)
   const [auth, setAuth] = useState({ user: null, ready: false })
   useEffect(() => {
@@ -62,7 +62,9 @@ export function FirebaseSignIn({ onSignedIn } = {}) {
   </>
 }
 
-/** Settings → Account block for Firebase mode: status, add-a-passkey, sign out. */
+/** Settings → Account block for Firebase mode: status and sign out. Adding or removing
+ *  sign-in methods is NOT here; that is the Sign-in methods card next door
+ *  (components/SignInMethods.jsx), so the account has exactly one place for it. */
 export default function FirebaseAccount() {
   const toast = useUI(s => s.toast)
   const { mod, auth } = useFb()
@@ -81,12 +83,6 @@ export default function FirebaseAccount() {
         <div className="muted small" style={{ marginBottom: 12 }}>
           {t('Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.', sessionLabel(auth.user) || t('you'))}
         </div>
-        {/* Adding a passkey belongs to passkey accounts: it keys off the username saved
-            on this device, which a Google session does not have. */}
-        {auth.user.username && <>
-          <Button disabled={busy} onClick={() => run(() => mod.fbAddPasskey(), t('Passkey added'))}>{t('Add a passkey on this device')}</Button>
-          <div style={{ height: 10 }} />
-        </>}
         <Button variant="ghost" disabled={busy} onClick={() => run(() => mod.fbSignOut(), t('Signed out'))}>{t('Sign out')}</Button>
       </> : <FirebaseSignIn />}
     </div>

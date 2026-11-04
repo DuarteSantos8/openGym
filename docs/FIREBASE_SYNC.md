@@ -80,6 +80,11 @@ Nothing else changes: a Google sign-in creates the same kind of Firebase
 session as a passkey sign-in, and the account's data lives under the same
 `users/{uid}` tree and syncs the same way.
 
+Signed-in accounts manage all of this under **Settings -> Sign-in methods**:
+link or unlink Google, add a passkey (a Google-first account picks its
+username there), or remove a passkey. The screen never offers removing the
+account's last remaining way in, and the server refuses it too.
+
 ## Part 2: Deploy to Vercel
 
 1. In Vercel, import this repo (your own fork or clone of it) as a new project.
@@ -130,7 +135,7 @@ tab, paste the contents of `firestore.rules`, Publish.
    Your plan and history arrive, and from then on all your devices stay in sync
    live.
 5. Later, to add a passkey on another device: sign in there first, then
-   Settings, Account, "Add a passkey on this device".
+   Settings -> Sign-in methods -> Add a passkey.
 
 ## Check it worked
 
