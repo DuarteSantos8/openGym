@@ -387,8 +387,7 @@
 .xm-ring-n span{font-size:14px;color:var(--label-2);margin-top:4px;font-variant-numeric:tabular-nums}
 .xm-countbtns{display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:10px}
 .xm-countbtns .btn.primary{min-width:112px;min-height:48px;font-size:19px}
-.xm-countbtns .btn.primary::before{content:'+'}
-.xm-countbtns .btn.ghost{min-width:44px;min-height:44px}
+.xm-countbtns .btn.ghost{min-width:48px;min-height:48px;border-radius:999px;background:var(--surface-3);justify-content:center}
 .xm-litline{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:13px;color:var(--label-3)}
 .xm-litball{width:9px;height:9px;border-radius:50%;background:var(--surface-3);flex:none}
 .xm-litline.xm-on{color:var(--label-2)}

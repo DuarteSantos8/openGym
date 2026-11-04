@@ -34,6 +34,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Form and exercise videos can be bigger: a clip over 12 MB is shrunk on your phone first (to 1280 px, the button counts up while it works), and the server takes up to 100 MB instead of 40. Self-hosting? MEDIA_VIDEO_MAX_MB and MEDIA_UPLOAD_MAX (now 112m) set it, see docs/SELF_HOSTING.md.
 - Your own sounds: Settings → Sound → Add a sound takes an MP3, M4A, WAV or OGG, trims the silence, keeps up to 30 seconds and plays it at the end of a rest, or of a hold (each can have its own). It rings in the app, on the locked phone and in the iPhone notification, and comes along to your other devices.
 
+**Advent calendar, reworked**
+- The advent calendar is now a gym thing: every door is something to do (or a number from your own year), each open door hangs a bauble on a little tree, and training that day lights it up. Swipe the doors open. What is behind them stays a surprise until 1 December.
+
 **The streak, explained (and yours to style)**
 - The calendar now shows how your streak counted, week by week: a flame for a week that counts, a freeze for a missed week a freeze covered (that week gets a frosty wash too), a ring for a missed one and a dashed ring for this week, still open. Tap a mark and it tells you why.
 - On top of the calendar: what the number counts (weeks in a row with at least one workout), your freezes and how the next one is earned, and the first time, four short lines on how it all works. Stats → Week streak says it too, with How streaks work one tap away.
