@@ -8,14 +8,17 @@ import { dayNoteOf, dayNoteLine } from '../lib/day-notes.js'
 
 const normalizeMetric = value => value === 'vol' ? 'vol' : 'time'
 
-// GitHub-style activity heatmap, shaded by the selected time or volume metric per day.
-export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChange }) {
+// GitHub-style activity heatmap, shaded by the selected time or volume metric per day. With
+// `counts` ({ 'YYYY-MM-DD': n }) it draws that instead of the workouts (the progress photos per
+// day, #949): shaded by n, no Time/Volume switch, and `legend` ({ less, more }) for the legend.
+export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChange, counts, legend }) {
   const wrapRef = useRef(null)
   const [localMetric, setLocalMetric] = useState(() => normalizeMetric(selectedMetric ?? S?.heatmapMetric))
   useEffect(() => { if (wrapRef.current) wrapRef.current.scrollLeft = wrapRef.current.scrollWidth }, [])
 
   const metric = normalizeMetric(selectedMetric ?? localMetric)
-  const metricValue = metric === 'vol' ? 'vol' : 'min'
+  const counting = counts != null
+  const metricValue = counting ? 'n' : metric === 'vol' ? 'vol' : 'min'
   const changeMetric = value => {
     const next = normalizeMetric(value)
     if (selectedMetric == null) setLocalMetric(next)
@@ -23,7 +26,8 @@ export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChan
   }
 
   const agg = {}
-  ;(S.workouts || []).forEach(w => {
+  if (counting) for (const [day, n] of Object.entries(counts)) if (n > 0) agg[day] = { n, vol: 0, min: 0 }
+  ;(counting ? [] : S.workouts || []).forEach(w => {
     const day = workoutDay(w)
     if (!day) return
     const a = agg[day] = agg[day] || { n: 0, vol: 0, min: 0 }
@@ -62,18 +66,18 @@ export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChan
       const a = agg[key]
       // A day off with a note (#261): outlined, its note in the tooltip, and tappable like a
       // trained day so the note can be read (and changed) on a phone too.
-      const note = !a && dayNoteOf(S, key)
+      const note = !counting && !a && dayNoteOf(S, key)
       const cls = 'hm-c l' + level(a) + (note ? ' noted' : '') + (key === todayISO() ? ' today' : '') + (day > today ? ' future' : '')
       cells.push(<div key={d} className={cls}
-        title={key + (a ? ` · ${tn('{0} workout', '{0} workouts', a.n)} · ${t('{0} min', a.min)} · ${fmtVol(a.vol, S.unit)}` : note ? ` · ${dayNoteLine(note, t)}` : '')}
+        title={key + (a ? (counting ? ` · ${tn('{0} photo', '{0} photos', a.n)}` : ` · ${tn('{0} workout', '{0} workouts', a.n)} · ${t('{0} min', a.min)} · ${fmtVol(a.vol, S.unit)}`) : note ? ` · ${dayNoteLine(note, t)}` : '')}
         {...tappable(a || note ? () => onDay?.(key) : undefined)} />)
     }
     cols.push(<div key={wk} className="hm-col">{cells}</div>)
   }
 
   return <>
-    <Segmented value={metric} onChange={changeMetric}
-      options={[{ value: 'time', label: t('Time') }, { value: 'vol', label: t('Volume') }]} />
+    {!counting && <Segmented value={metric} onChange={changeMetric}
+      options={[{ value: 'time', label: t('Time') }, { value: 'vol', label: t('Volume') }]} />}
     <div className="hm-wrap" ref={wrapRef}>
       <div className="hm-months" style={{ marginInlineStart: 30 }}>{months}</div>
       <div className="hm-body">
@@ -81,6 +85,6 @@ export default function Heatmap({ S, onDay, metric: selectedMetric, onMetricChan
         <div className="hm-grid">{cols}</div>
       </div>
     </div>
-    <div className="hm-legend">{t(metric === 'vol' ? 'Less volume' : 'Less time')} <div className="hm-c l0" /><div className="hm-c l1" /><div className="hm-c l2" /><div className="hm-c l3" /><div className="hm-c l4" /> {t(metric === 'vol' ? 'More volume' : 'More time')}</div>
+    <div className="hm-legend">{counting ? legend?.less : t(metric === 'vol' ? 'Less volume' : 'Less time')} <div className="hm-c l0" /><div className="hm-c l1" /><div className="hm-c l2" /><div className="hm-c l3" /><div className="hm-c l4" /> {counting ? legend?.more : t(metric === 'vol' ? 'More volume' : 'More time')}</div>
   </>
 }
