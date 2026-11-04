@@ -88,4 +88,17 @@ describe('buildReminderNotifications', () => {
     expect(waiting[0].body).toContain('Legs')            // Tue: weekday plan
     expect(waiting[1].body).toContain('Push')            // Wed: startsOn — the queue takes over
   })
+
+  it('asks each date about that date, so a session logged for a later day is not done before it', () => {
+    // The DONE RULE stops at today (queue.js), and every date here is asked as if it were today:
+    // a Push dated Tuesday, started before the apply, has not happened on Monday, and has by Wednesday.
+    const now = new Date(2026, 8, 7, 7, 0)   // Monday 07:00
+    const queue = { ids: ['push', 'pull'], since: now.getTime(), startsOn: iso(now), label: 'US W1' }
+    const tue = { id: 'w1', d: iso(new Date(2026, 8, 8)), start: now.getTime() - 3600000, routineIds: ['push'], name: 'Push', entries: [] }
+    const n = buildReminderNotifications(state({ week: {}, queue, workouts: [tue] }), now)
+    expect(iso(n[0].schedule.at)).toBe(iso(now))
+    expect(n[0].body).toContain('Push')
+    expect(iso(n[1].schedule.at)).toBe(iso(new Date(2026, 8, 9)))   // Tuesday has its workout
+    expect(n[1].body).toContain('Pull')
+  })
 })
