@@ -114,6 +114,42 @@ describe('resolveProgressionContext', () => {
     expect(resolve(r, [{ exposures: [logged(p1)] }], { p1, p2 }, { occA: own }).state).toBe(own)
   })
 
+  it('programme exposures never seed an ordinary baseline, Any workout included', () => {
+    const r = plan(3, 10)
+    const pA = gen('pA', 'occA', r), pR = gen('pR', 'run:r1:bench:occA', r)
+    const inRun = { ...logged(pR, { trackId: 'run:r1:bench:occA', exposureId: 'xR', load: 100 }), programme: { runId: 'r1', trackId: 'bench', slot: 'p1:a0:occA', stage: 'w1', attempt: 1, role: 'work' } }
+    const workouts = [{ start: 1, exposures: [logged(pA, { exposureId: 'xA' })] }, { start: 2, exposures: [inRun] }]
+    for (const acrossRoutines of [false, true]) {
+      const ctx = resolveProgressionContext({ trackId: 'occA', exerciseId: 'ex1', rule: r, workouts, prescriptions: { pA, pR }, progression: {}, acrossRoutines })
+      expect(ctx).toMatchObject({ source: 'slot', heldLoad: kg(60) })
+      expect(ctx.baseline.exposureId).toBe('xA')
+    }
+    // Nothing ordinary logged: the run's 100 kg is not borrowed either, even on the run's own track id.
+    expect(resolve(r, [{ exposures: [inRun] }], { pR }).baseline).toBeNull()
+    expect(resolveProgressionContext({ trackId: 'run:r1:bench:occA', exerciseId: 'ex1', rule: r, workouts: [{ exposures: [inRun] }], prescriptions: { pR } }).baseline).toBeNull()
+  })
+
+  it('a recovery week (adaptive: false) is never the baseline: the next week opens at the work week\'s reps', () => {
+    const r = plan(3, 5, 80)
+    const easy = plan(2, 8, 60)
+    const recovery = { ...easy, id: 'rule-r', program: { ...easy.program, adaptive: false } }
+    const p1 = gen('p1', 'occA', r), p2 = gen('p2', 'occA', recovery)
+    const x = (p, id, reps, load) => ({
+      exposureId: id, exerciseId: 'ex1', trackId: 'occA', prescriptionId: p.id, excludedFromProgression: false, actual: { sets: p.rows.length, reps, load: kg(load) },
+      performance: { sets: p.rows.map(() => ({ ...work(load), observations: [{ metric: 'repetitions', unit: 'reps', value: reps }] })) }
+    })
+    const x1 = x(p1, 'x1', 5, 80), x2 = x(p2, 'x2', 8, 60)
+    let state = advanceProgression({ state: null, prescription: p1, log: { id: 'x1', actual: x1.actual, performance: x1.performance }, now: NOW })
+    state = advanceProgression({ state, prescription: p2, log: { id: 'x2', actual: x2.actual, performance: x2.performance }, now: NOW })
+    const ctx = resolve(r, [{ start: 1, exposures: [x1] }, { start: 2, exposures: [x2] }], { p1, p2 }, { occA: state })
+    expect(ctx.baseline.exposureId).toBe('x1')
+    expect(ctx.lastPrescription).toBe(p1)
+    expect(ctx.heldLoad).toEqual(kg(80))
+    const next = generatePrescription({ id: 'p3', now: NOW, trackId: 'occA', rule: r, state: ctx.state, lastPrescription: ctx.lastPrescription, lastLog: { ...ctx.baseline, id: ctx.baseline.exposureId }, startFrom: 'last' })
+    expect(next.prefill.reps).toBe(5)
+    expect(next.rows.map(row => row.load.value)).toEqual([82.5, 82.5, 82.5])
+  })
+
   it('has no baseline for an exercise never logged', () => {
     expect(resolve(plan(3, 10), [], {})).toMatchObject({ baseline: null, source: null, reset: null, state: null, lastPrescription: null, heldLoad: null })
   })

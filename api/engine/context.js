@@ -68,14 +68,17 @@ export function replayProgression({ workouts = [], trackId, prescriptions = {}, 
  * borrowed and records no plan. An own log with no recorded plan never resets.
  */
 export function resolveProgressionContext({ trackId, exerciseId, rule, workouts = [], prescriptions = {}, progression = {}, assisted = false, acrossRoutines = false }) {
-  const ownLog = newest(workouts, x => x.trackId === trackId && x.prescriptionId && !x.excludedFromProgression)
+  // A programme's exposure belongs to its run (programme-run.js), and a recovery week (adaptive:
+  // false) moved nothing: neither is ever a baseline, own, any-workout or borrowed.
+  const ordinary = x => !x.programme && prescriptions[x.prescriptionId]?.ruleSnapshot?.program?.adaptive !== false
+  const ownLog = newest(workouts, x => x.trackId === trackId && x.prescriptionId && !x.excludedFromProgression && ordinary(x))
   // "Last time means → Any workout" (#770): the exercise's newest counted log in any routine is
   // the baseline, one line of progress across routines. Only an edit of this occurrence's own
   // plan restarts it, judged against its own last prescription, never another routine's.
-  const anyLog = acrossRoutines ? newest(workouts, x => x.exerciseId === exerciseId && x.prescriptionId && !x.excludedFromProgression && x.progressionExclusion !== 'explicit') : null
+  const anyLog = acrossRoutines ? newest(workouts, x => x.exerciseId === exerciseId && x.prescriptionId && !x.excludedFromProgression && x.progressionExclusion !== 'explicit' && ordinary(x)) : null
   const own = anyLog || ownLog
   const borrowed = own ? null : newest(workouts, x => x.exerciseId === exerciseId
-    && x.progressionExclusion !== 'explicit'
+    && x.progressionExclusion !== 'explicit' && ordinary(x)
     && (!x.prescriptionId || !x.excludedFromProgression) && (x.performance?.sets || []).some(isWork))
   const baseline = own || borrowed
   const source = own ? 'slot' : borrowed ? 'exercise' : null

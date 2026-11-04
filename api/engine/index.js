@@ -21,3 +21,4 @@ export { advanceProgression, initialProgressionState, verdictOf } from './advanc
 export { legacyEntriesOf } from './performance.js'
 export { migrateOccurrence, migrateWarmups, planWarmupRows, validateWarmup, warmupClass, warmupMaxCount, warmupSteps } from './warmup.js'
 export { OPTION_CLASSES, slotOutcome, stageRule, validateProgramme, weeklyTemplate } from './programme.js'
+export { deriveRun, referenceProposals, slotFor, slotInputs } from './programme-run.js'
