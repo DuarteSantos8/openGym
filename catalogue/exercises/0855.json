@@ -3,9 +3,9 @@
   "name": "weighted standing twist",
   "bodyPart": "waist",
   "equipment": "weighted",
-  "target": "abs",
+  "target": "obliques",
   "secondaryMuscles": [
-    "obliques",
+    "abdominals",
     "shoulders"
   ],
   "category": "strength",

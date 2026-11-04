@@ -6,6 +6,7 @@ import { useStore, DEF } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { PhotoView, progressPhotosOf, AddPhotosSheet } from './ProgressPhotos.jsx'
 import { todayISO } from '../lib/format.js'
+import { pickDate } from '../components/DateField.test-util.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -82,18 +83,19 @@ describe('adding photos for a day', () => {
     const save = vi.fn(async () => {})
     act(() => root.render(<AddPhotosSheet items={[item('2026-09-14')]} close={() => {}} save={save} />))
     expect(host.querySelector('h3').textContent).toBe('Add 1 photo')
-    expect(host.querySelector('input[type=date]').value).toBe('2026-09-14')
-    expect(host.querySelector('input[type=date]').max).toBe(todayISO())
+    expect(host.querySelector('[data-datefield]').value).toBe('2026-09-14')
+    const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
+    expect(pickDate(host.querySelector('[data-datefield]'), tomorrow.getFullYear() + '-' + String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrow.getDate()).padStart(2, '0'))).toBe(false)
     await act(async () => { button('Add').click() })
     expect(save).toHaveBeenCalledWith([item('2026-09-14')], '2026-09-14')
 
     act(() => root.render(null))
     act(() => root.render(<AddPhotosSheet items={[item('2026-09-14'), item(null), item(null)]} close={() => {}} save={save} />))
     expect(host.textContent).toContain('1 photo knows its day and goes there. The others go on the day below.')
-    expect(host.querySelector('input[type=date]').value).toBe(todayISO())
+    expect(host.querySelector('[data-datefield]').value).toBe(todayISO())
     act(() => root.render(null))
     act(() => root.render(<AddPhotosSheet items={[item('2026-09-14'), item('2026-09-15')]} close={() => {}} save={save} />))
-    expect(host.querySelector('input[type=date]')).toBeNull()
+    expect(host.querySelector('[data-datefield]')).toBeNull()
     expect(host.textContent).toContain('Each photo goes on the day it was taken.')
   })
 })

@@ -3,8 +3,9 @@
   "name": "power sled anti rotation forward walk",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
-  "target": "glutes",
+  "target": "abs",
   "secondaryMuscles": [
+    "glutes",
     "core",
     "obliques",
     "quadriceps",

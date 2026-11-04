@@ -4,6 +4,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import Stats from './Stats.jsx'
+import { pickFrom, pickerOptions } from './stats-pick.test-util.js'
 
 const mocks = vi.hoisted(() => ({ charts: [], S: null }))
 vi.mock('../store/useStore.js', () => ({ useStore: selector => selector({ S: mocks.S }) }))
@@ -40,23 +41,27 @@ function mount(workouts) {
 }
 const exCard = () => [...host.querySelectorAll('.card')].find(c => c.querySelector('h2')?.textContent === 'Exercise progress')
 const press = (scope, label) => act(() => [...scope.querySelectorAll('.seg button')].find(b => b.textContent === label).click())
-const labels = scope => [...scope.querySelectorAll('.seg button')].map(b => b.textContent)
-const lastChart = () => mocks.charts.at(-1)
+// Since the stats redesign the chart is picked from a sheet (the Chart row), the body weight basis
+// as two entries of it ("Bodyweight · Est. 1RM", "Bodyweight · Top set") instead of a second toggle.
+const labels = scope => pickerOptions(scope, 'Chart')
+const pickChart = (scope, label) => pickFrom(scope, 'Chart', label)
+// the exercise progress chart (h 150): since 1.4.5 (P5) the Effort part's own chart renders after it
+const lastChart = () => mocks.charts.filter(c => c.h === 150).at(-1)
 
 describe('Stats: Bodyweight view of exercise progress', () => {
   it('is not offered without a body weight to compare with, or with a single workout', () => {
     mount([session(20, 80), session(10, 85)])
-    expect(labels(exCard())).not.toContain('Bodyweight')
+    expect(labels(exCard()).some(l => l.startsWith('Bodyweight'))).toBe(false)
     act(() => root.unmount()); host.remove()
     mount([session(10, 80, 80)])
-    expect(labels(exCard())).not.toContain('Bodyweight')
+    expect(labels(exCard()).some(l => l.startsWith('Bodyweight'))).toBe(false)
   })
 
   it('draws the lift as a percentage of the body weight it was logged at', () => {
     mount([session(20, 80, 80), session(10, 100, 80)])
     const card = exCard()
-    expect(labels(card)).toContain('Bodyweight')
-    press(card, 'Bodyweight')
+    expect(labels(card).some(l => l.startsWith('Bodyweight'))).toBe(true)
+    pickChart(card, 'Bodyweight')
     const chart = lastChart()
     expect(chart.unit).toBe('% BW')
     const ys = chart.points.map(p => p.y)
@@ -69,17 +74,16 @@ describe('Stats: Bodyweight view of exercise progress', () => {
   it('offers the basis toggle, and the top set reads the heaviest set over body weight', () => {
     mount([session(20, 80, 80), session(10, 100, 80)])
     const card = exCard()
-    press(card, 'Bodyweight')
-    const toggle = [...card.querySelectorAll('.seg')].find(s => labels(s).join() === 'Est. 1RM,Top set')
-    expect(toggle).toBeTruthy()
-    act(() => [...toggle.querySelectorAll('button')].find(b => b.textContent === 'Top set').click())
+    pickChart(card, 'Bodyweight')
+    expect(labels(card)).toEqual(expect.arrayContaining(['Bodyweight · Est. 1RM', 'Bodyweight · Top set']))
+    pickChart(card, 'Bodyweight · Top set')
     expect(lastChart().points.map(p => p.y)).toEqual([100, 125])
     expect(card.textContent).toContain('Heaviest set as a share of body weight, per workout')
   })
 
   it('names the estimated 1RM, not a weight lifted, in the point note', () => {
     mount([session(20, 80, 80), session(10, 100, 80)])
-    press(exCard(), 'Bodyweight')
+    pickChart(exCard(), 'Bodyweight')
     expect(lastChart().points.every(p => p.note.startsWith('Est. 1RM '))).toBe(true)
   })
 
@@ -91,8 +95,9 @@ describe('Stats: Bodyweight view of exercise progress', () => {
     }
     mount([assisted(20, 30), assisted(10, 10)])
     const card = exCard()
-    press(card, 'Bodyweight')
-    expect([...card.querySelectorAll('.seg')].some(s => labels(s).join() === 'Est. 1RM,Top set')).toBe(false)
+    pickChart(card, 'Bodyweight')
+    expect(labels(card)).toContain('Bodyweight')
+    expect(labels(card)).not.toContain('Bodyweight · Est. 1RM')
     expect(card.textContent).toContain('Heaviest set as a share of body weight, per workout')
     expect(lastChart().points.map(p => p.y)).toEqual([62.5, 87.5])
   })
@@ -105,8 +110,8 @@ describe('Stats: Bodyweight view of exercise progress', () => {
     }
     mount([high(20, 100), high(10, 120)])
     const card = exCard()
-    expect(labels(card)).toContain('Bodyweight')
-    press(card, 'Bodyweight')
+    expect(labels(card).some(l => l.startsWith('Bodyweight'))).toBe(true)
+    pickChart(card, 'Bodyweight')
     expect(lastChart().points.map(p => p.y)).toEqual([125, 150])
     expect(card.textContent).toContain('Heaviest set as a share of body weight, per workout')
   })
@@ -114,7 +119,7 @@ describe('Stats: Bodyweight view of exercise progress', () => {
   it('follows the date range and says so when it holds fewer than two workouts', () => {
     mount([session(200, 70, 80), session(20, 80, 80), session(5, 90, 80)])
     const card = exCard()
-    press(card, 'Bodyweight')
+    pickChart(card, 'Bodyweight')
     expect(lastChart().points).toHaveLength(3)
     press(card, '1M')
     expect(lastChart().points).toHaveLength(2)

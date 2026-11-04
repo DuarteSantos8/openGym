@@ -26,7 +26,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="stylesheet" href="styles.css?v=28">
+<link rel="stylesheet" href="styles.css?v=29">
 <script>document.documentElement.className += ' js'</script>
 <!-- Umami web analytics for opengym.ch (self-hosted, cookieless). -->
 <script defer src="https://stats.duarte-santos.ch/script.js" data-website-id="db36019e-50f4-453c-9c56-d0588aefe233"></script>
@@ -92,6 +92,7 @@
   <a class="side-link" href="#online"><b>When the app goes online</b><span>Only for what you set up</span></a>
   <a class="side-link" href="#stores"><b>App stores</b><span>Google Play and the App Store</span></a>
   <a class="side-link" href="#website"><b>This website</b><span>Cookieless page counts</span></a>
+  <a class="side-link" href="#legal"><b>The legal part</b><span>Who, why, your rights</span></a>
   <a class="side-link" href="#contact"><b>Questions</b><span>Who to ask</span></a>
   <p class="side-label">More</p>
   <a class="side-link" href="/"><b>Home</b><span>The tour, the demo, the download</span></a>
@@ -103,18 +104,19 @@
   <h1>Privacy</h1>
   <p class="lead">This page covers the openGym apps for Android and iPhone (the APK from this
      site and GitHub, the Google Play and App Store versions) and this website.
-     Last changed: 15 October 2026.</p>
+     Last changed: 31 October 2026.</p>
 
   <h2 id="short">The short version</h2>
   <ul>
     <li><b>No account.</b> The app works without signing up anywhere.</li>
     <li><b>No analytics, no ads, no crash reporting, no tracking.</b> Not in the app, not by us,
         not by anyone we work with. There is nobody we work with.</li>
-    <li><b>Your training log stays on your phone.</b> Workouts, plans, body weight, photos and
+    <li><b>Your training log stays on your phone.</b> Workouts, plans, body weight, photos, videos and
         settings are stored in the app's own storage on your device. We never receive them.</li>
     <li><b>You decide what leaves the phone</b>, and only these things can: a backup you export,
         a server you connect, the AI coach if you set it up, Health Connect or Apple Health if you
-        switch them on, and the address search of the gym reminder.</li>
+        switch them on, the address search of the gym reminder, and a YouTube video you tap to
+        watch.</li>
   </ul>
 
   <h2 id="online">When the app goes online</h2>
@@ -138,19 +140,33 @@
         switch, all off until you turn them on. Writing puts finished workouts and weigh-ins into
         the health store on your phone. Reading (since v1.4.3) takes two things back: the heart
         rate your watch saved during a workout you logged (from the last day, while the app is
-        open) and weigh-ins other apps saved (from the last 30 days). They go into your own
+        open) and weigh-ins other apps saved (from the last 30 days; on Android up to a year back the first
+        time, if you also allow Health Connect's "past data" access). They go into your own
         workout log on the phone and never leave it, except inside that log when you sync it to
         your own server. Nothing is read in the background, nothing else is read, and no health
-        data goes to us or to anyone else.</li>
+        data goes to us or to anyone else. Health data is never sold, never used for advertising
+        and never used to decide anything about credit, insurance or work.</li>
     <li><b>Apple Watch</b> (iPhone). During a workout the Apple Watch app reads your heart rate
         to show it next to each set. The watch talks to your iPhone directly. Health data is never
         sent to us and never used for advertising.</li>
+    <li><b>Wear OS watch</b> (Android, beta). The watch app and your phone talk through Google
+        Play services' Wearable Data Layer: directly over Bluetooth or Wi-Fi, or, when they are apart,
+        through Google's encrypted sync, under Google's privacy policy. During a workout the watch
+        reads your heart rate to show it next to each set and puts it into the workout on your phone.
+        Health data is never sent to us and never used for advertising.</li>
     <li><b>Sharper animations</b> (store versions). A basic set of exercise animations comes
         with the app. Sharper sets are optional downloads under Settings → Animation quality,
         delivered by Google Play or Apple like the app itself (on Auto, only over Wi-Fi).</li>
     <li><b>Missed-day reminder</b> (only with your own server connected). In the background the
         app may ask your server whether you already trained today, so it doesn't nag you for
         nothing.</li>
+    <li><b>YouTube videos</b>, only when you tap one. A YouTube link you put on an exercise you
+        added or in a routine's notes shows as a "Watch video" card, and nothing is loaded from
+        YouTube until you tap it. Then, on Android and in the browser, the video plays in the app
+        from youtube-nocookie.com, YouTube's privacy-enhanced player: Google (YouTube's owner) gets
+        your IP address and which video it is, and the player may keep a little data of its own on
+        the phone, under Google's privacy policy. On the iPhone the tap opens the video in YouTube
+        or Safari instead. The app never tells YouTube anything else about you or your training.</li>
     <li><b>Update check</b> (only the APK from this site and GitHub). When you open Settings →
         About, the app asks GitHub's public release list whether there is a newer version, and
         downloads it from GitHub if you tap update. The store versions are updated by their store
@@ -163,9 +179,13 @@
   <p><b>Gym reminder</b> (phone app, off until you switch it on). Where your gyms are stays on your
      phone: not synced, not in backups, not sent to us or to your server. The phone itself notices
      when you walk in (Android's location service or iOS region monitoring), so nobody, us
-     included, learns where you go. We don't want to know, honestly. Two things do go out: an
-     address you search for on the map goes to OpenStreetMap's Nominatim (just the text you
-     typed), and the map tiles come from OpenStreetMap. And if the phone is connected to your own
+     included, learns where you go. We don't want to know, honestly. Two things do go out: what you
+     type into the map's search, and the map itself. On the iPhone the map is Apple Maps, so a search
+     (and the street address of a pin you drop) goes to Apple, like any search in Apple's Maps app.
+     On Android it is OpenStreetMap: a search goes to OpenStreetMap's Nominatim (just the text you
+     typed and the rough area the map shows, at most one request a second) and the map tiles come
+     from OpenStreetMap's tile servers (© OpenStreetMap contributors, under their tile usage
+     policy). "Open in Google Maps" sends the pin's spot to Google only when you tap it. And if the phone is connected to your own
      server, it asks that server "trained today already?" when you arrive, so a workout logged on
      your laptop doesn't get you nagged. That question carries the date, not your location.</p>
   <p id="delete"><b>Deleting your data:</b> it's on your phone, so Settings → Reset or uninstalling the app
@@ -183,6 +203,46 @@
   <p>opengym.ch counts page views with a self-hosted, cookieless
      <a href="https://umami.is" rel="noopener">Umami</a>: no cookies, no cross-site tracking, no
      personal profile. The demo runs entirely in your browser and is never counted.</p>
+
+  <h2 id="legal">The legal part</h2>
+  <p><b>Who is responsible.</b> Duarte Santos, Switzerland, <a href="mailto:contact@duarte-santos.ch">contact@duarte-santos.ch</a>,
+     is the controller under the Swiss Federal Act on Data Protection (FADP) and, where it applies,
+     the EU General Data Protection Regulation (GDPR). For the app that is a short job: your
+     training log is processed on your device, and the services you connect (your server, an AI
+     provider, Google or Apple) handle what you send them under their own terms.</p>
+  <p><b>What we do process, and why.</b></p>
+  <ul>
+    <li>This website: your IP address and the request, to deliver and protect the pages, and
+        anonymous page counts (see below). Legal basis: our legitimate interest in a working,
+        secure site and in knowing which pages are read (Art. 6(1)(f) GDPR).</li>
+    <li>Messages you send us by e-mail, GitHub or Discord: to answer you. Legal basis: our
+        legitimate interest in answering, or the steps you asked for (Art. 6(1)(b) and (f) GDPR).
+        We keep a conversation only as long as it is useful for it, then delete it.</li>
+  </ul>
+  <p><b>Who helps.</b> The website runs on our own server in Switzerland behind
+     <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Cloudflare</a>
+     (Cloudflare, Inc., USA), which receives your IP address to deliver the pages and keep attacks
+     out. E-mail to contact@duarte-santos.ch is hosted by Zoho in its EU data centre. Where data
+     goes to the USA, the transfer rests on the EU-US and Swiss-US Data Privacy Frameworks or the
+     EU standard contractual clauses. We sell no data and share none for advertising.</p>
+  <p><b>Health data.</b> Body weight, heart rate and workouts count as health data under the
+     FADP and the GDPR (Art. 9). openGym keeps them on your device. They only leave it when you
+     switch something on yourself: sync with your own server, Apple Health or Health Connect, an
+     AI provider, or a watch. Switching it on is your explicit consent for exactly that
+     (Art. 9(2)(a) GDPR), and switching it off withdraws it. Nothing of it reaches us.</p>
+  <p><b>Age.</b> openGym is meant for people aged 13 and over. We do not knowingly collect data
+     from children, and the app itself collects nothing for us at any age. If you are under 16 in
+     the EU (or under the age your country sets), ask a parent before you connect online services
+     such as an AI provider or a server you do not run yourself. If you think a child sent us
+     data, write to us and we delete it.</p>
+  <p><b>Your rights.</b> You can ask what we hold about you, have it corrected or deleted, restrict
+     or object to its processing, and get a copy to take elsewhere. Write to
+     <a href="mailto:contact@duarte-santos.ch">contact@duarte-santos.ch</a>. You can also complain
+     to a data protection authority: in Switzerland the
+     <a href="https://www.edoeb.admin.ch" rel="noopener">Federal Data Protection and Information Commissioner (FDPIC)</a>,
+     in the EU the authority of the country you live in.</p>
+  <p><b>Changes.</b> When the app starts doing something new with data, this page changes first,
+     and the date at the top says when.</p>
 
   <h2 id="contact">Questions</h2>
   <p>openGym is made by <a href="https://duarte-santos.ch" rel="noopener">Duarte Santos</a>,
@@ -206,6 +266,6 @@
   </div>
 </div></footer>
 
-<script src="site.js?v=28" defer></script>
+<script src="site.js?v=29" defer></script>
 </body>
 </html>

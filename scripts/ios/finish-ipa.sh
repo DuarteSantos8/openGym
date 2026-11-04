@@ -16,7 +16,7 @@
 #   WATCH_WIDGET_PROFILE=<widget.mobileprovision>  once the watch app carries its widget
 #
 # Before: the phone build with the app's animations, from the same commit as the IPA:
-#   cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/backup-hdd/opengym-media/build-appwebp npm run build:mobile
+#   cd frontend && VITE_CLIP_EXT=webp APP_MEDIA_DIR=/mnt/build-fast/from-hdd/opengym-media/build-appwebp npm run build:mobile
 # After: upload the IPA (docs/APP_STORES.md, "Upload").
 set -euo pipefail
 
@@ -72,6 +72,15 @@ if 'NSHealthShareUsageDescription' not in info:
 # it the app still works, and Settings → Apple Health reports that it could not write.
 if not e.get('com.apple.developer.healthkit'):
     print('WARNING: the app profile has no HealthKit: Apple Health will not work in this build')
+# NFC stickers (NfcTagsPlugin.swift) need "NFC Tag Reading" on the app id. App Store Connect
+# refuses the old NDEF format in this entitlement, so only TAG is kept.
+NFC = 'com.apple.developer.nfc.readersession.formats'
+if NFC in e:
+    e[NFC] = [f for f in e[NFC] if f != 'NDEF'] or ['TAG']
+if 'NFCReaderUsageDescription' not in info:
+    e.pop(NFC, None)
+elif not e.get(NFC):
+    print('WARNING: the app profile has no NFC Tag Reading: writing NFC stickers will not work in this build')
 plistlib.dump(e, open(sys.argv[2], 'wb'))
 print('profile:', p['Name'], '| team', p['TeamIdentifier'][0], '| expires', p['ExpirationDate'])
 PY

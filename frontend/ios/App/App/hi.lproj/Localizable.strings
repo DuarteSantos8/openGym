@@ -1,0 +1,24 @@
+/* Written by ios/ci/voice-strings.mjs: change it there. */
+"Start workout" = "वर्कआउट शुरू करें";
+"Starts today’s planned workout, or opens the one already running." = "आज का प्लान किया वर्कआउट शुरू करता है, या चल रहा वर्कआउट खोलता है।";
+"Log weight" = "वज़न दर्ज करें";
+"Logs your body weight without opening openGym." = "openGym खोले बिना आपका वज़न दर्ज करता है।";
+"Weight" = "वज़न";
+"What’s your weight?" = "आपका वज़न कितना है?";
+"Today’s workout" = "आज का वर्कआउट";
+"Tells you what’s planned for today." = "बताता है कि आज क्या प्लान है।";
+"Week streak" = "हफ़्तों की स्ट्रीक";
+"Tells you how many weeks in a row you trained." = "बताता है कि आपने लगातार कितने हफ़्ते ट्रेनिंग की।";
+"Open openGym once, then ask me again." = "openGym एक बार खोलें, फिर मुझसे दोबारा पूछें।";
+"You’re in the middle of %@." = "आप अभी %@ के बीच में हैं।";
+"You’re in the middle of a workout." = "आप अभी वर्कआउट के बीच में हैं।";
+"Your workout" = "आपका वर्कआउट";
+"%@ is done for today. Nice work." = "आज का %@ हो गया। बढ़िया।";
+"Today: %@." = "आज: %@।";
+"Rest day today. Next up: %@ on %@." = "आज आराम का दिन है। अगला: %@, %@।";
+"Nothing planned today." = "आज कुछ प्लान नहीं है।";
+"No streak yet. One workout this week starts one." = "अभी कोई स्ट्रीक नहीं। इस हफ़्ते एक वर्कआउट से शुरू हो जाएगी।";
+"Week streak: %d. This week already counts." = "हफ़्तों की स्ट्रीक: %d। यह हफ़्ता पहले ही गिना जा चुका है।";
+"Week streak: %d. One workout this week keeps it going." = "हफ़्तों की स्ट्रीक: %d। इस हफ़्ते एक वर्कआउट इसे जारी रखेगा।";
+"That doesn’t sound like a weight. Try again?" = "यह वज़न जैसा नहीं लगता। फिर से कोशिश करें?";
+"Logged %@." = "%@ दर्ज हो गया।";

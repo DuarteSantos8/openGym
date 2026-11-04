@@ -70,11 +70,13 @@ function renderTopSheet() {
   act(() => sheetRoot.render(sheet.render(() => useUI.getState().closeSheet(sheet.id))))
   return sheetContainer
 }
+// The rarely used rows sit folded under More (MenuSheet's `more`, v1.4.4): open it like a user would.
+const unfold = c => { const m = c.querySelector('.menu-more'); if (m) act(() => m.click()); return c }
 const openHeaderMenu = () => {
   const more = container.querySelector('button[aria-label="Workout options"]')
   expect(more).toBeTruthy()
   act(() => more.click())
-  return renderTopSheet()
+  return unfold(renderTopSheet())
 }
 const headerItem = () => [...openHeaderMenu().querySelectorAll('.menu-item')]
   .find(it => it.querySelector('.tt')?.textContent === 'Don’t count for progression' && it.querySelector('.ss')?.textContent === HEADER_SUB)

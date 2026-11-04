@@ -3,9 +3,9 @@
   "name": "thoracic bridge",
   "bodyPart": "back",
   "equipment": "body weight",
-  "target": "spine",
+  "target": "glutes",
   "secondaryMuscles": [
-    "glutes",
+    "lower back",
     "shoulders",
     "core"
   ],

@@ -12,8 +12,8 @@ published one plus one patch (1.4.2 → 1.4.3), and a minor bump is saved for a 
 new exercise database (v1.4.0).
 
 - Milestones: https://github.com/DuarteSantos8/openGym/milestones
-- Next, in order: programmes, tour & fixes (v1.4.4) → Google Play, F-Droid & integrations (v1.4.5) →
-  Wear OS & Health Connect (v1.4.6) → the progression engine & circuits (v1.4.7) → the list after that
+- Next, in order: Google Play for everyone, F-Droid & integrations (v1.4.5) →
+  Wear OS out of beta & Health Connect (v1.4.6) → the progression engine & circuits (v1.4.7) → the list after that
 
 ---
 
@@ -205,8 +205,9 @@ the rest sound), and two security fixes.
 
 ## v1.4.5: Google Play, F-Droid & integrations  (planned for the end of November)
 
-- **openGym on Google Play.** A new developer account needs a closed test with 12 testers for
-  14 days first. Until then the signed APK on GitHub is the Android app
+- **openGym on Google Play, for everyone.** The closed test runs since v1.4.4 (join: https://groups.google.com/g/opengym-testers/about, then
+  https://play.google.com/apps/testing/ch.duartesantos.opengym). A new developer account needs 12 testers for 14 days before Google lets it go public.
+  Until then the signed APK on GitHub is the Android app for everyone else
 - **F-Droid** (#325): a build without Google's barcode scanner, store texts in F-Droid's format, and
   the licensed exercise animations marked as non-free assets. Their review can take a few weeks
 - **Settings → Integrations**, one page with a card per service:
@@ -223,7 +224,8 @@ the rest sound), and two security fixes.
 
 ## v1.4.6: Wear OS & Health Connect  (planned for mid December)
 
-- **A Wear OS app**: record a workout on an Android watch (#673)
+- **The Wear OS app out of beta**: it shipped as a beta in v1.4.4 and reaches testers through the
+  Google Play test; this step is fixing what real wrists find (#673)
 - **Android lock screen and widget**: the workout card between sets, like on the iPhone (#760, #125,
   #299), and the rest timer in Xiaomi's HyperIsland (#727)
 - **Deeper Health Connect**: real sets and segments out (#816, #654), calories (#724), weigh-ins on
