@@ -14,7 +14,7 @@ const H = n => String(n).repeat(64).slice(0, 64)
 const photo = (h, poster) => ({ kind: 'image', hash: h, mime: 'image/webp', size: 1000, width: 800, height: 600, ...(poster ? { poster: { hash: poster, mime: 'image/webp', size: 100, width: 480, height: 360 } } : {}), at: 1 })
 const clip = (h, poster) => ({ kind: 'video', hash: h, mime: 'video/mp4', size: 500000, width: 1280, height: 720, dur: 8, codec: 'avc1', ...(poster ? { poster: { hash: poster, mime: 'image/webp', size: 100, width: 480, height: 270 } } : {}), at: 2 })
 const set = (w, r) => ({ w, r, done: true })
-const workout = over => ({ id: 'w1', d: '2026-09-20', start: 1000, end: 4000, name: 'Push', routineIds: [], routineId: null, entries: [{ id: 'bench', sets: [set(60, 5)], topW: 60, target: null }], prs: [], vol: 300, ...over })
+const workout = over => ({ id: 'w1', d: '2026-09-20', start: 1000, end: 4000, name: 'Push', routineIds: [], routineId: null, entries: [{ id: 'bench', sets: [set(60, 5)], topW: 60, target: null }], exposures: [{ exposureId: 'x1', exerciseId: 'bench', mode: 'reps', performance: { sets: [{ role: 'work', status: 'completed', observations: [{ metric: 'repetitions', value: 5 }], resistance: { kind: 'external-load', value: 60 } }] } }], prs: [], vol: 300, ...over })
 const state = (...ws) => ({ unit: 'kg', workouts: ws, routines: [], customEx: [], exWeights: {}, bodyweight: [], active: null })
 
 describe('addWorkoutMedia / removeWorkoutMedia', () => {

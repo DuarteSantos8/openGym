@@ -34,7 +34,7 @@ const MAX_FAILURES = 3
 export function planMediaUrls(S, base = globalThis.location?.href, index = EXIDX) {
   if (!base) return []
   const ids = new Set()
-  ;(S?.routines || []).forEach(r => (r?.ex || []).forEach(e => { if (e?.id) ids.add(e.id) }))
+  ;(S?.routines || []).forEach(r => (r?.ex || []).forEach(e => { const id = e?.exerciseId ?? e?.id; if (id) ids.add(id) }))
   ;(S?.active?.entries || []).forEach(en => { if (en?.id) ids.add(en.id) })
   const origin = new URL(base).origin
   const urls = new Set()
@@ -122,7 +122,8 @@ export function startMediaPrefetch(store, { delay = PREFETCH_DELAY_MS, win = glo
     timer = null
     // Only through a worker that is in charge of this page: without one nothing would be kept.
     if (running || !sw.controller || !allowed()) return
-    const urls = planMediaUrls(store.getState().S)
+    const st = store.getState()
+    const urls = planMediaUrls({ ...st.S, active: st.A === undefined ? st.S?.active : st.A })
     const key = urls.join('\n')
     if (!urls.length || key === done) return
     running = true
@@ -139,11 +140,10 @@ export function startMediaPrefetch(store, { delay = PREFETCH_DELAY_MS, win = glo
       else run()
     }, delay)
   }
-  let seen = store.getState().S
+  let seen = store.getState()
   const unsubscribe = store.subscribe(st => {
-    const S = st.S
-    if (S?.routines === seen?.routines && S?.active === seen?.active) return
-    seen = S
+    if (st.S?.routines === seen.S?.routines && st.A === seen.A && st.S?.active === seen.S?.active) return
+    seen = st
     schedule()
   })
   // A tab moved into the app's window becomes the installed app without a reload.

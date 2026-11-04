@@ -1,4 +1,5 @@
 import { afterEach, expect, it } from 'vitest'
+import { ruleOccurrence } from './test-fixtures.js'
 import { normalizeAliases, registerExerciseAliases } from './exercise-aliases.js'
 import { CATALOGUE, searchExercises, searchScore } from './exercises.js'
 import { stampEdits, mergeStates, sinceReset } from './sync-merge.js'
@@ -43,7 +44,7 @@ it('merges different exercise edits and preserves an explicit clear against stal
   expect(sinceReset(a, 100).exAliases).toEqual({})
 })
 it('preserves custom aliases in a shared plan', () => {
-  const source = { unit: 'kg', week: {}, routines: [{ id: 'r1', name: 'A', ex: [{ id: 'c1', sets: 3, reps: 8 }] }],
+  const source = { unit: 'kg', week: {}, routines: [{ id: 'r1', name: 'A', ex: [ruleOccurrence('c1', { routineId: 'r1' })] }],
     customEx: [{ id: 'c1', n: 'My press', bp: 'shoulders', eq: 'barbell', aliases: ['Viking lift'] }] }
   const bundle = buildPlanBundle(source)
   expect(bundle.customEx[0].aliases).toEqual(['Viking lift'])

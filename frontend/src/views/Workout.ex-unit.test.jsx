@@ -7,6 +7,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { migratedFixture } from '../lib/test-fixtures.js'
+import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
+import { modeOf } from '../lib/history.js'
 import { useUI } from '../store/useUI.js'
 import { withExUnit, shownWeight } from '../lib/ex-unit.js'
 
@@ -37,7 +40,11 @@ function mount(entries, patch = {}) {
   S.workoutView = 'list'
   Object.assign(S, patch)
   S.active = { id: 'u-test', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Units', bw: null, cur: 0, entries, workoutView: S.workoutView }
-  useStore.setState({ S, user: null })
+  const A = S.active
+  delete S.active
+  A.entries = A.entries.map((e, i) => ({ ...e, exposureId: 'x-' + i }))
+  A.exposures = exposuresWithPerformance(A.entries.map(e => ({ exposureId: e.exposureId, exerciseId: e.id, mode: modeOf({ ...e.target, id: e.id }) })), A.entries, S.unit)
+  useStore.setState({ S: migratedFixture({ ...S, engineSchemaVersion: 1 }), A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -45,7 +52,7 @@ function mount(entries, patch = {}) {
 }
 const heads = () => [...container.querySelectorAll('.sethead .w-sp')].map(el => el.textContent)
 const weights = () => [...container.querySelectorAll('.wl-unit')].map(u => [...u.querySelectorAll('.stp input')].filter((_, i) => i % 2 === 0).map(el => el.value))
-const stored = (e = 0, i = 0) => useStore.getState().S.active.entries[e].sets[i].w
+const stored = (e = 0, i = 0) => useStore.getState().A.entries[e].sets[i].w
 const tapIn = (unit, label) => act(() => container.querySelectorAll('.wl-unit')[unit].querySelector('.stp [aria-label="' + label + '"]').click())
 const LB = { exUnit: withExUnit({}, BENCH, 'lb', 1) }
 
@@ -75,7 +82,7 @@ describe('a pinned exercise in a running session', () => {
       set.call(input, '225')
       input.dispatchEvent(new Event('input', { bubbles: true }))
     })
-    const S = useStore.getState().S
+    const S = { ...useStore.getState().S, active: useStore.getState().A }
     expect(S.active.entries[0].sets.map(s => s.w)).toEqual([102.0583, 102.0583, 102.0583])
     expect(S.active.entries[0].sets.map(s => shownWeight(S, BENCH, s.w))).toEqual([225, 225, 225])
   })
@@ -105,7 +112,7 @@ describe('a pinned exercise in a running session', () => {
       set.call(reps, '7')
       reps.dispatchEvent(new Event('input', { bubbles: true }))
     })
-    const sets = useStore.getState().S.active.entries[0].sets
+    const sets = useStore.getState().A.entries[0].sets
     expect(sets[0].r).toBe(7)
     expect(sets.map(s => s.w)).toEqual([61.3, 61.3])
   })

@@ -24,8 +24,8 @@ let container
 function renderWorkout(entries) {
   const S = clone(DEF)
   S.sound = true
-  S.active = { id: 'hold-test', d: '2026-09-23', start: Date.now(), routineId: null, name: 'Hold', bw: null, cur: 0, entries }
-  useStore.setState({ S, user: null })
+  const A = { id: 'hold-test', d: '2026-09-23', start: Date.now(), routineId: null, name: 'Hold', bw: null, cur: 0, entries }
+  useStore.setState({ S, A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
@@ -39,7 +39,7 @@ const startHold = () => {
   expect(useUI.getState().work).not.toBeNull()
 }
 const tickBeeps = () => beep.mock.calls.filter(call => call[1] === 1040)
-const doneOf = () => useStore.getState().S.active.entries[0].sets.map(s => s.done)
+const doneOf = () => useStore.getState().A.entries[0].sets.map(s => s.done)
 
 beforeEach(() => {
   vi.useFakeTimers()

@@ -40,9 +40,10 @@ describe('tour sandbox', () => {
 
     useStore.getState().enterTourSandbox(sample)
     expect(useStore.getState().tourSandbox).toBe(true)
-    expect(useStore.getState().S.active.tour).toBe(true)
+    expect(useStore.getState().A.tour).toBe(true)
     // the screens edit it like any session: ticking a set, renaming, finishing
-    useStore.getState().update(s => { s.active.name = 'Renamed'; s.workouts.push({ id: 'w-tour', d: '2026-10-26', entries: [] }) })
+    useStore.getState().updateActive(a => { a.name = 'Renamed' })
+    useStore.getState().update(s => { s.workouts.push({ id: 'w-tour', d: '2026-10-26', entries: [] }) })
     await useStore.getState().pushState()
     await useStore.getState().pullState()
 
@@ -52,7 +53,7 @@ describe('tour sandbox', () => {
     useStore.getState().leaveTourSandbox()
     expect(useStore.getState().tourSandbox).toBe(false)
     expect(useStore.getState().S).toBe(real)
-    expect(useStore.getState().S.active).toBeFalsy()
+    expect(useStore.getState().A).toBeFalsy()
     expect(useStore.getState().S.workouts).toEqual([])
     expect(useStore.getState().S.routines.map(r => r.id)).toEqual(['r1'])
   })
@@ -79,7 +80,7 @@ describe('tour sandbox', () => {
     const real = useStore.getState().S
     useStore.getState().enterTourSandbox(sample)
     useStore.getState().enterTourSandbox(s => { s.active = null })
-    expect(useStore.getState().S.active.tour).toBe(true)
+    expect(useStore.getState().A.tour).toBe(true)
     useStore.getState().leaveTourSandbox()
     expect(useStore.getState().S).toBe(real)
   })

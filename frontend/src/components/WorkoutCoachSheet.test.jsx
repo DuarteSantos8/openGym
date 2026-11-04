@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => {
   const m = { S: null, pending: null, job: null, last: null, toast: vi.fn(), refresh: vi.fn() }
-  m.store = () => ({ S: m.S, update: fn => { fn(m.S) } })
+  m.store = () => ({ S: m.S, A: m.A, setActive: a => { m.A = a }, update: fn => { fn(m.S) } })
   m.ui = () => ({ toast: m.toast, stopWork: vi.fn(), timer: null })
   return m
 })
@@ -57,7 +57,7 @@ const render = el => { act(() => root.render(el)) }
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
   host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
-  mocks.S = state(); mocks.pending = null; mocks.job = null; mocks.last = null
+  mocks.S = state(); mocks.A = mocks.S.active; delete mocks.S.active; mocks.pending = null; mocks.job = null; mocks.last = null
   vi.clearAllMocks()
 })
 afterEach(() => { act(() => root.unmount()); host.remove() })
@@ -81,15 +81,15 @@ describe('Ask the Coach mid-workout', () => {
     // Untick the rest change, keep the sets one.
     act(() => { host.querySelectorAll('.pcard-chg')[1].querySelector('input, button, [role="checkbox"]').click() })
     act(() => { [...host.querySelectorAll('button')].find(b => b.textContent.includes('Apply 1 change')).click() })
-    expect(mocks.S.active.entries[1].sets).toHaveLength(1)
-    expect(mocks.S.active.entries[0].target.restSec).toBeUndefined()
+    expect(mocks.A.entries[1].sets).toHaveLength(1)
+    expect(mocks.A.entries[0].target.restSec).toBeUndefined()
     expect(mocks.S.coach.log[0]).toMatchObject({ kind: 'adapt', proposalId: 'p1' })
     expect(api.resolvePending).toHaveBeenCalledWith({ accepted: ['a0'], rejected: ['a1'] })
     expect(close).toHaveBeenCalled()
   })
 
   it('a proposal for a workout that has ended can only be dismissed', () => {
-    mocks.S.active = null
+    mocks.A = null
     render(<AdaptProposal p={adapt()} onDone={() => {}} />)
     expect(host.textContent).toContain('That workout is over')
     expect([...host.querySelectorAll('button')].some(b => b.textContent.includes('Apply'))).toBe(false)

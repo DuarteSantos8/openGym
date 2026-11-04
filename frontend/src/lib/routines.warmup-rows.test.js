@@ -1,33 +1,37 @@
 import { describe, it, expect } from 'vitest'
-import { routineChangesFromEntry, updateRoutineFromEntry, ownWarmupsChange } from './routines.js'
+import { routineChangesFromEntry, updateRoutineFromEntry } from './routine-update.js'
+import { ownWarmupsChange } from './routines.js'
+import { ruleOccurrence } from './test-fixtures.js'
 import { buildPlanBundle, parsePlan } from './plan-share.js'
 
 const BENCH = '0025'
 const warm = (w, r, extra = {}) => ({ w, r, done: true, phase: 'warmup', warmup: true, ...extra })
 const work = (w = 60, r = 5) => ({ w, r, done: true })
-const routineWith = slot => ({ id: 'R', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 60, ...slot }] })
-const entryWith = sets => [{ id: BENCH, rid: 'R', target: { sets: 3, reps: 5, weight: 60 }, sets }]
+const routineWith = ({ warmupSets, ...slot }) => ({ id: 'R', name: 'Push', ex: [{ ...ruleOccurrence(BENCH, { routineId: 'R', options: { sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'absolute', value: 60, unit: 'kg' } } }), restFromProfile: true, ...(warmupSets ? { legacyWarmupSets: warmupSets, warmup: { mode: 'smart', count: warmupSets } } : {}), ...slot }] })
+const exposure = r => ({ occurrenceId: r.ex[0].occurrenceId, exerciseId: BENCH })
+const changes = (r, entry) => routineChangesFromEntry(r, exposure(r), entry[0], 20, 20)
+const entryWith = sets => [{ id: BENCH, rid: 'R', routineWarmups: 1, target: { sets: 3, reps: 5, weight: 60 }, sets }]
 
 describe('keeping a session’s warm-ups in the routine (#525)', () => {
   it('an older ramp-set slot still counts its warm-ups', () => {
     const r = routineWith({ warmupSets: 1 })
-    const found = routineChangesFromEntry(r, entryWith([warm(30, 5), warm(45, 5), work()]), 0, 20)
+    const found = changes(r, entryWith([warm(30, 5), warm(45, 5), work()]))
     expect(found.changes).toEqual([{ key: 'warmupSets', from: 1, to: 2 }])
   })
   it('a generated block you left alone offers nothing', () => {
     const r = routineWith({ warmup: 'auto' })
-    expect(routineChangesFromEntry(r, entryWith([warm(20, 10, { wb: true }), warm(35, 3, { wp: 60 }), work()]), 0, 20)).toBeNull()
+    expect(changes(r, entryWith([warm(20, 10, { wb: true }), warm(35, 3, { wp: 60 }), work()]))).toBeNull()
   })
   it('a generated block you changed is offered as your own, and saved as one', () => {
     const r = routineWith({ warmup: 'auto' })
     const entries = entryWith([warm(20, 12, { wb: true, edited: true }), warm(30, 8, { wp: 50 }), warm(40, 5, { edited: true }), work()])
-    const found = routineChangesFromEntry(r, entries, 0, 20)
+    const found = changes(r, entries)
     expect(found.changes[0]).toEqual({ key: 'warmupRows', from: null, to: [{ wb: true, r: 12 }, { wp: 50, r: 8 }, { wp: 67, r: 5 }] })
-    updateRoutineFromEntry(r, entries, 0, 20)
+    updateRoutineFromEntry(r, found)
     expect(r.ex[0].warmup).toBe('own')
     expect(r.ex[0].warmupRows).toHaveLength(3)
     expect(r.ex[0].warmupSets).toBeUndefined()
-    expect(routineChangesFromEntry(r, entries, 0, 20)).toBeNull()
+    expect(changes(r, entries)).toBeNull()
   })
   it('“Keep these warm-ups” keeps them even untouched', () => {
     const slot = { id: BENCH }

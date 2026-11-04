@@ -223,7 +223,7 @@ export function applyLiveEvents (events, getState) {
   for (const ev of events) {
     if (!ev || typeof ev.id !== 'string') continue
     if (applied.includes(ev.id)) { done.push(ev.id); continue }
-    const A = getState()?.S?.active
+    const A = getState()?.A
     const ours = A && Array.isArray(A.entries) && !A.editingWorkoutId && (!ev.wid || ev.wid === String(A.id))
     if (ev.type === 'setDone' && ours) {
       if (!handlers) break
@@ -311,7 +311,8 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
     if (!storeReady()) return
     try {
       const ui = useUI.getState()
-      const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext })
+      const st = useStore.getState()
+      const live = buildLiveActivity({ ...st.S, active: st.A }, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext })
       const json = live ? JSON.stringify(live) : ''
       if (json === last) return
       if (live) await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) })
@@ -323,7 +324,7 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
   const schedule = () => { if (!supported || useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(send, SEND_DEBOUNCE_MS) }
   const offStore = useStore.subscribe((s, prev) => {
     if (s.ready && !prev.ready) { drainLiveEvents(); schedule() }
-    else if (s.S !== prev.S) schedule()
+    else if (s.S !== prev.S || s.A !== prev.A) schedule()
   })
   const restOf = x => (x ? `${x.endsAt}|${!!x.paused}|${!!x.ready}|${x.left}|${x.kind || ''}` : '')
   const holdOf = x => (x ? `${x.endsAt}|${!!x.paused}|${!!x.auto}` : '')

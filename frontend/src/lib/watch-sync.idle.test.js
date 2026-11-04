@@ -34,7 +34,7 @@ describe('a finish from the watch', () => {
     const A = ticked()
     const finish = vi.fn(), idleKept = vi.fn()
     bindWatchActions({ setDone: vi.fn(), finish, idleKept })
-    expect(applyEvents([{ id: 'f-904', type: 'finish', wid: 'w-904', at: watchLast, idle: true }], () => ({ S: { active: A } }))).toEqual(['f-904'])
+    expect(applyEvents([{ id: 'f-904', type: 'finish', wid: 'w-904', at: watchLast, idle: true }], () => ({ S: {}, A }))).toEqual(['f-904'])
     expect(finish).not.toHaveBeenCalled()
     expect(idleKept).toHaveBeenCalledTimes(1)
   })
@@ -45,7 +45,7 @@ describe('a finish from the watch', () => {
     bindWatchActions({ setDone: vi.fn(), finish })
     // the phone opened hours later: opening it is no work done in the workout
     notePhoneOpen('w-904', T + 5 * 60 * min)
-    expect(applyEvents([{ id: 'f-old', type: 'finish', wid: 'w-904', at: watchLast, idle: true }], () => ({ S: { active: A } }))).toEqual(['f-old'])
+    expect(applyEvents([{ id: 'f-old', type: 'finish', wid: 'w-904', at: watchLast, idle: true }], () => ({ S: {}, A }))).toEqual(['f-old'])
     expect(finish).toHaveBeenCalledTimes(1)
   })
 
@@ -75,7 +75,7 @@ describe('a finish from the watch', () => {
     applyEvents([
       { id: 'd', type: 'setDone', wid: 'w-904', exId: '0025', entryIdx: 0, setIdx: 1, w: 60, r: 8, at: T + 10 * min },
       { id: 'f', type: 'finish', wid: 'w-904', at: T + 10 * min, idle: true },
-    ], () => ({ S: { active: A } }))
+    ], () => ({ S: {}, A }))
     expect(finish).toHaveBeenCalledTimes(1)
   })
 })

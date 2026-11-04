@@ -3,6 +3,7 @@ import { LB_TO_KG } from './recovery.js'
 import { isBw } from './history.js'
 import { EXIDX, isAssisted } from './exercises.js'
 import { isSideSet, isWarmupRow } from './workout-model.js'
+import { legacyEntriesOf } from './prescription/index.js'
 import { BALANCE_STATUSES, BORDERLINE_BAND_PCT, EVALUATION_MODES } from './structuralBalanceTemplates.js'
 
 const kgOf = (n, unit) => (unit === 'lb' ? Number(n) * LB_TO_KG : Number(n))
@@ -73,7 +74,8 @@ function setLoadKg(S, workout, entry, set, bodyweightKg) {
 function waitsOnBodyweight(S, role, exerciseIds, current, bodyweightKg) {
   if (bodyweightKg > 0 || role.evaluationMode === EVALUATION_MODES.REP_COUNT) return false
   if (current) return role.evaluationMode === EVALUATION_MODES.BODYWEIGHT_RATIO
-  return (S.workouts || []).some(workout => !(workout?.bw > 0) && (workout.entries || []).some(entry =>
+  // A migrated workout has exposures, not entries: read every workout through legacyEntriesOf.
+  return (S.workouts || []).some(workout => !(workout?.bw > 0) && legacyEntriesOf(workout, S.prescriptions).some(entry =>
     exerciseIds.includes(entry.id) && (isAssistedEntry(entry) || onLifter(entry)) &&
     (entry.sets || []).some(set => set.done && !isWarmupRow(set) && (!isAssistedEntry(entry) || kgOf(set.w || 0, S.unit) > 0))))
 }
@@ -124,7 +126,7 @@ export function resolveCurrent(S, exerciseIds, bodyweightKg, reps = null) {
   let best = null
   for (const exId of exerciseIds) {
     for (const workout of S.workouts || []) {
-      const entry = (workout.entries || []).find(e => e.id === exId)
+      const entry = legacyEntriesOf(workout, S.prescriptions).find(e => e.id === exId)
       if (!entry) continue
       for (const set of entry.sets || []) {
         if (!set.done || isWarmupRow(set)) continue
@@ -170,7 +172,7 @@ export function resolveCurrentReps(S, exerciseIds) {
   let best = null
   for (const exId of exerciseIds) {
     for (const workout of S.workouts || []) {
-      const entry = (workout.entries || []).find(e => e.id === exId)
+      const entry = legacyEntriesOf(workout, S.prescriptions).find(e => e.id === exId)
       const found = entry && !isAssistedEntry(entry) && bestRepsOf(entry)
       if (found && (!best || found.r > best.r)) best = { ...found, d: workout.d, t: workout.start, exId }
     }
