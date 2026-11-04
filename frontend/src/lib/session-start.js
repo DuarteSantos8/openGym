@@ -128,7 +128,7 @@ export function buildSessionExposures(stored, routine, ctx) {
       routineId: routine.id, occurrenceId: occ.occurrenceId, trackId,
       excludedFromProgression: excluded || slot?.deload === true,
       prescriptionId: prescription.id,
-      ...Object.fromEntries(['sideRestOff', 'sideRestSec', 'autoHold', 'warmupRestOff', 'subs', 'restOff'].filter(k => occ[k] != null).map(k => [k, occ[k]])),
+      ...Object.fromEntries(['sgName', 'sgRest', 'sideRestOff', 'sideRestSec', 'autoHold', 'warmupRestOff', 'subs', 'restOff'].filter(k => occ[k] != null).map(k => [k, occ[k]])),
       ...(slot ? { programme: { ...slot, why: programmeWhy(slot) } } : {}),
       ...(occ.sg ? { sg: occ.sg } : {}),
       // The plan's instruction for this exercise, shown on its card; session-only (finish-session.js drops it).

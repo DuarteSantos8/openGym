@@ -3325,7 +3325,7 @@ export default {
   "At {0}": "在{0}",
   "Copy from {0}": "从{0}复制",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "它会以你现在设置的杠铃片、哑铃和杠铃杆开始。设为当前健身房后再修改。",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "杠铃片、哑铃、杠铃杆和器械配重片按健身房分别保存。切换健身房，这些也一起切换。",
   "Active gym": "当前健身房",
   "Pick a gym": "选择健身房",
@@ -3726,7 +3726,7 @@ export default {
   'sets': '组数',
   'weight': '重量',
   'effort': '强度',
-  
+
   'Smart ramp': '智能递增',
   'Percentage template': '百分比模板',
   '% of work weight': '工作重量的百分比',
@@ -3734,7 +3734,7 @@ export default {
   'Check the warm-up steps': '检查热身步骤',
   'Estimate: {0}': '预估：{0}',
   '{0} of {1} sets: the load is too low for the full ramp': '{1} 组中的 {0} 组：重量过低，无法完成完整热身递增',
-  
+
   'Timed hold progression': '计时保持进阶',
   'Hold for time; the target seconds go up each time you reach the longest time.': '按时间保持；每次达到最长时间，目标秒数就会增加。',
   'Seconds added per step': '每步增加的秒数',

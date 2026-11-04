@@ -3403,7 +3403,7 @@ export default {
   "At {0}": "{0}-এ",
   "Copy from {0}": "{0} থেকে কপি করুন",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "এখন যে প্লেট, ডাম্বেল আর বার সেট করা আছে সেগুলো দিয়েই শুরু হয়। এটি সক্রিয় জিম হলে বদলে নিন।",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "প্লেট, ডাম্বেল, বার আর মেশিনের ওজন-স্ট্যাক প্রতিটি জিমের জন্য আলাদা থাকে। জিম বদলালে সবই বদলায়।",
   "Active gym": "সক্রিয় জিম",
   "Pick a gym": "একটি জিম বেছে নিন",
@@ -3732,7 +3732,7 @@ export default {
   "{0} of {1} modules on.": "{1}টির মধ্যে {0}টি মডিউল চালু।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"স্বাস্থ্য\" বন্ধ থাকলে {0} সিঙ্ক বন্ধ রাখে। কিছুই বিচ্ছিন্ন হয় না, আর \"স্বাস্থ্য\" ফিরলেই সব পুষিয়ে নেয়।",
   // --- configurable progression and warm-ups ---
-  
+
   'Smart ramp': 'স্বয়ংক্রিয় ধাপে ওজন বাড়ানো',
   'Percentage template': 'শতাংশের ছক',
   '% of work weight': 'মূল সেটের ওজনের %',

@@ -99,7 +99,11 @@ function cleanOccurrence(o) {
   if (o.restFromProfile) out.restFromProfile = true
   // A recipe the rule cannot use (timed, unloaded) is dropped rather than carried inert.
   const can = o.rule && supports(o.rule)
-  if (o.warmup && can?.warmup) out.warmup = o.warmup
+  if (o.warmup && can?.warmup) {
+    out.warmup = o.warmup
+    if (warmupModeOf(o) === 'own') out.warmupRows = ownRowsOf(o)
+    if (o.legacyWarmupSets > 0) out.legacyWarmupSets = Math.min(5, Math.round(o.legacyWarmupSets))
+  }
   if (o.intensifier && can?.[o.intensifier.type]) out.intensifier = o.intensifier
   const rest = cleanRestSec(o.restSec)
   if (o.restOff === true) out.restOff = true   // "No timer" for this exercise

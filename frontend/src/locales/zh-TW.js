@@ -3317,7 +3317,7 @@ export default {
   "At {0}": "在{0}",
   "Copy from {0}": "從{0}複製",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "它會以你現在設定的槓片、啞鈴和槓鈴桿開始。設為目前健身房後再修改。",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "槓片、啞鈴、槓鈴桿和器械配重片依健身房分別儲存。切換健身房，這些也一起切換。",
   "Active gym": "目前健身房",
   "Pick a gym": "選擇健身房",
@@ -3718,7 +3718,7 @@ export default {
   'sets': '組數',
   'weight': '重量',
   'effort': '強度',
-  
+
   'Smart ramp': '智慧遞增',
   'Percentage template': '百分比範本',
   '% of work weight': '正式組重量的百分比',

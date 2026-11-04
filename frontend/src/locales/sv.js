@@ -3371,7 +3371,7 @@ export default {
   "At {0}": "På {0}",
   "Copy from {0}": "Kopiera från {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Det börjar med de viktskivor, hantlar och stänger du har inställt nu. Ändra dem när det är det aktiva gymmet.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Viktskivor, hantlar, stänger och viktmagasin sparas per gym. Byt gym så byts allt.",
   "Active gym": "Aktivt gym",
   "Pick a gym": "Välj ett gym",
@@ -3771,7 +3771,7 @@ export default {
   'sets': 'set',
   'weight': 'vikt',
   'effort': 'ansträngning',
-  
+
   'Smart ramp': 'Smart uppvärmning',
   'Percentage template': 'Procentmall',
   '% of work weight': '% av arbetsvikten',

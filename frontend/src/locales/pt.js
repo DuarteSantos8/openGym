@@ -3325,7 +3325,7 @@ export default {
   "At {0}": "Em {0}",
   "Copy from {0}": "Copiar de {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Começa com as anilhas, halteres e barras que tens agora. Muda-os quando for o ginásio ativo.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Anilhas, halteres, barras e blocos de peso ficam guardados por ginásio. Muda de ginásio e muda tudo.",
   "Active gym": "Ginásio ativo",
   "Pick a gym": "Escolhe um ginásio",
@@ -3737,7 +3737,7 @@ export default {
   'sets': 'séries',
   'weight': 'carga',
   'effort': 'esforço',
-  
+
   'Smart ramp': 'Rampa inteligente',
   'Percentage template': 'Modelo em percentagem',
   '% of work weight': '% da carga de trabalho',
@@ -3745,7 +3745,7 @@ export default {
   'Check the warm-up steps': 'Verifica os passos de aquecimento',
   'Estimate: {0}': 'Estimativa: {0}',
   '{0} of {1} sets: the load is too low for the full ramp': '{0} de {1} séries: a carga é demasiado baixa para a rampa completa',
-  
+
   'Back off when stuck': 'Reduzir a carga quando estagnar',
   'Back off after repeated misses': 'Reduzir a carga após falhas repetidas',
   'Missed sessions in a row': 'Sessões falhadas seguidas',

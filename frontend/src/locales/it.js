@@ -3333,7 +3333,7 @@ export default {
   "At {0}": "A {0}",
   "Copy from {0}": "Copia da {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Parte con i dischi, manubri e bilancieri che hai impostato ora. Cambiali quando è la palestra attiva.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Dischi, manubri, bilancieri e pacchi pesi sono tenuti per palestra. Cambia palestra e cambia tutto.",
   "Active gym": "Palestra attiva",
   "Pick a gym": "Scegli una palestra",
@@ -3476,7 +3476,7 @@ export default {
   "These warm-ups come before the work sets every session, as a share of the work weight, so they grow with it.": "Questi riscaldamenti vengono prima delle serie di lavoro ogni volta, come quota del carico di lavoro, quindi crescono con lui.",
   "This is the demo, so there is no AI model behind me. On your own server I read your session and suggest changes like these.": "Questa è la demo, quindi dietro di me non c’è un modello di IA. Sul tuo server leggo la sessione e propongo modifiche come queste.",
   "Warm-up {0}": "Riscaldamento {0}",
-  
+
   "What’s up? The Coach suggests a few changes to what is left of this workout. Logged sets stay as they are.": "Che succede? Il Coach suggerisce qualche modifica per il resto dell’allenamento. Le serie registrate restano come sono.",
   "Where, and what movement hurts? (optional)": "Dove, e in quale movimento fa male? (facoltativo)",
   "With {0} {1} today: {2}": "Con {0} {1} oggi: {2}",
@@ -3745,7 +3745,7 @@ export default {
   'sets': 'serie',
   'weight': 'peso',
   'effort': 'sforzo',
-  
+
   'Back off when stuck': 'Scarica se ti blocchi',
   'Back off after repeated misses': 'Scarica dopo ripetuti fallimenti',
   'Missed sessions in a row': 'Sessioni fallite di fila',

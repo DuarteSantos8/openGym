@@ -3345,7 +3345,7 @@ export default {
   "At {0}": "Bei {0}",
   "Copy from {0}": "Von {0} übernehmen",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Es startet mit den Scheiben, Kurzhanteln und Stangen, die du jetzt eingestellt hast. Ändere sie, sobald es das aktive Gym ist.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Scheiben, Kurzhanteln, Stangen und Gewichtsblöcke gelten pro Gym. Wechsle das Gym und alles wechselt mit.",
   "Active gym": "Aktives Gym",
   "Pick a gym": "Gym wählen",
@@ -3746,7 +3746,7 @@ export default {
   'sets': 'Sätze',
   'weight': 'Gewicht',
   'effort': 'Anstrengung',
-  
+
   'Smart ramp': 'Smarte Steigerung',
   'Percentage template': 'Prozentvorlage',
   '% of work weight': '% des Arbeitsgewichts',
@@ -3754,7 +3754,7 @@ export default {
   'Check the warm-up steps': 'Aufwärmschritte prüfen',
   'Estimate: {0}': 'Schätzung: {0}',
   '{0} of {1} sets: the load is too low for the full ramp': '{0} von {1} Sätzen: Das Gewicht ist für die volle Steigerung zu niedrig',
-  
+
   'Timed hold progression': 'Progression beim Halten auf Zeit',
   'Hold for time; the target seconds go up each time you reach the longest time.': 'Auf Zeit halten; die Zielsekunden steigen jedes Mal, wenn du die längste Zeit erreichst.',
   'Seconds added per step': 'Sekunden pro Schritt',

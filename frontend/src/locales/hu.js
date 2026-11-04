@@ -3328,7 +3328,7 @@ export default {
   "At {0}": "Itt: {0}",
   "Copy from {0}": "Másolás innen: {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Azokkal a tárcsákkal, kézisúlyzókkal és rudakkal indul, amik most be vannak állítva. Módosítsd, ha ez lesz az aktív terem.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "A tárcsák, kézisúlyzók, rudak és gépi súlytömbök termenként vannak. Válts termet, és minden vele vált.",
   "Active gym": "Aktív terem",
   "Pick a gym": "Válassz termet",
@@ -3729,7 +3729,7 @@ export default {
   'sets': 'széria',
   'weight': 'súly',
   'effort': 'erőfeszítés',
-  
+
   'Smart ramp': 'Okos emelkedés',
   'Percentage template': 'Százalékos minta',
   '% of work weight': 'A munkasúly %-a',
@@ -3737,7 +3737,7 @@ export default {
   'Check the warm-up steps': 'Ellenőrizd a bemelegítés lépéseit',
   'Estimate: {0}': 'Becslés: {0}',
   '{0} of {1} sets: the load is too low for the full ramp': '{0} / {1} sorozat: a súly túl kevés a teljes bemelegítő sorhoz',
-  
+
   'Timed hold progression': 'Időre tartás progresszió',
   'Hold for time; the target seconds go up each time you reach the longest time.': 'Tartás időre; a célmásodpercek nőnek, valahányszor eléred a leghosszabb időt.',
   'Seconds added per step': 'Lépésenként hozzáadott másodpercek',

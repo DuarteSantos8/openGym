@@ -4,6 +4,7 @@
 import React, { act } from 'react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { createRoot } from 'react-dom/client'
+import { migratedFixture } from '../lib/test-fixtures.js'
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { StrengthLevelBlock, StrengthLevelsCard, aboutYouSheet } from './StrengthLevel.jsx'
@@ -18,7 +19,7 @@ const render = el => {
   act(() => root.render(el))
   return host
 }
-const seed = extra => useStore.setState({ S: { ...structuredClone(DEF), bodyweight: [{ d: '2026-10-01', w: 80 }], workouts: [{ id: 'w', d: '2026-10-02', start: 1, entries: [{ id: BENCH, target: { mode: 'reps' }, sets: [{ w: 100, r: 1, done: true }] }] }], ...extra }, user: null })
+const seed = extra => useStore.setState({ S: migratedFixture({ ...structuredClone(DEF), engineSchemaVersion: 1, bodyweight: [{ d: '2026-10-01', w: 80 }], workouts: [{ id: 'w', d: '2026-10-02', start: 1, entries: [{ id: BENCH, target: { mode: 'reps' }, sets: [{ w: 100, r: 1, done: true }] }] }], ...extra }), A: null, user: null })
 beforeEach(() => { globalThis.IS_REACT_ACT_ENVIRONMENT = true; useUI.setState({ sheets: [] }); seed() })
 afterEach(() => { act(() => { mounted.splice(0).forEach(r => r.unmount()) }) })
 

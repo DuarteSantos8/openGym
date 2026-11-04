@@ -62,3 +62,17 @@ test('a pinned exercise keeps exact stored loads when its history is migrated', 
   const p = Object.values(profile.prescriptions)[0];
   assert.equal(p.rows[0].load.value, 20.4117);
 });
+
+test('migration preserves superset labels and session timing choices', () => {
+  const input = legacy();
+  const timing = { sg: 'a', sgName: 'Arms', sgRest: 90, restOff: true, warmupRestOff: true, sideRestOff: true, sideRestSec: 10, autoHold: true, subs: ['0043'] };
+  Object.assign(input.routines[0].ex[0], timing);
+  input.workouts[0].entries[0].target = timing;
+  input.workouts[0].entries[0].sg = 'a';
+  const { profile } = migrateProfileV1ToV2(input, LIB_BY_ID);
+  for (const [key, value] of Object.entries(timing)) assert.deepEqual(profile.routines[0].ex[0][key], value);
+  assert.equal(profile.routines[0].ex[0].restFromProfile, undefined);
+  const stored = unpackProfile(packProfile(profile));
+  assert.equal(stored.workouts[0].exposures[0].sgRest, 90);
+  assert.equal(legacyEntriesOf(stored.workouts[0], stored.prescriptions)[0].target.sgName, 'Arms');
+});

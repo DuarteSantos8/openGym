@@ -73,7 +73,7 @@ describe('Share with a friend', () => {
     expect(text).toBe('Here’s my Push Day on openGym 💪')
     expect(url.startsWith('https://opengym.ch/r#1.')).toBe(true)
     const data = await decodePayload(routinePayloadFromUrl(url))
-    expect(planPhase(data.routines[0].ex[0].rule).parameters.load.mode).toBe('empty')
+    expect(planPhase(data.routines[0].ex[0].rule).parameters.load.value).toBe(0)
     expect(data.from).toBeUndefined()
   })
 

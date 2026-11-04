@@ -3325,7 +3325,7 @@ export default {
   "At {0}": "{0} पर",
   "Copy from {0}": "{0} से कॉपी करें",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "यह उन्हीं प्लेट्स, डम्बल और बार से शुरू होता है जो अभी सेट हैं। जब यह सक्रिय जिम हो, तब इन्हें बदलें।",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "प्लेट्स, डम्बल, बार और मशीन के वज़न स्टैक हर जिम के लिए अलग रहते हैं। जिम बदलें और सब कुछ साथ बदल जाता है।",
   "Active gym": "सक्रिय जिम",
   "Pick a gym": "जिम चुनें",
@@ -3726,7 +3726,7 @@ export default {
   'sets': 'सेट',
   'weight': 'भार',
   'effort': 'प्रयास',
-  
+
   'Smart ramp': 'स्मार्ट रैंप',
   'Percentage template': 'प्रतिशत टेम्पलेट',
   '% of work weight': 'वर्किंग वेट का %',
@@ -3734,7 +3734,7 @@ export default {
   'Check the warm-up steps': 'वार्म-अप स्टेप जाँचें',
   'Estimate: {0}': 'अनुमान: {0}',
   '{0} of {1} sets: the load is too low for the full ramp': '{1} में से {0} सेट: पूरे वार्म-अप रैंप के लिए वज़न बहुत कम है',
-  
+
   'Timed hold progression': 'समयबद्ध होल्ड प्रगति',
   'Hold for time; the target seconds go up each time you reach the longest time.': 'समय तक रोकें; जब भी आप सबसे लंबा समय हासिल करते हैं, लक्ष्य सेकंड बढ़ जाते हैं।',
   'Seconds added per step': 'प्रति चरण जोड़े गए सेकंड',

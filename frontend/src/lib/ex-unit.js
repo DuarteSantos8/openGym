@@ -84,7 +84,8 @@ export function viewTarget(S, exId, cfg) {
 export function storedTarget(S, exId, cfg, prev) {
   if (!cfg || !exConverted(S, exId)) return cfg
   const [c, inc] = storeFns(S, exId)
-  return { ...mapTargetWeights(cfg, c, prev, inc), ...(cfg.rule ? { rule: convertPlanRuleUnit(cfg.rule, exUnitOf(S, exId), profileUnit(S), { weight: (v) => c(v), increment: (v) => inc(v) }) } : {}) }
+  const known = knownOf(S, exId, prev?.rule, (rule, collect) => canonicalLoads(rule, profileUnit(S), exUnitOf(S, exId), true, collect))
+  return { ...mapTargetWeights(cfg, c, prev, inc), ...(cfg.rule ? { rule: convertPlanRuleUnit(cfg.rule, exUnitOf(S, exId), profileUnit(S), { weight: backKnown(c, known), increment: (v) => inc(v) }) } : {}) }
 }
 /** One set row (with its sides and drops) in the exercise's unit. */
 export function viewRow(S, exId, row) {

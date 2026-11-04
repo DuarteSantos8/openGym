@@ -3329,7 +3329,7 @@ export default {
   "At {0}": "В {0}",
   "Copy from {0}": "Скопировать из {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Начнёт с блинов, гантелей и грифов, которые у тебя сейчас. Поменяй их, когда этот зал станет активным.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Блины, гантели, грифы и стеки тренажёров хранятся для каждого зала. Смени зал, и сменится всё.",
   "Active gym": "Активный зал",
   "Pick a gym": "Выбери зал",
@@ -3730,7 +3730,7 @@ export default {
   'sets': 'подходов',
   'weight': 'веса',
   'effort': 'усилия',
-  
+
   'Smart ramp': 'Умная разминка',
   'Percentage template': 'Шаблон в процентах',
   '% of work weight': '% от рабочего веса',
@@ -3738,7 +3738,7 @@ export default {
   'Check the warm-up steps': 'Проверьте шаги разминки',
   'Estimate: {0}': 'Оценка: {0}',
   '{0} of {1} sets: the load is too low for the full ramp': '{0} из {1} подходов: вес слишком мал для полной разминочной схемы',
-  
+
   'Timed hold progression': 'Прогрессия удержания на время',
   'Hold for time; the target seconds go up each time you reach the longest time.': 'Удержание на время; целевые секунды растут каждый раз, когда вы достигаете самого долгого времени.',
   'Seconds added per step': 'Секунд добавляется за шаг',

@@ -3321,7 +3321,7 @@ export default {
   "At {0}": "У {0}",
   "Copy from {0}": "Скопіювати з {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Почне з млинців, гантелей і грифів, які в тебе зараз. Зміни їх, коли цей зал стане активним.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Млинці, гантелі, грифи й стеки тренажерів зберігаються для кожного залу. Зміни зал, і зміниться все.",
   "Active gym": "Активний зал",
   "Pick a gym": "Вибери зал",
@@ -3722,7 +3722,7 @@ export default {
   'sets': 'підходи',
   'weight': 'вага',
   'effort': 'зусилля',
-  
+
   'Smart ramp': 'Розумне нарощування',
   'Percentage template': 'Шаблон у відсотках',
   '% of work weight': '% від робочої ваги',

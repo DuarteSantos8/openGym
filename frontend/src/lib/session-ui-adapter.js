@@ -127,7 +127,7 @@ export const actualOfRow = (row, unit, assisted = false) => ({
 })
 
 const ROW_META = ['hr', 'restHr', 'at', 'note', 'media', 'restSec', 'restOff', 'edited', 'wp', 'wb', 'autoWarmup']
-const EXPOSURE_META = ['sideRestOff', 'sideRestSec', 'autoHold', 'warmupRestOff', 'subs', 'restOff']
+const EXPOSURE_META = ['sgName', 'sgRest', 'sideRestOff', 'sideRestSec', 'autoHold', 'warmupRestOff', 'subs', 'restOff']
 const kept = (value, keys) => Object.fromEntries(keys.filter(k => value?.[k] != null).map(k => [k, value[k]]))
 
 const performanceRow = (row, unit) => {
