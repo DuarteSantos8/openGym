@@ -3731,4 +3731,5 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "\"ইন্টিগ্রেশন\" বন্ধ থাকলে আপনার ওয়েবহুক কিছু পাঠায় না। সেগুলো সেট আপ করাই থাকে।",
   "{0} of {1} modules on.": "{1}টির মধ্যে {0}টি মডিউল চালু।",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"স্বাস্থ্য\" বন্ধ থাকলে {0} সিঙ্ক বন্ধ রাখে। কিছুই বিচ্ছিন্ন হয় না, আর \"স্বাস্থ্য\" ফিরলেই সব পুষিয়ে নেয়।",
+  'No print service on this device. Install or enable one in the device settings, then try again.': 'এই ডিভাইসে কোনো প্রিন্ট সার্ভিস নেই। ডিভাইস সেটিংস থেকে একটি ইনস্টল বা চালু করুন, তারপর আবার চেষ্টা করুন।',
 }

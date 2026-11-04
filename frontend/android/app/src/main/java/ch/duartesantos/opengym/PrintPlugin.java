@@ -1,5 +1,6 @@
 package ch.duartesantos.opengym;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
@@ -74,6 +75,12 @@ public class PrintPlugin extends Plugin {
                                             .setMediaSize(media)
                                             .build());
                             call.resolve();
+                        } catch (ActivityNotFoundException e) {
+                            // The ROM has no print service at all (nothing handles the print
+                            // dialog — some builds strip it). A stable message the JS side
+                            // recognises, so it can say what is missing instead of staying silent.
+                            printView = null;
+                            call.reject("no print service on this device");
                         } catch (Throwable e) {
                             // The page finished after the activity went away, or the print
                             // framework refused the job: fail this printout, never the app.

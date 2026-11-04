@@ -210,9 +210,22 @@ function printInFrame(html) {
  * Print `html` (a printShell page): the browser's print dialog on the web, the phone's print
  * sheet in the app (Android's WebView has no window.print()). `name` names the print job and the
  * suggested PDF file; Android refuses a job without one.
+ *
+ * A rejection from the native side is a failure, not a dismissal (the Android call resolves the
+ * moment the sheet opens, iOS resolves dismissals with completed:false) — the sheet never
+ * opened, so the user is told why instead of the tap looking dead. The plugin rejects with
+ * "no print service on this device" when the ROM has nothing to handle the print dialog.
  */
 export function printDocument(html, name) {
-  if (MOBILE) return printHtml(html, name || 'openGym', printOptions()).catch(() => { /* dismissed */ })
+  if (MOBILE) return printHtml(html, name || 'openGym', printOptions()).catch(err => {
+    const msg = String((err && err.message) || err || '')
+    const text = msg.includes('no print service')
+      ? t('No print service on this device. Install or enable one in the device settings, then try again.')
+      : t('Something went wrong')
+    // The store reaches this lib through a dynamic import: print-doc is also loaded by plain
+    // Node tests, where the store graph does not resolve.
+    import('../store/useUI.js').then(({ useUI }) => useUI.getState().toast(text)).catch(() => {})
+  })
   printInFrame(html)
   return Promise.resolve()
 }

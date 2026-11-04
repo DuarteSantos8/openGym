@@ -3672,4 +3672,5 @@ export default {
   "Your webhooks stop sending while Integrations is off. They stay set up.": "Deine Webhooks senden nichts, solange „Integrationen“ aus ist. Sie bleiben eingerichtet.",
   "{0} of {1} modules on.": "{0} von {1} Modulen an.",
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} synchronisiert nicht, solange „Gesundheit“ aus ist. Nichts wird getrennt, und es holt alles nach, sobald „Gesundheit“ wieder an ist.",
+  'No print service on this device. Install or enable one in the device settings, then try again.': 'Kein Druckdienst auf diesem Gerät. Installiere oder aktiviere einen in den Geräteeinstellungen und versuche es erneut.',
 }
