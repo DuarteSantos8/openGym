@@ -247,13 +247,45 @@ test('a later B assigned to a closed week replaces its skip and keeps later pres
   // Until resolved the recorded branch holds, and no prescription is regenerated.
   expect(conflict.tracks.bench).toMatchObject({ stage: 'w1', attempt: 2, period: 2 })
   expect(P[retry.prescriptionId].contentHash).toBe(hash)
-  const recorded = derive(strict, [mon1, retry, late], [assign, ev('conflict', { trackId: 'bench', keep: 'recorded', at: iso(date(2, 2)) })], date(2, 2))
+  const recorded = derive(strict, [mon1, retry, late], [assign, ev('conflict', { trackId: 'bench', exposureId: retry.exposureId, keep: 'recorded', at: iso(date(2, 2)) })], date(2, 2))
   expect(recorded.conflicts).toEqual([])
   expect(recorded.tracks.bench).toMatchObject({ stage: 'w1', attempt: 2 })
-  const recomputed = derive(strict, [mon1, retry, late], [assign, ev('conflict', { trackId: 'bench', keep: 'recomputed', at: iso(date(2, 2)) })], date(2, 2))
+  const recomputed = derive(strict, [mon1, retry, late], [assign, ev('conflict', { trackId: 'bench', exposureId: retry.exposureId, keep: 'recomputed', at: iso(date(2, 2)) })], date(2, 2))
   expect(recomputed.conflicts).toEqual([])
   expect(recomputed.tracks.bench).toMatchObject({ stage: 'w2', attempt: 1, period: 2 })
-  expect(recomputed.tracks.bench.slots[0]).toMatchObject({ id: 'p2:a0:rA:o0', outcome: 'pending' })
+  expect(recomputed.tracks.bench.slots[0]).toMatchObject({ id: 'p2:a0:rA:o0', outcome: 'pending', reasons: ['recomputed'] })
+})
+
+test('a conflict event settles only the conflict it names; recomputed work frees its slot for a redo', () => {
+  const bench = trackOf('bench', ['rA:o0', 'rB:o0'])
+  const r = run(def([bench]))
+  // Weeks 1 and 2 clean; week 2's B is only recorded late, so week 3 was generated as week 2's retry.
+  const a1 = ex('p1:a0:rA:o0'), b1 = ex('p1:a1:rB:o0'), a2 = ex('p2:a0:rA:o0', undefined, { stage: 'w2' })
+  const a3 = ex('p3:a0:rA:o0', undefined, { stage: 'w2', attempt: 2 })
+  const b2 = ex('p3:a1:rB:o0', undefined, { stage: 'w2', attempt: 2, at: iso(date(3, 2), 18) })
+  const assign = ev('assign', { exposureId: b2.exposureId, slot: 'p2:a1:rB:o0', at: iso(date(3, 2), 19) })
+  // An older resolution, for another exposure, does not hide this new conflict.
+  const old = ev('conflict', { trackId: 'bench', exposureId: a2.exposureId, keep: 'recorded', at: iso(date(1, 3)) })
+  expect(derive(r, [a1, b1, a2, a3, b2], [old, assign], date(3, 3)).conflicts).toEqual([{ trackId: 'bench', exposureId: a3.exposureId }])
+
+  // Recomputed: week 3 is w3, Monday's w2 retry credits nothing, and a redo of Monday takes the slot.
+  const recompute = ev('conflict', { trackId: 'bench', exposureId: a3.exposureId, keep: 'recomputed', at: iso(date(3, 3), 8) })
+  const events = [old, assign, recompute]
+  const view = derive(r, [a1, b1, a2, a3, b2], events, date(3, 3))
+  expect(view.conflicts).toEqual([])
+  expect(view.tracks.bench).toMatchObject({ stage: 'w3', attempt: 1, period: 3 })
+  expect(slotFor({ view, run: r, rid: 'rA', oid: 'rA:o0', date: date(3, 3) })).toEqual({
+    assignment: { slot: 'p3:a0:rA:o0', trackId: 'bench', stage: 'w3', attempt: 1, role: 'work', period: 3 }, bypass: []
+  })
+  const redo = ex('p3:a0:rA:o0', undefined, { stage: 'w3', at: iso(date(3, 3), 18) })
+  const b3 = ex('p3:a1:rB:o0', undefined, { stage: 'w3', at: iso(date(3, 4), 18) })
+  const done = derive(r, [a1, b1, a2, a3, b2, redo, b3], events, date(4))
+  expect(done.tracks.bench.decisions.at(-1)).toMatchObject({ period: 3, stage: 'w3', action: 'advance', reasons: { failed: [], skipped: [], unknown: [] } })
+  expect(done.tracks.bench).toMatchObject({ stage: 'w4', period: 4 })
+  // Without a redo the done work is never read as unattempted: the week waits for a redo or a resolve.
+  const waiting = derive(r, [a1, b1, a2, a3, b2, b3], events, date(4))
+  expect(waiting.tracks.bench).toMatchObject({ state: 'held', period: 3 })
+  expect(waiting.tracks.bench.decisions.at(-1)).toMatchObject({ action: 'hold', reasons: { failed: [], skipped: [], unknown: ['p3:a0:rA:o0'] } })
 })
 
 test('free rotation: days off leave B due; bypass skips B; next is the next round A (spec 12.10)', () => {
@@ -607,9 +639,124 @@ test('a removed occurrence blocks its track only', () => {
 test('a date before startedOn is period 0', () => {
   const r = run()
   const before = derive(r, [], [], '2026-10-30')
-  expect(before.period.index).toBe(0)
+  expect(before.period).toEqual({ index: 0, from: '2026-11-02', to: '2026-11-08' })
+  // Started on Thursday and viewed on the Tuesday before: the window that opens on Thursday.
+  expect(derive(run(def(), { startedOn: '2026-11-05', firstWeek: [2] }), [], [], '2026-11-03').period).toEqual({ index: 0, from: '2026-11-05', to: '2026-11-08' })
+  expect(derive(run(def(), { startedOn: '2026-11-05', firstWeek: [2] }), [], [], '2026-11-06').period).toEqual({ index: 1, from: '2026-11-05', to: '2026-11-08' })
   expect(before.tracks.bench).toMatchObject({ stage: 'w1', attempt: 1, period: 1, decisions: [] })
   expect(slotFor({ view: derive(r, [], [], date(1)), run: r, rid: 'rA', oid: 'rA:o0', date: '2026-11-01' })).toEqual({ assignment: null, bypass: [] })
   const loop = run(rotation([trackOf('bench', ['rA:o0'])], ['rA']))
   expect(derive(loop, [], [], '2026-10-30').period).toEqual({ index: 0, next: 0 })
+})
+
+test('an amend reaches a held or blocked track: a drop removes it, a rebind repairs it', () => {
+  const d = def([trackOf('bench', ['rA:o0'], stages('w1')), trackOf('squat', ['rA:o1'], stages('s1'))])
+  const r = run(d)
+  // Bench reaches its goal in week 1; squat's week 1 is unknown and waits. Squat is dropped in week 3.
+  const xs = [ex('p1:a0:rA:o0'), ex('p1:a0:rA:o1', [5, 5, U], { track: 'squat', stage: 's1' })]
+  expect(derive(r, xs, [], date(4)).tracks.squat.state).toBe('held')
+  const drop = ev('amend', { def: { ...d, rev: 2, tracks: [d.tracks[0]] }, at: iso(date(3, 1)) })
+  const view = derive(r, xs, [drop], date(4))
+  expect(view.tracks.squat).toMatchObject({ state: 'removed', decisions: [expect.objectContaining({ action: 'hold' })] })
+  expect(view.status).toBe('complete')
+  expect(slotFor({ view: derive(r, xs, [drop], date(3, 2)), run: r, rid: 'rA', oid: 'rA:o1', date: date(3, 2) }).assignment).toBeNull()
+
+  // Bench's Wednesday occurrence is gone: blocked until an amend drops or rebinds it.
+  const d2 = def([trackOf('bench', ['rA:o0', 'rB:o0']), trackOf('squat', ['rA:o1'])])
+  const r2 = run(d2)
+  const routines = [{ id: 'rA', ex: [{ occurrenceId: 'rA:o0' }, { occurrenceId: 'rA:o1' }] }, { id: 'rB', ex: [] }]
+  const done = [ex('p1:a0:rA:o0'), ex('p1:a0:rA:o1', undefined, { track: 'squat' })]
+  const dropped = ev('amend', { def: { ...d2, rev: 2, tracks: [d2.tracks[1]] }, at: iso(date(3, 1)) })
+  expect(derive(r2, done, [dropped], date(4), { routines }).tracks.bench.state).toBe('removed')
+  // Rebound to Monday only in week 3: week 1 closes on what it has, and the next week starts after the repair.
+  const rebound = ev('amend', { def: { ...d2, rev: 2, tracks: [trackOf('bench', ['rA:o0']), d2.tracks[1]] }, at: iso(date(3, 1)) })
+  const repaired = derive(r2, done, [rebound], date(4), { routines })
+  expect(repaired.tracks.bench).toMatchObject({ state: 'active', stage: 'w2', attempt: 1, period: 4 })
+  expect(repaired.tracks.bench.decisions.map(x => [x.period, x.action, x.at])).toEqual([[1, 'hold', date(1, 6)], [1, 'advance', date(3, 1)]])
+})
+
+test('rotation: exercises of one session finished minutes apart close their round together', () => {
+  const r = run(rotation([trackOf('row', ['rA:o0']), trackOf('squat', ['rB:o0']), trackOf('bench', ['rB:o1'])], ['rA', 'rB']))
+  const xs = [
+    ex('p1:a0:rA:o0', undefined, { track: 'row', at: '2026-11-02T18:00:00.000Z' }),
+    ex('p1:a1:rB:o0', undefined, { track: 'squat', at: '2026-11-03T18:00:00.000Z' }),
+    ex('p1:a1:rB:o1', undefined, { track: 'bench', at: '2026-11-03T18:10:00.000Z' })
+  ]
+  const view = derive(r, xs, [], '2026-11-04')
+  for (const t of ['row', 'squat', 'bench']) expect(view.tracks[t]).toMatchObject({ stage: 'w2', period: 2 })
+  expect(slotFor({ view, run: r, rid: 'rB', oid: 'rB:o1', date: '2026-11-05' })).toEqual({
+    assignment: { slot: 'p2:a1:rB:o1', trackId: 'bench', stage: 'w2', attempt: 1, role: 'work', period: 2 }, bypass: ['p2:a0']
+  })
+})
+
+test('a rest week advances with no credit; recovery needs its work unless it closes with the calendar', () => {
+  const rest = run(def([trackOf('bench', ['rA:o0'], [stage('w1'), stage('r', { kind: 'rest' }), stage('w2')])]))
+  const week1 = [ex('p1:a0:rA:o0')]
+  const view = derive(rest, week1, [], date(3))
+  expect(view.tracks.bench.decisions[1]).toEqual({ stage: 'r', attempt: 1, period: 2, action: 'advance', reasons: { failed: [], skipped: [], unknown: [] }, policy: REPEAT, at: date(2, 6) })
+  expect(view.tracks.bench).toMatchObject({ stage: 'w2', period: 3 })
+  // Training in the rest week is logged as extra work.
+  expect(slotFor({ view: derive(rest, week1, [], date(2)), run: rest, rid: 'rA', oid: 'rA:o0', date: date(2) }).assignment).toMatchObject({ stage: 'r', role: 'extra' })
+  const recovery = close => run(def([trackOf('bench', ['rA:o0'], [stage('w1'), stage('d', { kind: 'recovery', ...(close ? { close } : {}) }), stage('w2')])]))
+  // Not done: by default (completion) the skipped recovery week repeats; a calendar one moves on.
+  expect(derive(recovery(), week1, [], date(3)).tracks.bench.decisions[1]).toMatchObject({ stage: 'd', action: 'repeat', reasons: { skipped: ['p2:a0:rA:o0'] } })
+  expect(derive(recovery('completion'), week1, [], date(3)).tracks.bench).toMatchObject({ stage: 'd', attempt: 2 })
+  expect(derive(recovery('calendar'), week1, [], date(3)).tracks.bench.decisions[1]).toMatchObject({ stage: 'd', action: 'advance' })
+  expect(derive(recovery('calendar'), week1, [], date(3)).tracks.bench).toMatchObject({ stage: 'w2', period: 3 })
+})
+
+test('optional slots never block a week and never credit a required one', () => {
+  const t = { ...trackOf('bench', []), slots: [{ rid: 'rA', oid: 'rA:o0' }, { rid: 'rC', oid: 'rC:o0', optional: true }] }
+  const r = run(def([t]))
+  const monday = ex('p1:a0:rA:o0')
+  expect(derive(r, [monday], [], date(1, 5)).tracks.bench.slots.map(s => [s.id, s.required])).toEqual([['p1:a0:rA:o0', true], ['p1:a2:rC:o0', false]])
+  for (const xs of [[monday], [monday, ex('p1:a2:rC:o0', [5, 5, 2])]]) {
+    expect(derive(r, xs).tracks.bench.decisions).toEqual([expect.objectContaining({ action: 'advance', reasons: { failed: [], skipped: [], unknown: [] } })])
+  }
+  expect(derive(r, [ex('p1:a2:rC:o0')]).tracks.bench.decisions).toEqual([expect.objectContaining({ action: 'repeat', reasons: { failed: [], skipped: ['p1:a0:rA:o0'], unknown: [] } })])
+})
+
+test('an end-policy event counts before the nominal end, never after it', () => {
+  const r = run(def([trackOf('bench', ['rA:o0'], stages('w1'))], { duration: { n: 2, unit: 'weeks' } }))
+  const missed = [1, 2].map(k => ex(`p${k}:a0:rA:o0`, [5, 5, 3], { attempt: k }))
+  expect(derive(r, missed, [], date(4)).status).toBe('stopped')
+  expect(derive(r, missed, [ev('end-policy', { end: 'extend', at: iso(date(2, 1)) })], date(4))).toMatchObject({ status: 'running', tracks: { bench: { stage: 'w1', attempt: 4, period: 4 } } })
+  // Too late: the run had already stopped at its nominal end.
+  expect(derive(r, missed, [ev('end-policy', { end: 'extend', at: iso(date(3, 1)) })], date(4)).status).toBe('stopped')
+})
+
+test('an amend of targets applies from the next unstarted week: Friday stays 80, the next week is 70', () => {
+  const r = run(def([trackOf('bench', ['rA:o0', 'rC:o0'], stages('w1', 'w2'))]))
+  const w = world()
+  const rule = occRule()
+  expect(rows(perform(r, w, { rid: 'rA', oid: 'rA:o0', date: date(1), occRule: rule }))).toEqual([80, 80, 80])
+  const fixed = { own: 'set', phase: phase(abs(70)) }
+  const targets = { 'rA:o0': fixed, 'rC:o0': fixed }
+  w.events.push(ev('amend', { def: { ...r.def, rev: 2, tracks: [trackOf('bench', ['rA:o0', 'rC:o0'], [stage('w1', { targets }), stage('w2', { targets })])] }, at: iso(date(1, 1)) }))
+  expect(rows(perform(r, w, { rid: 'rC', oid: 'rC:o0', date: date(1, 4), occRule: rule }))).toEqual([80, 80, 80])
+  const next = perform(r, w, { rid: 'rA', oid: 'rA:o0', date: date(2), occRule: rule })
+  expect(next.programme).toMatchObject({ stage: 'w2', attempt: 1 })
+  expect(rows(next)).toEqual([70, 70, 70])
+})
+
+test('an explicit skip applies onSkipped; a discard after a work row is a failure', () => {
+  const r = run(def([trackOf('bench', ['rA:o0', 'rC:o0'])]), { policy: { onFailure: 'repeat', onSkipped: 'advance' } })
+  const monday = [ex('p1:a0:rA:o0')]
+  const skip = derive(r, monday, [ev('skip', { slot: 'p1:a2:rC:o0', at: iso(date(1, 4)) })], date(1, 5))
+  // The skip is the slot's disposition at once, before the week closes.
+  expect(skip.tracks.bench.slots[1]).toMatchObject({ outcome: 'skipped', reasons: ['skip'] })
+  expect(derive(r, monday, [ev('skip', { slot: 'p1:a2:rC:o0', at: iso(date(1, 4)) })], date(2)).tracks.bench.decisions).toEqual([expect.objectContaining({ action: 'advance', reasons: { failed: [], skipped: ['p1:a2:rC:o0'], unknown: [] } })])
+  const discard = derive(r, monday, [ev('discard', { slot: 'p1:a2:rC:o0', worked: true, at: iso(date(1, 4)) })], date(2))
+  expect(discard.tracks.bench.decisions).toEqual([expect.objectContaining({ action: 'repeat', reasons: { failed: ['p1:a2:rC:o0'], skipped: [], unknown: [] } })])
+  expect(derive(r, monday, [ev('discard', { slot: 'p1:a2:rC:o0', worked: false, at: iso(date(1, 4)) })], date(2)).tracks.bench.decisions[0]).toMatchObject({ action: 'advance', reasons: { skipped: ['p1:a2:rC:o0'] } })
+})
+
+test('the replay does not depend on the order exposures and events arrive in', () => {
+  const { r, w } = eightWeeks('extend')
+  const turn = (a, n) => [...a.slice(n), ...a.slice(0, n)].reverse()
+  const base = JSON.stringify(derive(r, w.xs, w.events, date(9)))
+  for (const n of [1, 5, 11]) expect(JSON.stringify(derive(r, turn(w.xs, n), turn(w.events, n), date(9)))).toBe(base)
+  const events = [ev('pause', { at: iso(date(2, 2)) }), ev('resume', { at: iso(date(3, 2)) }), ev('reference', { trackId: 'bench', ref: R110, from: null, at: iso(date(2)) })]
+  const keyed = Object.fromEntries(turn(events, 1).map(e => [e.id, e]))
+  expect(JSON.stringify(derive(r, w.xs, keyed, date(9)))).toBe(JSON.stringify(derive(r, w.xs, events, date(9))))
 })

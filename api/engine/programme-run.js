@@ -49,16 +49,18 @@ function periodOfDate(run, pauses, date) {
   return calendarWeek(run, date) - shift
 }
 
-/** Weeks: the calendar dates of a period's (last) window; `to` is null while a pause holds it open. */
+/** Weeks: the calendar dates of a period's (last) window; `to` is null while a pause holds it open.
+ *  Before the start (period 0) it is the partial first window, which opens on startedOn. */
 function windowOf(run, pauses, k) {
-  let shift = 0
+  k = Math.max(k, 1)
+  let shift = 0, open = false
   for (const p of pauses) {
-    if (periodOfDate(run, pauses, p.from) > k) break
-    if (!p.to) return { from: isoOf(weekOf(dayOf(run.startedOn), run.weekStart ?? 1) + 7 * (k - 1 + shift)), to: null }
+    if (calendarWeek(run, p.from) - shift > k) break
+    if (!p.to) { open = true; break }
     shift += calendarWeek(run, p.to) - calendarWeek(run, p.from)
   }
   const from = weekOf(dayOf(run.startedOn), run.weekStart ?? 1) + 7 * (k - 1 + shift)
-  return { from: isoOf(from), to: isoOf(from + 6) }
+  return { from: isoOf(from) < run.startedOn ? run.startedOn : isoOf(from), to: open ? null : isoOf(from + 6) }
 }
 
 const apptsOf = def => (def.schedule.mode === 'weeks' ? def.schedule.appts.map(a => a.rid) : def.schedule.sequence)
@@ -112,10 +114,10 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
   // A slot takes its earliest completed exposure (completedAt, then id); the others stay logged as extra.
   // byPeriod: when each track's work was generated, by the period it was generated for (an
   // assigned correction still started its own week, not the one it fills).
-  const credit = new Map(), byPeriod = new Map()
+  const credit = new Map(), byPeriod = new Map(), dropped = new Set()
   const started = (track, slot, gen) => { const at = `${track}|${slot.split(':')[0]}`; if (!byPeriod.has(at)) byPeriod.set(at, []); byPeriod.get(at).push(gen) }
   for (const s of saved) {
-    if (s.role !== 'extra' && !credit.has(`${s.track}|${s.slot}`)) credit.set(`${s.track}|${s.slot}`, s)
+    if (s.role !== 'extra') { if (!credit.has(`${s.track}|${s.slot}`)) credit.set(`${s.track}|${s.slot}`, []); credit.get(`${s.track}|${s.slot}`).push(s) }
     started(s.track, s.x.programme.slot, s.gen)
   }
   // An open session is pending on its slot, and has started its attempt.
@@ -182,6 +184,12 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
       // Policy, end policy, references and amends apply from the next attempt with no prescription and no work.
       applies = e => (startedAt != null ? e.t <= startedAt : !closedWindow || periodAt(e.t) <= k)
       def = amends.filter(applies).at(-1)?.def ?? run.def
+      // A repair (spec 7.1): an attempt held up by a gone occurrence takes the latest definition,
+      // which rebinds or drops it; the next attempt then starts after that amend.
+      const gone = s => !!routines && !routines.find(r => r.id === s.rid)?.ex?.some(o => o.occurrenceId === s.oid)
+      const stuck = d => { const tr = d.tracks.find(t => t.id === id); return !!tr && slotsOf(run, d, tr, k).some(s => s.required && gone(s) && !credit.has(`${id}|${s.id}`) && !dispositionOf(s.id)) }
+      const repair = routines && latest !== def && stuck(def) && !stuck(latest) ? amends.at(-1) : null
+      if (repair) def = latest
       const track = def.tracks.find(t => t.id === id)
       known = track ?? known
       tm ??= rt.tm ?? (track?.tm ? { value: track.tm.value, unit: track.tm.unit } : null)
@@ -192,7 +200,7 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
       if (achieved && i >= track.stages.length) {
         // Maintenance (spec 8.6): its slots are shown and logged; they decide nothing.
         slots = k > limit ? [] : slotsOf(run, def, track, k).map(s => {
-          const c = credit.get(`${id}|${s.id}`)
+          const c = credit.get(`${id}|${s.id}`)?.[0]
           return { ...s, ...(c?.p ? { ...slotOutcome({ prescription: c.p, exposure: c.x }), exposureId: c.id } : { outcome: 'pending', reasons: [] }) }
         })
         state = 'maintenance'
@@ -203,38 +211,44 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
       let stage = track.stages[i]
       let attempt = tries[stage.id] ??= 1
       const bound = slotsOf(run, def, track, k)
-      const workOf = s => { const c = credit.get(`${id}|${s.id}`); return c?.role === 'work' ? c : null }
+      const works = s => (credit.get(`${id}|${s.id}`) || []).filter(c => c.role === 'work')
+      const workOf = s => works(s).find(c => !dropped.has(c)) ?? null
       // Work generated for another stage or attempt than the replay reaches is a conflict (spec 17);
-      // the recorded assignment holds until a conflict event says otherwise.
-      const keep = of('conflict').filter(e => e.trackId === id).at(-1)?.keep
-      const off = bound.map(workOf).filter(c => c && !c.moved && (c.x.programme.stage !== stage.id || c.x.programme.attempt !== attempt))
-      const dropped = new Set(keep === 'recomputed' ? off : [])
+      // the recorded assignment holds until a conflict event naming one of those exposures says
+      // otherwise. Under 'recomputed' that work credits nothing and a redo of the slot takes it.
+      const astray = c => !c.moved && (c.x.programme.stage !== stage.id || c.x.programme.attempt !== attempt)
+      const off = bound.map(s => works(s)[0]).filter(c => c && astray(c))
+      const keep = off.length ? of('conflict').filter(e => e.trackId === id && off.some(c => c.id === e.exposureId)).at(-1)?.keep : null
+      if (keep === 'recomputed') for (const s of bound) for (const c of works(s)) if (astray(c)) dropped.add(c)
       if (off.length && keep !== 'recomputed') {
         if (!keep) conflicts.push(...off.map(c => ({ trackId: id, exposureId: c.id })))
         // ponytail: the position follows the record, the values the replay's entry; a recorded branch's own entry values are not rebuilt.
         const j = track.stages.findIndex(s => s.id === off[0].x.programme.stage)
         if (j >= 0) { i = j; stage = track.stages[j]; attempt = tries[stage.id] = off[0].x.programme.attempt }
       }
-      const gone = s => !!routines && !routines.find(r => r.id === s.rid)?.ex?.some(o => o.occurrenceId === s.oid)
       const blocked = bound.some(s => s.required && gone(s) && !credit.has(`${id}|${s.id}`) && !dispositionOf(s.id))
       // R: when the evidence arrived. Work started for this window and finished later, or a later
       // disposition or resolve, moves the effective close to its time (spec 7.4); a correction
       // assigned afterwards is history and does not. `early` is each slot as the window left it.
-      let R = -Infinity, base = -Infinity
+      let R = -Infinity, base = -Infinity, settled = repair ? repair.t : -Infinity
       const credits = []
       const read = (stage.kind === 'rest' ? [] : bound).map(s => {
         const key = `${id}|${s.id}`
-        const c = dropped.has(credit.get(key)) ? null : workOf(s)
+        const c = workOf(s)
         const act = live.has(key)
         let d = c || act ? null : dispositionOf(s.id)
-        if (!c && !act && !d && closedWindow && !gone(s)) d = { type: 'close' }
-        const o0 = c && !c.p ? { outcome: 'unknown', reasons: ['missing_prescription'] } : slotOutcome({ prescription: c?.p, exposure: c?.x ?? null, disposition: d, active: act })
+        // Work recomputed away awaits its redo, or a resolve: it is never read as unattempted.
+        const redo = !c && !act && !d && works(s).length > 0
+        if (!c && !act && !d && !redo && closedWindow && !gone(s)) d = { type: 'close' }
+        const o0 = redo ? { outcome: closedWindow ? 'unknown' : 'pending', reasons: ['recomputed'] }
+          : c && !c.p ? { outcome: 'unknown', reasons: ['missing_prescription'] } : slotOutcome({ prescription: c?.p, exposure: c?.x ?? null, disposition: d, active: act })
         const r = resolved.get(s.id)
         const settles = !!r && !act && (o0.outcome === 'unknown' || o0.outcome === 'pending')
         const o = settles ? { outcome: r.as, reasons: [...o0.reasons, 'resolved'] } : o0
         const t = Math.max(c && periodAt(c.gen) <= k ? c.t : -Infinity, d?.t ?? -Infinity)
         base = Math.max(base, t)
         R = Math.max(R, t, settles ? r.t : -Infinity)
+        if (settles) settled = Math.max(settled, r.t)
         if (c) credits.push({ ...c, oid: s.oid })
         const early = weekly ? (periodAt(t) > k ? 'pending' : settles && periodAt(r.t) > k ? o0.outcome : o.outcome) : settles ? o0.outcome : o.outcome
         return { slot: { ...s, outcome: o.outcome, reasons: o.reasons, ...(c ? { exposureId: c.id } : {}) }, early }
@@ -248,7 +262,8 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
       const reasonsOf = pick => Object.fromEntries(['failed', 'skipped', 'unknown'].map(o => [o, required.filter(x => pick(x) === o).map(x => x.slot.id)]))
       const reasons = reasonsOf(x => x.slot.outcome)
       const pending = required.some(x => x.slot.outcome === 'pending')
-      const late = required.some(x => x.early !== x.slot.outcome)
+      R = Math.max(R, settled)
+      const late = !!repair || required.some(x => x.early !== x.slot.outcome)
       const policy = of('policy').filter(e => e.trackId === id && applies(e)).at(-1)?.policy ?? rt.policy ?? track.policy ?? REPEAT
       const free = stage.kind === 'rest' || (stage.kind === 'recovery' && stage.close === 'calendar')
       const repeat = (reasons.failed.length > 0 && policy.onFailure === 'repeat') || (reasons.skipped.length > 0 && policy.onSkipped === 'repeat')
@@ -256,12 +271,15 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
       const success = !free && !pending && !reasons.failed.length && !reasons.skipped.length && !reasons.unknown.length
       const endOf = t => (weekly ? windowOf(run, pauses, k).to : dateIn(Number.isFinite(t) ? t : consumed[k - 1] ?? closes.get(k)?.t, tz))
       const decision = (act, at, why = reasons) => ({ stage: stage.id, attempt, period: k, action: act, reasons: why, policy, at })
-      if (action === 'hold') { push(decisions, decision('hold', endOf(base))); state = 'held'; break }
+      const dropBy = t => !!removal && periodAt(removal.t) <= now && removal.t <= t
+      if (action === 'hold') { push(decisions, decision('hold', endOf(base))); state = dropBy(Infinity) ? 'removed' : 'held'; break }
+      if (late && dropBy(R)) { push(decisions, decision('hold', endOf(base), reasonsOf(x => x.early))); state = 'removed'; break }
       if (late) push(decisions, decision('hold', endOf(base), reasonsOf(x => x.early)))
       const goal = i === lastWork && success
       const quiet = !late && required.length > 0 && required.every(x => x.slot.reasons[0] === 'close')
       push(decisions, decision(goal ? 'achieve' : action, weekly && periodAt(R) > k ? dateIn(R, tz) : endOf(R)), quiet)
-      const next = Math.max(k + 1, periodAt(R) + 1)
+      // In a rotation a round's own exposures close it on time, whatever their completedAt: only a later resolve or repair defers.
+      const next = Math.max(k + 1, periodAt(weekly ? R : settled) + 1)
       if (action === 'repeat') { tries[stage.id] = attempt + 1; k = next; continue }
       // Advance: a success commits what the attempt earned; a miss keeps the entry values (spec 8.4).
       if (stage.kind === 'work') { if (success) entry = values; else cycleOk = false }
@@ -308,7 +326,7 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
   const period = weekly ? { index: now, ...windowOf(run, pauses, now) } : { index: now, next: apptsOf(d).findIndex((_, i) => tracked(d, i) && !(`p${now}:a${i}` in taken)) }
   // For slotFor: per appointment, true when a disposition took all of it, else the occurrences recorded or open in it.
   const marks = {}
-  for (const slot of [...saved.map(s => s.slot), ...[...live].map(key => key.split('|')[1]), ...disposed.keys(), ...[...closes.keys()].flatMap(k => apptsOf(run.def).map((_, a) => `p${k}:a${a}`))]) {
+  for (const slot of [...saved.filter(s => !dropped.has(s)).map(s => s.slot), ...[...live].map(key => key.split('|')[1]), ...disposed.keys(), ...[...closes.keys()].flatMap(k => apptsOf(run.def).map((_, a) => `p${k}:a${a}`))]) {
     const a = apptOf(slot), oid = oidOf(slot)
     if (!oid) marks[a] = true
     else if (marks[a] !== true) marks[a] = [...(marks[a] || []), oid]
