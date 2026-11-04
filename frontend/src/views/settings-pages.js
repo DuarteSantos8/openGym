@@ -59,8 +59,10 @@ export function pageVisible(page, ctx) {
   if (page === 'coach') return !!ctx.mobile
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
-  // Signed in to a server: a Zepp OS watch reaches openGym through it (lib/watch-relay.js).
-  if (page === 'zepp') return !!ctx.user && !ctx.demo
+  // A Zepp OS watch reaches openGym through a server (lib/watch-relay.js). Signed in, the page pairs
+  // one; a phone on its own gets the page too, saying why it needs a server and how to connect
+  // (Discord, ravk_: on three Android phones the page was simply not there).
+  if (page === 'zepp') return !ctx.demo && (!!ctx.user || !!ctx.mobile)
   // The phone app only: a browser cannot watch where you are with the page closed.
   if (page === 'gym' || page === 'gym-find' || page === 'gym-edit') return !!ctx.mobile && ctx.gymReminder !== false
   // The health store of the phone this runs on (unknown counts as yes, as for the watch).
