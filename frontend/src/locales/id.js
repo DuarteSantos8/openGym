@@ -3727,7 +3727,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Melewatkan seminggu? Satu freeze menutupinya: streak tetap jalan, minggu itu hanya tidak menambah apa-apa. Tanpa freeze, streak mulai dari awal.",
   "Missed": "Terlewat",
   "Moon": "Bulan",
-  "Muscle": "Otot",
+  "Kettlebell": "Kettlebell",
   "No workout and no freeze left, so the streak started over.": "Tidak ada latihan dan freeze habis, jadi streak mulai dari awal.",
   "No workout this week.": "Tidak ada latihan minggu ini.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Tidak ada latihan, jadi satu freeze menutupinya. Streak tetap jalan, tapi minggu ini tidak menambah hitungan.",

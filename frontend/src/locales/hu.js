@@ -3766,7 +3766,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Kihagysz egy hetet? Egy fagyasztó lefedi: a sorozat megy tovább, az a hét csak nem ad hozzá semmit. Nincs több fagyasztó, és újraindul.",
   "Missed": "Kihagyva",
   "Moon": "Hold",
-  "Muscle": "Izom",
+  "Kettlebell": "Kettlebell",
   "No workout and no freeze left, so the streak started over.": "Nem volt edzés és fagyasztó sem, így a sorozat újraindult.",
   "No workout this week.": "Ezen a héten nem volt edzés.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Nem volt edzés, így egy fagyasztó lefedte. A sorozat ment tovább, de ez a hét nem számít bele.",

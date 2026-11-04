@@ -2607,7 +2607,7 @@ button.cal-wk:active{background:var(--press-fill)}
 .wk-frz{display:inline-grid;place-items:center;color:var(--frost);--icon-stroke:2}
 .wk-legend{flex-wrap:wrap;row-gap:6px;margin-top:8px}
 .wk-legend > span{display:inline-flex;align-items:center;gap:5px}
-.wk-legend-g{display:inline-grid;place-items:center;width:1.2em;font-size:14px}
+.wk-legend-g{display:inline-grid;place-items:center;flex:none;width:18px;font-size:14px}
 .wk-note{display:flex;align-items:flex-start;gap:8px;min-height:2.8em;margin-top:12px;padding:10px 12px;border-radius:var(--r);background:var(--surface);line-height:var(--lh-small);text-wrap:pretty}
 .wk-note b{font-weight:600}
 .wk-note-g{flex:none;display:inline-grid;place-items:center;width:1.2em;margin-top:1px;font-size:15px}

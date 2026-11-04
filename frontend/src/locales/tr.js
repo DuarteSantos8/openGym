@@ -3763,7 +3763,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Bir hafta mı kaçırdın? Bir dondurma onu kapatır: seri devam eder, o hafta sadece bir şey eklemez. Dondurma kalmadıysa seri baştan başlar.",
   "Missed": "Kaçırıldı",
   "Moon": "Ay",
-  "Muscle": "Kas",
+  "Kettlebell": "Kettlebell",
   "No workout and no freeze left, so the streak started over.": "Antrenman yok, dondurma da kalmadı, seri baştan başladı.",
   "No workout this week.": "Bu hafta antrenman yok.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Antrenman yok, bir dondurma kapattı. Seri devam etti ama bu hafta sayıya bir şey eklemez.",

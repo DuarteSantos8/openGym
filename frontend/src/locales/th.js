@@ -3774,7 +3774,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "พลาดไปหนึ่งสัปดาห์? ตัวหยุดจะช่วยไว้: สถิติยังต่อเนื่อง แค่สัปดาห์นั้นไม่บวกเพิ่ม ถ้าไม่มีตัวหยุดเหลือ จะเริ่มนับใหม่",
   "Missed": "พลาด",
   "Moon": "พระจันทร์",
-  "Muscle": "กล้ามเนื้อ",
+  "Kettlebell": "เคตเทิลเบล",
   "No workout and no freeze left, so the streak started over.": "ไม่ได้ฝึกและไม่มีตัวหยุดเหลือ สถิติเลยเริ่มนับใหม่",
   "No workout this week.": "สัปดาห์นี้ยังไม่ได้ฝึก",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "ไม่ได้ฝึก ตัวหยุดเลยช่วยไว้ สถิติยังต่อเนื่อง แต่สัปดาห์นี้ไม่บวกเพิ่ม",

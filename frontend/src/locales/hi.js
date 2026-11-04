@@ -3763,7 +3763,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "एक हफ़्ता छूट गया? एक फ़्रीज़ उसे संभाल लेता है: स्ट्रीक चलती रहती है, बस वह हफ़्ता कुछ नहीं जोड़ता। फ़्रीज़ न बचा हो तो स्ट्रीक फिर से शुरू होती है।",
   "Missed": "छूट गया",
   "Moon": "चाँद",
-  "Muscle": "मांसपेशी",
+  "Kettlebell": "केटलबेल",
   "No workout and no freeze left, so the streak started over.": "न वर्कआउट, न फ़्रीज़ बचा, इसलिए स्ट्रीक फिर से शुरू हुई।",
   "No workout this week.": "इस हफ़्ते कोई वर्कआउट नहीं।",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "वर्कआउट नहीं हुआ, इसलिए एक फ़्रीज़ ने इसे संभाला। स्ट्रीक चलती रही, पर यह हफ़्ता गिनती में कुछ नहीं जोड़ता।",

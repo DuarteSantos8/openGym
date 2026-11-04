@@ -3810,7 +3810,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Missar du en vecka täcker en frysning den: streaken fortsätter, den veckan lägger bara inte till något. Inga frysningar kvar, och den börjar om.",
   "Missed": "Missad",
   "Moon": "Måne",
-  "Muscle": "Muskel",
+  "Kettlebell": "Kettlebell",
   "No workout and no freeze left, so the streak started over.": "Inget pass och inga frysningar kvar, så streaken började om.",
   "No workout this week.": "Inget pass den här veckan.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Inget pass, så en frysning täckte den. Streaken fortsatte, men veckan lägger inte till något.",

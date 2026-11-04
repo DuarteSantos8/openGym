@@ -3767,7 +3767,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Пропустил неделю? Заморозка её прикроет: серия идёт дальше, просто эта неделя ничего не добавляет. Нет заморозки, и серия начнётся заново.",
   "Missed": "Пропущена",
   "Moon": "Луна",
-  "Muscle": "Мышца",
+  "Kettlebell": "Гиря",
   "No workout and no freeze left, so the streak started over.": "Ни тренировки, ни заморозки, так что серия началась заново.",
   "No workout this week.": "На этой неделе тренировок нет.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Тренировки не было, её прикрыла заморозка. Серия продолжилась, но эта неделя в счёт не идёт.",

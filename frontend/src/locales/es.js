@@ -3763,7 +3763,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "¿Te saltas una semana? Una congelación la cubre: la racha sigue, esa semana simplemente no suma. Sin congelaciones, empieza de cero.",
   "Missed": "Perdida",
   "Moon": "Luna",
-  "Muscle": "Músculo",
+  "Kettlebell": "Pesa rusa",
   "No workout and no freeze left, so the streak started over.": "Sin entreno y sin congelaciones, así que la racha empezó de cero.",
   "No workout this week.": "Sin entreno esta semana.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Sin entreno, así que una congelación la cubrió. La racha siguió, pero esta semana no suma.",

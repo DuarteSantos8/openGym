@@ -3728,7 +3728,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Lỡ một tuần? Một lượt đóng băng sẽ giữ nó: chuỗi vẫn tiếp tục, tuần đó chỉ không cộng thêm. Hết lượt đóng băng thì chuỗi bắt đầu lại.",
   "Missed": "Đã lỡ",
   "Moon": "Mặt trăng",
-  "Muscle": "Cơ bắp",
+  "Kettlebell": "Tạ ấm",
   "No workout and no freeze left, so the streak started over.": "Không tập và hết lượt đóng băng, nên chuỗi bắt đầu lại.",
   "No workout this week.": "Tuần này không có buổi tập.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Không tập, nên một lượt đóng băng đã giữ tuần này. Chuỗi vẫn tiếp tục, nhưng tuần này không được cộng.",

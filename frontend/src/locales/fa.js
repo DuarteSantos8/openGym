@@ -3728,7 +3728,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "هفته‌ای را جا انداختی؟ یک یخ‌زدگی پوشش می‌دهد: زنجیره ادامه دارد، فقط آن هفته چیزی اضافه نمی‌کند. یخ‌زدگی نمانده باشد، از نو شروع می‌شود.",
   "Missed": "جا افتاده",
   "Moon": "ماه",
-  "Muscle": "عضله",
+  "Kettlebell": "کتل‌بل",
   "No workout and no freeze left, so the streak started over.": "نه تمرینی بود نه یخ‌زدگی‌ای، پس زنجیره از نو شروع شد.",
   "No workout this week.": "این هفته تمرینی نبود.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "تمرینی نبود، پس یک یخ‌زدگی آن را پوشاند. زنجیره ادامه پیدا کرد، اما این هفته به شمار اضافه نمی‌کند.",

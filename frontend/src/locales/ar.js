@@ -3818,7 +3818,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "فاتك أسبوع؟ التجميد يغطيه: تستمر السلسلة، لكن ذلك الأسبوع لا يضيف شيئًا. لا تجميد متبقٍ، فتبدأ من جديد.",
   "Missed": "فائت",
   "Moon": "قمر",
-  "Muscle": "عضلة",
+  "Kettlebell": "كيتل بل",
   "No workout and no freeze left, so the streak started over.": "لا تمرين ولا تجميد متبقٍ، فبدأت السلسلة من جديد.",
   "No workout this week.": "لا تمرين هذا الأسبوع.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "لا تمرين، فغطّاه تجميد. استمرت السلسلة، لكن هذا الأسبوع لا يضيف إلى العدد.",

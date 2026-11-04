@@ -3763,7 +3763,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "漏了一周？冻结卡会帮你顶上：连续记录照样继续，那一周只是不加数。没有冻结卡了，就从头开始。",
   "Missed": "已错过",
   "Moon": "月亮",
-  "Muscle": "肌肉",
+  "Kettlebell": "壶铃",
   "No workout and no freeze left, so the streak started over.": "没训练，也没有冻结卡了，所以连续记录从头开始。",
   "No workout this week.": "这周没有训练。",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "没训练，所以用了一张冻结卡。连续记录没断，但这一周不加数。",

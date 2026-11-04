@@ -30,7 +30,7 @@ export const FLAME_CHOICES = [
   { v: 'trophy', c: '#ffb020' },
   { v: 'sun', c: '#ff9f0a' },
   { v: 'dumbbell', c: '#30d158' },
-  { v: 'arm', c: '#bf5af2' },
+  { v: 'kettlebell', c: '#bf5af2' },
 ]
 export const FREEZE_CHOICES = [
   { v: 'snowflake', c: FREEZE_DEFAULT, def: true },
@@ -198,7 +198,7 @@ export function dominantColor (px) {
 
 // A few emoji to tap instead of typing one (the field takes any).
 export const EMOJI_IDEAS = {
-  flame: ['🔥', '⚡', '🌟', '💪', '🚀', '❤️', '🏆', '🌶️'],
+  flame: ['🔥', '⚡️', '🌟', '💪', '🚀', '❤️', '🏆', '🌶️'],
   freeze: ['❄️', '🧊', '🛡️', '☃️', '💤', '🐧', '💎', '🌙'],
 }
 

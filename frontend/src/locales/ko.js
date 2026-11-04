@@ -3763,7 +3763,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "한 주를 놓쳐도 동결권이 지켜 줘요: 기록은 이어지고, 그 주만 더해지지 않아요. 동결권이 없으면 처음부터 다시 시작해요.",
   "Missed": "놓침",
   "Moon": "달",
-  "Muscle": "근육",
+  "Kettlebell": "케틀벨",
   "No workout and no freeze left, so the streak started over.": "운동도 동결권도 없어서 연속 기록이 다시 시작됐어요.",
   "No workout this week.": "이번 주에는 운동이 없어요.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "운동이 없어서 동결권이 이 주를 지켰어요. 기록은 이어졌지만 이 주는 더해지지 않아요.",

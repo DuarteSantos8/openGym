@@ -3783,7 +3783,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Woche verpasst? Ein Freeze deckt sie ab: Die Serie läuft weiter, die Woche zählt nur nicht mit. Kein Freeze mehr, und sie fängt von vorn an.",
   "Missed": "Verpasst",
   "Moon": "Mond",
-  "Muscle": "Muskel",
+  "Kettlebell": "Kettlebell",
   "No workout and no freeze left, so the streak started over.": "Kein Training und kein Freeze mehr, also fing die Serie von vorn an.",
   "No workout this week.": "Kein Training in dieser Woche.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Kein Training, also hat ein Freeze sie abgedeckt. Die Serie lief weiter, aber diese Woche zählt nicht mit.",

@@ -3842,7 +3842,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "একটি সপ্তাহ বাদ গেছে? একটি ফ্রিজ সেটা ঢেকে দেয়: স্ট্রিক চলতে থাকে, শুধু সেই সপ্তাহ কিছু যোগ করে না। ফ্রিজ না থাকলে আবার শুরু থেকে।",
   "Missed": "বাদ গেছে",
   "Moon": "চাঁদ",
-  "Muscle": "পেশি",
+  "Kettlebell": "কেটলবেল",
   "No workout and no freeze left, so the streak started over.": "ওয়ার্কআউট নেই, ফ্রিজও নেই, তাই স্ট্রিক আবার শুরু হয়েছে।",
   "No workout this week.": "এই সপ্তাহে কোনো ওয়ার্কআউট নেই।",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "ওয়ার্কআউট হয়নি, তাই একটি ফ্রিজ এটা ঢেকে দিয়েছে। স্ট্রিক চলেছে, কিন্তু এই সপ্তাহ গণনায় কিছু যোগ করে না।",

@@ -3728,7 +3728,7 @@ export default {
   "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Vynecháš týden? Zmrazení ho pokryje: série pokračuje, ten týden jen nic nepřidá. Žádné zmrazení, a začíná se znovu.",
   "Missed": "Vynecháno",
   "Moon": "Měsíc",
-  "Muscle": "Sval",
+  "Kettlebell": "Kettlebell",
   "No workout and no freeze left, so the streak started over.": "Žádný trénink a žádné zmrazení, takže série začala znovu.",
   "No workout this week.": "Tento týden bez tréninku.",
   "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Žádný trénink, takže ho pokrylo zmrazení. Série pokračovala, ale tento týden nic nepřidá.",

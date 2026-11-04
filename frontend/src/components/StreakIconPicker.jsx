@@ -14,7 +14,7 @@ import { Button, Row } from './ui.jsx'
 
 const NAMES = () => ({
   flame: t('Flame'), bolt: t('Bolt'), starFill: t('Star'), heart: t('Heart'), rocket: t('Rocket'), crown: t('Crown'),
-  trophy: t('Trophy'), sun: t('Sun'), dumbbell: t('Dumbbell'), arm: t('Muscle'),
+  trophy: t('Trophy'), sun: t('Sun'), dumbbell: t('Dumbbell'), kettlebell: t('Kettlebell'),
   snowflake: t('Snowflake'), shield: t('Shield'), cloud: t('Cloud'), moon: t('Moon'), hourglass: t('Hourglass'), tree: t('Tree'), gift: t('Gift'),
 })
 const title = kind => (kind === 'freeze' ? t('Streak freeze') : t('Streak flame'))
