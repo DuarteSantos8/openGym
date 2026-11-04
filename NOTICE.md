@@ -104,6 +104,22 @@ language-model assistance. They are not copied from a separate Portuguese
 dataset. Their review status and translation policy are documented alongside
 the source files.
 
+## Strength standards (strength levels)
+
+The Beginner to Elite cut-offs on the Strength levels card and in the exercise details are
+bodyweight ratios (one-rep max ÷ body weight) rounded from the **Strength Standards** published at
+[strengthlevel.com](https://strengthlevel.com/), bodyweight-ratio view, for men and women. The
+population shares shown with them (the percentiles of lifters each level stands above) are from
+the same source, and are shown only for the men's table under 40. openGym is not affiliated with
+strengthlevel.com; the figures are a rough guide, and the source's terms apply to them.
+
+The masters age adjustment (from 40 on, each threshold divided by an age coefficient) uses
+**McCulloch's masters coefficients**, as used in masters powerlifting. Ages between the tabled
+points are interpolated.
+
+The training-experience lines on the card ("About 2 to 5 years of regular training" and the
+like) are openGym's own rough guide, not taken from either source.
+
 ## Gym check-in QR codes and barcodes
 
 The gym check-in feature (a saved membership code shown as a QR code or barcode on the phone,

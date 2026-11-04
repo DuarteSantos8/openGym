@@ -124,3 +124,71 @@ export function strengthLevels(S) {
   }
   return out.sort((a, b) => b.level - a.level || b.ratio - a.ratio || Object.keys(STANDARDS).indexOf(a.lift) - Object.keys(STANDARDS).indexOf(b.lift))
 }
+
+/**
+ * Where each band starts on the level bar, as fractions of its width: 'ratio' gives every level an
+ * equal fifth; 'population' sizes each band by the share of lifters it covers (Beginner to the 20th
+ * percentile, Novice to 50, Intermediate to 80, Advanced to 95, Elite the top 5).
+ */
+export const BAR_EDGES = {
+  ratio: [0, 0.2, 0.4, 0.6, 0.8, 1],
+  population: [0, 0.2, 0.5, 0.8, 0.95, 1],
+}
+// The percentile each threshold sits at (see the header): Beginner 5, Novice 20, Intermediate 50,
+// Advanced 80, Elite 95.
+const PERCENTILE_AT = [5, 20, 50, 80, 95]
+
+/**
+ * Where a lifter stands on the level bar, 0 to 1, in the given mode. In 'ratio' mode each level is
+ * a fifth, and inside its band the share of the way to the next threshold. In 'population' mode the
+ * position follows the percentile, interpolated between the thresholds. Elite is full.
+ */
+export function levelPosition(lv, mode = 'ratio') {
+  if (!lv) return 0
+  if (!lv.next) return 1
+  if (mode === 'population') {
+    const r = lv.e1rm / lv.bw, th = lv.thresholds
+    const xs = [0, ...th], ys = [0, ...PERCENTILE_AT]
+    let j = 0
+    while (j < 4 && r >= xs[j + 1]) j++
+    const p = ys[j] + (ys[j + 1] - ys[j]) * Math.min(1, Math.max(0, (r - xs[j]) / (xs[j + 1] - xs[j])))
+    return p / 100
+  }
+  const lo = lv.level ? lv.thresholds[lv.level] : 0
+  const hi = lv.thresholds[lv.level + 1]
+  const f = Math.min(1, Math.max(0, (lv.e1rm / lv.bw - lo) / (hi - lo)))
+  return (lv.level + f) / LEVELS.length
+}
+
+/**
+ * Whether the population shares (percentiles of lifters) can be shown for this profile. They are
+ * measured on the men's table with no age adjustment, so they hold for a male or unset sex under 40
+ * only. For women, and from 40 on, the bar shows body-weight ratios alone.
+ */
+export const populationShown = S => sexOf(S) !== 'female' && !((ageOf(S) ?? 0) >= 40)
+
+/**
+ * The range each level covers, for the cut-off table: `weight` the body-weight ratios it spans
+ * (the first starts at 0, Elite has no top, so `hi` is null) and `pop` the population percentiles.
+ */
+export function bandRanges(lv) {
+  const th = lv.thresholds
+  return LEVELS.map((name, i) => ({
+    name,
+    weight: { lo: i ? th[i] : 0, hi: i < LEVELS.length - 1 ? th[i + 1] : null },
+    pop: { lo: Math.round(BAR_EDGES.population[i] * 100), hi: Math.round(BAR_EDGES.population[i + 1] * 100) },
+  }))
+}
+
+/**
+ * The Stats card: `done` is every graded lift with a level (strongest first), `todo` the standard
+ * lifts with no estimate yet (their first catalogue id, to name them), and `weighed` whether a
+ * bodyweight is logged at all (the levels need one).
+ */
+export function strengthCard(S) {
+  const bw = Number(lastBW(S || { bodyweight: [] })?.w)
+  const done = strengthLevels(S)
+  const logged = new Set(done.map(d => d.lift))
+  const todo = Object.entries(STANDARDS).filter(([lift]) => !logged.has(lift)).map(([lift, st]) => ({ lift, id: st.ids[0] }))
+  return { done, todo, weighed: bw > 0 }
+}
