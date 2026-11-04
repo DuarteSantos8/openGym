@@ -142,6 +142,8 @@ export function stateMediaRefs(state) {
   if (isObj(state.dayPhotos)) for (const e of Object.values(state.dayPhotos)) if (isObj(e) && isObj(e.m)) out.push(e.m)
   // Sounds of one's own (lib/user-sounds.js): sounds[] = { id, name, m, _ts }.
   for (const e of Array.isArray(state.sounds) ? state.sounds : []) if (isObj(e) && isObj(e.m)) out.push(e.m)
+  // The profile picture (lib/avatar.js): avatar = { m } (a preset has no file).
+  if (isObj(state.avatar) && isObj(state.avatar.m)) out.push(state.avatar.m)
   return out
 }
 
@@ -217,12 +219,15 @@ export function referencedFiles(state, { refs = stateMediaRefs(state) } = {}) {
  * server does not say it keeps them (`sets` false: GET /api/config without media.sets, whose GC
  * would sweep them). A file another ref names without those reasons still goes.
  */
-export function uploadableFiles(state, { sets = true, sounds = true } = {}) {
+export function uploadableFiles(state, { sets = true, sounds = true, avatar = true } = {}) {
   const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
   const setRefs = new Set(state && typeof state === 'object' && Array.isArray(state.workouts) ? state.workouts.flatMap(setRefsOf) : [])
   // A sound of one's own goes only to a server that says it keeps them (media.sounds, v1.4.5):
   // an older one would refuse the WAV and sweep it.
-  const refs = stateMediaRefs(state).filter(m => isObj(m) && m.local !== true && (sets || !setRefs.has(m)) && (sounds || m.kind !== 'audio'))
+  // The profile picture likewise (media.avatar, v1.4.5): an older server's GC would sweep it, so
+  // there it stays on the device that has it.
+  const avatarRef = state && typeof state === 'object' && isObj(state.avatar) ? state.avatar.m : null
+  const refs = stateMediaRefs(state).filter(m => isObj(m) && m.local !== true && (sets || !setRefs.has(m)) && (sounds || m.kind !== 'audio') && (avatar || m !== avatarRef))
   return referencedFiles(state, { refs })
 }
 

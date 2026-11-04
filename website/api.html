@@ -4939,6 +4939,11 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc">This instance keeps the sounds of the user's own for the rest timer (<code>sounds</code>, v1.4.5). Absent on an instance from before; the app then keeps them on the device.</span>
   </div>
   <div class="prow">
+    <span class="p-name">avatar</span>
+    <span class="p-type">always true</span>
+    <span class="p-desc">This instance keeps the user's profile picture (<code>avatar.m</code>, a 256 px square, v1.4.5). It is served like every other file, from the caller's own folder only. Absent on an instance from before; the app then keeps the picture on the device that set it.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">workouts</span>
     <span class="p-type">always true</span>
     <span class="p-desc">This instance keeps the files a logged workout's <code>media</code> list names too, not only a custom exercise's. Absent on an instance from before; the app then offers photos and videos on custom exercises only.</span>

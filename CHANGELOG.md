@@ -33,6 +33,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Our own icons instead of the phone's emoji, wherever the app still had some: the warm-up flame in Focus view, the trophy on share cards and in Wrapped, the advent calendar's doors and medals, the heart rate. They take your accent and look the same on every phone. Prefer the emoji? Settings → Look & Home → Icons → Emoji brings them back, also for the streak flame, the freezes and the medals.
 - Form and exercise videos can be bigger: a clip over 12 MB is shrunk on your phone first (to 1280 px, the button counts up while it works), and the server takes up to 100 MB instead of 40. Self-hosting? MEDIA_VIDEO_MAX_MB and MEDIA_UPLOAD_MAX (now 112m) set it, see docs/SELF_HOSTING.md.
 - Your own sounds: Settings → Sound → Add a sound takes an MP3, M4A, WAV or OGG, trims the silence, keeps up to 30 seconds and plays it at the end of a rest, or of a hold (each can have its own). It rings in the app, on the locked phone and in the iPhone notification, and comes along to your other devices.
+- A profile picture: Settings → Account → Profile picture takes a photo from the camera or your library (drag and zoom to frame it) or one of a dozen icons. It is shrunk to a small square on your phone with the location and camera details stripped, follows your account to your other devices, and nobody else sees it, admins included. No picture, no problem: your initial stays (thanks dreeper999 for the idea).
 
 **The streak, explained (and yours to style)**
 - The calendar now shows how your streak counted, week by week: a flame for a week that counts, a freeze for a missed week a freeze covered (that week gets a frosty wash too), a ring for a missed one and a dashed ring for this week, still open. Tap a mark and it tells you why.
@@ -42,6 +43,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Settings → Look & Home → Icons: pick your own streak flame and freeze, from openGym's icons or any emoji. The colors around it (the flame's glow and bar, the frozen week, the freeze chips) follow its color in light and dark mode, and Reset to default is right there. Syncs like the rest of your settings; the watches and widgets keep their own flame.
 
 **Fixes from your reports**
+- Your own sounds come back from a backup with photos and videos too. They went into the zip, but the import left them out.
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
 - Android widget: it loads at every size again instead of "Unable to load widget" when stretched, and its "What to show" screen is wide enough to read (#981).
 - Body measurements: lengths in cm or inches whatever your weight unit (#932), and a custom measurement can be deleted.
