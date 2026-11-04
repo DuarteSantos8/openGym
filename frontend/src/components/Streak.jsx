@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t, tn } from '../lib/i18n.js'
+import { fmtDate } from '../lib/format.js'
 import { STREAK_BADGES, FREEZE_MAX, streakCelebration } from '../lib/streak.js'
 import { reducedMotion } from '../lib/use-swipe-row.js'
 import { vibrate } from '../lib/sound.js'
@@ -143,6 +144,21 @@ export function StreakCard ({ info }) {
       </div>
       : null}
     <div className="muted small streak-hint">{info.next ? '' : nextLine + ' '}{hint}</div>
+    <FrozenWeeks frozen={info.frozen} />
+  </div>
+}
+
+/**
+ * The weeks a freeze covered in the running streak, the newest three. Without it a streak that ran
+ * through a gap you can see on the calendar looked like a counting error (Discord, dimarei: 11
+ * weeks with a hole in September). The freeze week itself adds nothing to the count.
+ */
+export function FrozenWeeks ({ frozen }) {
+  if (!Array.isArray(frozen) || !frozen.length) return null
+  const shown = frozen.slice(-3).map(wk => fmtDate(wk, false, wk.slice(0, 4) !== String(new Date().getFullYear()))).join(', ')
+  return <div className="muted small streak-frozen" data-streak-frozen>
+    <Icon name="snowflake" />
+    <span>{frozen.length === 1 ? t('A freeze covered the week of {0}, so the streak kept going.', shown) : t('Freezes covered the weeks of {0}, so the streak kept going.', shown)}</span>
   </div>
 }
 
