@@ -22,11 +22,11 @@ describe('the profile’s default progression rule', () => {
 
   it('applies only when neither an exercise nor its routine specifies a rule', () => {
     const preset = (state, exercise, routine = {}) => migratedFixture({ ...state, routines: [{ id: 'r', ...routine, ex: [exercise] }] }).routines[0].ex[0].rule.preset
-    expect(preset(clean('off'), cfg)).toBe('autoregulated')
+    expect(preset(clean('off'), cfg)).toBe('manual')
     expect(preset(clean(), cfg)).toBe('linear')
     expect(preset(clean('off'), cfg, { prog: 'linear' })).toBe('linear')
     expect(preset(clean('off'), { ...cfg, prog: 'double' })).toBe('double')
-    expect(preset(clean(), { id: LIFT, mode: 'time', sec: 30 })).toBe('autoregulated')
+    expect(preset(clean(), { id: LIFT, mode: 'time', sec: 30 })).toBe('manual')
   })
 
   it('decides the next session: Off keeps the weight, the default still adds a step', () => {
