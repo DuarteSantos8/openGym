@@ -91,6 +91,7 @@ const Stats = lazyView(() => import('./views/Stats.jsx'))
 const History = lazyView(() => import('./views/History.jsx'))
 const Library = lazyView(() => import('./views/Library.jsx'))
 const Muscles = lazyView(() => import('./views/Muscles.jsx'))
+const Health = lazyView(() => import('./views/Health.jsx'))
 const SettingsRoute = lazyView(() => import('./views/Settings.jsx').then(m => ({ default: m.SettingsRoute })))
 // The app tour's overlay (components/Tour.jsx): fetched when it opens, never before.
 const Tour = lazy(() => import('./components/Tour.jsx'))
@@ -348,6 +349,7 @@ function Shell() {
       <Route path="/structural-balance" element={<StructuralBalance />} />
       {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
+      {isOn(S, 'health') && <Route path="/health" element={<Health />} />}
       <Route path="/settings" element={<SettingsRoute />} />
       <Route path="/settings/:page" element={<SettingsRoute />} />
       {/* The Coach screens gate themselves on the instance config; the routes exist whenever the

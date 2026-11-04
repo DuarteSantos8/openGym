@@ -55,6 +55,8 @@ RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 # else, and one that is missing only shows at boot, as ERR_MODULE_NOT_FOUND.
 COPY server.js push-messages.js nudge.js nudge-copy.js wrapped.js wrapped-copy.js verify-error.js password.js rate-limit.js passkeys-store.js device-link.js watch-relay.js media.js queue.js sync-stamps.js durable.js admin-socket.js recover.js net-guard.js ./
 COPY coach ./coach
+COPY health ./health
+COPY providers ./providers
 COPY integrations ./integrations
 ENV NODE_ENV=production
 ENV PORT=3000

@@ -11,6 +11,7 @@ import { copyText } from '../lib/clipboard.js'
 import { platformNow } from '../lib/platform-now.js'
 import { coachAvailable } from '../lib/coach.js'
 import { healthStatus, loadHealth, onHealthChange, disableHealth, disableRead } from '../lib/health-sync.js'
+import { loadSources, onSourcesChange } from '../lib/health/sync.js'
 import { directory, cardState, CARD, PILL, WORKS_WITH, WEBHOOK_EVENTS, webhookUrlProblem, normalizeWebhookUrl } from '../lib/integrations.js'
 import { importFromApp, importFromHevy, confirmSheet, menuSheet } from '../sheets.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
@@ -56,6 +57,33 @@ function useHealth() {
     return () => { gone = true; off() }
   }, [])
   return h
+}
+
+// The Health area's own reading of the phone's store (Settings → Integrations → Apple Health).
+function useReads() {
+  const [reads, setReads] = useState(null)
+  useEffect(() => {
+    if (!MOBILE) return
+    let gone = false
+    const set = f => { if (!gone) setReads(Object.fromEntries(Object.entries(f?.providers || {}).map(([id, p]) => [id, !!p.on]))) }
+    loadSources().then(set, () => {})
+    const off = onSourcesChange(set)
+    return () => { gone = true; off() }
+  }, [])
+  return reads
+}
+
+// Whether the server reads RENPHO for this profile; false where this server has no RENPHO.
+function useRenpho(on) {
+  const [st, setSt] = useState(null)
+  useEffect(() => {
+    if (!on) return
+    let gone = false
+    api('/api/renpho').then(s => { if (!gone) setSt(s || null) })
+      .catch(e => { if (!gone && e && (e.status === 401 || e.status === 404 || e.code === 'not-paired')) setSt(false) })
+    return () => { gone = true }
+  }, [on])
+  return st
 }
 
 function Pill({ status }) {
@@ -117,10 +145,12 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const offered = config?.integrations?.providers || []
   const server = useServerIntegrations(!!user && !DEMO && offered.length > 0)
   const health = useHealth()
+  const reads = useReads()
+  const renpho = useRenpho(!!user && !DEMO)
   const platform = MOBILE ? (ios ? 'ios' : android ? 'android' : health?.platform || platformNow()) : null
   const S = useStore(s => s.S)
   const ctx = {
-    mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
+    mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, reads, renpho, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
   }
@@ -133,6 +163,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       case 'apple-health': case 'health-connect':
         if (status === 'device') return infoSheet(card, t('This one lives in the openGym phone app: Apple Health on iPhone, Health Connect on Android.'))
         return nav('/settings/' + card.id)
+      case 'renpho': return nav('/settings/renpho')
       case 'hevy': return importFromHevy()
       case 'files': return fileRef.current?.click()
       case 'csv': return csvExportSheet()
@@ -216,9 +247,11 @@ const READS = {
 
 function worksWithSheet(w, platform, nav) {
   const store = platform === 'ios' ? 'apple-health' : platform === 'android' ? 'health-connect' : null
+  const direct = w.direct === 'renpho' && !!useStore.getState().user
   sheet(close => <>
     <SheetHead icon={w.glyph} title={w.name} />
-    <p className="intg-lead">{t('{0} has no direct line to openGym, and it does not need one.', w.name)}</p>
+    {direct && <p className="intg-lead">{t('RENPHO also connects straight to your openGym server, with every reading of the scale.')}</p>}
+    {!direct && <p className="intg-lead">{t('{0} has no direct line to openGym, and it does not need one.', w.name)}</p>}
     {/* Three facts, not three settings: plain rows, no tinted tile on each (Integrations pass, I6). */}
     <Section className="intg-facts">
       <Row title={t('How it gets here')}
@@ -226,9 +259,13 @@ function worksWithSheet(w, platform, nav) {
       <Row title={t('What openGym reads')} subtitle={t(READS[w.reads])} />
       <Row title={t('What it does not do')} subtitle={t('Workouts logged in openGym go to the health store, not back into {0} itself.', w.name)} />
     </Section>
+    {/* RENPHO on a signed-in profile: the server reads the scale itself (its card above), every
+        reading, the ones RENPHO keeps from the health store too. */}
+    {direct && <Button variant="primary" onClick={() => { close(); nav('/settings/renpho') }}>{t('Connect RENPHO')}</Button>}
+    {direct && store && <div style={{ height: 8 }} />}
     {store
-      ? <Button variant="primary" onClick={() => { close(); nav('/settings/' + store) }}>{t('Set up {0}', CARD[store].name)}</Button>
-      : <p className="intg-note">{t('Install the openGym app on your phone to use this.')}</p>}
+      ? <Button variant={direct ? 'tinted' : 'primary'} onClick={() => { close(); nav('/settings/' + store) }}>{t('Set up {0}', CARD[store].name)}</Button>
+      : !direct && <p className="intg-note">{t('Install the openGym app on your phone to use this.')}</p>}
   </>)
 }
 

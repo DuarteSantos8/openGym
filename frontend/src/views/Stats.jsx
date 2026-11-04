@@ -857,6 +857,8 @@ export default function Stats() {
   // paragraph and an Open button each, dressed as content. Under Body, where two of them live;
   // with the Body module off, at the end of Lifts, without the two that are Body's.
   const linkRows = [
+    // The health area (views/Health.jsx): body composition, activity, heart and sleep, with the Health module.
+    on('health') && <Row key="h" title={t('Health')} subtitle={t('Body composition, activity, heart and sleep')} accessory="chevron" className="stats-link" onClick={() => nav('/health')} />,
     bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
       value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
       onClick={() => nav('/measurements')} />,
