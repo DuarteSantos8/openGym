@@ -1713,6 +1713,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* drop-set drops / rest-pause bursts riding on a work row, editable like the row itself
    (issue: drop-sets & rest-pause) */
 .subrow{display:flex;align-items:center;gap:6px;padding-block:3px;padding-inline:32px 0}
+/* A done set's drops and bursts are done with it (Discord, dark._.ninja): greyed like the row. */
+.subrow.done>*{opacity:.45}
 /* Under an L/R row the set number already sits outside the .side-rows box, so the indent that
    tucks a straight row's drops under its number would be paid twice — at 320 px both number
    fields of a per-side drop collapsed to 0 px (QA C3). The label starts under the badge instead. */

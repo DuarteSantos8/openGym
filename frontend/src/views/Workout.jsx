@@ -711,7 +711,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     const sd = (s.sides && s.sides[side]) || {}
     return <>
       {dropsOf(sd).map((d, di) => (
-        <div className="subrow" key={'d' + di}>
+        <div className={'subrow' + (sd.done ? ' done' : '')} key={'d' + di}>
           <span className="subn">{t('Drop {0}', di + 1)}</span>
           {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v, side), true)}
           {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v, side))}
@@ -719,7 +719,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         </div>
       ))}
       {clustersOf(sd).map((c, ci) => (
-        <div className="subrow" key={'c' + ci}>
+        <div className={'subrow' + (sd.done ? ' done' : '')} key={'c' + ci}>
           <span className="subn">{t('Burst {0}', ci + 1)}</span>
           {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v, side))}
           <span className="dim small">{c.restSec}s</span>
@@ -905,7 +905,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
               every value here is just as editable as the main row's own weight/reps. */}
           {!warm && mode === 'reps' && <>
             {dropsOf(s).map((d, di) => (
-              <div className="subrow" key={'d' + di}>
+              <div className={'subrow' + (s.done ? ' done' : '')} key={'d' + di}>
                 <span className="subn">{t('Drop {0}', di + 1)}</span>
                 {miniStepper(d.w, loadStep, true, v => setDropField(i, di, 'w', v), true)}
                 {miniStepper(d.r, 1, false, v => setDropField(i, di, 'r', v))}
@@ -913,7 +913,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
               </div>
             )).flatMap((el, di) => [el, <Fragment key={'dl' + di}>{loadLine(i + ':d' + di)}</Fragment>])}
             {clustersOf(s).map((c, ci) => (
-              <div className="subrow" key={'c' + ci}>
+              <div className={'subrow' + (s.done ? ' done' : '')} key={'c' + ci}>
                 <span className="subn">{t('Burst {0}', ci + 1)}</span>
                 {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v))}
                 <span className="dim small">{c.restSec}s</span>
