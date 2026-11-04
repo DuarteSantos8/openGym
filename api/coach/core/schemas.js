@@ -71,7 +71,13 @@ export const CREATE_SCHEMA = {
     name: STR,
     summary: STR,
     basedOn: STR,
-    week: { type: 'object' },
+    // Some constrained decoders treat an object without declared properties as closed and
+    // can only emit {}. Name every optional weekday so the requested schedule is expressible;
+    // validate.js still checks the routine references and the requested number of days.
+    week: {
+      type: 'object',
+      properties: { '0': STR, '1': STR, '2': STR, '3': STR, '4': STR, '5': STR, '6': STR }
+    },
     // The caps are the validator's own (MAX_ROUTINES, MAX_EX_PER_ROUTINE), stated here as well
     // because "1-7 routines, each 3-12 exercises" in create.md is only a request. A small model
     // that starts repeating itself does not stop at a request: qwen2.5:3b walks the library id by
@@ -80,12 +86,13 @@ export const CREATE_SCHEMA = {
     // routines instead.
     routines: {
       type: 'array',
+      minItems: 1,
       maxItems: 7,
       items: {
         type: 'object',
         properties: {
           id: STR, name: STR, emoji: STR, prog: STR, why: STR,
-          ex: { type: 'array', maxItems: 20, items: EX_SCHEMA }
+          ex: { type: 'array', minItems: 1, maxItems: 20, items: EX_SCHEMA }
         },
         required: ['id', 'name', 'ex']
       }
