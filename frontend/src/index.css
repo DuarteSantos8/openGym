@@ -2094,7 +2094,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sip-h{margin:18px 2px 8px}
 .sip-cell{color:var(--sip-c,var(--label))}
 .sip-cell .icn{--icon-stroke:2}
-:root[data-theme="light"] .sip-cell{color:color-mix(in srgb,var(--sip-c,var(--label)) 72%,#000)}
+:root[data-theme="light"] .sip-cell{color:var(--sip-cl,var(--label))}
 .sip-cell.on{background:var(--surface-2);color:var(--sip-c,var(--label));box-shadow:inset 0 0 0 2px var(--sip-c,var(--acc))}
 .sip-emoji{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:10px}
 .sip-e{font-size:22px;border-radius:11px}

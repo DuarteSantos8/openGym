@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { choicesFor, keyFor, iconChoice, pickValue, firstEmoji, EMOJI_IDEAS } from '../lib/streak-icons.js'
+import { choicesFor, keyFor, inkFor, iconChoice, pickValue, firstEmoji, EMOJI_IDEAS } from '../lib/streak-icons.js'
 import { StreakFlame, Freezes, FreezeGlyph } from './Streak.jsx'
 import Icon from './Icon.jsx'
 import { Button, Row } from './ui.jsx'
@@ -73,7 +73,7 @@ export function StreakIconPicker ({ kind }) {
       {choicesFor(kind).map(ch => {
         const on = ch.def ? current === 'def' : current === 'icon:' + ch.v
         return <button key={ch.v} type="button" role="radio" aria-checked={on} aria-label={names[ch.v] || t('Default')}
-          className={'glyph-cell sip-cell' + (on ? ' on' : '')} style={{ '--sip-c': ch.c }}
+          className={'glyph-cell sip-cell' + (on ? ' on' : '')} style={{ '--sip-c': ch.c, '--sip-cl': inkFor(ch.c, 'light') }}
           onClick={() => { setTyped(''); setBad(false); set(ch.def ? null : { k: 'icon', v: ch.v }) }}>
           {ch.def && kind === 'flame' ? <StreakFlame plain /> : <Icon name={ch.v} />}
         </button>
