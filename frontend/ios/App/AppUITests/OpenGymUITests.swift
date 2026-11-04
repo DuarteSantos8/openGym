@@ -278,8 +278,10 @@ final class OpenGymUITests: XCTestCase {
         field.tap()
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 10), "no keyboard")
         shot("5-keyboard")
-        let save = app.buttons["Save"]
-        XCTAssertTrue(save.waitForExistence(timeout: 5), "no Save button")
+        // The sheet's Save is the last one: a new profile's streak rule card on home has its own.
+        let saves = app.buttons.matching(NSPredicate(format: "label == %@", "Save"))
+        XCTAssertTrue(saves.firstMatch.waitForExistence(timeout: 5), "no Save button")
+        let save = saves.element(boundBy: saves.count - 1)
         let keyboardTop = app.keyboards.firstMatch.frame.minY
         XCTAssertLessThanOrEqual(save.frame.maxY, keyboardTop + 1, "Save sits under the keyboard")
     }
