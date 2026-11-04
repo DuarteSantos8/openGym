@@ -21,7 +21,7 @@ vi.mock('./coach-local.js', () => ({ setNotifier: vi.fn() }))
 vi.mock('../store/useStore.js', () => ({ useStore: { getState: () => ({ S: { unit: 'kg' }, coachLocal: mocks.coachLocal }) } }))
 vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ toast: mocks.toast }) } }))
 
-const { jobErrorText, JOB_ERRORS } = await import('./coach-api.js')
+const { jobErrorText, JOB_ERRORS, BYOK_ERRORS } = await import('./coach-api.js')
 
 beforeEach(() => { mocks.MOBILE = false; mocks.coachLocal = null })
 

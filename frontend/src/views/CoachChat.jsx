@@ -98,7 +98,10 @@ export default function CoachChat() {
       if (!pending && !settled) {
         const cls = lastError?.errorClass || (last?.outcome === 'failed' ? (last.errorClass || 'internal') : null)
         appendChat(s, cls
-          ? { role: 'coach', kind: 'error', text: jobErrorText(cls, lastError?.detail) }
+          // The server's own line for the class rides along on `last` (api/coach/jobs.js): a
+          // failure it sorts by cause says which cause, even in a build that has no translated
+          // line for that class yet.
+          ? { role: 'coach', kind: 'error', text: jobErrorText(cls, lastError?.detail, last?.message) }
           : { role: 'coach', kind: 'nochange', text: last?.reading
             ? last.reading
             : t('I looked through everything and there is nothing I would change right now. Keep it up, and ask me again after a few more sessions.') })
