@@ -3737,4 +3737,12 @@ export default {
   "This sound cannot be read here. Try an MP3, M4A, WAV or OGG file.": "Questo suono non si legge qui. Prova con un MP3, M4A, WAV o OGG.",
   "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "Fino a 30 secondi, da un file MP3, M4A, WAV o OGG. Il silenzio all’inizio e alla fine viene tagliato.",
   "Your own sounds": "I tuoi suoni",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym non è ancora nello Zepp App Store. Nel frattempo l’app per l’orologio si installa con la modalità sviluppatore dell’app Zepp. La guida ti spiega come.",
+  "Install the watch app": "Installa l’app per l’orologio",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Un orologio Zepp OS raggiunge openGym attraverso il tuo server openGym, perché la sua parte dell’app gira dentro l’app Zepp e non qui. Collega questo telefono al tuo server e il codice di abbinamento comparirà proprio qui.",
+  "Copy address": "Copia indirizzo",
+  "Copy code": "Copia codice",
+  "A freeze covered the week of {0}, so the streak kept going.": "Un congelamento ha coperto la settimana del {0}, quindi la serie è andata avanti.",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "I congelamenti hanno coperto le settimane del {0}, quindi la serie è andata avanti.",
 }

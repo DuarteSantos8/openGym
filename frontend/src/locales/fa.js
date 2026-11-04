@@ -3702,4 +3702,12 @@ export default {
   "Distance ({0})": "مسافت ({0})",
   "Log speed instead": "به‌جایش سرعت را ثبت کن",
   "Log distance instead": "به‌جایش مسافت را ثبت کن",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym هنوز در فروشگاه Zepp نیست. تا آن موقع، برنامهٔ ساعت از راه حالت توسعه‌دهندهٔ برنامهٔ Zepp نصب می‌شود. راهنما قدم‌به‌قدم نشانت می‌دهد.",
+  "Install the watch app": "نصب برنامهٔ ساعت",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "ساعت Zepp OS از راه سرور openGym خودت به openGym وصل می‌شود، چون بخش ساعتِ برنامه داخل برنامهٔ Zepp اجرا می‌شود، نه اینجا. این گوشی را به سرورت وصل کن تا کد اتصال همین‌جا نمایش داده شود.",
+  "Copy address": "کپی نشانی",
+  "Copy code": "کپی کد",
+  "A freeze covered the week of {0}, so the streak kept going.": "یک یخ‌زدگی هفتهٔ {0} را پوشاند، پس زنجیره ادامه پیدا کرد.",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "یخ‌زدگی‌ها هفته‌های {0} را پوشاندند، پس زنجیره ادامه پیدا کرد.",
 }

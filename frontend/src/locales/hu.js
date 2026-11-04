@@ -3740,4 +3740,12 @@ export default {
   "This sound cannot be read here. Try an MP3, M4A, WAV or OGG file.": "Ezt a hangot itt nem lehet beolvasni. Próbálj MP3, M4A, WAV vagy OGG fájlt.",
   "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "Legfeljebb 30 másodperc, MP3, M4A, WAV vagy OGG fájlból. A két végén lévő csendet levágjuk.",
   "Your own sounds": "Saját hangjaid",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "Az openGym még nincs fent a Zepp App Store-ban. Addig az órás app a Zepp app fejlesztői módjával kerül fel. Az útmutató végigvezet rajta.",
+  "Install the watch app": "Az órás app telepítése",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Egy Zepp OS-es óra a saját openGym szervereden keresztül éri el az openGymet, mert az app órához tartozó része a Zepp appban fut, nem itt. Csatlakoztasd ezt a telefont a szerveredhez, és a párosítási kód itt jelenik meg.",
+  "Copy address": "Cím másolása",
+  "Copy code": "Kód másolása",
+  "A freeze covered the week of {0}, so the streak kept going.": "Egy fagyasztó lefedte a(z) {0} hetét, így a sorozat folytatódott.",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "Fagyasztók fedték le ezeket a heteket: {0}, így a sorozat folytatódott.",
 }

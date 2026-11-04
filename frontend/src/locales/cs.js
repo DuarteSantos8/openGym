@@ -3702,4 +3702,12 @@ export default {
   "Distance ({0})": "Vzdálenost ({0})",
   "Log speed instead": "Zapisovat raději rychlost",
   "Log distance instead": "Zapisovat raději vzdálenost",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym zatím není v Zepp App Store. Do té doby se aplikace pro hodinky instaluje přes vývojářský režim v aplikaci Zepp. Návod tě provede.",
+  "Install the watch app": "Nainstalovat aplikaci do hodinek",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Hodinky se Zepp OS se k openGym dostanou přes tvůj vlastní server openGym, protože jejich část aplikace běží v aplikaci Zepp, a ne tady. Připoj tenhle telefon ke svému serveru a párovací kód se objeví přímo tady.",
+  "Copy address": "Kopírovat adresu",
+  "Copy code": "Kopírovat kód",
+  "A freeze covered the week of {0}, so the streak kept going.": "Zmrazení pokrylo týden od {0}, takže série pokračovala.",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "Zmrazení pokryla týdny od {0}, takže série pokračovala.",
 }

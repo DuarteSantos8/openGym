@@ -3737,4 +3737,12 @@ export default {
   "This sound cannot be read here. Try an MP3, M4A, WAV or OGG file.": "이 소리는 여기서 읽을 수 없어요. MP3, M4A, WAV, OGG 파일로 해 보세요.",
   "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "MP3, M4A, WAV, OGG 파일에서 최대 30초. 앞뒤 무음은 잘라내요.",
   "Your own sounds": "내 소리",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym은 아직 Zepp 앱 스토어에 없어요. 그때까지 워치 앱은 Zepp 앱의 개발자 모드로 설치해요. 가이드가 차근차근 알려 드려요.",
+  "Install the watch app": "워치 앱 설치",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Zepp OS 워치는 내 openGym 서버를 통해 openGym에 연결돼요. 앱의 워치 쪽은 여기가 아니라 Zepp 앱 안에서 돌아가거든요. 이 휴대폰을 내 서버에 연결하면 페어링 코드가 바로 여기에 나타나요.",
+  "Copy address": "주소 복사",
+  "Copy code": "코드 복사",
+  "A freeze covered the week of {0}, so the streak kept going.": "동결권이 {0} 주를 지켜 줘서 연속 기록이 이어졌어요.",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "동결권이 {0} 주를 지켜 줘서 연속 기록이 이어졌어요.",
 }

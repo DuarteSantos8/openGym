@@ -3702,4 +3702,12 @@ export default {
   "Distance ({0})": "Quãng đường ({0})",
   "Log speed instead": "Ghi tốc độ thay vào đó",
   "Log distance instead": "Ghi quãng đường thay vào đó",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym chưa có trên Zepp App Store. Trong lúc chờ, ứng dụng đồng hồ được cài qua chế độ nhà phát triển của ứng dụng Zepp. Hướng dẫn sẽ chỉ bạn cách làm.",
+  "Install the watch app": "Cài ứng dụng đồng hồ",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Đồng hồ Zepp OS kết nối với openGym qua máy chủ openGym của riêng bạn, vì phần ứng dụng của nó chạy bên trong ứng dụng Zepp chứ không phải ở đây. Kết nối điện thoại này với máy chủ của bạn và mã ghép nối sẽ hiện ngay tại đây.",
+  "Copy address": "Sao chép địa chỉ",
+  "Copy code": "Sao chép mã",
+  "A freeze covered the week of {0}, so the streak kept going.": "Một lượt đóng băng đã giữ tuần {0}, nên chuỗi vẫn tiếp tục.",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "Các lượt đóng băng đã giữ các tuần {0}, nên chuỗi vẫn tiếp tục.",
 };

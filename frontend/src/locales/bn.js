@@ -3816,4 +3816,12 @@ export default {
   "This sound cannot be read here. Try an MP3, M4A, WAV or OGG file.": "এই শব্দটা এখানে পড়া যাচ্ছে না। MP3, M4A, WAV বা OGG ফাইল চেষ্টা করো।",
   "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "সর্বোচ্চ ৩০ সেকেন্ড, MP3, M4A, WAV বা OGG ফাইল থেকে। দুই প্রান্তের নীরবতা কেটে ফেলা হয়।",
   "Your own sounds": "তোমার নিজের শব্দ",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym এখনও Zepp App Store-এ নেই। ততদিন ঘড়ির অ্যাপটি Zepp অ্যাপের ডেভেলপার মোড দিয়ে ইনস্টল হয়। গাইডটি ধাপে ধাপে দেখাবে।",
+  "Install the watch app": "ঘড়ির অ্যাপ ইনস্টল করুন",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Zepp OS ঘড়ি আপনার নিজের openGym সার্ভারের মাধ্যমে openGym-এ পৌঁছায়, কারণ অ্যাপের ঘড়ির অংশটি এখানে নয়, Zepp অ্যাপের ভেতরে চলে। এই ফোনটি আপনার সার্ভারে সংযোগ করুন, পেয়ারিং কোড এখানেই দেখা যাবে।",
+  "Copy address": "ঠিকানা কপি করুন",
+  "Copy code": "কোড কপি করুন",
+  "A freeze covered the week of {0}, so the streak kept going.": "একটি ফ্রিজ {0}-এর সপ্তাহটি ঢেকে দিয়েছে, তাই স্ট্রিক চলতে থাকল।",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "ফ্রিজগুলো {0}-এর সপ্তাহগুলো ঢেকে দিয়েছে, তাই স্ট্রিক চলতে থাকল।",
 }

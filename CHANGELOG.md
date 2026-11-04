@@ -52,6 +52,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Italian: Pause fits next to Skip again (thanks @DomHeadroom in #969).
 - Warm-ups on an assistance machine explain themselves the right way round (thanks @radu781 in #864).
 - Apple Watch: the end of a rest or a timed set keeps you in the app instead of dropping you on the watch face, and the rest countdown no longer crashes at 0:00 (#936, #883, thanks @cubetes in #955).
+- Workout: swapping an exercise while you rest keeps the countdown and its Skip on screen, instead of making them vanish until the next set.
+- Workout: a drop set ticked done greys out its drops (and a rest-pause set its bursts) along with it.
+- Week streak: when a freeze covers a missed week, the streak card on Stats now says which week it was, so a streak running across a gap you can see no longer looks like a counting error.
+- Zepp OS watch: the page is there on a phone without a server too, says why the watch needs one and connects you, the pairing code and the server address each get a copy button, and the page says plainly that openGym is not in the Zepp App Store yet, with the install guide.
+- AI Coach: a question in the chat sees your weigh-ins of the last four weeks, the ones from Apple Health or Health Connect included, instead of answering that it does not know your weight.
 
 **Community: new languages, a sharper catalogue and a calmer Coach**
 - Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856). What the app learnt since they were written is translated too.

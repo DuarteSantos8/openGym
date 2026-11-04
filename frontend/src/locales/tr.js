@@ -3737,4 +3737,12 @@ export default {
   "This sound cannot be read here. Try an MP3, M4A, WAV or OGG file.": "Bu ses burada okunamıyor. MP3, M4A, WAV ya da OGG dosyası dene.",
   "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "En fazla 30 saniye, MP3, M4A, WAV ya da OGG dosyasından. Baştaki ve sondaki sessizlik kesilir.",
   "Your own sounds": "Kendi seslerin",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym henüz Zepp App Store’da yok. O zamana kadar saat uygulaması Zepp uygulamasının geliştirici modu üzerinden yüklenir. Rehber adım adım anlatıyor.",
+  "Install the watch app": "Saat uygulamasını yükle",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Zepp OS’li bir saat openGym’e kendi openGym sunucun üzerinden ulaşır, çünkü uygulamanın saat tarafı burada değil Zepp uygulamasının içinde çalışır. Bu telefonu sunucuna bağla, eşleştirme kodu tam burada görünsün.",
+  "Copy address": "Adresi kopyala",
+  "Copy code": "Kodu kopyala",
+  "A freeze covered the week of {0}, so the streak kept going.": "Bir dondurma {0} haftasını kapattı, seri devam etti.",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "Dondurmalar şu haftaları kapattı: {0}, seri devam etti.",
 }

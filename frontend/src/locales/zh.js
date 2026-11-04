@@ -3737,4 +3737,12 @@ export default {
   "This sound cannot be read here. Try an MP3, M4A, WAV or OGG file.": "这里读不了这个声音。试试 MP3、M4A、WAV 或 OGG 文件。",
   "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "最长 30 秒，来自 MP3、M4A、WAV 或 OGG 文件。两端的静音会被剪掉。",
   "Your own sounds": "你自己的声音",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym 还没有上架 Zepp 应用商店。在那之前，手表应用需通过 Zepp App 的开发者模式安装。指南会一步步带你完成。",
+  "Install the watch app": "安装手表应用",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "Zepp OS 手表通过你自己的 openGym 服务器连接 openGym，因为应用的手表部分运行在 Zepp App 里，而不是这里。把这台手机连接到你的服务器，配对码就会出现在这里。",
+  "Copy address": "复制地址",
+  "Copy code": "复制代码",
+  "A freeze covered the week of {0}, so the streak kept going.": "一张冻结卡保住了 {0} 那一周，所以连续记录没有中断。",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "冻结卡保住了 {0} 这几周，所以连续记录没有中断。",
 }

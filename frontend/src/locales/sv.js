@@ -3784,4 +3784,12 @@ export default {
   "This sound cannot be read here. Try an MP3, M4A, WAV or OGG file.": "Ljudet kan inte läsas här. Prova en MP3-, M4A-, WAV- eller OGG-fil.",
   "Up to 30 seconds, from an MP3, M4A, WAV or OGG file. Silence at either end is trimmed off.": "Upp till 30 sekunder, från en MP3-, M4A-, WAV- eller OGG-fil. Tystnad i början och slutet klipps bort.",
   "Your own sounds": "Dina egna ljud",
+  // --- 1.4.5: Zepp page without a server, frozen streak weeks ---
+  "openGym isn’t in the Zepp App Store yet. Until it is, the watch app goes on through the Zepp app’s developer mode. The guide walks you through it.": "openGym finns inte i Zepp App Store än. Tills dess installeras klockappen via Zepp-appens utvecklarläge. Guiden visar hur.",
+  "Install the watch app": "Installera klockappen",
+  "A Zepp OS watch reaches openGym through your own openGym server, since its side of the app runs inside the Zepp app and not here. Connect this phone to your server and the pairing code shows up right here.": "En Zepp OS-klocka når openGym via din egen openGym-server, eftersom dess del av appen körs i Zepp-appen och inte här. Anslut den här telefonen till din server så dyker parkopplingskoden upp just här.",
+  "Copy address": "Kopiera adress",
+  "Copy code": "Kopiera kod",
+  "A freeze covered the week of {0}, so the streak kept going.": "En frysning täckte veckan den {0}, så streaken fortsatte.",
+  "Freezes covered the weeks of {0}, so the streak kept going.": "Frysningar täckte veckorna den {0}, så streaken fortsatte.",
 }
