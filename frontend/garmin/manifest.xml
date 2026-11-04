@@ -4,7 +4,7 @@
      check.mjs holds them together): Connect IQ has no separate build number, and the store wants
      each upload's version higher than the last. -->
 <iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
-    <iq:application id="3c533c63754d40189c000ad529e400b9" type="watch-app" name="@Strings.app_name" entry="OpenGymApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="3.2.0" version="1.4.4">
+    <iq:application id="3c533c63754d40189c000ad529e400b9" type="watch-app" name="@Strings.app_name" entry="OpenGymApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="3.2.0" version="1.4.5">
         <iq:products>
             <iq:product id="approachs7042mm"/>
             <iq:product id="approachs7047mm"/>
