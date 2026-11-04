@@ -2056,11 +2056,22 @@ function commitActiveSwap(index, ex, cfg) {
   }
 
   const apply = options => {
-    // A timed callback closes over entry/set indexes. Invalidate it, and the current rest,
-    // before the selected occurrence can be replaced or a new entry shifts those indexes.
+    // A timed callback closes over entry/set indexes. Invalidate it before the selected
+    // occurrence can be replaced or a new entry shifts those indexes.
     ui().stopWork()
-    ui().stopRest()
-    update(state => { swapActiveExercise(state.active, index, replacement, options) }, true)
+    let swapped = null
+    update(state => { swapped = swapActiveExercise(state.active, index, replacement, options) }, true)
+    // The rest keeps running through a swap (Discord, tharun_01: the countdown and Skip went
+    // away until the next set). Only its pointer follows the entries: an insert shifts the
+    // ones after it, and a rest whose own set was just replaced in place no longer has that row.
+    const rest = ui().timer
+    if (swapped && rest && rest.forIdx != null) {
+      if (swapped.inserted && rest.forIdx >= swapped.index) useUI.setState({ timer: { ...rest, forIdx: rest.forIdx + 1 } })
+      else if (!swapped.inserted && rest.forIdx === swapped.index && rest.forSet != null) {
+        const { forSet, ...kept } = rest
+        useUI.setState({ timer: kept })
+      }
+    }
   }
   const logged = (current.sets || []).some(set => set.done === true)
   if (!logged) { apply(); return }
