@@ -31,6 +31,12 @@ export async function warmOnce({ log = console, fetch: fetchImpl } = {}) {
   if (!cfgStore.isEnabled() || cfg.provider !== 'compatible') return { skipped: true };
   const adapter = adapterFor(cfg.provider);
   if (!adapter || adapter.spawns !== false) return { skipped: true };
+  // A keyed endpoint is not a model on this machine. It is a hosted API, often a gateway in
+  // front of one, where the request is billed and the prefix cache is not ours to keep warm.
+  // Pinging it costs money and warms nothing, so it is left alone. Per-profile mode has no
+  // single credential to spend, so it is skipped for the same reason.
+  const stored = cfgStore.authFor(cfg);
+  if (cfg.authMode === 'profile' || (stored && stored.data)) return { skipped: true };
   if (running) return { skipped: true };
   running = true;
   try {
