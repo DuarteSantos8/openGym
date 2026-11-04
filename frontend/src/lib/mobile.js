@@ -331,6 +331,18 @@ export async function printHtml(html, name, { paper = 'a4', footer } = {}) {
   await Print.printHtml({ html, name, paper, ...(footer ? { footer } : {}) })
 }
 
+// The same self-contained document as a PDF file, then the phone's share sheet (Save to
+// Downloads/Files, Telegram, mail, …) — like shareExport does for a backup. Android renders
+// the PDF itself (PrintPlugin.sharePdf drives the WebView's print adapter into a cache file),
+// so the system print service is never involved: this also works on ROMs that have none.
+export async function sharePdf(html, name, { paper = 'a4' } = {}) {
+  const { registerPlugin } = await import('@capacitor/core')
+  const Print = registerPlugin('Print')
+  const { uri } = await Print.sharePdf({ html, name, paper })
+  const { Share } = await import('@capacitor/share')
+  await Share.share({ title: name, url: uri, dialogTitle: name })
+}
+
 // "Auto-backup on changes" (Settings): a dated snapshot dropped into Documents/openGym/ —
 // visible in Files (iOS) / a file manager (Android), unlike the private mirror nativeSave keeps
 // — so whatever the user points at that folder (a sync app, a manual copy) always has something

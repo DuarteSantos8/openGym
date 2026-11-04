@@ -24,7 +24,7 @@
 // Nothing here bundles a PDF library: the browser's print dialog or the phone's print sheet
 // renders the PDF.
 import { t, getLang, RTL_LANGS, dateLocale } from './i18n-core.js'
-import { MOBILE, printHtml } from './mobile.js'
+import { MOBILE, nativePlatform, printHtml, sharePdf } from './mobile.js'
 
 export const esc = str => String(str == null ? '' : str)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -207,25 +207,29 @@ function printInFrame(html) {
 }
 
 /**
- * Print `html` (a printShell page): the browser's print dialog on the web, the phone's print
- * sheet in the app (Android's WebView has no window.print()). `name` names the print job and the
- * suggested PDF file; Android refuses a job without one.
+ * Print `html` (a printShell page): the browser's print dialog on the web; in the app a PDF the
+ * OS share sheet sends anywhere (Save to Downloads, Telegram, mail, …) on Android, the print
+ * sheet on iOS. Android renders the PDF itself (lib/mobile.js sharePdf), because the print
+ * sheet needs a system print service and some ROMs ship none at all. `name` names the print
+ * job and the PDF file.
  *
- * A rejection from the native side is a failure, not a dismissal (the Android call resolves the
- * moment the sheet opens, iOS resolves dismissals with completed:false) — the sheet never
- * opened, so the user is told why instead of the tap looking dead. The plugin rejects with
- * "no print service on this device" when the ROM has nothing to handle the print dialog.
+ * A rejection from the native side is a failure, not a dismissal (the share sheet rejects with
+ * "Share canceled", the iOS sheet resolves dismissals with completed:false) — only a failure
+ * tells the user why, so backing out never pops an error toast.
  */
 export function printDocument(html, name) {
-  if (MOBILE) return printHtml(html, name || 'openGym', printOptions()).catch(err => {
-    const msg = String((err && err.message) || err || '')
-    const text = msg.includes('no print service')
-      ? t('No print service on this device. Install or enable one in the device settings, then try again.')
-      : t('Something went wrong')
-    // The store reaches this lib through a dynamic import: print-doc is also loaded by plain
-    // Node tests, where the store graph does not resolve.
-    import('../store/useUI.js').then(({ useUI }) => useUI.getState().toast(text)).catch(() => {})
-  })
+  if (MOBILE) return nativePlatform()
+    .then(p => (p === 'android' ? sharePdf : printHtml)(html, name || 'openGym', printOptions()))
+    .catch(err => {
+      const msg = String((err && err.message) || err || '')
+      if (/cancel/i.test(msg)) return   // the sheet was dismissed, not failed
+      const text = msg.includes('no print service')
+        ? t('No print service on this device. Install or enable one in the device settings, then try again.')
+        : t('Something went wrong')
+      // The store reaches this lib through a dynamic import: print-doc is also loaded by plain
+      // Node tests, where the store graph does not resolve.
+      import('../store/useUI.js').then(({ useUI }) => useUI.getState().toast(text)).catch(() => {})
+    })
   printInFrame(html)
   return Promise.resolve()
 }
