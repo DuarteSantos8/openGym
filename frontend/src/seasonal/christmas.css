@@ -398,7 +398,7 @@
 .xm-review span{font-size:12px;color:var(--label-2)}
 .xm-gift{display:flex;align-items:center;gap:12px;text-align:start;margin:4px 0 14px;padding:12px;border-radius:14px;background:var(--surface)}
 .xm-gift-i{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:28px;color:var(--xm-red);
-  background:color-mix(in srgb,var(--xm-red) 16%,var(--surface-2))}
+  background:var(--surface-2);background:color-mix(in srgb,var(--xm-red) 16%,var(--surface-2))}
 .xm-gift .ttl{font-size:16px;font-weight:600;margin-bottom:2px}
 .xm-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:6px}
 
