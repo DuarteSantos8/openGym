@@ -2103,12 +2103,14 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mk-ck{flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
   box-shadow:inset 0 0 0 1.5px var(--label-4);font-size:14px}
 .mk-card.on{background:var(--acc-soft)}
-.mk-card.on .mk-ic{background:var(--acc);color:var(--on-acc)}
+.mk-card.on .mk-ic{background:var(--acc-soft);color:var(--acc-ink)}
 .mk-card.on .mk-ck{background:var(--acc);color:var(--on-acc);box-shadow:none}
 .mk-foot{position:sticky;bottom:0;padding:12px 0 4px;margin-top:12px;background:var(--bg-el)}
 :root[data-theme="light"] .mk-foot{background:var(--bg)}
 .iconbtn.mk-not{color:var(--label-3);padding:8px;margin:-8px 0}
 .iconbtn.mk-not:active{color:var(--label)}
+/* In the card view it sits on the picture, under the quick action (or in its place in the Library). */
+.ex-grid .item>.mk-not{position:absolute;top:54px;inset-inline-end:14px;width:32px;height:32px;margin:0;padding:7px;border-radius:50%;background:var(--surface);color:var(--label-2)}
 @media (prefers-reduced-motion:reduce){.mk-card,.mk-ic{transition:none}.mk-card:active{transform:none}}
 
 /* --- big weight readout --- */
