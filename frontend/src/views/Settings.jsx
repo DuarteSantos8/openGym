@@ -85,6 +85,7 @@ import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
 import { dailyModeOf, settleAll } from '../lib/weigh-ins.js'
 import { voiceShortcutsSheet, voiceRowTitle } from '../components/VoiceShortcuts.jsx'
 import { readOrientation, setOrientation } from '../lib/orientation.js'
+import { AvatarFace, AvatarSection } from '../components/Avatar.jsx'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -1254,6 +1255,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     </>,
 
     account: () => <>
+      {/* The profile picture (lib/avatar.js): every mode but the demo, kept like any other photo. */}
+      {!DEMO && <AvatarSection name={user?.name || null} signedIn={!!user} />}
       {/* The server: which one, which account, how that stands, "Sync now". A paired phone's
           Admin and Disconnect sit in the same block; a browser's account rows follow in their own. */}
       {user && !DEMO && <ServerSyncSection>
@@ -1359,7 +1362,8 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
     }
     : MOBILE ? { title: t('This phone'), sub: t('All data stays on this phone') }
     : { title: t('Guest'), sub: t('Your data lives on this device. Sign in to sync.') }
-  const initial = user && !DEMO ? String(user.name || '?').trim().charAt(0).toUpperCase() : null
+  // The face: one's own picture (components/Avatar.jsx), else the name's first letter, else the icon.
+  const faceName = user && !DEMO ? (String(user.name || '').trim() || '?') : null
   const nav = useNavigate()
   // Only while the server offers the Coach (the flag every Coach screen reads): on a box without
   // it the admin dashboard has no Coach card to land on.
@@ -1381,7 +1385,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
     </Section> : <div className="sp-empty">{t('No setting matches “{0}”.', q.trim())}</div>) : <>
       <Section>
         <button className="lrow tap sp-acct" data-tour="settings-account" onClick={() => open('account')}>
-          <span className={'sp-avatar' + (initial ? ' on' : '')} aria-hidden="true">{initial || <Icon name="personCircle" />}</span>
+          <AvatarFace name={faceName} />
           <span className="lrow-m"><span className="lrow-t">{acct.title}</span><span className="lrow-s">{acct.sub}</span></span>
           <Icon name="chevronRight" className="lrow-c" />
         </button>

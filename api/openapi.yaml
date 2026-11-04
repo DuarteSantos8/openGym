@@ -326,7 +326,7 @@ paths:
                     allow_guest: false
                     coach: { enabled: true, provider: compatible, providerLabel: "OpenAI-compatible endpoint", authMode: instance, community: false }
                 passwordLogin: { value: { invite_only: true, allow_guest: false, password_login: true } }
-                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 60, audioMB: 2, quotaMB: 200, workouts: true, sounds: true } } }
+                media: { value: { invite_only: false, allow_guest: true, media: { imageMB: 2, gifMB: 8, videoMB: 100, videoSec: 60, audioMB: 2, quotaMB: 200, workouts: true, sounds: true, avatar: true } } }
 
   /api/me:
     get:
@@ -4357,6 +4357,13 @@ components:
           description: >-
             This instance keeps the sounds of the user's own for the rest timer (`sounds`,
             v1.4.5). Absent on an instance from before; the app then keeps them on the device.
+        avatar:
+          type: boolean
+          const: true
+          description: >-
+            This instance keeps the user's profile picture (`avatar.m`, a 256 px square, v1.4.5).
+            It is served like every other file, from the caller's own folder only. Absent on an
+            instance from before; the app then keeps the picture on the device that set it.
         workouts:
           type: boolean
           const: true

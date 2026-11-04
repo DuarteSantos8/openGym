@@ -2546,6 +2546,19 @@ export const PT_BR_OVERRIDES = {
   "The colors around it follow your pick, in light and dark.": "As cores ao redor seguem a sua escolha, no claro e no escuro.",
   "Type or paste an emoji": "Digite ou cole um emoji",
   "You trained, so this week counts. Streak: {0}.": "Você treinou, então esta semana conta. Sequência: {0}.",
+  "Choose a photo": "Escolher uma foto",
+  "Drag to move, pinch or slide to zoom.": "Arraste para mover, faça pinça ou use o controle para dar zoom.",
+  "Frame your best side": "Mostre seu melhor lado",
+  "Only you see it, and it stays on this device.": "Só você vê, e ela fica neste dispositivo.",
+  "Only you see it, here and on your other devices. Not even an admin can.": "Só você vê, aqui e nos seus outros dispositivos. Nem um admin.",
+  "Photo crop. Arrow keys move it, plus and minus zoom.": "Recorte da foto. As setas movem, mais e menos dão zoom.",
+  "Picture removed. Back to the letter.": "Foto removida. Volta a inicial.",
+  "Picture set. Looking sharp.": "Foto definida. Ficou ótimo.",
+  "Profile picture": "Foto de perfil",
+  "Remove picture": "Remover foto",
+  "That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.": "Isso não é uma foto. Tente JPEG, PNG, WebP ou HEIC.",
+  "Use this photo": "Usar esta foto",
+  "Zoom": "Zoom",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
