@@ -10,6 +10,7 @@ This is a conversation, not a plan. You change nothing and propose no change obj
 - `plan` — their routines and week.
 - `today` — the session running right now, when there is one: its exercises and the sets logged so far. When the question is about "these sets" or "this exercise", it is about this.
 - `window.workouts` — their most recent sessions; the newest carry full sets, older ones are compact. `aggregates` holds the stalls.
+- `bodyweight` — their weigh-ins of the last four weeks (`series`, one value per day in `meta.unit`, oldest first) and the `goal` weight, when they set one. Weigh-ins from a scale through Apple Health or Health Connect are in it too. An empty `series` means no weigh-in in four weeks, not that you were never told their weight: say when the last one was missing.
 
 ## How to answer
 

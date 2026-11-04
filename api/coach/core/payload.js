@@ -700,6 +700,12 @@ export function build(S, opts = {}) {
     p.aggregates = aggregates(S, workouts);
     const today = cleanToday(opts.today);
     if (today) p.today = today;
+    // Four weeks of weigh-ins, typed in or synced from Apple Health / Health Connect (they land in
+    // the same S.bodyweight). Without them "what do I weigh?" got "I don't know your weight" while
+    // Home showed it (Discord, becory, a smart scale through Apple Health).
+    const since = new Date(now);
+    since.setDate(since.getDate() - 28);
+    p.bodyweight = { goal: num(S.targetW) ?? null, ...dailyOf(S), series: weighIns(S, iso(since), null) };
   } else if (opts.kind === 'adapt') {
     // An exercise in the workout running now, and why it needs a rethink: pain, a busy rack, a
     // short day, feeling great. The session as it stands (each entry with its index, so a change
