@@ -1,6 +1,6 @@
 // Settings (v1.3.11): which page each row lives on, and the index the search field reads.
 //
-// The root holds eleven rows in four groups plus the account card; each opens a page at
+// The root holds its rows in four groups plus the account card; each opens a page at
 // /settings/<page>. Rare things hang one level further down (Workout → Fine-tuning). Titles here
 // are the English keys the pages render with t(), so a search hit can find its row on the page
 // by the same text and flash it (views/Settings.jsx). settings-pages.test.jsx renders every page
@@ -21,7 +21,10 @@ export const PAGES = {
   units: { title: 'Units & language', icon: 'ruler', tint: 'var(--teal)' },
   equipment: { title: 'Equipment', icon: 'kettlebell', tint: 'var(--indigo)' },
   look: { title: 'Look & Home', icon: 'palette', tint: 'var(--purple)' },
+  features: { title: 'Features', icon: 'slider', tint: 'var(--pink)' },
   coach: { title: 'AI Coach', icon: 'sparkles', tint: 'var(--green)', mod: 'coach' },
+  // The health area's sources (an Apple Health export, the Shortcut), with the Health module.
+  health: { title: 'Health', icon: 'heart', tint: 'var(--red)', mod: 'health' },
   watch: { title: 'Apple Watch', icon: 'watch', tint: 'var(--grey)', mod: 'watch' },
   // Settings → Integrations (v1.4.4): the directory of what openGym talks to (views/Integrations.jsx).
   integrations: { title: 'Integrations', icon: 'plug', tint: 'var(--indigo)', kw: 'integrations connect apps services webhook webhooks home assistant n8n ntfy node-red zapier automation garmin fitbit strava sync api mcp' },
@@ -45,7 +48,7 @@ export const PAGE_IDS = Object.keys(PAGES)
 
 // The root, top to bottom. Whether a row shows is pageVisible's call.
 // Modules first, on its own: what the app shows at all comes before how each part behaves.
-export const ROOT_GROUPS = [['modules'], ['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'coach', 'watch', 'zepp'], ['integrations', 'data', 'about']]
+export const ROOT_GROUPS = [['modules'], ['workout', 'alerts', 'reminders'], ['plan', 'units', 'equipment'], ['look', 'features', 'health', 'coach', 'watch', 'zepp'], ['integrations', 'data', 'about']]
 
 /**
  * Whether a page exists for this device and profile. Reminders need a push server (signed in) or
@@ -186,7 +189,11 @@ export const SEARCH = [
   { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh advent calendar december decoration', opts: ['Auto', 'On', 'Off'] },
   { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal' },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
+  // Features
+  { page: 'features', title: 'Music bar', icon: 'music', tint: 'var(--pink)', kw: 'music bar spotify apple music show hide turn on off enable disable' },
+  { page: 'features', title: 'Music player', icon: 'music', tint: 'var(--pink)', kw: 'music spotify apple music song songs playlist player track skip next pause', when: c => c.musicBar },
   // Data & backup
+  { page: 'health', title: 'Open Health', icon: 'heart', tint: 'var(--red)', kw: 'health body composition bia scale fat muscle water steps heart rate sleep apple health healthkit' },
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },
   { page: 'data', title: 'Export with photos & videos (.zip)', icon: 'share', tint: 'var(--blue)', kw: 'zip media export backup', when: c => c.hasMedia },
   { page: 'data', title: 'Performance report (PDF)', icon: 'note', tint: 'var(--green)', kw: 'pdf print report performance progress summary charts export paper' },
