@@ -3819,4 +3819,9 @@ export default {
   "About {0} minute, two moves back to back": "约 {0} 分钟，两个动作连着做",
   "About {0} minutes, two moves back to back": "约 {0} 分钟，两个动作连着做",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "大约相当于 {0} 头驯鹿。鲁道夫想躺一会儿。",
+  "Missed plan": "错过计划",
+  "Open this day": "打开这一天",
+  "Planned, not trained. Any other day this week still counts.": "计划了，没练。这周其他任何一天练都还算。",
+  "Planned, not trained. Any workout that week would have counted.": "计划了，没练。那周任何一天练一次都会算。",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "计划了，没练。没关系：你那周别的天练了，所以这周照样算。",
 }

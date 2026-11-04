@@ -2583,6 +2583,10 @@ export const PT_BR_OVERRIDES = {
   "About {0} minute, two moves back to back": "Cerca de {0} minuto, dois movimentos seguidos",
   "About {0} minutes, two moves back to back": "Cerca de {0} minutos, dois movimentos seguidos",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "Isso dá cerca de {0} renas. O Rudolph precisa deitar um pouco.",
+  "Missed plan": "Plano perdido",
+  "Planned, not trained. Any other day this week still counts.": "Planejado, não treinado. Qualquer outro dia desta semana ainda conta.",
+  "Planned, not trained. Any workout that week would have counted.": "Planejado, não treinado. Qualquer treino naquela semana teria contado.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planejado, não treinado. Sem problema: você treinou em outro dia, então a semana conta do mesmo jeito.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

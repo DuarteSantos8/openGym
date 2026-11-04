@@ -3898,4 +3898,9 @@ export default {
   "About {0} minute, two moves back to back": "প্রায় {0} মিনিট, পরপর দুটো মুভ",
   "About {0} minutes, two moves back to back": "প্রায় {0} মিনিট, পরপর দুটো মুভ",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "এটা প্রায় {0}টা রেনডিয়ার। রুডলফের একটু শুয়ে নেওয়া দরকার।",
+  "Missed plan": "বাদ পড়া পরিকল্পনা",
+  "Open this day": "এই দিনটি খুলুন",
+  "Planned, not trained. Any other day this week still counts.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। এই সপ্তাহের অন্য যেকোনো দিন এখনো গোনা হবে।",
+  "Planned, not trained. Any workout that week would have counted.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। সেই সপ্তাহে যেকোনো ওয়ার্কআউট গোনা হতো।",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "পরিকল্পনা ছিল, ট্রেনিং হয়নি। সমস্যা নেই: আপনি অন্য দিন ট্রেনিং করেছেন, তাই সপ্তাহটি তবুও গোনা হয়েছে।",
 }

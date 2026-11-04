@@ -3823,4 +3823,9 @@ export default {
   "About {0} minute, two moves back to back": "Около {0} минуты, два упражнения подряд",
   "About {0} minutes, two moves back to back": { one: "Около {0} минуты, два упражнения подряд", few: "Около {0} минут, два упражнения подряд", many: "Около {0} минут, два упражнения подряд" },
   "That is about {0} reindeer. Rudolph would like a lie-down.": { one: "Это примерно {0} олень. Рудольфу бы прилечь.", few: "Это примерно {0} оленя. Рудольфу бы прилечь.", many: "Это примерно {0} оленей. Рудольфу бы прилечь." },
+  "Missed plan": "План пропущен",
+  "Open this day": "Открыть этот день",
+  "Planned, not trained. Any other day this week still counts.": "Запланировано, но без тренировки. Любой другой день этой недели ещё засчитается.",
+  "Planned, not trained. Any workout that week would have counted.": "Запланировано, но без тренировки. Засчиталась бы любая тренировка на той неделе.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Запланировано, но без тренировки. Не страшно: ты тренировался в другой день, так что неделя засчитана.",
 }

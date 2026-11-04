@@ -3830,4 +3830,9 @@ export default {
   "About {0} minute, two moves back to back": "ประมาณ {0} นาที สองท่าต่อกัน",
   "About {0} minutes, two moves back to back": "ประมาณ {0} นาที สองท่าต่อกัน",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "เท่ากับกวางเรนเดียร์ราว {0} ตัว รูดอล์ฟขอนอนพักหน่อย",
+  "Missed plan": "พลาดแผน",
+  "Open this day": "เปิดวันนี้",
+  "Planned, not trained. Any other day this week still counts.": "วางแผนไว้แต่ไม่ได้ฝึก วันอื่นในสัปดาห์นี้ยังนับได้",
+  "Planned, not trained. Any workout that week would have counted.": "วางแผนไว้แต่ไม่ได้ฝึก ฝึกวันไหนก็ได้ในสัปดาห์นั้นก็จะนับ",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "วางแผนไว้แต่ไม่ได้ฝึก ไม่เป็นไร คุณฝึกวันอื่นแล้ว สัปดาห์นั้นจึงยังนับ",
 }

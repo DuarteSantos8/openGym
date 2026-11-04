@@ -3784,4 +3784,9 @@ export default {
   "About {0} minute, two moves back to back": "Khoảng {0} phút, hai động tác liền nhau",
   "About {0} minutes, two moves back to back": "Khoảng {0} phút, hai động tác liền nhau",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "Tức là khoảng {0} con tuần lộc. Rudolph cần nằm nghỉ.",
+  "Missed plan": "Lỡ kế hoạch",
+  "Open this day": "Mở ngày này",
+  "Planned, not trained. Any other day this week still counts.": "Đã lên lịch, chưa tập. Bất kỳ ngày nào khác trong tuần này vẫn được tính.",
+  "Planned, not trained. Any workout that week would have counted.": "Đã lên lịch, chưa tập. Tập bất kỳ buổi nào trong tuần đó cũng sẽ được tính.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Đã lên lịch, chưa tập. Không sao: bạn đã tập vào ngày khác, nên tuần đó vẫn được tính.",
 };

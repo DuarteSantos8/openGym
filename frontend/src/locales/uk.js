@@ -3816,4 +3816,9 @@ export default {
   "About {0} minute, two moves back to back": "Близько {0} хвилини, два рухи поспіль",
   "About {0} minutes, two moves back to back": { one: "Близько {0} хвилини, два рухи поспіль", few: "Близько {0} хвилин, два рухи поспіль", many: "Близько {0} хвилин, два рухи поспіль" },
   "That is about {0} reindeer. Rudolph would like a lie-down.": { one: "Це приблизно {0} олень. Рудольф хоче трохи полежати.", few: "Це приблизно {0} олені. Рудольф хоче трохи полежати.", many: "Це приблизно {0} оленів. Рудольф хоче трохи полежати." },
+  "Missed plan": "План пропущено",
+  "Open this day": "Відкрити цей день",
+  "Planned, not trained. Any other day this week still counts.": "Заплановано, але без тренування. Будь-який інший день цього тижня ще зарахується.",
+  "Planned, not trained. Any workout that week would have counted.": "Заплановано, але без тренування. Зарахувалося б будь-яке тренування того тижня.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Заплановано, але без тренування. Не страшно: ти тренувався іншого дня, тож тиждень зараховано.",
 }

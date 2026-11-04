@@ -3866,4 +3866,9 @@ export default {
   "About {0} minute, two moves back to back": "Cirka {0} minut, två rörelser direkt efter varandra",
   "About {0} minutes, two moves back to back": "Cirka {0} minuter, två rörelser direkt efter varandra",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "Det blir ungefär {0} renar. Rudolf behöver vila en stund.",
+  "Missed plan": "Missad plan",
+  "Open this day": "Öppna dagen",
+  "Planned, not trained. Any other day this week still counts.": "Planerat, inte tränat. Vilken annan dag som helst den här veckan räknas fortfarande.",
+  "Planned, not trained. Any workout that week would have counted.": "Planerat, inte tränat. Vilket pass som helst den veckan hade räknats.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planerat, inte tränat. Ingen fara: du tränade en annan dag, så veckan räknas ändå.",
 }

@@ -3819,4 +3819,9 @@ export default {
   "About {0} minute, two moves back to back": "Około {0} minuty, dwa ruchy jeden po drugim",
   "About {0} minutes, two moves back to back": { one: "Około {0} minuty, dwa ruchy jeden po drugim", few: "Około {0} minut, dwa ruchy jeden po drugim", many: "Około {0} minut, dwa ruchy jeden po drugim" },
   "That is about {0} reindeer. Rudolph would like a lie-down.": { one: "To mniej więcej {0} renifer. Rudolf chętnie by się położył.", few: "To mniej więcej {0} renifery. Rudolf chętnie by się położył.", many: "To mniej więcej {0} reniferów. Rudolf chętnie by się położył." },
+  "Missed plan": "Plan opuszczony",
+  "Open this day": "Otwórz ten dzień",
+  "Planned, not trained. Any other day this week still counts.": "Zaplanowane, bez treningu. Każdy inny dzień tego tygodnia wciąż się liczy.",
+  "Planned, not trained. Any workout that week would have counted.": "Zaplanowane, bez treningu. Każdy trening w tamtym tygodniu by się liczył.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Zaplanowane, bez treningu. Nic się nie stało: trenowałeś innego dnia, więc tydzień i tak się liczy.",
 }

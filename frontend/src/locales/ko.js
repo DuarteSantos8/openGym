@@ -3819,4 +3819,9 @@ export default {
   "About {0} minute, two moves back to back": "약 {0}분, 동작 두 개를 연달아",
   "About {0} minutes, two moves back to back": "약 {0}분, 동작 두 개를 연달아",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "순록 약 {0}마리 분량이에요. 루돌프가 좀 누워야겠어요.",
+  "Missed plan": "놓친 계획",
+  "Open this day": "이 날 열기",
+  "Planned, not trained. Any other day this week still counts.": "계획했지만 운동하지 않았어요. 이번 주 다른 날에 해도 인정돼요.",
+  "Planned, not trained. Any workout that week would have counted.": "계획했지만 운동하지 않았어요. 그 주에 아무 날이나 운동했으면 인정됐을 거예요.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "계획했지만 운동하지 않았어요. 괜찮아요: 다른 날 운동해서 그 주는 인정돼요.",
 }

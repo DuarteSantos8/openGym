@@ -3819,4 +3819,9 @@ export default {
   "About {0} minute, two moves back to back": "Yaklaşık {0} dakika, art arda iki hareket",
   "About {0} minutes, two moves back to back": "Yaklaşık {0} dakika, art arda iki hareket",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "Bu yaklaşık {0} ren geyiği eder. Rudolph biraz uzanmak istiyor.",
+  "Missed plan": "Kaçan plan",
+  "Open this day": "Bu günü aç",
+  "Planned, not trained. Any other day this week still counts.": "Planlandı, yapılmadı. Bu haftanın başka herhangi bir günü hâlâ sayılır.",
+  "Planned, not trained. Any workout that week would have counted.": "Planlandı, yapılmadı. O hafta herhangi bir antrenman sayılırdı.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planlandı, yapılmadı. Sorun değil: başka bir gün antrenman yaptın, hafta yine sayılır.",
 }

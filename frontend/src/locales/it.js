@@ -3819,4 +3819,9 @@ export default {
   "About {0} minute, two moves back to back": "Circa {0} minuto, due movimenti di fila",
   "About {0} minutes, two moves back to back": "Circa {0} minuti, due movimenti di fila",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "Sono circa {0} renne. Rudolph vorrebbe sdraiarsi un attimo.",
+  "Missed plan": "Piano saltato",
+  "Open this day": "Apri questo giorno",
+  "Planned, not trained. Any other day this week still counts.": "Pianificato, non fatto. Qualsiasi altro giorno di questa settimana conta ancora.",
+  "Planned, not trained. Any workout that week would have counted.": "Pianificato, non fatto. Un allenamento qualsiasi quella settimana avrebbe contato.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Pianificato, non fatto. Nessun problema: ti sei allenato un altro giorno, quindi la settimana conta lo stesso.",
 }

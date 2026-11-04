@@ -3784,4 +3784,9 @@ export default {
   "About {0} minute, two moves back to back": "Asi {0} minuta, dva pohyby za sebou",
   "About {0} minutes, two moves back to back": { one: "Asi {0} minuta, dva pohyby za sebou", few: "Asi {0} minuty, dva pohyby za sebou", many: "Asi {0} minut, dva pohyby za sebou" },
   "That is about {0} reindeer. Rudolph would like a lie-down.": { one: "To je asi {0} sob. Rudolf by si rád lehl.", few: "To jsou asi {0} soby. Rudolf by si rád lehl.", many: "To je asi {0} sobů. Rudolf by si rád lehl." },
+  "Missed plan": "Plán vynechán",
+  "Open this day": "Otevřít tento den",
+  "Planned, not trained. Any other day this week still counts.": "Naplánováno, neodcvičeno. Kterýkoli jiný den tohoto týdne se ještě počítá.",
+  "Planned, not trained. Any workout that week would have counted.": "Naplánováno, neodcvičeno. Jakýkoli trénink v tom týdnu by se započítal.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Naplánováno, neodcvičeno. Nevadí: trénoval jsi jiný den, takže týden se počítá.",
 }

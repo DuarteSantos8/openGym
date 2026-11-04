@@ -3784,4 +3784,9 @@ export default {
   "About {0} minute, two moves back to back": "حدود {0} دقیقه، دو حرکت پشت‌سرهم",
   "About {0} minutes, two moves back to back": "حدود {0} دقیقه، دو حرکت پشت‌سرهم",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "این حدود {0} گوزن است. رودولف یک کم دراز کشیدن می‌خواهد.",
+  "Missed plan": "برنامهٔ جاافتاده",
+  "Open this day": "باز کردن این روز",
+  "Planned, not trained. Any other day this week still counts.": "برنامه‌ریزی شده، تمرین نشد. هر روز دیگر این هفته هنوز حساب می‌شود.",
+  "Planned, not trained. Any workout that week would have counted.": "برنامه‌ریزی شده، تمرین نشد. هر تمرینی در آن هفته حساب می‌شد.",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "برنامه‌ریزی شده، تمرین نشد. اشکالی ندارد: روز دیگری تمرین کردی، پس آن هفته حساب می‌شود.",
 }

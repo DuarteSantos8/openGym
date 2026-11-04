@@ -3812,4 +3812,9 @@ export default {
   "About {0} minute, two moves back to back": "約 {0} 分鐘，兩個動作連著做",
   "About {0} minutes, two moves back to back": "約 {0} 分鐘，兩個動作連著做",
   "That is about {0} reindeer. Rudolph would like a lie-down.": "大約相當於 {0} 頭馴鹿。魯道夫想躺一下。",
+  "Missed plan": "錯過計畫",
+  "Open this day": "打開這一天",
+  "Planned, not trained. Any other day this week still counts.": "計畫了，沒練。這週其他任何一天練都還算。",
+  "Planned, not trained. Any workout that week would have counted.": "計畫了，沒練。那週任何一天練一次都會算。",
+  "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "計畫了，沒練。沒關係：你那週別的天練了，所以這週照樣算。",
 }

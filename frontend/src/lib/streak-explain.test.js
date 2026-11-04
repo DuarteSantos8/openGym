@@ -55,3 +55,13 @@ describe('the words', () => {
     expect(freezeLine({ freezes: 1, toNextFreeze: 3 })).toBe('3 more weeks with a workout earn a freeze.')
   })
 })
+
+describe('a missed planned day', () => {
+  it('says what its week made of it', async () => {
+    const { explainMissedDay } = await import('./streak-explain.js')
+    expect(explainMissedDay({ s: 'on' })).toMatch(/^Planned, not trained\. No harm done: you trained another day/)
+    expect(explainMissedDay({ s: 'open' })).toBe('Planned, not trained. Any other day this week still counts.')
+    expect(explainMissedDay({ s: 'frozen' })).toBe('Planned, not trained. Any workout that week would have counted.')
+    expect(explainMissedDay(null)).toMatch(/would have counted/)
+  })
+})
