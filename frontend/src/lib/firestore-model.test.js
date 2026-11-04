@@ -94,4 +94,14 @@ describe('splitState workout doc keys', () => {
     const { lists } = splitState({ workouts: [{ id: 'w9', d: '2026-10-20', start: '18:00', entries: [] }, noId()] })
     expect([...lists.workouts.keys()].sort()).toEqual(['2026-10-20|18:00', 'w9'])
   })
+
+  it('a real id equal to a taken fallback key moves the id-less workout aside, nothing is lost', () => {
+    const suffixed = splitState({ workouts: [noId(), noId(), { id: '2026-10-20|18:00#2', note: 'crafted' }] })
+    expect(suffixed.lists.workouts.size).toBe(3)
+    expect(suffixed.lists.workouts.get('2026-10-20|18:00#2').note).toBe('crafted')
+    const plain = splitState({ workouts: [noId('first'), { id: '2026-10-20|18:00', note: 'crafted' }] })
+    expect(plain.lists.workouts.size).toBe(2)
+    expect(plain.lists.workouts.get('2026-10-20|18:00').note).toBe('crafted')
+    expect([...plain.lists.workouts.values()].map(w => w.note).sort()).toEqual(['crafted', 'first'])
+  })
 })

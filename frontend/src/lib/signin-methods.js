@@ -41,7 +41,23 @@ export function googleLinkErrorText(code) {
       return 'That Google account is already used by another account.'
     case 'auth/provider-already-linked':
       return 'Google is already linked to this account.'
+    case 'auth/popup-closed-by-user':
+    case 'auth/cancelled-popup-request':
+      return 'The Google window was closed before finishing.'
+    case 'auth/popup-blocked':
+      return 'The browser blocked the Google window. Allow popups for this site and try again.'
     default:
       return null
   }
+}
+
+/** Plain-language text for a failed account action, or null when the error is
+ *  not a Firebase Auth error and its own message should be shown instead (the
+ *  sync server's messages are already plain language). Raw Firebase strings
+ *  ("Firebase: Error (auth/...)") are never fit to show a user. */
+export function accountErrorText(e) {
+  const mapped = googleLinkErrorText(e?.code)
+  if (mapped) return mapped
+  if (typeof e?.code === 'string' && e.code.startsWith('auth/')) return 'That did not finish. Try again.'
+  return null
 }

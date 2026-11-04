@@ -142,11 +142,21 @@ export async function removePasskey({ uid, reqBody, db, auth }) {
   if (!snap.exists || snap.data().uid !== uid) {
     return { status: 404, payload: { error: 'Passkey not found' } }
   }
-  const [creds, providers] = await Promise.all([credsOfUid(db, uid), providerIdsOf(auth, uid)])
-  const remaining = creds.filter(c => c.id !== credentialId).length
-  if (remaining === 0 && !providers.includes('google.com')) {
-    return { status: 409, payload: { error: 'That passkey is your only way in. Link Google or add another passkey first' } }
-  }
-  await ref.delete()
-  return { status: 200, payload: { ok: true, passkeys: remaining } }
+  const providers = await providerIdsOf(auth, uid)
+  // The lockout check and the delete run in ONE transaction over the caller's
+  // credential list: checked-then-deleted outside one, two parallel removals of
+  // the account's last two passkeys would each see one remaining, both pass,
+  // and lock the account out between them.
+  let result = null
+  await db.runTransaction(async tx => {
+    const credsSnap = await tx.get(db.collection('passkeys').where('uid', '==', uid))
+    const remaining = credsSnap.docs.filter(d => d.id !== credentialId).length
+    if (remaining === 0 && !providers.includes('google.com')) {
+      result = { status: 409, payload: { error: 'That passkey is your only way in. Link Google or add another passkey first' } }
+      return
+    }
+    tx.delete(ref)
+    result = { status: 200, payload: { ok: true, passkeys: remaining } }
+  })
+  return result
 }

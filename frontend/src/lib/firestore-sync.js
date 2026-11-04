@@ -224,9 +224,25 @@ export async function fbLinkOutcome() {
   return redirectOutcomePromise
 }
 
+/** The outcome of a Google SIGN-IN redirect once this page has come back from
+ *  it: { error: true, code, message } when it failed, null otherwise (a success
+ *  signs in through the auth listener; link returns are fbLinkOutcome's, and
+ *  this only peeks at their flag, never consumes it). Without a reader, a
+ *  failed redirect sign-in (the standalone and mobile path) silently looped
+ *  back to the login screen with no explanation. */
+export async function fbSignInOutcome() {
+  let flagged = false
+  try { flagged = sessionStorage.getItem(LINK_REDIRECT_KEY) === '1' } catch { /* storage unavailable */ }
+  if (flagged || !redirectOutcomePromise) return null
+  const outcome = await redirectOutcomePromise
+  return outcome && outcome.error ? outcome : null
+}
+
 /** Unlink Google from the signed-in account. The passkey guard lives in the UI and,
- *  for passkey removal, on the server; Firebase itself also refuses to unlink an
- *  account's only provider. */
+ *  for passkey removal, on the server. Whether Firebase counts a passkey
+ *  (custom-token) sign-in as a provider when this asks to unlink the account's
+ *  only listed provider is Firebase's call; a refusal lands as an error the
+ *  card surfaces in plain language. */
 export async function fbUnlinkGoogle() {
   await ensureFirebase()
   if (!auth.currentUser) throw new Error('Sign in first')
@@ -282,6 +298,11 @@ export async function fbAddPasskey() {
 
 export async function fbSignOut() {
   await ensureFirebase()
+  // Flush any push still inside its debounce window BEFORE signing out, while
+  // the client is still authenticated. The flush used to ride detach() on the
+  // auth-state callback, which only runs after sign-out completes, when the
+  // Firestore rules refuse every write: the last edit never reached the cloud.
+  if (session) { try { await session.flushPush() } catch { /* sign-out proceeds regardless */ } }
   const { signOut } = await import('firebase/auth')
   await signOut(auth)
 }
@@ -528,6 +549,11 @@ async function attachSession(useStore, uid) {
     console.warn('[fb-sync] snapshot error', e)
     sess.snapshotFailed = true
   }
+  // A newer session may have superseded this one while the load above was in
+  // flight (auth churn, or a wake re-attach racing it): installing listeners
+  // now would strand them; their callbacks no-op on the session check but the
+  // reads still cost. Only the live session installs.
+  if (session !== sess) return
   sess.unsubs.push(fs.onSnapshot(userRef, onSnap, onSnapError))
   for (const c of ['workouts', 'routines', 'exercises', 'bodyweight', 'measurements']) {
     sess.unsubs.push(fs.onSnapshot(collRef(c), onSnap, onSnapError))

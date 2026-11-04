@@ -3,6 +3,7 @@ import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { bio } from '../lib/api.js'
 import { Button } from './ui.jsx'
+import { accountErrorText } from '../lib/signin-methods.js'
 
 // Firebase mode (Phase 2): passkey sign-in + Firestore sync controls. The sync engine and
 // the Firebase SDK live in lib/firestore-sync.js and are imported lazily, these components
@@ -37,11 +38,20 @@ export function FirebaseSignIn({ onSignedIn } = {}) {
   // or just landed from a Google redirect — steps into the app the same way a fresh
   // sign-in does, instead of leaving the Login screen showing a "signed in" line.
   useEffect(() => { if (auth.user && onSignedIn) onSignedIn() }, [auth.user, onSignedIn])
+  // A Google redirect sign-in that failed on the way back (standalone and mobile
+  // take the redirect path) leaves its outcome with the sync module; surface it
+  // here, or this screen just reappears with no explanation.
+  useEffect(() => {
+    if (!mod?.fbSignInOutcome) return
+    let live = true
+    mod.fbSignInOutcome().then(o => { if (live && o?.error) toast(accountErrorText(o) || t('Something went wrong')) }).catch(() => {})
+    return () => { live = false }
+  }, [mod])
   if (!mod) return null
   const run = async (fn, okMsg) => {
     setBusy(true)
     try { await fn(); if (okMsg) toast(okMsg); if (onSignedIn) onSignedIn() }
-    catch (e) { if (e?.name !== 'NotAllowedError' && e?.name !== 'AbortError') toast(e?.message || t('Something went wrong')) }
+    catch (e) { if (e?.name !== 'NotAllowedError' && e?.name !== 'AbortError') toast(accountErrorText(e) || e?.message || t('Something went wrong')) }
     finally { setBusy(false) }
   }
   if (auth.user) return (
@@ -73,7 +83,7 @@ export default function FirebaseAccount() {
   const run = async (fn, okMsg) => {
     setBusy(true)
     try { await fn(); if (okMsg) toast(okMsg) }
-    catch (e) { if (e?.name !== 'NotAllowedError' && e?.name !== 'AbortError') toast(e?.message || t('Something went wrong')) }
+    catch (e) { if (e?.name !== 'NotAllowedError' && e?.name !== 'AbortError') toast(accountErrorText(e) || e?.message || t('Something went wrong')) }
     finally { setBusy(false) }
   }
   return (

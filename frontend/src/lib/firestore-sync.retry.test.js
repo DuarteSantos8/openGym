@@ -2,8 +2,10 @@
 // Sync robustness of the Firestore transport: (1) a failed push is owed and
 // retried when the window comes back online (plus one backoff retry), a failed
 // initial load leaves the wake triggers armed so attach re-runs, and a snapshot
-// error is logged and marked for a wake re-check; (2) sign-out flushes a push
-// still inside its debounce window instead of discarding it; (3) the cached
+// error is logged and marked for a wake re-check; (2) fbSignOut flushes a push
+// still inside its debounce window BEFORE the sign-out itself, while the
+// client is still authenticated (the fake Firestore refuses unauthenticated
+// writes, as the real rules do); (3) the cached
 // passkey username is scoped to the uid, never served to another account;
 // (4) a push larger than one Firestore batch lands in chunks. Everything runs
 // against an in-memory fake Firestore: no Firebase SDK, no network.
@@ -15,6 +17,7 @@ const h = vi.hoisted(() => ({
   failReads: false, // getDoc/getDocs throw (initial load cannot complete)
   getDocCalls: 0,
   snapErrs: [], // the error callbacks handed to onSnapshot, per registration
+  authedUid: null, // the uid the fake Firestore currently treats as signed in
 }))
 
 vi.mock('firebase/app', () => ({ initializeApp: () => ({}) }))
@@ -24,6 +27,9 @@ vi.mock('firebase/auth', () => ({
   browserLocalPersistence: {},
   onAuthStateChanged: (auth, cb) => { h.authCb = cb; return () => {} },
   getRedirectResult: async () => null,
+  // Firebase clears the auth before it fires the listener: from this line on
+  // the fake Firestore refuses writes, exactly as the real rules do.
+  signOut: async () => { h.authedUid = null; if (h.authCb) h.authCb(null) },
 }))
 vi.mock('firebase/firestore', () => {
   const clone = v => (v === undefined ? v : JSON.parse(JSON.stringify(v)))
@@ -60,6 +66,7 @@ vi.mock('firebase/firestore', () => {
         set: (r, v) => ops.push(['set', r.path, clone(v)]),
         delete: r => ops.push(['del', r.path]),
         commit: async () => {
+          if (!h.authedUid) throw new Error('permission-denied')
           if (h.failCommits > 0) { h.failCommits--; throw new Error('commit failed') }
           if (ops.length > 500) throw new Error('batch over 500 operations')
           h.commits++
@@ -110,6 +117,7 @@ async function signIn(S, uid = 'u1') {
   mod.startFirestoreSync(store)
   await flush()
   h.authCb({ uid, email: '', displayName: '', providerData: [] })
+  h.authedUid = uid
   await flush(30)
   return store
 }
@@ -117,7 +125,7 @@ async function signIn(S, uid = 'u1') {
 beforeEach(() => {
   localStorage.clear()
   h.docs = new Map(); h.commits = 0; h.batchSizes = []; h.authCb = null
-  h.failCommits = 0; h.failReads = false; h.getDocCalls = 0; h.snapErrs = []
+  h.failCommits = 0; h.failReads = false; h.getDocCalls = 0; h.snapErrs = []; h.authedUid = null
 })
 afterEach(() => { localStorage.clear(); vi.restoreAllMocks() })
 
@@ -166,12 +174,14 @@ describe('firestore-sync retry triggers', { timeout: 60000 }, () => {
 })
 
 describe('firestore-sync sign-out flush', { timeout: 30000 }, () => {
-  it('sign-out within the debounce window still flushes the pending edit', async () => {
+  it('fbSignOut flushes a push still inside its debounce window, before signing out', async () => {
     await signIn(baseS())
     store.setS(baseS({ routines: [{ id: 'r-bye', name: 'Last Seconds' }] }))
-    // Sign out NOW, well inside the ~800 ms debounce: detach used to clear the timer
-    // and silently discard this edit.
-    h.authCb(null)
+    // Sign out NOW, well inside the ~800 ms debounce. The flush has to land
+    // while the client is still authenticated: the fake refuses writes once
+    // signOut clears the auth (as the real rules do), so a flush riding the
+    // auth-state callback in detach would be rejected with permission-denied.
+    await mod.fbSignOut()
     await flush(20)
     expect(h.docs.get('users/u1/routines/r-bye')).toMatchObject({ name: 'Last Seconds' })
     // The cleared debounce does not fire a second, resurrecting push afterwards.
@@ -191,6 +201,7 @@ describe('firestore-sync username cache scoping', { timeout: 30000 }, () => {
     expect(mod.currentFbUser()?.uid).toBe('uB')
     expect(mod.currentFbUser()?.username).toBe('')
     h.authCb({ uid: 'uA', email: '', displayName: '', providerData: [] })
+    h.authedUid = 'uA'
     await flush(30)
     expect(mod.currentFbUser()?.uid).toBe('uA')
     expect(mod.currentFbUser()?.username).toBe('AliceA')

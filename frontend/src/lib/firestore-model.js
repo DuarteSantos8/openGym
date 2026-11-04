@@ -56,6 +56,7 @@ export function splitState(S) {
   const lists = {}
   for (const { field, coll, key } of FB_LISTS) {
     const m = new Map()
+    const fallbackKeys = new Set()
     for (const x of Array.isArray(S?.[field]) ? S[field] : []) {
       if (!x || typeof x !== 'object') continue
       let k = key(x)
@@ -72,8 +73,21 @@ export function splitState(S) {
         let n = 2
         while (m.has(`${k}#${n}`)) n++
         k = `${k}#${n}`
+      } else if (field === 'workouts' && x.id != null && fallbackKeys.has(k)) {
+        // A real id that literally equals a key an id-less workout already
+        // took: the id owns its key, so the id-less entry moves to its next
+        // free occurrence suffix instead of being overwritten and lost.
+        const prev = m.get(k)
+        const base = key(prev)
+        let n = 2
+        while (m.has(`${base}#${n}`)) n++
+        m.delete(k)
+        m.set(`${base}#${n}`, prev)
+        fallbackKeys.delete(k)
+        fallbackKeys.add(`${base}#${n}`)
       }
       m.set(k, sanitize(x))
+      if (field === 'workouts' && x.id == null) fallbackKeys.add(k)
     }
     lists[coll] = m
   }

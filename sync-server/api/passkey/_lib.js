@@ -109,6 +109,6 @@ export function handler(fn) {
   return async (req, res) => {
     if (req.method !== 'POST') return send(res, 405, { error: 'POST only' })
     try { await fn(req, res) }
-    catch (e) { console.error(e); if (!res.headersSent) send(res, 500, { error: e.message || 'Server error' }) }
+    catch (e) { console.error(e); if (!res.headersSent) send(res, 500, { error: 'Server error' }) }
   }
 }
