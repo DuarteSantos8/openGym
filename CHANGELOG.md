@@ -63,6 +63,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Zepp OS watch: the page is there on a phone without a server too, says why the watch needs one and connects you, the pairing code and the server address each get a copy button, and the page says plainly that openGym is not in the Zepp App Store yet, with the install guide.
 - AI Coach: a question in the chat sees your weigh-ins of the last four weeks, the ones from Apple Health or Health Connect included, instead of answering that it does not know your weight.
 
+**Security**
+- Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
+
 **Community: new languages, a sharper catalogue and a calmer Coach**
 - Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856). What the app learnt since they were written is translated too.
 - Chinese: every exercise has its Chinese name, description and steps now (thanks @nine-orders in #959), and no two exercises share a name any more (thanks @daoshi818-crypto in #629).
