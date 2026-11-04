@@ -131,8 +131,10 @@ describe('exercise settings: bodyweight and plate loading', () => {
 
   it('sets how the exercise is loaded, for every plan it is in', () => {
     const { host } = renderConfig({})
-    const plates = [...host.querySelectorAll('h4')].find(e => e.textContent === 'Plate loading').nextElementSibling
+    act(() => host.querySelector('#xc-tab-options').click())
+    const plates = [...host.querySelectorAll('.disc')].find(e => e.textContent.startsWith('Plate loading'))
     expect(plates.textContent).toContain('Off')   // a leverage machine has no plate math by default
+    act(() => plates.querySelector('.lrow, button, [role=button]').click())
     act(() => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === 'Per side').click())
     expect(useStore.getState().S.loadKind[ex.id]).toMatchObject({ kind: 'pairs' })
   })

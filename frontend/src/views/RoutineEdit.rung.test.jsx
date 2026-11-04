@@ -47,7 +47,7 @@ describe('RoutineEdit — a chain of exercises', () => {
   })
 
   it('opens the occurrence\'s own exercise, so a Save keeps it', () => {
-    act(() => host.querySelector('[data-routine-row] .item').click())
+    act(() => host.querySelector('[data-routine-row] [data-row-open]').click())
     const [ex, existing, onSave] = sheets.exConfigSheet.mock.calls[0]
     expect(ex.id).toBe('0652')
     act(() => onSave({ ...existing }))
