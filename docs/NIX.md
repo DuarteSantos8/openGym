@@ -65,9 +65,11 @@ contrib/nix/
   flake.nix          Flake entry point — packages, apps, devShell, module alias
   flake.lock         Locked inputs
   opengym.nix        The NixOS module (options + systemd/nginx wiring)
+  node-package.nix   The packaging module shared by the API and the MCP server: stages the
+                     app, proves every import it ships resolves, wraps the binary
+  api.nix            The API's layout over node-package.nix → bin/opengym-api
+  mcp.nix            The MCP server's layout over node-package.nix → bin/opengym-mcp
   frontend.nix       buildNpmPackage → $out/share/opengym (+ exercise-media/ from catalogue/media)
-  api.nix            buildNpmPackage → bin/opengym-api
-  mcp.nix            buildNpmPackage → bin/opengym-mcp
   default.nix        package-set aggregator (used by both the flake and the module); reads the
                      release version from api/package.json
 ```
