@@ -4169,4 +4169,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO ansluter också direkt till din openGym-server, med varje mätning från vågen.',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'Kroppssammansättning, aktivitet, hjärta och sömn kommer in i Hälsa.',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'Varje mätning från din våg, direkt till din server.',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'Din server loggar in på ditt RENPHO-konto och sparar inloggningen krypterad.',
+  'Every reading comes in every few hours, segmental values included.': 'Varje mätning kommer in med några timmars mellanrum, segmentvärden inräknade.',
 }

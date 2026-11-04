@@ -4127,4 +4127,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO는 체중계의 모든 측정값과 함께 openGym 서버에 직접 연결할 수도 있어요.',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': '체성분, 활동, 심장, 수면 데이터가 건강으로 들어옵니다.',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': '체중계의 모든 측정값이 서버로 바로 들어옵니다.',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': '서버가 RENPHO 계정에 로그인하고 로그인 정보를 암호화해 보관합니다.',
+  'Every reading comes in every few hours, segmental values included.': '모든 측정값이 몇 시간마다 들어오며, 부위별 값도 포함됩니다.',
 }

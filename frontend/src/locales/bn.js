@@ -4206,4 +4206,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO সরাসরি আপনার openGym সার্ভারের সাথেও যুক্ত হয়, ওজন মাপার যন্ত্রের প্রতিটি রিডিং সহ।',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'দেহের গঠন, কার্যকলাপ, হৃদয় ও ঘুম স্বাস্থ্য-এ আসে।',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'আপনার ওজন মাপার যন্ত্রের প্রতিটি রিডিং, সরাসরি আপনার সার্ভারে।',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'আপনার সার্ভার আপনার RENPHO অ্যাকাউন্টে সাইন ইন করে এবং সাইন-ইন এনক্রিপ্ট করে রাখে।',
+  'Every reading comes in every few hours, segmental values included.': 'প্রতিটি রিডিং কয়েক ঘণ্টা পরপর আসে, অংশভিত্তিক মানসহ।',
 }

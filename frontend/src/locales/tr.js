@@ -4127,4 +4127,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO, tartının her ölçümüyle doğrudan openGym sunucuna da bağlanır.',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'Vücut kompozisyonu, aktivite, kalp ve uyku Sağlık bölümüne gelir.',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'Tartının her ölçümü, doğrudan sunucuna.',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'Sunucun RENPHO hesabına giriş yapar ve girişi şifreli olarak saklar.',
+  'Every reading comes in every few hours, segmental values included.': 'Her ölçüm birkaç saatte bir gelir, bölgesel değerler dahil.',
 }

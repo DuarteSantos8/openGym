@@ -39,6 +39,18 @@ describe('the directory', () => {
     expect(cardState('apple-health', { ...ios, reads: { 'apple-health': true } })).toEqual({ status: 'connected', action: 'manage' })
   })
 
+  it('RENPHO, read by the server, shows only to a profile signed in to one', () => {
+    expect(cardState('renpho', web)).toBeNull()
+    expect(cardState('renpho', { ...web, demo: true, user: { id: 'u' } })).toBeNull()
+    const user = { ...web, user: { id: 'u' } }
+    expect(cardState('renpho', { ...user, renpho: false })).toBeNull()
+    expect(cardState('renpho', user)).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('renpho', { ...user, renpho: { connected: false } })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('renpho', { ...user, renpho: { connected: true } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('renpho', { ...user, renpho: { connected: true, error: 'auth' } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(directory({ ...user, mod: id => id !== 'health' }).flatMap(c => c.cards.map(x => x.id))).not.toContain('renpho')
+  })
+
   it('webhooks: hidden where the server does not offer them, except to its admin', () => {
     const user = { ...web, user: { id: 'u1' } }
     expect(cardState('webhook', user)).toBeNull()

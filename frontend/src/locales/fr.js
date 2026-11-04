@@ -4127,4 +4127,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO se connecte aussi directement à ton serveur openGym, avec chaque mesure de la balance.',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'Composition corporelle, activité, cœur et sommeil arrivent dans Santé.',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'Chaque mesure de ta balance, directement sur ton serveur.',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'Ton serveur se connecte à ton compte RENPHO et garde la connexion chiffrée.',
+  'Every reading comes in every few hours, segmental values included.': 'Chaque mesure arrive toutes les quelques heures, valeurs segmentaires comprises.',
 }

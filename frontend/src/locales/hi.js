@@ -4127,4 +4127,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO सीधे आपके openGym सर्वर से भी जुड़ता है, तराज़ू की हर रीडिंग के साथ।',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'शरीर-संरचना, गतिविधि, हृदय और नींद स्वास्थ्य में आते हैं।',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'आपके तराज़ू की हर रीडिंग, सीधे आपके सर्वर पर।',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'आपका सर्वर आपके RENPHO खाते में साइन इन करता है और साइन-इन को एन्क्रिप्ट करके रखता है।',
+  'Every reading comes in every few hours, segmental values included.': 'हर रीडिंग कुछ घंटों में आती है, खंडवार मानों सहित।',
 }

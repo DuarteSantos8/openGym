@@ -73,6 +73,19 @@ function useReads() {
   return reads
 }
 
+// Whether the server reads RENPHO for this profile; false where this server has no RENPHO.
+function useRenpho(on) {
+  const [st, setSt] = useState(null)
+  useEffect(() => {
+    if (!on) return
+    let gone = false
+    api('/api/renpho').then(s => { if (!gone) setSt(s || null) })
+      .catch(e => { if (!gone && e && (e.status === 401 || e.status === 404 || e.code === 'not-paired')) setSt(false) })
+    return () => { gone = true }
+  }, [on])
+  return st
+}
+
 function Pill({ status }) {
   if (!status) return null
   return <span className={'intg-pill ' + status}>{t(PILL[status])}</span>
@@ -133,10 +146,11 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const server = useServerIntegrations(!!user && !DEMO && offered.length > 0)
   const health = useHealth()
   const reads = useReads()
+  const renpho = useRenpho(!!user && !DEMO)
   const platform = MOBILE ? (ios ? 'ios' : android ? 'android' : health?.platform || platformNow()) : null
   const S = useStore(s => s.S)
   const ctx = {
-    mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, reads, server: server.data, offered,
+    mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, reads, renpho, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
   }
@@ -149,6 +163,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       case 'apple-health': case 'health-connect':
         if (status === 'device') return infoSheet(card, t('This one lives in the openGym phone app: Apple Health on iPhone, Health Connect on Android.'))
         return nav('/settings/' + card.id)
+      case 'renpho': return nav('/settings/renpho')
       case 'hevy': return importFromHevy()
       case 'files': return fileRef.current?.click()
       case 'csv': return csvExportSheet()
@@ -244,9 +259,9 @@ function worksWithSheet(w, platform, nav) {
       <Row title={t('What openGym reads')} subtitle={t(READS[w.reads])} />
       <Row title={t('What it does not do')} subtitle={t('Workouts logged in openGym go to the health store, not back into {0} itself.', w.name)} />
     </Section>
-    {/* RENPHO on a signed-in profile: the server reads the scale itself (Settings → Health), every
+    {/* RENPHO on a signed-in profile: the server reads the scale itself (its card above), every
         reading, the ones RENPHO keeps from the health store too. */}
-    {direct && <Button variant="primary" onClick={() => { close(); nav('/settings/health') }}>{t('Connect RENPHO')}</Button>}
+    {direct && <Button variant="primary" onClick={() => { close(); nav('/settings/renpho') }}>{t('Connect RENPHO')}</Button>}
     {direct && store && <div style={{ height: 8 }} />}
     {store
       ? <Button variant={direct ? 'tinted' : 'primary'} onClick={() => { close(); nav('/settings/' + store) }}>{t('Set up {0}', CARD[store].name)}</Button>

@@ -4182,4 +4182,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'يتصل RENPHO أيضًا مباشرةً بخادم openGym الخاص بك، مع كل قياس من الميزان.',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'تكوين الجسم والنشاط والقلب والنوم تصل إلى الصحة.',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'كل قياس من ميزانك، مباشرةً إلى خادمك.',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'يسجّل خادمك الدخول إلى حساب RENPHO الخاص بك ويحفظ بيانات الدخول مشفّرة.',
+  'Every reading comes in every few hours, segmental values included.': 'يصل كل قياس كل بضع ساعات، بما في ذلك القيم المقطعية.',
 }

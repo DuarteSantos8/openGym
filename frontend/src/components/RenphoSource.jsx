@@ -7,7 +7,7 @@ import { MOBILE, shareExport } from '../lib/mobile.js'
 import { metricOf } from '../lib/health/metrics.js'
 import { Section, Row, Button, TextField, Switch } from './ui.jsx'
 
-// Settings → Health → RENPHO Health. The server holds the connection (api/providers/renpho): it
+// Settings → Integrations → RENPHO Health. The server holds the connection (api/providers/renpho): it
 // signs in to RENPHO, keeps the sign-in sealed, and syncs the scale's readings into the profile on
 // its own every few hours. This card connects, says how the last sync went, syncs now and
 // disconnects. The password goes to the server once and is never kept on the device.

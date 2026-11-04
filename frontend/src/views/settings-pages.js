@@ -41,6 +41,8 @@ export const PAGES = {
   // The phone's health store, one page per platform (until 1.4.4 a section of Data & backup).
   'apple-health': { title: 'Apple Health', icon: 'heart', tint: 'var(--red)', parent: 'integrations', mod: 'health', kw: 'apple health healthkit heart rate weight scale watch sync workouts' },
   'health-connect': { title: 'Health Connect', icon: 'heart', tint: 'var(--red)', parent: 'integrations', mod: 'health', kw: 'health connect google fit samsung fitbit garmin heart rate weight scale watch sync workouts' },
+  // RENPHO read by the server (components/RenphoSource.jsx), a card in Integrations.
+  renpho: { title: 'RENPHO Health', icon: 'scale', tint: 'var(--teal)', parent: 'integrations', mod: 'health', kw: 'renpho scale weight body composition fat muscle segmental' },
 }
 export const PAGE_IDS = Object.keys(PAGES)
 
@@ -67,6 +69,8 @@ export function pageVisible(page, ctx) {
   // The health store of the phone this runs on (unknown counts as yes, as for the watch).
   // In a browser too, for the Health area (an Apple Health export, the Shortcut).
   if (page === 'apple-health') return !!ctx.ios || !ctx.mobile
+  // The server reads RENPHO: a profile signed in to one.
+  if (page === 'renpho') return !!ctx.user && !ctx.demo
   if (page === 'health-connect') return !!ctx.mobile && !!ctx.android
   return page in PAGES
 }
@@ -208,6 +212,7 @@ export const SEARCH = [
   { page: 'integrations', title: 'Import a file', icon: 'download', tint: 'var(--teal)', kw: 'import strong fitnotes hevy csv gymmane apple health export file' },
   { page: 'integrations', title: 'Spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel export' },
   { page: 'integrations', title: 'MCP server', icon: 'plug', tint: 'var(--purple)', mod: 'integrations', kw: 'mcp claude desktop cursor llm agent ai model context protocol api' },
+  { page: 'integrations', mod: 'health', title: 'RENPHO Health', icon: 'scale', tint: 'var(--teal)', kw: 'renpho scale weight body composition fat muscle segmental', when: c => !!c.user && !c.demo },
   { page: 'integrations', mod: 'health', title: 'Garmin', icon: 'watch', tint: 'var(--grey)', kw: 'garmin fenix forerunner venu watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'COROS', icon: 'watch', tint: 'var(--grey)', kw: 'coros watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'Polar', icon: 'watch', tint: 'var(--grey)', kw: 'polar watch heart rate strap' },

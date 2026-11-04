@@ -4138,4 +4138,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO เชื่อมต่อกับเซิร์ฟเวอร์ openGym ของคุณได้โดยตรงด้วย พร้อมทุกค่าที่เครื่องชั่งวัดได้',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'องค์ประกอบร่างกาย กิจกรรม หัวใจ และการนอน เข้ามาใน สุขภาพ',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'ทุกค่าที่เครื่องชั่งของคุณวัดได้ ส่งตรงถึงเซิร์ฟเวอร์ของคุณ',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'เซิร์ฟเวอร์ของคุณลงชื่อเข้าใช้บัญชี RENPHO ของคุณ และเก็บข้อมูลการลงชื่อเข้าใช้แบบเข้ารหัส',
+  'Every reading comes in every few hours, segmental values included.': 'ทุกค่าที่วัดได้จะเข้ามาทุกไม่กี่ชั่วโมง รวมถึงค่าแยกส่วนของร่างกาย',
 }

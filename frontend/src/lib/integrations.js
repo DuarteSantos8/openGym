@@ -27,6 +27,12 @@ export const CARDS = [
     desc: 'Workouts and weigh-ins out, heart rate and scale readings in.',
     syncs: ['Finished workouts and weigh-ins go to Health Connect.', 'Heart rate from your watch fills in each set.', 'Weigh-ins from your smart scale land here.'],
   },
+  // RENPHO read by the server itself (api/providers/renpho), every reading of the scale.
+  {
+    id: 'renpho', cat: 'health', name: 'RENPHO Health', icon: 'scale', tint: 'var(--teal)',
+    desc: 'Every reading of your scale, straight to your server.',
+    syncs: ['Your server signs in to your RENPHO account and keeps the sign-in encrypted.', 'Every reading comes in every few hours, segmental values included.'],
+  },
   {
     id: 'hevy', cat: 'training', name: 'Hevy', icon: 'key', tint: 'var(--teal)',
     desc: 'Bring your Hevy history over with a Pro API key.',
@@ -70,7 +76,7 @@ export const WORKS_WITH = [
   { name: 'Samsung Health', glyph: 'watch', reads: 'both' },
   { name: 'Oura', glyph: 'ring', reads: 'hr' },
   { name: 'Withings', glyph: 'scale', reads: 'weight' },
-  // RENPHO also has a line of its own to the server (api/providers/renpho, Settings → Health).
+  // RENPHO also has a line of its own to the server (api/providers/renpho, its own card above).
   { name: 'Renpho', glyph: 'scale', reads: 'weight', direct: 'renpho' },
 ]
 
@@ -91,6 +97,7 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  * ctx: { mobile, platform ('ios' | 'android' | null), user, demo, admin,
  *        health: { status, on, readHr, readWeight, error, readError } | null  (this phone's store)
  *        reads: { 'apple-health': bool }  (the Health area reading the store, lib/health/sync.js)
+ *        renpho: GET /api/renpho | false (no RENPHO on this server) | null (not asked yet)
  *        server: { providers: [id], connections: [..] } | null  (GET /api/integrations)
  *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode }
  * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'import' | 'export' | 'open' | null }.
@@ -110,6 +117,13 @@ export function cardState(id, ctx) {
       if (h.status === 'missing' || h.status === 'update') return { status: 'off', action: 'connect' }
       if (healthTrouble(h)) return { status: 'attention', action: 'manage' }
       return healthOn(h) || ctx.reads?.[id] ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
+    }
+    case 'renpho': {
+      // The server holds the sign-in: nothing to show without one, or on a server without RENPHO.
+      if (ctx.demo || !ctx.user || ctx.renpho === false) return null
+      const r = ctx.renpho
+      if (r?.connected && r.error) return { status: 'attention', action: 'manage' }
+      return r?.connected ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
     }
     case 'hevy':
     case 'files':
@@ -137,7 +151,7 @@ export function cardState(id, ctx) {
 }
 
 // The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
-export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', coach: 'coach' }
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', renpho: 'health', webhook: 'integrations', mcp: 'integrations', coach: 'coach' }
 
 /** The directory for this device: categories with their visible cards, empty ones left out.
  *  `ctx.mod(id)` says whether a module is on (absent: all on). */

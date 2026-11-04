@@ -4127,4 +4127,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO 也可以直接连接到你的 openGym 服务器，带上体重秤的每一次测量。',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': '身体成分、活动、心脏和睡眠数据会进入健康。',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': '体重秤的每一次测量，直接进入你的服务器。',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': '你的服务器登录你的 RENPHO 账户，并加密保存登录信息。',
+  'Every reading comes in every few hours, segmental values included.': '每次测量每隔几小时传入一次，包括分段数值。',
 }

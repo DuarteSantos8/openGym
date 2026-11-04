@@ -4130,4 +4130,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'A RENPHO közvetlenül is csatlakozik az openGym-szerveredhez, a mérleg minden mérésével.',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'A testösszetétel, az aktivitás, a szív és az alvás az Egészség részbe kerül.',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'A mérleged minden mérése, egyenesen a szerveredre.',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'A szervered bejelentkezik a RENPHO-fiókodba, és titkosítva őrzi a bejelentkezést.',
+  'Every reading comes in every few hours, segmental values included.': 'Minden mérés néhány óránként megérkezik, a szegmentális értékekkel együtt.',
 }

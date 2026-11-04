@@ -2917,6 +2917,11 @@ export const PT_BR_OVERRIDES = {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'O RENPHO também se conecta direto ao seu servidor openGym, com cada medição da balança.',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'Composição corporal, atividade, coração e sono chegam em Saúde.',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'Cada medição da sua balança, direto no seu servidor.',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'Seu servidor entra na sua conta RENPHO e guarda o acesso criptografado.',
+  'Every reading comes in every few hours, segmental values included.': 'Cada medição chega a cada poucas horas, com os valores segmentares.',
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

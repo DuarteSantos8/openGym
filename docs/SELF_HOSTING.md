@@ -764,7 +764,7 @@ are not encrypted at rest — whoever can read that folder can see them.
 
 ### RENPHO Health (optional)
 
-Anyone signed in can connect a RENPHO Health account in **Settings → Health → RENPHO Health**. The
+Anyone signed in can connect a RENPHO Health account in **Settings → Integrations → RENPHO Health**. The
 server then imports every reading of the scale into the health area (weight, BMI, body fat, fat
 and lean mass, muscle and skeletal muscle, water, bone, protein, visceral and subcutaneous fat, BMR,
 metabolic age, and the segmental values and impedances when the scale and RENPHO's cloud give them),

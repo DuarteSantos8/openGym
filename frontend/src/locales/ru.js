@@ -4131,4 +4131,9 @@ export default {
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO также подключается напрямую к вашему серверу openGym, со всеми измерениями весов.',
   // --- Integrations: the Health area's sources ---
   'Body composition, activity, heart and sleep come into Health.': 'Состав тела, активность, сердце и сон попадают в раздел «Здоровье».',
+  // --- Integrations: the Health area's sources ---
+  'RENPHO Health': 'RENPHO Health',
+  'Every reading of your scale, straight to your server.': 'Каждое измерение ваших весов — прямо на ваш сервер.',
+  'Your server signs in to your RENPHO account and keeps the sign-in encrypted.': 'Ваш сервер входит в ваш аккаунт RENPHO и хранит вход в зашифрованном виде.',
+  'Every reading comes in every few hours, segmental values included.': 'Каждое измерение приходит раз в несколько часов, включая сегментные значения.',
 }
