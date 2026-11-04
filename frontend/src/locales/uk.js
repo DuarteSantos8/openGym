@@ -2220,7 +2220,7 @@ export default {
   'Health': 'Здоров’я',
   'Heart': 'Серце',
   'Last read {0}': 'Останнє читання {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'Додайте вимір складу тіла або підключіть джерело в Налаштування → Здоров’я, і ваші дані з’являться тут разом із динамікою.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'Додайте вимір складу тіла або підключіть джерело в Налаштування → Інтеграції, і ваші дані з’являться тут разом із динамікою.',
   'Manage permissions': 'Керувати дозволами',
   'Measurement deleted': 'Вимір видалено',
   'Measurement saved': 'Вимір збережено',
@@ -4122,4 +4122,6 @@ export default {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "Поки «Здоров'я» вимкнено, {0} не синхронізується. Нічого не від’єднується, і все наздожене, щойно «Здоров'я» повернеться.",
   // --- Integrations: RENPHO's own line ---
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO також підключається напряму до твого сервера openGym, з усіма вимірюваннями ваг.',
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'Склад тіла, активність, серце й сон потрапляють у розділ «Здоров’я».',
 }

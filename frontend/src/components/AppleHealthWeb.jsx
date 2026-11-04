@@ -16,7 +16,7 @@ import { confirmSheet } from '../sheets.jsx'
 const toast = m => useUI.getState().toast(m)
 const openSheet = r => useUI.getState().openSheet(r)
 
-// Settings → Health on the web app and the PWA, where no website may read Apple Health: Health's
+// Settings → Integrations → Apple Health on the web app and the PWA, where no website may read Apple Health: Health's
 // own export, read here (lib/health/apple-export.js), and an iPhone Shortcut that sends the
 // readings to this server every day (POST /api/health/samples, api/health/fold.js).
 export default function AppleHealthWeb() {

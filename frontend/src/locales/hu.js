@@ -2226,7 +2226,7 @@ export default {
   'Health': 'Egészség',
   'Heart': 'Szív',
   'Last read {0}': 'Utolsó olvasás: {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'Rögzíts egy testösszetétel-mérést, vagy csatlakoztass egy forrást a Beállítások → Egészség menüben, és az adataid itt jelennek meg a trendjükkel.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'Rögzíts egy testösszetétel-mérést, vagy csatlakoztass egy forrást a Beállítások → Integrációk menüben, és az adataid itt jelennek meg a trendjükkel.',
   'Manage permissions': 'Engedélyek kezelése',
   'Measurement deleted': 'Mérés törölve',
   'Measurement saved': 'Mérés mentve',
@@ -4128,4 +4128,6 @@ export default {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "Amíg az „Egészség” ki van kapcsolva, a(z) {0} nem szinkronizál. A kapcsolat megmarad, és mindent bepótol, amint az „Egészség” újra be van kapcsolva.",
   // --- Integrations: RENPHO's own line ---
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'A RENPHO közvetlenül is csatlakozik az openGym-szerveredhez, a mérleg minden mérésével.',
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'A testösszetétel, az aktivitás, a szív és az alvás az Egészség részbe kerül.',
 }

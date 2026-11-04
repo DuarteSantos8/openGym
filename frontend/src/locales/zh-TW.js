@@ -2216,7 +2216,7 @@ export default {
   'Health': '健康',
   'Heart': '心臟',
   'Last read {0}': '上次讀取 {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': '記錄一次身體組成測量，或在 設定 → 健康 中連接資料來源，你的讀數會連同趨勢顯示在這裡。',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': '記錄一次身體組成測量，或在 設定 → 整合 中連接資料來源，你的讀數會連同趨勢顯示在這裡。',
   'Manage permissions': '管理權限',
   'Measurement deleted': '測量已刪除',
   'Measurement saved': '測量已儲存',
@@ -4118,4 +4118,6 @@ export default {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "「健康」關閉期間，{0} 會停止同步。不會中斷任何連線，「健康」重新開啟後會自動補上。",
   // --- Integrations: RENPHO's own line ---
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO 也可以直接連接到你的 openGym 伺服器，帶上體重計的每一次測量。',
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': '身體組成、活動、心臟和睡眠資料會進入健康。',
 }

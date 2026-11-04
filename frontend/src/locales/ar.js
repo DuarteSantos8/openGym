@@ -2278,7 +2278,7 @@ export default {
   'Health': 'الصحة',
   'Heart': 'القلب',
   'Last read {0}': 'آخر قراءة {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'سجّل قياسًا لتكوين الجسم، أو اربط مصدرًا من الإعدادات ← الصحة، وستظهر قراءاتك هنا مع اتجاهها.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'سجّل قياسًا لتكوين الجسم، أو اربط مصدرًا من الإعدادات ← التكاملات، وستظهر قراءاتك هنا مع اتجاهها.',
   'Manage permissions': 'إدارة الأذونات',
   'Measurement deleted': 'تم حذف القياس',
   'Measurement saved': 'تم حفظ القياس',
@@ -4180,4 +4180,6 @@ export default {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "يتوقف {0} عن المزامنة ما دامت «الصحة» متوقفة. لا يُفصل شيء، ويلحق بكل شيء عند عودة «الصحة».",
   // --- Integrations: RENPHO's own line ---
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'يتصل RENPHO أيضًا مباشرةً بخادم openGym الخاص بك، مع كل قياس من الميزان.',
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'تكوين الجسم والنشاط والقلب والنوم تصل إلى الصحة.',
 }

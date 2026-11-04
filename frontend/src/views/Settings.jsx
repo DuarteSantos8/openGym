@@ -495,7 +495,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     modules: () => { const p = presetOf(S); return p === 'custom' ? t('Custom') : presetCopy()[p][0] },
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
     data: () => '',
-    health: () => '',
     integrations: () => '',
     about: () => 'v' + __APP_VERSION__,
     watch: () => '',
@@ -1113,16 +1112,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
     </>,
 
-    // Health: the area itself, and on the iPhone app the sources it can read from (Apple Health).
-    health: () => <>
-      <Section>
-        <Row icon="heart" iconTint="var(--red)" title={t('Open Health')}
-          subtitle={t('Body composition, activity, heart and sleep')} accessory="chevron" onClick={() => nav('/health')} />
-      </Section>
-      {MOBILE && <HealthSources />}
-      <RenphoSource />
-      {!MOBILE && <AppleHealthWeb />}
-    </>,
+    // RENPHO read by the server, a card in Integrations.
+    renpho: () => <RenphoSource />,
 
     about: () => <>
       {/* Updates. On Android the row is always there: it checks on demand and installs when a
@@ -1874,10 +1865,13 @@ const HEALTH_COPY = {
 
 // Settings → Integrations → Apple Health / Health Connect. On a phone without the store, a line
 // that says so instead of an empty page.
+// Below it, the Health area's own reading of the store (HealthSources), and in a browser the Health
+// app's export and the Shortcut (AppleHealthWeb) instead of the line.
 function HealthPage({ S, toast, android }) {
-  if (!MOBILE) return <Section><Row icon="info" iconTint="var(--grey)" title={t('This lives in the openGym phone app.')} /></Section>
+  if (!MOBILE) return android ? <Section><Row icon="info" iconTint="var(--grey)" title={t('This lives in the openGym phone app.')} /></Section> : <AppleHealthWeb />
   return <>
     <HealthConnectCard S={S} toast={toast} android={android} page />
+    <HealthSources />
     <p className="sect-f">{t('Your watch or scale writes here too? Garmin, COROS, Fitbit, Withings, Oura and friends reach openGym this way.')}</p>
   </>
 }

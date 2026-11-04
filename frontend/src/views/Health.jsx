@@ -216,7 +216,7 @@ export default function Health() {
   // empty state's pointer to Settings.
   const [canConnect, setCanConnect] = useState(false)
   useEffect(() => {
-    // The web app and the PWA always can: Health's export, or a Shortcut (Settings → Health).
+    // The web app and the PWA always can: Health's export, or a Shortcut (Settings → Integrations → Apple Health).
     if (!MOBILE) { setCanConnect(true); return }
     let gone = false
     Promise.all(PROVIDERS.map(p => p.isAvailable().catch(() => false))).then(r => { if (!gone) setCanConnect(r.some(Boolean)) })
@@ -246,10 +246,10 @@ export default function Health() {
     </div>
 
     {tab === 'overview' && !shown.length && <div className="card">
-      <div className="muted small">{t('Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.')}</div>
+      <div className="muted small">{t('Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.')}</div>
       <div style={{ height: 10 }} />
       <Button icon="plus" onClick={() => compositionSheet()}>{t('New measurement')}</Button>
-      {canConnect && <><div style={{ height: 8 }} /><Button icon="heart" onClick={() => nav('/settings/health')}>{t('Connect a source')}</Button></>}
+      {canConnect && <><div style={{ height: 8 }} /><Button icon="heart" onClick={() => nav('/settings/integrations')}>{t('Connect a source')}</Button></>}
     </div>}
 
     {tab !== 'overview' && !shown.length && <div className="empty small">{t('No readings yet')}</div>}

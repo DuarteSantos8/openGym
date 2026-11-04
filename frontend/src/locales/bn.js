@@ -2302,7 +2302,7 @@ export default {
   'Health': 'স্বাস্থ্য',
   'Heart': 'হৃদয়',
   'Last read {0}': 'শেষ পড়া {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'একটি দেহ-গঠনের মাপ লিখুন, বা সেটিংস → স্বাস্থ্য-এ একটি উৎস যুক্ত করুন, তাহলে আপনার রিডিং প্রবণতাসহ এখানে দেখা যাবে।',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'একটি দেহ-গঠনের মাপ লিখুন, বা সেটিংস → ইন্টিগ্রেশন-এ একটি উৎস যুক্ত করুন, তাহলে আপনার রিডিং প্রবণতাসহ এখানে দেখা যাবে।',
   'Manage permissions': 'অনুমতি পরিচালনা করুন',
   'Measurement deleted': 'মাপ মুছে ফেলা হয়েছে',
   'Measurement saved': 'মাপ সংরক্ষিত হয়েছে',
@@ -4204,4 +4204,6 @@ export default {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "\"স্বাস্থ্য\" বন্ধ থাকলে {0} সিঙ্ক বন্ধ রাখে। কিছুই বিচ্ছিন্ন হয় না, আর \"স্বাস্থ্য\" ফিরলেই সব পুষিয়ে নেয়।",
   // --- Integrations: RENPHO's own line ---
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO সরাসরি আপনার openGym সার্ভারের সাথেও যুক্ত হয়, ওজন মাপার যন্ত্রের প্রতিটি রিডিং সহ।',
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'দেহের গঠন, কার্যকলাপ, হৃদয় ও ঘুম স্বাস্থ্য-এ আসে।',
 }

@@ -14,8 +14,9 @@ const getState = () => useStore.getState().S
 const update = fn => useStore.getState().update(fn)
 const toast = m => useUI.getState().toast(m)
 
-// Settings → Health: one card per source this device can read from (Apple Health on the iPhone
-// app). Each source is off until the user connects it here; the permissions it asks for are the
+// Settings → Integrations → Apple Health, under the store's own switches: one card per source this
+// device can read from for the Health area (Apple Health on the iPhone app), titled Health so the
+// page does not say Apple Health twice. Each source is off until the user connects it here; the permissions it asks for are the
 // types it lists, read-only.
 export default function HealthSources() {
   const [avail, setAvail] = useState([])
@@ -74,7 +75,7 @@ function SourceCard({ provider, st }) {
     ],
   })
 
-  return <Section title={name} footer={st.on ? t(provider.manageHint) : t('Read-only. Nothing is shared until you connect.')}>
+  return <Section title={t('Health')} footer={st.on ? t(provider.manageHint) : t('Read-only. Nothing is shared until you connect.')}>
     <Row icon="heart" iconTint="var(--red)" title={t('Read from {0}', name)}
       subtitle={st.on ? (st.at ? t('Last read {0}', fmtAgo(st.at)) : t('Connected')) : t('Body composition, activity, heart and sleep')}>
       <Switch checked={!!st.on} disabled={busy} onChange={v => (v ? askConnect() : askOff())} />

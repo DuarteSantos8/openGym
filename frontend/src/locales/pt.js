@@ -2223,7 +2223,7 @@ export default {
   'Health': 'Saúde',
   'Heart': 'Coração',
   'Last read {0}': 'Última leitura {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': 'Regista uma medição de composição corporal, ou liga uma fonte em Definições → Saúde, e os teus valores aparecem aqui com a sua evolução.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': 'Regista uma medição de composição corporal, ou liga uma fonte em Definições → Integrações, e os teus valores aparecem aqui com a sua evolução.',
   'Manage permissions': 'Gerir permissões',
   'Measurement deleted': 'Medição eliminada',
   'Measurement saved': 'Medição guardada',
@@ -4125,4 +4125,6 @@ export default {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "{0} deixa de sincronizar enquanto «Saúde» estiver desligado. Nada fica desconectado, e põe-se em dia quando «Saúde» voltar.",
   // --- Integrations: RENPHO's own line ---
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'O RENPHO também se liga diretamente ao teu servidor openGym, com cada medição da balança.',
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': 'Composição corporal, atividade, coração e sono chegam à Saúde.',
 }

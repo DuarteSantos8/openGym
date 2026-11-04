@@ -2223,7 +2223,7 @@ export default {
   'Health': '건강',
   'Heart': '심장',
   'Last read {0}': '마지막 읽기 {0}',
-  'Log a body composition measurement, or connect a source in Settings → Health, and your readings show up here with their trends.': '체성분 측정을 기록하거나 설정 → 건강에서 데이터 소스를 연결하면, 기록이 추세와 함께 여기에 표시됩니다.',
+  'Log a body composition measurement, or connect a source in Settings → Integrations, and your readings show up here with their trends.': '체성분 측정을 기록하거나 설정 → 연동에서 데이터 소스를 연결하면, 기록이 추세와 함께 여기에 표시됩니다.',
   'Manage permissions': '권한 관리',
   'Measurement deleted': '측정을 삭제했습니다',
   'Measurement saved': '측정을 저장했습니다',
@@ -4125,4 +4125,6 @@ export default {
   "{0} stops syncing while Health is off. Nothing is disconnected, and it catches up once Health is back.": "'건강'이 꺼져 있는 동안 {0} 동기화가 멈춰요. 연결은 끊기지 않고, '건강'을 다시 켜면 밀린 걸 따라잡아요.",
   // --- Integrations: RENPHO's own line ---
   'RENPHO also connects straight to your openGym server, with every reading of the scale.': 'RENPHO는 체중계의 모든 측정값과 함께 openGym 서버에 직접 연결할 수도 있어요.',
+  // --- Integrations: the Health area's sources ---
+  'Body composition, activity, heart and sleep come into Health.': '체성분, 활동, 심장, 수면 데이터가 건강으로 들어옵니다.',
 }
