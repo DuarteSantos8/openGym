@@ -64,8 +64,8 @@ describe('contrast and the text on the accent', () => {
 })
 
 describe('readable on the theme', () => {
-  const darkPresets = ['#30d158', '#0a84ff', '#ff9f0a', '#bf5af2', '#ff375f', '#ff453a', '#40c8e0', '#ffd60a']
-  const lightPresets = ['#34c759', '#007aff', '#ff9500', '#af52de', '#ff2d55', '#ff3b30', '#30b0c7']
+  const darkPresets = ['#30d158', '#0091ff', '#ff9230', '#db34f2', '#ff375f', '#ff4245', '#00d2e0', '#ffd600']
+  const lightPresets = ['#34c759', '#0088ff', '#ff8d28', '#cb30e0', '#ff2d55', '#ff383c', '#00c3d0']
   it('leaves every dark preset shade as it is, and darkens the light ones under 3:1', () => {
     for (const c of darkPresets) expect(adjustedIn(c, 'dark'), c).toBe(false)
     // the presets draw their own index.css shades; as an own colour, Apple's light green,
