@@ -3711,4 +3711,5 @@ export default {
   "Welcome back": "Välkommen tillbaka",
   "Your workouts. Your weights. Every device.": "Dina träningspass. Dina vikter. Alla enheter.",
   "you": "du",
+  "Continue with Google": "Fortsätt med Google",
 }

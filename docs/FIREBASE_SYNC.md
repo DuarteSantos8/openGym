@@ -65,6 +65,21 @@ WEBAUTHN_ORIGIN=           the same domain with https:// in front, set in Part 2
 The `VITE_FB_*` values are **not** secret: they just name your project. The
 service account JSON is the only secret, and it only ever goes into Vercel.
 
+### Optional: Google sign-in
+
+The passkey is the primary way in, but the sign-in screen also offers
+**Continue with Google** once the provider is on:
+
+1. In the Firebase console: **Authentication -> Sign-in method -> Add new
+   provider -> Google**, enable it, and save.
+2. Under **Authentication -> Settings -> Authorized domains**, make sure your
+   Vercel domain is listed; Google sign-in refuses to run from a domain that
+   is not.
+
+Nothing else changes: a Google sign-in creates the same kind of Firebase
+session as a passkey sign-in, and the account's data lives under the same
+`users/{uid}` tree and syncs the same way.
+
 ## Part 2: Deploy to Vercel
 
 1. In Vercel, import this repo (your own fork or clone of it) as a new project.

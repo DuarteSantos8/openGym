@@ -3668,4 +3668,5 @@ export default {
   "Welcome back": "С возвращением",
   "Your workouts. Your weights. Every device.": "Ваши тренировки. Ваши веса. На каждом устройстве.",
   "you": "вы",
+  "Continue with Google": "Продолжить через Google",
 }

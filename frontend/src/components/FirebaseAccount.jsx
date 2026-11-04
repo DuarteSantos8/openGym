@@ -20,6 +20,11 @@ function useFb() {
   return { mod, auth }
 }
 
+// How a signed-in session names itself: the passkey account name when this device has
+// one, otherwise what the provider itself reports — a Google session's email first,
+// then its display name.
+const sessionLabel = user => (user && (user.username || user.email || user.displayName)) || null
+
 /** The sign-in / create-account form. `onSignedIn` fires after a successful ceremony,
  *  the Login screen uses it to step into the app (the store stays in local/guest mode;
  *  Firebase Auth is what carries the session, and the sync engine keys off it). */
@@ -28,6 +33,10 @@ export function FirebaseSignIn({ onSignedIn } = {}) {
   const { mod, auth } = useFb()
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
+  // A session that is already there when this form mounts — restored by Firebase Auth,
+  // or just landed from a Google redirect — steps into the app the same way a fresh
+  // sign-in does, instead of leaving the Login screen showing a "signed in" line.
+  useEffect(() => { if (auth.user && onSignedIn) onSignedIn() }, [auth.user, onSignedIn])
   if (!mod) return null
   const run = async (fn, okMsg) => {
     setBusy(true)
@@ -36,7 +45,7 @@ export function FirebaseSignIn({ onSignedIn } = {}) {
     finally { setBusy(false) }
   }
   if (auth.user) return (
-    <div className="muted small">{t('Signed in as {0}.', auth.user.username || t('you'))}</div>
+    <div className="muted small">{t('Signed in as {0}.', sessionLabel(auth.user) || t('you'))}</div>
   )
   return <>
     <div className="muted small" style={{ marginBottom: 12 }}>
@@ -48,6 +57,8 @@ export function FirebaseSignIn({ onSignedIn } = {}) {
     <Button variant="primary" disabled={busy || !name.trim()} onClick={() => run(() => mod.fbLogin(name), t('Welcome back'))}>{t('Sign in with passkey')}</Button>
     <div style={{ height: 10 }} />
     <Button disabled={busy || !name.trim()} onClick={() => run(() => mod.fbRegister(name), t('Account created'))}>{t('Create account with passkey')}</Button>
+    <div style={{ height: 10 }} />
+    <Button disabled={busy} onClick={() => run(() => mod.fbGoogleLogin(), t('Welcome back'))}>{t('Continue with Google')}</Button>
   </>
 }
 
@@ -68,10 +79,14 @@ export default function FirebaseAccount() {
       <div style={{ fontWeight: 600, marginBottom: 6 }}>{t('Cloud sync (passkey)')}</div>
       {auth.user ? <>
         <div className="muted small" style={{ marginBottom: 12 }}>
-          {t('Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.', auth.user.username || t('you'))}
+          {t('Signed in as {0}. Your plan, workouts and weigh-ins sync across your devices.', sessionLabel(auth.user) || t('you'))}
         </div>
-        <Button disabled={busy} onClick={() => run(() => mod.fbAddPasskey(), t('Passkey added'))}>{t('Add a passkey on this device')}</Button>
-        <div style={{ height: 10 }} />
+        {/* Adding a passkey belongs to passkey accounts: it keys off the username saved
+            on this device, which a Google session does not have. */}
+        {auth.user.username && <>
+          <Button disabled={busy} onClick={() => run(() => mod.fbAddPasskey(), t('Passkey added'))}>{t('Add a passkey on this device')}</Button>
+          <div style={{ height: 10 }} />
+        </>}
         <Button variant="ghost" disabled={busy} onClick={() => run(() => mod.fbSignOut(), t('Signed out'))}>{t('Sign out')}</Button>
       </> : <FirebaseSignIn />}
     </div>

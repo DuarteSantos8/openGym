@@ -3657,4 +3657,5 @@ export default {
   "Welcome back": "歡迎回來",
   "Your workouts. Your weights. Every device.": "你的訓練。你的體重。每個裝置上都有。",
   "you": "你",
+  "Continue with Google": "使用 Google 繼續",
 }

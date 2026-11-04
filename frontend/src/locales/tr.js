@@ -3664,4 +3664,5 @@ export default {
   "Welcome back": "Tekrar hoş geldin",
   "Your workouts. Your weights. Every device.": "Antrenmanların. Kiloların. Her cihazda.",
   "you": "sen",
+  "Continue with Google": "Google ile devam et",
 }

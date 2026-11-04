@@ -3664,4 +3664,5 @@ export default {
   "Welcome back": "다시 오신 것을 환영합니다",
   "Your workouts. Your weights. Every device.": "내 운동. 내 무게. 모든 기기에서.",
   "you": "나",
+  "Continue with Google": "Google로 계속하기",
 }

@@ -3719,4 +3719,5 @@ export default {
   "Welcome back": "مرحبا بعودتك",
   "Your workouts. Your weights. Every device.": "تمارينك. أوزانك. على كل جهاز.",
   "you": "أنت",
+  "Continue with Google": "المتابعة باستخدام Google",
 }

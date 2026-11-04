@@ -3743,4 +3743,5 @@ export default {
   "Welcome back": "আবার স্বাগতম",
   "Your workouts. Your weights. Every device.": "আপনার ওয়ার্কআউট। আপনার ওজন। প্রতিটি ডিভাইসে।",
   "you": "আপনি",
+  "Continue with Google": "Google দিয়ে চালিয়ে যান",
 }

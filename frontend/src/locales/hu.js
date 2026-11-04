@@ -3667,4 +3667,5 @@ export default {
   "Welcome back": "Üdv újra itt",
   "Your workouts. Your weights. Every device.": "Az edzéseid. A súlyméréseid. Minden eszközödön.",
   "you": "te",
+  "Continue with Google": "Folytatás Google-fiókkal",
 }

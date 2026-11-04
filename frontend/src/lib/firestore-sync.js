@@ -26,6 +26,8 @@
 // /api/passkey/* Vercel functions (@simplewebauthn/server + firebase-admin): they verify
 // the WebAuthn response and mint a Firebase custom token; this module then signs in with
 // it via signInWithCustomToken. Session persistence is Firebase Auth's own (local).
+// Google sign-in (fbGoogleLogin) needs none of this machinery: it is a native Firebase
+// Auth provider, and its sessions enter through the same onAuthStateChanged door.
 import { firebaseConfig } from './firebase-config.js'
 import { splitState, joinDocs, splitHashes, docIdFor, keyForDocId, entryHash } from './firestore-model.js'
 import { mergeStates } from './sync-merge.js'
@@ -34,7 +36,9 @@ const USERNAME_KEY = 'gym_fb_username'
 const PUSH_DEBOUNCE_MS = 800
 
 // ---- tiny auth-state pub/sub for the UI (components/FirebaseAccount.jsx, views/Login.jsx)
-let fbUser = null // { uid, username } | null
+let fbUser = null // { uid, username, email, displayName, provider } | null — username is
+// the passkey account name saved on this device; email/displayName/provider come from
+// the Firebase user itself, which is what a Google session carries.
 let fbReady = false
 const authListeners = new Set()
 export function onFbAuthChange(fn) {
@@ -120,6 +124,32 @@ export async function fbLogin(username) {
   return out
 }
 
+/** Sign in with Google — native Firebase Auth, no project server function involved.
+ *  The session it creates is an ordinary Firebase session, so the sync engine's
+ *  onAuthStateChanged path treats it exactly like a passkey custom-token session and
+ *  the account's data lives under users/{uid} like everyone else's.
+ *
+ *  Redirect or popup: an installed PWA (and mobile Safari generally) cannot be trusted
+ *  with a popup — it opens in a separate browser context and the result is lost — so
+ *  standalone displays and mobile user agents go through signInWithRedirect, whose
+ *  result startFirestoreSync collects via getRedirectResult, and desktop browsers get
+ *  the popup. A redirect return value means the page is about to navigate away. */
+export async function fbGoogleLogin() {
+  await ensureFirebase()
+  const authMod = authModCache || (await import('firebase/auth'))
+  const provider = new authMod.GoogleAuthProvider()
+  const standalone = (typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      && window.matchMedia('(display-mode: standalone)').matches)
+    || (typeof navigator !== 'undefined' && navigator.standalone === true)
+  const mobile = typeof navigator !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
+  if (standalone || mobile) {
+    await authMod.signInWithRedirect(auth, provider)
+    return { redirect: true }
+  }
+  await authMod.signInWithPopup(auth, provider)
+  return { redirect: false }
+}
+
 /** Add another passkey to the signed-in account (new phone/browser). */
 export async function fbAddPasskey() {
   await ensureFirebase()
@@ -141,9 +171,21 @@ export function startFirestoreSync(useStore) {
   started = true
   ensureFirebase().then(() => {
     const { onAuthStateChanged } = authModCache
+    // A Google redirect sign-in lands back on this page; its result (or its failure)
+    // arrives here. The session itself is picked up by onAuthStateChanged below either
+    // way, so this only surfaces an error the redirect would otherwise swallow.
+    if (typeof authModCache.getRedirectResult === 'function') {
+      authModCache.getRedirectResult(auth).catch(e => console.warn('[fb-sync] redirect sign-in failed', e))
+    }
     onAuthStateChanged(auth, user => {
       if (user) {
-        setFbUser({ uid: user.uid, username: localStorage.getItem(USERNAME_KEY) || '' })
+        setFbUser({
+          uid: user.uid,
+          username: localStorage.getItem(USERNAME_KEY) || '',
+          email: user.email || '',
+          displayName: user.displayName || '',
+          provider: (user.providerData && user.providerData[0] && user.providerData[0].providerId) || '',
+        })
         attach(useStore, user.uid).catch(e => console.warn('[fb-sync] attach failed', e))
       } else {
         detach()

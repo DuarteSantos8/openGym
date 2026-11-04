@@ -3664,4 +3664,5 @@ export default {
   "Welcome back": "Bem-vindo de volta",
   "Your workouts. Your weights. Every device.": "Os seus treinos. Os seus pesos. Em cada dispositivo.",
   "you": "você",
+  "Continue with Google": "Continuar com o Google",
 }

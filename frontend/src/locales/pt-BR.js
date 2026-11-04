@@ -2453,6 +2453,7 @@ export const PT_BR_OVERRIDES = {
   "Welcome back": "Bem-vindo de volta",
   "Your workouts. Your weights. Every device.": "Seus treinos. Seus pesos. Em cada dispositivo.",
   "you": "você",
+  "Continue with Google": "Continuar com o Google",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

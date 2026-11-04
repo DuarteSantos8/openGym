@@ -3675,4 +3675,5 @@ export default {
   "Welcome back": "ยินดีต้อนรับกลับ",
   "Your workouts. Your weights. Every device.": "การออกกำลังกายของคุณ น้ำหนักของคุณ บนทุกอุปกรณ์",
   "you": "คุณ",
+  "Continue with Google": "ดำเนินการต่อด้วย Google",
 }
