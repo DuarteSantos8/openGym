@@ -15,6 +15,7 @@ dependencies {
     implementation project(':capacitor-filesystem')
     implementation project(':capacitor-local-notifications')
     implementation project(':capacitor-share')
+    implementation project(':capacitor-splash-screen')
 
 }
 
