@@ -1111,8 +1111,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
     </>,
 
-    // Health: the area itself, and on the iPhone app the sources it can read from (Apple Health).
-
     about: () => <>
       {/* Updates. On Android the row is always there: it checks on demand and installs when a
           release is newer (checksum verified, see onUpdateRowClick). On the web the app updates
