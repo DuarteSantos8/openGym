@@ -2572,7 +2572,6 @@ export default {
   'Medium fits most gyms. Go bigger if the nudge comes late, smaller if it pings you on the street.': 'বেশিরভাগ জিমে মাঝারিই ঠিক। রিমাইন্ডার দেরিতে এলে বড় করুন, রাস্তাতেই বাজলে ছোট করুন।',
   'Remind me here': 'এখানে মনে করিয়ে দিন',
   'Open in Apple Maps': 'Apple Maps-এ খুলুন',
-  'Your gym': 'আপনার জিম',
   'Lost access?': 'অ্যাক্সেস হারিয়েছেন?',
   'No panic: your training is safe on the server. One of these gets you back in.': 'চিন্তা নেই: আপনার ট্রেনিং সার্ভারে নিরাপদে আছে। এগুলোর একটি দিয়ে আবার ঢুকতে পারবেন।',
   'Your passkey may be synced': 'আপনার পাসকি হয়তো সিঙ্ক করা আছে',
