@@ -1,10 +1,11 @@
 // @vitest-environment happy-dom
-// Christmas (and its advent calendar) is a surprise until 1 December 2026, local time: shipped in
-// 1.4.5 in November, nothing of it may show or be reachable before then, even with the theme set
-// to On (lib/seasonal.js `debut`). This walks every way in on a November day: the theme helpers,
+// Christmas (and its advent calendar) is a surprise every year until 1 December, local time, and
+// goes back into hiding on 1 January: outside December nothing of it may show or be reachable,
+// even with the theme set to On (lib/seasonal.js `hidden`). This walks every way in on a day out
+// of December (the last minute of November 2026, 1 January 2027, November 2027): the theme helpers,
 // Settings → Look & Home, Seasonal themes and Modules, the settings search, the app icon picker,
 // the streak icon picker, openSeasonal (the advent row's way in) and the Christmas chunk's own
-// open() and Home card. Then the same on 1 December, where it all turns up.
+// open() and Home card. Then the same on 1 December, where it all turns up and switches off.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -74,8 +75,8 @@ beforeEach(() => {
 afterEach(() => { act(() => root.unmount()); host.remove(); vi.useRealTimers() })
 const mount = page => act(() => root.render(<Settings page={page} key={page} />))
 
-describe('the last minute of November 2026', () => {
-  beforeEach(() => vi.setSystemTime(NOV))
+describe.each([['the last minute of November 2026', NOV], ['New Year\'s Day 2027', new Date(2027, 0, 1, 0, 0)], ['November 2027', new Date(2027, 10, 20, 12)]])('%s', (_, when) => {
+  beforeEach(() => vi.setSystemTime(when))
 
   it('the theme does not exist: no On, no colours, no workout decoration, no calendar', () => {
     expect(shownThemes().map(th => th.id)).toEqual(['halloween'])
@@ -108,6 +109,7 @@ describe('the last minute of November 2026', () => {
   it('no Christmas app icon to pick, no festive streak flame', () => {
     expect(offeredIcons(new Date(), 'default').map(v => v.id)).not.toContain('christmas')
     expect(pickerChoices({ advent: { year: 2025, opened: [] } }, 'flame').map(c => c.v)).not.toContain('flameHat')
+    expect(offeredIcons(new Date(), 'christmas').map(v => v.id)).toContain('christmas')   // one in use stays
   })
 
   it('no way in to the calendar: openSeasonal, the chunk\'s own open() and its Home card all say no', async () => {
@@ -130,6 +132,15 @@ describe('1 December 2026, one minute past midnight', () => {
     mount('themes')
     expect(host.textContent).toContain('Christmas')
     expect(host.textContent).toContain('Advent calendar')
+    // in its own weeks it is simply on or off, like any switch
+    const sw = host.querySelector('[aria-label="Christmas"]')
+    expect(sw).not.toBeNull()
+    act(() => sw.click())
+    expect(mocks.S.seasonal.christmas).toBe('off')
+    expect(activeSeason(mocks.S)).toBe(null)
+    act(() => root.unmount()); root = createRoot(host); mount('themes')
+    act(() => host.querySelector('[aria-label="Christmas"]').click())
+    expect(mocks.S.seasonal.christmas).toBe('auto')
     expect(searchSettings('christmas', guestWeb, s => s).length).toBeGreaterThan(0)
     expect(offeredIcons(new Date(), 'default').map(v => v.id)).toContain('christmas')
     expect(await openSeasonal('christmas', 'advent')).toBe(true)

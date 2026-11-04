@@ -17,11 +17,12 @@
    override, which is only ever opt-in. `appIcon` names its icon in lib/app-icon-variants.js, which
    the settings page then suggests while the theme shows.
 
-   `debut` is the first local day a theme exists at all (1.4.5): before it, nothing of it shows or
-   can be reached, whatever its choice says. Christmas shipped in November 2026 and stays a
-   surprise until 1 December: no row in Settings, no "On" to force it, no app icon, no advent
-   calendar, no search hit (seasonal.gate.test.jsx walks every way in). After its debut it
-   behaves like Halloween: Auto in its weeks, On all year if you insist. */
+   `hidden: true` makes a theme exist only inside its own window (1.4.5): outside it, nothing of
+   it shows or can be reached, whatever its choice says. Christmas is a surprise every year: from
+   1 December it turns up in Settings and works like Halloween (Auto, On, Off, its colours), and
+   on 1 January it goes back into hiding until the next 1 December. No row in Settings, no "On"
+   to force it early, no app icon, no advent calendar, no search hit (views/seasonal-gate.test.jsx
+   walks every way in). */
 import { isOn } from './modules.js'
 import { seasonNow } from './season-clock.js'
 
@@ -37,7 +38,7 @@ export const THEMES = [
   },
   {
     id: 'christmas', title: 'Christmas', icon: 'gift', tint: 'var(--red)',
-    from: [12, 1], to: [12, 31], debut: [2026, 12, 1],
+    from: [12, 1], to: [12, 31], hidden: true,
     colors: 'red', colorsTitle: 'Festive colors', colorsNote: 'A berry red accent while Christmas shows. Your own color comes back after.',
     workoutTitle: 'Also during workouts', workoutNote: 'A few snowflakes behind the cards, a bauble in the header, presents on the finish screen. Never on your sets.',
     during: 'Snow, fairy lights, a sleigh and an advent calendar until the end of December. Never on your sets.',
@@ -51,17 +52,15 @@ const byId = id => THEMES.find(th => th.id === id) || null
 
 const md = d => (d.getMonth() + 1) * 100 + d.getDate()
 
-/** Whether the theme exists yet on `now` (local): always, or from its `debut` day on. */
-export function debuted(theme, now = seasonNow()) {
+/** Whether the theme exists on `now` (local): always, or only inside its window when `hidden`. */
+export function available(theme, now = seasonNow()) {
   const th = typeof theme === 'string' ? byId(theme) : theme
   if (!th) return false
-  if (!th.debut) return true
-  const [y, m, d] = th.debut
-  return now.getTime() >= new Date(y, m - 1, d).getTime()
+  return !th.hidden || inSeason(th, now)
 }
 
 /** The themes that exist on `now`: the ones Settings lists, searches and lets you choose. */
-export const shownThemes = (now = seasonNow()) => THEMES.filter(th => debuted(th, now))
+export const shownThemes = (now = seasonNow()) => THEMES.filter(th => available(th, now))
 
 /** Whether `now` (local time) falls inside the theme's window. A window may wrap the new year. */
 export function inSeason(theme, now = seasonNow()) {
@@ -77,9 +76,9 @@ export function seasonChoice(S, id) {
   return CHOICES.includes(v) ? v : 'auto'
 }
 
-/** Whether the theme shows now: On always, Off never, Auto inside its window. Never before its debut. */
+/** Whether the theme shows now: On always, Off never, Auto inside its window. Never while the theme is hidden. */
 export function themeOn(S, id, now = seasonNow()) {
-  if (!debuted(id, now)) return false
+  if (!available(id, now)) return false
   const c = seasonChoice(S, id)
   return c === 'on' || (c === 'auto' && inSeason(id, now))
 }

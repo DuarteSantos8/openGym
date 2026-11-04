@@ -8,7 +8,7 @@
 import { t } from '../lib/i18n.js'
 import { ACCENT_NAMES } from '../lib/format.js'
 import { MODULES } from '../lib/modules.js'
-import { debuted, shownThemes } from '../lib/seasonal.js'
+import { available, shownThemes } from '../lib/seasonal.js'
 
 // `mod`: the module (lib/modules.js) a page belongs to; with it off the page and its rows are gone,
 // from the root and from the search alike (pageVisible, searchSettings).
@@ -98,8 +98,8 @@ const MODULE_KW = {
   integrations: 'integrations webhook webhooks home assistant n8n mcp automation',
   seasonal: 'seasonal season halloween theme decoration',
 }
-// The words for a theme that only exist from its debut (lib/seasonal.js): Christmas stays a
-// surprise until 1 December 2026, so before then "christmas" or "advent" finds nothing at all.
+// The words for a theme that only exists in its own weeks (lib/seasonal.js `hidden`): outside
+// December "christmas" or "advent" finds nothing at all.
 const SEASON_KW = { christmas: 'christmas xmas advent calendar snow santa december' }
 const seasonKw = () => shownThemes().map(th => SEASON_KW[th.id] || '').join(' ')
 export const SEARCH = [
@@ -198,8 +198,8 @@ export const SEARCH = [
   { page: 'themes', title: 'Halloween', icon: 'pumpkin', tint: 'var(--orange)', kw: 'halloween seasonal theme spooky spider pumpkin bats witch october decoration', opts: ['Auto', 'On', 'Off'] },
   { page: 'themes', title: 'Also during workouts', icon: 'play', tint: 'var(--green)', kw: 'halloween seasonal workout training decoration' },
   { page: 'themes', title: 'Spooky colors', icon: 'palette', tint: 'var(--purple)', kw: 'halloween orange purple accent color colour seasonal' },
-  { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh advent calendar december decoration', opts: ['Auto', 'On', 'Off'], when: () => debuted('christmas') },
-  { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal', when: () => debuted('christmas') },
+  { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh reindeer advent calendar december decoration on off', when: () => available('christmas') },
+  { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal', when: () => available('christmas') },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },

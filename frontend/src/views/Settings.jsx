@@ -1103,18 +1103,22 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     // One section per seasonal theme (lib/seasonal.js). Auto shows it in its weeks; On keeps it
     // all year, Off never. Synced like the rest of Look; once-a-day surprises stay per device.
     themes: () => <>
-      {/* Only the themes that exist yet: Christmas is not there at all before 1 December 2026. */}
+      {/* Only the themes that exist now: Christmas is there in December only (lib/seasonal.js
+          `hidden`), and since it only exists in its own weeks it is simply on or off. */}
       {shownThemes().map(th => {
         const choice = seasonChoice(S, th.id)
         const set = (k, v) => update(s => { s.seasonal = { ...(s.seasonal || {}), [k]: v } })
-        const note = choice === 'on' ? t('On all year round. Bold choice.')
-          : choice === 'off' ? t('Off, even in season. Fair enough.')
+        const note = choice === 'off' ? t('Off, even in season. Fair enough.')
+          : th.hidden ? t(th.during)
+          : choice === 'on' ? t('On all year round. Bold choice.')
           : inSeason(th) ? t(th.during) : t(th.back)
         return <Section key={th.id} footer={note}>
           <Row icon={th.icon} iconTint={th.tint} title={t(th.title)}>
-            <Segmented className="seg-inline"
-              options={[{ value: 'auto', label: t('Auto') }, { value: 'on', label: t('On') }, { value: 'off', label: t('Off') }]}
-              value={choice} onChange={v => set(th.id, v)} />
+            {th.hidden
+              ? <Switch aria-label={t(th.title)} checked={choice !== 'off'} onChange={v => set(th.id, v ? 'auto' : 'off')} />
+              : <Segmented className="seg-inline"
+                options={[{ value: 'auto', label: t('Auto') }, { value: 'on', label: t('On') }, { value: 'off', label: t('Off') }]}
+                value={choice} onChange={v => set(th.id, v)} />}
           </Row>
           {th.colors && <Row icon="palette" iconTint="var(--purple)" title={t(th.colorsTitle)} subtitle={t(th.colorsNote)}>
             <Switch aria-label={t(th.colorsTitle)} checked={S.seasonal?.[th.id + 'Colors'] === true}

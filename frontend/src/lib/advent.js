@@ -20,13 +20,13 @@
 // Every door that is open hangs a bauble on the tree; it lights up when its thing is done or
 // when you trained that day (adventLit). Catch-up is always fine: a missed day's door opens any
 // time in December, and nothing is ever taken away.
-import { debuted } from './seasonal.js'
+import { available } from './seasonal.js'
 import { seasonNow } from './season-clock.js'
 
 export const DOORS = 24
 export const REPS_MAX = 999
 
-const isDec = now => now.getMonth() === 11 && debuted('christmas', now)
+const isDec = now => now.getMonth() === 11 && available('christmas', now)
 
 /** Whether `now` (local) is inside the calendar's days: 1 to 24 December. */
 export const inAdvent = (now = seasonNow()) => isDec(now) && now.getDate() <= DOORS

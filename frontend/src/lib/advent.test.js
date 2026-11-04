@@ -114,9 +114,9 @@ describe('two devices', () => {
   })
 })
 
-describe('not before its debut', () => {
-  it('nothing opens in November 2026, nor in a December before the calendar existed', () => {
-    for (const now of [local(2026, 11, 30, 23, 59), local(2025, 12, 5)]) {
+describe('only in December, every year', () => {
+  it('nothing opens in November or January, whatever the year; every December it does', () => {
+    for (const now of [local(2026, 11, 30, 23, 59), local(2027, 11, 15), local(2027, 1, 1, 0, 0), local(2031, 6, 1)]) {
       expect(inAdvent(now)).toBe(false)
       expect(adventOpenable(now)).toBe(false)
       expect(nextDoor({}, now)).toBe(null)
@@ -124,7 +124,7 @@ describe('not before its debut', () => {
       expect(openDoor(s, 1, now)).toBe(false)
       expect(s.advent).toBeUndefined()
     }
-    expect(inAdvent(local(2026, 12, 1, 0, 0))).toBe(true)
+    for (const now of [local(2026, 12, 1, 0, 0), local(2027, 12, 3), local(2025, 12, 5)]) expect(inAdvent(now)).toBe(true)
   })
 })
 
