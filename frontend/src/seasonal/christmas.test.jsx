@@ -92,7 +92,7 @@ describe('Santa and his reindeer', () => {
     const f = host.querySelector('.xm-flight')
     expect(f).not.toBeNull()
     expect(f.getAttribute('aria-hidden')).toBe('true')
-    expect(f.querySelectorAll('.xm-deer')).toHaveLength(9)
+    expect(f.querySelectorAll('.xm-ear')).toHaveLength(9)          // one ear each: nine reindeer
     expect(f.querySelector('.xm-rudolph')).not.toBeNull()
     expect(f.querySelector('button, a, [tabindex]')).toBeNull()
     act(() => f.dispatchEvent(new Event('animationend', { bubbles: true })))

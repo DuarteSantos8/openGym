@@ -73,8 +73,10 @@ const Present = ({ hue = 0 }) => (
   </svg>
 )
 
-const Snowman = () => (
-  <svg className="xm-snowmansvg" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+const Snowman = ({ wave = false }) => (
+  <svg className={'xm-snowmansvg' + (wave ? ' xm-waver' : '')} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+    {wave && <path className="xm-arm xm-arm-wave" d="M27 24.4 34.6 17.6M32.4 19.4l2.6.4M33.2 18.4l-.2-2.6" />}
+    {wave && <path className="xm-arm" d="M13 24.6 5.6 21.4M7.6 22.2l-2.2 1.4" />}
     <circle className="xm-snow" cx="20" cy="33" r="11" />
     <circle className="xm-snow" cx="20" cy="15.5" r="8" />
     <rect className="xm-hatblk" x="13.5" y="2" width="13" height="6.6" rx="1.2" />
@@ -107,34 +109,70 @@ const Bauble = ({ gold = false }) => (
   </svg>
 )
 
-// One reindeer, facing right: body, legs and antlers. The team below draws it nine times.
-const DEER = <>
-  <path className="xm-deer" d="M.6 15.4c2.6-2.4 10-2.6 15-1l4-5.8 2.4.8-2.6 7.4c-.6 2.6-3.8 4-9.4 4.2-6 .2-9.8-1.2-9.4-5.6Z" />
-  <path className="xm-deerline" d="M3.6 19.6 0 26.4M7 20.4l-1.2 6.6M14.4 20.4l2.6 6.2M17.6 19.4l3.8 5.2" />
-  <path className="xm-antler" d="M20.6 8.4l-1.4-4M19.8 6l-2.4-1M22.6 8.8l1.4-4.2M23.6 6.2l2.4-1" />
+/* One reindeer, facing right, mid-gallop: body, neck and head, an ear, antlers, a tail, front
+   legs reaching forward and back legs pushing off, with a red harness band and a gold bell.
+   `stride` 1 swaps the legs, so a pair never gallops in step. About 36 x 26 units. */
+const Deer = ({ stride = 0, rudolph = false }) => <>
+  <path className="xm-deerline" d={stride
+    ? 'M22.6 17.6 27 21.2l3.2-.6M20.4 18.8l2.4 5.4M10.6 18.2 6.4 22.6 3 22.4M12.4 19l-2.2 5.6'
+    : 'M22.4 17.8 25.4 23l3.4.2M20.6 18.6 25 21.6l3-1.4M10.4 18.4 5 21l-2.6 2.2M12.6 19.2 9.6 24.6'} />
+  <ellipse className="xm-deer" cx="16.4" cy="14.6" rx="9.6" ry="5.2" />
+  <path className="xm-deer" d="M21.4 11.6 26 4.8c.7-1 2-1.3 3-.6l.8.6-4.8 10Z" />
+  <path className="xm-deer" d="M26.4 3.8c1.4-1 3.4-1.1 5.6-.4l2.6.9c.9.3 1 1.5.2 2l-1.6 1-4.6.6c-1.6.2-2.9-.9-3-2.4 0-.6.3-1.3.8-1.7Z" />
+  <ellipse className="xm-deer xm-ear" cx="26.2" cy="3" rx="2" ry=".9" transform="rotate(-28 26.2 3)" />
+  <path className="xm-antler" d="M27.6 2.8 26.4-1.6M26.9.4 24.8-.8M27.2 1.6 25.2 1.4M29.2 2.6l1-4.2M29.8.2l2.2-1M29.5 1.4l2.4.2" />
+  <ellipse className="xm-tail" cx="6.6" cy="12.4" rx="1.8" ry="1.1" transform="rotate(-24 6.6 12.4)" />
+  <path className="xm-harness" d="M21.6 10.4 24.8 15.6M15.6 9.6v10" />
+  <circle className="xm-bell" cx="23.6" cy="14.6" r="1" />
+  <circle className={rudolph ? 'xm-rudolph' : 'xm-snout'} cx="34.4" cy="5.8" r={rudolph ? 1.9 : 0.9} />
 </>
 
 /* Santa in his sleigh with all nine reindeer: Dasher, Dancer, Prancer and Vixen, Comet, Cupid,
    Donner and Blitzen in pairs, and Rudolph out in front with the nose that lights the way. The
-   pair's far reindeer sits a little higher and lighter, for depth. */
-const PAIRS = [62, 96, 130, 164]
+   sleigh has a curled front, gold runners and a sack of presents; Santa a hat, a beard and his
+   belt. A little sparkle trail follows. The pair's far reindeer is a touch higher and lighter. */
+const PAIRS = [94, 136, 178, 220]
 const SantaTeam = () => (
-  <svg className="xm-teamsvg" viewBox="0 0 232 42" aria-hidden="true" focusable="false">
-    <path className="xm-reins" d="M42 14.6C80 11 150 12 206 15.6" />
-    {PAIRS.map((x, i) => <g key={i} className="xm-pair" style={{ animationDelay: i * 0.08 + 's' }}>
-      <g className="xm-far" transform={`translate(${x + 7} 9) scale(.86)`}>{DEER}</g>
-      <g transform={`translate(${x} 12)`}>{DEER}</g>
+  <svg className="xm-teamsvg" viewBox="-30 -8 340 58" aria-hidden="true" focusable="false">
+    {/* the reins, from Santa's mitt to every collar */}
+    <path className="xm-reins" d="M52 15C80 12 100 12 117 14M52 15c40-4 70-4 107-1M52 15c50-5 100-4 149-1M52 15c60-6 130-5 191-1M52 15c70-7 160-6 233-2" />
+    {PAIRS.map((x, i) => <g key={i} className="xm-pair" style={{ animationDelay: i * 0.11 + 's' }}>
+      <g className="xm-far" transform={`translate(${x + 8} 6) scale(.9)`}><Deer stride={(i + 1) % 2} /></g>
+      <g transform={`translate(${x} 10)`}><Deer stride={i % 2} /></g>
     </g>)}
-    <g className="xm-pair" transform="translate(198 10)">{DEER}<circle className="xm-rudolph" cx="21.8" cy="10.4" r="2" /></g>
+    <g className="xm-pair" style={{ animationDelay: '.5s' }} transform="translate(264 8)"><Deer rudolph /></g>
+    {/* the sleigh, its sack and Santa */}
     <g className="xm-sleighg">
-      <path className="xm-sack" d="M8.4 16.8c-1-5.4 1.6-9.6 6-10.4 3.6-.6 5.6 2.2 5.4 5.4l-.6 5Z" />
-      <path className="xm-santa" d="M16.4 16.6c0-5.4 3-8.8 7-8.8s7 3.4 7 8.8Z" />
-      <circle className="xm-beard" cx="24.6" cy="7.8" r="3" />
-      <path className="xm-santa" d="M21.2 5.4c.8-3 3.6-4.6 6.8-3.4l2.6 2.8-2.8.4Z" />
-      <circle className="xm-beard" cx="30.6" cy="4.6" r="1.1" />
-      <path className="xm-sled" d="M5 24h30c3.2 0 5.6-2 6.6-5.2l1.8-6.4h-5.6l-1.8 4.2H13c-3.4 0-6.6 2.6-8 7.4Z" />
-      <path className="xm-runner" d="M1.6 31.6h35.6c4.2 0 6.6-2 7.4-5M12 25v6.4M32 25v6.4" />
+      <path className="xm-sack" d="M6 26c-2.6-6.8-.6-14 5-17.4 4.6-2.8 10.4-1.6 13.4 2.4l1.6 15Z" />
+      <rect className="xm-gift xm-gift-a" x="8.4" y="2.6" width="8" height="7.4" rx="1" /><path className="xm-giftrib" d="M12.4 2.6v7.4M8.4 6.3h8" />
+      <rect className="xm-gift xm-gift-b" x="15.6" y="5" width="7" height="6" rx="1" transform="rotate(10 19 8)" />
+      <path className="xm-santa" d="M24.6 30c-.4-8.6 2.6-15.6 9.6-16.6 6.6-.9 10.8 4.4 10.8 12.6l-.4 4Z" />
+      <path className="xm-armline" d="M40.4 19.4 50.4 15" />
+      <circle className="xm-mitt" cx="51.4" cy="14.8" r="1.8" />
+      <rect className="xm-belt" x="25.4" y="23.2" width="19.4" height="3" rx="1" />
+      <rect className="xm-buckle" x="33.2" y="22.6" width="4.2" height="4.2" rx=".8" />
+      <circle className="xm-face" cx="39.4" cy="8.8" r="4.4" />
+      <path className="xm-beard" d="M34.6 9.6c-.4 4.4 1.6 8 4.8 8.4 3 .4 5.2-2.2 5.4-6.8-1.6 1.2-3.6 1.6-5.2 1.2-1.8-.4-3.6-1.4-5-2.8Z" />
+      <path className="xm-santa" d="M34.4 7c.6-4.6 3.8-7.2 7.4-6.6 1.6.3 2.4 1.4 2.4 2.8-1.2-.8-2.6-.8-3.4 0 .6 1.2.8 2.4.6 3.8Z" />
+      <rect className="xm-fur" x="33.4" y="5.6" width="11.4" height="2.8" rx="1.4" />
+      <circle className="xm-fur" cx="44.8" cy="3.6" r="1.7" />
+      <path className="xm-sled" d="M12.6 22.4h44.6c5.6 0 9.4-2.8 11-8 .7-2.2 3.6-2.6 4.8-.6 1.4 2.4.2 6.6-2.6 9.8-3.8 4.4-9.4 6.8-15.6 6.8H22.6c-5.4 0-9.4-3.2-10-8Z" />
+      <path className="xm-trim" d="M16.6 25.4h40.6c4 0 7-1.4 8.8-4.4" />
+      <path className="xm-runner" d="M6.6 38.4h57.6c6.4 0 9.6-2.8 11-7 .5-1.6-.4-3-2-2.8M6.6 38.4c-3 0-4.6-2.4-3.4-4.4M22.4 30.6v7.8M52 30.6v7.8" />
     </g>
+    {/* the sparkle trail */}
+    <g className="xm-trail">
+      {[[-6, 30, 2.4, 0], [-14, 22, 1.8, .3], [-22, 32, 1.5, .6], [-30, 25, 1.2, .9]].map(([x, y, r, d], i) =>
+        <path key={i} className="xm-spark" style={{ animationDelay: d + 's' }} d={`M${x} ${y - r * 2}l${r * .5} ${r * 1.5} ${r * 1.5} ${r * .5}-${r * 1.5} ${r * .5}-${r * .5} ${r * 1.5}-${r * .5}-${r * 1.5}-${r * 1.5}-${r * .5} ${r * 1.5}-${r * .5}Z`} />)}
+    </g>
+  </svg>
+)
+
+// A candy cane, hung by its crook.
+const CandyCane = () => (
+  <svg className="xm-canesvg" viewBox="0 0 14 30" aria-hidden="true" focusable="false">
+    <path className="xm-cane" d="M4 29V8.6a4 4 0 0 1 8 0v1.6" />
+    <path className="xm-cane-s" d="M4 29V8.6a4 4 0 0 1 8 0v1.6" />
   </svg>
 )
 
@@ -232,13 +270,61 @@ export function Layer({ hidden, fresh, workout }) {
     window.addEventListener('pointerdown', away, true)
     return () => window.removeEventListener('pointerdown', away, true)
   }, [flight])
+  // Snow settling on the cards' top edges, on every screen the theme decorates (the workout screen
+  // only with "Also during workouts"), and the warm festive tint with the Christmas colours on.
+  const tint = useStore(s => s.S?.seasonal?.christmasColors === true)
+  useEffect(() => {
+    const de = document.documentElement
+    if (show) de.dataset.xmCaps = '1'; else delete de.dataset.xmCaps
+    if (tint) de.dataset.xmTint = '1'; else delete de.dataset.xmTint
+    return () => { delete de.dataset.xmCaps; delete de.dataset.xmTint }
+  }, [show, tint])
+  const spark = useSetSparkle(hidden && !!workout)
   return <>
+    {spark && <SetSparkle key={spark.n} at={spark} />}
     {snow > 0 && show && !reducedMotion() && <Snow key={snow} few={hidden} onGone={() => setSnow(0)} />}
     {flight > 0 && !hidden && <div key={flight} className={'xm-flight' + (leaving ? ' xm-leave' : '')} aria-hidden="true"
       onAnimationEnd={e => { if (e.target === e.currentTarget) setFlight(0) }}
       onTransitionEnd={e => { if (e.target === e.currentTarget && leaving) setFlight(0) }}><SantaTeam /></div>}
   </>
 }
+
+/* A short sparkle where a set was just ticked done, on the workout screen with "Also during
+   workouts" on: the store's count of done sets goes up within a moment of a tap, and the sparkle
+   shows at that tap. Never with reduced motion; never anything to tap itself. */
+const doneSets = A => (A && Array.isArray(A.entries) ? A.entries.reduce((n, e) => n + (Array.isArray(e?.sets) ? e.sets.filter(x => x?.done).length : 0), 0) : 0)
+function useSetSparkle(on) {
+  const done = useStore(s => doneSets(s.S?.active))
+  const prev = useRef(done)
+  const tap = useRef(null)
+  const [spark, setSpark] = useState(null)
+  useEffect(() => {
+    if (!on) return
+    const down = e => { tap.current = { x: e.clientX, y: e.clientY, t: Date.now() } }
+    window.addEventListener('pointerdown', down, true)
+    return () => window.removeEventListener('pointerdown', down, true)
+  }, [on])
+  useEffect(() => {
+    const was = prev.current
+    prev.current = done
+    if (!on || done <= was || reducedMotion()) return
+    const p = tap.current
+    if (!p || Date.now() - p.t > 1500) return
+    setSpark(sp => ({ x: p.x, y: p.y, n: (sp?.n || 0) + 1 }))
+  }, [done, on])
+  useEffect(() => {
+    if (!spark) return
+    const tm = setTimeout(() => setSpark(null), 900)
+    return () => clearTimeout(tm)
+  }, [spark])
+  return spark
+}
+const SPARKS = [[-26, -18], [24, -22], [-8, -32], [30, 4], [-30, 6], [6, 26]]
+const SetSparkle = ({ at }) => (
+  <div className="xm-setspark" aria-hidden="true" style={{ left: at.x, top: at.y }}>
+    {SPARKS.map(([dx, dy], i) => <span key={i} className={'xm-sp' + (i % 3)} style={{ '--dx': dx + 'px', '--dy': dy + 'px', animationDelay: i * 25 + 'ms' }} />)}
+  </div>
+)
 
 /* A few flakes, each falling a few times at its own pace, then gone: about a minute in all. The
    places and speeds come from a small fixed table, so the snow looks the same on every start. */
@@ -271,8 +357,10 @@ function art(spot) {
   switch (spot) {
     case 'header-bats': return <Lights />
     // Home: holly in the hero's corner, a gingerbread house peeking over its top edge.
-    case 'home-hero': return <><Holly className="xm-holly-br" /><span className="xm-peek xm-peek-house" aria-hidden="true"><span className="xm-pk"><GingerHouse /></span></span></>
-    case 'home-streak': return <PeekPresent />
+    case 'home-hero': return <><Holly className="xm-holly-br" />
+      <span className="xm-peek xm-peek-house" aria-hidden="true"><span className="xm-pk"><GingerHouse /></span></span>
+      <span className="xm-peek xm-peek-snowman xm-peek-home" aria-hidden="true" data-snowman><span className="xm-pk"><Snowman wave /></span></span></>
+    case 'home-streak': return <><PeekPresent /><span className="xm-peek xm-peek-mini" aria-hidden="true"><span className="xm-pk"><DecoTree /></span></span></>
     case 'streak-flame': return <FlameHat />
     case 'home-advent': return <><IconSuggest /><AdventCard /></>
     // Plan: a decorated tree and a present in the empty top corner of How you train.
@@ -280,14 +368,19 @@ function art(spot) {
     // Stats: lights along the header, two baubles in the lifetime tile, a gingerbread person
     // hanging off the activity card, holly in a corner and a snowman peeking over a card.
     case 'stats-hdr': return <Lights />
-    case 'stats-tile': return <span className="xm-baubles" aria-hidden="true"><HangingBauble len={26} /><HangingBauble len={12} gold className="xm-hang-b" /></span>
+    case 'stats-tile': return <span className="xm-baubles" aria-hidden="true"><HangingBauble len={26} /><HangingBauble len={12} gold className="xm-hang-b" /><span className="xm-hang xm-hang-c"><span className="xm-hangthread" /><CandyCane /></span></span>
     case 'stats-heatmap': return <span className="xm-ginger-hang" aria-hidden="true"><Gingerbread /></span>
     case 'stats-web': return <Holly className="xm-holly-bl" />
-    case 'stats-peek': return <span className="xm-peek xm-peek-snowman" aria-hidden="true"><span className="xm-pk"><Snowman /></span></span>
+    case 'stats-peek': return <span className="xm-peek xm-peek-snowman" aria-hidden="true" data-snowman><span className="xm-pk"><Snowman wave /></span></span>
+    // An empty list: a tiny snowman keeps it company.
+    case 'empty': return <span className="xm-emptysnow" aria-hidden="true" data-snowman><Snowman /></span>
     // The workout screen: a bauble in one side gutter, a little tree in the other, two flakes along
     // the rest bar's top edge, presents beside the finish screen's trophy. Nothing on a set, a
     // button or a timer.
-    case 'workout-hdr': return <><span className="xm-wcorner" aria-hidden="true"><HangingBauble len={20} className="xm-hang-w" /></span><span className="xm-wcorner xm-wcorner-e" aria-hidden="true"><span className="xm-wtree"><DecoTree /></span></span></>
+    case 'workout-hdr': return <>
+      <WorkoutLights />
+      <span className="xm-wcorner" aria-hidden="true"><HangingBauble len={20} className="xm-hang-w" /><span className="xm-hang xm-hang-w xm-hang-w2"><span className="xm-hangthread" /><CandyCane /></span></span>
+      <span className="xm-wcorner xm-wcorner-e" aria-hidden="true"><span className="xm-wtree"><DecoTree /></span><HangingBauble len={34} gold className="xm-hang-we" /></span></>
     case 'rest-timer': return <RestFlakes />
     case 'streak-party':
     case 'finish': return <span className="xm-finish" aria-hidden="true"><span className="xm-pk"><Present hue={0} /></span><span className="xm-pk xm-pk-r"><Present hue={1} /></span></span>
@@ -324,6 +417,15 @@ function Nose({ spot }) {
   }
   return <>
     {!burst && <span className={'xm-nose-peek' + (spot === 'plan-card' ? ' xm-nose-tree' : '')} aria-hidden="true" data-rudolph={spot}>
+      <span className="xm-rudhead" aria-hidden="true">
+        <svg viewBox="0 0 34 22" aria-hidden="true" focusable="false">
+          <path className="xm-r-antler" d="M12.4 13.2 9.4 5.4M10.6 8.4 6.6 7.2M11.4 10.6 7.8 10.8M9.8 6.8 8.6 2.6M21.6 13.2l3-7.8M23.4 8.4l4-1.2M22.6 10.6l3.6.2M24.2 6.8l1.2-4.2" />
+          <ellipse className="xm-r-ear" cx="9.8" cy="15.4" rx="3.2" ry="1.4" transform="rotate(-24 9.8 15.4)" />
+          <ellipse className="xm-r-ear" cx="24.2" cy="15.4" rx="3.2" ry="1.4" transform="rotate(24 24.2 15.4)" />
+          <path className="xm-r-head" d="M10.6 22c0-5 2.8-8.2 6.4-8.2s6.4 3.2 6.4 8.2Z" />
+          <circle className="xm-r-eye" cx="14.8" cy="18.2" r=".9" /><circle className="xm-r-eye" cx="19.2" cy="18.2" r=".9" />
+        </svg>
+      </span>
       <button type="button" ref={ref} className="xm-nose" tabIndex={-1} aria-hidden="true" onClick={tap} onKeyDown={e => e.stopPropagation()}><i /></button>
     </span>}
     {burst && <Confetti at={burst} />}
@@ -365,10 +467,23 @@ const HangingBauble = ({ len = 20, gold = false, className = '' }) => (
   </span>
 )
 
+/* The rest bar: a gold star riding the end of its progress (RestTimer sets --rest-p, 0 to 1),
+   and, with motion, two flakes drifting along its top edge. Under the clock and the buttons. */
 function RestFlakes() {
-  if (reducedMotion()) return null
-  return <span className="xm-restflakes" aria-hidden="true">
-    {[0, 1].map(i => <span key={i} className={'xm-restlane xm-rl' + i}><span className="xm-restflake"><Flake /></span></span>)}
+  return <>
+    <span className="xm-reststar" aria-hidden="true"><span className="xm-reststar-i"><svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="m6 .6 1.5 3.2 3.4.4-2.5 2.4.6 3.4L6 8.4 3 10l.6-3.4L1.1 4.2l3.4-.4Z" /></svg></span></span>
+    {!reducedMotion() && <span className="xm-restflakes" aria-hidden="true">
+      {[0, 1].map(i => <span key={i} className={'xm-restlane xm-rl' + i}><span className="xm-restflake"><Flake /></span></span>)}
+    </span>}
+  </>
+}
+
+/* Lights along the very top of the workout screen, in the strip above its header: small, and they
+   twinkle a while and then just stay lit, calm enough to train with. */
+function WorkoutLights() {
+  const still = reducedMotion()
+  return <span className={'xm-wlights' + (still ? ' xm-still' : '')} aria-hidden="true">
+    {Array.from({ length: 11 }, (_, i) => <span key={i} className={'xm-bulb xm-b' + (i % 4)} style={{ left: 4 + i * 9.2 + '%', top: (i % 2 ? 4 : 2) + 'px', animationDelay: (i % 3) * 0.5 + 's' }} />)}
   </span>
 }
 
