@@ -3336,7 +3336,7 @@ export default {
   "At {0}": "ที่ {0}",
   "Copy from {0}": "คัดลอกจาก {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "เริ่มด้วยแผ่นน้ำหนัก ดัมเบล และบาร์ที่ตั้งไว้ตอนนี้ เปลี่ยนได้เมื่อเป็นยิมที่ใช้งานอยู่",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "แผ่นน้ำหนัก ดัมเบล บาร์ และชุดน้ำหนักเครื่องจะแยกตามยิม เปลี่ยนยิมแล้วทุกอย่างเปลี่ยนตาม",
   "Active gym": "ยิมที่ใช้งานอยู่",
   "Pick a gym": "เลือกยิม",
@@ -3737,7 +3737,7 @@ export default {
   'sets': 'เซ็ต',
   'weight': 'น้ำหนัก',
   'effort': 'ความหนัก',
-  
+
   'Smart ramp': 'แรมป์อัจฉริยะ',
   'Percentage template': 'เทมเพลตเปอร์เซ็นต์',
   '% of work weight': '% ของน้ำหนักทำงาน',
@@ -3745,7 +3745,7 @@ export default {
   'Check the warm-up steps': 'ตรวจสอบขั้นวอร์มอัพ',
   'Estimate: {0}': 'ประมาณ: {0}',
   '{0} of {1} sets: the load is too low for the full ramp': '{0} จาก {1} เซ็ต: น้ำหนักต่ำเกินไปสำหรับการวอร์มอัพแบบเต็ม',
-  
+
   'Timed hold progression': 'ความก้าวหน้าการค้างตามเวลา',
   'Hold for time; the target seconds go up each time you reach the longest time.': 'ค้างตามเวลา วินาทีเป้าหมายจะเพิ่มขึ้นทุกครั้งที่คุณทำเวลานานที่สุดได้',
   'Seconds added per step': 'วินาทีที่เพิ่มต่อขั้น',

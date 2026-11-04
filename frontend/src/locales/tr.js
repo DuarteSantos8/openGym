@@ -3325,7 +3325,7 @@ export default {
   "At {0}": "{0} salonunda",
   "Copy from {0}": "{0} salonundan kopyala",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Şu an ayarlı plakalar, dambıllar ve barlarla başlar. Aktif salon olunca değiştir.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Plakalar, dambıllar, barlar ve makine ağırlık yığınları salon başına tutulur. Salonu değiştir, hepsi değişsin.",
   "Active gym": "Aktif salon",
   "Pick a gym": "Bir salon seç",
@@ -3726,7 +3726,7 @@ export default {
   'sets': 'set',
   'weight': 'yük',
   'effort': 'efor',
-  
+
   'Smart ramp': 'Akıllı artış',
   'Percentage template': 'Yüzde şablonu',
   '% of work weight': 'Çalışma yükünün %’si',
@@ -3734,7 +3734,7 @@ export default {
   'Check the warm-up steps': 'Isınma adımlarını kontrol et',
   'Estimate: {0}': 'Tahmin: {0}',
   '{0} of {1} sets: the load is too low for the full ramp': '{0}/{1} set: yük tam ısınma rampası için çok düşük',
-  
+
   'Timed hold progression': 'Süreli tutuş ilerlemesi',
   'Hold for time; the target seconds go up each time you reach the longest time.': 'Süreyle tut; en uzun süreye ulaştığında hedef saniyeler artar.',
   'Seconds added per step': 'Adım başına eklenen saniye',

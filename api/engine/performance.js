@@ -11,6 +11,8 @@ function legacySet(row, mode) {
   else if (row.resistance?.kind === 'bodyweight') out.w = 0
   const r = obs(row, 'repetitions'), d = obs(row, 'duration'), speed = obs(row, 'speed'), incline = obs(row, 'incline')
   if (r != null) out.r = r
+  if (mode === 'time' && r != null && d == null) out.mode = 'reps'
+  if (mode === 'reps' && d != null && r == null) out.mode = 'time'
   if (d != null) { if (mode === 'cardio') out.min = d / 60; else out.sec = d }
   if (speed != null) out.speed = speed
   if (incline != null) out.incline = incline
@@ -39,7 +41,7 @@ function targetOf(exposure, p) {
       : { sec: p.prefill.durationSeconds }
   return {
     mode: exposure.mode || 'reps',
-    ...Object.fromEntries(['side', 'bodyweight', 'assisted', 'intensifier', 'warmupRestSec', 'dbLoad', 'bells', 'lastToFailure', 'backoff'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])), sets: p.rows.length, reps: p.prefill.reps, ...duration,
+    ...Object.fromEntries(['side', 'bodyweight', 'assisted', 'sgName', 'sgRest', 'intensifier', 'warmupRestSec', 'dbLoad', 'bells', 'lastToFailure', 'backoff'].filter(k => exposure[k] != null).map(k => [k, exposure[k]])), sets: p.rows.length, reps: p.prefill.reps, ...duration,
     ...(p.parameters.load.resolved ? { weight: p.parameters.load.resolved.value } : {})
   }
 }

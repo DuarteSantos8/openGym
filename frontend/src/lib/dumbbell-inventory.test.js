@@ -5,7 +5,9 @@ import {
   presetWeights, cleanWeights, dumbbellsOf, ownsDumbbells, withDumbbells, ownedWeightsFor,
   ownedUp, ownedDown, ownedFloor, stepOwned, ownedDeload, ownedAround, withDbLoad,
 } from './dumbbells.js'
-import { startMigratedFixture } from './test-fixtures.js'
+import { canonicalProfile, ruleOccurrence } from './test-fixtures.js'
+import { buildSessionExposures } from './session-start.js'
+import { entriesForExposures } from './session-ui-adapter.js'
 import { dropGrid } from './plates.js'
 import { nextDropWeight } from './workout-model.js'
 import { mergeStates } from './sync-merge.js'
@@ -109,8 +111,10 @@ describe('walking the list', () => {
 
 describe('warm-ups and drops over owned dumbbells', () => {
   it('ramps the warm-up onto the heaviest bell under the rung', () => {
-    const S = state([session('2026-10-01', CURL, 21, [8, 6])])
-    const built = startMigratedFixture(S, { ex: [cfg(CURL, { warmupSets: 1 })] }).entries[0]
+    const occ = { ...ruleOccurrence(CURL, { options: { sets: { min: 2, max: 2 }, reps: { min: 8, max: 8 }, load: { mode: 'absolute', value: 21, unit: 'kg' } } }), warmup: { mode: 'smart', count: 1 } }
+    const S = canonicalProfile({ ...state(), routines: [{ id: 'r1', ex: [occ] }] })
+    const xs = buildSessionExposures(S, S.routines[0], { now: 1, newId: seed => seed, unit: 'kg' })
+    const built = entriesForExposures(xs, S.prescriptions)[0]
     const warm = built.sets.find(s => s.phase === 'warmup')
     expect(built.sets.at(-1).w).toBe(21)
     expect(warm.w).toBe(17)

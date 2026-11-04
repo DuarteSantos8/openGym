@@ -11,11 +11,16 @@ import { readGarminLink, writeWatchPrefs } from './watch-settings.js'
 import { GARMIN_SNAPSHOT_VERSION } from './garmin-snapshot.js'
 
 function store(initial) {
-  let st = initial
+  const split = state => {
+    if (!state.S || !Object.hasOwn(state.S, 'active')) return state
+    const { active, ...S } = state.S
+    return { ...state, S, A: active }
+  }
+  let st = split(initial)
   const subs = new Set()
   return {
     getState: () => st,
-    setState: patch => { const prev = st; st = { ...st, ...patch }; subs.forEach(fn => fn(st, prev)) },
+    setState: patch => { const prev = st; st = { ...st, ...split(patch) }; subs.forEach(fn => fn(st, prev)) },
     subscribe: fn => { subs.add(fn); return () => subs.delete(fn) },
   }
 }

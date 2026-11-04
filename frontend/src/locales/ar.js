@@ -3379,7 +3379,7 @@ export default {
   "At {0}": "في {0}",
   "Copy from {0}": "نسخ من {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "يبدأ بالأقراص والدمبلز والبارات المضبوطة لديك الآن. غيّرها عندما يصبح النادي النشط.",
-  
+
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "تُحفظ الأقراص والدمبلز والبارات وأوزان الأجهزة لكل نادٍ. بدّل النادي فيتبدل كل شيء معه.",
   "Active gym": "النادي النشط",
   "Pick a gym": "اختر ناديًا",
@@ -3780,7 +3780,7 @@ export default {
   'sets': 'مجموعات',
   'weight': 'الوزن',
   'effort': 'الجهد',
-  
+
   'Smart ramp': 'تدرّج ذكي',
   'Percentage template': 'قالب بالنسب',
   '% of work weight': '% من وزن العمل',

@@ -242,11 +242,11 @@ function draftRoutines(state, ctx) {
 
 const occurrenceOf = d => ({
   occurrenceId: d.occurrenceId, exerciseId: d.exerciseId, mode: d.mode, rule: d.rule,
-  ...(d.cfg.restSec == null && d.cfg.rest == null ? { restFromProfile: true } : {}),
+  ...(!d.cfg.restOff && d.cfg.restSec == null && d.cfg.rest == null ? { restFromProfile: true } : {}),
   ...(d.warmup ? { warmup: d.warmup } : {}),
   ...(whole(d.cfg.warmupSets) ? { legacyWarmupSets: whole(d.cfg.warmupSets) } : {}),
   ...(Array.isArray(d.cfg.warmupRows) ? { warmupRows: clone(d.cfg.warmupRows) } : {}),
-  ...(d.cfg.sg ? { sg: d.cfg.sg } : {}),
+  ...(d.cfg.sg ? { sg: d.cfg.sg, ...Object.fromEntries(['sgName', 'sgRest'].filter(k => d.cfg[k] != null).map(k => [k, clone(d.cfg[k])])) } : {}),
   ...(typeof d.cfg.note === 'string' && d.cfg.note ? { note: d.cfg.note } : {}),
   ...(whole(d.cfg.restSec) ? { restSec: whole(d.cfg.restSec) } : {}),
   ...(whole(d.cfg.warmupRestSec) ? { warmupRestSec: whole(d.cfg.warmupRestSec) } : {}),
@@ -256,7 +256,7 @@ const occurrenceOf = d => ({
   ...(d.cfg.side === true && d.mode !== 'cardio' ? { side: true } : {}),
   // Only where it overrides the catalogue, the way v1 wrote it.
   ...(d.mode !== 'cardio' && d.cfg.bodyweight != null ? { bodyweight: !!d.cfg.bodyweight } : {}),
-  ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff'].filter(k => d.cfg[k] != null).map(k => [k, clone(d.cfg[k])])),
+  ...Object.fromEntries(['dbLoad', 'lastToFailure', 'backoff', 'restOff', 'warmupRestOff', 'sideRestOff', 'sideRestSec', 'autoHold', 'subs'].filter(k => d.cfg[k] != null).map(k => [k, clone(d.cfg[k])])),
   ...(d.intensifier ? { intensifier: d.intensifier } : {}),
   // What the cardio sheet edits (sheets.jsx): the rule holds the same numbers for the engine.
   ...(d.mode === 'cardio' ? { cardio: { sets: planPhase(d.rule).parameters.sets.min, min: planPhase(d.rule).parameters.durationSeconds.min / 60, speed: planPhase(d.rule).parameters.speed, ...(num(d.cfg.incline) > 0 ? { incline: num(d.cfg.incline) } : {}) } } : {})
@@ -456,7 +456,7 @@ const volumeOf = exposures => exposures.reduce((total, x) => total + x.performan
 function executionOf(entry, d) {
   const target = isObj(entry.target) ? entry.target : {};
   const out = {};
-  for (const key of ['side', 'bodyweight', 'assisted', 'intensifier', 'warmupRestSec', 'dbLoad', 'lastToFailure', 'backoff']) {
+  for (const key of ['side', 'bodyweight', 'assisted', 'intensifier', 'sgName', 'sgRest', 'restOff', 'warmupRestOff', 'sideRestOff', 'sideRestSec', 'autoHold', 'subs', 'warmupRestSec', 'dbLoad', 'lastToFailure', 'backoff']) {
     const value = target[key] ?? entry[key] ?? d?.cfg[key];
     if (value != null) out[key] = clone(value);
   }
@@ -499,7 +499,7 @@ function migrateWorkout(w, i, ctx) {
           ...(isObj(entry.target) ? { legacyTarget: clone(entry.target) } : {}),
           ...(isObj(entry.planned) ? { legacyPlanned: clone(entry.planned) } : {})
         }),
-      ...(entry.sg ? { sg: entry.sg } : {}),
+      ...(entry.sg ? { sg: entry.sg, ...Object.fromEntries(['sgName', 'sgRest'].filter(k => entry.target?.[k] != null).map(k => [k, clone(entry.target[k])])) } : {}),
       ...(isObj(entry.muscleSnapshot) ? { muscleSnapshot: clone(entry.muscleSnapshot) } : {}),
       performance: {
         sets: performanceRows.flatMap(row => isObj(row.sides?.L) && isObj(row.sides?.R)
@@ -612,7 +612,7 @@ function migrateActive(active, ctx) {
       ...(target.side === true || d?.cfg.side === true ? { side: true } : {}),
       ...(d?.warmup ? { warmup: clone(d.warmup) } : {}),
       routineId: d ? d.routineId : idOf(entry.rid, null), ...(d ? { occurrenceId: d.occurrenceId } : {}), trackId,
-      excludedFromProgression: !d, prescriptionId: prescription.id, ...(entry.sg ? { sg: entry.sg } : {}),
+      excludedFromProgression: !d, prescriptionId: prescription.id, ...(entry.sg ? { sg: entry.sg, ...Object.fromEntries(['sgName', 'sgRest'].filter(k => entry.target?.[k] != null).map(k => [k, clone(entry.target[k])])) } : {}),
       performance: { sets: [] }
     });
     const setOf = setIndexer();

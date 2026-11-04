@@ -1,3 +1,4 @@
+import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 import { describe, expect, it } from 'vitest'
 import { advanceProgression, editPlan, generatePrescription, planPhase } from './prescription/index.js'
 import { buildSessionExposures, effectiveExerciseId, missingOneRms, occurrenceFor } from './session-start.js'
@@ -198,7 +199,8 @@ describe('rung exercises', () => {
     const S = at(occ, 1)
     const [x] = buildSessionExposures(S, { id: 'r1', ex: [occ] }, ctx)
     expect(x).toMatchObject({ exerciseId: '1326', exerciseNameSnapshot: '1326', trackId: occ.occurrenceId, occurrenceId: occ.occurrenceId })
-    expect(S.prescriptions[x.prescriptionId].exerciseId).toBe('0652')
+    expect(S.prescriptions[x.prescriptionId].exerciseId).toBe('1326')
+    expect(validateCanonicalProfile({ ...S, engineSchemaVersion: 2, progression: {}, routines: [{ id: 'r1', ex: [occ] }], workouts: [{ id: 'rung-log', exposures: [x] }] }).errors).toEqual([])
   })
 
   // Shared by both "Any workout" tests: a logged exposure of `exerciseId` on `trackId`.
