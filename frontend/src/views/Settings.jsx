@@ -706,6 +706,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="plusCircle" iconTint="var(--green)" title={t('Weight and reps buttons')} subtitle={t('Off: tap the number and type it')}>
             <Switch checked={wc.steppers} onChange={v => setWc('steppers', v)} />
           </Row>
+          <Row icon="swap" iconTint="var(--indigo)" title={t('Scrubby slider')}
+            subtitle={t('Long-press and drag workout values to adjust them.')}>
+            <Switch aria-label={t('Scrubby slider')} checked={wc.scrubby} onChange={v => setWc('scrubby', v)} />
+          </Row>
           <Row icon="bolt" iconTint="var(--orange)" title={t('Drop and burst shortcuts on every set')}>
             <Switch checked={wc.setShortcuts} onChange={v => setWc('setShortcuts', v)} />
           </Row>

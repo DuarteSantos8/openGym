@@ -7,12 +7,11 @@ import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
 import { fmtDate, fmtNum, fmtPlate } from '../lib/format.js'
 import { EFFORT, effortOf, modeOf } from '../lib/history.js'
 import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
-import { effortColor, rirOf } from '../lib/effort.js'
 import { progressionGuidance } from '../lib/progression-copy.js'
 import {
   addCluster, addDrop, addSideCluster, addSideDrop, clustersOf, dropsOf,
   isFailureSet, isSideSet, isWarmupRow, nextBurstReps, toggleFailure, nextDropWeight, setClusterAt,
-  setDropAt, setSideClusterAt, setSideDropAt, setSideField,
+  setDropAt, setSideClusterAt, setSideDropAt,
 } from '../lib/workout-model.js'
 import { weightIncrement, stepWeight } from '../lib/progression.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
@@ -22,6 +21,8 @@ import { ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView } from '../lib/gym-inventory.js'
 import { exView } from '../lib/ex-unit.js'
 import Icon from '../components/Icon.jsx'
+import EffortInput from '../components/EffortInput.jsx'
+import { workoutControls } from '../lib/workout-controls.js'
 import { Button, Stepper } from '../components/ui.jsx'
 import './FocusView.css'
 import { youtubeSearchUrl } from '../lib/youtube.js'
@@ -115,7 +116,7 @@ function PlateBadge({ S, entry, set }) {
 }
 
 export default function FocusView({
-  entryIdx, unit, onToggle, onToggleSide, onField, onMutateSet, onStartTimed,
+  entryIdx, unit, onToggle, onToggleSide, onField, onSideField, onMutateSet, onStartTimed,
   onAddSet, onAddWarmup, onRemoveSetAt, onProgressionSettings, onSwap, onRemoveExercise,
   onNoProg, busy, onSelectEntry, onAdvanceUnit, onPairPrev, onPairNext, onUnpair, pointerEpoch,
 }) {
@@ -139,10 +140,11 @@ export default function FocusView({
   const locked = !set.done && setIdx > firstOpenSet
   const readOnly = set.done || locked
   const mode = modeOf({ ...(entry.target || {}), id: entry.id })
+  const wc = workoutControls(S)
+  const scrubby = { enabled: wc.scrubby, revision: live, targetKey: `${entryIdx}:${setIdx}:${pointerEpoch}`, isValid: () => useStore.getState().S === live }
   const effort = effortOf(S)
   const effortField = EFFORT[effort]?.f
   const effortValue = effortField ? set[effortField] ?? null : null
-  const effortTint = effortValue == null ? null : effortColor(rirOf({ [effortField]: effortValue }))
   const loadStep = weightIncrement({ ...(entry.target || {}), id: entry.id }, S.unit)
   // Bell to bell over the dumbbells you own, when the profile lists them (issue #376).
   const owned = mode === 'reps' ? ownedWeightsFor(S, { ...(entry.target || {}), id: entry.id }) : null
@@ -183,7 +185,7 @@ export default function FocusView({
 
   const sideFields = side => {
     const sideSet = set.sides[side]
-    const change = (field, value) => onMutateSet(setIdx, row => setSideField(row, side, field, value))
+    const change = (field, value) => onSideField(setIdx, side, field, value)
     const sideDrops = dropsOf(sideSet).length ? dropsOf(sideSet) : Array.isArray(sideSet.drops) ? sideSet.drops : []
     const sideBursts = clustersOf(sideSet).length ? clustersOf(sideSet) : Array.isArray(sideSet.clusters) ? sideSet.clusters : []
     return <section className="focus-side" data-focus-side={side}>
@@ -194,21 +196,21 @@ export default function FocusView({
           onClick={() => onToggleSide(setIdx, side,
             !sideSet.done && (set.sides.L.done || set.sides.R.done) ? onProgress : undefined)}><Icon name="check" /></button>
       </div>
-      <Stepper label={t('Load ({0})', S.unit)} ariaLabel="load" value={sideSet.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly || sideSet.done}
+      <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Load ({0})', S.unit)} ariaLabel="load" value={sideSet.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly || sideSet.done}
         onChange={value => change('w', value)} />
-      <Stepper label={t('Reps')} ariaLabel="reps" value={sideSet.r || 0} step={1} decimal={false} disabled={readOnly || sideSet.done}
+      <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Reps')} ariaLabel="reps" value={sideSet.r || 0} step={1} decimal={false} disabled={readOnly || sideSet.done}
         onChange={value => change('r', value)} />
       <div className="focus-extras">
         {sideDrops.map((drop, index) => <div className="focus-extra" key={`drop-${index}`}>
           <span>{t('Drop {0}', index + 1)}</span>
-          <Stepper label={t('Load')} ariaLabel="load" value={drop.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly || sideSet.done}
+          <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Load')} ariaLabel="load" value={drop.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly || sideSet.done}
             onChange={value => onMutateSet(setIdx, row => setSideDropAt(row, side, index, { w: value }))} />
-          <Stepper label={t('Reps')} ariaLabel="reps" value={drop.r || 0} step={1} decimal={false} disabled={readOnly || sideSet.done}
+          <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Reps')} ariaLabel="reps" value={drop.r || 0} step={1} decimal={false} disabled={readOnly || sideSet.done}
             onChange={value => onMutateSet(setIdx, row => setSideDropAt(row, side, index, { r: value }))} />
         </div>)}
         {sideBursts.map((burst, index) => <div className="focus-extra" key={`burst-${index}`}>
           <span>{t('Burst {0}', index + 1)}</span>
-          <Stepper label={t('Reps')} ariaLabel="reps" value={burst.r || 0} step={1} decimal={false} disabled={readOnly || sideSet.done}
+          <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Reps')} ariaLabel="reps" value={burst.r || 0} step={1} decimal={false} disabled={readOnly || sideSet.done}
             onChange={value => onMutateSet(setIdx, row => setSideClusterAt(row, side, index, value))} />
           <span className="dim small">{burst.restSec}s</span>
         </div>)}
@@ -348,26 +350,26 @@ export default function FocusView({
             {(inclineFits(ex) || entry.sets.some(hasIncline)) && <Stepper label={t('Incline (%)')} ariaLabel="incline" value={set.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX} disabled={readOnly}
               onChange={value => onField(setIdx, 'incline', clampIncline(value))} />}
           </> : <>
-            <Stepper label={t('Load ({0})', S.unit)} ariaLabel="load" value={set.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly}
+            <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Load ({0})', S.unit)} ariaLabel="load" value={set.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly}
               onChange={value => onField(setIdx, 'w', value)} />
           {mode === 'time' ? <div className="focus-timed">
             <strong>{t('{0}s hold', set.sec || entry.target?.sec || 45)}</strong>
             <Button icon="play" aria-label={t('Start set')} disabled={readOnly || busy}
               onClick={() => onStartTimed(setIdx, onProgress)}>{t('Start')}</Button>
-          </div> : <Stepper label={t('Reps')} ariaLabel="reps" value={set.r || 0} step={1} decimal={false} disabled={readOnly}
+          </div> : <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Reps')} ariaLabel="reps" value={set.r || 0} step={1} decimal={false} disabled={readOnly}
             onChange={value => onField(setIdx, 'r', value)} />}</>}
         </>}
         <div className="focus-extras">
           {drops.map((drop, index) => <div className="focus-extra" key={`drop-${index}`}>
             <span>{t('Drop {0}', index + 1)}</span>
-            <Stepper label={t('Load')} ariaLabel="load" value={drop.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly}
+            <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Load')} ariaLabel="load" value={drop.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly}
               onChange={value => onMutateSet(setIdx, row => setDropAt(row, index, { w: value }))} />
-            <Stepper label={t('Reps')} ariaLabel="reps" value={drop.r || 0} step={1} decimal={false} disabled={readOnly}
+            <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Reps')} ariaLabel="reps" value={drop.r || 0} step={1} decimal={false} disabled={readOnly}
               onChange={value => onMutateSet(setIdx, row => setDropAt(row, index, { r: value }))} />
           </div>)}
           {bursts.map((burst, index) => <div className="focus-extra" key={`burst-${index}`}>
             <span>{t('Burst {0}', index + 1)}</span>
-            <Stepper label={t('Reps')} ariaLabel="reps" value={burst.r || 0} step={1} decimal={false} disabled={readOnly}
+            <Stepper scrubby={scrubby} buttons={wc.steppers} label={t('Reps')} ariaLabel="reps" value={burst.r || 0} step={1} decimal={false} disabled={readOnly}
               onChange={value => onMutateSet(setIdx, row => {
                 const delta = (Number(value) || 0) - (clustersOf(row)[index]?.r ?? row.clusters?.[index]?.r ?? 0)
                 return { ...setClusterAt(row, index, { r: value }), r: Math.max(0, (row.r || 0) + delta) }
@@ -375,9 +377,8 @@ export default function FocusView({
             <span className="dim small">{burst.restSec}s</span>
           </div>)}
         </div>
-        {mode === 'reps' && effortField && <button className={'effcell focus-effort' + (effortValue == null ? ' is-empty' : '')}
-          style={effortTint ? { color: effortTint, borderColor: effortTint, background: `color-mix(in srgb, ${effortTint} 20%, var(--surface-2))` } : undefined}
-          aria-label={t(EFFORT[effort].hd)} disabled={readOnly} onClick={openEffort}>{effortValue == null ? t(EFFORT[effort].hd) : fmtNum(effortValue)}</button>}
+        {mode === 'reps' && effortField && <EffortInput focus kind={effort} value={effortValue} label={t(EFFORT[effort].hd)}
+          scrubby={scrubby} disabled={readOnly} onChange={v => onField(setIdx, effortField, v)} onOpen={openEffort} />}
       </div>
       <Button variant="primary" icon="check" data-tour="tick" aria-label={t('Complete set')} onClick={complete}>{set.done ? t('Completed') : t('Complete')}</Button>
       <div className="focus-secondary">

@@ -1,5 +1,8 @@
 // Korean UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  "Scrubby slider": "드래그로 값 조절",
+  "Long-press and drag workout values to adjust them.": "운동 값을 길게 누른 뒤 드래그하여 조절하세요.",
+
   "Same muscle and exercise type. The movement may differ.": "같은 근육과 운동 유형입니다. 동작은 다를 수 있습니다.",
   "Related muscles and exercise type. The movement may differ.": "관련 근육과 같은 운동 유형입니다. 동작은 다를 수 있습니다.",
   "Same muscle, different exercise type. Check suitability.": "같은 근육이지만 운동 유형이 다릅니다. 적합한지 확인하세요.",
