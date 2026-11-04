@@ -3022,6 +3022,41 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   background:linear-gradient(160deg,var(--surface-3),var(--surface-2));color:var(--label-2)}
 .sp-acct .lrow-t{font-size:19px;font-weight:600}
 .sp-avatar.on{background:var(--acc-soft);color:var(--acc-ink);font-size:24px;font-weight:700}
+/* The profile picture (components/Avatar.jsx): a photo fills the circle, a built-in one sits on
+   the accent's tint like the letter does. */
+.sp-avatar{overflow:hidden;position:relative}
+.sp-avatar.av-photo{background:var(--surface-2)}
+.sp-avatar > img{width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none;user-select:none}
+.sp-avatar.av-preset{font-size:28px}
+.sp-avatar.av-lg{width:96px;height:96px;font-size:42px}
+.sp-avatar.av-lg.av-preset{font-size:46px}
+.lrow.av-edit{justify-content:center;padding-block:16px 12px}
+.av-edit-face{position:relative;border:0;padding:0;background:none;border-radius:50%;cursor:pointer;color:inherit;
+  transition:transform var(--fast)}
+.av-edit-face:active{transform:scale(var(--press-scale-sm))}
+.av-edit-face:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:3px;border-radius:50%}
+.av-edit-badge{position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:var(--acc);color:var(--on-acc);font-size:16px;box-shadow:0 0 0 3px var(--surface)}
+.av-presets{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:6px 0 14px}
+.av-preset{aspect-ratio:1;border-radius:50%;border:0;background:var(--acc-soft);color:var(--acc-ink);font-size:30px;
+  display:grid;place-items:center;cursor:pointer;transition:transform var(--fast),box-shadow var(--fast)}
+.av-preset:active{transform:scale(var(--press-scale-sm))}
+.av-preset.on{box-shadow:0 0 0 2.5px var(--acc)}
+.av-preset:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:3px;border-radius:50%}
+/* The crop: the picture under a round window, the corners dimmed. touch-action none: every
+   finger here moves or zooms the picture, never the page or the sheet. */
+.av-crop-hint{text-align:center;margin:-4px 0 12px}
+.av-crop{position:relative;margin:0 auto 14px;border-radius:var(--r-lg);overflow:hidden;background:var(--surface-2);
+  touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.av-crop:active{cursor:grabbing}
+.av-crop.loading{animation:av-pulse 1.2s ease-in-out infinite alternate}
+@keyframes av-pulse{from{opacity:.55}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.av-crop.loading{animation:none}}
+.av-crop-img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;pointer-events:none}
+.av-crop-ring{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  box-shadow:0 0 0 999px rgba(0,0,0,.52),inset 0 0 0 1.5px rgba(255,255,255,.75)}
+.av-zoom{display:flex;align-items:center;gap:10px;margin:0 auto 16px;max-width:264px;color:var(--label-2);font-size:15px}
+.av-zoom input{flex:1;accent-color:var(--acc)}
 .sp-version{text-align:center;margin-top:4px;line-height:1.6}
 /* The root rows' previews ("2:00 de descanso · Tarjetas", "Som · Vibração") are two or three facts, and a
    one-line ellipsis cut all but the first. They wrap instead, up to three lines, and never below

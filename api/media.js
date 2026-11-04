@@ -94,7 +94,10 @@ export function mediaLimits(env = process.env) {
 // that filmed it and never uploads it.
 // `sounds: true`: it keeps the sounds of one's own for the rest timer (state.sounds, v1.4.5). An
 // older server would refuse and sweep them, so there the app keeps them on the device that has them.
-export const mediaConfig = l => ({ imageMB: l.imageMB, gifMB: l.gifMB, videoMB: l.videoMB, videoSec: l.videoSec, audioMB: l.audioMB, quotaMB: l.quotaMB, workouts: true, days: true, sets: true, sounds: true });
+// `avatar: true`: it keeps the profile picture (state.avatar.m, v1.4.5). Served like every other
+// file, from the caller's own folder only, so nobody else (an admin included) can fetch it. An
+// older server would sweep it, so there the picture stays on the device that set it.
+export const mediaConfig = l => ({ imageMB: l.imageMB, gifMB: l.gifMB, videoMB: l.videoMB, videoSec: l.videoSec, audioMB: l.audioMB, quotaMB: l.quotaMB, workouts: true, days: true, sets: true, sounds: true, avatar: true });
 
 /* ---------------------------------------------------------------- errors */
 
@@ -328,6 +331,8 @@ export function referencedHashes(state) {
   if (isObj(state.dayPhotos)) for (const e of Object.values(state.dayPhotos)) if (isObj(e) && isObj(e.m)) ref(e.m);
   // Sounds of one's own (frontend lib/user-sounds.js): sounds[] = { id, name, m, _ts }.
   for (const e of Array.isArray(state.sounds) ? state.sounds : []) if (isObj(e) && isObj(e.m)) ref(e.m);
+  // The profile picture (frontend lib/avatar.js): avatar = { m }, a 256 px square.
+  if (isObj(state.avatar) && isObj(state.avatar.m)) ref(state.avatar.m);
   return out;
 }
 
