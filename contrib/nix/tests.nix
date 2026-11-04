@@ -53,5 +53,9 @@ pkgs.testers.runNixOSTest {
     # Licensed for openGym only: another site cannot embed them.
     corp = machine.succeed("curl -fsSI http://localhost/exercise-media/NOTICE.md")
     assert "cross-origin-resource-policy: same-origin" in corp.lower(), f"no CORP header: {corp}"
+    # The serving contract's other rule on the media: named after the exercise, never
+    # changing within a build, so browsers may keep them for a month (see serving.nix —
+    # the same contract the `nix run` stack's Caddyfile renders).
+    assert "cache-control: public, max-age=2592000, immutable" in corp.lower(), f"no immutable cache header: {corp}"
   '';
 }

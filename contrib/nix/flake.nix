@@ -160,6 +160,8 @@
           meta.description = "Run the full openGym local stack (API + frontend + media behind a throwaway Caddy)";
           # Runs the full local stack: API + frontend (exercise media included) behind a throwaway
           # Caddy. Defaults to http://localhost:8080; env vars override ports/data/rp.
+          # The routes and their headers come from the serving contract (serving.nix) — the same
+          # one the module's nginx vhost renders.
           program = "${pkgs.writeShellScript "opengym" ''
             set -euo pipefail
 
@@ -194,14 +196,11 @@
             :$WEB_PORT {
               encode zstd gzip
 
-              handle /api/* {
-                reverse_proxy 127.0.0.1:$API_PORT
-              }
-              handle {
-                root * ${opengymPackages.opengym-frontend}/share/opengym
-                try_files {path} /index.html
-                file_server
-              }
+            ${(import ./serving.nix {
+              webRoot = "${opengymPackages.opengym-frontend}/share/opengym";
+              apiPort = "$API_PORT";
+            }).caddySite
+            }
             }
             EOF
 

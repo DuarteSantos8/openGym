@@ -147,6 +147,13 @@ module (where `config` is in scope) so the store paths resolve from the module's
       extraConfig = ''
         encode zstd gzip
 
+        handle /exercise-media/* {
+          header {
+            Cache-Control "public, max-age=2592000, immutable"
+            Cross-Origin-Resource-Policy same-origin
+          }
+        }
+
         handle /api/* {
           reverse_proxy 127.0.0.1:${toString config.services.opengym.apiPort}
         }
@@ -161,10 +168,14 @@ module (where `config` is in scope) so the store paths resolve from the module's
 }
 ```
 
-The API must **keep** its `/api` prefix (openGym routes on it), so `/api` uses a plain `handle`
-that passes the full URI through. Order matters: `/api` must be handled before the catch-all
-`handle` that serves the SPA. The exercise media are files under `web.root`, so `file_server`
-serves them; `try_files` only falls back to `/index.html` for paths that don't exist.
+The routes and their headers are openGym's serving contract, stated once in
+[`contrib/nix/serving.nix`](../contrib/nix/serving.nix) and rendered for nginx (by the module)
+and for Caddy (by this config and by `nix run .#opengym`). If you hand-write your own, this is
+the shape to keep: the API must **keep** its `/api` prefix (openGym routes on it), and
+`/exercise-media/*` carries the two headers — a month of browser caching, and
+Cross-Origin-Resource-Policy, because the media are licensed for openGym only and no other site
+may embed them. Caddy sets the `X-Forwarded-*` headers itself, so the proxy needs nothing else;
+the `try_files` fallback to `/index.html` covers unknown SPA paths only.
 
 ### nginx
 
