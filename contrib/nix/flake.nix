@@ -99,7 +99,9 @@
               or "missing"
           }"
           echo "nginx /exercise-media location = ${
-            if nginxTestConfig.config.services.nginx.virtualHosts."localhost".locations ? "/exercise-media/" then
+            if
+              nginxTestConfig.config.services.nginx.virtualHosts."localhost".locations ? "/exercise-media/"
+            then
               "true"
             else
               "false"
@@ -188,6 +190,8 @@
             modules = [ opengymNixOSModule ];
           };
         });
+
+        formatter = pkgs.nixfmt;
 
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [

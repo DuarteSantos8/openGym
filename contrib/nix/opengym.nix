@@ -349,7 +349,8 @@ in
             environment = {
               # The MCP server reads OPENGYM_DATA (not DATA_DIR) to locate the data files.
               OPENGYM_DATA = cfg.dataDir;
-            } // lib.optionalAttrs (cfg.mcp.uid != null) {
+            }
+            // lib.optionalAttrs (cfg.mcp.uid != null) {
               OPENGYM_UID = cfg.mcp.uid;
             };
             serviceConfig = lib.mkMerge [
@@ -371,42 +372,41 @@ in
             enable = true;
             recommendedOptimisation = true;
             recommendedGzipSettings = true;
-            virtualHosts.${cfg.nginx.hostName} =
-              {
-                root = cfg.web.root;
-                locations = {
-                  "/" = {
-                    tryFiles = "$uri $uri/ /index.html";
-                  };
-                  "/api/" = {
-                    # services.nginx renders this as `proxy_pass <value>;`, so the value
-                    # must not carry its own semicolon (nginx rejects `;;`).
-                    proxyPass = "http://127.0.0.1:${toString cfg.apiPort}";
-                    extraConfig = ''
-                      proxy_http_version 1.1;
-                      proxy_set_header Host $host;
-                      proxy_set_header X-Real-IP $remote_addr;
-                      proxy_set_header X-Forwarded-For $remote_addr;
-                      proxy_set_header X-Forwarded-Proto $scheme;
-                    '';
-                  };
-                  # exercise-media/ is served from root like the rest of the app. The files
-                  # are named after the exercise and never change within a build, so let
-                  # browsers keep them. They are licensed for openGym only (NOTICE.md):
-                  # Cross-Origin-Resource-Policy keeps other sites from embedding them.
-                  "/exercise-media/" = {
-                    extraConfig = ''
-                      expires 30d;
-                      add_header Cache-Control "public";
-                      add_header Cross-Origin-Resource-Policy "same-origin" always;
-                    '';
-                  };
+            virtualHosts.${cfg.nginx.hostName} = {
+              root = cfg.web.root;
+              locations = {
+                "/" = {
+                  tryFiles = "$uri $uri/ /index.html";
                 };
-              }
-              // lib.optionalAttrs cfg.nginx.enableACME {
-                enableACME = true;
-                forceSSL = true;
+                "/api/" = {
+                  # services.nginx renders this as `proxy_pass <value>;`, so the value
+                  # must not carry its own semicolon (nginx rejects `;;`).
+                  proxyPass = "http://127.0.0.1:${toString cfg.apiPort}";
+                  extraConfig = ''
+                    proxy_http_version 1.1;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $remote_addr;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                  '';
+                };
+                # exercise-media/ is served from root like the rest of the app. The files
+                # are named after the exercise and never change within a build, so let
+                # browsers keep them. They are licensed for openGym only (NOTICE.md):
+                # Cross-Origin-Resource-Policy keeps other sites from embedding them.
+                "/exercise-media/" = {
+                  extraConfig = ''
+                    expires 30d;
+                    add_header Cache-Control "public";
+                    add_header Cross-Origin-Resource-Policy "same-origin" always;
+                  '';
+                };
               };
+            }
+            // lib.optionalAttrs cfg.nginx.enableACME {
+              enableACME = true;
+              forceSSL = true;
+            };
           };
         })
         # Caddy-native default: this module owns no web server of its own.
@@ -415,5 +415,5 @@ in
         })
       ]
     ))
-];
+  ];
 }
