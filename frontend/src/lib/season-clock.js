@@ -15,7 +15,7 @@
 // ?season-date=off. The fake day keeps the real time of day ticking.
 
 /* global __SEASON_CLOCK__ */
-const HOOK = import.meta.env.DEV || (typeof __SEASON_CLOCK__ !== 'undefined' && __SEASON_CLOCK__ === true)
+const HOOK = (import.meta.env && import.meta.env.DEV) || (typeof __SEASON_CLOCK__ !== 'undefined' && __SEASON_CLOCK__ === true)
 
 /** Now, as the seasonal code sees it. */
 export function seasonNow() {
