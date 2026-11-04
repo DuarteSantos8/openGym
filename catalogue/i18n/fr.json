@@ -236,7 +236,15 @@
     "name": "développé couché parallèle à la machine"
   },
   "1030": {
-    "name": "pec deck écarté à la machine"
+    "name": "pec deck écarté à la machine",
+    "description": "Un écarté à la machine où les bras se rejoignent devant toi, pour isoler les pectoraux.",
+    "instructions": [
+      "Assieds-toi sur le pec deck, le dos plaqué contre le dossier et les bras à hauteur de poitrine.",
+      "Place tes avant-bras ou tes mains sur les appuis, les coudes légèrement fléchis.",
+      "Ramène les bras l'un vers l'autre devant ta poitrine.",
+      "Contracte un instant, puis ouvre lentement jusqu'à sentir l'étirement des pectoraux.",
+      "Garde les épaules basses et en arrière."
+    ]
   },
   "1031": {
     "name": "extension de hanche debout à la machine"
@@ -320,7 +328,16 @@
     "name": "étirement des quadriceps debout"
   },
   "1060": {
-    "name": "hip thrust à la barre"
+    "name": "hip thrust à la barre",
+    "description": "Un pont des hanches, le haut du dos sur un banc et une barre sur les hanches. C'est l'exercice de référence pour des fessiers solides.",
+    "instructions": [
+      "Assieds-toi au sol, le haut du dos contre un banc et une barre protégée par un manchon sur les hanches.",
+      "Pose tes pieds à la largeur des hanches et pousse dans tes talons.",
+      "Monte les hanches jusqu'à ce que ton buste soit parallèle au sol.",
+      "Serre les fessiers en haut en gardant le menton rentré.",
+      "Redescends les hanches sous contrôle.",
+      "Répète sans cambrer le bas du dos."
+    ]
   },
   "1061": {
     "name": "hip thrust une jambe à la barre"
@@ -329,7 +346,16 @@
     "name": "hip thrust une jambe avec poids"
   },
   "1063": {
-    "name": "squat sumo à la barre"
+    "name": "squat sumo à la barre",
+    "description": "Un squat pieds très écartés avec une barre sur le dos. Il cible les fessiers et l'intérieur des cuisses en plus des quadriceps.",
+    "instructions": [
+      "Place la barre sur le haut de ton dos, les pieds nettement plus écartés que les épaules.",
+      "Ouvre la pointe des pieds d'environ 30 degrés.",
+      "Gaine tes abdominaux et descends entre tes jambes.",
+      "Garde les genoux dans l'axe de tes orteils.",
+      "Descends jusqu'à la hauteur des cuisses ou plus bas, puis pousse dans tes talons pour te relever.",
+      "Garde la poitrine bien haute."
+    ]
   },
   "1064": {
     "name": "squat sumo"
@@ -730,7 +756,15 @@
     "name": "tirage haut sumo à la barre"
   },
   "1200": {
-    "name": "push press"
+    "name": "push press",
+    "description": "Un développé au-dessus de la tête aidé par une petite flexion et une poussée des jambes. Il permet de manier des charges plus lourdes pour les épaules et les triceps.",
+    "instructions": [
+      "Tiens la barre en haut de ta poitrine, les coudes légèrement devant la barre.",
+      "Fléchis les genoux de quelques centimètres en gardant le buste droit.",
+      "Pousse avec les jambes et développe la barre au-dessus de ta tête.",
+      "Verrouille les bras avec la barre au-dessus du milieu des pieds, puis ramène-la sur ta poitrine.",
+      "Gaine tes abdominaux et évite de te pencher en arrière."
+    ]
   },
   "1201": {
     "name": "burpee aux haltères",
@@ -758,7 +792,15 @@
     "name": "tirage horizontal assis un bras avec rotation au câble"
   },
   "1206": {
-    "name": "pull through au câble"
+    "name": "pull through au câble",
+    "description": "Une flexion de hanches dos à un câble bas. Il développe les fessiers et les ischio-jambiers et apprend le bon mouvement de charnière.",
+    "instructions": [
+      "Fixe une corde à la poulie basse, mets-toi dos à la machine et tiens la corde entre tes jambes.",
+      "Avance jusqu'à ce que le câble soit tendu et fléchis légèrement les genoux.",
+      "Envoie les hanches en arrière en laissant la corde passer derrière toi.",
+      "Pousse les hanches vers l'avant et serre les fessiers pour te redresser.",
+      "Garde le dos plat tout au long du mouvement."
+    ]
   },
   "1207": {
     "name": "rotation au câble (de bas en haut)"
@@ -3591,7 +3633,15 @@
     "name": "squat frankenstein à la machine smith"
   },
   "1595": {
-    "name": "squat avant à la machine smith"
+    "name": "squat avant à la machine smith",
+    "description": "Un squat avant avec la barre guidée du multipower. Il travaille les quadriceps avec le buste droit.",
+    "instructions": [
+      "Règle la barre à hauteur d'épaules et pose-la sur l'avant de tes épaules, coudes hauts.",
+      "Débloque la barre et avance légèrement les pieds.",
+      "Descends jusqu'à ce que tes cuisses soient à peu près parallèles au sol.",
+      "Garde les coudes hauts et la poitrine sortie.",
+      "Pousse dans tes talons pour remonter, puis rebloque la barre à la fin de la série."
+    ]
   },
   "1596": {
     "name": "squat au banc à la machine smith"
@@ -6158,7 +6208,15 @@
     ]
   },
   "2146": {
-    "name": "hip thrust à la machine"
+    "name": "hip thrust à la machine",
+    "description": "Une version à la machine du hip thrust, qui charge les fessiers sur une trajectoire guidée.",
+    "instructions": [
+      "Assieds-toi sur la machine, le haut du dos contre l'appui et la ceinture en travers des hanches.",
+      "Pose tes pieds à plat, à peu près à la largeur des hanches.",
+      "Pousse dans tes talons et monte les hanches jusqu'à ce que ton buste et tes cuisses soient alignés.",
+      "Serre les fessiers un instant en haut.",
+      "Redescends avec contrôle et répète, en gardant le menton rentré."
+    ]
   },
   "2147": {
     "name": "hip thrust à la machine avec élastique"
@@ -6484,7 +6542,16 @@
     ]
   },
   "2290": {
-    "name": "squat bulgare aux haltères"
+    "name": "squat bulgare aux haltères",
+    "description": "Un squat sur une jambe, le pied arrière surélevé, qui développe la force des jambes et l'équilibre.",
+    "instructions": [
+      "Tiens-toi à une grande enjambée devant un banc, un haltère dans chaque main.",
+      "Pose le dessus de ton pied arrière sur le banc.",
+      "Descends à la verticale jusqu'à ce que ta cuisse avant soit à peu près parallèle au sol.",
+      "Garde le buste droit et le genou avant dans l'axe de tes orteils.",
+      "Pousse sur le talon avant pour remonter.",
+      "Termine toutes tes répétitions, puis change de jambe."
+    ]
   },
   "2291": {
     "name": "tirage vertical prise large au câble"
@@ -8019,7 +8086,14 @@
     "name": "portage gobelet au kettlebell"
   },
   "2917": {
-    "name": "marche du fermier aux haltères"
+    "name": "marche du fermier aux haltères",
+    "description": "Marcher en tenant un haltère lourd dans chaque main. Il développe la force de préhension, les trapèzes et la posture en général.",
+    "instructions": [
+      "Tiens un haltère dans chaque main le long du corps et tiens-toi droit.",
+      "Ramène les épaules en arrière et vers le bas, et gaine tes abdominaux.",
+      "Marche à petits pas rapides et contrôlés, sans balancer les charges.",
+      "Parcours la distance prévue, puis repose les haltères en sécurité."
+    ]
   },
   "2918": {
     "name": "marche de la valise à la barre"
@@ -8115,7 +8189,15 @@
     "name": "rouleau de massage du grand dorsal"
   },
   "2950": {
-    "name": "squat ceinture à la machine"
+    "name": "squat ceinture à la machine",
+    "description": "Un squat à la machine où la charge est suspendue à une ceinture au niveau des hanches. Il charge les jambes sans charger ta colonne vertébrale.",
+    "instructions": [
+      "Enfile la ceinture et monte sur les plateformes, la ceinture bien ajustée sur les hanches.",
+      "Tiens-toi droit et gaine tes abdominaux.",
+      "Descends jusqu'à ce que tes cuisses soient à peu près parallèles au sol.",
+      "Pousse dans tes talons pour remonter.",
+      "Garde la poitrine haute et les genoux dans l'axe de tes orteils."
+    ]
   },
   "2951": {
     "name": "presse à jambes horizontale à la machine"
@@ -8133,7 +8215,15 @@
     "name": "squat fente pied avant surélevé aux haltères"
   },
   "2960": {
-    "name": "squat fente aux haltères"
+    "name": "squat fente aux haltères",
+    "description": "Une fente sur place avec un haltère dans chaque main. Elle renforce une jambe à la fois, surtout les quadriceps et les fessiers.",
+    "instructions": [
+      "Tiens un haltère dans chaque main et prends un grand écart, un pied devant.",
+      "Garde le buste droit.",
+      "Descends le genou arrière vers le sol.",
+      "Pousse sur le talon avant pour te relever.",
+      "Termine tes répétitions, puis change de jambe."
+    ]
   },
   "2961": {
     "name": "planche avec pompe et tirage"
@@ -8180,7 +8270,15 @@
     "name": "planche dynamique coudes haut et bas"
   },
   "2980": {
-    "name": "rowing renégat aux haltères"
+    "name": "rowing renégat aux haltères",
+    "description": "Un rowing en position de planche avec des haltères. Il développe le dos pendant que tes abdominaux résistent à la rotation.",
+    "instructions": [
+      "Mets-toi en planche bras tendus, un haltère dans chaque main et les pieds écartés.",
+      "Gaine tes abdominaux.",
+      "Tire un haltère vers tes côtes sans faire pivoter les hanches.",
+      "Repose-le avec contrôle.",
+      "Répète de l'autre côté."
+    ]
   },
   "2982": {
     "name": "développé au sol alterné aux haltères"
@@ -8425,7 +8523,16 @@
     "name": "patineur"
   },
   "3110": {
-    "name": "poussée de hanches au multipower"
+    "name": "poussée de hanches au multipower",
+    "description": "Un hip thrust avec la barre du multipower, qui offre une trajectoire stable pour charger les fessiers.",
+    "instructions": [
+      "Assieds-toi au sol, le haut du dos contre un banc et la barre du multipower au-dessus de tes hanches.",
+      "Protège la barre avec un manchon et fais-la rouler dans le pli de tes hanches.",
+      "Pose tes pieds à la largeur des hanches et débloque la barre.",
+      "Pousse dans tes talons et monte les hanches jusqu'à ce que ton corps soit à l'horizontale.",
+      "Serre les fessiers en haut.",
+      "Redescends lentement et répète."
+    ]
   },
   "3113": {
     "name": "split jacks"
@@ -9516,7 +9623,15 @@
     "name": "écarté au sol un bras aux haltères"
   },
   "3335": {
-    "name": "pont fessier aux haltères"
+    "name": "pont fessier aux haltères",
+    "description": "Un pont des hanches lesté qui cible les fessiers. Un haltère posé sur les hanches ajoute de la résistance.",
+    "instructions": [
+      "Allonge-toi sur le dos, genoux pliés et pieds à plat au sol.",
+      "Tiens un haltère posé en travers de tes hanches.",
+      "Pousse dans tes talons et monte les hanches vers le plafond.",
+      "Serre fort les fessiers en haut.",
+      "Redescends lentement les hanches et répète."
+    ]
   },
   "3336": {
     "name": "v-up aux haltères"
@@ -9537,7 +9652,15 @@
     "name": "fente aux haltères v. 2"
   },
   "3342": {
-    "name": "élévation en y au câble"
+    "name": "élévation en y au câble",
+    "description": "Une élévation au câble où les bras dessinent un Y. Elle développe les épaules et les muscles qui stabilisent les omoplates.",
+    "instructions": [
+      "Règle les poulies en bas et tiens une poignée dans chaque main, bras croisés devant toi.",
+      "Tiens-toi droit en te penchant légèrement en avant.",
+      "Monte les deux bras vers le haut et vers l'extérieur pour former un Y.",
+      "Garde les pouces vers le haut et les épaules basses.",
+      "Redescends lentement à la position de départ."
+    ]
   },
   "3343": {
     "name": "élévation latérale à la machine v. 2"
@@ -9855,7 +9978,16 @@
     "name": "fente latérale aux haltères v. 3"
   },
   "3449": {
-    "name": "rotation russe aux haltères"
+    "name": "rotation russe aux haltères",
+    "description": "Une rotation assise avec un haltère pour les obliques.",
+    "instructions": [
+      "Assieds-toi genoux pliés et penche-toi légèrement en arrière.",
+      "Tiens un haltère à deux mains devant toi.",
+      "Tourne le buste d'un côté.",
+      "Tourne de l'autre côté.",
+      "Garde la poitrine haute.",
+      "Bouge avec contrôle."
+    ]
   },
   "3452": {
     "name": "svend press aux haltères"
@@ -10392,7 +10524,15 @@
     "name": "torsion avec élastique"
   },
   "3593": {
-    "name": "squat à la barre"
+    "name": "squat à la barre",
+    "description": "Le squat classique à la barre, qui développe la force des cuisses et des hanches.",
+    "instructions": [
+      "Place la barre sur le haut de ton dos, les pieds écartés à la largeur des épaules.",
+      "Gaine tes abdominaux et garde la poitrine haute.",
+      "Descends en envoyant les hanches en arrière jusqu'à ce que tes cuisses soient à peu près parallèles au sol.",
+      "Garde les genoux dans l'axe de tes orteils.",
+      "Pousse dans tes pieds pour te redresser complètement."
+    ]
   },
   "3606": {
     "name": "crunch avec extension de jambes (avec ballon de stabilité)"
@@ -10751,7 +10891,15 @@
     "name": "fente révérence gobelet aux haltères"
   },
   "3684": {
-    "name": "rotation externe aux haltères"
+    "name": "rotation externe aux haltères",
+    "description": "Une rotation externe légère pour la coiffe des rotateurs.",
+    "instructions": [
+      "Allonge-toi sur le côté, un haltère dans la main du dessus et le coude plié.",
+      "Garde le coude collé contre ton flanc.",
+      "Fais pivoter ton avant-bras vers le haut.",
+      "Redescends lentement.",
+      "Change de côté après la série."
+    ]
   },
   "3685": {
     "name": "élévation latérale poitrine appuyée aux haltères"
@@ -12087,7 +12235,16 @@
     "name": "planche de l'ours"
   },
   "4171": {
-    "name": "rack pull au multipower"
+    "name": "rack pull au multipower",
+    "description": "Un soulevé de terre partiel depuis la hauteur des genoux au multipower. Il permet de surcharger le dos et les hanches.",
+    "instructions": [
+      "Règle la barre du multipower à hauteur des genoux.",
+      "Saisis la barre et place ton dos bien plat.",
+      "Pousse dans tes pieds et tends les hanches.",
+      "Redresse-toi complètement et serre les fessiers.",
+      "Redescends la barre au point de départ avec contrôle.",
+      "Garde la barre près de tes jambes."
+    ]
   },
   "4172": {
     "name": "oiseau penché au poids du corps"
@@ -12393,7 +12550,15 @@
     "name": "squat bras tendus au poids du corps"
   },
   "4295": {
-    "name": "fente marchée aux haltères"
+    "name": "fente marchée aux haltères",
+    "description": "Des fentes en avançant pas après pas avec un haltère dans chaque main. Elles développent la force des jambes et des fessiers et l'équilibre.",
+    "instructions": [
+      "Tiens-toi droit, un haltère dans chaque main le long du corps.",
+      "Fais un pas en avant avec une jambe et descends jusqu'à ce que tes deux genoux soient à environ 90 degrés.",
+      "Garde le buste droit et le genou avant au-dessus de la cheville.",
+      "Pousse sur le pied avant et ramène la jambe arrière vers l'avant pour le pas suivant.",
+      "Alterne les jambes pour le nombre de pas voulu."
+    ]
   },
   "4296": {
     "name": "étirement croisé des fléchisseurs de hanche à genoux"
@@ -12459,10 +12624,26 @@
     "name": "flexion latérale aux haltères v. 2"
   },
   "4336": {
-    "name": "curl biceps à la machine"
+    "name": "curl biceps à la machine",
+    "description": "Un curl biceps sur une machine à disques qui guide la trajectoire. Il développe l'avant du bras.",
+    "instructions": [
+      "Règle le siège pour que tes coudes soient alignés avec l'axe de la machine.",
+      "Saisis les poignées paumes vers le haut.",
+      "Monte les poignées vers tes épaules.",
+      "Contracte tes biceps en haut.",
+      "Redescends lentement jusqu'à ce que tes bras soient presque tendus."
+    ]
   },
   "4338": {
-    "name": "curl araignée à la barre"
+    "name": "curl araignée à la barre",
+    "description": "Un curl à la barre, poitrine posée sur un banc incliné, qui supprime l'élan et isole les biceps.",
+    "instructions": [
+      "Allonge-toi poitrine contre un banc incliné, les bras pendants et une barre en main.",
+      "Saisis la barre paumes vers le haut, à la largeur des épaules.",
+      "Monte la barre vers tes épaules sans bouger le haut des bras.",
+      "Contracte en haut.",
+      "Redescends lentement jusqu'à l'extension complète."
+    ]
   },
   "4339": {
     "name": "pull-over à la barre v. 2"
@@ -12705,7 +12886,15 @@
     "name": "marche sur place"
   },
   "4421": {
-    "name": "kickback donkey au câble"
+    "name": "kickback donkey au câble",
+    "description": "Une jambe poussée vers l'arrière à quatre pattes, contre la résistance d'un câble. Il isole les fessiers.",
+    "instructions": [
+      "Fixe une sangle de cheville à la poulie basse et mets-toi à quatre pattes face à la machine.",
+      "Accroche la sangle autour d'une cheville.",
+      "Genou plié, pousse ton talon vers le plafond.",
+      "Serre le fessier en haut sans cambrer le dos.",
+      "Reviens lentement et répète, puis change de jambe."
+    ]
   },
   "4422": {
     "name": "curl biceps drag à la barre ez"
@@ -13431,7 +13620,15 @@
     "name": "crunch (bras sur la poitrine)"
   },
   "4728": {
-    "name": "dips sur banc aux haltères"
+    "name": "dips sur banc aux haltères",
+    "description": "Des dips sur banc avec un haltère posé sur les cuisses pour ajouter de la charge. Ils sollicitent les triceps et l'avant des épaules.",
+    "instructions": [
+      "Assieds-toi au bord d'un banc, mains à côté des hanches, et fais glisser tes hanches devant le banc.",
+      "Pose un haltère sur tes cuisses et maintiens-le stable avec tes hanches et tes jambes.",
+      "Plie les coudes pour descendre jusqu'à environ 90 degrés.",
+      "Garde le dos près du banc et les épaules basses.",
+      "Pousse dans tes paumes pour tendre les bras."
+    ]
   },
   "4729": {
     "name": "dips sur banc aux haltères avec jambes surélevées"
@@ -13779,7 +13976,15 @@
     "name": "élévation latérale alternée aux haltères"
   },
   "4853": {
-    "name": "fente latérale aux haltères"
+    "name": "fente latérale aux haltères",
+    "description": "Une fente sur le côté avec des haltères. Elle travaille les fessiers et l'intérieur des cuisses.",
+    "instructions": [
+      "Tiens un haltère contre ta poitrine ou le long du corps.",
+      "Fais un grand pas sur le côté.",
+      "Envoie les hanches en arrière et plie ce genou.",
+      "Garde l'autre jambe tendue.",
+      "Pousse pour revenir au centre et change de côté."
+    ]
   },
   "4854": {
     "name": "rotation des obliques assis au sol à la barre"
@@ -14040,7 +14245,16 @@
     "name": "kickback des triceps penché aux haltères"
   },
   "4962": {
-    "name": "squat sur box à la barre"
+    "name": "squat sur box à la barre",
+    "description": "Un squat jusqu'à une box placée derrière toi. Il travaille les hanches et les jambes tout en apprenant à contrôler la profondeur.",
+    "instructions": [
+      "Place une box derrière toi et une barre sur le haut de ton dos.",
+      "Envoie les hanches en arrière et assieds-toi sur la box.",
+      "Marque une courte pause sans relâcher.",
+      "Pousse dans tes pieds pour te relever.",
+      "Garde la poitrine haute.",
+      "Garde les genoux dans l'axe de tes orteils."
+    ]
   },
   "4963": {
     "name": "squat sur box au kettlebell"
@@ -14352,7 +14566,15 @@
     "name": "rotation interne de l'épaule à 90 degrés au câble"
   },
   "5090": {
-    "name": "tirage debout au câble"
+    "name": "tirage debout au câble",
+    "description": "Tire une poignée de câble vers ton buste en position debout. Il travaille le milieu du dos et apprend une posture droite et solide.",
+    "instructions": [
+      "Règle le câble à hauteur de poitrine, tiens la poignée et recule jusqu'à sentir la tension.",
+      "Tiens-toi droit, les abdominaux gainés.",
+      "Tire la poignée vers tes côtes en ramenant les coudes en arrière.",
+      "Serre les omoplates.",
+      "Reviens lentement jusqu'à ce que tes bras soient tendus."
+    ]
   },
   "5091": {
     "name": "développé couché prise inversée à la barre"
@@ -14409,7 +14631,15 @@
     "name": "kickback au câble v. 2"
   },
   "5121": {
-    "name": "squat sumo aux haltères"
+    "name": "squat sumo aux haltères",
+    "description": "Un squat pieds écartés avec un haltère tenu entre les jambes. Il cible les fessiers et l'intérieur des cuisses.",
+    "instructions": [
+      "Tiens-toi pieds écartés, pointes ouvertes, un haltère tenu à deux mains devant toi.",
+      "Garde la poitrine haute.",
+      "Descends jusqu'à ce que tes cuisses soient à peu près parallèles au sol.",
+      "Pousse tes genoux vers l'extérieur, dans l'axe de tes orteils.",
+      "Pousse dans tes talons pour te relever."
+    ]
   },
   "5122": {
     "name": "épaulé-jeté à la barre"
@@ -14980,7 +15210,15 @@
     "name": "relevé de buste décliné v. 3"
   },
   "5516": {
-    "name": "hack squat à la machine"
+    "name": "hack squat à la machine",
+    "description": "Une machine de hack squat à disques qui permet de charger les quadriceps et les fessiers avec le dos soutenu.",
+    "instructions": [
+      "Place tes épaules sous les appuis et tes pieds à la largeur des épaules sur la plateforme.",
+      "Débloque les poignées de sécurité.",
+      "Descends jusqu'à ce que tes cuisses soient au moins parallèles à la plateforme.",
+      "Pousse avec tout le pied pour remonter.",
+      "Ne verrouille pas brutalement les genoux en haut."
+    ]
   },
   "5517": {
     "name": "tirage horizontal inversé prise supination"
@@ -15055,7 +15293,15 @@
     "name": "développé couché debout avec élastique v. 2"
   },
   "5609": {
-    "name": "face pull debout au câble"
+    "name": "face pull debout au câble",
+    "description": "Un face pull au câble pour développer l'arrière des épaules et renforcer le haut du dos.",
+    "instructions": [
+      "Règle le câble à hauteur du haut de la poitrine avec une poignée.",
+      "Tiens-toi bien droit et tire vers ton visage.",
+      "Écarte les mains en fin de mouvement.",
+      "Serre les omoplates.",
+      "Reviens lentement."
+    ]
   },
   "5623": {
     "name": "curl biceps avec marche avant"
@@ -15130,7 +15376,15 @@
     "name": "développé épaules debout aux sécurités à la barre"
   },
   "5669": {
-    "name": "curl strict à la barre"
+    "name": "curl strict à la barre",
+    "description": "Un curl à la barre sans aucun élan du corps, pour que les biceps fassent tout le travail. C'est une façon simple de développer l'avant du bras.",
+    "instructions": [
+      "Tiens-toi droit avec une barre en prise supination, à la largeur des épaules.",
+      "Garde les coudes collés au corps et le buste immobile.",
+      "Monte la barre vers tes épaules.",
+      "Contracte tes biceps en haut.",
+      "Redescends lentement jusqu'à ce que tes bras soient complètement tendus."
+    ]
   },
   "5670": {
     "name": "soulevé de terre zercher à la barre"
@@ -15250,7 +15504,15 @@
     "name": "élévation en y sur le ventre"
   },
   "5823": {
-    "name": "fente marchée à la barre"
+    "name": "fente marchée à la barre",
+    "description": "Des fentes en avançant pas après pas avec une barre sur le dos. Elles développent les jambes et les fessiers et sollicitent l'équilibre.",
+    "instructions": [
+      "Place une barre sur le haut de ton dos et tiens-toi bien droit.",
+      "Fais un pas en avant et descends jusqu'à ce que tes deux genoux soient pliés à environ 90 degrés.",
+      "Garde le buste droit.",
+      "Pousse sur le pied avant et ramène la jambe arrière vers l'avant pour le pas suivant.",
+      "Continue en alternant les jambes sur la distance prévue."
+    ]
   },
   "5825": {
     "name": "fente arrière au multipower v. 2"
@@ -15259,7 +15521,15 @@
     "name": "pull-through avec élastique"
   },
   "5843": {
-    "name": "écarté incliné à la machine"
+    "name": "écarté incliné à la machine",
+    "description": "Un écarté à la machine en position inclinée, qui met l'accent sur le haut des pectoraux. Les poignées suivent un arc de cercle guidé.",
+    "instructions": [
+      "Assieds-toi dans la machine, le dos contre le dossier.",
+      "Saisis les poignées, les coudes légèrement fléchis.",
+      "Rapproche les poignées devant le haut de ta poitrine.",
+      "Contracte les pectoraux.",
+      "Reviens lentement jusqu'à un étirement confortable."
+    ]
   },
   "5844": {
     "name": "tirage vertical bras tendu latéral un bras"
@@ -16039,7 +16309,15 @@
     "name": "extension des triceps en position de planche au poids du corps"
   },
   "6424": {
-    "name": "good morning aux haltères"
+    "name": "good morning aux haltères",
+    "description": "Une flexion de hanches avec un haltère tenu contre la poitrine, qui travaille les ischio-jambiers, les fessiers et le bas du dos.",
+    "instructions": [
+      "Tiens-toi les pieds à la largeur des hanches, un haltère tenu contre ta poitrine.",
+      "Fléchis légèrement les genoux.",
+      "Envoie les hanches en arrière et penche le buste en avant, le dos plat.",
+      "Arrête-toi quand tu sens l'étirement des ischio-jambiers.",
+      "Pousse les hanches vers l'avant pour te redresser."
+    ]
   },
   "6425": {
     "name": "good morning au kettlebell v. 2"
@@ -16819,7 +17097,15 @@
     "name": "fente arrière homolatérale au kettlebell"
   },
   "7583": {
-    "name": "tirage vertical prise neutre au câble"
+    "name": "tirage vertical prise neutre au câble",
+    "description": "Tire une poignée en prise neutre jusqu'au haut de ta poitrine au câble. Il développe les dorsaux et les muscles entre les omoplates.",
+    "instructions": [
+      "Assieds-toi au poste de tirage vertical, les cuisses calées, et saisis la poignée en prise neutre.",
+      "Penche-toi légèrement en arrière et gaine tes abdominaux.",
+      "Tire la poignée jusqu'au haut de ta poitrine en ramenant les coudes vers tes côtes.",
+      "Serre les omoplates en bas du mouvement.",
+      "Laisse remonter la poignée lentement jusqu'à ce que tes bras soient complètement tendus."
+    ]
   },
   "7584": {
     "name": "coupe anti-rotation à genoux de haut en bas au câble"
@@ -16987,7 +17273,15 @@
     "name": "posture de l'enfant en mouvement"
   },
   "8141": {
-    "name": "croisé debout au câble"
+    "name": "croisé debout au câble",
+    "description": "Un écarté debout au câble où les mains se croisent devant la poitrine. Il met l'accent sur la contraction des pectoraux.",
+    "instructions": [
+      "Règle les poulies en position haute et prends une poignée dans chaque main.",
+      "Fais un pas en avant en te penchant légèrement.",
+      "Rapproche les mains en décrivant un grand arc de cercle.",
+      "Contracte les pectoraux quand tes mains se croisent.",
+      "Reviens lentement jusqu'à l'étirement."
+    ]
   },
   "8142": {
     "name": "presse à jambes allongé avec élastique"
@@ -17746,7 +18040,16 @@
     "name": "développé california à la barre"
   },
   "9931": {
-    "name": "curl spider aux haltères"
+    "name": "curl spider aux haltères",
+    "description": "Un curl réalisé poitrine posée sur un banc incliné, bras pendant à la verticale. Il supprime l'élan et met la charge sur les biceps.",
+    "instructions": [
+      "Allonge-toi face contre un banc incliné, un haltère dans chaque main et les bras pendant vers le sol.",
+      "Garde le haut des bras vertical et les paumes tournées vers l'avant.",
+      "Monte les haltères vers tes épaules.",
+      "Contracte tes biceps en haut.",
+      "Redescends lentement jusqu'à ce que tes bras soient complètement tendus.",
+      "Garde la poitrine sur le banc et évite de te balancer."
+    ]
   },
   "9932": {
     "name": "développé couché avec élastique et disque lesté à la barre"
@@ -18019,7 +18322,15 @@
     "name": "squat bulgare avec ceinture à la machine"
   },
   "10329": {
-    "name": "rowing kroc aux haltères"
+    "name": "rowing kroc aux haltères",
+    "description": "Un rowing à un bras, lourd et en séries longues, avec un peu d'élan du corps. Idéal pour la force des dorsaux et de la préhension.",
+    "instructions": [
+      "Place-toi à côté d'un banc, une main et un genou en appui dessus, et tiens un haltère lourd.",
+      "Laisse pendre la charge en sentant l'étirement du dorsal.",
+      "Tire l'haltère vers ta hanche avec un élan contrôlé.",
+      "Redescends lentement jusqu'à l'étirement complet.",
+      "Garde le dos plat. Termine tes répétitions, puis change de bras."
+    ]
   },
   "10330": {
     "name": "élévation powell aux haltères"
@@ -19661,7 +19972,16 @@
     ]
   },
   "0062": {
-    "name": "tirage étroit à la barre"
+    "name": "tirage étroit à la barre",
+    "description": "Un rowing penché en prise serrée qui sollicite davantage les dorsaux et les muscles entre les omoplates.",
+    "instructions": [
+      "Tiens une barre en prise serrée, en supination ou neutre, penche-toi en avant depuis les hanches et garde le dos plat.",
+      "Laisse pendre la barre bras tendus sous ta poitrine.",
+      "Tire la barre vers le bas de tes côtes en gardant les coudes près du corps.",
+      "Serre les omoplates en haut du mouvement.",
+      "Redescends la barre sous contrôle jusqu'à ce que tes bras soient tendus.",
+      "Garde la nuque neutre et évite les à-coups avec le bas du dos."
+    ]
   },
   "0063": {
     "name": "squat stance étroite à la barre",
@@ -20627,7 +20947,16 @@
     ]
   },
   "0166": {
-    "name": "curl marteau au câble"
+    "name": "curl marteau au câble",
+    "description": "Un curl en prise marteau au câble bas. La prise neutre fait travailler ensemble les biceps et les muscles de l'avant-bras.",
+    "instructions": [
+      "Fixe une corde ou une poignée à la poulie basse et tiens-la paumes face à face.",
+      "Tiens-toi droit, les coudes le long du corps.",
+      "Monte les poignées vers tes épaules.",
+      "Contracte en haut.",
+      "Redescends lentement jusqu'à ce que tes bras soient tendus.",
+      "Garde le haut des bras immobile et évite de te balancer."
+    ]
   },
   "0167": {
     "name": "tirage haut à genoux au câble",
