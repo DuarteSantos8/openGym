@@ -2,7 +2,7 @@
 // a track's stages compile, one occurrence at a time, into ordinary plan rules, and a slot's saved
 // work reads back as one outcome. Rounding is nearest 0.5 kg unless a test says otherwise.
 import { describe, expect, it } from 'vitest'
-import { OPTION_CLASSES, advanceProgression, cardioParameters, defaultPlanRule, generatePrescription, slotOutcome, stageRule, summarizeActual, validateProgramme, weeklyTemplate } from './index.js'
+import { OPTION_CLASSES, advanceProgression, cardioParameters, defaultPlanRule, generatePrescription, resolveProgressionContext, slotOutcome, stageRule, summarizeActual, validateProgramme, verdictOf, weeklyTemplate } from './index.js'
 import { migrateProfileV1ToV2 } from '../../../../api/migration/profile-migration.js'
 
 const NOW = '2026-11-04T10:00:00.000Z'
@@ -66,6 +66,27 @@ function sessions(rule, n) {
     last = p
     return `${aims.every(r => r === aims[0]) ? `${aims.length}x${aims[0]}` : aims.join('/')}@${p.rows[0].load.value}`
   })
+}
+
+// One programme track driven across its stages ([stage, sessions] pairs) the way the app drives a
+// track: resolve the context, generate, every set done at its aim, advance. Each session's row loads.
+function across(rule, plan) {
+  const ctx = ctxOf(plan.map(([s]) => s), { rule })
+  const workouts = [], prescriptions = {}, progression = {}, out = []
+  for (const [s, n] of plan) {
+    for (let k = 0; k < n; k++) {
+      const i = out.length
+      const r = stageRule({ ...ctx, stage: s })
+      const c = resolveProgressionContext({ trackId: 't', exerciseId: 'bench', rule: r, workouts, prescriptions, progression })
+      const p = gen(r, { id: 'p' + i, trackId: 't', state: c.state, lastPrescription: c.lastPrescription, lastLog: c.baseline && { ...c.baseline, id: c.baseline.exposureId }, reset: c.reset, heldLoad: c.heldLoad })
+      const x = { exposureId: 'x' + i, exerciseId: 'bench', trackId: 't', prescriptionId: p.id, ...saved(p, p.rows.map((row, j) => ({ row: j, reps: row.reps.min, load: row.load }))) }
+      prescriptions[p.id] = p
+      progression.t = advanceProgression({ state: progression.t ?? null, prescription: p, log: { id: x.exposureId, actual: x.actual, performance: x.performance }, now: NOW })
+      workouts.push({ id: 'w' + i, d: `2026-11-${String(i + 1).padStart(2, '0')}`, start: i, exposures: [x] })
+      out.push(p.rows.map(row => row.load.value).join('/'))
+    }
+  }
+  return out
 }
 
 describe('stageRule', () => {
@@ -144,12 +165,48 @@ describe('stageRule', () => {
     expect(validate([stage('w1', { own: 'inherit', effort: { mode: 'operational', rpe: 8 } })]).ok).toBe(true)
   })
 
-  it('a deload week drops the steps and scales the anchor once', () => {
-    const rule = compile({ own: 'inherit', deload: { factor: 0.9 } })
-    expect(rule.program.phases[0].progression).toEqual([])
-    expect(rule.program.phases[0].stall).toBeUndefined()
-    expect(rule.program.completion).toEqual([])
-    expect(gen(rule).rows.map(r => r.load.value)).toEqual([72, 72, 72])
+  it('a seeded load carries on into the later stages that keep its step', () => {
+    const plan = [[stage('w1', set(week({ load: abs(60) }))), 1], [stage('w2', { own: 'inherit', seed: { load: 'copy' } }), 2], [stage('w3', INHERIT), 1]]
+    expect(validate(plan.map(([s]) => s))).toEqual({ ok: true, errors: [] })
+    // Never the occurrence's own 80: week 3 goes on from where week 2 left the track.
+    expect(across(occRule(), plan)).toEqual(['60/60/60', '60/60/60', '62.5/62.5/62.5', '65/65/65'])
+  })
+
+  it('a deload or recovery week scales from the progressed value and the next week goes on from it', () => {
+    const climb = [stage('w1', INHERIT), 2]
+    const deload = [stage('d', { own: 'inherit', deload: { factor: 0.9 } }, { kind: 'recovery' }), 1]
+    const fixed = [stage('r', set(week({ sets: 2, load: abs(60) })), { kind: 'recovery' }), 1]
+    const next = [stage('w2', INHERIT), 1]
+    // 0.9 × 85, not × the starting 80; the light week earns no step and loses none.
+    expect(across(occRule(), [climb, deload, next])).toEqual(['80/80/80', '82.5/82.5/82.5', '76.5/76.5/76.5', '85/85/85'])
+    expect(across(occRule(), [climb, fixed, next])).toEqual(['80/80/80', '82.5/82.5/82.5', '60/60', '85/85/85'])
+  })
+
+  it('a deload scales anchor, training-max and absolute loads once; nothing to scale is rejected', () => {
+    const deload = factor => ({ own: 'inherit', deload: { factor } })
+    const linear = compile(deload(0.9))
+    expect(linear.program.adaptive).toBe(false)
+    expect(linear.program.phases[0].progression).toEqual(occRule().program.phases[0].progression)
+    expect(gen(linear).rows.map(r => r.load.value)).toEqual([72, 72, 72])
+    const wendler = occRule('five_three_one', { trainingMax: { mode: 'direct', value: 100, unit: 'kg' } })
+    const half = gen(compile(deload(0.5), { rule: wendler }))
+    expect(half.rows.map(r => r.load.value)).toEqual([32.5, 37.5, 42.5])
+    expect(half.trainingMax).toEqual(kg(100))
+    const pyramid = occRule('pyramid_reps', { setReps: [10, 8], setWeights: [100, 80] })
+    expect(gen(compile(deload(0.9), { rule: pyramid })).rows.map(r => r.load.value)).toEqual([90, 72])
+    const recovery = rule => validate([stage('d', deload(0.5), { kind: 'recovery' })], { routines: routinesOf(occurrence(rule)) })
+    expect(recovery(wendler)).toEqual({ ok: true, errors: [] })
+    expect(recovery(pyramid)).toEqual({ ok: true, errors: [] })
+    expect(recovery(occRule('bodyweight_ladder')).errors).toEqual([expect.stringMatching(/deload needs a load to scale/)])
+  })
+
+  it('a fixed week is used exactly: the occurrence goal caps nothing (spec 9)', () => {
+    const [copied] = weeklyTemplate('copy', { oid: OID, occRule: occRule(), n: 1 })   // linear: a 100 kg goal
+    const ph = copied.targets[OID].phase
+    const heavy = [stage('w1', set({ ...ph, parameters: { ...ph.parameters, load: abs(110) } }))]
+    expect(validate(heavy)).toEqual({ ok: true, errors: [] })
+    expect(gen(stageRule({ ...ctxOf(heavy), stage: heavy[0] })).rows.map(r => r.load.value)).toEqual([110, 110, 110])
+    expect(gen(compile(set(week({ load: abs(110) }, { target: abs(100) })))).rows.map(r => r.load.value)).toEqual([110, 110, 110])
   })
 
   it('explicit zero rest and a 0% incline survive compile; absent values inherit', () => {
@@ -306,7 +363,18 @@ describe('slotOutcome', () => {
     const row = (i, more) => ({ row: i, reps: 5, load: kg(60), rir: 2, ...more })
     const performed = [row(0), row(1, { rir: 0, failure: true }), row(2, { reps: 9, rir: 0 }), row(3, { reps: 7, rir: 0, max: true })]
     expect(slotOutcome({ prescription: p, exposure: saved(p, performed) })).toEqual({ outcome: 'succeeded', reasons: [] })
+    expect(verdictOf(p, summarizeActual(p, performed)).success).toBe(true)
     expect(slotOutcome({ prescription: p, exposure: saved(p, [row(0, { rir: 0 }), ...performed.slice(1)]) })).toEqual({ outcome: 'failed', reasons: ['effort'] })
+  })
+
+  it('a set taken to failure is left out of the effort the engine itself judges (spec 11)', () => {
+    const p = gen(compile({ own: 'inherit', effort: { mode: 'operational', rpe: 8 } }))
+    const next = performed => advanceProgression({ state: null, prescription: p, log: { id: 'l1', actual: summarizeActual(p, performed) }, now: NOW }).values.load.value
+    expect(next(lifts({ rir: 0, failure: true }))).toBe(82.5)
+    expect(slotOutcome({ prescription: p, exposure: saved(p, lifts({ rir: 0, failure: true })) })).toEqual({ outcome: 'succeeded', reasons: [] })
+    // The same RIR 0 on an ordinary set is an effort miss for both readers.
+    expect(next(lifts({ rir: 0 }))).toBe(80)
+    expect(slotOutcome({ prescription: p, exposure: saved(p, lifts({ rir: 0 })) }).outcome).toBe('failed')
   })
 
   it('slot outcome: saved with incomplete required rows is failed; zero-work save is failed', () => {

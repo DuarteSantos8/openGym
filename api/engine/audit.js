@@ -59,7 +59,7 @@ export function auditExecution(prescription, actual, state = null) {
 /**
  * The exercise-level actual that completion reads: every completed work set is counted, and the
  * weakest deciding set (the rows of the phase's success scope) supplies reps, load, duration and
- * effort — for an assistance machine that is the set with the most help. Each deciding set is also
+ * effort (from its ordinary sets only) — for an assistance machine that is the set with the most help. Each deciding set is also
  * held to its own row: `short` when one fell below its target, `light` when one was lifted below
  * its prescribed load. Sets added past the prescription are extra work: they never move the plan
  * (v1 #233). Values are copied exactly as logged.
@@ -90,7 +90,8 @@ export function summarizeActual(prescription, performed) {
   const loads = deciding.map(s => s.load).filter(l => Number.isFinite(l?.value))
   const durationSeconds = least(deciding.map(s => s.durationSeconds))
   const speed = least(deciding.map(s => s.speed))
-  const rir = least(deciding.map(s => normalizeEffort(s).rir))
+  // Spec 11: AMRAP, Max and to-failure (`failure`) sets are not ordinary sets, so the effort floor reads the others.
+  const rir = least(deciding.filter(s => !s.failure && !s.max && !rows[s.row]?.amrap && !rows[s.row]?.max).map(s => normalizeEffort(s).rir))
   const rpes = deciding.map(s => s.rpeEntered).filter(Number.isFinite)
   return {
     sets: done,

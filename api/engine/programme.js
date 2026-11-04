@@ -33,16 +33,20 @@ const INHERIT = { own: 'inherit' }
 const targetOf = (stage, oid) => stage.targets?.[oid] ?? INHERIT
 /** The work stage before this one: what a new step is measured against and 'copy' reads. */
 const before = (track, stage) => track.stages.slice(0, track.stages.findIndex(s => s.id === stage.id)).findLast(s => s.kind === 'work') ?? null
-const scaled = (e, f) => (e?.mode === 'absolute' ? { ...e, value: e.value * f } : e?.mode === 'percent_1rm' ? { ...e, percent: e.percent * f } : e)
+// A deload scales every group's load once: a share of the anchor or the training max, or its own kg/lb.
+const deloaded = (l, f) => (l.basis === 'absolute' ? { ...l, value: l.value * f } : l.basis === 'anchor' || l.basis === 'training_max' ? { ...l, percent: l.percent * f } : l)
+const scalable = rule => rule.program.phases.some(ph => ph.groups.some(g => g.load.basis === 'training_max'
+  || (g.load.basis === 'absolute' && g.load.value > 0) || (g.load.basis === 'anchor' && ph.parameters.load.mode !== 'empty')))
 const opsOf = rule => rule.program.phases.flatMap(ph => ph.progression)
 
 /**
  * The PlanRule one stage asks of one bound occurrence. `own: 'set'` is the authored phase alone,
- * fixed unless it keeps a step; `own: 'inherit'` is the occurrence's own rule, scaled once and
- * stepless on a deload week. A declared load seed is where a newly adaptive load opens.
- * Operational effort becomes a RIR floor; advisory effort leaves the rule alone (the run carries
- * it in the prescription's provenance). The week's execution options ride along as `options`, so
- * they are frozen into the prescription with the rest of the rule.
+ * fixed unless it keeps a step; `own: 'inherit'` is the occurrence's own rule. A deload week keeps
+ * that rule's steps, so it opens from the track's progressed value, and scales every group's load
+ * once; it and any recovery week are `adaptive: false`, logged without moving the track
+ * (advance.js). Operational effort becomes a RIR floor; advisory effort leaves the rule alone (the
+ * run carries it in the prescription's provenance). The week's execution options ride along as
+ * `options`, so they are frozen into the prescription with the rest of the rule.
  */
 export function stageRule({ def, track, stage, oid, occRule, runId }) {
   const t = targetOf(stage, oid)
@@ -51,30 +55,28 @@ export function stageRule({ def, track, stage, oid, occRule, runId }) {
     const ph = { ...copy(t.phase), exit: null }
     // Absent rest inherits the occurrence's; an explicit 0 is kept.
     ph.parameters.restSeconds = ph.parameters.restSeconds ?? occRule.program.phases[0].parameters.restSeconds
+    // A fixed load is used exactly (spec 9): with no load step, a goal would only cap it.
+    if (!operatorFor(ph, 'load')) ph.target = { mode: 'none' }
     const tm = ph.groups.some(g => g.load?.basis === 'training_max') && track.tm
     program = { phases: [ph], end: 'complete', completion: [], ...(tm ? { trainingMax: { mode: 'direct', value: tm.value, unit: tm.unit } } : {}) }
   } else {
     program = copy(occRule.program)
-    if (t.deload) {
-      // ponytail: only the anchor (and its range end) scales; absolute or training-max group loads stay as authored.
-      program.phases = program.phases.map(({ stall, ...ph }) => ({
-        ...ph, progression: [],
-        parameters: { ...ph.parameters, load: scaled(ph.parameters.load, t.deload.factor), ...(ph.parameters.loadTo ? { loadTo: scaled(ph.parameters.loadTo, t.deload.factor) } : {}) }
-      }))
-      // A recovery week completes nothing, and steps it no longer has cannot be completion terms.
-      program.completion = []
-    }
+    // ponytail: an anchor group's load range (loadTo) is dropped at a scaled percent; the deload is one load.
+    if (t.deload) program.phases = program.phases.map(ph => ({ ...ph, groups: ph.groups.map(g => ({ ...g, load: deloaded(g.load, t.deload.factor) })) }))
   }
-  const seed = t.seed?.load
-  if (seed !== undefined) {
-    const p = program.phases[0].parameters
-    const prev = seed === 'copy' && before(track, stage)
-    const from = prev && stageRule({ def, track, stage: prev, oid, occRule, runId }).program.phases[0]
-    // ponytail: 'copy' after an adaptive stage needs that stage's committed value, which only the run's replay knows.
-    if (from && !operatorFor(from, 'load')) p.load = copy(from.parameters.load)
-    else if (typeof seed === 'number') p.load = p.load.mode === 'percent_1rm' ? { ...p.load, percent: seed } : { ...p.load, value: seed }
-  }
-  // ponytail: seeds of reps, sets and the other metrics are run state, not rule: the run's replay applies them.
+  if (stage.kind === 'recovery' || t.deload) program.adaptive = false
+  // Stage entry for the load (spec 6): a declared seed; on 'copy', the previous work stage's fixed
+  // load; and an unchanged load step keeps the start it entered with, so the engine carries the
+  // track's progressed value on (program.js sameStart) instead of reopening at the occurrence's.
+  const phase = program.phases[0], seed = t.seed?.load
+  const prev = before(track, stage)
+  const prevPhase = prev && stageRule({ def, track, stage: prev, oid, occRule, runId }).program.phases[0]
+  const prevOp = prevPhase && operatorFor(prevPhase, 'load')
+  const carried = !!prevOp && canonicalJSON(prevOp) === canonicalJSON(operatorFor(phase, 'load'))
+  const load = phase.parameters.load
+  if (typeof seed === 'number') phase.parameters.load = load.mode === 'percent_1rm' ? { ...load, percent: seed } : { ...load, value: seed }
+  else if (seed === 'copy' ? prevPhase && (!prevOp || carried) : carried) phase.parameters.load = copy(prevPhase.parameters.load)
+  // ponytail: 'copy' after a different adaptive load, and seeds of other metrics, are run state: the run's replay applies them.
   if (t.effort?.mode === 'operational') {
     program.phases = program.phases.map(ph => ({ ...ph, parameters: { ...ph.parameters, rir: { min: 10 - t.effort.rpe, max: 10 } }, success: { ...ph.success, effort: 'rir_floor' } }))
   }
@@ -95,7 +97,7 @@ export function weeklyTemplate(name, { oid, occRule, n = 1 }) {
   }
   if (name === 'copy') {
     const { stall, ...ph } = occRule.program.phases[0]
-    return Array.from({ length: n }, (_, i) => stage(`w${i + 1}`, copy({ ...ph, progression: [], exit: null })))
+    return Array.from({ length: n }, (_, i) => stage(`w${i + 1}`, copy({ ...ph, target: { mode: 'none' }, progression: [], exit: null })))
   }
   throw new Error(`unknown weekly template "${name}"`)
 }
@@ -118,7 +120,7 @@ const FIXED = {
 function targetErrors(t, at, hasPrevious) {
   const out = []
   if (!isObj(t) || !['inherit', 'set'].includes(t.own)) return [`${at}.own must be inherit or set`]
-  if (t.own === 'set' && !(isObj(t.phase) && isObj(t.phase.parameters) && Array.isArray(t.phase.groups))) out.push(`${at}.phase is required for own set`)
+  if (t.own === 'set' && !(isObj(t.phase) && isObj(t.phase.parameters) && Array.isArray(t.phase.groups) && Array.isArray(t.phase.progression))) out.push(`${at}.phase is required for own set`)
   if (t.own === 'inherit' && t.phase !== undefined) out.push(`${at}.phase is for own set only`)
   if (t.effort !== undefined && !(isObj(t.effort) && ['advisory', 'operational'].includes(t.effort.mode) && Number.isFinite(t.effort.rpe) && t.effort.rpe >= 6 && t.effort.rpe <= 10)) out.push(`${at}.effort needs mode advisory or operational and rpe 6 to 10`)
   if (t.deload !== undefined && !(t.own === 'inherit' && isValidDeloadFactor(t.deload?.factor))) out.push(`${at}.deload needs an inherited week and a valid factor`)
@@ -161,16 +163,18 @@ export function validateProgramme(def, { routines = [] } = {}) {
     const authored = stages.reduce((n, st) => n + (track.slots || []).filter(slot => st?.targets?.[slot?.oid]?.own === 'set').length, 0)
     if (authored > MAX_PHASES) errors.push(`${at}: at most ${MAX_PHASES} authored phases`)
     for (const { slot, occ } of bound) {
-      let prev = null
+      let prev = null, malformed = false
       stages.forEach((stage, i) => {
-        if (stage?.kind === 'rest') return
+        // A later stage compiles from the ones before it (stageRule's entry), so a malformed one ends the slot's checks.
+        if (malformed || stage?.kind === 'rest') return
         const sat = `${at}.stages[${i}].targets.${slot.oid}`
         const t = targetOf(stage, slot.oid)
         const bad = targetErrors(t, sat, !!prev)
-        if (bad.length) { errors.push(...bad); return }
+        if (bad.length) { errors.push(...bad); malformed = true; return }
         const rule = stageRule({ def, track, stage, oid: slot.oid, occRule: occ.rule, runId: 'check' })
         const check = validatePlanRule(rule)
         if (!check.ok) { errors.push(...check.errors.map(e => `${sat}: ${e}`)); return }
+        if (t.deload && !scalable(rule)) errors.push(`${sat}.deload needs a load to scale`)
         const ph = rule.program.phases[0]
         if (t.own === 'set') {
           for (const op of ph.progression) {

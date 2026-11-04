@@ -160,6 +160,9 @@ function backOff(phase, p, log, values, stalls) {
 export function advanceProgression({ state, prescription: p, log, now }) {
   // The same finish twice (a retried save, a duplicated sync) earns nothing twice.
   if (state && state.lastCompletedLogId === log.id) return state
+  // A programme's recovery week (programme.js stageRule) is logged and moves nothing: the values,
+  // counters and last prescription stay what the last work session left (spec 9).
+  if (p.ruleSnapshot.program.adaptive === false) return { ...(state ?? initialProgressionState(p.trackId)), lastCompletedLogId: log.id }
   // A session built from another plan (its sets, reps or phases were edited) starts the track over:
   // live and replayed history restart at the same log. An unstamped plan never restarts.
   const restart = !!state?.planFingerprint && !!p.planFingerprint && state.planFingerprint !== p.planFingerprint
