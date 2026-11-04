@@ -2534,6 +2534,18 @@ export const PT_BR_OVERRIDES = {
   "Copy code": "Copiar código",
   "A freeze covered the week of {0}, so the streak kept going.": "Um congelamento cobriu a semana de {0}, então a sequência continuou.",
   "Freezes covered the weeks of {0}, so the streak kept going.": "Os congelamentos cobriram as semanas de {0}, então a sequência continuou.",
+  "Every 4th week you train earns a freeze. You can bank 2.": "Cada 4ª semana de treino dá um congelamento. Você pode guardar 2.",
+  "How your streak works": "Como funciona a sua sequência",
+  "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.": "Perdeu uma semana? Um congelamento cobre: a sequência continua, essa semana só não soma. Sem congelamentos, ela recomeça do zero.",
+  "Missed": "Perdida",
+  "No workout and no freeze left, so the streak started over.": "Sem treino e sem congelamentos, então a sequência recomeçou.",
+  "No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.": "Sem treino, então um congelamento cobriu. A sequência continuou, mas esta semana não soma.",
+  "Reset to default": "Voltar ao padrão",
+  "Rocket": "Foguete",
+  "Tap a week's mark to see how it counted.": "Toque na marca de uma semana para ver como ela contou.",
+  "The colors around it follow your pick, in light and dark.": "As cores ao redor seguem a sua escolha, no claro e no escuro.",
+  "Type or paste an emoji": "Digite ou cole um emoji",
+  "You trained, so this week counts. Streak: {0}.": "Você treinou, então esta semana conta. Sequência: {0}.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

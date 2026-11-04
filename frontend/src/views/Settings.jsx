@@ -20,6 +20,7 @@ import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevic
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
 import { setSlot, slotChoice, slotSound, toneFor } from '../lib/user-sounds.js'
 import OwnSounds from '../components/OwnSounds.jsx'
+import { StreakIconRows } from '../components/StreakIconPicker.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
@@ -1023,6 +1024,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             value={S.icons === 'emoji' ? 'emoji' : 'opengym'}
             onChange={v => update(s => { if (v === 'emoji') s.icons = 'emoji'; else delete s.icons })} />
         </Row>
+        {/* Your own streak flame and freeze, over either choice above (components/StreakIconPicker.jsx). */}
+        {on('motivation') && <StreakIconRows />}
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}

@@ -7,6 +7,7 @@ import { reducedMotion } from '../lib/use-swipe-row.js'
 import { vibrate } from '../lib/sound.js'
 import Icon from './Icon.jsx'
 import { SeasonDeco } from './Seasonal.jsx'
+import { iconChoice } from '../lib/streak-icons.js'
 
 /* The week streak's extras (lib/streak.js): the best run and the freezes under the streak, the
    milestone badges on Stats, and Home's little party when a week is done or a badge is reached.
@@ -19,8 +20,13 @@ import { SeasonDeco } from './Seasonal.jsx'
  * where the icon sat and the seasonal Santa hat (spot "streak-flame") still lands on its tip.
  * `lit` false (no streak yet) draws it in grey.
  */
-export function StreakFlame ({ className = '', style, lit = true }) {
+export function StreakFlame ({ className = '', style, lit = true, plain = false }) {
   const id = 'fl' + useId().replace(/[^a-zA-Z0-9]/g, '')
+  // Settings → Icons → Streak flame (lib/streak-icons.js): your own icon or emoji, in the same
+  // 1em box, tinted by index.css from its own colour. It wins over the openGym/Emoji switch.
+  // `plain` is the default flame whatever was picked (the picker's own "default" cell).
+  const own = iconChoice({ flameIcon: useStore(s => s.S?.flameIcon) }, 'flame')
+  if (own && !plain) return <OwnSymbol own={own} cls={'flame flame-own' + (lit ? ' lit' : ' out') + (className ? ' ' + className : '')} style={style} />
   return <svg className={'flame' + (lit ? ' lit glyph-svg' : ' out') + (className ? ' ' + className : '')} style={style} viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id={id + 'o'} x1="0" y1="1" x2="0" y2="0">
@@ -84,11 +90,31 @@ export function Burst () {
   </span>
 }
 
+/** A chosen flame or freeze: an openGym icon in its own colour, or the emoji itself. */
+function OwnSymbol ({ own, cls, style }) {
+  return <span className={cls + ' own-' + own.k} style={style} aria-hidden="true">
+    {own.k === 'icon' ? <Icon name={own.v} /> : <span className="own-e">{own.v}</span>}
+  </span>
+}
+
+/**
+ * The freeze's symbol: the snowflake (or ❄️ with Icons on Emoji), or the one picked in Settings →
+ * Icons → Streak freeze. `on` false is a freeze still to earn: always the plain outline, so an
+ * empty slot reads the same whatever was picked.
+ */
+export function FreezeGlyph ({ on = true, className = '' }) {
+  const own = iconChoice({ freezeIcon: useStore(s => s.S?.freezeIcon) }, 'freeze')
+  if (on && own) return <OwnSymbol own={own} cls={'frz-g frz-own' + (className ? ' ' + className : '')} />
+  return <span className={'frz-g' + (on ? ' glyph' : '') + (className ? ' ' + className : '')} aria-hidden="true">
+    <Icon name="snowflake" className={on ? 'on' : ''} />{on && <span className="glyph-e">❄️</span>}
+  </span>
+}
+
 /** Snowflakes for the freezes banked: filled chips are there, outlined ones still to earn. */
 export function Freezes ({ n, className = '' }) {
   const label = t('Streak freezes: {0} of {1}', n, FREEZE_MAX)
   return <span className={'streak-freezes ' + className} role="img" aria-label={label} title={label}>
-    {Array.from({ length: FREEZE_MAX }, (_, i) => <span key={i} className={'frz' + (i < n ? ' on' : '') + (i < n ? ' glyph' : '')}><Icon name="snowflake" className={i < n ? 'on' : ''} />{i < n && <span className="glyph-e">❄️</span>}</span>)}
+    {Array.from({ length: FREEZE_MAX }, (_, i) => <span key={i} className={'frz' + (i < n ? ' on' : '')}><FreezeGlyph on={i < n} /></span>)}
   </span>
 }
 
@@ -118,7 +144,7 @@ export function StreakBadges ({ info }) {
 }
 
 /** Stats: the streak with its best, the freezes, the badges and how far the next one is. */
-export function StreakCard ({ info }) {
+export function StreakCard ({ info, onHelp }) {
   const hint = info.freezes >= FREEZE_MAX
     ? t('Freezes full. A missed week uses one, no harm done.')
     : tn('One more week with a workout earns a freeze.', '{0} more weeks with a workout earn a freeze.', info.toNextFreeze)
@@ -128,6 +154,8 @@ export function StreakCard ({ info }) {
       <div>
         <h2 style={{ margin: 0 }}>{t('Week streak')}</h2>
         <div className="streak-num"><StreakFlame lit={info.current > 0} /><span>{info.current}</span></div>
+        {/* What the number counts, right under it (Discord 11-04: it read as workouts, or as a bug). */}
+        <div className="muted small streak-what">{t('Weeks in a row with at least one workout.')}</div>
       </div>
       <div className="streak-side">
         <div className="muted small">{t('Best: {0}', info.best)}</div>
@@ -145,6 +173,10 @@ export function StreakCard ({ info }) {
       : null}
     <div className="muted small streak-hint">{info.next ? '' : nextLine + ' '}{hint}</div>
     <FrozenWeeks frozen={info.frozen} />
+    {/* The calendar with every week's mark and the how-to (components/StreakCalendar.jsx). */}
+    {onHelp && <button type="button" className="streak-how" onClick={onHelp} aria-haspopup="dialog">
+      <Icon name="calendar" /><span>{t('How streaks work')}</span><Icon name="chevronRight" className="chev" />
+    </button>}
   </div>
 }
 
@@ -157,7 +189,7 @@ export function FrozenWeeks ({ frozen }) {
   if (!Array.isArray(frozen) || !frozen.length) return null
   const shown = frozen.slice(-3).map(wk => fmtDate(wk, false, wk.slice(0, 4) !== String(new Date().getFullYear()))).join(', ')
   return <div className="muted small streak-frozen" data-streak-frozen>
-    <Icon name="snowflake" />
+    <FreezeGlyph />
     <span>{frozen.length === 1 ? t('A freeze covered the week of {0}, so the streak kept going.', shown) : t('Freezes covered the weeks of {0}, so the streak kept going.', shown)}</span>
   </div>
 }

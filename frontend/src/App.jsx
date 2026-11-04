@@ -61,6 +61,7 @@ import Login from './views/Login.jsx'
 import MobileOnboarding from './views/MobileOnboarding.jsx'
 import PermissionSteps from './views/PermissionSteps.jsx'
 import Home from './views/Home.jsx'
+import { tintCss } from './lib/streak-icons.js'
 import Plan from './views/Plan.jsx'
 import Workout from './views/Workout.jsx'
 
@@ -172,6 +173,15 @@ function Shell() {
   useEffect(() => { applyPrefs(S.theme, accent) }, [S.theme, accent])
   // Settings → Icons: openGym's own or the emoji (components/Glyph.jsx, index.css .glyph).
   useEffect(() => { document.documentElement.dataset.icons = S.icons === 'emoji' ? 'emoji' : 'opengym' }, [S.icons])
+  // Settings → Icons → your own streak flame and freeze: the tints around them come from their
+  // colour (lib/streak-icons.js tintCss), one <style> per page, emptied on Reset to default.
+  const ownTints = tintCss({ flameIcon: S.flameIcon, freezeIcon: S.freezeIcon })
+  useEffect(() => {
+    let el = document.getElementById('streak-icon-tints')
+    if (!ownTints) { el?.remove(); return }
+    if (!el) { el = document.createElement('style'); el.id = 'streak-icon-tints'; document.head.appendChild(el) }
+    el.textContent = ownTints
+  }, [ownTints])
   // Sounds of one's own (lib/user-sounds.js) are wanted at the end of a rest, maybe with no
   // network and the screen off: their files come down to this device as soon as they are known,
   // not when they are first played. A missing one plays the chime meanwhile.

@@ -98,7 +98,7 @@ describe('a streak that ran through a gap', () => {
     const el = render(<StreakCard info={streakInfo(S, '2026-11-03')} />)
     const line = el.querySelector('[data-streak-frozen]')
     expect(line).toBeTruthy()
-    expect(line.textContent).toMatch(/^A freeze covered the week of .*21.*, so the streak kept going\.$/)
+    expect(line.lastElementChild.textContent).toMatch(/^A freeze covered the week of .*21.*, so the streak kept going\.$/)
     expect(line.querySelector('[data-icon="snowflake"]')).toBeTruthy()
   })
 

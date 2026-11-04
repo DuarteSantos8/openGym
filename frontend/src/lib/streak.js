@@ -34,8 +34,15 @@ const plusWeek = (iso, n = 1) => { const d = new Date(iso + 'T12:00:00'); d.setD
  *   thisWeekDone whether this week has a workout yet
  *   badges       the milestones the best run has reached; next: the next one, or null
  *   toNextFreeze trained weeks still needed for the next freeze (0 when the bank is full)
+ *
+ * `log`, a Map, if given, is filled with what the walk decided for each week, keyed like
+ * weekKey: { s, run, bank, earned } where s is 'on' (trained), 'frozen' (a freeze covered it),
+ * 'broke' (missed with no freeze left: the run started over), 'missed' (missed with no run to
+ * break) or 'open' (this week, no workout yet); run and bank are the streak and the freezes
+ * after that week, earned whether it earned a freeze. Only a record of the walk: the calendar
+ * (components/StreakCalendar.jsx) reads it to say why a week counted, nothing here depends on it.
  */
-export function streakInfo (S, today = todayISO()) {
+export function streakInfo (S, today = todayISO(), log = null) {
   const ws = weekStartOf(S)
   const cur = weekKey(today, ws)
   const trained = new Set()
@@ -51,14 +58,17 @@ export function streakInfo (S, today = todayISO()) {
   if (wk < floor) wk = floor
   let run = 0, best = 0, freezes = 0, earned = 0, frozen = []
   for (let i = 0; i <= MAX_WEEKS && wk <= cur; i++, wk = plusWeek(wk)) {
+    let s = 'open', got = false
     if (trained.has(wk)) {
       run++
       earned++
-      if (earned % FREEZE_EVERY === 0 && freezes < FREEZE_MAX) freezes++
+      if (earned % FREEZE_EVERY === 0 && freezes < FREEZE_MAX) { freezes++; got = true }
+      s = 'on'
     } else if (wk !== cur) {
-      if (freezes > 0) { freezes--; frozen.push(wk) } else { run = 0; earned = 0; freezes = 0; frozen = [] }
+      if (freezes > 0) { freezes--; frozen.push(wk); s = 'frozen' } else { s = run > 0 ? 'broke' : 'missed'; run = 0; earned = 0; freezes = 0; frozen = [] }
     }
     if (run > best) best = run
+    if (log) log.set(wk, { s, run, bank: freezes, earned: got })
   }
   const badges = STREAK_BADGES.filter(b => best >= b)
   return {
