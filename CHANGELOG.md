@@ -37,6 +37,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **Advent calendar, reworked**
 - The advent calendar is now a gym thing: every door is something to do (or a number from your own year), each open door hangs a bauble on a little tree, and training that day lights it up. Swipe the doors open. What is behind them stays a surprise until 1 December.
+- Christmas shows up only in December now, every year, and it brought friends: a lot more to spot around the app, and someone with a shiny nose who likes hide and seek.
 
 **The streak, explained (and yours to style)**
 - The calendar now shows how your streak counted, week by week: a flame for a week that counts, a freeze for a missed week a freeze covered (that week gets a frosty wash too), a ring for a missed one and a dashed ring for this week, still open. Tap a mark and it tells you why.
