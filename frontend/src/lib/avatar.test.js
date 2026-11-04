@@ -100,7 +100,13 @@ describe('the crop', () => {
 })
 
 describe('no metadata leaves the device', () => {
-  it('spots EXIF, XMP and ICC in what an encoder handed back', () => {
+  it('spots EXIF, XMP and comments in what an encoder handed back, and lets the sRGB profile be', () => {
+    const icc = bytes([0xff, 0xd8, 0xff, 0xe2, 0, 16], 'ICC_PROFILE', [0, 1, 0], [0xff, 0xda, 0, 2])
+    expect(hasImageMetadata(icc)).toBe(false)
+    const mpf = bytes([0xff, 0xd8, 0xff, 0xe2, 0, 8], 'MPF', [0, 0, 0], [0xff, 0xda, 0, 2])
+    expect(hasImageMetadata(mpf)).toBe(true)
+    const webpIcc = bytes('RIFF', [0, 0, 0, 0], 'WEBP', 'VP8X', [10, 0, 0, 0], [0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0], 'ICCP', [4, 0, 0, 0], 'sRGB', 'VP8 ', [0, 0, 0, 0])
+    expect(hasImageMetadata(webpIcc)).toBe(false)
     expect(hasImageMetadata(jpegWithGps())).toBe(true)
     expect(hasImageMetadata(jpeg())).toBe(true)   // the shared sample carries an APP1 Exif
     const jfif = bytes([0xff, 0xd8, 0xff, 0xe0], u16be(16), 'JFIF', [0, 1, 1, 0, 0, 1, 0, 1, 0, 0], [0xff, 0xc0], u16be(17), [8, 1, 0, 1, 0, 3], new Uint8Array(9), [0xff, 0xda, 0, 2])

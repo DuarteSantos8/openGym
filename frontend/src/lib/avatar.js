@@ -18,7 +18,7 @@
  *
  * Nothing leaves the device as it was picked. The photo is decoded and drawn on a canvas twice
  * (once into a working copy at most WORK_EDGE px, once into the square), and the square is encoded
- * as WebP, or JPEG where the browser cannot write WebP. A canvas has no EXIF, GPS or colour profile
+ * as WebP, or JPEG where the browser cannot write WebP. A canvas has no EXIF, GPS or camera details
  * to give back, and hasImageMetadata checks the bytes anyway before anything is stored.
  */
 import { sniffKind, imageDims } from './media-sniff.js'
@@ -120,9 +120,12 @@ export function zoomAround (pic, view, crop, factor, px = 0, py = 0) {
 const ascii = (b, i, n) => String.fromCharCode(...b.subarray(i, i + n))
 
 /**
- * Whether encoded image bytes still carry metadata: a JPEG's APP1 (EXIF or XMP), APP2 (ICC),
- * APP13 (IPTC) or a COM segment; a WebP's EXIF, XMP or ICCP chunk; a PNG's eXIf, tEXt, iTXt or
- * zTXt. What a canvas writes has none of them; this is the check that it stays that way.
+ * Whether encoded image bytes still carry metadata about the photo or the person: a JPEG's APP1
+ * (EXIF or XMP), APP13 (IPTC), COM, or an APP2 that is not the colour profile (FlashPix, MPF); a
+ * WebP's EXIF or XMP chunk; a PNG's eXIf, tEXt, iTXt or zTXt. A colour profile is allowed: Chrome's
+ * canvas encoder writes its own sRGB one into every WebP and JPEG (checked in headless Chrome), and
+ * it says nothing about where or with what the photo was taken. What a canvas writes has none of
+ * the rest; this is the check that it stays that way.
  */
 export function hasImageMetadata (bytes) {
   const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
@@ -132,7 +135,8 @@ export function hasImageMetadata (bytes) {
       if (b[i] !== 0xff) return false
       const mk = b[i + 1]
       if (mk === 0xda || mk === 0xd9) return false          // the image data starts: no more headers
-      if (mk === 0xe1 || mk === 0xe2 || mk === 0xed || mk === 0xfe) return true
+      if (mk === 0xe1 || mk === 0xed || mk === 0xfe) return true
+      if (mk === 0xe2 && ascii(b, i + 4, 11) !== 'ICC_PROFILE') return true
       i += 2 + ((b[i + 2] << 8) | b[i + 3])
     }
     return false
@@ -141,7 +145,7 @@ export function hasImageMetadata (bytes) {
     let i = 12
     while (i + 8 <= b.length) {
       const id = ascii(b, i, 4)
-      if (id === 'EXIF' || id === 'XMP ' || id === 'ICCP') return true
+      if (id === 'EXIF' || id === 'XMP ') return true
       const len = b[i + 4] | (b[i + 5] << 8) | (b[i + 6] << 16) | (b[i + 7] << 24)
       i += 8 + len + (len & 1)
     }
