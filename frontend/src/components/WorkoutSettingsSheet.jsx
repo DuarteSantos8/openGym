@@ -58,19 +58,19 @@ export function WorkoutSettings({ close }) {
     </Section>
     <Section>
       <Row icon="layout" iconTint="var(--blue)" title={t('Layout')}>
-        <Segmented className="seg-inline" disabled={!effortOn}>
+        <Segmented className="seg-inline"
           options={[{ value: 'cards', label: t('Cards') }, { value: 'list', label: t('List') }, { value: 'compact', label: t('Compact') }]}
           value={layout} onChange={v => update(s => { s.workoutView = v; if (s.active) delete s.active.workoutView })} />
       </Row>
       <Row icon="gauge" iconTint="var(--purple)" title={t('Effort per set')}>
-        <Segmented className="seg-inline" disabled={!effortOn}>
+        <Segmented className="seg-inline"
           options={[{ value: 'none', label: t('Off') }, { value: 'rir', label: t('RIR') }, { value: 'rpe', label: t('RPE') }]}
           value={effortOf(S)} onChange={v => update(s => { s.effort = v; delete s.showRir })} />
       </Row>
       {/* Same as Settings → Workout → Partial reps: greyed out while Effort per set is Off. */}
       <Row icon="arrowDown" iconTint="var(--orange)" title={t('Partial reps')} className={effortOn ? '' : 'dis'}
         subtitle={effortOn ? null : t('Needs Effort per set (RIR or RPE) to be on.')}>
-        <Segmented className="seg-inline" disabled={!effortOn}>
+        <Segmented className="seg-inline" disabled={!effortOn}
           options={[{ value: 'off', label: t('Off') }, { value: 'fold', label: t('Fold') }, { value: 'open', label: t('Keep open') }]}
           value={PARTIALS_MODES.includes(S.partials) ? S.partials : 'off'} onChange={v => { if (effortOn) update(s => { s.partials = v }) }} />
       </Row>
@@ -79,7 +79,7 @@ export function WorkoutSettings({ close }) {
           onChange={v => update(s => { s.wc = { ...workoutControls(s), swipeSets: v } })} />
       </Row>
       <Row icon="image" iconTint="var(--teal)" title={t('Exercise animations')}>
-        <Segmented className="seg-inline" disabled={!effortOn}>
+        <Segmented className="seg-inline"
           options={[{ value: 'full', label: t('Full') }, { value: 'mini', label: t('Small') }, { value: 'off', label: t('Hidden') }]}
           value={gif} onChange={v => update(s => { s.gifSize = v })} />
       </Row>

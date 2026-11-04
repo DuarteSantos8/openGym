@@ -461,9 +461,10 @@ const fmtSet = s => {
   const eff = s.rir != null ? '@RIR' + s.rir : s.rpe != null ? '@RPE' + s.rpe : s.failure === true && !isWarmupSet(s) ? '@failure' : '';
   if (s.sec != null) return s.sec + 's' + eff;
   if (s.min != null) return s.min + 'min' + (s.speed != null ? '/' + s.speed : '') + eff;
-  const eligiblePartials = (s) => { /* eligibility logic */ };
-
-return (eligiblePartials(s) ? (s.w != null ? s.w + 'x' : '') + (s.r != null ? s.r : '?') + (num(s.lp) > 0 && s.r != null ? '+' + s.lp + 'p' : '') + eff : '');
+  // Partials only count on a failure set (F, RIR 0 or RPE 10); eligibility gates the suffix alone.
+  const eligiblePartials = !isWarmupSet(s) && (s.failure === true || s.rir === 0 || s.rpe === 10);
+  return (s.w != null ? s.w + 'x' : '') + (s.r != null ? s.r : '?')
+    + (eligiblePartials && num(s.lp) > 0 && s.r != null ? '+' + s.lp + 'p' : '') + eff;
 };
 
 /** One logged set, its numbers only. */

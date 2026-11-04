@@ -181,7 +181,7 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // pressed buttons otherwise reads as three loose words).
 // `of` names the card a segmented control belongs to, for a screen reader: Stats has a "1M / 3M /
 // 1Y / All" on five cards, and each button then says whose it is, "Body weight: 1M" (P4).
-export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby, of }) {
+export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby, of, disabled = false }) {
   const i = Math.max(0, options.findIndex(o => o.value === value))
   return (
     <div className={'seg ' + className} style={{ '--n': options.length, '--i': i }} data-tour={tour}
@@ -193,6 +193,7 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
           aria-label={of && typeof o.label === 'string' && o.label ? nameIn(of, o.label) : undefined}
+          disabled={disabled}
           onClick={() => onChange(o.value)}
         >
           {o.icon && <Icon name={o.icon} />}

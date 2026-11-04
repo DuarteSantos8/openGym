@@ -3306,7 +3306,7 @@ function PartialsPicker({ value, onPick, close }) {
         <div className="grow"><div className="tt">{t('Partial reps')}</div></div>
         <div className="stp effcell-stp">
           <button aria-label={t('Decrease')} onClick={() => setV(x => Math.max(0, (x || 0) - 1))}><Icon name="minus" /></button>
-          <span className="val"><NumberField value={v || ''} placeholder="0" onChange={nv => setV(Math.max(0, Math.floor(Number(nv) || 0)))} aria-label={t('Partial reps')}/></span></span>
+          <span className="val"><NumberField value={v || ''} placeholder="0" onChange={nv => setV(Math.max(0, Math.floor(Number(nv) || 0)))} aria-label={t('Partial reps')}/></span>
           <button aria-label={t('Increase')} onClick={() => setV(x => Math.min(99, (x || 0) + 1))}><Icon name="plus" /></button>
         </div>
       </div>
