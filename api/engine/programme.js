@@ -66,13 +66,14 @@ export function stageRule({ def, track, stage, oid, occRule, runId }) {
   }
   if (stage.kind === 'recovery' || t.deload) program.adaptive = false
   // Stage entry for the load (spec 6): a declared seed; on 'copy', the previous work stage's fixed
-  // load; and an unchanged load step keeps the start it entered with, so the engine carries the
-  // track's progressed value on (program.js sameStart) instead of reopening at the occurrence's.
+  // load; and an unchanged load step in the same phase keeps the start it entered with, so the
+  // engine carries the track's progressed value on (program.js sameStart) instead of reopening at
+  // the occurrence's. In another phase the engine starts over, so the week's own load stands.
   const phase = program.phases[0], seed = t.seed?.load
   const prev = before(track, stage)
   const prevPhase = prev && stageRule({ def, track, stage: prev, oid, occRule, runId }).program.phases[0]
   const prevOp = prevPhase && operatorFor(prevPhase, 'load')
-  const carried = !!prevOp && canonicalJSON(prevOp) === canonicalJSON(operatorFor(phase, 'load'))
+  const carried = !!prevOp && prevPhase.id === phase.id && canonicalJSON(prevOp) === canonicalJSON(operatorFor(phase, 'load'))
   const load = phase.parameters.load
   if (typeof seed === 'number') phase.parameters.load = load.mode === 'percent_1rm' ? { ...load, percent: seed } : { ...load, value: seed }
   else if (seed === 'copy' ? prevPhase && (!prevOp || carried) : carried) phase.parameters.load = copy(prevPhase.parameters.load)

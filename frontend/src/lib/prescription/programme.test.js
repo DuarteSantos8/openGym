@@ -172,6 +172,17 @@ describe('stageRule', () => {
     expect(across(occRule(), plan)).toEqual(['60/60/60', '60/60/60', '62.5/62.5/62.5', '65/65/65'])
   })
 
+  it('a fixed-reps week that keeps the load step opens at its own load, or carries on in the same phase', () => {
+    const step = occRule().program.phases[0].progression   // the occurrence's +2.5 kg
+    const kept = id => [stage('w2', set(week({ sets: 3, reps: 5, load: abs(70) }, { id, progression: step }))), 1]
+    const plan = id => [[stage('w1', INHERIT), 2], kept(id)]
+    expect(validate(plan('week').map(([s]) => s))).toEqual({ ok: true, errors: [] })
+    // Its own phase: the engine starts that phase over, at the week's visible 70, never the occurrence's 80.
+    expect(across(occRule(), plan('week'))).toEqual(['80/80/80', '82.5/82.5/82.5', '70/70/70'])
+    // The occurrence's phase: the same step carries the progressed 85 on.
+    expect(across(occRule(), plan('plan'))).toEqual(['80/80/80', '82.5/82.5/82.5', '85/85/85'])
+  })
+
   it('a deload or recovery week scales from the progressed value and the next week goes on from it', () => {
     const climb = [stage('w1', INHERIT), 2]
     const deload = [stage('d', { own: 'inherit', deload: { factor: 0.9 } }, { kind: 'recovery' }), 1]
