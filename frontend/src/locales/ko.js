@@ -2066,7 +2066,6 @@ export default {
   'Skip set': '세트 건너뛰기',
   'Superset:': '슈퍼세트:',
   '{0}s hold': '{0}초 유지',
-  '{0}s': '{0}초',
   // --- finish summary: last time and next time ---
   'Details': '세부 정보',
   'Progression settings': '점진적 증가 설정',

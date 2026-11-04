@@ -2066,7 +2066,6 @@ export default {
   'Skip set': 'सेट छोड़ें',
   'Superset:': 'सुपरसेट:',
   '{0}s hold': '{0} सेकंड होल्ड',
-  '{0}s': '{0} से.',
   // --- finish summary: last time and next time ---
   'Details': 'विवरण',
   'Progression settings': 'प्रोग्रेशन सेटिंग',

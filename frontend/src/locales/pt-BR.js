@@ -1312,7 +1312,6 @@ export const PT_BR_OVERRIDES = {
   'Skip set': 'Pular série',
   'Superset:': 'Superset:',
   '{0}s hold': 'Segurar por {0}s',
-  '{0}s': '{0} s',
   'Progression settings': 'Configurações de progressão',
   // --- exercise library: types ---
   'stretching': 'alongamento',

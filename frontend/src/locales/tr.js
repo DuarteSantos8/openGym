@@ -2066,7 +2066,6 @@ export default {
   'Skip set': 'Seti atla',
   'Superset:': 'Süperset:',
   '{0}s hold': '{0} sn tutuş',
-  '{0}s': '{0} sn',
   // --- finish summary: last time and next time ---
   'Details': 'Ayrıntılar',
   'Progression settings': 'İlerleme ayarları',

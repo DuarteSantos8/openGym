@@ -170,8 +170,8 @@ export default function RestTimer() {
         <span className="lbl">{label}<Icon name="chevronDown" /></span>
       </button>
       <div className="acts" ref={actsRef}>
-        <Button size="sm" className="adj" icon="minus" onClick={() => addRest(-15)}>{t('{0}s', 15)}</Button>
-        <Button size="sm" className="adj" icon="plus" disabled={!timer.ready && timer.left >= REST_MAX} onClick={() => addRest(15)}>{t('{0}s', 15)}</Button>
+        <Button size="sm" className="adj" icon="minus" onClick={() => addRest(-15)}>15s</Button>
+        <Button size="sm" className="adj" icon="plus" disabled={!timer.ready && timer.left >= REST_MAX} onClick={() => addRest(15)}>15s</Button>
         {timer.ready
           ? <Button size="sm" className="pause-slot" icon="pause" disabled tabIndex={-1} aria-hidden="true" />
           : <Button size="sm" className="pause" icon={timer.paused ? 'play' : 'pause'}

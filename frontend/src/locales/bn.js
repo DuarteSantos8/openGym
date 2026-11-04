@@ -2090,7 +2090,6 @@ export default {
   'Skip set': 'সেট এড়িয়ে যান',
   'Superset:': 'সুপারসেট:',
   '{0}s hold': '{0} সে. ধরে রাখুন',
-  '{0}s': '{0} সে.',
   'Couldn’t sign out. You’re still signed in.': 'সাইন আউট করা যায়নি। আপনি এখনও সাইন ইন আছেন।',
   'Couldn’t disconnect. You’re still connected.': 'সংযোগ বিচ্ছিন্ন করা যায়নি। আপনি এখনও সংযুক্ত আছেন।',
   'clubbell': 'ক্লাবেল',

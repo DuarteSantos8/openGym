@@ -707,7 +707,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         <div className="subrow" key={'c' + ci}>
           <span className="subn">{t('Burst {0}', ci + 1)}</span>
           {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v, side))}
-          <span className="dim small">{t('{0}s', c.restSec)}</span>
+          <span className="dim small">{c.restSec}s</span>
           <button className="iconbtn" aria-label={t('Remove burst')} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
         </div>
       ))}
@@ -898,7 +898,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
               <div className="subrow" key={'c' + ci}>
                 <span className="subn">{t('Burst {0}', ci + 1)}</span>
                 {miniStepper(c.r, 1, false, v => setClusterField(i, ci, v))}
-                <span className="dim small">{t('{0}s', c.restSec)}</span>
+                <span className="dim small">{c.restSec}s</span>
                 <button className="iconbtn" aria-label={t('Remove burst')} onClick={() => removeCluster(i, ci)}><Icon name="xmark" /></button>
               </div>
             ))}
