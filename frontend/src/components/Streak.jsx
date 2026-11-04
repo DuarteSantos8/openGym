@@ -8,6 +8,7 @@ import { vibrate } from '../lib/sound.js'
 import Icon from './Icon.jsx'
 import { SeasonDeco } from './Seasonal.jsx'
 import { iconChoice } from '../lib/streak-icons.js'
+import { freezeLine } from '../lib/streak-explain.js'
 
 /* The week streak's extras (lib/streak.js): the best run and the freezes under the streak, the
    milestone badges on Stats, and Home's little party when a week is done or a badge is reached.
@@ -111,10 +112,12 @@ export function FreezeGlyph ({ on = true, className = '' }) {
 }
 
 /** Snowflakes for the freezes banked: filled chips are there, outlined ones still to earn. */
-export function Freezes ({ n, className = '' }) {
-  const label = t('Streak freezes: {0} of {1}', n, FREEZE_MAX)
+export function Freezes ({ n, max = FREEZE_MAX, className = '' }) {
+  // A rule without freezes (lib/streak-rule.js) has no chips to show.
+  if (!max) return null
+  const label = t('Streak freezes: {0} of {1}', n, max)
   return <span className={'streak-freezes ' + className} role="img" aria-label={label} title={label}>
-    {Array.from({ length: FREEZE_MAX }, (_, i) => <span key={i} className={'frz' + (i < n ? ' on' : '')}><FreezeGlyph on={i < n} /></span>)}
+    {Array.from({ length: max }, (_, i) => <span key={i} className={'frz' + (i < n ? ' on' : '')}><FreezeGlyph on={i < n} /></span>)}
   </span>
 }
 
@@ -122,7 +125,7 @@ export function Freezes ({ n, className = '' }) {
 export function StreakMeta ({ info }) {
   return <span className="streak-meta">
     <span>{t('Best: {0}', info.best)}</span>
-    <Freezes n={info.freezes} />
+    <Freezes n={info.freezes} max={info.max ?? FREEZE_MAX} />
   </span>
 }
 
@@ -145,9 +148,7 @@ export function StreakBadges ({ info }) {
 
 /** Stats: the streak with its best, the freezes, the badges and how far the next one is. */
 export function StreakCard ({ info, onHelp }) {
-  const hint = info.freezes >= FREEZE_MAX
-    ? t('Freezes full. A missed week uses one, no harm done.')
-    : tn('One more week with a workout earns a freeze.', '{0} more weeks with a workout earn a freeze.', info.toNextFreeze)
+  const hint = freezeLine(info)
   const nextLine = info.next ? t('Next badge at {0} weeks.', info.next) : t('Every badge collected. Legend.')
   return <div className="card streak-card" data-streak-card>
     <div className="row between" style={{ alignItems: 'flex-start' }}>
@@ -159,7 +160,7 @@ export function StreakCard ({ info, onHelp }) {
       </div>
       <div className="streak-side">
         <div className="muted small">{t('Best: {0}', info.best)}</div>
-        <Freezes n={info.freezes} className="big" />
+        <Freezes n={info.freezes} max={info.max ?? FREEZE_MAX} className="big" />
       </div>
     </div>
     <StreakBadges info={info} />
