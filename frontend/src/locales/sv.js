@@ -2087,6 +2087,7 @@ export default {
   'Skip set': 'Hoppa över set',
   'Superset:': 'Superset:',
   '{0}s hold': '{0} s hållning',
+  '{0}s': '{0} s',
   // --- finish summary: last time and next time ---
   'Details': 'Detaljer',
   'Progression settings': 'Progressionsinställningar',

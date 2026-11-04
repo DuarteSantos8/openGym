@@ -2121,6 +2121,7 @@ export default {
   'Skip set': 'تخطي المجموعة',
   'Superset:': 'سوبرست:',
   '{0}s hold': 'ثبات لمدة {0} ث',
+  '{0}s': '{0} ث',
   // --- finish summary: last time and next time ---
   'Details': 'التفاصيل',
   'Progression settings': 'إعدادات التدرّج',

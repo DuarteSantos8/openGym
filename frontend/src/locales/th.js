@@ -2077,6 +2077,7 @@ export default {
   'Skip set': 'ข้ามเซ็ต',
   'Superset:': 'ซูเปอร์เซ็ต:',
   '{0}s hold': 'ค้างไว้ {0} วินาที',
+  '{0}s': '{0} วิ.',
   // --- finish summary: last time and next time ---
   'Details': 'รายละเอียด',
   'Progression settings': 'ตั้งค่าการเพิ่มระดับ',

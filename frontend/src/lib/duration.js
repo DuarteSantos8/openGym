@@ -30,12 +30,12 @@ export function joinDuration(m, s, min = 0, max = REST_MAX) {
 
 /**
  * The short form a row shows: "45s" under a minute, "1:30" from a minute up, "Off" for 0 when
- * the caller says 0 means off. Digits stay Western, like the rest of the app's numbers.
+ * the caller says 0 means off. The seconds abbreviation is translated ("45 с", "45秒").
  */
 export function fmtDuration(sec, { off = null } = {}) {
   const n = Math.max(0, Math.round(Number(sec)) || 0)
   if (!n && off != null) return off
-  if (n < 60) return n + 's'
+  if (n < 60) return t('{0}s', n)
   const { m, s } = splitDuration(n)
   return m + ':' + String(s).padStart(2, '0')
 }

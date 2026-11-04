@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { _setLangState } from './i18n-core.js'
+import ru from '../locales/ru.js'
+import zh from '../locales/zh.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, clampDuration, splitDuration, joinDuration, fmtDuration, durationText, fmtRest } from './duration.js'
 
 describe('durations for the rest wheels', () => {
@@ -35,6 +38,15 @@ describe('durations for the rest wheels', () => {
     expect(fmtDuration(605)).toBe('10:05')
     expect(fmtDuration(0)).toBe('0s')
     expect(fmtDuration(0, { off: 'Off' })).toBe('Off')
+    try {
+      _setLangState('ru', ru, null, null)
+      expect(fmtDuration(45)).toBe('45 с')
+      _setLangState('zh', zh, null, null)
+      expect(fmtDuration(45)).toBe('45秒')
+      expect(fmtDuration(105)).toBe('1:45')
+    } finally {
+      _setLangState('en', null, null, null)
+    }
     expect(fmtRest(0)).toBe('Off')
     expect(fmtRest(undefined)).toBe('Off')
     expect(fmtRest(135)).toBe('2:15')

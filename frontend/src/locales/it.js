@@ -2066,6 +2066,7 @@ export default {
   'Skip set': 'Salta serie',
   'Superset:': 'Superset:',
   '{0}s hold': 'Tenuta di {0}s',
+  '{0}s': '{0} s',
   // --- finish summary: last time and next time ---
   'Details': 'Dettagli',
   'Progression settings': 'Impostazioni di progressione',

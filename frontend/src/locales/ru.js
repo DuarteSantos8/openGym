@@ -2070,6 +2070,7 @@ export default {
   'Skip set': 'Пропустить подход',
   'Superset:': 'Суперсет:',
   '{0}s hold': 'Удержание {0} с',
+  '{0}s': '{0} с',
   // --- finish summary: last time and next time ---
   'Details': 'Подробнее',
   'Progression settings': 'Настройки прогрессии',

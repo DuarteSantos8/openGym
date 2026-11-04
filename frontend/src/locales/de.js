@@ -2086,6 +2086,7 @@ export default {
   'Skip set': 'Satz überspringen',
   'Superset:': 'Supersatz:',
   '{0}s hold': '{0}s halten',
+  '{0}s': '{0} s',
   // --- finish summary: last time and next time ---
   'Details': 'Details',
   'Progression settings': 'Progressionseinstellungen',

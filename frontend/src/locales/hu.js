@@ -2069,6 +2069,7 @@ export default {
   'Skip set': 'Sorozat kihagyása',
   'Superset:': 'Szuperszett:',
   '{0}s hold': '{0} mp tartás',
+  '{0}s': '{0} mp',
   // --- finish summary: last time and next time ---
   'Details': 'Részletek',
   'Progression settings': 'Progresszió beállításai',

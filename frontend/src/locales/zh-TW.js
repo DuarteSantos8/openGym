@@ -2059,6 +2059,7 @@ export default {
   'Skip set': '略過這一組',
   'Superset:': '超級組：',
   '{0}s hold': '維持 {0} 秒',
+  '{0}s': '{0}秒',
   // --- finish summary: last time and next time ---
   'Details': '詳細資訊',
   'Progression settings': '漸進設定',

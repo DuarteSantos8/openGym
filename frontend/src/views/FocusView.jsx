@@ -210,7 +210,7 @@ export default function FocusView({
           <span>{t('Burst {0}', index + 1)}</span>
           <Stepper label={t('Reps')} ariaLabel="reps" value={burst.r || 0} step={1} decimal={false} disabled={readOnly || sideSet.done}
             onChange={value => onMutateSet(setIdx, row => setSideClusterAt(row, side, index, value))} />
-          <span className="dim small">{burst.restSec}s</span>
+          <span className="dim small">{t('{0}s', burst.restSec)}</span>
         </div>)}
       </div>
     </section>
@@ -372,7 +372,7 @@ export default function FocusView({
                 const delta = (Number(value) || 0) - (clustersOf(row)[index]?.r ?? row.clusters?.[index]?.r ?? 0)
                 return { ...setClusterAt(row, index, { r: value }), r: Math.max(0, (row.r || 0) + delta) }
               })} />
-            <span className="dim small">{burst.restSec}s</span>
+            <span className="dim small">{t('{0}s', burst.restSec)}</span>
           </div>)}
         </div>
         {mode === 'reps' && effortField && <button className={'effcell focus-effort' + (effortValue == null ? ' is-empty' : '')}

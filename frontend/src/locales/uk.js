@@ -2063,6 +2063,7 @@ export default {
   'Skip set': 'Пропустити підхід',
   'Superset:': 'Суперсет:',
   '{0}s hold': 'Утримання {0} с',
+  '{0}s': '{0} с',
   // --- finish summary: last time and next time ---
   'Details': 'Докладніше',
   'Progression settings': 'Налаштування прогресії',
