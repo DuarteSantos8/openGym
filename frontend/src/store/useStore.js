@@ -337,6 +337,9 @@ export function freshState() {
   // Exercise animations: Small (v1.3.11), a thumbnail beside the exercise name that a tap opens,
   // so the first set is on screen without scrolling. DEF stays 'full' for a profile saved before.
   s.gifSize = 'mini'
+  // The streak's freeze rule is asked once on Home (components/StreakRule.jsx). Only the ask is
+  // set here, not a rule: a profile without S.streakRule counts as it always did (lib/streak-rule.js).
+  s.streakRuleAsk = true
   return s
 }
 

@@ -4,7 +4,29 @@
 // number on Home.
 import { t, tn } from './i18n.js'
 import { streakInfo, FREEZE_EVERY, FREEZE_MAX } from './streak.js'
-import { todayISO } from './format.js'
+import { todayISO, fmtDate } from './format.js'
+import { STREAK_RULES, streakRuleOf } from './streak-rule.js'
+
+/** A rule's name and what it does, for the pickers and the how-to. */
+export const ruleLabel = r => ({ off: t('No freezes'), gentle: t('Gentle'), generous: t('Generous') }[r] || t('Generous'))
+export const ruleDesc = r => ({
+  off: t('Every week counts. Miss one and the streak starts over.'),
+  gentle: t('Bank 1 freeze, earned every 4 trained weeks. Two missed weeks in a row end the streak.'),
+  generous: t('Bank up to 2 freezes, one every 4 trained weeks. Even two missed weeks in a row can be covered.'),
+}[r] || '')
+
+/** "From now on: Gentle." with what it means for the weeks already counted. */
+export const fromNowOn = r => t('From now on: {0}.', ruleLabel(r)) + ' ' + t('Weeks already counted stay as they are.')
+
+/**
+ * For a week judged by a rule picked later on (S.streakRule.since, not a first pick), the line
+ * that says so: "From the week of 2 Nov on: Gentle." Empty for every other week.
+ */
+export function ruleNote (S, wk) {
+  const r = streakRuleOf(S)
+  if (!r || !r.since || !wk || wk < r.since) return ''
+  return t('From the week of {0} on: {1}.', fmtDate(r.since), ruleLabel(r.rule))
+}
 
 /** The streak as of `today` plus, per week key, what the walk decided (see streakInfo's `log`). */
 export function streakWeeks (S, today = todayISO()) {
@@ -25,7 +47,7 @@ export function explainWeek (entry) {
       return entry.earned ? base + ' ' + t('It also earned a freeze.') : base
     }
     case 'frozen': return t('No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.')
-    case 'broke': return t('No workout and no freeze left, so the streak started over.')
+    case 'broke': return entry.rule === 'off' ? t('No workout, and your rule has no freezes, so the streak started over.') : t('No workout and no freeze left, so the streak started over.')
     case 'missed': return t('No workout this week.')
     case 'open': return t('Still open. One workout and it counts.')
     default: return ''
@@ -34,7 +56,9 @@ export function explainWeek (entry) {
 
 /** The line beside the freeze chips: how the next freeze is earned, or that the bank is full. */
 export function freezeLine (info) {
-  if (info.freezes >= FREEZE_MAX) return t('Freezes full. A missed week uses one, no harm done.')
+  const max = info.max ?? FREEZE_MAX
+  if (!max) return t('No freezes on your rule. Every week counts.')
+  if (info.freezes >= max) return t('Freezes full. A missed week uses one, no harm done.')
   return tn('One more week with a workout earns a freeze.', '{0} more weeks with a workout earn a freeze.', info.toNextFreeze || FREEZE_EVERY)
 }
 

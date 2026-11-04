@@ -2618,6 +2618,22 @@ button.cal-wk:active{background:var(--press-fill)}
 .wk-note{display:flex;align-items:flex-start;gap:8px;min-height:2.8em;margin-top:12px;padding:10px 12px;border-radius:var(--r);background:var(--surface);line-height:var(--lh-small);text-wrap:pretty}
 .wk-note b{font-weight:600}
 .wk-note-g{flex:none;display:inline-grid;place-items:center;width:1.2em;margin-top:1px;font-size:15px}
+/* The streak's freeze rule (components/StreakRule.jsx): three choices as rows, a check on the
+   picked one, and the line on what saving means. */
+.rule-opts{display:grid;gap:8px}
+.rule-opt{display:flex;align-items:flex-start;gap:12px;width:100%;padding:12px 14px;border:0;border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast),box-shadow var(--fast)}
+.rule-opt:active{background:var(--press-fill)}
+.rule-opt.on{box-shadow:inset 0 0 0 2px var(--acc)}
+.rule-dot{flex:none;display:grid;place-items:center;width:22px;height:22px;margin-top:1px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);font-size:13px;color:var(--on-acc);--icon-stroke:2.4}
+.rule-opt.on .rule-dot{background:var(--acc);box-shadow:none}
+.rule-txt{display:grid;gap:2px;min-width:0}
+.rule-t{font-weight:600;font-size:var(--fs-callout)}
+.rule-d{font-size:var(--fs-footnote);color:var(--label-2);line-height:var(--lh-small);text-wrap:pretty}
+.rule-note{display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:10px 12px;border-radius:var(--r);background:var(--acc-soft);color:var(--label);line-height:var(--lh-small)}
+.rule-note .icn{flex:none;margin-top:1px;color:var(--acc-ink)}
+.rule-welcome .rule-opt{background:var(--surface-2)}
+.rule-welcome-t{font-weight:600;font-size:var(--fs-title3);letter-spacing:var(--ls-title)}
+.wk-note-r{color:var(--label-2)}
 /* The calendar's head: the streak, what it counts, the freezes, the how-to the first time. */
 .streak-sum{margin-bottom:14px}
 .streak-sum-top{display:flex;align-items:center;gap:10px}

@@ -14,9 +14,9 @@ describe('the walk, week by week', () => {
     const { info, log } = streakWeeks(S, '2026-11-03')
     expect(info).toEqual(streakInfo(S, '2026-11-03'))
     expect(info.current).toBe(11)
-    expect(log.get(wk(0))).toEqual({ s: 'on', run: 1, bank: 0, earned: false })
-    expect(log.get(wk(3))).toEqual({ s: 'on', run: 4, bank: 1, earned: true })
-    expect(log.get(wk(5))).toEqual({ s: 'frozen', run: 5, bank: 0, earned: false })
+    expect(log.get(wk(0))).toMatchObject({ s: 'on', run: 1, bank: 0, earned: false })
+    expect(log.get(wk(3))).toMatchObject({ s: 'on', run: 4, bank: 1, earned: true })
+    expect(log.get(wk(5))).toMatchObject({ s: 'frozen', run: 5, bank: 0, earned: false })
     expect(log.get(wk(6)).run).toBe(6)
     expect(log.get(wk(11)).run).toBe(11)
     // Before the first workout and after this week: no mark.

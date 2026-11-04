@@ -3544,7 +3544,7 @@ function Calendar({ start, close, help = false }) {
   // The streak's week by week (components/StreakCalendar.jsx), with Motivation on and a workout
   // to count: a mark at the end of each row, the frozen weeks washed, one tapped week explained.
   const streakOn = isOn(st, 'motivation') && st.workouts.length > 0
-  const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart]) // eslint-disable-line react-hooks/exhaustive-deps
+  const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart, st.streakRule]) // eslint-disable-line react-hooks/exhaustive-deps
   const [selWk, setSelWkRaw] = useState(null)
   // A tapped missed planned day (its line in WeekNote); a week and a day are never both picked.
   const [selDay, setSelDay] = useState(null)

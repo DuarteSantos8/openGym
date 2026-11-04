@@ -2550,6 +2550,19 @@ export const PT_BR_OVERRIDES = {
   "Planned, not trained. Any other day this week still counts.": "Planejado, não treinado. Qualquer outro dia desta semana ainda conta.",
   "Planned, not trained. Any workout that week would have counted.": "Planejado, não treinado. Qualquer treino naquela semana teria contado.",
   "Planned, not trained. No harm done: you trained another day that week, so it still counts.": "Planejado, não treinado. Sem problema: você treinou em outro dia, então a semana conta do mesmo jeito.",
+  "Bank 1 freeze, earned every 4 trained weeks. Two missed weeks in a row end the streak.": "1 congelamento guardado, ganho a cada 4 semanas de treino. Duas semanas perdidas seguidas acabam com a sequência.",
+  "Bank up to 2 freezes, one every 4 trained weeks. Even two missed weeks in a row can be covered.": "Até 2 congelamentos guardados, um a cada 4 semanas de treino. Até duas semanas perdidas seguidas podem ser cobertas.",
+  "Every 4th week you train earns a freeze. You can bank 1.": "Cada 4ª semana de treino dá um congelamento. Você pode guardar 1.",
+  "Every week counts. Miss one and the streak starts over.": "Cada semana conta. Perdeu uma, a sequência recomeça do zero.",
+  "How forgiving should your week streak be?": "Quão tolerante deve ser a sua sequência semanal?",
+  "How strict should your streak be?": "Quão rigorosa deve ser a sua sequência?",
+  "Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. Two missed weeks in a row, and it starts over.": "Perdeu uma semana? Um congelamento cobre: a sequência continua, essa semana só não soma. Duas semanas perdidas seguidas, e ela recomeça do zero.",
+  "No freezes on your rule. Every week counts.": "A sua regra não tem congelamentos. Cada semana conta.",
+  "No freezes on your rule: a week without a workout starts it over.": "A sua regra não tem congelamentos: uma semana sem treino e a sequência recomeça.",
+  "No workout, and your rule has no freezes, so the streak started over.": "Sem treino, e a sua regra não tem congelamentos, então a sequência recomeçou.",
+  "You can change it later in Settings. A change counts from then on.": "Você pode mudar isso depois nas Configurações. Uma mudança vale a partir daí.",
+  "Your rule right now: {0}.": "Sua regra agora: {0}.",
+  "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Sua sequência conta semanas com pelo menos um treino. Os congelamentos podem cobrir uma semana perdida de vez em quando.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
