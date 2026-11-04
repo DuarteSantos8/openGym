@@ -205,6 +205,8 @@ const P = {
   // The seasonal set (v1.4.5): the advent calendar's tree, and its little joke of the day.
   tree: <path d="M12 3.4 7.6 9.4h2.3l-3.5 4.8h2.7L5.6 19h12.8l-3.5-4.8h2.7l-3.5-4.8h2.3ZM12 19v2" />,
   smile: <><circle cx="12" cy="12" r="8.2" /><path d="M8.7 14a3.9 3.9 0 0 0 6.6 0M9.4 9.7v.4M14.6 9.7v.4" /></>,
+  // The advent calendar's present (door 24): the streak flame in a Santa hat.
+  flameHat: <><path d="M11.4 21c2.8 0 4.7-1.8 4.7-4.4 0-2.7-1.9-4.1-2.4-6.6-1.9.7-3.1 2.4-3.1 4.2 0 .8-.4 1.3-1 1.3-.7 0-1-.6-1-1.5-.9 1-1.5 2.4-1.5 4.1 0 2.6 1.9 4.4 4.3 4.4Z" /><path d="M9.3 9.6c.6-3.3 3-5.6 6-5.7 1.7 0 3 .9 3.7 2.3-1.3-.5-2.4-.4-3.2.3.7 1.1 1 2.3 1 3.6" /><path d="M8.4 10.2c2.6-1.1 5.4-1.3 8.6-.4" /><circle cx="19.4" cy="7.4" r="1.4" /></>,
 }
 
 export const ICON_NAMES = Object.keys(P)

@@ -8,6 +8,7 @@
 import { t } from '../lib/i18n.js'
 import { ACCENT_NAMES } from '../lib/format.js'
 import { MODULES } from '../lib/modules.js'
+import { debuted, shownThemes } from '../lib/seasonal.js'
 
 // `mod`: the module (lib/modules.js) a page belongs to; with it off the page and its rows are gone,
 // from the root and from the search alike (pageVisible, searchSettings).
@@ -95,11 +96,16 @@ const MODULE_KW = {
   motivation: 'motivation streak challenges badges trophies recap wrapped year share gamification',
   coach: 'ai coach llm assistant review suggestions',
   integrations: 'integrations webhook webhooks home assistant n8n mcp automation',
-  seasonal: 'seasonal season halloween christmas advent calendar theme decoration',
+  seasonal: 'seasonal season halloween theme decoration',
 }
+// The words for a theme that only exist from its debut (lib/seasonal.js): Christmas stays a
+// surprise until 1 December 2026, so before then "christmas" or "advent" finds nothing at all.
+const SEASON_KW = { christmas: 'christmas xmas advent calendar snow santa december' }
+const seasonKw = () => shownThemes().map(th => SEASON_KW[th.id] || '').join(' ')
 export const SEARCH = [
   // Modules
-  ...MODULES.map(m => ({ page: 'modules', title: m.title, icon: m.icon, tint: m.tint, kw: MODULE_KW[m.id] + ' module turn on off hide' })),
+  ...MODULES.map(m => ({ page: 'modules', title: m.title, icon: m.icon, tint: m.tint,
+    get kw() { return MODULE_KW[m.id] + (m.id === 'seasonal' ? ' ' + seasonKw() : '') + ' module turn on off hide' } })),
   // Workout
   { page: 'workout', title: 'Automatic warm-ups', icon: 'sunrise', tint: 'var(--orange)', mod: 'plates', kw: 'warm-up warmup ramp automatic generator compounds' },
   { page: 'workout', title: 'Rest timer', icon: 'timer', tint: 'var(--orange)', kw: 'rest pause break seconds minutes timer countdown' },
@@ -187,13 +193,13 @@ export const SEARCH = [
   { page: 'look', title: 'Week and month recap', icon: 'chart', tint: 'var(--purple)', mod: 'motivation', kw: 'recap summary weekly monthly report your week your month card home share' },
   { page: 'look', title: 'Weekly sets on Home', icon: 'figureStrength', tint: 'var(--teal)', kw: 'weekly sets muscle volume range home card line' },
   { page: 'look', title: 'Monthly challenges', icon: 'target', tint: 'var(--orange)', mod: 'motivation', kw: 'challenge challenges monthly month goal goals badge badges trophy motivation' },
-  { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', mod: 'seasonal', kw: 'seasonal season holiday halloween christmas advent calendar snow theme decoration' },
+  { page: 'look', title: 'Seasonal themes', icon: 'pumpkin', tint: 'var(--orange)', mod: 'seasonal', get kw() { return 'seasonal season holiday halloween theme decoration ' + seasonKw() } },
   // Seasonal themes
   { page: 'themes', title: 'Halloween', icon: 'pumpkin', tint: 'var(--orange)', kw: 'halloween seasonal theme spooky spider pumpkin bats witch october decoration', opts: ['Auto', 'On', 'Off'] },
   { page: 'themes', title: 'Also during workouts', icon: 'play', tint: 'var(--green)', kw: 'halloween seasonal workout training decoration' },
   { page: 'themes', title: 'Spooky colors', icon: 'palette', tint: 'var(--purple)', kw: 'halloween orange purple accent color colour seasonal' },
-  { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh advent calendar december decoration', opts: ['Auto', 'On', 'Off'] },
-  { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal' },
+  { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh advent calendar december decoration', opts: ['Auto', 'On', 'Off'], when: () => debuted('christmas') },
+  { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal', when: () => debuted('christmas') },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },

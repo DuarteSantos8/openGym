@@ -31,6 +31,10 @@ export const FLAME_CHOICES = [
   { v: 'sun', c: '#ff9f0a' },
   { v: 'dumbbell', c: '#30d158' },
   { v: 'kettlebell', c: '#bf5af2' },
+  // The festive flame, the advent calendar's present (door 24, in the Christmas chunk). Always a
+  // valid pick so a worn one shows on every device; offered in the picker only to someone who
+  // opened door 24 or wears it already (pickerChoices).
+  { v: 'flameHat', c: '#ff5a5f', prize: 'advent' },
 ]
 export const FREEZE_CHOICES = [
   { v: 'snowflake', c: FREEZE_DEFAULT, def: true },
@@ -44,6 +48,14 @@ export const FREEZE_CHOICES = [
 ]
 export const choicesFor = kind => (kind === 'freeze' ? FREEZE_CHOICES : FLAME_CHOICES)
 export const keyFor = kind => (kind === 'freeze' ? 'freezeIcon' : 'flameIcon')
+export const FESTIVE_FLAME = FLAME_CHOICES.find(ch => ch.prize === 'advent')
+
+/** The picks the picker offers: every curated one, a prize only once it is earned or worn. */
+export function pickerChoices (S, kind) {
+  const worn = S?.[keyFor(kind)]?.v
+  const advent = Array.isArray(S?.advent?.opened) && S.advent.opened.map(Number).includes(24)
+  return choicesFor(kind).filter(ch => !ch.prize || ch.v === worn || (ch.prize === 'advent' && advent))
+}
 
 const HEX = /^#[0-9a-f]{6}$/i
 const PICTO = /\p{Extended_Pictographic}|\p{Regional_Indicator}/u

@@ -161,15 +161,25 @@ describe('the advent card on Home', () => {
 describe('the calendar', () => {
   const openCal = async () => {
     const m = await load()
-    m.open('advent')
+    expect(m.open('advent')).toBe(true)
     render(<>{ui.sheets[0](() => {})}</>)
     return m
   }
   const door = n => host.querySelector(`[data-door="${n}"]`)
+  const button = text => [...host.querySelectorAll('button')].find(b => b.textContent === text || b.getAttribute('aria-label') === text)
+  // A door, from the grid to what is behind it, with reduced motion: a tap opens it at once.
+  const openDay = async n => {
+    reduce = true
+    await openCal()
+    act(() => door(n).click())
+    act(() => host.querySelector('[data-bigdoor]').click())
+  }
 
-  it('24 doors; today glows, a future door is locked and only says no peeking', async () => {
+  it('24 doors under a tree; today glows, a future door is locked and only says no peeking', async () => {
     await openCal()
     expect(host.querySelectorAll('.xm-door')).toHaveLength(24)
+    expect(host.querySelector('.xm-tree')).not.toBeNull()
+    expect(host.querySelectorAll('.xm-tree .xm-hook')).toHaveLength(24)
     expect(door(5).className).toContain('xm-today')
     expect(door(2).className).toContain('xm-ready')
     expect(door(6).className).toContain('xm-locked')
@@ -179,63 +189,163 @@ describe('the calendar', () => {
     expect(door(6).className).toContain('xm-shake')
   })
 
-  it('opening a door saves it in the profile and shows what is behind it', async () => {
-    reduce = true                                     // no swing to wait for
-    await openCal()
-    act(() => door(5).click())
+  it('a door opens on a tap (or Enter): saved in the profile, a bauble on the tree, the surprise behind it', async () => {
+    await openDay(5)
     expect(store.S.advent).toEqual({ year: 2026, opened: [5], done: [] })
     expect(host.querySelector('[data-door-open="5"]')).not.toBeNull()
+    expect(buzz.vibrate).toHaveBeenCalled()
     act(() => host.querySelector('.xm-back').click())
     expect(door(5).className).toContain('xm-open')
+    expect(host.querySelectorAll('.xm-tree [data-ball]')).toHaveLength(1)
+    expect(host.textContent).toContain('1 bauble on the tree, 0 lit')
   })
 
-  it('with motion the door swings open first, then the surprise pops up', async () => {
-    vi.useRealTimers()
-    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] }); vi.setSystemTime(new Date(2026, 11, 5, 9))
-    await openCal()
-    act(() => door(1).click())
-    expect(door(1).className).toContain('xm-opening')
-    act(() => { vi.advanceTimersByTime(800) })
-    expect(host.querySelector('[data-door-open="1"]')).not.toBeNull()
+  describe('with motion', () => {
+    beforeEach(() => {
+      vi.useRealTimers()
+      vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame', 'performance'] })
+      vi.setSystemTime(new Date(2026, 11, 5, 9))
+    })
+    const pointer = (el, type, x) => el.dispatchEvent(new PointerEvent(type, { bubbles: true, clientX: x, pointerId: 1 }))
+
+    it('a tap swings the door open on its spring, and the surprise shows once it settles', async () => {
+      await openCal()
+      act(() => door(1).click())
+      const flap = host.querySelector('[data-bigdoor]')
+      act(() => { pointer(flap, 'pointerdown', 200); pointer(flap, 'pointerup', 200) })
+      expect(store.S.advent).toBeUndefined()           // not yet: still swinging
+      act(() => { vi.advanceTimersByTime(250) })
+      expect(store.S.advent.opened).toEqual([1])        // past half way it counts
+      expect(flap.style.transform).toMatch(/rotateY\(-\d/)
+      act(() => { vi.advanceTimersByTime(2500) })
+      expect(host.querySelector('[data-door-open="1"]')).not.toBeNull()
+    })
+
+    it('a small, slow drag lets go and the door springs back shut, nothing opened', async () => {
+      await openCal()
+      act(() => door(1).click())
+      const flap = host.querySelector('[data-bigdoor]')
+      act(() => { pointer(flap, 'pointerdown', 200); pointer(flap, 'pointermove', 190) })
+      act(() => { vi.advanceTimersByTime(400); pointer(flap, 'pointermove', 180) })
+      act(() => { vi.advanceTimersByTime(400); pointer(flap, 'pointerup', 180) })
+      act(() => { vi.advanceTimersByTime(2500) })
+      expect(store.S.advent).toBeUndefined()
+      expect(host.querySelector('[data-bigdoor]')).not.toBeNull()
+    })
+
+    it('dragged past half way, it opens', async () => {
+      await openCal()
+      act(() => door(1).click())
+      const flap = host.querySelector('[data-bigdoor]')
+      act(() => { pointer(flap, 'pointerdown', 200); pointer(flap, 'pointermove', 150) })
+      act(() => { vi.advanceTimersByTime(300); pointer(flap, 'pointermove', 60) })
+      act(() => { vi.advanceTimersByTime(300); pointer(flap, 'pointerup', 60) })
+      act(() => { vi.advanceTimersByTime(2500) })
+      expect(store.S.advent.opened).toEqual([1])
+    })
   })
 
-  it('a challenge behind a door is ticked off with a tap and earns its badge', async () => {
-    reduce = true
-    await openCal()
-    act(() => door(2).click())                        // door 2 of 2026: 10 push-ups
-    expect(host.textContent).toContain('10 push-ups before dinner')
-    const btn = [...host.querySelectorAll('button')].find(b => b.textContent === 'I did it')
-    act(() => btn.click())
+  it('a counting door: plus by its step, a minus for a slip, and the goal does the door', async () => {
+    await openDay(2)                                   // door 2 of 2026: 50 squats in tens
+    expect(host.textContent).toContain('/ 50')
+    act(() => button('10').click())
+    act(() => button('10').click())
+    expect(store.S.advent.reps).toEqual({ 2: 20 })
+    act(() => button('Take 10 back').click())
+    expect(store.S.advent.reps).toEqual({ 2: 10 })
+    for (let i = 0; i < 4; i++) act(() => button('10').click())
     expect(store.S.advent.done).toEqual([2])
-    expect(host.textContent).toContain('Done! Badge earned.')
+    expect(host.textContent).toContain('All 50. Done!')
+    expect(host.querySelector('[data-lit="1"]')).not.toBeNull()
+  })
+
+  it('a finisher starts a quick workout of timed moves in a superset, and does the door', async () => {
+    vi.setSystemTime(new Date(2026, 11, 1, 9))
+    await openDay(1)                                   // door 1 of 2026: Jingle burner
+    expect(host.textContent).toContain('Jingle burner')
+    act(() => button('Start the finisher').click())
+    const A = store.S.active
+    expect(A.name).toBe('Jingle burner')
+    expect(A.entries.map(e => e.id)).toEqual(['3094', '3948'])
+    expect(A.entries[0].sg).toBeTruthy()
+    expect(A.entries[0].sg).toBe(A.entries[1].sg)
+    expect(A.entries.every(e => e.sets.length === 4 && e.sets.every(x => x.sec === 30))).toBe(true)
+    expect(store.S.advent.done).toEqual([1])
+  })
+
+  it('with a workout running, the exercise of the day joins it at the end instead', async () => {
+    store.S.active = { id: 'a', d: '2026-12-04', start: 1, routineIds: [], name: 'Legs', cur: 0, entries: [{ id: '0043', sets: [] }] }
+    vi.setSystemTime(new Date(2026, 11, 4, 9))
+    await openDay(4)                                   // door 4 of 2026: kettlebell swings
+    act(() => button('Add to this workout').click())
+    expect(store.S.active.id).toBe('a')
+    expect(store.S.active.entries.map(e => e.id)).toEqual(['0043', '0549'])
+    expect(ui.toast).toHaveBeenCalledWith('Added to this workout. Finish strong!')
   })
 
   it('the stretch door adds its routine once', async () => {
-    reduce = true
-    vi.setSystemTime(new Date(2026, 11, 9, 9))
-    await openCal()
-    act(() => door(9).click())
-    const add = [...host.querySelectorAll('button')].find(b => b.textContent === 'Add to my routines')
-    act(() => add.click())
+    vi.setSystemTime(new Date(2026, 11, 8, 9))
+    await openDay(8)
+    act(() => button('Add to my routines').click())
     expect(store.S.routines).toHaveLength(1)
     expect(store.S.routines[0]).toMatchObject({ name: 'Cosy stretch', emoji: 'stretch' })
     expect(store.S.routines[0].ex.every(e => e.mode === 'time' && e.sec > 0)).toBe(true)
+    expect(store.S.advent.done).toEqual([8])
+  })
+
+  it('a workout that day lights the bauble, whatever the door', async () => {
+    store.S.workouts = [{ id: 'w', d: '2026-12-05', start: 1, end: 2, entries: [] }]
+    await openDay(5)
+    expect(host.querySelector('[data-lit="1"]').textContent).toContain('Bauble lit')
+  })
+
+  it('door 24: the year so far, and the festive flame to keep', async () => {
+    const set = (w, r) => ({ w, r, done: true })
+    store.S.workouts = [{ id: 'a', d: '2026-03-02', start: 1, end: 3600001, entries: [{ id: '0025', sets: [set(70, 5)] }] }]
+    vi.setSystemTime(new Date(2026, 11, 24, 9))
+    await openDay(24)
+    expect(host.querySelector('[data-review]').textContent).toContain('Workouts')
+    act(() => button('Put it on').click())
+    expect(store.S.flameIcon).toEqual({ k: 'icon', v: 'flameHat', c: '#ff5a5f' })
+    expect(store.S.advent.done).toEqual([24])
+    expect(host.textContent).toContain('Wearing it. Very merry.')
+    act(() => host.querySelector('.xm-back').click())
+    expect(host.querySelector('.xm-star.xm-lit')).not.toBeNull()
+  })
+
+  it('not before 1 December 2026: open() refuses and nothing is drawn on Home', async () => {
+    vi.setSystemTime(new Date(2026, 10, 30, 23, 59))
+    const m = await load()
+    expect(m.open('advent')).toBe(false)
+    expect(ui.sheets).toHaveLength(0)
+    render(<m.Deco spot="home-advent" />)
+    expect(host.innerHTML).toBe('')
   })
 })
 
 describe('the stat of the day', () => {
+  const set = (w, r) => ({ w, r, done: true })
+  const S = { unit: 'kg', routines: [], bodyweight: [], workouts: [
+    { id: 'a', d: '2026-03-02', start: 1, end: 2, entries: [{ id: '0025', sets: [set(70, 5), set(75, 5)] }] },
+    { id: 'b', d: '2026-06-02', start: 1, end: 2, entries: [{ id: '0025', sets: [set(80, 3)] }] },
+    { id: 'c', d: '2025-06-02', start: 1, end: 2, entries: [{ id: '0025', sets: [set(120, 3)] }] },
+  ] }
+
   it('the best set of the year\'s most-done lift, from the user\'s own workouts', async () => {
     const { statOf } = await load()
-    const set = (w, r) => ({ w, r, done: true })
-    const S = { unit: 'kg', routines: [], bodyweight: [], workouts: [
-      { id: 'a', d: '2026-03-02', start: 1, end: 2, entries: [{ id: '0025', sets: [set(70, 5), set(75, 5)] }] },
-      { id: 'b', d: '2026-06-02', start: 1, end: 2, entries: [{ id: '0025', sets: [set(80, 3)] }] },
-      { id: 'c', d: '2025-06-02', start: 1, end: 2, entries: [{ id: '0025', sets: [set(120, 3)] }] },
-    ] }
     const s = statOf(S, 'best', 2026)
     expect(s.big).toBe('80 kg')
     expect(s.line).toContain('2026')
     expect(statOf(S, 'year', 2026).big).toBe('2')
     expect(statOf({ ...S, workouts: [] }, 'best', 2026)).toBe(null)
+  })
+
+  it('the year in reindeer, the favourite muscle and the longest streak', async () => {
+    const { statOf } = await load()
+    const v = statOf(S, 'volume', 2026)
+    expect(v.big).toBe('965 kg')
+    expect(v.sub).toContain('8 reindeer')
+    expect(statOf(S, 'muscle', 2026).big).toBeTruthy()
+    expect(statOf(S, 'streak', 2026).big).toBe('1 week')
   })
 })

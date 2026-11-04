@@ -151,6 +151,10 @@ jobs:
       - name: Web build
         run: npm run build
         working-directory: frontend
+      # The seasonal QA date hook (src/lib/season-clock.js) must be compiled out of a real build.
+      - name: No seasonal date hook in the build
+        run: node scripts/check-season-clock.mjs dist
+        working-directory: frontend
       - name: Bundle size
         run: node scripts/bundle-size.mjs --out bundle-size.json
         working-directory: frontend

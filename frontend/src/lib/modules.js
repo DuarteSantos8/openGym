@@ -45,7 +45,7 @@ export const MODULES = [
   { id: 'integrations', group: 'extras', icon: 'webhook', tint: 'var(--indigo)', title: 'Integrations',
     desc: 'Webhooks for Home Assistant and friends, and the MCP server.' },
   { id: 'seasonal', group: 'extras', icon: 'pumpkin', tint: 'var(--orange)', title: 'Seasonal themes',
-    desc: 'Halloween, Christmas and the advent calendar. Spooky, festive, optional.' },
+    desc: 'Halloween and friends, little extras for the time of year. All optional.' },
 ]
 export const MODULE_IDS = MODULES.map(m => m.id)
 export const MODULE = Object.fromEntries(MODULES.map(m => [m.id, m]))

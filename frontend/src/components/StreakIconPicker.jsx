@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { choicesFor, keyFor, inkFor, iconChoice, pickValue, firstEmoji, EMOJI_IDEAS } from '../lib/streak-icons.js'
+import { pickerChoices, keyFor, inkFor, iconChoice, pickValue, firstEmoji, EMOJI_IDEAS } from '../lib/streak-icons.js'
 import { StreakFlame, Freezes, FreezeGlyph } from './Streak.jsx'
 import Icon from './Icon.jsx'
 import { Button, Row } from './ui.jsx'
@@ -14,7 +14,7 @@ import { Button, Row } from './ui.jsx'
 
 const NAMES = () => ({
   flame: t('Flame'), bolt: t('Bolt'), starFill: t('Star'), heart: t('Heart'), rocket: t('Rocket'), crown: t('Crown'),
-  trophy: t('Trophy'), sun: t('Sun'), dumbbell: t('Dumbbell'), kettlebell: t('Kettlebell'),
+  trophy: t('Trophy'), sun: t('Sun'), dumbbell: t('Dumbbell'), kettlebell: t('Kettlebell'), flameHat: t('Festive flame'),
   snowflake: t('Snowflake'), shield: t('Shield'), cloud: t('Cloud'), moon: t('Moon'), hourglass: t('Hourglass'), tree: t('Tree'), gift: t('Gift'),
 })
 const title = kind => (kind === 'freeze' ? t('Streak freeze') : t('Streak flame'))
@@ -70,7 +70,7 @@ export function StreakIconPicker ({ kind }) {
 
     <div className="sip-h small muted">{t('openGym icons')}</div>
     <div className="glyph-grid sip-grid" role="radiogroup" aria-label={t('openGym icons')}>
-      {choicesFor(kind).map(ch => {
+      {pickerChoices(S, kind).map(ch => {
         const on = ch.def ? current === 'def' : current === 'icon:' + ch.v
         return <button key={ch.v} type="button" role="radio" aria-checked={on} aria-label={names[ch.v] || t('Default')}
           className={'glyph-cell sip-cell' + (on ? ' on' : '')} style={{ '--sip-c': ch.c, '--sip-cl': inkFor(ch.c, 'light') }}

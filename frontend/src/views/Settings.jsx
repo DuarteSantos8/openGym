@@ -78,7 +78,7 @@ import { reportSheet } from '../components/ReportSheet.jsx'
 import { csvExportSheet } from '../components/CsvExportSheet.jsx'
 import GymReminderPage, { GymEditPage, GymFindPage } from './GymReminder.jsx'
 import { readGymConfig } from '../lib/gym-reminder.js'
-import { THEMES, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
+import { THEMES, shownThemes, inSeason, seasonChoice, activeSeason } from '../lib/seasonal.js'
 import { adventOf, adventOpenable } from '../lib/advent.js'
 import { openSeasonal } from '../components/Seasonal.jsx'
 import { useNfcSupported, nfcStickerSheet } from '../components/Nfc.jsx'
@@ -1103,7 +1103,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     // One section per seasonal theme (lib/seasonal.js). Auto shows it in its weeks; On keeps it
     // all year, Off never. Synced like the rest of Look; once-a-day surprises stay per device.
     themes: () => <>
-      {THEMES.map(th => {
+      {/* Only the themes that exist yet: Christmas is not there at all before 1 December 2026. */}
+      {shownThemes().map(th => {
         const choice = seasonChoice(S, th.id)
         const set = (k, v) => update(s => { s.seasonal = { ...(s.seasonal || {}), [k]: v } })
         const note = choice === 'on' ? t('On all year round. Bold choice.')

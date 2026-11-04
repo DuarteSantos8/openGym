@@ -1,22 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
-import { t, dateLocale } from '../lib/i18n.js'
+import { t, tn, dateLocale } from '../lib/i18n.js'
 import { vibrate } from '../lib/sound.js'
 import { onceToday, doneToday, reducedMotion } from '../lib/seasonal.js'
-import { DOORS, LAYOUT, inAdvent, adventOf, doorState, openDoor, markDone, nextDoor } from '../lib/advent.js'
+import { seasonNow } from '../lib/season-clock.js'
+import {
+  DOORS, LAYOUT, OPEN_DEG, inAdvent, adventOpenable, adventOf, doorState, openDoor, markDone, nextDoor,
+  countReps, repsDone, adventLit, treeOf, dragAngle, releaseOpens, springStep, springSettled,
+} from '../lib/advent.js'
 import { MOBILE } from '../lib/mobile.js'
 import { appIconState, setAppIcon } from '../lib/app-icon.js'
 import { yearStats, workoutsOfYear } from '../lib/wrapped.js'
+import { openWrapped } from '../lib/wrapped-ui.js'
 import { bestWeightForEntry, defaultConfig } from '../lib/history.js'
+import { buildSessionEntry } from '../lib/session-start.js'
+import { joinSessionNoProg } from '../lib/session-noprog.js'
+import { closeThenNav } from '../lib/nav.js'
+import { isOn } from '../lib/modules.js'
+import { MUSCLE_NAME } from '../lib/muscles.js'
+import { FESTIVE_FLAME } from '../lib/streak-icons.js'
 import { EXIDX } from '../lib/exercises.js'
-import { exerciseNameText, fmtNum, fmtVol, uid } from '../lib/format.js'
+import { exerciseNameText, fmtDur, fmtNum, fmtVol, todayISO, uid } from '../lib/format.js'
 import { shownWeight, exUnitOf } from '../lib/ex-unit.js'
 import { tappable } from '../lib/use-sheet-keyboard.js'
 import Icon from '../components/Icon.jsx'
 import Glyph, { splitEmoji } from '../components/Glyph.jsx'
 import { Button } from '../components/ui.jsx'
-import { doorFor, STRETCH } from './advent-doors.js'
+import { doorFor, finisherMinutes, REINDEER_KG, STRETCH } from './advent-doors.js'
 import './christmas.css'
 
 /* Christmas (v1.4.4), fetched only while the theme shows (components/Seasonal.jsx), with the
@@ -188,7 +199,7 @@ export function Deco({ spot }) {
     case 'header-bats': return <Lights />
     case 'home-hero': return <Holly className="xm-holly-br" />
     case 'home-streak': return <PeekPresent />
-    case 'streak-flame': return <span className="xm-hat" aria-hidden="true"><Hat /></span>
+    case 'streak-flame': return <FlameHat />
     case 'home-advent': return <><IconSuggest /><AdventCard /></>
     // Stats: lights along the header, two baubles in the lifetime tile, a gingerbread person
     // hanging off the activity card, holly in a corner and a snowman peeking over a card.
@@ -205,6 +216,12 @@ export function Deco({ spot }) {
     case 'finish': return <span className="xm-finish" aria-hidden="true"><span className="xm-pk"><Present hue={0} /></span><span className="xm-pk xm-pk-r"><Present hue={1} /></span></span>
     default: return null
   }
+}
+
+// The Santa hat on the streak flame, unless the flame is the festive one, which has its own.
+function FlameHat() {
+  const festive = useStore(s => s.S?.flameIcon?.v === FESTIVE_FLAME.v)
+  return festive ? null : <span className="xm-hat" aria-hidden="true"><Hat /></span>
 }
 
 /* A string of fairy lights along the top of a header: the wire sags between three hooks, the
@@ -336,19 +353,19 @@ function IconSuggest() {
 
 /* -------------------------------------------------- the calendar -- */
 
-/** Opens something from outside the chunk (components/Seasonal.jsx openSeasonal). */
+/** Opens something from outside the chunk (components/Seasonal.jsx openSeasonal). Only in December. */
 export function open(what) {
-  if (what !== 'advent') return false
+  if (what !== 'advent' || !adventOpenable()) return false
   openAdvent()
   return true
 }
 
 const openAdvent = day => useUI.getState().openSheet(close => <AdventCalendar close={close} initial={day} />)
 
-/** Home, 1 to 24 December: today's door, one tap away. */
+/** Home, 1 to 24 December: today's door, one tap away, and the tree so far as a row of baubles. */
 function AdventCard() {
   const S = useStore(s => s.S)
-  const now = new Date()
+  const now = seasonNow()
   if (!inAdvent(now)) return null
   const a = adventOf(S, now)
   const next = nextDoor(S, now)
@@ -368,119 +385,378 @@ function AdventCard() {
       </div>
       <Icon name="chevronRight" className="chev" />
     </div>
-    <div className="xm-dots" aria-label={t('{0} of 24 doors open', a.opened.length)} role="img">
-      {Array.from({ length: DOORS }, (_, i) => <i key={i} className={a.opened.includes(i + 1) ? 'on' : i + 1 === today ? 'now' : i + 1 > today ? 'later' : ''} />)}
+    <div className="xm-dots" aria-label={treeLabel(treeOf(S, now))} role="img">
+      {Array.from({ length: DOORS }, (_, i) => {
+        const d = i + 1
+        const cls = adventLit(S, d, now) ? 'lit' : a.opened.includes(d) ? 'on' : d === today ? 'now' : d > today ? 'later' : ''
+        return <i key={i} className={cls} />
+      })}
     </div>
   </div>
 }
 
+const treeLabel = ({ hung, lit }) => tn('{0} bauble on the tree, {1} lit', '{0} baubles on the tree, {1} lit', hung, lit)
+
 // Each door's picture: openGym's own icon, or the emoji with Settings → Icons on Emoji (Glyph).
 const KIND = {
-  fact: [['lightbulb', '💡'], 'Fun fact'],
-  joke: [['smile', '😄'], 'A little joke'],
-  tip: [['dumbbell', '🏋️'], 'Training tip'],
-  challenge: [['arm', '💪'], 'Mini challenge'],
+  finisher: [['timer', '⏱️'], 'Quick finisher'],
+  count: [['target', '🎯'], 'Count it up'],
+  exercise: [['dumbbell', '🏋️'], 'Exercise of the day'],
   stretch: [['stretch', '🧘'], 'Cosy stretch'],
   stat: [['chart', '📊'], 'Stat of the day'],
   special: [['starFill', '⭐'], 'Merry everything!'],
 }
 const kindGlyph = ([icon, emoji]) => <Glyph icon={icon} emoji={emoji} />
+const kindOf = door => KIND[door.kind] || KIND.stat
+
+/* The tree: 24 hooks, one per door, in five rows from the top (3, 4, 5, 6, 6). An open door hangs
+   its bauble; a lit one glows (its thing done, or a workout that day); door 24 lights the star.
+   The hooks are dealt to the days in the calendar's own scrambled order, so the tree fills up all
+   over and not row by row. */
+const TREE_ROWS = [[34, 3, 10], [53, 4, 16], [70, 5, 22], [87, 6, 26], [104, 6, 34]]
+const HOOKS = TREE_ROWS.flatMap(([y, n, half]) => Array.from({ length: n }, (_, i) => [60 - half + (2 * half * i) / (n - 1), y + (i % 2 ? 2.5 : 0)]))
+const HOOK_OF = Object.fromEntries(LAYOUT.map((day, i) => [day, HOOKS[i]]))
+
+export function Tree({ S, now }) {
+  const a = adventOf(S, now)
+  const star = a.opened.includes(24)
+  return <svg className="xm-tree" viewBox="0 0 120 128" aria-hidden="true" focusable="false">
+    <path className="xm-tree-c" d="M60 12 36 46h48Z" />
+    <path className="xm-tree-c xm-tree-b" d="M60 28 27 76h66Z" />
+    <path className="xm-tree-c" d="M60 50 16 112h88Z" />
+    <rect className="xm-trunk" x="53" y="112" width="14" height="13" rx="2" />
+    <path className="xm-garland" d="M44 40q16 8 32 0M36 63q24 11 48 0M26 92q34 14 68 0" />
+    {LAYOUT.map(day => {
+      const [x, y] = HOOK_OF[day]
+      const hung = a.opened.includes(day)
+      const lit = hung && adventLit(S, day, now)
+      return hung
+        ? <circle key={day} className={'xm-ball xm-bp' + (day % 3) + (lit ? ' xm-lit' : '')} cx={x} cy={y} r="4.3" data-ball={day} />
+        : <circle key={day} className="xm-hook" cx={x} cy={y} r="1.3" />
+    })}
+    <path className={'xm-star' + (star ? ' xm-lit' : '')} d="m60 1.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L60 16.4l-5.8 3 1.1-6.4-4.7-4.6 6.5-.9Z" />
+  </svg>
+}
 
 function AdventCalendar({ close, initial }) {
   const S = useStore(s => s.S)
-  const update = useStore(s => s.update)
-  const now = new Date()
+  const now = seasonNow()
   const year = now.getFullYear()
   const [shown, setShown] = useState(initial || null)
-  const [opening, setOpening] = useState(null)
   const [shake, setShake] = useState(null)
-  const timer = useRef(null)
-  useEffect(() => () => clearTimeout(timer.current), [])
   const a = adventOf(S, now)
   const tap = day => {
-    const st = doorState(S, day, now)
-    if (st === 'locked') {
+    if (doorState(S, day, now) === 'locked') {
       setShake(day)
+      vibrate(8)
       useUI.getState().toast(S.icons === 'emoji' ? t('No peeking 👀') : splitEmoji(t('No peeking 👀')).text)
       return
     }
-    if (st === 'open') { setShown(day); return }
-    update(s => { openDoor(s, day, now) })
-    vibrate(15)
-    if (reducedMotion()) { setShown(day); return }
-    setOpening(day)
-    timer.current = setTimeout(() => { setOpening(null); setShown(day) }, 700)
+    setShown(day)
   }
-  if (shown) return <DoorView day={shown} year={year} back={() => setShown(null)} close={close} />
+  if (shown) return <DoorView key={shown} day={shown} year={year} back={() => setShown(null)} close={close} />
+  const tree = treeOf(S, now)
   return <div className="xm-cal">
     <h3><Glyph icon="tree" emoji="🎄" className="xm-h-g" /> {t('Advent calendar')}</h3>
-    <div className="muted small" style={{ marginBottom: 14 }}>{t('One door a day until the 24th. Missed one? It waits for you.')}</div>
+    <div className="xm-treebox">
+      <Tree S={S} now={now} />
+      <div className="xm-treetext">
+        <div className="xm-tree-n">{treeLabel(tree)}</div>
+        <div className="muted small">{t('Every door you open hangs a bauble. Train that day, or do what is behind the door, and it lights up.')}</div>
+        <div className="muted small">{t('Missed a day? Its door waits for you.')}</div>
+      </div>
+    </div>
     <div className="xm-grid">
       {LAYOUT.map(day => {
-        const st = opening === day ? 'opening' : doorState(S, day, now)
-        const kind = doorFor(day, year).kind
-        const label = st === 'locked' ? t('Door {0}, locked', day) : st === 'open' ? t('Door {0}, open', day) : t('Door {0}', day)
+        const st = doorState(S, day, now)
+        const lit = st === 'open' && adventLit(S, day, now)
+        const label = st === 'locked' ? t('Door {0}, locked', day) : st === 'open' ? (lit ? t('Door {0}, open and lit', day) : t('Door {0}, open', day)) : t('Door {0}', day)
         return <button key={day} type="button" data-door={day} aria-label={label}
-          className={'xm-door xm-' + st + ' xm-paper' + (day % 3) + (shake === day ? ' xm-shake' : '')}
+          className={'xm-door xm-' + st + ' xm-paper' + (day % 3) + (shake === day ? ' xm-shake' : '') + (lit ? ' xm-door-lit' : '')}
           onClick={() => tap(day)} onAnimationEnd={e => { if (e.animationName === 'xm-shake') setShake(null) }}>
-          <span className="xm-door-in" aria-hidden="true">{kindGlyph(KIND[kind][0])}</span>
+          <span className="xm-door-in" aria-hidden="true">{kindGlyph(kindOf(doorFor(day, year))[0])}</span>
           <span className="xm-flap" aria-hidden="true"><span className="xm-num">{day}</span></span>
-          {a.done.includes(day) && <span className="xm-done" aria-hidden="true"><Glyph icon="medal" emoji="🏅" /></span>}
+          {lit && <span className="xm-done" aria-hidden="true" />}
         </button>
       })}
     </div>
-    <div className="muted small xm-tally">
-      {t('{0} of 24 doors open', a.opened.length)}{a.done.length ? ' · ' + t('Challenges done: {0}', a.done.length) : ''}
-    </div>
+    <div className="muted small xm-tally">{t('{0} of 24 doors open', a.opened.length)}</div>
   </div>
 }
+
+/* ------------------------------------------------- the door itself -- */
+
+/* The door, big, before it is opened: drag it open by its edge (it follows the finger, gives a
+   little past shut and wide open, and springs open or back from where the swing is heading:
+   lib/advent.js dragAngle, releaseOpens, springStep), or tap it, or press Enter. Past half way it
+   counts as opened (saved, a buzz and a puff of snow) and the surprise shows as it settles. With
+   reduced motion there is no swing: a tap opens it and the surprise fades in. */
+const DOOR_SPRING = { response: 0.5, damping: 0.72 }
+const TAP_PUSH = 520   // deg/s: a tap gives the door a shove of this much
+
+function BigDoor({ day, kind, onOpen, onDone }) {
+  const flap = useRef(null)
+  const box = useRef(null)
+  const st = useRef({ x: 0, v: 0 })
+  const raf = useRef(0)
+  const drag = useRef(null)
+  const committed = useRef(false)
+  const [hint, setHint] = useState(true)
+  const rtl = typeof document !== 'undefined' && document.documentElement.dir === 'rtl'
+  useEffect(() => () => cancelAnimationFrame(raf.current), [])
+  const paint = a => { if (flap.current) flap.current.style.transform = `rotateY(${rtl ? a : -a}deg)` }
+  const commit = () => {
+    if (committed.current) return
+    committed.current = true
+    onOpen(box.current?.getBoundingClientRect())
+  }
+  const springTo = (target, v) => {
+    cancelAnimationFrame(raf.current)
+    if (Number.isFinite(v)) st.current.v = v
+    let last = performance.now()
+    const tick = now => {
+      const dt = Math.min(0.05, Math.max(0, (now - last) / 1000))
+      last = now
+      st.current = springStep(st.current, target, dt, DOOR_SPRING)
+      paint(st.current.x)
+      if (target === OPEN_DEG && st.current.x > OPEN_DEG * 0.5) commit()
+      if (springSettled(st.current, target)) {
+        st.current = { x: target, v: 0 }
+        paint(target)
+        if (target === OPEN_DEG) onDone()
+        return
+      }
+      raf.current = requestAnimationFrame(tick)
+    }
+    raf.current = requestAnimationFrame(tick)
+  }
+  const openNow = () => {
+    setHint(false)
+    if (reducedMotion()) { commit(); onDone(); return }
+    springTo(OPEN_DEG, TAP_PUSH)
+  }
+  const down = e => {
+    if (drag.current || committed.current || reducedMotion()) return
+    cancelAnimationFrame(raf.current)
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    drag.current = { id: e.pointerId, x0: e.clientX, a0: st.current.x, w: box.current?.offsetWidth || 220, moved: false, hist: [[performance.now(), st.current.x]] }
+  }
+  const move = e => {
+    const d = drag.current
+    if (!d || d.id !== e.pointerId) return
+    const dx = e.clientX - d.x0
+    if (!d.moved && Math.abs(dx) < 6) return
+    if (!d.moved) { d.moved = true; setHint(false) }
+    const a = Math.max(-12, d.a0 + dragAngle(dx, d.w, rtl))
+    st.current = { x: a, v: 0 }
+    paint(a)
+    d.hist.push([performance.now(), a])
+    if (d.hist.length > 6) d.hist.shift()
+  }
+  const up = e => {
+    const d = drag.current
+    if (!d || d.id !== e.pointerId) return
+    drag.current = null
+    if (!d.moved) { openNow(); return }
+    const [t0, a0] = d.hist[0], [t1, a1] = d.hist[d.hist.length - 1]
+    const v = t1 > t0 ? ((a1 - a0) / (t1 - t0)) * 1000 : 0
+    springTo(releaseOpens(st.current.x, v) ? OPEN_DEG : 0, v)
+  }
+  const cancel = e => { if (drag.current?.id === e.pointerId) { drag.current = null; springTo(0, 0) } }
+  return <div className="xm-stage">
+    <div className={'xm-bigdoor xm-paper' + (day % 3)} ref={box}>
+      <div className="xm-bigdoor-in" aria-hidden="true">{kindGlyph(KIND[kind]?.[0] || KIND.stat[0])}</div>
+      <button type="button" ref={flap} className={"xm-bigflap" + (hint ? " xm-nudge" : "")} data-bigdoor={day}
+        aria-label={t('Open door {0}', day)}
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel}
+        onClick={e => { if (e.detail === 0) openNow() }}>
+        <span className="xm-bigribbon" aria-hidden="true" />
+        <span className="xm-bignum" aria-hidden="true">{day}</span>
+        <span className="xm-bigknob" aria-hidden="true" />
+      </button>
+    </div>
+    <div className={'muted small xm-hint' + (hint ? '' : ' xm-gone')} aria-hidden={!hint}>{t('Swipe the door open, or give it a tap')}</div>
+  </div>
+}
+
+// A puff of snow out of the door as it opens.
+const PUFF = [[-120, -60, 7], [-80, -130, 5], [-20, -150, 6], [40, -140, 5], [100, -90, 7], [130, -20, 5], [-140, 10, 6], [-60, -40, 4], [70, -40, 4], [10, -90, 5], [-100, 50, 4], [110, 40, 4]]
+const SnowPuff = ({ at }) => (
+  <div className="xm-burst" aria-hidden="true" style={{ left: at.x, top: at.y }}>
+    {PUFF.map(([dx, dy, s], i) => <span key={i} className="xm-puff" style={{ '--dx': dx + 'px', '--dy': dy + 'px', '--s': s + 'px', animationDelay: i * 18 + 'ms' }} />)}
+  </div>
+)
 
 function DoorView({ day, year, back, close }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
+  const now = seasonNow()
   const door = doorFor(day, year)
-  const [icon, title] = KIND[door.kind]
-  const date = new Date(year, 11, day).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' })
-  const done = adventOf(S).done.includes(day)
+  const [icon, title] = kindOf(door)
+  const [phase, setPhase] = useState(() => (adventOf(S, now).opened.includes(day) ? 'open' : 'shut'))
   const [burst, setBurst] = useState(null)
-  const btn = useRef(null)
-  const tick = () => {
-    update(s => { markDone(s, day) })
+  useEffect(() => {
+    if (!burst) return
+    const tm = setTimeout(() => setBurst(null), 1500)
+    return () => clearTimeout(tm)
+  }, [burst])
+  const date = new Date(year, 11, day).toLocaleDateString(dateLocale(), { day: 'numeric', month: 'long' })
+  const a = adventOf(S, now)
+  const done = a.done.includes(day)
+  const lit = adventLit(S, day, now)
+  const celebrate = el => {
     vibrate([15, 30, 15])
-    const r = btn.current?.getBoundingClientRect()
-    if (r && !reducedMotion()) { setBurst({ x: r.left + r.width / 2, y: r.top }); setTimeout(() => setBurst(null), 1500) }
+    const r = el?.getBoundingClientRect?.()
+    if (r && !reducedMotion()) setBurst({ kind: 'confetti', x: r.left + r.width / 2, y: r.top })
   }
+  const did = el => {
+    if (!done) { update(s => { markDone(s, day, seasonNow()) }); celebrate(el) }
+  }
+  const opened = rect => {
+    update(s => { openDoor(s, day, seasonNow()) })
+    vibrate([12, 40, 18])
+    if (rect && !reducedMotion()) setBurst({ kind: 'snow', x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 })
+  }
+  const fx = burst && (burst.kind === 'snow' ? <SnowPuff at={burst} /> : <Confetti at={burst} />)
+  const top = <button type="button" className="btn ghost sm xm-back" onClick={back}><Icon name="chevronLeft" /><span>{t('Back to the calendar')}</span></button>
+  if (phase !== 'open') return <div className="xm-reveal-wrap">{top}<BigDoor day={day} kind={door.kind} onOpen={opened} onDone={() => setPhase('open')} />{fx}</div>
   return <div className="xm-reveal-wrap">
-    <button type="button" className="btn ghost sm xm-back" onClick={back}><Icon name="chevronLeft" /><span>{t('Back to the calendar')}</span></button>
+    {top}
     <div className={'xm-reveal xm-k-' + door.kind} data-door-open={day}>
       <div className="xm-reveal-top"><span className="xm-reveal-day">{date}</span><span className="xm-reveal-kind">{t(title)}</span></div>
       <div className="xm-reveal-icon" aria-hidden="true">{kindGlyph(icon)}</div>
-      {door.text && <p className="xm-reveal-text">{t(door.text)}</p>}
+      {door.kind === 'finisher' && <FinisherDoor door={door} close={close} did={did} />}
+      {door.kind === 'count' && <CountDoor day={day} door={door} celebrate={celebrate} />}
+      {door.kind === 'exercise' && <ExerciseDoor door={door} close={close} did={did} />}
       {door.kind === 'stat' && <StatDoor S={S} stat={door.stat} year={year} />}
-      {door.kind === 'stretch' && <StretchDoor close={close} />}
-      {door.kind === 'special' && <SpecialDoor />}
-      {door.kind === 'challenge' && (done
-        ? <div className="xm-badge"><Glyph icon="medal" emoji="🏅" /> {t('Done! Badge earned.')}</div>
-        : <span ref={btn} style={{ display: 'inline-block' }}><Button variant="primary" icon="check" onClick={tick}>{t('I did it')}</Button></span>)}
+      {door.kind === 'stretch' && <StretchDoor close={close} did={did} />}
+      {door.kind === 'special' && <SpecialDoor S={S} year={year} close={close} did={did} />}
+      {door.text && <p className="xm-reveal-aside">{t(door.text)}</p>}
+      <div className={'xm-litline' + (lit ? ' xm-on' : '')} data-lit={lit ? '1' : '0'}>
+        <span className="xm-litball" aria-hidden="true" />
+        {lit ? t('Bauble lit. Nice work.') : t('Train today, or do this, and its bauble lights up.')}
+      </div>
     </div>
-    {burst && <Confetti at={burst} />}
+    {fx}
   </div>
 }
 
-/** A number from the user's own year: the best set of their most-done lift, or the year so far. */
+const clock = sec => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')
+const exName = id => (EXIDX[id] ? exerciseNameText(EXIDX[id]) : id)
+
+/* A door's moves as a quick workout, or added to the end of the one running: built the way the
+   workout screen builds a freestyle exercise, so the hold timer, rests and sounds are the app's
+   own. Two moves share a superset so they alternate. A finisher skips the weigh-in: nobody wants
+   to step on the scales for five minutes of jumping jacks. */
+function startOrAdd(update, name, cfgs, close) {
+  const sg = cfgs.length > 1 ? 'xm' + uid() : null
+  let added = false
+  update(s => {
+    const entries = cfgs.map(cfg => ({ id: cfg.id, ...buildSessionEntry(s, cfg.id, cfg, null, null), ...(sg ? { sg } : {}) }))
+    if (s.active) {
+      added = true
+      s.active.entries.push(...entries.map(e => joinSessionNoProg(s.active, e)))
+    } else {
+      s.active = { id: uid(), d: todayISO(), start: Date.now(), routineIds: [], name, bw: null, cur: 0, entries, workoutView: s.workoutView || 'cards' }
+    }
+  })
+  if (added) { useUI.getState().toast(t('Added to this workout. Finish strong!')); return }
+  useUI.getState().stopRest?.()
+  closeThenNav(close, '/workout')
+}
+
+function FinisherDoor({ door, close, did }) {
+  const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  const moves = door.moves.filter(([id]) => EXIDX[id])
+  const go = e => {
+    did(e.currentTarget)
+    startOrAdd(update, t(door.name), moves.map(([id, sets, sec]) => ({ ...defaultConfig(id, 'time'), id, sets, sec, restSec: door.rest })), close)
+  }
+  return <>
+    <div className="xm-big-name">{t(door.name)}</div>
+    <div className="muted small">{tn('About {0} minute, two moves back to back', 'About {0} minutes, two moves back to back', finisherMinutes(door))}</div>
+    <ul className="xm-moves">{moves.map(([id, sets, sec]) => <li key={id}><span>{exName(id)}</span><span className="xm-dose">{sets} × {clock(sec)}</span></li>)}</ul>
+    <Button variant="primary" icon={S.active ? 'plus' : 'play'} onClick={go}>{S.active ? t('Add to this workout') : t('Start the finisher')}</Button>
+  </>
+}
+
+function ExerciseDoor({ door, close, did }) {
+  const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  if (!EXIDX[door.id]) return null
+  const timed = door.sec > 0
+  const cfg = timed ? { ...defaultConfig(door.id, 'time'), id: door.id, sets: door.sets, sec: door.sec } : { ...defaultConfig(door.id, 'reps'), id: door.id, sets: door.sets, reps: door.reps }
+  const go = e => { did(e.currentTarget); startOrAdd(update, exName(door.id), [cfg], close) }
+  return <>
+    <div className="xm-big-name">{exName(door.id)}</div>
+    <div className="xm-dose-big">{door.sets} × {timed ? clock(door.sec) : door.reps}</div>
+    <Button variant="primary" icon={S.active ? 'plus' : 'play'} onClick={go}>{S.active ? t('Add to this workout') : t('Start a workout with it')}</Button>
+  </>
+}
+
+/* A count over the day: a ring that fills, a big plus by the door's step, a small minus for a
+   slip of the thumb. Reaching the goal does the door, with confetti. */
+function CountDoor({ day, door, celebrate }) {
+  const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  const plus = useRef(null)
+  const n = repsDone(S, day, door.goal)
+  const done = n >= door.goal
+  const add = by => {
+    let r = false
+    update(s => { r = countReps(s, day, by, door.goal, seasonNow()) })
+    if (r === 'done') celebrate(plus.current)
+    else if (r) vibrate(8)
+  }
+  const R = 44, C = 2 * Math.PI * R
+  return <>
+    <div className="xm-big-name">{exName(door.id)}</div>
+    <div className="xm-ring" role="img" aria-label={t('{0} of {1} done', n, door.goal)}>
+      <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <circle className="xm-ring-bg" cx="50" cy="50" r={R} />
+        <circle className="xm-ring-fg" cx="50" cy="50" r={R} style={{ strokeDasharray: C, strokeDashoffset: C * (1 - n / door.goal) }} />
+      </svg>
+      <span className="xm-ring-n" aria-hidden="true"><b>{n}</b><span>/ {door.goal}</span></span>
+    </div>
+    {done
+      ? <div className="xm-badge"><Glyph icon="medal" emoji="🏅" /> {t('All {0}. Done!', door.goal)}</div>
+      : <div className="xm-countbtns">
+        <Button variant="ghost" size="sm" icon="minus" aria-label={t('Take {0} back', door.step)} disabled={n === 0} onClick={() => add(-door.step)} />
+        <span ref={plus} style={{ display: 'inline-block' }}><Button variant="primary" icon="plus" onClick={() => add(door.step)}>{String(door.step)}</Button></span>
+      </div>}
+    {!done && <div className="muted small">{t('Spread them over the day. Every {0} counts.', door.step)}</div>}
+  </>
+}
+
+/** A number from the user's own year, for a stat door. null when the year has no workout yet. */
 export function statOf(S, stat, year) {
   const st = yearStats(S, year)
   if (!st) return null
+  const y = String(year)
   if (stat === 'best' && st.topExercise) {
     const id = st.topExercise.id
     let best = 0
     for (const w of workoutsOfYear(S, year)) for (const e of Array.isArray(w.entries) ? w.entries : []) if (e?.id === id) best = Math.max(best, bestWeightForEntry(e) || 0)
     if (best > 0) {
       const name = EXIDX[id] ? exerciseNameText(EXIDX[id]) : st.topExercise.name || id
-      return { line: t('Your {0} best on {1}', String(year), name), big: fmtNum(shownWeight(S, id, best)) + ' ' + exUnitOf(S, id), sub: t('Santa checked it twice. Still a very good number.') }
+      return { line: t('Your {0} best on {1}', y, name), big: fmtNum(shownWeight(S, id, best)) + ' ' + exUnitOf(S, id), sub: t('Santa checked it twice. Still a very good number.') }
     }
   }
-  return { line: t('Workouts in {0} so far', String(year)), big: fmtNum(st.workouts), sub: t('Lifted in total: {0}', fmtVol(Math.round(st.volume), st.unit)) }
+  if (stat === 'volume' && st.volume > 0) {
+    const deer = Math.round(st.volumeKg / REINDEER_KG)
+    return {
+      line: t('Lifted in {0} so far', y), big: fmtVol(Math.round(st.volume), st.unit),
+      sub: deer >= 1 ? tn('That is about {0} reindeer. Rudolph would like a lie-down.', 'That is about {0} reindeer. Rudolph would like a lie-down.', deer) : t('Not quite a reindeer yet. Plenty of December left.'),
+    }
+  }
+  if (stat === 'muscle' && st.topMuscle && MUSCLE_NAME[st.topMuscle.id]) {
+    return { line: t('Your most trained muscle in {0}', y), big: t(MUSCLE_NAME[st.topMuscle.id]), sub: t('{0}% of all the work you did. Clearly a favourite.', Math.round(st.topMuscle.share * 100)) }
+  }
+  if (stat === 'streak' && st.streak?.weeks > 0) {
+    return { line: t('Your longest streak in {0}', y), big: tn('{0} week', '{0} weeks', st.streak.weeks), sub: t('Weeks in a row with at least one workout. The elves are taking notes.') }
+  }
+  return { line: t('Workouts in {0} so far', y), big: fmtNum(st.workouts), sub: st.ms > 0 ? t('Time trained: {0}', fmtDur(st.ms)) : t('Lifted in total: {0}', fmtVol(Math.round(st.volume), st.unit)) }
 }
 
 function StatDoor({ S, stat, year }) {
@@ -493,13 +769,14 @@ function StatDoor({ S, stat, year }) {
   </div>
 }
 
-function StretchDoor({ close }) {
+function StretchDoor({ close, did }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const name = t('Cosy stretch')
   const ids = STRETCH.map(([id]) => id).filter(id => EXIDX[id])
   const have = S.routines.some(r => r.name === name && r.ex?.length === ids.length && r.ex.every((e, i) => e.id === ids[i]))
-  const add = () => {
+  const add = e => {
+    did(e.currentTarget)
     update(s => {
       s.routines.push({ id: uid(), name, emoji: 'stretch', ex: STRETCH.filter(([id]) => EXIDX[id]).map(([id, sets, sec]) => ({ ...defaultConfig(id, 'time'), id, sets, sec })) })
     })
@@ -514,7 +791,11 @@ function StretchDoor({ close }) {
   </>
 }
 
-function SpecialDoor() {
+/* Door 24: the year so far on one card (lib/wrapped.js), a way into the full Wrapped, and a present:
+   the festive flame for the streak (lib/streak-icons.js FESTIVE_FLAME), yours to keep, plus the
+   Christmas app icon on a phone that can switch icons. */
+function SpecialDoor({ S, year, close, did }) {
+  const update = useStore(s => s.update)
   const [canIcon, setCanIcon] = useState(false)
   useEffect(() => {
     if (!MOBILE) return
@@ -522,11 +803,36 @@ function SpecialDoor() {
     appIconState().then(s => { if (live && s && s.name !== 'christmas') setCanIcon(true) })
     return () => { live = false }
   }, [])
+  const st = yearStats(S, year)
+  const worn = S.flameIcon?.k === 'icon' && S.flameIcon.v === FESTIVE_FLAME.v
+  const wear = e => {
+    did(e.currentTarget)
+    update(s => { s.flameIcon = { k: 'icon', v: FESTIVE_FLAME.v, c: FESTIVE_FLAME.c } })
+    useUI.getState().toast(t('Festive flame on. Your streak looks very merry.'))
+  }
   return <>
+    {st && <div className="xm-review" data-review>
+      <div><b>{fmtNum(st.workouts)}</b><span>{t('Workouts')}</span></div>
+      <div><b>{st.ms > 0 ? fmtDur(st.ms) : '0'}</b><span>{t('Time')}</span></div>
+      <div><b>{fmtVol(Math.round(st.volume), st.unit)}</b><span>{t('Volume')}</span></div>
+      <div><b>{tn('{0} week', '{0} weeks', st.streak?.weeks || 0)}</b><span>{t('Longest streak')}</span></div>
+    </div>}
     <p className="xm-reveal-text">{t('Whatever you celebrate, even if it is mostly a day on the sofa: thank you for training with openGym this year. Rest well, eat well, see you in the new year.')}</p>
+    <div className="xm-gift">
+      <span className="xm-gift-i" aria-hidden="true"><Icon name={FESTIVE_FLAME.v} /></span>
+      <div className="xm-gift-t">
+        <div className="ttl">{t('Your present: a festive flame')}</div>
+        <div className="muted small">{t('Your streak wears a Santa hat, all year if you like. Change it any time in Settings, Icons.')}</div>
+      </div>
+    </div>
+    <div className="xm-actions">
+      {worn ? <div className="xm-badge"><Glyph icon="check" emoji="✅" /> {t('Wearing it. Very merry.')}</div>
+        : <Button variant="primary" icon="gift" onClick={wear}>{t('Put it on')}</Button>}
+      {st && isOn(S, 'motivation') && <Button variant="ghost" icon="sparkles" onClick={() => { close(); openWrapped(year) }}>{t('Show me my year')}</Button>}
+    </div>
     {canIcon && <>
       <p className="xm-reveal-text muted small">{t('One more surprise: the barbell has a festive outfit for your home screen.')}</p>
-      <Button variant="primary" icon="gift" onClick={async () => { markAsked(); if (await wearFestiveIcon()) setCanIcon(false) }}>{t('Try the Christmas icon')}</Button>
+      <Button variant="ghost" icon="gift" onClick={async () => { markAsked(); if (await wearFestiveIcon()) setCanIcon(false) }}>{t('Try the Christmas icon')}</Button>
     </>}
   </>
 }
