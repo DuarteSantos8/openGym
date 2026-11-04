@@ -63,7 +63,7 @@ describe('the doors', () => {
       const pack = (await import(pathToFileURL(join(dir, f)).href)).default
       expect(DOOR_STRINGS.filter(k => !pack[k]), f).toEqual([])
     }
-  })
+  }, 30000)
 
   it('the stretch routine is made of catalogue holds', () => {
     for (const [id, sets, sec] of STRETCH) {

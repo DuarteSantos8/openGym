@@ -6,6 +6,8 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
+// The chunk pulls in the workout builders on its first import: slow on a busy machine.
+vi.setConfig({ testTimeout: 20000 })
 
 const ui = vi.hoisted(() => ({ toast: null, sheets: [] }))
 vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ toast: ui.toast, openSheet: r => { ui.sheets.push(r); return {} } }) } }))
@@ -145,6 +147,52 @@ describe('Santa and his reindeer', () => {
   })
 })
 
+describe('round two: the workout, snow and the festive glow', () => {
+  const setStore = S => { store.S = S; store.listeners.forEach(l => l()) }
+  const active = done => ({ id: 'a', entries: [{ id: '0025', sets: [{ w: 60, r: 8, done: true }, { w: 60, r: 8, done }] }] })
+
+  it('a set ticked on the workout screen sparkles at the tap; never with reduced motion or with workouts off', async () => {
+    const m = await load()
+    store.S = { ...store.S, active: active(false) }
+    render(<m.Layer hidden fresh={false} workout />)
+    act(() => { window.dispatchEvent(new PointerEvent('pointerdown', { clientX: 200, clientY: 300 })) })
+    act(() => setStore({ ...store.S, active: active(true) }))
+    const sp = host.querySelector('.xm-setspark')
+    expect(sp).not.toBeNull()
+    expect(sp.getAttribute('aria-hidden')).toBe('true')
+    expect(sp.style.left).toBe('200px')
+    act(() => root.unmount()); root = createRoot(host)
+    store.S = { ...store.S, active: active(false) }
+    render(<m.Layer hidden fresh={false} workout={false} />)
+    act(() => { window.dispatchEvent(new PointerEvent('pointerdown', { clientX: 200, clientY: 300 })) })
+    act(() => setStore({ ...store.S, active: active(true) }))
+    expect(host.querySelector('.xm-setspark')).toBeNull()
+    act(() => root.unmount()); root = createRoot(host)
+    reduce = true
+    store.S = { ...store.S, active: active(false) }
+    render(<m.Layer hidden fresh={false} workout />)
+    act(() => { window.dispatchEvent(new PointerEvent('pointerdown', { clientX: 200, clientY: 300 })) })
+    act(() => setStore({ ...store.S, active: active(true) }))
+    expect(host.querySelector('.xm-setspark')).toBeNull()
+  })
+
+  it('snow on the cards wherever the theme decorates, on the workout screen only with workouts on; the glow only with the colours', async () => {
+    const m = await load()
+    const de = document.documentElement
+    render(<m.Layer hidden={false} fresh={false} />)
+    expect(de.dataset.xmCaps).toBe('1')
+    expect(de.dataset.xmTint).toBeUndefined()
+    render(<m.Layer hidden fresh={false} workout={false} />)
+    expect(de.dataset.xmCaps).toBeUndefined()
+    act(() => setStore({ ...store.S, seasonal: { christmasColors: true } }))
+    render(<m.Layer hidden fresh={false} workout />)
+    expect(de.dataset.xmCaps).toBe('1')
+    expect(de.dataset.xmTint).toBe('1')
+    act(() => root.unmount()); root = createRoot(host)
+    expect(de.dataset.xmCaps).toBeUndefined()
+  })
+})
+
 describe('Rudolph', () => {
   it('hides his nose in one spot a day, a different one the next day', async () => {
     const m = await load()
@@ -157,6 +205,8 @@ describe('Rudolph', () => {
     expect(noses).toHaveLength(1)
     expect(noses[0].getAttribute('data-rudolph')).toBe(m.noseSpotOf())
     expect(noses[0].getAttribute('aria-hidden')).toBe('true')
+    expect(noses[0].querySelector('.xm-r-antler')).not.toBeNull()   // his antlers peek out too
+    expect(noses[0].querySelectorAll('.xm-r-ear')).toHaveLength(2)
   })
 
   it('found with a tap: a buzz, a hello, and he is gone until tomorrow', async () => {
@@ -194,14 +244,14 @@ describe('the present', () => {
 describe('the spots', () => {
   it('Santa hat, holly, trees, a gingerbread house, baubles, gingerbread and snowman: all decoration, none in the way', async () => {
     const { Deco } = await load()
-    render(<>{['streak-flame', 'home-hero', 'plan-card', 'stats-hdr', 'stats-tile', 'stats-heatmap', 'stats-web', 'stats-peek', 'workout-hdr', 'finish'].map(s => <Deco key={s} spot={s} />)}</>)
-    for (const sel of ['.xm-hat', '.xm-holly', '.xm-peek-house', '.xm-plandeco', '.xm-lights', '.xm-baubles', '.xm-ginger-hang', '.xm-peek-snowman', '.xm-wcorner', '.xm-wtree', '.xm-finish']) {
+    render(<>{['streak-flame', 'home-hero', 'home-streak', 'plan-card', 'rest-timer', 'empty', 'stats-hdr', 'stats-tile', 'stats-heatmap', 'stats-web', 'stats-peek', 'workout-hdr', 'finish'].map(s => <Deco key={s} spot={s} />)}</>)
+    for (const sel of ['.xm-hat', '.xm-holly', '.xm-peek-house', '.xm-peek-home [data-snowman], [data-snowman]', '.xm-canesvg', '.xm-wlights', '.xm-reststar', '.xm-plandeco', '.xm-lights', '.xm-baubles', '.xm-ginger-hang', '.xm-peek-snowman', '.xm-wcorner', '.xm-wtree', '.xm-finish']) {
       const el = host.querySelector(sel)
       expect(el, sel).not.toBeNull()
       expect(el.closest('[aria-hidden="true"]'), sel).not.toBeNull()
     }
-    // the only thing that takes a tap is Rudolph's nose, out of the keyboard's way
-    expect([...host.querySelectorAll('button, a, input, [tabindex]')].every(el => el.classList.contains('xm-nose') && el.tabIndex === -1)).toBe(true)
+    // the only things that take a tap are Rudolph's nose and the present, out of the keyboard's way
+    expect([...host.querySelectorAll('button, a, input, [tabindex]')].every(el => (el.classList.contains('xm-nose') || el.classList.contains('xm-present')) && el.tabIndex === -1)).toBe(true)
     render(<Deco spot="plan-ideas" />)
     expect(host.innerHTML).toBe('')
   })

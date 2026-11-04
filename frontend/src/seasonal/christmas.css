@@ -554,15 +554,20 @@
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 5' preserveAspectRatio='none'%3E%3Cpath fill='%23f6f8fc' d='M2 5C4 2.6 9 1.4 18 1.2s22 .6 30 1.6 14 1.4 18 2.2ZM128 5c2-1.6 6-2.4 12-2.4s9 .8 12 2.4ZM176 5c1.4-1.2 4-1.8 7-1.6s5 .8 6 1.6Z'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
   opacity:.92;
 }
-:root[data-season="christmas"][data-theme="light"][data-xm-caps] .card::before{filter:drop-shadow(0 .5px .6px rgba(60,60,67,.28))}
 :root[data-season="christmas"][data-xm-caps] .card.xm-advent::before{display:none}
 
-/* The Christmas colours: a warm, festive glow in the corners of the page, behind everything. */
-:root[data-season="christmas"][data-xm-tint] body::before{
-  content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
-  background:radial-gradient(120% 60% at 0% 0%,rgba(200,29,37,.16),transparent 60%),radial-gradient(120% 60% at 100% 100%,rgba(42,157,92,.14),transparent 60%),radial-gradient(60% 30% at 50% 0%,rgba(255,204,77,.10),transparent 70%);
+/* The Christmas colours: a soft festive vignette in the corners of the screen, berry red at the
+   top, pine green at the bottom, a little warm gold under the lights. Over the page but under the
+   bars and sheets, never taking a tap, faint enough that every text stays as readable as before. */
+:root[data-season="christmas"][data-xm-tint] body::after{
+  content:'';position:fixed;inset:0;z-index:39;pointer-events:none;
+  background:
+    radial-gradient(70% 34% at 0% 0%,rgba(200,29,37,.13),transparent 72%),
+    radial-gradient(70% 34% at 100% 0%,rgba(255,170,60,.09),transparent 72%),
+    radial-gradient(80% 30% at 0% 100%,rgba(42,157,92,.12),transparent 72%),
+    radial-gradient(80% 30% at 100% 100%,rgba(200,29,37,.10),transparent 72%);
 }
-:root[data-season="christmas"][data-theme="light"][data-xm-tint] body::before{opacity:.75}
+:root[data-season="christmas"][data-theme="light"][data-xm-tint] body::after{opacity:.8}
 
 /* A warm glow under the header lights. */
 .xm-lights::after{content:'';position:absolute;left:6%;right:6%;top:-6px;height:30px;pointer-events:none;
