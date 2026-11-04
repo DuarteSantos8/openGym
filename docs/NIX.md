@@ -44,7 +44,8 @@ openGym needs everything on **one origin** (passkeys require it), and NixOS depl
 a proxy — so the module integrates openGym into *yours* instead of re-implementing a web server
 itself. See §4. If you'd rather have openGym's web server managed for you, set
 `services.opengym.nginx.enable = true` and the module configures an nginx virtualHost for openGym
-(only then is `services.nginx` enabled; on the Caddy-native default it is force-disabled).
+(only then does the module touch `services.nginx` at all; on the Caddy-native default it leaves
+whatever web server you configured alone).
 
 ### Configuration flow
 
@@ -189,8 +190,9 @@ That renders a `services.nginx.virtualHosts."gym.example.com"` with the SPA root
 It's ordinary `services.nginx` config afterwards, so you can still extend the vhost or add your own
 virtualHosts alongside it.
 
-Note: on the Caddy-native default the module force-disables `services.nginx`, so the way to turn
-nginx on (and the only supported one, since the force-off is `mkForce`) is `nginx.enable = true`.
+Note: the module declares no web server of its own, so on the Caddy-native default it leaves
+`services.nginx` exactly as you configured it. To have it configure the openGym vhost, set
+`nginx.enable = true`; to run your own, simply do nothing.
 
 ### Passkey constraint (read before choosing a hostname)
 
@@ -336,7 +338,7 @@ variables, so entries there can still override).
 | `systemd.services.opengym-api` | always | `Restart=on-failure`, runs as `opengym`, hardened |
 | `systemd.services.opengym-mcp` | only when `mcp.enable = true` | stdio bridge, runs as `opengym`, same sandbox as the API |
 | `services.nginx` vhost | only when `nginx.enable = true` | managed virtualHost (SPA + `/api`, exercise media from the SPA root) |
-| `services.nginx.enable = false` | only when `nginx.enable = false` | force-disabled — bring your own web server |
+| `services.nginx` | never touched | the module declares no web server of its own: your `services.nginx` (or Caddy) stays exactly as you configured it |
 
 <span id="systemd-hardening"></span>
 The API unit is restricted: `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`,
@@ -379,7 +381,7 @@ for other modules to consume — setting them yourself is an error.
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `nginx.enable` | `bool` | `false` | Have the module configure an nginx virtualHost for openGym via `services.nginx` (SPA root + fallback, `/api` proxy, cache header on `/exercise-media/`, gzip/optimisation). When `false` (Caddy-native default) the module force-disables `services.nginx`. |
+| `nginx.enable` | `bool` | `false` | Have the module configure an nginx virtualHost for openGym via `services.nginx` (SPA root + fallback, `/api` proxy, cache header on `/exercise-media/`, gzip/optimisation). When `false` (Caddy-native default) the module leaves `services.nginx` as you configured it. |
 | `nginx.hostName` | `str` | `"${rpId}"` | Server name the virtualHost listens on. |
 | `nginx.enableACME` | `bool` | `false` | Serve over TLS: `enableACME` + `forceSSL` on the vhost. Requires `security.acme.acceptTerms = true`. |
 
@@ -455,7 +457,7 @@ routine update — see the passkey caveat in §4.
 | No passkey prompt / "verification failed" | `rpId`/`origin` don't match the address bar. Ask the server what it loaded: `journalctl -u opengym-api -b \| grep 'gym-api on'`.  See §4 and `docs/SELF_HOSTING.md`. |
 | App loads but exercises show no image/animation | Your web server doesn't serve `web.root` for `/exercise-media/*`, for example because an older config still routes `/img/` and `/gif/` or sends everything unknown to `index.html` without trying the file first. `curl -I https://your-host/exercise-media/NOTICE.md` should answer 200. |
 | `/api` returns 502/404 | Your proxy's `apiPort` (`services.opengym.apiPort`) differs from what `reverse_proxy`/`proxy_pass` targets. |
-| `nginx` is silently gone after enabling the module | Expected on the Caddy-native default (`nginx.enable = false`): the module sets `services.nginx.enable = false`. Set `services.opengym.nginx.enable = true` to have the module configure nginx for openGym (or `lib.mkForce true` to manage it yourself). |
+| `nginx` is silently gone after enabling the module | No longer expected, and a bug if you see it: the module used to force `services.nginx.enable = false`, which took a user's own nginx down with it. Set `services.opengym.nginx.enable = true` to have the module configure nginx for openGym, or leave it off and bring your own web server — the module then touches neither. |
 | Service won't start | `journalctl -u opengym-api -xe`. Common: custom `dataDir` not created/owned correctly (the tmpfiles rule should handle it; check `systemd-tmpfiles --create`). |
 | Eval fails: `environment and environmentFile are mutually exclusive` | Pick one. Set extra vars either as a Nix attrset (`environment`) or in a file (`environmentFile`), never both. |
 | You expected a binary cache | The flake builds from source; override `services.opengym.package` (or `packages.*` via a cache/overlay) to substitute binaries. |

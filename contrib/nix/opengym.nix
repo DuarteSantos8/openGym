@@ -425,10 +425,6 @@ in
             };
           };
         })
-        # Caddy-native default: this module owns no web server of its own.
-        (lib.mkIf (!cfg.nginx.enable) {
-          services.nginx.enable = lib.mkForce false;
-        })
       ]
     ))
   ];
