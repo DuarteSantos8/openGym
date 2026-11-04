@@ -53,15 +53,32 @@ final class OpenGymUITests: XCTestCase {
      * nothing in the app is tapped while a system alert is up: a late alert used to swallow one
      * tap and pass the next one through to home underneath (CI 10-13, the gym card opened).
      */
+    /**
+     * The "Want a 1-minute tour?" card (components/Tour.jsx) comes up a moment after the first
+     * setup and is a modal web dialog: while it shows, home's buttons are not in the tree. Skip it.
+     */
+    private func skipTour() {
+        let card = app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", "Want a 1-minute tour?")).firstMatch
+        guard card.waitForExistence(timeout: 4) else { return }
+        let skip = app.buttons["Skip"].firstMatch
+        if skip.exists && skip.isHittable { skip.tap() }
+    }
+
+    private func homeShows(_ timeout: TimeInterval) -> Bool {
+        if app.buttons["Log"].firstMatch.waitForExistence(timeout: timeout) { return true }
+        skipTour()
+        return app.buttons["Log"].firstMatch.waitForExistence(timeout: 5)
+    }
+
     private func chooseLocal() {
-        if app.buttons["Log"].waitForExistence(timeout: 45) { return }   // chosen in an earlier test
+        if homeShows(45) { return }   // chosen in an earlier test
         let local = app.buttons["Use on this device"]
         XCTAssertTrue(local.waitForExistence(timeout: 60), "the onboarding choice did not show up")
         for _ in 0..<5 {
             if systemAlertUp() { allowSystemAlert(within: 20) }
             if local.exists && local.isHittable { local.tap() }
             passPermissionSteps()
-            if app.buttons["Log"].waitForExistence(timeout: 20) { return }
+            if homeShows(20) { return }
         }
         XCTFail("home never showed after the onboarding choice")
     }
@@ -187,7 +204,7 @@ final class OpenGymUITests: XCTestCase {
         app.launch()
         let finish = app.buttons["Finish"]
         let resume = app.buttons["Resume"]
-        let home = app.buttons["Log"]
+        let home = app.buttons["Log"].firstMatch
         let local = app.buttons["Use on this device"]
         // One query for any of the four, waited on, rather than four polled every second: on a busy
         // simulator each poll is a whole snapshot of the app, and they ran past XCTest's limit (CI 10-13).
@@ -253,7 +270,7 @@ final class OpenGymUITests: XCTestCase {
     func test1WeighInSheetStaysAboveTheKeyboard() {
         app.launch()
         chooseLocal()
-        tap(app.buttons["Log"], "Log (body weight)")
+        tap(app.buttons["Log"].firstMatch, "Log (body weight)")
         let field = app.textFields.firstMatch
         XCTAssertTrue(field.waitForExistence(timeout: 15), "no weight field")
         // The sheet slides in; wait until the field is where a finger can reach it.
