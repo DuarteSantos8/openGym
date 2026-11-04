@@ -1,0 +1,3087 @@
+{
+ "linear: steps, a weight not typed, a stalled run and its back-off, a ramped miss | at 0": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 5,
+   "weight": 60,
+   "prog": "linear",
+   "warmupSets": 2
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "hit",
+   "noLoad",
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit",
+   "rampMiss",
+   "hit",
+   "lighterMiss",
+   "hit"
+  ],
+  "v1": [
+   "5@60 5@60 5@60",
+   "5@62.5 5@62.5 5@62.5",
+   "5@65 5@65 5@65",
+   "5@60 5@60 5@60",
+   "5@62.5 5@62.5 5@62.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@55 5@55 5@55",
+   "5@57.5 5@57.5 5@57.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@65 5@65 5@65",
+   "5@65 5@65 5@65"
+  ]
+ },
+ "linear: steps, a weight not typed, a stalled run and its back-off, a ramped miss | at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 5,
+   "weight": 60,
+   "prog": "linear",
+   "warmupSets": 2
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@60 5@60"
+   },
+   {
+    "target": {
+     "weight": 62.5,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@62.5 5@62.5 5@62.5"
+   },
+   {
+    "target": {
+     "weight": 65,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@0 5@0 5@0"
+   }
+  ],
+  "pats": [
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit",
+   "rampMiss",
+   "hit",
+   "lighterMiss",
+   "hit"
+  ],
+  "v1": [
+   "5@60 5@60 5@60",
+   "5@62.5 5@62.5 5@62.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@55 5@55 5@55",
+   "5@57.5 5@57.5 5@57.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@65 5@65 5@65",
+   "5@65 5@65 5@65"
+  ]
+ },
+ "linear: steps, a weight not typed, a stalled run and its back-off, a ramped miss | mid-workout at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 5,
+   "weight": 60,
+   "prog": "linear",
+   "warmupSets": 2
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@60 5@60"
+   },
+   {
+    "target": {
+     "weight": 62.5,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@62.5 5@62.5 5@62.5"
+   },
+   {
+    "target": {
+     "weight": 65,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@0 5@0 5@0"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 60,
+    "reps": 5,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 5,
+    "weight": 60
+   },
+   "rows": "5@60 ~5@60 ~5@60"
+  },
+  "pats": [
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit",
+   "rampMiss",
+   "hit",
+   "lighterMiss",
+   "hit"
+  ],
+  "v1": [
+   "5@60 5@60 5@60",
+   "5@62.5 5@62.5 5@62.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@55 5@55 5@55",
+   "5@57.5 5@57.5 5@57.5",
+   "5@62.5 5@62.5 5@62.5",
+   "5@65 5@65 5@65",
+   "5@65 5@65 5@65"
+  ]
+ },
+ "linear on a 5 kg increment: off-grid weights kept off-grid | at 0": {
+  "cfg": {
+   "id": "0043",
+   "sets": 3,
+   "reps": 5,
+   "weight": 100,
+   "prog": "linear"
+  },
+  "history": [],
+  "pats": [
+   "ramp",
+   "hit",
+   "rampMiss",
+   "missAll",
+   "missAll",
+   "hit",
+   "ramp",
+   "hit"
+  ],
+  "v1": [
+   "5@100 5@100 5@100",
+   "5@110 5@110 5@110",
+   "5@115 5@115 5@115",
+   "5@120 5@120 5@120",
+   "5@120 5@120 5@120",
+   "5@110 5@110 5@110",
+   "5@115 5@115 5@115",
+   "5@125 5@125 5@125"
+  ]
+ },
+ "linear on a 5 kg increment: off-grid weights kept off-grid | at 3": {
+  "cfg": {
+   "id": "0043",
+   "sets": 3,
+   "reps": 5,
+   "weight": 100,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 100,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@100 5@102.5 5@105"
+   },
+   {
+    "target": {
+     "weight": 110,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@110 5@110 5@110"
+   },
+   {
+    "target": {
+     "weight": 115,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@115 5@117.5 3@120"
+   }
+  ],
+  "pats": [
+   "missAll",
+   "missAll",
+   "hit",
+   "ramp",
+   "hit"
+  ],
+  "v1": [
+   "5@120 5@120 5@120",
+   "5@120 5@120 5@120",
+   "5@110 5@110 5@110",
+   "5@115 5@115 5@115",
+   "5@125 5@125 5@125"
+  ]
+ },
+ "linear on a 5 kg increment: off-grid weights kept off-grid | mid-workout at 3": {
+  "cfg": {
+   "id": "0043",
+   "sets": 3,
+   "reps": 5,
+   "weight": 100,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 100,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@100 5@102.5 5@105"
+   },
+   {
+    "target": {
+     "weight": 110,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@110 5@110 5@110"
+   },
+   {
+    "target": {
+     "weight": 115,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@115 5@117.5 3@120"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 120,
+    "reps": 5,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 5,
+    "weight": 100
+   },
+   "rows": "4@120 ~5@120 ~5@120"
+  },
+  "pats": [
+   "missAll",
+   "missAll",
+   "hit",
+   "ramp",
+   "hit"
+  ],
+  "v1": [
+   "5@120 5@120 5@120",
+   "5@120 5@120 5@120",
+   "5@110 5@110 5@110",
+   "5@115 5@115 5@115",
+   "5@125 5@125 5@125"
+  ]
+ },
+ "greyskull: a back-off from the heaviest set after one miss | at 0": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 5,
+   "weight": 60,
+   "prog": "greyskull"
+  },
+  "history": [],
+  "pats": [
+   "rampMiss",
+   "hit",
+   "lighterMiss",
+   "beat",
+   "noLoad",
+   "hit",
+   "missBig",
+   "hit"
+  ],
+  "v1": [
+   "5@60 5@60 5@60",
+   "5@57.5 5@57.5 5@57.5",
+   "5@60 5@60 5@60",
+   "5@55 5@55 5@55",
+   "5@57.5 5@57.5 5@57.5",
+   "5@60 5@60 5@60",
+   "5@62.5 5@62.5 5@62.5",
+   "5@57.5 5@57.5 5@57.5"
+  ]
+ },
+ "greyskull: a back-off from the heaviest set after one miss | at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 5,
+   "weight": 60,
+   "prog": "greyskull"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@62.5 3@65"
+   },
+   {
+    "target": {
+     "weight": 57.5,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@57.5 5@57.5 5@57.5"
+   },
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@57.5 4@55"
+   }
+  ],
+  "pats": [
+   "beat",
+   "noLoad",
+   "hit",
+   "missBig",
+   "hit"
+  ],
+  "v1": [
+   "5@55 5@55 5@55",
+   "5@57.5 5@57.5 5@57.5",
+   "5@60 5@60 5@60",
+   "5@62.5 5@62.5 5@62.5",
+   "5@57.5 5@57.5 5@57.5"
+  ]
+ },
+ "greyskull: a back-off from the heaviest set after one miss | mid-workout at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 5,
+   "weight": 60,
+   "prog": "greyskull"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@62.5 3@65"
+   },
+   {
+    "target": {
+     "weight": 57.5,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@57.5 5@57.5 5@57.5"
+   },
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@57.5 4@55"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 55,
+    "reps": 5,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 5,
+    "weight": 60
+   },
+   "rows": "8@55 ~5@55 ~5@55"
+  },
+  "pats": [
+   "beat",
+   "noLoad",
+   "hit",
+   "missBig",
+   "hit"
+  ],
+  "v1": [
+   "5@55 5@55 5@55",
+   "5@57.5 5@57.5 5@57.5",
+   "5@60 5@60 5@60",
+   "5@62.5 5@62.5 5@62.5",
+   "5@57.5 5@57.5 5@57.5"
+  ]
+ },
+ "double: the top first, an unchecked set counts none, the aim from the weakest set | at 0": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 10,
+   "repsMin": 6,
+   "weight": 40,
+   "prog": "double"
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "firstOnly",
+   "skipLast",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "missBig",
+   "missLast",
+   "missAll",
+   "hit",
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "10@40 10@40 10@40",
+   "6@42.5 6@42.5 6@42.5",
+   "6@42.5 6@42.5 6@42.5",
+   "6@42.5 6@42.5 6@42.5",
+   "7@42.5 7@42.5 7@42.5",
+   "8@42.5 8@42.5 8@42.5",
+   "9@42.5 9@42.5 9@42.5",
+   "10@42.5 10@42.5 10@42.5",
+   "7@42.5 7@42.5 7@42.5",
+   "6@42.5 6@42.5 6@42.5",
+   "6@37.5 6@37.5 6@37.5",
+   "7@37.5 7@37.5 7@37.5",
+   "10@40 10@40 10@40"
+  ]
+ },
+ "double: the top first, an unchecked set counts none, the aim from the weakest set | at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 10,
+   "repsMin": 6,
+   "weight": 40,
+   "prog": "double"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 40,
+     "reps": 10,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6,
+     "weight": 40
+    },
+    "rows": "10@40 10@40 10@40"
+   },
+   {
+    "target": {
+     "weight": 42.5,
+     "reps": 6,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6,
+     "weight": 40
+    },
+    "rows": "6@42.5 ~6@42.5 ~6@42.5"
+   },
+   {
+    "target": {
+     "weight": 42.5,
+     "reps": 6,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6,
+     "weight": 40
+    },
+    "rows": "6@42.5 6@42.5 ~6@42.5"
+   }
+  ],
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "missBig",
+   "missLast",
+   "missAll",
+   "hit",
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "6@42.5 6@42.5 6@42.5",
+   "7@42.5 7@42.5 7@42.5",
+   "8@42.5 8@42.5 8@42.5",
+   "9@42.5 9@42.5 9@42.5",
+   "10@42.5 10@42.5 10@42.5",
+   "7@42.5 7@42.5 7@42.5",
+   "6@42.5 6@42.5 6@42.5",
+   "6@37.5 6@37.5 6@37.5",
+   "7@37.5 7@37.5 7@37.5",
+   "10@40 10@40 10@40"
+  ]
+ },
+ "double: the top first, an unchecked set counts none, the aim from the weakest set | mid-workout at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 10,
+   "repsMin": 6,
+   "weight": 40,
+   "prog": "double"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 40,
+     "reps": 10,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6,
+     "weight": 40
+    },
+    "rows": "10@40 10@40 10@40"
+   },
+   {
+    "target": {
+     "weight": 42.5,
+     "reps": 6,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6,
+     "weight": 40
+    },
+    "rows": "6@42.5 ~6@42.5 ~6@42.5"
+   },
+   {
+    "target": {
+     "weight": 42.5,
+     "reps": 6,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6,
+     "weight": 40
+    },
+    "rows": "6@42.5 6@42.5 ~6@42.5"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 42.5,
+    "reps": 6,
+    "repsMin": 6,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 10,
+    "repsMin": 6,
+    "weight": 40
+   },
+   "rows": "6@42.5 ~6@42.5 ~6@42.5"
+  },
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "missBig",
+   "missLast",
+   "missAll",
+   "hit",
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "6@42.5 6@42.5 6@42.5",
+   "7@42.5 7@42.5 7@42.5",
+   "8@42.5 8@42.5 8@42.5",
+   "9@42.5 9@42.5 9@42.5",
+   "10@42.5 10@42.5 10@42.5",
+   "7@42.5 7@42.5 7@42.5",
+   "6@42.5 6@42.5 6@42.5",
+   "6@37.5 6@37.5 6@37.5",
+   "7@37.5 7@37.5 7@37.5",
+   "10@40 10@40 10@40"
+  ]
+ },
+ "double per side | at 0": {
+  "cfg": {
+   "id": "0285",
+   "sets": 3,
+   "reps": 12,
+   "repsMin": 8,
+   "weight": 10,
+   "prog": "double",
+   "side": true
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "hit",
+   "skipLast",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "6+6@10 6+6@10 6+6@10",
+   "4+4@12.5 4+4@12.5 4+4@12.5",
+   "5+5@12.5 5+5@12.5 5+5@12.5",
+   "4+4@12.5 4+4@12.5 4+4@12.5",
+   "5+5@12.5 5+5@12.5 5+5@12.5",
+   "6+6@12.5 6+6@12.5 6+6@12.5",
+   "4+4@15 4+4@15 4+4@15",
+   "5+5@15 5+5@15 5+5@15",
+   "5+5@15 5+5@15 5+5@15",
+   "5+5@15 5+5@15 5+5@15",
+   "4+4@15 4+4@15 4+4@15"
+  ]
+ },
+ "double per side | at 3": {
+  "cfg": {
+   "id": "0285",
+   "sets": 3,
+   "reps": 12,
+   "repsMin": 8,
+   "weight": 10,
+   "prog": "double",
+   "side": true
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 10,
+     "reps": 12,
+     "repsMin": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 12,
+     "repsMin": 8,
+     "weight": 10
+    },
+    "rows": "6+6@10 6+6@10 6+6@10"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 8,
+     "repsMin": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 12,
+     "repsMin": 8,
+     "weight": 10
+    },
+    "rows": "4+4@12.5 4+4@12.5 4+4@12.5"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 10,
+     "repsMin": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 12,
+     "repsMin": 8,
+     "weight": 10
+    },
+    "rows": "5+5@12.5 5+5@12.5 ~5+5@12.5"
+   }
+  ],
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "4+4@12.5 4+4@12.5 4+4@12.5",
+   "5+5@12.5 5+5@12.5 5+5@12.5",
+   "6+6@12.5 6+6@12.5 6+6@12.5",
+   "4+4@15 4+4@15 4+4@15",
+   "5+5@15 5+5@15 5+5@15",
+   "5+5@15 5+5@15 5+5@15",
+   "5+5@15 5+5@15 5+5@15",
+   "4+4@15 4+4@15 4+4@15"
+  ]
+ },
+ "double per side | mid-workout at 3": {
+  "cfg": {
+   "id": "0285",
+   "sets": 3,
+   "reps": 12,
+   "repsMin": 8,
+   "weight": 10,
+   "prog": "double",
+   "side": true
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 10,
+     "reps": 12,
+     "repsMin": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 12,
+     "repsMin": 8,
+     "weight": 10
+    },
+    "rows": "6+6@10 6+6@10 6+6@10"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 8,
+     "repsMin": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 12,
+     "repsMin": 8,
+     "weight": 10
+    },
+    "rows": "4+4@12.5 4+4@12.5 4+4@12.5"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 10,
+     "repsMin": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 12,
+     "repsMin": 8,
+     "weight": 10
+    },
+    "rows": "5+5@12.5 5+5@12.5 ~5+5@12.5"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 12.5,
+    "reps": 8,
+    "repsMin": 8,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 12,
+    "repsMin": 8,
+    "weight": 10
+   },
+   "rows": "4+4@12.5 ~4+4@12.5 ~4+4@12.5"
+  },
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "4+4@12.5 4+4@12.5 4+4@12.5",
+   "5+5@12.5 5+5@12.5 5+5@12.5",
+   "6+6@12.5 6+6@12.5 6+6@12.5",
+   "4+4@15 4+4@15 4+4@15",
+   "5+5@15 5+5@15 5+5@15",
+   "5+5@15 5+5@15 5+5@15",
+   "5+5@15 5+5@15 5+5@15",
+   "4+4@15 4+4@15 4+4@15"
+  ]
+ },
+ "bodyweight with a ceiling: one over the target, weight added and taken off | at 0": {
+  "cfg": {
+   "id": "0001",
+   "sets": 3,
+   "reps": 10,
+   "repsMax": 12,
+   "prog": "linear"
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "beat",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "plusLoad",
+   "hit",
+   "missAll",
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "10@0 10@0 10@0",
+   "11@0 11@0 11@0",
+   "12@0 12@0 12@0",
+   "10@0 10@0 10@0 10@0",
+   "11@0 11@0 11@0 11@0",
+   "12@0 12@0 12@0 12@0",
+   "10@0 10@0 10@0 10@0 10@0",
+   "10@12.5 10@12.5 10@12.5",
+   "10@15 10@15 10@15",
+   "10@15 10@15 10@15",
+   "11@0 11@0 11@0"
+  ]
+ },
+ "bodyweight with a ceiling: one over the target, weight added and taken off | at 3": {
+  "cfg": {
+   "id": "0001",
+   "sets": 3,
+   "reps": 10,
+   "repsMax": 12,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "10@0 10@0 10@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 11,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "14@0 14@0 14@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 12,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "12@0 12@0 12@0"
+   }
+  ],
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "plusLoad",
+   "hit",
+   "missAll",
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "10@0 10@0 10@0 10@0",
+   "11@0 11@0 11@0 11@0",
+   "12@0 12@0 12@0 12@0",
+   "10@0 10@0 10@0 10@0 10@0",
+   "10@12.5 10@12.5 10@12.5",
+   "10@15 10@15 10@15",
+   "10@15 10@15 10@15",
+   "11@0 11@0 11@0"
+  ]
+ },
+ "bodyweight with a ceiling: one over the target, weight added and taken off | mid-workout at 3": {
+  "cfg": {
+   "id": "0001",
+   "sets": 3,
+   "reps": 10,
+   "repsMax": 12,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "10@0 10@0 10@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 11,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "14@0 14@0 14@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 12,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "12@0 12@0 12@0"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 0,
+    "reps": 10,
+    "sets": 4
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 10
+   },
+   "rows": "10@0 ~10@0 ~10@0 ~10@0"
+  },
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "plusLoad",
+   "hit",
+   "missAll",
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "10@0 10@0 10@0 10@0",
+   "11@0 11@0 11@0 11@0",
+   "12@0 12@0 12@0 12@0",
+   "10@0 10@0 10@0 10@0 10@0",
+   "10@12.5 10@12.5 10@12.5",
+   "10@15 10@15 10@15",
+   "10@15 10@15 10@15",
+   "11@0 11@0 11@0"
+  ]
+ },
+ "bodyweight with no ceiling: the reps climb on | at 0": {
+  "cfg": {
+   "id": "1311",
+   "sets": 3,
+   "reps": 8,
+   "prog": "linear"
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit"
+  ],
+  "v1": [
+   "8@0 8@0 8@0",
+   "9@0 9@0 9@0",
+   "10@0 10@0 10@0",
+   "11@0 11@0 11@0",
+   "12@0 12@0 12@0",
+   "13@0 13@0 13@0",
+   "14@0 14@0 14@0",
+   "15@0 15@0 15@0",
+   "16@0 16@0 16@0",
+   "17@0 17@0 17@0",
+   "18@0 18@0 18@0",
+   "19@0 19@0 19@0",
+   "20@0 20@0 20@0",
+   "21@0 21@0 21@0",
+   "22@0 22@0 22@0"
+  ]
+ },
+ "bodyweight with no ceiling: the reps climb on | at 3": {
+  "cfg": {
+   "id": "1311",
+   "sets": 3,
+   "reps": 8,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8
+    },
+    "rows": "8@0 8@0 8@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 9,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8
+    },
+    "rows": "9@0 9@0 9@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8
+    },
+    "rows": "10@0 10@0 10@0"
+   }
+  ],
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit"
+  ],
+  "v1": [
+   "11@0 11@0 11@0",
+   "12@0 12@0 12@0",
+   "13@0 13@0 13@0",
+   "14@0 14@0 14@0",
+   "15@0 15@0 15@0",
+   "16@0 16@0 16@0",
+   "17@0 17@0 17@0",
+   "18@0 18@0 18@0",
+   "19@0 19@0 19@0",
+   "20@0 20@0 20@0",
+   "21@0 21@0 21@0",
+   "22@0 22@0 22@0"
+  ]
+ },
+ "bodyweight with no ceiling: the reps climb on | mid-workout at 3": {
+  "cfg": {
+   "id": "1311",
+   "sets": 3,
+   "reps": 8,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8
+    },
+    "rows": "8@0 8@0 8@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 9,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8
+    },
+    "rows": "9@0 9@0 9@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8
+    },
+    "rows": "10@0 10@0 10@0"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 0,
+    "reps": 11,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 8
+   },
+   "rows": "11@0 ~11@0 ~11@0"
+  },
+  "pats": [
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit",
+   "hit"
+  ],
+  "v1": [
+   "11@0 11@0 11@0",
+   "12@0 12@0 12@0",
+   "13@0 13@0 13@0",
+   "14@0 14@0 14@0",
+   "15@0 15@0 15@0",
+   "16@0 16@0 16@0",
+   "17@0 17@0 17@0",
+   "18@0 18@0 18@0",
+   "19@0 19@0 19@0",
+   "20@0 20@0 20@0",
+   "21@0 21@0 21@0",
+   "22@0 22@0 22@0"
+  ]
+ },
+ "bodyweight double: loaded and back to the climb at the reps asked for | at 0": {
+  "cfg": {
+   "id": "1311",
+   "sets": 3,
+   "reps": 10,
+   "repsMin": 6,
+   "prog": "double"
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "plusLoad",
+   "hit",
+   "hit",
+   "noLoad",
+   "hit",
+   "beat1",
+   "hit"
+  ],
+  "v1": [
+   "10@0 10@0 10@0",
+   "11@0 11@0 11@0",
+   "6@12.5 6@12.5 6@12.5",
+   "7@12.5 7@12.5 7@12.5",
+   "8@12.5 8@12.5 8@12.5",
+   "9@0 9@0 9@0",
+   "10@0 10@0 10@0",
+   "11@0 11@0 11@0"
+  ]
+ },
+ "bodyweight double: loaded and back to the climb at the reps asked for | at 3": {
+  "cfg": {
+   "id": "1311",
+   "sets": 3,
+   "reps": 10,
+   "repsMin": 6,
+   "prog": "double"
+  },
+  "history": [
+   {
+    "target": {
+     "reps": 10,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6
+    },
+    "rows": "10@0 10@0 10@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 11,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6
+    },
+    "rows": "11@10 11@10 11@10"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 6,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6
+    },
+    "rows": "6@12.5 6@12.5 6@12.5"
+   }
+  ],
+  "pats": [
+   "hit",
+   "noLoad",
+   "hit",
+   "beat1",
+   "hit"
+  ],
+  "v1": [
+   "7@12.5 7@12.5 7@12.5",
+   "8@12.5 8@12.5 8@12.5",
+   "9@0 9@0 9@0",
+   "10@0 10@0 10@0",
+   "11@0 11@0 11@0"
+  ]
+ },
+ "bodyweight double: loaded and back to the climb at the reps asked for | mid-workout at 3": {
+  "cfg": {
+   "id": "1311",
+   "sets": 3,
+   "reps": 10,
+   "repsMin": 6,
+   "prog": "double"
+  },
+  "history": [
+   {
+    "target": {
+     "reps": 10,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6
+    },
+    "rows": "10@0 10@0 10@0"
+   },
+   {
+    "target": {
+     "weight": 0,
+     "reps": 11,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6
+    },
+    "rows": "11@10 11@10 11@10"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 6,
+     "repsMin": 6,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "repsMin": 6
+    },
+    "rows": "6@12.5 6@12.5 6@12.5"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 12.5,
+    "reps": 7,
+    "repsMin": 6,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 10,
+    "repsMin": 6
+   },
+   "rows": "7@12.5 ~7@12.5 ~7@12.5"
+  },
+  "pats": [
+   "hit",
+   "noLoad",
+   "hit",
+   "beat1",
+   "hit"
+  ],
+  "v1": [
+   "7@12.5 7@12.5 7@12.5",
+   "8@12.5 8@12.5 8@12.5",
+   "9@0 9@0 9@0",
+   "10@0 10@0 10@0",
+   "11@0 11@0 11@0"
+  ]
+ },
+ "assistance machine: less help, held at the least help, more after misses | at 0": {
+  "cfg": {
+   "id": "0009",
+   "sets": 3,
+   "reps": 8,
+   "weight": 40,
+   "prog": "linear"
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "hit",
+   "lighterMiss",
+   "firstOnly",
+   "missLast",
+   "hit",
+   "beat",
+   "hit"
+  ],
+  "v1": [
+   "8@40 8@40 8@40",
+   "8@37.5 8@37.5 8@37.5",
+   "8@35 8@35 8@35",
+   "8@30 8@30 8@30",
+   "8@30 8@30 8@30",
+   "8@32.5 8@32.5 8@32.5",
+   "8@30 8@30 8@30",
+   "8@27.5 8@27.5 8@27.5"
+  ]
+ },
+ "assistance machine: less help, held at the least help, more after misses | at 3": {
+  "cfg": {
+   "id": "0009",
+   "sets": 3,
+   "reps": 8,
+   "weight": 40,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 40,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 40
+    },
+    "rows": "8@40 8@40 8@40"
+   },
+   {
+    "target": {
+     "weight": 37.5,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 40
+    },
+    "rows": "8@37.5 8@37.5 8@37.5"
+   },
+   {
+    "target": {
+     "weight": 35,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 40
+    },
+    "rows": "8@35 8@32.5 7@30"
+   }
+  ],
+  "pats": [
+   "firstOnly",
+   "missLast",
+   "hit",
+   "beat",
+   "hit"
+  ],
+  "v1": [
+   "8@30 8@30 8@30",
+   "8@30 8@30 8@30",
+   "8@32.5 8@32.5 8@32.5",
+   "8@30 8@30 8@30",
+   "8@27.5 8@27.5 8@27.5"
+  ]
+ },
+ "assistance machine: less help, held at the least help, more after misses | mid-workout at 3": {
+  "cfg": {
+   "id": "0009",
+   "sets": 3,
+   "reps": 8,
+   "weight": 40,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 40,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 40
+    },
+    "rows": "8@40 8@40 8@40"
+   },
+   {
+    "target": {
+     "weight": 37.5,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 40
+    },
+    "rows": "8@37.5 8@37.5 8@37.5"
+   },
+   {
+    "target": {
+     "weight": 35,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 40
+    },
+    "rows": "8@35 8@32.5 7@30"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 30,
+    "reps": 8,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 8,
+    "weight": 40
+   },
+   "rows": "8@30 ~8@30 ~8@30"
+  },
+  "pats": [
+   "firstOnly",
+   "missLast",
+   "hit",
+   "beat",
+   "hit"
+  ],
+  "v1": [
+   "8@30 8@30 8@30",
+   "8@30 8@30 8@30",
+   "8@32.5 8@32.5 8@32.5",
+   "8@30 8@30 8@30",
+   "8@27.5 8@27.5 8@27.5"
+  ]
+ },
+ "timed hold: a miss after a back-off backs off again | at 0": {
+  "cfg": {
+   "id": "0464",
+   "mode": "time",
+   "sets": 3,
+   "sec": 30,
+   "prog": "time"
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "missLast",
+   "hit",
+   "hit"
+  ],
+  "v1": [
+   "30s 30s 30s",
+   "35s 35s 35s",
+   "40s 40s 40s",
+   "40s 40s 40s",
+   "40s 40s 40s",
+   "35s 35s 35s",
+   "30s 30s 30s",
+   "35s 35s 35s"
+  ]
+ },
+ "timed hold: a miss after a back-off backs off again | at 3": {
+  "cfg": {
+   "id": "0464",
+   "mode": "time",
+   "sets": 3,
+   "sec": 30,
+   "prog": "time"
+  },
+  "history": [
+   {
+    "target": {
+     "sec": 30,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "sec": 30
+    },
+    "rows": "30s 30s 30s"
+   },
+   {
+    "target": {
+     "sec": 35,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "sec": 30
+    },
+    "rows": "35s 35s 35s"
+   },
+   {
+    "target": {
+     "sec": 40,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "sec": 30
+    },
+    "rows": "35s 35s 35s"
+   }
+  ],
+  "pats": [
+   "missAll",
+   "missAll",
+   "missLast",
+   "hit",
+   "hit"
+  ],
+  "v1": [
+   "40s 40s 40s",
+   "40s 40s 40s",
+   "35s 35s 35s",
+   "30s 30s 30s",
+   "35s 35s 35s"
+  ]
+ },
+ "timed hold: a miss after a back-off backs off again | mid-workout at 3": {
+  "cfg": {
+   "id": "0464",
+   "mode": "time",
+   "sets": 3,
+   "sec": 30,
+   "prog": "time"
+  },
+  "history": [
+   {
+    "target": {
+     "sec": 30,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "sec": 30
+    },
+    "rows": "30s 30s 30s"
+   },
+   {
+    "target": {
+     "sec": 35,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "sec": 30
+    },
+    "rows": "35s 35s 35s"
+   },
+   {
+    "target": {
+     "sec": 40,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "sec": 30
+    },
+    "rows": "35s 35s 35s"
+   }
+  ],
+  "active": {
+   "target": {
+    "sec": 40,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "sec": 30
+   },
+   "rows": "35s ~40s ~40s"
+  },
+  "pats": [
+   "missAll",
+   "missAll",
+   "missLast",
+   "hit",
+   "hit"
+  ],
+  "v1": [
+   "40s 40s 40s",
+   "40s 40s 40s",
+   "35s 35s 35s",
+   "30s 30s 30s",
+   "35s 35s 35s"
+  ]
+ },
+ "timed hold per side | at 0": {
+  "cfg": {
+   "id": "0464",
+   "mode": "time",
+   "sets": 2,
+   "sec": 30,
+   "prog": "time",
+   "side": true
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "hit",
+   "missLast",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "30sL 30sR 30sL 30sR",
+   "35sL 35sR 35sL 35sR",
+   "40sL 40sR 40sL 40sR",
+   "40sL 40sR 40sL 40sR",
+   "40sL 40sR 40sL 40sR",
+   "35sL 35sR 35sL 35sR"
+  ]
+ },
+ "timed hold per side | at 3": {
+  "cfg": {
+   "id": "0464",
+   "mode": "time",
+   "sets": 2,
+   "sec": 30,
+   "prog": "time",
+   "side": true
+  },
+  "history": [
+   {
+    "target": {
+     "sec": 30,
+     "sets": 2
+    },
+    "planned": {
+     "sets": 2,
+     "sec": 30
+    },
+    "rows": "30sL 30sR 30sL 30sR"
+   },
+   {
+    "target": {
+     "sec": 35,
+     "sets": 2
+    },
+    "planned": {
+     "sets": 2,
+     "sec": 30
+    },
+    "rows": "35sL 35sR 35sL 35sR"
+   },
+   {
+    "target": {
+     "sec": 40,
+     "sets": 2
+    },
+    "planned": {
+     "sets": 2,
+     "sec": 30
+    },
+    "rows": "40sL 40sR 40sL 30sR"
+   }
+  ],
+  "pats": [
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "40sL 40sR 40sL 40sR",
+   "40sL 40sR 40sL 40sR",
+   "35sL 35sR 35sL 35sR"
+  ]
+ },
+ "timed hold per side | mid-workout at 3": {
+  "cfg": {
+   "id": "0464",
+   "mode": "time",
+   "sets": 2,
+   "sec": 30,
+   "prog": "time",
+   "side": true
+  },
+  "history": [
+   {
+    "target": {
+     "sec": 30,
+     "sets": 2
+    },
+    "planned": {
+     "sets": 2,
+     "sec": 30
+    },
+    "rows": "30sL 30sR 30sL 30sR"
+   },
+   {
+    "target": {
+     "sec": 35,
+     "sets": 2
+    },
+    "planned": {
+     "sets": 2,
+     "sec": 30
+    },
+    "rows": "35sL 35sR 35sL 35sR"
+   },
+   {
+    "target": {
+     "sec": 40,
+     "sets": 2
+    },
+    "planned": {
+     "sets": 2,
+     "sec": 30
+    },
+    "rows": "40sL 40sR 40sL 30sR"
+   }
+  ],
+  "active": {
+   "target": {
+    "sec": 40,
+    "sets": 2
+   },
+   "planned": {
+    "sets": 2,
+    "sec": 30
+   },
+   "rows": "35sL ~40sR ~40sL ~40sR"
+  },
+  "pats": [
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "40sL 40sR 40sL 40sR",
+   "40sL 40sR 40sL 40sR",
+   "35sL 35sR 35sL 35sR"
+  ]
+ },
+ "no progression: the routine's weight, whatever was lifted | at 0": {
+  "cfg": {
+   "id": "0148",
+   "sets": 3,
+   "reps": 10,
+   "weight": 20,
+   "prog": "off"
+  },
+  "history": [],
+  "pats": [
+   "plusLoad",
+   "noLoad",
+   "hit",
+   "lighterMiss"
+  ],
+  "v1": [
+   "10@20 10@20 10@20",
+   "10@20 10@20 10@20",
+   "10@20 10@20 10@20",
+   "10@20 10@20 10@20"
+  ]
+ },
+ "no progression: the routine's weight, whatever was lifted | at 3": {
+  "cfg": {
+   "id": "0148",
+   "sets": 3,
+   "reps": 10,
+   "weight": 20,
+   "prog": "off"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 20,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "weight": 20
+    },
+    "rows": "10@30 10@30 10@30"
+   },
+   {
+    "target": {
+     "weight": 20,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "weight": 20
+    },
+    "rows": "10@0 10@0 10@0"
+   },
+   {
+    "target": {
+     "weight": 20,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "weight": 20
+    },
+    "rows": "10@20 10@20 10@20"
+   }
+  ],
+  "pats": [
+   "lighterMiss"
+  ],
+  "v1": [
+   "10@20 10@20 10@20"
+  ]
+ },
+ "no progression: the routine's weight, whatever was lifted | mid-workout at 3": {
+  "cfg": {
+   "id": "0148",
+   "sets": 3,
+   "reps": 10,
+   "weight": 20,
+   "prog": "off"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 20,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "weight": 20
+    },
+    "rows": "10@30 10@30 10@30"
+   },
+   {
+    "target": {
+     "weight": 20,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "weight": 20
+    },
+    "rows": "10@0 10@0 10@0"
+   },
+   {
+    "target": {
+     "weight": 20,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10,
+     "weight": 20
+    },
+    "rows": "10@20 10@20 10@20"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 20,
+    "reps": 10,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 10,
+    "weight": 20
+   },
+   "rows": "10@20 ~10@20 ~10@20"
+  },
+  "pats": [
+   "lighterMiss"
+  ],
+  "v1": [
+   "10@20 10@20 10@20"
+  ]
+ },
+ "pyramid sets: the routine's weight | at 0": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 8,
+   "weight": 50,
+   "pyramid": [
+    10,
+    8,
+    6
+   ]
+  },
+  "history": [],
+  "pats": [
+   "plusLoad",
+   "hit",
+   "noLoad"
+  ],
+  "v1": [
+   "10@50 8@50 6@50",
+   "10@50 8@50 6@50",
+   "10@50 8@50 6@50"
+  ]
+ },
+ "pyramid sets: the routine's weight | at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 8,
+   "weight": 50,
+   "pyramid": [
+    10,
+    8,
+    6
+   ]
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "10@60 8@60 6@60"
+   },
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "10@50 8@50 6@50"
+   },
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "10@0 8@0 6@0"
+   }
+  ],
+  "pats": [],
+  "v1": []
+ },
+ "pyramid sets: the routine's weight | mid-workout at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 8,
+   "weight": 50,
+   "pyramid": [
+    10,
+    8,
+    6
+   ]
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "10@60 8@60 6@60"
+   },
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "10@50 8@50 6@50"
+   },
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "10@0 8@0 6@0"
+   }
+  ],
+  "pats": [],
+  "v1": []
+ },
+ "rest-pause: the burst total judged against the plan's reps | at 0": {
+  "cfg": {
+   "id": "0025",
+   "sets": 1,
+   "reps": 8,
+   "weight": 50,
+   "prog": "linear",
+   "intensifier": {
+    "type": "restpause",
+    "totalReps": 15,
+    "restSec": 15
+   }
+  },
+  "history": [],
+  "pats": [
+   "missBig",
+   "hit",
+   "missLast",
+   "hit",
+   "missAll"
+  ],
+  "v1": [
+   "15@50",
+   "15@52.5",
+   "15@55",
+   "15@57.5",
+   "15@60"
+  ]
+ },
+ "rest-pause: the burst total judged against the plan's reps | at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 1,
+   "reps": 8,
+   "weight": 50,
+   "prog": "linear",
+   "intensifier": {
+    "type": "restpause",
+    "totalReps": 15,
+    "restSec": 15
+   }
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 1
+    },
+    "planned": {
+     "sets": 1,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "11@50"
+   },
+   {
+    "target": {
+     "weight": 52.5,
+     "reps": 8,
+     "sets": 1
+    },
+    "planned": {
+     "sets": 1,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "15@52.5"
+   },
+   {
+    "target": {
+     "weight": 55,
+     "reps": 8,
+     "sets": 1
+    },
+    "planned": {
+     "sets": 1,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "13@55"
+   }
+  ],
+  "pats": [
+   "hit",
+   "missAll"
+  ],
+  "v1": [
+   "15@57.5",
+   "15@60"
+  ]
+ },
+ "rest-pause: the burst total judged against the plan's reps | mid-workout at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 1,
+   "reps": 8,
+   "weight": 50,
+   "prog": "linear",
+   "intensifier": {
+    "type": "restpause",
+    "totalReps": 15,
+    "restSec": 15
+   }
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 1
+    },
+    "planned": {
+     "sets": 1,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "11@50"
+   },
+   {
+    "target": {
+     "weight": 52.5,
+     "reps": 8,
+     "sets": 1
+    },
+    "planned": {
+     "sets": 1,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "15@52.5"
+   },
+   {
+    "target": {
+     "weight": 55,
+     "reps": 8,
+     "sets": 1
+    },
+    "planned": {
+     "sets": 1,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "13@55"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 57.5,
+    "reps": 8,
+    "sets": 1
+   },
+   "planned": {
+    "sets": 1,
+    "reps": 8,
+    "weight": 50
+   },
+   "rows": "15@57.5"
+  },
+  "pats": [
+   "hit",
+   "missAll"
+  ],
+  "v1": [
+   "15@57.5",
+   "15@60"
+  ]
+ },
+ "a loaded lift with no weight in the plan: a missing weight asks for none | at 0": {
+  "cfg": {
+   "id": "0148",
+   "sets": 3,
+   "reps": 10,
+   "prog": "linear"
+  },
+  "history": [],
+  "pats": [
+   "noLoad",
+   "plusLoad",
+   "hit",
+   "noLoad",
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@12.5 10@12.5 10@12.5",
+   "10@15 10@15 10@15",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0"
+  ]
+ },
+ "a loaded lift with no weight in the plan: a missing weight asks for none | at 3": {
+  "cfg": {
+   "id": "0148",
+   "sets": 3,
+   "reps": 10,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "10@0 10@0 10@0"
+   },
+   {
+    "target": {
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "10@10 10@10 10@10"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "10@12.5 10@12.5 10@12.5"
+   }
+  ],
+  "pats": [
+   "noLoad",
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "10@15 10@15 10@15",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0"
+  ]
+ },
+ "a loaded lift with no weight in the plan: a missing weight asks for none | mid-workout at 3": {
+  "cfg": {
+   "id": "0148",
+   "sets": 3,
+   "reps": 10,
+   "prog": "linear"
+  },
+  "history": [
+   {
+    "target": {
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "10@0 10@0 10@0"
+   },
+   {
+    "target": {
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "10@10 10@10 10@10"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 10,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 10
+    },
+    "rows": "10@12.5 10@12.5 10@12.5"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 15,
+    "reps": 10,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 10
+   },
+   "rows": "10@0 ~10@15 ~10@15"
+  },
+  "pats": [
+   "noLoad",
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "10@15 10@15 10@15",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0",
+   "10@0 10@0 10@0"
+  ]
+ },
+ "drop sets on a linear lift | at 0": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 8,
+   "weight": 50,
+   "prog": "linear",
+   "intensifier": {
+    "type": "dropset",
+    "count": 2,
+    "pct": 20
+   }
+  },
+  "history": [],
+  "pats": [
+   "hit",
+   "missAll",
+   "hit",
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "8@50 8@50 8@50",
+   "8@52.5 8@52.5 8@52.5",
+   "8@52.5 8@52.5 8@52.5",
+   "8@55 8@55 8@55",
+   "8@50 8@50 8@50"
+  ]
+ },
+ "drop sets on a linear lift | at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 8,
+   "weight": 50,
+   "prog": "linear",
+   "intensifier": {
+    "type": "dropset",
+    "count": 2,
+    "pct": 20
+   }
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "8@50 8@50 8@50"
+   },
+   {
+    "target": {
+     "weight": 52.5,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "7@52.5 7@52.5 7@52.5"
+   },
+   {
+    "target": {
+     "weight": 52.5,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "8@52.5 8@52.5 8@52.5"
+   }
+  ],
+  "pats": [
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "8@55 8@55 8@55",
+   "8@50 8@50 8@50"
+  ]
+ },
+ "drop sets on a linear lift | mid-workout at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 8,
+   "weight": 50,
+   "prog": "linear",
+   "intensifier": {
+    "type": "dropset",
+    "count": 2,
+    "pct": 20
+   }
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "8@50 8@50 8@50"
+   },
+   {
+    "target": {
+     "weight": 52.5,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "7@52.5 7@52.5 7@52.5"
+   },
+   {
+    "target": {
+     "weight": 52.5,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "8@52.5 8@52.5 8@52.5"
+   }
+  ],
+  "active": {
+   "target": {
+    "weight": 55,
+    "reps": 8,
+    "sets": 3
+   },
+   "planned": {
+    "sets": 3,
+    "reps": 8,
+    "weight": 50
+   },
+   "rows": "8@0 ~8@55 ~8@55"
+  },
+  "pats": [
+   "noLoad",
+   "hit"
+  ],
+  "v1": [
+   "8@55 8@55 8@55",
+   "8@50 8@50 8@50"
+  ]
+ },
+ "start from the last session: rows reopen at what each did | at 3": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 5,
+   "weight": 60,
+   "prog": "linear",
+   "warmupSets": 2
+  },
+  "profile": {
+   "startFrom": "last"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@60 3@60"
+   },
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@60 3@60"
+   },
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "8@60 8@60 6@60"
+   }
+  ],
+  "pats": [
+   "hit",
+   "missAll",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "8@62.5 8@62.5 6@62.5",
+   "8@65 8@65 6@65",
+   "7@67.5 7@67.5 5@67.5",
+   "6@67.5 6@67.5 4@67.5",
+   "5@67.5 5@67.5 3@67.5"
+  ]
+ },
+ "start from the last session, per side | at 2": {
+  "cfg": {
+   "id": "0285",
+   "sets": 3,
+   "reps": 12,
+   "repsMin": 8,
+   "weight": 10,
+   "prog": "double",
+   "side": true
+  },
+  "profile": {
+   "startFrom": "last"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 10,
+     "reps": 12,
+     "repsMin": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 12,
+     "repsMin": 8,
+     "weight": 10
+    },
+    "rows": "6+6@10 6+6@10 6+6@10"
+   },
+   {
+    "target": {
+     "weight": 12.5,
+     "reps": 8,
+     "repsMin": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 12,
+     "repsMin": 8,
+     "weight": 10
+    },
+    "rows": "4+4@0 4+4@0 4+4@0"
+   }
+  ],
+  "pats": [
+   "hit",
+   "hit"
+  ],
+  "v1": [
+   "4+4@10 4+4@10 4+4@10",
+   "5+5@10 5+5@10 5+5@10"
+  ]
+ },
+ "pounds: the lifter's increments | at 3": {
+  "cfg": {
+   "id": "0043",
+   "sets": 3,
+   "reps": 5,
+   "weight": 100,
+   "prog": "linear"
+  },
+  "profile": {
+   "unit": "lb"
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 100,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@100 5@100 5@100"
+   },
+   {
+    "target": {
+     "weight": 110,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@110 5@112.5 5@115"
+   },
+   {
+    "target": {
+     "weight": 125,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 100
+    },
+    "rows": "5@125 5@125 5@125"
+   }
+  ],
+  "pats": [
+   "rampMiss",
+   "missAll",
+   "missAll",
+   "hit"
+  ],
+  "v1": [
+   "5@135 5@135 5@135",
+   "5@140 5@140 5@140",
+   "5@140 5@140 5@140",
+   "5@130 5@130 5@130"
+  ]
+ },
+ "a plan edited in v1 history: sets and reps restart, weight edits do not | at 4": {
+  "cfg": {
+   "id": "0025",
+   "sets": 3,
+   "reps": 5,
+   "weight": 60,
+   "prog": "linear",
+   "warmupSets": 2
+  },
+  "edits": {
+   "1": {
+    "weight": 65
+   },
+   "2": {
+    "reps": 8
+   }
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 60,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 60
+    },
+    "rows": "5@60 5@60 5@60"
+   },
+   {
+    "target": {
+     "weight": 62.5,
+     "reps": 5,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 5,
+     "weight": 65
+    },
+    "rows": "5@62.5 5@62.5 5@62.5"
+   },
+   {
+    "target": {
+     "weight": 62.5,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 65
+    },
+    "rows": "8@62.5 8@62.5 8@62.5"
+   },
+   {
+    "target": {
+     "weight": 65,
+     "reps": 8,
+     "sets": 3
+    },
+    "planned": {
+     "sets": 3,
+     "reps": 8,
+     "weight": 65
+    },
+    "rows": "8@65 8@65 8@65"
+   }
+  ],
+  "pats": [
+   "hit",
+   "missAll"
+  ],
+  "v1": [
+   "8@67.5 8@67.5 8@67.5",
+   "8@70 8@70 8@70"
+  ]
+ },
+ "a pyramid planned for more sets than targets | at 1": {
+  "cfg": {
+   "id": "0025",
+   "sets": 4,
+   "reps": 8,
+   "weight": 50,
+   "pyramid": [
+    10,
+    8,
+    6
+   ]
+  },
+  "history": [
+   {
+    "target": {
+     "weight": 50,
+     "reps": 8,
+     "sets": 4
+    },
+    "planned": {
+     "sets": 4,
+     "reps": 8,
+     "weight": 50
+    },
+    "rows": "10@50 8@50 6@50 6@50"
+   }
+  ],
+  "pats": [
+   "hit",
+   "hit"
+  ],
+  "v1": [
+   "10@50 8@50 6@50 6@50",
+   "10@50 8@50 6@50 6@50"
+  ]
+ }
+}

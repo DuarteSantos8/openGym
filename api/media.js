@@ -309,8 +309,9 @@ export function referencedHashes(state) {
   }
   // A set's own form video (v1.4.4): every entry of every set's `media` list, by the same rule.
   for (const w of Array.isArray(state.workouts) ? state.workouts : []) {
-    if (!isObj(w) || !Array.isArray(w.entries)) continue;
-    for (const e of w.entries) {
+    if (!isObj(w)) continue;
+    const entries = Array.isArray(w.exposures) ? w.exposures.map(x => x?.performance) : w.entries;
+    for (const e of Array.isArray(entries) ? entries : []) {
       if (!isObj(e) || !Array.isArray(e.sets)) continue;
       for (const st of e.sets) if (isObj(st) && Array.isArray(st.media)) for (const m of st.media) if (isObj(m)) ref(m);
     }

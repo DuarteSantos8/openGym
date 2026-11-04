@@ -3,7 +3,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import LineChart from './LineChart.jsx'
-import { fmtDate, isoOf } from '../lib/format.js'
+import { fmtDate, fmtSpread, isoOf } from '../lib/format.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -145,5 +145,31 @@ describe('LineChart x axis', () => {
     expect(edge[0]).toBe("Apr '25")
     expect(edge.at(-1)).toBe("Apr '26")
     expect(new Set(edge).size).toBe(edge.length)
+  })
+})
+
+describe('LineChart estimate band', () => {
+  const draw = points => { act(() => root.render(<LineChart points={points} />)) }
+  const bands = () => container.querySelectorAll('polygon[opacity=".16"]')
+
+  it('draws a band behind the line only when a point has a low and a high apart', () => {
+    draw([{ ...point(2026, 1, 1, 100), low: 95, high: 108 }, { ...point(2026, 1, 8, 105), low: 105, high: 105 }])
+    expect(bands()).toHaveLength(1)
+    draw([{ ...point(2026, 1, 1, 100), low: 100, high: 100 }, point(2026, 1, 8, 105)])
+    expect(bands()).toHaveLength(0)
+  })
+
+  it('says the range in the tooltip of a banded point and nothing for a flat one', () => {
+    draw([{ ...point(2026, 1, 1, 100), low: 95, high: 108 }, { ...point(2026, 1, 8, 105), low: 105, high: 105 }])
+    act(() => { container.querySelector('.chart-i').dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 0 })) })
+    expect(container.querySelector('.ctip').textContent).toContain(fmtSpread(95, 108))
+  })
+})
+
+describe('fmtSpread', () => {
+  it('is a range only where the models disagree', () => {
+    expect(fmtSpread(135, 150)).toBe(' (135–150)')
+    expect(fmtSpread(100, 100)).toBe('')
+    expect(fmtSpread(undefined, undefined)).toBe('')
   })
 })

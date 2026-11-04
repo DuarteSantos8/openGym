@@ -1,26 +1,36 @@
 import { describe, expect, it } from 'vitest'
 import { swapActiveExercise } from './active-exercise-swap.js'
 
-const entry = (id, { sg, done = false, target, sets } = {}) => ({
-  id,
+const entry = (id, { exposureId = id, sg, done = false, target, sets } = {}) => ({
+  id, exposureId,
   ...(sg ? { sg } : {}),
   target: target || { mode: 'reps', sets: 1, reps: 5, weight: 40 },
   sets: sets || [{ w: 40, r: 5, done }]
 })
 
-const replacement = () => entry('incline', {
-  target: { mode: 'reps', sets: 2, reps: 8, weight: 32.5, note: 'Keep elbows tucked.', intensifier: { type: 'dropset', count: 1, pct: 20 } },
-  sets: [{ w: 32.5, r: 8, done: false }, { w: 32.5, r: 8, done: false }]
+const replacement = () => ({
+  exposure: { exposureId: 'incline-new', exerciseId: 'incline' },
+  entry: entry('incline', {
+    exposureId: 'incline-new',
+    target: { mode: 'reps', sets: 2, reps: 8, weight: 32.5, note: 'Keep elbows tucked.', intensifier: { type: 'dropset', count: 1, pct: 20 } },
+    sets: [{ w: 32.5, r: 8, done: false }, { w: 32.5, r: 8, done: false }]
+  })
+})
+
+const activeOf = entries => ({
+  cur: 0,
+  entries,
+  exposures: entries.map(value => ({ exposureId: value.exposureId, exerciseId: value.id, ...(value.sg ? { sg: value.sg } : {}) }))
 })
 
 describe('safe active exercise swap', () => {
   it('replaces only the selected duplicate occurrence and preserves its group and replacement metadata', () => {
-    const first = entry('bench', { sg: 'pair' })
-    const selected = entry('bench', { sg: 'pair' })
+    const first = entry('bench', { exposureId: 'bench#1', sg: 'pair' })
+    const selected = entry('bench', { exposureId: 'bench#2', sg: 'pair' })
     selected.occurrenceId = 'bench#2'
     selected.provenance = { routineIndex: 4 }
     const unrelated = entry('row')
-    const active = { cur: 1, entries: [first, selected, unrelated] }
+    const active = activeOf([first, selected, unrelated]); active.cur = 1
     const next = replacement()
 
     expect(swapActiveExercise(active, 1, next)).toEqual({ inserted: false, index: 1 })
@@ -28,17 +38,18 @@ describe('safe active exercise swap', () => {
     expect(active.entries[0]).toBe(first)
     expect(active.entries[2]).toBe(unrelated)
     expect(active.entries[1]).toEqual({
-      ...next,
+      ...next.entry,
       occurrenceId: 'bench#2',
       provenance: { routineIndex: 4 },
       sg: 'pair'
     })
+    expect(active.entries.map(x => x.exposureId)).toEqual(active.exposures.map(x => x.exposureId))
     expect(active.cur).toBe(1)
   })
 
   it('fails closed before a logged standalone occurrence is explicitly confirmed', () => {
     const logged = entry('bench', { sets: [{ w: 42.5, r: 7, done: true, rir: 1 }] })
-    const active = { cur: 0, entries: [logged, entry('row')] }
+    const active = activeOf([logged, entry('row')])
 
     expect(swapActiveExercise(active, 0, replacement())).toEqual({ needsConfirmation: true, grouped: false, index: 0 })
     expect(active.entries).toEqual([logged, active.entries[1]])
@@ -48,18 +59,19 @@ describe('safe active exercise swap', () => {
   it('preserves a confirmed logged occurrence and inserts the replacement after it', () => {
     const logged = entry('bench', { sets: [{ w: 42.5, r: 7, done: true, rir: 1 }] })
     const unrelated = entry('row')
-    const active = { cur: 0, entries: [logged, unrelated] }
+    const active = activeOf([logged, unrelated])
 
     expect(swapActiveExercise(active, 0, replacement(), { loggedConfirmed: true })).toEqual({ inserted: true, index: 1 })
     expect(active.entries[0]).toBe(logged)
     expect(active.entries[0].sets[0]).toEqual({ w: 42.5, r: 7, done: true, rir: 1 })
     expect(active.entries[1].id).toBe('incline')
     expect(active.entries[2]).toBe(unrelated)
+    expect(active.entries.map(x => x.exposureId)).toEqual(active.exposures.map(x => x.exposureId))
     expect(active.cur).toBe(1)
   })
 
   it('requires an explicit grouped disposition before changing a logged group member', () => {
-    const active = { cur: 0, entries: [entry('bench', { sg: 'pair', done: true }), entry('row', { sg: 'pair' }), entry('curl')] }
+    const active = activeOf([entry('bench', { sg: 'pair', done: true }), entry('row', { sg: 'pair' }), entry('curl')])
     const before = [...active.entries]
 
     expect(swapActiveExercise(active, 0, replacement(), { loggedConfirmed: true }))
@@ -74,7 +86,7 @@ describe('safe active exercise swap', () => {
     const logged = entry('bench', { sg: 'pair', sets: [{ w: 45, r: 6, done: true }] })
     const partner = entry('row', { sg: 'pair' })
     const unrelated = entry('curl')
-    const active = { cur: 0, entries: [logged, partner, unrelated] }
+    const active = activeOf([logged, partner, unrelated])
 
     expect(swapActiveExercise(active, 0, replacement(), { loggedConfirmed: true, groupDisposition }))
       .toEqual({ inserted: true, index: cursor })
@@ -83,6 +95,7 @@ describe('safe active exercise swap', () => {
     expect(active.entries[0]).toBe(logged)
     expect(active.entries.includes(partner)).toBe(true)
     expect(active.entries.at(-1)).toBe(unrelated)
+    expect(active.entries.map(x => x.exposureId)).toEqual(active.exposures.map(x => x.exposureId))
     expect(active.cur).toBe(cursor)
   })
 })

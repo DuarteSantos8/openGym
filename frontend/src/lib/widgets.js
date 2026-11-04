@@ -27,6 +27,7 @@ import { streakInfo } from './streak.js'
 import { challengesOn, monthChallenges, progressOf } from './challenges.js'
 import { challengeTitle, challengeCount, doneLine } from './challenge-copy.js'
 import { deriveSessionName } from './session-merge.js'
+import { rowsOfPerformance } from './session-ui-adapter.js'
 import { queueOf, weekTally } from './queue.js'
 import { workoutsLeft } from './week-left.js'
 import { todayISO, isoOf, fmtNum, weekStartOf, startOfWeek, weekKey, exerciseNameText } from './format.js'
@@ -88,8 +89,10 @@ function lastPrOf (S) {
   if (!ws.length) return null
   const w = ws.reduce((a, b) => ((b.d || '') > (a.d || '') || ((b.d || '') === (a.d || '') && (b.end || 0) > (a.end || 0)) ? b : a))
   const id = w.prs[0]
-  const entry = (w.entries || []).find(e => e && e.id === id)
-  const name = EXIDX[id] ? exerciseNameText(EXIDX[id]) : String(entry?.target?.name || entry?.name || id)
+  // A saved workout keeps its sets as the exposure's performance rows; the best weight reads them as the rows the screen edits.
+  const x = (w.exposures || []).find(e => e && e.exerciseId === id)
+  const entry = x ? { id, target: { mode: x.mode }, sets: rowsOfPerformance(x.performance?.sets, x.mode) } : null
+  const name = EXIDX[id] ? exerciseNameText(EXIDX[id]) : String(x?.exerciseNameSnapshot || id)
   let best = 0
   try { best = entry ? bestWeightForEntry(entry) : 0 } catch { best = 0 }
   return { name, value: best > 0 ? `${fmtNum(shownWeight(S, id, best))} ${exUnitOf(S, id)}` : '', d: w.d || null }
@@ -296,7 +299,9 @@ export async function startWidgetSync ({ useStore }) {
     tm = null
     if (useStore.getState().tourSandbox) return
     try {
-      const json = JSON.stringify(buildWidgetSnapshot(useStore.getState().S))
+      const st = useStore.getState()
+      // The running workout is the store's own `A`; the snapshot reads it as `S.active`.
+      const json = JSON.stringify(buildWidgetSnapshot({ ...st.S, active: st.A }))
       if (json === last) return
       await p.WidgetBridge.write({ json })
       last = json
@@ -304,7 +309,7 @@ export async function startWidgetSync ({ useStore }) {
   }
   // The tour's practice workout (useStore enterTourSandbox) is left off the widgets.
   const schedule = () => { if (useStore.getState().tourSandbox) return; clearTimeout(tm); tm = setTimeout(write, WRITE_DEBOUNCE_MS) }
-  const off = useStore.subscribe((s, prev) => { if (s.S !== prev.S) schedule() })
+  const off = useStore.subscribe((s, prev) => { if (s.S !== prev.S || s.A !== prev.A) schedule() })
   const onVisible = () => { if (document.visibilityState === 'visible') schedule() }
   document.addEventListener('visibilitychange', onVisible)
   write()

@@ -7,7 +7,7 @@
    answers like api/server.js (409 with the current document on a stale baseRev). */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('../lib/api.js', () => ({ api: vi.fn(), setRemoteAuth: vi.fn() }))
+vi.mock('../lib/api.js', () => ({ setAccessHeaders: vi.fn(), api: vi.fn(), setRemoteAuth: vi.fn() }))
 const { toast } = vi.hoisted(() => ({ toast: vi.fn() }))
 vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
 
@@ -17,7 +17,7 @@ import { mergeStates, stampChange } from '../lib/sync-merge.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const ids = xs => (xs || []).map(x => x.id).sort()
-const workout = (id, t) => ({ id, d: '2026-09-20', start: t - 3600e3, end: t, entries: [] })
+const workout = (id, t) => ({ id, d: '2026-09-20', start: t - 3600e3, end: t, exposures: [] })
 const httpError = (status, data) => Object.assign(new Error('HTTP ' + status), { status, data })
 const T = Date.now() - 86400e3
 

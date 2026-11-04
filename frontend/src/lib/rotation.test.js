@@ -316,12 +316,17 @@ describe('refilling a completed managed pass', () => {
 
 describe('the finished-workout boundary', () => {
   it('refills from the workout the finish screen actually writes', async () => {
-    const { buildCompletedWorkout } = await import('./finish-workout.js')
-    const active = {
-      id: 'w1', d: TODAY, start: NOW, routineIds: ['b'], name: 'B',
-      entries: [{ id: '0025', sets: [{ w: 60, reps: 5, done: true }] }],
-    }
-    const done = buildCompletedWorkout(active)
+    const { buildCompletedSession } = await import('./finish-session.js')
+    const { buildSessionExposures } = await import('./session-start.js')
+    const { entriesForExposures } = await import('./session-ui-adapter.js')
+    const { canonicalProfile, ruleOccurrence } = await import('./test-fixtures.js')
+    const profile = canonicalProfile({ routines: [{ id: 'b', name: 'B', ex: [ruleOccurrence('0025', { routineId: 'b' })] }] })
+    const ctx = { now: NOW, newId: seed => seed, unit: 'kg' }
+    const exposures = buildSessionExposures(profile, profile.routines[0], ctx)
+    const entries = entriesForExposures(exposures, profile.prescriptions)
+    entries.forEach(e => e.sets.forEach(row => { row.done = true }))
+    const active = { id: 'w1', d: TODAY, start: NOW, routineIds: ['b'], name: 'B', exposures, entries }
+    const { session: done } = buildCompletedSession(active, profile, { end: NOW + 60000, newId: ctx.newId, unit: 'kg' })
     const s = S({
       rotation: { id: 'r1', sequence: ['a', 'b'], label: 'My split' },
       queue: pass(['a', 'b'], { rotationId: 'r1' }),

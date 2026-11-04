@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { finishCompare, trendOf } from './finish-compare.js'
+import { migratedFixture } from './test-fixtures.js'
+import { finishCompare as canonicalFinishCompare, trendOf } from './finish-compare.js'
 
 const set = (w, r, extra = {}) => ({ w, r, done: true, ...extra })
 const routine = { id: 'r1', name: 'A', prog: 'linear', ex: [{ id: 'bench', sets: 3, reps: 5, weight: 60, mode: 'reps' }] }
@@ -31,3 +32,5 @@ describe('last time and next time on the finish summary (#324)', () => {
     expect(row.next).toBeNull()
   })
 })
+
+function finishCompare(S, w) { const profile = migratedFixture(S); return canonicalFinishCompare(profile, profile.workouts.find(x => x.id === w.id)) }

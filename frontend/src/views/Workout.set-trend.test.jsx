@@ -7,6 +7,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { migratedFixture } from '../lib/test-fixtures.js'
+import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
+import { modeOf } from '../lib/history.js'
 import { useUI } from '../store/useUI.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
@@ -30,7 +33,11 @@ function mount(patch = {}) {
       { w: 40, r: 5, done: true, phase: 'warmup' }, { w: 80, r: 8, done: true }, { w: 80, r: 6, done: true }, { w: 80, r: 8, done: false },
     ] },
   ] }
-  useStore.setState({ S, user: null })
+  const A = S.active
+  delete S.active
+  A.entries = A.entries.map((e, i) => ({ ...e, exposureId: 'x-' + i }))
+  A.exposures = exposuresWithPerformance(A.entries.map(e => ({ exposureId: e.exposureId, exerciseId: e.id, mode: modeOf({ ...e.target, id: e.id }) })), A.entries, S.unit)
+  useStore.setState({ S: migratedFixture({ ...S, engineSchemaVersion: 1 }), A, user: null })
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)

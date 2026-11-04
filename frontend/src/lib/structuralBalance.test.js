@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { computeBalance, classify, ratioFor, resolveCurrent, resolveCurrentReps, targetFor, overrideKey, overrideIdOf, withOverride, loadForReps, loadAtReps } from './structuralBalance.js'
 import { TEMPLATES, EVALUATION_MODES, BALANCE_STATUSES, BORDERLINE_BAND_PCT } from './structuralBalanceTemplates.js'
+import { canonicalProfile, loggedExposure } from './test-fixtures.js'
 
 const NOW = Date.parse('2026-01-15T00:00:00Z')
 
@@ -713,5 +714,26 @@ describe('a role waiting on its anchor says so', () => {
     const incline = role(S, TEMPLATES.poliquin, 'inclineBench')
     expect(incline.needsAnchor).toBe(false)
     expect(incline.status).not.toBe(BALANCE_STATUSES.NO_DATA)
+  })
+})
+
+// A migrated profile's workouts carry exposures and no entries (the validator refuses entries); the
+// screen read `workout.entries` and showed every role as never logged, for every user, after the migration.
+describe('a migrated workout counts', () => {
+  const S = canonicalProfile()   // one logged exposure: bench ('0025'), 5 x 60 kg
+
+  it('resolves a current load from a logged exposure', () => {
+    expect(resolveCurrent(S, ['0025'], 80)).toMatchObject({ exId: '0025' })
+    expect(resolveCurrent(S, ['0025'], 80).estKg).toBeGreaterThan(60)
+  })
+
+  it('resolves a best rep count from a logged exposure', () => {
+    expect(resolveCurrentReps(S, ['0025'])).toMatchObject({ r: 5, exId: '0025' })
+  })
+
+  it('asks for a weigh-in when the only lift logged is an exposure', () => {
+    const rdl = canonicalProfile({ workouts: [{ id: 'w1', d: '2026-01-10', status: 'completed', start: NOW, exposures: [loggedExposure('0085', [{ r: 12, w: 80 }])] }] })
+    expect(computeBalance(rdl, TEMPLATES.atg).find(r => r.roleId === 'romanianDeadlift'))
+      .toMatchObject({ status: BALANCE_STATUSES.NO_DATA, needsBodyweight: true })
   })
 })

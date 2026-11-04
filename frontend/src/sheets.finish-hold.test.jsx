@@ -29,15 +29,15 @@ function tapInTopSheet(text) {
 
 function install(sets) {
   const st = clone(DEF)
-  st.active = {
+  const A = {
     id: 'fin', d: '2026-09-28', start: Date.now() - 20 * 60000, routineId: null, name: 'Core', bw: null, cur: 0,
     entries: [{ id: EXDB[0].id, target: { mode: 'reps', sets: sets.length, reps: 5, weight: 40 }, sets }]
   }
-  useStore.setState({ S: st, user: null })
+  useStore.setState({ S: st, A, user: null })
 }
 
 // Shaped like the row's own callback in views/Workout.jsx: it writes what was held into the set.
-const holdInto = set => vi.fn(elapsed => useStore.getState().update(s => { s.active.entries[0].sets[set].sec = elapsed }))
+const holdInto = set => vi.fn(elapsed => useStore.getState().updateActive(a => { a.entries[0].sets[set].sec = elapsed }))
 
 beforeEach(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true
@@ -62,7 +62,7 @@ describe('finishing while a timed hold runs', () => {
 
     act(() => finishWorkout())
 
-    expect(S().active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
     expect(S().workouts).toHaveLength(1)
     expect(useUI.getState().work).toBeNull()
     expect(() => vi.advanceTimersByTime(60_000)).not.toThrow()
@@ -77,7 +77,7 @@ describe('finishing while a timed hold runs', () => {
     act(() => finishWorkout())
     tapInTopSheet('Finish workout')
 
-    expect(S().active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
     expect(useUI.getState().work).toBeNull()
     expect(() => vi.advanceTimersByTime(60_000)).not.toThrow()
     expect(held).not.toHaveBeenCalled()
@@ -106,7 +106,7 @@ describe('the Finish sheet', () => {
     expect([...host.querySelectorAll('.menu-item .tt')].map(e => e.textContent)).toEqual(['Finish and save', 'Discard workout'])
     expect(host.querySelector('.menu-item.danger').textContent).toContain('Discard workout')
     tapItem(host, 'Finish and save')
-    expect(S().active).toBeNull()
+    expect(useStore.getState().A).toBeNull()
     expect(S().workouts).toHaveLength(1)
   })
 
@@ -119,7 +119,7 @@ describe('the Finish sheet', () => {
     expect(host.textContent).toContain('2 sets still unchecked. Finish the workout now?')
     tapItem(host, 'Discard workout')
     expect(onDiscard).toHaveBeenCalledOnce()
-    expect(S().active).not.toBeNull()
+    expect(useStore.getState().A).not.toBeNull()
   })
 
   it('nothing checked: says so', () => {

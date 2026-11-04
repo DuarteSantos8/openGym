@@ -6,16 +6,18 @@ import { exportBackupZip, readBackupFile } from './backup-media.js'
 import { createMediaStore, memoryBackend } from './media-store.js'
 import { parsePlan, buildPlanBundle } from './plan-share.js'
 import { restSecFor } from './supersetFlow.js'
+import { ruleOccurrence } from './test-fixtures.js'
 
 /* DATA SAFETY for an exercise's own "No timer" (Discord lajawi): one optional `restOff: true` on a
    routine entry and a session target. Nothing existing changes meaning: a 0 or missing restSec
    still follows the default. A profile with it keeps it through loading, merging, backups and plan
    files; an app from before it reads such an exercise as following the default, as it always did. */
 const OLD = () => ({
+  engineSchemaVersion: 2, prescriptions: {}, progression: {}, oneRepMaxes: {}, customEx: [],
   _ts: 1760000000000, unit: 'kg',
   routines: [{ id: 'r1', name: 'Upper', _ts: 7, ex: [
-    { id: '0025', sets: 3, reps: 8, weight: 60, restSec: 150 },
-    { id: '0098', sets: 3, reps: 10, weight: 20 },
+    { ...ruleOccurrence('0025', { routineId: 'r1' }), restSec: 150 },
+    ruleOccurrence('0098', { routineId: 'r1' }),
   ] }],
   week: { 1: ['r1'] }, workouts: [],
 })

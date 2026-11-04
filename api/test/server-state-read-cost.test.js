@@ -5,7 +5,7 @@
    the loop for 850 ms. readStateCached — the stat cache the reminder tick has always used — reads
    the file only when its mtime or size moved.
 
-   The key is (mtimeMs, size), and neither field is as sharp as it looks: mtime granularity is
+   The key is (mtimeMs, size, ino), and neither of the first two is as sharp as it looks: mtime granularity is
    4 ms on ext4 on this kernel (3901 of 3999 back-to-back same-size writes shared one timestamp),
    and a `_rev` going from 7 to 8 keeps the file exactly as long. So a sync and the poll after it
    inside one 4 ms tick are the same key, and the poll serves the revision from before the write —
@@ -154,6 +154,40 @@ test('the poll really is reading through the stat cache', async t => {
     method: 'PUT', headers, body: JSON.stringify({ state: { _ts: 1, workouts: [], routines: [] }, stamped: true })
   }).then(r => r.json());
   assert.equal(await rev(), put.rev, 'a write through the app is on the very next poll');
+});
+
+// The engine gate on the poll asks the file's schema on every request; it reads the same cache, so
+// a poll costs a stat, not a parse (#312 review). Same probe as above: a pinned rewrite the key
+// cannot see — here one that does not even parse, which a gate reading the file would answer 503.
+test('the engine gate on the poll reads through the stat cache too', async t => {
+  const h = await startServer(t);
+  const file = path.join(h.dataDir, 'state-u_cost_1.json');
+  const PINNED = new Date(1700000000000);
+  const writePinned = text => { fs.writeFileSync(file, text); fs.utimesSync(file, PINNED, PINNED); };
+  const v2 = JSON.stringify({ _rev: 7, engineSchemaVersion: 2, prescriptions: {}, progression: {}, oneRepMaxes: {}, workouts: [], routines: [] });
+  const poll = () => fetch(`${h.api}/api/data/rev`, { headers: { ...headers, 'X-OpenGym-Engine-Schema': '2' } }).then(async r => [r.status, (await r.json()).rev]);
+  writePinned(v2);
+  assert.deepEqual(await poll(), [200, 7]);
+  writePinned('{' + 'x'.repeat(v2.length - 1));
+  assert.deepEqual(await poll(), [200, 7], 'nothing the key can see changed, so the gate did not parse the file again');
+});
+
+// A file renamed over the state (a restored backup, an atomic write by any other tool) is a new
+// inode, so the key sees it even when the mtime and the size match the old one.
+test('a file renamed over the state is read again even with the same mtime and size', async t => {
+  const h = await startServer(t);
+  const file = path.join(h.dataDir, 'state-u_cost_1.json');
+  const rev = async () => (await fetch(`${h.api}/api/data/rev`, { headers }).then(r => r.json())).rev;
+  const PINNED = new Date(1700000000000);
+  const replace = n => {
+    fs.writeFileSync(file + '.new', JSON.stringify({ _rev: n, lang: 'en', workouts: [], routines: [] }));
+    fs.utimesSync(file + '.new', PINNED, PINNED);
+    fs.renameSync(file + '.new', file);
+  };
+  replace(7);
+  assert.equal(await rev(), 7);
+  replace(8);
+  assert.equal(await rev(), 8);
 });
 
 // The other two sites want `lang` for a push payload, which nothing outside the push service can

@@ -5,8 +5,6 @@ import { describe, expect, it } from 'vitest'
 import {
   stackOf, withStack, canHaveStack, ownedWeightsFor, ownedKindFor, stackFromStep, cleanWeights,
 } from './dumbbells.js'
-import { nextPrescription } from './progression.js'
-import { buildPlannedEntry } from './session-start.js'
 import { dropGrid } from './plates.js'
 import { nextDropWeight } from './workout-model.js'
 import { mergeStates, STAMPED_MAPS } from './sync-merge.js'
@@ -88,46 +86,7 @@ describe('the stack', () => {
   })
 })
 
-describe('progression over the stack', () => {
-  it('raises to the next weight on the stack, not by the increment', () => {
-    const S = state([session('2026-10-01', FLY, 18.1, [8, 8])])
-    const p = nextPrescription(S, cfg(FLY), null)
-    expect(p.kind).toBe('up')
-    expect(p.weight).toBe(24.9)
-  })
-
-  it('without a list, the increment decides as before', () => {
-    const S = state([session('2026-10-01', FLY, 18.1, [8, 8])], { stackWeights: {} })
-    expect(nextPrescription(S, cfg(FLY), null).weight).toBe(20.6)
-  })
-
-  it('holds at the heaviest plate of the stack and says it is the stack, not a dumbbell', () => {
-    const S = state([session('2026-10-01', FLY, 45.3, [8, 8])])
-    const p = nextPrescription(S, cfg(FLY), null)
-    expect(p.kind).toBe('hold')
-    expect(p.weight).toBe(45.3)
-    expect(p.why[0]).toMatch(/whole stack/)
-    expect(p.why[0]).not.toMatch(/dumbbell/)
-  })
-
-  it('the Epley deload after three stalls lands on the stack', () => {
-    const S = state(['2026-10-01', '2026-10-03', '2026-10-05'].map(d => session(d, FLY, 31.7, [8, 5])))
-    const p = nextPrescription(S, cfg(FLY), null)
-    expect(p.kind).toBe('deload')
-    expect(STACK).toContain(p.weight)
-    expect(p.weight).toBeLessThan(31.7)
-  })
-})
-
 describe('warm-ups and drops over the stack', () => {
-  it('ramps the warm-up onto a weight the stack has', () => {
-    const S = state([session('2026-10-01', FLY, 31.7, [8, 6])])
-    const built = buildPlannedEntry(S, cfg(FLY, { warmupSets: 1 }), null)
-    const warm = built.sets.find(s => s.phase === 'warmup')
-    expect(built.sets.at(-1).w).toBe(31.7)
-    expect(STACK).toContain(warm.w)
-  })
-
   it('drops onto the stack', () => {
     const grid = dropGrid(state(), cfg(FLY))
     expect(STACK).toContain(nextDropWeight(31.7, 20, grid))

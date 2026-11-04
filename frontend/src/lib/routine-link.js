@@ -91,9 +91,16 @@ const inflate = bytes => pipe(new DecompressionStream('deflate-raw'), bytes, MAX
 
 export const cleanFrom = v => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim().slice(0, FROM_MAX) : '')
 
+const withoutLoads = value => {
+  if (!value || typeof value !== 'object') return value
+  if (Array.isArray(value)) return value.map(withoutLoads)
+  const out = Object.fromEntries(Object.entries(value).map(([k, v]) => [k, withoutLoads(v)]))
+  if (value.mode === 'absolute' || value.basis === 'absolute') out.value = 0
+  return out
+}
 const stripWeights = e => {
   const { weight, pyramidWeight, ...rest } = e
-  return rest
+  return { ...rest, ...(e.rule ? { rule: withoutLoads(e.rule) } : {}) }
 }
 
 /**
@@ -110,8 +117,9 @@ export function routineLinkBundle(S, routine, { weights = false, from = '' } = {
   if (!weights) out.routines = out.routines.map(r => ({ ...r, ex: r.ex.map(stripWeights) }))
   const names = {}
   for (const e of out.routines[0].ex) {
-    const ex = EXIDX[e.id]
-    if (ex && !isCustomEx(ex) && ex.n) names[e.id] = ex.n
+    const id = e.exerciseId ?? e.id
+    const ex = EXIDX[id]
+    if (ex && !isCustomEx(ex) && ex.n) names[id] = ex.n
   }
   if (Object.keys(names).length) out.names = names
   const name = cleanFrom(from)

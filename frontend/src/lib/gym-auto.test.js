@@ -26,8 +26,9 @@ const state = () => syncGymInventory({
 }, null, 10)
 // The store as far as these helpers use it.
 const storeOf = S0 => {
-  let S = S0
-  return { getState: () => ({ S, update: fn => { const d = JSON.parse(JSON.stringify(S)); fn(d); S = syncGymInventory(d, S) } }) }
+  const { active, ...profile } = S0
+  let S = profile, A = active || null
+  return { getState: () => ({ S, A, updateActive: fn => { const d = JSON.parse(JSON.stringify(A)); fn(d); A = d }, update: fn => { const d = JSON.parse(JSON.stringify(S)); fn(d); S = syncGymInventory(d, S) } }) }
 }
 const near = p => ({ lat: p.lat + 0.0003, lng: p.lng, accuracy: 15 })   // about 33 m away
 
@@ -90,8 +91,8 @@ describe('switching on arrival', () => {
     S.active = { id: 'a', start: 1, entries: [{ id: CURL, target: { sets: 2, reps: 10, weight: 10 }, sets: [{ w: 10, r: 10 }, { w: 10, r: 10 }] }] }
     const d = deps(S)
     expect(await autoGymHere(d)).toBe(true)
-    expect(d.store.getState().S.active.entries[0].sets.map(s => s.w)).toEqual([8, 8])
-    expect(d.store.getState().S.active.gym).toEqual({ id: 'big', name: 'Big gym' })
+    expect(d.store.getState().A.entries[0].sets.map(s => s.w)).toEqual([8, 8])
+    expect(d.store.getState().A.gym).toEqual({ id: 'big', name: 'Big gym' })
 
     const busy = state()
     busy.active = { id: 'b', start: 1, entries: [{ id: CURL, target: {}, sets: [{ w: 10, r: 10, done: true }, { w: 10, r: 10 }] }] }

@@ -21,8 +21,11 @@ const mocks = vi.hoisted(() => {
   state.stopRest = vi.fn(() => { state.timer = null })
   state.stopWork = vi.fn(() => { state.work = null })
   state.storeSnapshot = () => ({
-    S: state.S, user: null,
+    S: state.S, A: state.A, user: null,
     update: mut => { const next = structuredClone(state.S); mut(next); state.S = next },
+    updateActive: mut => { if (!state.A) return; const next = structuredClone(state.A); mut(next); state.A = next },
+    setActive: session => { state.A = session ? structuredClone(session) : null },
+    clearActive: () => { state.A = null },
   })
   state.uiSnapshot = () => ({
     timer: state.timer, work: state.work,
@@ -91,8 +94,8 @@ async function mount(entries, cur = 0, view = 'list') {
   mocks.S = {
     unit: 'kg', restSec: 90, sound: false, effort: 'none', gifSize: 'full', collapseCompleted: false,
     workouts: [], exWeights: {}, routines: [],
-    active: { id: 'active', name: 'Test', start: Date.now(), cur, entries, workoutView: view },
   }
+  mocks.A = { id: 'active', name: 'Test', start: Date.now(), cur, entries, workoutView: view }
   installDom()
   dom.innerHeight = 659
   // Everything on screen by default; a test overrides geometry where it matters.
@@ -124,7 +127,7 @@ for (const view of ['list', 'compact']) {
       // first member A set 0 — its checkbox is the first on screen
       await press(container.querySelector('[role="checkbox"]'))
       await rerender()
-      expect(mocks.S.active.cur).toBe(1)
+      expect(mocks.A.cur).toBe(1)
       // The list brings the partner's exercise BLOCK (its name first) up under the header, not
       // its set field: you want to see which exercise you are on, then the row.
       const partnerBlock = container.querySelector('.ss-ex[data-exidx="1"]')
@@ -140,11 +143,11 @@ for (const view of ['list', 'compact']) {
       const seen = watchScrolls()
       // A set 0 Left — no advance, no scroll yet
       await press(box(l => /Left/.test(l) && /Set 1/.test(l))); await rerender()
-      expect(mocks.S.active.cur).toBe(0)
+      expect(mocks.A.cur).toBe(0)
       expect(seen).toHaveLength(0)
       // A set 0 Right — set done, advance to partner B, scroll to B's exercise block (its title)
       await press(box(l => /Right/.test(l) && /Set 1/.test(l))); await rerender()
-      expect(mocks.S.active.cur).toBe(1)
+      expect(mocks.A.cur).toBe(1)
       const partnerBlock = container.querySelector('.ss-ex[data-exidx="1"]')
       expect(partnerBlock).toBeTruthy()
       expect(seen).toContain(partnerBlock)
@@ -163,10 +166,10 @@ for (const view of ['list', 'compact']) {
       const queued = []
       mocks.afterScrollRestore.mockImplementation(fn => { queued.push(fn); return () => {} })
       await press(box(l => /Right/.test(l) && /Set 1/.test(l))); await rerender()
-      expect(mocks.S.active.cur).toBe(1)
+      expect(mocks.A.cur).toBe(1)
       expect(queued).toHaveLength(1)
       // Another write lands before the wait is over (the store clones state, re-keying refs).
-      mocks.storeSnapshot().update(s => { s.active.entries[1].sets[0].w = 62.5 }); await rerender()
+      mocks.storeSnapshot().updateActive(a => { a.entries[1].sets[0].w = 62.5 }); await rerender()
       await act(async () => { queued[0]() })
       const partnerBlock = container.querySelector('.ss-ex[data-exidx="1"]')
       expect(seen).toContain(partnerBlock)

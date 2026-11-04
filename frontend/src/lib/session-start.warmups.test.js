@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildPlannedEntry, buildSessionEntries } from './session-start.js'
+import { startMigratedFixture } from './test-fixtures.js'
 import { isWarmupRow, syncSideAggregate } from './workout-model.js'
 
 const BENCH = '0025'
@@ -188,3 +188,11 @@ describe('planned warm-ups carried from last session', () => {
     expect(entry.sets.slice(2)).toEqual(work(entry))
   })
 })
+
+function buildPlannedEntry(S, cfg, routine, { noProg = false } = {}) {
+  return startMigratedFixture(S, { ...(routine || {}), excludeFromProgression: noProg || routine?.excludeFromProgression, ex: [cfg] }).entries[0]
+}
+function buildSessionEntries(S, routine) { return startMigratedFixture(S, routine).entries }
+function buildSessionEntry(S, id, cfg, routine, slot) {
+  return buildPlannedEntry(S, { ...cfg, id }, routine, { noProg: slot?.noProg || routine?.excludeFromProgression })
+}

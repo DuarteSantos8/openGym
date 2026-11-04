@@ -33,11 +33,12 @@ vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: () => {} }) } 
 
 const readFile = name => { const v = h.files.get('DATA/' + name); return v == null ? null : JSON.parse(v) }
 const tick = () => new Promise(r => setTimeout(r, 20))
-const workout = id => ({ id, d: '2026-10-10', start: 1, end: 2, entries: [] })
+const workout = id => ({ id, d: '2026-10-10', start: 1, end: 2, exposures: [] })
 
 let stores = []
 async function freshStore() {
   vi.resetModules()
+  await import('@capacitor/filesystem')   // loaded once up front: two first imports in flight at once can miss the mock
   const { useStore } = await import('./useStore.js')
   stores.push(useStore)
   return useStore
@@ -45,13 +46,17 @@ async function freshStore() {
 // A phone in local mode with a history and a workout running, in localStorage and in the file.
 async function localPhone() {
   const { DEF } = await import('./useStore.js')
-  const S = { ...JSON.parse(JSON.stringify(DEF)), _ts: 5000, workouts: [workout('w1'), workout('w2')],
-    active: { id: 'run', d: '2026-10-14', start: 4000, cur: 0, entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }] }] } }
+  const S = { ...JSON.parse(JSON.stringify(DEF)), _ts: 5000, workouts: [workout('w1'), workout('w2')] }
+  // The running workout is its own copy (the store's A), mirrored to its own file.
+  const A = { id: 'run', d: '2026-10-14', start: 4000, cur: 0, entries: [{ id: '0025', exposureId: 'x0', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: false }, { w: 60, r: 8, done: false }] }],
+    exposures: [{ exposureId: 'x0', exerciseId: '0025', mode: 'reps', performance: { sets: [] } }] }
   h.files.clear()
   localStorage.clear()
   h.files.set('DATA/opengym-remote.json', JSON.stringify({ mode: 'local' }))
   h.files.set('DATA/opengym-state.json', JSON.stringify(S))
+  h.files.set('DATA/gym_active_v1.json', JSON.stringify(A))
   localStorage.setItem('gym_state_v1', JSON.stringify(S))
+  localStorage.setItem('gym_active_v1', JSON.stringify(A))
   localStorage.setItem('gym_guest', '1')
   return S
 }
@@ -72,9 +77,10 @@ describe('a phone with no server', { timeout: 30000 }, () => {
     await localPhone()
     const useStore = await freshStore()
     await useStore.getState().boot()
-    useStore.getState().update(s => { s.active.entries[0].sets[0].done = true })
-    await tick()                                    // far less than the 800 ms of other changes
-    expect(readFile('opengym-state.json').active.entries[0].sets.map(x => x.done)).toEqual([true, false])
+    useStore.getState().updateActive(A => { A.entries[0].sets[0].done = true })
+    await tick()
+                                    // far less than the 800 ms of other changes
+    expect(readFile('gym_active_v1.json').entries[0].sets.map(x => x.done)).toEqual([true, false])
     expect(h.files.has('DATA/opengym-state.next.json')).toBe(false)
   })
 
@@ -82,11 +88,11 @@ describe('a phone with no server', { timeout: 30000 }, () => {
     await localPhone()
     const useStore = await freshStore()
     await useStore.getState().boot()
-    useStore.getState().update(s => { s.workouts.push({ ...s.active, end: 9000 }); s.active = null })
+    useStore.getState().update(s => { s.workouts.push({ ...useStore.getState().A, end: 9000 }) })
+    useStore.getState().clearActive()
     await tick()
-    const file = readFile('opengym-state.json')
-    expect(file.active).toBeNull()
-    expect(file.workouts.map(w => w.id)).toEqual(['w1', 'w2', 'run'])
+    expect(readFile('gym_active_v1.json')).toBeNull()
+    expect(readFile('opengym-state.json').workouts.map(w => w.id)).toEqual(['w1', 'w2', 'run'])
   })
 
   it('storage evicted: the file brings everything back, and the store says ready only then', async () => {
@@ -98,7 +104,7 @@ describe('a phone with no server', { timeout: 30000 }, () => {
     await useStore.getState().boot()
     expect(useStore.getState().ready).toBe(true)
     expect(useStore.getState().S.workouts.map(w => w.id)).toEqual(['w1', 'w2'])
-    expect(useStore.getState().S.active.id).toBe('run')
+    expect(useStore.getState().A.id).toBe('run')
   })
 
   it('saveNow writes the copy to the file without waiting', async () => {

@@ -89,7 +89,7 @@ function serverWith(doc) {
 
 // The account: twelve workouts at rev 5. The phone: local mode, one workout of its own, newer.
 const TWELVE = Array.from({ length: 12 }, (_, i) => workout('s' + i, `2026-09-${String(i + 1).padStart(2, '0')}`))
-const SERVER = { _ts: 1000, _rev: 5, unit: 'kg', workouts: TWELVE, routines: [], bodyweight: [] }
+const SERVER = { engineSchemaVersion: 2, _ts: 1000, _rev: 5, unit: 'kg', workouts: TWELVE, routines: [], bodyweight: [] }   // a v2 server; a v1 answer opens the migration screen instead
 // At collection, not in a hook: the cold transform of the store's imports (the 1 MB exercise
 // table among them) takes seconds, and under a parallel run it went past the hook's timeout.
 const { DEF } = await import('./useStore.js')

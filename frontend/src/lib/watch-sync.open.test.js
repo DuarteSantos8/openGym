@@ -40,7 +40,7 @@ describe('which workouts open the watch app', () => {
   it('not one the watch started itself', () => {
     const start = vi.fn()
     bindWatchAppActions({ start, patchSet: vi.fn() })
-    applyEvents([{ id: 'e1', type: 'start', wid: 'w-9', at: now, routineIds: [] }], () => ({ S: { active: null } }))
+    applyEvents([{ id: 'e1', type: 'start', wid: 'w-9', at: now, routineIds: [] }], () => ({ S: { active: null }, A: null }))
     expect(start).toHaveBeenCalled()
     expect(shouldOpenOnWatch(null, live(), { prefs, now })).toBe(false)
     expect(shouldOpenOnWatch(null, live({ id: 'w-other' }), { prefs, now })).toBe(true)
@@ -49,11 +49,12 @@ describe('which workouts open the watch app', () => {
 
 // A store as small as zustand's: getState, setState, subscribe((s, prev)).
 function store(initial) {
-  let st = initial
+  let st = { ...initial, A: initial.S?.active ?? null }
   const subs = new Set()
   return {
     getState: () => st,
-    setState: patch => { const prev = st; st = { ...st, ...patch }; subs.forEach(fn => fn(st, prev)) },
+    // The running workout is the store's `A`; these tests set it as `S.active`.
+    setState: patch => { const prev = st; st = { ...st, ...patch }; st.A = st.S?.active ?? null; subs.forEach(fn => fn(st, prev)) },
     subscribe: fn => { subs.add(fn); return () => subs.delete(fn) },
   }
 }

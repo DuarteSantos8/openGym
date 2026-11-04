@@ -7,6 +7,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { DEF, useStore } from '../store/useStore.js'
+import { migratedFixture } from '../lib/test-fixtures.js'
+import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
+import { modeOf } from '../lib/history.js'
 import { useUI } from '../store/useUI.js'
 
 vi.mock('../lib/sound.js', () => ({ beep: vi.fn(), vibrate: vi.fn(), alertBuzz: vi.fn(), unlock: vi.fn(), restOver: vi.fn() }))
@@ -39,11 +42,15 @@ function mount(sets, workouts) {
   S.workoutView = 'list'
   S.workouts = workouts
   S.active = { id: 'typo-test', d: '2026-10-09', start: Date.now(), routineId: null, name: 'Typo', bw: null, cur: 0, entries: [entry(sets)], workoutView: 'list' }
-  useStore.setState({ S, user: null })
+  const A = S.active
+  delete S.active
+  A.entries = A.entries.map((e, i) => ({ ...e, exposureId: 'x-' + i }))
+  A.exposures = exposuresWithPerformance(A.entries.map(e => ({ exposureId: e.exposureId, exerciseId: e.id, mode: modeOf({ ...e.target, id: e.id }) })), A.entries, S.unit)
+  useStore.setState({ S: migratedFixture({ ...S, engineSchemaVersion: 1 }), A, user: null })
   return render(<MemoryRouter><Workout /></MemoryRouter>)
 }
 const tick = (el, n = 1) => act(() => el.querySelector(`[aria-label="Set ${n} done"]`).click())
-const setAt = i => useStore.getState().S.active.entries[0].sets[i]
+const setAt = i => useStore.getState().A.entries[0].sets[i]
 const sheet = () => render(useUI.getState().sheets.at(-1).render(() => {}))
 const button = (el, text) => [...el.querySelectorAll('button')].find(b => b.textContent === text)
 

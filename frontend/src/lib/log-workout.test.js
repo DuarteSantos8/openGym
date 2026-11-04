@@ -3,12 +3,17 @@ import { buildLoggedWorkout, appendLoggedWorkout, resolveExercise, findDuplicate
 import { setLabel, workoutVolume, setsDone } from './history.js'
 import { best1RM } from './onerm.js'
 import { mergeStates, stampChange } from './sync-merge.js'
+import { rowsOfPerformance } from './session-ui-adapter.js'
+import { loggedExposure } from './test-fixtures.js'
+
+// A saved exposure's rows as the workout screen reads them.
+const rows = x => rowsOfPerformance(x.performance.sets, x.mode)
 
 // Pinned to an evening, local time, so "today" and "now" mean the same thing on every machine.
 const NOW = new Date('2026-10-20T19:30:00').getTime()
 const TODAY = '2026-10-20'
 const clone = v => JSON.parse(JSON.stringify(v))
-const profile = (over = {}) => ({ unit: 'kg', workouts: [], routines: [], customEx: [], exWeights: {}, deleted: {}, edited: {}, ...over })
+const profile = (over = {}) => ({ engineSchemaVersion: 2, prescriptions: {}, progression: {}, oneRepMaxes: {}, unit: 'kg', workouts: [], routines: [], customEx: [], exWeights: {}, deleted: {}, edited: {}, ...over })
 const curls = (over = {}) => ({
   date: TODAY,
   exercises: [{ exercise: 'dumbbell curl', sets: [{ reps: 12, weight: 12 }, { reps: 12, weight: 12 }, { reps: 10, weight: 12 }] }],
@@ -18,7 +23,7 @@ const build = (S, input, now = NOW) => buildLoggedWorkout(S, input, { now })
 const bench = (d, w, prs = []) => ({
   id: 'w' + d, d, start: new Date(d + 'T18:00:00').getTime(), end: new Date(d + 'T19:00:00').getTime(),
   routineIds: [], routineId: null, name: 'Bench', prs,
-  entries: [{ id: '0025', sets: [{ w, r: 5, done: true }], topW: w, target: null }],
+  exposures: [loggedExposure('0025', [{ r: 5, w }], { exposureId: 'e' + d })],
 })
 
 describe('what the user said becomes the workout Finish would have saved', () => {
@@ -28,12 +33,10 @@ describe('what the user said becomes the workout Finish would have saved', () =>
     const w = r.workout
     expect(w.d).toBe(TODAY)
     expect(w.end).toBe(NOW)
-    expect(w.routineId).toBe(null)
     expect(w.routineIds).toEqual([])
-    expect(w.entries).toHaveLength(1)
-    expect(w.entries[0].id).toBe('0294')
-    expect(w.entries[0].sets).toEqual([{ w: 12, r: 12, done: true }, { w: 12, r: 12, done: true }, { w: 12, r: 10, done: true }])
-    expect(w.entries[0].topW).toBe(12)
+    expect(w.exposures).toHaveLength(1)
+    expect(w.exposures[0].exerciseId).toBe('0294')
+    expect(rows(w.exposures[0])).toEqual([{ w: 12, r: 12, done: true }, { w: 12, r: 12, done: true }, { w: 12, r: 10, done: true }])
     expect(w.vol).toBe(workoutVolume(w))
     expect(w.vol).toBe(12 * 34)
     expect(setsDone(w)).toBe(3)
@@ -43,7 +46,7 @@ describe('what the user said becomes the workout Finish would have saved', () =>
 
   it('a drawing alias id is filed under the exercise it draws, or its history would never find it', () => {
     const r = build(profile(), { date: TODAY, exercises: [{ exercise: '1019', sets: [{ reps: 5, weight: 50 }] }] })
-    expect(r.workout.entries[0].id).toBe('3841')
+    expect(r.workout.exposures[0].exerciseId).toBe('3841')
     expect(best1RM(profile({ workouts: [r.workout] }), '3841')).not.toBe(null)
   })
 
@@ -70,7 +73,7 @@ describe('what the user said becomes the workout Finish would have saved', () =>
     const made = build(profile(), { date: TODAY, exercises: [{ exercise: 'Zottman curl machine x', createCustom: true, sets: [{ reps: 8, weight: 10 }] }] })
     expect(made.customEx).toHaveLength(1)
     expect(made.customEx[0]).toMatchObject({ n: 'Zottman curl machine x', custom: true, bp: 'upper arms' })
-    expect(made.workout.entries[0].id).toBe(made.customEx[0].id)
+    expect(made.workout.exposures[0].exerciseId).toBe(made.customEx[0].id)
     const vague = build(profile(), { date: TODAY, exercises: [{ exercise: 'Frobnicator', createCustom: true, sets: [{ reps: 8 }] }] })
     expect(vague.problems[0].field).toBe('exercises[0].bodyPart')
     const told = build(profile(), { date: TODAY, exercises: [{ exercise: 'Frobnicator', createCustom: true, bodyPart: 'back', sets: [{ reps: 8 }] }] })
@@ -85,41 +88,40 @@ describe('what the user said becomes the workout Finish would have saved', () =>
 
 describe('the numbers', () => {
   it('pounds into a kilo profile and kilos into a pound one, to the tenth the importer keeps', () => {
-    expect(build(profile(), curls({ unit: 'lb', exercises: [{ exercise: '0294', sets: [{ reps: 10, weight: 25 }] }] })).workout.entries[0].sets[0].w).toBe(11.3)
-    expect(build(profile({ unit: 'lb' }), curls({ unit: 'kg', exercises: [{ exercise: '0294', sets: [{ reps: 10, weight: 20 }] }] })).workout.entries[0].sets[0].w).toBe(44.1)
-    expect(build(profile({ unit: 'lb' }), curls({ exercises: [{ exercise: '0294', sets: [{ reps: 10, weight: 25 }] }] })).workout.entries[0].sets[0].w).toBe(25)
+    const w0 = r => rows(r.workout.exposures[0])[0].w
+    expect(w0(build(profile(), curls({ unit: 'lb', exercises: [{ exercise: '0294', sets: [{ reps: 10, weight: 25 }] }] })))).toBe(11.3)
+    expect(w0(build(profile({ unit: 'lb' }), curls({ unit: 'kg', exercises: [{ exercise: '0294', sets: [{ reps: 10, weight: 20 }] }] })))).toBe(44.1)
+    expect(w0(build(profile({ unit: 'lb' }), curls({ exercises: [{ exercise: '0294', sets: [{ reps: 10, weight: 25 }] }] })))).toBe(25)
   })
 
   it('a warm-up is logged as one and stays out of the top weight and the volume', () => {
     const w = build(profile(), { date: TODAY, exercises: [{ exercise: '0025', sets: [{ reps: 5, weight: 120, warmup: true }, { reps: 5, weight: 100 }] }] }).workout
-    expect(w.entries[0].sets[0]).toMatchObject({ phase: 'warmup' })
-    expect(w.entries[0].topW).toBe(100)
+    expect(rows(w.exposures[0])[0]).toMatchObject({ phase: 'warmup' })
     expect(w.vol).toBe(500)
   })
 
   it('a timed hold keeps its mode on the entry, so it reads back as 1:00 and not as 0 reps', () => {
     const w = build(profile(), { date: TODAY, exercises: [{ exercise: '0463', sets: [{ seconds: 60 }] }] }).workout
-    const e = w.entries[0]
-    expect(e.sets[0]).toEqual({ sec: 60, w: 0, done: true })
-    expect(e.target.mode).toBe('time')
-    // the MCP's get_workout reads every set through a config built from the target
-    expect(setLabel(e.id, e.sets[0], { ...e.target, id: e.id })).toBe('1:00')
+    const x = w.exposures[0]
+    expect(x.mode).toBe('time')
+    expect(rows(x)[0]).toMatchObject({ sec: 60, done: true })
+    expect(setLabel(x.exerciseId, rows(x)[0], { mode: 'time', id: x.exerciseId })).toBe('1:00')
   })
 
   it("a dumbbell exercise logged 'each' keeps that meaning, and its volume counts both bells", () => {
     const S = profile({ dbLoad: { '0289': { mode: 'each', _ts: 1 } } })
     const w = build(S, { date: TODAY, exercises: [{ exercise: '0289', sets: [{ reps: 10, weight: 20 }] }] }).workout
-    expect(w.entries[0].target.dbLoad).toBe('each')
+    expect(w.exposures[0].dbLoad).toBe('each')
     expect(w.vol).toBe(400)
     expect(build(profile(), { date: TODAY, exercises: [{ exercise: '0289', sets: [{ reps: 10, weight: 20 }] }] }).workout.vol).toBe(200)
     const total = build(profile({ dbLoad: { '0289': { mode: 'total', _ts: 1 } } }), { date: TODAY, exercises: [{ exercise: '0289', sets: [{ reps: 10, weight: 40 }] }] }).workout
-    expect(total.entries[0].target.dbLoad).toBe('total')
+    expect(total.exposures[0].dbLoad).toBe('total')
     expect(total.vol).toBe(400)
   })
 
   it('failure, RIR and RPE ride on the row; both scales at once, or effort on a hold, are refused', () => {
     const w = build(profile(), { date: TODAY, exercises: [{ exercise: '0025', sets: [{ reps: 5, weight: 100, rir: 2 }, { reps: 4, weight: 100, failure: true, rpe: 10 }] }] }).workout
-    expect(w.entries[0].sets).toEqual([{ w: 100, r: 5, done: true, rir: 2 }, { w: 100, r: 4, done: true, failure: true, rpe: 10 }])
+    expect(rows(w.exposures[0])).toEqual([{ w: 100, r: 5, done: true, rir: 2 }, { w: 100, r: 4, done: true, failure: true, rpe: 10 }])
     expect(build(profile(), { date: TODAY, exercises: [{ exercise: '0025', sets: [{ reps: 5, rir: 2, rpe: 8 }] }] }).problems).toBeDefined()
     expect(build(profile(), { date: TODAY, exercises: [{ exercise: '0463', sets: [{ seconds: 30, rpe: 8 }] }] }).problems).toBeDefined()
     expect(build(profile(), { date: TODAY, exercises: [{ exercise: '0025', sets: [{ reps: 5, rpe: 3 }] }] }).problems).toBeDefined()
@@ -238,7 +240,7 @@ describe('what a device does with it on its next sync', () => {
     phone._ts = stampChange(server0, phone, NOW - 60000)
     const merged = mergeStates(phone, server1)
     expect(merged.routines[0].name).toBe('Push day')
-    expect(merged.workouts.map(w => w.entries[0].id)).toEqual(['0294'])
+    expect(merged.workouts.map(w => w.exposures[0].exerciseId)).toEqual(['0294'])
   })
 })
 
@@ -247,7 +249,7 @@ describe('found in review', () => {
     const input = { date: TODAY, exercises: [{ exercise: '0025', sets: [{ reps: 5, weight: 100 }] }] }
     const kg = buildLoggedWorkout(profile(), input, { now: NOW, unit: 'kg' })
     const nowLb = buildLoggedWorkout(profile({ unit: 'lb' }), input, { now: NOW, unit: 'kg' })
-    expect(nowLb.workout.entries[0].sets[0].w).toBe(220.5)
+    expect(rows(nowLb.workout.exposures[0])[0].w).toBe(220.5)
     expect(nowLb.workout.id).toBe(kg.workout.id)
     expect(build(profile({ unit: 'lb' }), input).workout.id).toBe(kg.workout.id)
   })
@@ -279,8 +281,8 @@ describe('found in review', () => {
   it("a custom exercise's muscles ride on the entry, so a device deleting it unseen leaves the sets their credit", () => {
     const own = { id: 'c1', n: 'Landmine press thing', custom: true, eq: 'custom', bp: 'chest', tg: '', desc: '' }
     const w = build(profile({ customEx: [own] }), { date: TODAY, exercises: [{ exercise: 'c1', sets: [{ reps: 8, weight: 20 }] }] }).workout
-    expect(w.entries[0].muscleSnapshot).toBeTruthy()
-    expect(build(profile(), { date: TODAY, exercises: [{ exercise: '0025', sets: [{ reps: 5 }] }] }).workout.entries[0].muscleSnapshot).toBeUndefined()
+    expect(w.exposures[0].muscleSnapshot).toBeTruthy()
+    expect(build(profile(), { date: TODAY, exercises: [{ exercise: '0025', sets: [{ reps: 5 }] }] }).workout.exposures[0].muscleSnapshot).toBeUndefined()
   })
 
   it('a new custom exercise filed under cardio is refused like built-in cardio', () => {
@@ -299,7 +301,7 @@ describe('found in review, round 2', () => {
   })
 
   it('"just did" after a session logged in the app this past hour is filed after it, as a live finish', () => {
-    const app = { ...bench(TODAY, 100), id: 'w-app', start: new Date(`${TODAY}T18:00:00`).getTime(), end: new Date(`${TODAY}T19:10:00`).getTime(), entries: [{ id: '0025', sets: [{ w: 100, r: 5, done: true }], topW: 100, target: null }] }
+    const app = { ...bench(TODAY, 100), id: 'w-app', start: new Date(`${TODAY}T18:00:00`).getTime(), end: new Date(`${TODAY}T19:10:00`).getTime(), exposures: [loggedExposure('0025', [{ r: 5, w: 100 }])] }
     const S = profile({ workouts: [app], exWeights: { '0294': { w: 10, d: '2026-10-13' } } })
     const built = build(S, curls())
     expect(built.workout.start).toBeGreaterThanOrEqual(app.end)
@@ -331,10 +333,10 @@ describe('found in review, round 2', () => {
   it('the meaning fixed for a request wins over a default changed since', () => {
     const S = profile({ dbLoad: { '0289': { mode: 'total', _ts: 2 } } })
     const w = buildLoggedWorkout(S, { date: TODAY, exercises: [{ exercise: '0289', sets: [{ reps: 10, weight: 20 }] }] }, { now: NOW, meanings: { '0289': 'each' } }).workout
-    expect(w.entries[0].target.dbLoad).toBe('each')
+    expect(w.exposures[0].dbLoad).toBe('each')
     expect(w.vol).toBe(400)
     const asIs = buildLoggedWorkout(S, { date: TODAY, exercises: [{ exercise: '0289', sets: [{ reps: 10, weight: 20 }] }] }, { now: NOW, meanings: { '0289': 'as' } }).workout
-    expect(asIs.entries[0].target.dbLoad).toBeUndefined()
+    expect(asIs.exposures[0].dbLoad).toBeUndefined()
   })
 })
 

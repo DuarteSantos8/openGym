@@ -10,6 +10,8 @@
    profile, so it only ever travels over https — plain http to this machine aside, the exception
    passkeys make too — and it is never put into a result or an error message. */
 
+import { unpackProfile } from '../../api/migration/profile-pack.js'
+
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
 // What a session token is made of (api/server.js makeSession: `uid:exp:ver` and a base64url MAC).
 // Checked before it goes into a header, because the header check's own error quotes the value.
@@ -58,7 +60,7 @@ export async function apiFetch(cfg, path, { method = 'GET', body, timeoutMs = TI
   try {
     res = await fetchImpl(cfg.base + path, {
       method,
-      headers: { authorization: 'Bearer ' + cfg.token, ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      headers: { authorization: 'Bearer ' + cfg.token, 'x-opengym-engine-schema': '2', ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(timeoutMs),
       // Never followed: a redirect to http:// or to another host would replay the profile (or,
@@ -75,6 +77,7 @@ export async function apiFetch(cfg, path, { method = 'GET', body, timeoutMs = TI
   }
   let data = null
   try { data = await res.json() } catch { /* an HTML error page from a proxy: the status says enough */ }
+  if (data?.state) data.state = unpackProfile(data.state)
   if (res.ok || res.status === 409) return { status: res.status, body: data }
   if (res.status === 401) throw fail('EAUTH', 'the openGym server did not accept OPENGYM_TOKEN: it expired or was signed out everywhere. Pair again (node mcp/scripts/pair.mjs) and update the config.')
   if (res.status === 413) throw fail('ETOOBIG', 'the profile is larger than the server accepts in one write (MAX_BODY); nothing was saved')
