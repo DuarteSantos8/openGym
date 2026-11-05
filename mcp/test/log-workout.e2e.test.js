@@ -37,12 +37,12 @@ const V1 = {
   _rev: 5, _wid: 'w-seed', _ts: 1000,
 }
 
-// The server only serves the engine schema to the MCP (X-OpenGym-Engine-Schema: 2): the same
-// profile as a migrated device holds it.
+// The server only serves the engine schema and contract to the MCP (X-OpenGym-Engine-Schema: 2 and
+// X-OpenGym-Engine-Contract: 1, api-client.js): the same profile as a migrated device holds it.
 const DOC = { ...migrateProfileV1ToV2(V1, LIB_BY_ID).profile, edited: V1.edited, deleted: {}, _rev: 5, _wid: 'w-seed', _ts: 1000 }
 
 let child, dataDir, base, log = ''
-const get = async p => (await fetch(base + p, { headers: { authorization: 'Bearer ' + TOKEN, 'x-opengym-engine-schema': '2' } })).json()
+const get = async p => (await fetch(base + p, { headers: { authorization: 'Bearer ' + TOKEN, 'x-opengym-engine-schema': '2', 'x-opengym-engine-contract': '1' } })).json()
 // The file keeps the packed form (api/migration/profile-pack.js); a device reads it unpacked.
 const stored = () => unpackProfile(JSON.parse(fs.readFileSync(path.join(dataDir, `state-${UID}.json`), 'utf8')))
 
@@ -144,7 +144,7 @@ describe.skipIf(!HAVE_API)('log_workout against the real api', () => {
       const cur = await get('/api/data')
       const next = { ...cur.state, restSec: 75 }
       const res = await fetch(base + '/api/data', {
-        method: 'PUT', headers: { authorization: 'Bearer ' + TOKEN, 'x-opengym-engine-schema': '2', 'content-type': 'application/json' },
+        method: 'PUT', headers: { authorization: 'Bearer ' + TOKEN, 'x-opengym-engine-schema': '2', 'x-opengym-engine-contract': '1', 'content-type': 'application/json' },
         body: JSON.stringify({ state: next, baseRev: cur.rev, baseWid: cur.state._wid }),
       })
       expect(res.status).toBe(200)

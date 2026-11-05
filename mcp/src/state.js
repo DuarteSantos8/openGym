@@ -5,6 +5,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { applyExerciseMerges } from '../../frontend/src/lib/exercise-merge.js'
 import { unpackProfile } from '../../api/migration/profile-pack.js'
+import { ENGINE_CONTRACT, contractOf } from '../../api/migration/profile-version.js'
 
 const DATA_DIR = process.env.OPENGYM_DATA || path.join(process.cwd(), 'data')
 // Whether a data directory was asked for, as opposed to the ./data guess.
@@ -15,8 +16,12 @@ const DATA_SET = !!process.env.OPENGYM_DATA
 // (or one whose migration never ran — this reads straight off disk, never through the API's
 // own gate) has neither shape, so every tool must refuse it explicitly rather than iterate
 // fields that silently don't exist and report an empty profile.
+// The same holds for the engine contract inside schema 2 (programmes as engine definitions,
+// api/migration/profile-version.js): a profile no device has upgraded yet still holds programmes in
+// the older shape, and one from a newer build holds records this one cannot read. Both are refused
+// with the upgrade message rather than read in part.
 export const MIN_ENGINE_SCHEMA = 2
-export const engineUnsupported = S => (S.engineSchemaVersion || 1) < MIN_ENGINE_SCHEMA
+export const engineUnsupported = S => (S.engineSchemaVersion || 1) < MIN_ENGINE_SCHEMA || contractOf(S) !== ENGINE_CONTRACT
 
 // null = no state file (brand-new account); undefined = not yet loaded.
 let _state = undefined

@@ -938,6 +938,25 @@ The full field-by-field description of both data models, the conversion of histo
 workout in progress, and the cases that need care before upgrading is in
 [MIGRATION_TO_ENGINE_NOTE.md](MIGRATION_TO_ENGINE_NOTE.md).
 
+### Programmes on the engine (engine contract 1)
+
+A later update moves programmes onto the training engine. The app upgrades each profile on its
+own the first time it opens one, keeping its untouched copy on the device first, and marks it with
+`engineContractRevision: 1`. The first time a device saves such a profile to the server, the server
+keeps the file it replaces once, as `data/state-<uid>.pre-contract-1.json`; nothing overwrites that
+copy, and deleting the account deletes it with the rest.
+
+From then on the server refuses that profile to an app from before the update: its sync stops
+with "upgrade the app" (409 `upgrade-required`), and nothing it holds is written over the newer
+data. Update every device. The MCP server refuses the profile in the same way until it runs the
+same version.
+
+To go back to a version from before this update for one profile, stop the API, copy
+`data/state-<uid>.pre-contract-1.json` over `data/state-<uid>.json`, and start the older version.
+Workouts logged since the upgrade are not in that copy: export a backup from the app first if
+you want to keep them. Each device also keeps its own pre-upgrade copy (`gym_state_v1.pre-contract-1`
+in the browser's `localStorage`, `opengym-stash.json.pre-contract-1` next to the phone app's data file).
+
 ## Passkeys fail even though `RP_ID` looks right
 
 The most common support question, and the values are usually *nearly* correct. Work through

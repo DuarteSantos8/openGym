@@ -44,7 +44,7 @@ import { integrationRoutes } from './integrations/routes.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalProfile } from './migration/profile-migration.js';
-import { ENGINE_CONTRACT_HEADER, ENGINE_SCHEMA_HEADER } from './migration/profile-version.js';
+import { ENGINE_CONTRACT, ENGINE_CONTRACT_HEADER, ENGINE_SCHEMA_HEADER, contractOf } from './migration/profile-version.js';
 import { MAX_SYNC_BODY, assertSyncSize } from './migration/profile-size.js';
 import { packProfile, unpackProfile } from './migration/profile-pack.js';
 import { LIB_BY_ID } from './coach/core/library.js';
@@ -1354,8 +1354,8 @@ function removeAccount(u) {
   // The training history and any Coach credential of theirs, both outside db.json.
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
   try { fs.unlinkSync(watchFile(u.id)); } catch { /* never had a watch */ }
-  // And the engine migration's v1 backups (state-<uid>.pre-engine-v1[.r<rev>].json); an id has no dot.
-  const backups = path.basename(stateFile(u.id), '.json') + '.pre-engine-v1';
+  // And the engine upgrades' backups (state-<uid>.pre-engine-v1[.r<rev>].json, state-<uid>.pre-contract-1.json); an id has no dot.
+  const backups = path.basename(stateFile(u.id), '.json') + '.pre-';
   let kept = [];
   try { kept = fs.readdirSync(DATA).filter(f => f.startsWith(backups) && f.endsWith('.json')); } catch { /* none kept */ }
   for (const f of kept) try { fs.unlinkSync(path.join(DATA, f)); } catch (e) { console.error('could not remove', f, e.message); }
@@ -2095,7 +2095,7 @@ const MIN_ENGINE_SCHEMA = 2;
 function readStateSource(uid) {
   let text;
   try { text = fs.readFileSync(stateFile(uid), 'utf8'); } catch { return { state: null }; }
-  const failed = e => (e.message === 'unsupported-schema' ? 'unsupported-schema' : 'profile-unreadable');
+  const failed = e => (['unsupported-schema', 'unsupported-contract'].includes(e.message) ? e.message : 'profile-unreadable');
   let state;
   try { state = unpackProfile(JSON.parse(text)); } catch (e) { return { error: failed(e) }; }
   // A document with no status (a v1 list that is not a list) is still what readStateCached hands
@@ -2108,15 +2108,24 @@ function readStateSource(uid) {
 // while an engine-aware client is sent to POST /api/data/migrate-engine-v2 — it must never read v1
 // as v2, nor replace it with a v2 document that skipped the conversion. This stays confined to the
 // /api/data routes; reminder, admin and Coach readers deliberately keep their own access.
-function engineGate(req, res, uid) {
+// The same holds one level down for the engine contract (spec 16): a profile marked with
+// engineContractRevision is closed to a client that announces a lower X-OpenGym-Engine-Contract,
+// and a PUT body (`state`, checked once the body is read) cannot drop or lower the stored marker.
+function engineGate(req, res, uid, state) {
   const source = stateCacheEntry(uid)?.source || { state: null };
   // A file that does not parse is a fault of the server's, not a conflict to merge: 503, and nothing is replaced.
   if (source.error === 'profile-unreadable') { console.error('state file unreadable for', uid); json(res, 503, { error: 'state unreadable' }); return true; }
   if (source.error) { json(res, 409, { error: source.error }); return true; }
   if (!source.state) return false;   // no profile yet: whoever writes first creates it
   const aware = Number(req.headers[ENGINE_SCHEMA_HEADER.toLowerCase()]) >= MIN_ENGINE_SCHEMA;
-  if (source.status.required ? !aware : aware) return false;
-  json(res, 409, source.status.required ? { error: 'migration-required' } : { error: 'upgrade-required', minEngineSchema: MIN_ENGINE_SCHEMA });
+  if (source.status.required ? aware : !aware) {
+    json(res, 409, source.status.required ? { error: 'migration-required' } : { error: 'upgrade-required', minEngineSchema: MIN_ENGINE_SCHEMA });
+    return true;
+  }
+  const marked = source.status.contract;
+  const client = Number(req.headers[ENGINE_CONTRACT_HEADER.toLowerCase()]) || 0;
+  if (marked <= client && !(state && typeof state === 'object' && contractOf(state) < marked)) return false;
+  json(res, 409, { error: 'upgrade-required', minEngineContract: marked });
   return true;
 }
 
@@ -2154,6 +2163,9 @@ const routes = {
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
       // Public: the sign-in screen is the first thing that reads it.
       ...(DEFAULT_LANG ? { default_lang: DEFAULT_LANG } : {}),
+      // Public: the engine contract this server reads and gates (engineGate). An app holding a
+      // marked profile pushes only to a server that says it has it.
+      engineContract: ENGINE_CONTRACT,
       // Public like the two flags above: the caps are not a secret, and the absence of the
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
@@ -2639,7 +2651,9 @@ const routes = {
     if (!user) return json(res, 401, { error: 'not signed in' });
     if (engineGate(req, res, user.id)) return;
     const body = await readBody(req);
-    if (engineGate(req, res, user.id)) return;
+    // Again on what is on disk now (another device may have marked it while the body streamed),
+    // and on the marker the body carries.
+    if (engineGate(req, res, user.id, body.state)) return;
     if (!body.state || typeof body.state !== 'object') return json(res, 400, { error: 'state required' });
     // The wire form is compact; everything below works on the canonical profile.
     try { body.state = unpackProfile(body.state); } catch { return json(res, 400, { error: 'invalid state' }); }
@@ -2724,6 +2738,13 @@ const routes = {
     let text;
     try { text = JSON.stringify(packProfile(body.state)); }
     catch (e) { if (e instanceof RangeError) return json(res, 400, { error: 'invalid state' }); throw e; }
+    // The first write that marks an unmarked profile keeps the file it replaces, once: the way back
+    // to a build from before engine contract 1 (docs/SELF_HOSTING.md). A failed copy fails the write.
+    // ponytail: never replaced, so unmarked writes after a crash between these two renames are not in it.
+    const contractBackup = stateFile(user.id).replace(/\.json$/, '.pre-contract-1.json');
+    if (cur && contractOf(cur) === 0 && contractOf(body.state) > 0 && !fs.existsSync(contractBackup)) {
+      atomicWrite(contractBackup, fs.readFileSync(stateFile(user.id), 'utf8'));
+    }
     atomicWrite(stateFile(user.id), text);
     // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
     // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a

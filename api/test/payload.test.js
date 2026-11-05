@@ -428,3 +428,31 @@ test('the app\'s active equipment profile stands in when the Coach was told no e
   S.coach.profile.equipment = ['barbell'];
   assert.deepEqual(payload.build(S, { handle: handleFor('u1'), kind: 'create' }).coachProfile.equipment, ['barbell']);
 });
+
+/* Programmes on engine contract 1 (spec 13): each exercise's stages with who owns their numbers,
+   the advance/repeat proposal, and where the running one stands, replayed from the run. */
+test('Coach payload summarises stages, choices and positions within the bounds', async () => {
+  const { programmeProfile, PROGRAMME_TODAY } = await import('./helpers.mjs');
+  const S = await programmeProfile();
+  S.programmes.pg.tracks[0].policy = { onFailure: 'repeat', onSkipped: 'advance' };
+  const p = payload.build(S, { handle: handleFor('u1'), kind: 'review', now: PROGRAMME_TODAY });
+  assert.deepEqual(p.plan.programmes, [{
+    id: 'pg', name: 'Block', rev: 1, mode: 'weeks', duration: { n: 2, unit: 'weeks' }, end: 'stop',
+    tracks: [
+      { exId: '0025', routineId: 'r1', policy: { onFailure: 'repeat', onSkipped: 'advance' }, stages: [
+        { kind: 'work', own: 'set', sets: 3, reps: 5, load: { pct: 70 }, rest: 180, effort: { mode: 'advisory', rpe: 7 } },
+        { kind: 'recovery', own: 'inherit' }
+      ] },
+      { exId: '0043', routineId: 'r1', stages: [{ kind: 'work', own: 'inherit', effort: { mode: 'advisory', rpe: 7 } }, { kind: 'recovery', own: 'inherit' }] }
+    ],
+    // Calendar week 1 of the converted run, bench on its training week 2 (the legacy week carried over).
+    running: { status: 'running', period: 1, tracks: [{ exId: '0025', stage: 2, attempt: 1, state: 'active' }, { exId: '0043', stage: 2, attempt: 1, state: 'active' }] }
+  }]);
+  // A programme still in the shape of a build from before the contract is not summarised at all,
+  // and a run this build cannot replay leaves `running` out rather than guessing.
+  const legacy = { ...S, programmes: { ...S.programmes, old: { id: 'old', name: 'Old', weeks: [{}] } } };
+  assert.deepEqual(payload.build(legacy, { handle: handleFor('u1'), kind: 'review', now: PROGRAMME_TODAY }).plan.programmes.map(x => x.id), ['pg']);
+  const broken = structuredClone(S);
+  broken.programmeRuns[broken.programme.runId].def = { schedule: null };
+  assert.equal(payload.build(broken, { handle: handleFor('u1'), kind: 'review', now: PROGRAMME_TODAY }).plan.programmes[0].running, undefined);
+});

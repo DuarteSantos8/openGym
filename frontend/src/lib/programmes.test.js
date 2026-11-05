@@ -16,6 +16,8 @@ import { queueOf } from './queue.js'
 import { todayISO } from './format.js'
 import { planPhase, referenceProposals } from './prescription/index.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
+import { applyChangeSet, markStale, revertLast } from './coach.js'
+import { buildCompletedSession } from './finish-session.js'
 
 // A fixed clock for the whole file, local noon on a Wednesday: every date here is a calendar date
 // in the device's own zone. Only Date is faked, so nothing waits on timers.
@@ -434,5 +436,98 @@ describe('week boundaries across the clock changes', () => {
   it('a start on the week\'s last day still counts that week as week 1', () => {
     expect(['2026-10-25', '2026-10-26'].map(weekOf('2026-10-25'))).toEqual([1, 2])
     expect(['2027-03-28', '2027-03-29'].map(weekOf('2027-03-28'))).toEqual([1, 2])
+  })
+})
+
+/* ------------------------------ the Coach's programme change ------------------------------ */
+// What validate.js hands the app for a `programme` change: the legacy week shape plus the leaf
+// edits (sets, reps, sec, weight in kg, rest) and an advance/repeat choice per exercise.
+describe('a Coach programme change', () => {
+  const review = changes => ({ id: 'r1', kind: 'review', summary: 's', changes: changes.map((c, i) => ({ id: 'c' + i, why: 'w', status: 'proposed', ...c })) })
+  const change = (after, rev = 1) => ({ type: 'programme', target: { programmeId: 'P' }, before: { name: 'Strength block', weeks: 3, rev }, after })
+  const REPEAT = { onFailure: 'repeat', onSkipped: 'advance' }
+  const targetOf = (s, oid, k) => programmeById(s, 'P').tracks.find(t => t.slots[0].oid === oid).stages[k].targets[oid]
+
+  it('a Coach programme change applies through the converter on a clone; a stale or invalid batch changes nothing', () => {
+    const s = state()
+    withBlock(s)
+    s.programmes.P.tracks.find(t => t.slots[0].oid === SQUAT_A).policy = ADVANCE   // a choice the Coach says nothing about
+    const after = { name: 'Strength block', weeks: [
+      { rpe: 7, t: { [BENCH]: { pct: 75, sets: 5, reps: 3, rest: 150, policy: REPEAT } } },
+      { t: { [`B:${SQUAT}`]: { weight: 100, sets: 4, reps: 6 } } },
+      { deload: true },
+    ] }
+    const sent = clone(after)
+    const p = markStale(review([change(after)]), s)
+    expect(p.changes[0].status).toBe('proposed')
+    applyChangeSet(s, p, ['c0'])
+    expect(after).toEqual(sent)   // converted on a copy: the proposal is what it was
+    const def = programmeById(s, 'P')
+    expect(def.rev).toBe(2)
+    expect(targetOf(s, BENCH_A, 0)).toMatchObject({ own: 'set', effort: { mode: 'advisory', rpe: 7 }, phase: { parameters: {
+      sets: { min: 5, max: 5 }, reps: { min: 3, max: 3 }, load: { mode: 'percent_1rm', percent: 75 }, restSeconds: 150 } } })
+    expect(targetOf(s, SQUAT_B, 1)).toMatchObject({ own: 'set', phase: { parameters: { sets: { min: 4, max: 4 }, reps: { min: 6, max: 6 }, load: { mode: 'absolute', value: 100, unit: 'kg' } } } })
+    expect(targetOf(s, SQUAT_A, 1)).toMatchObject({ own: 'inherit' })   // a routine's own entry does not reach the other routine
+    expect(def.tracks.map(t => t.policy)).toEqual([REPEAT, ADVANCE, undefined])
+    expect(def.tracks[0].stages[2].kind).toBe('recovery')
+    expect(validateCanonicalProfile(s).ok).toBe(true)
+
+    // The store hands applyChangeSet a draft and keeps it only when it returns: each of these throws.
+    const refused = (changes, ids = changes.map((_, i) => 'c' + i)) => {
+      const draft = clone(s)
+      expect(() => applyChangeSet(draft, review(changes), ids)).toThrow()
+    }
+    // Stale: the programme moved on since the Coach read it (rev 1), here by an edit of the user's.
+    expect(markStale(review([change(after)]), s).changes[0].status).toBe('stale')
+    refused([change(after)])
+    // Invalid: a hold time on a lift done for reps, a weight on a %1RM week, sets with no load on a
+    // lift, two different choices for one exercise. Never half applied, never dropped silently.
+    for (const t of [{ [BENCH]: { sec: 30 } }, { [BENCH]: { pct: 70, weight: 80 } }, { [BENCH]: { sets: 4 } }]) refused([change({ weeks: [{ t }] }, 2)])
+    refused([change({ weeks: [{ t: { [BENCH]: { pct: 70, policy: REPEAT } } }, { t: { [BENCH]: { pct: 75, policy: ADVANCE } } }] }, 2)])
+    // A batch is one change: a good `sets` change goes down with a bad programme beside it.
+    refused([{ type: 'sets', target: { routineId: 'A', exId: BENCH }, before: 3, after: 4 }, change({ weeks: [{ t: { [BENCH]: { sec: 30 } } }] }, 2)])
+    expect(programmeById(s, 'P').rev).toBe(2)
+  })
+
+  it('a Coach change to the running programme is an amend for future weeks; Undo refuses once the programme was edited since', () => {
+    const s = state({}, [logged('2026-01-05', BENCH, 100, 5, 'A')])   // Epley: 116.7
+    withBlock(s)
+    start(s, '2026-10-19', 'P', { firstWeek: [0, 1] })
+    const benchOn = (when, d) => {
+      at(...when)
+      const routine = s.routines.find(r => r.id === 'A')
+      const exposures = buildSessionExposures(s, routine, { now: Date.now(), date: d, newId: x => x + d })
+      const A = { id: 'w' + d, d, start: Date.now(), routineIds: ['A'], exposures, entries: entriesForExposures(exposures, s.prescriptions) }
+      A.entries.forEach(e => e.sets.forEach(row => { if (!isWarmupRow(row)) row.done = true }))
+      const out = buildCompletedSession(A, s, { end: A.start + 3600000, newId: x => x, unit: 'kg' })
+      s.workouts = [...s.workouts, out.session]
+      return s.prescriptions[exposures[0].prescriptionId].rows.map(r => r.load.value)   // what the week prescribes
+    }
+    expect(benchOn([2026, 9, 19, 10, 0], '2026-10-19')).toEqual([87.5, 87.5, 87.5])   // 75 % of 116.7
+    at(2026, 9, 20, 12, 0)
+    const rev = programmeById(s, 'P').rev
+    const weeks = [{ rpe: 7, t: { [BENCH]: { pct: 85 } } }, { rpe: 8, t: { [BENCH]: { pct: 90 } } }, { deload: true }]
+    applyChangeSet(s, markStale(review([change({ name: 'Strength block', weeks }, rev)]), s), ['c0'])
+    const amends = () => Object.values(s.programmeEvents).filter(e => e.type === 'amend')
+    expect(amends()).toHaveLength(1)
+    expect(amends()[0].def.rev).toBe(rev + 1)
+    expect(s.programme.runId).toBe(runOf(s).id)
+    // This week has begun: Thursday keeps its 75 %. The next week takes the Coach's 90 %.
+    expect(benchOn([2026, 9, 22, 10, 0], '2026-10-22')).toEqual([87.5, 87.5, 87.5])
+    expect(benchOn([2026, 9, 26, 10, 0], '2026-10-26')).toEqual([105, 105, 105])
+
+    // Edited since (the third week made an RPE week): Undo would overwrite that edit, so it does nothing.
+    const edited = clone(s)
+    saveProgramme(edited, setLegacyWeek(programmeById(edited, 'P'), 2, { rpe: 6 }, edited))
+    const before = clone(edited)
+    expect(revertLast(edited)).toBe(false)
+    expect(edited).toEqual(before)
+    // Not edited since: Undo puts the weeks back, through an amend of its own, for the weeks to come.
+    expect(revertLast(s)).toBe(true)
+    expect(legacyWeeksOf(programmeById(s, 'P')).map(w => w.t?.[BENCH]?.pct)).toEqual([75, 80, undefined])
+    expect(programmeById(s, 'P').rev).toBe(rev + 2)
+    expect(amends()).toHaveLength(2)
+    expect(legacyWeeksOf(amends()[1].def)[1].t[BENCH].pct).toBe(80)
+    expect(validateCanonicalProfile(s).ok).toBe(true)
   })
 })

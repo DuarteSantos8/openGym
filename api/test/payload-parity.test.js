@@ -119,3 +119,20 @@ test('the canonical triple plan keeps its policy and set range in the Coach payl
   assert.equal(p.plan.routines[0].ex[0].prog, 'triple');
   assert.equal(p.plan.routines[0].ex[0].setsMax, 5);
 });
+
+/* Where a running programme stands is the app's own reading (frontend lib/programmes.js
+   programmeView, the screen and the session start), not a second one: both replay the same run. */
+test('the Coach reads a running programme where the app reads it', async () => {
+  const { programmeProfile, PROGRAMME_TODAY } = await import('./helpers.mjs');
+  const { programmeView } = await import('../../frontend/src/lib/programmes.js');
+  const S = await programmeProfile();
+  for (const now of [PROGRAMME_TODAY, PROGRAMME_TODAY + 7 * 86400000, PROGRAMME_TODAY + 21 * 86400000]) {
+    const view = programmeView(S, new Date(now).toISOString().slice(0, 10));
+    const running = payload.build(S, { handle: handleFor('u_parity'), kind: 'review', now }).plan.programmes[0].running;
+    const def = S.programmes.pg;
+    assert.deepEqual(running, {
+      status: view.status, period: view.period.index,
+      tracks: def.tracks.map(t => ({ exId: t.exerciseId, stage: t.stages.findIndex(s => s.id === view.tracks[t.id].stage) + 1, attempt: view.tracks[t.id].attempt, state: view.tracks[t.id].state }))
+    });
+  }
+});

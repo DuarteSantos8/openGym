@@ -13,7 +13,8 @@
 import { glyphStr } from './glyphs.js';
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, swapSlice, isStretch, MAX_LIBRARY, ownsNoDumbbells } from './library.js';
 import { muscleLoad, gymOf, challengesOf } from './context.js';
-import { legacyEntriesOf } from '../../engine/index.js';
+import { deriveRun, legacyEntriesOf } from '../../engine/index.js';
+import { dateIn } from '../../engine/programme-run.js';
 import { coachRoutinesOf } from './plan-view.js';
 import { POLICIES } from './vocabulary.js';
 
@@ -248,55 +249,102 @@ export function warmupRowsOut(rows) {
   }).filter(Boolean);
 }
 
-/* ---------- programmes (frontend/src/lib/programmes.js) ----------
-   A block of 1 to 16 weeks over the routines, each week with its own %1RM or RPE per exercise
-   and maybe a deload. The Coach sees them so it can revise one, or write a new one. Bounded:
-   the six most recent, and a week's targets cut at MAX_PROGRAMME_TARGETS. */
+/* ---------- programmes (frontend/src/lib/programmes.js, engine contract 1) ----------
+   A programme runs the routines for 1 to 16 weeks (or rounds of a loop) as one track per
+   exercise with a stage per week. The Coach sees each exercise's stages and who owns their
+   numbers (`own: 'set'` fixes them that week, `inherit` leaves them to the exercise's own
+   progression), its advance/repeat proposal, and where the running one stands, replayed from the
+   run exactly as the app replays it (deriveRun). Only definitions: a programme still in the shape
+   of a build from before the contract is left out. Bounded: the six most recent, 24 exercises and
+   16 stages each, and MAX_PROGRAMME_STAGES in all; what did not fit is counted in `more`. */
 export const MAX_PROGRAMMES = 6;
 export const MAX_PROGRAMME_TARGETS = 24;
+export const MAX_PROGRAMME_STAGES = 768;
+const MAX_WEEKS_OF_PROGRAMME = 16;
 const half = v => Math.round(v * 2) / 2;
-function programmeWeekOut(w) {
-  const out = {};
-  if (!w || typeof w !== 'object') return out;
-  if (w.deload === true) out.deload = true;
-  const rpe = Number(w.rpe);
-  if (rpe >= 6 && rpe <= 10) out.rpe = half(rpe);
-  const targets = [];
-  if (w.t && typeof w.t === 'object' && !Array.isArray(w.t)) {
-    for (const [k, v] of Object.entries(w.t).slice(0, MAX_PROGRAMME_TARGETS)) {
-      if (!v || typeof v !== 'object' || typeof k !== 'string') continue;
-      const at = k.indexOf(':');
-      const exId = ident(at < 0 ? k : k.slice(at + 1));
-      const routineId = at < 0 ? null : ident(k.slice(0, at));
-      const pct = Number(v.pct), r = Number(v.rpe);
-      const t = { exId, ...(routineId ? { routineId } : {}), ...(pct >= 30 && pct <= 110 ? { pct: half(pct) } : {}), ...(r >= 6 && r <= 10 ? { rpe: half(r) } : {}) };
-      if (t.pct != null || t.rpe != null) targets.push(t);
-    }
+const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v);
+const fin = v => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+const whole = (v, lo, hi) => (Number.isInteger(v) && v >= lo && v <= hi ? v : null);
+// A range as one number, or [min, max] when it is one.
+const span = (r, lo, hi) => {
+  const a = whole(r?.min, lo, hi), b = whole(r?.max, lo, hi);
+  return a == null ? null : b == null || b === a ? a : [a, b];
+};
+const STAGE_KINDS = ['work', 'recovery', 'rest'];
+const ADVANCE_REPEAT = ['advance', 'repeat'];
+function stageOut(st, oid) {
+  const x = isMap(st?.targets) && Object.hasOwn(st.targets, oid) && isMap(st.targets[oid]) ? st.targets[oid] : {};
+  const out = { kind: STAGE_KINDS.includes(st?.kind) ? st.kind : 'work', own: x.own === 'set' ? 'set' : 'inherit' };
+  const pr = out.own === 'set' && isMap(x.phase?.parameters) ? x.phase.parameters : null;
+  if (pr) {
+    const sets = span(pr.sets, 1, 100), reps = span(pr.reps, 0, 1000), sec = span(pr.durationSeconds, 1, 86400);
+    if (sets != null) out.sets = sets;
+    if (sec != null) out.sec = sec;
+    else if (reps != null) out.reps = reps;
+    const l = pr.load;
+    if (l?.mode === 'percent_1rm' && fin(l.percent) != null) out.load = { pct: half(l.percent) };
+    else if (l?.mode === 'absolute' && fin(l.value) != null) out.load = { weight: l.value, unit: l.unit === 'lb' ? 'lb' : 'kg' };
+    const rest = whole(pr.restSeconds, 0, 3600);
+    if (rest != null) out.rest = rest;
   }
-  if (targets.length) out.targets = targets;
+  const rpe = fin(x.effort?.rpe);
+  if (rpe != null && rpe >= 6 && rpe <= 10) out.effort = { mode: x.effort.mode === 'operational' ? 'operational' : 'advisory', rpe: half(rpe) };
   return out;
 }
+// The running one, as the app reads it (lib/programmes.js programmeView), on the job's clock in
+// the run's own zone. A run this build cannot replay is left out rather than guessed.
+function runningOut(S, def, tracks, now) {
+  const runs = isMap(S.programmeRuns) ? S.programmeRuns : {};
+  const id = S.programme?.runId;
+  const run = typeof id === 'string' && Object.hasOwn(runs, id) && isMap(runs[id]) ? runs[id] : null;
+  if (!run || run.programmeId !== def.id) return null;
+  let view;
+  try {
+    view = deriveRun({ run, events: isMap(S.programmeEvents) ? S.programmeEvents : {}, workouts: list(S.workouts), prescriptions: isMap(S.prescriptions) ? S.prescriptions : {}, today: dateIn(now, run.tz || 'UTC'), routines: list(S.routines) });
+  } catch { return null; }
+  return {
+    status: word(view.status, 16), period: whole(view.period?.index, 0, 100000) ?? 0,
+    tracks: tracks.map(t => {
+      const v = isMap(view.tracks?.[t.id]) ? view.tracks[t.id] : {};
+      return { exId: ident(t.exerciseId), stage: t.stages.findIndex(st => st?.id === v.stage) + 1, attempt: whole(v.attempt, 1, 100000) ?? 1, state: word(v.state, 16) };
+    })
+  };
+}
 export function programmesOut(S, now) {
-  const all = S?.programmes && typeof S.programmes === 'object' && !Array.isArray(S.programmes) ? Object.values(S.programmes) : [];
-  const run = S?.programme && typeof S.programme === 'object' ? S.programme : null;
-  return all.filter(p => p && typeof p === 'object' && typeof p.id === 'string' && p.id)
+  const all = isMap(S?.programmes) ? Object.values(S.programmes) : [];
+  let budget = MAX_PROGRAMME_STAGES;
+  return all.filter(p => isMap(p) && typeof p.id === 'string' && p.id && isMap(p.schedule) && Array.isArray(p.tracks))
     .sort((a, b) => (Number(b.at) || 0) - (Number(a.at) || 0))
     .slice(0, MAX_PROGRAMMES)
     .map(p => {
-      const weeks = list(p.weeks).slice(0, 16).map(programmeWeekOut);
-      const running = run && run.id === p.id && typeof run.startedOn === 'string';
-      return {
-        id: ident(p.id), name: text(String(p.name ?? ''), NAME_MAX), weeks: weeks.length ? weeks : [{}],
-        ...(running ? { running: { startedOn: day(run.startedOn), week: runWeek(run, now, weeks.length || 1), ...(typeof run.pausedOn === 'string' ? { paused: true } : {}) } } : {})
+      const tracks = [];
+      for (const t of p.tracks.slice(0, MAX_PROGRAMME_TARGETS)) {
+        const stages = list(t?.stages).slice(0, MAX_WEEKS_OF_PROGRAMME);
+        if (!isMap(t) || stages.length > budget) break;
+        budget -= stages.length;
+        tracks.push({ ...t, stages });
+      }
+      const n = Number(p.duration?.n);
+      const out = {
+        id: ident(p.id), name: text(String(p.name ?? ''), NAME_MAX), rev: whole(p.rev, 1, 1e9) ?? 1,
+        mode: p.schedule.mode === 'rotation' ? 'rotation' : 'weeks',
+        duration: { n: Math.min(MAX_WEEKS_OF_PROGRAMME, Math.max(1, Math.round(n) || 1)), unit: p.duration?.unit === 'blocks' ? 'blocks' : 'weeks' },
+        end: p.end === 'extend' ? 'extend' : 'stop',
+        tracks: tracks.map(t => {
+          const oid = list(t.slots)[0]?.oid;
+          const pol = t.policy;
+          return {
+            exId: ident(t.exerciseId), routineId: ident(list(t.slots)[0]?.rid),
+            ...(ADVANCE_REPEAT.includes(pol?.onFailure) && ADVANCE_REPEAT.includes(pol?.onSkipped) ? { policy: { onFailure: pol.onFailure, onSkipped: pol.onSkipped } } : {}),
+            stages: t.stages.map(st => stageOut(st, oid))
+          };
+        })
       };
+      if (p.tracks.length > tracks.length) out.more = p.tracks.length - tracks.length;
+      const running = runningOut(S, p, tracks, now);
+      if (running) out.running = running;
+      return out;
     });
-}
-// The week of the block a running programme is in today, by whole weeks since it started (the
-// app counts calendar weeks from the profile's week start; a week either way is close enough here).
-function runWeek(run, now, weeks) {
-  const start = Date.parse(String(run.startedOn).slice(0, 10) + 'T12:00:00Z');
-  if (!Number.isFinite(start)) return 1;
-  return Math.min(weeks, Math.max(1, Math.floor(((Number.isFinite(now) ? now : Date.now()) - start) / (7 * 86400000)) + 1));
 }
 /**
  * The plan reduced to exactly the fields that decide whether it has *changed* — mode-aware,

@@ -80,7 +80,7 @@ Ten read-only tools, and one that writes:
 | `get_bodyweight` | Weigh-ins, one value per day (the profile's "Daily weigh-in value": morning, average or last), each day's readings with their times, the latest weight, the goal line, and deltas vs goal. |
 | `estimate_1rm` | All-time best 1RM for an exercise + the trend, or a PR table across all exercises. |
 | `muscle_balance` | Which muscles I've trained this week/month/all-time, ranked + which I've neglected. |
-| `get_programme` | My programmes (routines as a block of weeks with %1RM / RPE targets), and which week of the running one I'm in. |
+| `get_programme` | My programmes (each exercise's weeks: a %1RM, weight, sets and reps, or its own progression, and whether a missed week is repeated), and where the running one stands for each exercise. |
 | `log_workout` | *Writes.* "I did dumbbell curls, 12 kg, 12/12/10" → a logged session in your history, on every device. Needs pairing: [Logging workouts](#logging-workouts). |
 
 `get_routine` and `preview_session` answer two different questions, and confusing them is the

@@ -35,21 +35,42 @@ function zoneOf(tz) {
   try { new Intl.DateTimeFormat('en-CA', { timeZone: tz }); return tz; } catch { return 'UTC'; }
 }
 
+// The Coach's leaf edits on a week's target (api/coach/core/validate.js, spec 13): whole numbers in
+// these bounds, a weight in kg. A legacy week never carries them, so the upgrade reads none.
+const LEAVES = { sets: [1, 10], reps: [1, 100], sec: [5, 3600], rest: [0, 600] };
+const KG_PER_LB = 0.45359237;
+const CHOICES = ['advance', 'repeat'];
+function leavesOf(x) {
+  const fix = {};
+  for (const [k, [lo, hi]] of Object.entries(LEAVES)) if (Number.isInteger(x?.[k]) && x[k] >= lo && x[k] <= hi) fix[k] = x[k];
+  if (typeof x?.weight === 'number' && x.weight > 0 && x.weight <= 1000) fix.weight = x.weight;
+  return Object.keys(fix).length ? fix : null;
+}
+const policyOf = x => (CHOICES.includes(x?.policy?.onFailure) && CHOICES.includes(x?.policy?.onSkipped) ? { onFailure: x.policy.onFailure, onSkipped: x.policy.onSkipped } : null);
+
 /** A legacy week as lib/programmes.js cleanWeek reads it: a target with neither number is none. */
 function cleanWeek(w) {
   const t = {};
   for (const [k, x] of Object.entries(isObj(w?.t) ? w.t : {})) {
-    const pct = half(x?.pct, 30, PCT_MAX), rpe = half(x?.rpe, 6, 10);
-    if (pct != null || rpe != null) t[k] = { pct, rpe };
+    const pct = half(x?.pct, 30, PCT_MAX), rpe = half(x?.rpe, 6, 10), fix = leavesOf(x), policy = policyOf(x);
+    if (pct != null || rpe != null || fix || policy) t[k] = { pct, rpe, ...(fix ? { fix } : {}), ...(policy ? { policy } : {}) };
   }
   return { deload: w?.deload === true, rpe: half(w?.rpe, 6, 10), t };
 }
 
-// The occurrence's phase at a %1RM: the same groups and their anchor ratios, its steps removed.
-function percentPhase(ph, percent) {
+// The occurrence's phase with that week's numbers fixed: a %1RM or a weight (kg, in the
+// occurrence's own unit) for its anchor, and any of the leaves; the same groups and their anchor
+// ratios, its steps removed.
+function fixedPhase(ph, percent, fix = null, unit = 'kg') {
   const { stall, ...rest } = copy(ph);
   const { loadTo, ...parameters } = rest.parameters;
-  return { ...rest, parameters: { ...parameters, load: { mode: 'percent_1rm', percent } }, target: { mode: 'none' }, progression: [], exit: null };
+  if (percent != null) parameters.load = { mode: 'percent_1rm', percent };
+  else if (fix?.weight != null) parameters.load = { mode: 'absolute', value: unit === 'lb' ? Math.round(fix.weight / KG_PER_LB * 100) / 100 : fix.weight, unit };
+  if (fix?.sets != null) parameters.sets = { min: fix.sets, max: fix.sets };
+  if (fix?.reps != null) parameters.reps = { min: fix.reps, max: fix.reps };
+  if (fix?.sec != null) parameters.durationSeconds = { min: fix.sec, max: fix.sec };
+  if (fix?.rest != null) parameters.restSeconds = fix.rest;
+  return { ...rest, parameters, target: { mode: 'none' }, progression: [], exit: null };
 }
 
 /** One track per occurrence: a stage per legacy week, the occurrence's own rule unless a %1RM fixes it. */
@@ -64,13 +85,23 @@ function trackOf(p, rid, occ, weeks, ctx) {
   const external = mode === 'reps' && !isBodyweight(occ, info) && !(typeof occ.assisted === 'boolean' ? occ.assisted : isAssisted(info));
   // A flat %1RM is a load for the anchor; groups of their own (a training max, explicit per-set loads) are never guessed (spec 15.2).
   const anchored = ph.groups.every(g => g.load.basis === 'anchor');
+  const unit = [ph.parameters.load?.unit, ...ph.progression.map(op => op.step?.unit)].find(u => u === 'kg' || u === 'lb') ?? 'kg';
   let repair = null;
+  const policies = new Set();
   const stages = weeks.map((w, i) => {
     // lib/programmes.js programmeSlot: the routine's own entry, whole, else the exercise's.
     const own = w.t[`${rid}:${occ.exerciseId}`] || w.t[occ.exerciseId] || {};
     const pct = external ? own.pct : null;
-    if (pct != null && !anchored) repair = ph.groups.some(g => g.load.basis === 'training_max') ? 'training-max' : 'group-loads';
-    const target = pct != null && anchored ? { own: 'set', phase: percentPhase(ph, pct) }
+    const fix = own.fix ?? null;
+    if (own.policy) policies.add(JSON.stringify(own.policy));
+    if ((pct != null || fix) && !anchored) repair = ph.groups.some(g => g.load.basis === 'training_max') ? 'training-max' : 'group-loads';
+    // A leaf this exercise cannot take is refused, never dropped (spec 5.3): reps and a weight are
+    // for reps work, a weight on what lifts one and never beside a %1RM, seconds for a hold; a lift's
+    // fixed week names its load.
+    if (fix && (mode === 'cardio' || ((fix.reps != null || fix.weight != null) && mode !== 'reps') || (fix.weight != null && (!external || own.pct != null))
+      || (fix.sec != null && mode !== 'time') || (external && pct == null && fix.weight == null)
+      || (fix.sets != null && !ph.groups.some(g => g.count === 'parameters')) || ((fix.reps ?? fix.sec) != null && !ph.groups.some(g => g.reps === 'parameters')))) repair = 'leaf';
+    const target = (pct != null || fix) && anchored ? { own: 'set', phase: fixedPhase(ph, pct, fix, unit) }
       : { own: 'inherit', ...(w.deload && external && scalable(rule) ? { deload: { factor: DELOAD_FACTOR } } : {}) };
     const rpe = own.rpe ?? w.rpe;
     if (rpe != null) target.effort = { mode: 'advisory', rpe };
@@ -87,8 +118,10 @@ function trackOf(p, rid, occ, weeks, ctx) {
     if (t.own === 'inherit' && prev?.own === 'set' && metrics.length) t.seed = Object.fromEntries(metrics.map(m => [m, m === 'load' ? load : 'copy']));
     if (s.kind === 'work') prev = t;
   }
+  // One advance/repeat choice per exercise: two different ones for it are a contradiction, not a pick.
+  if (policies.size > 1) repair = 'policy';
   if (repair) ctx.summary.push({ kind: 'repair', programmeId: p.id, trackId: id, reason: repair });
-  return { id, exerciseId: occ.exerciseId, slots: [{ rid, oid }], stages, refs: 'inherit', repair };
+  return { id, exerciseId: occ.exerciseId, slots: [{ rid, oid }], stages, refs: 'inherit', ...(policies.size === 1 ? { policy: JSON.parse([...policies][0]) } : {}), repair };
 }
 
 /**

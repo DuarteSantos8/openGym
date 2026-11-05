@@ -11,6 +11,7 @@
    passkeys make too — and it is never put into a result or an error message. */
 
 import { unpackProfile } from '../../api/migration/profile-pack.js'
+import { ENGINE_CONTRACT, ENGINE_CONTRACT_HEADER } from '../../api/migration/profile-version.js'
 
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
 // What a session token is made of (api/server.js makeSession: `uid:exp:ver` and a base64url MAC).
@@ -60,7 +61,9 @@ export async function apiFetch(cfg, path, { method = 'GET', body, timeoutMs = TI
   try {
     res = await fetchImpl(cfg.base + path, {
       method,
-      headers: { authorization: 'Bearer ' + cfg.token, 'x-opengym-engine-schema': '2', ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+      // The engine schema and contract this build reads and writes (api/migration/profile-version.js):
+      // without them the server's gate answers 409 upgrade-required, as it would an old app.
+      headers: { authorization: 'Bearer ' + cfg.token, 'x-opengym-engine-schema': '2', [ENGINE_CONTRACT_HEADER.toLowerCase()]: String(ENGINE_CONTRACT), ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(timeoutMs),
       // Never followed: a redirect to http:// or to another host would replay the profile (or,

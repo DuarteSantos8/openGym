@@ -14,7 +14,7 @@
  * model verbatim for the one repair round (FR-48) — and a list of six problems produces a
  * better second attempt than the first of them does.
  */
-import { libraryHas, libraryName, equipmentAllows, isDumbbellLift } from './library.js';
+import { libraryHas, libraryName, equipmentAllows, isDumbbellLift, LIB_BY_ID } from './library.js';
 
 // A catalogue exercise the person's equipment does not reach, and that was not in the library
 // slice they were offered (which already pins what they train). The prompt says "their
@@ -35,6 +35,10 @@ export { CHANGE_TYPES };
 export const WARMUP_MODES = ['auto', 'own', 'none'];
 const MAX_PROGRAMME_WEEKS = 16;
 const MAX_WEEK_TARGETS = 24;
+// The leaves a programme week may fix for one exercise (spec 13), in the bounds the change types
+// of the same name have; `weight` is kg like every weight the Coach writes.
+const PROGRAMME_LEAVES = [['sets', 1, 10], ['reps', 1, 100], ['sec', 5, 3600], ['rest', 0, 600]];
+const CHOICES = ['advance', 'repeat'];
 const halfStep = v => Math.round(v * 2) / 2;
 const MAX_INC = 50;
 // A prescription, not a world record. Anything past this is a model slip or a hostile answer,
@@ -522,6 +526,10 @@ export function validateReview(data, plan, ctx = {}) {
         if (!weeks.length || weeks.length > MAX_PROGRAMME_WEEKS) { errors.push(`${where}.after.weeks must list 1-${MAX_PROGRAMME_WEEKS} weeks`); return; }
         const inPlan = new Map([...routines.values()].map(r => [r.id, new Set((r.ex || []).map(e => e.id))]));
         const anywhere = id => [...inPlan.values()].some(set => set.has(id));
+        // The plan's entries a target names: its routine's, else every routine's with that exercise.
+        const named = x => [...routines.values()].filter(r => !isStr(x.routineId) || r.id === x.routineId).flatMap(r => (r.ex || []).filter(e => e.id === x.exId));
+        const lifted = e => e.mode === 'reps' && !(e.bodyweight != null ? e.bodyweight : (LIB_BY_ID.get(e.id)?.eq || '').toLowerCase() === 'body weight');
+        const choices = new Map();
         const outWeeks = [];
         for (let k = 0; k < weeks.length; k++) {
           const w = weeks[k] || {};
@@ -540,14 +548,41 @@ export function validateReview(data, plan, ctx = {}) {
             if (isStr(x.routineId) && !inPlan.get(x.routineId)?.has(x.exId)) { errors.push(`${at}.routineId must be a routine of the plan that has exercise "${x.exId}"`); return; }
             const pct = isNum(x.pct) && x.pct >= 30 && x.pct <= 110 ? halfStep(x.pct) : null;
             const rpe = isNum(x.rpe) && x.rpe >= 6 && x.rpe <= 10 ? halfStep(x.rpe) : null;
-            if (pct == null && rpe == null) { errors.push(`${at} needs pct (30-110, a share of the best estimated 1RM) or rpe (6-10)`); return; }
-            t[isStr(x.routineId) ? `${x.routineId}:${x.exId}` : x.exId] = { ...(pct != null ? { pct } : {}), ...(rpe != null ? { rpe } : {}) };
+            const leaf = {};
+            for (const [k, lo, hi] of PROGRAMME_LEAVES) {
+              if (x[k] == null) continue;
+              if (!isInt(x[k], lo, hi)) { errors.push(`${at}.${k} must be a whole number ${lo}-${hi}`); return; }
+              leaf[k] = x[k];
+            }
+            if (x.weight != null) {
+              if (!isNum(x.weight) || x.weight <= 0 || x.weight > MAX_WEIGHT) { errors.push(`${at}.weight must be kg above 0, at most ${MAX_WEIGHT}`); return; }
+              if (pct != null) { errors.push(`${at} gives pct and weight: a week's load is one or the other`); return; }
+              leaf.weight = x.weight;
+            }
+            if (x.policy != null) {
+              if (!CHOICES.includes(x.policy?.onFailure) || !CHOICES.includes(x.policy?.onSkipped)) { errors.push(`${at}.policy must be { onFailure, onSkipped }, each "advance" or "repeat"`); return; }
+              const key = `${isStr(x.routineId) ? x.routineId : ''}:${x.exId}`, was = choices.get(key);
+              if (was && (was.onFailure !== x.policy.onFailure || was.onSkipped !== x.policy.onSkipped)) { errors.push(`${at}.policy differs from an earlier week's for the same exercise: one choice per exercise, for the whole programme`); return; }
+              choices.set(key, leaf.policy = { onFailure: x.policy.onFailure, onSkipped: x.policy.onSkipped });
+            }
+            // Each leaf only where the exercise takes it (spec 5.3): reps and a weight for reps work, a
+            // weight not on the body alone, seconds for a hold, nothing for cardio; a lift's fixed week
+            // (sets, reps or rest) names its load too.
+            const entries = named(x);
+            const fixes = ['sets', 'reps', 'sec', 'rest'].some(k => leaf[k] != null);
+            const misfit = entries.some(e => e.mode === 'cardio' ? fixes || leaf.weight != null
+              : ((leaf.reps != null || leaf.weight != null) && e.mode !== 'reps') || (leaf.weight != null && !lifted(e)) || (leaf.sec != null && e.mode !== 'time')
+                || (fixes && lifted(e) && pct == null && leaf.weight == null));
+            if (misfit) { errors.push(`${at} does not fit exercise "${x.exId}": reps and weight are for exercises done for reps (weight not on bodyweight ones), sec for timed ones, none of them for cardio, and a week that fixes sets, reps or rest on a lift with a weight needs its pct or weight too`); return; }
+            if (pct == null && rpe == null && !Object.keys(leaf).length) { errors.push(`${at} needs pct (30-110, a share of the adopted 1RM), rpe (6-10) or one of sets, reps, sec, weight, rest, policy`); return; }
+            t[isStr(x.routineId) ? `${x.routineId}:${x.exId}` : x.exId] = { ...(pct != null ? { pct } : {}), ...(rpe != null ? { rpe } : {}), ...leaf };
           }
           if (Object.keys(t).length) week.t = t;
           outWeeks.push(week);
         }
         out.after = { ...(isStr(a.name) ? { name: clampStr(a.name, 60) } : existing ? { name: clampStr(existing.name || '', 60) } : {}), weeks: outWeeks };
-        out.before = existing ? { name: existing.name || '', weeks: existing.weeks.length } : null;
+        // The revision it read: the app refuses the change once the programme has moved past it.
+        out.before = existing ? { name: existing.name || '', weeks: existing.duration?.n || 0, rev: existing.rev } : null;
         break;
       }
       case 'week': {

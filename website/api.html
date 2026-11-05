@@ -338,6 +338,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 <p><code>media</code> is there unless the instance runs with <code>MEDIA_UPLOADS=0</code>, for everybody: the caps are not a secret, and its absence is how the app knows this server does not store photos and videos at all.</p>
 <p>A caller with a valid session also gets a <code>coach</code> key: the block when the instance has the AI Coach switched on <b>and</b> a provider connected, and <code>null</code> when it has not. A caller with no session gets no key at all. The block names the provider this instance talks to, which is the same fact <code>GET /api/coach/disclosure</code> will not hand out unauthenticated.</p>
 <p>The key is always present for a session, <code>null</code> included, so a client that caches this answer can tell &quot;no Coach on this instance&quot; from &quot;you were not signed in when you asked&quot; and knows whether asking again would change it.</p>
+<p><code>engineContract</code> is public too: the engine contract this server reads and gates (see the 409 on <code>/api/data</code>). An app holding a profile marked with a contract does not push it to a server that does not advertise at least that one.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Public: no authentication required.</span></p>
 
 
@@ -345,7 +346,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <div class="ptab">
   <div class="prow rrow">
     <span class="r-code s2">200</span>
-    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a>, integrations: object }</span></span>
+    <span class="p-desc">Instance flags, plus the Coach block for a signed-in caller.<span class="r-sig">{ invite_only: boolean, allow_guest: boolean, coach: object | null, password_login: always true, default_lang: string, media: <a href="#schema-MediaConfig">MediaConfig</a>, engineContract: always 1, integrations: object }</span></span>
   </div>
     </div>
   </div>
@@ -1881,7 +1882,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">Pull the account's app state</span>
   </summary>
   <div class="ep-body">
-<p>Returns the caller's entire app state as one JSON blob, or <code>{&quot;state&quot;: null}</code> if nothing has been synced yet, together with <code>rev</code>, the server's revision of that document (0 when there is none). A client keeps the <code>rev</code> it last read or wrote and sends it back as <code>baseRev</code> on the next push, which lets the server refuse a write over a document the client never saw (see the 409 on PUT).</p>
+<p>Returns the caller's entire app state as one JSON blob, or <code>{&quot;state&quot;: null}</code> if nothing has been synced yet, together with <code>rev</code>, the server's revision of that document (0 when there is none). A client keeps the <code>rev</code> it last read or wrote and sends it back as <code>baseRev</code> on the next push, which lets the server refuse a write over a document the client never saw (see the 409 on PUT). The three data routes (this one, <code>PUT</code> and <code>/api/data/rev</code>) are gated on the engine the client announces: <code>X-OpenGym-Engine-Schema</code> (a v2 profile answers a client below 2 with 409 <code>upgrade-required</code> and <code>minEngineSchema</code>; a v1 profile answers an engine-aware client with 409 <code>migration-required</code>) and <code>X-OpenGym-Engine-Contract</code> (a profile marked with <code>engineContractRevision</code> answers a client that announces a lower contract, or none, with 409 <code>upgrade-required</code> and <code>minEngineContract</code>).</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 
@@ -1894,6 +1895,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The stored profile and the client's announced engine do not match (<code>GET /api/data</code>): <code>upgrade-required</code> with <code>minEngineSchema</code> or <code>minEngineContract</code> (update the app), or <code>migration-required</code> (a v1 profile, see <code>POST /api/data/migrate-engine-v2</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;migration-required&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1912,6 +1917,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
 <p>The records of removals (<code>deleted</code>) and of edits (<code>edited</code>) never shrink: the stored ones are joined into the write (a reset keeps its own). A writer that does not stamp its own changes (no <code>stamped: true</code>; an API script, an older app) and sends the current <code>baseRev</code> gets them stamped by the server, at the server's time: every entry it removed (a workout, routine, custom exercise, weigh-in, card, profile or favourite), every setting and plan day it changed (<code>queue</code>, <code>week.&lt;day&gt;</code>, …), and every entry it edited (<code>_ts</code>, per field <code>_f</code>). That keeps a planner's new week, or a routine it removed, from being undone by a phone that reconnects later with an older change. A setting, plan day or entry field whose stored stamp (<code>edited</code>, <code>_f</code>) is later than the one the writer sends back keeps the stored value: the writer never saw that change, so send back the <code>edited</code> and <code>_f</code> you read. A writer that sends no <code>edited</code> at all is not held to it. An entry the document holds while a removal on record says it was deleted after its last edit is kept and marked as added back.</p>
 <p>Such a writer also cannot delete what it does not know: a field of the stored document, of a stored routine, workout, custom exercise, card or profile, of a routine's exercise, or of a logged exercise or set that its copy leaves out comes back from the stored copy (an older app rebuilds an exercise from the fields it knows, which dropped pyramid sets made on an updated device). Only the fields v1.3.9 itself removes (a superset link, a note, a cleared set value, …) can be removed this way. Send <code>stamped: true</code> to remove anything else.</p>
 <p>Every accepted write also starts the grace period of each stored file (tag <code>media</code>) the new state no longer references, and stops it for each one it references again. That bookkeeping never changes the answer.</p>
+<p>The engine gate (see <code>GET /api/data</code>) runs before the body is read and again after, on the file as it is then and on the body: a body that drops or lowers the stored <code>engineContractRevision</code> is refused with the same 409. The first write that marks an unmarked profile keeps the file it replaces, once, as <code>state-&lt;uid&gt;.pre-contract-1.json</code> (never replaced; removed with the account).</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
@@ -1952,7 +1958,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
-    <span class="p-desc"><code>baseRev</code> is not the current revision: another client wrote since this one last read. Carries the current document so the client can merge and retry.</span>
+    <span class="p-desc"><code>baseRev</code> is not the current revision: another client wrote since this one last read. Carries the current document so the client can merge and retry. The engine gate answers 409 too, with <code>upgrade-required</code> or <code>migration-required</code> and no document (see <code>GET /api/data</code>).</span>
   </div>
     </div>
   </div>
@@ -1979,6 +1985,10 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">401</span>
     <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The stored profile and the client's announced engine do not match (<code>GET /api/data</code>): <code>upgrade-required</code> with <code>minEngineSchema</code> or <code>minEngineContract</code> (update the app), or <code>migration-required</code> (a v1 profile, see <code>POST /api/data/migrate-engine-v2</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;migration-required&quot;}</code></span></span>
   </div>
     </div>
   </div>

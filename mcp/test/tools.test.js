@@ -12,6 +12,9 @@ import { ruleOccurrence } from '../../frontend/src/lib/test-fixtures.js'
 import { exOr } from '../../frontend/src/lib/exercises.js'
 import { PRESET_IDS, defaultPlanRule } from '../../frontend/src/lib/prescription/index.js'
 import { ruleSummary, presetLabel } from '../src/labels.js'
+import { startProgramme } from '../../frontend/src/lib/programmes.js'
+import { convertLegacyProgramme } from '../../api/migration/programme-upgrade.js'
+import { LIB_BY_ID } from '../../api/coach/core/library.js'
 
 const byName = Object.fromEntries(TOOLS.map(t => [t.name, t.handler]))
 function call(name, params = {}) {
@@ -30,7 +33,7 @@ const ctxAt = now => ({ now, newId: seed => seed, unit: 'kg' })
 
 function baseProfile() {
   return {
-    engineSchemaVersion: 2, unit: 'kg',
+    engineSchemaVersion: 2, engineContractRevision: 1, unit: 'kg',
     prescriptions: {}, progression: {}, oneRepMaxes: {},
     customEx: [], week: { 1: ['r1'] }, dayPlan: {}, exWeights: {},
     bodyweight: [{ d: '2026-01-01', w: 80 }, { d: '2026-01-08', w: 79 }],
@@ -712,33 +715,67 @@ describe('date arguments must be dates the calendar has', () => {
 /* ---------- get_programme (#159) ---------- */
 
 describe('get_programme', () => {
-  const block = () => ({ id: 'P', name: 'Block', at: 1, days: { 1: [S.routines[0].id] }, weeks: [{ rpe: 7, t: { '0025': { pct: 75 } } }, { deload: true }] })
+  // A block over Push Day as the app keeps it on engine contract 1: one track per exercise, a stage per week.
+  const withBlock = () => {
+    S.programmes = { P: convertLegacyProgramme({ id: 'P', name: 'Block', at: 1, days: { 1: ['r1'] }, weeks: [{ rpe: 7, t: { [BENCH]: { pct: 75 } } }, { deload: true }] }, { routines: S.routines, catalogue: LIB_BY_ID }) }
+    S.programmes.P.tracks[0].policy = { onFailure: 'repeat', onSkipped: 'advance' }
+  }
+  const start = () => {
+    // A 1RM to adopt: without one the first session asks for it and earns no week's credit.
+    S.oneRepMaxes = { b100: { id: 'b100', exerciseId: BENCH, value: 100, unit: 'kg', source: 'manual', capturedAt: '2026-01-01T00:00:00.000Z' } }
+    const policies = Object.fromEntries(S.programmes.P.tracks.map(t => [t.id, { onFailure: 'advance', onSkipped: 'advance' }]))
+    expect(startProgramme(S, 'P', { policies, end: 'stop', today: FAKE_TODAY_ISO, now: MONDAY_2 })).toEqual({ ok: true })
+  }
 
   test('lists the programmes and nothing running by default', () => {
-    S.programmes = { P: block() }
+    withBlock()
     _seedStateForTests(S)
     const r = call('get_programme')
     expect(r.running).toBeNull()
     expect(r.programmes).toHaveLength(1)
-    expect(r.programmes[0]).toMatchObject({ id: 'P', weeks: 2, schedule: { kind: 'weekdays', days: { Monday: ['Push Day'] } } })
-    expect(r.programmes[0].week_targets[0]).toEqual({ deload: false, rpe: 7, targets: [{ exercise_id: '0025', exercise_name: 'barbell bench press', routine_id: null, pct_1rm: 75, rpe: null }] })
+    const [p] = r.programmes
+    expect(p).toMatchObject({ id: 'P', name: 'Block', mode: 'weeks', duration: { n: 2, unit: 'weeks' }, end: 'stop', routine_ids: ['r1'], schedule: { kind: 'weekdays', days: { Monday: ['Push Day'] } } })
+    expect(p.running).toBeUndefined()
+    expect(p.tracks[0]).toEqual({
+      exId: BENCH, exercise_name: 'barbell bench press', routineId: 'r1', routine_name: 'Push Day', policy: { onFailure: 'repeat', onSkipped: 'advance' },
+      stages: [{ kind: 'work', own: 'set', sets: 3, reps: 5, load: { pct: 75 }, rest: 180, effort: { mode: 'advisory', rpe: 7 } }, { kind: 'recovery', own: 'inherit' }]
+    })
+    expect(p.tracks[1]).toMatchObject({ exId: LEGPRESS, stages: [{ kind: 'work', own: 'inherit', effort: { mode: 'advisory', rpe: 7 } }, { kind: 'recovery', own: 'inherit' }] })
   })
 
-  test('the running one: its week and this week\'s targets, and preview_session opens at them', () => {
-    S.programmes = { P: block() }
-    S.week = { 1: [S.routines[0].id] }
-    S.programme = { id: 'P', startedOn: FAKE_TODAY_ISO, cycle: 1, bump: 0, saved: { week: {} } }
+  test('the running one: its week and where each exercise stands, and preview_session opens at it', () => {
+    withBlock()
+    start()
     _seedStateForTests(S)
     const r = call('get_programme')
-    expect(r.running).toMatchObject({ id: 'P', week: 1, weeks: 2, paused: false, done: false })
-    expect(r.running.this_week.rpe).toBe(7)
-    const bench = call('preview_session').exercises.find(e => e.id === '0025')
-    expect(bench.prescription.programme).toMatchObject({ week: 1, weeks: 2, pct_1rm: 75, target_rpe: 7 })
+    expect(r.running).toMatchObject({ id: 'P', name: 'Block', status: 'running', week: 1, weeks: 2, unit: 'weeks', paused: false, done: false, round: 1, started_on: FAKE_TODAY_ISO })
+    expect(r.programmes[0].running).toEqual({ status: 'running', period: 1, tracks: [{ exId: BENCH, stage: 1, attempt: 1, state: 'active' }, { exId: LEGPRESS, stage: 1, attempt: 1, state: 'active' }] })
+    const bench = call('preview_session').exercises.find(e => e.id === BENCH)
+    expect(bench.prescription.programme).toEqual({ week: 1, attempt: 1, role: 'work', pct_1rm: 75, target_rpe: 7 })
+    expect(bench.prescription.weight).toBe(75)   // 75 % of the adopted 100 kg
   })
 
   test('a profile without programmes answers empty', () => {
     const r = call('get_programme')
     expect(r).toMatchObject({ running: null, programmes: [] })
+  })
+
+  // Spec 16: a reader that cannot read the records refuses; it never flattens or strips them.
+  test('MCP get_programme reads contract 1; a newer contract or a contract-0 v2 file is refused with the upgrade message', () => {
+    withBlock()
+    _seedStateForTests(S)
+    expect(call('get_programme').programmes[0].tracks).toHaveLength(2)
+    for (const [contract, says] of [[2, /newer openGym/], [0, /open the current openGym app/i], [undefined, /open the current openGym app/i]]) {
+      _seedStateForTests({ ...S, engineContractRevision: contract })
+      for (const name of ['get_programme', 'list_routines', 'preview_session', 'get_week_plan']) {
+        const r = call(name)
+        expect(r.error, name).toBe('engine_contract_unsupported')
+        expect(r.message).toMatch(says)
+        expect(r.message).toMatch(/upgrade/i)
+        expect(r).toMatchObject({ engine_contract: contract || 0, supported_engine_contract: 1 })
+        expect(JSON.stringify(r)).not.toContain('Block')
+      }
+    }
   })
 })
 

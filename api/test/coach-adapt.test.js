@@ -3,7 +3,7 @@
  * muscle, the active gym, this month's challenges, the daily weigh-in value). */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { tempData } from './helpers.mjs';
+import { tempData, programmeProfile, PROGRAMME_TODAY } from './helpers.mjs';
 
 tempData();
 const payloadLib = await import('../coach/core/payload.js');
@@ -76,10 +76,9 @@ test('review payload: warm-ups, programmes, muscles, gym, challenges and the dai
   assert.deepEqual(bench.warmupRows, [{ bar: true, reps: 10 }, { pct: 60, reps: 5 }]);
   assert.equal(curl.warmupSets, 2);
   assert.equal(p.plan.routines[1].ex[0].warmup, 'auto');
-  const prog = p.plan.programmes[0];
-  assert.equal(prog.id, 'p1');
-  assert.deepEqual(prog.weeks[1].targets, [{ exId: '0025', routineId: 'push', pct: 80, rpe: 8 }]);
-  assert.deepEqual(prog.running, { startedOn: day(9), week: 2 });
+  // A programme still in the shape from before engine contract 1 is not summarised (payload.test.js
+  // has the contract-1 summary); the app upgrades it before the Coach can change it.
+  assert.equal(p.plan.programmes, undefined);
   assert.ok(p.muscles.length && p.gym && p.challenges);
   assert.equal(p.bodyweight.daily, 'avg');
   assert.equal(payloadLib.build({ ...S, bwDaily: undefined }, { handle: H, kind: 'review', now: NOW }).bodyweight.daily, undefined);
@@ -188,24 +187,33 @@ test('review: warm-up changes, explained and bounded', () => {
   bad({ mode: 'own', rows: [{ pct: 120, reps: 5 }] }, /0-95/);
 });
 
-test('review: a programme, new or revised, over exercises of the plan', () => {
-  const plan = payloadLib.cleanPlan(S);
+test('review: a programme, new or revised, over exercises of the plan', async () => {
+  const plan = payloadLib.cleanPlan(await programmeProfile(), PROGRAMME_TODAY);
   const fresh = validateReview({ coach_contract: 1, summary: 's', changes: [{ id: 'c1', type: 'programme', target: {}, after: {
     name: 'Squat 4 weeks', weeks: [
-      { targets: [{ exId: '0043', pct: 72.3 }] }, { targets: [{ exId: '0043', pct: 77.5, rpe: 8 }] }, { rpe: 8.5, targets: [{ exId: '0043', routineId: 'legs', pct: 82.5 }] }, { deload: true }
+      { targets: [{ exId: '0043', pct: 72.3 }] }, { targets: [{ exId: '0043', pct: 77.5, rpe: 8 }] }, { rpe: 8.5, targets: [{ exId: '0043', routineId: 'r1', pct: 82.5 }] }, { deload: true }
     ] }, why: 'You asked for a block before the meet: three climbing weeks, then an easy one.' }] }, plan, {});
   assert.equal(fresh.ok, true, JSON.stringify(fresh.errors));
   const after = fresh.proposal.changes[0].after;
   assert.equal(after.name, 'Squat 4 weeks');
   assert.deepEqual(after.weeks[0], { t: { '0043': { pct: 72.5 } } });
-  assert.deepEqual(after.weeks[2], { rpe: 8.5, t: { 'legs:0043': { pct: 82.5 } } });
+  assert.deepEqual(after.weeks[2], { rpe: 8.5, t: { 'r1:0043': { pct: 82.5 } } });
   assert.deepEqual(after.weeks[3], { deload: true });
   assert.equal(fresh.proposal.changes[0].before, null);
 
-  const revise = validateReview({ coach_contract: 1, summary: 's', changes: [{ id: 'c1', type: 'programme', target: { programmeId: 'p1' }, after: { weeks: [{ targets: [{ exId: '0025', pct: 70 }] }] }, why: 'Your last two bench sessions missed the last set.' }] }, plan, {});
+  // A revision names the revision it read; its leaves and choices ride along, bounded.
+  const REPEAT = { onFailure: 'repeat', onSkipped: 'advance' };
+  const revise = validateReview({ coach_contract: 1, summary: 's', changes: [{ id: 'c1', type: 'programme', target: { programmeId: 'pg' }, after: { weeks: [
+    { targets: [{ exId: '0025', pct: 70, sets: 5, reps: 3, rest: 150, policy: { ...REPEAT, extra: 1 } }] },
+    { targets: [{ exId: '0043', weight: 100, sets: 4, reps: 6, note: 'x' }, { exId: '0025', policy: REPEAT }] }
+  ] }, why: 'Your last two bench sessions missed the last set.' }] }, plan, {});
   assert.equal(revise.ok, true, JSON.stringify(revise.errors));
-  assert.deepEqual(revise.proposal.changes[0].before, { name: 'Bench block', weeks: 3 });
-  assert.equal(revise.proposal.changes[0].after.name, 'Bench block');
+  assert.deepEqual(revise.proposal.changes[0].before, { name: 'Block', weeks: 2, rev: 1 });
+  assert.equal(revise.proposal.changes[0].after.name, 'Block');
+  assert.deepEqual(revise.proposal.changes[0].after.weeks, [
+    { t: { '0025': { pct: 70, sets: 5, reps: 3, rest: 150, policy: REPEAT } } },
+    { t: { '0043': { weight: 100, sets: 4, reps: 6 }, '0025': { policy: REPEAT } } }
+  ]);
 
   const bad = (target, after, msg) => {
     const x = validateReview({ coach_contract: 1, summary: 's', changes: [{ id: 'c', type: 'programme', target, after, why: 'w' }] }, plan, {});
@@ -215,8 +223,16 @@ test('review: a programme, new or revised, over exercises of the plan', () => {
   bad({}, { weeks: [{}] }, /name is required/);
   bad({}, { name: 'x', weeks: Array.from({ length: 17 }, () => ({})) }, /1-16/);
   bad({}, { name: 'x', weeks: [{ targets: [{ exId: '9999', pct: 70 }] }] }, /exercise of the plan/);
-  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', routineId: 'push', pct: 70 }] }] }, /routine of the plan/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', routineId: 'legs', pct: 70 }] }] }, /routine of the plan/);
   bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043' }] }] }, /needs pct/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', sets: 11, pct: 70 }] }] }, /sets must be a whole number 1-10/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', rest: 601, pct: 70 }] }] }, /rest must be a whole number 0-600/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', weight: -5 }] }] }, /weight must be kg/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', pct: 70, weight: 100 }] }] }, /one or the other/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', sec: 30, pct: 70 }] }] }, /does not fit/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', sets: 4 }] }] }, /does not fit/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', policy: { onFailure: 'skip', onSkipped: 'advance' } }] }] }, /policy must be/);
+  bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', policy: REPEAT }] }, { targets: [{ exId: '0043', policy: { onFailure: 'advance', onSkipped: 'advance' } }] }] }, /one choice per exercise/);
   const two = validateReview({ coach_contract: 1, summary: 's', changes: [
     { id: 'a', type: 'programme', target: {}, after: { name: 'A', weeks: [{}] }, why: 'w' },
     { id: 'b', type: 'programme', target: {}, after: { name: 'B', weeks: [{}] }, why: 'w' }

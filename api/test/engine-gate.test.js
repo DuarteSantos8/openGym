@@ -15,9 +15,13 @@ import { LIB_BY_ID } from '../coach/core/library.js';
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
 const uid = 'u_engine_1';
+const OTHER = 'u_engine_2';   // a second profile the admin (uid) can delete
 const V1 = { workouts: [], routines: [], _ts: 1 };
 const V2 = { ...V1, engineSchemaVersion: 2, prescriptions: {}, progression: {}, oneRepMaxes: {} };
 const ENGINE = { 'X-OpenGym-Engine-Schema': '2' };
+// A client built for engine contract 1 (the unified programme model) says so on every request.
+const CONTRACT = { ...ENGINE, 'X-OpenGym-Engine-Contract': '1' };
+const MARKED = { ...V2, engineContractRevision: 1 };
 const V1_PROFILE = {
   unit: 'kg', _rev: 4, _ts: 1,
   routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60, prog: 'linear', warmupSets: 2 }] }],
@@ -26,16 +30,17 @@ const V1_PROFILE = {
 };
 const primaryFile = dir => path.join(dir, `state-${uid}.json`);
 const backupFile = dir => path.join(dir, `state-${uid}.pre-engine-v1.json`);
+const contractBackup = (dir, who = uid) => path.join(dir, `state-${who}.pre-contract-1.json`);
 
-const cookie = () => {
-  const payload = `${uid}:${Date.now() + 86400000}:0`;
+const cookie = (who = uid) => {
+  const payload = `${who}:${Date.now() + 86400000}:0`;
   return `gymsid=${payload}.${crypto.createHmac('sha256', SECRET).update(payload).digest('base64url')}`;
 };
 
 async function harness(t, preload) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-engine-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
-  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: [{ id: uid, name: 'One', created: new Date().toISOString() }], creds: [], subs: [], invites: [] }));
+  fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: [{ id: uid, name: 'One', created: new Date().toISOString() }, { id: OTHER, name: 'Two', created: new Date().toISOString() }], creds: [], subs: [], invites: [] }));
   const child = spawn(process.execPath, [...(preload ? ['--import', preload] : []), 'server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ADMIN_UIDS: uid }
@@ -45,20 +50,21 @@ async function harness(t, preload) {
   child.stdout.on('data', d => { log += d; });
   child.stderr.on('data', d => { log += d; });
   const api = `http://127.0.0.1:${await boundPort(child, () => log)}`;
-  const call = async (route, { method = 'GET', body, headers = {} } = {}) => {
+  const call = async (route, { method = 'GET', body, headers = {}, as = uid } = {}) => {
     const response = await fetch(api + route, {
       method,
-      headers: { Cookie: cookie(), ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers },
+      headers: { Cookie: cookie(as), ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers },
       ...(body ? { body: JSON.stringify(body) } : {})
     });
     return { status: response.status, body: await response.json() };
   };
   return {
     dataDir, api,
-    put: (state, headers = {}) => call('/api/data', { method: 'PUT', body: { state }, headers }),
+    put: (state, headers = {}, as = uid) => call('/api/data', { method: 'PUT', body: { state }, headers, as }),
     get: (headers = {}) => call('/api/data', { headers }),
     getRev: (headers = {}) => call('/api/data/rev', { headers }),
     adminUsers: () => call('/api/admin/users'),
+    adminDelete: id => call('/api/admin/user/delete', { method: 'POST', body: { id } }),
     coachStatus: () => call('/api/coach/status'),
     plant: text => fs.writeFileSync(primaryFile(dataDir), text),
     status: () => call('/api/data/migration-status', { headers: ENGINE }),
@@ -120,7 +126,8 @@ test('confirming migrates once: byte-identical backup, validated v2, _rev + 1, o
   const saved = JSON.parse(fs.readFileSync(primaryFile(dataDir), 'utf8'));
   assert.deepEqual([saved.engineSchemaVersion, saved._rev], [2, 5]);
   assert.deepEqual(saved.routines[0].ex[0].warmup, { mode: 'smart', count: 2 });
-  assert.equal((await get(ENGINE)).body.state.workouts[0].exposures.length, 1);
+  assert.equal(saved.engineContractRevision, 1, 'the migration chains the contract upgrade');
+  assert.equal((await get(CONTRACT)).body.state.workouts[0].exposures.length, 1);
   assert.equal((await get()).body.error, 'upgrade-required');
   const again = await migrate({ confirmed: true, baseRev: 5 });
   assert.deepEqual(again.body, { migrated: false, revision: 5 });
@@ -268,7 +275,7 @@ test('A31: a 3000-workout migration remains writable through ordinary sync', asy
   const state = unpackProfile(JSON.parse(fs.readFileSync(primaryFile(dataDir), 'utf8')));   // the canonical form: the largest body a client can still send
   const body = JSON.stringify({ state, baseRev: 5 });
   assert.ok(Buffer.byteLength(body) > 5 * 1024 * 1024);
-  const response = await fetch(api + '/api/data', { method: 'PUT', headers: { Cookie: cookie(), ...ENGINE, 'Content-Type': 'application/json' }, body });
+  const response = await fetch(api + '/api/data', { method: 'PUT', headers: { Cookie: cookie(), ...CONTRACT, 'Content-Type': 'application/json' }, body });
   assert.equal(response.status, 200);
 });
 
@@ -286,14 +293,123 @@ test('A31: oversized canonical conversion refuses success and preserves source',
 test('M5: the profile is stored and sent in its compact form, and read back canonical', async t => {
   const { put, get, dataDir } = await harness(t);
   const canonical = migrateProfileV1ToV2(JSON.parse(JSON.stringify(V1_PROFILE)), LIB_BY_ID).profile;
-  assert.equal((await put(canonical, ENGINE)).status, 200);                       // canonical push still works
+  assert.equal((await put(canonical, CONTRACT)).status, 200);                     // canonical push still works
   const onDisk = JSON.parse(fs.readFileSync(primaryFile(dataDir), 'utf8'));
   assert.equal(onDisk.packed, 1);
-  const wire = (await get(ENGINE)).body.state;
+  const wire = (await get(CONTRACT)).body.state;
   assert.equal(wire.packed, 1);
   const bookkeeping = { _rev: undefined, _ts: undefined, _wid: undefined, _wids: undefined };
   assert.deepEqual({ ...unpackProfile(wire), ...bookkeeping }, { ...canonical, ...bookkeeping });
-  assert.equal((await put(packProfile(canonical), ENGINE)).status, 200);          // and so does a packed one
+  assert.equal((await put(packProfile(canonical), CONTRACT)).status, 200);        // and so does a packed one
   assert.equal(JSON.parse(fs.readFileSync(primaryFile(dataDir), 'utf8')).packed, 1);
-  assert.equal((await put({ packed: 1, engineSchemaVersion: 2, workouts: [null], prescriptions: { a: { _t: 'x' } } }, ENGINE)).status, 400);   // hostile packed doc: refused, not a 500
+  assert.equal((await put({ packed: 1, engineSchemaVersion: 2, engineContractRevision: 1, workouts: [null], prescriptions: { a: { _t: 'x' } } }, CONTRACT)).status, 400);   // hostile packed doc: refused, not a 500
+});
+
+/* ---------- engine contract 1: programmes as engine definitions (spec 16) ---------- */
+
+test('a contract-0 client reading a marked profile gets 409 upgrade-required with minEngineContract 1', async t => {
+  const { put, get, getRev } = await harness(t);
+  // An unmarked v2 profile stays open to a build from before the contract.
+  assert.equal((await put(V2, ENGINE)).status, 200);
+  assert.equal((await get(ENGINE)).status, 200);
+  assert.equal((await put(MARKED, CONTRACT)).status, 200);
+  for (const headers of [ENGINE, { ...ENGINE, 'X-OpenGym-Engine-Contract': '0' }, { ...ENGINE, 'X-OpenGym-Engine-Contract': 'nonsense' }]) {
+    for (const call of [get, getRev]) {
+      const r = await call(headers);
+      assert.deepEqual([r.status, r.body], [409, { error: 'upgrade-required', minEngineContract: 1 }], JSON.stringify(headers));
+    }
+  }
+  const r = await get(CONTRACT);
+  assert.deepEqual([r.status, r.body.state.engineContractRevision], [200, 1]);
+  assert.equal((await getRev(CONTRACT)).body.rev, 2);
+  // The schema gate still answers first for a client that knows neither.
+  assert.deepEqual((await get()).body, { error: 'upgrade-required', minEngineSchema: 2 });
+});
+
+// Review Focus 1: a phone still on the previous build edits a profile another device upgraded.
+test('contract-0 PUT on a marked file is 409 and leaves the file byte-identical', async t => {
+  const { put, get, dataDir } = await harness(t);
+  assert.equal((await put(MARKED, CONTRACT)).status, 200);
+  const before = fs.readFileSync(primaryFile(dataDir), 'utf8');
+  for (const state of [{ ...V2, _ts: 2 }, { ...MARKED, _ts: 2 }]) {
+    const r = await put(state, ENGINE);
+    assert.deepEqual([r.status, r.body], [409, { error: 'upgrade-required', minEngineContract: 1 }]);
+  }
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), before);
+  assert.equal((await get(CONTRACT)).body.rev, 1);
+});
+
+test('a PUT that drops the marker is refused after the body is read', async t => {
+  const { put, plant, dataDir, api } = await harness(t);
+  // A current client whose body has lost the marker (or lowers it) cannot write it away.
+  assert.equal((await put(MARKED, CONTRACT)).status, 200);
+  const marked = fs.readFileSync(primaryFile(dataDir), 'utf8');
+  for (const state of [{ ...V2, _ts: 3 }, { ...MARKED, engineContractRevision: 0, _ts: 3 }]) {
+    const r = await put(state, CONTRACT);
+    assert.deepEqual([r.status, r.body], [409, { error: 'upgrade-required', minEngineContract: 1 }]);
+  }
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), marked);
+
+  // An old client's PUT streams in over an unmarked file; a current device marks the file while
+  // the body is still arriving. The check after the body sees the marker and refuses.
+  plant(JSON.stringify({ ...V2, _rev: 4 }));
+  const bytes = JSON.stringify({ state: { ...V2, _ts: 9 } });
+  let finish;
+  const pending = new Promise((resolve, reject) => {
+    const req = http.request(api + '/api/data', { method: 'PUT', headers: { Cookie: cookie(), ...ENGINE, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bytes) } }, res => {
+      let body = ''; res.on('data', d => { body += d; }); res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(body) }));
+    });
+    req.on('error', reject); req.write(bytes.slice(0, 1)); finish = () => req.end(bytes.slice(1));
+  });
+  await new Promise(resolve => setTimeout(resolve, 60));
+  assert.equal((await put(MARKED, CONTRACT)).status, 200);
+  const after = fs.readFileSync(primaryFile(dataDir), 'utf8');
+  finish();
+  assert.deepEqual(await pending, { status: 409, body: { error: 'upgrade-required', minEngineContract: 1 } });
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), after);
+});
+
+test('the first marked PUT keeps a pre-contract-1 backup once; deleting the account removes it', async t => {
+  const { put, adminDelete, dataDir } = await harness(t);
+  const file = path.join(dataDir, `state-${OTHER}.json`);
+  assert.equal((await put(V2, ENGINE, OTHER)).status, 200);
+  assert.equal((await put({ ...V2, _ts: 2 }, ENGINE, OTHER)).status, 200);
+  assert.equal(fs.existsSync(contractBackup(dataDir, OTHER)), false, 'an unmarked write keeps no copy');
+  const unmarked = fs.readFileSync(file, 'utf8');
+  assert.equal((await put(MARKED, CONTRACT, OTHER)).status, 200);
+  assert.equal(fs.readFileSync(contractBackup(dataDir, OTHER), 'utf8'), unmarked, 'the file as it was before the marker');
+  assert.equal(JSON.parse(fs.readFileSync(file, 'utf8')).engineContractRevision, 1);
+  assert.equal((await put({ ...MARKED, _ts: 5 }, CONTRACT, OTHER)).status, 200);
+  assert.equal(fs.readFileSync(contractBackup(dataDir, OTHER), 'utf8'), unmarked, 'written once, never replaced');
+  // The copy is training history too: it goes with the account, and nobody else's is touched.
+  fs.writeFileSync(contractBackup(dataDir), '{}');
+  assert.equal((await adminDelete(OTHER)).status, 200);
+  assert.equal(fs.existsSync(contractBackup(dataDir, OTHER)), false);
+  assert.equal(fs.existsSync(file), false);
+  assert.equal(fs.existsSync(contractBackup(dataDir)), true);
+});
+
+test('GET /api/config advertises engineContract; the preflight allows X-OpenGym-Engine-Contract', async t => {
+  const { api } = await harness(t);
+  for (const headers of [{}, { Cookie: cookie() }]) {
+    assert.equal((await (await fetch(api + '/api/config', { headers })).json()).engineContract, 1);
+  }
+  const pre = await fetch(api + '/api/data', { method: 'OPTIONS', headers: { Origin: 'capacitor://localhost', 'Access-Control-Request-Method': 'PUT', 'Access-Control-Request-Headers': 'x-opengym-engine-contract' } });
+  assert.equal(pre.status, 204);
+  assert.match(pre.headers.get('access-control-allow-headers'), /(^|, )X-OpenGym-Engine-Contract(,|$)/);
+});
+
+// Same probe as server-state-read-cost.test.js: a rewrite the stat cache's key cannot see (same
+// length, pinned mtime) that drops the marker. A gate parsing the file would let the old client in.
+test('rev polling reads the cached status, not the file', async t => {
+  const { plant, getRev, dataDir } = await harness(t);
+  const PINNED = new Date(1700000000000);
+  const writePinned = text => { plant(text); fs.utimesSync(primaryFile(dataDir), PINNED, PINNED); };
+  const marked = JSON.stringify({ ...MARKED, _rev: 7 });
+  writePinned(marked);
+  assert.equal((await getRev(CONTRACT)).body.rev, 7);
+  writePinned(marked.replace('"engineContractRevision":1', '"engineContractRevision":0'));
+  assert.equal(fs.statSync(primaryFile(dataDir)).size, Buffer.byteLength(marked));
+  const r = await getRev(ENGINE);
+  assert.deepEqual([r.status, r.body], [409, { error: 'upgrade-required', minEngineContract: 1 }], 'the poll answered from the cached status');
 });

@@ -256,7 +256,7 @@ const snapshot = s => ({
 })
 
 // The schedule as the plan screens read it: weekdays from the appointments' preferred days, or a loop.
-function legacyScheduleOf(def) {
+export function legacyScheduleOf(def) {
   if (def.schedule.mode === 'rotation') return { sequence: def.schedule.sequence.slice() }
   if (isMap(def.src) && Array.isArray(def.src.sequence)) return { sequence: def.src.sequence.slice() }
   const days = {}

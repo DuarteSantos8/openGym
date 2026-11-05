@@ -10,7 +10,9 @@
 import { z } from 'zod'
 import { setNoteOf } from '../../frontend/src/lib/set-notes.js'
 import { setVideosOf } from '../../frontend/src/lib/set-videos.js'
-import { programmesOf, programmeView, programmeRoutineIds, legacyWeeksOf } from '../../frontend/src/lib/programmes.js'
+import { programmeById, programmeView, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
+import { programmesOut } from '../../api/coach/core/payload.js'
+import { ENGINE_CONTRACT, contractOf } from '../../api/migration/profile-version.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { getState, getUser, MIN_ENGINE_SCHEMA, engineUnsupported } from './state.js'
 import {
@@ -71,6 +73,18 @@ function noState() {
 }
 
 function engineUnsupportedError(S) {
+  if ((S.engineSchemaVersion || 1) >= MIN_ENGINE_SCHEMA) {
+    const contract = contractOf(S)
+    return {
+      error: 'engine_contract_unsupported',
+      message: contract > ENGINE_CONTRACT
+        ? `This profile was saved by a newer openGym (engine contract ${contract}) than this MCP server reads (${ENGINE_CONTRACT}). Upgrade the MCP server to the version your openGym server runs, then retry.`
+        : 'This profile still keeps its programmes in the format from before the current app. Open the current openGym app on a device so it can upgrade the saved data, then retry.',
+      engine_contract: contract,
+      supported_engine_contract: ENGINE_CONTRACT,
+      unit: S.unit || 'kg'
+    }
+  }
   return {
     error: 'engine_schema_unsupported',
     message: `This profile is on an old data format (schema ${S.engineSchemaVersion || 1}) that predates the generic training-prescription engine. Sign in from a device running the current openGym app so it can upgrade the saved data to the current format, then retry.`,
@@ -667,10 +681,7 @@ export const previewSession = {
         preset_id: p.preset,
         preset_label: presetLabel(p.preset),
         configured: { ...configured, summary: ruleSummary(occ.rule) },
-        prescription: { ...prescribed, why: whyOf(p), ...(p.provenance.programme ? { programme: {
-          week: p.provenance.programme.week, weeks: p.provenance.programme.weeks, pct_1rm: p.provenance.programme.pct,
-          target_rpe: p.provenance.programme.rpe, deload: p.provenance.programme.deload === true
-        } } : {}) },
+        prescription: { ...prescribed, why: whyOf(p), ...(p.provenance.programme ? { programme: programmeOf(S, p, iso) } : {}) },
         opening_sets: entries[i].sets.map(row => {
           const role = row.phase === 'warmup' || row.warmup ? 'warmup' : 'work'
           return {
@@ -706,46 +717,53 @@ export const previewSession = {
 
 /* ---------- get_programme ---------- */
 
+// A session's place in the running programme (its prescription's provenance): the week of the
+// exercise's own track, which try of it, its role, and the %1RM or RPE that week asks for.
+function programmeOf(S, p, iso) {
+  const g = p.provenance.programme
+  const view = programmeView(S, iso)
+  const track = view?.run.id === g.runId ? view.def.tracks.find(t => t.id === g.trackId) : null
+  const load = p.ruleSnapshot?.program?.phases?.find(ph => ph.id === p.phaseId)?.parameters?.load
+  return {
+    week: track ? track.stages.findIndex(st => st.id === g.stage) + 1 : null, attempt: g.attempt, role: g.role,
+    ...(load?.mode === 'percent_1rm' ? { pct_1rm: load.percent } : {}),
+    ...(g.effort ? { target_rpe: g.effort.rpe } : {})
+  }
+}
+
 /** get_programme — the programmes saved, and where the running one stands (#159). */
 export const getProgramme = {
   name: 'get_programme',
-  description: 'Show the user\'s programmes: routines run as a block of 1 to 16 calendar weeks, each week with optional targets (a %1RM per exercise, an RPE per exercise or for the whole week, a deload week). `running` is the one in progress, or null: its current week (1-based) of how many, whether it is paused or done, and this week\'s targets. While one runs, its schedule IS the user\'s weekday plan or rotation (get_week_plan shows it), and preview_session already opens sessions at its targets. `programmes` lists every saved one with its schedule and weeks. Targets are keyed by exercise id, or by "routineId:exerciseId" for one routine only.',
+  description: 'Show the user\'s programmes: routines run as a block of 1 to 16 calendar weeks (or rounds of a loop), one track per exercise with a stage per week. A stage with `own: "set"` fixes that week\'s numbers (`sets`, `reps` or `sec`, `load` as `pct` of the 1RM or a `weight`, `rest`, an `effort` RPE); `own: "inherit"` leaves them to the exercise\'s own progression; `kind: "recovery"` is a deload week. `policy` is what happens to an exercise after a missed or skipped week (advance or repeat). `running` (top level) is the one in progress, or null: its nominal week of how many, whether it is paused or done; that programme\'s own `running` says each exercise\'s week (`stage`), which try of it (`attempt`) and its state. While one runs, its schedule IS the user\'s weekday plan or rotation (get_week_plan shows it), and preview_session opens sessions at its targets.',
   schema: {},
   handler: () => {
-    const S = getState()
-    if (!S) return noState()
+    const { S, error } = stateOrError()
+    if (error) return error
     const nameOf = id => (S.routines || []).find(r => r.id === id)?.name || null
-    const weekOut = w => ({
-      deload: w.deload === true,
-      rpe: w.rpe ?? null,
-      targets: Object.entries(w.t || {}).map(([key, v]) => {
-        const i = key.indexOf(':')
-        const exId = i < 0 ? key : key.slice(i + 1)
-        return { exercise_id: exId, exercise_name: exerciseOf(exId, S).n, routine_id: i < 0 ? null : key.slice(0, i), pct_1rm: v.pct ?? null, rpe: v.rpe ?? null }
-      }),
-    })
-    // Engine contract 1 (frontend/src/lib/programmes.js), read through the week bridge until this
-    // tool reads stages itself (and refuses a profile it cannot read).
     const st = programmeView(S, todayIso())
-    const week = st ? Math.min(st.nominal.used + 1, st.nominal.of) : 0
     const done = !!st && ['stopped', 'complete', 'ended'].includes(st.status)
     const days = p => { const out = {}; for (const a of p.schedule.appts || []) if (a.day != null) (out[DAY_NAMES[a.day]] ||= []).push(nameOf(a.rid)); return out }
     return {
       today: todayIso(),
       running: st ? {
-        id: st.run.programmeId, name: st.def.name, week, weeks: st.nominal.of,
+        id: st.run.programmeId, name: st.def.name, status: st.status, week: Math.min(st.nominal.used + 1, st.nominal.of), weeks: st.nominal.of, unit: st.nominal.unit,
         paused: st.status === 'paused', done, round: st.run.cycle, started_on: st.run.startedOn,
         extra_pct_1rm: Number(st.run.bump) || 0,
-        this_week: done ? null : weekOut(legacyWeeksOf(st.def)[week - 1] || {}),
       } : null,
-      programmes: programmesOf(S).map(p => ({
-        id: p.id, name: p.name, weeks: p.duration.n,
-        schedule: p.schedule.mode === 'rotation'
-          ? { kind: 'rotation', sequence: p.schedule.sequence.map(id => (id === 'rest' ? 'rest' : nameOf(id))) }
-          : { kind: 'weekdays', days: days(p) },
-        routine_ids: programmeRoutineIds(S, p),
-        week_targets: legacyWeeksOf(p).map(weekOut),
-      })),
+      // The Coach's own summary (api/coach/core/payload.js), bounded the same way, with names added.
+      programmes: programmesOut(S, Date.now()).map(x => {
+        const p = programmeById(S, x.id)   // null only for an id the summary had to cut
+        return {
+          ...x,
+          ...(p ? {
+            schedule: p.schedule.mode === 'rotation'
+              ? { kind: 'rotation', sequence: p.schedule.sequence.map(id => (id === 'rest' ? 'rest' : nameOf(id))) }
+              : { kind: 'weekdays', days: days(p) },
+            routine_ids: programmeRoutineIds(S, p),
+          } : {}),
+          tracks: x.tracks.map(t => ({ ...t, exercise_name: exerciseOf(t.exId, S).n, routine_name: nameOf(t.routineId) })),
+        }
+      }),
     }
   }
 }

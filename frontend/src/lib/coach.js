@@ -14,19 +14,20 @@
 
 import { EXIDX, canonicalExId } from './exercises.js'
 import { modeOf, isBw, isPerSide, cleanupSg } from './history.js'
-import { uid, todayISO, DAYN } from './format.js'
+import { uid, todayISO, DAYN, SUNDAY } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
 import { POLICY_IDS, POLICY_NAME, POLICY_DESC } from './prescription/vocabulary.js'
-import { newProgramme, programmeById, saveProgramme, setLegacyWeeks, MAX_WEEKS } from './programmes.js'
+import { legacyScheduleOf, newProgramme, programmeById, saveProgramme, MAX_WEEKS } from './programmes.js'
 import { ownRowsOf, cleanOwnRow, ownRowsLine } from './warmup-ramp.js'
 import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
 import { coachExOf, coachRoutinesOf, ruleFromView } from '../../../api/coach/core/plan-view.js'
-import { defaultPlanRule, presetForPolicy, validatePlanRule } from './prescription/index.js'
+import { defaultPlanRule, presetForPolicy, validatePlanRule, validateProgramme } from './prescription/index.js'
 import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
+import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
@@ -190,8 +191,12 @@ export function markStale(proposal, S) {
   const changes = (proposal.changes || []).map(c => {
     const r = c.target?.routineId ? findRoutine(S, c.target.routineId) : null
     let stale = false
-    // A programme names no routine: a revision is stale once the programme it revises is gone.
-    if (c.type === 'programme') stale = !!c.target?.programmeId && !programmeById(S, c.target.programmeId)
+    // A programme names no routine: a revision is stale once the programme it revises is gone, or
+    // has been saved again since the revision the Coach read (`before.rev`; older records have none).
+    if (c.type === 'programme') {
+      const p = c.target?.programmeId ? programmeById(S, c.target.programmeId) : null
+      stale = !!c.target?.programmeId && (!p || (c.before?.rev != null && p.rev !== c.before.rev))
+    }
     else if (c.type !== 'add-routine' && c.type !== 'week' && !r) stale = true
     else if (c.target?.exId && !findEx(r, c.target.exId)) stale = true
     else if (c.type === 'week') {
@@ -288,6 +293,11 @@ export function revertLast(s) {
   const c = coachOf(s)
   const snap = (c.snapshots || []).at(-1)
   if (!snap) return false
+  // A programme the Coach wrote and you edited since (or a revised one you deleted since): putting
+  // it back would overwrite that edit, so Undo does nothing at all (spec 13). Older snapshots have no `rev`.
+  const pr = snap.programmeRestore
+  const nowDef = pr?.id ? programmeById(s, pr.id) : null
+  if (pr?.id && pr.rev != null && (nowDef ? nowDef.rev !== pr.rev : !!pr.prev)) return false
   let routines = snap.routines
   let audit = snap.migrationAudit
   if (routines.some(r => (r.ex || []).some(o => !o?.occurrenceId || !o?.exerciseId))) {
@@ -309,13 +319,15 @@ export function revertLast(s) {
     s.rotation = clone(snap.rotationRestore.rotation)
     s.queue = clone(snap.rotationRestore.queue)
   }
-  // A programme the Coach wrote goes away again, one it revised gets its weeks back.
-  if (snap.programmeRestore?.id) {
-    const { id, prev } = snap.programmeRestore
-    const all = { ...(s.programmes && typeof s.programmes === 'object' ? s.programmes : {}) }
-    if (prev) all[id] = clone(prev)
-    else if (s.programmeRuns?.[s.programme?.runId]?.programmeId !== id) delete all[id]
-    s.programmes = all
+  // A programme the Coach wrote goes away again, unless it runs; one it revised gets its weeks back,
+  // saved one revision up so the running one takes them as an amend for the weeks to come.
+  if (pr?.id) {
+    if (pr.prev) saveProgramme(s, clone(pr.prev))
+    else if (nowDef && s.programmeRuns?.[s.programme?.runId]?.programmeId !== pr.id) {
+      const all = { ...s.programmes }
+      delete all[pr.id]
+      s.programmes = all
+    }
   }
   // Which snapshot this used (`snap`): the sync merge keeps it off the ring when another device's
   // copy still holds it, so the same Undo is not offered twice (lib/sync-merge.js mergeCoach).
@@ -632,20 +644,35 @@ const CHANGE_APPLY = {
     else delete e.warmupRows
   },
   // A programme (lib/programmes.js): a new one over the schedule you train by now, or the weeks
-  // of one you have replaced, converted like every week the programme screen writes. Never
-  // started here: running it stays your call, on Plan.
+  // of one you have replaced. The weeks (with the leaf edits and choices validate.js allows) go
+  // through the one conversion every programme goes through (api/migration/programme-upgrade.js),
+  // on a copy. Never started here: running it stays your call, on Plan, where its choices are
+  // acknowledged. On the running one, saving is an amend for the weeks not yet begun.
   programme: (s, c) => {
     const weeks = Array.isArray(c.after?.weeks) ? c.after.weeks : []
-    if (!weeks.length) throw new Error('bad programme')
+    if (!weeks.length || weeks.length > MAX_WEEKS) throw new Error('bad programme')
     const id = c.target?.programmeId
     const was = id ? programmeById(s, id) : null
     if (id && !was) throw new Error('missing programme')
-    const base = was || newProgramme(s, String(c.after.name || t('Coach programme')).slice(0, 60), weeks.length)
-    const next = setLegacyWeeks({ ...base, ...(c.after.name ? { name: String(c.after.name).slice(0, 60) } : {}) }, weeks.slice(0, MAX_WEEKS), s)
+    // Saved again since the Coach read it: applying would overwrite that edit (spec 13).
+    if (was && c.before?.rev != null && was.rev !== c.before.rev) throw new Error('stale programme')
+    const name = String(c.after.name || was?.name || t('Coach programme')).slice(0, 60)
+    const base = was || newProgramme(s, name, weeks.length)
+    const out = convertLegacyProgramme({ id: base.id, name, at: base.at, weeks: clone(weeks), ...legacyScheduleOf(base), ...(typeof base.src === 'string' ? { src: base.src } : {}) },
+      { routines: s.routines || [], catalogue: LIB_BY_ID, customEx: s.customEx, progression: s.progression, weekStart: s.weekStart === SUNDAY ? 0 : 1 })
+    // What the Coach asked for cannot run as asked (a leaf the exercise cannot take, two choices for
+    // one exercise, a %1RM on a training max): refused whole, never kept for a repair.
+    if (out.needs?.includes('repair') && !base.needs?.includes('repair')) throw new Error('bad programme')
+    // An exercise it says nothing about keeps its choice, its 1RM preference and its training max.
+    const old = new Map((base.tracks || []).map(tr => [tr.id, tr]))
+    const tracks = out.tracks.map(tr => {
+      const o = old.get(tr.id)
+      return { ...tr, ...(o?.refs ? { refs: o.refs } : {}), ...(o?.tm ? { tm: o.tm } : {}), ...(tr.policy || o?.policy ? { policy: tr.policy || o.policy } : {}) }
+    })
     const snaps = coachOf(s).snapshots || []
     const snap = snaps[snaps.length - 1]
-    if (snap && !snap.programmeRestore) snap.programmeRestore = { id: next.id, prev: was ? clone(s.programmes[next.id]) : null }
-    saveProgramme(s, next)
+    const saved = saveProgramme(s, { ...out, rev: base.rev, end: base.end, refs: base.refs, tracks })
+    if (snap && !snap.programmeRestore) snap.programmeRestore = { id: saved.id, prev: was ? clone(was) : null, rev: saved.rev }
   },
   week: (s, c) => {
     // A single-routine op: the slot is a list, but the Coach only ever names one routine (or
@@ -680,6 +707,9 @@ export function applyChangeSet(s, proposal, acceptedIds) {
     CHANGE_APPLY[c.type](s, c)
     applied.push(decisionOf(c, 'accepted'))
   }
+  // The batch as a whole (spec 13): a programme it wrote still runs on the routines the rest of it left.
+  const written = programmeById(s, coachOf(s).snapshots.at(-1)?.programmeRestore?.id)
+  if (written && !written.needs?.includes('repair') && !validateProgramme(written, { routines: s.routines || [] }).ok) throw new Error('bad programme')
   // Turned-down changes keep their before/after too: the chat shows the whole proposal back
   // later, and "you declined something about sets" is not a memory anyone can use.
   const rejected = (proposal.changes || [])
@@ -802,8 +832,15 @@ export function changeMeaning(c) {
   }
   if (c.type === 'programme') {
     const weeks = c.after?.weeks || []
+    // A fixed week shows its numbers (a load, sets × reps or seconds), so a week taken over from the
+    // exercise's own progression is visible as such.
+    const bit = x => {
+      const amount = x.reps ?? (x.sec != null ? x.sec + ' s' : null)
+      return [x.pct != null ? x.pct + '%' : x.weight != null ? x.weight + ' kg' : null,
+        x.sets != null ? x.sets + '×' + (amount ?? '') : amount, x.rpe != null ? 'RPE ' + x.rpe : null].filter(v => v != null).join(' ')
+    }
     return t('Saved under Plan → Programmes. It starts when you start it.') + ' ' + weeks.map((w, i) => {
-      const bits = Object.values(w.t || {}).map(x => (x.pct != null ? x.pct + '%' : 'RPE ' + x.rpe))
+      const bits = Object.values(w.t || {}).map(bit).filter(Boolean)
       return t('Week {0}', i + 1) + ': ' + (w.deload ? t('deload') : bits.length ? [...new Set(bits)].join(', ') : w.rpe != null ? 'RPE ' + w.rpe : '–')
     }).join(' · ')
   }

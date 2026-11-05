@@ -103,6 +103,25 @@ export function sampleState(over = {}) {
   };
 }
 
+/* A profile on engine contract 1 with a programme running: a v1 block (70 % bench, then a deload
+   week) taken through the canonical migration, which chains the programme upgrade. Started on
+   2026-10-26, it reads week 2 for bench on 2026-11-03 (the Monday session is credited to it). */
+export const PROGRAMME_TODAY = Date.parse('2026-11-03T12:00:00Z');
+export async function programmeProfile() {
+  const { migrateProfileV1ToV2 } = await import('../migration/profile-migration.js');
+  const { LIB_BY_ID } = await import('../coach/core/library.js');
+  const row = (r, w) => ({ r, w, done: true });
+  return migrateProfileV1ToV2({
+    unit: 'kg', lang: 'en', coach: { consent: { agreedAt: new Date().toISOString(), version: 1 } },
+    routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60, prog: 'linear' }, { id: '0043', sets: 3, reps: 5, weight: 80, prog: 'linear' }] }],
+    week: { 1: 'r1' },
+    workouts: [{ id: 'w1', d: '2026-11-02', start: Date.UTC(2026, 10, 2, 18), end: Date.UTC(2026, 10, 2, 19), routineIds: ['r1'], routineId: 'r1',
+      entries: [{ id: '0025', rid: 'r1', target: { sets: 3, reps: 5, weight: 60, mode: 'reps' }, planned: { sets: 3, reps: 5 }, sets: [row(5, 60), row(5, 60), row(5, 60)] }] }],
+    programmes: { pg: { id: 'pg', name: 'Block', at: 1, days: { 1: ['r1'] }, weeks: [{ rpe: 7, t: { '0025': { pct: 70 } } }, { deload: true }] } },
+    programme: { id: 'pg', startedOn: '2026-10-26', cycle: 1, bump: 0, saved: { week: { 1: 'r1' } } }
+  }, LIB_BY_ID).profile;
+}
+
 /* A software authenticator: a P-256 key that makes attestations ("none") and assertions the way
    a browser's would, for tests that need a passkey ceremony or a passkey step-up (proveOwner).
    `row(userId)` is its db.creds entry. */
