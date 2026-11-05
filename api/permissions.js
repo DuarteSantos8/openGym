@@ -17,6 +17,7 @@
  *   gym:staff                an admin; a gym lead too, for the trainer role in their own gym
  *   gym:view                 an admin, or anyone with a role or membership in that gym (counts, names)
  *   gym:members              the gym's leads (the names of members who joined)
+ *   gym:invite               the gym's leads (a join code, GY-…)
  *   trainer:invite           a free trainer (no gymId), or a trainer of subject.gymId
  *   library:read             any account; a studio item only for that studio's people
  *   library:import           as read, and the item must be live
@@ -142,6 +143,10 @@ export function createPermissions({ org, userById, isAdmin, isOwner = () => fals
       case 'gym:members':
         if (!f.trainers) return NO('off', 404);
         return hasStaff(subject?.gymId, actor.id, 'lead') ? YES('view', 'lead') : NO('not-found', 404);
+      case 'gym:invite':
+        // A gym's join code (GY-…) comes from its leads: joining is between the member and the gym.
+        if (!f.trainers) return NO('off', 404);
+        return hasStaff(subject?.gymId, actor.id, 'lead') ? YES('apply', 'lead') : NO('not-lead');
       case 'trainer:invite': {
         if (!f.trainers) return NO('off', 404);
         const gid = subject?.gymId || null;
