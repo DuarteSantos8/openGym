@@ -82,7 +82,7 @@ const still = { hash: POSTER, mime: 'image/webp', size: 3, width: 48, height: 36
 const image = { kind: 'image', hash: MAIN, mime: 'image/webp', size: 3, width: 80, height: 60, poster: still, at: 1 }
 const anim = { ...image, kind: 'gif', mime: 'image/gif', dur: 1.2 }
 const clip = (dur, over = {}) => ({ kind: 'video', hash: MAIN, mime: 'video/mp4', size: 3, width: 64, height: 36, dur, codec: 'avc1', poster: still, at: 1, ...over })
-const custom = over => ({ id: 'c1', n: 'sandbag carry', bp: 'back', custom: true, ...over })
+const custom = over => ({ id: 'c1', n: 'zzqx odd lift', bp: 'back', custom: true, ...over })
 
 // Object URLs the store hands out, by file, so a test can tell which file an element shows.
 let media, made
@@ -308,6 +308,15 @@ describe('Thumb — a custom exercise', () => {
     expect(host.querySelector('.thumb-x [data-icon="link"]')).toBeTruthy()
     await mountThumb(custom({}))
     expect(host.querySelector('.thumb-x [data-icon="dumbbell"]')).toBeTruthy()
+  })
+
+  it('a custom exercise the catalogue knows by name, with no picture of its own, shows the catalogue still', async () => {
+    await mountThumb(custom({ n: '3/4 Sit-up' }))
+    expect(host.querySelector('img.thumb').getAttribute('src')).toContain('still/0001.webp')
+    expect(host.querySelector('.thumb-x')).toBeNull()
+    // its own link keeps the link icon instead
+    await mountThumb(custom({ n: '3/4 Sit-up', url: 'https://exrx.net/x' }))
+    expect(host.querySelector('.thumb-x [data-icon="link"]')).toBeTruthy()
   })
 
   it('a poster that is not here shows the tile while nothing can fetch it', async () => {

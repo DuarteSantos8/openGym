@@ -6,13 +6,18 @@ import { t, exerciseNameFor } from '../lib/i18n.js'
 import Icon from './Icon.jsx'
 import CustomMedia, { CustomThumb } from './CustomMedia.jsx'
 import { useAnimSources } from './Animations.jsx'
+import { catalogueTwin } from '../lib/exercise-visual.js'
 
 // An exercise's picture, wherever one shows. A custom exercise goes to CustomMedia.jsx — its own
 // photo, GIF, video or link, from the local media store — and never through imgSrc/gifSrc, which
 // name files of the shipped dataset (a stray img/gif on a custom exercise, written by a fork, is
 // ignored). The split is by component, not by branch, so each side keeps its own hooks in order.
+// A custom exercise with no picture of its own borrows the catalogue's drawing when the catalogue
+// knows the lift by that name (lib/exercise-visual.js); the grey dumbbell is only for one nobody knows.
 export default function Media(p) {
-  return isCustomEx(p.ex) ? <CustomMedia {...p} /> : <BuiltinMedia {...p} />
+  if (!isCustomEx(p.ex)) return <BuiltinMedia {...p} />
+  const twin = catalogueTwin(p.ex)
+  return twin ? <BuiltinMedia {...p} ex={twin} /> : <CustomMedia {...p} />
 }
 
 // Big autoplaying animation; tap toggles to the still frame. `compact` shrinks it (superset cards).
@@ -167,7 +172,9 @@ export function autoplayClip(el) {
 // broken-image glyph in a list of them (#281). The failure is remembered per image, so a list
 // that re-renders does not ask again; a new exercise in the same slot tries its own.
 export function Thumb(p) {
-  return isCustomEx(p.ex) ? <CustomThumb {...p} /> : <BuiltinThumb {...p} />
+  if (!isCustomEx(p.ex)) return <BuiltinThumb {...p} />
+  const twin = catalogueTwin(p.ex)
+  return twin ? <BuiltinThumb {...p} ex={twin} /> : <CustomThumb {...p} />
 }
 function BuiltinThumb({ ex }) {
   const body = useStore(s => figureOf(s.S))
