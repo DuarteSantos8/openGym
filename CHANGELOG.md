@@ -71,6 +71,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Zepp OS watch: the page is there on a phone without a server too, says why the watch needs one and connects you, the pairing code and the server address each get a copy button, and the page says plainly that openGym is not in the Zepp App Store yet, with the install guide.
 - AI Coach: a question in the chat sees your weigh-ins of the last four weeks, the ones from Apple Health or Health Connect included, instead of answering that it does not know your weight.
 
+**Trainers and gyms (self-hosted, `TRAINERS=on`, off by default)**
+- Gyms, gym leads and trainers on one server. An admin creates a gym and gives people the lead or trainer role, or lets someone train freely without a gym.
+- A trainer hands you a code or a QR. You see who they are, which gym and who answers for your data, and pick per category what they may see, suggest or change. Nothing is shared until you say yes and they confirm.
+- With a gym trainer, the gym lead gets a row of their own: pre-filled with what your trainer sees, never more than see, and you can switch any of it off (`TRAINERS_LEAD_ACCESS` picks `row`, `mirror` or `none`).
+- Settings → Account → Trainer & gym shows exactly what each side sees, lets you change it or disconnect, and it counts on their next tap. Your sharing log lists every connection, change and look, only you read it, and it comes along in "Download my sharing record" and goes with your account.
+- Groundwork for the trainer dashboard, the shared library and sign-in with OIDC: one permission check for every new route, versioned consent records, per-account limits. See docs/TRAINERS.md.
+
+**Admins see counts, not your training**
+- Behaviour change: the admin dashboard no longer opens anyone's workouts and weigh-ins. A person's detail shows counts, storage and last sync, and the list no longer says when someone last trained or what they are training right now. The data is still readable on disk by whoever runs the server, just not in the app.
+- `ADMIN_DATA_VIEW=on` brings the old view back for small instances that want it, and then every look is written to the activity log and to that person's own sharing log.
+
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
 

@@ -886,6 +886,42 @@ instances whose users you trust. Connections live in `data/integrations/`, the U
 secret encrypted with a key from `data/secret`. Payloads, signatures and retries are in
 [INTEGRATIONS.md](INTEGRATIONS.md).
 
+### Trainers and gyms (`TRAINERS`) and what admins see (`ADMIN_DATA_VIEW`)
+
+```
+TRAINERS=on
+```
+
+turns on gyms (studios), gym leads and trainers. An admin creates gyms in the admin dashboard and
+gives people the lead or trainer role, or allows someone to train freely without a gym. A trainer
+hands out a code (or its QR), and a member decides on a consent screen, per category, what that
+trainer may see, suggest or change. With a gym trainer the gym lead gets a row of its own, never
+more than see, and the member can switch any category off. The member can change it or
+disconnect any time, and it counts on the trainer's next request. Everything lives in
+`data/org.json` (with `org.json.bak`) and one sharing log per member in `data/share/`; put both in
+your backups. Off by default: then none of it shows anywhere.
+
+```
+TRAINERS_LEAD_ACCESS=row     # row (default) | mirror | none
+SHARE_LOG_DAYS=365           # how long a member's sharing log keeps its lines, 0 = forever
+```
+
+`TRAINERS_LEAD_ACCESS` decides how the gym lead sees a member: `row` is its own consent row,
+pre-filled from the trainer's read levels; `mirror` always shows the lead what the trainer sees
+(capped at see); `none` shows the lead names only. Details and the API are in
+[TRAINERS.md](TRAINERS.md).
+
+Since 1.4.5 the admin dashboard no longer shows anyone's workouts or weigh-ins: the user detail
+has counts, storage and last sync only. The data is still readable on disk by whoever runs the
+server, just not in the app. For a small instance that liked the old view:
+
+```
+ADMIN_DATA_VIEW=on
+```
+
+brings back the workout history and the weigh-ins, and every look is written to the activity log
+and to that member's own sharing log.
+
 ## 8. Updating
 
 Running prebuilt images:
