@@ -65,3 +65,10 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -.02em }
     radial-gradient(55% 42% at 100% 38%, rgba(47,110,128,.30), transparent 72%),
     radial-gradient(75% 38% at 60% 100%, rgba(52,52,130,.30), transparent 72%);
 }
+
+/* The logo (Tom.RPM) on the sign-in screen: white on the dark theme, black on the light one. */
+.brand-logo{display:block;width:min(62vw,240px);height:auto;margin:0 auto 18px}
+.brand-logo.on-light{display:none}
+:root[data-theme="light"] .brand-logo.on-dark{display:none}
+:root[data-theme="light"] .brand-logo.on-light{display:block}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
