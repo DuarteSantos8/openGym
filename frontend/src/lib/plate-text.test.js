@@ -19,6 +19,10 @@ describe('the plate line', () => {
     expect(plateText(rowLoad('pairs', 20, 20, inv), { unit: 'kg', base: 20 })).toBe('Bar only')
     expect(sameLoad(rowLoad('pairs', 12.5, 20, inv), rowLoad('pairs', 20, 20, inv))).toBe(false)
   })
+  it('a machine with a base weight of its own is never called a bar', () => {
+    expect(plateText(rowLoad('pairs', 145, 50, inv), { unit: 'lb', base: 50, first: true, bar: false })).not.toMatch(/bar/)
+    expect(plateText(rowLoad('pairs', 40, 50, inv), { unit: 'lb', base: 50, first: true, bar: false })).toBe('Bar only')
+  })
   it('a single stack and a bar-less machine stay as they were', () => {
     expect(plateText(rowLoad('single', 25, 0, inv), { unit: 'kg', base: 0, first: true })).toBe('Load 25')
     expect(plateText(rowLoad('pairs', 30, 0, inv), { unit: 'kg', base: 0, first: true })).toBe('15 per side')

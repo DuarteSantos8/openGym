@@ -18,6 +18,7 @@ import { weightIncrement, stepWeight } from '../lib/progression.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { effortPickerSheet, exerciseDetailSheet, exerciseHistorySheet, exerciseNoteSheet, menuSheet, barWeightSheet } from '../sheets.jsx'
 import { baseWeightFor, inventoryFor, loadKindFor, rowLoad } from '../lib/plates.js'
+import { usesBar } from '../lib/bar.js'
 import { plateText } from '../lib/plate-text.js'
 import { ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView } from '../lib/gym-inventory.js'
@@ -112,7 +113,7 @@ function PlateBadge({ S, entry, set }) {
   const load = rowLoad(loadKindFor(S, { ...(entry.target || {}), id: entry.id }), set.w, base, inventoryFor(S))
   if (!load) return null
   // One set at a time here, so the bar it counts with is always named (lib/plate-text.js).
-  const text = plateText(load, { unit: S.unit, base, first: true })
+  const text = plateText(load, { unit: S.unit, base, first: true, bar: usesBar(entry.id) })
   return <span className="focus-badge plate"><Icon name="plate" />{text}{load.missing > 0 && <> · <span className="short">{t('{0} short', fmtPlate(load.missing) + ' ' + S.unit)}</span></>}</span>
 }
 

@@ -466,7 +466,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     if (prev && sameLoad(prev, L)) return null
     // "+" between plates: "45 + 5 per side" reads as a sum, a dot did not (Boris, 2026-09-13).
     // The first line names the bar it counts with (lib/plate-text.js).
-    const text = plateText(L, { unit: S.unit, base, first: !prev })
+    const text = plateText(L, { unit: S.unit, base, first: !prev, bar: usesBar(ex) })
     const d = prev && !dense ? plateDelta(prev.plates, L.plates) : null
     const moves = d ? [...d.strip.map(w => '−' + fmtPlate(w)), ...d.add.map(w => '+' + fmtPlate(w))] : []
     return <div className="plateline">

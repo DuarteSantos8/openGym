@@ -5,11 +5,12 @@
 import { t } from './i18n-core.js'
 import { fmtPlate } from './format.js'
 
-export function plateText(L, { unit, base = 0, first = false } = {}) {
+// `bar`: the base is a real bar. A plate-loaded machine with a weight of its own is no "50 lb bar".
+export function plateText(L, { unit, base = 0, first = false, bar = true } = {}) {
   if (!L) return ''
-  if (L.underBar) return t('Lighter than the {0} bar', fmtPlate(L.bar) + ' ' + unit)
+  if (L.underBar && bar) return t('Lighter than the {0} bar', fmtPlate(L.bar) + ' ' + unit)
   if (L.barOnly) return t('Bar only')
   const stack = L.plates.map(w => fmtPlate(w)).join(' + ') || '–'
   if (L.kind !== 'pairs') return t('Load {0}', stack)
-  return first && base > 0 ? t('{0} per side on a {1} bar', stack, fmtPlate(base) + ' ' + unit) : t('{0} per side', stack)
+  return first && bar && base > 0 ? t('{0} per side on a {1} bar', stack, fmtPlate(base) + ' ' + unit) : t('{0} per side', stack)
 }
