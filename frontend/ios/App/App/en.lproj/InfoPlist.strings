@@ -1,2 +1,2 @@
-"NSCameraUsageDescription" = "Used to scan your gym membership QR code and take a photo or video of an exercise you add.";
-"NSMicrophoneUsageDescription" = "Used to record sound when you take a video of an exercise you add.";
+"NSCameraUsageDescription" = "Used to scan your gym membership QR code, to take a photo or video of an exercise you add yourself, and to film a set so you can check your form.";
+"NSMicrophoneUsageDescription" = "Used to record the sound of a video you take of an exercise you add yourself or of a set you film.";

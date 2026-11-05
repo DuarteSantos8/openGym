@@ -107,6 +107,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Coach: exercise ids sent as 24 or "24" are read as "0024" (thanks @dagov42 in #963), reasoning models' <think> blocks are skipped (thanks @polidisio in #929), and MiniMax's schema complaint falls back to plain JSON (thanks @polidisio in #928).
 - Coach: longer answers before a cut, and a cut lands on a sentence or a word (thanks @maliv2 in #937).
 - Coach: "swap it for what you suggested" finds what was suggested, and a clear request is acted on even without a stall (thanks @joshiparth1000 in #819).
+- Italian: every exercise has its steps in Italian now, a few app texts read more naturally, and the Android rest channels and the iPhone's camera and microphone prompts speak Italian too (#513, #517, thanks @casungo).
 
 ## v1.4.4 (2026-11-03)
 

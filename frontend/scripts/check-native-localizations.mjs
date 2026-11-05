@@ -72,6 +72,13 @@ for (const [key, value] of Object.entries(androidEnglish)) {
 }
 const englishIos = readIosStrings('en')
 const italianIos = readIosStrings('it')
+// en.lproj overrides Info.plist on an English phone: it has to say what Info.plist says, or a
+// newer wording there (filming a set) never reaches anyone.
+const plist = readFileSync(join(iosRoot, 'Info.plist'), 'utf8')
+for (const key of usageKeys) {
+  const m = plist.match(new RegExp(`<key>${key}</key>\\s*<string>([^<]*)</string>`))
+  if (m && englishIos.get(key) !== m[1].replace(/&amp;/g, '&')) fail(`${key}: en.lproj/InfoPlist.strings differs from Info.plist`)
+}
 for (const key of usageKeys) {
   if (englishIos.get(key) === italianIos.get(key)) fail(`${key}: Italian must have localized copy`)
 }
