@@ -150,6 +150,24 @@
               ];
             }
 
+            # The docs' option → environment mapping must name every variable the
+            # module sets. The env contract is restated in more places than any other
+            # (module, `nix run` script, the API itself), and a stale table sends
+            # readers to the wrong source of truth.
+            {
+              label = "docs";
+              doc = ../../docs/NIX.md;
+              # The optional variables only reach the unit when set, so this config
+              # sets them: the table has to name those too.
+              modules = [
+                (opengymConfig {
+                  defaultLang = "pt-BR";
+                  vapidSubject = "mailto:test@example.com";
+                  adminUids = "u-1";
+                })
+              ];
+            }
+
             # The optional managed vhost: the routes are the serving contract
             # (serving.nix), so what this pins is that both header rules render.
             {

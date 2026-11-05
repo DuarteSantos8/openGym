@@ -429,7 +429,8 @@ old `/var/lib/opengym/media` directory is no longer used and can be deleted.
 ### Option → environment mapping
 
 The module renders these into the `opengym-api` systemd unit as environment variables — useful if
-you are cross-referencing the Docker/`.env` contract:
+you are cross-referencing the Docker/`.env` contract. The `nix flake check` eval check holds this
+table against the module: a variable the module sets that is not named here fails the check.
 
 | Option | Env var | Option | Env var |
 | --- | --- | --- | --- |
@@ -440,6 +441,14 @@ you are cross-referencing the Docker/`.env` contract:
 | `rpName` | `RP_NAME` | `vapidSubject` | `VAPID_SUBJECT` (set only when non-empty) |
 | `sessionDays` | `SESSION_DAYS` | `adminUids` | `ADMIN_UIDS` (set only when non-empty) |
 | `allowGuest` | `ALLOW_GUEST` (`1`/`0`) | `inviteOnly` | `INVITE_ONLY` (`1`/`0`) |
+| `trustProxy` | `TRUST_PROXY` (`1`/`0`) | `passwordLogin` | `PASSWORD_LOGIN` (`1`/`0`) |
+| `firstUserAdmin` | `FIRST_USER_ADMIN` (`1`/`0`) | `defaultLang` | `DEFAULT_LANG` (set only when non-empty) |
+
+Three deliberate differences from the API's own defaults, all of them NixOS's choice rather than the
+app's: `DATA_DIR` points at `/var/lib/opengym` (the API defaults to `/data` for its containers),
+`TRUST_PROXY` starts on because a NixOS deployment always fronts the API with a proxy (the API
+itself defaults it off), and the set-only-when-non-empty variables are left off rather than
+substituted (`VAPID_SUBJECT` defaults to the origin, `ADMIN_UIDS` to no admin).
 
 `environment` and `environmentFile` are raw passthrough and don't appear here — they end up on the
 unit exactly as you write them (see [Extra environment variables](#extra-environment-variables)).

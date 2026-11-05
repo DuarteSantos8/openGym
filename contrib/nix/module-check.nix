@@ -32,6 +32,56 @@ let
   # The evaluated config of a scenario's modules.
   evalConfig = modules: (lib.nixosSystem { inherit system modules; }).config;
 
+  # A scenario's demand that the documentation names what the module manages. The
+  # env-var contract is restated in prose more than anywhere else — the module, the
+  # `nix run` script, the API itself — and a stale table sends readers to the wrong
+  # source of truth. This reads the option → environment table out of the doc and
+  # holds it against the variables the module actually sets.
+  reportDocumented =
+    scenario:
+    let
+      # The table: from the marker heading's line to the next heading.
+      dropUntil =
+        pred: lines:
+        if lines == [ ] then
+          [ ]
+        else if pred (builtins.head lines) then
+          lib.drop 1 lines
+        else
+          dropUntil pred (builtins.tail lines);
+      takeUntilHeading =
+        lines:
+        if lines == [ ] then
+          [ ]
+        else if lib.hasPrefix "#" (builtins.head lines) then
+          [ ]
+        else
+          [ (builtins.head lines) ] ++ takeUntilHeading (builtins.tail lines);
+
+      config = evalConfig scenario.modules;
+      # PATH is systemd's default for every unit, not the module's; the scenario's
+      # config sets the optional ones (defaultLang, vapidSubject, adminUids) so this
+      # sees every variable the module can put on the unit.
+      vars = lib.filter (name: name != "PATH") (
+        builtins.attrNames config.systemd.services.opengym-api.environment
+      );
+      table = lib.concatStringsSep "\n" (
+        takeUntilHeading (
+          dropUntil (line: lib.hasInfix "Option → environment mapping" line) (
+            lib.splitString "\n" (builtins.readFile scenario.doc)
+          )
+        )
+      );
+      # The table spells every variable as a code span (`PORT`, `DEFAULT_LANG`), and the
+      # check looks for exactly that: a substring match would pass on a longer name
+      # that happens to contain a shorter one.
+      missing = lib.filter (name: !(lib.hasInfix "`${name}`" table)) vars;
+    in
+    if missing == [ ] then
+      [ ]
+    else
+      [ "${scenario.label} :: the docs' option → environment table does not name: ${toString missing}" ];
+
   # Walk an option path under services.opengym, so a removed-option scenario can
   # name the option instead of spelling the whole path through the config.
   optionValue =
@@ -74,7 +124,9 @@ let
         else
           (builtins.tryEval (optionValue config scenario.failsToEvaluate)).success;
     in
-    if scenario ? failsToEvaluate then
+    if scenario ? doc then
+      reportDocumented scenario
+    else if scenario ? failsToEvaluate then
       if checkFails then
         [ "${scenario.label} :: expected this configuration to fail evaluation, but it evaluated" ]
       else
@@ -83,11 +135,16 @@ let
       map reportOne scenario.expect;
 
   failures = joinFailures (lib.concatMap reportScenario scenarios);
+
+  # The checked docs ride in the derivation's environment as store paths, so the check
+  # has them as inputs: a check that read its doc without depending on it would keep
+  # passing while the file changed under it.
+  docPaths = lib.concatMapStringsSep " " (s: "${s.doc}") (lib.filter (s: s ? doc) scenarios);
 in
 pkgs.runCommand name
   {
     passAsFile = [ "failures" ];
-    inherit failures;
+    inherit failures docPaths;
   }
   ''
     if [ -s "$failuresPath" ]; then
