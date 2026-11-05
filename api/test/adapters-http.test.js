@@ -195,6 +195,19 @@ test('compatible: a mount whose API has no version segment is reached on the 404
   }
 });
 
+// #520 (Bortlesboat): a busy versionless endpoint (503) after the /v1 404 was turned back into the
+// 404, so the call ended as "not found" instead of retrying.
+test('compatible: a 503 from the versionless form is retried, not reported as the first 404 (#520)', async () => {
+  const f = fakeFetch(n => (n % 2 === 1 ? { status: 404, body: '404 page not found' }
+    : n === 2 ? { status: 503, body: { error: { message: 'busy' } } }
+      : ok({ object: 'chat.completion', choices: [{ index: 0, message: { role: 'assistant', content: ANSWER }, finish_reason: 'stop' }] })));
+  // Its own base: the form that answered is remembered per base.
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://busy.lan:8080/' } } };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.text, ANSWER);
+});
+
 test('compatible: the 404 fallback keeps the first error when neither form answers, and never touches other providers (#508)', async () => {
   // Ollama answers an unknown model with a 404 of its own; that message must survive the retry.
   const f = fakeFetch(n => (n === 1

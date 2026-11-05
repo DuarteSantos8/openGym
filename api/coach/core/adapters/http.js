@@ -82,7 +82,11 @@ async function reach(spec, base, path, send) {
   const first = await send(urls[0]);
   if (first.status !== 404 || urls.length < 2) return first;
   const second = await send(urls[1]);
-  if (!second.ok) { try { await second.text(); } catch { /* drained or gone */ } return first; }
+  // Only a second 404 says the other spelling is wrong too. A 429 or a 5xx from it is that
+  // endpoint answering, and the caller's retries have to see it (#520): handing back the first
+  // 404 ended the call as "not found" instead.
+  if (second.status === 404) { try { await second.text(); } catch { /* drained or gone */ } return first; }
+  if (!second.ok) { try { await first.text(); } catch { /* drained or gone */ } return second; }
   if (urls[1] === endpointUrl(base, path)) versionlessBases.delete(base);
   else versionlessBases.add(base);
   return second;

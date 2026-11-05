@@ -79,6 +79,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Android: Create PDF no longer closes the app on phones without a print service. It says what is missing instead (#991, thanks @dagov42 for tracking it down).
 - Plates: the first plate line of a lift names the bar it counts with ("5 per side on a 20 kg bar"), and a weight under the bar says so instead of "Bar only". Logging without the bar? Set your bar under Equipment (thanks vitoralves9629 on Discord).
 - Home: the recovery card put away with its × comes back when you switch Recovery tips on again, and the × now says it is only for today, with Undo (thanks dnys8445 on Discord).
+- AI Coach: a self-hosted endpoint without /v1 that is briefly busy is tried again instead of failing as "not found" (#520, thanks @Bortlesboat).
 
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
