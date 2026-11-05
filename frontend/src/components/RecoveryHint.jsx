@@ -7,6 +7,7 @@ import { t } from '../lib/i18n.js'
 import { todayISO } from '../lib/format.js'
 import { fatigueOf, LB_TO_KG } from '../lib/recovery.js'
 import { recoveryHint, hintText } from '../lib/recovery-hint.js'
+import { useUI } from '../store/useUI.js'
 import { lastBW } from '../lib/history.js'
 import { dayOverrideSheet } from '../sheets.jsx'
 
@@ -25,7 +26,11 @@ export default function RecoveryHint({ S }) {
   }, [S.workouts, S.recoveryHint, S.recoveryHintDay, S.active, S.week, S.dayPlan, S.queue, S.routines, S.unit, today, hour]) // eslint-disable-line react-hooks/exhaustive-deps
   const text = hintText(hint, today)
   if (!text) return null
-  const dismiss = () => useStore.getState().update(s => { s.recoveryHintDay = today })
+  // Put away for today, said so, with a way back: the card returns tomorrow on its own.
+  const dismiss = () => {
+    useStore.getState().update(s => { s.recoveryHintDay = today })
+    useUI.getState().toast(t('Hidden for today. Back tomorrow.'), { action: t('Undo'), onAction: () => useStore.getState().update(s => { s.recoveryHintDay = null }) })
+  }
   return <div className="card recovery-hint" data-hint={hint.kind}>
     <CardHead icon="figureStrength" tint="var(--green)" eyebrow={t('Recovery')} title={text[0]} sub={text[1]}
       action={<button type="button" className="iconbtn" onClick={dismiss} aria-label={t('Hide for today')}><Icon name="xmark" /></button>} />

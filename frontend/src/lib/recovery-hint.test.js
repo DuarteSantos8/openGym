@@ -100,3 +100,19 @@ describe('hint words', () => {
     for (const h of all) for (const line of hintText(h, TODAY)) expect(line).not.toMatch(/—|–/)
   })
 })
+
+// Discord 2026-11-05: the card put away with its × stayed away after Recovery tips was switched
+// back on, which read as broken.
+import { setRecoveryHint } from './recovery-hint.js'
+describe('Recovery tips switched back on', () => {
+  it('brings back a card hidden for today', () => {
+    const s = { recoveryHint: false, recoveryHintDay: '2026-11-05' }
+    setRecoveryHint(s, true)
+    expect(s).toEqual({ recoveryHint: true, recoveryHintDay: null })
+  })
+  it('switched off keeps the day as it was', () => {
+    const s = { recoveryHint: true, recoveryHintDay: '2026-11-05' }
+    setRecoveryHint(s, false)
+    expect(s).toEqual({ recoveryHint: false, recoveryHintDay: '2026-11-05' })
+  })
+})
