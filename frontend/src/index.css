@@ -3640,6 +3640,17 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-code-v{font:600 var(--fs-title3)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;-webkit-user-select:all;user-select:all}
 .tr-code-a{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
 .tr-num{width:72px;text-align:end}
+.tr-edit-ex{margin-top:10px;background:var(--surface-2)}
+.tr-edit-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tr-set{display:flex;align-items:center;gap:8px;min-height:44px}
+.tr-set+.tr-set{border-top:var(--hair) solid var(--sep)}
+.tr-set-l{flex:1;min-width:0;font-size:var(--fs-subhead);overflow-wrap:anywhere}
+.tr-set .tr-num{flex:none}
+.tr-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tr-pick-i{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:6px 12px;border:0;border-radius:99px;background:var(--surface-2);color:var(--label);font:inherit;font-size:var(--fs-subhead);cursor:pointer;max-width:100%;overflow-wrap:anywhere;text-align:start;transition:transform 160ms var(--ease)}
+.tr-pick-i .icn{color:var(--acc-ink);flex:none}
+.tr-pick-i:active{transform:scale(var(--press-scale))}
+@media (max-width:360px){.tr-set .tr-num{width:60px}}
 .tr-weigh{display:flex;align-items:center;gap:10px;margin:6px 0 16px;font-size:var(--fs-title2)}
 .tr-weigh input{font-size:var(--fs-title2);flex:1;min-width:0}
 

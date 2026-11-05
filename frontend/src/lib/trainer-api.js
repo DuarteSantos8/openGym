@@ -109,6 +109,7 @@ export function changeText(s, unit = 'kg') {
     case 'bodyweight.put': return t('Weigh-in: {0} {1} on {2}', s.w, unit, s.d)
     case 'measurement.put': return t('Check-in on {0}', s.d)
     case 'workout.add': return t('Workout logged: {0}', s.name)
+    case 'workout.edit': return t('Workout corrected: {0}', s.name)
     default: return s?.kind || ''
   }
 }

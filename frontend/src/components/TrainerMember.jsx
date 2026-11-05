@@ -95,7 +95,7 @@ function bestSet(e) {
   return best
 }
 
-function WorkoutCard({ w, d, comments, onComment }) {
+function WorkoutCard({ w, d, comments, onComment, onEdit }) {
   const [open, setOpen] = useState(false)
   const mine = comments.filter(c => c.workoutId === String(w.id))
   return <div className="tr-card tr-wo">
@@ -116,15 +116,21 @@ function WorkoutCard({ w, d, comments, onComment }) {
     </div>}
     {mine.map(c => <div key={c.id} className="tr-comment"><Icon name="chat" /><span>{c.text}</span><span className="tr-tile-s">{c.seen ? t('Seen') : t('Sent')}</span></div>)}
     {w._by && <div className="tr-by">{t('Logged by {0}', w._by.name)}</div>}
-    {onComment && <div className="tr-wo-a"><Button variant="plain" size="xs" icon="chat" onClick={() => onComment(w)}>{t('Comment')}</Button></div>}
+    {w._edit && <div className="tr-by">{t('Corrected by {0}', w._edit.name)}</div>}
+    {(onComment || onEdit) && <div className="tr-wo-a">
+      {onComment && <Button variant="plain" size="xs" icon="chat" onClick={() => onComment(w)}>{t('Comment')}</Button>}
+      {onEdit && <Button variant="plain" size="xs" icon="pencil" onClick={() => onEdit(w)}>{t('Correct')}</Button>}
+    </div>}
   </div>
 }
 
-function Workouts({ d, onComment, onMore, more }) {
+function Workouts({ d, onComment, onEdit, onLog, onMore, more, levels }) {
   const list = d.workouts?.list || []
-  if (!list.length) return <p className="tr-empty">{t('No workouts yet. Everyone starts somewhere.')}</p>
+  const log = onLog && <Button variant="tinted" icon="plus" onClick={onLog}>{levels?.workouts === 'apply' ? t('Log a workout') : t('Suggest a workout')}</Button>
+  if (!list.length) return <><p className="tr-empty">{t('No workouts yet. Everyone starts somewhere.')}</p>{log}</>
   return <>
-    {list.map(w => <WorkoutCard key={w.id} w={w} d={d} comments={d.comments || []} onComment={onComment} />)}
+    {log}
+    {list.map(w => <WorkoutCard key={w.id} w={w} d={d} comments={d.comments || []} onComment={onComment} onEdit={onEdit} />)}
     {d.workouts.next && onMore && <Button onClick={onMore} disabled={more}>{t('Show older')}</Button>}
   </>
 }
@@ -160,7 +166,7 @@ function Plan({ d, onAssign, onRemove, levels }) {
   </>
 }
 
-function Body({ d, onWeigh, levels }) {
+function Body({ d, onWeigh, onMeasure, levels }) {
   const bw = d.bodyweight, ms = d.measurements
   return <>
     {bw && <div className="tr-card">
@@ -180,6 +186,7 @@ function Body({ d, onWeigh, levels }) {
         <span className="tr-line-t">{fmtDate(e.d)}</span>
         <span className="tr-line-v muted">{t('{0} values', Object.keys(e).filter(k => k !== 'd' && k !== '_by' && typeof e[k] === 'number').length)}</span>
       </div>)}
+      {onMeasure && levels?.measurements !== 'view' && <div className="tr-wo-a"><Button size="sm" icon="ruler" onClick={onMeasure}>{levels?.measurements === 'apply' ? t('Log a check-in') : t('Suggest a check-in')}</Button></div>}
     </div>}
   </>
 }
@@ -209,7 +216,7 @@ function Activity({ d }) {
  * `d` is a projection (GET /api/trainer/member or /api/sharing/preview). The handlers are optional:
  * without them the view is read-only (the member's preview, a gym lead).
  */
-export default function TrainerMember({ d, onBack, onComment, onAssign, onWeigh, onRemoveRoutine, onDisconnect, onMore, more, preview = false }) {
+export default function TrainerMember({ d, onBack, onComment, onEdit, onLog, onAssign, onWeigh, onMeasure, onRemoveRoutine, onDisconnect, onMore, more, preview = false }) {
   const shared = useMemo(() => new Set(d.shared || []), [d])
   const tabs = useMemo(() => [
     { value: 'overview', label: t('Overview') },
@@ -236,9 +243,9 @@ export default function TrainerMember({ d, onBack, onComment, onAssign, onWeigh,
     {tabs.length > 1 && <Segmented className="tr-tabs" options={tabs} value={tab} onChange={setTab} />}
     <div className="tr-pane" key={tab}>
       {tab === 'overview' && <Overview d={d} />}
-      {tab === 'workouts' && <Workouts d={d} onComment={onComment} onMore={onMore} more={more} />}
+      {tab === 'workouts' && <Workouts d={d} onComment={onComment} onEdit={onEdit} onLog={onLog} onMore={onMore} more={more} levels={levels} />}
       {tab === 'plan' && d.plans && <Plan d={d} onAssign={onAssign} onRemove={onRemoveRoutine} levels={levels} />}
-      {tab === 'body' && <Body d={d} onWeigh={onWeigh} levels={levels} />}
+      {tab === 'body' && <Body d={d} onWeigh={onWeigh} onMeasure={onMeasure} levels={levels} />}
       {tab === 'notes' && <Notes d={d} />}
       {tab === 'activity' && <Activity d={d} />}
       {tab === 'overview' && shared.has('nutrition') && <div className="tr-card"><div className="tr-card-t">{t('Nutrition')}</div>

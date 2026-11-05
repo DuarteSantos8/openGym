@@ -337,3 +337,32 @@ test('progress photos: a trainer with the photos grant sees them, without it 403
   await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'view', photos: 'off' }, consent });
   assert.equal((await photo('u_marco', day)).status, 403);
 });
+
+test('workout.edit: a correction applied with "Change directly", suggested otherwise, undone by the member', async t => {
+  const h = await start(t);
+  const { call } = h;
+  const { conn, consent } = await connected(h, { metrics: 'view', workouts: 'apply' });
+  const fix = { op: 'workout.edit', id: 'w1', sets: [{ e: 0, s: 0, ex: 'bench', w: 62.5 }] };
+  const r = (await call('u_marco', 'POST', '/api/trainer/ops', { memberId: 'u_lea', ops: [fix] })).body;
+  assert.deepEqual([r.applied, r.suggested], [1, 0]);
+  let w = h.state('u_lea').workouts.find(x => x.id === 'w1');
+  assert.equal(w.entries[0].sets[0].w, 62.5);
+  assert.equal(w._edit.name, 'Marco');
+  assert.equal(w.note, 'felt strong');                      // the rest of her workout untouched
+  const d = (await call('u_marco', 'GET', `/api/trainer/member?id=u_lea&today=${today}`)).body;
+  assert.equal(d.workouts.list[0]._edit.name, 'Marco');
+  assert.equal(d.changes[0].summary[0].kind, 'workout.edit');
+  // Her Undo puts the 60 back.
+  const inbox = (await call('u_lea', 'GET', '/api/sharing/inbox')).body;
+  assert.equal((await call('u_lea', 'POST', '/api/sharing/undo', { id: inbox.undo[0].id })).status, 200);
+  w = h.state('u_lea').workouts.find(x => x.id === 'w1');
+  assert.equal(w.entries[0].sets[0].w, 60);
+
+  // At "Suggest" it waits for her; at "See" it is refused.
+  await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'suggest' }, consent });
+  const s = (await call('u_marco', 'POST', '/api/trainer/ops', { memberId: 'u_lea', ops: [{ ...fix, name: 'Push A (fixed)' }] })).body;
+  assert.deepEqual([s.applied, s.suggested], [0, 1]);
+  assert.equal(h.state('u_lea').workouts.find(x => x.id === 'w1').name, 'Push A');
+  await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'view' }, consent });
+  assert.equal((await call('u_marco', 'POST', '/api/trainer/ops', { memberId: 'u_lea', ops: [fix] })).status, 403);
+});

@@ -214,7 +214,10 @@ probe who exists), and 403 `not-shared` to someone who was and is not any more.
 
 A trainer never sends a document. `POST /api/trainer/ops` carries up to 20 whitelisted ops
 (`api/trainers/ops.js`): `routine.put` (new or an existing routine), `routine.remove` (also takes it
-off the week), `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`. Assigning adds two
+off the week), `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`, `workout.edit` (a
+correction of a logged workout: its name and the weight, reps or tick of sets it already has, each
+addressed by position with its exercise id, so a workout that changed shape since is refused with
+409 `changed-since`; the workout keeps its owner and gets `_edit` with the trainer's name). Assigning adds two
 the server makes itself: the custom exercises the routine needs (`custom.put`, without media; one
 the member already has stays theirs) and `week.add`. Each op is checked against its category, for
 this member, in the moment of the write:

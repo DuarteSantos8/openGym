@@ -2825,6 +2825,11 @@ export const PT_BR_OVERRIDES = {
   "{0} waiting for an answer": "{0} aguardando resposta",
   "{0} want to connect with you": "{0} querem se conectar com você",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Você está entrando nesta academia. O responsável dela vê o seu nome e as categorias que você marcar aqui, nunca mais do que Ver. Você pode mudar isso ou sair da academia quando quiser, e deixa de funcionar no momento em que sair.",
+  "Fill in what you measured, leave the rest.": "Preencha o que você mediu e deixe o resto.",
+  "Fix a typo in what they logged. Nothing gets added or removed.": "Corrija um erro de digitação no que foi registrado. Nada é adicionado nem removido.",
+  "For a session you ran together.": "Para uma sessão que vocês fizeram juntos.",
+  "Log a check-in": "Registrar medidas",
+  "Log a workout": "Registrar um treino",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

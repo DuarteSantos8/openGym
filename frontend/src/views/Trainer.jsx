@@ -21,7 +21,7 @@ import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, Button, SearchField, Segmented, Check, TextField, openSelectSheet } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
 import TrainerMember, { Avatar, FlagPill } from '../components/TrainerMember.jsx'
-import { InviteSheet, GymCodeSheet, AssignSheet, CommentSheet, WeighSheet } from '../components/TrainerSheets.jsx'
+import { InviteSheet, GymCodeSheet, AssignSheet, CommentSheet, WeighSheet, WorkoutEditSheet, WorkoutAddSheet, MeasureSheet } from '../components/TrainerSheets.jsx'
 
 // Held for this visit of the dashboard only (never stored): going from the list to a member and
 // back does not fetch the list again for a few seconds.
@@ -214,6 +214,9 @@ function GymView({ gymId, openMember }) {
   </div>
 }
 
+// The exercises a member did lately, newest first: the quick picks when logging a workout for them.
+const recentIds = d => [...new Set((d.workouts?.list || []).flatMap(w => w.entries.map(e => String(e.id))))]
+
 function Detail({ id, entry, onBack, reloadList }) {
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
@@ -246,6 +249,9 @@ function Detail({ id, entry, onBack, reloadList }) {
     onComment={levels.workouts !== 'off' && mine ? w => openSheet(close => <CommentSheet member={member} workout={w} close={close} done={load} />) : null}
     onAssign={writable('plans') && mine ? () => openSheet(close => <AssignSheet members={[asMember]} close={close} done={load} />) : null}
     onWeigh={writable('bodyweight') && mine ? () => openSheet(close => <WeighSheet member={member} unit={d.unit} level={levels.bodyweight} close={close} done={load} />) : null}
+    onEdit={writable('workouts') && mine ? w => openSheet(close => <WorkoutEditSheet member={member} workout={w} customEx={d.customEx} unit={d.unit} level={levels.workouts} close={close} done={load} />) : null}
+    onLog={writable('workouts') && mine ? () => openSheet(close => <WorkoutAddSheet member={member} recent={recentIds(d)} customEx={d.customEx} unit={d.unit} level={levels.workouts} close={close} done={load} />) : null}
+    onMeasure={writable('measurements') && mine ? () => openSheet(close => <MeasureSheet member={member} level={levels.measurements} close={close} done={load} />) : null}
     onRemoveRoutine={writable('plans') && mine ? removeRoutine : null}
     onDisconnect={mine ? disconnect : null} />
 }

@@ -142,7 +142,7 @@ export function cleanWorkout(w, { notes = false } = {}) {
     routineId: w.routineId ?? null, entries, prs: Array.isArray(w.prs) ? w.prs.map(String).slice(0, 40) : [],
     volume: workoutVolume(w), sets: workoutSets(w), mins: minutes(w),
     ...(notes && typeof w.note === 'string' && w.note ? { note: str(w.note, 1000) } : {}),
-    ...(by ? { _by: by } : {}),
+    ...(by ? { _by: by } : {}), ...(byOf(w._edit) ? { _edit: byOf(w._edit) } : {}),
   };
 }
 

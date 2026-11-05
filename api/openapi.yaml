@@ -4420,7 +4420,7 @@ paths:
       operationId: trainerOps
       summary: 'The trainer: change a member''s data'
       description: >-
-        Whitelisted ops (`routine.put`, `routine.remove`, `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled `_by`, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.
+        Whitelisted ops (`routine.put`, `routine.remove`, `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`, `workout.edit`), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled `_by`, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.
       requestBody:
         required: true
         content:

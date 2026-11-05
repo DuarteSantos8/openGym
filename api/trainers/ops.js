@@ -26,7 +26,7 @@ export class OpError extends Error {
 export const OP_CATEGORY = {
   'routine.put': 'plans', 'routine.remove': 'plans', 'week.set': 'plans',
   'bodyweight.put': 'bodyweight', 'measurement.put': 'measurements',
-  'workout.add': 'workouts',
+  'workout.add': 'workouts', 'workout.edit': 'workouts',
   // Only the server makes these two, as part of assigning a routine (never from a request body):
   // the trainer's custom exercises the routine needs, and the routine put on a weekday.
   'custom.put': 'plans', 'week.add': 'plans',
@@ -111,6 +111,27 @@ export function cleanOps(raw) {
         return { op: o.op, d: o.d, values };
       }
       case 'workout.add': return { op: o.op, workout: cleanWorkout(o.workout) };
+      case 'workout.edit': {
+        // A correction of a logged workout: its name and the weight, reps or tick of sets it has.
+        // Sets are addressed by position (e, s) as the projection lists them, with the exercise id
+        // to make sure the workout still looks that way; nothing is added, removed or reordered.
+        // A workout without an id of its own goes by date|start, the way the projection names it.
+        if (!idOk(o.id) && !(typeof o.id === 'string' && /^\d{4}-\d{2}-\d{2}\|\d{1,16}$/.test(o.id))) throw bad('bad workout id');
+        const sets = o.sets == null ? [] : o.sets;
+        if (!Array.isArray(sets) || sets.length > 200) throw bad('sets are at most 200 changes');
+        const clean = sets.map(x => {
+          if (!isMap(x) || !Number.isInteger(x.e) || !Number.isInteger(x.s) || x.e < 0 || x.s < 0 || !idOk(x.ex)) throw bad('a set change names its exercise and position');
+          if (x.side != null && x.side !== 'L' && x.side !== 'R') throw bad('side is L or R');
+          if (x.w != null && !finite(x.w, 0, 2000)) throw bad('a weight is 0 to 2000');
+          if (x.r != null && !finite(x.r, 0, 1000)) throw bad('reps are 0 to 1000');
+          if (x.w == null && x.r == null && x.done == null) throw bad('a set change changes something');
+          return { e: x.e, s: x.s, ex: x.ex, ...(x.side ? { side: x.side } : {}), ...(x.w != null ? { w: Math.round(+x.w * 1000) / 1000 } : {}),
+            ...(x.r != null ? { r: Math.round(+x.r) } : {}), ...(x.done != null ? { done: !!x.done } : {}) };
+        });
+        const name = o.name == null ? null : text(o.name, 80);
+        if (!clean.length && !name) throw bad('nothing to correct');
+        return { op: o.op, id: o.id, ...(name ? { name } : {}), sets: clean };
+      }
     }
     throw bad('unknown op');
   });
@@ -248,6 +269,30 @@ export function applyOps(S, ops, { by, t, rand = crypto.randomBytes } = {}) {
         putEntry(S, 'measurements', o.d, { ...(before || {}), d: o.d, ...o.values, ...(label ? { _by: label } : {}) }, t);
         rec.summary = { kind: o.op, d: o.d, n: Object.keys(o.values).length };
         rec.touched.push({ list: 'measurements', key: o.d });
+        break;
+      }
+      case 'workout.edit': {
+        const before = snapshot(S, 'workouts', o.id);
+        if (!before) throw new OpError(404, 'no-workout', 'no such workout');
+        const w = clone(before);
+        // The same positions the projection showed: entries and sets that are objects, in order.
+        const entries = Array.isArray(w.entries) ? w.entries.filter(isMap) : [];
+        for (const x of o.sets) {
+          const e = entries[x.e];
+          const st = e && Array.isArray(e.sets) ? e.sets.filter(isMap)[x.s] : null;
+          if (!e || String(e.id) !== String(x.ex) || !st) throw new OpError(409, 'changed-since', 'that workout changed since you looked');
+          const target = isMap(st.sides) ? (x.side ? st.sides[x.side] : null) : (x.side ? null : st);
+          if (!isMap(target)) throw new OpError(409, 'changed-since', 'that workout changed since you looked');
+          if (x.w != null) target.w = x.w;
+          if (x.r != null) target.r = x.r;
+          if (x.done != null) target.done = x.done;
+        }
+        if (o.name) w.name = o.name;
+        if (label) w._edit = label;
+        rec.inverse.push({ list: 'workouts', key: o.id, value: before });
+        putEntry(S, 'workouts', o.id, w, t);
+        rec.summary = { kind: o.op, d: w.d, name: w.name, n: o.sets.length };
+        rec.touched.push({ list: 'workouts', key: o.id });
         break;
       }
       case 'workout.add': {
