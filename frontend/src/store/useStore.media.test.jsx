@@ -34,13 +34,13 @@ beforeEach(async () => {
   _resetMediaOwed()
   media = createMediaStore(memoryBackend())
   _setMediaStore(media)
-  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: null })
+  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: { engineContract: 1, coach: null } })
 })
 afterEach(() => {
   localStorage.clear()
   _setMediaStore(null)
   _resetMediaOwed()
-  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: null })
+  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: { engineContract: 1, coach: null } })
 })
 
 // Signed in, with a copy the server already has (the push lands, nothing else is owed).

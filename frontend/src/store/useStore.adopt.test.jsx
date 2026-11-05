@@ -13,6 +13,8 @@ vi.mock('../sheets.jsx', () => ({ askAddDeviceData: (...a) => sheetAsk(...a) }))
 
 import { api } from '../lib/api.js'
 import { DEF, hasData, useStore } from './useStore.js'
+// A server that reads this build's engine contract (GET /api/config), as boot learns it.
+beforeEach(() => { useStore.setState({ config: { engineContract: 1, coach: null } }) })
 
 const clone = value => JSON.parse(JSON.stringify(value))
 const routine = id => ({ id, name: id, ex: [] })

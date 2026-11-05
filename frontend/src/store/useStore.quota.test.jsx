@@ -35,7 +35,7 @@ function server(doc) {
 async function openApp() {
   vi.resetModules()
   const m = await import('./useStore.js')
-  m.useStore.setState({ user: { id: 'u1' }, ready: true })
+  m.useStore.setState({ user: { id: 'u1' }, ready: true, config: { engineContract: 1, coach: null } })
   return m
 }
 

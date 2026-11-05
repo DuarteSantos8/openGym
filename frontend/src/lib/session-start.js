@@ -69,13 +69,17 @@ export function effectiveExerciseId(occ, profile) {
  * answer is an empty list carrying `bypass` (`p<n>:a<i>` ids) until programmes.js bypassTo records them.
  * `ctx.history` (a session logged into the past: the profile as of its day, backfill.js historyAsOf)
  * is what its prescriptions are generated from; the run, its slots and every capture are read and
- * written on `stored` itself, so a later session already in the run still holds its slot.
+ * written on `stored` itself, so a later session already in the run still holds its slot. The
+ * workout a backfill replaces (`ctx.replaceId`) is read as gone: the replacement takes its slot back.
  */
 export function buildSessionExposures(stored, routine, ctx) {
   stored.prescriptions ||= {}
   const past = ctx.history || stored
   const date = ctx.date || stored.active?.d || isoOf(new Date(ctx.now))
-  let view = routine?.excludeFromProgression === true ? null : programmeView(stored)
+  // Only the records a run reads: spreading the draft would copy the whole profile.
+  const runView = () => programmeView(ctx.replaceId == null ? stored : { programme: stored.programme, programmeRuns: stored.programmeRuns, programmeEvents: stored.programmeEvents,
+    prescriptions: stored.prescriptions, routines: stored.routines, workouts: (stored.workouts || []).filter(w => w.id !== ctx.replaceId) })
+  let view = routine?.excludeFromProgression === true ? null : runView()
   const placed = (routine?.ex || []).map(occ => (view ? slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date }) : null))
   const bypass = [...new Set(placed.flatMap(x => x?.bypass || []))]
   if (bypass.length) return Object.assign([], { bypass })
@@ -90,7 +94,7 @@ export function buildSessionExposures(stored, routine, ctx) {
     // The first session that finds a 1RM for a track with none adopts it (spec 10.1).
     if (inputs?.blocked === 'reference-missing' && currentOneRm(stored.oneRepMaxes, base.exerciseId)) {
       captureReference(stored, at.trackId, currentOneRm(stored.oneRepMaxes, base.exerciseId), ctx.now)
-      view = programmeView(stored)
+      view = runView()
       inputs = slotInputs({ view, run: view.run, assignment: at, occRule: base.rule })
     }
     // Still no reference: ordinary work kept out of progression, nothing fabricated; the slot stays open.

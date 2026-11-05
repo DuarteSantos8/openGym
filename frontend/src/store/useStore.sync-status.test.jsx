@@ -33,12 +33,12 @@ beforeEach(() => {
   localStorage.clear()
   localStorage.setItem('gym_owner', USER.id)
   api.mockReset(); toast.mockReset()
-  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: null })
+  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: { engineContract: 1, coach: null } })
 })
 afterEach(() => {
   vi.useRealTimers()
   localStorage.clear()
-  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: null })
+  useStore.setState({ S: clone(DEF), user: null, ready: false, sync: { ...fresh }, config: { engineContract: 1, coach: null } })
 })
 
 describe('sync status', () => {

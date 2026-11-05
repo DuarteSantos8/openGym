@@ -128,6 +128,17 @@ describe('a session of a running programme', () => {
     expect(work(T, out.exposures.find(x => x.routineId === 'R'))).toEqual([72.5, 72.5, 72.5])   // 80 % of 90, on the 2.5 grid
   })
 
+  it('a backfill that replaces a workout takes that workout\'s slot back', () => {
+    const S = running()
+    finish(S, session(S, 'A', '2026-10-20T10:00:00Z'))
+    const tuesday = S.workouts.at(-1).id
+    const start = Date.parse('2026-10-20T17:00:00Z')
+    // Log past workout → same day → Replace: the old Tuesday goes when this one is saved.
+    const out = buildCombinedExposures(S, ['A'], { now: start, newId: s => 'rp:' + s, history: historyAsOf(S, { d: '2026-10-20', start, replaceId: tuesday }), replaceId: tuesday })
+    expect(benchOf(out).programme).toMatchObject({ slot: 'p1:a0:a-bench', role: 'work' })
+    expect(benchOf(out).excludedFromProgression).toBe(false)
+  })
+
   it('a programme exposure never advances ordinary progression; its run replays instead', () => {
     const S = running()
     const before = clone(S.progression)

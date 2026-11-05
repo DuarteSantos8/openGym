@@ -3437,7 +3437,7 @@ function beginBackfill({ iso, time, durationMin, routineIds, replaceId }) {
     // later session may already hold) and the references its first session adopts.
     s.prescriptions ||= {}
     const past = historyAsOf(s, { d: iso, start: session.start, replaceId })
-    const out = buildCombinedExposures(s, routineIds || [], { now: session.start, newId: uid, unit: s.unit, history: past })
+    const out = buildCombinedExposures(s, routineIds || [], { now: session.start, newId: uid, unit: s.unit, history: past, replaceId })
     session.routineIds = out.routineIds
     session.name = out.routines.length ? deriveSessionName(out.routines.map(r => r.name)) : t('Freestyle')
     session.exposures = out.exposures

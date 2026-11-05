@@ -88,7 +88,7 @@ describe('PUT /api/data carries no session (A33)', () => {
     const api = await import('../lib/api.js')
     const spy = vi.spyOn(api, 'api').mockResolvedValue({ rev: 1 })
     const { useStore } = await import('../store/useStore.js')
-    useStore.setState({ user: { id: 'u1' }, ready: true })
+    useStore.setState({ user: { id: 'u1' }, ready: true, config: { engineContract: 1, coach: null } })
     useStore.getState().setActive({ id: 'a1', d: '2026-09-22', start: 1, name: 'Push', cur: 0, entries: [] })
     useStore.getState().update(s => { s.unit = 'kg' })
     await useStore.getState().pushState()

@@ -13,6 +13,8 @@ vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast }) } }))
 
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
+// A server that reads this build's engine contract (GET /api/config), as boot learns it.
+beforeEach(() => { useStore.setState({ config: { engineContract: 1, coach: null } }) })
 import { mergeStates, stampChange } from '../lib/sync-merge.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))

@@ -183,7 +183,8 @@ describe('boot when the server refuses the pairing token', () => {
     await useStore.getState().pushState()
 
     expect(localCalls()).toHaveLength(0)
-    expect(serverCalls()).toEqual([expect.objectContaining({ url: BASE + '/api/data', method: 'PUT', auth: 'Bearer TOKEN-OLD' })])
+    // Boot never read the server's config (the token was refused first): the push asks for it, with the token, before any PUT.
+    expect(serverCalls()).toEqual([expect.objectContaining({ url: BASE + '/api/config', method: 'GET', auth: 'Bearer TOKEN-OLD' })])
     expect(localStorage.getItem('gym_dirty')).toBe('1')
     expect(useStore.getState().sync).toMatchObject({ status: 'auth', pending: true, lastSynced: 0 })
     expect(useStore.getState().unsyncedChanges()).toEqual({ owed: true, count: 1 })

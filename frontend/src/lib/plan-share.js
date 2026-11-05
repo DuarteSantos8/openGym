@@ -184,7 +184,7 @@ export function buildPlanBundle(S, name) {
   // written after are read the same way at the other end.
   const week = {}
   WEEK_DAYS.forEach(d => { if (S.week?.[d]?.length) week[d] = [].concat(S.week[d]) })
-  const programmes = programmesOf(S).map(bundleProgramme).filter(Boolean)
+  const programmes = programmesOf(S).map(p => bundleProgramme(p, routines)).filter(Boolean)
   // The plan's exercises that are shown in a weight unit of their own (#657), so a shared lb
   // machine arrives as one. The numbers stay in the file's `unit`; an older app skips the map.
   const exUnit = Object.fromEntries([...usedIds].map(id => [id, exUnitPin(S, id)]).filter(([, u]) => u))
@@ -366,7 +366,9 @@ export function mergePlan(s, bundle, { schedule } = {}) {
   // ponytail: a format-2 week's own kg/lb load is not converted with the routines; a %1RM needs nothing.
   let programmes = 0
   for (const p of source.programmes || []) {
-    const got = importedProgramme(p, { ridMap, occMap: occurrenceMap, exMap: exIdMap, fmt: source.programmeFmt }, s)
+    // parsePlan checked it whole; one this profile cannot take after all is refused alone, the routines kept.
+    let got = null
+    try { got = importedProgramme(p, { ridMap, occMap: occurrenceMap, exMap: exIdMap, fmt: source.programmeFmt }, s) } catch { /* left out */ }
     if (!got) continue
     s.programmes = { ...(s.programmes && typeof s.programmes === 'object' ? s.programmes : {}), [got.id]: got }
     programmes++

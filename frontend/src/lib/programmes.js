@@ -25,7 +25,7 @@ import { best1RM } from './onerm.js'
 import { effortOf } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { t } from './i18n-core.js'
-import { currentOneRm, deriveRun, editPlan, slotFor, validateProgramme } from './prescription/index.js'
+import { OPERATOR_METRICS, currentOneRm, deriveRun, editPlan, slotFor, validateProgramme } from './prescription/index.js'
 import { dateIn } from '../../../api/engine/programme-run.js'
 import { convertLegacyProgramme, seedOf } from '../../../api/migration/programme-upgrade.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
@@ -596,9 +596,11 @@ export const rpeAs = (rpe, effort) => (effort === 'rir' ? { k: 'RIR', v: Math.ma
 /* ------------------------------------ in a plan file ------------------------------------ */
 
 /** A programme as it travels in a plan file (format 2): the definition and the choices it proposes,
- *  never a run, an acknowledgment, a reviewed proposal or a Config default (spec 17). */
-export function bundleProgramme(def) {
-  if (!isDef(def)) return null
+ *  never a run, an acknowledgment, a reviewed proposal or a Config default (spec 17). Only one that
+ *  runs over the routines going with it: one waiting on a repair or a binding stays home, so the
+ *  file it would have spoiled still imports. */
+export function bundleProgramme(def, routines) {
+  if (!isDef(def) || def.needs?.length || !validateProgramme(def, { routines }).ok) return null
   const { id, name, schedule, duration, end, refs, tracks } = clone(def)
   return { id, name, schedule, duration, end, refs, tracks }
 }
@@ -634,9 +636,11 @@ const notPlan = () => { throw Object.assign(new Error(t('this isn’t an openGym
 // The definition check the profile itself runs (api/migration/profile-validation.js), over these routines alone.
 const canonical = (def, routines) => validateCanonicalProfile({ engineSchemaVersion: 2, engineContractRevision: 1, prescriptions: {}, oneRepMaxes: {}, progression: {}, workouts: [], routines, programmes: { [def.id]: def } }).ok
 
-function targetOf(x) {
+function targetOf(x, rest) {
   if (!isMap(x)) notPlan()
-  const out = pick(x, ['own', 'seed', 'options'])
+  const out = pick(x, rest ? ['own'] : ['own', 'options'])
+  // A seed names an operator metric and its entry value (spec 6); a rest stage has none, nor options.
+  if (!rest && isMap(x.seed)) out.seed = Object.fromEntries(Object.entries(x.seed).filter(([m, v]) => OPERATOR_METRICS.includes(m) && (v === 'copy' || Number.isFinite(v))))
   if (isMap(x.phase)) out.phase = pick(x.phase, PHASE_KEYS)
   if (isMap(x.effort)) out.effort = pick(x.effort, ['mode', 'rpe'])
   if (isMap(x.deload)) out.deload = pick(x.deload, ['factor'])
@@ -667,19 +671,29 @@ export function importedProgramme(p, { ridMap = {}, occMap = {}, exMap = {}, fmt
     ? { mode: 'rotation', sequence: list(p.schedule.sequence).map(id => (id === REST ? REST : mapped(ridMap, id))) }
     : { mode: 'weeks', appts: list(p.schedule.appts).map(a => ({ rid: mapped(ridMap, a?.rid), ...(Number.isInteger(a.day) ? { day: a.day } : {}) })), ...(p.schedule.ordered === true ? { ordered: true } : {}) }
   if (apptRids({ schedule }).length > IMPORT_MAX_SEQUENCE) notPlan()
-  const tracks = p.tracks.map(tr => ({
-    id: String(tr?.id ?? notPlan()), exerciseId: own(exMap, tr.exerciseId) || tr.exerciseId,
-    slots: list(tr.slots).map(sl => ({ rid: mapped(ridMap, sl?.rid), oid: mapped(occMap, sl.oid), ...(sl.optional === true ? { optional: true } : {}) })),
-    stages: list(tr.stages).map(st => {
-      if (!isMap(st) || !STAGE_KINDS.includes(st.kind) || (st.close !== undefined && !CLOSES.includes(st.close))) notPlan()
-      return { id: String(st.id), kind: st.kind, ...(st.close ? { close: st.close } : {}), ...(st.cycleEnd === true ? { cycleEnd: true } : {}),
-        targets: Object.fromEntries(Object.entries(map(st.targets)).map(([oid, x]) => [mapped(occMap, oid), targetOf(x)])) }
-    }),
-    refs: ['ask', 'keep'].includes(tr.refs) ? tr.refs : 'inherit',
-    ...(isPolicy(tr.policy) ? { policy: { onFailure: tr.policy.onFailure, onSkipped: tr.policy.onSkipped } } : {}), ...(isMap(tr.tm) ? { tm: pick(tr.tm, ['value', 'unit', 'increment']) } : {})
-  }))
+  // Checked against the routines it was imported with, not the rest of the profile it lands in.
+  const routines = (S?.routines || []).filter(r => Object.values(ridMap).includes(r.id))
+  const tracks = p.tracks.map(tr => {
+    const slots = list(tr?.slots).map(sl => ({ rid: mapped(ridMap, sl?.rid), oid: mapped(occMap, sl.oid), ...(sl.optional === true ? { optional: true } : {}) }))
+    const bound = new Set(slots.map(sl => sl.oid))
+    // The track's exercise is its occurrence's, as the import named it (a custom id mapped, an alias resolved).
+    const occ = slots.length ? occOf({ routines }, slots[0].rid, slots[0].oid) : null
+    return {
+      id: String(tr.id ?? notPlan()), exerciseId: occ?.exerciseId ?? (own(exMap, tr.exerciseId) || tr.exerciseId), slots,
+      stages: list(tr.stages).map(st => {
+        if (!isMap(st) || !STAGE_KINDS.includes(st.kind) || (st.close !== undefined && !CLOSES.includes(st.close))) notPlan()
+        // A target only for an occurrence the track binds: one for any other is nothing the engine reads.
+        return { id: String(st.id), kind: st.kind, ...(st.close ? { close: st.close } : {}), ...(st.cycleEnd === true ? { cycleEnd: true } : {}),
+          targets: Object.fromEntries(Object.entries(map(st.targets)).map(([oid, x]) => [mapped(occMap, oid), x]).filter(([oid]) => bound.has(oid)).map(([oid, x]) => [oid, targetOf(x, st.kind === 'rest')])) }
+      }),
+      refs: ['ask', 'keep'].includes(tr.refs) ? tr.refs : 'inherit',
+      ...(isPolicy(tr.policy) ? { policy: { onFailure: tr.policy.onFailure, onSkipped: tr.policy.onSkipped } } : {}),
+      // The cycle increment is a number the run adds to the training max (programme-run.js).
+      ...(isMap(tr.tm) ? { tm: { ...pick(tr.tm, ['value', 'unit']), ...(Number.isFinite(tr.tm.increment) ? { increment: tr.tm.increment } : {}) } } : {})
+    }
+  })
   const def = { id: uid(), name, at: now, rev: 1, schedule, duration: { n: p.duration?.n, unit: p.duration?.unit }, end: p.end === 'extend' ? 'extend' : 'stop', refs: ['ask', 'keep'].includes(p.refs) ? p.refs : 'inherit', tracks }
-  if (!canonical(def, S?.routines || [])) notPlan()
+  if (!canonical(def, routines)) notPlan()
   return def
 }
 

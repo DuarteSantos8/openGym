@@ -143,7 +143,7 @@ describe('a v1 profile on the server', () => {
     const useStore = await fresh()
     const server = canonical(8)
     server.state.workouts = [{ id: 'elsewhere', d: '2026-01-07', start: 3, exposures: [] }]
-    useStore.setState({ user: { id: 'u1' }, ready: true })
+    useStore.setState({ user: { id: 'u1' }, ready: true, config: { engineContract: 1, coach: null } })
     byPath({ '/api/data': opts => opts?.method === 'PUT' ? { ok: true, rev: 9 } : server })
     useStore.getState().importLegacyBackup(V1, raw.length, { mergeWith: { state: server.state, rev: 8 } })
     await useStore.getState().confirmMigration()

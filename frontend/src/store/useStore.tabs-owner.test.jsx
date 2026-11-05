@@ -74,7 +74,7 @@ async function openTab(user) {
     tab.store = m.useStore
   } finally { window.addEventListener = add }
   tabs.push(tab)
-  tab.store.setState({ user: user ?? null, ready: true })
+  tab.store.setState({ user: user ?? null, ready: true, config: { engineContract: 1, coach: null } })
   return tab.store
 }
 

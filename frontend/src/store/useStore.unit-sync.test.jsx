@@ -12,6 +12,8 @@ vi.mock('./useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn() }) } }
 
 import { api } from '../lib/api.js'
 import { DEF, useStore } from './useStore.js'
+// A server that reads this build's engine contract (GET /api/config), as boot learns it.
+beforeEach(() => { useStore.setState({ config: { engineContract: 1, coach: null } }) })
 import { convertBodyWeight, convertStateUnit, convertWeight } from '../lib/units.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))

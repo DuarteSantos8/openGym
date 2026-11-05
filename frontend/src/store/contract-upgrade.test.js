@@ -106,25 +106,32 @@ describe('the server it syncs with', () => {
     expect(store.getState().syncBlocked).toBeNull()
   })
 
-  it('with the server\'s config unknown, a copy holding a programme asks for it first and pushes only to a server that reads it', async () => {
-    localStorage.setItem('gym_state_v1', JSON.stringify(contract0()))
-    for (const [config, pushed] of [[{ allow_guest: false }, 0], [{ allow_guest: false, engineContract: 1 }, 1], [null, 0]]) {
-      const store = await openApp()
-      const log = []
-      h.api = async (path, opts = {}) => {
-        log.push((opts.method || 'GET') + ' ' + path)
-        if (path === '/api/config') { if (!config) throw Object.assign(new Error('offline'), { status: 0 }); return config }
-        if (opts.method === 'PUT') return { ok: true, rev: 1 }
-        throw new Error('unexpected ' + path)
+  it('with the server\'s config unknown, a marked copy asks for it first and pushes only to a server that reads it', async () => {
+    // A copy whose only contract-1 mark is the marker, and one holding an upgraded run.
+    for (const saved of [null, contract0()]) {
+      for (const [config, pushed] of [[{ allow_guest: false }, 0], [{ allow_guest: false, engineContract: 1 }, 1], ['offline', 0]]) {
+        localStorage.clear()
+        if (saved) localStorage.setItem('gym_state_v1', JSON.stringify(saved))
+        const store = await openApp()
+        const log = []
+        h.api = async (path, opts = {}) => {
+          log.push((opts.method || 'GET') + ' ' + path)
+          if (path === '/api/config') { if (config === 'offline') throw new TypeError('Failed to fetch'); return config }
+          if (opts.method === 'PUT') return { ok: true, rev: 1 }
+          throw new Error('unexpected ' + path)
+        }
+        // Booted offline: no config was read.
+        store.setState({ user: { id: 'u1' }, ready: true, config: null })
+        expect(store.getState().S.engineContractRevision).toBe(1)
+        store.getState().update(s => { s.restSec = 75 }, false)
+        await store.getState().pushState()
+        expect(log[0]).toBe('GET /api/config')
+        expect(log.filter(x => x === 'PUT /api/data')).toHaveLength(pushed)
+        expect(localStorage.getItem('gym_dirty')).toBe(pushed ? null : '1')
+        // Unreachable is the offline path of any push; a server that answers without the contract blocks.
+        expect(store.getState().syncBlocked).toBe(config === 'offline' || pushed ? null : 'server-upgrade')
+        if (config === 'offline') expect(store.getState().sync).toMatchObject({ offline: true, pending: true })
       }
-      // Booted offline: no config was read. The copy holds an upgraded run.
-      store.setState({ user: { id: 'u1' }, ready: true, config: null })
-      expect(Object.keys(store.getState().S.programmeRuns)).toHaveLength(1)
-      store.getState().update(s => { s.restSec = 75 }, false)
-      await store.getState().pushState()
-      expect(log.filter(x => x === 'PUT /api/data')).toHaveLength(pushed)
-      expect(log[0]).toBe('GET /api/config')
-      expect(store.getState().syncBlocked).toBe(pushed ? null : 'server-upgrade')
     }
   })
 

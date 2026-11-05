@@ -35,7 +35,7 @@ async function openTab(user = { id: 'u1' }) {
   const m = await import('./useStore.js')
   DEF = m.DEF
   tabs.push(m.useStore)
-  m.useStore.setState({ user, ready: true })
+  m.useStore.setState({ user, ready: true, config: { engineContract: 1, coach: null } })
   return m.useStore
 }
 

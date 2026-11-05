@@ -521,6 +521,46 @@ describe('programmes in a plan file', () => {
     expect(parsePlan(fileOf((q, f) => { f.programmes = Array(40).fill(q) }), 'kg').programmes).toHaveLength(32)
   })
 
+  it('a plan export leaves out a programme waiting on a repair, so the routines still import; a runnable one round-trips', () => {
+    const s = running()
+    s.programmes.Q = { ...s.programmes.P, id: 'Q', name: 'Broken', needs: ['repair'] }
+    const file = JSON.parse(JSON.stringify(buildPlanBundle(s, 'Mine')))
+    expect(file.programmes.map(p => p.name)).toEqual(['Block'])
+    // A routine edit since (rule B) marks the only programme for repair: the file carries none, and imports.
+    s.programmes.P = { ...s.programmes.P, needs: ['repair'] }
+    const bare = JSON.parse(JSON.stringify(buildPlanBundle(s, 'Mine')))
+    expect(bare.programmes).toBeUndefined()
+    const friend = { unit: 'kg', routines: [], week: {}, customEx: [], programmes: {} }
+    expect(mergePlan(friend, parsePlan(JSON.stringify(bare), 'kg'))).toMatchObject({ routines: 2, programmes: 0 })
+    const other = { unit: 'kg', routines: [], week: {}, customEx: [], programmes: {} }
+    expect(mergePlan(other, parsePlan(JSON.stringify(file), 'kg'))).toMatchObject({ routines: 2, programmes: 1 })
+  })
+
+  it('a format-2 programme keeps no nested blob: no target off its slots, nothing on a rest stage, a seed of metrics, a numeric TM step', () => {
+    const blob = { deep: { blob: 'x'.repeat(200000) } }
+    const text = fileOf((p, f) => {
+      const [bench, squat] = p.tracks
+      const [oid] = Object.keys(bench.stages[0].targets), other = squat.slots[0].oid
+      bench.stages[0].targets[other] = { own: 'set', phase: { parameters: blob, groups: [blob] }, seed: blob, options: blob }
+      bench.stages[0].targets[oid].seed = { load: 70, blob: 1, reps: 5 }
+      bench.stages[1] = { id: 'r', kind: 'rest', targets: { [oid]: { own: 'inherit', seed: blob, options: blob } } }
+      bench.tm = { value: 100, unit: 'kg', increment: blob }
+      squat.tm = { value: 120, unit: 'kg', increment: 5 }
+      void f
+    })
+    expect(text.length).toBeGreaterThan(800000)
+    const friend = { unit: 'kg', routines: [], week: {}, customEx: [], programmes: {} }
+    expect(mergePlan(friend, parsePlan(text, 'kg')).programmes).toBe(1)
+    const [p] = Object.values(friend.programmes)
+    expect(JSON.stringify(p).length).toBeLessThan(20000)
+    const [bench, squat] = p.tracks
+    expect(Object.keys(bench.stages[0].targets)).toEqual([bench.slots[0].oid])
+    expect(bench.stages[0].targets[bench.slots[0].oid].seed).toEqual({ load: 70, reps: 5 })
+    expect(bench.stages[1]).toEqual({ id: 'r', kind: 'rest', targets: { [bench.slots[0].oid]: { own: 'inherit' } } })
+    expect(bench.tm).toEqual({ value: 100, unit: 'kg' })
+    expect(squat.tm).toEqual({ value: 120, unit: 'kg', increment: 5 })
+  })
+
   it('a format-1 file brings only what a programme is, at a size a programme has', () => {
     const file = JSON.parse(`{"name":"Block","days":{"1":["A"]},"weeks":[{"t":{"__proto__":{"pct":80},"constructor":{"pct":75},"A:toString":{"pct":70},"0025":{"pct":72.5}}}],
       "src":"strength-4","run":{"startedOn":"2026-01-01"},"blob":"${'x'.repeat(1000)}"}`)

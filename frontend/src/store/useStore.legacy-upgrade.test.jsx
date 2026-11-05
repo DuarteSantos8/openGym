@@ -59,7 +59,7 @@ function leaveOldCopy(base, mut) {
 async function openApp() {
   vi.resetModules()
   const m = await import('./useStore.js')
-  m.useStore.setState({ user: { id: OWNER, name: 'Ana' }, ready: true })
+  m.useStore.setState({ user: { id: OWNER, name: 'Ana' }, ready: true, config: { engineContract: 1, coach: null } })
   return m.useStore
 }
 
