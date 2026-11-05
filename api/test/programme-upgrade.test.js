@@ -344,6 +344,26 @@ test('this week s logged sessions are credited once through assign events listed
   assert.deepEqual([later.stage, later.period], ['s3', 2]);
 });
 
+test('this week is the week the sessions were logged in, whatever the zone; ties go by code point', () => {
+  // Monday evening in Los Angeles is Tuesday in UTC; Monday morning in Sydney is still Sunday in UTC.
+  const at = (id, d, start, rid = 'rA') => ({ ...dayA(id, d), start: Date.parse(start), end: Date.parse(start) + 3600000, routineIds: [rid], routineId: rid });
+  const cases = [['la', '2026-11-03T02:00:00Z', 'America/Los_Angeles'], ['syd', '2026-11-01T20:00:00Z', 'Australia/Sydney']];
+  for (const [id, start, tz] of cases) {
+    for (const reminder of [undefined, { on: true, tz, time: '18:00' }]) {
+      const { state, summary } = up(contract0(v1('strength-4', { run: { startedOn: '2026-10-26' }, oneRepMaxes: ONE_RMS, ...(reminder ? { reminder } : {}),
+        workouts: [at(`${id}0`, '2026-10-26', start.replace('11-03', '10-27').replace('11-01', '10-25')), at(id, '2026-11-02', start)] })));
+      const runId = 'run:pg:2026-10-26:1';
+      assert.equal(state.programmeRuns[runId].tz, reminder ? tz : 'UTC');
+      assert.deepEqual(summary.filter(x => x.kind === 'credit').map(x => [x.exposureId, x.slot]), [SQUAT, BENCH, ROW].map((oid, j) => [`${id}:x${j}`, `p1:a0:${oid}`]), `${id} ${reminder ? tz : 'UTC'}`);
+      const slot = view(state, runId, '2026-11-03').tracks[`t:pg:${SQUAT}`].slots[0];
+      assert.deepEqual([slot.exposureId, slot.outcome], [`${id}:x0`, 'succeeded']);
+    }
+  }
+  // Two sessions finished at the same instant: the lower exposure id by code point ('B' before 'a'), on every runtime.
+  const { summary } = up(contract0(v1('strength-4', { run: { startedOn: '2026-10-26' }, oneRepMaxes: ONE_RMS, workouts: [dayA('a1', '2026-11-02'), dayA('B1', '2026-11-02')] })));
+  assert.deepEqual(summary.filter(x => x.kind === 'credit').map(x => x.exposureId), ['B1:x0', 'B1:x1', 'B1:x2']);
+});
+
 test('an active legacy workout and every prescription keep their bytes and hashes', () => {
   const active = { id: 'a1', d: '2026-11-04', start: at('2026-11-04'), routineIds: ['rB'], routineId: 'rB', cur: 0,
     entries: [{ id: '0085', rid: 'rB', target: { mode: 'reps', sets: 5, reps: 5, weight: 70 }, planned: { sets: 5, reps: 5 }, sets: [{ r: 5, w: 70, done: true }, { r: 5, w: 70, done: false }] }] };
@@ -382,6 +402,27 @@ test('a loop programme is marked needs binding and its run keeps calendar weeks'
   const v = view(state, runId, '2026-11-04');
   assert.deepEqual([v.period.index, v.tracks[`t:pg:${SQUAT}`].stage], [1, 's3']);
   assert.equal(view(state, runId, '2026-11-09').tracks[`t:pg:${SQUAT}`].stage, 's4');
+});
+
+test('a programme over 50 tracks keeps every week and target in its source, pending repair', () => {
+  const ids = ['0043', '0025', '0027', '0085', '0047', '0426', '2330', '1323', '0739', '0031'];
+  const routines = ['rA', 'rB', 'rC', 'rD', 'rE', 'rF'].map(id => ({ id, name: id, ex: ids.map(ex => ({ id: ex, sets: 3, reps: 5, weight: 40 })) }));
+  const week = pct => ({ rpe: 8, t: { ...Object.fromEntries(ids.map(ex => [ex, { pct }])), 'rF:0025': { pct: pct + 5, rpe: 9 } } });
+  const programme = { id: 'pg', name: 'Big', at: 7, src: 'mine', days: { 1: ['rA'], 2: ['rB'], 3: ['rC'], 4: ['rD'], 5: ['rE'], 6: ['rF'] }, weeks: [week(70), week(75), { ...week(60), deload: true }] };
+  const input = contract0(v1('strength-4', { routines, programme, run: { startedOn: '2026-11-02' }, oneRepMaxes: ONE_RMS }));
+  const { state, summary } = up(structuredClone(input));
+  const def = state.programmes.pg;
+  assert.equal(def.tracks.length, 50);
+  assert.deepEqual(def.needs, ['repair']);
+  assert.deepEqual(summary.find(x => x.reason === 'too-many-tracks'), { kind: 'repair', programmeId: 'pg', reason: 'too-many-tracks', tracks: ids.map((_, j) => `t:pg:rF:o${j}`) });
+  // Nothing is lost: the legacy programme rides along verbatim, every week and target in it.
+  assert.deepEqual(def.src, programme);
+  assert.deepEqual(state.programmeRuns['run:pg:2026-11-02:1'].def.src, programme);
+  assert.equal(validateCanonicalProfile(state).ok, true);
+  assert.deepEqual(up(structuredClone(input)), up(structuredClone(input)));
+  // Its weight in the synced document: the legacy source twice (programme and run), a few kB.
+  const extra = syncSize(state) - syncSize({ ...state, programmes: { pg: { ...def, src: 'mine' } }, programmeRuns: { 'run:pg:2026-11-02:1': { ...state.programmeRuns['run:pg:2026-11-02:1'], def: { ...def, src: 'mine' } } } });
+  assert.ok(extra > 0 && extra < 8 * 1024, String(extra));
 });
 
 test('no reference decision, review or user acknowledgement is invented', () => {
@@ -445,6 +486,8 @@ test('validation refuses the event, run and assignment shapes a replay cannot re
   const tz = structuredClone(state);
   tz.programmeRuns[runId].tz = 'Mars/Olympus';
   assert.equal(validateCanonicalProfile(tz).ok, false);
+  // Old squat work is never assigned to the bench slot.
+  assert.equal(validateCanonicalProfile(event({ type: 'assign', exposureId: 'h1:x0', slot: `p1:a0:${BENCH}` })).ok, false);
   const stamped = structuredClone(state);
   stamped.workouts[0].exposures[0].programme = { runId, rev: 1, trackId: 't', stage: 's1', attempt: 1, role: 'work' };   // no slot
   assert.equal(validateCanonicalProfile(stamped).ok, false);

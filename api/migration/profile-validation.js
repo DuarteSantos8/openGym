@@ -52,7 +52,7 @@ const EVENTS = {
 const isAssignment = g => isObj(g) && str(g.runId) && whole(g.rev, 1) && str(g.trackId) && isSlot(g.slot) && str(g.stage) && whole(g.attempt, 1)
   && ['work', 'maintenance', 'extra'].includes(g.role) && (g.ref == null || isRef(g.ref)) && (g.effort == null || isEffort(g.effort));
 
-function programmeErrors(state) {
+function programmeErrors(state, exposures) {
   const out = [];
   if (state.engineContractRevision !== undefined && !whole(state.engineContractRevision)) out.push('engineContractRevision must be a whole number');
   const map = (key, check) => {
@@ -65,7 +65,7 @@ function programmeErrors(state) {
     map('programmes', (p, at, key) => {
       const bad = definitionErrors(p, at);
       if (bad.length) return out.push(...bad);
-      if (p.id !== key || typeof p.name !== 'string' || !Number.isFinite(p.at)) return out.push(`${at}: invalid programme`);
+      if (p.id !== key || typeof p.name !== 'string' || !Number.isFinite(p.at) || !(p.src === undefined || typeof p.src === 'string' || isObj(p.src))) return out.push(`${at}: invalid programme`);
       // One marked for repair is kept readable, not runnable; any other one must compile against today's routines.
       if (!p.needs?.includes('repair')) { const check = validateProgramme(p, { routines: list(state.routines) }); if (!check.ok) out.push(`${at}: ${check.errors[0]}`); }
     });
@@ -85,6 +85,9 @@ function programmeErrors(state) {
   map('programmeEvents', (e, at, key) => {
     if (!isObj(e) || e.id !== key || !str(e.runId) || !when(e.at) || !Object.hasOwn(EVENTS, e.type) || !EVENTS[e.type](e)) return out.push(`${at}: invalid event`);
     if (e.type === 'amend') out.push(...definitionErrors(e.def, `${at}.def`));
+    // Unstamped (legacy) work may only be assigned to a slot of its own occurrence.
+    const x = e.type === 'assign' ? exposures.get(e.exposureId) : null;
+    if (x && !x.programme && x.occurrenceId !== e.slot.split(':').slice(2).join(':')) out.push(`${at}: assigns work of another occurrence`);
   });
   map('refReviews', (r, at) => { if (!isObj(r) || !str(r.candidateId) || !['keep', 'later'].includes(r.decision) || !when(r.at)) out.push(`${at}: invalid review`); });
   return out;
@@ -165,7 +168,6 @@ function validateStructure(state) {
       });
     });
   });
-  errors.push(...programmeErrors(state));
   return { ok: errors.length === 0, errors };
 }
 
@@ -261,5 +263,6 @@ export function validateCanonicalProfile(state) {
     if (s.terminalTarget != null && !amount(s.terminalTarget)) bad(`${at}.terminalTarget`, 'invalid load');
     if (s.values?.trainingMax != null && !amount(s.values.trainingMax)) bad(`${at}.values.trainingMax`, 'invalid load');
   }
+  try { errors.push(...programmeErrors(state, exposures)); } catch { errors.push('invalid programme records'); }
   return { ok: errors.length === 0, errors };
 }

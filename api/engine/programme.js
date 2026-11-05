@@ -35,7 +35,7 @@ const targetOf = (stage, oid) => stage.targets?.[oid] ?? INHERIT
 const before = (track, stage) => track.stages.slice(0, track.stages.findIndex(s => s.id === stage.id)).findLast(s => s.kind === 'work') ?? null
 // A deload scales every group's load once: a share of the anchor or the training max, or its own kg/lb.
 const deloaded = (l, f) => (l.basis === 'absolute' ? { ...l, value: l.value * f } : l.basis === 'anchor' || l.basis === 'training_max' ? { ...l, percent: l.percent * f } : l)
-const scalable = rule => rule.program.phases.some(ph => ph.groups.some(g => g.load.basis === 'training_max'
+export const scalable = rule => rule.program.phases.some(ph => ph.groups.some(g => g.load.basis === 'training_max'
   || (g.load.basis === 'absolute' && g.load.value > 0) || (g.load.basis === 'anchor' && ph.parameters.load.mode !== 'empty')))
 const opsOf = rule => rule.program.phases.flatMap(ph => ph.progression)
 

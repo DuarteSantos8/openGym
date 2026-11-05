@@ -36,9 +36,11 @@ output must pass `validateCanonicalProfile`, fit the 16 MiB packed sync limit an
 | a running `S.programme` | `S.programmeRuns[run:<pid>:<startedOn>:<cycle>]` with the definition (the run's bump applied), `policy: advance/advance`, `ack: 'legacy'`, `end: 'stop'`, references captured with `currentOneRm`, seeds from the ordinary tracks, `legacy.weekOffset` = weeks already spent; `S.programme = { runId, saved }` |
 | `pausedOn` | a `pause` event at that date; the run starts in the paused week |
 | a run past its last week | `legacy.weekOffset` = every week: the run reads as stopped |
-| this week's sessions logged before the upgrade | `assign` events, each session once, earliest first, only onto appointments of its own routine; listed in the summary as `credit` |
+| this week's sessions logged before the upgrade (by the day they were logged on, `workout.d`) | `assign` events, each session once, earliest first, only onto a slot of its own occurrence and routine; listed in the summary as `credit`. The engine credits unstamped work only through such an event, and only onto its own occurrence |
 | `cycle`, `bump` | kept on the run; the bump is added to its percentage stages only (capped at 110), never to kg, reps, seconds or group ratios |
 | an occurrence whose own rule needs a 1RM | `occurrence.ref = currentOneRm(...)`, else `reference-missing` in the summary |
+| more than 50 occurrences | the first 50 become tracks, the programme `needs: ['repair']` |
+| a programme marked `binding` or `repair` | `src` holds the legacy programme verbatim, so no week or target is lost |
 | a run whose programme is gone | `S.programme = { runId: null, saved }`: only the plan to put back |
 | prescriptions, exposures, hashes, progression, 1RM records, Coach history | untouched |
 

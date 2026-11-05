@@ -12,7 +12,8 @@ import { validateCanonicalProfile } from './profile-validation.js';
 import { assertSyncSize } from './profile-size.js';
 import { isAssisted, isBodyweight } from './profile-migration.js';
 import { currentOneRm, deriveRun, needsOneRm, validateProgramme } from '../engine/index.js';
-import { dateIn } from '../engine/programme-run.js';
+import { scalable } from '../engine/programme.js';
+import { cmp, dateIn, dayOf, isoOf, weekOf } from '../engine/programme-run.js';
 
 // lib/programmes.js: 1 to 16 weeks, a %1RM of 30 to 110, an RPE of 6 to 10, both to the half.
 const MAX_WEEKS = 16, MAX_TRACKS = 50, PCT_MAX = 110;
@@ -20,17 +21,14 @@ const MAX_WEEKS = 16, MAX_TRACKS = 50, PCT_MAX = 110;
 const DELOAD_FACTOR = 0.9;
 // The legacy calendar never held a week: the preserved choice, never presented as the user's.
 const LEGACY = { onFailure: 'advance', onSkipped: 'advance' };
-const DAY = 86400000;
 
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const list = v => (Array.isArray(v) ? v : []);
 const copy = v => JSON.parse(JSON.stringify(v));
 const half = (v, lo, hi) => (typeof v === 'number' && v >= lo && v <= hi ? Math.round(v * 2) / 2 : null);
 const isDate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v));
-// Calendar arithmetic as in engine/programme-run.js: days on UTC midnights, weekStart 0 Sunday or 1 Monday.
-const dayOf = date => Date.parse(`${date}T00:00:00Z`) / DAY;
-const weekOf = (date, ws) => { const d = dayOf(date); return d - ((((d + 4 - ws) % 7) + 7) % 7); };
-const isoOf = day => new Date(day * DAY).toISOString().slice(0, 10);
+// The first day of a date's calendar week, on engine/programme-run.js's day numbers.
+const weekStartOf = (date, ws) => weekOf(dayOf(date), ws);
 // The zone the reminder fires by is the profile's own (api/queue.js reads it the same way); UTC without one.
 function zoneOf(tz) {
   if (typeof tz !== 'string' || !tz) return 'UTC';
@@ -47,9 +45,6 @@ function cleanWeek(w) {
   return { deload: w?.deload === true, rpe: half(w?.rpe, 6, 10), t };
 }
 
-// Where a stage's deload factor has a load to scale (engine/programme.js validateProgramme).
-const scalable = rule => rule.program.phases.some(ph => ph.groups.some(g => g.load.basis === 'training_max'
-  || (g.load.basis === 'absolute' && g.load.value > 0) || (g.load.basis === 'anchor' && ph.parameters.load.mode !== 'empty')));
 // The occurrence's phase at a %1RM: the same groups and their anchor ratios, its steps removed.
 function percentPhase(ph, percent) {
   const { stall, ...rest } = copy(ph);
@@ -118,7 +113,7 @@ export function convertLegacyProgramme(p, { routines = [], catalogue, customEx =
   let tracks = [...new Set(appts.map(a => a.rid))].filter(rid => have.get(rid).excludeFromProgression !== true)
     .flatMap(rid => list(have.get(rid).ex).map(occ => trackOf(p, rid, occ, weeks, ctx)));
   if (tracks.some(t => t.repair)) needs.add('repair');
-  // ponytail: past 50 tracks the rest stay ordinary work, the programme marked for repair; a merge would guess links.
+  // ponytail: past 50 tracks the rest stay ordinary work until a repair (their targets kept in `src`); a merge would guess links.
   if (tracks.length > MAX_TRACKS) { needs.add('repair'); summary.push({ kind: 'repair', programmeId: p.id, reason: 'too-many-tracks', tracks: tracks.slice(MAX_TRACKS).map(t => t.id) }); tracks = tracks.slice(0, MAX_TRACKS); }
   const def = {
     id: p.id, name: String(p.name ?? '').trim().slice(0, 80), at: Number.isFinite(p.at) ? p.at : 0, rev: 1, ...(typeof p.src === 'string' ? { src: p.src } : {}),
@@ -130,7 +125,8 @@ export function convertLegacyProgramme(p, { routines = [], catalogue, customEx =
   const empty = !appts.length || !tracks.length;
   if (empty || !check.ok) { needs.add('repair'); summary.push({ kind: 'repair', programmeId: p.id, reason: empty ? 'empty' : check.errors[0] }); }
   if (loop) summary.push({ kind: 'binding', programmeId: p.id });
-  return needs.size ? { ...def, needs: [...needs] } : def;
+  // A programme waiting on a repair or a binding keeps its legacy source verbatim: no week or target is lost (spec 15.2, 16).
+  return needs.size ? { ...def, src: copy(p), needs: [...needs] } : def;
 }
 
 // A repeated round's cumulative bump, on percentages only (spec 15.3), capped as lib/programmes.js did.
@@ -153,18 +149,21 @@ function convertRun(s, legacyRun, def, ctx) {
   const { ws, tz, summary, events } = ctx;
   const S0 = legacyRun.startedOn, P = isDate(legacyRun.pausedOn) ? legacyRun.pausedOn : null;
   // No clock: "now" is the profile's newest date (a workout, the start, the pause).
-  const A = [S0, P, ...list(s.workouts).map(w => (isDate(w?.d) ? w.d : Number.isFinite(w?.end ?? w?.start) ? dateIn(w.end ?? w.start, tz) : null))].filter(Boolean).sort().at(-1);
+  // A workout's day is the one the athlete logged it on (`d`, local), else its time in the run's zone:
+  // the same frame for "now" and for this week's credits.
+  const dayOfWorkout = w => (isDate(w?.d) ? w.d : Number.isFinite(w?.end ?? w?.start) ? dateIn(w.end ?? w.start, tz) : null);
+  const A = [S0, P, ...list(s.workouts).map(dayOfWorkout)].filter(Boolean).sort().at(-1);
   // lib/programmes.js programmeStatus: the calendar week the run stands in, frozen at a pause.
   const at = P && P < A ? P : A;
-  const week = Math.max(1, (weekOf(at, ws) - weekOf(S0, ws)) / 7 + 1);
+  const week = Math.max(1, (weekStartOf(at, ws) - weekStartOf(S0, ws)) / 7 + 1);
   const n = def.duration.n, offset = Math.min(week - 1, n);
-  const startedOn = week === 1 ? S0 : isoOf(weekOf(at, ws));
+  const startedOn = week === 1 ? S0 : isoOf(weekStartOf(at, ws));
   const cycle = Math.max(1, Math.round(Number(legacyRun.cycle) || 1)), bump = Math.max(0, Number(legacyRun.bump) || 0);
   const id = `run:${def.id}:${S0}:${cycle}`;
   const runDef = bump ? bumped(def, bump) : copy(def);
   const appts = runDef.schedule.appts;
   // The first window owes the appointments from the start on: none before it is invented (spec 7.2).
-  const from = dayOf(startedOn) - weekOf(startedOn, ws);
+  const from = dayOf(startedOn) - weekStartOf(startedOn, ws);
   const firstWeek = appts.map((a, i) => i).filter(i => appts[i].day == null || (appts[i].day - ws + 7) % 7 >= from);
   const tracks = {};
   for (const t of runDef.tracks) {
@@ -184,9 +183,9 @@ function convertRun(s, legacyRun, def, ctx) {
   // (spec 15.3): only work linked to a bound occurrence and its routine, never a paused or ended run's.
   if (!P && week <= n) {
     const taken = new Set();
-    const xs = list(s.workouts).flatMap(w => list(w.exposures)).filter(x => !x.programme && !x.excludedFromProgression && s.prescriptions[x.prescriptionId]
-      && typeof x.completedAt === 'string' && Number.isFinite(Date.parse(x.completedAt)) && dateIn(x.completedAt, tz) >= startedOn && dateIn(x.completedAt, tz) <= A)
-      .sort((a, b) => a.completedAt.localeCompare(b.completedAt) || a.exposureId.localeCompare(b.exposureId));
+    const xs = list(s.workouts).filter(w => dayOfWorkout(w) >= startedOn && dayOfWorkout(w) <= A).flatMap(w => list(w.exposures))
+      .filter(x => !x.programme && !x.excludedFromProgression && s.prescriptions[x.prescriptionId] && typeof x.completedAt === 'string')
+      .sort((a, b) => cmp(a.completedAt, b.completedAt) || cmp(a.exposureId, b.exposureId));
     for (const x of xs) {
       const track = runDef.tracks.find(t => t.slots.some(sl => sl.oid === x.occurrenceId && sl.rid === x.routineId));
       const a = track && firstWeek.find(i => appts[i].rid === x.routineId && !taken.has(`${i}:${x.occurrenceId}`));

@@ -808,12 +808,16 @@ test('a converted legacy run starts past its spent weeks, credits old work only 
   }
   const r = legacy(2)
   // Monday's session, saved before the run existed: no programme stamp of its own.
-  const { programme, ...old } = ex('p1:a0:rA:o0')
+  const { programme, ...plain } = ex('p1:a0:rA:o0')
+  const old = { ...plain, routineId: 'rA', occurrenceId: 'rA:o0' }
   const v = derive(r, [old], [ev('assign', { exposureId: old.exposureId, slot: 'p1:a0:rA:o0' })], date(1, 2))
   expect(v.tracks.bench).toMatchObject({ stage: 'w3', period: 1 })
   expect(v.tracks.bench.slots[0]).toMatchObject({ exposureId: old.exposureId, outcome: 'succeeded' })
   expect(v.nominal).toEqual({ used: 2, of: 4, unit: 'weeks' })
   expect(derive(r, [old], [], date(1, 2)).tracks.bench.slots[0].exposureId).toBeUndefined()
+  // Old work of another exercise (routine B's squat) is never credited to bench, whatever an assign event says.
+  const squat = { ...plain, exposureId: 'squat1', exerciseId: 'squat', routineId: 'rB', occurrenceId: 'rB:o0' }
+  expect(derive(r, [squat], [ev('assign', { exposureId: 'squat1', slot: 'p1:a0:rA:o0' })], date(1, 2)).tracks.bench.slots[0].exposureId).toBeUndefined()
   // The fixed 70 kg week stands over the seed; the adaptive w4 of a run one week further opens at it.
   expect(rows(perform(r, world(), { rid: 'rA', oid: 'rA:o0', date: date(1), occRule: PLAIN }))).toEqual([70, 70, 70])
   expect(rows(perform(legacy(3), world(), { rid: 'rA', oid: 'rA:o0', date: date(1), occRule: PLAIN }))).toEqual([90, 90, 90])

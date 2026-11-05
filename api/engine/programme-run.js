@@ -17,7 +17,8 @@ const MAX_PERIODS = 520
 const DAY = 86400000
 const REPEAT = { onFailure: 'repeat', onSkipped: 'repeat' }
 const ms = at => (typeof at === 'number' ? at : Date.parse(at))
-const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0)
+// Code-point order: the same on every runtime, whatever its locale.
+export const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0)
 const byTime = (a, b) => a.t - b.t || cmp(a.id, b.id)
 const apptOf = slot => slot.split(':').slice(0, 2).join(':')
 const oidOf = slot => slot.split(':').slice(2).join(':')
@@ -30,10 +31,10 @@ export function dateIn(at, tz) {
   return fmts.get(tz).format(new Date(ms(at)))
 }
 // Days counted on the UTC midnights of local dates: a DST change never makes a week 6 or 8 days long.
-const dayOf = date => Date.parse(date + 'T00:00:00Z') / DAY
-const isoOf = day => new Date(day * DAY).toISOString().slice(0, 10)
+export const dayOf = date => Date.parse(date + 'T00:00:00Z') / DAY
+export const isoOf = day => new Date(day * DAY).toISOString().slice(0, 10)
 // The first day of a day's calendar week (1970-01-01 was a Thursday; weekStart is 0 Sunday or 1 Monday).
-const weekOf = (day, ws) => day - (((day + 4 - ws) % 7) + 7) % 7
+export const weekOf = (day, ws) => day - (((day + 4 - ws) % 7) + 7) % 7
 const calendarWeek = (run, date) => (weekOf(dayOf(date), run.weekStart ?? 1) - weekOf(dayOf(run.startedOn), run.weekStart ?? 1)) / 7 + 1
 
 /** Weeks: the period a local date falls in, 1 from the start's calendar week; 0 before startedOn.
@@ -100,13 +101,19 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
   }
 
   // Saved exposures of this run, earliest first; an assign event moves one to another slot. Work
-  // saved before the run existed (a converted legacy run, spec 15.3) counts only through an assign event.
+  // saved before the run existed (a converted legacy run, spec 15.3) counts only through an assign
+  // event naming it onto a slot of its own occurrence, in an appointment of its own routine.
   const moved = new Map(of('assign').map(e => [e.exposureId, e.slot]))
-  const legacy = slot => ({ runId: run.id, trackId: run.def.tracks.find(t => t.slots.some(s => s.oid === oidOf(slot)))?.id, slot })
+  const legacy = (x, slot) => {
+    const a = Number(apptOf(slot).split(':')[1]?.slice(1)), oid = oidOf(slot)
+    const d = x.occurrenceId === oid ? [run.def, latest].find(d => apptsOf(d)[a] === x.routineId) : null
+    const track = d?.tracks.find(t => t.slots.some(s => s.oid === oid && s.rid === x.routineId))
+    return track ? { runId: run.id, trackId: track.id, slot } : null
+  }
   const saved = []
   for (const w of workouts) {
     for (const x of w.exposures || []) {
-      const g = x.programme ?? (moved.has(x.exposureId) ? legacy(moved.get(x.exposureId)) : null)
+      const g = x.programme ?? (moved.has(x.exposureId) ? legacy(x, moved.get(x.exposureId)) : null)
       if (g?.runId !== run.id) continue
       const t = ms(x.completedAt ?? w.end ?? w.start), p = prescriptions[x.prescriptionId] ?? null
       saved.push({ x, g, id: x.exposureId, track: g.trackId, slot: moved.get(x.exposureId) ?? g.slot, role: g.role ?? 'work', moved: moved.has(x.exposureId), t, gen: p ? ms(p.generatedAt) : t, p })
