@@ -11,6 +11,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - "Your last session" keeps the warm-ups you marked, also with progression off (#993, #1001, thanks @ilirhushi).
 - Windows: the bundle size script and the coach tests find their files again (#999, #998, #1000, thanks @lintuo and @fromcodetogold).
 - Android: the tab bar no longer slides under the navigation bar after a page load (#997, thanks @FrancescoDeSimone).
+- Android: "Rest's over" no longer rings a minute early with the phone locked, and the countdown card stays until the real end. Some phones hand the alarm over early; openGym now books it again for the right time (#995, thanks @ukizet).
 
 ## Unreleased (v1.4.5)
 

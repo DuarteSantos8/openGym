@@ -63,4 +63,27 @@ public class RestCountdownPlanTest {
         assertEquals("1:29", RestAlert.clock((int) RestCountdownPlan.chronometerShows(base, 1000)));
         assertEquals("0:00", RestAlert.clock((int) RestCountdownPlan.chronometerShows(base, 90_000)));
     }
+
+    // #995: a 3:00 rest rang "Rest's over" a minute in, with the card still at 2:00.
+    @Test
+    public void anAlarmThatComesEarlyIsBookedAgainForItsEnd() {
+        long end = 1_000_000;
+        assertEquals(RestCountdownPlan.REBOOK, RestCountdownPlan.alarmVerdict(end, end - 120_000, end, false));
+        assertEquals(RestCountdownPlan.REBOOK, RestCountdownPlan.alarmVerdict(end, end - 30_000, 0, false));
+    }
+
+    @Test
+    public void secondsEarlyItWaitsAndOnTimeItRings() {
+        long end = 1_000_000;
+        assertEquals(RestCountdownPlan.WAIT, RestCountdownPlan.alarmVerdict(end, end - 4_000, end, false));
+        assertEquals(RestCountdownPlan.FIRE, RestCountdownPlan.alarmVerdict(end, end - 1_000, end, false));
+        assertEquals(RestCountdownPlan.FIRE, RestCountdownPlan.alarmVerdict(end, end + 5_000, end, false));
+    }
+
+    @Test
+    public void anAlarmForAnotherEndIsLeftOver() {
+        assertEquals(RestCountdownPlan.STALE, RestCountdownPlan.alarmVerdict(900_000, 900_000, 1_000_000, false));
+        // The card's own clock is always the rest on screen, also after a skip into a hold chain.
+        assertEquals(RestCountdownPlan.FIRE, RestCountdownPlan.alarmVerdict(900_000, 900_000, 1_000_000, true));
+    }
 }
