@@ -1749,6 +1749,13 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .subrow .stp.mini .val{min-width:var(--num)}
 .subrow .stp.mini .num{font-size:var(--fs-footnote);min-height:30px}
 .subrow .iconbtn{width:26px;height:26px;font-size:var(--fs-caption2);flex:none}
+/* A cardio row with the incline is three steppers too, and at 320 px it pushed the tick past the
+   card's edge. Below 360 px the incline gives up its −/+ like the effort column does: the number
+   stays and takes a typed grade. */
+@media (max-width:359px){
+  .setrow .stp.inc:not(.plain)>button{display:none}
+  .setrow .stp.inc,.sethead .inc-sp{--btn-floor:0px}
+}
 /* label 46, two minis at their floors 70 + 60, the ✕ and three gaps: 252 px with the indent — the
    whole row at 320 px. The label starts under the number circle's inner edge there instead. */
 @media (max-width:359px){

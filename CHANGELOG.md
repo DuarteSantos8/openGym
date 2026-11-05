@@ -49,6 +49,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Settings → Look & Home → Icons: pick your own streak flame and freeze, from openGym's icons or any emoji. The colors around it (the flame's glow and bar, the frozen week, the freeze chips) follow its color in light and dark mode, and Reset to default is right there. Syncs like the rest of your settings; the watches and widgets keep their own flame.
 
 **Fixes from your reports**
+- Cardio on a 320 px phone: a row with the incline pushed its tick off the card. Below 360 px the incline now takes a typed number without the − and +, and the tick is back.
 - Your own sounds come back from a backup with photos and videos too. They went into the zip, but the import left them out.
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
 - Android widget: it loads at every size again instead of "Unable to load widget" when stretched, and its "What to show" screen is wide enough to read (#981).
