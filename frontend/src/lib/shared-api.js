@@ -44,6 +44,8 @@ export const banSharing = (uid, banned, reason) => send('POST', '/api/admin/user
 // The canonical consent text of api/consent.js as a t() key, so it reads in the app's language.
 // A server with a newer text shows its own words instead.
 export const LIBRARY_CONSENT = 'This is public to everyone on this server: everyone with an account here can see it, try it and copy it. Your name and the date go with it, always. Only share what is yours: something you made, recorded or have the right to pass on. The exercise pictures and animations of the built-in library are licensed and can never be shared. You can stop sharing any time; copies people already took stay with them.'
+// Written out inside t() so scripts/check-source-strings.mjs finds it; the test holds the two together.
+export const libraryConsentWords = consent => (consent && consent.text && consent.text !== LIBRARY_CONSENT ? consent.text : t('This is public to everyone on this server: everyone with an account here can see it, try it and copy it. Your name and the date go with it, always. Only share what is yours: something you made, recorded or have the right to pass on. The exercise pictures and animations of the built-in library are licensed and can never be shared. You can stop sharing any time; copies people already took stay with them.'))
 
 export const REPORT_REASONS = ['spam', 'offensive', 'not-theirs', 'licensed', 'personal', 'other']
 export const reasonLabel = r => ({

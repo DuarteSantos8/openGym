@@ -12,9 +12,9 @@ import { fmtDate, isoOf, exCount } from '../lib/format.js'
 import { remoteAuth } from '../lib/api.js'
 import {
   libraryOf, libraryOn, listShared, getShared, publishShared, editShared, withdrawShared, importShared, reportShared,
-  sharedMediaBlob, LIBRARY_CONSENT, REPORT_REASONS, reasonLabel, sharedError,
+  sharedMediaBlob, libraryConsentWords, REPORT_REASONS, reasonLabel, sharedError,
 } from '../lib/shared-api.js'
-import { TYPE, browseTypes, ownItems, applyImport, importedRefs, cardLine, bylineOf, hasCopy, newerThanCopy } from '../lib/shared-items.js'
+import { TYPE, browseTypes, ownItems, applyImport, importedRefs, cardLine, bylineOf, hasCopy, newerThanCopy, typeWords } from '../lib/shared-items.js'
 import { exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { exOr } from '../lib/exercises.js'
 import { initialOf } from '../lib/avatar.js'
@@ -158,10 +158,10 @@ export default function Community() {
     <AvatarShareRow lib={lib} />
     <div className="chips com-tabs" role="tablist" aria-label={t('Kinds')}>
       {tabs.map(x => <button key={x.id} type="button" role="tab" aria-selected={type === x.id} className={'chip nocap ichip' + (type === x.id ? ' on' : '')}
-        onClick={() => setType(x.id)}><Icon name={x.icon} />{t(x.label)}</button>)}
+        onClick={() => setType(x.id)}><Icon name={x.icon} />{typeWords()[x.id]?.[0]}</button>)}
     </div>
     <div className="com-tools">
-      <SearchField value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} placeholder={t('Search {0}', t(meta.label || '').toLowerCase())} aria-label={t('Search')} />
+      <SearchField value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} placeholder={t('Search {0}', (typeWords()[type]?.[0] || '').toLowerCase())} aria-label={t('Search')} />
       <div className="com-sortrow">
         <Segmented className="com-sort" value={sort} onChange={setSort} options={[{ value: 'new', label: t('New') }, { value: 'popular', label: t('Popular') }]} />
         <button type="button" className={'chip nocap' + (mine ? ' on' : '')} aria-pressed={mine} onClick={() => setMine(v => !v)}>{t('Yours')}</button>
@@ -280,7 +280,7 @@ function ItemSheet({ item: first, close, onChanged }) {
       <Preview item={item} big />
       <div className="grow">
         <h3>{item.title}</h3>
-        <div className="small dim">{t(meta.one || '')}{item.version > 1 ? ' · ' + t('version {0}', item.version) : ''}</div>
+        <div className="small dim">{typeWords()[item.type]?.[1]}{item.version > 1 ? ' · ' + t('version {0}', item.version) : ''}</div>
       </div>
     </div>
     <Byline item={item} />
@@ -388,14 +388,14 @@ function ShareSheet({ type, close, onShared }) {
     <h3>{t('Share one of yours')}</h3>
     <p className="small dim">{t('Nothing is shared until you pick it and say yes. You decide for each one.')}</p>
     <div className="chips com-tabs">
-      {tabs.map(x => <button key={x.id} type="button" className={'chip nocap ichip' + (kind === x.id ? ' on' : '')} aria-pressed={kind === x.id} onClick={() => setKind(x.id)}><Icon name={x.icon} />{t(x.label)}</button>)}
+      {tabs.map(x => <button key={x.id} type="button" className={'chip nocap ichip' + (kind === x.id ? ' on' : '')} aria-pressed={kind === x.id} onClick={() => setKind(x.id)}><Icon name={x.icon} />{typeWords()[x.id]?.[0]}</button>)}
     </div>
     <div className="com-own">
       {items.map(it => {
         const done = liveSrc.has(it.src)
         return <div key={it.src} className="com-own-row">
           <span className="com-pre sm" style={{ color: meta.tint }}><Icon name={meta.icon} /></span>
-          <span className="grow tt">{it.title || (it.exId ? exerciseNameFor(exOr(it.exId)) : t(meta.one))}</span>
+          <span className="grow tt">{it.title || (it.exId ? exerciseNameFor(exOr(it.exId)) : typeWords()[kind]?.[1])}</span>
           {done ? <span className="tag acc"><Icon name="check" />{t('Shared')}</span>
             : <Button size="sm" variant="tinted" disabled={shared === null} onClick={() => pick(it)}>{t('Share')}</Button>}
         </div>
@@ -419,7 +419,7 @@ function ConsentSheet({ type, it, close, done }) {
   const [own, setOwn] = useState(false)
   const [busy, setBusy] = useState(false)
   const consent = lib?.consent
-  const words = consent ? t(LIBRARY_CONSENT) : ''
+  const words = libraryConsentWords(consent)
   const payload = it.payload.exId && !it.payload.exName ? { ...it.payload, exName: defTitle } : it.payload
   const go = async () => {
     setBusy(true)
@@ -452,7 +452,7 @@ function ConsentSheet({ type, it, close, done }) {
       <TextArea value={desc} maxLength={500} rows={3} placeholder={t('What it is, who it is for')} onChange={e => setDesc(e.target.value)} /></label>
     {personal && <p className="com-warn" role="note"><Icon name="shield" />{t('Careful: this is a photo of you. Everyone on this server can see it and could save it with a screenshot. Sure?')}</p>}
     {lib?.review || personal ? <p className="small dim">{t('An admin looks at it before anyone else can see it.')}</p> : null}
-    <p className="com-consent-text">{words || consent?.text}</p>
+    <p className="com-consent-text">{words}</p>
     <label className="com-own-check">
       <Check checked={own} onChange={setOwn} label={t('It is mine to share')} />
       <span>{t('It is mine to share. I made it, recorded it or may pass it on, and it is not an openGym animation.')}</span>

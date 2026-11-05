@@ -297,6 +297,8 @@ test('SHARE_PERSONAL_MEDIA=on: photos are possible, and always reviewed', async 
   const s = await h.share('u_anna', { type: 'progress', payload: { media: [ref(pic, 'image/jpeg', 'image')], caption: 'Week 12' } });
   assert.equal(s.status, 201, JSON.stringify(s.body));
   assert.equal(s.body.status, 'pending');
+  await h.call('u_admin', 'POST', `/api/admin/shared/${s.body.id}`, { action: 'approve', reason: 'fine' });
+  assert.equal((await h.call('u_ben', 'POST', `/api/shared/${s.body.id}/import`, {})).body.code, 'not-importable', 'only to look at');
   const local = await h.share('u_anna', { type: 'formvideo', payload: { media: [ref(pic, 'image/jpeg', 'image', { local: true })] } });
   assert.equal(local.status, 422);
 });

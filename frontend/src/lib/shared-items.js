@@ -29,6 +29,13 @@ export const TYPES = [
   { id: 'formvideo', label: 'Form checks', one: 'Form check', icon: 'camera', tint: 'var(--red)', take: false, personal: true },
 ]
 export const TYPE = Object.fromEntries(TYPES.map(x => [x.id, x]))
+/** The words of each kind, inside t() so the source-strings check finds them: [tab, one]. */
+export const typeWords = () => ({
+  exercise: [t('Exercises'), t('Exercise')], plan: [t('Plans'), t('Plan')], sound: [t('Sounds'), t('Sound')],
+  equipment: [t('Gyms'), t('Gym')], tip: [t('Tips'), t('Tip')], look: [t('Looks'), t('Look')],
+  measures: [t('Measurements'), t('Measurement set')], photo: [t('Photos'), t('Photo')],
+  progress: [t('Progress'), t('Progress photo')], formvideo: [t('Form checks'), t('Form check')],
+})
 
 /** The tabs this server offers (the profile picture is a switch, not a tab). */
 export const browseTypes = lib => TYPES.filter(x => (lib?.types || []).includes(x.id))

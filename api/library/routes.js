@@ -237,6 +237,8 @@ export function libraryRoutes(deps) {
     'POST /api/shared/{id}/import': guard('library.import', async (req, res, user) => {
       await readBody(req);
       const it = itemOr404(req, res, user, 'library:import'); if (!it) return;
+      // A face or a body is there to be looked at, never taken home.
+      if (it.type === 'avatar' || PERSONAL_TYPES.includes(it.type)) return json(res, 403, { error: 'this one is only to look at', code: 'not-importable' });
       // The files go into the importer's own folder, against their own quota: from then on the
       // copy is theirs, and stays when the original stops being shared.
       const copied = [];

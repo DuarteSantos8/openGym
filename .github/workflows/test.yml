@@ -318,6 +318,8 @@ jobs:
         run: node scripts/catalogue/build.mjs --check
       - name: Media stay within 180 px (licence)
         run: node scripts/catalogue/check-media.mjs
+      - name: The community library blocks every catalogue file (licence, by checksum)
+        run: node scripts/catalogue/media-hashes.mjs --check
 
   # Builds *and runs* the api image targets and the web image. Building alone would not have
   # caught the api image shipping without coach/: that image built perfectly and exited on boot.

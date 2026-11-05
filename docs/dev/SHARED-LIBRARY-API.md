@@ -3,7 +3,9 @@
 The contract the library packages build against: routes, payloads, the attribution fields, errors,
 switches and budgets. The idea and the reasoning are in the library design; the shared pieces
 (permissions, gyms as a visibility scope, consent records, provenance, budgets) already exist and
-are described in [../TRAINERS.md](../TRAINERS.md). Nothing here is served yet.
+are described in [../TRAINERS.md](../TRAINERS.md). Built in 1.4.5: `api/library/` (server),
+`frontend/src/views/Community.jsx`, `lib/shared-api.js` and `lib/shared-items.js` (app),
+`views/AdminCommunity.jsx` (moderation). The routes are in `api/openapi.yaml` under the tag `shared`.
 
 Ground rules: private by default, shared per item after a consent, the uploader's name and the date
 always shown, importing copies (the copy is the importer's), licensed exercise media never.
@@ -12,13 +14,26 @@ always shown, importing copies (the copy is the importer's), licensed exercise m
 
 | Env | Default | Meaning |
 |---|---|---|
-| `SHARING` | `on` | `off`: no library routes (404 `sharing-off`), no `shared` block in `/api/config`. `permissions.js` already reads it (`flags.sharing`). |
+| `LIBRARY` | off | `on`: the library exists. Off (the default) every route answers 404 `sharing-off` and `/api/config` has no `shared` block. `permissions.js` reads it as `flags.sharing`. |
+| `SHARING` | `on` | `off` closes the library even with `LIBRARY=on`. |
 | `SHARE_TYPES` | all | `sound,exercise,plan,equipment,tip,look,measures,avatar` (+ `photo,formvideo,progress` with personal media) |
-| `SHARE_REVIEW` | `0` | `1`: new items start `pending` until an admin approves |
-| `SHARE_PERSONAL_MEDIA` | `0` | `1`: workout photos, form videos and progress photos can be shared (always reviewed) |
+| `SHARE_REVIEW` | off | `on` (or `1`): new items and new versions start `pending` until an admin approves |
+| `SHARE_PERSONAL_MEDIA` | off | `on` (or `1`): workout photos, form videos and progress photos can be shared (always reviewed, never taken as a copy) |
 | `SHARE_QUOTA_MB` | `50` | per person |
 | `SHARE_VIDEO_MAX_MB` | `25` | tighter than private uploads |
-| `SHARE_AUTOHIDE_REPORTS` | `3` | reports from different people before an item goes `pending` (1 for the "licensed material" reason) |
+| `SHARE_AUTOHIDE_REPORTS` | `3` | reports from different people before an item goes `pending` (1 for the "licensed material" reason); reports before an approval do not count again |
+| `SHARE_IMAGE_MAX_MB`, `SHARE_GIF_MAX_MB`, `SHARE_SOUND_MAX_MB`, `SHARE_SOUND_MAX_SEC`, `SHARE_AVATAR_MAX_KB` | 2, 8, 2, 30, 32 | per-file caps for sharing |
+| `SHARE_ITEMS_PER_TYPE` | `50` | per person and kind (`409 too-many`) |
+| `SHARE_GC_GRACE_DAYS` | `14` | the shared folder's own GC keeps a withdrawn item's files this long |
+
+## What was decided while building it
+
+- Which of your own things an item is: the app sends `src` (`sound:<id>`, `plan:r:<id>`, …) and only the owner gets it back. No `shared` marker goes into the synced state, so nothing new in `sync-merge.js`; a copy carries `origin` on the element (`sounds[]`, `customEx[]`, `routines[]`, `equipProfiles[]`, `customMeasurements[]`), which rides along with the element.
+- `media` is derived from the payload's MediaRefs (and posters); the server checks every file in the owner's uploads, takes the stored size as the truth and copies it with a hard link where it can.
+- Removing is final: payload dropped, files deleted from `shared/media` and from every importer's folder (`media.dropFile`, only hashes of that item, only its importer list), hashes blocked. A blocked hash is still accepted by `PUT /api/media` (no one learns someone else had it), never shared, served or copied again.
+- Tips are not copied into the state as an item: "Add to my note" appends the text to `exNotes[exId]`. `GET /api/shared?type=tip&ex=<id>` feeds the exercise sheet.
+- The profile picture is a switch, not a tab: a live `avatar` item puts its hash into `by.avatar` on that person's items. One per person; a new one withdraws the old.
+- Personal media can be looked at, never taken (`take: false` in the app, no import button).
 
 Budgets come from `api/budgets.js` (`library.list` 600/h, `library.publish` 20/h, `library.edit`
 60/h, `library.report` 10/h, `library.import` 120/h), per account; over budget is `429
