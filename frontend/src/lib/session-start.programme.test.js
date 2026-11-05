@@ -3,6 +3,8 @@
 // without touching ordinary progression; discarded with a recorded disposition.
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { buildSessionExposures, missingOneRms, occurrenceFor } from './session-start.js'
+import { buildCombinedExposures } from './session-merge.js'
+import { historyAsOf } from './backfill.js'
 import { buildCompletedSession } from './finish-session.js'
 import { entriesForExposures } from './session-ui-adapter.js'
 import { migratedFixture } from './test-fixtures.js'
@@ -97,6 +99,33 @@ describe('a session of a running programme', () => {
     const old = buildSessionExposures(S, routine(S, 'A'), { now: Date.parse('2026-10-13T17:00:00Z'), newId: s => 'old:' + s })
     expect(benchOf({ exposures: old }).programme).toMatchObject({ slot: 'p1:a0:a-bench', role: 'extra' })
     expect(benchOf({ exposures: old }).excludedFromProgression).toBe(true)
+  })
+
+  it('logged into the past (beginBackfill), a session reads the run as it stands and keeps what it adopts', () => {
+    // On Wednesday, Monday's A is logged afterwards, generated from the history as of Monday
+    // (backfill.js historyAsOf), as beginBackfill does.
+    const start = Date.parse('2026-10-19T17:00:00Z')
+    const backfill = S => buildCombinedExposures(S, ['A', 'R'], { now: start, newId: s => 'bf:' + s, history: historyAsOf(S, { d: '2026-10-19', start }) })
+    const pct = { occurrenceId: 'r-bench', exerciseId: BENCH, rule: defaultPlanRule('autoregulated', { id: 'r-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
+    const withR = S => ({ ...S, routines: [...S.routines, { id: 'R', name: 'Standalone', ex: [pct, occ(SQUAT, 'r-squat', 'R', 3, 5, 80)] }] })
+    // Tuesday's A already holds this week's Monday appointment: the late Monday is extra, never a second credit.
+    const S = running(withR(profile()))
+    finish(S, session(S, 'A', '2026-10-20T10:00:00Z'))
+    finish(S, session(S, 'R', '2026-10-20T11:00:00Z'))
+    const late = backfill(S)
+    expect(benchOf(late).programme).toMatchObject({ slot: 'p1:a0:a-bench', role: 'extra' })
+    // Its prescriptions come from the history before its day (#284): Tuesday's squat moved R's track to 82.5.
+    expect(work(S, late.exposures.find(x => x.occurrenceId === 'r-squat'))).toEqual([80, 80, 80])
+    expect(programmeView(S).tracks['t:P:a-bench'].slots.find(x => x.id === 'p1:a0:a-bench').exposureId).toBe(S.workouts[0].exposures[0].exposureId)
+    // What it adopts is the profile's own: the run's first reference and the occurrence's.
+    const T = running(withR(profile({ oneRepMaxes: {} })))
+    T.oneRepMaxes = { b90: orm('b90', 90, '2026-10-21T09:00:00.000Z') }
+    const out = backfill(T)
+    expect(benchOf(out).programme).toMatchObject({ slot: 'p1:a0:a-bench', role: 'work', ref: { id: 'b90' } })
+    expect(Object.values(T.programmeEvents).filter(e => e.type === 'reference')).toMatchObject([{ trackId: 't:P:a-bench', ref: { id: 'b90' }, from: null }])
+    expect(programmeView(T).tracks['t:P:a-bench'].nextRef.id).toBe('b90')
+    expect(T.routines.find(r => r.id === 'R').ex[0].ref).toMatchObject({ id: 'b90' })
+    expect(work(T, out.exposures.find(x => x.routineId === 'R'))).toEqual([72.5, 72.5, 72.5])   // 80 % of 90, on the 2.5 grid
   })
 
   it('a programme exposure never advances ordinary progression; its run replays instead', () => {

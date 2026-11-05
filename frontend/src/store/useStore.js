@@ -137,6 +137,8 @@ function contractUp(state, { backup = true, raw = null } = {}) {
 }
 // A contract-1 load that failed: the screen says so (migration error) and the copy stays as it was.
 let contractError = null
+// Whether a copy holds anything only engine contract 1 can read: a programme, a run and its records.
+const programmeRecords = S => S.programme != null || ['programmes', 'programmeRuns', 'programmeEvents', 'refReviews'].some(k => S[k] && typeof S[k] === 'object' && Object.keys(S[k]).length)
 const CHECK_MIN_MS = 3000    // rev checks closer together than this are the same event (focus + visibility)
 const POLL_MS = 30000        // while the app is open and signed in, ask the server for its revision this often
 const AUTO_BACKUP_SOON_MS = 2000   // several photos picked at once make one backup
@@ -781,7 +783,9 @@ export const useStore = create((set, get) => {
   const readSaved = () => {
     try {
       const stored = parseStored(localStorage.getItem(KEY))
-      return stored && !stored.status.required ? Object.assign(clone(DEF), stored.parsed) : null
+      // A tab of an older build may still write contract 0: upgraded before it meets DEF's marker
+      // (this copy is the backup), and nothing to join when it cannot be.
+      return stored && !stored.status.required ? Object.assign(clone(DEF), contractUp(stored.parsed, { backup: false })) : null
     } catch { return null }
   }
   // Another tab's copy joined into `mine`. The running workout (`A`) is its own key, shared by the tabs as it stands.
@@ -977,9 +981,14 @@ export const useStore = create((set, get) => {
     // against the copy it holds, exactly as it would for that app (api/sync-stamps.js).
     // Spec 16: a copy on a newer engine contract than the server reads (GET /api/config
     // `engineContract`) is never pushed over its copy; it stays owed here until the server is updated.
-    // ponytail: a config this boot could not read lets the push go; the server's own gate is the backstop.
-    const cfg = get().config
-    if (cfg && contractOf(S) > (Number(cfg.engineContract) || 0)) {
+    // A copy holding programme records waits for that answer: a config this boot could not read is
+    // asked for again, and with no answer nothing is pushed.
+    // ponytail: a copy whose only contract-1 mark is the marker pushes while the config is unknown
+    // (a server that cannot read it has no programme record of it to damage); ask first if that changes.
+    const records = programmeRecords(S)
+    let cfg = get().config
+    if (!cfg && records) cfg = await get().refreshConfig()
+    if ((cfg || records) && contractOf(S) > (Number(cfg?.engineContract) || 0)) {
       markOwed(true)
       if (get().syncBlocked !== 'server-upgrade') set({ syncBlocked: 'server-upgrade' })
       return

@@ -106,6 +106,59 @@ describe('the server it syncs with', () => {
     expect(store.getState().syncBlocked).toBeNull()
   })
 
+  it('with the server\'s config unknown, a copy holding a programme asks for it first and pushes only to a server that reads it', async () => {
+    localStorage.setItem('gym_state_v1', JSON.stringify(contract0()))
+    for (const [config, pushed] of [[{ allow_guest: false }, 0], [{ allow_guest: false, engineContract: 1 }, 1], [null, 0]]) {
+      const store = await openApp()
+      const log = []
+      h.api = async (path, opts = {}) => {
+        log.push((opts.method || 'GET') + ' ' + path)
+        if (path === '/api/config') { if (!config) throw Object.assign(new Error('offline'), { status: 0 }); return config }
+        if (opts.method === 'PUT') return { ok: true, rev: 1 }
+        throw new Error('unexpected ' + path)
+      }
+      // Booted offline: no config was read. The copy holds an upgraded run.
+      store.setState({ user: { id: 'u1' }, ready: true, config: null })
+      expect(Object.keys(store.getState().S.programmeRuns)).toHaveLength(1)
+      store.getState().update(s => { s.restSec = 75 }, false)
+      await store.getState().pushState()
+      expect(log.filter(x => x === 'PUT /api/data')).toHaveLength(pushed)
+      expect(log[0]).toBe('GET /api/config')
+      expect(store.getState().syncBlocked).toBe(pushed ? null : 'server-upgrade')
+    }
+  })
+
+  it('another tab of an older build writing contract 0 is upgraded before it is joined; the run survives', async () => {
+    localStorage.setItem('gym_state_v1', JSON.stringify(contract0()))
+    const store = await openApp()
+    const runId = store.getState().S.programme.runId
+    // The other tab writes its own contract-0 copy, later than this one: a setting, and its legacy
+    // selector paused (the stamp makes it the selector a merge keeps).
+    const later = Date.now() + 60000
+    const theirs = contract0({ _ts: later, restSec: 77, edited: { restSec: later, programme: later } })
+    theirs.programme = { ...theirs.programme, pausedOn: '2026-10-21' }
+    localStorage.setItem('gym_state_v1', JSON.stringify(theirs))
+    localStorage.setItem('gym_state_wid', 'other-tab')
+    localStorage.setItem('gym_state_owner', '')
+    store.getState().update(s => { s.sound = false }, false)
+    const S = store.getState().S
+    expect(S.restSec).toBe(77)
+    // Upgraded the same way, its selector names the same run, and its pause joins that run.
+    expect(S.programme).toMatchObject({ runId })
+    expect(Object.values(S.programmeEvents).map(e => e.type)).toEqual(['pause'])
+    expect(validateCanonicalProfile(S).ok).toBe(true)
+  })
+
+  it('an edit that removes an occurrence a programme binds marks it for repair in the same change', async () => {
+    localStorage.setItem('gym_state_v1', JSON.stringify(contract0()))
+    const store = await openApp()
+    store.getState().update(s => { s.routines = s.routines.map(r => ({ ...r, ex: [] })) }, false)
+    const S = store.getState().S
+    expect(S.programmes.P.needs).toEqual(['repair'])
+    expect(validateCanonicalProfile(S).ok).toBe(true)
+    expect(S.edited['programmes.P']).toBeGreaterThan(0)
+  })
+
   it('every request says which engine contract this build reads and writes', async () => {
     const { api } = await vi.importActual('../lib/api.js')
     const fetch = vi.fn(async () => new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } }))

@@ -3433,10 +3433,11 @@ function beginBackfill({ iso, time, durationMin, routineIds, replaceId }) {
   }
   useStore.getState().update(s => {
     // Prescribed from the history before that day, not from a session logged after it (#284).
-    // The prescriptions it writes are still the profile's own.
+    // Everything else is the profile's own: the prescriptions it writes, a programme slot (which a
+    // later session may already hold) and the references its first session adopts.
     s.prescriptions ||= {}
     const past = historyAsOf(s, { d: iso, start: session.start, replaceId })
-    const out = buildCombinedExposures(past, routineIds || [], { now: session.start, newId: uid, unit: s.unit })
+    const out = buildCombinedExposures(s, routineIds || [], { now: session.start, newId: uid, unit: s.unit, history: past })
     session.routineIds = out.routineIds
     session.name = out.routines.length ? deriveSessionName(out.routines.map(r => r.name)) : t('Freestyle')
     session.exposures = out.exposures

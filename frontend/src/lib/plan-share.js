@@ -256,6 +256,17 @@ export function parsePlan(raw, destinationUnit = 'kg') {
     .map(([id, u]) => [known.has(id) ? id : canonicalExId(id), u])
     .filter(([id, u]) => (u === 'kg' || u === 'lb') && inPlan.has(id)))
   if (sourceUnit && sourceUnit !== destination) routines = convertStateUnit({ unit: sourceUnit, routines }, destination).routines
+  const programmeFmt = Number(data.programme_fmt) === PROGRAMME_FMT ? PROGRAMME_FMT : 1
+  // A newer programme format than this app reads is left out rather than half understood.
+  const programmes = Array.isArray(data.programmes) && !(Number(data.programme_fmt) > PROGRAMME_FMT)
+    ? data.programmes.filter(p => p && typeof p === 'object' && !Array.isArray(p)).slice(0, IMPORT_MAX_PROGRAMMES) : []
+  // A format-2 programme comes in whole or the file is refused, before anything is imported: each
+  // is mapped over the file's own routines and put through the profile's definition check.
+  if (programmeFmt === PROGRAMME_FMT) {
+    const same = ids => Object.fromEntries(ids.map(id => [id, id]))
+    const maps = { ridMap: same(routines.map(r => r.id)), occMap: same(routines.flatMap(r => r.ex.map(e => e.occurrenceId))), fmt: programmeFmt }
+    for (const p of programmes) importedProgramme(p, maps, { routines })
+  }
   return {
     name: (data.name || '').trim(),
     routines,
@@ -266,10 +277,8 @@ export function parsePlan(raw, destinationUnit = 'kg') {
     routineCount: routines.length,
     exerciseCount: routines.reduce((n, r) => n + r.ex.length, 0),
     scheduledDays: WEEK_DAYS.filter(d => data.week?.[d]?.length).length,
-    // A newer programme format than this app reads is left out rather than half understood.
-    programmes: Array.isArray(data.programmes) && !(Number(data.programme_fmt) > PROGRAMME_FMT)
-      ? data.programmes.filter(p => p && typeof p === 'object' && !Array.isArray(p)).slice(0, IMPORT_MAX_PROGRAMMES) : [],
-    programmeFmt: Number(data.programme_fmt) === PROGRAMME_FMT ? PROGRAMME_FMT : 1,
+    programmes,
+    programmeFmt,
     // `unit` is the unit of the returned prescriptions. `sourceUnit` is null for a legacy file;
     // that absence means its numbers were intentionally treated as already in `destination`.
     unit: destination,

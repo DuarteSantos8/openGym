@@ -265,7 +265,7 @@ describe('ending and repeating', () => {
     const s = trained()
     const first = runOf(s)
     s.oneRepMaxes = { ...s.oneRepMaxes, fresh: { id: 'fresh', exerciseId: BENCH, value: 120, unit: 'kg', source: 'manual', capturedAt: '2026-11-01T00:00:00.000Z' } }
-    expect(repeatProgramme(s, '2026-11-09', 2.5)).toBe(true)
+    expect(repeatProgramme(s, '2026-11-09', 2.5)).toEqual({ ok: true })
     const next = runOf(s)
     expect(next.id).not.toBe(first.id)
     expect(next).toMatchObject({ cycle: 2, bump: 2.5, startedOn: '2026-11-09' })
@@ -276,6 +276,23 @@ describe('ending and repeating', () => {
     expect(pct(next, SQUAT_A, 0)).toEqual(pct(first, SQUAT_A, 0))   // an inherited week has no %1RM to raise
     expect(events(s, 'end').map(e => e.runId)).toEqual([first.id])
     expect(s.programme.saved).toEqual({ week: { 1: ['C'] }, scheduleMode: null, rotation: null, pass: false })
+  })
+  it('repeat passes the start\'s own checks, and never invents a choice for a track added since', () => {
+    const broken = trained()
+    broken.programmes.P = { ...broken.programmes.P, needs: ['repair'] }
+    const before = clone(broken.programmeRuns)
+    expect(repeatProgramme(broken, '2026-11-09')).toEqual({ ok: false, missing: ['repair'] })
+    expect(broken.programmeRuns).toEqual(before)
+    expect(events(broken, 'end')).toEqual([])
+    // A track the definition gained since the run started has no recorded choice: asked, not given one.
+    const grown = trained()
+    const def = grown.programmes.P
+    grown.programmes.P = { ...def, tracks: [...def.tracks, { ...def.tracks[0], id: 't:P:new' }] }
+    expect(repeatProgramme(grown, '2026-11-09')).toEqual({ ok: false, missing: ['policy'] })
+    // A choice recorded later for the run (a policy event) is the one the new run keeps.
+    setRunPolicy(grown, 't:P:new', { onFailure: 'repeat', onSkipped: 'advance' })
+    expect(repeatProgramme(grown, '2026-11-09')).toEqual({ ok: true })
+    expect(runOf(grown).tracks['t:P:new'].policy).toEqual({ onFailure: 'repeat', onSkipped: 'advance' })
   })
 })
 

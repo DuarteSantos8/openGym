@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { editPlan, planOptions, planPhase, validateProgramme } from './prescription/index.js'
 import { buildPlanBundle, buildProgrammeBundle, mergePlan, parsePlan, planPrintHTML } from './plan-share.js'
 import { canonicalProfile, migratedFixture, ruleOccurrence } from './test-fixtures.js'
-import { pauseProgramme, setLegacyWeeks, startProgramme } from './programmes.js'
+import { IMPORT_MAX_SEQUENCE, IMPORT_MAX_TARGETS, importedProgramme, legacyWeeksOf, pauseProgramme, setLegacyWeeks, startProgramme } from './programmes.js'
+import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 
 // There was no test file for plan sharing at all, which is how a whole prescription field
 // went missing without anyone noticing.
@@ -490,11 +491,49 @@ describe('programmes in a plan file', () => {
     expect(parsePlan({ ...file, programme_fmt: 3 }).programmes).toEqual([])
   })
 
-  it('a format-2 programme that does not compile is left out, never cut down', () => {
-    const file = JSON.parse(JSON.stringify(buildProgrammeBundle(running(), 'P')))
-    file.programmes[0].tracks[0].stages = Array(17).fill(file.programmes[0].tracks[0].stages[0])
-    const friend = { unit: 'kg', routines: [], week: {}, customEx: [], programmes: {} }
-    expect(mergePlan(friend, parsePlan(JSON.stringify(file), 'kg')).programmes).toBe(0)
-    expect(friend.routines).toHaveLength(2)
+  // A file is someone else's (spec 17): a format-2 programme comes in whole, with only the keys a
+  // definition has, or the file is refused before anything is imported.
+  const fileOf = mut => { const f = JSON.parse(JSON.stringify(buildProgrammeBundle(running(), 'P'))); mut(f.programmes[0], f); return JSON.stringify(f) }
+  const refused = mut => expect(() => parsePlan(fileOf(mut), 'kg')).toThrow('this isn’t an openGym plan file')
+
+  it('a format-2 programme that does not compile, names what the file lacks, or says more than a definition does is refused, never cut down', () => {
+    refused(p => { p.tracks[0].stages = Array(17).fill(p.tracks[0].stages[0]) })        // over the bounds
+    refused(p => { p.tracks[0].stages[0].kind = 'bogus' })                                // a kind the profile check refuses
+    refused(p => { p.tracks[0].stages[0].close = 'x' })
+    refused(p => { p.tracks[0].slots[0].oid = 'nowhere' })                                // a slot on an occurrence the file lacks
+    refused(p => { p.schedule.appts.push({ rid: 'gone', day: 2 }) })
+    refused(p => { const [oid] = Object.keys(p.tracks[0].stages[0].targets); p.tracks[0].stages[0].targets = JSON.parse(`{"__proto__":{"own":"inherit"},"${oid}":{"own":"inherit"}}`) })
+    refused(p => { p.tracks = Array(51).fill(p.tracks[0]) })
+    refused((p, f) => { f.programmes.push({ ...p, schedule: { mode: 'weeks', appts: Array(65).fill(p.schedule.appts[0]) } }) })
+    // A key no definition has is left behind; the rest comes in and the friend's profile validates.
+    const text = fileOf(p => {
+      p.blob = 'x'.repeat(1000); p.run = { startedOn: '2026-01-01' }; p.tracks[0].ack = 'user'
+      const t = Object.values(p.tracks[0].stages[0].targets)[0]
+      Object.assign(t, { blob: 'x', ref: { value: 1 } }); t.phase.blob = 'x'; t.effort.blob = 'x'
+    })
+    const friend = { ...migratedFixture({ unit: 'kg', routines: [], workouts: [] }), week: {}, customEx: [], programmes: {} }
+    expect(mergePlan(friend, parsePlan(text, 'kg')).programmes).toBe(1)
+    const [p] = Object.values(friend.programmes)
+    expect(JSON.stringify(p)).not.toMatch(/blob|startedOn|"ack"|"ref"/)
+    expect(Object.keys(p).sort()).toEqual(['at', 'duration', 'end', 'id', 'name', 'refs', 'rev', 'schedule', 'tracks'])
+    expect(validateCanonicalProfile({ ...friend, engineContractRevision: 1 }).ok).toBe(true)
+    // More programmes than anyone makes: the first ones come.
+    expect(parsePlan(fileOf((q, f) => { f.programmes = Array(40).fill(q) }), 'kg').programmes).toHaveLength(32)
+  })
+
+  it('a format-1 file brings only what a programme is, at a size a programme has', () => {
+    const file = JSON.parse(`{"name":"Block","days":{"1":["A"]},"weeks":[{"t":{"__proto__":{"pct":80},"constructor":{"pct":75},"A:toString":{"pct":70},"0025":{"pct":72.5}}}],
+      "src":"strength-4","run":{"startedOn":"2026-01-01"},"blob":"${'x'.repeat(1000)}"}`)
+    const S = migratedFixture({ unit: 'kg', weekStart: 1, routines: [{ id: 'a1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }], workouts: [] })
+    const got = importedProgramme(file, { ridMap: { A: 'a1' } }, S, 7)
+    expect(Object.keys(got).sort()).toEqual(['at', 'duration', 'end', 'id', 'name', 'refs', 'rev', 'schedule', 'tracks'])
+    expect(got).toMatchObject({ at: 7, name: 'Block', schedule: { appts: [{ rid: 'a1', day: 1 }] } })
+    expect(legacyWeeksOf(got)).toEqual([{ t: { '0025': { pct: 72.5 } } }])
+    expect(importedProgramme({ ...file, days: { 1: ['constructor'] } }, { ridMap: { A: 'a1' } }, S)).toBeNull()
+    // A loop and its targets only as long as anyone writes one.
+    const long = importedProgramme({ name: 'Loop', sequence: Array(500).fill('A'), weeks: [{ t: Object.fromEntries(Array.from({ length: 900 }, (_, i) => ['e' + i, { pct: 70 }])) }] }, { ridMap: { A: 'a1' } }, S)
+    expect(long.src.sequence).toHaveLength(IMPORT_MAX_SEQUENCE)
+    expect(Object.keys(long.src.weeks[0].t)).toHaveLength(IMPORT_MAX_TARGETS)
+    expect(validateCanonicalProfile({ ...S, programmes: { [got.id]: got, [long.id]: long } }).ok).toBe(true)
   })
 })

@@ -137,8 +137,9 @@ const bumped = (def, bump) => ({
     x.own === 'set' ? { ...x, phase: { ...x.phase, parameters: { ...x.phase.parameters, load: { ...x.phase.parameters.load, percent: Math.min(PCT_MAX, x.phase.parameters.load.percent + bump) } } } } : x])) })) }))
 });
 
-/** The ordinary track's values its steps would carry on from: the run's captured seed. */
-function seedOf(rule, st) {
+/** The ordinary track's values its steps would carry on from: the run's captured seed (an upgraded
+ *  run's and a run started in the app, lib/programmes.js). Null when the track has none to give. */
+export function seedOf(rule, st) {
   const ph = rule.program.phases[0];
   // ponytail: an ordinary track in a later phase (a ladder's loaded regime) seeds nothing; its stage opens at its own start.
   if (!st?.values || st.phaseId !== ph.id) return null;

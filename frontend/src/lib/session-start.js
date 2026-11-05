@@ -67,19 +67,23 @@ export function effectiveExerciseId(occ, profile) {
  * and stamped with where it went (`exposure.programme`); anything else from its own rule. When
  * continuing would pass earlier appointments of the week or round (spec 7.3), nothing is built: the
  * answer is an empty list carrying `bypass` (`p<n>:a<i>` ids) until programmes.js bypassTo records them.
+ * `ctx.history` (a session logged into the past: the profile as of its day, backfill.js historyAsOf)
+ * is what its prescriptions are generated from; the run, its slots and every capture are read and
+ * written on `stored` itself, so a later session already in the run still holds its slot.
  */
 export function buildSessionExposures(stored, routine, ctx) {
   stored.prescriptions ||= {}
+  const past = ctx.history || stored
   const date = ctx.date || stored.active?.d || isoOf(new Date(ctx.now))
   let view = routine?.excludeFromProgression === true ? null : programmeView(stored)
   const placed = (routine?.ex || []).map(occ => (view ? slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date }) : null))
   const bypass = [...new Set(placed.flatMap(x => x?.bypass || []))]
   if (bypass.length) return Object.assign([], { bypass })
   return (routine?.ex || []).map((original, i) => {
-    const id = effectiveExerciseId(original, stored)
+    const id = effectiveExerciseId(original, past)
     const storedOccurrence = id === original.exerciseId ? original : { ...original, exerciseId: id, exerciseName: undefined }
-    const profile = exConverted(stored, id)
-      ? exView({ ...stored, workouts: [...(stored.workouts || [])] }, id) : stored
+    const profile = exConverted(past, id)
+      ? exView({ ...past, workouts: [...(past.workouts || [])] }, id) : past
     const base = viewTarget(stored, id, storedOccurrence)
     const at = placed[i]?.assignment
     let inputs = at ? slotInputs({ view, run: view.run, assignment: at, occRule: base.rule }) : null

@@ -27,8 +27,9 @@ import { isWarmupRow } from './workout-model.js'
 import { t } from './i18n-core.js'
 import { currentOneRm, deriveRun, editPlan, slotFor, validateProgramme } from './prescription/index.js'
 import { dateIn } from '../../../api/engine/programme-run.js'
-import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
+import { convertLegacyProgramme, seedOf } from '../../../api/migration/programme-upgrade.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 
 export const MAX_WEEKS = 16
 export const PCT_MIN = 30
@@ -286,14 +287,6 @@ function applySchedule(s, def, today, now) {
   s.week = days
 }
 
-// The ordinary track's values the run's adaptive weeks carry on from (the conversion's seed, spec 6).
-function seedOf(rule, st) {
-  const ph = rule?.program?.phases?.[0]
-  if (!ph || !st?.values || st.phaseId !== ph.id) return null
-  const seed = Object.fromEntries(ph.progression.map(op => op.metric).filter(m => st.values[m] != null).map(m => [m, clone(st.values[m])]))
-  return Object.keys(seed).length ? seed : null
-}
-
 // The partial first week owes the appointments from today on: none before the start is invented (spec 7.2).
 function owedFrom(def, today, weekStart) {
   if (def.schedule.mode !== 'weeks') return undefined
@@ -306,7 +299,8 @@ function makeRun(s, def, { policies, acks = {}, end, firstWeek, today, now, cycl
   const tracks = {}
   for (const tr of runDef.tracks) {
     const ref = currentOneRm(s.oneRepMaxes, tr.exerciseId)
-    const seed = Object.fromEntries(tr.slots.map(sl => [sl.oid, seedOf(occOf(s, sl.rid, sl.oid)?.rule, s.progression?.[sl.oid])]).filter(([, v]) => v))
+    // The ordinary track's values the run's adaptive weeks carry on from (spec 6), as an upgraded run's.
+    const seed = Object.fromEntries(tr.slots.map(sl => { const occ = occOf(s, sl.rid, sl.oid); return [sl.oid, occ ? seedOf(occ.rule, s.progression?.[sl.oid]) : null] }).filter(([, v]) => v))
     tracks[tr.id] = {
       policy: { ...policies[tr.id] }, ack: acks[tr.id] ?? 'user', refs: refPreference(s, { def: runDef, track: tr }).pref,
       ...(ref ? { ref: clone(ref) } : {}), ...(tms[tr.id] ? { tm: clone(tms[tr.id]) } : {}), ...(Object.keys(seed).length ? { seed } : {})
@@ -329,15 +323,22 @@ const operational = def => def.tracks.some(tr => tr.stages.some(st => Object.val
  * with no 1RM yet does not block the start (its first session asks for one). A run already going is
  * ended first, so `saved` always holds the plan from before any programme.
  */
-export function startProgramme(s, id, { policies = {}, end, firstWeek, today = todayISO(), now = Date.now() } = {}) {
-  const def = programmeById(s, id)
-  if (!def) return { ok: false, missing: ['repair'] }
+// What a run of `def` still needs before it may start (spec 8.1, 8.5, 11, 7.1): a recorded choice
+// for every track and the end, effort logging for operational effort, a binding, a repair.
+function missingFor(s, def, policies, end) {
   const missing = []
   if (def.tracks.some(tr => !isPolicy(policies?.[tr.id]))) missing.push('policy')
   if (!['stop', 'extend'].includes(end)) missing.push('end')
   if (operational(def) && effortOf(s) === 'none') missing.push('effort-off')
   if (def.needs?.includes('binding')) missing.push('binding')
   if (def.needs?.includes('repair') || !validateProgramme(def, { routines: s.routines || [] }).ok) missing.push('repair')
+  return missing
+}
+
+export function startProgramme(s, id, { policies = {}, end, firstWeek, today = todayISO(), now = Date.now() } = {}) {
+  const def = programmeById(s, id)
+  if (!def) return { ok: false, missing: ['repair'] }
+  const missing = missingFor(s, def, policies, end)
   if (missing.length) return { ok: false, missing }
   if (s.programme) endProgramme(s, today, now)
   const saved = snapshot(s)
@@ -398,32 +399,37 @@ export function endProgramme(s, today = todayISO(), now = Date.now(), { keepReac
   if (saved.pass && s.rotation) startPass(s, today, now)
 }
 
-const lastOf = (s, run, type, pick = () => true) => Object.values(map(s.programmeEvents))
-  .filter(e => e?.runId === run.id && e.type === type && pick(e)).sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0)).at(-1)
+const lastOf = (s, run, type, match = () => true) => Object.values(map(s.programmeEvents))
+  .filter(e => e?.runId === run.id && e.type === type && match(e)).sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0)).at(-1)
 
 /**
- * Runs the programme again as a new run from week 1, with the choices this one ended with, fresh
- * references, and each training max as its qualified cycles left it (spec 9). `bump` raises every
- * %1RM stage by that many points on top of the last round's; kg, reps and seconds stay.
+ * Runs the programme again as a new run from week 1, with the choices recorded for this one (its
+ * own, or a later `policy` / `end-policy` event), fresh references, and each training max as its
+ * qualified cycles left it (spec 9). `bump` raises every %1RM stage by that many points on top of
+ * the last round's; kg, reps and seconds stay. It passes the start's own checks: a track added
+ * since, with no recorded choice, is `missing: ['policy']`, never given one.
  */
 export function repeatProgramme(s, today = todayISO(), bump = 0, now = Date.now()) {
   const run = currentRun(s)
   const def = run && programmeById(s, run.programmeId)
-  if (!def) return false
+  if (!def) return { ok: false, missing: ['repair'] }
   const view = programmeView(s)
   const policies = {}, acks = {}, tms = {}
   for (const tr of def.tracks) {
-    policies[tr.id] = lastOf(s, run, 'policy', e => e.trackId === tr.id)?.policy ?? run.tracks?.[tr.id]?.policy ?? tr.policy ?? { onFailure: 'repeat', onSkipped: 'repeat' }
+    const policy = lastOf(s, run, 'policy', e => e.trackId === tr.id)?.policy ?? run.tracks?.[tr.id]?.policy
+    if (policy) policies[tr.id] = policy
     acks[tr.id] = run.tracks?.[tr.id]?.ack ?? 'user'
     if (view?.tracks[tr.id]?.tm) tms[tr.id] = view.tracks[tr.id].tm
   }
   const end = lastOf(s, run, 'end-policy')?.end ?? run.end
+  const missing = missingFor(s, def, policies, end)
+  if (missing.length) return { ok: false, missing }
   addEvent(s, run, 'end', {}, now)
   const next = makeRun(s, def, { policies, acks, end, today, now, cycle: (Number(run.cycle) || 1) + 1, bump: (Number(run.bump) || 0) + (Number(bump) || 0), tms })
   s.programmeRuns = { ...map(s.programmeRuns), [next.id]: next }
   // Its schedule is already in place: the plan from before the first round stays in `saved`.
   s.programme = { runId: next.id, saved: s.programme?.saved ?? null }
-  return true
+  return { ok: true }
 }
 
 /** Closes the current week (or round) now: what it left unattempted is skipped (spec 7.2). */
@@ -620,11 +626,32 @@ function legacyImported(p, ridMap, exMap) {
   return Object.keys(days).length ? { weeks, days } : null
 }
 
+// What a format-2 file may say about a stage and a target (spec 17): anything else is left behind.
+const STAGE_KINDS = ['work', 'recovery', 'rest'], CLOSES = ['completion', 'calendar']
+const PHASE_KEYS = ['id', 'parameters', 'target', 'groups', 'success', 'progression', 'exit', 'stall']
+const pick = (x, keys) => Object.fromEntries(keys.filter(k => isMap(x) && x[k] !== undefined).map(k => [k, clone(x[k])]))
+const notPlan = () => { throw Object.assign(new Error(t('this isn’t an openGym plan file')), { code: 'not-plan' }) }
+// The definition check the profile itself runs (api/migration/profile-validation.js), over these routines alone.
+const canonical = (def, routines) => validateCanonicalProfile({ engineSchemaVersion: 2, engineContractRevision: 1, prescriptions: {}, oneRepMaxes: {}, progression: {}, workouts: [], routines, programmes: { [def.id]: def } }).ok
+
+function targetOf(x) {
+  if (!isMap(x)) notPlan()
+  const out = pick(x, ['own', 'seed', 'options'])
+  if (isMap(x.phase)) out.phase = pick(x.phase, PHASE_KEYS)
+  if (isMap(x.effort)) out.effort = pick(x.effort, ['mode', 'rpe'])
+  if (isMap(x.deload)) out.deload = pick(x.deload, ['factor'])
+  // ponytail: below the phase's own keys (parameters, groups) the engine's shapes are validated, not whitelisted.
+  return out
+}
+
 /**
  * A programme from a plan file over the routines the import just created: format 1 through the
- * converter, format 2 with its routine (`ridMap`), occurrence (`occMap`) and exercise (`exMap`) ids
- * mapped. A new id of its own, never started, marked for repair when it no longer compiles. Null
- * for one that names none of the new routines.
+ * converter (routines and exercises it names that did not come along are left out, as before);
+ * format 2 with its routine (`ridMap`), occurrence (`occMap`) and exercise (`exMap`) ids mapped,
+ * only the keys a definition has, a new id of its own, never started. A format-2 programme is
+ * taken whole or not at all (spec 17): an id the import did not map, a stage of an unknown kind,
+ * a definition over the bounds or one the profile's own check refuses throws the plan-file error.
+ * Null for a format-1 programme that names none of the new routines.
  */
 export function importedProgramme(p, { ridMap = {}, occMap = {}, exMap = {}, fmt = 1 } = {}, S, now = Date.now()) {
   if (!isMap(p)) return null
@@ -633,25 +660,27 @@ export function importedProgramme(p, { ridMap = {}, occMap = {}, exMap = {}, fmt
     const legacy = legacyImported(p, ridMap, exMap)
     return legacy ? { ...convert(S, { id: uid(), name, at: now, ...legacy }), rev: 1 } : null
   }
-  // Validated whole (spec 17): one that does not compile, or is over the bounds, is left out, never cut down.
-  if (!isMap(p.schedule) || !Array.isArray(p.tracks) || p.tracks.length > 50) return null
-  const rid = id => (id === REST ? REST : own(ridMap, id))
+  if (!isMap(p.schedule) || !Array.isArray(p.tracks) || p.tracks.length > 50) notPlan()
+  const mapped = (m, k) => own(m, k) ?? notPlan()
+  const list = v => (Array.isArray(v) ? v : notPlan())
   const schedule = p.schedule.mode === 'rotation'
-    ? { mode: 'rotation', sequence: (Array.isArray(p.schedule.sequence) ? p.schedule.sequence : []).map(rid).filter(Boolean) }
-    : { mode: 'weeks', appts: (Array.isArray(p.schedule.appts) ? p.schedule.appts : []).filter(isMap).map(a => ({ rid: rid(a.rid), ...(Number.isInteger(a.day) ? { day: a.day } : {}) })).filter(a => a.rid), ...(p.schedule.ordered === true ? { ordered: true } : {}) }
-  if (apptRids({ schedule }).length > IMPORT_MAX_SEQUENCE) return null
-  const tracks = p.tracks.filter(isMap).map(tr => {
-    const slots = (Array.isArray(tr.slots) ? tr.slots : []).filter(isMap).map(sl => ({ rid: own(ridMap, sl.rid), oid: own(occMap, sl.oid), ...(sl.optional === true ? { optional: true } : {}) })).filter(sl => sl.rid && sl.oid)
-    const stages = (Array.isArray(tr.stages) ? tr.stages : []).filter(isMap).map(st => ({
-      id: String(st.id), kind: st.kind, ...(st.close ? { close: st.close } : {}), ...(st.cycleEnd === true ? { cycleEnd: true } : {}),
-      targets: Object.fromEntries(Object.entries(map(st.targets)).map(([oid, x]) => [own(occMap, oid), clone(x)]).filter(([oid]) => oid))
-    }))
-    const exerciseId = own(exMap, tr.exerciseId) || tr.exerciseId
-    return { id: String(tr.id), exerciseId, slots, stages, refs: ['ask', 'keep'].includes(tr.refs) ? tr.refs : 'inherit',
-      ...(isPolicy(tr.policy) ? { policy: { onFailure: tr.policy.onFailure, onSkipped: tr.policy.onSkipped } } : {}), ...(isMap(tr.tm) ? { tm: clone(tr.tm) } : {}) }
-  }).filter(tr => tr.slots.length)
+    ? { mode: 'rotation', sequence: list(p.schedule.sequence).map(id => (id === REST ? REST : mapped(ridMap, id))) }
+    : { mode: 'weeks', appts: list(p.schedule.appts).map(a => ({ rid: mapped(ridMap, a?.rid), ...(Number.isInteger(a.day) ? { day: a.day } : {}) })), ...(p.schedule.ordered === true ? { ordered: true } : {}) }
+  if (apptRids({ schedule }).length > IMPORT_MAX_SEQUENCE) notPlan()
+  const tracks = p.tracks.map(tr => ({
+    id: String(tr?.id ?? notPlan()), exerciseId: own(exMap, tr.exerciseId) || tr.exerciseId,
+    slots: list(tr.slots).map(sl => ({ rid: mapped(ridMap, sl?.rid), oid: mapped(occMap, sl.oid), ...(sl.optional === true ? { optional: true } : {}) })),
+    stages: list(tr.stages).map(st => {
+      if (!isMap(st) || !STAGE_KINDS.includes(st.kind) || (st.close !== undefined && !CLOSES.includes(st.close))) notPlan()
+      return { id: String(st.id), kind: st.kind, ...(st.close ? { close: st.close } : {}), ...(st.cycleEnd === true ? { cycleEnd: true } : {}),
+        targets: Object.fromEntries(Object.entries(map(st.targets)).map(([oid, x]) => [mapped(occMap, oid), targetOf(x)])) }
+    }),
+    refs: ['ask', 'keep'].includes(tr.refs) ? tr.refs : 'inherit',
+    ...(isPolicy(tr.policy) ? { policy: { onFailure: tr.policy.onFailure, onSkipped: tr.policy.onSkipped } } : {}), ...(isMap(tr.tm) ? { tm: pick(tr.tm, ['value', 'unit', 'increment']) } : {})
+  }))
   const def = { id: uid(), name, at: now, rev: 1, schedule, duration: { n: p.duration?.n, unit: p.duration?.unit }, end: p.end === 'extend' ? 'extend' : 'stop', refs: ['ask', 'keep'].includes(p.refs) ? p.refs : 'inherit', tracks }
-  return validateProgramme(def, { routines: S?.routines || [] }).ok ? def : null
+  if (!canonical(def, S?.routines || [])) notPlan()
+  return def
 }
 
 /* ------------------------- the PR2 bridge (the week editor; Task 7 removes it) ------------------------- */
