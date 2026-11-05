@@ -4,6 +4,14 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased (v1.4.6)
+
+**Fixes**
+- Apple Health and Health Connect: workouts logged on the phone now come with their active calories, an estimate from what you did, how long and your body weight (a sane 75 kg until you weigh in). The Apple Watch keeps measuring its own. If you turned Health on before, openGym asks once for the calories permission (#724, D#917, thanks @justteshi and @mips6904).
+- "Your last session" keeps the warm-ups you marked, also with progression off (#993, #1001, thanks @ilirhushi).
+- Windows: the bundle size script and the coach tests find their files again (#999, #998, #1000, thanks @lintuo and @fromcodetogold).
+- Android: the tab bar no longer slides under the navigation bar after a page load (#997, thanks @FrancescoDeSimone).
+
 ## Unreleased (v1.4.5)
 
 **Watch sync, rebuilt to not lose a single set**

@@ -23,7 +23,11 @@ vi.mock('@capacitor/core', () => ({
   Capacitor: { getPlatform: () => h.platform },
   registerPlugin: name => (h.plugins.push(name), {
     status: async () => ({ ...h.status }),
-    requestPermissions: async () => { h.calls.push(['request']); h.status.granted = h.grant; return { granted: h.grant } },
+    requestPermissions: async arg => {
+      h.calls.push(arg ? ['request', arg] : ['request'])
+      if (arg?.write?.includes('calories')) { h.status.calories = h.grantKcal; return { granted: h.status.granted, calories: h.grantKcal } }
+      h.status.granted = h.grant; return { granted: h.grant }
+    },
     write: async arg => {
       h.calls.push(['write', arg])
       if (h.fail) throw Object.assign(new Error('refused'), { code: h.fail })
@@ -261,5 +265,30 @@ describe('on the iPhone', () => {
     await hs.enableHealth(state([workout('w1', 17)]))
     expect(h.calls.filter(c => c[0] === 'setEnabled')).toEqual([])
     expect((await hs.healthStatus()).platform).toBe('android')
+  })
+})
+
+// #724: workouts carry their estimated active energy once the hub allows it. Someone who turned
+// Health on before that permission existed is asked for it once.
+describe('active energy', () => {
+  it('asks once for calories, then writes the estimate with each session', async () => {
+    h.status = { status: 'available', granted: true, calories: false }
+    h.grantKcal = true
+    h.files.set('opengym-health.json', JSON.stringify({ on: true, written: {} }))
+    await hs.loadHealth()
+    await hs.syncHealth(state([workout('w1', 17)]))
+    expect(h.calls.filter(c => c[0] === 'request')).toEqual([['request', { read: [], write: ['calories'] }]])
+    expect(writes()[0].sessions[0].kcal).toBeGreaterThan(0)
+    expect(file().kcalAsked).toBe(true)
+  })
+  it('never asks again after a no, and writes without calories', async () => {
+    h.status = { status: 'available', granted: true, calories: false }
+    h.grantKcal = false
+    h.files.set('opengym-health.json', JSON.stringify({ on: true, written: {} }))
+    await hs.loadHealth()
+    await hs.syncHealth(state([workout('w1', 17)]))
+    await hs.syncHealth(state([workout('w1', 17), workout('w2', 18)]))
+    expect(h.calls.filter(c => c[0] === 'request')).toHaveLength(1)
+    expect(writes().flatMap(w => w.sessions).some(s => 'kcal' in s)).toBe(false)
   })
 })

@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContract;
 import androidx.health.connect.client.HealthConnectClient;
 import androidx.health.connect.client.HealthConnectFeatures;
 import androidx.health.connect.client.PermissionController;
+import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.Record;
@@ -16,6 +17,7 @@ import androidx.health.connect.client.records.metadata.Metadata;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.response.ReadRecordsResponse;
 import androidx.health.connect.client.time.TimeRangeFilter;
+import androidx.health.connect.client.units.Energy;
 import androidx.health.connect.client.units.Mass;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -60,7 +62,7 @@ import org.json.JSONObject;
  * Usage from JS (lib/health-sync.js):
  *   const HC = registerPlugin('HealthConnect');
  *   await HC.status();              // { status: 'available' | 'update' | 'missing' | 'unsupported', granted }
- *   await HC.requestPermissions();  // { granted }
+ *   await HC.requestPermissions();  // { granted, calories } (calories optional, #724)
  *   await HC.write({ sessions: [...], weights: [...] });
  *   await HC.remove({ sessions: [ids], weights: [ids] });
  *   await HC.openSettings();        // Health Connect's data screen, or its store page
@@ -81,6 +83,8 @@ public class HealthConnectPlugin extends Plugin {
     // The literal permission names, as declared in AndroidManifest.xml.
     private static final String WRITE_EXERCISE = "android.permission.health.WRITE_EXERCISE";
     private static final String WRITE_WEIGHT = "android.permission.health.WRITE_WEIGHT";
+    // Optional (#724): the estimated active energy of each workout, written beside its session.
+    private static final String WRITE_CALORIES = "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED";
     private static final String READ_HEART_RATE = "android.permission.health.READ_HEART_RATE";
     private static final String READ_WEIGHT = "android.permission.health.READ_WEIGHT";
     private static final String READ_HISTORY = "android.permission.health.READ_HEALTH_DATA_HISTORY";
@@ -151,6 +155,7 @@ public class HealthConnectPlugin extends Plugin {
                 r.put("status", status);
                 Set<String> got = granted();
                 r.put("granted", got.containsAll(permissions()));
+                r.put("calories", got.contains(WRITE_CALORIES));
                 r.put("read", readState(got));
                 r.put("history", historyAvailable());
                 call.resolve(r);
@@ -192,6 +197,7 @@ public class HealthConnectPlugin extends Plugin {
                 if (got != null) now.addAll(got);
                 JSObject r = new JSObject();
                 r.put("granted", now.containsAll(permissions()));
+                r.put("calories", now.contains(WRITE_CALORIES));
                 r.put("read", readState(now));
                 call.resolve(r);
             } catch (Exception e) {
@@ -211,8 +217,13 @@ public class HealthConnectPlugin extends Plugin {
         worker.execute(() -> {
             try {
                 long version = System.currentTimeMillis();
+                boolean kcal = granted().contains(WRITE_CALORIES);
                 List<Record> records = new ArrayList<>();
-                for (int i = 0; i < sessions.length(); i++) records.add(session(sessions.getJSONObject(i), version));
+                for (int i = 0; i < sessions.length(); i++) {
+                    JSONObject s = sessions.getJSONObject(i);
+                    records.add(session(s, version));
+                    if (kcal && s.optDouble("kcal", 0) > 0) records.add(calories(s, version));
+                }
                 for (int i = 0; i < weights.length(); i++) records.add(weight(weights.getJSONObject(i), version));
                 for (int from = 0; from < records.size(); from += CHUNK) {
                     List<Record> part = records.subList(from, Math.min(records.size(), from + CHUNK));
@@ -238,6 +249,8 @@ public class HealthConnectPlugin extends Plugin {
         worker.execute(() -> {
             try {
                 delete(ExerciseSessionRecord.class, ids(sessions));
+                // A session's calories go with it; without the permission there are none of ours.
+                if (granted().contains(WRITE_CALORIES)) delete(ActiveCaloriesBurnedRecord.class, kcalIds(sessions));
                 delete(WeightRecord.class, ids(weights));
                 call.resolve();
             } catch (SecurityException e) {
@@ -335,7 +348,11 @@ public class HealthConnectPlugin extends Plugin {
     // optional. Without either, the two write permissions, as before v1.4.3.
     private static Set<String> asked(PluginCall call) throws JSONException {
         JSArray read = call.getArray("read", null), write = call.getArray("write", null);
-        if (read == null && write == null) return permissions();
+        if (read == null && write == null) {
+            Set<String> all = permissions();
+            all.add(WRITE_CALORIES);
+            return all;
+        }
         Set<String> out = new HashSet<>();
         if (read != null) for (int i = 0; i < read.length(); i++) {
             String p = HealthRead.readPermission(read.getString(i));
@@ -397,6 +414,13 @@ public class HealthConnectPlugin extends Plugin {
         return out;
     }
 
+    // The client id of a session's calories record: the session's own, plus "-kcal".
+    private static List<String> kcalIds(JSArray sessions) throws JSONException {
+        List<String> out = new ArrayList<>();
+        for (int i = 0; i < sessions.length(); i++) out.add(sessions.getString(i) + "-kcal");
+        return out;
+    }
+
     // The offset in force at that moment where the phone is now: what Health Connect shows the
     // session's local time with.
     private static ZoneOffset offsetAt(Instant at) {
@@ -414,6 +438,14 @@ public class HealthConnectPlugin extends Plugin {
                 exerciseType(s.optString("type")),
                 title.isEmpty() ? null : title,
                 notes.isEmpty() ? null : notes);
+    }
+
+    // The estimate from lib/active-energy.js, over the session's own time.
+    private static ActiveCaloriesBurnedRecord calories(JSONObject s, long version) throws JSONException {
+        Instant start = Instant.ofEpochMilli(s.getLong("start"));
+        Instant end = Instant.ofEpochMilli(s.getLong("end"));
+        return new ActiveCaloriesBurnedRecord(start, offsetAt(start), end, offsetAt(end),
+                Energy.kilocalories(s.getDouble("kcal")), Metadata.manualEntry(s.getString("id") + "-kcal", version));
     }
 
     private static WeightRecord weight(JSONObject w, long version) throws JSONException {

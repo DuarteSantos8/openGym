@@ -42,7 +42,14 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     private let store = HKHealthStore()
     private var bodyMass: HKQuantityType { HKQuantityType.quantityType(forIdentifier: .bodyMass)! }
 
-    private var shareTypes: Set<HKSampleType> { [HKObjectType.workoutType(), bodyMass] }
+    /// The estimated active energy of a workout logged on the phone (#724), lib/active-energy.js.
+    private var activeEnergy: HKQuantityType? { HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned) }
+
+    private var shareTypes: Set<HKSampleType> {
+        var types: Set<HKSampleType> = [HKObjectType.workoutType(), bodyMass]
+        if let kcal = activeEnergy { types.insert(kcal) }
+        return types
+    }
     private var readTypes: Set<HKObjectType> {
         var types: Set<HKObjectType> = [HKObjectType.workoutType(), bodyMass]
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
@@ -51,28 +58,39 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
 
     /// Saving workouts is what the switch is about; weigh-ins follow when allowed too.
     private var granted: Bool { store.authorizationStatus(for: HKObjectType.workoutType()) == .sharingAuthorized }
+    /// Optional: refused, the workouts still go in, without calories.
+    private var caloriesGranted: Bool {
+        guard let kcal = activeEnergy else { return false }
+        return store.authorizationStatus(for: kcal) == .sharingAuthorized
+    }
 
     @objc func status(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else {
             call.resolve(["status": "unsupported", "granted": false])
             return
         }
-        call.resolve(["status": "available", "granted": granted])
+        call.resolve(["status": "available", "granted": granted, "calories": caloriesGranted])
     }
 
     @objc override public func requestPermissions(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else { call.resolve(["granted": false]); return }
         // { read: ['heartRate' | 'weight'], write: [...] } asks for just those reads (the switches
         // added in v1.4.3); without them, everything, as before.
+        // write: ['calories'] asks for the active energy alone (someone who turned Health on
+        // before v1.4.6 never saw it).
         if let read = call.getArray("read") as? [String] {
             var types: Set<HKObjectType> = []
             if read.contains("heartRate"), let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
             if read.contains("weight") { types.insert(bodyMass) }
-            store.requestAuthorization(toShare: [], read: types) { _, _ in call.resolve(["granted": self.granted]) }
+            var share: Set<HKSampleType> = []
+            if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal) }
+            store.requestAuthorization(toShare: share, read: types) { _, _ in
+                call.resolve(["granted": self.granted, "calories": self.caloriesGranted])
+            }
             return
         }
         store.requestAuthorization(toShare: shareTypes, read: readTypes) { _, _ in
-            call.resolve(["granted": self.granted])
+            call.resolve(["granted": self.granted, "calories": self.caloriesGranted])
         }
     }
 
@@ -113,6 +131,10 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             do {
                 var left: [String] = []
                 if !sessions.isEmpty { left += try await self.delete(HKObjectType.workoutType(), ids: sessions) }
+                // Their estimated calories (#724): only ever ours, so nothing is reported left.
+                if !sessions.isEmpty, self.caloriesGranted, let kcal = self.activeEnergy {
+                    _ = try? await self.delete(kcal, ids: sessions.map { $0 + "-kcal" })
+                }
                 if !weights.isEmpty { left += try await self.delete(self.bodyMass, ids: weights) }
                 call.resolve(["left": left])
             } catch {
@@ -201,6 +223,19 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         var meta = syncMetadata(id)
         if let title = s["title"] as? String, !title.isEmpty { meta["OpenGymTitle"] = title }
         try await builder.addMetadata(meta)
+        // The estimated active energy, with a sync identifier of its own so a rewrite replaces it
+        // too. The Apple Watch measures its own; this is for a workout the phone logged.
+        if let kcal = (s["kcal"] as? NSNumber)?.doubleValue, kcal > 0, caloriesGranted, let type = activeEnergy {
+            var kmeta = syncMetadata(id + "-kcal")
+            kmeta["OpenGymEstimate"] = true
+            let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .kilocalorie(), doubleValue: kcal),
+                                          start: start, end: end, device: .local(), metadata: kmeta)
+            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+                builder.add([sample]) { _, error in
+                    if let error = error { cont.resume(throwing: error) } else { cont.resume() }
+                }
+            }
+        }
         try await builder.endCollection(at: end)
         _ = try await builder.finishWorkout()
     }
