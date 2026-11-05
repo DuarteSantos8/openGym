@@ -180,12 +180,13 @@ function GymView({ gymId, openMember }) {
   })
   return <div className="tr-list">
     <div className="hdr">
-      <div><h1>{g.gym.name}</h1><div className="sub">{t('{0} members, {1} trainers', g.members.length, g.trainers.length)}</div></div>
+      <div><h1>{g.gym.name}</h1><div className="sub">{t('Members: {0} · Trainers: {1}', g.members.length, g.trainers.length)}</div></div>
       <div className="hdr-actions"><button className="iconbtn" onClick={() => openSheet(close => <GymCodeSheet gym={g.gym} close={close} />)} aria-label={t('Gym join code')}><Icon name="qr" /></button></div>
     </div>
     <Section title={t('Trainers')} footer={t('Add a trainer by the account id from their Settings. Members still decide what each trainer sees.')}>
-      {g.trainers.map(tr => <Row key={tr.id} icon="personCircle" iconTint="var(--acc)" title={tr.name} subtitle={t('{0} members', tr.members)}
-        value={t('Remove')} onClick={() => remove(tr)} />)}
+      {g.trainers.map(tr => <Row key={tr.id} icon="personCircle" iconTint="var(--acc)" title={tr.name} subtitle={t('Members: {0}', tr.members)}>
+        <Button size="xs" variant="plain" className="tr-danger" onClick={() => remove(tr)}>{t('Remove')}</Button>
+      </Row>)}
       <div className="tr-add">
         <TextField value={add} onChange={e => setAdd(e.target.value)} placeholder={t('Account id')} aria-label={t('Account id')} autoCapitalize="off" spellCheck={false} />
         <Button size="sm" variant="tinted" disabled={!add.trim()} onClick={addTrainer}>{t('Add')}</Button>
@@ -287,7 +288,8 @@ function Dashboard({ config }) {
   const view = gymParam || (!roles.trainer && gyms[0]?.id) || 'mine'
   const back = () => nav(gymParam ? `/trainer?gym=${gymParam}` : '/trainer')
   const open = m => nav(`/trainer/m/${encodeURIComponent(m.member.id)}${gymParam ? `?gym=${gymParam}` : ''}`)
-  const switcher = gyms.length > 0 && <Segmented className="tr-switch" value={view} onChange={v => nav(v === 'mine' ? '/trainer' : `/trainer?gym=${v}`, { replace: true })}
+  const switchOpts = (roles.trainer ? 1 : 0) + gyms.length
+  const switcher = switchOpts > 1 && <Segmented className="tr-switch" value={view} onChange={v => nav(v === 'mine' ? '/trainer' : `/trainer?gym=${v}`, { replace: true })}
     options={[...(roles.trainer ? [{ value: 'mine', label: t('My members') }] : []), ...gyms.map(g => ({ value: g.id, label: g.name }))]} />
   const left = view === 'mine'
     ? <MemberList list={list} overview={overview} reload={load} selected={selected} setSelected={setSelected} openMember={open} currentId={id} loading={loading} />

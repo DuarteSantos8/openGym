@@ -245,7 +245,7 @@ export default function TrainerMember({ d, onBack, onComment, onAssign, onWeigh,
       {tab === 'overview' && shared.has('photos') && <div className="tr-tile-s tr-photos">{t('Progress photos: {0}', d.photos?.count ?? 0)}</div>}
     </div>
     {notShared.length > 0 && <p className="tr-foot">{t('Not shared: {0}. {1} decides.', notShared.map(categoryLabel).join(', '), d.member?.name || '')}</p>}
-    {onDisconnect && <div className="tr-foot-a"><Button variant="danger" icon="signOut" onClick={onDisconnect}>{t('Disconnect')}</Button></div>}
+    {onDisconnect && <div className="tr-foot-a"><Button variant="plain" size="sm" icon="signOut" className="tr-danger" onClick={onDisconnect}>{t('Disconnect')}</Button></div>}
   </div>
 }
 export { TAB_CATS }

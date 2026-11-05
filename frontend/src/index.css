@@ -3615,3 +3615,5 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-tabs button{font-size:var(--fs-footnote)}
 .tr-wo .tr-wo-a{padding:0 8px 8px;margin-top:-6px}
 .tr-wo .tr-comment+.tr-wo-a{margin-top:0}
+.btn.tr-danger{color:var(--red)}
+.tr-foot-a{display:flex;justify-content:flex-start}
