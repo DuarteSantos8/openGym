@@ -3,9 +3,9 @@
   "name": "suspender row",
   "bodyPart": "back",
   "equipment": "suspension trainer",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "rhomboids"
   ],

@@ -3,9 +3,9 @@
   "name": "band seated straight back row",
   "bodyPart": "back",
   "equipment": "band",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "rhomboids",
     "biceps"
   ],

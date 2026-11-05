@@ -84,6 +84,6 @@ describe('the Auto-backup subtitle', () => {
     const warn = host.querySelector('.lrow.backup-lost')
     expect(warn.textContent).toContain('SyncFolder')
     const css = (await import('node:fs')).readFileSync(process.cwd() + '/src/index.css', 'utf8')
-    expect(css).toMatch(/\.lrow\.backup-lost \.lrow-t\{font-size:13px/)
+    expect(css).toMatch(/\.lrow\.backup-lost \.lrow-t\{font-size:var\(--fs-footnote\)/)
   })
 })
