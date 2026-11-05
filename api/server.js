@@ -36,7 +36,7 @@ import {
 import { startAdminSocket } from './admin-socket.js';
 import { createMediaStore, mediaLimits, mediaConfig, MediaError, HASH_RE } from './media.js';
 import { effectiveRoutineId } from './queue.js';
-import { stampPut } from './sync-stamps.js';
+import { stampPut, highestStamp } from './sync-stamps.js';
 import { atomicWrite as durableWrite } from './durable.js';
 import { ipv6Groups, guardedLookup, pushEndpointError, MAX_PUSH_ENDPOINT } from './net-guard.js';
 import { createIntegrations } from './integrations/index.js';
@@ -45,6 +45,10 @@ import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
 import { createOrgStore } from './trainers/org-store.js';
 import { trainerRoutes } from './trainers/routes.js';
+import { dashboardRoutes } from './trainers/dashboard-routes.js';
+import { createNotify } from './trainers/notify.js';
+import { OrgError } from './trainers/org-store.js';
+import { nutritionSourceFrom } from './sources/nutrition.js';
 import { createPermissions } from './permissions.js';
 import { createShareLog } from './share-log.js';
 import { createBudgets, createCodeGuard } from './budgets.js';
@@ -468,6 +472,36 @@ function readStateCached(uid) {
   stateCache.set(uid, { mtimeMs: st.mtimeMs, size: st.size, hitAt: now, S });
   while (stateCache.size > STATE_CACHE_MAX) stateCache.delete(stateCache.keys().next().value);
   return S;
+}
+
+// A write the server makes into a profile on someone's behalf: a trainer's change, a suggestion the
+// member took, the member's Undo of a trainer change (trainers/ops.js). The same steps as PUT
+// /api/data, synchronous from read to rename so nothing can write in between: `fn(next, t)` changes
+// a copy of the stored document and stamps what it changed at `t` (a time later than every stamp in
+// it, so the change wins the member's devices' merge like one from a second device), then stampPut
+// joins the records and the document goes in one revision further. The devices see the new revision
+// on their next check (every half minute) and merge it. `skipIf(result)` true leaves the file alone.
+// A profile with no document on the server yet is refused: there is nothing of theirs to merge into.
+function writeStateAs(uid, fn, { skipIf = null } = {}) {
+  const cur = readStateStrict(uid);
+  if (cur === UNREADABLE) throw new OrgError(503, 'state-unreadable', 'that profile cannot be read right now');
+  if (!cur) throw new OrgError(409, 'not-synced', 'they have not synced this profile with the server yet');
+  const next = JSON.parse(JSON.stringify(cur));
+  const t = Math.max(Date.now(), highestStamp(cur) + 1);
+  const result = fn(next, t);
+  if (skipIf && skipIf(result)) return result;
+  stampPut(cur, next, { stamped: true, now: t });
+  const curRev = cur._rev || 0;
+  next._rev = curRev + 1;
+  next._ts = t;
+  next._wids = [...(Array.isArray(cur._wids) ? cur._wids : []), ...(cur._wid ? [cur._wid] : [])].filter(x => typeof x === 'string').slice(-WID_KEEP);
+  next._wid = crypto.randomBytes(8).toString('hex');
+  delete next.active;
+  atomicWrite(stateFile(uid), JSON.stringify(next));
+  stateCache.delete(uid);
+  if (MEDIA_ON) { try { MEDIA.noteState(uid, next); } catch (e) { console.error('media noteState', e); } }
+  try { integrations.onStateWrite(uid, cur, next); } catch (e) { console.error('integrations onStateWrite', e); }
+  return result;
 }
 // Missed-workout nudge (nudge.js): opt-in on top of the reminder, so it needs everything the
 // reminder does (a push subscription, the reminder on, a zone). Owed from 20:00 — or 2 h after the
@@ -2105,6 +2139,23 @@ function dataWritable() {
   return ok;
 }
 
+// The trainer feature's routes (docs/TRAINERS.md): roles and consent (trainers/routes.js) and the
+// dashboard on top of it (trainers/dashboard-routes.js), sharing one guard and one sharing log.
+const NUTRITION = nutritionSourceFrom(process.env);
+const trainerNotify = createNotify({ log: shareLog, sendPush: (uid, p) => sendPush(uid, p), langOf: uid => readStateCached(uid)?.lang || 'en' });
+const trainerRolesOf = uid => {
+  const r = org.rolesOf(uid);
+  return { trainer: r.freeTrainer || r.staff.some(x => x.role === 'trainer' && org.activeGym(x.gymId)), lead: r.staff.some(x => x.role === 'lead' && org.activeGym(x.gymId)) };
+};
+const trainerApi = trainerRoutes({
+  json, readBody, readSession, requireAdmin, isAdmin, audit, origin: ORIGIN,
+  userById: id => db.users.find(u => u.id === id) || null,
+  addressOf: req => limitAddress(req),
+  org, perms, log: shareLog, budgets, codeGuard, on: () => TRAINERS, notify: trainerNotify, nutrition: NUTRITION
+});
+// Offers to stay with a trainer privately run out after 30 days even if nobody opens the app.
+if (TRAINERS) { const offerSweep = setInterval(() => { try { org.expireOffers(); } catch (e) { console.error('org offers', e.message); } }, 3600000); offerSweep.unref?.(); }
+
 const routes = {
   // 503 rather than a flag in a 200: the container healthcheck is `wget --spider`, which reads
   // the status and nothing else, and an instance that cannot write its data directory is exactly
@@ -2148,7 +2199,8 @@ const routes = {
       ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
       // Trainers and studios (docs/TRAINERS.md): only to a session and only when on, so the app
       // shows no trace of the feature anywhere else.
-      ...(TRAINERS && readSession(req) ? { trainers: { on: true, leadAccess: org.leadMode } } : {})
+      // `roles` decides whether the app shows the trainer dashboard; every route checks again anyway.
+      ...(TRAINERS && readSession(req) ? { trainers: { on: true, leadAccess: org.leadMode, roles: trainerRolesOf(readSession(req).id) } } : {})
     });
   },
 
@@ -3048,11 +3100,11 @@ const routes = {
   /* ---------- trainers, gym leads, studios ---------- */
   // trainers/routes.js. Every decision about another profile is permissions.js; with TRAINERS
   // off the routes answer 404 'trainers-off'.
-  ...trainerRoutes({
-    json, readBody, readSession, requireAdmin, isAdmin, audit, origin: ORIGIN,
-    userById: id => db.users.find(u => u.id === id) || null,
-    addressOf: req => limitAddress(req),
-    org, perms, log: shareLog, budgets, codeGuard, on: () => TRAINERS
+  ...trainerApi.routes,
+  ...dashboardRoutes({
+    json, readBody, audit, origin: ORIGIN, userById: id => db.users.find(u => u.id === id) || null,
+    org, perms, log: shareLog, budgets, notify: trainerNotify, nutrition: NUTRITION, helpers: trainerApi.helpers,
+    state: { read: uid => readStateCached(uid), write: writeStateAs }
   }),
 
   /* ---------- photos & videos ---------- */

@@ -248,7 +248,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>111 endpoints</span>
+    <span>125 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3910,6 +3910,704 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">429</span>
     <span class="p-desc">Over the account budget (<code>rate-limited</code>) or too many wrong codes (<code>code-paused</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-trainerMembers">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/trainer/members</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The trainer: the member list</span>
+  </summary>
+  <div class="ep-body">
+<p>Every member connected to this trainer, with what each shares and, where key numbers are shared, the last workout, the streak (weeks), this week's sessions against the plan and flags: <code>missed</code> (planned days without a workout in the last 7), <code>pr</code> (records in the last 7 days), <code>inactive</code> (no workout for <code>inactive</code> days, default 7), <code>weight</code> (a change of 1 or more over two weeks, needs body weight), <code>pending</code> (suggestions not answered yet). A flag only appears when its category is shared. Each listed member's sharing log notes the look.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">today</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Client date (YYYY-MM-DD), used when within a day of the server</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">inactive</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Days without a workout before the inactive flag (2 to 60)</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-trainerMember">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/trainer/member</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The trainer or gym lead: one member</span>
+  </summary>
+  <div class="ep-body">
+<p>The projection of one member: only the categories they share with this person (<code>shared</code>), never the document. Workouts come without media and, unless notes are shared, without notes; paged newest first by <code>before</code>. Plus this person's own comments, suggestions and changes. 404 for a member this person was never connected to, 403 <code>not-shared</code> once a connection ended.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Member id</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">before</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Workouts before this date (YYYY-MM-DD)</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">limit</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Workouts per page (1 to 100, default 20)</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">today</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Client date (YYYY-MM-DD)</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-trainerOps">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/trainer/ops</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The trainer: change a member's data</span>
+  </summary>
+  <div class="ep-body">
+<p>Whitelisted ops (<code>routine.put</code>, <code>routine.remove</code>, <code>week.set</code>, <code>bodyweight.put</code>, <code>measurement.put</code>, <code>workout.add</code>), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled <code>_by</code>, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">memberId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ops</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">message</span>
+    <span class="p-type">string <span class="p-hint">(&le; 300 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-trainerAssign">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/trainer/assign</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The trainer: assign one of their routines</span>
+  </summary>
+  <div class="ep-body">
+<p>Copies one of the trainer's own routines (with the custom exercises it needs, without media) to up to 50 members, optionally onto a weekday (<code>day</code>, 0 is Sunday). Per member the outcome is <code>applied</code>, <code>suggested</code> or <code>skipped</code> with a reason. The copy carries <code>origin</code> (kind trainer, sourceId); assigning it again replaces that copy.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">memberIds</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routineId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">day</span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;6)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">message</span>
+    <span class="p-type">string <span class="p-hint">(&le; 300 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-trainerComment">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/trainer/comment</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The trainer: comment on a workout</span>
+  </summary>
+  <div class="ep-body">
+<p>Needs workouts at See. The comment goes to the member's inbox (and a push), never into their training data.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">memberId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">workoutId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">text</span>
+    <span class="p-type">string <span class="p-hint">(&le; 1000 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-trainerLeaveGym">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/trainer/leave-gym</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The trainer: stop working at a gym</span>
+  </summary>
+  <div class="ep-body">
+<p>Ends the trainer role at that gym. The trainer's members there are paused and get the offer to stay connected privately for 30 days.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">gymId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-gymOverview">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/gym</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The gym lead: the gym</span>
+  </summary>
+  <div class="ep-body">
+<p>The gym's trainers (with member counts) and its members, each with their trainers and, where the member's own lead row shares key numbers, the summary. Never more than view.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Gym id</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">today</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Client date (YYYY-MM-DD)</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-gymCode">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/gym/code</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The gym lead: a join code</span>
+  </summary>
+  <div class="ep-body">
+<p>A <code>GY-…</code> code (default 50 uses, 30 days) and the link that opens it. Members who use it join the gym and set their lead row; there is no trainer in it.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">gymId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">maxUses</span>
+    <span class="p-type">integer <span class="p-hint">(1&ndash;200)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">days</span>
+    <span class="p-type">integer <span class="p-hint">(1&ndash;30)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-gymStaff">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/gym/staff</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The gym lead: add or remove a trainer</span>
+  </summary>
+  <div class="ep-body">
+<p>By account id. Removing one pauses their gym members and sends each the private offer.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">gymId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">user</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Account id</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">on</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-sharingInbox">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/sharing/inbox</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The member: inbox and trainer changes</span>
+  </summary>
+  <div class="ep-body">
+<p>Suggestions, comments, notices (a new connection, changed sharing, a gym joined, a trainer's change) and offers to stay with a trainer privately, newest first; plus every change a trainer made, with <code>canUndo</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-sharingInboxAnswer">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/sharing/inbox/answer</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The member: answer an inbox item</span>
+  </summary>
+  <div class="ep-body">
+<p>A suggestion: <code>accept</code> applies it (labelled with the trainer, undoable), otherwise it is declined; 410 when the connection ended. An offer: <code>accept</code> with the current consent makes a private connection, otherwise the paused one ends. A notice or comment: dismissed.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">accept</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">consent</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lang</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-sharingInboxSeen">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/sharing/inbox/seen</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The member: mark inbox items seen</span>
+  </summary>
+  <div class="ep-body">
+<p>Without <code>ids</code>, all of them.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">ids</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-sharingUndo">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/sharing/undo</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The member: undo a trainer's change</span>
+  </summary>
+  <div class="ep-body">
+<p>Puts the entries back as they were, as the member's own newest change, so it wins on every device. 409 <code>changed-since</code> when the member changed them after the trainer did (send again with <code>force</code>), 409 <code>already-undone</code>, 410 after 30 days.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">force</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Not allowed at this level, or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-sharingPreview">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/sharing/preview</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The member: see what a connection sees</span>
+  </summary>
+  <div class="ep-body">
+<p>The same projection the trainer or gym lead of that grant gets, so the preview cannot drift from the truth.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">grant</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Grant id</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">object</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
   </div>
     </div>
   </div>

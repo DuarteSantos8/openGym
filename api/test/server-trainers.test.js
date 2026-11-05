@@ -58,6 +58,7 @@ test('the whole road: gym, trainer, code, consent, confirm, change, disconnect, 
   const { call } = h;
   // Config tells a session the feature is on.
   assert.equal((await call('u_lea', 'GET', '/api/config')).body.trainers.on, true);
+  assert.deepEqual((await call('u_lea', 'GET', '/api/config')).body.trainers.roles, { trainer: false, lead: false });
   assert.equal((await call(null, 'GET', '/api/config')).body.trainers, undefined);
 
   // The admin makes a gym and gives Marco the trainer role, Lena the lead role.
@@ -73,6 +74,8 @@ test('the whole road: gym, trainer, code, consent, confirm, change, disconnect, 
 
   // Tim is no trainer: no code for him.
   assert.equal((await call('u_tim', 'POST', '/api/trainer/codes', {})).status, 403);
+  assert.deepEqual((await call('u_marco', 'GET', '/api/config')).body.trainers.roles, { trainer: true, lead: false });
+  assert.deepEqual((await call('u_lena', 'GET', '/api/config')).body.trainers.roles, { trainer: false, lead: true });
   const made = (await call('u_marco', 'POST', '/api/trainer/codes', { gymId: gym.id, maxUses: 5 })).body;
   assert.match(made.code, /^TR-/);
   assert.match(made.link, /#\/settings\/trainer\?code=TR-/);
@@ -132,7 +135,8 @@ test('the whole road: gym, trainer, code, consent, confirm, change, disconnect, 
 
   // Her log says what happened, in order; only she reads it.
   const lg = (await call('u_lea', 'GET', '/api/sharing/log')).body.log.map(e => e.ev);
-  assert.deepEqual(lg, ['grant.end', 'grant.update', 'grant.accept', 'gym.lead', 'grant.create']);
+  // Marco leaving the gym is in it too (her offer to keep him privately lapsed when he came back).
+  assert.deepEqual(lg, ['grant.end', 'trainer.left-gym', 'grant.update', 'grant.accept', 'gym.lead', 'grant.create']);
   assert.equal((await call('u_marco', 'GET', '/api/sharing/log')).body.log.length, 0);
 
   // The export has the grants, the consents with version and hash, and the log.
@@ -140,7 +144,9 @@ test('the whole road: gym, trainer, code, consent, confirm, change, disconnect, 
   assert.match(ex.headers.get('content-disposition'), /attachment/);
   assert.equal(ex.body.consents.every(c => c.hash && c.v), true);
   assert.equal(ex.body.consents[0].lang, 'de');
-  assert.equal(ex.body.log.length, 5);
+  assert.equal(ex.body.log.length, 6);
+  // Her inbox travels with it: the "Marco is now your trainer" and "sharing changed" notices.
+  assert.deepEqual(ex.body.inbox.filter(i => i.kind === 'notice').map(i => i.notice).sort(), ['connected', 'scopes']);
   assert.equal(ex.body.grants.length, 2);
 
   // She leaves the gym, then deletes her account: nothing of her is left in org.json or share/.

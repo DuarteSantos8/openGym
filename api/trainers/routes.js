@@ -3,14 +3,14 @@
  * helpers by server.js like coach/routes.js. With TRAINERS off every route answers 404
  * { code: 'trainers-off' }, so an app can tell "off here" from "old server". Every decision about
  * another profile goes through permissions.js; every route spends an account budget (budgets.js). */
-import { OrgError, normalizeCode } from './org-store.js';
+import { OrgError, normalizeCode, OFFER_DAYS } from './org-store.js';
 import { cleanScopes, leadScopes, TRAINER_DEFAULTS, CATEGORY_IDS } from './scopes.js';
 import { currentConsent, consentCurrent } from '../consent.js';
 
 const text = (v, n) => (typeof v === 'string' ? v.replace(/[\u0000-\u001f\u007f‪-‮⁦-⁩]/g, '').trim().slice(0, n) : '');
 const idOf = v => (typeof v === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(v) ? v : null);
 
-export function trainerRoutes({ json, readBody, readSession, requireAdmin, userById, isAdmin, audit, addressOf, org, perms, log, budgets, codeGuard, on, origin }) {
+export function trainerRoutes({ json, readBody, readSession, requireAdmin, userById, isAdmin, audit, addressOf, org, perms, log, budgets, codeGuard, on, origin, notify, nutrition }) {
   // Everything below runs only with TRAINERS on and a session; refusals the store throws are the caller's to read.
   const guard = (budget, fn) => async (req, res) => {
     if (!on()) return json(res, 404, { error: 'trainers are off on this server', code: 'trainers-off' });
@@ -54,6 +54,32 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
     } else if (g.kind === 'trainer' && !org.isFreeTrainer(g.granteeId)) return 'not-trainer';
     return null;
   };
+  // Open suggestions of a connection that ended lapse (design 3.3): what was taken stays the member's.
+  const lapseSuggestions = (memberId, grantIds) => log.updateInbox(memberId,
+    i => i.status === 'open' && i.kind === 'suggest' && grantIds.includes(i.grantId), { status: 'expired', answeredAt: Date.now() });
+  // "Keep training with Marco privately?" for every studio trainer grant a gym change cut (design 3.5, 3.6).
+  const offerPrivate = (grants, gymName) => {
+    for (const g of grants) {
+      if (g.kind !== 'trainer' || !g.gymId) continue;
+      const tName = nameOf(g.granteeId);
+      log.addInbox(g.memberId, { kind: 'offer', grantId: g.id, gymId: g.gymId, from: { kind: 'trainer', id: g.granteeId, name: tName },
+        names: [tName, gymName || ''], expires: g.offerUntil || Date.now() + OFFER_DAYS * 86400000 });
+      notify.push(g.memberId, 'offer', [tName, gymName || '']);
+    }
+  };
+  // A trainer leaves a gym (an admin or lead took the role, or they left): pause, offer, tell.
+  const trainerLeaves = (gid, uid) => {
+    const cut = org.trainerLeft(gid, uid);
+    offerPrivate(cut, org.gym(gid)?.name);
+    for (const g of cut) log.append(g.memberId, { ev: 'trainer.left-gym', actor: { kind: 'trainer', ...person(uid) }, grantId: g.id, peer: { kind: 'gym', id: gid, name: org.gym(gid)?.name } });
+    return cut.length;
+  };
+  const trainerReturns = (gid, uid) => {
+    org.trainerBack(gid, uid);
+    for (const g of org.get().grants.filter(x => x.kind === 'trainer' && x.granteeId === uid && x.gymId === gid && x.status !== 'ended')) {
+      log.updateInbox(g.memberId, i => i.kind === 'offer' && i.status === 'open' && i.grantId === g.id, { status: 'lapsed', answeredAt: Date.now() });
+    }
+  };
   const consentBody = (res, given, kind = 'trainer') => {
     if (consentCurrent(kind, given)) return true;
     json(res, 409, { error: 'the consent text changed, please read it again', code: 'consent-outdated', consent: currentConsent(kind) });
@@ -68,7 +94,8 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
     const c = normalizeCode(typed) ? org.findCode(typed) : null;
     // An owner who is gone, disabled or no longer allowed to invite makes the code as dead as an expired one.
     const owner = c && userById(c.ownerId);
-    if (!c || !owner || owner.disabled || !perms.can(owner, 'trainer:invite', { gymId: c.gymId }).ok) {
+    const may = owner && (c.kind === 'gym' ? perms.can(owner, 'gym:invite', { gymId: c.gymId }) : perms.can(owner, 'trainer:invite', { gymId: c.gymId }));
+    if (!c || !owner || owner.disabled || !may?.ok) {
       codeFailed(req, user);
       json(res, 404, { error: 'that code is wrong, used up or expired', code: 'code-invalid' });
       return null;
@@ -77,7 +104,7 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
     return c;
   };
 
-  return {
+  const routes = {
     /* ---------- the member ---------- */
     'GET /api/sharing': guard('sharing.read', async (req, res, user) => {
       const rec = org.memberRecord(user.id);
@@ -94,14 +121,22 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       const leadOnly = grants.filter(g => g.kind === 'lead' && !grants.some(t => t.pairId === g.id))
         .map(g => ({ id: g.id, status: g.status, scopes: g.scopes, gym: gymCard(g.gymId), paused: pausedWhy(g) }));
       const gyms = rec.memberships.filter(m => !m.until).map(m => ({ ...gymCard(m.gymId), since: m.since }));
-      json(res, 200, { leadMode: org.leadMode, consent: currentConsent('trainer'), defaults: TRAINER_DEFAULTS, connections, leadOnly, gyms });
+      json(res, 200, { leadMode: org.leadMode, consent: currentConsent('trainer'), leadConsent: currentConsent('lead'), defaults: TRAINER_DEFAULTS, connections, leadOnly, gyms,
+        nutrition: nutrition ? nutrition.status(user.id) : 'not-linked' });
     }),
 
     'POST /api/sharing/code': guard('sharing.write', async (req, res, user) => {
       const body = await readBody(req);
       const c = lookupCode(req, res, user, body.code); if (!c) return;
+      if (c.kind === 'gym') {
+        return json(res, 200, {
+          kind: 'gym', gym: gymCard(c.gymId), leadMode: org.leadMode, member: !!org.membership(c.gymId, user.id),
+          leadDefaults: org.leadMode !== 'none' ? leadScopes(org.leadMode, null, TRAINER_DEFAULTS) : null,
+          consent: currentConsent('lead'), expires: c.expires
+        });
+      }
       if (c.ownerId === user.id) return json(res, 400, { error: 'that is your own code', code: 'self' });
-      json(res, 200, {
+      json(res, 200, { kind: 'trainer',
         trainer: person(c.ownerId), gym: c.gymId ? gymCard(c.gymId) : null, leadMode: org.leadMode,
         defaults: TRAINER_DEFAULTS, leadDefaults: c.gymId && org.leadMode !== 'none' ? leadScopes(org.leadMode, TRAINER_DEFAULTS) : null,
         consent: currentConsent('trainer'), expires: c.expires
@@ -110,6 +145,17 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
 
     'POST /api/sharing/connect': guard('sharing.write', async (req, res, user) => {
       const body = await readBody(req);
+      const pre = normalizeCode(body.code) ? org.findCode(body.code) : null;
+      // A gym's join code: a membership and the lead row, agreed to under the lead text.
+      if (pre?.kind === 'gym') {
+        if (!consentBody(res, body.consent, 'lead')) return;
+        const c = lookupCode(req, res, user, body.code); if (!c) return;
+        const out = org.joinGym({ memberId: user.id, code: c, leadPicked: body.leadScopes, lang: body.lang });
+        const gName = org.gym(c.gymId)?.name;
+        log.append(user.id, { ev: 'gym.join', actor: self(user), grantId: out.lead?.id, peer: { kind: 'gym', id: c.gymId, name: gName } });
+        notify.notice(user.id, 'joined', { from: { kind: 'gym', id: c.gymId, name: gName }, names: [gName] });
+        return json(res, 200, { ok: true, gymId: c.gymId, leadId: out.lead?.id || null, status: 'active' });
+      }
       if (!consentBody(res, body.consent)) return;
       const c = lookupCode(req, res, user, body.code); if (!c) return;
       const { grant, lead } = org.connect({ memberId: user.id, code: c, scopes: body.scopes, leadPicked: body.leadScopes, lang: body.lang });
@@ -132,6 +178,8 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       if (!consentBody(res, body.consent)) return;
       const out = org.updateScopes(user.id, idOf(body.id), body.scopes, body.lang);
       log.append(user.id, { ev: 'grant.update', actor: self(user), grantId: out.grant.id });
+      const who = out.grant.kind === 'lead' ? org.gym(out.grant.granteeId)?.name : nameOf(out.grant.granteeId);
+      notify.notice(user.id, 'scopes', { names: [who], grantId: out.grant.id });
       json(res, 200, { ok: true, scopes: out.grant.scopes, pairScopes: out.pair?.scopes || null });
     }),
 
@@ -140,6 +188,8 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       const g = org.grant(idOf(body.id));
       if (!g || g.memberId !== user.id || g.status === 'ended') return json(res, 404, { error: 'no such connection', code: 'no-grant' });
       org.endGrant(g.id, 'member');
+      lapseSuggestions(user.id, [g.id]);
+      log.updateInbox(user.id, i => i.kind === 'offer' && i.status === 'open' && i.grantId === g.id, { status: 'declined', answeredAt: Date.now() });
       log.append(user.id, { ev: 'grant.end', actor: self(user), grantId: g.id, peer: g.kind === 'lead' ? { kind: 'gym', id: g.gymId, name: org.gym(g.gymId)?.name } : { kind: 'trainer', ...person(g.granteeId) } });
       json(res, 200, { ok: true });
     }),
@@ -148,7 +198,10 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       const body = await readBody(req);
       const gid = idOf(body.gymId);
       const ended = org.leaveGym(user.id, gid);
+      lapseSuggestions(user.id, ended.map(g => g.id));
       log.append(user.id, { ev: 'gym.leave', actor: self(user), peer: { kind: 'gym', id: gid, name: org.gym(gid)?.name } });
+      // Only the trainers who are still around get the offer; one who left the gym already has theirs.
+      offerPrivate(ended.filter(g => g.kind === 'trainer' && org.staffOf(gid, g.granteeId, 'trainer')), org.gym(gid)?.name);
       json(res, 200, { ok: true, ended: ended.length });
     }),
 
@@ -161,7 +214,7 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
 
     // Art. 15/20: everything the server keeps about this member's sharing, in one file.
     'GET /api/sharing/export': guard('sharing.read', async (req, res, user) => {
-      json(res, 200, { exported: Date.now(), server: origin, ...org.memberRecord(user.id), log: log.all(user.id) },
+      json(res, 200, { exported: Date.now(), server: origin, ...org.memberRecord(user.id), log: log.all(user.id), inbox: log.inbox(user.id), undo: log.undos(user.id) },
         { 'Content-Disposition': 'attachment; filename="opengym-sharing.json"' });
     }),
 
@@ -208,6 +261,7 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       const g = org.answer(user.id, idOf(body.id), body.accept === true);
       const actor = { kind: 'trainer', id: user.id, name: user.name };
       log.append(g.memberId, { ev: body.accept === true ? 'grant.accept' : 'grant.decline', actor, grantId: g.id });
+      if (body.accept === true) notify.notice(g.memberId, 'connected', { from: actor, names: [user.name], grantId: g.id });
       json(res, 200, { ok: true, status: g.status });
     }),
 
@@ -216,6 +270,7 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       const g = org.grant(idOf(body.id));
       if (!g || g.kind !== 'trainer' || g.granteeId !== user.id || g.status === 'ended') return json(res, 404, { error: 'no such member', code: 'no-grant' });
       org.endGrant(g.id, 'trainer');
+      lapseSuggestions(g.memberId, [g.id]);
       log.append(g.memberId, { ev: 'grant.end', actor: { kind: 'trainer', id: user.id, name: user.name }, grantId: g.id });
       json(res, 200, { ok: true });
     }),
@@ -263,7 +318,10 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       const gid = idOf(body.gymId);
       const may = perms.can(admin, 'gym:staff', { gymId: gid, role });
       if (!may.ok) return json(res, may.status, { error: 'forbidden', code: may.reason });
+      const was = !!org.staffOf(gid, target.id, role);
       org.setStaff(gid, target.id, role, body.on !== false);
+      if (role === 'trainer' && was && body.on === false) trainerLeaves(gid, target.id);
+      if (role === 'trainer' && !was && body.on !== false) trainerReturns(gid, target.id);
       audit(req, body.on !== false ? 'admin.gym.staff.add' : 'admin.gym.staff.remove', { user: admin, target, msg: `${role} @ ${org.gym(gid)?.name || gid}` });
       json(res, 200, { ok: true });
     }),
@@ -278,5 +336,6 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       json(res, 200, { ok: true, free: body.free === true });
     })
   };
+  // The dashboard's routes (dashboard-routes.js) share the helpers above.
+  return { routes, helpers: { guard, nameOf, person, self, gymCard, pausedWhy, consentBody, lookupCode, lapseSuggestions, offerPrivate, trainerLeaves, trainerReturns, text, idOf } };
 }
-

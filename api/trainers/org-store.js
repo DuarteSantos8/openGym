@@ -12,7 +12,10 @@
  *   grants[]       { id, memberId, kind: 'trainer'|'lead', granteeId, gymId, scopes, status,
  *                    pairId?, consentId, created, updated, endedAt?, endedBy? }
  *   consents[]     consent.js records
- *   codes[]        { id, hash, ownerId, gymId, uses, maxUses, expires, created, revokedAt }
+ *   codes[]        { id, hash, kind: 'trainer'|'gym', ownerId, gymId, uses, maxUses, expires, created, revokedAt }
+ *
+ * A studio grant whose trainer left the gym carries `offerUntil`: until then the member can keep the
+ * trainer privately (stayPrivate), after it expireOffers() ends the grant.
  *
  * A grant is 'pending' until the trainer confirms it, then 'active', then 'ended' (by either
  * side). Pausing is never stored: a grant whose trainer left the gym, or whose gym is disabled,
@@ -33,18 +36,20 @@ export class OrgError extends Error {
   constructor(status, code, message, extra) { super(message); this.status = status; this.code = code; this.extra = extra; }
 }
 
-/** `TR-ABCDE-FGHJK`, 50 random bits. Only its hash is stored. */
-export function makeCode(rand = crypto.randomBytes) {
+/** `TR-ABCDE-FGHJK` (a trainer's) or `GY-…` (a gym's join code), 50 random bits. Only its hash is stored. */
+export function makeCode(rand = crypto.randomBytes, prefix = 'TR') {
   const b = rand(10);
   let s = '';
   for (let i = 0; i < 10; i++) s += CODE_ALPHABET[b[i] & 31];
-  return `TR-${s.slice(0, 5)}-${s.slice(5)}`;
+  return `${prefix}-${s.slice(0, 5)}-${s.slice(5)}`;
 }
-/** What was typed, the way it was printed: case, spaces, dashes and the TR prefix do not matter. */
+/** What was typed, the way it was printed: case, spaces, dashes and the TR/GY prefix do not matter. */
 export const normalizeCode = v => {
-  const s = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^TR/, '');
+  const s = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^(TR|GY)(?=[A-Z0-9]{10}$)/, '');
   return s.length === 10 ? s : null;
 };
+// How long a member has to answer "stay connected privately?" (design 3.5).
+export const OFFER_DAYS = 30;
 const hashCode = norm => crypto.createHash('sha256').update('trainer-code:' + norm).digest('hex');
 
 export function createOrgStore({ file, now = Date.now, leadMode = 'row' } = {}) {
@@ -91,6 +96,13 @@ export function createOrgStore({ file, now = Date.now, leadMode = 'row' } = {}) 
     for (const c of o.consents) if (c.subjectId === g.id && !c.revokedAt) c.revokedAt = now();
   }
   function addConsent(o, rec) { o.consents.push(rec); return rec; }
+  // The gym lead row stays when its trainer row goes the private way: it is the member's
+  // membership, not the trainer's (design 3.5). It just stops following that trainer row.
+  function unpair(g) {
+    const lead = g.pairId ? grant(g.pairId) : null;
+    if (lead && lead.pairId === g.id) delete lead.pairId;
+    delete g.pairId;
+  }
   function rolesOf(uid) {
     return {
       freeTrainer: isFreeTrainer(uid),
@@ -151,10 +163,10 @@ export function createOrgStore({ file, now = Date.now, leadMode = 'row' } = {}) 
 
     /* ---------- trainer codes ---------- */
     /** A new invite code. A studio code needs a trainer role in that gym, a free one free-trainer status. */
-    createCode({ ownerId, gymId = null, maxUses = 1, days = 7 }) {
+    createCode({ ownerId, gymId = null, maxUses = 1, days = 7, kind = 'trainer' }) {
       return mutate(o => {
-        const code = makeCode();
-        const row = { id: id('k_'), hash: hashCode(normalizeCode(code)), ownerId, gymId, uses: 0,
+        const code = makeCode(crypto.randomBytes, kind === 'gym' ? 'GY' : 'TR');
+        const row = { id: id('k_'), hash: hashCode(normalizeCode(code)), kind: kind === 'gym' ? 'gym' : 'trainer', ownerId, gymId, uses: 0,
           maxUses: Math.max(1, Math.min(200, Math.floor(maxUses) || 1)), expires: now() + Math.max(1, Math.min(30, days || 7)) * DAY,
           created: now(), revokedAt: null };
         o.codes.push(row);
@@ -181,6 +193,68 @@ export function createOrgStore({ file, now = Date.now, leadMode = 'row' } = {}) 
       });
     },
     codesOf: ownerId => org.codes.filter(c => c.ownerId === ownerId && !c.revokedAt && c.expires > now() && c.uses < c.maxUses),
+
+    /** The member used a gym's join code: a membership and, unless leads see names only, the lead
+     *  row with what the member ticked. No trainer to confirm, so it counts at once. */
+    joinGym({ memberId, code, leadPicked, lang }) {
+      return mutate(o => {
+        if (code.kind !== 'gym' || !code.gymId) throw new OrgError(400, 'not-gym-code', 'that is not a gym code');
+        if (membership(code.gymId, memberId)) throw new OrgError(409, 'already-member', 'you are in this gym already');
+        code.uses += 1;
+        o.memberships.push({ gymId: code.gymId, userId: memberId, since: now(), until: null });
+        let lead = null;
+        const open = o.grants.find(g => g.memberId === memberId && g.kind === 'lead' && g.granteeId === code.gymId && g.status !== 'ended');
+        if (!open && LEAD !== 'none') {
+          const ls = leadScopes(LEAD, null, leadPicked);
+          lead = { id: id('gr_'), memberId, kind: 'lead', granteeId: code.gymId, gymId: code.gymId, scopes: ls, status: 'active', created: now(), updated: now() };
+          lead.consentId = addConsent(o, consentRecord({ kind: 'lead', memberId, subjectId: lead.id, scopes: ls, lang, now: now() })).id;
+          o.grants.push(lead);
+        }
+        return { gymId: code.gymId, lead };
+      });
+    },
+
+    /** A trainer stops working at a gym (removed, or left): their studio grants are paused at once
+     *  (permissions.js sees the missing role) and each gets an offer to stay privately. Returns them. */
+    trainerLeft(gid, uid) {
+      return mutate(o => {
+        const out = o.grants.filter(g => g.kind === 'trainer' && g.granteeId === uid && g.gymId === gid && g.status !== 'ended');
+        for (const g of out) { g.offerUntil = now() + OFFER_DAYS * DAY; g.updated = now(); }
+        return out;
+      });
+    },
+    /** The trainer is back before anyone answered: the offers lapse, the grants simply work again. */
+    trainerBack(gid, uid) {
+      return mutate(o => {
+        for (const g of o.grants) if (g.kind === 'trainer' && g.granteeId === uid && g.gymId === gid && g.offerUntil) delete g.offerUntil;
+      });
+    },
+    /** "Stay connected privately": a new grant without the gym (and so without the lead row), with
+     *  the same scopes and a fresh consent record. The studio grant ends. */
+    stayPrivate({ memberId, grantId, lang }) {
+      return mutate(o => {
+        const g = grant(grantId);
+        if (!g || g.memberId !== memberId || g.kind !== 'trainer' || !g.gymId) throw new OrgError(404, 'no-grant', 'no such connection');
+        const dupe = o.grants.find(x => x.memberId === memberId && x.kind === 'trainer' && x.granteeId === g.granteeId && !x.gymId && x.status !== 'ended');
+        if (dupe) throw new OrgError(409, 'already-connected', 'you are already connected to this trainer', { grantId: dupe.id });
+        const p = { id: id('gr_'), memberId, kind: 'trainer', granteeId: g.granteeId, gymId: null, scopes: cleanScopes(g.scopes),
+          status: 'active', from: g.id, created: now(), updated: now() };
+        p.consentId = addConsent(o, consentRecord({ kind: 'trainer', memberId, subjectId: p.id, scopes: p.scopes, lang, now: now() })).id;
+        o.grants.push(p);
+        if (g.status !== 'ended') endGrant(o, g, 'member');
+        unpair(g);
+        return p;
+      });
+    },
+    /** Offers nobody answered within OFFER_DAYS: the paused studio grant ends. Returns the ended ones. */
+    expireOffers() {
+      const due = org.grants.filter(g => g.offerUntil && g.offerUntil <= now() && g.status !== 'ended');
+      if (!due.length) return [];
+      return mutate(o => {
+        for (const g of due) { endGrant(o, g, 'expired'); unpair(g); }
+        return due;
+      });
+    },
 
     /* ---------- member: connect, change, disconnect ---------- */
     /** The member said yes on the consent screen. A pending trainer grant (the trainer confirms

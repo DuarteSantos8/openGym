@@ -57,6 +57,7 @@ COPY server.js push-messages.js nudge.js nudge-copy.js wrapped.js wrapped-copy.j
 COPY coach ./coach
 COPY integrations ./integrations
 COPY trainers ./trainers
+COPY sources ./sources
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
