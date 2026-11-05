@@ -4215,4 +4215,13 @@ export default {
   "New exercises start with": "Нові вправи починаються з",
   "Seconds for a hold": "Секунди для утримання",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Це отримує вправа, коли ви додаєте її до програми чи тренування. Потім кожну можна змінити.",
+  "From {0}, {1}": "З {0}, {1}",
+  "Just today’s plan": "Лише план на сьогодні",
+  "Let them go. No one’s counting.": "Хай лишаються. Ніхто не рахує.",
+  "Then today’s plan, as usual": "Потім план на сьогодні, як завжди",
+  "then {0}": "потім {0}",
+  "You didn’t get to {0} exercise last time": "Минулого разу ви не встигли {0} вправу",
+  "You didn’t get to {0} exercises last time": {"one": "Минулого разу ви не встигли {0} вправу", "few": "Минулого разу ви не встигли {0} вправи", "many": "Минулого разу ви не встигли {0} вправ", "other": "Минулого разу ви не встигли {0} вправи"},
+  "Start with the {0} exercise you didn’t get to": "Почати з {0} вправи, що лишилася",
+  "Start with the {0} exercises you didn’t get to": {"one": "Почати з {0} вправи, що лишилася", "few": "Почати з {0} вправ, що лишилися", "many": "Почати з {0} вправ, що лишилися", "other": "Почати з {0} вправ, що лишилися"},
 }

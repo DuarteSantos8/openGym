@@ -4183,4 +4183,13 @@ export default {
   "New exercises start with": "تمرین‌های تازه شروع می‌شوند با",
   "Seconds for a hold": "ثانیه برای حرکت ایستا",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "چیزی که یک تمرین هنگام افزودن به روتین یا تمرین می‌گیرد. بعدش هم می‌توانی هرکدام را تغییر دهی.",
+  "From {0}, {1}": "از {0}، {1}",
+  "Just today’s plan": "فقط برنامهٔ امروز",
+  "Let them go. No one’s counting.": "ولشان کن. کسی نمی‌شمارد.",
+  "Then today’s plan, as usual": "بعد برنامهٔ امروز، مثل همیشه",
+  "then {0}": "بعد {0}",
+  "You didn’t get to {0} exercise last time": "دفعهٔ قبل به {0} تمرین نرسیدی",
+  "You didn’t get to {0} exercises last time": "دفعهٔ قبل به {0} تمرین نرسیدی",
+  "Start with the {0} exercise you didn’t get to": "شروع با {0} تمرینی که جا ماند",
+  "Start with the {0} exercises you didn’t get to": "شروع با {0} تمرینی که جا ماند",
 }

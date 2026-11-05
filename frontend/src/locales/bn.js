@@ -4297,4 +4297,13 @@ export default {
   "New exercises start with": "নতুন ব্যায়াম শুরু হয়",
   "Seconds for a hold": "হোল্ডের সেকেন্ড",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "রুটিন বা ওয়ার্কআউটে যোগ করার সময় ব্যায়াম যা পায়। পরে প্রতিটি বদলাতে পারবেন।",
+  "From {0}, {1}": "{0} থেকে, {1}",
+  "Just today’s plan": "শুধু আজকের প্ল্যান",
+  "Let them go. No one’s counting.": "বাদ দিন। কেউ গুনছে না।",
+  "Then today’s plan, as usual": "তারপর আজকের প্ল্যান, যেমন হয়",
+  "then {0}": "তারপর {0}",
+  "You didn’t get to {0} exercise last time": "গতবার {0}টি ব্যায়াম বাকি ছিল",
+  "You didn’t get to {0} exercises last time": "গতবার {0}টি ব্যায়াম বাকি ছিল",
+  "Start with the {0} exercise you didn’t get to": "বাকি থাকা {0}টি ব্যায়াম দিয়ে শুরু করুন",
+  "Start with the {0} exercises you didn’t get to": "বাকি থাকা {0}টি ব্যায়াম দিয়ে শুরু করুন",
 }

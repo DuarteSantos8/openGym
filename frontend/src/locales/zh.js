@@ -4218,4 +4218,13 @@ export default {
   "New exercises start with": "新动作的默认组数",
   "Seconds for a hold": "静力保持的秒数",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "把动作加入计划或训练时的初始值。之后每个都还能单独改。",
+  "From {0}, {1}": "来自 {0}，{1}",
+  "Just today’s plan": "只练今天的计划",
+  "Let them go. No one’s counting.": "放过它们吧，没人在数。",
+  "Then today’s plan, as usual": "然后照常练今天的计划",
+  "then {0}": "然后 {0}",
+  "You didn’t get to {0} exercise last time": "上次有 {0} 个动作没练到",
+  "You didn’t get to {0} exercises last time": "上次有 {0} 个动作没练到",
+  "Start with the {0} exercise you didn’t get to": "先练没练到的 {0} 个动作",
+  "Start with the {0} exercises you didn’t get to": "先练没练到的 {0} 个动作",
 }

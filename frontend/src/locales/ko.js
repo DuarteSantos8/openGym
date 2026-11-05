@@ -4218,4 +4218,13 @@ export default {
   "New exercises start with": "새 운동 기본값",
   "Seconds for a hold": "버티기 초",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "루틴이나 운동에 추가할 때 처음 들어가는 값이에요. 나중에 하나씩 바꿀 수 있어요.",
+  "From {0}, {1}": "{0}, {1}",
+  "Just today’s plan": "오늘 계획만",
+  "Let them go. No one’s counting.": "그냥 넘어가요. 아무도 안 세요.",
+  "Then today’s plan, as usual": "그다음 평소처럼 오늘 계획",
+  "then {0}": "그다음 {0}",
+  "You didn’t get to {0} exercise last time": "지난번에 {0}개 운동을 못 했어요",
+  "You didn’t get to {0} exercises last time": "지난번에 {0}개 운동을 못 했어요",
+  "Start with the {0} exercise you didn’t get to": "못 한 운동 {0}개부터 시작",
+  "Start with the {0} exercises you didn’t get to": "못 한 운동 {0}개부터 시작",
 }

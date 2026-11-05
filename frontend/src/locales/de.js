@@ -4238,4 +4238,13 @@ export default {
   "New exercises start with": "Neue Übungen starten mit",
   "Seconds for a hold": "Sekunden für eine Halteübung",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Das bekommt eine Übung, wenn du sie zu einer Routine oder einem Workout hinzufügst. Jede einzelne kannst du danach noch ändern.",
+  "From {0}, {1}": "Aus {0}, {1}",
+  "Just today’s plan": "Nur der Plan von heute",
+  "Let them go. No one’s counting.": "Lass sie gehen. Niemand zählt mit.",
+  "Then today’s plan, as usual": "Danach der Plan von heute, wie immer",
+  "then {0}": "danach {0}",
+  "You didn’t get to {0} exercise last time": "Letztes Mal bist du zu {0} Übung nicht gekommen",
+  "You didn’t get to {0} exercises last time": "Letztes Mal bist du zu {0} Übungen nicht gekommen",
+  "Start with the {0} exercise you didn’t get to": "Mit der {0} Übung starten, die liegen blieb",
+  "Start with the {0} exercises you didn’t get to": "Mit den {0} Übungen starten, die liegen blieben",
 }

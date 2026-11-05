@@ -4273,4 +4273,13 @@ export default {
   "New exercises start with": "التمارين الجديدة تبدأ بـ",
   "Seconds for a hold": "ثوانٍ للثبات",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "ما يحصل عليه التمرين عند إضافته إلى روتين أو تمرين. ويمكنك تغييره بعد ذلك.",
+  "From {0}, {1}": "من {0}، {1}",
+  "Just today’s plan": "خطة اليوم فقط",
+  "Let them go. No one’s counting.": "دعها. لا أحد يعدّ.",
+  "Then today’s plan, as usual": "ثم خطة اليوم كالمعتاد",
+  "then {0}": "ثم {0}",
+  "You didn’t get to {0} exercise last time": "لم تصل إلى {0} من التمارين المرة الماضية",
+  "You didn’t get to {0} exercises last time": "لم تصل إلى {0} من التمارين المرة الماضية",
+  "Start with the {0} exercise you didn’t get to": "ابدأ بالتمارين التي لم تصل إليها ({0})",
+  "Start with the {0} exercises you didn’t get to": "ابدأ بالتمارين التي لم تصل إليها ({0})",
 }

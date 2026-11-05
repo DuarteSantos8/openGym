@@ -4183,4 +4183,13 @@ export default {
   "New exercises start with": "Nové cviky začínají s",
   "Seconds for a hold": "Sekundy výdrže",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Co cvik dostane, když ho přidáš do rutiny nebo tréninku. Každý pak můžeš změnit.",
+  "From {0}, {1}": "Z {0}, {1}",
+  "Just today’s plan": "Jen dnešní plán",
+  "Let them go. No one’s counting.": "Pusť je. Nikdo to nepočítá.",
+  "Then today’s plan, as usual": "Pak dnešní plán, jako obvykle",
+  "then {0}": "pak {0}",
+  "You didn’t get to {0} exercise last time": "Minule jsi nestihl(a) {0} cvik",
+  "You didn’t get to {0} exercises last time": {"one": "Minule jsi nestihl(a) {0} cvik", "few": "Minule jsi nestihl(a) {0} cviky", "many": "Minule jsi nestihl(a) {0} cviku", "other": "Minule jsi nestihl(a) {0} cviků"},
+  "Start with the {0} exercise you didn’t get to": "Začít {0} cvikem, který zbyl",
+  "Start with the {0} exercises you didn’t get to": {"one": "Začít {0} cvikem, který zbyl", "few": "Začít {0} cviky, které zbyly", "many": "Začít {0} cviky, které zbyly", "other": "Začít {0} cviky, které zbyly"},
 }

@@ -91,6 +91,7 @@ import { finishCompare, finishCardio } from './lib/finish-compare.js'
 import { workoutFit, fitFileName } from './lib/fit-export.js'
 import { joinSessionNoProg } from './lib/session-noprog.js'
 import { buildCombinedEntries, deriveSessionName } from './lib/session-merge.js'
+import { leadEntries } from './lib/leftovers.js'
 import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, sessionHistory } from './lib/backfill.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { editCompletedSession, editLeftEmpty, editedRecord, editChangesNothing } from './lib/session-edit.js'
@@ -3670,18 +3671,24 @@ export function DayNoteRow({ iso, note }) {
 /* ============================ workout lifecycle ============================ */
 // `routineIds` accepts `string | string[] | null` — `[r.id]` for one routine,
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
-export function startFlow(routineIds) {
+// `opts.lead`: exercises a last session did not get to (lib/leftovers.js, #985), done first.
+export function startFlow(routineIds, opts = {}) {
   // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
   // into the session with no body weight on it, same as "Start without weighing in".
   // Off in Settings → Workout, or with the Body module (Settings → Modules): straight into the session.
-  if (S().weighIn === false || !isOn(S(), 'body')) { beginWorkout(routineIds, null); return }
-  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
+  if (S().weighIn === false || !isOn(S(), 'body')) { beginWorkout(routineIds, null, opts); return }
+  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw, opts) })
 }
 // `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id,
 // so the sets ticked on it find it, and its start time, however late the phone hears of it.
-export function beginWorkout(routineIds, bw, { id = null, start = null } = {}) {
+export function beginWorkout(routineIds, bw, { id = null, start = null, lead = null } = {}) {
   const st = S()
-  const { entries, routineIds: rids, routines } = buildCombinedEntries(st, routineIds)
+  const built = buildCombinedEntries(st, routineIds)
+  const { routineIds: rids, routines } = built
+  // The leftovers keep their own routine's `rid`, so the history reads them back per routine;
+  // the session stays today's (routineIds), so the plan and the queue count today only.
+  const first = leadEntries(st, lead)
+  const entries = first.length ? [...first, ...built.entries] : built.entries
   const startAt = Number.isFinite(start) && start > 0 ? start : Date.now()
   update(s => {
     s.active = {
@@ -3689,7 +3696,7 @@ export function beginWorkout(routineIds, bw, { id = null, start = null } = {}) {
       // A session tracks its routines as a list; per-entry `rid` carries which one each
       // exercise came from. No top-level `excludeFromProgression` — per-entry `noProg` does it.
       routineIds: rids,
-      name: routines.length ? deriveSessionName(routines.map(r => r.name)) : t('Freestyle'),
+      name: routines.length ? deriveSessionName(routines.map(r => r.name)) : first.length ? deriveSessionName(lead.routines.map(r => r.name)) : t('Freestyle'),
       bw: bw || null, cur: 0, entries,
       // Snapshot the layout at start so the header ⋮ can change it for this session only —
       // changing the saved default (Settings → Workout view) mid-session leaves it alone.
@@ -3823,7 +3830,7 @@ function beginBackfill({ iso, time, durationMin, routineIds, replaceId }) {
     s.active = {
       id: uid(), d: iso, start,
       routineIds: rids,
-      name: routines.length ? deriveSessionName(routines.map(r => r.name)) : t('Freestyle'),
+      name: routines.length ? deriveSessionName(routines.map(r => r.name)) : first.length ? deriveSessionName(lead.routines.map(r => r.name)) : t('Freestyle'),
       bw: null, cur: 0, entries,
       backfill: { durationMin, replaceId: replaceId || null },
       // Same layout snapshot as a live session (see beginWorkout).

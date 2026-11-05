@@ -4265,4 +4265,13 @@ export default {
   "New exercises start with": "Nya övningar börjar med",
   "Seconds for a hold": "Sekunder för en hållning",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Det här får en övning när du lägger till den i en rutin eller ett pass. Du kan ändra varje övning efteråt.",
+  "From {0}, {1}": "Från {0}, {1}",
+  "Just today’s plan": "Bara dagens plan",
+  "Let them go. No one’s counting.": "Släpp dem. Ingen räknar.",
+  "Then today’s plan, as usual": "Sedan dagens plan, som vanligt",
+  "then {0}": "sedan {0}",
+  "You didn’t get to {0} exercise last time": "Förra gången hann du inte {0} övning",
+  "You didn’t get to {0} exercises last time": "Förra gången hann du inte {0} övningar",
+  "Start with the {0} exercise you didn’t get to": "Börja med {0} övning som blev kvar",
+  "Start with the {0} exercises you didn’t get to": "Börja med de {0} övningar som blev kvar",
 }

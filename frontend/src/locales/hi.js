@@ -4218,4 +4218,13 @@ export default {
   "New exercises start with": "नए व्यायाम शुरू होते हैं",
   "Seconds for a hold": "होल्ड के सेकंड",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "रूटीन या वर्कआउट में जोड़ने पर व्यायाम को यही मिलता है। बाद में हर एक बदल सकते हैं।",
+  "From {0}, {1}": "{0} से, {1}",
+  "Just today’s plan": "सिर्फ़ आज का प्लान",
+  "Let them go. No one’s counting.": "जाने दें। कोई गिन नहीं रहा।",
+  "Then today’s plan, as usual": "फिर आज का प्लान, हमेशा की तरह",
+  "then {0}": "फिर {0}",
+  "You didn’t get to {0} exercise last time": "पिछली बार {0} व्यायाम रह गया",
+  "You didn’t get to {0} exercises last time": "पिछली बार {0} व्यायाम रह गए",
+  "Start with the {0} exercise you didn’t get to": "बचे हुए {0} व्यायाम से शुरू करें",
+  "Start with the {0} exercises you didn’t get to": "बचे हुए {0} व्यायामों से शुरू करें",
 }

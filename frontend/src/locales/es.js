@@ -4218,4 +4218,13 @@ export default {
   "New exercises start with": "Los ejercicios nuevos empiezan con",
   "Seconds for a hold": "Segundos de una isométrica",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Lo que recibe un ejercicio al añadirlo a una rutina o un entreno. Luego puedes cambiar cada uno.",
+  "From {0}, {1}": "De {0}, {1}",
+  "Just today’s plan": "Solo el plan de hoy",
+  "Let them go. No one’s counting.": "Déjalos ir. Nadie lleva la cuenta.",
+  "Then today’s plan, as usual": "Luego el plan de hoy, como siempre",
+  "then {0}": "luego {0}",
+  "You didn’t get to {0} exercise last time": "La última vez te quedó {0} ejercicio",
+  "You didn’t get to {0} exercises last time": "La última vez te quedaron {0} ejercicios",
+  "Start with the {0} exercise you didn’t get to": "Empezar con el {0} ejercicio que quedó",
+  "Start with the {0} exercises you didn’t get to": "Empezar con los {0} ejercicios que quedaron",
 }

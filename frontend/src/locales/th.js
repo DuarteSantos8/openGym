@@ -4229,4 +4229,13 @@ export default {
   "New exercises start with": "ท่าใหม่เริ่มต้นด้วย",
   "Seconds for a hold": "วินาทีสำหรับท่าค้าง",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "ค่านี้จะใส่ให้ท่าตอนเพิ่มเข้ารูทีนหรือเวิร์กเอาต์ เปลี่ยนทีละท่าทีหลังได้",
+  "From {0}, {1}": "จาก {0}, {1}",
+  "Just today’s plan": "แค่แผนของวันนี้",
+  "Let them go. No one’s counting.": "ปล่อยไป ไม่มีใครนับหรอก",
+  "Then today’s plan, as usual": "จากนั้นแผนวันนี้ตามปกติ",
+  "then {0}": "จากนั้น {0}",
+  "You didn’t get to {0} exercise last time": "ครั้งก่อนยังไม่ได้ทำ {0} ท่า",
+  "You didn’t get to {0} exercises last time": "ครั้งก่อนยังไม่ได้ทำ {0} ท่า",
+  "Start with the {0} exercise you didn’t get to": "เริ่มด้วย {0} ท่าที่ค้างไว้",
+  "Start with the {0} exercises you didn’t get to": "เริ่มด้วย {0} ท่าที่ค้างไว้",
 }

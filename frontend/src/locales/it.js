@@ -4228,4 +4228,13 @@ export default {
   "New exercises start with": "I nuovi esercizi partono con",
   "Seconds for a hold": "Secondi per una tenuta",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Quello che riceve un esercizio quando lo aggiungi a una routine o a un allenamento. Puoi sempre cambiarli uno per uno.",
+  "From {0}, {1}": "Da {0}, {1}",
+  "Just today’s plan": "Solo il piano di oggi",
+  "Let them go. No one’s counting.": "Lasciali andare. Nessuno tiene il conto.",
+  "Then today’s plan, as usual": "Poi il piano di oggi, come sempre",
+  "then {0}": "poi {0}",
+  "You didn’t get to {0} exercise last time": "L’ultima volta ti è rimasto {0} esercizio",
+  "You didn’t get to {0} exercises last time": "L’ultima volta ti sono rimasti {0} esercizi",
+  "Start with the {0} exercise you didn’t get to": "Inizia con l’esercizio rimasto ({0})",
+  "Start with the {0} exercises you didn’t get to": "Inizia con i {0} esercizi rimasti",
 }

@@ -4218,4 +4218,13 @@ export default {
   "New exercises start with": "Yeni egzersizler şununla başlar",
   "Seconds for a hold": "Tutma için saniye",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Bir egzersizi rutine ya da antrenmana eklediğinde aldığı değer. Sonra her birini yine değiştirebilirsin.",
+  "From {0}, {1}": "{0}, {1}",
+  "Just today’s plan": "Sadece bugünün planı",
+  "Let them go. No one’s counting.": "Boş ver. Kimse saymıyor.",
+  "Then today’s plan, as usual": "Sonra her zamanki gibi bugünün planı",
+  "then {0}": "sonra {0}",
+  "You didn’t get to {0} exercise last time": "Geçen sefer {0} egzersize sıra gelmedi",
+  "You didn’t get to {0} exercises last time": "Geçen sefer {0} egzersize sıra gelmedi",
+  "Start with the {0} exercise you didn’t get to": "Kalan {0} egzersizle başla",
+  "Start with the {0} exercises you didn’t get to": "Kalan {0} egzersizle başla",
 }

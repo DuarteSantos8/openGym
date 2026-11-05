@@ -4222,4 +4222,13 @@ export default {
   "New exercises start with": "Новые упражнения начинаются с",
   "Seconds for a hold": "Секунды для удержания",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Это получает упражнение, когда вы добавляете его в программу или тренировку. Потом каждое можно изменить.",
+  "From {0}, {1}": "Из {0}, {1}",
+  "Just today’s plan": "Только план на сегодня",
+  "Let them go. No one’s counting.": "Пусть остаются. Никто не считает.",
+  "Then today’s plan, as usual": "Потом план на сегодня, как обычно",
+  "then {0}": "потом {0}",
+  "You didn’t get to {0} exercise last time": "В прошлый раз вы не успели {0} упражнение",
+  "You didn’t get to {0} exercises last time": {"one": "В прошлый раз вы не успели {0} упражнение", "few": "В прошлый раз вы не успели {0} упражнения", "many": "В прошлый раз вы не успели {0} упражнений", "other": "В прошлый раз вы не успели {0} упражнения"},
+  "Start with the {0} exercise you didn’t get to": "Начать с {0} упражнения, которое осталось",
+  "Start with the {0} exercises you didn’t get to": {"one": "Начать с {0} упражнения, которое осталось", "few": "Начать с {0} упражнений, которые остались", "many": "Начать с {0} упражнений, которые остались", "other": "Начать с {0} упражнений, которые остались"},
 }

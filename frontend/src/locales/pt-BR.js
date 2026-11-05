@@ -2847,6 +2847,7 @@ export const PT_BR_OVERRIDES = {
   "Back to 3 × 10": "Voltar para 3 × 10",
   "Cardio keeps starting as one block of time.": "O cardio continua começando como um único bloco de tempo.",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "O que um exercício recebe quando você o adiciona a uma rotina ou a um treino. Dá para mudar cada um depois.",
+  "Let them go. No one’s counting.": "Deixa pra lá. Ninguém está contando.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

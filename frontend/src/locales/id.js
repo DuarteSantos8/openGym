@@ -4182,4 +4182,13 @@ export default {
   "New exercises start with": "Latihan baru dimulai dengan",
   "Seconds for a hold": "Detik untuk tahan",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Yang didapat latihan saat kamu menambahkannya ke rutinitas atau sesi. Masing-masing tetap bisa diubah.",
+  "From {0}, {1}": "Dari {0}, {1}",
+  "Just today’s plan": "Rencana hari ini saja",
+  "Let them go. No one’s counting.": "Biarkan saja. Tidak ada yang menghitung.",
+  "Then today’s plan, as usual": "Lalu rencana hari ini, seperti biasa",
+  "then {0}": "lalu {0}",
+  "You didn’t get to {0} exercise last time": "Terakhir kali {0} latihan terlewat",
+  "You didn’t get to {0} exercises last time": "Terakhir kali {0} latihan terlewat",
+  "Start with the {0} exercise you didn’t get to": "Mulai dengan {0} latihan yang terlewat",
+  "Start with the {0} exercises you didn’t get to": "Mulai dengan {0} latihan yang terlewat",
 };

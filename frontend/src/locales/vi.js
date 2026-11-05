@@ -4183,4 +4183,13 @@ export default {
   "New exercises start with": "Bài tập mới bắt đầu với",
   "Seconds for a hold": "Số giây khi giữ",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Giá trị bài tập nhận được khi bạn thêm vào lịch tập hay buổi tập. Sau đó vẫn sửa từng bài được.",
+  "From {0}, {1}": "Từ {0}, {1}",
+  "Just today’s plan": "Chỉ kế hoạch hôm nay",
+  "Let them go. No one’s counting.": "Bỏ qua đi. Chẳng ai đếm đâu.",
+  "Then today’s plan, as usual": "Rồi tới kế hoạch hôm nay như thường",
+  "then {0}": "rồi {0}",
+  "You didn’t get to {0} exercise last time": "Lần trước bạn còn {0} bài chưa tập",
+  "You didn’t get to {0} exercises last time": "Lần trước bạn còn {0} bài chưa tập",
+  "Start with the {0} exercise you didn’t get to": "Bắt đầu với {0} bài còn dở",
+  "Start with the {0} exercises you didn’t get to": "Bắt đầu với {0} bài còn dở",
 };

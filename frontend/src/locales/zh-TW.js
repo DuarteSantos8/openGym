@@ -4211,4 +4211,13 @@ export default {
   "New exercises start with": "新動作的預設組數",
   "Seconds for a hold": "靜態支撐的秒數",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "把動作加入計畫或訓練時的初始值。之後每個都還能單獨改。",
+  "From {0}, {1}": "來自 {0}，{1}",
+  "Just today’s plan": "只練今天的計畫",
+  "Let them go. No one’s counting.": "放過它們吧，沒人在數。",
+  "Then today’s plan, as usual": "然後照常練今天的計畫",
+  "then {0}": "然後 {0}",
+  "You didn’t get to {0} exercise last time": "上次有 {0} 個動作沒練到",
+  "You didn’t get to {0} exercises last time": "上次有 {0} 個動作沒練到",
+  "Start with the {0} exercise you didn’t get to": "先練沒練到的 {0} 個動作",
+  "Start with the {0} exercises you didn’t get to": "先練沒練到的 {0} 個動作",
 }

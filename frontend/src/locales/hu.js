@@ -4221,4 +4221,13 @@ export default {
   "New exercises start with": "Új gyakorlatok kezdése",
   "Seconds for a hold": "Másodperc tartásnál",
   "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Ezt kapja egy gyakorlat, amikor rutinhoz vagy edzéshez adod. Utána bármelyiket átírhatod.",
+  "From {0}, {1}": "{0}, {1}",
+  "Just today’s plan": "Csak a mai terv",
+  "Let them go. No one’s counting.": "Engedd el őket. Senki sem számolja.",
+  "Then today’s plan, as usual": "Utána a mai terv, ahogy szokás",
+  "then {0}": "utána {0}",
+  "You didn’t get to {0} exercise last time": "Legutóbb {0} gyakorlat kimaradt",
+  "You didn’t get to {0} exercises last time": "Legutóbb {0} gyakorlat kimaradt",
+  "Start with the {0} exercise you didn’t get to": "Kezdés a kimaradt {0} gyakorlattal",
+  "Start with the {0} exercises you didn’t get to": "Kezdés a kimaradt {0} gyakorlattal",
 }
