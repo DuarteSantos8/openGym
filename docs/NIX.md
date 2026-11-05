@@ -21,7 +21,7 @@ managed by your NixOS configuration. This document covers both.
 | `apps.opengym` | Runs the **full local stack** — API + frontend (exercise media included) behind a throwaway Caddy (`nix run .#opengym`, default `http://localhost:8080`). |
 | `apps.default` | Alias for `opengym`. |
 | `devShells.default` | Development shell: Node.js 22, coreutils, git. |
-| `checks.nixos-module-eval` | Evaluates the module against a smoke-test config and asserts the resulting services/users/nginx state and extra environment. |
+| `checks.nixos-module-eval` | Evaluates the module against a list of scenarios (`module-check.nix`) and asserts the resulting services/users/nginx state, environment, hardening and TLS config — plus the configurations that must fail to evaluate (mutually exclusive options, removed options). |
 | `checks.opengym-nixos-test` *(Linux)* | Boots a NixOS VM and exercises the HTTP contract end to end (API health, nginx vhost proxy, SPA, exercise media). |
 | `nixosTests.opengym` | The same VM test under the conventional `nixosTests` output. |
 | `nixosModules.opengym` | The NixOS module (`nixosModules.default` aliases it). |
@@ -66,7 +66,10 @@ contrib/nix/
   flake.lock         Locked inputs
   opengym.nix        The NixOS module (options + systemd/nginx wiring)
   node-package.nix   The packaging module shared by the API and the MCP server: stages the
-                     app, proves every import it ships resolves, wraps the binary
+                     app, proves every import it ships resolve, wraps the binary
+  serving.nix        The serving contract (routes + media headers), rendered for nginx and Caddy
+  module-check.nix   The eval-level check machinery: scenarios → one evaluated system each →
+                     one check derivation reporting every failure together
   api.nix            The API's layout over node-package.nix → bin/opengym-api
   mcp.nix            The MCP server's layout over node-package.nix → bin/opengym-mcp
   frontend.nix       buildNpmPackage → $out/share/opengym (+ exercise-media/ from catalogue/media)
