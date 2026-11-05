@@ -283,6 +283,9 @@ export default {
   'Week schedule': 'Wochenplan',
   'No routines yet.': 'Noch keine Routinen.',
   'Make one, or grab the starter plan to get going.': 'Erstelle eine oder schnapp dir den Starterplan, um loszulegen.',
+  'Make one, copy a workout you did, or grab the starter plan to get going.': 'Erstelle eine, kopiere ein absolviertes Training oder schnapp dir den Starterplan, um loszulegen.',
+  'Copy a workout as a routine': 'Training als Routine kopieren',
+  'Pick one and its exercises and targets become a new routine. Your workout history is kept.': 'Wähle eines aus, dann werden seine Übungen und Ziele zu einer neuen Routine. Dein Trainingsverlauf bleibt erhalten.',
   // --- routine edit ---
   'Superset with exercise above': 'Supersatz mit der Übung darüber',
   'Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering': 'Notiz (optional): Hinweise zur Belastung, z. B. „nur die Stange, dann pro Satz +1 Scheibe pro Seite“, alles, was du dir merken willst',

@@ -26,7 +26,7 @@ vi.mock('../store/useStore.js', () => {
 })
 vi.mock('react-router-dom', () => ({ useNavigate: () => mocks.nav }))
 vi.mock('../sheets.jsx', () => ({
-  dayAssignSheet: vi.fn(), starterPlanSheet: vi.fn(), menuSheet: vi.fn(), confirmSheet: vi.fn(),
+  dayAssignSheet: vi.fn(), starterPlanSheet: vi.fn(), workoutToRoutineSheet: vi.fn(), menuSheet: vi.fn(), confirmSheet: vi.fn(),
   planHasRoutines: () => true, exportPlanFile: vi.fn(), printWholePlan: vi.fn(), importPlanFile: vi.fn(),
 }))
 vi.mock('../lib/mobile.js', () => ({ MOBILE: false }))
@@ -34,7 +34,7 @@ vi.mock('../lib/demo.js', () => ({ DEMO: false }))
 vi.mock('../lib/coach.js', () => ({ coachAvailable: () => false }))
 
 import Plan from './Plan.jsx'
-import { menuSheet, confirmSheet } from '../sheets.jsx'
+import { menuSheet, confirmSheet, workoutToRoutineSheet } from '../sheets.jsx'
 import { todayISO, isoOf, fmtDate } from '../lib/format.js'
 
 const routines = [
@@ -358,6 +358,15 @@ describe('Plan — Schedule extras', () => {
     click(byLabel('Plan options'))
     const items = menuSheet.mock.calls.at(-1)[0].items.filter(Boolean)
     expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Load starter plan', 'Programmes'])
+  })
+
+  it('with a workout to copy, the menu offers it as a routine, after the starter plans', () => {
+    mount({ workouts: [{ id: 'w1', d: '2026-09-01', name: 'Push', entries: [{ id: '0025', target: { reps: 5 }, sets: [{ w: 40, r: 5, done: true }] }] }] })
+    click(byLabel('Plan options'))
+    const items = menuSheet.mock.calls.at(-1)[0].items.filter(Boolean)
+    expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Load starter plan', 'Copy a workout as a routine', 'Programmes'])
+    items.find(i => i.label === 'Copy a workout as a routine').onClick()
+    expect(workoutToRoutineSheet).toHaveBeenCalledTimes(1)
   })
 })
 

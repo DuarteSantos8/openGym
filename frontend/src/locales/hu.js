@@ -274,6 +274,9 @@ export default {
   'Routines': 'Rutinok',
   'No routines yet.': 'Még nincs rutin.',
   'Make one, or grab the starter plan to get going.': 'Hozz létre egyet, vagy kapd elő a kezdő tervet az induláshoz.',
+  'Make one, copy a workout you did, or grab the starter plan to get going.': 'Hozz létre egyet, másolj le egy elvégzett edzést, vagy kapd elő a kezdő tervet az induláshoz.',
+  'Copy a workout as a routine': 'Edzés másolása rutinként',
+  'Pick one and its exercises and targets become a new routine. Your workout history is kept.': 'Válassz egyet, és a gyakorlatai és céljai új rutinná válnak. Az edzésnaplód megmarad.',
   // --- routine edit ---
   'Superset with exercise above': 'Szuperszett a fenti gyakorlattal',
   'Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering': 'Megjegyzés (opcionális): súlyozási tippek, pl. „csak a rúd, majd sorozatonként +1 tárcsa oldalanként”, bármi, amit érdemes megjegyezni',

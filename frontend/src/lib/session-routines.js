@@ -137,6 +137,18 @@ export function routineFromSession(session, name = session?.name, routines = [])
   return { id: uid(), name: String(name || 'Workout').trim() || 'Workout', ex }
 }
 
+// The saved workouts Plan offers to copy as a routine, newest first (by day, then start). Only
+// the ones routineFromSession can turn into a routine: a workout with no logged exercise has
+// nothing to copy and would only end in "no exercises".
+export function copyableWorkouts(workouts) {
+  const list = Array.isArray(workouts) ? workouts : []
+  const copyable = w => sessionEntries(w).some(entry => entry?.sets?.length)
+  const startOf = w => Number(w?.start) || 0
+  return list.map((w, i) => [w, i]).filter(([w]) => copyable(w))
+    .sort(([a, i], [b, j]) => (a.d < b.d ? 1 : a.d > b.d ? -1 : startOf(b) - startOf(a) || j - i))
+    .map(([w]) => w)
+}
+
 export function saveSessionAsRoutine(state, session, name) {
   const routine = routineFromSession(session, name, state.routines)
   state.routines.push(routine)
