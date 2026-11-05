@@ -207,12 +207,15 @@ export default function AdminCoach() {
         </div>)}
       </Step>
 
-      {/* ---------- endpoint (compatible only) ---------- */}
+      {/* ---------- endpoint (a provider whose base can be pointed elsewhere) ---------- */}
       {needsEndpoint && <Step n={num()} title="Endpoint" hint={d.baseUrl || 'Where the model runs'} done={step2Done} {...stepAt()}>
-        <div className="adm-hint">The address of any server that speaks OpenAI's chat API: <b>Ollama</b>, <b>LM Studio</b>, <b>vLLM</b>, <b>OpenRouter</b>, or a gateway of your own. The base as your provider documents it, with or without its version (<code>/v1</code>, <code>/v4</code>), and no key in the URL.</div>
+        <div className="adm-hint">{meta.id === 'anthropic'
+          ? <>Any server that speaks the Anthropic Messages API: <b>Z.ai</b> for the GLM models (<code>https://api.z.ai/api/anthropic</code>), a gateway of your own, or leave it as it is for Anthropic's own API. No key in the URL.</>
+          : <>The address of any server that speaks OpenAI's chat API: <b>Ollama</b>, <b>LM Studio</b>, <b>vLLM</b>, <b>OpenRouter</b>, or a gateway of your own. The base as your provider documents it, with or without its version (<code>/v1</code>, <code>/v4</code>), and no key in the URL.</>}
+        </div>
         <div className="adm-field">
           <label>Base URL</label>
-          <TextField key={d.baseUrl || ''} defaultValue={d.baseUrl || ''} placeholder="http://ollama:11434  or  https://openrouter.ai/api" inputMode="url" autoCapitalize="none" autoCorrect="off"
+          <TextField key={d.baseUrl || ''} defaultValue={d.baseUrl || ''} placeholder={meta.id === 'anthropic' ? 'https://api.z.ai/api/anthropic' : 'http://ollama:11434  or  https://openrouter.ai/api'} inputMode="url" autoCapitalize="none" autoCorrect="off"
             onBlur={e => e.target.value !== (d.baseUrl || '') && patch({ baseUrl: e.target.value })} />
         </div>
         <div className="adm-hint" style={{ margin: 0 }}>The host is written to the job log, so you can always see where requests went.</div>

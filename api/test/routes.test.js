@@ -151,6 +151,34 @@ test('the compatible endpoint: base URL is validated, a keyless endpoint counts 
   } finally { mock.close(); }
 });
 
+test('the Anthropic provider takes a base URL: any server that speaks the Messages API (Z.ai GLM)', async () => {
+  const mock = await mockEndpoint(['glm-5.3', 'glm-5.3-flash']);
+  try {
+    fresh({ provider: 'anthropic' });
+    const { call } = harness();
+    // A Z.ai-style base, a prefix with no version segment of its own, is stored as given.
+    let r = await call('POST /api/admin/coach/config', { baseUrl: 'https://api.z.ai/api/anthropic' });
+    assert.equal(r.status, 200);
+    assert.equal(cfg.load().providerOptions.anthropic.baseUrl, 'https://api.z.ai/api/anthropic');
+    // The card's check lists the models the endpoint serves, as its auth round trip.
+    r = await call('POST /api/admin/coach/config', { baseUrl: mock.base });
+    assert.equal(r.status, 200);
+    r = await call('POST /api/admin/coach/connect', { type: 'apikey', token: 'zai-1' });
+    assert.equal(r.status, 200);
+    r = await call('GET /api/admin/coach');
+    assert.equal(r.body.baseUrl, mock.base);
+    assert.equal(r.body.runtime.ok, true);
+    assert.deepEqual(r.body.knownModels, ['glm-5.3', 'glm-5.3-flash']);
+    // Empty means back to the default, Anthropic's own API; no override is kept.
+    r = await call('POST /api/admin/coach/config', { baseUrl: '' });
+    assert.equal(r.status, 200);
+    assert.equal(cfg.load().providerOptions.anthropic.baseUrl, null);
+    // OpenAI stays fixed: only the providers whose row says so take an endpoint.
+    r = await call('POST /api/admin/coach/config', { provider: 'openai', baseUrl: 'http://x' });
+    assert.equal(r.status, 400, 'openai has a fixed endpoint');
+  } finally { mock.close(); }
+});
+
 test('the card does not run a runtime to ask its version when the privilege drop cannot be performed', async () => {
   // `codex --version` is a child process like a job's, and without the drop it would run as this
   // process and see ./data. The job path and the test run refused it; the card's check did not.

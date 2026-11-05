@@ -39,6 +39,9 @@ describe('a disclosure, as something to ask about', () => {
     expect(consentTarget({ provider: 'gemini', host: 'generativelanguage.googleapis.com' }, 'server').name).toBe('Google Gemini')
     // The server's runtime providers have no base URL, and go to the same companies.
     expect(consentTarget({ provider: 'claude', host: null, providerLabel: 'Claude (Anthropic)' }, 'server').name).toBe('Anthropic')
+    // An HTTPS provider pointed at an endpoint of its own (the Anthropic chip at Z.ai) is
+    // named by the host it actually goes to, not by the company whose API shape it speaks.
+    expect(consentTarget({ provider: 'anthropic', host: 'api.z.ai' }, 'device').name).toBe('api.z.ai')
   })
 
   it('names a compatible endpoint by its host, and keys on provider and host', () => {

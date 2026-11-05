@@ -175,9 +175,12 @@ describe('CoachSetup — bringing your own key', () => {
     expect(host.textContent).toContain('Each request goes straight to api.anthropic.com with your key')
   })
 
-  it('shows an endpoint field only for the OpenAI-compatible provider', async () => {
+  it('shows an endpoint field for the providers that take one, and only those', async () => {
     await mount(); await openByok()
+    await click(chip('OpenAI API'))
     expect(host.textContent).not.toContain('Endpoint')
+    await click(chip('Anthropic API'))
+    expect(host.textContent).toContain('Endpoint')
     await click(chip('OpenAI-compatible endpoint'))
     expect(host.textContent).toContain('Endpoint')
     expect(field('text').getAttribute('placeholder')).toBe('https://ollama.example.com')

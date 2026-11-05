@@ -20,6 +20,9 @@ const FILE = 'opengym-coach-consent.json'
 // The name a person knows the company by. A compatible endpoint is whatever it was pointed at,
 // so it is named by its host; the runtime providers on a server talk to the same companies.
 export const PROVIDER_NAMES = { anthropic: 'Anthropic', openai: 'OpenAI', gemini: 'Google Gemini', claude: 'Anthropic', codex: 'OpenAI' }
+// The host each HTTPS provider calls when nobody pointed it anywhere. On that host the company
+// name is the honest one; pointed somewhere else (the Anthropic chip at Z.ai, say) the host is.
+const OWN_HOSTS = { anthropic: 'api.anthropic.com', openai: 'api.openai.com', gemini: 'generativelanguage.googleapis.com' }
 // Server providers that send nothing anywhere: the test fixture answers from a file.
 const NOWHERE = new Set(['fixture', 'demo'])
 
@@ -55,7 +58,8 @@ export function consentTarget(info, via) {
   if (!info || !info.provider || NOWHERE.has(info.provider)) return null
   const provider = String(info.provider)
   const host = info.host ? String(info.host).toLowerCase() : null
-  const name = (provider !== 'compatible' && PROVIDER_NAMES[provider]) || host || info.providerLabel || provider
+  const own = provider !== 'compatible' && (!host || !OWN_HOSTS[provider] || host === OWN_HOSTS[provider])
+  const name = (own && PROVIDER_NAMES[provider]) || host || info.providerLabel || provider
   return { key: `${via}|${provider}|${host || ''}`, via, provider, host, name, local: isLocalHost(host) }
 }
 

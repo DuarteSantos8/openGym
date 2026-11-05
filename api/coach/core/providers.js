@@ -13,7 +13,9 @@ export const HTTP_PROVIDERS = Object.freeze({
   anthropic: Object.freeze({
     label: 'Anthropic API', runtime: 'HTTPS', http: true,
     apiKeyEnv: 'ANTHROPIC_API_KEY', oauthEnv: null,
-    defaultBase: 'https://api.anthropic.com',
+    // A base URL here is any server that speaks the Messages API: Z.ai's GLM endpoint
+    // (https://api.z.ai/api/anthropic), a proxy of your own. Unset means Anthropic's own API.
+    defaultBase: 'https://api.anthropic.com', baseUrl: true,
     defaultModel: 'claude-opus-5',
     keyPlaceholder: 'sk-ant-…'
   }),
