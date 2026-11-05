@@ -179,6 +179,39 @@ async function readJson(res) {
   try { return { data: JSON.parse(text), text }; } catch { return { data: null, text }; }
 }
 
+/* Endpoints (and models) whose answer was cut off mid-wait: a CDN in front of a slow reasoning
+ * model closes a connection that carries no bytes for 60 s (DeepSeek behind CloudFront, #546).
+ * Those are asked to stream from then on, so bytes keep flowing. Only those: a strict gateway
+ * that sees an unknown `stream` field refuses the request (#804). */
+const streamed = new Set();
+
+/* A streamed Chat Completions answer (#546, idea and first version by @jijichen), folded back into
+ * the one-shot shape readText reads. Still read with text(), so the phones' native fetch works as
+ * it is; a server that ignores `stream` answers plain JSON, read as before. An error event after
+ * the 200 comes back as { error }, which embeddedErrorStatus treats like any embedded error. */
+async function readStream(res) {
+  const text = await res.text();
+  if (!/^\s*(?:data|event|id|retry|:)/.test(text)) {
+    try { return { data: JSON.parse(text), text }; } catch { return { data: null, text }; }
+  }
+  let content = '', finish = null, any = false;
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.startsWith('data:')) continue;
+    const payload = line.slice(5).trim();
+    if (!payload || payload === '[DONE]') continue;
+    let ev;
+    try { ev = JSON.parse(payload); } catch { continue; }
+    if (ev && ev.error) return { data: { error: ev.error }, text };
+    const choice = ev && Array.isArray(ev.choices) ? ev.choices[0] : null;
+    if (!choice) continue;
+    any = true;
+    const piece = choice.delta ? choice.delta.content : choice.message && choice.message.content;
+    if (typeof piece === 'string') content += piece;
+    if (choice.finish_reason) finish = choice.finish_reason;
+  }
+  return { data: any ? { choices: [{ message: { content }, finish_reason: finish }] } : null, text };
+}
+
 export function httpAdapter(spec) {
   const id = spec.id;
   const meta = HTTP_PROVIDERS[id];
@@ -260,7 +293,12 @@ export function httpAdapter(spec) {
       if (!asked) return { code: 1, text: '', stderr: `no model chosen for ${id} (pick one from the list the endpoint serves)` };
       let chosen = substitutes.get(substituteKey(id, base, asked)) || asked;
 
-      const build = () => spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens, base });
+      const streamKey = () => `${id} ${base} ${chosen}`;
+      let useStream = !!spec.streamOnCut && streamed.has(streamKey());
+      const build = () => {
+        const b = spec.body({ model: chosen, prompt, system: system || null, schema: schema || null, maxTokens, base });
+        return useStream ? { ...b, stream: true } : b;
+      };
       let steps = spec.compat ? (compatProfiles.get(compatKey(id, base, chosen)) || []) : [];
       let body = spec.compat ? applySteps(spec, build(), steps) : build();
       let triedOtherModel = false;
@@ -296,10 +334,31 @@ export function httpAdapter(spec) {
           if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
           return { code: 1, text: '', stderr: `could not reach ${hostOf(base)}: ${trim(e.message, 200)}` };
         }
-        const { data, text } = await readJson(res);
+        let read;
+        try { read = await (body.stream && res.ok ? readStream(res) : readJson(res)); }
+        catch (e) {
+          if (e.name === 'AbortError') return { code: -1, text: '', stderr: 'timed out', timedOut: true };
+          // The 200 came, then the connection dropped while the model was still thinking: once
+          // more as a stream, remembered for this endpoint and model (#546).
+          if (spec.streamOnCut && res.ok && !useStream && !(signal && signal.aborted)) {
+            useStream = true;
+            streamed.add(streamKey());
+            body = spec.compat ? applySteps(spec, build(), steps) : build();
+            continue;
+          }
+          return { code: 1, text: '', stderr: `the connection to ${hostOf(base)} dropped mid-answer: ${trim(e.message, 200)}` };
+        }
+        const { data, text } = read;
         const status = embeddedErrorStatus(res, data);
         if (status) {
           const msg = spec.errorMessage(data) || trim(text, 200);
+          // An endpoint that will not stream after all: back to one answer, and forgotten.
+          if (status === 400 && useStream && /\bstream/i.test(msg) && !(signal && signal.aborted)) {
+            useStream = false;
+            streamed.delete(streamKey());
+            body = spec.compat ? applySteps(spec, build(), steps) : build();
+            continue;
+          }
           if (RETRY_STATUSES.has(status) && transientRetries < RETRY_DELAYS_MS.length && !(signal && signal.aborted)) {
             await sleep(opts.retryDelayMs != null ? opts.retryDelayMs : RETRY_DELAYS_MS[transientRetries], signal);
             transientRetries++;
