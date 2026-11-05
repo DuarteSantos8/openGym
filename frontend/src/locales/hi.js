@@ -4190,4 +4190,8 @@ export default {
   "Workout corrected: {0}": "वर्कआउट सुधारा गया: {0}",
   "{0}: weight": "{0}: वज़न",
   "They can’t train people privately on this server, so there’s nothing to keep.": "इस सर्वर पर वे निजी तौर पर ट्रेनिंग नहीं दे सकते, इसलिए रखने को कुछ नहीं है।",
+  "How hard it felt: RPE {0}": "कितना कठिन लगा: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "रेट करें कि कितना कठिन लगा",
+  "Rate it": "रेट करें",
 }

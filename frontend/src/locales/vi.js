@@ -4155,4 +4155,8 @@ export default {
   "Workout corrected: {0}": "Đã sửa buổi tập: {0}",
   "{0}: weight": "{0}: mức tạ",
   "They can’t train people privately on this server, so there’s nothing to keep.": "Trên máy chủ này họ không được huấn luyện riêng, nên không còn gì để giữ.",
+  "How hard it felt: RPE {0}": "Cảm giác nặng thế nào: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "Chấm xem cảm giác nặng thế nào",
+  "Rate it": "Chấm điểm",
 };

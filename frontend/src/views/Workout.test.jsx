@@ -3053,6 +3053,42 @@ describe('workout controls: the more menu and the set menu', () => {
     expect('rpe' in mocks.S.active.entries[0].sets[0]).toBe(false)
   })
 
+  // Q5: the same rating as a chip on the row, so nobody has to know about the set menu.
+  it('shows a cardio row\'s effort as a chip: "Rate it", then "RPE 6" in its colour, off with the Effort module', async () => {
+    const tread = () => [exercise('plain-treadmill', [false], { target: { mode: 'cardio', min: 30, speed: 5 }, sets: [{ min: 30, speed: 5, done: false }] })]
+    await mount(tread(), 0)
+    const chip = () => container.querySelector('.cardio-eff')
+    expect(chip().textContent).toBe('Rate it')
+    expect(chip().getAttribute('aria-label')).toBe('Rate how hard it felt')
+    mocks.effortPickerSheet.mockClear()
+    await act(async () => { chip().dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    const [scale, value, onPick, opts] = mocks.effortPickerSheet.mock.calls.at(-1)
+    expect([scale, value, opts]).toEqual(['rpe', null, { cardio: true }])
+    await act(async () => { onPick(6) })
+    await rerender()
+    expect(mocks.S.active.entries[0].sets[0].rpe).toBe(6)
+    expect(chip().textContent).toBe('RPE 6')
+    expect(chip().classList.contains('on')).toBe(true)
+    expect(chip().style.getPropertyValue('--eff')).not.toBe('')
+    await unmount()
+    await mount(tread(), 0, { modules: { effort: false } })
+    expect(chip()).toBeNull()
+  })
+
+  it('puts no effort chip on a lift or a cardio warm-up', async () => {
+    await mount([exercise('plain-bench', [false])])
+    expect(container.querySelector('.cardio-eff')).toBeNull()
+  })
+
+  it('rates cardio from the focus card\'s chip too, also after the set is done', async () => {
+    await mount([exercise('plain-treadmill', [false], { target: { mode: 'cardio', min: 20, speed: 8 }, sets: [{ min: 20, speed: 8, done: true }] })], 0, { active: { workoutView: 'focus' } })
+    const chip = container.querySelector('.focus-cardio-eff .cardio-eff')
+    expect(chip.disabled).toBe(false)
+    await act(async () => { chip.dispatchEvent(new dom.Event('click', { bubbles: true })) })
+    await act(async () => { mocks.effortPickerSheet.mock.calls.at(-1)[2](8) })
+    expect(mocks.S.active.entries[0].sets[0].rpe).toBe(8)
+  })
+
   it('offers no effort row on a lift, where the column already does it', async () => {
     await mount([exercise('plain-bench', [false])])
     await act(async () => { container.querySelector('button[aria-label="Set 1"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })

@@ -4190,4 +4190,8 @@ export default {
   "Workout corrected: {0}": "Antrenman düzeltildi: {0}",
   "{0}: weight": "{0}: ağırlık",
   "They can’t train people privately on this server, so there’s nothing to keep.": "Bu sunucuda özel antrenörlük yapamıyor, yani sürdürülecek bir şey yok.",
+  "How hard it felt: RPE {0}": "Ne kadar zorladı: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "Ne kadar zorladığını puanla",
+  "Rate it": "Puanla",
 }

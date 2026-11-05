@@ -4200,4 +4200,8 @@ export default {
   "Workout corrected: {0}": "Allenamento corretto: {0}",
   "{0}: weight": "{0}: peso",
   "They can’t train people privately on this server, so there’s nothing to keep.": "Su questo server non può allenare in privato, quindi non c'è niente da tenere.",
+  "How hard it felt: RPE {0}": "Quanto è stato duro: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "Valuta quanto è stato duro",
+  "Rate it": "Valuta",
 }

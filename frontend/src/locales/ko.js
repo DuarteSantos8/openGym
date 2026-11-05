@@ -4190,4 +4190,8 @@ export default {
   "Workout corrected: {0}": "운동 수정됨: {0}",
   "{0}: weight": "{0}: 무게",
   "They can’t train people privately on this server, so there’s nothing to keep.": "이 서버에서는 개인 트레이닝을 할 수 없어서 유지할 연결이 없어요.",
+  "How hard it felt: RPE {0}": "얼마나 힘들었는지: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "얼마나 힘들었는지 평가하기",
+  "Rate it": "평가하기",
 }

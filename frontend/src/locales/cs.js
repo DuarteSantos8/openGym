@@ -4155,4 +4155,8 @@ export default {
   "Workout corrected: {0}": "Opravený trénink: {0}",
   "{0}: weight": "{0}: váha",
   "They can’t train people privately on this server, so there’s nothing to keep.": "Na tomhle serveru nesmí trénovat soukromě, takže není co zachovat.",
+  "How hard it felt: RPE {0}": "Jak těžké to bylo: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "Ohodnoť, jak těžké to bylo",
+  "Rate it": "Ohodnoť",
 }

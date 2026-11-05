@@ -2831,6 +2831,8 @@ export const PT_BR_OVERRIDES = {
   "Log a check-in": "Registrar medidas",
   "Log a workout": "Registrar um treino",
   "They can’t train people privately on this server, so there’s nothing to keep.": "Neste servidor essa pessoa não pode treinar ninguém por conta própria, então não há nada a manter.",
+  "How hard it felt: RPE {0}": "Quão puxado foi: RPE {0}",
+  "Rate how hard it felt": "Avalie quão puxado foi",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

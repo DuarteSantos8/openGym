@@ -4190,4 +4190,8 @@ export default {
   "Workout corrected: {0}": "已更正训练：{0}",
   "{0}: weight": "{0}：重量",
   "They can’t train people privately on this server, so there’s nothing to keep.": "这台服务器上对方不能私下带学员，所以没有可保留的连接。",
+  "How hard it felt: RPE {0}": "感觉有多累：RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "给这组的累度打个分",
+  "Rate it": "打分",
 }

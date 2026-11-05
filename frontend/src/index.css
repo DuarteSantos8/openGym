@@ -1718,6 +1718,21 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 
 /* drop-set drops / rest-pause bursts riding on a work row, editable like the row itself
    (issue: drop-sets & rest-pause) */
+/* Cardio's effort chip (Q5): a quiet pill under the row until rated, then the value in its effort
+   colour. 28px tall to sit light under the row; the ::before lends it a 40px tap area. */
+.cardio-eff-line{display:flex;padding-inline:32px 0;margin:-3px 0 5px}
+.cardio-eff{position:relative;display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px 0 9px;border-radius:99px;
+  border:1px dashed var(--label-3);background:transparent;color:var(--label-2);font:inherit;font-size:var(--fs-caption);font-weight:500;
+  font-variant-numeric:tabular-nums;white-space:nowrap;cursor:pointer;transition:transform 160ms var(--ease),background-color 160ms ease}
+.cardio-eff::before{content:'';position:absolute;inset:-6px -2px}
+.cardio-eff .icn{font-size:13px}
+.cardio-eff.on{border-style:solid;border-color:var(--eff);color:var(--eff);background:var(--surface-2);background:color-mix(in srgb,var(--eff) 16%,var(--surface-2));font-weight:600}
+.cardio-eff:active:not(:disabled){transform:scale(var(--press-scale))}
+.cardio-eff:disabled{opacity:.45;cursor:default}
+.cardio-eff:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.focus-cardio-eff{display:flex;justify-content:center;margin-top:10px}
+.focus-cardio-eff .cardio-eff{height:34px;padding:0 14px 0 12px;font-size:var(--fs-subhead)}
+@media (prefers-reduced-motion:reduce){.cardio-eff{transition:none}}
 .subrow{display:flex;align-items:center;gap:6px;padding-block:3px;padding-inline:32px 0}
 /* A done set's drops and bursts are done with it (Discord, dark._.ninja): greyed like the row. */
 .subrow.done>*{opacity:.45}

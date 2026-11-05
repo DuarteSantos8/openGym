@@ -4193,4 +4193,8 @@ export default {
   "Workout corrected: {0}": "Javított edzés: {0}",
   "{0}: weight": "{0}: súly",
   "They can’t train people privately on this server, so there’s nothing to keep.": "Ezen a szerveren nem edzhet senkit magánúton, így nincs mit megtartani.",
+  "How hard it felt: RPE {0}": "Mennyire volt nehéz: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "Értékeld, mennyire volt nehéz",
+  "Rate it": "Értékeld",
 }

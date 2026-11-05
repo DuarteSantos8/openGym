@@ -4190,4 +4190,8 @@ export default {
   "Workout corrected: {0}": "Séance corrigée : {0}",
   "{0}: weight": "{0} : poids",
   "They can’t train people privately on this server, so there’s nothing to keep.": "Sur ce serveur, cette personne ne peut pas coacher en privé, donc il n'y a rien à garder.",
+  "How hard it felt: RPE {0}": "Ressenti de l’effort : RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "Note ton ressenti de l’effort",
+  "Rate it": "Noter",
 }

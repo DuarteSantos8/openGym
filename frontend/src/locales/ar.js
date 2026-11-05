@@ -4245,4 +4245,8 @@ export default {
   "Workout corrected: {0}": "تمرين مُصحَّح: {0}",
   "{0}: weight": "{0}: الوزن",
   "They can’t train people privately on this server, so there’s nothing to keep.": "لا يمكنه تدريب الناس بشكل خاص على هذا الخادم، فلا شيء يبقى.",
+  "How hard it felt: RPE {0}": "كم كان صعبًا: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "قيّم كم كان صعبًا",
+  "Rate it": "قيّمه",
 }

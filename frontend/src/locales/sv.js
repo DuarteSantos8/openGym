@@ -4237,4 +4237,8 @@ export default {
   "Workout corrected: {0}": "Pass rättat: {0}",
   "{0}: weight": "{0}: vikt",
   "They can’t train people privately on this server, so there’s nothing to keep.": "På den här servern får hen inte träna någon privat, så det finns inget att behålla.",
+  "How hard it felt: RPE {0}": "Hur tungt det kändes: RPE {0}",
+  "RPE {0}": "RPE {0}",
+  "Rate how hard it felt": "Betygsätt hur tungt det kändes",
+  "Rate it": "Betygsätt",
 }
