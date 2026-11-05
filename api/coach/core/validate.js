@@ -15,6 +15,7 @@
  * better second attempt than the first of them does.
  */
 import { libraryHas, libraryName, equipmentAllows, isDumbbellLift, LIB_BY_ID } from './library.js';
+import { leafMisfit, loadedWork } from '../../migration/programme-upgrade.js';
 
 // A catalogue exercise the person's equipment does not reach, and that was not in the library
 // slice they were offered (which already pins what they train). The prompt says "their
@@ -528,7 +529,6 @@ export function validateReview(data, plan, ctx = {}) {
         const anywhere = id => [...inPlan.values()].some(set => set.has(id));
         // The plan's entries a target names: its routine's, else every routine's with that exercise.
         const named = x => [...routines.values()].filter(r => !isStr(x.routineId) || r.id === x.routineId).flatMap(r => (r.ex || []).filter(e => e.id === x.exId));
-        const lifted = e => e.mode === 'reps' && !(e.bodyweight != null ? e.bodyweight : (LIB_BY_ID.get(e.id)?.eq || '').toLowerCase() === 'body weight');
         const choices = new Map();
         const outWeeks = [];
         for (let k = 0; k < weeks.length; k++) {
@@ -565,15 +565,17 @@ export function validateReview(data, plan, ctx = {}) {
               if (was && (was.onFailure !== x.policy.onFailure || was.onSkipped !== x.policy.onSkipped)) { errors.push(`${at}.policy differs from an earlier week's for the same exercise: one choice per exercise, for the whole programme`); return; }
               choices.set(key, leaf.policy = { onFailure: x.policy.onFailure, onSkipped: x.policy.onSkipped });
             }
-            // Each leaf only where the exercise takes it (spec 5.3): reps and a weight for reps work, a
-            // weight not on the body alone, seconds for a hold, nothing for cardio; a lift's fixed week
-            // (sets, reps or rest) names its load too.
-            const entries = named(x);
-            const fixes = ['sets', 'reps', 'sec', 'rest'].some(k => leaf[k] != null);
-            const misfit = entries.some(e => e.mode === 'cardio' ? fixes || leaf.weight != null
-              : ((leaf.reps != null || leaf.weight != null) && e.mode !== 'reps') || (leaf.weight != null && !lifted(e)) || (leaf.sec != null && e.mode !== 'time')
-                || (fixes && lifted(e) && pct == null && leaf.weight == null));
-            if (misfit) { errors.push(`${at} does not fit exercise "${x.exId}": reps and weight are for exercises done for reps (weight not on bodyweight ones), sec for timed ones, none of them for cardio, and a week that fixes sets, reps or rest on a lift with a weight needs its pct or weight too`); return; }
+            // Each number only where the exercise takes it (spec 5.3), by the very rule the app's
+            // conversion applies (leafMisfit), so a change accepted here is never refused on apply.
+            // An exercise with an engine rule of its own (`preset`) keeps its numbers.
+            const { policy: _, ...fix } = leaf;
+            const has = Object.keys(fix).length ? fix : null;
+            for (const e of named(x)) {
+              const mode = MODES.includes(e.mode) ? e.mode : e.sec != null ? 'time' : 'reps';   // cleanEx always says
+              const why = (has && e.preset ? 'an exercise with its own engine rule (`preset`) keeps its numbers' : null)
+                || leafMisfit({ mode, loaded: loadedWork(e, LIB_BY_ID.get(e.id), mode), pct, fix: has });
+              if (why) { errors.push(`${at} does not fit exercise "${x.exId}": ${why}`); return; }
+            }
             if (pct == null && rpe == null && !Object.keys(leaf).length) { errors.push(`${at} needs pct (30-110, a share of the adopted 1RM), rpe (6-10) or one of sets, reps, sec, weight, rest, policy`); return; }
             t[isStr(x.routineId) ? `${x.routineId}:${x.exId}` : x.exId] = { ...(pct != null ? { pct } : {}), ...(rpe != null ? { rpe } : {}), ...leaf };
           }

@@ -1898,7 +1898,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
-    <span class="p-desc">The stored profile and the client's announced engine do not match (<code>GET /api/data</code>): <code>upgrade-required</code> with <code>minEngineSchema</code> or <code>minEngineContract</code> (update the app), or <code>migration-required</code> (a v1 profile, see <code>POST /api/data/migrate-engine-v2</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;migration-required&quot;}</code></span></span>
+    <span class="p-desc">The stored profile and the client's announced engine do not match (<code>GET /api/data</code>): <code>upgrade-required</code> with <code>minEngineSchema</code> or <code>minEngineContract</code> (update the app), or <code>migration-required</code> (a v1 profile, see <code>POST /api/data/migrate-engine-v2</code>). <code>unsupported-contract</code>: a PUT body, or the stored file, announces an engine contract newer than this server reads; such a body is never written.<span class="r-sig"><code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;migration-required&quot;}</code></span></span>
   </div>
     </div>
   </div>
@@ -1988,7 +1988,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
   <div class="prow rrow">
     <span class="r-code s4">409</span>
-    <span class="p-desc">The stored profile and the client's announced engine do not match (<code>GET /api/data</code>): <code>upgrade-required</code> with <code>minEngineSchema</code> or <code>minEngineContract</code> (update the app), or <code>migration-required</code> (a v1 profile, see <code>POST /api/data/migrate-engine-v2</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;migration-required&quot;}</code></span></span>
+    <span class="p-desc">The stored profile and the client's announced engine do not match (<code>GET /api/data</code>): <code>upgrade-required</code> with <code>minEngineSchema</code> or <code>minEngineContract</code> (update the app), or <code>migration-required</code> (a v1 profile, see <code>POST /api/data/migrate-engine-v2</code>). <code>unsupported-contract</code>: a PUT body, or the stored file, announces an engine contract newer than this server reads; such a body is never written.<span class="r-sig"><code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;upgrade-required&quot;}</code> &middot; <code>{&quot;error&quot;:&quot;migration-required&quot;}</code></span></span>
   </div>
     </div>
   </div>

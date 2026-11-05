@@ -3922,12 +3922,14 @@ components:
         The stored profile and the client's announced engine do not match (`GET /api/data`):
         `upgrade-required` with `minEngineSchema` or `minEngineContract` (update the app),
         or `migration-required` (a v1 profile, see `POST /api/data/migrate-engine-v2`).
+        `unsupported-contract`: a PUT body, or the stored file, announces an engine contract
+        newer than this server reads; such a body is never written.
       content:
         application/json:
           schema:
             type: object
             properties:
-              error: { type: string, enum: [upgrade-required, migration-required] }
+              error: { type: string, enum: [upgrade-required, migration-required, unsupported-contract] }
               minEngineSchema: { type: integer }
               minEngineContract: { type: integer }
           examples:

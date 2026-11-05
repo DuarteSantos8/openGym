@@ -224,6 +224,9 @@ function cleanEx(e) {
   // Written out only when they disagree with the catalogue, matching plan-share.js — an
   // absent flag has always meant "whatever the exercise says", and still does.
   if (e.bodyweight != null) o.bodyweight = !!e.bodyweight;
+  // Likewise an assistance machine set by hand: what the programme validator reads to tell lifted
+  // work from assisted work (validate.js, loadedWork).
+  if (typeof e.assisted === 'boolean') o.assisted = e.assisted;
   if (e.side) o.side = true;
   // A superset tag is an id the app mints (sg-0-1, hs + uid()), so it is bounded like one.
   if (e.sg) o.sg = ident(e.sg);

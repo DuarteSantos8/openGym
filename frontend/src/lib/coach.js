@@ -25,7 +25,7 @@ import { snapshotKey } from './sync-merge.js'
 import { scheduleModeOf, startNewPass } from './rotation.js'
 import { queueOf } from './queue.js'
 import { coachExOf, coachRoutinesOf, ruleFromView } from '../../../api/coach/core/plan-view.js'
-import { defaultPlanRule, presetForPolicy, validatePlanRule, validateProgramme } from './prescription/index.js'
+import { contentHash, defaultPlanRule, presetForPolicy, validatePlanRule, validateProgramme } from './prescription/index.js'
 import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
 import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
@@ -294,10 +294,12 @@ export function revertLast(s) {
   const snap = (c.snapshots || []).at(-1)
   if (!snap) return false
   // A programme the Coach wrote and you edited since (or a revised one you deleted since): putting
-  // it back would overwrite that edit, so Undo does nothing at all (spec 13). Older snapshots have no `rev`.
+  // it back would overwrite that edit, so Undo does nothing at all (spec 13). Compared by content,
+  // not by revision: an Undo before this one saved what this batch wrote again, one revision up.
+  // Older snapshots have no `written`.
   const pr = snap.programmeRestore
   const nowDef = pr?.id ? programmeById(s, pr.id) : null
-  if (pr?.id && pr.rev != null && (nowDef ? nowDef.rev !== pr.rev : !!pr.prev)) return false
+  if (pr?.id && pr.written != null && (nowDef ? writtenOf(nowDef) !== pr.written : !!pr.prev)) return false
   let routines = snap.routines
   let audit = snap.migrationAudit
   if (routines.some(r => (r.ex || []).some(o => !o?.occurrenceId || !o?.exerciseId))) {
@@ -335,6 +337,8 @@ export function revertLast(s) {
   return true
 }
 export const canRevert = S => !!(S?.coach?.snapshots || []).length
+// A definition's content without its revision counter: what Undo compares.
+const writtenOf = def => contentHash({ ...def, rev: 0 })
 
 /* ============================ the log ============================ */
 
@@ -659,7 +663,7 @@ const CHANGE_APPLY = {
     const name = String(c.after.name || was?.name || t('Coach programme')).slice(0, 60)
     const base = was || newProgramme(s, name, weeks.length)
     const out = convertLegacyProgramme({ id: base.id, name, at: base.at, weeks: clone(weeks), ...legacyScheduleOf(base), ...(typeof base.src === 'string' ? { src: base.src } : {}) },
-      { routines: s.routines || [], catalogue: LIB_BY_ID, customEx: s.customEx, progression: s.progression, weekStart: s.weekStart === SUNDAY ? 0 : 1 })
+      { routines: s.routines || [], catalogue: LIB_BY_ID, customEx: s.customEx, progression: s.progression, weekStart: s.weekStart === SUNDAY ? 0 : 1, strict: true })
     // What the Coach asked for cannot run as asked (a leaf the exercise cannot take, two choices for
     // one exercise, a %1RM on a training max): refused whole, never kept for a repair.
     if (out.needs?.includes('repair') && !base.needs?.includes('repair')) throw new Error('bad programme')
@@ -672,7 +676,7 @@ const CHANGE_APPLY = {
     const snaps = coachOf(s).snapshots || []
     const snap = snaps[snaps.length - 1]
     const saved = saveProgramme(s, { ...out, rev: base.rev, end: base.end, refs: base.refs, tracks })
-    if (snap && !snap.programmeRestore) snap.programmeRestore = { id: saved.id, prev: was ? clone(was) : null, rev: saved.rev }
+    if (snap && !snap.programmeRestore) snap.programmeRestore = { id: saved.id, prev: was ? clone(was) : null, written: writtenOf(saved) }
   },
   week: (s, c) => {
     // A single-routine op: the slot is a list, but the Coach only ever names one routine (or

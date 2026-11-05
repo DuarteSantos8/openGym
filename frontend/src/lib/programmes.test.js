@@ -17,6 +17,8 @@ import { todayISO } from './format.js'
 import { planPhase, referenceProposals } from './prescription/index.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 import { applyChangeSet, markStale, revertLast } from './coach.js'
+import { validateReview } from '../../../api/coach/core/validate.js'
+import { cleanPlan } from '../../../api/coach/core/payload.js'
 import { buildCompletedSession } from './finish-session.js'
 
 // A fixed clock for the whole file, local noon on a Wednesday: every date here is a calendar date
@@ -498,10 +500,11 @@ describe('a Coach programme change', () => {
       const routine = s.routines.find(r => r.id === 'A')
       const exposures = buildSessionExposures(s, routine, { now: Date.now(), date: d, newId: x => x + d })
       const A = { id: 'w' + d, d, start: Date.now(), routineIds: ['A'], exposures, entries: entriesForExposures(exposures, s.prescriptions) }
+      const shown = work(A.entries[0]).map(x => x.w)   // what the workout screen opens at
       A.entries.forEach(e => e.sets.forEach(row => { if (!isWarmupRow(row)) row.done = true }))
       const out = buildCompletedSession(A, s, { end: A.start + 3600000, newId: x => x, unit: 'kg' })
       s.workouts = [...s.workouts, out.session]
-      return s.prescriptions[exposures[0].prescriptionId].rows.map(r => r.load.value)   // what the week prescribes
+      return shown
     }
     expect(benchOn([2026, 9, 19, 10, 0], '2026-10-19')).toEqual([87.5, 87.5, 87.5])   // 75 % of 116.7
     at(2026, 9, 20, 12, 0)
@@ -529,5 +532,47 @@ describe('a Coach programme change', () => {
     expect(amends()).toHaveLength(2)
     expect(legacyWeeksOf(amends()[1].def)[1].t[BENCH].pct).toBe(80)
     expect(validateCanonicalProfile(s).ok).toBe(true)
+  })
+
+  // One rule (leafMisfit) on both sides: what the Coach's validator accepts the app applies, and what
+  // it refuses the app refuses too, for a band (bodyweight by the catalogue) and an assistance machine.
+  it('the Coach validator and the apply agree on band and assisted work; a %1RM on unloaded work is refused by both', () => {
+    const BAND = '0968', ASSIST = '0017'
+    const s = { ...migratedFixture({ unit: 'kg', weekStart: 1, routines: [{ id: 'A', name: 'Day A', ex: [
+      { id: BENCH, sets: 3, reps: 5, weight: 60 }, { id: BAND, sets: 3, reps: 12, prog: 'double', repsMin: 10 }, { id: ASSIST, sets: 3, reps: 8, weight: 20 }] }] }),
+    week: { 1: ['A'] }, dayPlan: {}, programmes: {}, programme: null }
+    const plan = cleanPlan(s, Date.now())
+    for (const [exId, t, ok] of [
+      [BAND, { reps: 15 }, true], [BAND, { reps: 15, weight: 5 }, false], [BAND, { pct: 70 }, false],
+      [ASSIST, { sets: 4, reps: 8 }, true], [ASSIST, { weight: 20, reps: 8 }, false], [ASSIST, { pct: 70 }, false],
+      [BENCH, { reps: 5 }, false], [BENCH, { reps: 5, pct: 75 }, true],
+    ]) {
+      const v = validateReview({ coach_contract: 1, summary: 's', changes: [{ id: 'c0', type: 'programme', target: {}, after: { name: 'B', weeks: [{ targets: [{ exId, ...t }] }] }, why: 'w' }] }, plan, {})
+      expect(v.ok, `${exId} ${JSON.stringify(t)} validates`).toBe(ok)
+      const after = v.ok ? v.proposal.changes[0].after : { name: 'B', weeks: [{ t: { [exId]: t } }] }
+      const draft = clone(s)
+      const apply = () => applyChangeSet(draft, review([{ type: 'programme', target: {}, before: null, after }]), ['c0'])
+      if (ok) {
+        expect(apply, `${exId} ${JSON.stringify(t)} applies`).not.toThrow()
+        expect(programmesOf(draft)[0].tracks.find(tr => tr.exerciseId === exId).stages[0].targets).toMatchObject({ [`A:o${[BENCH, BAND, ASSIST].indexOf(exId)}`]: { own: 'set' } })
+      } else expect(apply, `${exId} ${JSON.stringify(t)} is refused`).toThrow()
+    }
+  })
+
+  // An Undo saves the earlier version one revision up; the Undo after it is not an edit of yours.
+  it('two Coach changes in a row are undone one after the other', () => {
+    const s = state()
+    withBlock(s)
+    const weeks = pct => ({ name: 'Strength block', weeks: [{ t: { [BENCH]: { pct } } }, { t: { [BENCH]: { pct: pct + 5 } } }, { deload: true }] })
+    applyChangeSet(s, markStale(review([change(weeks(70), 1)]), s), ['c0'])
+    applyChangeSet(s, markStale(review([change(weeks(72.5), 2)]), s), ['c0'])
+    const pcts = () => legacyWeeksOf(programmeById(s, 'P')).map(w => w.t?.[BENCH]?.pct)
+    expect(pcts()).toEqual([72.5, 77.5, undefined])
+    expect(revertLast(s)).toBe(true)
+    expect(pcts()).toEqual([70, 75, undefined])
+    expect(revertLast(s)).toBe(true)
+    expect(pcts()).toEqual([75, 80, undefined])
+    expect(programmeById(s, 'P').rev).toBe(5)
+    expect(s.coach.snapshots).toHaveLength(0)
   })
 })

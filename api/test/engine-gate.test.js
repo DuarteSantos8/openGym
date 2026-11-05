@@ -399,6 +399,23 @@ test('GET /api/config advertises engineContract; the preflight allows X-OpenGym-
   assert.match(pre.headers.get('access-control-allow-headers'), /(^|, )X-OpenGym-Engine-Contract(,|$)/);
 });
 
+test('a PUT announcing a newer contract than the server reads is refused, nothing written', async t => {
+  const { put, get, dataDir } = await harness(t);
+  // On a fresh profile nothing is created...
+  const r0 = await put({ ...MARKED, engineContractRevision: 2 }, CONTRACT);
+  assert.deepEqual([r0.status, r0.body], [409, { error: 'unsupported-contract' }]);
+  assert.equal(fs.existsSync(primaryFile(dataDir)), false);
+  // ...and a stored one stays byte-identical and readable by every current device.
+  assert.equal((await put(MARKED, CONTRACT)).status, 200);
+  const before = fs.readFileSync(primaryFile(dataDir), 'utf8');
+  for (const state of [{ ...MARKED, engineContractRevision: 2, _ts: 5 }, { ...V1, engineContractRevision: 2, _ts: 5 }]) {
+    const r = await put(state, CONTRACT);
+    assert.deepEqual([r.status, r.body], [409, { error: 'unsupported-contract' }]);
+  }
+  assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), before);
+  assert.equal((await get(CONTRACT)).status, 200);
+});
+
 // Same probe as server-state-read-cost.test.js: a rewrite the stat cache's key cannot see (same
 // length, pinned mtime) that drops the marker. A gate parsing the file would let the old client in.
 test('rev polling reads the cached status, not the file', async t => {

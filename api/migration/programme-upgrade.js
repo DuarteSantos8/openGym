@@ -46,6 +46,27 @@ function leavesOf(x) {
   if (typeof x?.weight === 'number' && x.weight > 0 && x.weight <= 1000) fix.weight = x.weight;
   return Object.keys(fix).length ? fix : null;
 }
+/** Reps work against an external load: not the body alone, a band or an assistance machine. The
+ *  only work a %1RM (or a deload factor) ever reached (lib/session-start.js programmePlan). */
+export const loadedWork = (cfg, ex, mode) => mode === 'reps' && !isBodyweight(cfg, ex) && !(typeof cfg?.assisted === 'boolean' ? cfg.assisted : isAssisted(ex));
+
+/**
+ * Why a week's target does not fit an exercise (spec 5.3: refused, never dropped), or null. The one
+ * rule for the Coach's validator (api/coach/core/validate.js) and for this conversion, so what one
+ * accepts the other never refuses. `loaded`: loadedWork. `pct` and `fix` (the leaves) as given.
+ */
+export function leafMisfit({ mode, loaded, pct = null, fix = null }) {
+  if (pct != null && !loaded) return 'a %1RM is only for work lifted with a weight';
+  if (!fix) return null;
+  if (mode === 'cardio') return 'cardio takes none of sets, reps, sec, weight or rest';
+  if ((fix.reps != null || fix.weight != null) && mode !== 'reps') return 'reps and weight are for exercises done for reps';
+  if (fix.weight != null && !loaded) return 'weight is only for work lifted with a weight, not bodyweight, band or assisted work';
+  if (fix.weight != null && pct != null) return 'a week\'s load is pct or weight, never both';
+  if (fix.sec != null && mode !== 'time') return 'sec is only for timed exercises';
+  if (loaded && pct == null && fix.weight == null) return 'a week that fixes sets, reps or rest on a lift needs its load too, as pct or weight';
+  return null;
+}
+
 const policyOf = x => (CHOICES.includes(x?.policy?.onFailure) && CHOICES.includes(x?.policy?.onSkipped) ? { onFailure: x.policy.onFailure, onSkipped: x.policy.onSkipped } : null);
 
 /** A legacy week as lib/programmes.js cleanWeek reads it: a target with neither number is none. */
@@ -82,7 +103,7 @@ function trackOf(p, rid, occ, weeks, ctx) {
   // lib/session-start.js programmePlan: a %1RM and the deload factor only ever reached reps work under an external load.
   // An occurrence made in the app may store no mode: read it as the session does (a duration is a hold, else the catalogue's).
   const mode = occ.mode ?? (rule.program.phases[0].parameters.durationSeconds ? 'time' : info?.bp === 'cardio' ? 'cardio' : 'reps');
-  const external = mode === 'reps' && !isBodyweight(occ, info) && !(typeof occ.assisted === 'boolean' ? occ.assisted : isAssisted(info));
+  const external = loadedWork(occ, info, mode);
   // A flat %1RM is a load for the anchor; groups of their own (a training max, explicit per-set loads) are never guessed (spec 15.2).
   const anchored = ph.groups.every(g => g.load.basis === 'anchor');
   const unit = [ph.parameters.load?.unit, ...ph.progression.map(op => op.step?.unit)].find(u => u === 'kg' || u === 'lb') ?? 'kg';
@@ -95,12 +116,11 @@ function trackOf(p, rid, occ, weeks, ctx) {
     const fix = own.fix ?? null;
     if (own.policy) policies.add(JSON.stringify(own.policy));
     if ((pct != null || fix) && !anchored) repair = ph.groups.some(g => g.load.basis === 'training_max') ? 'training-max' : 'group-loads';
-    // A leaf this exercise cannot take is refused, never dropped (spec 5.3): reps and a weight are
-    // for reps work, a weight on what lifts one and never beside a %1RM, seconds for a hold; a lift's
-    // fixed week names its load.
-    if (fix && (mode === 'cardio' || ((fix.reps != null || fix.weight != null) && mode !== 'reps') || (fix.weight != null && (!external || own.pct != null))
-      || (fix.sec != null && mode !== 'time') || (external && pct == null && fix.weight == null)
-      || (fix.sets != null && !ph.groups.some(g => g.count === 'parameters')) || ((fix.reps ?? fix.sec) != null && !ph.groups.some(g => g.reps === 'parameters')))) repair = 'leaf';
+    // What this exercise cannot take is refused (leafMisfit). A legacy week's %1RM on unloaded work
+    // never reached it and is left out as it was; an edit (`strict`, the Coach's) is refused instead.
+    // Sets, reps and seconds only reach groups that read them from the phase.
+    if (leafMisfit({ mode, loaded: external, pct: ctx.strict ? own.pct ?? null : pct, fix })
+      || (fix?.sets != null && !ph.groups.some(g => g.count === 'parameters')) || ((fix?.reps ?? fix?.sec) != null && !ph.groups.some(g => g.reps === 'parameters'))) repair = 'leaf';
     const target = (pct != null || fix) && anchored ? { own: 'set', phase: fixedPhase(ph, pct, fix, unit) }
       : { own: 'inherit', ...(w.deload && external && scalable(rule) ? { deload: { factor: DELOAD_FACTOR } } : {}) };
     const rpe = own.rpe ?? w.rpe;
@@ -131,8 +151,8 @@ function trackOf(p, rid, occ, weeks, ctx) {
  * Notes for the adoption summary go to `summary`. A loop is bound to calendar weeks and marked
  * `needs: ['binding']`; what cannot be converted faithfully is kept, marked `needs: ['repair']`.
  */
-export function convertLegacyProgramme(p, { routines = [], catalogue, customEx = [], progression = {}, weekStart = 1, summary = [] } = {}) {
-  const ctx = { catalogue, customEx: list(customEx), progression: isObj(progression) ? progression : {}, summary };
+export function convertLegacyProgramme(p, { routines = [], catalogue, customEx = [], progression = {}, weekStart = 1, summary = [], strict = false } = {}) {
+  const ctx = { catalogue, customEx: list(customEx), progression: isObj(progression) ? progression : {}, summary, strict };
   const weeks = list(p.weeks).slice(0, MAX_WEEKS).map(cleanWeek);
   if (!weeks.length) weeks.push(cleanWeek({}));
   const have = new Map(list(routines).map(r => [r.id, r]));

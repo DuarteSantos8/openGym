@@ -4,6 +4,7 @@ import { defaultPlanRule, editPlan, planPhase } from '../../../../api/engine/rul
 import { appendOneRm, currentOneRm } from '../../../../api/engine/one-rm.js'
 import { generatePrescription, ruleOfPrescription } from '../../../../api/engine/generate.js'
 import { advanceProgression } from '../../../../api/engine/advance.js'
+import { entriesForExposures } from '../session-ui-adapter.js'
 
 const NOW = '2026-09-24T10:00:00.000Z'
 const kg = value => ({ value, unit: 'kg' })
@@ -250,6 +251,18 @@ describe('session semantics (v1.3.9)', () => {
     expect(next.parameters.load.resolved).toEqual(kg(97.5))
     expect(next.prefill).toEqual({ sets: 3, reps: 10, load: null })
     expect(next).toMatchObject({ phaseId: 'plan', statusAtGeneration: 'active' })
+  })
+
+  // A programme week at a %1RM (a fixed stage: no load step) declares its load: the screen opens at
+  // it, not at what the week before lifted. Without a 1RM the rows have no load, and it still offers that.
+  it('a %1RM phase with no progression opens at its own resolved load, not at the last session\'s', () => {
+    const r = rule('autoregulated', { load: { mode: 'percent_1rm', percent: 90 } })
+    const lastLog = logOf({ sets: 3, reps: 8, load: kg(87.5) })
+    const p = gen(r, { oneRm: oneRm(116.7), lastLog })
+    expect(p.rows.map(row => row.load.value)).toEqual([105, 105, 105])
+    expect(p.prefill.load).toBeNull()
+    expect(entriesForExposures([{ exposureId: 'x1', prescriptionId: p.id, exerciseId: 'ex1' }], { [p.id]: p })[0].sets.map(row => row.w)).toEqual([105, 105, 105])
+    expect(gen(r, { oneRm: null, lastLog }).prefill.load).toEqual(kg(87.5))
   })
 
   it('opens at the plan\'s new weight when the edit changed it too', () => {

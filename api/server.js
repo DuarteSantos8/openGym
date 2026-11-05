@@ -2112,6 +2112,9 @@ function readStateSource(uid) {
 // engineContractRevision is closed to a client that announces a lower X-OpenGym-Engine-Contract,
 // and a PUT body (`state`, checked once the body is read) cannot drop or lower the stored marker.
 function engineGate(req, res, uid, state) {
+  // A body announcing a contract newer than this server's is never written: on disk it would close
+  // the profile to every device (`unsupported-contract` below) until an admin repaired the file.
+  if (state && typeof state === 'object' && contractOf(state) > ENGINE_CONTRACT) { json(res, 409, { error: 'unsupported-contract' }); return true; }
   const source = stateCacheEntry(uid)?.source || { state: null };
   // A file that does not parse is a fault of the server's, not a conflict to merge: 503, and nothing is replaced.
   if (source.error === 'profile-unreadable') { console.error('state file unreadable for', uid); json(res, 503, { error: 'state unreadable' }); return true; }
