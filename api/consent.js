@@ -20,8 +20,10 @@ export const CONSENT_TEXTS = {
   },
   library: {
     v: 1,
-    text: 'Everyone with an account on this server will be able to see this, try it and copy it. Your name and the date go with it, always. '
-      + 'Only share what is yours to share. You can stop sharing any time; copies people already took stay with them.'
+    text: 'This is public to everyone on this server: everyone with an account here can see it, try it and copy it. Your name and the date go with it, always. '
+      + 'Only share what is yours: something you made, recorded or have the right to pass on. '
+      + 'The exercise pictures and animations of the built-in library are licensed and can never be shared. '
+      + 'You can stop sharing any time; copies people already took stay with them.'
   }
 };
 export const CONSENT_KINDS = Object.keys(CONSENT_TEXTS);

@@ -52,6 +52,10 @@ import { nutritionSourceFrom } from './sources/nutrition.js';
 import { createPermissions } from './permissions.js';
 import { createShareLog } from './share-log.js';
 import { createBudgets, createCodeGuard } from './budgets.js';
+import { libraryConfig, publicLibraryConfig } from './library/config.js';
+import { createLibraryStore } from './library/store.js';
+import { libraryRoutes } from './library/routes.js';
+import { currentConsent } from './consent.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -97,6 +101,9 @@ const TRAINERS_LEAD_ACCESS = process.env.TRAINERS_LEAD_ACCESS || 'row';
 // Whether the admin dashboard shows a member's workouts and weigh-ins (1.4.5: off by default).
 // Off, admins see counts only; on, every look is in the activity log and the member's sharing log.
 const ADMIN_DATA_VIEW = /^(1|true|yes|on)$/i.test(process.env.ADMIN_DATA_VIEW || '');
+// The community library (docs/dev/SHARED-LIBRARY-API.md): LIBRARY=on, off by default. SHARING=off
+// still closes it. Read once; library/config.js has every SHARE_* switch.
+const LIBRARY = libraryConfig(process.env);
 // The language the sign-in screen, and every profile that never picked one, starts in (#303) —
 // for an instance whose people share a language. Only a tag's shape is checked here; the app
 // matches it against the languages it has and ignores one it does not know. Unset, it is left
@@ -199,7 +206,7 @@ const org = createOrgStore({ file: path.join(DATA, 'org.json'), leadMode: TRAINE
 const shareLog = createShareLog({ dir: path.join(DATA, 'share'), keepDays: Math.max(0, +(process.env.SHARE_LOG_DAYS || 365) || 0) });
 const perms = createPermissions({
   org, userById: id => db.users.find(u => u.id === id) || null, isAdmin, isOwner,
-  flags: () => ({ trainers: TRAINERS, adminDataView: ADMIN_DATA_VIEW, sharing: !/^(0|false|no|off)$/i.test(process.env.SHARING || '') })
+  flags: () => ({ trainers: TRAINERS, adminDataView: ADMIN_DATA_VIEW, sharing: LIBRARY.on })
 });
 const budgets = createBudgets();
 const codeGuard = createCodeGuard();
@@ -1415,6 +1422,8 @@ function removeAccount(u) {
     shareLog.remove(u.id);
     shareLog.anonymize(members, u.id);
   } catch (e) { console.error('org: could not remove', u.id, e.message); }
+  // What they shared with the server stops being shared; copies others took stay theirs.
+  try { library.removeUser(u.id); } catch (e) { console.error('library: could not withdraw items of', u.id, e.message); }
   saveDb();
 }
 
@@ -2119,6 +2128,20 @@ const mediaRoutes = {
   }
 };
 
+/* ---------- the community library (library/) ---------- */
+// Items people chose to share with everyone on this server, their files apart from uploads/,
+// and the blocklist (removed files plus every built-in catalogue file, by hash).
+const libStore = createLibraryStore({ dir: path.join(DATA, 'shared') });
+const library = libraryRoutes({
+  json, readBody, readSession, requireAdmin, isAdmin, audit, saveDb, origin: ORIGIN,
+  userById: id => db.users.find(u => u.id === id) || null,
+  perms, budgets, log: shareLog, media: MEDIA, store: libStore, cfg: LIBRARY, sendFile: sendMediaFile
+});
+if (LIBRARY.on) {
+  const sweepShared = () => { try { const r = libStore.sweep({ graceDays: LIBRARY.graceDays }); if (r.removed) console.log(`library: swept ${r.removed} unshared file(s)`); } catch (e) { console.error('library: sweep failed', e.message); } };
+  setInterval(sweepShared, 3600000).unref();
+}
+
 /* ---------- routes ---------- */
 // A health check that only proves the port answers is the one that lies on the day it matters:
 // a full disk, or a bind mount that came back read-only, leaves every write path in here broken
@@ -2206,6 +2229,8 @@ const routes = {
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
       ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {}),
+      // The community library: only to a session and only with LIBRARY=on.
+      ...(LIBRARY.on && readSession(req) ? { shared: publicLibraryConfig(LIBRARY, currentConsent('library')) } : {}),
       // Which integrations this server offers (only to a session, like the Coach block). Absent
       // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
       ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
@@ -3120,6 +3145,10 @@ const routes = {
     media: MEDIA_ON ? { file: (uid, hash) => MEDIA.file(uid, hash), send: sendMediaFile } : null
   }),
 
+  /* ---------- the community library ---------- */
+  // library/routes.js and library/moderation.js; with LIBRARY off they answer 404 'sharing-off'.
+  ...library.routes,
+
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature
   // answers, and the client already treats that as "this server does not store them".
@@ -3185,11 +3214,12 @@ const server = http.createServer(async (req, res) => {
     const pna = String(req.headers['access-control-request-private-network'] || '').toLowerCase() === 'true'
       && APP_ORIGINS.has(origin);
     res.writeHead(204, {
-      'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+      'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
       // The CF-Access-* pair: a phone's Cloudflare Access service token (frontend lib/cf-access.js),
       // for an Access application that passes OPTIONS through to the origin.
       // X-OpenGym-Account: the account a media upload is meant for (GHSA-699c-6p5r-q574).
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account',
+      // PATCH and If-Match: a new version of a shared item (library/routes.js).
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account, If-Match',
       'Access-Control-Max-Age': '86400',
       ...(pna ? { 'Access-Control-Allow-Private-Network': 'true' } : {})
     });
@@ -3211,6 +3241,13 @@ const server = http.createServer(async (req, res) => {
   // above stays a plain lookup, and so csrfOk and the catch-all see one name for every file.
   const mm = /^\/api\/media\/([0-9a-f]{64})$/.exec(url.pathname);
   if (mm) { key = req.method + ' /api/media/{hash}'; req.mediaHash = mm[1]; }
+  // The library's templates, the same way: an item id, a shared file, a person to ban.
+  const lm = /^\/api\/shared\/media\/([0-9a-f]{64})$/.exec(url.pathname);
+  if (lm) { key = req.method + ' /api/shared/media/{hash}'; req.mediaHash = lm[1]; }
+  const li = /^\/api\/(admin\/)?shared\/(s_[a-z2-7]{16})(\/import|\/report)?$/.exec(url.pathname);
+  if (li && !(li[1] && li[3])) { key = `${req.method} /api/${li[1] || ''}shared/{id}${li[3] || ''}`; req.itemId = li[2]; }
+  const lu = /^\/api\/admin\/users\/([A-Za-z0-9_-]{1,64})\/sharing$/.exec(url.pathname);
+  if (lu) { key = req.method + ' /api/admin/users/{uid}/sharing'; req.targetUid = lu[1]; }
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
   if (!csrfOk(req, key)) {

@@ -121,6 +121,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - "Keep training privately?" only shows up when that trainer may train people outside a gym on your server. Otherwise the connection just waits, in case they come back.
 - The streak in a trainer's list counts with the member's own phone's rules, freeze history included, so it is never a week off what the member sees.
 
+**Community: share with your server, if you like (self-hosted, `LIBRARY=on`, off by default)**
+- Exercises, plans and routines, sounds, gym equipment profiles, tips, looks and measurement fields you made can be shared with everyone on your server. Nothing is shared unless you pick it and say yes, one item at a time, after a short consent: it is public to everyone on this server, and it is yours to share.
+- Exercises → Community (or Settings → Account → Community): a tab per kind, search, New and Popular, a preview (play a sound, see the picture, the routines of a plan) and Get, which copies it into your profile. Every card says who shared it and when, always. Your copy is yours: it stays when the original stops being shared, and a new version shows up next to it instead of over it.
+- Tips from your gym: the exercise sheet shows what others on your server wrote about it, one tap from your own note. Your profile picture can sit next to your name on what you share, if you switch it on.
+- Report anything that does not belong there. Three reports, or one about licensed material, take it out of sight until an admin looks. Admins get a Community card to approve, hide, restore or remove (which takes the copies' files too) and to pause sharing for a person, every step with a reason in the activity log. `SHARE_REVIEW=on` makes every new item wait for an admin first.
+- The exercise pictures and animations of the built-in library are licensed and can never be shared: the server knows every one of them by its checksum. Shared photos lose their location and camera details, videos go up to 25 MB, sounds up to 30 seconds. Workout and progress photos have a switch of their own (`SHARE_PERSONAL_MEDIA=on`, off by default) and always wait for an admin.
+- Idea and first version by @davoloko (#441, sharing custom exercises with everyone on a server), rebuilt here into the wider library.
+
 **Admins see counts, not your training**
 - Behaviour change: the admin dashboard no longer opens anyone's workouts and weigh-ins. A person's detail shows counts, storage and last sync, and the list no longer says when someone last trained or what they are training right now. The data is still readable on disk by whoever runs the server, just not in the app.
 - `ADMIN_DATA_VIEW=on` brings the old view back for small instances that want it, and then every look is written to the activity log and to that person's own sharing log.

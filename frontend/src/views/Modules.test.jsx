@@ -50,6 +50,9 @@ const sw = title => row(title).querySelector('[role="switch"]')
 
 describe('the Modules page', () => {
   it('lists every module in its group, all on for a profile from before Modules', () => {
+    // Community shows only on a server with a library (LIBRARY=on), to a signed-in profile.
+    mocks.user = { id: 'u1', name: 'Anna' }
+    mocks.config = { shared: { types: ['sound'] } }
     mount()
     expect([...host.querySelectorAll('.sect-t')].map(h => h.textContent)).toEqual(expect.arrayContaining(['Training', 'Body and health', 'Extras']))
     for (const m of MODULES) {
@@ -58,6 +61,11 @@ describe('the Modules page', () => {
       expect(sw(m.title).getAttribute('aria-checked')).toBe('true')
     }
     expect(row('Start from').querySelector('.lrow-v').textContent).toBe('Everything')
+  })
+
+  it('Community is not offered where the server has no library', () => {
+    mount()
+    expect(row('Community')).toBeFalsy()
   })
 
   it('a switch writes that one module, and the preset turns Custom', () => {

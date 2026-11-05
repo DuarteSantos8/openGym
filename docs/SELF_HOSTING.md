@@ -789,7 +789,7 @@ tar czf opengym-backup-$(date +%F).tar.gz --exclude=data/uploads data/
 
 Restored without them, every profile is intact, and an exercise whose file is gone shows a
 placeholder until one of its owner's devices — each keeps its own copy — uploads it again. When
-you move openGym to another server, copy the whole `data/`, `uploads/` included; each person can
+you move openGym to another server, copy the whole `data/`, `uploads/` and `shared/` included; each person can
 also carry their own through Settings → Data & backup → *Export with photos & videos* and import it there.
 
 If you enabled the AI Coach with the Codex provider, note what this archive deliberately does
@@ -889,6 +889,40 @@ link-local. Every signed-in user can then make the server call into your network
 instances whose users you trust. Connections live in `data/integrations/`, the URL and the signing
 secret encrypted with a key from `data/secret`. Payloads, signatures and retries are in
 [INTEGRATIONS.md](INTEGRATIONS.md).
+
+### The community library (`LIBRARY`)
+
+```
+LIBRARY=on
+```
+
+turns on Community: people can share exercises, plans, sounds, gym profiles, tips, looks and
+measurement fields with everyone on this server, one item at a time after a consent, and others
+take a copy into their own profile. Off by default: then there are no routes and nothing of it in
+the app. Items live in `data/shared/items.json` (with `items.json.bak`), their files in
+`data/shared/media/`, apart from `data/uploads/`, and removed files on `data/shared/blocklist.json`.
+Put `data/shared/` in your backups with the rest of `data/`.
+
+```
+SHARE_REVIEW=on              # every new item (and new version) waits for an admin's approval
+SHARE_PERSONAL_MEDIA=on      # workout photos, progress photos and form videos can be shared too (always reviewed)
+SHARE_TYPES=sound,exercise   # only these kinds (default: all of them)
+SHARE_QUOTA_MB=50            # per person, across everything they share; 0 = no cap
+SHARE_VIDEO_MAX_MB=25        # tighter than private uploads: many people load a shared video
+SHARE_AUTOHIDE_REPORTS=3     # reports from different people before an item steps out of sight
+SHARE_ITEMS_PER_TYPE=50      # per person and kind
+SHARE_GC_GRACE_DAYS=14       # a withdrawn item's files stay this long
+SHARING=off                  # closes the library even with LIBRARY=on
+```
+
+Moderation is in the admin dashboard (card Community): reported items, items waiting for review,
+and everything, with approve, hide, restore, remove and pausing sharing for a person, each with a
+reason in the activity log. Removing deletes the files from `data/shared/media/` and from the
+upload folder of everyone who took a copy, and blocks them by checksum. The licensed exercise media
+of the built-in catalogue can never be shared: `api/library/catalogue-hashes.json` lists the
+SHA-256 of every catalogue file (`node scripts/catalogue/media-hashes.mjs` makes it from the bytes
+alone). As the host you answer for what people share: say in your terms how to report something
+and that you remove it when told. Details: [dev/SHARED-LIBRARY-API.md](dev/SHARED-LIBRARY-API.md).
 
 ### Trainers and gyms (`TRAINERS`) and what admins see (`ADMIN_DATA_VIEW`)
 

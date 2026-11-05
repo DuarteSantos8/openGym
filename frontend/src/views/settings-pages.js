@@ -89,6 +89,7 @@ const remind = c => !!c.mobile || !!c.pushOK
 const PUSH = 'Push notifications'
 // The words people use for each module (its row on Settings → Modules).
 const MODULE_KW = {
+  community: 'community library share shared server people upload others copy import',
   effort: 'effort rir rpe reps in reserve rating difficulty hard',
   plates: 'plates plate math calculator barbell load warm-up warmup ramp automatic',
   strength: 'strength level standards beginner intermediate advanced elite',
@@ -109,6 +110,8 @@ const seasonKw = () => shownThemes().map(th => SEASON_KW[th.id] || '').join(' ')
 export const SEARCH = [
   // Modules
   ...MODULES.map(m => ({ page: 'modules', title: m.title, icon: m.icon, tint: m.tint,
+    // Community is a row only where the server has a library (views/Modules.jsx).
+    ...(m.id === 'community' ? { when: c => !!c.library } : {}),
     get kw() { return MODULE_KW[m.id] + (m.id === 'seasonal' ? ' ' + seasonKw() : '') + ' module turn on off hide' } })),
   // Workout
   { page: 'workout', title: 'Automatic warm-ups', icon: 'sunrise', tint: 'var(--orange)', mod: 'plates', kw: 'warm-up warmup ramp automatic generator compounds' },

@@ -183,6 +183,13 @@ tags:
       connects to a trainer with the trainer's code and a consent, decides per category what is
       shared, and can change or end it any time, effective on the next request. Every route
       spends a per-account budget (429 `rate-limited`, Retry-After).
+  - name: shared
+    description: >-
+      The community library (`LIBRARY=on`, off by default): things people chose to share
+      with everyone on this server, each after its own consent, always shown with who shared
+      it and when. Importing copies the item into your own profile. Reports, admin review
+      (`SHARE_REVIEW=on`), removal and bans are all logged. The built-in exercise media can
+      never be shared (blocked by SHA-256). Every route spends a per-account budget.
   - name: integrations
     description: >-
       Settings → Integrations: outbound webhooks now, more providers later. Off unless the
@@ -2272,6 +2279,286 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "too many uploads, try again later", code: "locked", retryAfter: 1200 }
 
+  /api/shared:
+    get:
+      tags: [shared]
+      operationId: listShared
+      summary: Browse the community library of this server
+      description: |
+        Items people shared with everyone on this server (`LIBRARY=on`), newest or most
+        imported first, 50 a page. Live items the caller may see, plus the caller's own in any
+        status. Every item carries `by` (the uploader's current name and, when they shared one,
+        their profile picture's hash) and `at` (when it was shared). A plan comes with a
+        `summary` instead of its payload; `GET /api/shared/{id}` has the whole thing.
+        Budget `library.list` (600 an hour).
+      parameters:
+        - { name: type, in: query, schema: { type: string, enum: [sound, exercise, plan, equipment, tip, look, measures, avatar, photo, formvideo, progress] } }
+        - { name: q, in: query, description: 'Words that must all appear (title, description, names).', schema: { type: string } }
+        - { name: lang, in: query, description: 'Comma-separated languages, e.g. `de,en`.', schema: { type: string } }
+        - { name: sort, in: query, schema: { type: string, enum: [new, popular] } }
+        - { name: ex, in: query, description: 'Tips about this exercise id only.', schema: { type: string } }
+        - { name: mine, in: query, description: '`1`: only the caller''s own items, in every status.', schema: { type: string } }
+        - { name: gym, in: query, description: 'A gym id, or `server` for items open to the whole server.', schema: { type: string } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: One page.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/SharedItem' } }
+                  next: { type: string, nullable: true }
+                  total: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/SharingOff' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    post:
+      tags: [shared]
+      operationId: publishShared
+      summary: Share one of your own items with everyone on this server
+      description: |
+        Needs the current library consent with `own: true` ("It's mine to share"): without the
+        tick `400 consent-own`, with an older text `409 consent-outdated` and the current one.
+        Files named in the payload must be in the caller's own uploads (`PUT /api/media/{hash}`)
+        first, else `409 media-missing` with the list. Each file is checked again before it is
+        copied into the shared folder: its type, the sharing caps (`SHARE_VIDEO_MAX_MB` 25,
+        sounds 30 s, a profile picture 32 KB), no Exif, XMP, text chunks or MP4 metadata boxes
+        (`422 media-metadata`), no WebM (`422 media-webm`), and never a file of the built-in
+        exercise library or one an admin removed (`422 media-blocked`, by SHA-256). Starts
+        `pending` with `SHARE_REVIEW=on`, and always for personal photos and videos.
+        Budget `library.publish` (20 an hour). Logged as `shared.publish`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, payload, consent]
+              properties:
+                type: { type: string }
+                src: { type: string, description: 'Which of your own things this is (`sound:<id>`); only ever sent back to you.' }
+                title: { type: string, maxLength: 60 }
+                desc: { type: string, maxLength: 500 }
+                lang: { type: string }
+                gymId: { type: string, nullable: true }
+                payload: { type: object, description: 'Per type: sound `{name, m}`, exercise `{ex, media?}`, plan `{bundle}`, equipment `{name, profile}`, tip `{exId, exName, text}`, look `{flame?, freeze?, accent?}`, measures `{fields}`, avatar `{m}`, photo/progress/formvideo `{media, caption, exId?}`. Files are MediaRefs.' }
+                consent:
+                  type: object
+                  properties: { v: { type: integer }, hash: { type: string }, own: { type: boolean } }
+      responses:
+        '201':
+          description: Shared (or waiting for an admin).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+                  status: { type: string, enum: [live, pending] }
+                  item: { $ref: '#/components/schemas/SharedItem' }
+        '400': { description: '`consent-own`, `type-off`, `bad-payload`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: '`banned` or `not-in-gym`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '409': { description: '`consent-outdated` (with `consent`), `media-missing` (with `missing`), `too-many`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '413': { description: '`quota` or `media-too-large`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '422': { description: '`media-metadata`, `media-webm`, `media-blocked`, `media-type`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/shared/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, pattern: '^s_[a-z2-7]{16}$' } }
+    get:
+      tags: [shared]
+      operationId: getShared
+      summary: One shared item with its whole payload
+      description: An item the caller may not see answers exactly like one that does not exist (404 `not-found`).
+      responses:
+        '200': { description: The item., content: { application/json: { schema: { type: object, properties: { item: { $ref: '#/components/schemas/SharedItem' } } } } } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/SharingOff' }
+    patch:
+      tags: [shared]
+      operationId: editShared
+      summary: A new title, description or version of your item
+      description: |
+        `If-Match: <rev>` (or `rev` in the body) is the revision the editor saw; another one is
+        `412 rev-mismatch`. A new `payload` is a new version (`version` + 1) and goes through
+        every check a first share does; on a reviewed server it waits for an admin again.
+        People who imported an older version keep it and are told a new one exists.
+        Budget `library.edit` (60 an hour).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rev: { type: integer }
+                title: { type: string }
+                desc: { type: string }
+                lang: { type: string }
+                payload: { type: object }
+      responses:
+        '200': { description: The new rev and version., content: { application/json: { schema: { type: object, properties: { rev: { type: integer }, version: { type: integer }, status: { type: string }, item: { $ref: '#/components/schemas/SharedItem' } } } } } }
+        '403': { description: '`not-owner` or `banned`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '404': { $ref: '#/components/responses/SharingOff' }
+        '412': { description: '`rev-mismatch`, with the current `rev`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      tags: [shared]
+      operationId: withdrawShared
+      summary: Stop sharing your item
+      description: The item leaves the library for new imports (`withdrawn`); copies people already took stay theirs. Logged as `shared.withdraw`.
+      responses:
+        '200': { description: Withdrawn., content: { application/json: { schema: { type: object, properties: { status: { type: string, enum: [withdrawn] } } } } } }
+        '403': { description: '`not-owner`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '404': { $ref: '#/components/responses/SharingOff' }
+  /api/shared/{id}/import:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, pattern: '^s_[a-z2-7]{16}$' } }
+    post:
+      tags: [shared]
+      operationId: importShared
+      summary: Copy a shared item into your own profile
+      description: |
+        Only a live item. Its files are copied into the caller's own upload folder, against the
+        caller's media quota (`413 media-quota`), so the copy keeps working when the original is
+        withdrawn. Answers the payload and an `origin` (`kind: library`, the item id, its
+        version, `by` and `at` frozen now, this server's ORIGIN) for the app to merge into its
+        state. Counted once per person. Budget `library.import` (120 an hour).
+      requestBody: { content: { application/json: { schema: { type: object } } } }
+      responses:
+        '200':
+          description: What to merge.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type: { type: string }
+                  title: { type: string }
+                  payload: { type: object }
+                  media: { type: array, items: { type: string } }
+                  origin: { type: object }
+                  item: { $ref: '#/components/schemas/SharedItem' }
+        '404': { $ref: '#/components/responses/SharingOff' }
+        '413': { description: '`media-quota`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /api/shared/{id}/report:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, pattern: '^s_[a-z2-7]{16}$' } }
+    post:
+      tags: [shared]
+      operationId: reportShared
+      summary: Report a shared item to the admins
+      description: |
+        Once per person and item, never your own (`403 own-item`, `409 already-reported`).
+        Reasons: `spam`, `offensive`, `not-theirs`, `licensed`, `personal`, `other`, plus an
+        optional note of 300 characters. Reports from `SHARE_AUTOHIDE_REPORTS` (3) different
+        people take the item out of sight until an admin decides, and a single `licensed` report
+        does it at once. Budget `library.report` (10 an hour). Logged as `shared.report`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, enum: [spam, offensive, not-theirs, licensed, personal, other] }
+                note: { type: string, maxLength: 300 }
+      responses:
+        '200': { description: Reported; `status` says whether it is out of sight now., content: { application/json: { schema: { type: object, properties: { ok: { type: boolean }, status: { type: string } } } } } }
+        '400': { description: '`bad-reason`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '403': { description: '`own-item`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '409': { description: '`already-reported`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /api/shared/media/{hash}:
+    parameters:
+      - { name: hash, in: path, required: true, schema: { type: string, pattern: '^[0-9a-f]{64}$' } }
+    get:
+      tags: [shared]
+      operationId: getSharedMedia
+      summary: A file of a shared item, for the preview
+      description: |
+        Only a file a live item names that the caller may see (or one of the caller's own, or
+        any for an admin), never a blocked hash. The same headers as `GET /api/media/{hash}`
+        (`nosniff`, a sandbox CSP, `private, no-store`).
+      responses:
+        '200': { description: The file., content: { image/webp: { schema: { type: string, format: binary } }, audio/wav: { schema: { type: string, format: binary } }, video/mp4: { schema: { type: string, format: binary } } } }
+        '404': { description: '`media-missing` or `sharing-off`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /api/admin/shared:
+    get:
+      tags: [shared]
+      operationId: adminListShared
+      summary: 'Admin: the moderation list'
+      description: |
+        Every item the caller may moderate (admins; a gym's leads for that gym's items), most
+        reported first, with the owner, the reports (who, why, when), the number of importers,
+        the last moderation and the consent version. `counts` feeds the badge.
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [live, pending, hidden, withdrawn, removed] } }
+        - { name: reported, in: query, schema: { type: string, enum: ['1'] } }
+        - { name: type, in: query, schema: { type: string } }
+        - { name: owner, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: The list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/SharedItem' } }
+                  counts: { type: object, properties: { reported: { type: integer }, pending: { type: integer }, all: { type: integer } } }
+                  review: { type: boolean }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/admin/shared/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, pattern: '^s_[a-z2-7]{16}$' } }
+    post:
+      tags: [shared]
+      operationId: adminModerateShared
+      summary: 'Admin: approve, hide, restore or remove an item'
+      description: |
+        Every action needs a short `reason` and is logged (`shared.approve`, `shared.hide`,
+        `shared.restore`, `shared.remove`). Remove is final: the files leave the shared folder
+        and the folder of every person who imported them, and their hashes are blocked from then
+        on. Text copies (a routine, a tip) stay with the people who took them.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action, reason]
+              properties:
+                action: { type: string, enum: [approve, hide, restore, remove] }
+                reason: { type: string, maxLength: 200 }
+      responses:
+        '200': { description: Done., content: { application/json: { schema: { type: object, properties: { status: { type: string }, copiesRemoved: { type: integer } } } } } }
+        '400': { description: '`bad-action` or `reason-needed`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: '`removed` or `withdrawn`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+  /api/admin/users/{uid}/sharing:
+    parameters:
+      - { name: uid, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [shared]
+      operationId: adminBanSharing
+      summary: 'Admin: pause or resume sharing for one person'
+      description: |
+        `banned: true` (with a reason) stops the person sharing or editing, and takes their live
+        and waiting items out of sight; `false` brings back exactly the ones the ban hid.
+        Logged as `shared.ban` / `shared.unban`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [banned]
+              properties:
+                banned: { type: boolean }
+                reason: { type: string, maxLength: 200 }
+      responses:
+        '200': { description: Done., content: { application/json: { schema: { type: object, properties: { banned: { type: boolean }, items: { type: integer } } } } } }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { description: '`not-found`.', content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   /api/push/public-key:
     get:
       tags: [push]
@@ -5057,6 +5344,22 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
           example: { error: "forbidden" }
+    SharingOff:
+      description: >-
+        The community library is off on this server (`sharing-off`, `LIBRARY` unset), or the
+        item does not exist or is not one the caller may see (`not-found`).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "the community library is off on this server", code: "sharing-off" }
+    RateLimited:
+      description: Over a per-account budget (`rate-limited`); `Retry-After` says when to try again.
+      headers:
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "slow down a little", code: "rate-limited", retryAfter: 120 }
     CoachOff:
       description: >-
         The Coach is not set up on this instance (switched off, or no provider connected).
@@ -5221,6 +5524,32 @@ components:
         queued: { type: integer }
         failed: { type: integer, description: Deliveries given up on; Retry sends them again. }
 
+    SharedItem:
+      type: object
+      description: One item of the community library, as a client sees it (docs/dev/SHARED-LIBRARY-API.md).
+      properties:
+        id: { type: string, example: s_abcdefghijklmnop }
+        type: { type: string }
+        gymId: { type: string, nullable: true }
+        title: { type: string }
+        desc: { type: string }
+        lang: { type: string }
+        payload: { type: object }
+        summary: { type: object, description: A plan's routines and exercise ids, in lists only. }
+        media: { type: array, items: { type: string } }
+        version: { type: integer }
+        rev: { type: integer }
+        status: { type: string, enum: [live, pending, hidden, withdrawn, removed] }
+        createdAt: { type: integer }
+        updatedAt: { type: integer }
+        stats: { type: object, properties: { imports: { type: integer } } }
+        by:
+          type: object
+          description: The uploader, read fresh on every answer. Always there.
+          properties: { id: { type: string }, name: { type: string }, avatar: { type: string, nullable: true } }
+        at: { type: integer, description: When it was shared (ms). }
+        mine: { type: boolean }
+        src: { type: string, description: Only on your own items. }
     Error:
       type: object
       required: [error]

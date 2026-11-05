@@ -225,6 +225,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
   <a class="side-link" href="#integrations"><b>Integrations</b><span>Webhooks (INTEGRATIONS)</span></a>
   <a class="side-link" href="#trainers"><b>Trainers</b><span>Studios, sharing &amp; consent (TRAINERS)</span></a>
+  <a class="side-link" href="#shared"><b>Community</b><span>The shared library (LIBRARY)</span></a>
   <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
   <a class="side-link" href="#schemas"><b>Schemas</b><span>The state blob, the error shape &amp; co.</span></a>
   <p class="side-label">More</p>
@@ -248,7 +249,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>126 endpoints</span>
+    <span>143 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -4676,6 +4677,552 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </section>
 
+<section class="api-sec" id="shared">
+  <h2>Community</h2>
+  <p class="sub">The community library (<code>LIBRARY=on</code>, off by default): things people chose to share with everyone on this server, each after its own consent, always shown with who shared it and when. Importing copies the item into your own profile. Reports, admin review (<code>SHARE_REVIEW=on</code>), removal and bans are all logged. The built-in exercise media can never be shared (blocked by SHA-256). Every route spends a per-account budget.</p>
+  <div class="eps">
+
+<details class="ep" id="op-listShared">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/shared</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Browse the community library of this server</span>
+  </summary>
+  <div class="ep-body">
+<p>Items people shared with everyone on this server (<code>LIBRARY=on</code>), newest or most imported first, 50 a page. Live items the caller may see, plus the caller's own in any status. Every item carries <code>by</code> (the uploader's current name and, when they shared one, their profile picture's hash) and <code>at</code> (when it was shared). A plan comes with a <code>summary</code> instead of its payload; <code>GET /api/shared/{id}</code> has the whole thing. Budget <code>library.list</code> (600 an hour).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">type</span>
+    <span class="p-type">&quot;sound&quot; | &quot;exercise&quot; | &quot;plan&quot; | &quot;equipment&quot; | &quot;tip&quot; | &quot;look&quot; | &quot;measures&quot; | &quot;avatar&quot; | &quot;photo&quot; | &quot;formvideo&quot; | &quot;progress&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">q</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Words that must all appear (title, description, names).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lang</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Comma-separated languages, e.g. <code>de,en</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">sort</span>
+    <span class="p-type">&quot;new&quot; | &quot;popular&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">ex</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Tips about this exercise id only.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">mine</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"><code>1</code>: only the caller's own items, in every status.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">gym</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">A gym id, or <code>server</code> for items open to the whole server.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">cursor</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">One page.<span class="r-sig">{ items: <a href="#schema-SharedItem">SharedItem</a>[], next: string, total: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The community library is off on this server (<code>sharing-off</code>, <code>LIBRARY</code> unset), or the item does not exist or is not one the caller may see (<code>not-found</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;the community library is off on this server&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over a per-account budget (<code>rate-limited</code>); <code>Retry-After</code> says when to try again.<span class="r-sig"><code>{&quot;error&quot;:&quot;slow down a little&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-publishShared">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/shared</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Share one of your own items with everyone on this server</span>
+  </summary>
+  <div class="ep-body">
+<p>Needs the current library consent with <code>own: true</code> (&quot;It's mine to share&quot;): without the tick <code>400 consent-own</code>, with an older text <code>409 consent-outdated</code> and the current one. Files named in the payload must be in the caller's own uploads (<code>PUT /api/media/{hash}</code>) first, else <code>409 media-missing</code> with the list. Each file is checked again before it is copied into the shared folder: its type, the sharing caps (<code>SHARE_VIDEO_MAX_MB</code> 25, sounds 30 s, a profile picture 32 KB), no Exif, XMP, text chunks or MP4 metadata boxes (<code>422 media-metadata</code>), no WebM (<code>422 media-webm</code>), and never a file of the built-in exercise library or one an admin removed (<code>422 media-blocked</code>, by SHA-256). Starts <code>pending</code> with <code>SHARE_REVIEW=on</code>, and always for personal photos and videos. Budget <code>library.publish</code> (20 an hour). Logged as <code>shared.publish</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">type<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Which of your own things this is (<code>sound:&lt;id&gt;</code>); only ever sent back to you.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">title</span>
+    <span class="p-type">string <span class="p-hint">(&le; 60 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">desc</span>
+    <span class="p-type">string <span class="p-hint">(&le; 500 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lang</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">gymId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">payload<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Per type: sound <code>{name, m}</code>, exercise <code>{ex, media?}</code>, plan <code>{bundle}</code>, equipment <code>{name, profile}</code>, tip <code>{exId, exName, text}</code>, look <code>{flame?, freeze?, accent?}</code>, measures <code>{fields}</code>, avatar <code>{m}</code>, photo/progress/formvideo <code>{media, caption, exId?}</code>. Files are MediaRefs.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">consent<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">consent.v</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">consent.hash</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">consent.own</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">201</span>
+    <span class="p-desc">Shared (or waiting for an admin).<span class="r-sig">{ id: string, status: &quot;live&quot; | &quot;pending&quot;, item: <a href="#schema-SharedItem">SharedItem</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>consent-own</code>, <code>type-off</code>, <code>bad-payload</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc"><code>banned</code> or <code>not-in-gym</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>consent-outdated</code> (with <code>consent</code>), <code>media-missing</code> (with <code>missing</code>), <code>too-many</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">413</span>
+    <span class="p-desc"><code>quota</code> or <code>media-too-large</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">422</span>
+    <span class="p-desc"><code>media-metadata</code>, <code>media-webm</code>, <code>media-blocked</code>, <code>media-type</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over a per-account budget (<code>rate-limited</code>); <code>Retry-After</code> says when to try again.<span class="r-sig"><code>{&quot;error&quot;:&quot;slow down a little&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getShared">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/shared/{id}</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">One shared item with its whole payload</span>
+  </summary>
+  <div class="ep-body">
+<p>An item the caller may not see answers exactly like one that does not exist (404 <code>not-found</code>).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The item.<span class="r-sig">{ item: <a href="#schema-SharedItem">SharedItem</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The community library is off on this server (<code>sharing-off</code>, <code>LIBRARY</code> unset), or the item does not exist or is not one the caller may see (<code>not-found</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;the community library is off on this server&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-editShared">
+  <summary>
+    <span class="m patch">PATCH</span>
+    <span class="ep-path"><code>/api/shared/{id}</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">A new title, description or version of your item</span>
+  </summary>
+  <div class="ep-body">
+<p><code>If-Match: &lt;rev&gt;</code> (or <code>rev</code> in the body) is the revision the editor saw; another one is <code>412 rev-mismatch</code>. A new <code>payload</code> is a new version (<code>version</code> + 1) and goes through every check a first share does; on a reviewed server it waits for an admin again. People who imported an older version keep it and are told a new one exists. Budget <code>library.edit</code> (60 an hour).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">rev</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">title</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">desc</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lang</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">payload</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The new rev and version.<span class="r-sig">{ rev: integer, version: integer, status: string, item: <a href="#schema-SharedItem">SharedItem</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc"><code>not-owner</code> or <code>banned</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The community library is off on this server (<code>sharing-off</code>, <code>LIBRARY</code> unset), or the item does not exist or is not one the caller may see (<code>not-found</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;the community library is off on this server&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">412</span>
+    <span class="p-desc"><code>rev-mismatch</code>, with the current <code>rev</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-withdrawShared">
+  <summary>
+    <span class="m delete">DELETE</span>
+    <span class="ep-path"><code>/api/shared/{id}</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Stop sharing your item</span>
+  </summary>
+  <div class="ep-body">
+<p>The item leaves the library for new imports (<code>withdrawn</code>); copies people already took stay theirs. Logged as <code>shared.withdraw</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Withdrawn.<span class="r-sig">{ status: &quot;withdrawn&quot; }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc"><code>not-owner</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The community library is off on this server (<code>sharing-off</code>, <code>LIBRARY</code> unset), or the item does not exist or is not one the caller may see (<code>not-found</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;the community library is off on this server&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-importShared">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/shared/{id}/import</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Copy a shared item into your own profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Only a live item. Its files are copied into the caller's own upload folder, against the caller's media quota (<code>413 media-quota</code>), so the copy keeps working when the original is withdrawn. Answers the payload and an <code>origin</code> (<code>kind: library</code>, the item id, its version, <code>by</code> and <code>at</code> frozen now, this server's ORIGIN) for the app to merge into its state. Counted once per person. Budget <code>library.import</code> (120 an hour).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">What to merge.<span class="r-sig">{ type: string, title: string, payload: object, media: string[], origin: object, item: <a href="#schema-SharedItem">SharedItem</a> }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">The community library is off on this server (<code>sharing-off</code>, <code>LIBRARY</code> unset), or the item does not exist or is not one the caller may see (<code>not-found</code>).<span class="r-sig"><code>{&quot;error&quot;:&quot;the community library is off on this server&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">413</span>
+    <span class="p-desc"><code>media-quota</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-reportShared">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/shared/{id}/report</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Report a shared item to the admins</span>
+  </summary>
+  <div class="ep-body">
+<p>Once per person and item, never your own (<code>403 own-item</code>, <code>409 already-reported</code>). Reasons: <code>spam</code>, <code>offensive</code>, <code>not-theirs</code>, <code>licensed</code>, <code>personal</code>, <code>other</code>, plus an optional note of 300 characters. Reports from <code>SHARE_AUTOHIDE_REPORTS</code> (3) different people take the item out of sight until an admin decides, and a single <code>licensed</code> report does it at once. Budget <code>library.report</code> (10 an hour). Logged as <code>shared.report</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">reason<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;spam&quot; | &quot;offensive&quot; | &quot;not-theirs&quot; | &quot;licensed&quot; | &quot;personal&quot; | &quot;other&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">note</span>
+    <span class="p-type">string <span class="p-hint">(&le; 300 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Reported; <code>status</code> says whether it is out of sight now.<span class="r-sig">{ ok: boolean, status: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>bad-reason</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc"><code>own-item</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>already-reported</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over a per-account budget (<code>rate-limited</code>); <code>Retry-After</code> says when to try again.<span class="r-sig"><code>{&quot;error&quot;:&quot;slow down a little&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-getSharedMedia">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/shared/media/{hash}</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">A file of a shared item, for the preview</span>
+  </summary>
+  <div class="ep-body">
+<p>Only a file a live item names that the caller may see (or one of the caller's own, or any for an admin), never a blocked hash. The same headers as <code>GET /api/media/{hash}</code> (<code>nosniff</code>, a sandbox CSP, <code>private, no-store</code>).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The file.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc"><code>media-missing</code> or <code>sharing-off</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminListShared">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/admin/shared</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The moderation list</span>
+  </summary>
+  <div class="ep-body">
+<p>Every item the caller may moderate (admins; a gym's leads for that gym's items), most reported first, with the owner, the reports (who, why, when), the number of importers, the last moderation and the consent version. <code>counts</code> feeds the badge.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">status</span>
+    <span class="p-type">&quot;live&quot; | &quot;pending&quot; | &quot;hidden&quot; | &quot;withdrawn&quot; | &quot;removed&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">reported</span>
+    <span class="p-type">&quot;1&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">type</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">owner</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The list.<span class="r-sig">{ items: <a href="#schema-SharedItem">SharedItem</a>[], counts: object, review: boolean }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminModerateShared">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/shared/{id}</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Approve, hide, restore or remove an item</span>
+  </summary>
+  <div class="ep-body">
+<p>Every action needs a short <code>reason</code> and is logged (<code>shared.approve</code>, <code>shared.hide</code>, <code>shared.restore</code>, <code>shared.remove</code>). Remove is final: the files leave the shared folder and the folder of every person who imported them, and their hashes are blocked from then on. Text copies (a routine, a tip) stay with the people who took them.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">action<em class="p-req" title="required">required</em></span>
+    <span class="p-type">&quot;approve&quot; | &quot;hide&quot; | &quot;restore&quot; | &quot;remove&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">reason<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string <span class="p-hint">(&le; 200 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">{ status: string, copiesRemoved: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc"><code>bad-action</code> or <code>reason-needed</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc"><code>removed</code> or <code>withdrawn</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminBanSharing">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/users/{uid}/sharing</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Pause or resume sharing for one person</span>
+  </summary>
+  <div class="ep-body">
+<p><code>banned: true</code> (with a reason) stops the person sharing or editing, and takes their live and waiting items out of sight; <code>false</code> brings back exactly the ones the ban hid. Logged as <code>shared.ban</code> / <code>shared.unban</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">banned<em class="p-req" title="required">required</em></span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">reason</span>
+    <span class="p-type">string <span class="p-hint">(&le; 200 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">{ banned: boolean, items: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc"><code>not-found</code>.</span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
 <section class="api-sec" id="admin">
   <h2>Admin</h2>
   <p class="sub">Admin dashboard. Requires an admin session (<code>ADMIN_UIDS</code> or <code>admin:true</code>)</p>
@@ -5831,6 +6378,134 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">failed</span>
     <span class="p-type">integer</span>
     <span class="p-desc">Deliveries given up on; Retry sends them again.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-SharedItem">
+  <summary>
+    <span class="sch-name"><code>SharedItem</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">One item of the community library, as a client sees it (docs/dev/SHARED-LIBRARY-API.md).</span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">type</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">gymId</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">title</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">desc</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">lang</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">payload</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">summary</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">A plan's routines and exercise ids</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">media</span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">version</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">rev</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">status</span>
+    <span class="p-type">&quot;live&quot; | &quot;pending&quot; | &quot;hidden&quot; | &quot;withdrawn&quot; | &quot;removed&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">createdAt</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">updatedAt</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">stats</span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">stats.imports</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">by</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">The uploader, read fresh on every answer. Always there.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">by.id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">by.name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">by.avatar</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">at</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">When it was shared (ms).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">mine</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">src</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Only on your own items.</span>
   </div>
 </div>
   </div>

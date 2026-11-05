@@ -11,6 +11,7 @@ import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
+import AdminCommunity from './AdminCommunity.jsx'
 import '../admin.css'
 
 // Admin-only operator dashboard (owner passkey + admin flag; guarded again server-side).
@@ -497,6 +498,9 @@ export default function Admin() {
     <div ref={coachRef} className="adm-coach-anchor"><AdminCoach /></div>
 
     <InvitesCard invites={invites} reload={loadInvites} inviteOnly={inviteOnly} />
+
+    {/* The community library's moderation (AdminCommunity.jsx); nothing without LIBRARY=on. */}
+    <AdminCommunity tick={tick} />
 
     {trainersOn && <GymsCard users={users || []} tick={tick} />}
 

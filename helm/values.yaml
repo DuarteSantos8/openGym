@@ -126,6 +126,9 @@ api:
     INTEGRATIONS: ""         # "webhook" = Settings → Integrations → Webhooks (docs/INTEGRATIONS.md)
     INTEGRATIONS_ALLOW_LAN: ""  # "1" = webhooks may reach the home network
     TRAINERS: ""             # "on" = gyms, gym leads and trainers (docs/TRAINERS.md)
+    LIBRARY: ""              # "on" = the community library (docs/SELF_HOSTING.md); data/shared on the same volume
+    SHARE_REVIEW: ""         # "on" = an admin approves shared items first
+    SHARE_PERSONAL_MEDIA: "" # "on" = workout and progress photos can be shared (always reviewed)
     ADMIN_DATA_VIEW: ""      # "on" = admins see workouts and weigh-ins again, every look logged
     MEDIA_QUOTA_MB: ""
     MEDIA_IMAGE_MAX_MB: ""

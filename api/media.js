@@ -795,6 +795,39 @@ export function createMediaStore({ dir, limits, now = Date.now, readState = () =
       }
       return out;
     },
+    /** A file copied in from the shared library (an import): into the profile's own folder, against
+     *  its quota, marked like a fresh upload until the state that names it arrives. A hash the
+     *  profile already has is left as it is. */
+    adopt(uid, hash, src, ext) {
+      if (!HASH_RE.test(hash) || !EXT_MIME[ext]) throw new MediaError(400, 'bad-request');
+      const e = entry(uid);
+      if (intact(e, hash)) { touch(e, hash); return { existed: true }; }
+      const size = fs.statSync(src).size;
+      if (quotaBytes && e.bytes + e.reserved + size > quotaBytes) throw new MediaError(413, 'media-quota', { usage: usageOf(e) });
+      ensureDir(e.dir);
+      const dst = path.join(e.dir, `${hash}.${ext}`);
+      const tmp = dst + '.adopt';
+      try { fs.unlinkSync(tmp); } catch { /* none */ }
+      try { fs.linkSync(src, tmp); } catch { fs.copyFileSync(src, tmp); }
+      fs.renameSync(tmp, dst);
+      syncDir(e.dir);
+      forget(e, hash);
+      e.hashes.set(hash, { ext, size });
+      e.bytes += size;
+      e.count++;
+      try { markIfUnreferenced(uid, e, hash); } catch (err) { log.error('media: could not mark', e.id, hash, err.message); }
+      return { existed: false, size };
+    },
+    /** One file out of a profile's folder: only the library's admin removal asks, and only for a
+     *  file its import copied there. */
+    dropFile(uid, hash) {
+      const e = entry(uid);
+      const f = e.hashes.get(hash);
+      if (!f) return false;
+      try { fs.unlinkSync(path.join(e.dir, `${hash}.${f.ext}`)); } catch (err) { if (err.code !== 'ENOENT') throw err; }
+      forget(e, hash);
+      return true;
+    },
     /** Admin delete: the profile's whole folder. */
     removeUser(uid) {
       const id = safe(uid);
