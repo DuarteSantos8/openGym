@@ -380,13 +380,6 @@ button.conn:active{filter:brightness(1.12)}
 /* the page title drops a step on phone widths (the Library's header leaves it the least room) */
 @media (max-width:420px){:root{--fs-large:1.875rem}}
 .hdr .sub{color:var(--label-2);font-size:var(--fs-subhead);letter-spacing:-.006em;margin-top:4px}
-/* Library: the count line runs under the title row at full width instead of beside the "By muscle"
-   button, which left it ~200px on a phone: the catalogue count plus your own exercises stays one
-   line in every language. The ellipsis is only the safety net (the strings are kept short), and
-   text-overflow follows the text direction, so Arabic clips on its own end. */
-.hdr.lib-hdr{flex-wrap:wrap;align-items:center;row-gap:0}
-.hdr.lib-hdr>.sub.lib-count{flex:1 0 100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:360px){.hdr.lib-hdr>.sub.lib-count{white-space:normal;overflow:visible;text-overflow:clip}}
 
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;
@@ -3272,3 +3265,33 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   .kpis .tile{padding:10px 11px}
   .kpis .tile .v{font-size:var(--fs-title3)}
 }
+
+.hdr.lib-hdr{align-items:center}
+/* Home's weight summary: the reading leads; the chart opens the full weigh-in history. */
+.card.home-weight{padding:18px 18px 0;border-radius:20px}
+.home-weight-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.home-weight-head .btn{width:44px;height:44px;min-height:44px;font-size:var(--fs-title2);padding:0;flex:none}
+.home-weight-main{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.home-weight-reading{min-width:0;flex:1}
+.home-weight-label{font-size:var(--fs-caption);color:var(--label-2)}
+.home-weight-value{font-size:2.875rem;font-weight:650;letter-spacing:-.035em;line-height:1.15;font-variant-numeric:tabular-nums;margin:3px 0 5px;white-space:nowrap}
+.home-weight-value span{font-size:var(--fs-body);font-weight:500;letter-spacing:0;color:var(--label-2)}
+.home-weight-trend{width:135px;max-width:42%;flex:none;padding:0;border:0;background:none;color:var(--label-2);text-align:end;cursor:pointer}
+.home-weight-trend>span{display:block;font-size:var(--fs-caption2);margin-top:3px}
+.home-weight-trend .chart-i{pointer-events:none}
+.home-weight-trend polygon{display:none}
+.home-weight-trend polyline{stroke-width:2}
+.home-weight-delta{font-size:var(--fs-caption);color:var(--label-2);margin:12px 0 17px}
+.home-weight-goal{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:0;min-height:58px;margin-top:16px;border-top:var(--hair) solid var(--sep-op);background:none;color:var(--label-2);font-size:var(--fs-caption);text-align:start}
+.home-weight-delta+.home-weight-goal{margin-top:0}
+.home-weight-goal>span{display:flex;align-items:center;gap:4px}
+.home-weight-goal>span:first-child{color:var(--label)}
+.home-weight-goal .icn{font-size:var(--fs-footnote);flex:none}
+@media(max-width:360px){.home-weight-value{font-size:2.5rem}.home-weight-main{gap:12px}.home-weight-goal{flex-wrap:wrap;justify-content:flex-start;padding-block:12px;gap:8px}.home-weight-goal>span:last-child{margin-inline-start:auto}}
+
+
+.btn.lib-plan{width:44px;height:44px;padding:0;border-radius:50%;flex:none}
+.btn.lib-plan .icn{font-size:var(--fs-title3)}
+.lib-create-action{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;flex:none}
+.lib-create-action .icn{font-size:var(--fs-title3)}
+.ex-grid .item>.btn.lib-plan{width:44px;align-self:flex-end}

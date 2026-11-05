@@ -1,5 +1,8 @@
 // French UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  '{0} from goal': '{0} de l’objectif',
+  'Since last: {0}': 'Depuis la dernière : {0}',
+  'Latest': 'Dernière mesure',
   "Same muscle and exercise type. The movement may differ.": "Même muscle et même type d’exercice. Le mouvement peut différer.",
   "Related muscles and exercise type. The movement may differ.": "Muscles associés et même type d’exercice. Le mouvement peut différer.",
   "Same muscle, different exercise type. Check suitability.": "Même muscle, type d’exercice différent. Vérifiez si cela convient.",

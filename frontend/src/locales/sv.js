@@ -1,5 +1,8 @@
 // Swedish UI strings. Keys are the English source strings (see lib/i18n.js).
 export default {
+  '{0} from goal': '{0} från målet',
+  'Since last: {0}': 'Sedan senast: {0}',
+  'Latest': 'Senaste',
   'Same muscle and exercise type. The movement may differ.': 'Samma muskel och övningstyp. Rörelsen kan skilja sig.',
   'Related muscles and exercise type. The movement may differ.': 'Närliggande muskler och samma övningstyp. Rörelsen kan skilja sig.',
   'Same muscle, different exercise type. Check suitability.': 'Samma muskel, annan övningstyp. Kolla att den passar.',
