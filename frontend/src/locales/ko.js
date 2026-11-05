@@ -4052,7 +4052,6 @@ export default {
   "Per week": "주당",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "왼쪽에서 한 명을 고르세요. 그 사람이 공유하기로 한 것만 보이고, 그 외에는 아무것도 안 보여요.",
   "Private client": "개인 회원",
-  "Progress photos: {0}": "진행 사진: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "프런트 데스크에 두세요. 스캔한 사람은 헬스장에 가입하고, 무엇을 보여 줄지 직접 골라요.",
   "QR code for {0}": "{0} QR 코드",
   "Quiet": "조용함",
@@ -4172,4 +4171,7 @@ export default {
   "{0}: rest day": "{0}: 휴식일",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "이 헬스장에 가입하려고 해요. 헬스장 관리자는 내 이름과 여기서 표시한 카테고리를 볼 수 있지만, 보기 이상은 절대 안 돼요. 언제든 바꾸거나 헬스장에서 나갈 수 있고, 그 순간 바로 멈춰요.",
+  "Photo from {0}": "{0} 사진",
+  "No progress photos yet.": "아직 변화 사진이 없어요.",
+  "The newest {0} are here.": "최근 {0}장만 보여요.",
 }

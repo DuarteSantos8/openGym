@@ -12,6 +12,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { boundPort } from './helpers.mjs';
+import * as M from './media-samples.mjs';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
@@ -29,7 +30,7 @@ const USERS = [
 const today = new Date().toISOString().slice(0, 10);
 const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
 
-async function start(t, env = {}) {
+async function start(t, env = {}, lea = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-dash-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: USERS.map(u => ({ ...u, created: new Date().toISOString() })), creds: [], subs: [], invites: [] }));
@@ -41,7 +42,7 @@ async function start(t, env = {}) {
       { id: 'w0', name: 'Legs', d: daysAgo(9), start: 1, end: 2, entries: [] },
     ],
     bodyweight: [{ d: daysAgo(14), w: 70 }, { d: daysAgo(1), w: 68.4 }], routines: [{ id: 'r1', name: 'Push A', ex: [{ id: 'bench' }] }],
-    measurements: [{ d: daysAgo(3), waist: 80 }], dayNotes: { [daysAgo(2)]: { text: 'knee sore' } }, week: {}
+    measurements: [{ d: daysAgo(3), waist: 80 }], dayNotes: { [daysAgo(2)]: { text: 'knee sore' } }, week: {}, ...lea
   }));
   fs.writeFileSync(path.join(dataDir, 'state-u_marco.json'), JSON.stringify({
     unit: 'kg', _rev: 1,
@@ -65,6 +66,9 @@ async function start(t, env = {}) {
     });
     return { status: r.status, body: await r.json().catch(() => null) };
   };
+  h.raw = (who, method, p, body, headers = {}) => fetch(`http://127.0.0.1:${port}${p}`, {
+    method, headers: { ...(who ? { Cookie: `gymsid=${mint(who)}` } : {}), ...headers }, ...(body ? { body } : {})
+  });
   h.state = uid => JSON.parse(fs.readFileSync(path.join(dataDir, `state-${uid}.json`), 'utf8'));
   return h;
 }
@@ -276,4 +280,60 @@ test('nothing of it with TRAINERS off', async t => {
     assert.equal(r.status, 404, p);
     assert.equal(r.body.code, 'trainers-off');
   }
+});
+
+test('progress photos: a trainer with the photos grant sees them, without it 403, other media never', async t => {
+  const day = M.jpeg(1200), onWorkout = M.jpeg(1300), custom = M.jpeg(1400), video = M.jpeg(1500);
+  const ref = (b, mime = 'image/jpeg') => ({ kind: 'image', hash: M.sha(b), mime, size: b.length, width: 3, height: 4, at: 1 });
+  const h = await start(t, {}, {
+    dayPhotos: { [M.sha(day)]: { d: daysAgo(4), m: ref(day), _ts: 1 } },
+    customEx: [{ id: 'c_me', name: 'Mine', media: ref(custom) }],
+    avatar: { m: ref(video) },
+  });
+  const { call } = h;
+  // The workout photo rides on w1 (the fixture's first workout).
+  const S = h.state('u_lea');
+  S.workouts[0].media = [ref(onWorkout)];
+  fs.writeFileSync(path.join(h.dataDir, 'state-u_lea.json'), JSON.stringify(S));
+  for (const b of [day, onWorkout, custom, video]) {
+    assert.equal((await h.raw('u_lea', 'PUT', `/api/media/${M.sha(b)}`, b, { 'Content-Type': 'image/jpeg', Origin: 'http://localhost:8080' })).status, 201);
+  }
+  const photo = (who, b) => h.raw(who, 'GET', `/api/trainer/member/photo?id=u_lea&hash=${M.sha(b)}`);
+
+  // Nobody's trainer yet: 404, nothing to learn.
+  assert.equal((await photo('u_tim', day)).status, 404);
+  const { conn, consent } = await connected(h, { metrics: 'view', workouts: 'view' });
+  // Connected, but photos are not shared: 403, and the detail has no photos at all.
+  const no = await photo('u_marco', day);
+  assert.equal(no.status, 403);
+  assert.equal((await no.json()).code, 'level');
+  assert.equal((await call('u_marco', 'GET', `/api/trainer/member?id=u_lea&today=${today}`)).body.photos, undefined);
+  assert.equal((await photo('u_tim', day)).status, 404);
+
+  // She shares them: both progress photos, newest first, with the locked-down headers.
+  await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'view', photos: 'view' }, consent });
+  const d = (await call('u_marco', 'GET', `/api/trainer/member?id=u_lea&today=${today}`)).body;
+  assert.equal(d.photos.count, 2);
+  assert.deepEqual(d.photos.items.map(p => p.hash), [M.sha(onWorkout), M.sha(day)]);
+  assert.equal(d.photos.items[0].workoutId, 'w1');
+  const ok = await photo('u_marco', day);
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('content-type'), 'image/jpeg');
+  assert.equal(ok.headers.get('cache-control'), 'private, no-store');
+  assert.match(ok.headers.get('content-security-policy'), /sandbox/);
+  assert.ok(Buffer.from(await ok.arrayBuffer()).equals(day));
+  assert.equal((await photo('u_marco', onWorkout)).status, 200);
+  // Her custom exercise's picture and her profile picture are not progress photos.
+  assert.equal((await photo('u_marco', custom)).status, 404);
+  assert.equal((await photo('u_marco', video)).status, 404);
+  assert.equal((await h.raw('u_marco', 'GET', '/api/trainer/member/photo?id=u_lea&hash=nope')).status, 400);
+  // Her own media route still only ever answers her.
+  assert.equal((await h.raw('u_marco', 'GET', `/api/media/${M.sha(day)}`)).status, 404);
+  // The look is in her log.
+  const lg = (await call('u_lea', 'GET', '/api/sharing/log')).body.log;
+  assert.ok(lg.some(e => e.ev === 'access' && e.cat === 'photos' && e.actor.name === 'Marco'));
+
+  // Photos off again: 403 on the very next file.
+  await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'view', photos: 'off' }, consent });
+  assert.equal((await photo('u_marco', day)).status, 403);
 });

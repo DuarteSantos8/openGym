@@ -4052,7 +4052,6 @@ export default {
   "Per week": "Haftalık",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "Soldan birini seç. Paylaşmayı seçtiklerini görürsün, başka bir şeyi değil.",
   "Private client": "Özel danışan",
-  "Progress photos: {0}": "İlerleme fotoğrafları: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "Resepsiyona koy. Kim tararsa salona katılır ve ne göreceğini seçer.",
   "QR code for {0}": "{0} için QR kodu",
   "Quiet": "Sessiz",
@@ -4172,4 +4171,7 @@ export default {
   "{0}: rest day": "{0}: dinlenme günü",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Bu salona katılıyorsun. Salon yöneticisi adını ve burada işaretlediğin kategorileri görür, asla Gör seviyesinden fazlasını değil. Bunu istediğin an değiştirebilir ya da salondan ayrılabilirsin, ayrıldığın anda da çalışmayı bırakır.",
+  "Photo from {0}": "{0} tarihli fotoğraf",
+  "No progress photos yet.": "Henüz ilerleme fotoğrafı yok.",
+  "The newest {0} are here.": "En yeni {0} tanesi burada.",
 }

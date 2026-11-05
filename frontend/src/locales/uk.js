@@ -4049,7 +4049,6 @@ export default {
   "Per week": "На тиждень",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "Обери когось ліворуч. Ти бачиш те, чим людина вирішила поділитися, і більше нічого.",
   "Private client": "Приватний клієнт",
-  "Progress photos: {0}": "Фото прогресу: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "Поклади це на рецепцію. Хто відсканує, приєднається до залу й сам обере, що тобі показувати.",
   "QR code for {0}": "QR-код для {0}",
   "Quiet": "Тихо",
@@ -4169,4 +4168,7 @@ export default {
   "{0}: rest day": "{0}: день відпочинку",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Ти приєднуєшся до цього залу. Його керівник бачить твоє ім'я й категорії, які ти тут позначиш, але не більше ніж перегляд. Ти можеш змінити це або вийти із залу будь-коли, і все перестане діяти одразу.",
+  "Photo from {0}": "Фото від {0}",
+  "No progress photos yet.": "Фото прогресу поки немає.",
+  "The newest {0} are here.": "Тут найновіші: {0}.",
 }

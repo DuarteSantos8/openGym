@@ -4131,7 +4131,6 @@ export default {
   "Per week": "প্রতি সপ্তাহে",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "বাঁ দিক থেকে কাউকে বেছে নিন। তিনি যা শেয়ার করতে বেছেছেন তা-ই দেখেন, আর কিছু নয়।",
   "Private client": "ব্যক্তিগত ক্লায়েন্ট",
-  "Progress photos: {0}": "অগ্রগতির ছবি: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "রিসেপশনে রেখে দিন। যিনি স্ক্যান করবেন তিনি জিমে যোগ দেবেন আর নিজেই বেছে নেবেন আপনি কী দেখবেন।",
   "QR code for {0}": "{0}-এর জন্য QR কোড",
   "Quiet": "নীরব",
@@ -4251,4 +4250,7 @@ export default {
   "{0}: rest day": "{0}: বিশ্রামের দিন",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "আপনি এই জিমে যোগ দিচ্ছেন। এর জিম প্রধান আপনার নাম আর আপনি এখানে যে ক্যাটেগরি চিহ্নিত করেন সেগুলো দেখেন, দেখার বেশি কখনও নয়। আপনি এটা যে কোনো সময় বদলাতে বা জিম ছেড়ে দিতে পারেন, আর সেই মুহূর্তেই এটা কাজ করা বন্ধ করে।",
+  "Photo from {0}": "{0} তারিখের ছবি",
+  "No progress photos yet.": "এখনও কোনো অগ্রগতির ছবি নেই।",
+  "The newest {0} are here.": "সবচেয়ে নতুন {0}টি এখানে।",
 }

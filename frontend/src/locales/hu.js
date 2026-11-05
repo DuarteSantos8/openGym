@@ -4055,7 +4055,6 @@ export default {
   "Per week": "Hetente",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "Válassz valakit bal oldalt. Azt látod, amit megosztani választott, és semmi mást.",
   "Private client": "Magánügyfél",
-  "Progress photos: {0}": "Fejlődési fotók: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "Tedd ki a pultra. Aki beolvassa, csatlakozik a teremhez, és kiválasztja, mit látsz.",
   "QR code for {0}": "QR-kód ehhez: {0}",
   "Quiet": "Csendes",
@@ -4175,4 +4174,7 @@ export default {
   "{0}: rest day": "{0}: pihenőnap",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Csatlakozol ehhez a teremhez. A vezetője látja a neved és az itt megjelölt kategóriákat, soha nem többet, mint Megtekintés. Bármikor módosíthatod, vagy elhagyhatod a termet, és abban a pillanatban megszűnik működni.",
+  "Photo from {0}": "Fotó: {0}",
+  "No progress photos yet.": "Még nincs fejlődésfotó.",
+  "The newest {0} are here.": "Itt a legújabb {0}.",
 }

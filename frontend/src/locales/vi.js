@@ -4017,7 +4017,6 @@ export default {
   "Per week": "Mỗi tuần",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "Chọn một người ở bên trái. Bạn thấy những gì họ chọn chia sẻ, không hơn.",
   "Private client": "Khách hàng riêng",
-  "Progress photos: {0}": "Ảnh tiến trình: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "Để nó ở quầy lễ tân. Ai quét sẽ tham gia phòng gym và tự chọn bạn được thấy gì.",
   "QR code for {0}": "Mã QR cho {0}",
   "Quiet": "Im ắng",
@@ -4137,4 +4136,7 @@ export default {
   "{0}: rest day": "{0}: ngày nghỉ",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Bạn đang tham gia phòng gym này. Quản lý của phòng thấy tên bạn và các nhóm bạn đánh dấu ở đây, không bao giờ hơn mức xem. Bạn có thể đổi điều này hoặc rời phòng gym bất cứ lúc nào, và nó ngừng có hiệu lực ngay lúc đó.",
+  "Photo from {0}": "Ảnh ngày {0}",
+  "No progress photos yet.": "Chưa có ảnh tiến độ nào.",
+  "The newest {0} are here.": "Đây là {0} ảnh mới nhất.",
 };

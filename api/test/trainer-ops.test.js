@@ -103,7 +103,7 @@ test('projections show only the shared categories, without media or notes', () =
       entries: [{ id: 'bench', note: 'shoulder', photo: 'abc', sets: [{ w: 100, r: 5, done: true }, { w: 50, r: 5, done: true, phase: 'warmup' }, { w: 90, r: 5, done: false }] }] }],
     bodyweight: [{ d: '2026-10-20', w: 80 }, { d: '2026-11-03', w: 78.5 }],
     routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'bench', video: 'v' }] }], week: { 1: 'r1' },
-    dayNotes: { '2026-11-02': { text: 'sick' } }, dayPhotos: { '2026-11-01': [{ h: 'x' }] }, measurements: [{ d: '2026-11-01', waist: 80, t: 1 }],
+    dayNotes: { '2026-11-02': { text: 'sick' } }, dayPhotos: { 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa': { d: '2026-11-01', m: { kind: 'image', hash: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', mime: 'image/jpeg' }, _ts: 1 }, ['b'.repeat(64)]: { _ts: 2 } }, measurements: [{ d: '2026-11-01', waist: 80, t: 1 }],
   };
   const lv = { metrics: 'view', workouts: 'view', plans: 'off', bodyweight: 'off', measurements: 'off', photos: 'off', notes: 'off', nutrition: 'off' };
   const p = project(S, lv, { today: '2026-11-05' });

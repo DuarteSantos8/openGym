@@ -4017,7 +4017,6 @@ export default {
   "Per week": "در هفته",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "از سمت چپ یک نفر را انتخاب کن. آنچه را برای اشتراک انتخاب کرده می‌بینی، نه بیشتر.",
   "Private client": "مراجع خصوصی",
-  "Progress photos: {0}": "عکس‌های پیشرفت: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "بگذارش روی میز پذیرش. هر کس اسکنش کند به باشگاه می‌پیوندد و خودش انتخاب می‌کند چه چیزی ببینی.",
   "QR code for {0}": "کد QR برای {0}",
   "Quiet": "ساکت",
@@ -4137,4 +4136,7 @@ export default {
   "{0}: rest day": "{0}: روز استراحت",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "تو به این باشگاه می‌پیوندی. مدیر آن اسم تو و دسته‌هایی را که اینجا علامت می‌زنی می‌بیند، هرگز بیشتر از مشاهده. هر وقت خواستی می‌توانی این را تغییر دهی یا باشگاه را ترک کنی و همان لحظه از کار می‌افتد.",
+  "Photo from {0}": "عکس {0}",
+  "No progress photos yet.": "هنوز عکس پیشرفتی نیست.",
+  "The newest {0} are here.": "{0} عکس تازه‌تر اینجاست.",
 }

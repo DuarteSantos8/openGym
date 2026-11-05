@@ -4016,7 +4016,6 @@ export default {
   "Per week": "Per minggu",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "Pilih seseorang di kiri. Kamu melihat apa yang mereka pilih untuk dibagikan, tidak lebih.",
   "Private client": "Klien pribadi",
-  "Progress photos: {0}": "Foto progres: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "Taruh di meja depan. Siapa pun yang memindainya bergabung ke gym dan memilih apa yang kamu lihat.",
   "QR code for {0}": "Kode QR untuk {0}",
   "Quiet": "Sepi",
@@ -4136,4 +4135,7 @@ export default {
   "{0}: rest day": "{0}: hari istirahat",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Kamu bergabung ke gym ini. Pengelola gymnya melihat namamu dan kategori yang kamu tandai di sini, tidak pernah lebih dari melihat. Kamu bisa mengubah ini atau keluar dari gym kapan saja, dan langsung berhenti berlaku saat itu juga.",
+  "Photo from {0}": "Foto dari {0}",
+  "No progress photos yet.": "Belum ada foto progres.",
+  "The newest {0} are here.": "Ini {0} yang terbaru.",
 };

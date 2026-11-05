@@ -4052,7 +4052,6 @@ export default {
   "Per week": "每周",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "从左边选一个人。你只能看到对方选择共享的内容，别的看不到。",
   "Private client": "私教学员",
-  "Progress photos: {0}": "进度照片：{0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "放在前台。谁扫了谁就加入健身房，并自己选择你能看到什么。",
   "QR code for {0}": "{0}的二维码",
   "Quiet": "安静",
@@ -4172,4 +4171,7 @@ export default {
   "{0}: rest day": "{0}：休息日",
   "{0}: {1}": "{0}：{1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "你正在加入这家健身房。它的负责人能看到你的名字和你在这里勾选的类别，权限绝不超过查看。你可以随时更改，或退出健身房，操作一做就立即停止。",
+  "Photo from {0}": "{0} 的照片",
+  "No progress photos yet.": "还没有进度照片。",
+  "The newest {0} are here.": "这里是最新的 {0} 张。",
 }

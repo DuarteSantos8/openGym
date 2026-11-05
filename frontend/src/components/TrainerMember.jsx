@@ -10,6 +10,7 @@ import { categoryLabel } from '../lib/sharing-api.js'
 import { exName, flagText, changeLines, weekdayName, initials, tintOf } from '../lib/trainer-api.js'
 import { Segmented, Button } from './ui.jsx'
 import Icon from './Icon.jsx'
+import TrainerPhotos from './TrainerPhotos.jsx'
 
 const TAB_CATS = { overview: ['metrics', 'bodyweight'], workouts: ['workouts'], plan: ['plans'], body: ['bodyweight', 'measurements'], notes: ['notes'] }
 
@@ -242,7 +243,7 @@ export default function TrainerMember({ d, onBack, onComment, onAssign, onWeigh,
       {tab === 'activity' && <Activity d={d} />}
       {tab === 'overview' && shared.has('nutrition') && <div className="tr-card"><div className="tr-card-t">{t('Nutrition')}</div>
         <p className="tr-empty">{d.nutrition?.status === 'ok' ? t('Linked. Numbers arrive with the next version of openNutrition.') : t('Shared, but no nutrition app is linked yet.')}</p></div>}
-      {tab === 'overview' && shared.has('photos') && <div className="tr-tile-s tr-photos">{t('Progress photos: {0}', d.photos?.count ?? 0)}</div>}
+      {tab === 'overview' && shared.has('photos') && <TrainerPhotos photos={d.photos} memberId={preview ? null : d.member?.id} />}
     </div>
     {notShared.length > 0 && <p className="tr-foot">{t('Not shared: {0}. {1} decides.', notShared.map(categoryLabel).join(', '), d.member?.name || '')}</p>}
     {onDisconnect && <div className="tr-foot-a"><Button variant="plain" size="sm" icon="signOut" className="tr-danger" onClick={onDisconnect}>{t('Disconnect')}</Button></div>}

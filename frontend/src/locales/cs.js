@@ -4017,7 +4017,6 @@ export default {
   "Per week": "Za týden",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "Vyber někoho vlevo. Uvidíš, co se rozhodl(a) sdílet, a nic víc.",
   "Private client": "Soukromý klient",
-  "Progress photos: {0}": "Fotky pokroku: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "Dej ho na recepci. Kdo ho naskenuje, připojí se k posilovně a vybere, co uvidíš.",
   "QR code for {0}": "QR kód pro: {0}",
   "Quiet": "Klid",
@@ -4137,4 +4136,7 @@ export default {
   "{0}: rest day": "{0}: den volna",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Připojuješ se k této posilovně. Její vedoucí vidí tvoje jméno a kategorie, které tu označíš, nikdy víc než Vidět. Můžeš to kdykoli změnit nebo posilovnu opustit a v tu chvíli to přestane fungovat.",
+  "Photo from {0}": "Fotka z {0}",
+  "No progress photos yet.": "Zatím žádné fotky pokroku.",
+  "The newest {0} are here.": "Tady je nejnovějších {0}.",
 }

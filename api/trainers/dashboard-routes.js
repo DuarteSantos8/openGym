@@ -3,6 +3,7 @@
  *
  *   trainer   GET  /api/trainer/members      the list: last workout, streak, this week, flags
  *             GET  /api/trainer/member       one member, only the categories they shared
+ *             GET  /api/trainer/member/photo one progress photo, only with the photos category shared
  *             POST /api/trainer/ops          a change: applied where "Change directly", a suggestion where "Suggest"
  *             POST /api/trainer/assign       one of the trainer's routines to one or many members
  *             POST /api/trainer/comment      a note on a workout, into the member's inbox
@@ -21,7 +22,7 @@
  * read fresh on each request, and a member nobody may see answers 404, never 403. */
 import { OrgError } from './org-store.js';
 import { CATEGORY_IDS, cleanScopes, rank } from './scopes.js';
-import { summarize, project, customNames } from './projections.js';
+import { summarize, project, customNames, progressPhotos } from './projections.js';
 import { cleanOps, applyOps, applyRestores, fingerprintOf, OpError, OP_CATEGORY, customCopy, routineCopy } from './ops.js';
 import { originFor } from '../origin.js';
 
@@ -29,7 +30,7 @@ const DAY = 86400000;
 const isISO = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) && !Number.isNaN(Date.parse(d + 'T00:00:00Z'));
 const UNDO_DAYS = 30;
 
-export function dashboardRoutes({ json, readBody, userById, audit, org, perms, log, budgets, notify, nutrition, state, origin, helpers }) {
+export function dashboardRoutes({ json, readBody, userById, audit, org, perms, log, budgets, notify, nutrition, state, origin, helpers, media = null }) {
   const { guard, nameOf, person, gymCard, pausedWhy, consentBody, text, idOf } = helpers;
   const nowMs = () => Date.now();
 
@@ -173,6 +174,24 @@ export function dashboardRoutes({ json, readBody, userById, audit, org, perms, l
       const may = Object.fromEntries(CATEGORY_IDS.map(c => [c, acc.levels[c]]));
       json(res, 200, { member: person(member.id), today, levels: may, grants, ...proj, comments, suggestions, changes,
         pending: pendingFrom(member.id, user.id) });
+    }),
+
+    // One progress photo of a member: the grant is read again for this very file, the file has to be
+    // one the photos category covers (projections.js progressPhotos), and it is sent with the same
+    // locked-down headers as the member's own GET /api/media/{hash}. Their other media stay theirs.
+    'GET /api/trainer/member/photo': guard('trainer.photo', async (req, res, user) => {
+      const q = query(req);
+      const member = userById(idOf(q.get('id')));
+      if (!member || member.disabled) return json(res, 404, { error: 'no such member', code: 'not-found' });
+      const acc = access(user, member.id);
+      if (!acc.any) return refuse(res, user, member.id);
+      if (acc.levels.photos === 'off') return json(res, 403, { error: 'they do not share their photos with you', code: 'level' });
+      const hash = String(q.get('hash') || '');
+      if (!/^[0-9a-f]{64}$/.test(hash)) return json(res, 400, { error: 'hash must be a lowercase sha256', code: 'bad-request' });
+      const f = media && progressPhotos(state.read(member.id)).some(p => p.hash === hash) ? media.file(member.id, hash) : null;
+      if (!f) return json(res, 404, { error: 'no such photo', code: 'media-missing' });
+      lookedAt(member.id, actorOf(user, acc.via.photos), ['photos']);
+      await media.send(res, f, hash);
     }),
 
     'POST /api/trainer/ops': guard('trainer.ops', async (req, res, user) => {

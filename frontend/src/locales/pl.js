@@ -4052,7 +4052,6 @@ export default {
   "Per week": "Na tydzień",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "Wybierz kogoś po lewej. Widzisz to, co ta osoba zdecydowała się udostępnić, i nic więcej.",
   "Private client": "Klient prywatny",
-  "Progress photos: {0}": "Zdjęcia postępów: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "Połóż go przy recepcji. Kto zeskanuje, dołącza do siłowni i wybiera, co widzisz.",
   "QR code for {0}": "Kod QR dla: {0}",
   "Quiet": "Cicho",
@@ -4172,4 +4171,7 @@ export default {
   "{0}: rest day": "{0}: dzień odpoczynku",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Dołączasz do tej siłowni. Jej kierownik widzi twoje imię i kategorie, które tu zaznaczysz, nigdy więcej niż Podgląd. Możesz to zmienić albo opuścić siłownię w każdej chwili, a przestaje działać w momencie, gdy to zrobisz.",
+  "Photo from {0}": "Zdjęcie z {0}",
+  "No progress photos yet.": "Jeszcze brak zdjęć postępów.",
+  "The newest {0} are here.": "Tu jest {0} najnowszych.",
 }

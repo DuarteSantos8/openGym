@@ -1,7 +1,7 @@
 // The trainer dashboard's side of the API (docs/TRAINERS.md) and the pure helpers its screens
 // render with: sorting, filtering, the flags in words, a change in words. Member data fetched here
 // is held in component state only, never in the store or localStorage: it is someone else's.
-import { api } from './api.js'
+import { api, apiBlob } from './api.js'
 import { t } from './i18n.js'
 import { todayISO, exerciseNameText, DAYN } from './format.js'
 import { exOr } from './exercises.js'
@@ -16,6 +16,8 @@ export const showsDashboard = config => { const r = trainerRoles(config); return
 /* ---------- the trainer ---------- */
 export const getOverview = () => api('/api/trainer')
 export const getMembers = () => api('/api/trainer/members?' + q({ today: todayISO() }))
+/** One progress photo of a member, as a Blob (the server checks the photos grant for each file). */
+export const photoBlob = (memberId, hash) => apiBlob('/api/trainer/member/photo?' + q({ id: memberId, hash }), { expectSize: 25 * 1048576 })
 export const getMember = (id, before) => api('/api/trainer/member?' + q({ id, before, today: todayISO() }))
 export const sendOps = (memberId, ops, message) => post('/api/trainer/ops', { memberId, ops, message })
 export const assignRoutine = ({ memberIds, routineId, day, message }) => post('/api/trainer/assign', { memberIds, routineId, day, message })

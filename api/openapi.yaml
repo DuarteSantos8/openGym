@@ -4375,6 +4375,45 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+  /api/trainer/member/photo:
+    get:
+      tags: [trainers]
+      operationId: trainerMemberPhoto
+      summary: 'The trainer or gym lead: one progress photo of a member'
+      description: >-
+        The bytes of one progress photo (a still filed under a day or on a workout, `photos.items` of the member projection), only while the member shares `photos` with this person; the grant is checked for every file. Sent with the same headers as `GET /api/media/{hash}`. Form videos, custom exercise pictures, sounds and the profile picture are never served here. 403 `level` with photos not shared, 404 for a stranger or a file outside the category. Budget `trainer.photo`.
+      parameters:
+        - { name: id, in: query, required: false, schema: { type: string }, description: 'Member id' }
+        - { name: hash, in: query, required: false, schema: { type: string }, description: 'The photo (lowercase sha256)' }
+      responses:
+        '200':
+          description: The file.
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        '400':
+          description: Not a sha256 (`bad-request`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Photos not shared with this person (`level`), or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
   /api/trainer/ops:
     post:
       tags: [trainers]

@@ -4056,7 +4056,6 @@ export default {
   "Per week": "В неделю",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "Выбери кого-нибудь слева. Ты видишь то, чем человек решил поделиться, и больше ничего.",
   "Private client": "Частный клиент",
-  "Progress photos: {0}": "Фото прогресса: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "Положи это на ресепшен. Кто отсканирует, вступит в зал и сам выберет, что тебе показывать.",
   "QR code for {0}": "QR-код для {0}",
   "Quiet": "Тихо",
@@ -4176,4 +4175,7 @@ export default {
   "{0}: rest day": "{0}: день отдыха",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "Ты вступаешь в этот зал. Его руководитель видит твоё имя и категории, которые ты здесь отметишь, но не больше, чем просмотр. Ты можешь изменить это или выйти из зала в любой момент, и всё перестанет действовать сразу же.",
+  "Photo from {0}": "Фото от {0}",
+  "No progress photos yet.": "Фото прогресса пока нет.",
+  "The newest {0} are here.": "Здесь самые новые: {0}.",
 }

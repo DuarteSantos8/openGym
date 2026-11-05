@@ -3116,7 +3116,8 @@ const routes = {
   ...dashboardRoutes({
     json, readBody, audit, origin: ORIGIN, userById: id => db.users.find(u => u.id === id) || null,
     org, perms, log: shareLog, budgets, notify: trainerNotify, nutrition: NUTRITION, helpers: trainerApi.helpers,
-    state: { read: uid => readStateCached(uid), write: writeStateAs }
+    state: { read: uid => readStateCached(uid), write: writeStateAs },
+    media: MEDIA_ON ? { file: (uid, hash) => MEDIA.file(uid, hash), send: sendMediaFile } : null
   }),
 
   /* ---------- photos & videos ---------- */

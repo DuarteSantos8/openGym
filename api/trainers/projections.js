@@ -199,6 +199,28 @@ function stats(S, levels, today, weeks = 8) {
   return out;
 }
 
+/* ---------- progress photos ---------- */
+const HASH = /^[0-9a-f]{64}$/;
+const STILL = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const stillRef = m => !!m && typeof m === 'object' && typeof m.hash === 'string' && HASH.test(m.hash) && STILL.has(m.mime);
+const dims = m => ({ ...(num(m.width) > 0 ? { width: num(m.width) } : {}), ...(num(m.height) > 0 ? { height: num(m.height) } : {}) });
+/**
+ * What the `photos` category covers, oldest first: stills filed under a day (dayPhotos, keyed by
+ * hash) and stills on a workout. Never a form video, a custom exercise's picture, a sound or the
+ * profile picture: those are not progress photos and stay the member's own.
+ */
+export function progressPhotos(S) {
+  const out = [], seen = new Set();
+  const add = (m, d, extra) => { if (!seen.has(m.hash)) { seen.add(m.hash); out.push({ hash: m.hash, d, ...dims(m), ...extra }); } };
+  const map = S?.dayPhotos && typeof S.dayPhotos === 'object' && !Array.isArray(S.dayPhotos) ? S.dayPhotos : {};
+  for (const [h, e] of Object.entries(map)) if (e && typeof e === 'object' && isISO(e.d) && stillRef(e.m) && e.m.hash === h) add(e.m, e.d, {});
+  for (const w of records(S?.workouts)) {
+    if (!isISO(w.d)) continue;
+    for (const m of records(w.media)) if (stillRef(m)) add(m, w.d, { workoutId: String(w.id ?? `${w.d}|${w.start}`) });
+  }
+  return out.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+}
+
 /**
  * The member detail. `opts.before` pages the workouts (an ISO date, exclusive), `opts.limit` caps
  * them (default 20). Every key in the answer is one category; `shared` lists them.
@@ -250,9 +272,10 @@ export function project(S, levels, { today, before = null, limit = 20, nutrition
     out.notes = { days };
   }
   if (on(levels, 'photos')) {
-    // How many and when; the pictures themselves stay on the member's side in this version.
-    const ph = S.dayPhotos && typeof S.dayPhotos === 'object' ? Object.keys(S.dayPhotos).filter(isISO).sort() : [];
-    out.photos = { count: ph.length, last: ph.length ? ph[ph.length - 1] : null };
+    // The newest 60, as references only: the bytes come through GET /api/trainer/member/photo,
+    // which checks the same grant again for every single file.
+    const ph = progressPhotos(S);
+    out.photos = { count: ph.length, last: ph.length ? ph[ph.length - 1].d : null, items: ph.slice(-60).reverse() };
   }
   if (on(levels, 'nutrition')) out.nutrition = nutrition || { status: 'not-linked' };
   out.customEx = customNames(S, [...exIds]);

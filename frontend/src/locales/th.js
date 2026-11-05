@@ -4063,7 +4063,6 @@ export default {
   "Per week": "ต่อสัปดาห์",
   "Pick someone on the left. You see what they chose to share, and nothing else.": "เลือกใครสักคนทางซ้าย คุณเห็นสิ่งที่เขาเลือกแชร์ ไม่มีอย่างอื่น",
   "Private client": "ลูกค้าส่วนตัว",
-  "Progress photos: {0}": "รูปความคืบหน้า: {0}",
   "Put it on the front desk. Whoever scans it joins the gym and chooses what you see.": "วางไว้ที่เคาน์เตอร์ต้อนรับ ใครสแกนก็เข้าร่วมยิมและเลือกเองว่าคุณเห็นอะไร",
   "QR code for {0}": "คิวอาร์โค้ดสำหรับ {0}",
   "Quiet": "เงียบ",
@@ -4183,4 +4182,7 @@ export default {
   "{0}: rest day": "{0}: วันพัก",
   "{0}: {1}": "{0}: {1}",
   "You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.": "คุณกำลังเข้าร่วมยิมนี้ ผู้จัดการยิมเห็นชื่อคุณและหมวดที่คุณทำเครื่องหมายไว้ที่นี่ ไม่เกินระดับดู คุณเปลี่ยนสิ่งนี้หรือออกจากยิมได้ทุกเมื่อ และจะหยุดทำงานทันทีที่คุณทำ",
+  "Photo from {0}": "รูปจาก {0}",
+  "No progress photos yet.": "ยังไม่มีรูปความคืบหน้า",
+  "The newest {0} are here.": "นี่คือ {0} รูปล่าสุด",
 }

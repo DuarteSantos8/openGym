@@ -110,6 +110,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - A trainer leaving a gym (or a member leaving it) no longer just cuts things off: each member gets 30 days to keep that trainer privately, with the same sharing and without the gym lead, or the connection ends by itself.
 - Nutrition is a category you can share already; it stays empty until a nutrition app is linked. openNutrition plugs in with its read-only `summary:read` token (`NUTRITION_SOURCE`, `NUTRITION_URL`), and a trainer never sees the token.
 - "See what Marco sees" in Trainer & gym shows you the very screen your trainer gets.
+- Progress photos you share with a trainer they can now actually see: your day photos and workout photos, newest first, each file checked against your sharing on every look and logged. Your form videos, exercise pictures and profile picture stay yours. The photo count no longer said 0 either.
 - The streak in a trainer's list counts with the member's own phone's rules, freeze history included, so it is never a week off what the member sees.
 
 **Admins see counts, not your training**
