@@ -4213,4 +4213,9 @@ export default {
   "Use this code": "Usar este código",
   "Rest’s over: {0}": "Se acabó el descanso: {0}",
   "{0} s": "{0} s",
+  "Back to 3 × 10": "Volver a 3 × 10",
+  "Cardio keeps starting as one block of time.": "El cardio sigue empezando como un solo bloque de tiempo.",
+  "New exercises start with": "Los ejercicios nuevos empiezan con",
+  "Seconds for a hold": "Segundos de una isométrica",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Lo que recibe un ejercicio al añadirlo a una rutina o un entreno. Luego puedes cambiar cada uno.",
 }

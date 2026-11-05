@@ -4292,4 +4292,9 @@ export default {
   "Use this code": "এই কোড ব্যবহার করুন",
   "Rest’s over: {0}": "বিশ্রাম শেষ: {0}",
   "{0} s": "{0} সে",
+  "Back to 3 × 10": "৩ × ১০-এ ফিরুন",
+  "Cardio keeps starting as one block of time.": "কার্ডিও আগের মতোই এক টানা সময় দিয়ে শুরু হয়।",
+  "New exercises start with": "নতুন ব্যায়াম শুরু হয়",
+  "Seconds for a hold": "হোল্ডের সেকেন্ড",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "রুটিন বা ওয়ার্কআউটে যোগ করার সময় ব্যায়াম যা পায়। পরে প্রতিটি বদলাতে পারবেন।",
 }

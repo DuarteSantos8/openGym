@@ -4213,4 +4213,9 @@ export default {
   "Use this code": "यह कोड इस्तेमाल करें",
   "Rest’s over: {0}": "आराम खत्म: {0}",
   "{0} s": "{0} से",
+  "Back to 3 × 10": "वापस 3 × 10",
+  "Cardio keeps starting as one block of time.": "कार्डियो पहले की तरह समय के एक ब्लॉक से शुरू होता है।",
+  "New exercises start with": "नए व्यायाम शुरू होते हैं",
+  "Seconds for a hold": "होल्ड के सेकंड",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "रूटीन या वर्कआउट में जोड़ने पर व्यायाम को यही मिलता है। बाद में हर एक बदल सकते हैं।",
 }

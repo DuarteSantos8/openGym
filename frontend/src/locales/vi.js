@@ -4178,4 +4178,9 @@ export default {
   "Use this code": "Dùng mã này",
   "Rest’s over: {0}": "Hết giờ nghỉ: {0}",
   "{0} s": "{0} giây",
+  "Back to 3 × 10": "Về lại 3 × 10",
+  "Cardio keeps starting as one block of time.": "Cardio vẫn bắt đầu bằng một khối thời gian.",
+  "New exercises start with": "Bài tập mới bắt đầu với",
+  "Seconds for a hold": "Số giây khi giữ",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Giá trị bài tập nhận được khi bạn thêm vào lịch tập hay buổi tập. Sau đó vẫn sửa từng bài được.",
 };

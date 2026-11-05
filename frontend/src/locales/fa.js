@@ -4178,4 +4178,9 @@ export default {
   "Use this code": "استفاده از این کد",
   "Rest’s over: {0}": "استراحت تمام شد: {0}",
   "{0} s": "{0} ثانیه",
+  "Back to 3 × 10": "برگشت به 3 × 10",
+  "Cardio keeps starting as one block of time.": "کاردیو مثل قبل با یک بازهٔ زمانی شروع می‌شود.",
+  "New exercises start with": "تمرین‌های تازه شروع می‌شوند با",
+  "Seconds for a hold": "ثانیه برای حرکت ایستا",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "چیزی که یک تمرین هنگام افزودن به روتین یا تمرین می‌گیرد. بعدش هم می‌توانی هرکدام را تغییر دهی.",
 }

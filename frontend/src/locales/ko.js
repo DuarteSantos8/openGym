@@ -4213,4 +4213,9 @@ export default {
   "Use this code": "이 코드 사용",
   "Rest’s over: {0}": "휴식 끝: {0}",
   "{0} s": "{0}초",
+  "Back to 3 × 10": "3 × 10으로 되돌리기",
+  "Cardio keeps starting as one block of time.": "유산소는 그대로 한 덩어리 시간으로 시작해요.",
+  "New exercises start with": "새 운동 기본값",
+  "Seconds for a hold": "버티기 초",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "루틴이나 운동에 추가할 때 처음 들어가는 값이에요. 나중에 하나씩 바꿀 수 있어요.",
 }

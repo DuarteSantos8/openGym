@@ -4206,4 +4206,9 @@ export default {
   "Use this code": "使用這個條碼",
   "Rest’s over: {0}": "休息結束：{0}",
   "{0} s": "{0} 秒",
+  "Back to 3 × 10": "恢復為 3 × 10",
+  "Cardio keeps starting as one block of time.": "有氧仍然以一整段時間開始。",
+  "New exercises start with": "新動作的預設組數",
+  "Seconds for a hold": "靜態支撐的秒數",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "把動作加入計畫或訓練時的初始值。之後每個都還能單獨改。",
 }

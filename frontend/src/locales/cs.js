@@ -4178,4 +4178,9 @@ export default {
   "Use this code": "Použít tento kód",
   "Rest’s over: {0}": "Pauza skončila: {0}",
   "{0} s": "{0} s",
+  "Back to 3 × 10": "Zpět na 3 × 10",
+  "Cardio keeps starting as one block of time.": "Kardio dál začíná jedním blokem času.",
+  "New exercises start with": "Nové cviky začínají s",
+  "Seconds for a hold": "Sekundy výdrže",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Co cvik dostane, když ho přidáš do rutiny nebo tréninku. Každý pak můžeš změnit.",
 }

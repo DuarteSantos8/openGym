@@ -4268,4 +4268,9 @@ export default {
   "Use this code": "استخدم هذا الرمز",
   "Rest’s over: {0}": "انتهت الراحة: {0}",
   "{0} s": "{0} ث",
+  "Back to 3 × 10": "العودة إلى 3 × 10",
+  "Cardio keeps starting as one block of time.": "يبقى الكارديو يبدأ كفترة زمنية واحدة.",
+  "New exercises start with": "التمارين الجديدة تبدأ بـ",
+  "Seconds for a hold": "ثوانٍ للثبات",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "ما يحصل عليه التمرين عند إضافته إلى روتين أو تمرين. ويمكنك تغييره بعد ذلك.",
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, lastLoggedShape, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf } from './history.js'
+import { nextTrainingDay, modeOf, isTimed, fmtSec, setLabel, defaultConfig, pickedExerciseConfig, lastLoggedShape, buildSets, freestyleConfig, exLine, workoutVolume, bestWeightFor, bestWeightForEntry, completedRepsOf, metricRowsForEntry, effortOf, stepEffort, capEffort, isBw, isPerSide, sideReps, repStep, cascadeWeight, insertWarmupRow, makeWarmupAt, canBeWarmup, makeWorkAt, removeRowAt, removeLastSet, setSpanAt, workSetsDone, setsDone, setsDoneActive, setUnits, doneUnits, setUnitsTotal, pairAdjacent, unpairSuperset, supersetUnits, sessionSections, applyIntensifierPlan, pinnedNoteFor, exNoteFor, effectiveRoutineIds, effectiveRoutines, effectiveRoutineId, effectiveRoutine, lastEntryFor, entryExcluded, entryRoutineId, setsRepsOf, newExDefaultsOf, NEW_EX_DEFAULTS } from './history.js'
 import { makeSideSet, setSideField, toggleSide, WEIGHT_ORIGIN_MANUAL } from './workout-model.js'
 import { EXDB } from './exercises.js'
 import { todayISO, isoOf } from './format.js'
@@ -355,6 +355,22 @@ describe('pickedExerciseConfig', () => {
     expect(pickedExerciseConfig('0667')).toEqual(defaultConfig('0667'))   // raise single leg push up
     expect(pickedExerciseConfig(LIFT)).toEqual(defaultConfig(LIFT))
     expect(pickedExerciseConfig(CARDIO)).toEqual(defaultConfig(CARDIO))
+  })
+  // Q10: the profile's own start, 2 × 8 instead of 3 × 10.
+  it('starts with the profile\'s own sets and reps when it picked some, cardio and saved targets aside', () => {
+    const S = { newExDefaults: { sets: 2, reps: 8, sec: 30 } }
+    expect(pickedExerciseConfig(LIFT, undefined, S)).toMatchObject({ mode: 'reps', sets: 2, reps: 8 })
+    expect(pickedExerciseConfig(LIFT, 'time', S)).toMatchObject({ mode: 'time', sets: 2, sec: 30 })
+    expect(pickedExerciseConfig('4837', undefined, S)).toMatchObject({ side: true, sets: 2, reps: 16 })   // 8 a side
+    expect(pickedExerciseConfig(CARDIO, undefined, S)).toEqual(defaultConfig(CARDIO))
+    expect(defaultConfig(LIFT)).toMatchObject({ sets: 3, reps: 10 })                                       // the base under saved targets stays
+    expect(pickedExerciseConfig(LIFT, undefined, {})).toEqual(defaultConfig(LIFT))
+  })
+  it('reads the pick defensively: clamped, rounded, the rest from 3 × 10', () => {
+    expect(newExDefaultsOf({})).toEqual(NEW_EX_DEFAULTS)
+    expect(newExDefaultsOf({ newExDefaults: { sets: 99, reps: 2.6, sec: 'x' } })).toEqual({ sets: 10, reps: 3, sec: 45 })
+    expect(newExDefaultsOf({ newExDefaults: { sets: 0, reps: -1, sec: 2 } })).toEqual(NEW_EX_DEFAULTS)
+    expect(newExDefaultsOf({ newExDefaults: 'nope' })).toEqual(NEW_EX_DEFAULTS)
   })
   it('keeps defaultConfig flat, so a saved target without the flag stays one row a set', () => {
     expect('side' in defaultConfig('4837')).toBe(false)

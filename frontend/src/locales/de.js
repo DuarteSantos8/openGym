@@ -4233,4 +4233,9 @@ export default {
   "Use this code": "Diesen Code nehmen",
   "Rest’s over: {0}": "Pause vorbei: {0}",
   "{0} s": "{0} s",
+  "Back to 3 × 10": "Zurück auf 3 × 10",
+  "Cardio keeps starting as one block of time.": "Cardio startet weiter als ein Block Zeit.",
+  "New exercises start with": "Neue Übungen starten mit",
+  "Seconds for a hold": "Sekunden für eine Halteübung",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Das bekommt eine Übung, wenn du sie zu einer Routine oder einem Workout hinzufügst. Jede einzelne kannst du danach noch ändern.",
 }

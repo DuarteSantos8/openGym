@@ -4216,4 +4216,9 @@ export default {
   "Use this code": "Ezt a kódot használom",
   "Rest’s over: {0}": "Vége a pihenőnek: {0}",
   "{0} s": "{0} mp",
+  "Back to 3 × 10": "Vissza 3 × 10-re",
+  "Cardio keeps starting as one block of time.": "A kardió továbbra is egyetlen időblokkal indul.",
+  "New exercises start with": "Új gyakorlatok kezdése",
+  "Seconds for a hold": "Másodperc tartásnál",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Ezt kapja egy gyakorlat, amikor rutinhoz vagy edzéshez adod. Utána bármelyiket átírhatod.",
 }

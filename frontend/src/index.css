@@ -2974,6 +2974,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The QR itself: lean-qr paints 1 module per pixel, so scale it up with the browser's
    nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
    quiet-zone padding is baked in by the renderer; the plate underneath just frames it. */
+.nexd{display:flex;flex-direction:column;gap:12px;margin:4px 0 10px}
+.nexd-note{margin:0 0 14px;line-height:var(--lh-small)}
 .ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px}
 /* Typing a code by hand, only after a scan or photo found nothing */
 .ci-fallback{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin:-4px 0 16px;padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:var(--fs-subhead);color:var(--label-2)}

@@ -4177,4 +4177,9 @@ export default {
   "Use this code": "Pakai kode ini",
   "Rest’s over: {0}": "Istirahat selesai: {0}",
   "{0} s": "{0} dtk",
+  "Back to 3 × 10": "Kembali ke 3 × 10",
+  "Cardio keeps starting as one block of time.": "Kardio tetap dimulai sebagai satu blok waktu.",
+  "New exercises start with": "Latihan baru dimulai dengan",
+  "Seconds for a hold": "Detik untuk tahan",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Yang didapat latihan saat kamu menambahkannya ke rutinitas atau sesi. Masing-masing tetap bisa diubah.",
 };

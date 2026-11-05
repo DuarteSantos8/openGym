@@ -4224,4 +4224,9 @@ export default {
   "Use this code": "ใช้โค้ดนี้",
   "Rest’s over: {0}": "หมดเวลาพัก: {0}",
   "{0} s": "{0} วิ",
+  "Back to 3 × 10": "กลับเป็น 3 × 10",
+  "Cardio keeps starting as one block of time.": "คาร์ดิโอยังเริ่มเป็นช่วงเวลาเดียวเหมือนเดิม",
+  "New exercises start with": "ท่าใหม่เริ่มต้นด้วย",
+  "Seconds for a hold": "วินาทีสำหรับท่าค้าง",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "ค่านี้จะใส่ให้ท่าตอนเพิ่มเข้ารูทีนหรือเวิร์กเอาต์ เปลี่ยนทีละท่าทีหลังได้",
 }

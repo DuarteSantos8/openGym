@@ -4213,4 +4213,9 @@ export default {
   "Use this code": "使用这个码",
   "Rest’s over: {0}": "休息结束：{0}",
   "{0} s": "{0} 秒",
+  "Back to 3 × 10": "恢复为 3 × 10",
+  "Cardio keeps starting as one block of time.": "有氧仍然以一整段时间开始。",
+  "New exercises start with": "新动作的默认组数",
+  "Seconds for a hold": "静力保持的秒数",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "把动作加入计划或训练时的初始值。之后每个都还能单独改。",
 }

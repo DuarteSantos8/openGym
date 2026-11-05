@@ -247,9 +247,29 @@ export function lastLoggedShape(S, id) {
 // side, or both, unless `mode` names the mode.
 export function pickedExerciseConfig(id, mode, S) {
   const last = lastLoggedShape(S, id)
-  const cfg = defaultConfig(id, mode || (last.time ? 'time' : undefined))
+  const cfg = ownStart(defaultConfig(id, mode || (last.time ? 'time' : undefined)), S)
   if (!(isOneLimb(id) || last.side) || !('mode' in cfg)) return cfg
-  return { ...cfg, side: true, ...(cfg.mode === 'reps' ? { reps: 20 } : {}) }
+  return { ...cfg, side: true, ...(cfg.mode === 'reps' ? { reps: cfg.reps * 2 } : {}) }
+}
+
+// What a newly added exercise starts with, the profile's own pick (Settings → Workout → New
+// exercises start with, QOL Q10): S.newExDefaults = { sets, reps, sec }, each optional, clamped.
+// Not cardio, which starts as one block of time. Without a pick it is 3 × 10 and 3 × 0:45.
+export const NEW_EX_DEFAULTS = { sets: 3, reps: 10, sec: 45 }
+const NEW_EX_LIMITS = { sets: [1, 10], reps: [1, 50], sec: [5, 600] }
+export function newExDefaultsOf(S) {
+  const own = S?.newExDefaults && typeof S.newExDefaults === 'object' ? S.newExDefaults : {}
+  const out = {}
+  for (const [k, [lo, hi]] of Object.entries(NEW_EX_LIMITS)) {
+    const v = Math.round(Number(own[k]))
+    out[k] = Number.isFinite(v) && v >= lo ? Math.min(hi, v) : NEW_EX_DEFAULTS[k]
+  }
+  return out
+}
+function ownStart(cfg, S) {
+  if (!S?.newExDefaults || !('mode' in cfg)) return cfg
+  const d = newExDefaultsOf(S)
+  return cfg.mode === 'time' ? { ...cfg, sets: d.sets, sec: d.sec } : { ...cfg, sets: d.sets, reps: d.reps }
 }
 // A double-progression range is stored as its top (`reps`) and its bottom (`repsMin`), and
 // reads as the range it is: "8–12". Printing the top alone made "Reps from 10, up to 15" read

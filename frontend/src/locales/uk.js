@@ -4210,4 +4210,9 @@ export default {
   "Use this code": "Використати цей код",
   "Rest’s over: {0}": "Відпочинок скінчився: {0}",
   "{0} s": "{0} с",
+  "Back to 3 × 10": "Повернути 3 × 10",
+  "Cardio keeps starting as one block of time.": "Кардіо й далі починається одним відрізком часу.",
+  "New exercises start with": "Нові вправи починаються з",
+  "Seconds for a hold": "Секунди для утримання",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Це отримує вправа, коли ви додаєте її до програми чи тренування. Потім кожну можна змінити.",
 }

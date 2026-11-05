@@ -2844,6 +2844,9 @@ export const PT_BR_OVERRIDES = {
   "This format can’t carry some of those characters. Check the type above.": "Este formato não aceita alguns desses caracteres. Confira o tipo acima.",
   "Type it in": "Digitar",
   "Typed in by hand. Give it one test run at the turnstile.": "Digitado à mão. Teste uma vez na catraca.",
+  "Back to 3 × 10": "Voltar para 3 × 10",
+  "Cardio keeps starting as one block of time.": "O cardio continua começando como um único bloco de tempo.",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "O que um exercício recebe quando você o adiciona a uma rotina ou a um treino. Dá para mudar cada um depois.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

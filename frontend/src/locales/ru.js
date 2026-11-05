@@ -4217,4 +4217,9 @@ export default {
   "Use this code": "Использовать этот код",
   "Rest’s over: {0}": "Отдых окончен: {0}",
   "{0} s": "{0} с",
+  "Back to 3 × 10": "Вернуть 3 × 10",
+  "Cardio keeps starting as one block of time.": "Кардио по-прежнему начинается одним отрезком времени.",
+  "New exercises start with": "Новые упражнения начинаются с",
+  "Seconds for a hold": "Секунды для удержания",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Это получает упражнение, когда вы добавляете его в программу или тренировку. Потом каждое можно изменить.",
 }

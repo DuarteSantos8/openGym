@@ -4213,4 +4213,9 @@ export default {
   "Use this code": "Bu kodu kullan",
   "Rest’s over: {0}": "Dinlenme bitti: {0}",
   "{0} s": "{0} sn",
+  "Back to 3 × 10": "3 × 10'a dön",
+  "Cardio keeps starting as one block of time.": "Kardiyo yine tek bir süre bloğuyla başlar.",
+  "New exercises start with": "Yeni egzersizler şununla başlar",
+  "Seconds for a hold": "Tutma için saniye",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Bir egzersizi rutine ya da antrenmana eklediğinde aldığı değer. Sonra her birini yine değiştirebilirsin.",
 }

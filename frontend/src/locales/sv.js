@@ -4260,4 +4260,9 @@ export default {
   "Use this code": "Använd koden",
   "Rest’s over: {0}": "Vilan är slut: {0}",
   "{0} s": "{0} s",
+  "Back to 3 × 10": "Tillbaka till 3 × 10",
+  "Cardio keeps starting as one block of time.": "Kondition börjar fortfarande som ett block tid.",
+  "New exercises start with": "Nya övningar börjar med",
+  "Seconds for a hold": "Sekunder för en hållning",
+  "What an exercise gets when you add it to a routine or a workout. You can still change each one after.": "Det här får en övning när du lägger till den i en rutin eller ett pass. Du kan ändra varje övning efteråt.",
 }
