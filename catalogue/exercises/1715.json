@@ -3,6 +3,7 @@
   "name": "assisted oblique and latissimus dorsi stretch on stability ball",
   "bodyPart": "back",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "lats",
   "secondaryMuscles": [
     "obliques",

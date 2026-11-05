@@ -3,6 +3,7 @@
   "name": "lever deadlift",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "other",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

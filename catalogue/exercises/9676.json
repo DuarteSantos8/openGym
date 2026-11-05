@@ -3,6 +3,7 @@
   "name": "lever lying knee flexion",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-curl",
   "target": "hamstrings",
   "secondaryMuscles": [
     "calves",

@@ -3,6 +3,7 @@
   "name": "lever good morning on the hack squat machine",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "hack-squat",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

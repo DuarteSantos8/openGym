@@ -3,6 +3,7 @@
   "name": "smith single arm bent over row",
   "bodyPart": "back",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",

@@ -3,6 +3,7 @@
   "name": "lever adduction thrust",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "hip-abduction",
   "target": "adductors",
   "secondaryMuscles": [
     "glutes",

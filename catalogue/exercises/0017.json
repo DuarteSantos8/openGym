@@ -3,6 +3,7 @@
   "name": "assisted pull-up",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "assisted-pullup",
   "target": "lats",
   "secondaryMuscles": [
     "biceps",

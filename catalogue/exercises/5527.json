@@ -3,6 +3,7 @@
   "name": "lever seated bent over rear delt fly",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
+  "machineKind": "pec-deck",
   "target": "delts",
   "secondaryMuscles": [
     "rear deltoids",

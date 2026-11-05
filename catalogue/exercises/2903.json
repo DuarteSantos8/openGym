@@ -3,6 +3,7 @@
   "name": "power sled rear lunge v. 2",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

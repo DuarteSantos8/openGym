@@ -3,6 +3,7 @@
   "name": "lever overhand triceps dip",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "triceps-machine",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",

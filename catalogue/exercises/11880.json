@@ -3,6 +3,7 @@
   "name": "lever t bar close grip row (plate loaded)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",

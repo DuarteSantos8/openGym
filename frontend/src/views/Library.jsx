@@ -5,6 +5,7 @@ import { useStore } from '../store/useStore.js'
 import { EXDB, BODYPARTS, allExercises, equipmentOf, byCategory, searchExercises, similarExercises } from '../lib/exercises.js'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
+import { NotHereButton } from '../components/MachinePicker.jsx'
 import { bestWeightFor } from '../lib/history.js'
 import { fmtNum, exCount } from '../lib/format.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -79,6 +80,8 @@ export default function Library() {
       <Thumb ex={e} />
       <button type="button" className="grow item-open tap-main" aria-haspopup="dialog" onClick={() => exerciseDetailSheet(e)}><span className={`tt ${exerciseNameClass(e)}`}>{isFav(S, e.id) && <Icon name="starFill" className="fav-star" />}{exerciseNameFor(e)}</span><span className="ss capitalize">{t(MUSCLE_NAME[e.tg] || e.tg || e.bp)} · {t(e.eq)}</span></button>
       {best > 0 && <span className="tag acc">{fmtNum(best)}</span>}
+      {/* "Not at my gym" (#923): this machine off the active gym's list, with Undo. */}
+      {profile && !showAll && <NotHereButton profile={profile} ex={e} />}
       {/* a quiet trailing button (P7): the accent stays on the one action of the screen */}
       <button type="button" className="iconbtn lib-add" aria-label={t('Add to my plan')} title={t('Add to my plan')}
         onClick={() => addToRoutineSheet(e)}><Icon name="plus" /></button>

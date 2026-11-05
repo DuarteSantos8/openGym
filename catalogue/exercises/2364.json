@@ -3,6 +3,7 @@
   "name": "assisted wide-grip chest dip (kneeling)",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "assisted-pullup",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",

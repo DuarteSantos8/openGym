@@ -3,6 +3,7 @@
   "name": "lever seated good morning",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "other",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

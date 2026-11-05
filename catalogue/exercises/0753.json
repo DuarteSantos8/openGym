@@ -3,6 +3,7 @@
   "name": "smith decline bench press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",

@@ -3,6 +3,7 @@
   "name": "lever romanian deadlift (plate loaded)",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "other",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

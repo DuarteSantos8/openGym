@@ -3,6 +3,7 @@
   "name": "smith lying lift (on hip)",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "abductors",
   "secondaryMuscles": [
     "glutes"

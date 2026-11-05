@@ -3,6 +3,7 @@
   "name": "smith kneeling rear kick (with partner)",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

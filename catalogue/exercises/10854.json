@@ -3,6 +3,7 @@
   "name": "pilates machine arm circle",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "delts",
   "secondaryMuscles": [
     "chest",

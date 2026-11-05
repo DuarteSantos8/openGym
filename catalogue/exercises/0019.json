@@ -3,6 +3,7 @@
   "name": "assisted triceps dip (kneeling)",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "assisted-pullup",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",

@@ -3,6 +3,7 @@
   "name": "lever unilateral row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",

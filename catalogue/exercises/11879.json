@@ -3,6 +3,7 @@
   "name": "smith step up",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

@@ -3,6 +3,7 @@
   "name": "smith shrug",
   "bodyPart": "back",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "traps",
   "secondaryMuscles": [
     "shoulders"

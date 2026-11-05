@@ -3,6 +3,7 @@
   "name": "assisted pulling backs chest stretch",
   "bodyPart": "chest",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "pectorals",
   "secondaryMuscles": [
     "shoulders",

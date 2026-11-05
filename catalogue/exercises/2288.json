@@ -3,6 +3,7 @@
   "name": "lever gripper hands",
   "bodyPart": "lower arms",
   "equipment": "leverage machine",
+  "machineKind": "other",
   "target": "forearms",
   "secondaryMuscles": [
     "biceps",

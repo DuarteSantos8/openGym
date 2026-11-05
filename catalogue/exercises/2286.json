@@ -3,6 +3,7 @@
   "name": "lever hip extension v. 2",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "glute-machine",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings"

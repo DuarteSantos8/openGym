@@ -3,6 +3,7 @@
   "name": "smith seated one leg calf raise",
   "bodyPart": "lower legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "calves",
   "secondaryMuscles": [
     "hamstrings"

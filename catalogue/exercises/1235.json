@@ -3,6 +3,7 @@
   "name": "lever one arm seated row (seated row machine)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "seated-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",

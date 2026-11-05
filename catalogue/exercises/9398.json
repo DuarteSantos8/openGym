@@ -3,6 +3,7 @@
   "name": "lever standing pec fly",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "pec-deck",
   "target": "pectorals",
   "secondaryMuscles": [
     "upper chest",

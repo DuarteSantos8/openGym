@@ -63,6 +63,7 @@ import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } fro
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
+import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
@@ -1772,6 +1773,12 @@ function AccentSwatches({ S, update }) {
   </>
 }
 
+// "9 equipment types · 14 machines": what a profile has, in one line (the machines, #923, in their own words).
+function profileLine(p) {
+  const types = (p.equipment || []).filter(e => !MACHINE_EQ.includes(e)).length
+  return t('{0} equipment types', types) + ' · ' + machinesSummary(p)
+}
+
 function EquipmentCard({ S, update }) {
   const toast = useUI(s => s.toast)
   const profiles = S.equipProfiles || []
@@ -1825,7 +1832,7 @@ function EquipmentCard({ S, update }) {
     </Row>}
     {profiles.map(p => (
       <Row key={p.id} icon="house" iconTint="var(--teal)" title={p.name}
-        subtitle={t('{0} equipment types', p.equipment.length)} accessory="chevron"
+        subtitle={profileLine(p)} accessory="chevron"
         onClick={() => equipmentProfileSheet(p)}>
         <button className="iconbtn" aria-label={t('Delete')} onClick={ev => { ev.stopPropagation(); remove(p) }}><Icon name="trash" /></button>
       </Row>

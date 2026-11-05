@@ -3,6 +3,7 @@
   "name": "smith seated shoulder press",
   "bodyPart": "shoulders",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "delts",
   "secondaryMuscles": [
     "triceps",

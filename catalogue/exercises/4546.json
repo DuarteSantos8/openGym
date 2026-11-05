@@ -3,6 +3,7 @@
   "name": "smith drag curl",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "biceps",
   "secondaryMuscles": [
     "brachialis",

@@ -3,6 +3,7 @@
   "name": "stick assisted standing shoulder flexion",
   "bodyPart": "shoulders",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "delts",
   "secondaryMuscles": [
     "upper chest",

@@ -3,6 +3,7 @@
   "name": "assisted seated pectoralis major stretch with stability ball",
   "bodyPart": "chest",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "pectorals",
   "secondaryMuscles": [
     "shoulders",

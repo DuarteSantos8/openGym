@@ -3,6 +3,7 @@
   "name": "assisted chin tuck",
   "bodyPart": "neck",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "levator scapulae",
   "secondaryMuscles": [
     "sternocleidomastoid",

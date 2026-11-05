@@ -3,6 +3,7 @@
   "name": "lever stepper",
   "bodyPart": "cardio",
   "equipment": "leverage machine",
+  "machineKind": "cardio",
   "target": "cardiovascular system",
   "secondaryMuscles": [
     "quadriceps",

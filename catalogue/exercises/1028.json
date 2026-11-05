@@ -3,6 +3,7 @@
   "name": "assisted standing triceps dip",
   "bodyPart": "upper arms",
   "equipment": "assisted",
+  "machineKind": "assisted-pullup",
   "target": "triceps",
   "secondaryMuscles": [
     "chest",

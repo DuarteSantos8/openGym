@@ -3,6 +3,7 @@
   "name": "lever seated leg press v. 2",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "leg-press",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

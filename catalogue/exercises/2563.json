@@ -3,6 +3,7 @@
   "name": "power sled pull row",
   "bodyPart": "back",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",

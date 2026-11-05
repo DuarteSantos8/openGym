@@ -3,6 +3,7 @@
   "name": "smith sumo squat",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "glutes",
   "secondaryMuscles": [
     "quadriceps",

@@ -3,6 +3,7 @@
   "name": "lever bicep curl",
   "bodyPart": "upper arms",
   "equipment": "leverage machine",
+  "machineKind": "biceps-curl",
   "target": "biceps",
   "secondaryMuscles": [
     "forearms"

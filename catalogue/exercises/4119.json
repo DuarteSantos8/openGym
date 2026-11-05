@@ -3,6 +3,7 @@
   "name": "power sled triceps extension",
   "bodyPart": "upper arms",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "triceps",
   "secondaryMuscles": [
     "shoulders",
