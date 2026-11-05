@@ -3873,4 +3873,5 @@ export default {
   "Your rule right now: {0}.": "قاعدهٔ فعلی‌ات: {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "زنجیره‌ات هفته‌هایی با دست‌کم یک تمرین را می‌شمارد. یخ‌زدگی می‌تواند گاهی یک هفتهٔ جاافتاده را بپوشاند.",
   "{0} since the week of {1}.": "{0} از هفتهٔ {1}.",
+  "This phone has no print service. Turn one on in its settings and try again.": "این گوشی سرویس چاپ ندارد. یکی را در تنظیمات روشن کن و دوباره امتحان کن.",
 }

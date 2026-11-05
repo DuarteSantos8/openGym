@@ -2663,6 +2663,7 @@ export const PT_BR_OVERRIDES = {
   "You can change it later in Settings. A change counts from then on.": "Você pode mudar isso depois nas Configurações. Uma mudança vale a partir daí.",
   "Your rule right now: {0}.": "Sua regra agora: {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Sua sequência conta semanas com pelo menos um treino. Os congelamentos podem cobrir uma semana perdida de vez em quando.",
+  "This phone has no print service. Turn one on in its settings and try again.": "Este celular não tem serviço de impressão. Ative um nas configurações e tente de novo.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -3873,4 +3873,5 @@ export default {
   "Your rule right now: {0}.": "Quy tắc hiện tại: {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Chuỗi đếm số tuần có ít nhất một buổi tập. Lượt đóng băng có thể giữ một tuần thỉnh thoảng bị lỡ.",
   "{0} since the week of {1}.": "{0} từ tuần {1}.",
+  "This phone has no print service. Turn one on in its settings and try again.": "Điện thoại này không có dịch vụ in. Bật một dịch vụ trong cài đặt rồi thử lại.",
 };

@@ -12,6 +12,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Windows: the bundle size script and the coach tests find their files again (#999, #998, #1000, thanks @lintuo and @fromcodetogold).
 - Android: the tab bar no longer slides under the navigation bar after a page load (#997, thanks @FrancescoDeSimone).
 - Android: "Rest's over" no longer rings a minute early with the phone locked, and the countdown card stays until the real end. Some phones hand the alarm over early; openGym now books it again for the right time (#995, thanks @ukizet).
+- Android: Create PDF no longer closes the app on phones without a print service. It says what is missing instead (#991, thanks @dagov42 for tracking it down).
 
 ## Unreleased (v1.4.5)
 

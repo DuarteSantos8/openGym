@@ -3963,4 +3963,5 @@ export default {
   "Your rule right now: {0}.": "قاعدتك الآن: {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "سلسلتك تعدّ الأسابيع التي فيها تمرين واحد على الأقل. التجميد يمكنه تغطية أسبوع فائت بين حين وآخر.",
   "{0} since the week of {1}.": "{0} منذ أسبوع {1}.",
+  "This phone has no print service. Turn one on in its settings and try again.": "لا توجد خدمة طباعة على هذا الهاتف. فعّل واحدة من إعداداته ثم حاول مجددًا.",
 }

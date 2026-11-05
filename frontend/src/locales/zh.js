@@ -3908,4 +3908,5 @@ export default {
   "Your rule right now: {0}.": "你现在的规则：{0}。",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "连续记录按至少练一次的周来算。冻结卡可以偶尔顶上一周。",
   "{0} since the week of {1}.": "{1} 那周起为{0}。",
+  "This phone has no print service. Turn one on in its settings and try again.": "这台手机没有打印服务。在设置里打开一个再试一次。",
 }

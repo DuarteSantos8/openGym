@@ -3908,4 +3908,5 @@ export default {
   "Your rule right now: {0}.": "Ta règle actuelle : {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Ta série compte les semaines avec au moins une séance. Les gels peuvent couvrir une semaine manquée de temps en temps.",
   "{0} since the week of {1}.": "{0} depuis la semaine du {1}.",
+  "This phone has no print service. Turn one on in its settings and try again.": "Ce téléphone n’a pas de service d’impression. Actives-en un dans ses réglages et réessaie.",
 }

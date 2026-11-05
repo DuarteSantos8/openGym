@@ -3911,4 +3911,5 @@ export default {
   "Your rule right now: {0}.": "A szabályod most: {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "A sorozatod a legalább egy edzéses heteket számolja. A fagyasztók lefedhetnek egy-egy kihagyott hetet.",
   "{0} since the week of {1}.": "{0} a(z) {1} hete óta.",
+  "This phone has no print service. Turn one on in its settings and try again.": "Ezen a telefonon nincs nyomtatási szolgáltatás. Kapcsolj be egyet a beállításokban, és próbáld újra.",
 }

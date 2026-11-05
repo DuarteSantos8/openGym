@@ -3919,4 +3919,5 @@ export default {
   "Your rule right now: {0}.": "กฎของคุณตอนนี้: {0}",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "สถิตินับสัปดาห์ที่ฝึกอย่างน้อยหนึ่งครั้ง ตัวหยุดช่วยสัปดาห์ที่พลาดเป็นครั้งคราวได้",
   "{0} since the week of {1}.": "{0} ตั้งแต่สัปดาห์ของ {1}",
+  "This phone has no print service. Turn one on in its settings and try again.": "โทรศัพท์เครื่องนี้ไม่มีบริการพิมพ์ เปิดใช้งานในการตั้งค่าแล้วลองอีกครั้ง",
 }

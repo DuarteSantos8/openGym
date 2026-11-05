@@ -3908,4 +3908,5 @@ export default {
   "Your rule right now: {0}.": "지금 규칙: {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "연속 기록은 운동을 한 번 이상 한 주를 세요. 동결권은 가끔 놓친 주를 지켜 줘요.",
   "{0} since the week of {1}.": "{1} 주부터 {0}.",
+  "This phone has no print service. Turn one on in its settings and try again.": "이 휴대폰에는 인쇄 서비스가 없어요. 설정에서 하나를 켜고 다시 시도해 주세요.",
 }

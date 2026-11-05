@@ -3905,4 +3905,5 @@ export default {
   "Your rule right now: {0}.": "Твоє правило зараз: {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Серія рахує тижні бодай з одним тренуванням. Заморозки можуть прикрити випадково пропущений тиждень.",
   "{0} since the week of {1}.": "{0} з тижня {1}.",
+  "This phone has no print service. Turn one on in its settings and try again.": "На цьому телефоні немає служби друку. Увімкни її в налаштуваннях і спробуй ще раз.",
 }

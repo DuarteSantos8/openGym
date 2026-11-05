@@ -3873,4 +3873,5 @@ export default {
   "Your rule right now: {0}.": "Tvoje pravidlo teď: {0}.",
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Série počítá týdny s aspoň jedním tréninkem. Zmrazení může pokrýt občas vynechaný týden.",
   "{0} since the week of {1}.": "{0} od týdne {1}.",
+  "This phone has no print service. Turn one on in its settings and try again.": "Tenhle telefon nemá tiskovou službu. Zapni nějakou v nastavení a zkus to znovu.",
 }

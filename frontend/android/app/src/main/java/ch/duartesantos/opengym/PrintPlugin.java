@@ -1,5 +1,6 @@
 package ch.duartesantos.opengym;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
@@ -46,29 +47,54 @@ public class PrintPlugin extends Plugin {
                 : PrintAttributes.MediaSize.ISO_A4;
 
         getActivity().runOnUiThread(() -> {
-            WebView webView = new WebView(getContext());
-            webView.setWebViewClient(new WebViewClient() {
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    PrintManager printManager =
-                            (PrintManager) getContext().getSystemService(Context.PRINT_SERVICE);
-                    if (printManager == null) {
-                        printView = null;
-                        call.reject("printing is not available on this device");
-                        return;
-                    }
-                    PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(jobName);
-                    printManager.print(jobName, adapter,
-                            new PrintAttributes.Builder()
-                                    .setMediaSize(media)
-                                    .build());
-                    call.resolve();
+            // #991: anything thrown on the UI thread here took the whole app down. A WebView that
+            // cannot be made (its provider mid-update) or a ROM without a print service now fail
+            // this printout only.
+            try {
+                Context ctx = getContext();
+                if (ctx == null) {
+                    call.reject("printing is not available right now", "unavailable");
+                    return;
                 }
-            });
-            // baseURL null: the document is fully self-contained (inline <style>, no assets; the
-            // exercise pictures, #817, arrive inline as data: URLs, the 180 px stills only).
-            webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
-            printView = webView;
+                WebView webView = new WebView(ctx);
+                webView.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public void onPageFinished(WebView view, String url) {
+                        startPrint(call, view, jobName, media);
+                    }
+                });
+                // baseURL null: the document is fully self-contained (inline <style>, no assets; the
+                // exercise pictures, #817, arrive inline as data: URLs, the 180 px stills only).
+                webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
+                printView = webView;
+            } catch (Throwable e) {
+                printView = null;
+                call.reject("printing failed: " + e.getMessage(), "failed");
+            }
         });
+    }
+
+    // Hands the loaded page to the system print flow. Some ROMs (HyperOS seen) ship no print
+    // service: PrintManager.print then throws ActivityNotFoundException, answered as "no-service"
+    // so the page can say what is missing.
+    private void startPrint(PluginCall call, WebView view, String jobName, PrintAttributes.MediaSize media) {
+        try {
+            Context ctx = getContext();
+            PrintManager printManager = ctx == null ? null : (PrintManager) ctx.getSystemService(Context.PRINT_SERVICE);
+            if (printManager == null) {
+                printView = null;
+                call.reject("printing is not available on this device", "no-service");
+                return;
+            }
+            PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(jobName);
+            printManager.print(jobName, adapter, new PrintAttributes.Builder().setMediaSize(media).build());
+            call.resolve();
+        } catch (ActivityNotFoundException e) {
+            printView = null;
+            call.reject("no print service on this device", "no-service");
+        } catch (Throwable e) {
+            printView = null;
+            call.reject("printing failed: " + e.getMessage(), "failed");
+        }
     }
 }
