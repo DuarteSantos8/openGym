@@ -4200,4 +4200,5 @@ export default {
   "Suggest a workout": "เสนอเวิร์กเอาต์",
   "Workout corrected: {0}": "แก้ไขเวิร์กเอาต์แล้ว: {0}",
   "{0}: weight": "{0}: น้ำหนัก",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "บนเซิร์ฟเวอร์นี้เขาเทรนแบบส่วนตัวไม่ได้ จึงไม่มีอะไรให้เก็บไว้",
 }

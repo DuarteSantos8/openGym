@@ -4236,4 +4236,5 @@ export default {
   "Suggest a workout": "Föreslå ett pass",
   "Workout corrected: {0}": "Pass rättat: {0}",
   "{0}: weight": "{0}: vikt",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "På den här servern får hen inte träna någon privat, så det finns inget att behålla.",
 }

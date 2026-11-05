@@ -4189,4 +4189,5 @@ export default {
   "Suggest a workout": "Antrenman öner",
   "Workout corrected: {0}": "Antrenman düzeltildi: {0}",
   "{0}: weight": "{0}: ağırlık",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "Bu sunucuda özel antrenörlük yapamıyor, yani sürdürülecek bir şey yok.",
 }

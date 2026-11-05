@@ -251,18 +251,24 @@ test('gym join code, and a trainer leaving: stay connected privately', async t =
   assert.equal(tim.levels.metrics, 'view');
   assert.equal(tim.levels.workouts, 'off');
 
-  // Lena takes Marco off the gym. Lea's connection pauses and she gets the offer.
+  // Lena takes Marco off the gym. Lea's connection pauses; Marco may not train outside a gym, so
+  // there is nothing to offer her, and it simply waits for him to come back.
   assert.equal((await call('u_lena', 'POST', '/api/gym/staff', { gymId: gym.id, user: 'u_marco', on: false })).status, 200);
   assert.equal((await call('u_marco', 'GET', `/api/trainer/member?id=u_lea`)).status, 403);
+  assert.equal((await call('u_lea', 'GET', '/api/sharing/inbox')).body.items.some(i => i.kind === 'offer'), false);
+  assert.equal((await call('u_lena', 'POST', '/api/gym/staff', { gymId: gym.id, user: 'u_marco', on: true })).status, 200);
+  assert.equal((await call('u_marco', 'GET', `/api/trainer/member?id=u_lea`)).status, 200);
+  // Now an admin lets him train freely, and Lena takes him off again: this time Lea gets the offer.
+  await call('u_admin', 'POST', '/api/admin/user/trainer', { id: 'u_marco', free: true });
+  assert.equal((await call('u_lena', 'POST', '/api/gym/staff', { gymId: gym.id, user: 'u_marco', on: false })).status, 200);
   const offer = (await call('u_lea', 'GET', '/api/sharing/inbox')).body.items.find(i => i.kind === 'offer');
   assert.deepEqual(offer.names, ['Marco', 'FitBox']);
   assert.ok(offer.expires > Date.now() + 29 * 86400000);
-  // She keeps him: a private connection, without the lead row. It works once he may train freely.
+  // She keeps him: a private connection, without the lead row, working at once.
   const sharing = (await call('u_lea', 'GET', '/api/sharing')).body;
   const yes = (await call('u_lea', 'POST', '/api/sharing/inbox/answer', { id: offer.id, accept: true, consent: sharing.consent })).body;
   assert.equal(yes.status, 'accepted');
-  assert.equal(yes.paused, 'not-trainer');
-  await call('u_admin', 'POST', '/api/admin/user/trainer', { id: 'u_marco', free: true });
+  assert.equal(yes.paused, null);
   const list = (await call('u_marco', 'GET', '/api/trainer/members')).body.members;
   assert.equal(list.length, 1);
   assert.equal(list[0].gym, null);
@@ -365,4 +371,21 @@ test('workout.edit: a correction applied with "Change directly", suggested other
   assert.equal(h.state('u_lea').workouts.find(x => x.id === 'w1').name, 'Push A');
   await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'view' }, consent });
   assert.equal((await call('u_marco', 'POST', '/api/trainer/ops', { memberId: 'u_lea', ops: [fix] })).status, 403);
+});
+
+test('an offer to stay privately lapses once the trainer may no longer train freely', async t => {
+  const h = await start(t);
+  const { call } = h;
+  const { gym } = await connected(h, { metrics: 'view' });
+  await call('u_admin', 'POST', '/api/admin/user/trainer', { id: 'u_marco', free: true });
+  await call('u_lena', 'POST', '/api/gym/staff', { gymId: gym.id, user: 'u_marco', on: false });
+  const offer = (await call('u_lea', 'GET', '/api/sharing/inbox')).body.items.find(i => i.kind === 'offer');
+  assert.ok(offer);
+  await call('u_admin', 'POST', '/api/admin/user/trainer', { id: 'u_marco', free: false });
+  const sharing = (await call('u_lea', 'GET', '/api/sharing')).body;
+  const r = await call('u_lea', 'POST', '/api/sharing/inbox/answer', { id: offer.id, accept: true, consent: sharing.consent });
+  assert.equal(r.status, 409);
+  assert.equal(r.body.code, 'not-free');
+  assert.equal((await call('u_lea', 'GET', '/api/sharing/inbox')).body.items.find(i => i.id === offer.id).status, 'lapsed');
+  assert.equal((await call('u_lea', 'GET', '/api/sharing')).body.grants?.some?.(g => !g.gym && g.status === 'active') ?? false, false);
 });

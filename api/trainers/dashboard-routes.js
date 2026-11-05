@@ -417,6 +417,11 @@ export function dashboardRoutes({ json, readBody, userById, audit, org, perms, l
           log.append(user.id, { ev: 'grant.end', actor: { kind: 'self', id: user.id, name: user.name }, peer: item.from, grantId: item.grantId });
           return json(res, 200, { ok: true, status: 'declined' });
         }
+        // The trainer lost the right to train freely since the offer: nothing to stay connected to.
+        if (g && !org.rolesOf(g.granteeId).freeTrainer) {
+          done('lapsed');
+          return json(res, 409, { error: 'they cannot train people privately on this server', code: 'not-free' });
+        }
         if (!consentBody(res, body.consent)) return;
         const p = org.stayPrivate({ memberId: user.id, grantId: item.grantId, lang: body.lang });
         done('accepted');

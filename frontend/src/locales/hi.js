@@ -4189,4 +4189,5 @@ export default {
   "Suggest a workout": "वर्कआउट सुझाएँ",
   "Workout corrected: {0}": "वर्कआउट सुधारा गया: {0}",
   "{0}: weight": "{0}: वज़न",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "इस सर्वर पर वे निजी तौर पर ट्रेनिंग नहीं दे सकते, इसलिए रखने को कुछ नहीं है।",
 }

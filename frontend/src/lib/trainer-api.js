@@ -137,5 +137,6 @@ export function trainerError(e) {
   if (code === 'changed-since') return t('You changed it since. Undo anyway?')
   if (code === 'expired' || code === 'not-open') return t('That one is not open any more.')
   if (code === 'no-user') return t('No account with that id.')
+  if (code === 'not-free') return t('They can’t train people privately on this server, so there’s nothing to keep.')
   return e?.message || t('Something went wrong.')
 }

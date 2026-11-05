@@ -4154,4 +4154,5 @@ export default {
   "Suggest a workout": "پیشنهاد یک تمرین",
   "Workout corrected: {0}": "تمرین اصلاح شد: {0}",
   "{0}: weight": "{0}: وزنه",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "او روی این سرور نمی‌تواند خصوصی مربیگری کند، پس چیزی برای نگه داشتن نیست.",
 }

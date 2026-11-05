@@ -4154,4 +4154,5 @@ export default {
   "Suggest a workout": "Navrhnout trénink",
   "Workout corrected: {0}": "Opravený trénink: {0}",
   "{0}: weight": "{0}: váha",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "Na tomhle serveru nesmí trénovat soukromě, takže není co zachovat.",
 }

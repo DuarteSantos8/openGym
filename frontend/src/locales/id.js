@@ -4153,4 +4153,5 @@ export default {
   "Suggest a workout": "Usulkan latihan",
   "Workout corrected: {0}": "Latihan dikoreksi: {0}",
   "{0}: weight": "{0}: beban",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "Di server ini dia tidak bisa melatih secara pribadi, jadi tidak ada yang bisa dipertahankan.",
 };

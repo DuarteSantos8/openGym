@@ -4189,4 +4189,5 @@ export default {
   "Suggest a workout": "Sugerir un entreno",
   "Workout corrected: {0}": "Entreno corregido: {0}",
   "{0}: weight": "{0}: peso",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "En este servidor no puede entrenar a nadie por su cuenta, así que no hay nada que mantener.",
 }

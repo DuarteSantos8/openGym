@@ -4182,4 +4182,5 @@ export default {
   "Suggest a workout": "建議一次訓練",
   "Workout corrected: {0}": "已更正訓練：{0}",
   "{0}: weight": "{0}：重量",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "這台伺服器上對方不能私下帶學員，所以沒有可保留的連線。",
 }

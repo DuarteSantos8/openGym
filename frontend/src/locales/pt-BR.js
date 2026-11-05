@@ -2830,6 +2830,7 @@ export const PT_BR_OVERRIDES = {
   "For a session you ran together.": "Para uma sessão que vocês fizeram juntos.",
   "Log a check-in": "Registrar medidas",
   "Log a workout": "Registrar um treino",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "Neste servidor essa pessoa não pode treinar ninguém por conta própria, então não há nada a manter.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

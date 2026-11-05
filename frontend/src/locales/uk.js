@@ -4186,4 +4186,5 @@ export default {
   "Suggest a workout": "Запропонувати тренування",
   "Workout corrected: {0}": "Тренування виправлено: {0}",
   "{0}: weight": "{0}: вага",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "На цьому сервері тренер не може вести клієнтів приватно, тож зберігати нічого.",
 }

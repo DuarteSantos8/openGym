@@ -4192,4 +4192,5 @@ export default {
   "Suggest a workout": "Edzés javaslása",
   "Workout corrected: {0}": "Javított edzés: {0}",
   "{0}: weight": "{0}: súly",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "Ezen a szerveren nem edzhet senkit magánúton, így nincs mit megtartani.",
 }

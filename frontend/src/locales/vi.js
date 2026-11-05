@@ -4154,4 +4154,5 @@ export default {
   "Suggest a workout": "Đề xuất buổi tập",
   "Workout corrected: {0}": "Đã sửa buổi tập: {0}",
   "{0}: weight": "{0}: mức tạ",
+  "They can’t train people privately on this server, so there’s nothing to keep.": "Trên máy chủ này họ không được huấn luyện riêng, nên không còn gì để giữ.",
 };

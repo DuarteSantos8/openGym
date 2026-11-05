@@ -88,8 +88,10 @@ away. Give the role back and it works again. `GET /api/sharing` reports `paused`
 ### A trainer or member leaves a gym: "stay connected privately?"
 
 When a trainer stops working at a gym (an admin or the lead takes the role, or the trainer leaves
-with `POST /api/trainer/leave-gym`), their gym grants pause and get `offerUntil` (30 days). Each
-member gets an `offer` in their inbox and a push: keep training with them privately. Taking it
+with `POST /api/trainer/leave-gym`), their gym grants pause and get `offerUntil` (30 days). If the
+trainer may train freely (an admin's switch), each member gets an `offer` in their inbox and a push:
+keep training with them privately. A trainer who may not gets no offers; the grants just wait paused
+for the 30 days. An offer taken after the trainer lost that switch lapses with 409 `not-free`. Taking it
 (`POST /api/sharing/inbox/answer` with `accept` and the current consent) makes a new private grant
 with the same levels and a fresh consent record; the gym lead row stays, as it belongs to the
 membership. Declining ends the paused grant; no answer ends it after 30 days (`expireOffers`, run
