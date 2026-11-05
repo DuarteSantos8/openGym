@@ -2833,6 +2833,17 @@ export const PT_BR_OVERRIDES = {
   "They can’t train people privately on this server, so there’s nothing to keep.": "Neste servidor essa pessoa não pode treinar ninguém por conta própria, então não há nada a manter.",
   "How hard it felt: RPE {0}": "Quão puxado foi: RPE {0}",
   "Rate how hard it felt": "Avalie quão puxado foi",
+  "Looks right. Hold it next to your card: same digits, same bars?": "Parece certo. Coloque ao lado do cartão: mesmos dígitos, mesmas barras?",
+  "No luck reading it? Type the number instead.": "Não deu para ler? Digite o número.",
+  "Once more below, to be sure.": "Mais uma vez abaixo, para ter certeza.",
+  "Once more, to be sure": "Mais uma vez, para ter certeza",
+  "Test it at the turnstile once before you count on it.": "Teste uma vez na catraca antes de contar com ele.",
+  "That doesn’t add up. The last digit checks the others, so one of them is off.": "Não fecha. O último dígito confere os outros, então um deles está errado.",
+  "The number on your card": "O número do seu cartão",
+  "The two don’t match. One of them has a typo.": "Os dois não batem. Um deles tem um erro de digitação.",
+  "This format can’t carry some of those characters. Check the type above.": "Este formato não aceita alguns desses caracteres. Confira o tipo acima.",
+  "Type it in": "Digitar",
+  "Typed in by hand. Give it one test run at the turnstile.": "Digitado à mão. Teste uma vez na catraca.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

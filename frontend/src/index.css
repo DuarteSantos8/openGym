@@ -2975,6 +2975,23 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
    quiet-zone padding is baked in by the renderer; the plate underneath just frames it. */
 .ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px}
+/* Typing a code by hand, only after a scan or photo found nothing */
+.ci-fallback{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin:-4px 0 16px;padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:var(--fs-subhead);color:var(--label-2)}
+.ci-fallback>span{flex:1 1 180px;min-width:0}
+.ci-typedform{display:flex;flex-direction:column;gap:10px;margin:-4px 0 18px;padding:14px;border-radius:var(--r-card);background:var(--surface-2)}
+.ci-typed-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ci-typed-row .sect-t{margin:0}
+.ci-typed-in{font:600 var(--fs-title3)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.ci-typed-hint{min-height:1.3em;font-size:var(--fs-footnote);color:var(--label-2);line-height:var(--lh-small)}
+.ci-typed-hint.bad{color:var(--red)}
+.ci-typed-big{align-self:center;max-width:100%;box-sizing:border-box}
+.ci-typed-big canvas{max-width:100%;height:auto}
+.ci-typed-v{font:600 var(--fs-title2)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-align:center;color:var(--label);overflow-wrap:anywhere}
+.ci-typed-note{text-align:center}
+.ci-typed-act{gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.ci-typed{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:10px;font-size:var(--fs-footnote);color:var(--label-2);text-align:start}
+.ci-typed .icn{flex:none;color:var(--orange)}
+.ci-typed>span{flex:1 1 160px;min-width:0}
 .qr-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;transition:opacity var(--fast)}
 /* the trailing add card — a big + on a dashed outline, same footprint as a real card */
 .ci-add{
