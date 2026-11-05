@@ -24,7 +24,7 @@ const oidOf = slot => slot.split(':').slice(2).join(':')
 
 const fmts = new Map()
 /** A timestamp's local calendar date in the run's frozen timezone; a date passes as it is. */
-function dateIn(at, tz) {
+export function dateIn(at, tz) {
   if (typeof at === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(at)) return at
   if (!fmts.has(tz)) fmts.set(tz, new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }))
   return fmts.get(tz).format(new Date(ms(at)))
@@ -99,15 +99,17 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
     else if (e.type === 'resume' && open) pauses.at(-1).to = dateIn(e.at, tz)
   }
 
-  // Saved exposures of this run, earliest first; an assign event moves one to another slot.
+  // Saved exposures of this run, earliest first; an assign event moves one to another slot. Work
+  // saved before the run existed (a converted legacy run, spec 15.3) counts only through an assign event.
   const moved = new Map(of('assign').map(e => [e.exposureId, e.slot]))
+  const legacy = slot => ({ runId: run.id, trackId: run.def.tracks.find(t => t.slots.some(s => s.oid === oidOf(slot)))?.id, slot })
   const saved = []
   for (const w of workouts) {
     for (const x of w.exposures || []) {
-      const g = x.programme
+      const g = x.programme ?? (moved.has(x.exposureId) ? legacy(moved.get(x.exposureId)) : null)
       if (g?.runId !== run.id) continue
       const t = ms(x.completedAt ?? w.end ?? w.start), p = prescriptions[x.prescriptionId] ?? null
-      saved.push({ x, id: x.exposureId, track: g.trackId, slot: moved.get(x.exposureId) ?? g.slot, role: g.role ?? 'work', moved: moved.has(x.exposureId), t, gen: p ? ms(p.generatedAt) : t, p })
+      saved.push({ x, g, id: x.exposureId, track: g.trackId, slot: moved.get(x.exposureId) ?? g.slot, role: g.role ?? 'work', moved: moved.has(x.exposureId), t, gen: p ? ms(p.generatedAt) : t, p })
     }
   }
   saved.sort(byTime)
@@ -118,7 +120,7 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
   const started = (track, slot, gen) => { const at = `${track}|${slot.split(':')[0]}`; if (!byPeriod.has(at)) byPeriod.set(at, []); byPeriod.get(at).push(gen) }
   for (const s of saved) {
     if (s.role !== 'extra') { if (!credit.has(`${s.track}|${s.slot}`)) credit.set(`${s.track}|${s.slot}`, []); credit.get(`${s.track}|${s.slot}`).push(s) }
-    started(s.track, s.x.programme.slot, s.gen)
+    started(s.track, s.g.slot, s.gen)
   }
   // An open session is pending on its slot, and has started its attempt.
   const live = new Set()
@@ -154,7 +156,9 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
   let now = today < run.startedOn ? 0 : weekly ? periodOfDate(run, pauses, today) : consumed.length + 1
   if (ended) now = Math.min(now, periodAt(ended.t))
   now = Math.min(now, MAX_PERIODS + 1)
-  const n = latest.duration.n
+  // A converted legacy run starts where its calendar weeks left it (spec 15.3): weekOffset weeks are spent.
+  const offset = run.legacy?.weekOffset ?? 0
+  const n = Math.max(0, latest.duration.n - offset)
   // An end-policy change counts while the nominal end is still ahead.
   const endPolicy = of('end-policy').filter(e => periodAt(e.t) <= n).at(-1)?.end ?? run.end ?? 'stop'
   const limit = endPolicy === 'stop' ? n : MAX_PERIODS
@@ -173,7 +177,8 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
     const added = run.def.tracks.some(t => t.id === id) ? null : amends.find(e => e.def.tracks.some(t => t.id === id))
     const removal = amends.find(e => e.t >= (added?.t ?? -Infinity) && !e.def.tracks.some(t => t.id === id))
     const decisions = [], tries = {}
-    let k = added ? periodAt(added.t) + 1 : 1, i = 0, entry = {}, cycleOk = true, achieved = null, tm = null, state = 'active'
+    let k = added ? periodAt(added.t) + 1 : 1, i = added ? 0 : Math.min(offset, run.def.tracks.find(t => t.id === id).stages.length - 1)
+    let entry = {}, cycleOk = true, achieved = null, tm = null, state = 'active'
     let def = run.def, known = null, applies = () => true, slots = [], values = entry
     for (;;) {
       // Maintenance shows the current window.
@@ -332,7 +337,7 @@ export function deriveRun({ run, events = [], workouts = [], prescriptions = {},
     if (!oid) marks[a] = true
     else if (marks[a] !== true) marks[a] = [...(marks[a] || []), oid]
   }
-  return { status, period, nominal: { used: endPolicy === 'stop' ? Math.min(used, n) : used, of: n, unit: latest.duration.unit }, tracks, conflicts, def: latest, pauses, taken: marks }
+  return { status, period, nominal: { used: (endPolicy === 'stop' ? Math.min(used, n) : used) + offset, of: n + offset, unit: latest.duration.unit }, tracks, conflicts, def: latest, pauses, taken: marks }
 }
 
 /** Each occurrence's generation inputs, its entry advanced over the attempt's credited work in order.
@@ -430,7 +435,9 @@ export function slotInputs({ view, run, assignment, occRule }) {
   if (needsOneRm(rule) && !tv.ref) return { blocked: 'reference-missing' }
   const v = kept ? {} : tv.values[oid] ?? { fresh: true }
   const target = stage.targets?.[oid] ?? {}
-  const at = kept ? tv.achieved.values[oid] ?? null : v.fresh ? entryAt(rule, v, { ...(v.state ? {} : run.tracks?.[id]?.seed?.[oid]), ...target.seed }) : null
+  // The run's captured seed opens the stage's adaptive metrics only: what a week fixes, a percentage, stands as authored.
+  const captured = v.state ? {} : Object.fromEntries(Object.entries(run.tracks?.[id]?.seed?.[oid] ?? {}).filter(([m]) => operatorFor(rule.program.phases[0], m)))
+  const at = kept ? tv.achieved.values[oid] ?? null : v.fresh ? entryAt(rule, v, { ...captured, ...target.seed }) : null
   return {
     rule, trackId: `run:${run.id}:${id}:${oid}`, state: v.state ?? null, lastPrescription: v.lastPrescription ?? null,
     lastLog: v.lastLog ? { ...v.lastLog, id: v.lastLog.exposureId } : null, oneRm: tv.ref,

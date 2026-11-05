@@ -5,6 +5,7 @@ import { SHORT, packProfile, unpackProfile } from '../migration/profile-pack.js'
 import { assertSyncSize, syncSize } from '../migration/profile-size.js';
 import { migrateProfileV1ToV2, validateCanonicalProfile } from '../migration/profile-migration.js';
 import { LIB_BY_ID } from '../coach/core/library.js';
+import { contentHash } from '../engine/index.js';
 
 const migrate = state => migrateProfileV1ToV2(JSON.parse(JSON.stringify(state)), LIB_BY_ID).profile;
 const BENCH = '0025', CARDIO = '2331';
@@ -76,4 +77,21 @@ test('v1 and already-packed documents pass through', () => {
   const p = packProfile(bigProfile());
   assert.equal(packProfile(p), p);
   assert.equal(unpackProfile(old), old);
+});
+
+test('exposure.programme and provenance.programme survive pack and unpack', () => {
+  const x = migrate(v1([{ id: BENCH, sets: 3, reps: 5, weight: 60, prog: 'linear' }], [wk('w1', '2026-11-02', [entry(BENCH, { sets: 3, reps: 5, weight: 60 }, [row(5, 60), row(5, 60), row(5, 60)], { sets: 3, reps: 5 })])]));
+  const ref = { id: 'orm:1', exerciseId: BENCH, value: 100, unit: 'kg', source: 'manual', capturedAt: '2026-11-01T00:00:00.000Z' };
+  const stamp = { runId: 'run:pg:2026-11-02:1', rev: 1, trackId: 't:pg:r1:o0', slot: 'p1:a0:r1:o0', stage: 's1', attempt: 1, role: 'work', ref, effort: { mode: 'advisory', rpe: 8 } };
+  const exposure = x.workouts[0].exposures[0];
+  exposure.programme = stamp;
+  const { contentHash: _, ...body } = x.prescriptions[exposure.prescriptionId];
+  const p = { ...body, provenance: { ...body.provenance, programme: stamp } };
+  x.prescriptions[exposure.prescriptionId] = { ...p, contentHash: contentHash(p) };
+  assert.ok(validateCanonicalProfile(x).ok);
+  const packed = packProfile(x);
+  assert.equal(packed.packed, 1);                              // packed, not passed through on a collision
+  assert.deepEqual(unpackProfile(JSON.parse(JSON.stringify(packed))), x);
+  assert.deepEqual(unpackProfile(packed).workouts[0].exposures[0].programme, stamp);
+  assert.deepEqual(unpackProfile(packed).prescriptions[exposure.prescriptionId].provenance.programme, stamp);
 });

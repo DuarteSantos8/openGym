@@ -797,3 +797,26 @@ test('the replay does not depend on the order exposures and events arrive in', (
   const keyed = Object.fromEntries(turn(events, 1).map(e => [e.id, e]))
   expect(JSON.stringify(derive(r, w.xs, keyed, date(9)))).toBe(JSON.stringify(derive(r, w.xs, events, date(9))))
 })
+
+test('a converted legacy run starts past its spent weeks, credits old work only through assign, and its captured seed never moves a fixed week', () => {
+  // Weeks 1 and 2 were spent under the old calendar (api/migration/programme-upgrade.js): the run opens on w3.
+  const st = [stage('w1'), stage('w2'), stage('w3', { targets: { 'rA:o0': { own: 'set', phase: phase(abs(70)) } } }), stage('w4')]
+  const legacy = (weekOffset) => {
+    const r = run(def([trackOf('bench', ['rA:o0'], st)], { duration: { n: 4, unit: 'weeks' } }), { policy: { onFailure: 'advance', onSkipped: 'advance' }, legacy: { weekOffset } })
+    r.tracks.bench.seed = { 'rA:o0': { load: abs(90) } }
+    return r
+  }
+  const r = legacy(2)
+  // Monday's session, saved before the run existed: no programme stamp of its own.
+  const { programme, ...old } = ex('p1:a0:rA:o0')
+  const v = derive(r, [old], [ev('assign', { exposureId: old.exposureId, slot: 'p1:a0:rA:o0' })], date(1, 2))
+  expect(v.tracks.bench).toMatchObject({ stage: 'w3', period: 1 })
+  expect(v.tracks.bench.slots[0]).toMatchObject({ exposureId: old.exposureId, outcome: 'succeeded' })
+  expect(v.nominal).toEqual({ used: 2, of: 4, unit: 'weeks' })
+  expect(derive(r, [old], [], date(1, 2)).tracks.bench.slots[0].exposureId).toBeUndefined()
+  // The fixed 70 kg week stands over the seed; the adaptive w4 of a run one week further opens at it.
+  expect(rows(perform(r, world(), { rid: 'rA', oid: 'rA:o0', date: date(1), occRule: PLAIN }))).toEqual([70, 70, 70])
+  expect(rows(perform(legacy(3), world(), { rid: 'rA', oid: 'rA:o0', date: date(1), occRule: PLAIN }))).toEqual([90, 90, 90])
+  // Every week spent: the run reads as stopped.
+  expect(derive(legacy(4), [], [], date(1)).status).toBe('stopped')
+})

@@ -6,7 +6,7 @@
  * reads the clock or a random source, so a retry after a crash — or a device converting its own
  * copy of the same profile — produces the identical document.
  *
- * Imports only the engine and ./profile-version.js. The built-in exercise catalogue (a v1 profile
+ * Imports only the engine and its siblings in api/migration. The built-in exercise catalogue (a v1 profile
  * stores only an exerciseId, and cardio/bodyweight/assisted are read off the catalogue entry) is
  * passed in by the caller. Both callers — api/server.js and frontend/src/store/useStore.js — must
  * pass the same one, LIB_BY_ID from api/coach/core/library.js: a different catalogue on the phone
@@ -17,6 +17,7 @@
  */
 import { ENGINE_SCHEMA, migrationStatus } from './profile-version.js';
 import { validOneRepMax, validateCanonicalProfile } from './profile-validation.js';
+import { upgradeEngineContract } from './programme-upgrade.js';
 import {
   PRESETS, REPS_MAX, SET_REPS_MAX, currentOneRm, defaultPlanRule, estimate1RM,
   generatePrescription, isValidDeloadFactor, migrateOccurrence, normalizeEffort, planFingerprint, planOptions, planPhase, presetForPolicy, replayProgression, summarizeActual, validateIntensifier, validatePlanRule
@@ -63,8 +64,8 @@ const exerciseOf = (ctx, id) => records(ctx.state.customEx).find(c => String(c.i
 // A plan saved as minutes and speed stays cardio even where the catalogue has since moved its
 // exercise out of cardio (jumping jacks, #678): reclassifying must not rewrite a plan.
 const modeOf = (cfg, ex) => (MODES.includes(cfg?.mode) ? cfg.mode : cfg && (cfg.min != null || cfg.speed != null) && cfg.reps == null && cfg.sec == null ? 'cardio' : ex?.bp === 'cardio' ? 'cardio' : 'reps');
-const isBodyweight = (cfg, ex) => (cfg?.bodyweight != null ? !!cfg.bodyweight : BODYWEIGHT_EQ.has(ex?.eq));
-const isAssisted = ex => (typeof ex?.assisted === 'boolean' ? ex.assisted
+export const isBodyweight = (cfg, ex) => (cfg?.bodyweight != null ? !!cfg.bodyweight : BODYWEIGHT_EQ.has(ex?.eq));
+export const isAssisted = ex => (typeof ex?.assisted === 'boolean' ? ex.assisted
   : ex?.eq === 'leverage machine' && /\bassist(ed)?\b/i.test(String(ex?.n || '')));
 const WARMUP = new Set(['warmup', 'warm-up', 'warm_up']);
 const isWarmupRow = row => (row?.phase != null && row.phase !== ''
@@ -711,9 +712,11 @@ export function migrateProfileV1ToV2(state, catalogue) {
     const converted = migrateProfileV1ToV2({ unit, restSec: state.restSec, customEx: state.customEx, routines: snap.routines, workouts: [] }, catalogue).profile;
     return { ...snap, routines: converted.routines, migrationAudit: converted.migrationAudit };
   });
-  const activeCheck = validateCanonicalActive(profile, activeSession);
+  // In the same pass, programmes become engine definitions (contract 1); `summary` is for the adoption notice.
+  const upgraded = upgradeEngineContract(profile, catalogue);
+  const activeCheck = validateCanonicalActive(upgraded.state, activeSession);
   if (!activeCheck.ok) throw new Error(`invalid-active ${activeCheck.errors[0]}`);
-  return { profile, activeSession };
+  return { profile: upgraded.state, activeSession, summary: upgraded.summary };
 }
 
 /** Validate editable entries together with the frozen prescription dictionary they refer to. */

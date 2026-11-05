@@ -1,7 +1,94 @@
-import { ENGINE_SCHEMA } from './profile-version.js';
-import { validatePlanRule, validateWarmup, ruleOfPrescription, contentHash, phaseById } from '../engine/index.js';
+import { ENGINE_SCHEMA, contractOf } from './profile-version.js';
+import { MAX_PHASES, validatePlanRule, validateProgramme, validateWarmup, ruleOfPrescription, contentHash, phaseById } from '../engine/index.js';
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const list = v => Array.isArray(v) ? v : [];
+
+/* ---------- programmes (contract 1, programme-upgrade.js) ----------
+   The shapes engine/programme-run.js deriveRun reads without a guard: a synced record that fails
+   them would break a run's view for good, so they are refused here. */
+const str = v => typeof v === 'string' && v.length > 0;
+const when = v => Number.isFinite(v) || (typeof v === 'string' && Number.isFinite(Date.parse(v)));
+const whole = (v, lo = 0) => Number.isInteger(v) && v >= lo;
+const isPolicy = p => isObj(p) && ['advance', 'repeat'].includes(p.onFailure) && ['advance', 'repeat'].includes(p.onSkipped);
+const isEffort = e => isObj(e) && ['advisory', 'operational'].includes(e.mode) && Number.isFinite(e.rpe) && e.rpe >= 6 && e.rpe <= 10;
+const isAmount = v => isObj(v) && Number.isFinite(v.value) && ['kg', 'lb'].includes(v.unit);
+const isRef = r => validOneRepMax(r?.id, r);
+// `p<period>:a<appointment>`, then `:<occurrence>` for one exercise's slot.
+const isSlot = v => typeof v === 'string' && /^p\d+:a\d+(:.+)?$/.test(v);
+function isZone(tz) {
+  if (!str(tz)) return false;
+  try { new Intl.DateTimeFormat('en-CA', { timeZone: tz }); return true; } catch { return false; }
+}
+// A programme's (or a run's frozen) definition, with the bounds: 16 weeks or blocks, 50 tracks, 32 authored phases a track.
+function definitionErrors(def, at) {
+  if (!isObj(def) || !str(def.id) || !whole(def.rev, 1)) return [`${at}: invalid programme identity`];
+  const out = [], s = def.schedule, weeks = s?.mode === 'weeks';
+  if (!(weeks ? Array.isArray(s.appts) && s.appts.every(a => isObj(a) && str(a.rid) && (a.day === undefined || (whole(a.day) && a.day <= 6))) && (s.ordered === undefined || s.ordered === true)
+    : s?.mode === 'rotation' && Array.isArray(s.sequence) && s.sequence.every(str))) out.push(`${at}.schedule is invalid`);
+  if (!(whole(def.duration?.n, 1) && def.duration.n <= 16 && def.duration.unit === (weeks ? 'weeks' : 'blocks'))) out.push(`${at}.duration must be 1 to 16 ${weeks ? 'weeks' : 'blocks'}`);
+  if (!['stop', 'extend'].includes(def.end) || !['inherit', 'ask', 'keep'].includes(def.refs)) out.push(`${at}: invalid end or refs`);
+  if (def.needs !== undefined && !(Array.isArray(def.needs) && def.needs.every(n => ['binding', 'repair'].includes(n)))) out.push(`${at}.needs is invalid`);
+  if (!Array.isArray(def.tracks) || def.tracks.length > 50) return [...out, `${at}.tracks must hold at most 50 tracks`];
+  def.tracks.forEach((t, i) => {
+    const tat = `${at}.tracks[${i}]`;
+    if (!isObj(t) || !str(t.id) || !str(t.exerciseId) || !Array.isArray(t.slots) || !t.slots.every(x => isObj(x) && str(x.rid) && str(x.oid))
+      || (t.policy !== undefined && !isPolicy(t.policy)) || (t.tm !== undefined && !isAmount(t.tm))) return out.push(`${tat} is invalid`);
+    const stages = Array.isArray(t.stages) ? t.stages : [];
+    if (!stages.length || stages.length > 16 || !stages.every(st => isObj(st) && str(st.id) && ['work', 'recovery', 'rest'].includes(st.kind)
+      && (st.close === undefined || ['completion', 'calendar'].includes(st.close)) && isObj(st.targets) && Object.values(st.targets).every(x => isObj(x) && ['inherit', 'set'].includes(x.own)))) return out.push(`${tat}.stages must hold 1 to 16 stages`);
+    if (stages.reduce((n, st) => n + Object.values(st.targets).filter(x => x.own === 'set').length, 0) > MAX_PHASES) out.push(`${tat}: at most ${MAX_PHASES} authored phases`);
+  });
+  return out;
+}
+const EVENTS = {
+  skip: e => isSlot(e.slot), discard: e => isSlot(e.slot) && typeof e.worked === 'boolean', close: e => whole(e.period, 1),
+  bypass: e => whole(e.period, 1) && Array.isArray(e.appts) && e.appts.every(a => whole(a)), resolve: e => isSlot(e.slot) && ['failed', 'skipped'].includes(e.as),
+  assign: e => str(e.exposureId) && isSlot(e.slot), pause: () => true, resume: () => true, end: () => true,
+  policy: e => str(e.trackId) && isPolicy(e.policy), 'end-policy': e => ['stop', 'extend'].includes(e.end),
+  reference: e => str(e.trackId) && isRef(e.ref) && (e.from == null || str(e.from)), amend: e => isObj(e.def),
+  conflict: e => str(e.trackId) && str(e.exposureId) && ['recorded', 'recomputed'].includes(e.keep)
+};
+// exposure.programme = prescription.provenance.programme: where a session went in a run.
+const isAssignment = g => isObj(g) && str(g.runId) && whole(g.rev, 1) && str(g.trackId) && isSlot(g.slot) && str(g.stage) && whole(g.attempt, 1)
+  && ['work', 'maintenance', 'extra'].includes(g.role) && (g.ref == null || isRef(g.ref)) && (g.effort == null || isEffort(g.effort));
+
+function programmeErrors(state) {
+  const out = [];
+  if (state.engineContractRevision !== undefined && !whole(state.engineContractRevision)) out.push('engineContractRevision must be a whole number');
+  const map = (key, check) => {
+    if (state[key] == null) return;
+    if (!isObj(state[key])) return out.push(`${key} must be an object`);
+    for (const [k, v] of Object.entries(state[key])) check(v, `${key}[${k}]`, k);
+  };
+  // Before contract 1 `programmes` is lib/programmes.js's own shape, not checked here.
+  if (contractOf(state) >= 1) {
+    map('programmes', (p, at, key) => {
+      const bad = definitionErrors(p, at);
+      if (bad.length) return out.push(...bad);
+      if (p.id !== key || typeof p.name !== 'string' || !Number.isFinite(p.at)) return out.push(`${at}: invalid programme`);
+      // One marked for repair is kept readable, not runnable; any other one must compile against today's routines.
+      if (!p.needs?.includes('repair')) { const check = validateProgramme(p, { routines: list(state.routines) }); if (!check.ok) out.push(`${at}: ${check.errors[0]}`); }
+    });
+    const p = state.programme;
+    if (p != null && !(isObj(p) && (p.runId === null || str(p.runId)) && (p.saved == null || isObj(p.saved)))) out.push('programme must be { runId, saved }');
+  }
+  map('programmeRuns', (r, at, key) => {
+    if (!isObj(r) || r.id !== key || !str(r.programmeId) || !/^\d{4}-\d{2}-\d{2}$/.test(r.startedOn) || ![0, 1].includes(r.weekStart) || !isZone(r.tz) || !when(r.at)
+      || !['stop', 'extend'].includes(r.end) || !whole(r.cycle, 1) || !(Number.isFinite(r.bump) && r.bump >= 0) || !isObj(r.tracks)
+      || (r.firstWeek !== undefined && !(Array.isArray(r.firstWeek) && r.firstWeek.every(i => whole(i)))) || (r.legacy !== undefined && !(isObj(r.legacy) && whole(r.legacy.weekOffset)))) return out.push(`${at}: invalid run`);
+    out.push(...definitionErrors(r.def, `${at}.def`));
+    for (const [t, v] of Object.entries(r.tracks)) {
+      if (!isObj(v) || !isPolicy(v.policy) || !['user', 'legacy'].includes(v.ack) || !['ask', 'keep'].includes(v.refs) || (v.ref !== undefined && !isRef(v.ref))
+        || (v.tm !== undefined && !isAmount(v.tm)) || (v.seed !== undefined && !(isObj(v.seed) && Object.values(v.seed).every(isObj)))) out.push(`${at}.tracks[${t}]: invalid run track`);
+    }
+  });
+  map('programmeEvents', (e, at, key) => {
+    if (!isObj(e) || e.id !== key || !str(e.runId) || !when(e.at) || !Object.hasOwn(EVENTS, e.type) || !EVENTS[e.type](e)) return out.push(`${at}: invalid event`);
+    if (e.type === 'amend') out.push(...definitionErrors(e.def, `${at}.def`));
+  });
+  map('refReviews', (r, at) => { if (!isObj(r) || !str(r.candidateId) || !['keep', 'later'].includes(r.decision) || !when(r.at)) out.push(`${at}: invalid review`); });
+  return out;
+}
 
 /** Structural check of a canonical profile; every migration output passes it before it is stored. */
 function validateStructure(state) {
@@ -44,6 +131,7 @@ function validateStructure(state) {
       errors.push(`prescriptions[${id}] is not a prescription`);
       continue;
     }
+    if (p.provenance?.programme != null && !isAssignment(p.provenance.programme)) errors.push(`prescriptions[${id}].provenance.programme is not a programme assignment`);
     try {
       const check = validatePlanRule(ruleOfPrescription(p));
       if (!check.ok) errors.push(`prescriptions[${id}]: ${check.errors[0]}`);
@@ -65,6 +153,7 @@ function validateStructure(state) {
         if (exposures.has(x.exposureId)) errors.push(`${xat}.exposureId is duplicated`);
         exposures.add(x.exposureId);
       }
+      if (x.programme != null && !isAssignment(x.programme)) errors.push(`${xat}.programme is not a programme assignment`);
       if (x.prescriptionId != null && !isObj(prescriptions[x.prescriptionId])) errors.push(`${xat}.prescriptionId does not resolve`);
       else if (x.prescriptionId != null && prescriptions[x.prescriptionId].exerciseId !== x.exerciseId) errors.push(`${xat}.prescriptionId belongs to another exercise`);
       const rows = x.performance?.sets;
@@ -76,6 +165,7 @@ function validateStructure(state) {
       });
     });
   });
+  errors.push(...programmeErrors(state));
   return { ok: errors.length === 0, errors };
 }
 

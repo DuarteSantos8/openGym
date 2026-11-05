@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { defaultPlanRule, generatePrescription, planFingerprint, planPhase, planOptions } from '../engine/index.js';
 import { isLegacyProfile, migrateProfileV1ToV2, migrationStatus, validateCanonicalActive, validateCanonicalProfile } from '../migration/profile-migration.js';
 import { LIB_BY_ID } from '../coach/core/library.js';
+import { ENGINE_CONTRACT, ENGINE_CONTRACT_HEADER, contractOf } from '../migration/profile-version.js';
+import { deriveRun } from '../engine/index.js';
 
 // Whether the last finish on a track earned a load step: the next session's load is not the one it was prescribed.
 const earned = (profile, trackId) => {
@@ -119,9 +121,11 @@ test('A19: unknown inherited policies are audited as well as exercise overrides'
 
 test('engineSchemaVersion alone decides; a future schema is refused', () => {
   for (const v of [undefined, null, '2', 1, 1.5]) assert.equal(migrationStatus({ engineSchemaVersion: v }).required, true, String(v));
-  assert.deepEqual(migrationStatus(v1(), 123), { required: true, schemaVersion: 1, revision: 7, summary: { routines: 1, workouts: 1, bytes: 123 } });
-  assert.deepEqual(migrationStatus({ engineSchemaVersion: 2, _rev: 3 }), { required: false, schemaVersion: 2, revision: 3, summary: null });
+  assert.deepEqual(migrationStatus(v1(), 123), { required: true, schemaVersion: 1, contract: 0, contractRequired: false, revision: 7, summary: { routines: 1, workouts: 1, bytes: 123 } });
+  assert.deepEqual(migrationStatus({ engineSchemaVersion: 2, _rev: 3 }), { required: false, schemaVersion: 2, contract: 0, contractRequired: true, revision: 3, summary: null });
+  assert.deepEqual(migrationStatus({ engineSchemaVersion: 2, engineContractRevision: 1 }), { required: false, schemaVersion: 2, contract: 1, contractRequired: false, revision: 0, summary: null });
   assert.throws(() => migrationStatus({ engineSchemaVersion: 3 }), /unsupported-schema/);
+  assert.throws(() => migrationStatus({ engineSchemaVersion: 2, engineContractRevision: 2 }), /unsupported-contract/);
   assert.throws(() => migrationStatus([]), /profile-not-an-object/);
   assert.throws(() => migrationStatus({ routines: {} }), /invalid-v1-routines/);
   assert.equal(isLegacyProfile({ engineSchemaVersion: 3 }), false);
@@ -831,4 +835,34 @@ test('a per-side hold is a left and a right row per prescribed set, saved or sti
   }));
   assert.deepEqual(profile.workouts[0].exposures[0].performance.sets.map(r => r.setId), ['r0', 'r0', 'r1', 'r1']);
   assert.deepEqual(activeSession.entries[0].sets.map(r => r.setId), ['r0', 'r0', 'r1', 'r1']);
+});
+
+test('a v1 profile with a running programme migrates straight to contract 1', () => {
+  const input = v1({
+    routines: [{ id: 'r1', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 60, prog: 'linear' }, { id: SITUP, sets: 3, reps: 12, prog: 'linear' }] }],
+    workouts: [{ id: 'w1', d: '2026-11-02', start: Date.UTC(2026, 10, 2, 18), end: Date.UTC(2026, 10, 2, 19), routineIds: ['r1'], routineId: 'r1',
+      entries: [{ id: BENCH, rid: 'r1', target: { sets: 3, reps: 5, weight: 60, mode: 'reps' }, planned: { sets: 3, reps: 5 }, sets: [row(5, 60), row(5, 60), row(5, 60)] }] }],
+    programmes: { pg: { id: 'pg', name: 'Block', at: 1, days: { 1: ['r1'] }, weeks: [{ rpe: 7, t: { [BENCH]: { pct: 70 } } }, { deload: true }] } },
+    programme: { id: 'pg', startedOn: '2026-10-26', cycle: 1, bump: 0, saved: { week: { 1: 'r1' } } }
+  });
+  const before = structuredClone(input);
+  const { profile, summary } = migrate(input);
+  assert.deepEqual(input, before);
+  assert.equal(ENGINE_CONTRACT, 1);
+  assert.equal(ENGINE_CONTRACT_HEADER, 'X-OpenGym-Engine-Contract');
+  assert.equal(contractOf(profile), 1);
+  assert.deepEqual(migrationStatus(profile), { required: false, schemaVersion: 2, contract: 1, contractRequired: false, revision: 7, summary: null });
+  assert.equal(validateCanonicalProfile(profile).ok, true);
+  const runId = 'run:pg:2026-10-26:1';
+  assert.deepEqual(profile.programme, { runId, saved: { week: { 1: 'r1' } } });
+  assert.deepEqual(profile.programmes.pg.tracks.map(t => t.id), ['t:pg:r1:o0', 't:pg:r1:o1']);
+  assert.equal(profile.programmes.pg.tracks[0].stages[0].targets['r1:o0'].phase.parameters.load.percent, 70);
+  // Week 2 of 2: the deload week, this Monday's bench credited to it.
+  const run = profile.programmeRuns[runId];
+  assert.deepEqual([run.startedOn, run.legacy], ['2026-11-02', { weekOffset: 1 }]);
+  assert.deepEqual(summary.map(x => x.kind).sort(), ['credit', 'legacy-choices', 'reference']);
+  const view = deriveRun({ run, events: profile.programmeEvents, workouts: profile.workouts, prescriptions: profile.prescriptions, today: '2026-11-03', routines: profile.routines });
+  assert.deepEqual([view.status, view.tracks['t:pg:r1:o0'].stage, view.tracks['t:pg:r1:o0'].slots[0].exposureId], ['running', 's2', 'w1:x0']);
+  // Running it again changes nothing: a contract-1 profile is not a v1 one.
+  assert.equal(migrate(profile).profile, profile);
 });
