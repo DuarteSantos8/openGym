@@ -54,6 +54,23 @@ describe('Lithuanian locale', () => {
     expect(lt['Workout day reminder']).toBe('Treniruotės dienos priminimas')
   })
 
+  test('keeps v1.4.4 fitness copy accurate and fractional plurals grammatical', () => {
+    expect(lt['Pull-ups, dips and push-ups add your nearest weigh-in to their volume. Records stay as logged.'])
+      .toContain('Prisitraukimų, atsispaudimų lygiagretėse ir atsispaudimų')
+    expect(lt['The end of a rest rings through silent. Music turns down for it and keeps playing.'])
+      .toContain('net įjungus tylųjį režimą')
+    expect(lt['The reps you logged last time in that routine, carried over, and any warm-ups you set up yourself. With progression off, the weight too.'])
+      .toContain('apšilimo serijos')
+    expect(lt['Automatic warm-ups']).toBe('Automatinės apšilimo serijos')
+    expect(lt.Bar).toBe('Grifas')
+    expect(lt.Routine).toBe('Programa')
+    expect(lt.Programme).toBe('Treniruočių planas')
+    expect(lt['{0} programmes'].few).toContain('treniruočių planai')
+
+    _setLangState('lt', lt, null, null)
+    expect(tn('{0} workout this month', '{0} workouts this month', 1.5)).toBe('1.5 treniruotės šį mėnesį')
+  })
+
   test('matches the baseline key set and preserves interpolation placeholders', () => {
     expect(Object.keys(lt).sort()).toEqual(Object.keys(pl).sort())
     for (const [source, translated] of Object.entries(lt)) {
