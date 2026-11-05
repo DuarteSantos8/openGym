@@ -110,10 +110,26 @@ describe('planned warm-ups carried from last session', () => {
     expect(warmups(entryFor(st)).map(row => [row.sec, row.w])).toEqual([[20, 0]])
   })
 
-  it('case 10: leaves progression-off warm-ups generated from the routine', () => {
+  it('case 10: carries marked warm-ups when progression is off and starting from last session', () => {
     const routine = routineWith(cfg({ prog: 'off', warmupSets: 2 }))
-    const st = state(routine, [loggedWarmup(22, 11), loggedWork(), loggedWork(), loggedWork()])
-    expect(warmups(entryFor(st))).toEqual(generatedWarmups(st))
+    const st = state(routine, [loggedWarmup(90, 12), loggedWork(100, 12), loggedWork(100, 12), loggedWork(100, 12)])
+    const entry = entryFor(st)
+    expect(warmups(entry)).toEqual([{ w: 90, r: 12, done: false, phase: 'warmup', warmup: true, edited: true }])
+    expect(work(entry).map(row => [row.w, row.r])).toEqual([[100, 12], [100, 12], [100, 12]])
+  })
+
+  it('rebuilds an untouched ramp with progression off instead of carrying stale rungs', () => {
+    const routine = routineWith(cfg({ prog: 'off', warmupSets: 2 }))
+    const st = state(routine, [autoWarmup(20, 8), autoWarmup(30, 8), loggedWork(100, 12), loggedWork(100, 12), loggedWork(100, 12)])
+    const entry = entryFor(st)
+    expect(warmups(entry).map(row => [row.w, row.r, row.edited])).toEqual([[50, 12, undefined], [75, 12, undefined]])
+  })
+
+  it('carries a marked warm-up but rebuilds its automatic neighbor with progression off', () => {
+    const routine = routineWith(cfg({ prog: 'off', warmupSets: 0 }))
+    const st = state(routine, [loggedWarmup(20, 15), autoWarmup(40, 8), loggedWork(100, 12), loggedWork(100, 12), loggedWork(100, 12)])
+    const entry = entryFor(st)
+    expect(warmups(entry).map(row => [row.w, row.r, row.edited])).toEqual([[20, 15, true], [60, 12, undefined]])
   })
 
   it('case 11: leaves excluded-routine warm-ups generated from the routine', () => {
