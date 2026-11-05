@@ -1997,6 +1997,16 @@ async function sendMediaFile(res, f, hash) {
   catch { res.destroy(); }   // the client went away mid-download; nothing left to answer
 }
 
+// GHSA-699c-6p5r-q574: a device sends the account it means a media request for. A sync started
+// under A that is still sending after this browser signed in as B (another tab) must not land in
+// B's folder. Without the header (an older app) the session alone decides, as before.
+const ACCOUNT_HEADER = 'x-opengym-account';
+const wrongAccount = (req, user) => {
+  const want = req.headers[ACCOUNT_HEADER];
+  return typeof want === 'string' && want !== '' && want !== String(user.id);
+};
+const ACCOUNT_MISMATCH = { error: 'signed in as another account now', code: 'account-mismatch' };
+
 const mediaRoutes = {
   // The raw bytes of one file, named by the sha256 the client computed. media.js checks the
   // hash, the magic bytes, the caps, the quota and the free disk; this route only adds the
@@ -2004,6 +2014,7 @@ const mediaRoutes = {
   'PUT /api/media/{hash}': async (req, res) => {
     const user = readSession(req);
     if (!user) { MEDIA.discard(req); return json(res, 401, { error: 'not signed in' }); }
+    if (wrongAccount(req, user)) { MEDIA.discard(req); return json(res, 409, ACCOUNT_MISMATCH); }
     try { mediaThrottle(req, user, MEDIA_BURST); } catch (e) { MEDIA.discard(req); throw e; }
     req.allowSlowBody?.();   // a signed-in upload within its budget may take the half hour
     const r = await MEDIA.receive(user.id, req.mediaHash, req);
@@ -2024,6 +2035,7 @@ const mediaRoutes = {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const body = await readBody(req);
+    if (wrongAccount(req, user)) return json(res, 409, ACCOUNT_MISMATCH);
     const hashes = body.hashes;
     if (!Array.isArray(hashes) || hashes.length > 1000 || !hashes.every(h => typeof h === 'string' && HASH_RE.test(h))) {
       throw new MediaError(400, 'bad-request', { error: 'hashes must be a list of at most 1000 lowercase sha256 hex strings' });
@@ -3048,7 +3060,8 @@ const server = http.createServer(async (req, res) => {
       'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
       // The CF-Access-* pair: a phone's Cloudflare Access service token (frontend lib/cf-access.js),
       // for an Access application that passes OPTIONS through to the origin.
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret',
+      // X-OpenGym-Account: the account a media upload is meant for (GHSA-699c-6p5r-q574).
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, CF-Access-Client-Id, CF-Access-Client-Secret, X-OpenGym-Account',
       'Access-Control-Max-Age': '86400',
       ...(pna ? { 'Access-Control-Allow-Private-Network': 'true' } : {})
     });

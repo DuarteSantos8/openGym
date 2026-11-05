@@ -6,6 +6,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.6)
 
+**Security**
+- Media sync: a photo or video still uploading from the account you just left can no longer land in the one you switched to (GHSA-699c-6p5r-q574, thanks @natgreenwood for the report).
+
 **Fixes**
 - Apple Health and Health Connect: workouts logged on the phone now come with their active calories, an estimate from what you did, how long and your body weight (a sane 75 kg until you weigh in). The Apple Watch keeps measuring its own. If you turned Health on before, openGym asks once for the calories permission (#724, D#917, thanks @justteshi and @mips6904).
 - "Your last session" keeps the warm-ups you marked, also with progression off (#993, #1001, thanks @ilirhushi).
