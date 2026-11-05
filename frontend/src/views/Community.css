@@ -103,3 +103,11 @@
 .com-tips{display:grid;gap:8px}
 .com-tip{background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px;border-inline-start:3px solid var(--yellow)}
 .com-tip p{margin:0 0 6px;white-space:pre-line;line-height:var(--lh-body)}
+/* Safari before 16.2 has no color-mix(): plain surfaces instead. */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .com-pre-look{background:var(--surface-2)}
+  .com-pre-sound{background:var(--surface-2)}
+  .com-st-pending{background:var(--surface-2)}
+  .com-st-hidden,.com-st-removed{background:var(--surface-2)}
+  .com-warn{background:var(--surface-2)}
+}

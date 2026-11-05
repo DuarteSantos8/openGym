@@ -22,6 +22,7 @@ import { Button, SearchField, Segmented, Check, TextField, TextArea } from '../c
 import Icon from '../components/Icon.jsx'
 import { confirmSheet } from '../sheets.jsx'
 import { useRevealActiveChip } from '../lib/use-sheet-keyboard.js'
+import { pathBefore } from '../lib/nav.js'
 import './Community.css'
 
 const day = ms => fmtDate(isoOf(new Date(ms || 0)))
@@ -154,7 +155,7 @@ export default function Community() {
 
   return <div className="com">
     <div className="hdr com-hdr">
-      {(window.history.state?.idx || 0) > 0 && <button type="button" className="iconbtn com-back" onClick={() => nav(-1)} aria-label={t('Back')}><Icon name="chevronLeft" /></button>}
+      {(window.history.state?.idx || 0) > 0 && <button type="button" className="iconbtn com-back" data-back={pathBefore() || '/library'} onClick={() => nav(-1)} aria-label={t('Back')}><Icon name="chevronLeft" /></button>}
       <div className="grow"><h1>{t('Community')}</h1>
         <div className="sub">{t('Shared by people on {0}. Take a copy, it is yours.', serverName())}</div></div>
       <Button size="sm" variant="tinted" icon="plus" onClick={share}>{t('Share yours')}</Button>

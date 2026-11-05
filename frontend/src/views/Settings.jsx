@@ -486,6 +486,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
     integrations: config?.integrations?.providers || [],
     trainers: !!config?.trainers?.on,
+    library: libraryOn(config, user),
     rotation: scheduleModeOf(S) === 'rotation' && !externalQ,
     spokenCues: S.spokenCues === true,
     // Settings → Modules: which feature areas are on (pageVisible and the search ask it).
