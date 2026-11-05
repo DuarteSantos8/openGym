@@ -2853,7 +2853,7 @@ const routes = {
     };
     const may = perms.can(admin, 'admin:data-view', { memberId: u.id });
     if (!may.ok) return json(res, 200, base);
-    const wait = budgets.take('admin.data', admin.id);
+    const wait = budgets.take('data.admin', admin.id);
     if (wait) return json(res, 429, { error: 'slow down a little', code: 'rate-limited', retryAfter: wait }, { 'Retry-After': String(wait) });
     audit(req, 'admin.data-view', { user: admin, target: u });
     if (u.id !== admin.id) {

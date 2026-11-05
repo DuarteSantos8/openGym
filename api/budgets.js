@@ -17,7 +17,7 @@ export const BUDGETS = {
   'sharing.write': { max: 60, windowMs: H },          // connect, change, disconnect, leave
   // Admin
   'admin.gyms': { max: 300, windowMs: H },
-  'admin.data': { max: 300, windowMs: H },            // ADMIN_DATA_VIEW reads
+  'data.admin': { max: 300, windowMs: H },            // ADMIN_DATA_VIEW reads
   // Shared library (docs/dev/SHARED-LIBRARY-API.md)
   'library.list': { max: 600, windowMs: H },
   'library.publish': { max: 20, windowMs: H },
