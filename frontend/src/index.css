@@ -703,7 +703,8 @@ h4.sec{
    is missing; a browser that has it keeps the bars see-through even with Reduce Transparency on.
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
-  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index{-webkit-backdrop-filter:none;backdrop-filter:none}
+  #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk{-webkit-backdrop-filter:none;backdrop-filter:none}
+  .tr-bulk{background:var(--bg-el)}
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}
   #timer{background:var(--surface-raised)}
@@ -3524,20 +3525,20 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-row-s{font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
 .tr-row-c{flex:none;color:var(--label-3);font-size:13px}
 .tr-av{flex:none;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;font-weight:650;letter-spacing:.01em;
-  color:var(--tint);background:color-mix(in srgb,var(--tint) 18%,transparent)}
+  color:var(--tint);background:var(--surface-2);background:color-mix(in srgb,var(--tint) 18%,transparent)}
 .tr-dots{flex:none;display:inline-flex;gap:4px;align-items:center}
 .tr-dots i{width:8px;height:8px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3)}
 .tr-dots i.on{background:var(--acc);box-shadow:none}
 .tr-flags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
 .tr-flags-wide{margin:-4px 0 14px}
 .tr-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 6px;border-radius:99px;font-size:var(--fs-caption);font-weight:500;line-height:1.5;
-  color:var(--pill);background:color-mix(in srgb,var(--pill) 14%,transparent)}
+  color:var(--pill);background:var(--surface-2);background:color-mix(in srgb,var(--pill) 14%,transparent)}
 .tr-pill .icn{font-size:11px}
 .tr-pill.good{--pill:var(--green)}
 .tr-pill.warn{--pill:var(--orange)}
 .tr-pill.info{--pill:var(--blue)}
 .tr-bulk{position:sticky;bottom:calc(96px + var(--sab));z-index:5;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:10px 10px 10px 16px;
-  border-radius:var(--r-lg);background:color-mix(in srgb,var(--bg-el) 82%,transparent);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);
+  border-radius:var(--r-lg);background:var(--bg-el);background:color-mix(in srgb,var(--bg-el) 82%,transparent);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);
   box-shadow:0 8px 30px rgba(0,0,0,.28),inset 0 0 0 var(--hair) var(--raised-line);font-weight:600}
 .tr-hello{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:28px 18px 32px;background:var(--surface);border-radius:var(--r-card)}
 .tr-hello>.icn{font-size:34px;color:var(--acc-ink)}
@@ -3587,7 +3588,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-bars{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;height:118px;align-items:end}
 .tr-bar{display:grid;grid-template-rows:16px 1fr 16px;height:100%;text-align:center;min-width:0}
 .tr-bar-n{font-size:var(--fs-caption2);color:var(--label-2);font-variant-numeric:tabular-nums;align-self:end}
-.tr-bar-f{align-self:end;width:100%;border-radius:5px 5px 2px 2px;background:color-mix(in srgb,var(--acc) 42%,var(--surface-3))}
+.tr-bar-f{align-self:end;width:100%;border-radius:5px 5px 2px 2px;background:var(--acc-2);background:color-mix(in srgb,var(--acc) 42%,var(--surface-3))}
 .tr-bar.now .tr-bar-f{background:var(--acc)}
 .tr-bar-l{font-size:var(--fs-caption2);color:var(--label-3);white-space:nowrap;overflow:hidden;align-self:end}
 .tr-weight{display:flex;align-items:flex-end;gap:16px;justify-content:space-between}
