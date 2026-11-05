@@ -132,9 +132,12 @@ export function libraryRoutes(deps) {
       const sort = q.get('sort') === 'popular' ? 'popular' : 'new';
       const mineOnly = q.get('mine') === '1';
       const gym = q.get('gym') || '';
+      // Tips about one exercise: the exercise sheet's "Tips from your gym".
+      const exId = q.get('ex') || '';
       const cursor = Math.max(0, parseInt(q.get('cursor') || '0', 10) || 0);
       let rows = store.all().filter(it => {
         if (type && it.type !== type) return false;
+        if (exId && (it.type !== 'tip' || it.payload?.exId !== exId)) return false;
         if (!cfg.types.includes(it.type) && it.owner !== user.id) return false;
         if (mineOnly ? it.owner !== user.id : (it.status !== 'live' && it.owner !== user.id)) return false;
         if (it.status === 'removed' && it.owner !== user.id) return false;

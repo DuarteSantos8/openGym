@@ -14,7 +14,7 @@ import {
   libraryOf, libraryOn, listShared, getShared, publishShared, editShared, withdrawShared, importShared, reportShared,
   sharedMediaBlob, LIBRARY_CONSENT, REPORT_REASONS, reasonLabel, sharedError,
 } from '../lib/shared-api.js'
-import { TYPE, browseTypes, ownItems, applyImport, importedRefs, cardLine, bylineOf, hasCopy } from '../lib/shared-items.js'
+import { TYPE, browseTypes, ownItems, applyImport, importedRefs, cardLine, bylineOf, hasCopy, newerThanCopy } from '../lib/shared-items.js'
 import { exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { exOr } from '../lib/exercises.js'
 import { initialOf } from '../lib/avatar.js'
@@ -192,6 +192,7 @@ const STATUS = {
 function Card({ item, onOpen, onChanged }) {
   const meta = TYPE[item.type] || {}
   const taken = useStore(s => hasCopy(s.S, item))
+  const newer = useStore(s => newerThanCopy(s.S, item))
   const line = item.type === 'tip' ? tipLine(item) : cardLine(item)
   return <div className="com-card tap-host">
     <Preview item={item} />
@@ -204,6 +205,7 @@ function Card({ item, onOpen, onChanged }) {
       {item.mine && item.status !== 'live'
         ? <span className={'tag com-st com-st-' + item.status}>{STATUS[item.status]?.() || item.status}</span>
         : item.mine ? <span className="tag acc">{t('Yours')}</span>
+          : newer ? <span className="tag acc">{t('New version')}</span>
           : taken ? <span className="tag"><Icon name="check" />{t('In yours')}</span>
             : meta.take ? <TakeButton item={item} onDone={onChanged} compact /> : null}
       {item.stats?.imports > 0 && <span className="com-count small dim" aria-label={t('Taken {0} times', item.stats.imports)}>{t('{0}× taken', item.stats.imports)}</span>}
@@ -259,6 +261,7 @@ function ItemSheet({ item: first, close, onChanged }) {
   const p = item.payload || {}
   const [busy, take] = useTake(item, () => { close(); onChanged?.() })
   const own = item.mine && item.src ? ownItems(S, item.type).find(x => x.src === item.src) : null
+  const newer = newerThanCopy(S, item)
   const changed = own && JSON.stringify(own.payload) !== JSON.stringify(p)
   const stop = () => confirmSheet({
     title: t('Stop sharing?'), message: t('People who already took it keep their copy.'), confirmText: t('Stop sharing'),
@@ -283,6 +286,7 @@ function ItemSheet({ item: first, close, onChanged }) {
     <Byline item={item} />
     {item.stats?.imports > 0 && <span className="small dim com-taken">{t('Taken {0} times', item.stats.imports)}</span>}
     {item.mine && item.status !== 'live' && <p className={'com-note com-st-' + item.status}>{STATUS[item.status]?.()}</p>}
+    {newer && <p className="com-note com-st-pending">{t('{0} shared a new version. Yours stays as it is; take the new one as another copy if you like.', item.by?.name || t('someone who left'))}</p>}
     {item.desc && <p className="com-desc">{item.desc}</p>}
     <Detail item={item} />
     <div className="com-actions">

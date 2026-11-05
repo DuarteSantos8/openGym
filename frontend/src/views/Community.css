@@ -98,3 +98,8 @@
 .com-back{align-self:flex-start;margin-top:4px}
 .com-nowrap{white-space:nowrap;flex:none}
 .com-main .ss.capitalize{text-transform:capitalize}
+/* In the exercise sheet (components/CommunityBits.jsx) */
+.com-origin{display:flex;align-items:center;gap:6px;margin:8px 2px}
+.com-tips{display:grid;gap:8px}
+.com-tip{background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px;border-inline-start:3px solid var(--yellow)}
+.com-tip p{margin:0 0 6px;white-space:pre-line;line-height:var(--lh-body)}

@@ -36,6 +36,8 @@ import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from
 import { SG_NAME_MAX } from './lib/superset-meta.js'
 import { REST_MAX, fmtRest, restWheelValue } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
+import CommunityBits from './components/CommunityBits.jsx'
+import './views/Community.css'
 import { SeasonDeco } from './components/Seasonal.jsx'
 import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
 import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
@@ -1478,6 +1480,8 @@ function ExerciseDetail({ ex, close }) {
     {/* A YouTube search for the exercise, opened after the tap and only then (lib/youtube.js). A
         video link of the exercise's own stays first, in the media above. */}
     {youtubeSearchUrl(ex) && <Button variant="ghost" icon="play" style={{ marginTop: 6 }} onClick={() => openExternal(youtubeSearchUrl(ex))}>{t('Watch on YouTube')}</Button>}
+    {/* The community library: where a copy came from, and tips from people on this server. */}
+    <CommunityBits ex={ex} />
     {/* The catalogue is community-edited (catalogue/README.md): a wrong muscle, a clumsy step or a
         missing translation is one tap from an issue that already names the exercise. */}
     {!isCustomEx(ex) && !ex.missing && <a className="small dim exfix-link" target="_blank" rel="noopener"

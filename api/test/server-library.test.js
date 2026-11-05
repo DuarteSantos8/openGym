@@ -199,6 +199,8 @@ test('the whole road: share, browse, import, report, auto-hide, admin remove, un
   // Unshare: a tip Ben imported stays his after Anna withdraws it; nobody new gets it.
   const tip = await h.share('u_anna', { type: 'tip', title: 'Squat tip', payload: { exId: '0001', exName: 'Squat', text: 'Knees out, chest up.' } });
   assert.equal(tip.status, 201);
+  assert.equal((await call('u_ben', 'GET', '/api/shared?ex=0001')).body.items.length, 1, 'tips about one exercise');
+  assert.equal((await call('u_ben', 'GET', '/api/shared?ex=0002')).body.items.length, 0);
   const tipImp = await call('u_ben', 'POST', `/api/shared/${tip.body.id}/import`, {});
   assert.equal(tipImp.body.payload.text, 'Knees out, chest up.');
   assert.equal((await call('u_ben', 'DELETE', `/api/shared/${tip.body.id}`)).body.code, 'not-owner');

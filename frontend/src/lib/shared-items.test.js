@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ownItems, applyImport, importedRefs, originOf, browseTypes, cardLine, bylineOf, originLine } from './shared-items.js'
+import { ownItems, applyImport, importedRefs, originOf, browseTypes, cardLine, bylineOf, originLine, hasCopy, newerThanCopy } from './shared-items.js'
 import { libraryOf, libraryOn, sharedError, LIBRARY_CONSENT } from './shared-api.js'
 
 const H = c => c.repeat(64)
@@ -110,6 +110,16 @@ describe('applyImport: a copy that is yours and says where it came from', () => 
     applyImport(s, { type: 'equipment', payload: { name: 'FitBox', profile: { equipment: ['barbell'] } }, origin })
     expect(s.equipProfiles[0].name).toBe('FitBox')
     expect(importedRefs({ payload: { m: wav } }).map(r => r.hash)).toEqual([H('a')])
+  })
+  it('a new version is told apart, and comes in as another copy, never over yours', () => {
+    const s = { sounds: [] }
+    applyImport(s, { type: 'sound', payload: { name: 'Gong', m: wav }, origin })
+    const item = { id: origin.id, type: 'sound', version: 2 }
+    expect(hasCopy(s, item)).toBe(true)
+    expect(newerThanCopy(s, item)).toBe(true)
+    expect(newerThanCopy(s, { ...item, version: 1 })).toBe(false)
+    applyImport(s, { type: 'sound', payload: { name: 'Gong 2', m: { ...wav, hash: H('e') } }, origin: { ...origin, version: 2 } })
+    expect(s.sounds.map(x => x.name)).toEqual(['Gong', 'Gong 2'])
   })
   it('without an origin nothing is merged', () => {
     expect(() => applyImport({}, { type: 'sound', payload: { m: wav } })).toThrow()

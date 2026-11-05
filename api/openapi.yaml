@@ -2296,6 +2296,7 @@ paths:
         - { name: q, in: query, description: 'Words that must all appear (title, description, names).', schema: { type: string } }
         - { name: lang, in: query, description: 'Comma-separated languages, e.g. `de,en`.', schema: { type: string } }
         - { name: sort, in: query, schema: { type: string, enum: [new, popular] } }
+        - { name: ex, in: query, description: 'Tips about this exercise id only.', schema: { type: string } }
         - { name: mine, in: query, description: '`1`: only the caller''s own items, in every status.', schema: { type: string } }
         - { name: gym, in: query, description: 'A gym id, or `server` for items open to the whole server.', schema: { type: string } }
         - { name: cursor, in: query, schema: { type: string } }

@@ -11,9 +11,10 @@ const send = (method, path, body, headers) => api(path, { method, body: JSON.str
 export const libraryOf = config => (config?.shared && Array.isArray(config.shared.types) ? config.shared : null)
 export const libraryOn = (config, user) => !!user && !user.guest && !!libraryOf(config)
 
-export function listShared({ type, q, sort = 'new', lang, mine, cursor } = {}) {
+export function listShared({ type, q, sort = 'new', lang, mine, cursor, ex } = {}) {
   const p = new URLSearchParams()
   if (type) p.set('type', type)
+  if (ex) p.set('ex', ex)
   if (q && q.trim()) p.set('q', q.trim())
   if (sort) p.set('sort', sort)
   if (lang) p.set('lang', lang)

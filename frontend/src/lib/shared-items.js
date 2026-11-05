@@ -120,12 +120,18 @@ function bundleMedia(bundle) {
 }
 
 /** Whether this profile already holds a copy of a shared item (a tip lives in a note, so never). */
-export function hasCopy(S, item) {
+export function copyOf(S, item) {
   const id = item?.id
-  if (!id || !S) return false
+  if (!id || !S) return null
   const lists = { sound: S.sounds, exercise: S.customEx, plan: S.routines, equipment: S.equipProfiles, measures: S.customMeasurements }[item.type]
-  return Array.isArray(lists) && lists.some(x => x && !x.deleted && x.origin?.id === id)
+  return (Array.isArray(lists) && lists.find(x => x && !x.deleted && x.origin?.id === id)) || null
 }
+export const hasCopy = (S, item) => !!copyOf(S, item)
+/** A copy of an older version than the one shared now: the card says so, and never overwrites it. */
+export const newerThanCopy = (S, item) => { const c = copyOf(S, item); return !!c && (c.origin.version || 1) < (item.version || 1) }
+
+// A copy of this very version already: a newer version comes in as another copy.
+const sameCopy = (x, origin) => x?.origin?.id === origin.id && (x.origin.version || 1) >= (origin.version || 1)
 
 /** The `origin` a copy carries, or null. */
 export const originOf = x => (x && isMap(x.origin) && x.origin.kind === 'library' && typeof x.origin.id === 'string' ? x.origin : null)
@@ -150,7 +156,7 @@ export function applyImport(s, res, { exId } = {}) {
     case 'sound': {
       const m = normalizeMediaRef(p.m)
       if (!m || m.kind !== 'audio') throw new Error(t('That sound did not come through.'))
-      if ((s.sounds || []).some(e => e?.origin?.id === origin.id)) return t('You have that one already.')
+      if ((s.sounds || []).some(e => sameCopy(e, origin))) return t('You have that one already.')
       if (soundsOf(s).length >= SOUNDS_MAX) throw new Error(t('You have {0} sounds already. Remove one first.', SOUNDS_MAX))
       const id = addSound(s, { name: p.name, m })
       const e = s.sounds.find(x => x.id === id)
@@ -158,7 +164,7 @@ export function applyImport(s, res, { exId } = {}) {
       return t('Got it. It is in Settings, Sound now.')
     }
     case 'exercise': {
-      if ((s.customEx || []).some(c => c?.origin?.id === origin.id && !c.deleted)) return t('You have that one already.')
+      if ((s.customEx || []).some(c => !c?.deleted && sameCopy(c, origin))) return t('You have that one already.')
       const ex = isMap(p.ex) ? p.ex : {}
       const m = p.media ? normalizeMediaRef(p.media) : null
       const c = { ...ex, n: str(ex.n, 100) || t('Exercise'), id: 'c' + uid(), custom: true, origin }
