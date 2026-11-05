@@ -4208,4 +4208,6 @@ export default {
   "Type it in": "Ввести",
   "Typed in by hand. Give it one test run at the turnstile.": "Введено вручну. Перевірте раз на турнікеті.",
   "Use this code": "Використати цей код",
+  "Rest’s over: {0}": "Відпочинок скінчився: {0}",
+  "{0} s": "{0} с",
 }

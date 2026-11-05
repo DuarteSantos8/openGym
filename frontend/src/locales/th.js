@@ -4222,4 +4222,6 @@ export default {
   "Type it in": "พิมพ์เอง",
   "Typed in by hand. Give it one test run at the turnstile.": "พิมพ์ด้วยมือ ลองที่ประตูหมุนสักครั้ง",
   "Use this code": "ใช้โค้ดนี้",
+  "Rest’s over: {0}": "หมดเวลาพัก: {0}",
+  "{0} s": "{0} วิ",
 }

@@ -4258,4 +4258,6 @@ export default {
   "Type it in": "Skriv in",
   "Typed in by hand. Give it one test run at the turnstile.": "Inskriven för hand. Testa den en gång vid spärren.",
   "Use this code": "Använd koden",
+  "Rest’s over: {0}": "Vilan är slut: {0}",
+  "{0} s": "{0} s",
 }

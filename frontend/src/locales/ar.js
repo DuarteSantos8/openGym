@@ -4266,4 +4266,6 @@ export default {
   "Type it in": "اكتبه",
   "Typed in by hand. Give it one test run at the turnstile.": "أُدخل يدويًا. جرّبه مرة عند البوابة.",
   "Use this code": "استخدم هذا الرمز",
+  "Rest’s over: {0}": "انتهت الراحة: {0}",
+  "{0} s": "{0} ث",
 }

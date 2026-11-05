@@ -4176,4 +4176,6 @@ export default {
   "Type it in": "تایپش کن",
   "Typed in by hand. Give it one test run at the turnstile.": "دستی وارد شده. یک بار دم گیت امتحانش کن.",
   "Use this code": "استفاده از این کد",
+  "Rest’s over: {0}": "استراحت تمام شد: {0}",
+  "{0} s": "{0} ثانیه",
 }

@@ -2463,7 +2463,11 @@ paths:
                   type: string
                   pattern: '^[A-Za-z0-9_-]{8,64}$'
                   description: The browser's own token, see `POST /api/push/subscribe`. Optional.
-            example: { seconds: 90, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f" }
+                next:
+                  type: string
+                  maxLength: 120
+                  description: The set waiting after the rest, in the person's language ("Bench press, 80 kg × 8"). It becomes the push's body, one line of plain text cut at 120 characters. Optional; without it the body is the general "Time for your next set."
+            example: { seconds: 90, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f", next: "Bench press, 80 kg × 8" }
       responses:
         '200':
           description: Timer scheduled.

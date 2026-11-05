@@ -4175,4 +4175,6 @@ export default {
   "Type it in": "Ketik",
   "Typed in by hand. Give it one test run at the turnstile.": "Diketik manual. Coba sekali di gerbang putar.",
   "Use this code": "Pakai kode ini",
+  "Rest’s over: {0}": "Istirahat selesai: {0}",
+  "{0} s": "{0} dtk",
 };

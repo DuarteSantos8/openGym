@@ -4211,4 +4211,6 @@ export default {
   "Type it in": "Wpisz",
   "Typed in by hand. Give it one test run at the turnstile.": "Wpisany ręcznie. Sprawdź go raz przy bramce.",
   "Use this code": "Użyj tego kodu",
+  "Rest’s over: {0}": "Koniec przerwy: {0}",
+  "{0} s": "{0} s",
 }

@@ -4211,4 +4211,6 @@ export default {
   "Type it in": "직접 입력",
   "Typed in by hand. Give it one test run at the turnstile.": "직접 입력한 코드예요. 출입 게이트에서 한 번 시험해 보세요.",
   "Use this code": "이 코드 사용",
+  "Rest’s over: {0}": "휴식 끝: {0}",
+  "{0} s": "{0}초",
 }

@@ -4211,4 +4211,6 @@ export default {
   "Type it in": "Elle yaz",
   "Typed in by hand. Give it one test run at the turnstile.": "Elle yazıldı. Turnikede bir kez dene.",
   "Use this code": "Bu kodu kullan",
+  "Rest’s over: {0}": "Dinlenme bitti: {0}",
+  "{0} s": "{0} sn",
 }

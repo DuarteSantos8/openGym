@@ -385,7 +385,7 @@ const restKey = (userId, deviceId) => `${userId}:${deviceId || ''}`;
 // devices they train with. Each request with a new id used to leave another hour-long timer (and
 // its push to every id-less subscription) behind, without limit; past this many, the oldest goes.
 const MAX_REST_TIMERS_PER_USER = 5;
-function scheduleRestTimer(userId, deviceId, sec, lang) {
+function scheduleRestTimer(userId, deviceId, sec, lang, next = null) {
   const k = restKey(userId, deviceId);
   const t = restTimers.get(k);
   if (t) clearTimeout(t);
@@ -396,7 +396,7 @@ function scheduleRestTimer(userId, deviceId, sec, lang) {
   }
   restTimers.set(k, setTimeout(() => {
     restTimers.delete(k);
-    sendPush(userId, restTimerPush(lang), deviceId);
+    sendPush(userId, restTimerPush(lang, next), deviceId);
   }, sec * 1000));
 }
 function cancelRestTimer(userId, deviceId) {
@@ -2817,7 +2817,7 @@ const routes = {
     const n = typeof raw === 'number' || typeof raw === 'string' ? Number(raw) : NaN;
     if (!(n >= 1)) return json(res, 400, { error: 'seconds required' });
     const sec = Math.min(3600, Math.round(n));
-    scheduleRestTimer(user.id, deviceIdOf(body.deviceId), sec, readStateCached(user.id)?.lang);
+    scheduleRestTimer(user.id, deviceIdOf(body.deviceId), sec, readStateCached(user.id)?.lang, typeof body.next === 'string' ? body.next : null);
     json(res, 200, { ok: true });
   },
 

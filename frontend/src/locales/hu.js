@@ -4214,4 +4214,6 @@ export default {
   "Type it in": "Beírom",
   "Typed in by hand. Give it one test run at the turnstile.": "Kézzel beírva. Próbáld ki egyszer a forgóvillánál.",
   "Use this code": "Ezt a kódot használom",
+  "Rest’s over: {0}": "Vége a pihenőnek: {0}",
+  "{0} s": "{0} mp",
 }

@@ -4211,4 +4211,6 @@ export default {
   "Type it in": "टाइप करें",
   "Typed in by hand. Give it one test run at the turnstile.": "हाथ से टाइप किया गया। एक बार टर्नस्टाइल पर आज़माएँ।",
   "Use this code": "यह कोड इस्तेमाल करें",
+  "Rest’s over: {0}": "आराम खत्म: {0}",
+  "{0} s": "{0} से",
 }

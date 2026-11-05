@@ -4176,4 +4176,6 @@ export default {
   "Type it in": "Napsat ručně",
   "Typed in by hand. Give it one test run at the turnstile.": "Zadáno ručně. Jednou ho vyzkoušej u turniketu.",
   "Use this code": "Použít tento kód",
+  "Rest’s over: {0}": "Pauza skončila: {0}",
+  "{0} s": "{0} s",
 }

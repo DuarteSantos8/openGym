@@ -4204,4 +4204,6 @@ export default {
   "Type it in": "手動輸入",
   "Typed in by hand. Give it one test run at the turnstile.": "這是手動輸入的，去閘門試一次吧。",
   "Use this code": "使用這個條碼",
+  "Rest’s over: {0}": "休息結束：{0}",
+  "{0} s": "{0} 秒",
 }

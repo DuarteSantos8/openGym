@@ -30,6 +30,13 @@ describe('the rest timer across a reload', () => {
     vi.useRealTimers()
   })
 
+  it('tells the server which set waits, for the body of its push (Q6)', () => {
+    useStore.setState({ S: { ...useStore.getState().S, unit: 'kg', active: { id: 'a', cur: 0, entries: [
+      { id: 'x1', n: 'Plank', target: { mode: 'time', sec: 45 }, sets: [{ done: true }, { done: false }] }] } } })
+    useUI.getState().startRest(60, 0)
+    expect(JSON.parse(pushes().at(-1)[1].body)).toMatchObject({ seconds: 60, next: 'Plank, 45 s' })
+  })
+
   it('keeps the running rest, and forgets it once it is skipped', () => {
     useUI.getState().startRest(90, 2)
     expect(saved()).toMatchObject({ total: 90, forIdx: 2, paused: false, kind: null })

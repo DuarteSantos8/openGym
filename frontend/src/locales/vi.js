@@ -4176,4 +4176,6 @@ export default {
   "Type it in": "Gõ vào",
   "Typed in by hand. Give it one test run at the turnstile.": "Gõ tay. Thử một lần ở cửa quay nhé.",
   "Use this code": "Dùng mã này",
+  "Rest’s over: {0}": "Hết giờ nghỉ: {0}",
+  "{0} s": "{0} giây",
 };

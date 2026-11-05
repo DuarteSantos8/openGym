@@ -4290,4 +4290,6 @@ export default {
   "Type it in": "টাইপ করুন",
   "Typed in by hand. Give it one test run at the turnstile.": "হাতে টাইপ করা। টার্নস্টাইলে একবার পরীক্ষা করুন।",
   "Use this code": "এই কোড ব্যবহার করুন",
+  "Rest’s over: {0}": "বিশ্রাম শেষ: {0}",
+  "{0} s": "{0} সে",
 }

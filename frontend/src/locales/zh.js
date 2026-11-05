@@ -4211,4 +4211,6 @@ export default {
   "Type it in": "手动输入",
   "Typed in by hand. Give it one test run at the turnstile.": "这是手动输入的，去闸机上试一次吧。",
   "Use this code": "使用这个码",
+  "Rest’s over: {0}": "休息结束：{0}",
+  "{0} s": "{0} 秒",
 }
