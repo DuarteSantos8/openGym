@@ -145,10 +145,11 @@ describe('one number everywhere', () => {
     const { join, resolve } = await import('node:path')
     const src = resolve(process.cwd(), 'src')
     for (const f of ['lib/watch-sync.js', 'lib/widgets.js', 'lib/recap.js']) expect(readFileSync(join(src, f), 'utf8')).toMatch(/import \{[^}]*streak(Info|Weeks)[^}]*\} from '\.\/streak\.js'/)
-    // Nobody else keeps a freeze count of their own (the Coach, the API and the MCP server have none).
+    // Nobody else keeps a freeze count of their own: the one walk is api/coach/core/streak.js, which
+    // lib/streak.js and the trainer list on the server both run.
     const walk = (d, out = []) => { for (const n of readdirSync(d)) { const p = join(d, n); if (statSync(p).isDirectory()) { if (!['node_modules', 'locales', 'fixtures'].includes(n)) walk(p, out) } else if (/\.(js|jsx|mjs)$/.test(n) && !/\.test\./.test(n)) out.push(p) } return out }
     const files = [...walk(src), ...walk(resolve(process.cwd(), '../api')), ...walk(resolve(process.cwd(), '../mcp/src'))]
-    const own = files.filter(f => !/lib[\\/]streak(-rule)?\.js$/.test(f) && /freezes\s*(\+\+|--|[-+]=)/.test(readFileSync(f, 'utf8')))
+    const own = files.filter(f => !/(lib|coach[\\/]core)[\\/]streak(-rule)?\.js$/.test(f) && /freezes\s*(\+\+|--|[-+]=)/.test(readFileSync(f, 'utf8')))
     expect(own).toEqual([])
   })
 })

@@ -10,6 +10,7 @@
  * references, photo hashes and notes are stripped from workouts unless their own category is on. */
 import { effectiveRoutineId } from '../queue.js';
 import { excusedOn } from '../nudge.js';
+import { streakWalk } from '../coach/core/streak.js';
 
 const DAY = 86400000;
 const records = v => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object' && !Array.isArray(x)) : []);
@@ -45,28 +46,9 @@ const e1rm = (w, r) => (r > 0 && w > 0 ? (r === 1 ? w : w * (1 + r / 30)) : 0);
 const dated = S => records(S?.workouts).filter(w => isISO(w.d)).sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : num(b.start) - num(a.start)));
 
 /* ---------- the streak ---------- */
-// Weeks in a row with a workout, with the freezes of the profile's own rule (frontend
-// lib/streak.js has the full walk with history and badges; this is the number only).
-const FREEZE_MAX = { off: 0, gentle: 1, generous: 2 };
-export function streakWeeks(S, today) {
-  const max = FREEZE_MAX[S?.streakRule?.rule] ?? 2;
-  const cur = weekOf(today, S);
-  const trained = new Set(records(S?.workouts).filter(w => isISO(w.d) && w.d <= today).map(w => weekOf(w.d, S)));
-  if (!trained.size) return 0;
-  let wk = [...trained].sort()[0];
-  let run = 0, bank = 0, earned = 0;
-  for (let i = 0; i < 1500 && wk <= cur; i++, wk = addDays(wk, 7)) {
-    if (trained.has(wk)) {
-      run++; earned++;
-      if (earned % 4 === 0 && bank < max) bank++;
-    } else if (wk === cur) {
-      break;                                       // this week is still open
-    } else if (bank > 0) {
-      bank--;
-    } else { run = 0; bank = 0; earned = 0; }
-  }
-  return run;
-}
+// The app's own walk (coach/core/streak.js, which lib/streak.js runs too): the freeze rule with its
+// history, so the trainer's number matches the member's phone week for week.
+export const streakWeeks = (S, today) => streakWalk(S, today).current;
 
 /** Planned days in the last `days` (today left out: it is not over) without a workout or a note. */
 export function missedDays(S, today, days = 7) {

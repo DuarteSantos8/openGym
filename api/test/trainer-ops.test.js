@@ -155,6 +155,8 @@ test('streak weeks follow the freeze rule; missed days skip excused ones', () =>
   assert.equal(weekOf('2026-11-05', { weekStart: 0 }), '2026-11-01');
   assert.equal(streakWeeks(S, '2026-11-05'), 5);                                    // the missed week used a freeze
   assert.equal(streakWeeks({ ...S, streakRule: { rule: 'off' } }, '2026-11-05'), 1);
+  // Not retroactive: the missed week was judged by `generous`, in force then, so it stays covered.
+  assert.equal(streakWeeks({ ...S, streakRule: { rule: 'off', since: '2026-11-02', history: [{ rule: 'generous', since: null }] } }, '2026-11-05'), 5);
   const P = { routines: [{ id: 'r', name: 'x', ex: [] }], week: { 2: 'r', 3: 'r' }, workouts: [], dayNotes: { '2026-11-03': { tag: 'sick' } } };
   assert.deepEqual(missedDays(P, '2026-11-05'), ['2026-11-04']);   // Tuesday has a sick note
   assert.deepEqual(missedDays(P, '2026-11-05', 9), ['2026-11-04', '2026-10-28', '2026-10-27']);

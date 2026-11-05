@@ -19,17 +19,10 @@
 // one or two (the numbers above are `generous`, the rule of every profile that never picked).
 // Each week is judged by the rule in force that week, so a new pick never rewrites the past; on
 // the first week of a new rule the freezes banked are trimmed to what it keeps.
-import { todayISO, isoOf, weekKey, weekStartOf } from './format.js'
-import { STREAK_RULES, ruleTimeline, ruleAt } from './streak-rule.js'
+import { todayISO, weekKey } from './format.js'
+import { streakWalk } from '../../../api/coach/core/streak.js'
 
-export const FREEZE_EVERY = 4
-export const FREEZE_MAX = 2
-export const STREAK_BADGES = [4, 12, 26, 52, 104]
-// Far enough back for any real history, short enough that a typo'd year cannot spin the loop.
-const MAX_WEEKS = 1500
-
-const isISO = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)
-const plusWeek = (iso, n = 1) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + 7 * n); return isoOf(d) }
+export { FREEZE_EVERY, FREEZE_MAX, STREAK_BADGES } from '../../../api/coach/core/streak.js'
 
 /**
  * The streak as of `today`:
@@ -48,56 +41,12 @@ const plusWeek = (iso, n = 1) => { const d = new Date(iso + 'T12:00:00'); d.setD
  * break) or 'open' (this week, no workout yet); run and bank are the streak and the freezes
  * after that week, earned whether it earned a freeze. Only a record of the walk: the calendar
  * (components/StreakCalendar.jsx) reads it to say why a week counted, nothing here depends on it.
+ *
+ * The walk itself is api/coach/core/streak.js, shared with the server so a trainer's member list
+ * shows the same number as the member's phone.
  */
 export function streakInfo (S, today = todayISO(), log = null) {
-  const ws = weekStartOf(S)
-  const cur = weekKey(today, ws)
-  const trained = new Set()
-  for (const w of Array.isArray(S?.workouts) ? S.workouts : []) {
-    if (!w || !isISO(w.d)) continue
-    const k = weekKey(w.d, ws)
-    if (k <= cur) trained.add(k)
-  }
-  // The rules and the weeks they start, in this profile's weeks.
-  const timeline = ruleTimeline(S).map(e => ({ rule: e.rule, since: e.since === null ? null : weekKey(e.since, ws) }))
-  const nowRule = ruleAt(timeline, cur)
-  const max = STREAK_RULES[nowRule].max
-  const empty = { current: 0, best: 0, freezes: 0, frozen: [], thisWeekDone: false, badges: [], next: STREAK_BADGES[0], toNextFreeze: max ? FREEZE_EVERY : 0, weekKey: cur, rule: nowRule, max }
-  if (!trained.size) return empty
-  let wk = [...trained].sort()[0]
-  const floor = plusWeek(cur, -MAX_WEEKS)
-  if (wk < floor) wk = floor
-  let run = 0, best = 0, freezes = 0, earned = 0, frozen = []
-  for (let i = 0; i <= MAX_WEEKS && wk <= cur; i++, wk = plusWeek(wk)) {
-    let s = 'open', got = false
-    const rule = ruleAt(timeline, wk), cap = STREAK_RULES[rule].max
-    // A rule that keeps fewer: the bank shrinks to it, the streak stays as counted.
-    if (freezes > cap) freezes = cap
-    if (trained.has(wk)) {
-      run++
-      earned++
-      if (earned % FREEZE_EVERY === 0 && freezes < cap) { freezes++; got = true }
-      s = 'on'
-    } else if (wk !== cur) {
-      if (freezes > 0) { freezes--; frozen.push(wk); s = 'frozen' } else { s = run > 0 ? 'broke' : 'missed'; run = 0; earned = 0; freezes = 0; frozen = [] }
-    }
-    if (run > best) best = run
-    if (log) log.set(wk, { s, run, bank: freezes, earned: got, rule })
-  }
-  const badges = STREAK_BADGES.filter(b => best >= b)
-  return {
-    current: run,
-    best,
-    freezes,
-    frozen,
-    thisWeekDone: trained.has(cur),
-    badges,
-    next: STREAK_BADGES.find(b => best < b) ?? null,
-    toNextFreeze: freezes >= max ? 0 : FREEZE_EVERY - (earned % FREEZE_EVERY),
-    weekKey: cur,
-    rule: nowRule,
-    max,
-  }
+  return streakWalk(S, today, { log, weekKey })
 }
 
 /** Just the number, as Home, Stats, the report and the widgets show it. */
