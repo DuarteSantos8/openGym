@@ -169,6 +169,7 @@ const P = {
   // warm-up (flame is the streak only)
   sunrise: <path d="M3.6 17.4h16.8M7.6 17.4a4.4 4.4 0 0 1 8.8 0M12 6.4v2.4M5.4 10.2 7 11.8M18.6 10.2 17 11.8M8.4 20.4h7.2" />,
   plusCircle: <><circle cx="12" cy="12" r="8.2" /><path d="M12 8.2v7.6M8.2 12h7.6" /></>,
+  question: <><path d="M8 7.8a4 4 0 0 1 8 0c0 3-4 3.2-4 6.2" /><circle cx="12" cy="18.5" r="1" fill="currentColor" stroke="none" /></>,
   // a timed set's clock (timer stays the rest timer)
   stopwatch: <><circle cx="12" cy="13.4" r="7.2" /><path d="M12 9.6v3.8M9.6 3.4h4.8M18 7.2l1.4-1.4" /></>,
   watch: <><rect x="6.6" y="6.4" width="10.8" height="11.2" rx="3" /><path d="M9 6.4l.6-3h4.8l.6 3M9 17.6l.6 3h4.8l.6-3M12 9.6V12l1.6 1" /></>,

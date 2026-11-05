@@ -119,7 +119,7 @@ describe('exercise rows with a trailing button', () => {
     const host = render(<Library />)
     const row = [...host.querySelectorAll('.list .item.tap-host')][0]
     expect(row.getAttribute('role')).toBeNull()
-    act(() => row.querySelector('.lib-add').click())
+    act(() => row.querySelector('.lib-plan').click())
     const afterAdd = useUI.getState().sheets.slice()
     expect(afterAdd.length).toBeLessThanOrEqual(1)
     if (afterAdd.length) expect(renderTop().querySelector('.exdetail-name')).toBeNull()

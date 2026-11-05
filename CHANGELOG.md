@@ -4,6 +4,14 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
+## Unreleased
+
+- Home's body-weight card shows the latest reading beside a three-month trend, with a separate
+  goal row and neutral changes since the last reading. Logging, full history and the weekly
+  weight rate stay available. The session row omits its repeated Today label.
+- The exercise library gives names more room with round checkmark plan actions, a simpler
+  custom-exercise row and a header without the catalogue count.
+
 ## v1.4.4 (2026-11-03)
 
 **Modules: as much app as you want.** Settings → Modules switches whole parts of openGym on and

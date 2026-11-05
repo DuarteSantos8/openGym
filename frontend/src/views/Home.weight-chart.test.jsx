@@ -23,7 +23,7 @@ beforeEach(() => {
   document.body.appendChild(host)
   root = createRoot(host)
 })
-afterEach(() => { act(() => root.unmount()); host.remove(); mocks.charts = [] })
+afterEach(() => { act(() => root.unmount()); host.remove(); mocks.charts = []; vi.useRealTimers() })
 
 const noonOf = d => new Date(d + 'T12:00:00').getTime()
 const mountWith = bodyweight => {
@@ -36,14 +36,16 @@ const mountWith = bodyweight => {
 
 describe('Home body-weight card points', () => {
   it('places imported weigh-ins on their own days, not on the import moment', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2022-12-02T12:00:00'))
     const stamp = Date.now()   // what the store's stampChange leaves on a fresh import
     const imported = [
-      { d: '2021-01-05', w: 90, t: stamp },
-      { d: '2021-06-05', w: 89, t: stamp },
+      { d: '2022-10-05', w: 90, t: stamp },
+      { d: '2022-11-05', w: 89, t: stamp },
       { d: '2022-12-01', w: 76.3, t: stamp },
     ]
     mountWith(imported)
-    const chart = mocks.charts.find(c => c.h === 130)   // the weight card's chart
+    const chart = mocks.charts.find(c => c.h === 90)   // the weight card's chart
     expect(chart.points.map(p => p.t)).toEqual(imported.map(b => noonOf(b.d)))
     expect(chart.points.map(p => p.y)).toEqual([90, 89, 76.3])
     expect(chart.points.map(p => p.d)).toEqual(imported.map(b => b.d))
