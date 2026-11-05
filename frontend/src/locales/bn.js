@@ -474,8 +474,8 @@ export default {
   'Accent color': 'অ্যাকসেন্ট রং',
   'Keep screen awake': 'স্ক্রিন চালু রাখুন',
   'The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.': 'ওয়ার্কআউট চলাকালীন স্ক্রিন চালু থাকে, তাই সেটের মাঝে ফোন আনলক করতে হয় না।',
-  'Weight unit': 'ওজনের একক',
-  'Speed unit': 'গতির একক',
+  'Weight unit': 'ওজনের ইউনিট',
+  'Speed unit': 'গতির ইউনিট',
   'Week starts on': 'সপ্তাহ শুরু হয়',
   'Weight decimals': 'ওজনের দশমিক',
   'How precisely weights are shown.': 'ওজন কতটা নির্ভুলভাবে দেখানো হবে।',
@@ -735,7 +735,7 @@ export default {
   'Exercises matched': 'মিলে যাওয়া ব্যায়াম',
   'Added as your own': 'আপনার নিজের হিসেবে যোগ হয়েছে',
   'The file is in {0} and your profile is in {1}, so weights get converted.': 'ফাইলটি {0}-এ আর আপনার প্রোফাইল {1}-এ, তাই ওজন রূপান্তর করা হবে।',
-  'The file doesn’t say which unit it uses, so numbers are imported as they are.': 'ফাইলে বলা নেই কোন একক ব্যবহার করা হয়েছে, তাই সংখ্যাগুলো যেমন আছে তেমনই ইমপোর্ট হবে।',
+  'The file doesn’t say which unit it uses, so numbers are imported as they are.': 'ফাইলে বলা নেই কোন ইউনিট ব্যবহার করা হয়েছে, তাই সংখ্যাগুলো যেমন আছে তেমনই ইমপোর্ট হবে।',
   'The file mixes kg and lb, so each set is converted to {0}.': 'ফাইলে kg ও lb মেশানো, তাই প্রতিটি সেট {0}-এ রূপান্তর করা হবে।',
   '{0} days already have data here and will be left alone.': '{0} দিনের ডেটা ইতিমধ্যে এখানে আছে, সেগুলো যেমন আছে থাকবে।',
   'Not in the library, so they’re added as your own exercises': 'লাইব্রেরিতে নেই, তাই আপনার নিজের ব্যায়াম হিসেবে যোগ হয়েছে',
@@ -1401,7 +1401,7 @@ export default {
   'Every stored weight (logged sets, working weights, routine targets, body weight, bar weights) is in {0}. Convert the numbers, or keep them and only change the label?': 'সংরক্ষিত প্রতিটি ওজন (লগ করা সেট, ওয়ার্কিং ওজন, রুটিনের লক্ষ্য, শরীরের ওজন, বারের ওজন) {0}-এ আছে। সংখ্যাগুলো রূপান্তর করবেন, নাকি সেগুলো রেখে শুধু লেবেল বদলাবেন?',
   'Convert the numbers': 'সংখ্যাগুলো রূপান্তর করুন',
   'Keep the numbers, change the label': 'সংখ্যা রাখুন, লেবেল বদলান',
-  'Switching the unit offers to convert every stored weight.': 'একক বদলালে সংরক্ষিত প্রতিটি ওজন রূপান্তরের প্রস্তাব দেয়।',
+  'Switching the unit offers to convert every stored weight.': 'ইউনিট বদলালে সংরক্ষিত প্রতিটি ওজন রূপান্তরের প্রস্তাব দেয়।',
   'Update to {0}?': '{0}-এ আপডেট করবেন?',
   'The latest version will be downloaded and the installer will open.': 'সর্বশেষ সংস্করণ ডাউনলোড হবে এবং ইনস্টলার খুলবে।',
   'Download & Install': 'ডাউনলোড ও ইনস্টল করুন',
@@ -1863,7 +1863,7 @@ export default {
   'Timer alerts': 'টাইমারের সতর্কতা',
   'Reminders': 'রিমাইন্ডার',
   'Plan & schedule': 'প্ল্যান ও সূচি',
-  'Units & language': 'একক ও ভাষা',
+  'Units & language': 'ইউনিট ও ভাষা',
   'Look & Home': 'চেহারা ও হোম',
   'Data & backup': 'ডেটা ও ব্যাকআপ',
   'About & updates': 'পরিচিতি ও আপডেট',
@@ -2102,7 +2102,7 @@ export default {
   'What you tell the Coach': 'কোচকে আপনি যা বলেন',
   'Your intake answers, including any limitations or injuries you describe.': 'শুরুর প্রশ্নগুলোর উত্তর, আপনার বলা সীমাবদ্ধতা বা চোটসহ।',
   'A few preferences': 'কয়েকটি পছন্দ',
-  'Your unit, your language and which effort scale you log.': 'আপনার একক, ভাষা আর কোন পরিশ্রম স্কেলে লগ করেন।',
+  'Your unit, your language and which effort scale you log.': 'আপনার ইউনিট, ভাষা আর কোন পরিশ্রম স্কেলে লগ করেন।',
   'Heavier lifts, lower reps.': 'ভারী লিফট, কম রেপ।',
   'Volume and progression.': 'ভলিউম আর প্রগ্রেশন।',
   'Balanced, sustainable training.': 'ভারসাম্যপূর্ণ, টেকসই ট্রেনিং।',
@@ -2303,7 +2303,7 @@ export default {
   'Your data, your call': 'আপনার ডেটা, আপনার সিদ্ধান্ত',
   'Your name, email and sign-in stay put. {0} handles the rest under its own privacy terms.': 'আপনার নাম, ই-মেইল ও সাইন-ইন তথ্য এখানেই থাকে। বাকিটা {0} তার নিজের প্রাইভেসি নীতি অনুযায়ী সামলায়।',
   'Your plan: routines, exercises, sets, reps and schedule': 'আপনার প্ল্যান: রুটিন, ব্যায়াম, সেট, রেপ ও সময়সূচি',
-  'Your unit and language': 'আপনার একক ও ভাষা',
+  'Your unit and language': 'আপনার ইউনিট ও ভাষা',
   'Your workouts: weights, reps, times, effort and session notes': 'আপনার ওয়ার্কআউট: ওজন, রেপ, সময়, পরিশ্রম ও সেশনের নোট',
   // --- delete my account (App Store rule 5.1.1(v)) ---
   'Delete my account': 'আমার অ্যাকাউন্ট মুছুন',
@@ -2616,7 +2616,7 @@ export default {
   // --- one set's own rest (#609) ---
   'Rest after this set': 'এই সেটের পরে বিশ্রাম',
   // --- custom measurement units (#699) ---
-  "Measurement unit": "মাপের একক",
+  "Measurement unit": "মাপের ইউনিট",
   "Logged values keep their type. Add a new measurement to use a different type.": "লগ করা মানের ধরন একই থাকে। অন্য ধরন ব্যবহার করতে নতুন মাপ যোগ করুন।",
   "{0} must be between 0 and 100%.": "{0} অবশ্যই ০ থেকে ১০০%-এর মধ্যে হতে হবে।",
   // --- warm-ups counted in volume (#719) ---
@@ -2624,7 +2624,7 @@ export default {
   // --- weigh-in undo (#756) ---
   "Weigh-in deleted": "ওজন মাপা মুছে ফেলা হয়েছে",
   // --- unitless custom measurements, measurements from the body CSV (#718) ---
-  "No unit": "কোনো একক নেই",
+  "No unit": "কোনো ইউনিট নেই",
   "{0} measurement check-in imported": "{0}টি মাপের চেক-ইন ইমপোর্ট হয়েছে",
   "{0} measurement check-ins imported": "{0}টি মাপের চেক-ইন ইমপোর্ট হয়েছে",
   // --- weekly rate and corridor (#759) ---
@@ -2853,7 +2853,7 @@ export default {
   'No timed sets in this period.': 'এই সময়ে কোনো টাইমড সেট নেই।',
   // --- exercise weight unit (#657) ---
   'Profile default ({0})': 'প্রোফাইলের ডিফল্ট ({0})',
-  'For gyms that mix kg and lb. This exercise is shown and typed in it everywhere, plates and steps included. Totals in Stats stay in {0}.': 'যে জিমে kg আর lb দুটোই আছে তাদের জন্য। এই ব্যায়ামটি সব জায়গায় এই এককেই দেখানো ও লেখা হয়, প্লেট আর ধাপসহ। পরিসংখ্যানের মোট হিসাব {0}-তেই থাকে।',
+  'For gyms that mix kg and lb. This exercise is shown and typed in it everywhere, plates and steps included. Totals in Stats stay in {0}.': 'যে জিমে kg আর lb দুটোই আছে তাদের জন্য। এই ব্যায়ামটি সব জায়গায় এই ইউনিটেই দেখানো ও লেখা হয়, প্লেট আর ধাপসহ। পরিসংখ্যানের মোট হিসাব {0}-তেই থাকে।',
   'Back to top': 'উপরে ফিরে যান',
   // --- app tour (components/Tour.jsx) ---
   "A one-minute walk around the app": "অ্যাপে এক মিনিটের ঘোরাঘুরি",
@@ -3140,7 +3140,7 @@ export default {
   "Want more? Each of these is a short guided run. You’ll find them again in Settings → About & updates.": "আরও চান? প্রতিটিই একটি ছোট গাইডেড ট্যুর। পরে আবার পাবেন “সেটিংস → পরিচিতি ও আপডেট”-এ।",
   "We swapped in a practice copy with a pretend workout and weigh-in. Poke at anything, nothing here sticks.": "আমরা একটি প্র্যাকটিস কপি বসিয়েছি, তাতে একটি ডেমো ওয়ার্কআউট আর ওজন মাপা আছে। যা খুশি চেপে দেখুন, এখানে কিছুই সেভ হয় না।",
   "Weigh-ins first": "আগে ওজন মাপা",
-  "Weight unit, plates and stack live here. Edit or delete the exercise from here too.": "ওজনের একক, প্লেট আর স্ট্যাক এখানে। ব্যায়াম সম্পাদনা বা মোছাও এখান থেকেই।",
+  "Weight unit, plates and stack live here. Edit or delete the exercise from here too.": "ওজনের ইউনিট, প্লেট আর স্ট্যাক এখানে। ব্যায়াম সম্পাদনা বা মোছাও এখান থেকেই।",
   "What you can’t edit": "যা বদলানো যায় না",
   "When do you train it?": "কোন দিন এটি করবেন?",
   "Where your data goes in and out. We only point, nothing runs until you tap it yourself.": "এখান দিয়েই আপনার ডেটা ঢোকে আর বেরোয়। আমরা শুধু দেখিয়ে দিই, নিজে ট্যাপ না করলে কিছুই চলে না।",
