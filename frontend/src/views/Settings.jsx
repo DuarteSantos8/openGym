@@ -48,6 +48,7 @@ import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkey
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
+import { openGeminiKeySheet, useHasGeminiKey } from '../components/GeminiKeySheet.jsx'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
@@ -125,6 +126,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const importRef = useRef(null)
   const body = useRef(null)
   const wakeOK = wakeLockSupported()
+  const hasGeminiKey = useHasGeminiKey()
   // The gym reminder's switch lives on its own page and on this device only (lib/gym-reminder.js).
   const gymOn = MOBILE && readGymConfig().on
 
@@ -688,6 +690,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
       <Section>
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
+      </Section>
+      <Section title={t('AI review (Gemini)')} footer={t('Used by Analyze my latest performance, in Plan. The key stays on this phone.')}>
+        <Row icon="key" iconTint="var(--indigo)" title={t('Gemini API key')} value={hasGeminiKey == null ? '' : hasGeminiKey ? t('Saved') : t('None')}
+          accessory="chevron" onClick={openGeminiKeySheet} />
       </Section>
     </>,
 

@@ -72,3 +72,44 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -.02em }
 :root[data-theme="light"] .brand-logo.on-dark{display:none}
 :root[data-theme="light"] .brand-logo.on-light{display:block}
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ---------------------------------------------------------------- Performance review -- */
+/* Plan → Analyze my latest performance (views/PerfBilan.jsx). One column, 16px between blocks,
+   the same card and list as the rest of the app. */
+.plan-analyze{margin-bottom:18px}
+.bilan-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:6px}
+.bilan-kpis .tile{padding:14px 12px;min-width:0}
+.bilan-kpis .tile .l{font-size:13px;color:var(--label-2);line-height:1.25;min-height:2.5em}
+.bilan-kpis .tile .v{margin-top:6px}
+.bilan-ex{gap:12px}
+.bilan-ex .grow{min-width:0}
+.bilan-ex .ss{white-space:normal;overflow-wrap:anywhere}
+.bilan-ex .tag{flex:none;font-variant-numeric:tabular-nums}
+.bilan .list+.sect-f{padding-top:8px}
+.bilan .card{padding:16px}
+.bilan-ai{display:flex;flex-direction:column;gap:14px}
+.bilan-when{margin:0}
+.bilan-text{display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.45}
+.bilan-text p{margin:0}
+.bilan-h{margin:10px 0 2px;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--label)}
+.bilan-h:first-child{margin-top:0}
+.bilan-ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
+.bilan-err{padding:12px 14px;border-radius:var(--r);background:rgba(255,159,10,.14);background:color-mix(in srgb,var(--orange) 14%,transparent);font-size:14px;line-height:1.4}
+.bilan-err p{margin:0}
+.bilan-err-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.bilan-acts{display:flex;flex-direction:column;gap:10px}
+.bilan-acts .btn{width:100%}
+.bilan-note{margin:0;line-height:1.4}
+.bilan-bars+.bilan-note{margin-top:14px}
+.bilan-bars{display:flex;flex-direction:column;gap:10px}
+.bilan-bar{display:grid;grid-template-columns:minmax(96px,32%) 1fr 40px;align-items:center;gap:10px;font-size:14px}
+.bilan-bar .nm{color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bilan-bar .track{height:8px;border-radius:99px;background:var(--surface-3);overflow:hidden}
+.bilan-bar .track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand-coral),var(--brand-orange))}
+.bilan-bar .v{text-align:end;font-variant-numeric:tabular-nums;color:var(--label)}
+.bilan-balance{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--sep)}
+.bilan-balance div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bilan-balance .l{font-size:12px;color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bilan-balance b{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.bilan-flag{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:14px;color:var(--orange)}
+.bilan-flag .icn{flex:none}

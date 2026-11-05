@@ -107,6 +107,10 @@ export default function Plan() {
       </div>
     </div>
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
+    <Section className="plan-link plan-analyze">
+      <Row icon="sparkles" iconTint="var(--acc)" title={t('Analyze my latest performance')} subtitle={t('Progress, stalls, records and an AI review')}
+        accessory="chevron" onClick={() => nav('/plan/bilan')} />
+    </Section>
     <Segmented className="plan-views" value={view} onChange={setView}
       options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
     {view === 'routines'

@@ -10,7 +10,7 @@ import { hideBoot } from './boot.js'
 
 const html = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../index.html'), 'utf8')
 const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1])
-const bootMarkup = html.match(/<div id="boot"[\s\S]*?<\/svg>\s*<\/div>/)[0]
+const bootMarkup = html.match(/<div id="boot"[\s\S]*?<\/div>/)[0]
 
 let added = []
 const realAdd = window.addEventListener.bind(window)
@@ -39,7 +39,7 @@ describe('boot watchdog', () => {
     window.dispatchEvent(syntaxError())
     const b = boot()
     expect(b.className).toBe('fail')
-    expect(b.querySelector('svg')).toBeNull()
+    expect(b.querySelector('img')).toBeNull()
     expect(b.getAttribute('role')).toBe('alert')
     expect(b.hasAttribute('aria-hidden')).toBe(false)
     expect(b.textContent).toContain('openGym could not start on this browser.')
@@ -72,7 +72,7 @@ describe('boot watchdog', () => {
 
   it('says it is taking too long when nothing failed but the app never came', () => {
     vi.advanceTimersByTime(9999)
-    expect(boot().querySelector('svg')).not.toBeNull()
+    expect(boot().querySelector('img')).not.toBeNull()
     vi.advanceTimersByTime(1)
     expect(boot().textContent).toContain('openGym is taking too long to start.')
   })
