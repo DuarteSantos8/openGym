@@ -148,7 +148,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const config = useStore(s => s.config)
   const pwOn = passwordOn(config)
   // The server's community library (views/Community.jsx), where it has one and the module is on.
-  const community = libraryOn(config, user) && isOn({ modules, checkIn }, 'community')
+  const community = useStore(st => libraryOn(st.config, st.user) && isOn(st.S, 'community'))
   // What the app is showing, which for a profile that never picked a language is worked out on
   // this device rather than stored (#303).
   const lang = effectiveLang(S, config)
