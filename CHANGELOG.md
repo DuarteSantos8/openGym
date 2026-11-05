@@ -139,6 +139,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **Community: new languages, a sharper catalogue and a calmer Coach**
 - Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856). What the app learnt since they were written is translated too.
+- Lithuanian: the whole app speaks Lietuvių now (thanks @evaldass in #535). Everything added since it was written is translated too.
 - Chinese: every exercise has its Chinese name, description and steps now (thanks @nine-orders in #959), and no two exercises share a name any more (thanks @daoshi818-crypto in #629).
 - French: descriptions and steps for 40 everyday gym exercises (thanks @Neoko-First in #935).
 - Exercise details show each muscle's share in percent, the rest folded into a tappable Other (thanks @sg41 in #954).
