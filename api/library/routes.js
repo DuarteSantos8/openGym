@@ -59,7 +59,9 @@ export function libraryRoutes(deps) {
       stats: { imports: it.stats?.imports || 0 },
       by: { id: it.owner, name: owner?.name || '', avatar: owner ? avatarOf(it.owner) : null },
       at: it.createdAt,
-      ...(mine ? { mine: true } : {}),
+      // `src`: which of the owner's own things this is (`sound:<id>`), so their app can show
+      // "Shared" on it without a marker in the synced state. Only ever sent to the owner.
+      ...(mine ? { mine: true, ...(it.src ? { src: it.src } : {}) } : {}),
       ...(mine && it.mod && (it.status === 'hidden' || it.status === 'removed' || it.status === 'pending') ? { mod: { action: it.mod.action, at: it.mod.at } } : {}),
     };
     if (it.status === 'removed') return out;
@@ -174,7 +176,7 @@ export function libraryRoutes(deps) {
       const id = newItemId();
       const title = cleanText(body.title, TEXT.title) || cleanText(payload.name || payload.ex?.n || payload.exName || '', TEXT.title) || 'Untitled';
       const item = {
-        id, type, gymId, owner: user.id, title, desc: cleanText(body.desc, TEXT.desc, { lines: true }), lang: cleanLang(body.lang),
+        id, type, gymId, owner: user.id, src: typeof body.src === 'string' && /^[A-Za-z0-9_.:-]{1,80}$/.test(body.src) ? body.src : null, title, desc: cleanText(body.desc, TEXT.desc, { lines: true }), lang: cleanLang(body.lang),
         payload, media: refsOf(payload), version: 1, rev: 1, status: startStatus(type), createdAt: t, updatedAt: t,
         consent: consentRecord({ kind: 'library', memberId: user.id, subjectId: id, lang: body.lang, now: t }),
         stats: { imports: 0 }, importers: [], reports: [], mod: null

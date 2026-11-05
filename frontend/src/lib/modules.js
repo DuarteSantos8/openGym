@@ -44,6 +44,8 @@ export const MODULES = [
     desc: 'Reviews your training and suggests changes. You still say yes or no.' },
   { id: 'integrations', group: 'extras', icon: 'webhook', tint: 'var(--indigo)', title: 'Integrations',
     desc: 'Webhooks for Home Assistant and friends, and the MCP server.' },
+  { id: 'community', group: 'extras', icon: 'globe', tint: 'var(--blue)', title: 'Community',
+    desc: 'Exercises, plans and sounds people on your server shared, and a way to share yours.' },
   { id: 'seasonal', group: 'extras', icon: 'pumpkin', tint: 'var(--orange)', title: 'Seasonal themes',
     desc: 'Halloween and friends, little extras for the time of year. All optional.' },
 ]

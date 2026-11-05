@@ -2336,6 +2336,7 @@ paths:
               required: [type, payload, consent]
               properties:
                 type: { type: string }
+                src: { type: string, description: 'Which of your own things this is (`sound:<id>`); only ever sent back to you.' }
                 title: { type: string, maxLength: 60 }
                 desc: { type: string, maxLength: 500 }
                 lang: { type: string }
@@ -4999,6 +5000,7 @@ components:
           properties: { id: { type: string }, name: { type: string }, avatar: { type: string, nullable: true } }
         at: { type: integer, description: When it was shared (ms). }
         mine: { type: boolean }
+        src: { type: string, description: Only on your own items. }
     Error:
       type: object
       required: [error]

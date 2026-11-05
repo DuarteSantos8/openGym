@@ -94,7 +94,7 @@ test('the whole road: share, browse, import, report, auto-hide, admin remove, un
   // Consent: the tick, then the current text.
   const sound = M.wav(22050);
   const soundRef = ref(sound, 'audio/wav', 'audio', { width: 1, height: 1, dur: 1 });
-  const body = { type: 'sound', title: 'Gong', desc: 'A big gong for the end of a rest.', payload: { name: 'Gong', m: soundRef } };
+  const body = { type: 'sound', src: 'sound:s1', title: 'Gong', desc: 'A big gong for the end of a rest.', payload: { name: 'Gong', m: soundRef } };
   assert.equal((await h.call('u_anna', 'POST', '/api/shared', { ...body, consent: { v: c.v, hash: c.hash } })).body.code, 'consent-own');
   const stale = await h.call('u_anna', 'POST', '/api/shared', { ...body, consent: { v: c.v, hash: 'x'.repeat(64), own: true } });
   assert.equal(stale.status, 409);
@@ -124,6 +124,8 @@ test('the whole road: share, browse, import, report, auto-hide, admin remove, un
   assert.equal(card.by.name, 'Anna');
   assert.ok(card.at > 0);
   assert.equal(card.mine, undefined);
+  assert.equal(card.src, undefined, 'only the owner learns which of hers it is');
+  assert.equal((await call('u_anna', 'GET', '/api/shared?mine=1')).body.items[0].src, 'sound:s1');
   assert.equal(card.importers, undefined, 'never sent');
   assert.equal(card.reports, undefined, 'never sent');
   assert.equal((await call('u_ben', 'GET', '/api/shared?q=gong')).body.items.length, 1);
