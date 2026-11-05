@@ -34,11 +34,13 @@ export function createShareLog({ dir, maxEntries = 5000, keepDays = 365, now = D
   const actorOf = a => (a ? { kind: a.kind, id: a.id, name: String(a.name || '').slice(0, 60) } : null);
 
   return {
-    /** Appends one event. `ev` is a short code ('grant.create', 'grant.revoke', 'admin.view', …). */
-    append(uid, { ev, actor, cat, grantId, msg }) {
+    /** Appends one event. `ev` is a short code ('grant.create', 'grant.end', 'data.admin-view', …);
+     *  `peer` is the other side of a grant event (the trainer, the gym), kept apart from `msg` so
+     *  a deleted trainer's name can be taken out again. */
+    append(uid, { ev, actor, peer, cat, grantId, msg }) {
       const doc = read(uid);
       const entry = { id: 'l_' + crypto.randomBytes(6).toString('base64url'), at: now(), ev,
-        ...(actor ? { actor: actorOf(actor) } : {}), ...(cat ? { cat } : {}), ...(grantId ? { grantId } : {}),
+        ...(actor ? { actor: actorOf(actor) } : {}), ...(peer ? { peer: actorOf(peer) } : {}), ...(cat ? { cat } : {}), ...(grantId ? { grantId } : {}),
         ...(msg ? { msg: String(msg).slice(0, 200) } : {}) };
       doc.log.push(entry);
       write(uid, doc);
@@ -70,7 +72,11 @@ export function createShareLog({ dir, maxEntries = 5000, keepDays = 365, now = D
       for (const uid of memberIds) {
         const doc = read(uid);
         let changed = false;
-        for (const e of doc.log) if (e.actor?.id === actorId && e.actor.kind !== 'self') { e.actor = { kind: e.actor.kind, id: null, name: '' }; changed = true; }
+        for (const e of doc.log) {
+          for (const k of ['actor', 'peer']) {
+            if (e[k]?.id === actorId && e[k].kind !== 'self') { e[k] = { kind: e[k].kind, id: null, name: '' }; changed = true; }
+          }
+        }
         if (changed) write(uid, doc);
       }
     }

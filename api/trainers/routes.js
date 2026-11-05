@@ -113,8 +113,8 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       if (!consentBody(res, body.consent)) return;
       const c = lookupCode(req, res, user, body.code); if (!c) return;
       const { grant, lead } = org.connect({ memberId: user.id, code: c, scopes: body.scopes, leadPicked: body.leadScopes, lang: body.lang });
-      log.append(user.id, { ev: 'grant.create', actor: self(user), grantId: grant.id, msg: nameOf(c.ownerId) });
-      if (lead) log.append(user.id, { ev: 'gym.lead', actor: self(user), grantId: lead.id, msg: org.gym(c.gymId)?.name });
+      log.append(user.id, { ev: 'grant.create', actor: self(user), grantId: grant.id, peer: { kind: 'trainer', ...person(c.ownerId) } });
+      if (lead) log.append(user.id, { ev: 'gym.lead', actor: self(user), grantId: lead.id, peer: { kind: 'gym', id: c.gymId, name: org.gym(c.gymId)?.name } });
       json(res, 200, { ok: true, id: grant.id, status: grant.status, leadId: lead?.id || null });
     }),
 
@@ -123,7 +123,7 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
     'POST /api/sharing/decline': guard('sharing.write', async (req, res, user) => {
       const body = await readBody(req);
       const c = normalizeCode(body.code) ? org.findCode(body.code) : null;
-      if (c) log.append(user.id, { ev: 'invite.decline', actor: self(user), msg: nameOf(c.ownerId) });
+      if (c) log.append(user.id, { ev: 'invite.decline', actor: self(user), peer: { kind: 'trainer', ...person(c.ownerId) } });
       json(res, 200, { ok: true });
     }),
 
@@ -140,7 +140,7 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       const g = org.grant(idOf(body.id));
       if (!g || g.memberId !== user.id || g.status === 'ended') return json(res, 404, { error: 'no such connection', code: 'no-grant' });
       org.endGrant(g.id, 'member');
-      log.append(user.id, { ev: 'grant.end', actor: self(user), grantId: g.id, msg: g.kind === 'lead' ? org.gym(g.gymId)?.name : nameOf(g.granteeId) });
+      log.append(user.id, { ev: 'grant.end', actor: self(user), grantId: g.id, peer: g.kind === 'lead' ? { kind: 'gym', id: g.gymId, name: org.gym(g.gymId)?.name } : { kind: 'trainer', ...person(g.granteeId) } });
       json(res, 200, { ok: true });
     }),
 
@@ -148,7 +148,7 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
       const body = await readBody(req);
       const gid = idOf(body.gymId);
       const ended = org.leaveGym(user.id, gid);
-      log.append(user.id, { ev: 'gym.leave', actor: self(user), msg: org.gym(gid)?.name });
+      log.append(user.id, { ev: 'gym.leave', actor: self(user), peer: { kind: 'gym', id: gid, name: org.gym(gid)?.name } });
       json(res, 200, { ok: true, ended: ended.length });
     }),
 

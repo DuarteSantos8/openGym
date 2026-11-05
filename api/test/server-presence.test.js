@@ -43,7 +43,8 @@ async function startServer(t) {
   }));
   const child = spawn(process.execPath, ['--import', './test/fake-clock.mjs', 'server.js'], {
     cwd: API, stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
-    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost' }
+    // The drill-down and the live row with their contents: ADMIN_DATA_VIEW on (off is server-trainers.test.js).
+    env: { ...process.env, PORT: '0', DATA_DIR: dataDir, ORIGIN: 'http://localhost:8080', RP_ID: 'localhost', ADMIN_DATA_VIEW: 'on' }
   });
   let log = '';
   child.stdout.on('data', d => log += d);
