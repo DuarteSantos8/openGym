@@ -53,6 +53,8 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     private var readTypes: Set<HKObjectType> {
         var types: Set<HKObjectType> = [HKObjectType.workoutType(), bodyMass]
         if let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
+        // What a watch measured during a workout logged on the phone wins over the estimate.
+        if let kcal = activeEnergy { types.insert(kcal) }
         return types
     }
 
@@ -83,7 +85,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             if read.contains("heartRate"), let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
             if read.contains("weight") { types.insert(bodyMass) }
             var share: Set<HKSampleType> = []
-            if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal) }
+            if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal); types.insert(kcal) }
             store.requestAuthorization(toShare: share, read: types) { _, _ in
                 call.resolve(["granted": self.granted, "calories": self.caloriesGranted])
             }
@@ -225,9 +227,14 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         try await builder.addMetadata(meta)
         // The estimated active energy, with a sync identifier of its own so a rewrite replaces it
         // too. The Apple Watch measures its own; this is for a workout the phone logged.
-        if let kcal = (s["kcal"] as? NSNumber)?.doubleValue, kcal > 0, caloriesGranted, let type = activeEnergy {
+        if let estimate = (s["kcal"] as? NSNumber)?.doubleValue, estimate > 0, caloriesGranted, let type = activeEnergy {
+            // A watch worn while the phone logged (any that saves to Apple Health) measured the
+            // real thing: that goes on the workout instead (idea from #434). Apple Health's own
+            // totals take one source per stretch of time, so nothing counts twice.
+            let measured = await measuredEnergy(type, from: start, to: end)
+            let kcal = measured ?? estimate
             var kmeta = syncMetadata(id + "-kcal")
-            kmeta["OpenGymEstimate"] = true
+            kmeta["OpenGymEstimate"] = measured == nil
             let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .kilocalorie(), doubleValue: kcal),
                                           start: start, end: end, device: .local(), metadata: kmeta)
             try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
@@ -238,6 +245,23 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         }
         try await builder.endCollection(at: end)
         _ = try await builder.finishWorkout()
+    }
+
+    /// Active energy other sources saved inside this stretch of time (kcal), or nil without any,
+    /// or when reading it is not allowed (Apple Health then simply answers nothing).
+    private func measuredEnergy(_ type: HKQuantityType, from start: Date, to end: Date) async -> Double? {
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [.strictStartDate, .strictEndDate])
+        let found: [HKSample] = await withCheckedContinuation { cont in
+            let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: HKObjectQueryNoLimit, sortDescriptors: nil) { _, found, _ in
+                cont.resume(returning: found ?? [])
+            }
+            store.execute(q)
+        }
+        let me = Bundle.main.bundleIdentifier ?? ""
+        let total = found.compactMap { $0 as? HKQuantitySample }
+            .filter { $0.sourceRevision.source.bundleIdentifier != me }
+            .reduce(0.0) { $0 + $1.quantity.doubleValue(for: .kilocalorie()) }
+        return total > 0 ? total.rounded() : nil
     }
 
     /// Whether another app of ours (the Apple Watch app) saved this session already.

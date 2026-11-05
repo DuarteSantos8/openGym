@@ -71,6 +71,11 @@ describe('the native sides', () => {
     expect(swift).toMatch(/builder\.add\(\[sample\]\)/)
     expect(swift).toMatch(/syncMetadata\(id \+ "-kcal"\)/)
   })
+  it('Apple Health takes what a watch measured over the estimate (idea from #434)', () => {
+    expect(swift).toMatch(/let measured = await measuredEnergy\(type, from: start, to: end\)\s*let kcal = measured \?\? estimate/)
+    // Not its own earlier estimates.
+    expect(swift).toMatch(/func measuredEnergy[\s\S]*?bundleIdentifier != me/)
+  })
   it('Health Connect writes an ActiveCaloriesBurnedRecord beside the session', () => {
     expect(java).toMatch(/new ActiveCaloriesBurnedRecord\(/)
     expect(java).toMatch(/"-kcal"/)
