@@ -225,8 +225,9 @@ export function dashboardRoutes({ json, readBody, userById, audit, org, perms, l
       const results = [];
       for (const mid of [...new Set(ids)]) {
         const member = userById(mid);
-        const name = member ? member.name : '';
-        if (!member || member.disabled) { results.push({ memberId: mid, outcome: 'skipped', reason: 'not-found' }); continue; }
+        // A name only for someone this trainer may see: an id list must not turn into a phone book.
+        const name = member && access(user, mid).any ? member.name : '';
+        if (!member || member.disabled) { results.push({ memberId: mid, name: '', outcome: 'skipped', reason: 'not-shared' }); continue; }
         if (budgets.take('trainer.ops', user.id)) { results.push({ memberId: mid, name, outcome: 'skipped', reason: 'rate-limited' }); continue; }
         const a = perms.can(user, 'apply', { memberId: mid }, 'plans');
         const s = a.ok ? a : perms.can(user, 'suggest', { memberId: mid }, 'plans');

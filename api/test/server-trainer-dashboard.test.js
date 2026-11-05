@@ -122,6 +122,10 @@ test('connect, share, read, assign, suggest, comment, undo, lead, disconnect: 40
   const revBefore = h.state('u_lea')._rev;
   const as = (await call('u_marco', 'POST', '/api/trainer/assign', { memberIds: ['u_lea', 'u_tim'], routineId: 'm1', day: 1, message: 'Take it easy the first week' })).body;
   assert.deepEqual(as.results.map(r => r.outcome), ['applied', 'skipped']);
+  // Tim is not Marco's: skipped, and his name is not handed out either; an unknown id looks the same.
+  assert.deepEqual(as.results[1], { memberId: 'u_tim', name: '', outcome: 'skipped', reason: 'not-shared' });
+  const ghost = (await call('u_marco', 'POST', '/api/trainer/assign', { memberIds: ['u_ghost'], routineId: 'm1' })).body.results[0];
+  assert.deepEqual(ghost, { memberId: 'u_ghost', name: '', outcome: 'skipped', reason: 'not-shared' });
   let S = h.state('u_lea');
   assert.equal(S._rev, revBefore + 1);
   const copy = S.routines.find(r => r.name === 'Full body');
