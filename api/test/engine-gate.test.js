@@ -104,7 +104,7 @@ test('a v1 profile stays with old clients and sends engine-aware clients to the 
     const r = await call();
     assert.deepEqual([r.status, r.body.error], [409, 'migration-required']);
   }
-  assert.deepEqual((await status()).body, { required: true, schemaVersion: 1, revision: 4, summary: { routines: 1, workouts: 1, bytes: Buffer.byteLength(text) } });
+  assert.deepEqual((await status()).body, { required: true, schemaVersion: 1, contract: 0, contractRequired: false, revision: 4, summary: { routines: 1, workouts: 1, bytes: Buffer.byteLength(text) } });
   assert.equal(fs.readFileSync(primaryFile(dataDir), 'utf8'), text);
   assert.equal(fs.existsSync(backupFile(dataDir)), false);
 });
