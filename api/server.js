@@ -90,7 +90,7 @@ const TRAINERS = /^(1|true|yes|on)$/i.test(process.env.TRAINERS || '');
 // How a gym lead gets to see a member: 'row' (own consent row, default), 'mirror' or 'none'
 // (api/trainers/scopes.js LEAD_MODES).
 const TRAINERS_LEAD_ACCESS = process.env.TRAINERS_LEAD_ACCESS || 'row';
-// Whether the admin dashboard shows a member's workouts and weigh-ins (1.4.6: off by default).
+// Whether the admin dashboard shows a member's workouts and weigh-ins (1.4.5: off by default).
 // Off, admins see counts only; on, every look is in the activity log and the member's sharing log.
 const ADMIN_DATA_VIEW = /^(1|true|yes|on)$/i.test(process.env.ADMIN_DATA_VIEW || '');
 // The language the sign-in screen, and every profile that never picked one, starts in (#303) —
@@ -2793,7 +2793,7 @@ const routes = {
   // One row per user, cheap enough for a personal instance (stateSummary reads a file only when it
   // changed). Operational numbers only: how much is there, when it last synced, whether pushes
   // work. With ADMIN_DATA_VIEW on it also says when each person last trained and what they are
-  // training right now, as it did before 1.4.6, and that look is in the activity log.
+  // training right now, as it did before 1.4.5, and that look is in the activity log.
   'GET /api/admin/users': async (req, res) => {
     const admin = requireAdmin(req, res); if (!admin) return;
     const view = ADMIN_DATA_VIEW;
@@ -2821,7 +2821,7 @@ const routes = {
   },
 
   // Drill-down for one user. Without ADMIN_DATA_VIEW: counts, storage and roles, never a workout
-  // or a weigh-in. With it: the full workout history and body-weight log as before 1.4.6, and the
+  // or a weigh-in. With it: the full workout history and body-weight log as before 1.4.5, and the
   // look is written to the activity log and to the member's own sharing log.
   'GET /api/admin/user': async (req, res) => {
     const admin = requireAdmin(req, res); if (!admin) return;

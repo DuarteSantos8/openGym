@@ -1,4 +1,4 @@
-/* The hook for OIDC sign-in (1.4.6, not built yet): a provider's group claims mapped onto
+/* The hook for OIDC sign-in (not built yet): a provider's group claims mapped onto
  * openGym roles. The sign-in code reads the groups from the ID token, asks rolesFromGroups, and
  * hands the answer to org-store syncClaimRoles (studio roles) and to its own code for `admin`
  * and `access` (db.users). Roles given by hand are never taken away by a claim.

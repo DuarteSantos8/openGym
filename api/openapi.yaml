@@ -2839,7 +2839,7 @@ paths:
       operationId: adminUser
       summary: 'Admin: one user in detail'
       description: >-
-        Drill-down for one user. Admin only. Since 1.4.6 it answers operational numbers only
+        Drill-down for one user. Admin only. Since 1.4.5 it answers operational numbers only
         (`counts`, `bytes`, `lastSync`, `hasPush`, roles with TRAINERS on) and `data_view: false`.
         Only with `ADMIN_DATA_VIEW=on` does it add the full workout history (newest first), the
         body-weight log and the routines, with `data_view: true`; every such look is written to

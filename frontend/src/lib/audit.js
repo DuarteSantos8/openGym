@@ -71,7 +71,7 @@ const LABELS = {
   'admin.role.revoke': 'Removed someone as admin',
   'admin.owner.transfer': 'Handed the owner role on',
   'admin.invite.create': 'Created an invite code',
-  // ADMIN_DATA_VIEW (1.4.6): an admin opened someone's workouts and weigh-ins, or the list with last-workout dates.
+  // ADMIN_DATA_VIEW (1.4.5): an admin opened someone's workouts and weigh-ins, or the list with last-workout dates.
   'admin.data-view': 'Looked at training data',
   // Trainers and studios (docs/TRAINERS.md).
   'admin.gym.create': 'Created a gym',
