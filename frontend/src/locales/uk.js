@@ -3906,4 +3906,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Серія рахує тижні бодай з одним тренуванням. Заморозки можуть прикрити випадково пропущений тиждень.",
   "{0} since the week of {1}.": "{0} з тижня {1}.",
   "This phone has no print service. Turn one on in its settings and try again.": "На цьому телефоні немає служби друку. Увімкни її в налаштуваннях і спробуй ще раз.",
+  "{0} per side on a {1} bar": "{0} на сторону на грифі {1}",
+  "Lighter than the {0} bar": "Легше за гриф ({0})",
+  "Hidden for today. Back tomorrow.": "Сховано на сьогодні. Повернеться завтра.",
 }

@@ -3964,4 +3964,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "سلسلتك تعدّ الأسابيع التي فيها تمرين واحد على الأقل. التجميد يمكنه تغطية أسبوع فائت بين حين وآخر.",
   "{0} since the week of {1}.": "{0} منذ أسبوع {1}.",
   "This phone has no print service. Turn one on in its settings and try again.": "لا توجد خدمة طباعة على هذا الهاتف. فعّل واحدة من إعداداته ثم حاول مجددًا.",
+  "{0} per side on a {1} bar": "{0} لكل جانب على بار {1}",
+  "Lighter than the {0} bar": "أخف من البار ({0})",
+  "Hidden for today. Back tomorrow.": "مخفية لليوم. تعود غدًا.",
 }

@@ -3909,4 +3909,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Seria liczy tygodnie z co najmniej jednym treningiem. Zamrożenia mogą pokryć sporadycznie opuszczony tydzień.",
   "{0} since the week of {1}.": "{0} od tygodnia {1}.",
   "This phone has no print service. Turn one on in its settings and try again.": "Ten telefon nie ma usługi drukowania. Włącz jakąś w ustawieniach i spróbuj ponownie.",
+  "{0} per side on a {1} bar": "{0} na stronę na sztandze {1}",
+  "Lighter than the {0} bar": "Lżej niż sztanga ({0})",
+  "Hidden for today. Back tomorrow.": "Ukryte na dziś. Wróci jutro.",
 }

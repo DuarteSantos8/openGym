@@ -77,7 +77,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         // { read: ['heartRate' | 'weight'], write: [...] } asks for just those reads (the switches
         // added in v1.4.3); without them, everything, as before.
         // write: ['calories'] asks for the active energy alone (someone who turned Health on
-        // before v1.4.6 never saw it).
+        // before v1.4.5 never saw it).
         if let read = call.getArray("read") as? [String] {
             var types: Set<HKObjectType> = []
             if read.contains("heartRate"), let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }

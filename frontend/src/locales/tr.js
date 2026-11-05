@@ -3909,4 +3909,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Serin en az bir antrenman olan haftaları sayar. Dondurmalar ara sıra kaçırılan bir haftayı kapatabilir.",
   "{0} since the week of {1}.": "{1} haftasından beri {0}.",
   "This phone has no print service. Turn one on in its settings and try again.": "Bu telefonda yazdırma hizmeti yok. Ayarlardan birini aç ve tekrar dene.",
+  "{0} per side on a {1} bar": "{1} barda taraf başına {0}",
+  "Lighter than the {0} bar": "Bardan hafif ({0})",
+  "Hidden for today. Back tomorrow.": "Bugünlük gizlendi. Yarın geri gelir.",
 }

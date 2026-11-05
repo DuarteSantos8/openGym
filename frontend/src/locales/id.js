@@ -3873,4 +3873,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Streak kamu menghitung minggu dengan minimal satu latihan. Freeze bisa menutup minggu yang sesekali terlewat.",
   "{0} since the week of {1}.": "{0} sejak minggu {1}.",
   "This phone has no print service. Turn one on in its settings and try again.": "Ponsel ini tidak punya layanan cetak. Nyalakan satu di pengaturannya lalu coba lagi.",
+  "{0} per side on a {1} bar": "{0} per sisi di barbel {1}",
+  "Lighter than the {0} bar": "Lebih ringan dari barbel ({0})",
+  "Hidden for today. Back tomorrow.": "Disembunyikan untuk hari ini. Besok kembali.",
 };

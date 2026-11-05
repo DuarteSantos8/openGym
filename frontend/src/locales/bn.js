@@ -3988,4 +3988,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "আপনার স্ট্রিক অন্তত একটি ওয়ার্কআউট থাকা সপ্তাহ গোনে। ফ্রিজ মাঝে মাঝে বাদ পড়া সপ্তাহ ঢেকে দিতে পারে।",
   "{0} since the week of {1}.": "{1}-এর সপ্তাহ থেকে {0}।",
   "This phone has no print service. Turn one on in its settings and try again.": "এই ফোনে কোনো প্রিন্ট সার্ভিস নেই। সেটিংসে একটি চালু করে আবার চেষ্টা করো।",
+  "{0} per side on a {1} bar": "{1} বারে প্রতি পাশে {0}",
+  "Lighter than the {0} bar": "{0} বারের চেয়ে হালকা",
+  "Hidden for today. Back tomorrow.": "আজকের জন্য লুকানো। কাল ফিরবে।",
 }

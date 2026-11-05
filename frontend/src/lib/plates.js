@@ -260,7 +260,9 @@ export function rowLoad(kind, weight, base, inv) {
   const w = num(weight)
   if (!(w > 0)) return null
   const b = Math.max(0, num(base))
-  if (w <= b) return { kind, barOnly: true, perSide: 0, plates: [], missing: 0 }
+  // Under the bar is not "bar only": a weight no bar this heavy can show, which usually means the
+  // log counts the plates without the bar (Discord, 2026-11-04). `bar` names it for the line.
+  if (w <= b) return { kind, barOnly: true, ...(w < b ? { underBar: true, bar: b } : {}), perSide: 0, plates: [], missing: 0 }
   const perSide = Math.round(((w - b) / (kind === 'pairs' ? 2 : 1)) * 100) / 100
   // The inventory counts pairs. A bar takes one plate of a pair per side; a single stack can
   // take both, so one pair of 20s is two 20s on a sled, not one.
@@ -271,7 +273,7 @@ export function rowLoad(kind, weight, base, inv) {
 
 /** Two rows load the same when their stacks match, both are (or are not) bar-only, and the same amount is missing. */
 export const sameLoad = (a, b) =>
-  !!a && !!b && a.barOnly === b.barOnly && a.missing === b.missing
+  !!a && !!b && a.barOnly === b.barOnly && !!a.underBar === !!b.underBar && a.missing === b.missing
   && a.plates.length === b.plates.length && a.plates.every((w, i) => w === b.plates[i])
 
 /**

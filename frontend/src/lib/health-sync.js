@@ -115,7 +115,7 @@ export function syncHealth(S) {
 }
 
 // Whether the hub lets openGym write active energy (#724). Someone who turned Health on before
-// v1.4.6 never saw that permission: asked once, while the app is on screen, then never again.
+// v1.4.5 never saw that permission: asked once, while the app is on screen, then never again.
 async function kcalAllowed(p, h) {
   const st = await p.HC.status().catch(() => null)
   if (st?.calories === true) return { kcal: true, h }

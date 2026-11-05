@@ -3909,4 +3909,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Tu racha cuenta semanas con al menos un entreno. Las congelaciones pueden cubrir alguna semana perdida.",
   "{0} since the week of {1}.": "{0} desde la semana del {1}.",
   "This phone has no print service. Turn one on in its settings and try again.": "Este móvil no tiene servicio de impresión. Activa uno en sus ajustes y vuelve a intentarlo.",
+  "{0} per side on a {1} bar": "{0} por lado en una barra de {1}",
+  "Lighter than the {0} bar": "Menos que la barra ({0})",
+  "Hidden for today. Back tomorrow.": "Oculta por hoy. Vuelve mañana.",
 }

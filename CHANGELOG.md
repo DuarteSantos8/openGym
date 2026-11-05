@@ -4,19 +4,6 @@ Newest first. Each release is a `## vX.Y.Z (YYYY-MM-DD)` section, and the releas
 GitHub and GitLab are that section, word for word. New work goes under `## Unreleased` until the
 tag. Write it for the people using the app: what changed for them, short, no em dashes.
 
-## Unreleased (v1.4.6)
-
-**Security**
-- Media sync: a photo or video still uploading from the account you just left can no longer land in the one you switched to (GHSA-699c-6p5r-q574, thanks @natgreenwood for the report).
-
-**Fixes**
-- Apple Health and Health Connect: workouts logged on the phone now come with their active calories, an estimate from what you did, how long and your body weight (a sane 75 kg until you weigh in). The Apple Watch keeps measuring its own. If you turned Health on before, openGym asks once for the calories permission (#724, D#917, thanks @justteshi and @mips6904).
-- "Your last session" keeps the warm-ups you marked, also with progression off (#993, #1001, thanks @ilirhushi).
-- Windows: the bundle size script and the coach tests find their files again (#999, #998, #1000, thanks @lintuo and @fromcodetogold).
-- Android: the tab bar no longer slides under the navigation bar after a page load (#997, thanks @FrancescoDeSimone).
-- Android: "Rest's over" no longer rings a minute early with the phone locked, and the countdown card stays until the real end. Some phones hand the alarm over early; openGym now books it again for the right time (#995, thanks @ukizet).
-- Android: Create PDF no longer closes the app on phones without a print service. It says what is missing instead (#991, thanks @dagov42 for tracking it down).
-
 ## Unreleased (v1.4.5)
 
 **Watch sync, rebuilt to not lose a single set**
@@ -84,9 +71,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Week streak: when a freeze covers a missed week, the streak card on Stats now says which week it was, so a streak running across a gap you can see no longer looks like a counting error.
 - Zepp OS watch: the page is there on a phone without a server too, says why the watch needs one and connects you, the pairing code and the server address each get a copy button, and the page says plainly that openGym is not in the Zepp App Store yet, with the install guide.
 - AI Coach: a question in the chat sees your weigh-ins of the last four weeks, the ones from Apple Health or Health Connect included, instead of answering that it does not know your weight.
+- Apple Health and Health Connect: workouts logged on the phone now come with their active calories, an estimate from what you did, how long and your body weight (a sane 75 kg until you weigh in). The Apple Watch keeps measuring its own. If you turned Health on before, openGym asks once for the calories permission (#724, D#917, thanks @justteshi and @mips6904).
+- "Your last session" keeps the warm-ups you marked, also with progression off (#993, #1001, thanks @ilirhushi).
+- Windows: the bundle size script and the coach tests find their files again (#999, #998, #1000, thanks @lintuo and @fromcodetogold).
+- Android: the tab bar no longer slides under the navigation bar after a page load (#997, thanks @FrancescoDeSimone).
+- Android: "Rest's over" no longer rings a minute early with the phone locked, and the countdown card stays until the real end. Some phones hand the alarm over early; openGym now books it again for the right time (#995, thanks @ukizet).
+- Android: Create PDF no longer closes the app on phones without a print service. It says what is missing instead (#991, thanks @dagov42 for tracking it down).
+- Plates: the first plate line of a lift names the bar it counts with ("5 per side on a 20 kg bar"), and a weight under the bar says so instead of "Bar only". Logging without the bar? Set your bar under Equipment (thanks vitoralves9629 on Discord).
 
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
+- Media sync: a photo or video still uploading from the account you just left can no longer land in the one you switched to (GHSA-699c-6p5r-q574, thanks @natgreenwood for the report).
 
 **Community: new languages, a sharper catalogue and a calmer Coach**
 - Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856). What the app learnt since they were written is translated too.

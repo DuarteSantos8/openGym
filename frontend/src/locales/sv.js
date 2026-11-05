@@ -3956,4 +3956,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "Din streak räknar veckor med minst ett pass. Frysningar kan täcka en missad vecka då och då.",
   "{0} since the week of {1}.": "{0} sedan veckan den {1}.",
   "This phone has no print service. Turn one on in its settings and try again.": "Den här telefonen har ingen utskriftstjänst. Slå på en i inställningarna och försök igen.",
+  "{0} per side on a {1} bar": "{0} per sida på en {1}-stång",
+  "Lighter than the {0} bar": "Lättare än stången ({0})",
+  "Hidden for today. Back tomorrow.": "Dold för i dag. Tillbaka i morgon.",
 }

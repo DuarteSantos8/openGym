@@ -3909,4 +3909,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "आपकी स्ट्रीक उन हफ़्तों को गिनती है जिनमें कम से कम एक वर्कआउट हुआ। फ़्रीज़ कभी-कभार छूटे हफ़्ते को संभाल सकते हैं।",
   "{0} since the week of {1}.": "{1} वाले हफ़्ते से {0}।",
   "This phone has no print service. Turn one on in its settings and try again.": "इस फ़ोन में कोई प्रिंट सर्विस नहीं है। सेटिंग्स में एक चालू करो और फिर से कोशिश करो।",
+  "{0} per side on a {1} bar": "{1} बार पर प्रति तरफ़ {0}",
+  "Lighter than the {0} bar": "{0} बार से हल्का",
+  "Hidden for today. Back tomorrow.": "आज के लिए छिपाया। कल वापस आएगा।",
 }

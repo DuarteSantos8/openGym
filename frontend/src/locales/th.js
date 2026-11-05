@@ -3920,4 +3920,7 @@ export default {
   "Your streak counts weeks with at least one workout. Freezes can cover the odd missed week.": "สถิตินับสัปดาห์ที่ฝึกอย่างน้อยหนึ่งครั้ง ตัวหยุดช่วยสัปดาห์ที่พลาดเป็นครั้งคราวได้",
   "{0} since the week of {1}.": "{0} ตั้งแต่สัปดาห์ของ {1}",
   "This phone has no print service. Turn one on in its settings and try again.": "โทรศัพท์เครื่องนี้ไม่มีบริการพิมพ์ เปิดใช้งานในการตั้งค่าแล้วลองอีกครั้ง",
+  "{0} per side on a {1} bar": "{0} ต่อข้าง บนบาร์ {1}",
+  "Lighter than the {0} bar": "เบากว่าบาร์ ({0})",
+  "Hidden for today. Back tomorrow.": "ซ่อนไว้สำหรับวันนี้ พรุ่งนี้กลับมา",
 }
