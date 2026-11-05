@@ -18,11 +18,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 **New**
 - Android: Settings → Workout → Screen orientation keeps openGym upright (or sideways) while the rest of your phone rotates as it likes (#821, thanks @snike79 for the idea).
 - A machine's weight stack and your dumbbells take a whole list at once: type one per line or paste "5, 11.3, 18.1". The quick fill stays around after the first block, so a stack with a finer run on top is two fills (#926, thanks @johannes1984 for the idea).
-- Plates: add the sizes your gym really has (3 and 4 kg, 0.25 kg micro plates, anything on a quarter step) and take them out again, per gym. Plate loading and the "X kg short" hint only reach for what is on your list (#886, thanks @rt-oliveira for the idea).
+- Plates: add the sizes your gym really has (3 and 4 kg, 0.25 kg micro plates, anything on a quarter step) and take them out again, per gym. Plate loading and the "X kg short" hint only reach for what is on your list (#886, thanks @rt-oliveira for the idea, idea and first version also by @temperatio in #542).
 - Apple Watch and Wear OS: the rest screen shows the next set's weight and reps under Next, so you can load the bar while you breathe (#911, thanks @rhjensen79 for the idea).
 - An exercise can go by one of its other names everywhere: give it "Pec deck" under Other names, pick it under Shown as, and the workout, routines, history and stats say Pec deck. Exports and the API keep the catalogue title (#903, thanks @lodepav for the idea).
 - Start picks: hold the Start button (or set Settings → Workout → Start button to "Let me pick") for today's plan on top and every other routine below it, unscheduled ones too, plus freestyle. No more calendar detour (#930, thanks @Nour-hash for the idea). Home's "Choose a different workout" opens the same picker.
-- Preview before starting: switch it on in Settings → Workout and a routine opens on its exercises, sets and weights first, with Start at the bottom (#976, thanks @b225ccc for the idea).
+- Preview before starting: switch it on in Settings → Workout and a routine opens on its exercises, sets and weights first, with Start at the bottom (#976, thanks @b225ccc for the idea, idea also by @bedirhanKC in #569).
 - Two routines on one weekday can stay apart: in Plan, tap the day and pick Separately, and Home shows each with its own Start and its own Done, a run in the morning and ankle work at night (#908, thanks @wintersrd for the idea).
 - Pause a workout: ⋯ → Pause workout stops the clock, the rest and a hold, with their alerts, until you tap Resume (or log a set). The pause stays through a reload, the Apple Watch clock stands still with it, and the time paused is not counted in the workout's length (#976, thanks @b225ccc for the idea).
 - Muscles (Exercises → Muscles, and By muscle when adding one): pick several muscles and see what trains all of them, or any of them, and pick a whole group (Chest, Back, Shoulders, Arms, Core, Legs) that opens into its muscles (#885, thanks @rt-oliveira, and #900, thanks @lodepav, for the ideas).
@@ -54,8 +54,8 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Body measurements: lengths in cm or inches whatever your weight unit (#932), and a custom measurement can be deleted.
 - iPhone: no more surprise "Undo" alert after carrying the phone around (shake to undo is off, #921).
 - Workout: Set current keeps the List view you picked instead of flipping back to Cards (#641).
-- Sheets close on a real pull down from the very top, not while you scroll a how-to back up (#897).
-- Starter plans can have timed exercises: `[id, sets, seconds, 'time']` (#964, thanks @navid24601).
+- Sheets close on a real pull down from the very top, not while you scroll a how-to back up (#897, thanks @ilirhushi in #1002).
+- Starter plans can have timed exercises: `[id, sets, seconds, 'time']` (#964, thanks @navid24601 and @mvanhorn in #996).
 - iPhone release: the build check now counts the animations themselves, so an App Store build can no longer ship with stills only (#962).
 - iPhone and Android release: the build now checks every animation and picture by name against what the app will ask for, both figures, right size, so a package missing even one refuses to be built instead of reaching your phone frozen (#962).
 - Android: a self-hosted server the app's web view cannot reach (home network, private certificate) is paired and synced through the app's own connection (#870).
@@ -87,6 +87,12 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Rotation and day reminders: a routine named "Push + Pull" counts as done by its whole name, a workout dated in the future has not happened yet, a week without a date is not read as finished, and an old state file with an empty workout no longer stops the day reminder (#567, thanks @kurktchiev).
 - Import from Hevy: 429 of Hevy's templates now land on the exercise their own artwork shows, up from 297, so far fewer come in as custom exercises (#807, thanks @lodepav).
 - AI Coach: a scheduled review that fails for a reason trying again will not fix (a refused key, a missing runtime) no longer gets queued every minute until the day's limit is gone. A passing hiccup waits a quarter of an hour, so the real slot still finds room (thanks adam934912 on Discord, idea and first version by @radu781 in #983).
+- Calendar: on the 1st of a month west of UTC it opens on that month, not the one before (thanks @TheViniAlmeida in #497).
+- AI Coach: a running programme's week follows the job's clock, not the machine's (thanks @TheBlackSide243 and @kurktchiev in #975).
+
+**Thanks we owed**
+- Timed holds that run themselves (1.4.4): idea and first version by @kurktchiev (#490).
+- Ask the Coach mid-workout (1.4.4): idea and first version by @bbolinger (#852).
 
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
@@ -103,7 +109,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Coach: MiniMax is one of the providers you can pick (thanks @octo-patch in #912).
 - Coach: a failed job says what actually failed: the key, the quota, the request format, an outage or the network, each with its own line (thanks @omeliorator in #971).
 - Coach: OpenRouter with Claude works again instead of "the answer had no choices": an error that arrives inside a 200 answer now gets the same fallbacks as any other (#973).
-- Coach: a plan's week is spelled out day by day, so strict JSON Schema endpoints (Codex OAuth gateways, #828) no longer hand back an empty week, and Gemini gets a schema it can read (thanks @omeliorator in #970).
+- Coach: a plan's week is spelled out day by day, so strict JSON Schema endpoints (Codex OAuth gateways, #828) no longer hand back an empty week, and Gemini gets a schema it can read (thanks @omeliorator in #970, and @TheViniAlmeida, who had the idea first in #537).
 - Coach: an endpoint with a key is never pinged to keep warm, since that costs money and warms nothing (thanks @omeliorator in #968).
 - Coach: exercise ids sent as 24 or "24" are read as "0024" (thanks @dagov42 in #963), reasoning models' <think> blocks are skipped (thanks @polidisio in #929), and MiniMax's schema complaint falls back to plain JSON (thanks @polidisio in #928).
 - Coach: longer answers before a cut, and a cut lands on a sentence or a word (thanks @maliv2 in #937).
