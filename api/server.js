@@ -56,6 +56,9 @@ import { libraryConfig, publicLibraryConfig } from './library/config.js';
 import { createLibraryStore } from './library/store.js';
 import { libraryRoutes } from './library/routes.js';
 import { currentConsent } from './consent.js';
+import { oidcConfig } from './oidc/config.js';
+import { createProvider } from './oidc/provider.js';
+import { oidcRoutes } from './oidc/routes.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -104,6 +107,11 @@ const ADMIN_DATA_VIEW = /^(1|true|yes|on)$/i.test(process.env.ADMIN_DATA_VIEW ||
 // The community library (docs/dev/SHARED-LIBRARY-API.md): LIBRARY=on, off by default. SHARING=off
 // still closes it. Read once; library/config.js has every SHARE_* switch.
 const LIBRARY = libraryConfig(process.env);
+// Sign in with an identity provider (#130, docs/SELF_HOSTING.md): on once OIDC_ISSUER and
+// OIDC_CLIENT_ID are set. OIDC_ONLY makes the provider the one way in (admins keep their passkeys).
+const OIDC = oidcConfig(process.env, { origin: ORIGIN });
+for (const p of OIDC.problems) console.warn('OIDC is off:', p);
+let oidcApi = null;   // the routes and helpers, made once everything they need exists (below)
 // The language the sign-in screen, and every profile that never picked one, starts in (#303) —
 // for an instance whose people share a language. Only a tag's shape is checked here; the app
 // matches it against the languages it has and ignores one it does not know. Unset, it is left
@@ -630,9 +638,11 @@ const sessionVersion = user => user.sv || 0;
 // renewed (GET /api/me): a cookie value replayed as a bearer used to be traded for a fresh 90-day
 // token whenever it was past half its life, so a stolen cookie never had to expire. Tokens from
 // before the field have none and are renewed as before; the cookies among them expire on their own.
-function makeSession(user, kind = 'b') {
+// A fifth field, when present, is when the provider signed this session in (base 36 ms): a
+// sign-in there a few minutes ago counts as proof for a change to a way in (proveOwner).
+function makeSession(user, kind = 'b', at = null) {
   const exp = Date.now() + SESSION_DAYS * 86400000;
-  return sign(user.id + ':' + exp + ':' + sessionVersion(user) + ':' + kind);
+  return sign(user.id + ':' + exp + ':' + sessionVersion(user) + ':' + kind + (at ? ':' + Math.floor(at).toString(36) : ''));
 }
 // With the __Host- prefix the *browser* guarantees the cookie is host-only (no Domain attribute
 // is even allowed) — which is what stops a sibling subdomain, e.g. anything-else.example.com
@@ -684,7 +694,7 @@ function sessionUser(tok) {
   if (!tok) return null;
   const payload = verifySig(tok);
   if (!payload) return null;
-  const [uid, exp, ver, kind] = payload.split(':');
+  const [uid, exp, ver, kind, at] = payload.split(':');
   if (!uid || +exp < Date.now()) return null;
   const user = db.users.find(u => u.id === uid) || null;
   if (!user) return null;
@@ -693,7 +703,7 @@ function sessionUser(tok) {
   // payload (it still had to pass the HMAC, so this is belt-and-braces) and is refused outright.
   const claimed = ver === undefined ? 0 : Number(ver);
   if (!Number.isInteger(claimed) || claimed !== sessionVersion(user)) return null;
-  return { user, exp: +exp, kind: kind || null };
+  return { user, exp: +exp, kind: kind || null, at: at ? parseInt(at, 36) || null : null };
 }
 function readSession(req) {
   return sessionOf(req)?.user || null;
@@ -712,9 +722,13 @@ function requireOwner(req, res) {
   if (!isOwner(user)) { audit(req, 'admin.denied', { ok: false, user }); json(res, 403, { error: 'only the owner can do this' }); return null; }
   return user;
 }
-const expireCookie = name => `${name}=; Path=/; Max-Age=0; HttpOnly;${SECURE} SameSite=Lax`;
-function sessionCookie(user) {
-  const fresh = `${COOKIE}=${makeSession(user, 'c')}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=Lax`;
+// SESSION_SAMESITE=strict keeps the session cookie off every request another site starts, top
+// level navigations included. Lax (the default) is what older installs had; the app itself works
+// with either, since it only ever calls its own API from its own pages.
+const SAME_SITE = /^strict$/i.test(process.env.SESSION_SAMESITE || '') ? 'Strict' : 'Lax';
+const expireCookie = name => `${name}=; Path=/; Max-Age=0; HttpOnly;${SECURE} SameSite=${SAME_SITE}`;
+function sessionCookie(user, at = null) {
+  const fresh = `${COOKIE}=${makeSession(user, 'c', at)}; Path=/; Max-Age=${SESSION_DAYS * 86400}; HttpOnly;${SECURE} SameSite=${SAME_SITE}`;
   // Signing in also retires any pre-upgrade cookie, so nobody is left carrying an unprefixed one
   // (or a shadowing copy of it) alongside the new session.
   return COOKIE === LEGACY_COOKIE ? [fresh] : [fresh, expireCookie(LEGACY_COOKIE)];
@@ -750,7 +764,9 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // any site sign a visitor into the attacker's account and collect what they log (login CSRF).
 // The watch relay's two routes for the watch are the same kind: the code in the body, or a watch
 // token in the Authorization header, which no browser attaches on its own.
-const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box']);
+// The phone's OIDC redeem is the same kind as pair/redeem: a one-time code and the verifier only
+// the app holds, in the body; the token comes back in the body, never as a cookie.
+const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -1256,7 +1272,11 @@ function loginTarget(body) {
 }
 const acctKey = u => 'acct:' + u.id;
 const passkeyCount = u => db.creds.filter(c => c.userId === u.id).length;
-const publicUser = u => ({ id: u.id, name: u.name, admin: isAdmin(u), ...(isOwner(u) ? { owner: true } : {}) });
+const publicUser = u => ({ id: u.id, name: u.name, admin: isAdmin(u), ...(isOwner(u) ? { owner: true } : {}), ...(oidcWayIn(u) ? { oidc: true } : {}) });
+// A linked provider identity is a way in while the provider is configured (and the same issuer).
+const oidcWayIn = u => !!(OIDC.enabled && u?.oidc && String(u.oidc.iss || '').replace(/\/+$/, '') === OIDC.issuer);
+// The ways in besides passkeys, for "never remove the last one".
+const otherWaysIn = u => (passwordWayIn(u) ? 1 : 0) + (oidcWayIn(u) ? 1 : 0);
 const POLICY_ERRORS = {
   'too-short': `the password needs at least ${MIN_LENGTH} characters`,
   'too-long': `the password can have at most ${MAX_LENGTH} characters`,
@@ -1353,6 +1373,11 @@ function passwordAttempt(req, res, k) {
 // proof is logged as `auth.proof.fail` for that change, not as a failed sign-in — the owner was
 // signed in all along, and "Password sign-in failed" sent an admin looking for the wrong thing.
 async function proveOwner(req, res, user, body, act) {
+  if (body.provider === true && oidcApi) {
+    if (oidcApi.providerProof(req, user)) return 'provider';
+    json(res, 403, { error: 'sign in with your provider again first', code: 'reauth-required' });
+    return null;
+  }
   if (body.credential) {
     if (await passkeyStepUp(user, body)) return 'passkey';
     audit(req, 'auth.proof.fail', { ok: false, user, msg: 'step-up-failed', act });
@@ -1457,6 +1482,7 @@ const passwordRoutes = {
       return json(res, 403, { error: 'this account has been disabled', code: 'disabled' });
     }
     check.ok();
+    if (oidcOnlyRefused(res, user)) return audit(req, 'auth.password.fail', { ok: false, user, msg: 'oidc-only' });
     // A hash made with older parameters is replaced now, while the password is at hand.
     if (needsRehash(rec.h)) {
       try {
@@ -1585,7 +1611,7 @@ const passwordRoutes = {
     const body = await readBody(req);
     const lastWayIn = () => json(res, 409, { error: 'the password is the only way into this profile', code: 'last-way-in' });
     if (!hasPassword(user)) return json(res, 200, { ok: true });
-    if (!passkeyCount(user)) return lastWayIn();
+    if (!passkeyCount(user) && !oidcWayIn(user)) return lastWayIn();
     const proof = await proveOwner(req, res, user, body, 'password-remove');
     if (!proof) return;
     // Everything above awaited: the session may have ended, and the profile's last passkey may
@@ -1593,7 +1619,7 @@ const passwordRoutes = {
     if (readSession(req) !== user) return json(res, 401, { error: 'not signed in' });
     if (proof === 'passkey') saveDb();   // the confirming passkey's counter and last use
     if (!hasPassword(user)) return json(res, 200, { ok: true });
-    if (!passkeyCount(user)) return lastWayIn();
+    if (!passkeyCount(user) && !oidcWayIn(user)) return lastWayIn();
     delete user.pw;
     saveDb();
     audit(req, 'auth.password.remove', { user });
@@ -1693,6 +1719,7 @@ const passwordRoutes = {
       audit(req, 'auth.password.reset', { ok: false, user, msg: 'account-disabled' });
       return json(res, 403, { error: 'this account has been disabled', code: 'disabled' });
     }
+    if (oidcOnlyRefused(res, user)) return;
     // The code is good and stays good until a password is actually set with it.
     const problem = passwordProblem(body.next, user.name);
     if (problem) return policyError(res, problem);
@@ -1755,7 +1782,7 @@ const passkeyState = u => {
   const passkeys = listPasskeys(db, u.id);
   // `password`: whether the password can confirm an addition or a removal (proveOwner) — only
   // while password sign-in is on. `lastWayIn`: whether removing any one passkey would be refused.
-  return { passkeys, password: passwordWayIn(u), lastWayIn: passkeys.length + (passwordWayIn(u) ? 1 : 0) <= 1 };
+  return { passkeys, password: passwordWayIn(u), lastWayIn: passkeys.length + otherWaysIn(u) <= 1 };
 };
 const LIMIT = { error: `a profile can have at most ${MAX_PASSKEYS} passkeys`, code: 'passkey-limit' };
 const LINK_INVALID = { error: 'that code is wrong, used or expired', code: 'link-invalid' };
@@ -1875,13 +1902,13 @@ const passkeyRoutes = {
     const id = new URL(req.url, 'http://x').searchParams.get('id') || '';
     const body = await readBody(req);
     const refuse = r => json(res, r.code === 'last-way-in' ? 409 : 404, { error: r.error, code: r.code });
-    const refused = passkeyRemovalRefused(db, user.id, id, passwordWayIn(user) ? 1 : 0);
+    const refused = passkeyRemovalRefused(db, user.id, id, otherWaysIn(user));
     if (refused) return refuse(refused);
     const proof = await proveOwner(req, res, user, body, 'passkey-remove');
     if (!proof) return;
     if (readSession(req) !== user) return notSignedIn(res);
     if (proof === 'passkey') saveDb();   // the confirming passkey's counter and last use
-    const r = removePasskeyRecord(db, user.id, id, passwordWayIn(user) ? 1 : 0);
+    const r = removePasskeyRecord(db, user.id, id, otherWaysIn(user));
     if (r.error) return refuse(r);
     dropDeviceLinks(db, user.id);
     saveDb();
@@ -1955,6 +1982,7 @@ const passkeyRoutes = {
       return json(res, 400, { error: 'challenge expired, try again', code: 'challenge-expired' });
     }
     const owner = db.users.find(u => u.id === link.userId);
+    if (oidcOnlyRefused(res, owner)) return;
     const cred = await newPasskey(req, res, c, body, 'auth.link.fail', owner || { id: link.userId });
     if (!cred) return;
     // Everything above awaited: the code may have been used, replaced or dropped since (a sign-out
@@ -2188,6 +2216,30 @@ const trainerApi = trainerRoutes({
   addressOf: req => limitAddress(req),
   org, perms, log: shareLog, budgets, codeGuard, on: () => TRAINERS, notify: trainerNotify, nutrition: NUTRITION
 });
+// OIDC (#130): its own burst budget per address, and wrong states, tokens or codes count
+// toward the same address pause the other sign-in routes use.
+const OIDC_BURST = createWindow({ max: 30, windowMs: 60000 });
+setInterval(() => OIDC_BURST.sweep(), 60000).unref();
+if (OIDC.enabled) {
+  oidcApi = oidcRoutes({
+    cfg: OIDC, provider: createProvider(OIDC), secure: !!SECURE,
+    json, readBody, readSession, sessionOf, audit, auditFail, saveDb, publicUser, requireAdmin,
+    db: () => db, sessionCookie, makeSession, claimFirstAdmin, isAdmin, nameTaken, normalizeEmail,
+    inviteOnly: INVITE_ONLY, proveOwner, otherWaysIn: u => passkeyCount(u) + (passwordWayIn(u) ? 1 : 0),
+    cookieValues,
+    syncRoles: TRAINERS ? (uid, roles) => org.syncClaimRoles(uid, roles) : null,
+    throttle: req => { const a = limitAddress(req); return OIDC_BURST.take(a) || ADDR_FAILS.retryAfter('oidc|' + a); },
+    strike: req => strikeAddress(req, 'oidc')
+  });
+}
+// OIDC_ONLY: the provider is the way in. Passkeys and passwords still sign in an admin, so an
+// outage at the provider never locks the operator out of their own server.
+const oidcOnlyRefused = (res, user) => {
+  if (!OIDC.enabled || !OIDC.only || (user && isAdmin(user))) return false;
+  json(res, 403, { error: `sign in with ${OIDC.label} instead`, code: 'oidc-only' });
+  return true;
+};
+const OIDC_ONLY_SIGNUPS = new Set(['POST /api/register/options', 'POST /api/register/verify', 'POST /api/register/password']);
 // Offers to stay with a trainer privately run out after 30 days even if nobody opens the app.
 if (TRAINERS) { const offerSweep = setInterval(() => { try { org.expireOffers(); } catch (e) { console.error('org offers', e.message); } }, 3600000); offerSweep.unref?.(); }
 
@@ -2223,6 +2275,8 @@ const routes = {
       invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
       // Only when on, so an instance without passwords answers exactly as it did before (#118).
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
+      // Public like the flags above: the sign-in screen draws its provider button from it.
+      ...(oidcApi ? { oidc: { label: OIDC.label, ...(OIDC.only ? { only: true } : {}) } } : {}),
       // Public: the sign-in screen is the first thing that reads it.
       ...(DEFAULT_LANG ? { default_lang: DEFAULT_LANG } : {}),
       // Public like the two flags above: the caps are not a secret, and the absence of the
@@ -2392,6 +2446,7 @@ const routes = {
       audit(req, 'auth.login.fail', { ok: false, user, msg: 'account-disabled' });
       return json(res, 403, { error: 'this account has been disabled', code: 'disabled' });
     }
+    if (oidcOnlyRefused(res, user)) return audit(req, 'auth.login.fail', { ok: false, user, msg: 'oidc-only' });
     audit(req, 'auth.login.ok', { user });
     json(res, 200, { user: publicUser(user) }, { 'Set-Cookie': sessionCookie(user) });
   },
@@ -2401,7 +2456,9 @@ const routes = {
   'POST /api/logout': async (req, res) => {
     const user = readSession(req);
     if (user) audit(req, 'auth.logout', { user });
-    json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
+    // OIDC_LOGOUT: where the browser goes next to end the provider's session too.
+    const out = user && oidcApi ? oidcApi.logoutUrl(user) : null;
+    json(res, 200, { ok: true, ...(out ? { provider_logout: out } : {}) }, { 'Set-Cookie': clearCookie });
   },
 
   // "Sign out everywhere" — bumps this user's session version, which invalidates every cookie
@@ -2416,6 +2473,7 @@ const routes = {
     // does an unused device link.
     for (const [k, v] of pairings) if (v.uid === user.id) pairings.delete(k);
     dropDeviceLinks(db, user.id);
+    oidcApi?.forget(user.id);
     saveDb();
     audit(req, 'auth.logout.all', { user });
     json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
@@ -2597,6 +2655,7 @@ const routes = {
 
   // Always there: more passkeys and device links need nothing an instance has to switch on.
   ...passkeyRoutes,
+  ...(oidcApi ? oidcApi.routes : {}),
 
   // `rev` is the server's own count of writes to this profile (also stored inside the document as
   // `_rev`, so every other reader of the file — reminder tick, admin, Coach, MCP — is unaffected).
@@ -3249,6 +3308,7 @@ const server = http.createServer(async (req, res) => {
   if (lu) { key = req.method + ' /api/admin/users/{uid}/sharing'; req.targetUid = lu[1]; }
   const handler = routes[key];
   if (!handler) return json(res, 404, { error: 'not found' });
+  if (OIDC_ONLY_SIGNUPS.has(key) && oidcOnlyRefused(res, null)) return;
   if (!csrfOk(req, key)) {
     // A Bearer that does not verify and no cookie beside it: nothing ambient is in play, the caller
     // is simply not signed in. That is the paired app once its token is revoked or expired, and it
