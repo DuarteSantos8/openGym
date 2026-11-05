@@ -273,7 +273,7 @@ dashboard, so this is step one for each of them.
 An instance whose people share a language can start everyone in it:
 
 ```bash
-DEFAULT_LANG=pt-BR         # any code from Settings → Units & language → Language: de, es, fr, pt-BR, …
+DEFAULT_LANG=lt            # any code from Settings → Units & language → Language: de, es, fr, lt, pt-BR, …
 ```
 
 The sign-in and create-profile screens open in that language, and so does every profile that
@@ -283,6 +283,10 @@ old profile that chose English from one that never looked, so it leaves them alo
 `DEFAULT_LANG`, a new visitor starts in their browser's language when openGym has it, else
 English. A code the app has no translation for is ignored. The phone app in local mode has no
 server to ask and is unaffected.
+
+The language setting covers the app UI. Exercise names and instructions are translated by
+separate catalogue packs; when a selected language has no catalogue pack, that exercise content
+stays in English and the language picker says so.
 
 Until someone picks a language, it is worked out on each device and not saved with the profile:
 without `DEFAULT_LANG`, the same profile can show in German on one phone and in English on a
