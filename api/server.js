@@ -43,6 +43,11 @@ import { createIntegrations } from './integrations/index.js';
 import { integrationRoutes } from './integrations/routes.js';
 import { excusedOn, nudgeFor, nudgeWindowOpen, toneOf } from './nudge.js';
 import { wrappedPushYear, wrappedSummary, wrappedPushOwed, wrappedPush } from './wrapped.js';
+import { createOrgStore } from './trainers/org-store.js';
+import { trainerRoutes } from './trainers/routes.js';
+import { createPermissions } from './permissions.js';
+import { createShareLog } from './share-log.js';
+import { createBudgets, createCodeGuard } from './budgets.js';
 
 const PORT = +(process.env.PORT || 3000);
 const DATA = process.env.DATA_DIR || '/data';
@@ -79,6 +84,15 @@ const ALLOW_GUEST = !/^(0|false|no|off)$/i.test(process.env.ALLOW_GUEST || '');
 // every account that opts in, so an instance has to ask for it. While it is off every password
 // route answers 404 and the app shows none of it; hashes already stored stay where they are.
 const PASSWORD_LOGIN = /^(1|true|yes|on)$/i.test(process.env.PASSWORD_LOGIN || '');
+// Trainers, gym leads and studios (docs/TRAINERS.md). Off by default: with it off every
+// /api/sharing, /api/trainer and /api/admin/gyms route answers 404 and the app shows nothing.
+const TRAINERS = /^(1|true|yes|on)$/i.test(process.env.TRAINERS || '');
+// How a gym lead gets to see a member: 'row' (own consent row, default), 'mirror' or 'none'
+// (api/trainers/scopes.js LEAD_MODES).
+const TRAINERS_LEAD_ACCESS = process.env.TRAINERS_LEAD_ACCESS || 'row';
+// Whether the admin dashboard shows a member's workouts and weigh-ins (1.4.6: off by default).
+// Off, admins see counts only; on, every look is in the activity log and the member's sharing log.
+const ADMIN_DATA_VIEW = /^(1|true|yes|on)$/i.test(process.env.ADMIN_DATA_VIEW || '');
 // The language the sign-in screen, and every profile that never picked one, starts in (#303) —
 // for an instance whose people share a language. Only a tag's shape is checked here; the app
 // matches it against the languages it has and ignores one it does not know. Unset, it is left
@@ -175,6 +189,16 @@ function ownerId() {
   return db.users.find(isAdmin)?.id || null;
 }
 const isOwner = user => !!user && isAdmin(user) && user.id === ownerId();
+// Studios, roles and grants (org.json), each member's sharing log (share/<uid>.json), and the one
+// check every trainer, gym and library route asks (permissions.js).
+const org = createOrgStore({ file: path.join(DATA, 'org.json'), leadMode: TRAINERS_LEAD_ACCESS });
+const shareLog = createShareLog({ dir: path.join(DATA, 'share'), keepDays: Math.max(0, +(process.env.SHARE_LOG_DAYS || 365) || 0) });
+const perms = createPermissions({
+  org, userById: id => db.users.find(u => u.id === id) || null, isAdmin, isOwner,
+  flags: () => ({ trainers: TRAINERS, adminDataView: ADMIN_DATA_VIEW, sharing: !/^(0|false|no|off)$/i.test(process.env.SHARING || '') })
+});
+const budgets = createBudgets();
+const codeGuard = createCodeGuard();
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
 // Once the new version is on disk, a second copy of it goes to db.json.bak, the same durable
@@ -1351,6 +1375,12 @@ function removeAccount(u) {
   try { MEDIA.removeUser(u.id); } catch (e) { console.error('media: could not remove uploads of', u.id, e.message); }
   // Their integrations: connections, sealed secrets and anything still waiting to be sent.
   try { integrations.removeUser(u.id); } catch (e) { console.error('integrations: could not remove', u.id, e.message); }
+  // Their grants, consents, roles and sharing log; as a trainer their name leaves members' logs.
+  try {
+    const members = org.removeUser(u.id);
+    shareLog.remove(u.id);
+    shareLog.anonymize(members, u.id);
+  } catch (e) { console.error('org: could not remove', u.id, e.message); }
   saveDb();
 }
 
@@ -2115,7 +2145,10 @@ const routes = {
       ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {}),
       // Which integrations this server offers (only to a session, like the Coach block). Absent
       // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
-      ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {})
+      ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
+      // Trainers and studios (docs/TRAINERS.md): only to a session and only when on, so the app
+      // shows no trace of the feature anywhere else.
+      ...(TRAINERS && readSession(req) ? { trainers: { on: true, leadAccess: org.leadMode } } : {})
     });
   },
 
@@ -2757,37 +2790,48 @@ const routes = {
   },
 
   /* ---------- admin dashboard ---------- */
-  // One row per user, cheap enough for a personal instance (reads each state file once).
+  // One row per user, cheap enough for a personal instance (stateSummary reads a file only when it
+  // changed). Operational numbers only: how much is there, when it last synced, whether pushes
+  // work. With ADMIN_DATA_VIEW on it also says when each person last trained and what they are
+  // training right now, as it did before 1.4.6, and that look is in the activity log.
   'GET /api/admin/users': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const view = ADMIN_DATA_VIEW;
     const users = db.users.map(u => {
       const S = readState(u.id) || {};
       const workouts = records(S.workouts);
       const last = workouts[workouts.length - 1];
+      const live = livePresence(u.id);
       return {
         id: u.id, name: u.name, created: u.created || null,
         disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null,
         workouts: workouts.length,
-        lastWorkout: last ? last.d : null,
+        ...(view ? { lastWorkout: last ? last.d : null } : {}),
         lastSync: lastSyncOf(u, S),
         hasPush: db.subs.some(s => s.userId === u.id),
-        live: livePresence(u.id),
+        // Training right now is a fact about the server's load; which routine and how far along is theirs.
+        live: live ? (view ? live : { startedAt: live.startedAt }) : null,
         // The sign-in e-mail is an admin's to see (to hand out a reset code, to tell two
         // profiles apart), and only while the instance takes passwords at all.
         ...(PASSWORD_LOGIN ? { password: hasPassword(u), email: u.email || null } : {})
       };
     });
-    json(res, 200, { users, invite_only: INVITE_ONLY, ...(PASSWORD_LOGIN ? { password_login: true } : {}), now: Date.now() });
+    if (view) audit(req, 'admin.data-view', { user: admin, msg: 'user list' });
+    json(res, 200, { users, invite_only: INVITE_ONLY, data_view: view, ...(TRAINERS ? { trainers: true } : {}), ...(PASSWORD_LOGIN ? { password_login: true } : {}), now: Date.now() });
   },
 
-  // Drill-down: full workout history + body-weight log for one user.
+  // Drill-down for one user. Without ADMIN_DATA_VIEW: counts, storage and roles, never a workout
+  // or a weigh-in. With it: the full workout history and body-weight log as before 1.4.6, and the
+  // look is written to the activity log and to the member's own sharing log.
   'GET /api/admin/user': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    const admin = requireAdmin(req, res); if (!admin) return;
     const id = new URL(req.url, 'http://x').searchParams.get('id');
     const u = db.users.find(x => x.id === id);
     if (!u) return json(res, 404, { error: 'no such user' });
     const S = readState(u.id) || {};
-    json(res, 200, {
+    let bytes = 0;
+    try { bytes = fs.statSync(stateFile(u.id)).size; } catch { /* no state yet */ }
+    const base = {
       user: {
         id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null,
         // Only on an instance with password sign-in: whether they have one, and until when an
@@ -2798,6 +2842,27 @@ const routes = {
       },
       unit: S.unit || 'kg',
       lastSync: lastSyncOf(u, S),
+      hasPush: db.subs.some(s => s.userId === u.id),
+      bytes,
+      counts: {
+        workouts: records(S.workouts).length, bodyweight: records(S.bodyweight).length,
+        measurements: records(S.measurements).length, routines: records(S.routines).length
+      },
+      ...(TRAINERS ? { roles: org.rolesOf(u.id), grants: org.get().grants.filter(g => g.memberId === u.id && g.status === 'active').length } : {}),
+      data_view: false
+    };
+    const may = perms.can(admin, 'admin:data-view', { memberId: u.id });
+    if (!may.ok) return json(res, 200, base);
+    const wait = budgets.take('admin.data', admin.id);
+    if (wait) return json(res, 429, { error: 'slow down a little', code: 'rate-limited', retryAfter: wait }, { 'Retry-After': String(wait) });
+    audit(req, 'admin.data-view', { user: admin, target: u });
+    if (u.id !== admin.id) {
+      try { shareLog.append(u.id, { ev: 'data.admin-view', actor: { kind: 'admin', id: admin.id, name: admin.name } }); }
+      catch (e) { console.error('share log', e.message); }
+    }
+    json(res, 200, {
+      ...base,
+      data_view: true,
       routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length })),
       bodyweight: records(S.bodyweight),
       // records() already copied, so this reverse is ours: newest first for display. A workout's
@@ -2979,6 +3044,16 @@ const routes = {
   // integrations/routes.js, handed the same helpers. With INTEGRATIONS unset they answer an empty
   // list (GET) or 404 "off", so the routes exist on every server and the app can tell.
   ...integrationRoutes({ json, readBody, readSession, hub: integrations, audit }),
+
+  /* ---------- trainers, gym leads, studios ---------- */
+  // trainers/routes.js. Every decision about another profile is permissions.js; with TRAINERS
+  // off the routes answer 404 'trainers-off'.
+  ...trainerRoutes({
+    json, readBody, readSession, requireAdmin, isAdmin, audit, origin: ORIGIN,
+    userById: id => db.users.find(u => u.id === id) || null,
+    addressOf: req => limitAddress(req),
+    org, perms, log: shareLog, budgets, codeGuard, on: () => TRAINERS
+  }),
 
   /* ---------- photos & videos ---------- */
   // Absent, not refusing, when MEDIA_UPLOADS=0: a 404 is what a server from before the feature

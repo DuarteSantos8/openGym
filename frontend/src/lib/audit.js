@@ -71,6 +71,16 @@ const LABELS = {
   'admin.role.revoke': 'Removed someone as admin',
   'admin.owner.transfer': 'Handed the owner role on',
   'admin.invite.create': 'Created an invite code',
+  // ADMIN_DATA_VIEW (1.4.6): an admin opened someone's workouts and weigh-ins, or the list with last-workout dates.
+  'admin.data-view': 'Looked at training data',
+  // Trainers and studios (docs/TRAINERS.md).
+  'admin.gym.create': 'Created a gym',
+  'admin.gym.update': 'Changed a gym',
+  'admin.gym.staff.add': 'Gave someone a gym role',
+  'admin.gym.staff.remove': 'Took a gym role away',
+  'admin.trainer.add': 'Made someone a free trainer',
+  'admin.trainer.remove': 'Took free trainer away',
+  'trainer.code': 'Made a trainer invite code',
   'admin.invite.revoke': 'Revoked an invite code',
   'admin.audit.clear': 'Cleared the activity log',
   // FIRST_USER_ADMIN=1: the first profile on a fresh instance is made admin as it signs up.
