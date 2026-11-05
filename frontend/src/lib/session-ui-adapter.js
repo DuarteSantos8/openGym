@@ -122,6 +122,8 @@ export const actualOfRow = (row, unit, assisted = false) => ({
   speed: row.speed ?? null,
   rir: row.rir ?? (isFailureSet(row) ? 0 : null),
   rpeEntered: row.rpe ?? null,
+  // Taken to failure on purpose: left out of the effort floor the verdict reads (spec 11, audit.js).
+  ...(isFailureSet(row) ? { failure: true } : {}),
   // One limb of a timed per-side set: the set counts once both are done (audit.js summarizeActual).
   ...(row.side ? { limb: row.side } : {})
 })

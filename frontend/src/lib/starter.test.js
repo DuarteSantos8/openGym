@@ -3,7 +3,8 @@ import { planPhase } from './prescription/index.js'
 import { EXIDX } from './exercises.js'
 import { ALL_EQUIPMENT, eqAvailable } from './equipment.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines, starterProgrammeOptions, buildStarterProgramme } from './starter.js'
-import { normalizeProgramme, programmeRoutineIds } from './programmes.js'
+import { legacyWeeksOf, programmeRoutineIds } from './programmes.js'
+import { validateProgramme } from './prescription/index.js'
 
 // The approved prescription, written out again rather than imported: a test that reads the
 // same table as the code would pass no matter what that table said. [weekday, name, sets].
@@ -194,23 +195,25 @@ describe('fitting a starter plan to equipment', () => {
 })
 
 describe('starter programmes (#159)', () => {
-  it('each builds routines and a programme over every one of them', () => {
+  it('each builds routines and a programme over every one of them, keeping its numbers', () => {
     const opts = starterProgrammeOptions()
     expect(opts.map(o => o.id)).toEqual(['strength-4', 'hypertrophy-6', 'linear-12'])
     for (const { id, weeks } of opts) {
-      const { routines, programme } = buildStarterProgramme(id, 'X', 5)
-      const p = normalizeProgramme(programme)
-      expect(p.weeks).toHaveLength(weeks)
-      expect(p).toMatchObject({ name: 'X', at: 5, src: id })
-      expect(programmeRoutineIds({ routines }, p).sort()).toEqual(routines.map(r => r.id).sort())
-      // Every week as written is a week the model keeps unchanged.
-      expect(p.weeks).toEqual(programme.weeks)
+      const { routines, programme, legacy } = buildStarterProgramme(id, 'X', 5)
+      expect(programme).toMatchObject({ name: 'X', at: 5, src: id, duration: { n: weeks, unit: 'weeks' } })
+      expect(programme.needs).toBeUndefined()
+      expect(validateProgramme(programme, { routines }).ok).toBe(true)
+      expect(programmeRoutineIds({ routines }, programme).sort()).toEqual(routines.map(r => r.id).sort())
+      // Every week as written reads back unchanged through the editor's bridge.
+      expect(legacyWeeksOf(programme)).toEqual(legacy.weeks)
     }
     expect(buildStarterProgramme('nope', 'X')).toBeNull()
   })
-  it('only names exercises its routines hold', () => {
+  it('strength keeps its %1RM on the barbell lifts and its deload as recovery', () => {
     const { routines, programme } = buildStarterProgramme('strength-4', 'X')
-    const ids = new Set(routines.flatMap(r => r.ex.map(e => e.exerciseId)))
-    for (const w of programme.weeks) for (const k of Object.keys(w.t || {})) expect(ids.has(k)).toBe(true)
+    const squat = routines[0].ex.find(o => o.exerciseId === '0043')
+    const track = programme.tracks.find(t => t.slots[0].oid === squat.occurrenceId)
+    expect(track.stages.map(st => st.targets[squat.occurrenceId].phase.parameters.load.percent)).toEqual([72.5, 77.5, 82.5, 60])
+    expect(track.stages.map(st => st.kind)).toEqual(['work', 'work', 'work', 'recovery'])
   })
 })

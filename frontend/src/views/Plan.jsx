@@ -186,7 +186,7 @@ export default function Plan() {
     <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
       options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />
     {progChip && <button type="button" className="prog-strip" onClick={() => nav('/plan/programmes')}>
-      <Icon name="calendar" /><span className="grow">{S.programmes?.[S.programme?.id]?.name || t('Programme')}</span><span className="tag acc">{progChip}</span>
+      <Icon name="calendar" /><span className="grow">{S.programmes?.[S.programmeRuns?.[S.programme?.runId]?.programmeId]?.name || t('Programme')}</span><span className="tag acc">{progChip}</span>
     </button>}
     {view === 'routines'
       ? <Routines S={S} update={update} nav={nav} />

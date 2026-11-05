@@ -10,7 +10,7 @@
 import { z } from 'zod'
 import { setNoteOf } from '../../frontend/src/lib/set-notes.js'
 import { setVideosOf } from '../../frontend/src/lib/set-videos.js'
-import { programmesOf, programmeStatus, programmeRoutineIds } from '../../frontend/src/lib/programmes.js'
+import { programmesOf, programmeView, programmeRoutineIds, legacyWeeksOf } from '../../frontend/src/lib/programmes.js'
 import { readingsOf, dailyModeOf } from '../../frontend/src/lib/weigh-ins.js'
 import { getState, getUser, MIN_ENGINE_SCHEMA, engineUnsupported } from './state.js'
 import {
@@ -724,22 +724,27 @@ export const getProgramme = {
         return { exercise_id: exId, exercise_name: exerciseOf(exId, S).n, routine_id: i < 0 ? null : key.slice(0, i), pct_1rm: v.pct ?? null, rpe: v.rpe ?? null }
       }),
     })
-    const st = programmeStatus(S, todayIso())
+    // Engine contract 1 (frontend/src/lib/programmes.js), read through the week bridge until this
+    // tool reads stages itself (and refuses a profile it cannot read).
+    const st = programmeView(S, todayIso())
+    const week = st ? Math.min(st.nominal.used + 1, st.nominal.of) : 0
+    const done = !!st && ['stopped', 'complete', 'ended'].includes(st.status)
+    const days = p => { const out = {}; for (const a of p.schedule.appts || []) if (a.day != null) (out[DAY_NAMES[a.day]] ||= []).push(nameOf(a.rid)); return out }
     return {
       today: todayIso(),
       running: st ? {
-        id: st.programme.id, name: st.programme.name, week: st.week, weeks: st.weeks,
-        paused: st.paused, done: st.done, round: st.cycle, started_on: st.run.startedOn,
+        id: st.run.programmeId, name: st.def.name, week, weeks: st.nominal.of,
+        paused: st.status === 'paused', done, round: st.run.cycle, started_on: st.run.startedOn,
         extra_pct_1rm: Number(st.run.bump) || 0,
-        this_week: st.current ? weekOut(st.current) : null,
+        this_week: done ? null : weekOut(legacyWeeksOf(st.def)[week - 1] || {}),
       } : null,
       programmes: programmesOf(S).map(p => ({
-        id: p.id, name: p.name, weeks: p.weeks.length,
-        schedule: p.sequence
-          ? { kind: 'rotation', sequence: p.sequence.map(id => (id === 'rest' ? 'rest' : nameOf(id))) }
-          : { kind: 'weekdays', days: Object.fromEntries(Object.entries(p.days || {}).map(([d, ids]) => [DAY_NAMES[d], ids.map(nameOf).filter(Boolean)])) },
+        id: p.id, name: p.name, weeks: p.duration.n,
+        schedule: p.schedule.mode === 'rotation'
+          ? { kind: 'rotation', sequence: p.schedule.sequence.map(id => (id === 'rest' ? 'rest' : nameOf(id))) }
+          : { kind: 'weekdays', days: days(p) },
         routine_ids: programmeRoutineIds(S, p),
-        week_targets: p.weeks.map(weekOut),
+        week_targets: legacyWeeksOf(p).map(weekOut),
       })),
     }
   }

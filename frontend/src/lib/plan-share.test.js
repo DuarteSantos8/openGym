@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { editPlan, planOptions, planPhase } from './prescription/index.js'
-import { buildPlanBundle, mergePlan, parsePlan, planPrintHTML } from './plan-share.js'
-import { canonicalProfile, ruleOccurrence } from './test-fixtures.js'
+import { editPlan, planOptions, planPhase, validateProgramme } from './prescription/index.js'
+import { buildPlanBundle, buildProgrammeBundle, mergePlan, parsePlan, planPrintHTML } from './plan-share.js'
+import { canonicalProfile, migratedFixture, ruleOccurrence } from './test-fixtures.js'
+import { pauseProgramme, setLegacyWeeks, startProgramme } from './programmes.js'
 
 // There was no test file for plan sharing at all, which is how a whole prescription field
 // went missing without anyone noticing.
@@ -440,5 +441,60 @@ describe('parsePlan refuses a file that is not a plan in words', () => {
   it('text that is not JSON says it is not a plan file, not the parser message', () => {
     expect(() => parsePlan('hello there')).toThrow('this isn’t an openGym plan file')
     try { parsePlan('{oops') } catch (e) { expect(e.code).toBe('not-plan') }
+  })
+})
+
+describe('programmes in a plan file', () => {
+  const ADVANCE = { onFailure: 'advance', onSkipped: 'advance' }
+  // A running programme with every private record a profile can hold: a run, its events, a review, Config.
+  function running() {
+    const s = migratedFixture({ unit: 'kg', weekStart: 1, routines: [{ id: 'A', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }, { id: 'B', name: 'Legs', ex: [{ id: '0043', sets: 3, reps: 5, weight: 80 }] }], workouts: [] })
+    Object.assign(s, { week: { 1: ['A'] }, customEx: [], refUpdates: 'keep', programmeEnd: 'extend', refReviews: { 'occ:A:o0': { candidateId: 'c', decision: 'keep', at: 1 } } })
+    s.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ rpe: 7, t: { '0025': { pct: 75 } } }, { deload: true }], s, { days: { 1: ['A'], 4: ['B'] } }) }
+    s.programmes.P.tracks[0].policy = { onFailure: 'repeat', onSkipped: 'advance' }
+    startProgramme(s, 'P', { policies: Object.fromEntries(s.programmes.P.tracks.map(t => [t.id, ADVANCE])), end: 'stop', today: '2026-10-19' })
+    pauseProgramme(s, Date.parse('2026-10-20T10:00:00Z'))
+    return s
+  }
+
+  it('plan file format 2 carries no run state or consent; format 1 imports through the converter', () => {
+    const s = running()
+    const file = JSON.parse(JSON.stringify(buildProgrammeBundle(s, 'P')))
+    expect(file).toMatchObject({ opengym_plan: 3, programme_fmt: 2, week: { 1: ['A'], 4: ['B'] } })
+    const text = JSON.stringify(file)
+    for (const k of ['programmeRuns', 'programmeEvents', 'refReviews', 'refUpdates', 'programmeEnd', '"ack"', '"runId"', '"ref"', '"src"']) expect(text).not.toContain(k)
+    expect(Object.keys(file.programmes[0]).sort()).toEqual(['duration', 'end', 'id', 'name', 'refs', 'schedule', 'tracks'])
+    // The proposed choices travel; the friend still has to acknowledge them at their own start.
+    expect(file.programmes[0].tracks[0].policy).toEqual({ onFailure: 'repeat', onSkipped: 'advance' })
+    const friend = { unit: 'kg', routines: [], week: { 2: ['mine'] }, customEx: [], programmes: {} }
+    expect(mergePlan(friend, parsePlan(text, 'kg')).programmes).toBe(1)
+    const [p] = Object.values(friend.programmes)
+    const [a, b] = friend.routines
+    expect(p.id).not.toBe('P')
+    expect(p.schedule.appts).toEqual([{ rid: a.id, day: 1 }, { rid: b.id, day: 4 }])
+    expect(p.tracks.map(t => t.slots[0])).toEqual([{ rid: a.id, oid: a.ex[0].occurrenceId }, { rid: b.id, oid: b.ex[0].occurrenceId }])
+    expect(Object.keys(p.tracks[0].stages[0].targets)).toEqual([a.ex[0].occurrenceId])
+    expect(validateProgramme(p, { routines: friend.routines }).ok).toBe(true)
+    expect(friend.programme).toBeUndefined()
+    expect(friend.programmeRuns).toBeUndefined()
+    expect(friend.week).toEqual({ 2: ['mine'] })
+    // Format 1, today's weeks of targets: converted over the routines it brought.
+    const legacy = { ...file, programme_fmt: 1, programmes: [{ name: 'Old', days: { 1: ['A'] }, weeks: [{ rpe: 8, t: { '0025': { pct: 80 } } }] }] }
+    const other = { unit: 'kg', routines: [], week: {}, customEx: [], programmes: {} }
+    expect(mergePlan(other, parsePlan(JSON.stringify(legacy), 'kg')).programmes).toBe(1)
+    const [q] = Object.values(other.programmes)
+    const oid = other.routines[0].ex[0].occurrenceId
+    expect(q.tracks[0].stages[0].targets[oid]).toMatchObject({ own: 'set', effort: { mode: 'advisory', rpe: 8 }, phase: { parameters: { load: { mode: 'percent_1rm', percent: 80 } } } })
+    expect(validateProgramme(q, { routines: other.routines }).ok).toBe(true)
+    // A newer programme format is left out; the routines still come in.
+    expect(parsePlan({ ...file, programme_fmt: 3 }).programmes).toEqual([])
+  })
+
+  it('a format-2 programme that does not compile is left out, never cut down', () => {
+    const file = JSON.parse(JSON.stringify(buildProgrammeBundle(running(), 'P')))
+    file.programmes[0].tracks[0].stages = Array(17).fill(file.programmes[0].tracks[0].stages[0])
+    const friend = { unit: 'kg', routines: [], week: {}, customEx: [], programmes: {} }
+    expect(mergePlan(friend, parsePlan(JSON.stringify(file), 'kg')).programmes).toBe(0)
+    expect(friend.routines).toHaveLength(2)
   })
 })

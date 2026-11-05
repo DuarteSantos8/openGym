@@ -113,7 +113,7 @@ describe('a v1 profile on the server', () => {
   ])('A10/A13: identifies a migration-status failure as %s', async (error, reason) => {
     signedIn(); localStorage.setItem(KEY, raw)
     const useStore = await fresh()
-    byPath({ '/api/config': {}, '/api/me': { user: { id: 'u1' } }, '/api/data/migration-status': error })
+    byPath({ '/api/config': { engineContract: 1 }, '/api/me': { user: { id: 'u1' } }, '/api/data/migration-status': error })
     await useStore.getState().boot()
     expect(useStore.getState().migration).toMatchObject({ phase: 'error', reason })
     expect(localStorage.getItem(KEY)).toBe(raw)
@@ -126,7 +126,7 @@ describe('a v1 profile on the server', () => {
     localStorage.setItem('gym_stash', stash)
     const useStore = await fresh()
     byPath({
-      '/api/config': {}, '/api/me': { user: { id: 'u1' } },
+      '/api/config': { engineContract: 1 }, '/api/me': { user: { id: 'u1' } },
       '/api/data': opts => opts?.method === 'PUT' ? { ok: true, rev: 9 } : canonical(8)
     })
     await useStore.getState().boot()
@@ -156,7 +156,7 @@ describe('a v1 profile on the server', () => {
     const useStore = await fresh()
     let migrated = false
     byPath({
-      '/api/config': {}, '/api/me': { user: { id: 'u1' } },
+      '/api/config': { engineContract: 1 }, '/api/me': { user: { id: 'u1' } },
       '/api/data': () => { if (!migrated) throw refused(409, 'migration-required'); return canonical(8) },
       '/api/data/migration-status': status(7),
       '/api/data/migrate-engine-v2': () => { migrated = true; return { migrated: true, revision: 8 } }
@@ -175,7 +175,7 @@ describe('a v1 profile on the server', () => {
     const useStore = await fresh()
     let revision = 7
     byPath({
-      '/api/config': {}, '/api/me': { user: { id: 'u1' } },
+      '/api/config': { engineContract: 1 }, '/api/me': { user: { id: 'u1' } },
       '/api/data': refused(409, 'migration-required'),
       '/api/data/migration-status': () => status(revision),
       '/api/data/migrate-engine-v2': () => { revision = 9; throw refused(409, 'migration-state-changed') }
@@ -191,7 +191,7 @@ describe('a v1 profile on the server', () => {
     signedIn(); localStorage.setItem(KEY, raw)
     const useStore = await fresh()
     byPath({
-      '/api/config': {}, '/api/me': { user: { id: 'u1' } },
+      '/api/config': { engineContract: 1 }, '/api/me': { user: { id: 'u1' } },
       '/api/data/migration-status': status(3),
       '/api/data/migrate-engine-v2': refused(500, 'migration-failed')
     })
@@ -214,7 +214,7 @@ describe('a v1 profile on the server', () => {
     signedIn(); localStorage.setItem(KEY, raw)
     const useStore = await fresh()
     byPath({
-      '/api/config': {}, '/api/me': { user: { id: 'u1' } },
+      '/api/config': { engineContract: 1 }, '/api/me': { user: { id: 'u1' } },
       '/api/data/migration-status': status(8, false),
       '/api/data': opts => (opts?.method === 'PUT' ? { ok: true, rev: 9 } : canonical(8))
     })
@@ -234,7 +234,7 @@ describe('a v1 profile on the server', () => {
     const useStore = await fresh()
     let migrated = false, finish
     byPath({
-      '/api/config': {}, '/api/me': { user: { id: 'u1' } },
+      '/api/config': { engineContract: 1 }, '/api/me': { user: { id: 'u1' } },
       '/api/data': () => { if (!migrated) throw refused(409, 'migration-required'); return canonical(8) },
       '/api/data/migration-status': status(7),
       '/api/data/migrate-engine-v2': () => { migrated = true; return new Promise(resolve => { finish = resolve }) }

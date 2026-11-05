@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { contentHash, defaultPlanRule, planPhase } from './prescription/index.js'
 import { buildSessionExposures } from './session-start.js'
 import { entriesForExposures, exposuresWithPerformance, rowsOfPerformance } from './session-ui-adapter.js'
@@ -7,7 +7,7 @@ import { exView, shownWeight, storedWeight, withExUnit } from './ex-unit.js'
 import { convertStateUnit } from './units.js'
 import { sessionVolume } from './history.js'
 import { routineChangesFromEntry, updateRoutineFromEntry } from './routine-update.js'
-import { startProgramme } from './programmes.js'
+import { setLegacyWeeks, startProgramme } from './programmes.js'
 
 const BENCH = '0025'
 const profile = (over = {}) => ({ engineSchemaVersion: 2, unit: 'kg', routines: [], workouts: [], prescriptions: {}, progression: {}, oneRepMaxes: {}, ...over })
@@ -41,13 +41,18 @@ describe('new main features on the v2 session path', () => {
 
   it('freezes programme targets and excludes its deload from advancement', () => {
     const r = routine(100)
-    const S = profile({ routines: [r], oneRepMaxes: { one: { id: 'one', exerciseId: BENCH, value: 120, unit: 'kg', capturedAt: '2026-10-01T12:00:00Z', source: 'manual' } }, programmes: { p: { id: 'p', days: { 1: ['r'] }, weeks: [{ deload: true, t: { [BENCH]: { pct: 75, rpe: 7 } } }] } } })
-    // Programme percent references actual estimated history, as before.
+    const S = profile({ routines: [r], oneRepMaxes: { one: { id: 'one', exerciseId: BENCH, value: 120, unit: 'kg', capturedAt: '2026-10-01T12:00:00Z', source: 'manual' } } })
+    S.programmes = { p: setLegacyWeeks({ id: 'p', name: 'P', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ deload: true, t: { [BENCH]: { pct: 75, rpe: 7 } } }], S, { days: { 1: ['r'] } }) }
+    // A heavier session in history does not move it: the run adopted the 120 kg 1RM at its start.
     S.workouts.push({ id: 'previous', d: '2026-10-01', exposures: [{ exerciseId: BENCH, performance: { sets: [{ role: 'work', status: 'completed', resistance: { kind: 'external-load', value: 100, unit: 'kg' }, observations: [{ metric: 'repetitions', value: 5 }] }] } }] })
-    startProgramme(S, 'p', '2026-10-21', ctx.now)
-    const a = start(S, r), p = S.prescriptions[a.exposures[0].prescriptionId]
-    expect(a.entries[0].sets.map(row => row.w)).toEqual([87.5, 87.5, 87.5])
-    expect(p.provenance.programme).toMatchObject({ week: 1, pct: 75, deload: true })
+    expect(startProgramme(S, 'p', { policies: { 't:p:o': { onFailure: 'advance', onSkipped: 'advance' } }, end: 'stop', today: '2026-10-19', now: ctx.now })).toEqual({ ok: true })
+    // The run is read as of today: the session's own Wednesday.
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(ctx.now)
+    let a
+    try { a = start(S, r) } finally { vi.useRealTimers() }
+    const p = S.prescriptions[a.exposures[0].prescriptionId]
+    expect(a.entries[0].sets.map(row => row.w)).toEqual([90, 90, 90])
+    expect(p.provenance.programme).toMatchObject({ stage: 's1', role: 'work', ref: { id: 'one' }, effort: { mode: 'advisory', rpe: 7 } })
     expect(a.exposures[0].excludedFromProgression).toBe(true)
     const { contentHash: hash, ...body } = p
     expect(hash).toBe(contentHash(body))

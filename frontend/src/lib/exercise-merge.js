@@ -6,7 +6,8 @@
 //   - every logged entry (with its sets, notes, set videos and the workout's records list), in
 //     every saved workout; each workout touched is stamped as edited, so a sync keeps this version
 //   - routine slots (their sets, rest, warm-ups and progression come along) and their backups
-//   - a programme's per-exercise targets (`t` keys `exId` and `rid:exId`)
+//   - a programme's tracks of the exercise (`exerciseId`), in its definition and in its runs' frozen
+//     ones; a programme from before engine contract 1 (`t` keys `exId` and `rid:exId`) too
 //   - the kept working weight (the better of the two), the standing note (both, joined), the
 //     aliases (both, plus the source's own name, so a search for it still finds the target), the
 //     favourite star, and the per-exercise settings the target has none of yet: bar weight, plate
@@ -38,7 +39,7 @@ const clone = v => (v === undefined ? v : JSON.parse(JSON.stringify(v)))
 // Per-exercise settings maps: the target keeps its own, the source's moves only where it has none.
 const MOVE_MAPS = ['barWeights', 'loadKind', 'dbLoad', 'stackWeights', 'exUnit']
 // What an Undo puts back whole.
-const RESTORE = ['routines', 'programmes', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'favEx', 'balanceOverrides', ...MOVE_MAPS, 'oneRepMaxes', 'prescriptions']
+const RESTORE = ['routines', 'programmes', 'programmeRuns', 'customEx', 'exWeights', 'exNotes', 'exAliases', 'favEx', 'balanceOverrides', ...MOVE_MAPS, 'oneRepMaxes', 'prescriptions']
 
 /** Where `id` went, following merges of merges; `id` itself when it was never merged. */
 export function mergedInto(S, id) {
@@ -64,7 +65,10 @@ export function mergedAway(S) {
 const exOf = (S, id) => list(S?.customEx).find(c => c?.id === id) || EXIDX[id] || null
 const entryHas = (w, id) => legacyEntriesOf(w).some(e => e?.id === id)
 const routineHas = (r, id) => list(r?.ex).some(c => (c?.exerciseId ?? c?.id) === id || list(c?.subs).includes(id))
-const programmeHas = (p, id) => list(p?.weeks).some(wk => isMap(wk?.t) && Object.keys(wk.t).some(k => k === id || k.endsWith(':' + id)))
+const programmeHas = (p, id) => list(p?.tracks).some(t => t?.exerciseId === id)
+  || list(p?.weeks).some(wk => isMap(wk?.t) && Object.keys(wk.t).some(k => k === id || k.endsWith(':' + id)))
+// A definition's tracks of `fromId` follow the exercise; their slots, stages and progress stay theirs.
+const retrack = (def, fromId, toId) => ({ ...def, tracks: list(def.tracks).map(t => (t?.exerciseId === fromId ? { ...t, exerciseId: toId } : t)) })
 
 /**
  * What a merge of `fromId` into `toId` would move, for the confirm sheet: counts of workouts,
@@ -153,7 +157,7 @@ function redirect(S, fromId, toId, { stamp = false, now = Date.now() } = {}) {
   if (isMap(S.programmes)) {
     for (const [pid, p] of Object.entries(S.programmes)) {
       if (!programmeHas(p, fromId)) continue
-      const np = clone(p)
+      const np = clone(retrack(p, fromId, toId))
       for (const wk of list(np.weeks)) {
         if (!isMap(wk?.t)) continue
         const t = {}
@@ -165,6 +169,9 @@ function redirect(S, fromId, toId, { stamp = false, now = Date.now() } = {}) {
       }
       S.programmes = { ...S.programmes, [pid]: np }
     }
+  }
+  if (isMap(S.programmeRuns)) {
+    for (const [rid, run] of Object.entries(S.programmeRuns)) if (programmeHas(run?.def, fromId)) S.programmeRuns = { ...S.programmeRuns, [rid]: { ...run, def: retrack(run.def, fromId, toId) } }
   }
   for (const [id, rm] of Object.entries(S.oneRepMaxes || {})) if (rm.exerciseId === fromId) S.oneRepMaxes[id] = { ...rm, exerciseId: toId }
   return changed

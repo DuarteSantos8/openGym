@@ -1,39 +1,34 @@
-// Programmes (#159, #679): your routines run as a block of 1 to 16 weeks, each week with its own
-// intensity (a %1RM or an RPE per exercise, a week-wide RPE, a deload week).
+// Programmes (#159, docs/superpowers/specs/2026-11-04-programme-coach-effort-v2-design.md): your
+// routines run as a block of 1 to 16 weeks through the training engine.
 //
-//   S.programmes = { [id]: Programme }            one entry per programme, stamped per key
-//   S.programme  = null | Run                       the one that is running, a plain setting
+//   S.programmes[id]       a definition (engine contract 1): schedule, duration, one track per bound
+//                          occurrence with a stage per week (api/engine/programme.js)
+//   S.programme            { runId, saved } | null: the current run, and the plan to put back at its end
+//   S.programmeRuns[id]    a run: the definition frozen at its start, each track's acknowledged
+//                          choices, adopted 1RM and entry values
+//   S.programmeEvents[id]  what happened to a run since (pause, skip, close, reference, amend, …), append-only
+//   S.refReviews[key]      a 1RM proposal reviewed for one context: keep, or later
+//   S.refUpdates, S.programmeEnd   the Config defaults ('ask' | 'keep', 'stop' | 'extend')
 //
-//   Programme = { id, name, at, weeks: Week[], days?: { [getDay()]: rid[] }, sequence?: (rid|'rest')[], src? }
-//   Week      = { deload?: true, rpe?: number, t?: { [exId | 'rid:exId']: { pct?: number, rpe?: number } } }
-//   Run       = { id, startedOn: iso, pausedOn?: iso, cycle: 1, bump: 0, saved: { week, scheduleMode, rotation, pass } }
+// WHERE A RUN STANDS IS REPLAYED, NEVER STORED: api/engine/programme-run.js deriveRun folds the run,
+// its events and the saved workouts into each track's week, attempt and decisions (programmeView),
+// so two devices that merge their events per key read the same run. A session's prescription is
+// generated from its stage (session-start.js: slotFor → slotInputs), never patched afterwards.
 //
-// THE SCHEDULE IS APPLIED, NOT RESOLVED. A programme holds a schedule of its own: weekdays
-// (`days`) or a loop (`sequence`, lib/rotation.js), taken from your plan when you make it. Starting
-// it writes that schedule into S.week or S.rotation, keeping the plan you had in `saved`; ending it
-// puts that plan back. So Home's Today, Plan, the reminders, the MCP and an older app that has
-// never heard of programmes all follow the programme's days without a line of their own: they
-// read the same S.week and S.queue as always. One schedule for every week of the block; what the
-// weeks change is the intensity.
-//
-// THE WEEK IS THE CALENDAR WEEK. Week 1 is the calendar week (the profile's week start) the
-// programme was started in, week 2 the next one, and so on, for a loop as for weekdays: a missed
-// session does not hold the block up, a pause does (`pausedOn`; resuming moves the start on by the
-// whole weeks it was paused). Past the last week the programme is done: its targets stop, the
-// schedule stays until you choose to run it again or go back to your plan.
-//
-// TARGETS WIN WHILE IT RUNS. session-start.js asks programmeSlot for every planned exercise of a
-// routine the programme schedules. A %1RM resolves against the exercise's best estimated 1RM
-// (onerm.js best1RM, the profile's formula), snapped to the exercise's own step or to the weights
-// you own (dumbbells, a machine's stack): that weight replaces whatever the progression policy or
-// "Your last session" would have opened with, and the reps are the routine's. An RPE target is
-// shown with it and leaves the weight to the policy. A deload week without a %1RM takes the policy's
-// weight down by the usual deload factor, and none of its sessions count for progression.
-import { isoOf, todayISO, uid, weekKey, MONDAY, SUNDAY } from './format.js'
+// THE SCHEDULE IS APPLIED, NOT RESOLVED. Starting a run writes its appointments into S.week (or
+// S.rotation), keeping the plan you had in `saved`; ending it puts that plan back. Home's Today,
+// Plan, the reminders and the MCP keep reading S.week and S.queue as always.
+import { localTZ, todayISO, uid, SUNDAY } from './format.js'
 import { queueOf } from './queue.js'
 import { REST, saveRotation, startPass, stopPass, chooseFixedWeek } from './rotation.js'
 import { best1RM } from './onerm.js'
+import { effortOf } from './history.js'
+import { isWarmupRow } from './workout-model.js'
 import { t } from './i18n-core.js'
+import { currentOneRm, deriveRun, editPlan, slotFor, validateProgramme } from './prescription/index.js'
+import { dateIn } from '../../../api/engine/programme-run.js'
+import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
 export const MAX_WEEKS = 16
 export const PCT_MIN = 30
@@ -41,16 +36,22 @@ export const PCT_MAX = 110
 export const RPE_MIN = 6
 export const RPE_MAX = 10
 export const REPEAT_BUMP = 2.5
-// What a plan file may bring (importedProgramme, plan-share.js parsePlan): far past any real
-// programme, and a bound on what a stranger's file can put into the synced profile.
+// What a plan file may bring (plan-share.js parsePlan): far past any real programme, and a bound on
+// what a stranger's file can put into the synced profile.
 export const IMPORT_MAX_PROGRAMMES = 32
 export const IMPORT_MAX_SEQUENCE = 64
 export const IMPORT_MAX_TARGETS = 200
 
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
+const map = v => (isMap(v) ? v : {})
 const clone = v => (v == null ? v : JSON.parse(JSON.stringify(v)))
 const num = v => (typeof v === 'number' && Number.isFinite(v) ? v : Number.NaN)
 const half = v => Math.round(v * 2) / 2
+const isPolicy = p => isMap(p) && ['advance', 'repeat'].includes(p.onFailure) && ['advance', 'repeat'].includes(p.onSkipped)
+
+/* ------------------------- a legacy week (the PR2 editor bridge) ------------------------- */
+// Week = { deload?: true, rpe?: number, t?: { [exId | 'rid:exId']: { pct?, rpe? } } }: what the
+// programme screen still edits until its own editor replaces it; converted on every save.
 
 /** A %1RM kept to the half percent and inside 30 to 110, else null. */
 export const cleanPct = v => {
@@ -89,77 +90,6 @@ export function cleanWeek(w) {
   return out
 }
 
-const cleanDays = days => {
-  const out = {}
-  if (!isMap(days)) return out
-  for (const d of [0, 1, 2, 3, 4, 5, 6]) {
-    const ids = [].concat(days[d] ?? []).filter(x => typeof x === 'string' && x)
-    if (ids.length) out[d] = ids
-  }
-  return out
-}
-
-/**
- * A programme as this app keeps it: 1 to 16 weeks, a schedule of weekdays or a loop, a name.
- * Null for something that is not one. Fields a newer app adds are kept as they are, so a phone a
- * version behind never strips them on its next edit.
- */
-export function normalizeProgramme(p) {
-  if (!isMap(p) || typeof p.id !== 'string' || !p.id) return null
-  const weeks = (Array.isArray(p.weeks) ? p.weeks : []).slice(0, MAX_WEEKS).map(cleanWeek)
-  if (!weeks.length) weeks.push({})
-  const seq = Array.isArray(p.sequence) ? p.sequence.filter(x => typeof x === 'string' && x) : []
-  const out = { ...p, name: String(p.name ?? '').trim().slice(0, 80), weeks }
-  if (seq.some(x => x !== REST)) { out.sequence = seq; delete out.days }
-  else { delete out.sequence; out.days = cleanDays(p.days) }
-  return out
-}
-
-/** Every programme, newest first; the malformed ones are left out. */
-export const programmesOf = S => Object.values(isMap(S?.programmes) ? S.programmes : {})
-  .map(normalizeProgramme).filter(Boolean)
-  .sort((a, b) => (b.at || 0) - (a.at || 0))
-
-export const programmeById = (S, id) => normalizeProgramme(isMap(S?.programmes) ? S.programmes[id] : null)
-
-/** The routine ids a programme schedules that still exist, each once, in schedule order. */
-export function programmeRoutineIds(S, p) {
-  const have = new Set((S?.routines || []).map(r => r.id))
-  const ids = p?.sequence ? p.sequence : Object.keys(p?.days || {}).sort().flatMap(d => p.days[d])
-  return [...new Set(ids)].filter(id => id !== REST && have.has(id))
-}
-
-/** The schedule you train by right now, the way a programme stores it. */
-export function currentSchedule(S) {
-  const q = queueOf(S)
-  const seq = Array.isArray(S?.rotation?.sequence) ? S.rotation.sequence : []
-  if ((q || S?.scheduleMode === 'rotation') && seq.some(x => x !== REST)) return { sequence: seq.slice() }
-  return { days: cleanDays(S?.week) }
-}
-
-/** A new programme over the schedule you train by now; not saved yet. */
-export function newProgramme(S, name, weeks = 4, now = Date.now()) {
-  const n = Math.max(1, Math.min(MAX_WEEKS, Math.round(weeks) || 1))
-  return normalizeProgramme({ id: uid(), name, at: now, weeks: Array.from({ length: n }, () => ({})), ...currentSchedule(S) })
-}
-
-/** Writes `p` into the draft state (store.update), cleaned. */
-export function saveProgramme(s, p) {
-  const clean = normalizeProgramme(p)
-  if (!clean) return null
-  s.programmes = { ...(isMap(s.programmes) ? s.programmes : {}), [clean.id]: clean }
-  return clean
-}
-
-/** Removes a programme, ending it first when it is the one running. */
-export function deleteProgramme(s, id, today = todayISO()) {
-  if (s.programme?.id === id) endProgramme(s, today)
-  if (!isMap(s.programmes) || !(id in s.programmes)) return
-  const next = { ...s.programmes }
-  delete next[id]
-  s.programmes = next
-}
-
 /** A week list of `n` weeks: the ones kept as they were, new ones copied from the last. */
 export function resizeWeeks(weeks, n) {
   const k = Math.max(1, Math.min(MAX_WEEKS, Math.round(n) || 1))
@@ -180,34 +110,139 @@ export function stepWeek(week, step = REPEAT_BUMP) {
   return cleanWeek(out)
 }
 
-/* ------------------------------- the running programme ------------------------------- */
+/* ------------------------------------ definitions ------------------------------------ */
 
-const wsOf = S => (S?.weekStart === SUNDAY ? SUNDAY : MONDAY)
-const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00:00') - new Date(a + 'T12:00:00')) / 86400000)
-const weeksBetween = (a, b, ws) => Math.round(daysBetween(weekKey(a, ws), weekKey(b, ws)) / 7)
-const addDays = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d) }
-const isISO = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)
+const isDef = p => isMap(p) && typeof p.id === 'string' && !!p.id && isMap(p.schedule) && Array.isArray(p.tracks)
+const apptRids = def => (def.schedule.mode === 'rotation' ? def.schedule.sequence : (def.schedule.appts || []).map(a => a.rid))
+const occOf = (S, rid, oid) => (S?.routines || []).find(r => r.id === rid)?.ex?.find(o => o.occurrenceId === oid) || null
+const ws = S => (S?.weekStart === SUNDAY ? 0 : 1)
+
+/** Every programme definition, newest first; anything else under the key is left out. */
+export const programmesOf = S => Object.values(map(S?.programmes)).filter(isDef).sort((a, b) => (b.at || 0) - (a.at || 0))
+
+export function programmeById(S, id) {
+  const all = map(S?.programmes)
+  return Object.hasOwn(all, id) && isDef(all[id]) ? all[id] : null
+}
+
+/** The routine ids a programme schedules that still exist, each once, in schedule order. */
+export function programmeRoutineIds(S, p) {
+  const have = new Set((S?.routines || []).map(r => r.id))
+  return [...new Set(isDef(p) ? apptRids(p) : [])].filter(id => id !== REST && have.has(id))
+}
+
+const cleanDays = days => {
+  const out = {}
+  if (!isMap(days)) return out
+  for (const d of [0, 1, 2, 3, 4, 5, 6]) {
+    const ids = [].concat(days[d] ?? []).filter(x => typeof x === 'string' && x)
+    if (ids.length) out[d] = ids
+  }
+  return out
+}
+
+/** The schedule you train by right now, as a legacy programme wrote it: `{ days }` or `{ sequence }`. */
+export function currentSchedule(S) {
+  const q = queueOf(S)
+  const seq = Array.isArray(S?.rotation?.sequence) ? S.rotation.sequence : []
+  if ((q || S?.scheduleMode === 'rotation') && seq.some(x => x !== REST)) return { sequence: seq.slice() }
+  return { days: cleanDays(S?.week) }
+}
+
+// A legacy programme over this profile's routines as a definition: the one conversion the upgrade,
+// the starters, a plan file of format 1 and this screen's week editor all share.
+const convert = (S, legacy) => convertLegacyProgramme(legacy, { routines: S?.routines || [], catalogue: LIB_BY_ID, customEx: S?.customEx, progression: S?.progression, weekStart: ws(S) })
+
+/** A new programme of `n` weeks over the schedule you train by now; not saved yet. */
+export function newProgramme(S, name, n = 4, now = Date.now()) {
+  const k = Math.max(1, Math.min(MAX_WEEKS, Math.round(n) || 1))
+  return convert(S, { id: uid(), name, at: now, weeks: Array.from({ length: k }, () => ({})), ...currentSchedule(S) })
+}
+
+// A definition that no longer compiles against today's routines is kept readable, marked for
+// repair: profile validation refuses any other (api/migration/profile-validation.js).
+function marked(s, def) {
+  if (def.needs?.includes('repair') || validateProgramme(def, { routines: s.routines || [] }).ok) return def
+  return { ...def, needs: [...new Set([...(def.needs || []), 'repair'])] }
+}
 
 /**
- * Where the running programme stands on `today`: `{ programme, run, week (1-based), weeks, paused,
- * done, current (the Week, or null once done) }`. Null with no programme running, or one whose
- * definition is gone (removed on another device: the schedule it wrote just stays).
+ * Programmes a routine edit broke (an occurrence they bind removed or swapped) marked for repair, in
+ * the same change. A run is left alone: its replay blocks the track while that week is open (rule B).
  */
-export function programmeStatus(S, today = todayISO()) {
-  const run = S?.programme
-  if (!isMap(run) || !isISO(run.startedOn)) return null
-  const p = programmeById(S, run.id)
-  if (!p) return null
-  const ws = wsOf(S)
-  const at = isISO(run.pausedOn) && run.pausedOn < today ? run.pausedOn : today
-  const week = Math.max(1, weeksBetween(run.startedOn, at, ws) + 1)
-  const weeks = p.weeks.length
-  const done = week > weeks
-  return {
-    programme: p, run, week: Math.min(week, weeks), weeks, done,
-    paused: isISO(run.pausedOn), cycle: Math.max(1, Math.round(Number(run.cycle) || 1)),
-    current: done || isISO(run.pausedOn) ? null : p.weeks[week - 1],
+export function markBrokenProgrammes(s) {
+  if (!isMap(s.programmes)) return
+  let next = null
+  for (const [id, p] of Object.entries(s.programmes)) {
+    if (!isDef(p)) continue
+    const m = marked(s, p)
+    if (m !== p) (next ||= { ...s.programmes })[id] = m
   }
+  if (next) s.programmes = next
+}
+
+/** Writes `def` into the draft (store.update) one revision up; for the running programme an `amend`
+ *  event takes it to the run, from its next unstarted week (spec 7.1). */
+export function saveProgramme(s, def, now = Date.now()) {
+  if (!isDef(def)) return null
+  const prev = map(s.programmes)[def.id]
+  const next = marked(s, { ...def, rev: Math.max(Number(prev?.rev) || 0, Number(def.rev) || 0) + 1 })
+  s.programmes = { ...map(s.programmes), [next.id]: next }
+  const run = currentRun(s)
+  if (run?.programmeId === next.id) addEvent(s, run, 'amend', { def: bumped(next, run.bump) }, now)
+  return next
+}
+
+/** Removes a programme, ending it first when it is the one running. */
+export function deleteProgramme(s, id, today = todayISO(), now = Date.now()) {
+  if (currentRun(s)?.programmeId === id) endProgramme(s, today, now)
+  if (!isMap(s.programmes) || !Object.hasOwn(s.programmes, id)) return
+  const next = { ...s.programmes }
+  delete next[id]
+  s.programmes = next
+}
+
+// A repeated round's cumulative bump, on percentage stages only (spec 15.3), capped at 110.
+function bumped(def, bump) {
+  const b = Number(bump) || 0
+  if (!b) return clone(def)
+  const up = x => (x.own === 'set' && x.phase?.parameters?.load?.mode === 'percent_1rm'
+    ? { ...x, phase: { ...x.phase, parameters: { ...x.phase.parameters, load: { ...x.phase.parameters.load, percent: Math.min(PCT_MAX, x.phase.parameters.load.percent + b) } } } } : x)
+  return clone({ ...def, tracks: def.tracks.map(tr => ({ ...tr, stages: tr.stages.map(st => ({ ...st, targets: Object.fromEntries(Object.entries(map(st.targets)).map(([oid, x]) => [oid, up(x)])) })) })) })
+}
+
+/* ------------------------------------ the running one ------------------------------------ */
+
+function currentRun(S) {
+  const id = S?.programme?.runId
+  const runs = map(S?.programmeRuns)
+  return typeof id === 'string' && Object.hasOwn(runs, id) && isMap(runs[id]) ? runs[id] : null
+}
+
+const event = (run, type, fields, now) => ({ id: `${run.id}:${type}:${uid()}`, runId: run.id, type, at: new Date(now).toISOString(), ...fields })
+function addEvent(s, run, type, fields, now = Date.now()) {
+  const e = event(run, type, fields, now)
+  s.programmeEvents = { ...map(s.programmeEvents), [e.id]: e }
+  return e
+}
+
+const views = new WeakMap()
+/**
+ * The current run as its records say on `today` (a local date in the run's own timezone, by
+ * default now): deriveRun's RunView plus `run`, with the workout in progress `A` pending on its
+ * slots. Null with no current run (`S.programme.runId` null: only a plan to put back). Memoized on
+ * `S`, and on every record it reads, so a draft that appends an event reads it at once.
+ */
+export function programmeView(S, today = null, A = null) {
+  const run = currentRun(S)
+  if (!run) return null
+  const day = today || dateIn(Date.now(), run.tz || 'UTC')
+  const key = [day, A, run, S.programmeEvents, S.workouts, S.prescriptions, S.routines]
+  const hit = views.get(S)
+  if (hit && hit.key.every((v, i) => v === key[i])) return hit.view
+  const view = { ...deriveRun({ run, events: map(S.programmeEvents), workouts: S.workouts || [], prescriptions: map(S.prescriptions), active: A, today: day, routines: S.routines || [] }), run }
+  views.set(S, { key, view })
+  return view
 }
 
 /** What applying a schedule must keep of the plan it replaces, to put back at the end. */
@@ -219,15 +254,25 @@ const snapshot = s => ({
   pass: !!queueOf(s) && !!s.rotation && queueOf(s).rotationId === s.rotation.id,
 })
 
-function applySchedule(s, p, today, now) {
+// The schedule as the plan screens read it: weekdays from the appointments' preferred days, or a loop.
+function legacyScheduleOf(def) {
+  if (def.schedule.mode === 'rotation') return { sequence: def.schedule.sequence.slice() }
+  if (isMap(def.src) && Array.isArray(def.src.sequence)) return { sequence: def.src.sequence.slice() }
+  const days = {}
+  for (const a of def.schedule.appts || []) if (a.day != null) (days[a.day] ||= []).push(a.rid)
+  return { days }
+}
+
+function applySchedule(s, def, today, now) {
   const have = new Set((s.routines || []).map(r => r.id))
+  const p = legacyScheduleOf(def)
   if (p.sequence) {
     const seq = p.sequence.filter(id => id === REST || have.has(id))
     if (seq.some(id => id !== REST)) {
       // A loop of its own, with an id of its own: the one you had is in `saved`, untouched.
       stopPass(s, today)
       s.rotation = null
-      saveRotation(s, seq, p.name || '', today, now)
+      saveRotation(s, seq, def.name || '', today, now)
       s.scheduleMode = 'rotation'
       return
     }
@@ -241,41 +286,109 @@ function applySchedule(s, p, today, now) {
   s.week = days
 }
 
+// The ordinary track's values the run's adaptive weeks carry on from (the conversion's seed, spec 6).
+function seedOf(rule, st) {
+  const ph = rule?.program?.phases?.[0]
+  if (!ph || !st?.values || st.phaseId !== ph.id) return null
+  const seed = Object.fromEntries(ph.progression.map(op => op.metric).filter(m => st.values[m] != null).map(m => [m, clone(st.values[m])]))
+  return Object.keys(seed).length ? seed : null
+}
+
+// The partial first week owes the appointments from today on: none before the start is invented (spec 7.2).
+function owedFrom(def, today, weekStart) {
+  if (def.schedule.mode !== 'weeks') return undefined
+  const from = (new Date(today + 'T12:00:00').getDay() - weekStart + 7) % 7
+  return def.schedule.appts.map((a, i) => i).filter(i => def.schedule.appts[i].day == null || (def.schedule.appts[i].day - weekStart + 7) % 7 >= from)
+}
+
+function makeRun(s, def, { policies, acks = {}, end, firstWeek, today, now, cycle = 1, bump = 0, tms = {} }) {
+  const runDef = bumped(def, bump)
+  const tracks = {}
+  for (const tr of runDef.tracks) {
+    const ref = currentOneRm(s.oneRepMaxes, tr.exerciseId)
+    const seed = Object.fromEntries(tr.slots.map(sl => [sl.oid, seedOf(occOf(s, sl.rid, sl.oid)?.rule, s.progression?.[sl.oid])]).filter(([, v]) => v))
+    tracks[tr.id] = {
+      policy: { ...policies[tr.id] }, ack: acks[tr.id] ?? 'user', refs: refPreference(s, { def: runDef, track: tr }).pref,
+      ...(ref ? { ref: clone(ref) } : {}), ...(tms[tr.id] ? { tm: clone(tms[tr.id]) } : {}), ...(Object.keys(seed).length ? { seed } : {})
+    }
+  }
+  const weekStart = ws(s)
+  const fw = firstWeek ?? owedFrom(runDef, today, weekStart)
+  return {
+    id: `run:${def.id}:${uid()}`, programmeId: def.id, def: runDef, startedOn: today, weekStart, tz: localTZ(),
+    at: new Date(now).toISOString(), end, cycle, bump: Number(bump) || 0, ...(fw ? { firstWeek: fw } : {}), tracks
+  }
+}
+
+const operational = def => def.tracks.some(tr => tr.stages.some(st => Object.values(map(st.targets)).some(x => x?.effort?.mode === 'operational')))
+
 /**
- * Starts programme `id` today (inside store.update). A programme already running is ended first,
- * its plan put back, so `saved` always holds the plan you had before any programme. Returns false
- * when there is no such programme.
+ * Starts programme `id` on `today` (inside store.update) with the choices the person acknowledged:
+ * both advance/repeat choices for every track (`policies`) and the end policy (spec 8.1, 8.5).
+ * Each track adopts the current 1RM as its reference and freezes its reference preference; a lift
+ * with no 1RM yet does not block the start (its first session asks for one). A run already going is
+ * ended first, so `saved` always holds the plan from before any programme.
  */
-export function startProgramme(s, id, today = todayISO(), now = Date.now(), { cycle = 1, bump = 0 } = {}) {
-  const p = programmeById(s, id)
-  if (!p) return false
-  if (s.programme) endProgramme(s, today)
+export function startProgramme(s, id, { policies = {}, end, firstWeek, today = todayISO(), now = Date.now() } = {}) {
+  const def = programmeById(s, id)
+  if (!def) return { ok: false, missing: ['repair'] }
+  const missing = []
+  if (def.tracks.some(tr => !isPolicy(policies?.[tr.id]))) missing.push('policy')
+  if (!['stop', 'extend'].includes(end)) missing.push('end')
+  if (operational(def) && effortOf(s) === 'none') missing.push('effort-off')
+  if (def.needs?.includes('binding')) missing.push('binding')
+  if (def.needs?.includes('repair') || !validateProgramme(def, { routines: s.routines || [] }).ok) missing.push('repair')
+  if (missing.length) return { ok: false, missing }
+  if (s.programme) endProgramme(s, today, now)
   const saved = snapshot(s)
-  applySchedule(s, p, today, now)
-  s.programme = { id, startedOn: today, cycle, bump, saved }
-  return true
+  applySchedule(s, def, today, now)
+  const run = makeRun(s, def, { policies, end, firstWeek, today, now })
+  s.programmeRuns = { ...map(s.programmeRuns), [run.id]: run }
+  s.programme = { runId: run.id, saved }
+  return { ok: true }
 }
 
-export function pauseProgramme(s, today = todayISO()) {
-  if (!isMap(s.programme) || isISO(s.programme.pausedOn)) return
-  s.programme = { ...s.programme, pausedOn: today }
+export function pauseProgramme(s, now = Date.now()) {
+  const v = programmeView(s)
+  if (v?.status === 'running') addEvent(s, v.run, 'pause', {}, now)
 }
 
-/** Resumes where it was paused: the start moves on by the whole weeks the pause lasted. */
-export function resumeProgramme(s, today = todayISO()) {
-  const run = s.programme
-  if (!isMap(run) || !isISO(run.pausedOn)) return
-  const gap = Math.max(0, weeksBetween(run.pausedOn, today, wsOf(s)))
-  const { pausedOn, ...rest } = run
-  s.programme = { ...rest, startedOn: addDays(run.startedOn, gap * 7) }
+/** Resumes where it was paused: the paused weeks are not counted (programme-run.js). */
+export function resumeProgramme(s, now = Date.now()) {
+  const v = programmeView(s)
+  if (v?.status === 'paused') addEvent(s, v.run, 'resume', {}, now)
 }
 
-/** Ends the programme and puts back the plan you had before it (weekdays, loop, mode). */
-export function endProgramme(s, today = todayISO(), now = Date.now()) {
-  const run = s.programme
-  if (!isMap(run)) { s.programme = null; return }
-  const saved = isMap(run.saved) ? run.saved : null
+// Ending with `keepReached`: each track's reached load becomes its occurrence's own start, an
+// explicit plan edit (editPlan). Without it the routines stay as they were: a run never wrote them.
+function keepReachedLoads(s, view) {
+  const reached = {}
+  for (const [id, tv] of Object.entries(view.tracks)) {
+    for (const sl of tv.def?.tracks.find(x => x.id === id)?.slots || []) {
+      const p = tv.values?.[sl.oid]?.lastPrescription
+      const load = p && (p.prefill?.load ?? p.rows?.find(r => r.load)?.load)
+      if (load?.value > 0) reached[`${sl.rid}|${sl.oid}`] = load
+    }
+  }
+  s.routines = (s.routines || []).map(r => {
+    if (!(r.ex || []).some(o => reached[`${r.id}|${o.occurrenceId}`])) return r
+    return { ...r, ex: r.ex.map(o => {
+      const load = reached[`${r.id}|${o.occurrenceId}`]
+      return load ? { ...o, rule: editPlan(o.rule, { load: { mode: 'absolute', value: load.value, unit: load.unit } }) } : o
+    }) }
+  })
+}
+
+/** Ends the run (an `end` event) and puts back the plan you had before it (weekdays, loop, mode). */
+export function endProgramme(s, today = todayISO(), now = Date.now(), { keepReached = false } = {}) {
+  const sel = s.programme
+  const run = currentRun(s)
+  if (run) {
+    if (keepReached) keepReachedLoads(s, programmeView(s))
+    addEvent(s, run, 'end', {}, now)
+  }
   s.programme = null
+  const saved = isMap(sel) && isMap(sel.saved) ? sel.saved : null
   if (!saved) return
   const ownQ = queueOf(s)
   if (ownQ && (!s.rotation || ownQ.rotationId === s.rotation.id)) stopPass(s, today)
@@ -285,66 +398,183 @@ export function endProgramme(s, today = todayISO(), now = Date.now()) {
   if (saved.pass && s.rotation) startPass(s, today, now)
 }
 
+const lastOf = (s, run, type, pick = () => true) => Object.values(map(s.programmeEvents))
+  .filter(e => e?.runId === run.id && e.type === type && pick(e)).sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0)).at(-1)
+
 /**
- * Runs the same programme again from week 1. `bump` raises every %1RM of the new round by that
- * many points on top of the last round's: the estimate already grew with the work, this is for
- * anyone who wants the next block heavier still.
+ * Runs the programme again as a new run from week 1, with the choices this one ended with, fresh
+ * references, and each training max as its qualified cycles left it (spec 9). `bump` raises every
+ * %1RM stage by that many points on top of the last round's; kg, reps and seconds stay.
  */
 export function repeatProgramme(s, today = todayISO(), bump = 0, now = Date.now()) {
-  const run = s.programme
-  if (!isMap(run)) return false
-  const next = { cycle: Math.max(1, Number(run.cycle) || 1) + 1, bump: (Number(run.bump) || 0) + (Number(bump) || 0) }
-  // Its schedule is already in place: keep the plan from before the first round in `saved`.
-  s.programme = { ...run, startedOn: today, ...next }
-  delete s.programme.pausedOn
+  const run = currentRun(s)
+  const def = run && programmeById(s, run.programmeId)
+  if (!def) return false
+  const view = programmeView(s)
+  const policies = {}, acks = {}, tms = {}
+  for (const tr of def.tracks) {
+    policies[tr.id] = lastOf(s, run, 'policy', e => e.trackId === tr.id)?.policy ?? run.tracks?.[tr.id]?.policy ?? tr.policy ?? { onFailure: 'repeat', onSkipped: 'repeat' }
+    acks[tr.id] = run.tracks?.[tr.id]?.ack ?? 'user'
+    if (view?.tracks[tr.id]?.tm) tms[tr.id] = view.tracks[tr.id].tm
+  }
+  const end = lastOf(s, run, 'end-policy')?.end ?? run.end
+  addEvent(s, run, 'end', {}, now)
+  const next = makeRun(s, def, { policies, acks, end, today, now, cycle: (Number(run.cycle) || 1) + 1, bump: (Number(run.bump) || 0) + (Number(bump) || 0), tms })
+  s.programmeRuns = { ...map(s.programmeRuns), [next.id]: next }
+  // Its schedule is already in place: the plan from before the first round stays in `saved`.
+  s.programme = { runId: next.id, saved: s.programme?.saved ?? null }
   return true
 }
 
-/** "Week 2 of 6", "Push block, paused", "Programme done": the running programme in a few words, or null. */
-export function programmeChip(S, today = todayISO()) {
-  const st = programmeStatus(S, today)
-  if (!st) return null
-  if (st.done) return t('Programme done')
-  if (st.paused) return t('{0}, paused', st.programme.name || t('Programme'))
-  return t('Week {0} of {1}', st.week, st.weeks)
+/** Closes the current week (or round) now: what it left unattempted is skipped (spec 7.2). */
+export function closeWeek(s, now = Date.now()) {
+  const v = programmeView(s)
+  if (v) addEvent(s, v.run, 'close', { period: Math.max(1, v.period.index) }, now)
+}
+export function skipSlot(s, slot, now = Date.now()) {
+  const run = currentRun(s)
+  if (run) addEvent(s, run, 'skip', { slot }, now)
+}
+export function resolveSlot(s, slot, as, now = Date.now()) {
+  const run = currentRun(s)
+  if (run && ['failed', 'skipped'].includes(as)) addEvent(s, run, 'resolve', { slot, as }, now)
+}
+export function setRunPolicy(s, trackId, policy, now = Date.now()) {
+  const run = currentRun(s)
+  if (run && isPolicy(policy)) addEvent(s, run, 'policy', { trackId, policy: { onFailure: policy.onFailure, onSkipped: policy.onSkipped } }, now)
+}
+export function setRunEnd(s, end, now = Date.now()) {
+  const run = currentRun(s)
+  if (run && ['stop', 'extend'].includes(end)) addEvent(s, run, 'end-policy', { end }, now)
 }
 
-/* ------------------------------- targets for a session ------------------------------- */
+/**
+ * Continuing with routine `rid` past the earlier appointments of its week or round (spec 7.3): the
+ * acknowledged bypass, recorded as `bypass { period, appts }` per period. Returns the bypassed
+ * appointment ids (`p<n>:a<i>`), none when there is nothing to pass.
+ */
+export function bypassTo(s, rid, now = Date.now()) {
+  const view = programmeView(s)
+  if (!view) return []
+  const date = dateIn(now, view.run.tz || 'UTC')
+  const occs = (s.routines || []).find(r => r.id === rid)?.ex || []
+  const ids = [...new Set(occs.flatMap(o => slotFor({ view, run: view.run, rid, oid: o.occurrenceId, date }).bypass))]
+  const periods = {}
+  for (const id of ids) { const [, p, a] = /^p(\d+):a(\d+)$/.exec(id); (periods[p] ||= []).push(Number(a)) }
+  for (const [period, appts] of Object.entries(periods)) addEvent(s, view.run, 'bypass', { period: Number(period), appts }, now)
+  return ids
+}
 
 /**
- * The programme's target for one exercise of one routine on `iso`: `{ pct?, rpe?, deload, week,
- * weeks, name, bump }`, or null when no running programme speaks to it (paused, done, a routine it
- * does not schedule, a week with nothing for it).
+ * The events a discarded workout leaves on its programme slots (spec 8.2): `discard { slot, worked }`
+ * per work slot, `worked` once a work row was ticked (failed as abandoned; skipped without).
+ * Maintenance and extra work decide nothing, so they leave none.
  */
-export function programmeSlot(S, rid, exId, iso = todayISO()) {
-  const st = programmeStatus(S, iso)
-  if (!st || !st.current || !rid) return null
-  if (!programmeRoutineIds(S, st.programme).includes(rid)) return null
-  const w = st.current
-  const own = w.t?.[`${rid}:${exId}`] || w.t?.[exId] || {}
-  const pct = own.pct != null ? own.pct : null
-  const rpe = own.rpe != null ? own.rpe : w.rpe != null ? w.rpe : null
-  const deload = w.deload === true
-  if (pct == null && rpe == null && !deload) return null
-  const bump = Number(S.programme?.bump) || 0
-  return {
-    ...(pct != null ? { pct: Math.min(PCT_MAX, pct + bump) } : {}),
-    ...(rpe != null ? { rpe } : {}),
-    deload, week: st.week, weeks: st.weeks, name: st.programme.name, bump,
+export function discardEvents(A, view, now = Date.now()) {
+  if (!A || !view) return []
+  return (A.exposures || []).filter(x => x?.programme?.runId === view.run.id && x.programme.role === 'work').map(x => {
+    const rows = (A.entries || []).find(e => e.exposureId === x.exposureId)?.sets || []
+    return event(view.run, 'discard', { slot: x.programme.slot, worked: rows.some(row => row.done && !isWarmupRow(row)) }, now)
+  })
+}
+
+/* ------------------------------------ references (spec 10) ------------------------------------ */
+
+/**
+ * Whether a newer 1RM is offered for one context: Config → routine → occurrence for standalone work
+ * (`{ routine, occ }`), Config → programme → track for a definition (`{ def, track }`), and the
+ * preference the run froze at its start for a running track (`{ run, trackId }`). 'inherit' passes on.
+ */
+export function refPreference(S, c = {}) {
+  if (c.run) return { pref: c.run.tracks?.[c.trackId]?.refs === 'keep' ? 'keep' : 'ask', from: 'run' }
+  let pref = S?.refUpdates === 'keep' ? 'keep' : 'ask', from = 'config'
+  const steps = c.def ? [[c.def.refs, 'programme'], [c.track?.refs, 'track']] : [[c.routine?.refs, 'routine'], [c.occ?.refs, 'occurrence']]
+  for (const [v, f] of steps) if (v === 'ask' || v === 'keep') { pref = v; from = f }
+  return { pref, from }
+}
+
+const percentsOf = phases => [...new Set(phases.flatMap(ph => (ph?.parameters?.load?.mode === 'percent_1rm' ? [ph.parameters.load.percent] : [])))]
+
+/**
+ * Every context with an adopted 1RM a newer one could replace (referenceProposals' input): each
+ * standalone occurrence with its own reference, `occ:<oid>`, and each track of the current run,
+ * `run:<run>:<track>`, with the percentages still ahead of it.
+ */
+export function referenceContexts(S, today = null) {
+  const out = []
+  for (const r of S?.routines || []) {
+    for (const occ of r.ex || []) {
+      const percents = occ.ref && occ.rule ? percentsOf(occ.rule.program.phases) : []
+      if (percents.length) out.push({ key: `occ:${occ.occurrenceId}`, exerciseId: occ.exerciseId, ref: occ.ref, pref: refPreference(S, { routine: r, occ }).pref, percents, rounding: occ.rule.rounding, occurrenceId: occ.occurrenceId })
+    }
   }
+  const view = programmeView(S, today)
+  if (view && ['running', 'paused'].includes(view.status)) {
+    for (const [id, tv] of Object.entries(view.tracks)) {
+      const tr = tv.def?.tracks.find(x => x.id === id)
+      if (!tr || tv.state === 'removed') continue
+      const at = Math.max(0, tr.stages.findIndex(st => st.id === tv.stage))
+      const percents = percentsOf(tr.stages.slice(at).flatMap(st => Object.values(map(st.targets)).filter(x => x?.own === 'set').map(x => x.phase)))
+      out.push({ key: `run:${view.run.id}:${id}`, exerciseId: tr.exerciseId, ref: tv.nextRef, pref: refPreference(S, { run: view.run, trackId: id }).pref, percents,
+        rounding: occOf(S, tr.slots[0].rid, tr.slots[0].oid)?.rule.rounding, ...(tv.tm ? { tm: tv.tm } : {}), runId: view.run.id, trackId: id })
+    }
+  }
+  return out
+}
+
+/**
+ * Adopts `proposal.to` (referenceProposals) for the selected contexts, atomically (spec 10.2): when
+ * any of them no longer adopts the reference the person reviewed, nothing is written and the answer
+ * is `{ ok: false, stale: true }`. A standalone occurrence takes it at its next session, a running
+ * track at its next unstarted week (a `reference` event naming the reference it replaces).
+ * ponytail: `rebaseTm` is accepted and changes nothing yet: a context with a training max gets no
+ * 1RM proposal (referenceProposals), and a TM rebase needs its own before/after preview (spec 10.3).
+ */
+export function acceptReference(s, keys, proposal, { rebaseTm = false } = {}, now = Date.now()) {
+  void rebaseTm
+  const ctx = Object.fromEntries(referenceContexts(s).map(c => [c.key, c]))
+  const fresh = k => ctx[k] && ctx[k].exerciseId === proposal?.exerciseId && (ctx[k].ref?.id ?? null) === (proposal?.from?.id ?? null)
+  if (!keys?.length || !proposal?.to || !keys.every(fresh)) return { ok: false, stale: true }
+  const occs = new Set(keys.filter(k => ctx[k].occurrenceId).map(k => ctx[k].occurrenceId))
+  if (occs.size) s.routines = (s.routines || []).map(r => (r.ex || []).some(o => occs.has(o.occurrenceId)) ? { ...r, ex: r.ex.map(o => (occs.has(o.occurrenceId) ? { ...o, ref: clone(proposal.to) } : o)) } : r)
+  const run = currentRun(s)
+  for (const k of keys) if (ctx[k].trackId && run?.id === ctx[k].runId) addEvent(s, run, 'reference', { trackId: ctx[k].trackId, ref: clone(proposal.to), from: proposal.from?.id ?? null }, now)
+  return { ok: true }
+}
+
+/** "Keep current" hides this candidate for these contexts; "later" leaves it offered (spec 10.2). */
+export function reviewReference(s, keys, proposal, decision, now = Date.now()) {
+  if (!['keep', 'later'].includes(decision) || !proposal?.candidateId) return
+  s.refReviews = { ...map(s.refReviews), ...Object.fromEntries((keys || []).map(k => [k, { candidateId: proposal.candidateId, decision, at: now }])) }
+}
+
+/** The first reference a running track adopts, when its first session finds a 1RM (spec 10.1). */
+export function captureReference(s, trackId, ref, now = Date.now()) {
+  const run = currentRun(s)
+  if (run && ref) addEvent(s, run, 'reference', { trackId, ref: clone(ref), from: null }, now)
+}
+
+/** "Week 2 of 6", "Push block, paused", "Programme done": the current run in a few words, or null. */
+export function programmeChip(S, today = null) {
+  const v = programmeView(S, today)
+  if (!v) return null
+  if (['stopped', 'complete', 'ended'].includes(v.status)) return t('Programme done')
+  if (v.status === 'paused') return t('{0}, paused', programmeById(S, v.run.programmeId)?.name || v.def.name || t('Programme'))
+  return t('Week {0} of {1}', Math.min(v.nominal.used + 1, v.nominal.of), v.nominal.of)
 }
 
 const round1 = v => Math.round(v * 10) / 10
 
 /**
- * The weight `pct` percent of the exercise's best estimated 1RM comes to, on something you can
- * load: the nearest owned weight when the profile lists them (`owned`), else the nearest multiple
- * of `step`, never under the bar (`floor`). Null without an estimate to take it from.
+ * The weight `pct` percent of a 1RM comes to, on something you can load: of the adopted reference
+ * `ref` when given, else of the exercise's best estimate. The nearest owned weight when the profile
+ * lists them (`owned`), else the nearest multiple of `step`, never under the bar (`floor`). Null
+ * without a 1RM to take it from.
  */
-export function pctWeight(S, exId, pct, { step = 2.5, owned = null, floor = 0 } = {}) {
-  const best = best1RM(S, exId)
-  if (!(best?.est > 0) || !(pct > 0)) return null
-  const ideal = best.est * pct / 100
+export function pctWeight(S, exId, pct, { step = 2.5, owned = null, floor = 0 } = {}, ref = null) {
+  const est = ref?.value > 0 ? ref.value : best1RM(S, exId)?.est
+  if (!(est > 0) || !(pct > 0)) return null
+  const ideal = est * pct / 100
   let w
   if (Array.isArray(owned) && owned.length) {
     w = owned.reduce((b, x) => (Math.abs(x - ideal) < Math.abs(b - ideal) ? x : b), owned[0])
@@ -357,32 +587,20 @@ export function pctWeight(S, exId, pct, { step = 2.5, owned = null, floor = 0 } 
 /** The RPE as the profile logs effort: "RPE 8", or "RIR 2" for a profile that logs reps in reserve. */
 export const rpeAs = (rpe, effort) => (effort === 'rir' ? { k: 'RIR', v: Math.max(0, 10 - rpe) } : { k: 'RPE', v: rpe })
 
-/* ------------------------------- for a shared plan file ------------------------------- */
+/* ------------------------------------ in a plan file ------------------------------------ */
 
-/** A programme as it travels in a plan file: no run state, no ids but the routines'. */
-export function bundleProgramme(p) {
-  const n = normalizeProgramme(p)
-  if (!n) return null
-  const { at, src, ...rest } = n
-  return rest
+/** A programme as it travels in a plan file (format 2): the definition and the choices it proposes,
+ *  never a run, an acknowledgment, a reviewed proposal or a Config default (spec 17). */
+export function bundleProgramme(def) {
+  if (!isDef(def)) return null
+  const { id, name, schedule, duration, end, refs, tracks } = clone(def)
+  return { id, name, schedule, duration, end, refs, tracks }
 }
 
-/**
- * A programme from a plan file, with its routine ids mapped to the ones the import just created
- * (`ridMap`) and its exercise ids to the recipient's (`exMap`); one that names none of them is
- * dropped. A new id of its own, never running.
- */
-export function importedProgramme(p, ridMap, exMap = {}, now = Date.now()) {
-  // A file is someone else's: only the fields this app reads come in (no blob riding along into
-  // the synced profile), and a loop or a week of targets only as long as anyone writes one.
-  if (!isMap(p)) return null
-  const n = normalizeProgramme({
-    id: 'x', name: p.name, weeks: p.weeks, days: p.days,
-    ...(Array.isArray(p.sequence) ? { sequence: p.sequence.slice(0, IMPORT_MAX_SEQUENCE) } : {}),
-  })
-  if (!n) return null
-  // Own keys only: an id like "constructor" must not find Object's.
-  const own = (m, k) => (isMap(m) && Object.hasOwn(m, k) && typeof m[k] === 'string' ? m[k] : null)
+const own = (m, k) => (isMap(m) && typeof k === 'string' && Object.hasOwn(m, k) && typeof m[k] === 'string' ? m[k] : null)
+
+// Format 1 (today's programmes): routine ids and exercise ids mapped, the rest kept at its size.
+function legacyImported(p, ridMap, exMap) {
   const rid = id => (id === REST ? REST : own(ridMap, id))
   const key = k => {
     const i = k.indexOf(':')
@@ -390,19 +608,93 @@ export function importedProgramme(p, ridMap, exMap = {}, now = Date.now()) {
     const r = own(ridMap, k.slice(0, i))
     return r ? `${r}:${own(exMap, k.slice(i + 1)) || k.slice(i + 1)}` : null
   }
-  const weeks = n.weeks.map(w => {
+  const weeks = (Array.isArray(p.weeks) ? p.weeks : []).slice(0, MAX_WEEKS).map(cleanWeek).map(w => {
     if (!w.t) return w
     const t = {}
     for (const [k, v] of Object.entries(w.t).slice(0, IMPORT_MAX_TARGETS)) { const nk = key(k); if (nk) t[nk] = v }
     return { ...w, t }
   })
-  const out = { ...n, id: uid(), at: now, weeks }
-  if (n.sequence) {
-    out.sequence = n.sequence.map(rid).filter(Boolean)
-    if (!out.sequence.some(x => x !== REST)) return null
-  } else {
-    out.days = Object.fromEntries(Object.entries(n.days || {}).map(([d, ids]) => [d, ids.map(rid).filter(Boolean)]).filter(([, ids]) => ids.length))
-    if (!Object.keys(out.days).length) return null
+  const seq = Array.isArray(p.sequence) ? p.sequence.slice(0, IMPORT_MAX_SEQUENCE).filter(x => typeof x === 'string').map(rid).filter(Boolean) : []
+  if (seq.some(x => x !== REST)) return { weeks, sequence: seq }
+  const days = Object.fromEntries(Object.entries(cleanDays(p.days)).map(([d, ids]) => [d, ids.map(rid).filter(Boolean)]).filter(([, ids]) => ids.length))
+  return Object.keys(days).length ? { weeks, days } : null
+}
+
+/**
+ * A programme from a plan file over the routines the import just created: format 1 through the
+ * converter, format 2 with its routine (`ridMap`), occurrence (`occMap`) and exercise (`exMap`) ids
+ * mapped. A new id of its own, never started, marked for repair when it no longer compiles. Null
+ * for one that names none of the new routines.
+ */
+export function importedProgramme(p, { ridMap = {}, occMap = {}, exMap = {}, fmt = 1 } = {}, S, now = Date.now()) {
+  if (!isMap(p)) return null
+  const name = String(p.name ?? '').trim().slice(0, 80)
+  if (fmt < 2) {
+    const legacy = legacyImported(p, ridMap, exMap)
+    return legacy ? { ...convert(S, { id: uid(), name, at: now, ...legacy }), rev: 1 } : null
   }
-  return normalizeProgramme(out)
+  // Validated whole (spec 17): one that does not compile, or is over the bounds, is left out, never cut down.
+  if (!isMap(p.schedule) || !Array.isArray(p.tracks) || p.tracks.length > 50) return null
+  const rid = id => (id === REST ? REST : own(ridMap, id))
+  const schedule = p.schedule.mode === 'rotation'
+    ? { mode: 'rotation', sequence: (Array.isArray(p.schedule.sequence) ? p.schedule.sequence : []).map(rid).filter(Boolean) }
+    : { mode: 'weeks', appts: (Array.isArray(p.schedule.appts) ? p.schedule.appts : []).filter(isMap).map(a => ({ rid: rid(a.rid), ...(Number.isInteger(a.day) ? { day: a.day } : {}) })).filter(a => a.rid), ...(p.schedule.ordered === true ? { ordered: true } : {}) }
+  if (apptRids({ schedule }).length > IMPORT_MAX_SEQUENCE) return null
+  const tracks = p.tracks.filter(isMap).map(tr => {
+    const slots = (Array.isArray(tr.slots) ? tr.slots : []).filter(isMap).map(sl => ({ rid: own(ridMap, sl.rid), oid: own(occMap, sl.oid), ...(sl.optional === true ? { optional: true } : {}) })).filter(sl => sl.rid && sl.oid)
+    const stages = (Array.isArray(tr.stages) ? tr.stages : []).filter(isMap).map(st => ({
+      id: String(st.id), kind: st.kind, ...(st.close ? { close: st.close } : {}), ...(st.cycleEnd === true ? { cycleEnd: true } : {}),
+      targets: Object.fromEntries(Object.entries(map(st.targets)).map(([oid, x]) => [own(occMap, oid), clone(x)]).filter(([oid]) => oid))
+    }))
+    const exerciseId = own(exMap, tr.exerciseId) || tr.exerciseId
+    return { id: String(tr.id), exerciseId, slots, stages, refs: ['ask', 'keep'].includes(tr.refs) ? tr.refs : 'inherit',
+      ...(isPolicy(tr.policy) ? { policy: { onFailure: tr.policy.onFailure, onSkipped: tr.policy.onSkipped } } : {}), ...(isMap(tr.tm) ? { tm: clone(tr.tm) } : {}) }
+  }).filter(tr => tr.slots.length)
+  const def = { id: uid(), name, at: now, rev: 1, schedule, duration: { n: p.duration?.n, unit: p.duration?.unit }, end: p.end === 'extend' ? 'extend' : 'stop', refs: ['ask', 'keep'].includes(p.refs) ? p.refs : 'inherit', tracks }
+  return validateProgramme(def, { routines: S?.routines || [] }).ok ? def : null
+}
+
+/* ------------------------- the PR2 bridge (the week editor; Task 7 removes it) ------------------------- */
+
+/** A definition's weeks as the legacy week editor shows them: %1RM and RPE per lift, a deload flag. */
+export function legacyWeeksOf(def) {
+  return Array.from({ length: def?.duration?.n || 1 }, (_, i) => {
+    const w = {}, per = {}
+    for (const tr of def?.tracks || []) {
+      const st = tr.stages[i]
+      if (!st) continue
+      if (st.kind === 'recovery') w.deload = true
+      for (const sl of tr.slots) {
+        const x = map(st.targets)[sl.oid]
+        const pct = x?.own === 'set' && x.phase?.parameters?.load?.mode === 'percent_1rm' ? x.phase.parameters.load.percent : null
+        ;(per[tr.exerciseId] ||= []).push({ key: `${sl.rid}:${tr.exerciseId}`, pct, rpe: x?.effort?.rpe ?? null })
+      }
+    }
+    const all = Object.values(per).flat()
+    // The week's RPE, when every lift has one, is the one most of them share; a lift's own entry says only what differs.
+    const count = r => all.filter(x => x.rpe === r).length
+    const rpe = all.length && all.every(x => x.rpe != null) ? all.map(x => x.rpe).reduce((a, b) => (count(b) > count(a) ? b : a)) : null
+    if (rpe != null) w.rpe = rpe
+    const t = {}
+    for (const [exId, xs] of Object.entries(per)) {
+      const own = x => ({ ...(x.pct != null ? { pct: x.pct } : {}), ...(x.rpe != null && x.rpe !== rpe ? { rpe: x.rpe } : {}) })
+      const same = xs.every(x => JSON.stringify(own(x)) === JSON.stringify(own(xs[0])))
+      for (const x of same ? [{ ...xs[0], key: exId }] : xs) if (Object.keys(own(x)).length) t[x.key] = own(x)
+    }
+    if (Object.keys(t).length) w.t = t
+    return w
+  })
+}
+
+/** `def` with these legacy weeks (and schedule), converted again; its id, revision and choices kept. */
+export function setLegacyWeeks(def, weeks, S, schedule = legacyScheduleOf(def)) {
+  const out = convert(S, { id: def.id, name: def.name, at: def.at, weeks: weeks.map(cleanWeek), ...schedule, ...(typeof def.src === 'string' ? { src: def.src } : {}) })
+  return { ...out, rev: def.rev, end: def.end, refs: def.refs }
+}
+
+/** `def` with legacy week `i` replaced. */
+export function setLegacyWeek(def, i, week, S) {
+  const weeks = legacyWeeksOf(def)
+  weeks[i] = cleanWeek(week)
+  return setLegacyWeeks(def, weeks, S)
 }

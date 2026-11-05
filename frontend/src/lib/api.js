@@ -4,7 +4,7 @@ import { MOBILE } from './mobile.js'
 import { appBase } from './app-base.js'
 import { nativeFetch } from './capacitor-fetch.js'
 import { unpackProfile } from '../../../api/migration/profile-pack.js'
-import { ENGINE_SCHEMA, ENGINE_SCHEMA_HEADER } from '../../../api/migration/profile-version.js'
+import { ENGINE_CONTRACT, ENGINE_CONTRACT_HEADER, ENGINE_SCHEMA, ENGINE_SCHEMA_HEADER } from '../../../api/migration/profile-version.js'
 
 export const IS_APPLE = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)
 export const IS_ANDROID = /Android/.test(navigator.userAgent)
@@ -67,7 +67,8 @@ export async function api(path, opts) {
   // there and the change was marked as synced while the server never saw it. status 0, not
   // undefined: this is not "offline", and the store must not show it as such.
   if (MOBILE && !remoteBase) throw failure(t('This phone is not connected to a server.'), 'not-paired', 0)
-  const headers = Object.assign({ 'Content-Type': 'application/json', [ENGINE_SCHEMA_HEADER]: String(ENGINE_SCHEMA) }, init.headers, remoteHeaders())
+  // The engine contract this build reads and writes (spec 16): a server gates a marked profile on it.
+  const headers = Object.assign({ 'Content-Type': 'application/json', [ENGINE_SCHEMA_HEADER]: String(ENGINE_SCHEMA), [ENGINE_CONTRACT_HEADER]: String(ENGINE_CONTRACT) }, init.headers, remoteHeaders())
   // A paired phone has an absolute base of its own; everyone else is relative to where the app
   // is served, so a subpath deployment reaches its own API instead of the proxy's root.
   const url = remoteBase ? remoteBase + path : appBase().replace(/\/$/, '') + path

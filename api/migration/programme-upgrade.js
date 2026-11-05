@@ -59,7 +59,9 @@ function trackOf(p, rid, occ, weeks, ctx) {
   const st = ctx.progression[oid];
   const ph = rule.program.phases.find(x => x.id === st?.phaseId) ?? rule.program.phases[0];
   // lib/session-start.js programmePlan: a %1RM and the deload factor only ever reached reps work under an external load.
-  const external = occ.mode === 'reps' && !isBodyweight(occ, info) && !(typeof occ.assisted === 'boolean' ? occ.assisted : isAssisted(info));
+  // An occurrence made in the app may store no mode: read it as the session does (a duration is a hold, else the catalogue's).
+  const mode = occ.mode ?? (rule.program.phases[0].parameters.durationSeconds ? 'time' : info?.bp === 'cardio' ? 'cardio' : 'reps');
+  const external = mode === 'reps' && !isBodyweight(occ, info) && !(typeof occ.assisted === 'boolean' ? occ.assisted : isAssisted(info));
   // A flat %1RM is a load for the anchor; groups of their own (a training max, explicit per-set loads) are never guessed (spec 15.2).
   const anchored = ph.groups.every(g => g.load.basis === 'anchor');
   let repair = null;

@@ -535,7 +535,9 @@ const RESET_LISTS = {
   workouts: workoutKey, routines: x => x?.id, customEx: x => x?.id, bodyweight: bodyweightKey,
   measurements: bodyweightKey, gymCards: x => x?.id, equipProfiles: x => x?.id, favEx: x => x,
 }
-const RESET_MAPS = ['exNotes', 'barWeights', 'exAliases', 'programmes', ...STAMPED_MAPS]
+// A programme run, its events and reviewed 1RM proposals (lib/programmes.js) are kept per key like the definitions.
+const RUN_MAPS = ['programmeRuns', 'programmeEvents', 'refReviews']
+const RESET_MAPS = ['exNotes', 'barWeights', 'exAliases', 'programmes', ...RUN_MAPS, ...STAMPED_MAPS]
 /** An entry's name in resetIds: a workout's id (or day and start), a weigh-in's day and time, … */
 export const entryKey = (field, x) => String(RESET_LISTS[field](x))
 // Per field, the most names a reset keeps — far more workouts than anyone logs, and a bound on
@@ -596,6 +598,7 @@ export function sinceReset(S, at, ids) {
     out.exNotes = {}
     out.exAliases = {}
     out.programmes = {}
+    for (const f of RUN_MAPS) out[f] = {}
     out.barWeights = {}
     for (const f of STAMPED_MAPS) {
       out[f] = Object.fromEntries(Object.entries(isMap(S[f]) ? S[f] : {}).filter(([, v]) => after(stampOf(v))))
@@ -760,7 +763,7 @@ const OWN_MERGE = new Set([
 // (lib/programmes.js; the running one, `programme`, is a plain setting).
 // `modules` (lib/modules.js): one switch per feature area, so Body off on the phone and Seasonal off
 // on the laptop both hold.
-const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'programmes', 'modules', 'prescriptions', 'oneRepMaxes'])
+const PER_KEY = new Set(['week', 'dayPlan', 'exNotes', 'barWeights', 'exAliases', 'programmes', ...RUN_MAPS, 'modules', 'prescriptions', 'oneRepMaxes'])
 // The order of the routines, as the list shows them, is a choice of its own (`edited.routineOrder`):
 // a reorder on one device was lost to the other's whole copy whenever that one was newer.
 export const ORDER_KEY = 'routineOrder'
@@ -989,7 +992,7 @@ export function mergeStates(a0, b0, { prefer } = {}) {
     if (kept) out.exWeights[id] = clone(kept)
     else delete out.exWeights[id]
   }
-  for (const f of ['exNotes', 'barWeights', 'exAliases', 'programmes', 'modules', 'prescriptions', 'oneRepMaxes']) {
+  for (const f of ['exNotes', 'barWeights', 'exAliases', 'programmes', ...RUN_MAPS, 'modules', 'prescriptions', 'oneRepMaxes']) {
     if (n[f] || o[f]) out[f] = clone({ ...(o[f] || {}), ...(n[f] || {}) })
   }
   if (n.migrationAudit || o.migrationAudit) out.migrationAudit = clone(mergedAudit(n.migrationAudit, o.migrationAudit))

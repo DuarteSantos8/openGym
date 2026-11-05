@@ -1,5 +1,7 @@
 // Plan → Programmes (#159): the list, a programme's weeks, and the running one's controls. The
-// model is lib/programmes.js; this screen only ever writes through it.
+// model is lib/programmes.js; this screen only ever writes through it. Its weeks are still edited
+// as %1RM and RPE per lift, through the bridge (legacyWeeksOf / setLegacyWeek) that converts
+// every save into the engine definition, until the programme editor replaces this screen.
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -18,9 +20,10 @@ import { REST } from '../lib/rotation.js'
 import { starterProgrammeOptions, buildStarterProgramme } from '../lib/starter.js'
 import { exView, viewTarget, exUnitOf } from '../lib/ex-unit.js'
 import {
-  programmesOf, programmeById, programmeStatus, newProgramme, saveProgramme, deleteProgramme, resizeWeeks,
+  programmesOf, programmeById, programmeView, newProgramme, saveProgramme, deleteProgramme, resizeWeeks,
   stepWeek, cleanWeek, currentSchedule, startProgramme, pauseProgramme, resumeProgramme, endProgramme,
   repeatProgramme, programmeRoutineIds, pctWeight, rpeAs, cleanPct, programmeChip, MAX_WEEKS, REPEAT_BUMP,
+  legacyWeeksOf, setLegacyWeek, setLegacyWeeks,
 } from '../lib/programmes.js'
 
 // Names and blurbs as t() literals, for check-source-strings.mjs (see lib/starter.js).
@@ -43,12 +46,27 @@ export function weekSummary(w, S) {
   return parts.length ? parts.join(' · ') : t('Nothing set, progression as usual')
 }
 
+// A loop as the plan wrote it: a rotation, or a legacy loop kept (in `src`) until it is bound to weeks.
+const loopOf = p => (p.schedule.mode === 'rotation' ? p.schedule.sequence : Array.isArray(p.src?.sequence) ? p.src.sequence : null)
 function scheduleSummary(S, p) {
   const name = id => (id === REST ? t('Rest day') : (S.routines || []).find(r => r.id === id)?.name)
-  if (p.sequence) return p.sequence.map(name).filter(Boolean).join(' → ')
-  return weekOrder(weekStartOf(S)).filter(d => p.days?.[d]?.length)
-    .map(d => `${t(DAYS[d])} ${p.days[d].map(name).filter(Boolean).join(' + ')}`).join(' · ')
+  if (loopOf(p)) return loopOf(p).map(name).filter(Boolean).join(' → ')
+  const days = {}
+  for (const a of p.schedule.appts || []) if (a.day != null) (days[a.day] ||= []).push(a.rid)
+  return weekOrder(weekStartOf(S)).filter(d => days[d]?.length)
+    .map(d => `${t(DAYS[d])} ${days[d].map(name).filter(Boolean).join(' + ')}`).join(' · ')
 }
+// Where the current run stands, the way this screen showed it: week n of N, paused, done.
+function runStatus(S) {
+  const v = programmeView(S)
+  if (!v) return null
+  const week = Math.min(v.nominal.used + 1, v.nominal.of)
+  const done = ['stopped', 'complete', 'ended'].includes(v.status)
+  return { programme: programmeById(S, v.run.programmeId) || v.def, week, weeks: v.nominal.of, done, paused: v.status === 'paused', current: done ? null : legacyWeeksOf(v.def)[week - 1] }
+}
+// The choices the old start sheet stood for (the calendar never held a week, and stopped at its
+// end), until the activation sheet asks for them.
+const LEGACY_CHOICES = p => ({ policies: Object.fromEntries(p.tracks.map(tr => [tr.id, { onFailure: 'advance', onSkipped: 'advance' }])), end: 'stop' })
 
 function confirmStart(p) {
   confirmSheet({
@@ -56,7 +74,7 @@ function confirmStart(p) {
     message: t('Its schedule takes over your plan until you end it. Then your plan comes back as it was.'),
     confirmText: t('Start programme'),
     onConfirm: () => {
-      useStore.getState().update(s => { startProgramme(s, p.id) })
+      useStore.getState().update(s => { startProgramme(s, p.id, LEGACY_CHOICES(p)) })
       useUI.getState().toast(t('Week 1 starts now. Have fun!'))
     },
   })
@@ -73,7 +91,7 @@ function confirmEnd(name) {
 /** The running programme's card: where it stands, and what to do with it. */
 function RunningCard({ S, nav }) {
   const update = useStore(s => s.update)
-  const st = programmeStatus(S)
+  const st = runStatus(S)
   if (!st) return null
   const p = st.programme
   return <div className="card prog-run">
@@ -109,7 +127,7 @@ export default function Programmes() {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const list = programmesOf(S)
-  const runningId = programmeStatus(S)?.programme.id
+  const runningId = programmeView(S)?.run.programmeId
 
   const create = () => {
     const p = newProgramme(S, t('My programme'), 4)
@@ -117,7 +135,7 @@ export default function Programmes() {
     nav('/plan/prog/' + p.id)
   }
   const addStarter = id => {
-    const built = buildStarterProgramme(id, STARTER_COPY[id]().name)
+    const built = buildStarterProgramme(id, STARTER_COPY[id]().name, Date.now(), S.weekStart === 0 ? 0 : 1)
     if (!built) return
     update(s => {
       s.routines = [...(s.routines || []), ...built.routines]
@@ -136,7 +154,7 @@ export default function Programmes() {
     <RunningCard S={S} nav={nav} />
     <Section title={t('Your programmes')}>
       {list.length ? list.map(p => <Row key={p.id} icon="calendar" title={p.name || t('Programme')} accessory="chevron"
-        subtitle={tn('{0} week', '{0} weeks', p.weeks.length) + (p.id === runningId ? ' · ' + t('running') : '')}
+        subtitle={tn('{0} week', '{0} weeks', p.duration.n) + (p.id === runningId ? ' · ' + t('running') : '')}
         onClick={() => nav('/plan/prog/' + p.id)} />)
         : <EmptyState className="in-sect" text={t('No programmes yet. Make one from your plan, or grab a starter below.')}>
           <Button variant="tinted" icon="plus" onClick={create}>{t('New programme')}</Button>
@@ -174,14 +192,13 @@ function WeekSheet({ id, index, close }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const p = programmeById(S, id)
-  if (!p || !p.weeks[index]) return null
-  const w = p.weeks[index]
+  const weeks = p ? legacyWeeksOf(p) : []
+  if (!p || !weeks[index]) return null
+  const w = weeks[index]
   const setWeek = fn => update(s => {
     const cur = programmeById(s, id)
     if (!cur) return
-    const weeks = cur.weeks.slice()
-    weeks[index] = cleanWeek(fn(clone(weeks[index] || {})))
-    saveProgramme(s, { ...cur, weeks })
+    saveProgramme(s, setLegacyWeek(cur, index, cleanWeek(fn(clone(legacyWeeksOf(cur)[index] || {}))), s))
   })
   const setPct = (exId, v) => setWeek(x => {
     const tgt = { ...(x.t || {}) }
@@ -190,7 +207,7 @@ function WeekSheet({ id, index, close }) {
     return { ...x, t: tgt }
   })
   return <>
-    <h3>{t('Week {0} of {1}', index + 1, p.weeks.length)}</h3>
+    <h3>{t('Week {0} of {1}', index + 1, weeks.length)}</h3>
     <div className="sect-b" style={{ marginBottom: 14 }}>
       <Row icon="chartLineSlash" iconTint="var(--orange)" title={t('Deload week')} subtitle={t('Lighter weights, and its sessions do not count toward progression.')}>
         <Switch checked={w.deload === true} onChange={v => setWeek(x => ({ ...x, deload: v }))} />
@@ -216,7 +233,7 @@ function WeekSheet({ id, index, close }) {
       })}
     </div>
     <div className="small dim" style={{ margin: '0 2px 14px' }}>{t('Empty leaves the weight to your progression. A %1RM is worked out from your best estimated 1RM.')}</div>
-    {index > 0 && <Button variant="tinted" icon="copy" onClick={() => setWeek(() => stepWeek(p.weeks[index - 1]))}>{t('Same as last week, a bit heavier')}</Button>}
+    {index > 0 && <Button variant="tinted" icon="copy" onClick={() => setWeek(() => stepWeek(weeks[index - 1]))}>{t('Same as last week, a bit heavier')}</Button>}
     <Button variant="primary" onClick={close} style={{ marginTop: 8 }}>{t('Done')}</Button>
   </>
 }
@@ -242,9 +259,10 @@ export function ProgrammeEdit() {
   if (!p) return <div className="narrow"><div className="hdr">
     <button className="iconbtn" data-back="/plan/programmes" onClick={() => nav('/plan/programmes')} aria-label={t('Programmes')}><Icon name="chevronLeft" /></button>
   </div><div className="empty">{t('This programme is gone.')}</div></div>
-  const st = programmeStatus(S)
+  const st = runStatus(S)
   const running = st?.programme.id === id
-  const edit = fn => update(s => { const cur = programmeById(s, id); if (cur) saveProgramme(s, fn(cur)) })
+  const weeks = legacyWeeksOf(p)
+  const edit = fn => update(s => { const cur = programmeById(s, id); if (cur) saveProgramme(s, fn(cur, s)) })
   const summary = scheduleSummary(S, p)
   const remove = () => confirmSheet({
     title: t('Delete “{0}”?', p.name || t('Programme')),
@@ -265,21 +283,21 @@ export function ProgrammeEdit() {
     <div className="sect-b" style={{ marginBottom: 16 }}>
       <div className="lrow prog-weeks">
         <span className="lrow-m"><span className="lrow-t">{t('Weeks')}</span></span>
-        <Stepper value={p.weeks.length} min={1} max={MAX_WEEKS} decimal={false} ariaLabel={t('Weeks')}
-          onChange={n => edit(cur => ({ ...cur, weeks: resizeWeeks(cur.weeks, n) }))} />
+        <Stepper value={weeks.length} min={1} max={MAX_WEEKS} decimal={false} ariaLabel={t('Weeks')}
+          onChange={n => edit((cur, s) => setLegacyWeeks(cur, resizeWeeks(legacyWeeksOf(cur), n), s))} />
       </div>
-      <Row icon={p.sequence ? 'swap' : 'calendar'} title={p.sequence ? t('Rotation') : t('Schedule')}
+      <Row icon={loopOf(p) ? 'swap' : 'calendar'} title={loopOf(p) ? t('Rotation') : t('Schedule')}
         subtitle={summary || t('No schedule yet. Put routines on your week or in a loop in Plan, then take it over here.')} />
       <Row icon="download" title={t('Use my current plan')} subtitle={t('The schedule in your plan right now becomes this programme’s.')}
-        onClick={() => edit(cur => { const { days, sequence, ...rest } = cur; return { ...rest, ...currentSchedule(S) } })} />
+        onClick={() => edit((cur, s) => setLegacyWeeks(cur, legacyWeeksOf(cur), s, currentSchedule(s)))} />
     </div>
     <Section title={t('Weeks')} footer={t('The week is the calendar week: week 1 is the one you start in. A pause holds it.')}>
-      {p.weeks.map((w, i) => <Row key={i} title={t('Week {0}', i + 1)} subtitle={weekSummary(w, S)} accessory="chevron"
+      {weeks.map((w, i) => <Row key={i} title={t('Week {0}', i + 1)} subtitle={weekSummary(w, S)} accessory="chevron"
         icon={w.deload ? 'chartLineSlash' : 'chartLine'} iconTint={w.deload ? 'var(--orange)' : undefined}
         className={running && st.week === i + 1 && !st.done ? 'prog-now' : ''} onClick={() => weekSheet(id, i)} />)}
     </Section>
     <div className="prog-actions col">
-      {!running && <Button variant="primary" icon="play" disabled={!summary} onClick={() => confirmStart(p)}>{t('Start programme')}</Button>}
+      {!running && <Button variant="primary" icon="play" disabled={!summary || !!p.needs?.length} onClick={() => confirmStart(p)}>{t('Start programme')}</Button>}
       <Button variant="tinted" icon="share" onClick={() => exportProgrammeFile(id)}>{t('Share programme')}</Button>
       <Button variant="danger" icon="trash" onClick={remove}>{t('Delete programme')}</Button>
     </div>

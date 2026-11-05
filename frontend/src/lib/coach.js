@@ -18,7 +18,7 @@ import { uid, todayISO, DAYN } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
 import { POLICY_IDS, POLICY_NAME, POLICY_DESC } from './prescription/vocabulary.js'
-import { newProgramme, programmeById, saveProgramme, normalizeProgramme } from './programmes.js'
+import { newProgramme, programmeById, saveProgramme, setLegacyWeeks, MAX_WEEKS } from './programmes.js'
 import { ownRowsOf, cleanOwnRow, ownRowsLine } from './warmup-ramp.js'
 import { t, tn } from './i18n.js'
 import { snapshotKey } from './sync-merge.js'
@@ -298,7 +298,9 @@ export function revertLast(s) {
   if (audit) s.migrationAudit = { ...s.migrationAudit, fromSchema: 1, unsupported: [...(s.migrationAudit?.unsupported || []), ...audit.unsupported],
     discarded: [...(s.migrationAudit?.discarded || []), ...(audit.discarded || [])] }
   c.snapshots.pop()
-  s.routines = clone(routines)
+  // A 1RM an occurrence adopted since (spec 10) is not the Coach's to take back: it stays adopted.
+  const refs = new Map((s.routines || []).flatMap(r => r.ex || []).filter(o => o?.ref).map(o => [o.occurrenceId, o.ref]))
+  s.routines = clone(routines).map(r => ({ ...r, ex: (r.ex || []).map(o => (refs.has(o?.occurrenceId) ? { ...o, ref: clone(refs.get(o.occurrenceId)) } : o)) }))
   s.week = clone(snap.week)
   // Snapshots taken before this field existed have nothing to put back.
   if (snap.dayPlanRestore) Object.assign(s.dayPlan, snap.dayPlanRestore)
@@ -312,7 +314,7 @@ export function revertLast(s) {
     const { id, prev } = snap.programmeRestore
     const all = { ...(s.programmes && typeof s.programmes === 'object' ? s.programmes : {}) }
     if (prev) all[id] = clone(prev)
-    else if (s.programme?.id !== id) delete all[id]
+    else if (s.programmeRuns?.[s.programme?.runId]?.programmeId !== id) delete all[id]
     s.programmes = all
   }
   // Which snapshot this used (`snap`): the sync merge keeps it off the ring when another device's
@@ -630,7 +632,8 @@ const CHANGE_APPLY = {
     else delete e.warmupRows
   },
   // A programme (lib/programmes.js): a new one over the schedule you train by now, or the weeks
-  // of one you have replaced. Never started here: running it stays your call, on Plan.
+  // of one you have replaced, converted like every week the programme screen writes. Never
+  // started here: running it stays your call, on Plan.
   programme: (s, c) => {
     const weeks = Array.isArray(c.after?.weeks) ? c.after.weeks : []
     if (!weeks.length) throw new Error('bad programme')
@@ -638,8 +641,7 @@ const CHANGE_APPLY = {
     const was = id ? programmeById(s, id) : null
     if (id && !was) throw new Error('missing programme')
     const base = was || newProgramme(s, String(c.after.name || t('Coach programme')).slice(0, 60), weeks.length)
-    const next = normalizeProgramme({ ...base, ...(c.after.name ? { name: String(c.after.name).slice(0, 60) } : {}), weeks })
-    if (!next) throw new Error('bad programme')
+    const next = setLegacyWeeks({ ...base, ...(c.after.name ? { name: String(c.after.name).slice(0, 60) } : {}) }, weeks.slice(0, MAX_WEEKS), s)
     const snaps = coachOf(s).snapshots || []
     const snap = snaps[snaps.length - 1]
     if (snap && !snap.programmeRestore) snap.programmeRestore = { id: next.id, prev: was ? clone(s.programmes[next.id]) : null }

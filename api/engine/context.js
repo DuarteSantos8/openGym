@@ -43,7 +43,8 @@ function newest(workouts, match) {
  */
 export function replayProgression({ workouts = [], trackId, prescriptions = {}, upTo = null }) {
   let state = null
-  const counted = x => x.trackId === trackId && x.prescriptionId && !x.excludedFromProgression && x.actual && prescriptions[x.prescriptionId]
+  // Programme work is replayed by its run (programme-run.js), never into an ordinary track.
+  const counted = x => x.trackId === trackId && !x.programme && x.prescriptionId && !x.excludedFromProgression && x.actual && prescriptions[x.prescriptionId]
   for (const w of chronologicalWorkouts(workouts)) {
     // A track twice in one workout (a combined session) advances once, from its last counted
     // exposure — what finish-session.js does.

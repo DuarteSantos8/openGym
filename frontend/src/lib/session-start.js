@@ -1,12 +1,12 @@
 // Generate one immutable prescription per routine occurrence. The engine decides; this boundary
 // only gathers its inputs (rule, track state, newest log, current 1RM) and stores its output.
-import { currentOneRm, bestLoad, operatorFor, phaseOf, planFingerprint, planPhase, rungsOf, defaultPlanRule, generatePrescription, needsOneRm, resolveProgressionContext, supports, withRest } from './prescription/index.js'
+import { currentOneRm, bestLoad, operatorFor, phaseOf, planFingerprint, planPhase, rungsOf, defaultPlanRule, generatePrescription, needsOneRm, resolveProgressionContext, slotFor, slotInputs, supports, withRest } from './prescription/index.js'
 import { EXIDX, isAssisted, isBodyweightEq } from './exercises.js'
-import { modeOf, barFloor, lastAcrossRoutines, lastEntryFor, isBw, insertWarmupRow } from './history.js'
+import { modeOf, barFloor, lastAcrossRoutines, lastEntryFor, insertWarmupRow } from './history.js'
 import { oneRmForMeaning } from './onerm.js'
 import { exView, exConverted, viewTarget, profileUnit } from './ex-unit.js'
 import { convertExact, convertStep, convPrescription } from './units.js'
-import { programmeSlot, pctWeight } from './programmes.js'
+import { captureReference, programmeView } from './programmes.js'
 import { isoOf } from './format.js'
 import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
 import { dropGrid } from './plates.js'
@@ -22,12 +22,17 @@ const modeFor = (occ, p) => {
   return mode === 'reps' && p.parameters.durationSeconds ? 'time' : mode
 }
 
-/** Exercises in these routines whose rule needs a 1RM the profile does not have yet. */
+/** Exercises in these routines that need a 1RM the profile does not have yet: a rule of its own
+ *  without an adopted one, or a programme slot its run cannot generate without one. */
 export function missingOneRms(profile, routines) {
   const ids = new Set()
+  const view = programmeView(profile)
   for (const routine of routines) {
     for (const occ of routine.ex || []) {
-      if (occ.rule && needsOneRm(occ.rule) && !currentOneRm(profile.oneRepMaxes, occ.exerciseId)) ids.add(occ.exerciseId)
+      if (currentOneRm(profile.oneRepMaxes, occ.exerciseId)) continue
+      const at = view && slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date: isoOf(new Date()) }).assignment
+      const own = at ? slotInputs({ view, run: view.run, assignment: at, occRule: occ.rule }).blocked === 'reference-missing' : occ.rule && needsOneRm(occ.rule) && !occ.ref
+      if (own) ids.add(occ.exerciseId)
     }
   }
   return [...ids]
@@ -55,51 +60,87 @@ export function effectiveExerciseId(occ, profile) {
   return id && EXIDX[id] ? id : occ.exerciseId
 }
 
-/** Mutates `profile.prescriptions` (the store's update draft) and returns the session exposures. */
+/**
+ * Mutates `profile.prescriptions` (the store's update draft) and returns the session exposures. An
+ * occurrence the current programme run plans (programmes.js programmeView) is generated from its
+ * stage on the run's own track (slotFor → slotInputs), the week's options over the occurrence's,
+ * and stamped with where it went (`exposure.programme`); anything else from its own rule. When
+ * continuing would pass earlier appointments of the week or round (spec 7.3), nothing is built: the
+ * answer is an empty list carrying `bypass` (`p<n>:a<i>` ids) until programmes.js bypassTo records them.
+ */
 export function buildSessionExposures(stored, routine, ctx) {
   stored.prescriptions ||= {}
+  const date = ctx.date || stored.active?.d || isoOf(new Date(ctx.now))
+  let view = routine?.excludeFromProgression === true ? null : programmeView(stored)
+  const placed = (routine?.ex || []).map(occ => (view ? slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date }) : null))
+  const bypass = [...new Set(placed.flatMap(x => x?.bypass || []))]
+  if (bypass.length) return Object.assign([], { bypass })
   return (routine?.ex || []).map((original, i) => {
     const id = effectiveExerciseId(original, stored)
     const storedOccurrence = id === original.exerciseId ? original : { ...original, exerciseId: id, exerciseName: undefined }
     const profile = exConverted(stored, id)
       ? exView({ ...stored, workouts: [...(stored.workouts || [])] }, id) : stored
-    const occ = viewTarget(stored, id, storedOccurrence)
-    const excluded = routine.excludeFromProgression === true || occ.excludeFromProgression === true
-    const trackId = occ.occurrenceId
+    const base = viewTarget(stored, id, storedOccurrence)
+    const at = placed[i]?.assignment
+    let inputs = at ? slotInputs({ view, run: view.run, assignment: at, occRule: base.rule }) : null
+    // The first session that finds a 1RM for a track with none adopts it (spec 10.1).
+    if (inputs?.blocked === 'reference-missing' && currentOneRm(stored.oneRepMaxes, base.exerciseId)) {
+      captureReference(stored, at.trackId, currentOneRm(stored.oneRepMaxes, base.exerciseId), ctx.now)
+      view = programmeView(stored)
+      inputs = slotInputs({ view, run: view.run, assignment: at, occRule: base.rule })
+    }
+    // Still no reference: ordinary work kept out of progression, nothing fabricated; the slot stays open.
+    const prog = inputs && !inputs.blocked ? inputs : null
+    const options = prog?.rule.options || {}
+    // The week's execution options over the occurrence's own (an incline lives in its cardio settings).
+    const occ = prog ? { ...base, ...options, ...(options.incline != null ? { cardio: { ...base.cardio, incline: options.incline } } : {}) } : base
+    // A programme's maintenance, extra and recovery work is logged and moves nothing.
+    const excluded = routine.excludeFromProgression === true || occ.excludeFromProgression === true || !!inputs?.blocked || (!!prog && (at.role !== 'work' || prog.rule.program.adaptive === false))
+    const trackId = prog ? prog.trackId : occ.occurrenceId
     const meaning = dbLoadFor(profile, occ)
     const owned = ownedWeightsFor(profile, occ)
     const history = historyAs(profile, occ.exerciseId, meaning)
     // An assistance machine's load is the help given: the engine runs every step the other way.
     // An occurrence can say so itself (v1's per-exercise override), else the catalogue does.
     const assisted = typeof occ.assisted === 'boolean' ? occ.assisted : isAssisted(occ.exerciseId)
-    // The engine picks the history and decides a restart; this boundary only passes the profile.
-    const context = resolveProgressionContext({
-      trackId, exerciseId: occ.exerciseId, rule: occ.rule, assisted,
-      workouts: history.workouts, prescriptions: profile.prescriptions, progression: profile.progression,
-      // A ladder's rung is its own track's: another routine's state for the same exercise would move it.
-      acrossRoutines: lastAcrossRoutines(profile) && !(occ.rule && operatorFor(planPhase(occ.rule), 'difficulty'))
-    })
-    const previous = (profile.workouts || []).flatMap(w => w.exposures || []).find(x => x.exposureId === context.baseline?.exposureId)
-    const previousMeaning = entryDbLoad(previous)
-    const factor = meaningFactor(previousMeaning, meaning, { id: occ.exerciseId, side: occ.side })
-    if (factor !== 1 && context.state?.values?.load?.mode === 'absolute') {
-      const next = context.state.values.load.value, lifted = bestLoad(previous, assisted)
-      // A meaning change scales the lifted load; an earned absolute increment keeps its size.
-      const earned = !context.state.deload && context.lastPrescription && operatorFor(phaseOf(context.lastPrescription), 'load')?.step.type === 'absolute' && lifted > 0 ? next - lifted : 0
-      context.state = { ...context.state, values: { ...context.state.values, load: { ...context.state.values.load, value: next * factor + earned * (1 - factor) } } }
+    // A reference the occurrence adopted (spec 10.1), captured from the current 1RM on its first use.
+    const adopted = prog ? prog.oneRm : occ.rule && needsOneRm(occ.rule) ? occ.ref ?? currentOneRm(stored.oneRepMaxes, occ.exerciseId) : null
+    if (!prog && adopted && !occ.ref) adoptReference(stored, routine.id, original.occurrenceId, adopted)
+    let generation
+    if (prog) generation = { trackId, state: prog.state, lastPrescription: prog.lastPrescription, lastLog: prog.lastLog, at: prog.at ?? null, startFrom: 'plan' }
+    else {
+      // The engine picks the history and decides a restart; this boundary only passes the profile.
+      const context = resolveProgressionContext({
+        trackId, exerciseId: occ.exerciseId, rule: occ.rule, assisted,
+        workouts: history.workouts, prescriptions: profile.prescriptions, progression: profile.progression,
+        // A ladder's rung is its own track's: another routine's state for the same exercise would move it.
+        acrossRoutines: lastAcrossRoutines(profile) && !(occ.rule && operatorFor(planPhase(occ.rule), 'difficulty'))
+      })
+      const previous = (profile.workouts || []).flatMap(w => w.exposures || []).find(x => x.exposureId === context.baseline?.exposureId)
+      const previousMeaning = entryDbLoad(previous)
+      const factor = meaningFactor(previousMeaning, meaning, { id: occ.exerciseId, side: occ.side })
+      if (factor !== 1 && context.state?.values?.load?.mode === 'absolute') {
+        const next = context.state.values.load.value, lifted = bestLoad(previous, assisted)
+        // A meaning change scales the lifted load; an earned absolute increment keeps its size.
+        const earned = !context.state.deload && context.lastPrescription && operatorFor(phaseOf(context.lastPrescription), 'load')?.step.type === 'absolute' && lifted > 0 ? next - lifted : 0
+        context.state = { ...context.state, values: { ...context.state.values, load: { ...context.state.values.load, value: next * factor + earned * (1 - factor) } } }
+      }
+      generation = {
+        trackId, state: excluded ? null : context.state, lastPrescription: excluded ? null : context.lastPrescription,
+        // The engine reads a log's id; a saved exposure carries it as exposureId.
+        lastLog: !excluded && context.baseline ? { ...context.baseline, id: context.baseline.exposureId } : null,
+        reset: excluded ? null : context.reset, heldLoad: excluded ? null : context.heldLoad, startFrom: profile.startFrom
+      }
     }
-    let rule = occ.restFromProfile && Number.isFinite(profile.restSec) ? withRest(occ.rule, profile.restSec) : occ.rule
+    let rule = prog ? prog.rule : occ.rule
+    if (occ.restFromProfile && Number.isFinite(profile.restSec)) rule = withRest(rule, profile.restSec)
     if (rule.exerciseId !== occ.exerciseId) rule = { ...rule, exerciseId: occ.exerciseId }
     if (owned) rule = { ...rule, rounding: { mode: 'allowed_values', allowedValues: owned } }
     let prescription = generatePrescription({
       id: ctx.newId(`prescription:${routine.id}:${occ.occurrenceId}:${ctx.now}:${i}`),
       now: new Date(ctx.now).toISOString(),
-      trackId, rule,
-      state: excluded ? null : context.state, lastPrescription: excluded ? null : context.lastPrescription,
-      // The engine reads a log's id; a saved exposure carries it as exposureId.
-      lastLog: !excluded && context.baseline ? { ...context.baseline, id: context.baseline.exposureId } : null,
-      reset: excluded ? null : context.reset, heldLoad: excluded ? null : context.heldLoad, startFrom: profile.startFrom,
-      oneRm: oneRmForMeaning(profile, occ.exerciseId, meaning),
+      rule, ...generation,
+      oneRm: adopted ? oneRmForMeaning({ ...profile, oneRepMaxes: { [adopted.id]: adopted } }, occ.exerciseId, meaning) : oneRmForMeaning(profile, occ.exerciseId, meaning),
       // Lighter is harder on an assisted machine: the engine ramps its warm-ups up in help instead (#581).
       warmup: typeof occ.warmup === 'object' ? occ.warmup : null,
       warmupFloor: barFloor(profile, occ.exerciseId),
@@ -109,7 +150,7 @@ export function buildSessionExposures(stored, routine, ctx) {
       perSide: occ.side === true, restPause: occ.intensifier?.type === 'restpause', restPauseReps: occ.intensifier?.totalReps,
       bodyweight: typeof occ.bodyweight === 'boolean' ? occ.bodyweight : isBodyweightEq(occ.exerciseId)
     })
-    if (occ.repeatLast && prescription.preset === 'autoregulated' && modeFor(occ, prescription) === 'reps') {
+    if (!prog && occ.repeatLast && prescription.preset === 'autoregulated' && modeFor(occ, prescription) === 'reps') {
       const last = lastEntryFor(history, occ.exerciseId)?.sets
       if (last?.length) {
         const rows = prescription.rows.map((row, i) => {
@@ -120,16 +161,17 @@ export function buildSessionExposures(stored, routine, ctx) {
         prescription = freezePrescription({ ...prescription, rows, prefill: { ...prescription.prefill, load: null, reps: rowReps[0], rowReps } })
       }
     }
-    const slot = excluded ? null : programmeSlot(profile, routine.id, occ.exerciseId, ctx.date || stored.active?.d || isoOf(new Date(ctx.now)))
-    if (slot) prescription = programmePrescription(profile, occ, prescription, slot)
+    // Where the session went in the run, frozen with it (provenance only; its targets are the engine's).
+    const stamp = prog ? { runId: view.run.id, rev: view.tracks[at.trackId]?.def?.rev ?? view.run.def.rev, trackId: at.trackId, slot: at.slot, stage: at.stage, attempt: at.attempt, role: at.role, ref: prog.oneRm ?? null, effort: prog.effort ?? null } : null
+    if (stamp) prescription = freezePrescription({ ...prescription, provenance: { ...prescription.provenance, programme: stamp } })
     const exposure = {
       exposureId: ctx.newId(`exposure:${routine.id}:${occ.occurrenceId}:${ctx.now}:${i}`),
       exerciseId: occ.exerciseId, exerciseNameSnapshot: occ.exerciseName || occ.exerciseId, mode: modeFor(occ, prescription),
       routineId: routine.id, occurrenceId: occ.occurrenceId, trackId,
-      excludedFromProgression: excluded || slot?.deload === true,
+      excludedFromProgression: excluded,
       prescriptionId: prescription.id,
       ...Object.fromEntries(['sgName', 'sgRest', 'sideRestOff', 'sideRestSec', 'autoHold', 'warmupRestOff', 'subs', 'restOff'].filter(k => occ[k] != null).map(k => [k, occ[k]])),
-      ...(slot ? { programme: { ...slot, why: programmeWhy(slot) } } : {}),
+      ...(stamp ? { programme: stamp } : {}),
       ...(occ.sg ? { sg: occ.sg } : {}),
       // The plan's instruction for this exercise, shown on its card; session-only (finish-session.js drops it).
       ...(typeof occ.note === 'string' && occ.note ? { setupNote: occ.note } : {}),
@@ -151,31 +193,15 @@ export function buildSessionExposures(stored, routine, ctx) {
   })
 }
 
+// The first use of a 1RM rule adopts the current 1RM into the occurrence, in the same change.
+function adoptReference(stored, rid, oid, ref) {
+  stored.routines = (stored.routines || []).map(r => (r.id !== rid ? r : { ...r, ex: (r.ex || []).map(o => (o.occurrenceId === oid && !o.ref ? { ...o, ref: { ...ref } } : o)) }))
+}
+
 const freezePrescription = p => {
   const { contentHash: previous, ...body } = p
   return deepFreeze({ ...body, contentHash: contentHash(body) })
 }
-const programmeWhy = slot => [slot.pct != null ? 'Week {0} of {1}: {2}% of your best 1RM' : slot.deload ? 'Week {0} of {1}: deload week' : 'Week {0} of {1}', slot.week, slot.weeks, slot.pct]
-
-/** Programme targets override the day's load and reps and stay frozen with its prescription. */
-function programmePrescription(profile, occ, p, slot) {
-  const step = operatorFor(phaseOf(p), 'load')?.step.value || p.ruleSnapshot.rounding.step || (profile.unit === 'lb' ? 5 : 2.5)
-  const target = programmePlan(profile, { ...occ, id: occ.exerciseId }, { weight: p.prefill.load?.value ?? p.rows[0]?.load?.value }, slot, step)
-  const rows = p.rows.map(row => ({ ...row, ...(target.weight != null ? { load: { value: target.weight, unit: profile.unit } } : {}) }))
-  return freezePrescription({ ...p, rows, prefill: { ...p.prefill, reps: phaseOf(p).parameters.reps.max, rowReps: undefined, carried: false, ...(target.weight != null ? { load: { value: target.weight, unit: profile.unit } } : {}) }, provenance: { ...p.provenance, programme: { ...slot, why: target.why } } })
-}
-
-export function programmePlan(st, cfg, plan, slot, step) {
-  const reps = modeOf(cfg) === 'reps' && !isBw(cfg) && !isAssisted(cfg)
-  const owned = reps ? ownedWeightsFor(st, cfg) : null
-  let weight = reps && slot.pct != null ? pctWeight(st, cfg.id, slot.pct, { step, owned, floor: barFloor(st, cfg.id) }) : null
-  if (weight == null && slot.deload && reps) {
-    const base = plan.weight ?? cfg.weight
-    if (base > 0) weight = Math.max(step, Math.round(base * 0.9 / step) * step)
-  }
-  return { policy: plan.policy, kind: 'programme', why: programmeWhy(slot), ...(weight != null ? { weight } : plan.weight != null ? { weight: plan.weight } : {}), prog: { ...slot } }
-}
-
 function sessionWarmups(profile, occ, routine, p, exposure, excluded) {
   const cfg = { ...occ, id: occ.exerciseId, mode: exposure.mode, ...(occ.legacyWarmupSets > 0 ? { warmup: undefined, warmupSets: occ.legacyWarmupSets } : {}) }
   const source = warmupSource(profile, cfg)

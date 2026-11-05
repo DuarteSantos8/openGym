@@ -74,7 +74,7 @@ function serverWith(doc) {
   const srv = { doc: clone({ engineSchemaVersion: 2, ...doc }), puts: [] }
   srv.handle = (path, method, init) => {
     if (path === '/api/me') return json(200, { user: USER })
-    if (path === '/api/config') return json(200, { invite_only: false, allow_guest: true })
+    if (path === '/api/config') return json(200, { invite_only: false, allow_guest: true, engineContract: 1 })
     if (path === '/api/pair/redeem') return json(200, { token: 'TOKEN-NEW', user: USER })
     if (path === '/api/data/rev') return json(200, { rev: srv.doc._rev })
     if (path === '/api/data' && method === 'GET') return json(200, { state: clone(srv.doc), rev: srv.doc._rev })

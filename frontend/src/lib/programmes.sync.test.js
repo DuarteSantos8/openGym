@@ -3,6 +3,9 @@
 import { describe, it, expect } from 'vitest'
 import { mergeStates, stampEdits, resetIdsOf, sinceReset } from './sync-merge.js'
 import { stampPut } from '../../../api/sync-stamps.js'
+import { migratedFixture } from './test-fixtures.js'
+import { buildSessionExposures } from './session-start.js'
+import { programmeView, setLegacyWeeks, setRunEnd, skipSlot, startProgramme } from './programmes.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const T = 1_800_000_000_000
@@ -54,5 +57,49 @@ describe('an older app that does not know them', () => {
     delete old.programme
     const out = stampPut(clone(cur), old, { overRead: true, stamped: false, now: T + 100 })
     expect(out.programmes).toEqual(cur.programmes)
+  })
+})
+
+describe('a programme run in the sync (engine contract 1)', () => {
+  const BENCH = '0025'
+  const ADVANCE = { onFailure: 'advance', onSkipped: 'advance' }
+  // A running block over routine A (Monday) and B (Thursday), started Monday 2026-10-19.
+  function running() {
+    const s = migratedFixture({ unit: 'kg', weekStart: 1, routines: [{ id: 'A', name: 'A', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 60 }] }, { id: 'B', name: 'B', ex: [{ id: '0043', sets: 3, reps: 5, weight: 80 }] }], workouts: [] })
+    Object.assign(s, { _ts: T, week: {}, programmes: {}, programme: null })
+    const def = setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ rpe: 7 }, { rpe: 8 }], s, { days: { 1: ['A'], 4: ['B'] } })
+    s.programmes = { P: def }
+    startProgramme(s, 'P', { policies: Object.fromEntries(def.tracks.map(t => [t.id, ADVANCE])), end: 'stop', today: '2026-10-19', now: T })
+    return stampEdits(null, s, T)
+  }
+
+  it('two devices: events from both merge per key and replay to the same view', () => {
+    const s0 = running()
+    const runId = s0.programme.runId
+    // The phone logs Monday's A; the desk, offline, skips Thursday's B and sets the end policy.
+    const phone = edit(s0, T + 10, s => {
+      const exposures = buildSessionExposures(s, s.routines[0], { now: Date.parse('2026-10-19T17:00:00Z'), newId: x => 'ph:' + x })
+      s.workouts.push({ id: 'mon', d: '2026-10-19', start: Date.parse('2026-10-19T17:00:00Z'), status: 'completed', exposures: exposures.map(x => ({ ...x, completedAt: '2026-10-19T18:00:00.000Z', actual: { sets: 3, reps: 5 }, performance: { sets: [] } })) })
+    })
+    const desk = edit(s0, T + 20, s => { skipSlot(s, 'p1:a1:B:o0', Date.parse('2026-10-22T18:00:00Z')); setRunEnd(s, 'extend', Date.parse('2026-10-22T18:00:00Z')) })
+    const ab = mergeStates(phone, desk), ba = mergeStates(desk, phone)
+    expect(Object.keys(ab.programmeEvents).sort()).toEqual(Object.keys(ba.programmeEvents).sort())
+    expect(Object.values(ab.programmeEvents).map(e => e.type).sort()).toEqual(['end-policy', 'skip'])
+    expect(ab.programmeRuns).toEqual(ba.programmeRuns)
+    const view = S => programmeView(S, '2026-10-26')
+    expect(view(ab).tracks).toEqual(view(ba).tracks)
+    expect(view(ab).tracks['t:P:A:o0'].decisions[0]).toMatchObject({ period: 1, action: 'advance' })
+    expect(view(ab).tracks['t:P:B:o0'].decisions[0]).toMatchObject({ period: 1, action: 'advance', reasons: { skipped: ['p1:a1:B:o0'] } })
+    expect(ab.programme.runId).toBe(runId)
+  })
+
+  it('a reset wipes runs, events and reviews like the other per-key maps', () => {
+    const s = running()
+    s.refReviews = { 'occ:x': { candidateId: 'c', decision: 'keep', at: 1 } }
+    skipSlot(s, 'p1:a1:B:o0', T)
+    const ids = resetIdsOf(s)
+    expect(ids.programmeRuns).toEqual([s.programme.runId])
+    const after = sinceReset(s, T + 1, ids)
+    expect([after.programmeRuns, after.programmeEvents, after.refReviews]).toEqual([{}, {}, {}])
   })
 })

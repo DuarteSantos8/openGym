@@ -14,11 +14,13 @@ const copy = v => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)))
 const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v)
 const classed = (cls, keys) => keys.map(k => [k, cls])
 
-/** What each occurrence key is (spec 5.1). A week's `options` may set execution keys only. */
+/** What each occurrence key is (spec 5.1). A week's `options` may set execution keys only. The
+ *  adopted 1RM (`ref`), its update preference (`refs`) and "repeat last session" (`repeatLast`)
+ *  decide targets, so a week cannot set them either. */
 export const OPTION_CLASSES = Object.fromEntries([
-  ...classed('target', ['sets', 'reps', 'rule', 'restSec', 'cardio', 'excludeFromProgression']),
+  ...classed('target', ['sets', 'reps', 'rule', 'restSec', 'cardio', 'excludeFromProgression', 'repeatLast', 'ref', 'refs']),
   ...classed('execution', ['incline', 'intensifier', 'warmup', 'warmupRestSec', 'warmupRestOff', 'failureSets', 'lastToFailure', 'backoff', 'side', 'sideRestOff',
-    'sideRestSec', 'autoHold', 'restOff', 'restFromProfile', 'sg', 'sgName', 'sgRest', 'subs', 'bodyweight', 'assisted', 'mode', 'dbLoad']),
+    'sideRestSec', 'autoHold', 'restOff', 'restFromProfile', 'sg', 'sgName', 'sgRest', 'subs', 'bodyweight', 'assisted', 'mode', 'dbLoad', 'legacyWarmupSets']),
   ...classed('display', ['note', 'exerciseName'])
 ])
 

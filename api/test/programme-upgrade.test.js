@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { buildStarterProgramme } from '../../frontend/src/lib/starter.js';
 import { LIB_BY_ID } from '../coach/core/library.js';
 import { canonicalJSON, contentHash, defaultPlanRule, deriveRun, generatePrescription, referenceProposals, slotFor, slotInputs, stageRule, summarizeActual, validateProgramme } from '../engine/index.js';
-import { upgradeEngineContract } from '../migration/programme-upgrade.js';
+import { convertLegacyProgramme, upgradeEngineContract } from '../migration/programme-upgrade.js';
 import { migrateProfileV1ToV2, validateCanonicalActive, validateCanonicalProfile } from '../migration/profile-migration.js';
 import { packProfile, unpackProfile } from '../migration/profile-pack.js';
 import { MAX_SYNC_BODY, syncSize } from '../migration/profile-size.js';
@@ -21,13 +21,15 @@ const dayA = (id, d, sq = 60, be = 50, ro = 40) => session(id, d, 'rA', [['0043'
 const manual = (exerciseId, value, unit = 'kg') => ({ id: `orm:${exerciseId}`, exerciseId, value, unit, source: 'manual', capturedAt: '2026-10-01T00:00:00.000Z' });
 const ONE_RMS = { 'orm:0043': manual('0043', 100), 'orm:0025': manual('0025', 100) };
 
-// A starter programme with readable ids: routines rA, rB, rC… in plan order, programme pg.
+// A starter programme as today's app wrote it, with readable ids: v1 routines rA, rB, rC… in plan
+// order (each exercise `{ id, sets, reps, weight: 0 }`, as the v1 starters were), programme pg.
 function starter(kind) {
-  const { routines, programme } = buildStarterProgramme(kind, kind, 1000);
+  const { routines, legacy } = buildStarterProgramme(kind, kind, 1000);
   const ids = Object.fromEntries(routines.map((r, i) => [r.id, `r${'ABCD'[i]}`]));
+  const v1 = o => { const ph = o.rule.program.phases[0].parameters; return { id: o.exerciseId, sets: ph.sets.min, reps: ph.reps.min, weight: 0 }; };
   return {
-    routines: routines.map(r => ({ ...r, id: ids[r.id] })),
-    programme: { ...programme, id: 'pg', days: Object.fromEntries(Object.entries(programme.days).map(([d, rs]) => [d, rs.map(r => ids[r])])) }
+    routines: routines.map(r => ({ id: ids[r.id], name: r.name, emoji: r.emoji, ex: r.ex.map(v1) })),
+    programme: { ...legacy, id: 'pg', days: Object.fromEntries(Object.entries(legacy.days).map(([d, rs]) => [d, rs.map(r => ids[r])])) }
   };
 }
 // A v1 profile: a starter's routines and programme, optionally running.
@@ -510,4 +512,12 @@ test('validation refuses the event, run and assignment shapes a replay cannot re
 test('a start date that is not on the calendar is not a running programme', () => {
   const { state } = up(contract0(v1('strength-4', { run: { startedOn: '2026-02-30' } })));
   assert.deepEqual(Object.keys(state.programmeRuns ?? {}), []);
+});
+
+test('an occurrence the app made without a stored mode takes its %1RM; a hold or cardio one does not', () => {
+  const occ = (oid, exerciseId, opts) => ({ occurrenceId: oid, exerciseId, rule: defaultPlanRule('linear', { id: oid, exerciseId, routineId: 'rA', unit: 'kg', ...opts }) });
+  const routines = [{ id: 'rA', name: 'A', ex: [occ('rA:o0', '0025', { sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 } }), { ...occ('rA:o1', '0025', {}), rule: defaultPlanRule('autoregulated', { id: 'rA:o1', exerciseId: '0025', routineId: 'rA', durationSeconds: { min: 30, max: 30 }, reps: { min: 1, max: 1 } }) }, { ...occ('rA:o2', '3666', {}), rule: defaultPlanRule('autoregulated', { id: 'rA:o2', exerciseId: '3666', routineId: 'rA' }) }] }];
+  const def = convertLegacyProgramme({ id: 'pg', name: 'X', at: 1, days: { 1: ['rA'] }, weeks: [{ t: { '0025': { pct: 75 }, '3666': { pct: 75 } } }] }, { routines, catalogue: LIB_BY_ID });
+  const own = oid => def.tracks.find(t => t.slots[0].oid === oid).stages[0].targets[oid].own;
+  assert.deepEqual(['rA:o0', 'rA:o1', 'rA:o2'].map(own), ['set', 'inherit', 'inherit']);
 });

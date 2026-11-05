@@ -32,7 +32,8 @@ import { migrateOccurrence, supports, validateIntensifier, validatePlanRule, val
 import { coachExOf } from '../../../api/coach/core/plan-view.js'
 
 const PLAN_FMT = 3
-const PROGRAMME_FMT = 1
+// 2: engine definitions (lib/programmes.js bundleProgramme); 1, today's weeks of targets, still imports.
+const PROGRAMME_FMT = 2
 const WEEK_DAYS = [1, 2, 3, 4, 5, 6, 0]   // every getDay() index; only the reader's own
                                           // screen puts them in an order (see weekOrder)
 const PLAN_UNITS = new Set(['kg', 'lb'])
@@ -200,7 +201,10 @@ export function buildProgrammeBundle(S, id) {
   const p = programmeById(S, id)
   if (!p) return null
   const ids = new Set(programmeRoutineIds(S, p))
-  const sub = { ...S, routines: (S.routines || []).filter(r => ids.has(r.id)), week: p.days || {}, programmes: { [p.id]: p } }
+  // Its weekdays as the file's week: what an older app imports as the schedule.
+  const week = {}
+  for (const a of p.schedule.appts || []) if (a.day != null) (week[a.day] ||= []).push(a.rid)
+  const sub = { ...S, routines: (S.routines || []).filter(r => ids.has(r.id)), week, programmes: { [p.id]: p } }
   return buildPlanBundle(sub, p.name)
 }
 
@@ -265,6 +269,7 @@ export function parsePlan(raw, destinationUnit = 'kg') {
     // A newer programme format than this app reads is left out rather than half understood.
     programmes: Array.isArray(data.programmes) && !(Number(data.programme_fmt) > PROGRAMME_FMT)
       ? data.programmes.filter(p => p && typeof p === 'object' && !Array.isArray(p)).slice(0, IMPORT_MAX_PROGRAMMES) : [],
+    programmeFmt: Number(data.programme_fmt) === PROGRAMME_FMT ? PROGRAMME_FMT : 1,
     // `unit` is the unit of the returned prescriptions. `sourceUnit` is null for a legacy file;
     // that absence means its numbers were intentionally treated as already in `destination`.
     unit: destination,
@@ -347,10 +352,12 @@ export function mergePlan(s, bundle, { schedule } = {}) {
     if (s.exUnit && typeof s.exUnit === 'object' && s.exUnit[nid]) continue
     s.exUnit = withExUnit(s.exUnit, nid, u)
   }
-  // Programmes, over the routines just added (lib/programmes.js importedProgramme). Never started.
+  // Programmes, over the routines just added (lib/programmes.js importedProgramme): format 1 through
+  // the converter, format 2 with its ids mapped and validated whole. Never started.
+  // ponytail: a format-2 week's own kg/lb load is not converted with the routines; a %1RM needs nothing.
   let programmes = 0
   for (const p of source.programmes || []) {
-    const got = importedProgramme(p, ridMap, exIdMap)
+    const got = importedProgramme(p, { ridMap, occMap: occurrenceMap, exMap: exIdMap, fmt: source.programmeFmt }, s)
     if (!got) continue
     s.programmes = { ...(s.programmes && typeof s.programmes === 'object' ? s.programmes : {}), [got.id]: got }
     programmes++

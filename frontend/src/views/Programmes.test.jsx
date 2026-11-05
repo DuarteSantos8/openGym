@@ -29,6 +29,8 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => to => mocks.navs.push(to
 vi.mock('../sheets.jsx', () => ({ confirmSheet: o => { mocks.confirm = o }, exportProgrammeFile: vi.fn() }))
 
 const { default: Programmes, ProgrammeEdit } = await import('./Programmes.jsx')
+const { migratedFixture } = await import('../lib/test-fixtures.js')
+const { legacyWeeksOf, setLegacyWeeks } = await import('../lib/programmes.js')
 
 // A fixed clock (only Date is faked): Monday 00:30 local, the first minutes of a week, right after
 // the EU clock change, where a UTC date would still say Sunday.
@@ -37,9 +39,10 @@ afterAll(() => { vi.useRealTimers() })
 
 let host, root
 beforeEach(() => {
+  // A v2 profile on engine contract 1, from v1 routines (r1 Push: bench; r2 Legs: squat).
   mocks.S = {
-    unit: 'kg', weekStart: 1, workouts: [], exWeights: {}, dayPlan: {}, programmes: {}, programme: null,
-    week: { 1: ['r1'] }, routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }],
+    ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }, { id: 'r2', name: 'Legs', ex: [{ id: '0043', sets: 3, reps: 5, weight: 80 }] }] }),
+    exWeights: {}, dayPlan: {}, programmes: {}, programme: null, week: { 1: ['r1'] },
   }
   mocks.sheets = []; mocks.navs = []; mocks.confirm = null; mocks.toasts = []; mocks.params = {}
   host = document.createElement('div')
@@ -58,9 +61,9 @@ describe('the programme list', () => {
     expect(host.textContent).toContain('No programmes yet.')
     click(button('Strength block, 4 weeks'))
     const [p] = Object.values(mocks.S.programmes)
-    expect(p).toMatchObject({ src: 'strength-4', name: 'Strength block, 4 weeks' })
-    expect(p.weeks).toHaveLength(4)
-    expect(mocks.S.routines).toHaveLength(4)
+    expect(p).toMatchObject({ src: 'strength-4', name: 'Strength block, 4 weeks', duration: { n: 4, unit: 'weeks' } })
+    expect(legacyWeeksOf(p)[0].t['0043']).toEqual({ pct: 72.5 })
+    expect(mocks.S.routines).toHaveLength(5)
     expect(mocks.S.week).toEqual({ 1: ['r1'] })
     expect(mocks.navs.at(-1)).toBe('/plan/prog/' + p.id)
   })
@@ -69,17 +72,17 @@ describe('the programme list', () => {
     render(<Programmes />)
     click(button('New programme'))
     const [p] = Object.values(mocks.S.programmes)
-    expect(p.days).toEqual({ 1: ['r1'] })
-    expect(p.weeks).toHaveLength(4)
+    expect(p.schedule.appts).toEqual([{ rid: 'r1', day: 1 }])
+    expect(p.duration.n).toBe(4)
   })
 })
 
 describe('a programme', () => {
-  const seed = () => {
-    mocks.S.routines.push({ id: 'r2', name: 'Legs', ex: [] })
-    mocks.S.programmes = { P: { id: 'P', name: 'Block', at: 1, days: { 3: ['r2'] }, weeks: [{ rpe: 7 }, {}] } }
+  const seed = (days = { 3: ['r2'] }) => {
+    mocks.S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ rpe: 7 }, {}], mocks.S, { days }) }
     mocks.params = { id: 'P' }
   }
+  const weeks = () => legacyWeeksOf(mocks.S.programmes.P)
 
   it('starts after a confirm, shows where it stands, and ends with the plan back', () => {
     seed()
@@ -88,6 +91,8 @@ describe('a programme', () => {
     click(button('Start programme'))
     act(() => mocks.confirm.onConfirm())
     expect(mocks.S.week).toEqual({ 3: ['r2'] })
+    // Started with the choices the old sheet stood for: advance either way, stop at the end.
+    expect(Object.values(mocks.S.programmeRuns)[0]).toMatchObject({ end: 'stop', tracks: { 't:P:r2:o0': { policy: { onFailure: 'advance', onSkipped: 'advance' } } } })
     render(<ProgrammeEdit />)
     expect(host.textContent).toContain('Week 1 of 2')
     click(button('End programme'))
@@ -100,32 +105,33 @@ describe('a programme', () => {
     seed()
     render(<ProgrammeEdit />)
     click(host.querySelector('.prog-weeks button[aria-label="Increase Weeks"]'))
-    expect(mocks.S.programmes.P.weeks).toEqual([{ rpe: 7 }, {}, {}])
+    expect(weeks()).toEqual([{ rpe: 7 }, {}, {}])
   })
 
   it('the week sheet sets a deload and an RPE', () => {
-    seed()
-    mocks.S.programmes.P.days = { 1: ['r1'] }
+    seed({ 1: ['r1'] })
     render(<ProgrammeEdit />)
     click([...host.querySelectorAll('.lrow.tap')].find(r => r.textContent.startsWith('Week 2')))
     const sheet = mocks.sheets.at(-1)
     const close = vi.fn()
     render(sheet(close))
     click(host.querySelector('[role="switch"]'))
-    expect(mocks.S.programmes.P.weeks[1]).toEqual({ deload: true })
+    expect(weeks()[1]).toEqual({ deload: true })
     render(sheet(close))
     click(button('RPE 8.5'))
-    expect(mocks.S.programmes.P.weeks[1]).toEqual({ deload: true, rpe: 8.5 })
+    expect(weeks()[1]).toEqual({ deload: true, rpe: 8.5 })
     // The lift of its routine is there to get a %1RM.
     expect(host.querySelector('.prog-pct input')).not.toBeNull()
     render(sheet(close))
     click(button('Same as last week, a bit heavier'))
-    expect(mocks.S.programmes.P.weeks[1]).toEqual({ rpe: 7 })
+    expect(weeks()[1]).toEqual({ rpe: 7 })
   })
 
   it('delete asks first, and ends it when running', () => {
     seed()
-    mocks.S.programme = { id: 'P', startedOn: '2026-10-19', cycle: 1, bump: 0, saved: { week: { 1: ['r1'] }, scheduleMode: null, rotation: null, pass: false } }
+    render(<ProgrammeEdit />)
+    click(button('Start programme'))
+    act(() => mocks.confirm.onConfirm())
     render(<ProgrammeEdit />)
     click(button('Delete programme'))
     act(() => mocks.confirm.onConfirm())

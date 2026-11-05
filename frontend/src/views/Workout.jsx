@@ -3,6 +3,7 @@ import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
+import { discardEvents, programmeView } from '../lib/programmes.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
 import { autoHoldsFor, forecastHolds, nextAutoHold } from '../lib/auto-holds.js'
@@ -1713,8 +1714,14 @@ function ActiveWorkout() {
   })
   // Ending the session without saving it. The ⋯ menu's last item since the header's ✕ became the
   // ⌄ that only leaves the screen (v1.3.11).
-  // The watch hears it was discarded, not finished (#776).
-  const discardNow = () => { markDiscarded(useStore.getState().A?.id); useStore.getState().clearActive(); stopRest(); stopWork(); nav('/home') }
+  // The watch hears it was discarded, not finished (#776). A programme slot it held keeps a
+  // disposition (spec 8.2): skipped before any work row was ticked, failed after.
+  const discardNow = () => {
+    const { A, S: st, update } = useStore.getState()
+    const events = discardEvents(A, programmeView(st, null, A))
+    if (events.length) update(s => { s.programmeEvents = { ...(s.programmeEvents || {}), ...Object.fromEntries(events.map(e => [e.id, e])) } })
+    markDiscarded(A?.id); useStore.getState().clearActive(); stopRest(); stopWork(); nav('/home')
+  }
   const discardWorkout = () => confirmSheet({
     title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
     onConfirm: discardNow,

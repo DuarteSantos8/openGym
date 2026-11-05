@@ -174,6 +174,9 @@ describe('replayProgression', () => {
     // Up to a log: what the track was after it, not after the ones that followed.
     expect(replayProgression({ workouts, trackId: 't', prescriptions, upTo: workouts[1].exposures[0] })).toMatchObject({ lastCompletedLogId: 'x1', cyclesCompleted: 0, phaseId: 'w3' })
     expect(replayProgression({ workouts, trackId: 'other', prescriptions })).toBeNull()
+    // Programme work is its run's (programme-run.js): never replayed into a track, ordinary or run-scoped.
+    const stamped = workouts.map(w => ({ exposures: w.exposures.map(x => ({ ...x, programme: { runId: 'r', slot: 'p1:a0:o' } })) }))
+    expect(replayProgression({ workouts: stamped, trackId: 't', prescriptions })).toBeNull()
   })
 })
 

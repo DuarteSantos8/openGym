@@ -266,7 +266,7 @@ describe('ordering', () => {
     useStore.setState({ S: clone(DEF), user: { id: 'user-1' }, ready: false })
     localStorage.setItem('gym_user', JSON.stringify({ id: 'user-1' }))
     api.mockImplementation(async (path, opts) => {
-      if (path === '/api/config') return { allow_guest: true }
+      if (path === '/api/config') return { allow_guest: true, engineContract: 1 }
       if (path === '/api/me') return { user: { id: 'user-1', name: 'One' } }
       if (path === '/api/data' && !opts) {
         useStore.getState().update(s => { s.restSec = 30 })   // a change while the pull is in flight

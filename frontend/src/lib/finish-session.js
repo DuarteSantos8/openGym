@@ -1,5 +1,6 @@
 // Session finalization: each exposure becomes its ExecutionLog (exact rows, the actual summary,
-// the audit saved beside them), and each non-excluded track advances once.
+// the audit saved beside them), and each non-excluded track advances once. A programme exposure
+// advances nothing here: its run replays its own track from the saved work (programme-run.js).
 import { advanceProgression, auditExecution, currentOneRm, summarizeActual } from './prescription/index.js'
 import { actualOfRow, exposuresWithPerformance } from './session-ui-adapter.js'
 import { isWarmupRow } from './workout-model.js'
@@ -15,7 +16,7 @@ export function buildCompletedSession(active, profile, { end, newId, unit }) {
   // A track twice in one session (a combined workout) advances once: from its last counted exposure
   // with completed work (an excluded one never counts), as replayProgression does.
   const worked = new Map()
-  for (const x of active.exposures || []) if (!x.excludedFromProgression && (entries.get(x.exposureId)?.sets || []).some(row => row.done && !isWarmupRow(row))) worked.set(x.trackId, x.exposureId)
+  for (const x of active.exposures || []) if (!x.excludedFromProgression && !x.programme && (entries.get(x.exposureId)?.sets || []).some(row => row.done && !isWarmupRow(row))) worked.set(x.trackId, x.exposureId)
   const exposures = exposuresWithPerformance(active.exposures || [], active.entries || [], unit).map(({ setupNote, addedInSession, ...exposure }) => {
     const p = profile.prescriptions?.[exposure.prescriptionId]
     if (!p) return exposure

@@ -27,10 +27,13 @@ import { initCoachSchedule } from '../lib/coach-schedule.js'
 import { RTL_LANGS } from '../lib/i18n-core.js'
 import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 import { migrateWarmups } from '../lib/prescription/index.js'
-import { isLegacyProfile, migrationStatus } from '../../../api/migration/profile-version.js'
+import { ENGINE_CONTRACT, contractOf, isLegacyProfile, migrationStatus } from '../../../api/migration/profile-version.js'
 import { migrateProfileV1ToV2, validateCanonicalProfile, validateCanonicalActive } from '../../../api/migration/profile-migration.js'
+import { upgradeEngineContract } from '../../../api/migration/programme-upgrade.js'
 import { assertSyncSize } from '../../../api/migration/profile-size.js'
-import { packProfile } from '../../../api/migration/profile-pack.js'
+import { packProfile, unpackProfile } from '../../../api/migration/profile-pack.js'
+import { canonicalJSON, needsOneRm } from '../../../api/engine/index.js'
+import { markBrokenProgrammes } from '../lib/programmes.js'
 import { parseState, stringifyState } from '../lib/state-codec.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
@@ -95,6 +98,45 @@ const MIRROR_OWNER_FILE = 'opengym-state-owner.json'
 const LOCAL_BACKUP_KEY = 'gym_state_v1.pre-engine-v1'
 const MIGRATION_PENDING_KEY = 'gym_engine_migration_pending'
 const MIGRATION_PENDING_FILE = 'gym_engine_migration_pending.json'
+// The v2 copy from before engine contract 1 (programmes run through the engine), kept once before
+// the upgrade replaces it (contractUp): in the browser, and on a phone in a file as well.
+const CONTRACT_BACKUP_KEY = 'gym_state_v1.pre-contract-1'
+const CONTRACT_BACKUP_FILE = STASH_FILE + '.pre-contract-1'
+// What the upgrade writes, which must read back the same through the sync's packing.
+const CONTRACT_PARTS = ['engineContractRevision', 'routines', 'programmes', 'programme', 'programmeRuns', 'programmeEvents']
+
+/**
+ * Engine contract 1 (spec 15.1): a v2 profile from before programmes ran through the engine is kept
+ * once as it was (`backup`, the stored string itself when there is one), upgraded on a copy (api/migration/programme-upgrade.js), validated and
+ * read back through the sync's packing, and only then handed over; a step that fails throws and
+ * leaves the source as it was. Runs freeze this device's timezone when no reminder names one; the
+ * reminder itself is left as it was, so no setting changes. The upgrade's summary waits in
+ * `contractNotice` until it is dismissed. Anything else comes back as it is.
+ */
+function contractUp(state, { backup = true, raw = null } = {}) {
+  if (!state || typeof state !== 'object' || !migrationStatus(state).contractRequired) return state
+  // Nothing for the upgrade to convert (no programme, no occurrence with a 1RM to adopt): it would
+  // only add the marker, which is all this does, with no copy to keep or converted record to check.
+  const list = v => (Array.isArray(v) ? v : [])
+  if (!Object.keys(state.programmes && typeof state.programmes === 'object' ? state.programmes : {}).length && state.programme == null
+    && !list(state.routines).some(r => list(r?.ex).some(o => o?.rule && !o.ref && needsOneRm(o.rule)))) return { ...state, engineContractRevision: ENGINE_CONTRACT }
+  if (backup && localStorage.getItem(CONTRACT_BACKUP_KEY) == null) {
+    localStorage.setItem(CONTRACT_BACKUP_KEY, raw ?? stringifyState(state))
+    if (localStorage.getItem(CONTRACT_BACKUP_KEY) == null) throw new Error('contract-backup-failed')
+  }
+  const { state: up, summary } = upgradeEngineContract({ ...state, reminder: { ...state.reminder, tz: state.reminder?.tz || localTZ() } }, LIB_BY_ID)
+  const out = { ...up }
+  if ('reminder' in state) out.reminder = state.reminder; else delete out.reminder
+  const check = validateCanonicalProfile(out)
+  if (!check.ok) throw new Error('invalid-upgrade ' + check.errors[0])
+  // Packed as it travels, from copies of the lists (pack's identity cache must never hold ours).
+  const back = unpackProfile(JSON.parse(JSON.stringify(packProfile({ ...out, workouts: [...(out.workouts || [])], prescriptions: { ...out.prescriptions } }))))
+  for (const k of CONTRACT_PARTS) if (canonicalJSON(back[k] ?? null) !== canonicalJSON(out[k] ?? null)) throw new Error('upgrade-not-lossless ' + k)
+  if (summary.length) out.contractNotice = summary
+  return out
+}
+// A contract-1 load that failed: the screen says so (migration error) and the copy stays as it was.
+let contractError = null
 const CHECK_MIN_MS = 3000    // rev checks closer together than this are the same event (focus + visibility)
 const POLL_MS = 30000        // while the app is open and signed in, ask the server for its revision this often
 const AUTO_BACKUP_SOON_MS = 2000   // several photos picked at once make one backup
@@ -106,7 +148,8 @@ const gainedWorkoutMedia = (prev, next) => {
   return workoutMediaHashes(next).some(h => !had.has(h))
 }
 export const DEF = {
-  engineSchemaVersion: 2, prescriptions: {}, oneRepMaxes: {}, progression: {},
+  // A copy started here is on engine contract 1 from the start: it has no programme of the old shape.
+  engineSchemaVersion: 2, engineContractRevision: ENGINE_CONTRACT, prescriptions: {}, oneRepMaxes: {}, progression: {},
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'lime', body: 'male', targetW: null,
   // The weekly-rate corridor on the body-weight card (#759, lib/bodyweight.js rateCorridor).
@@ -373,11 +416,15 @@ function loadState() {
       // A v1 copy waits, untouched, for the migration screen: overlaying it on DEF would label it
       // engineSchemaVersion 2 without converting anything.
       if (migrationStatus(stored).required) return clone(DEF)
-      const parsed = sanitizeAccent(Object.assign(clone(DEF), stored))
+      // Upgraded before it meets DEF, whose marker would otherwise label it without converting anything.
+      let up = stored
+      try { up = contractUp(stored, { raw }) } catch (e) { contractError = String(e?.message || e) }
+      const parsed = sanitizeAccent(Object.assign(clone(DEF), up))
+      if (up === stored && contractOf(stored) < ENGINE_CONTRACT) delete parsed.engineContractRevision
       if (!stored.lang) parsed.lang = detectedLang()
       const S = migrateWarmups(parsed)
       // Written once, here, before the store is exposed; the next load finds nothing to do.
-      if (S !== parsed) localStorage.setItem(KEY, stringifyState(S))
+      if (S !== parsed || up !== stored) localStorage.setItem(KEY, stringifyState(S))
       return S
     }
   } catch (e) { /* ignore */ }
@@ -516,6 +563,21 @@ export const useStore = create((set, get) => {
   let releasing = false   // the migration handed over to boot(): sync and writes run again
   // Behind the migration screen nothing may pull, push or overwrite the copy it is about to convert.
   const gated = () => !!get().migration && !releasing
+  // A copy that comes in (a pull, a 409's answer, an adoption, an import, the phone's mirror) on
+  // contract 0 is upgraded before anything merges or keeps it; a failure keeps the live copy and
+  // the backup and puts the migration screen up in its error state.
+  const incoming = state => {
+    try { return contractUp(state) } catch (e) { set({ migration: { phase: 'error', reason: 'contract', error: String(e?.message || e) } }); throw e }
+  }
+  // The phone's own mirror: its contract-0 copy is kept in a file of its own first (CONTRACT_BACKUP_FILE).
+  const nativeIncoming = async state => {
+    if (!state || !migrationStatus(state).contractRequired) return state
+    if (!(await readJsonFile(CONTRACT_BACKUP_FILE))) {
+      await writeJsonFile(CONTRACT_BACKUP_FILE, state, true)
+      if (!(await readJsonFile(CONTRACT_BACKUP_FILE))) { set({ migration: { phase: 'error', reason: 'contract' } }); throw new Error('contract-backup-failed') }
+    }
+    return incoming(state)
+  }
 
   const readAdopt = () => { try { return JSON.parse(localStorage.getItem(ADOPT_KEY)) || null } catch { return null } }
   const writeAdopt = v => { try { if (v) localStorage.setItem(ADOPT_KEY, JSON.stringify(v)); else localStorage.removeItem(ADOPT_KEY) } catch { /* the hold in memory still stands */ } }
@@ -913,6 +975,15 @@ export const useStore = create((set, get) => {
     // (api/sync-stamps.js).
     // An older app's owed copy over the revision it read: the server stamps what that app changed
     // against the copy it holds, exactly as it would for that app (api/sync-stamps.js).
+    // Spec 16: a copy on a newer engine contract than the server reads (GET /api/config
+    // `engineContract`) is never pushed over its copy; it stays owed here until the server is updated.
+    // ponytail: a config this boot could not read lets the push go; the server's own gate is the backstop.
+    const cfg = get().config
+    if (cfg && contractOf(S) > (Number(cfg.engineContract) || 0)) {
+      markOwed(true)
+      if (get().syncBlocked !== 'server-upgrade') set({ syncBlocked: 'server-upgrade' })
+      return
+    }
     const legacy = readLegacy()
     const body = { state: packProfile(S), stamped: !(legacy && legacy.owner === get().user?.id) }
     if (asReplace != null) { body.baseRev = asReplace.rev; if (asReplace.wid) body.baseWid = asReplace.wid }
@@ -925,6 +996,7 @@ export const useStore = create((set, get) => {
       else writeSync(r.rev, S._ts, r.wid)
       if (legacy) clearLegacy()
       markOwed(false)
+      if (get().syncBlocked) set({ syncBlocked: null })
       toldTooLarge = false
       confirmed(S)
       // Back from offline with changes that were waiting: say so once — the banner that promised
@@ -946,7 +1018,10 @@ export const useStore = create((set, get) => {
             .then(({ useUI }) => useUI.getState().toast(t('Another device synced while you were importing, so its changes were kept next to the backup.')))
             .catch(() => {})
         }
-        mergeInto(get().S, migrateWarmups(e.data.state), e.data.rev || 0)
+        // A copy this build cannot upgrade is not merged: this one stays owed (incoming says why).
+        let theirs
+        try { theirs = incoming(e.data.state) } catch { markOwed(true); return }
+        mergeInto(get().S, migrateWarmups(theirs), e.data.rev || 0)
         return doPush(attempt + 1)
       }
       // Whatever went wrong — no network, a refused token, a phone without a pairing, a server
@@ -1187,11 +1262,13 @@ export const useStore = create((set, get) => {
      sign-out wipes the rest. */
   const stashKey = (server, uid) => (server || '') + '|' + uid
   const canonicalStash = entry => {
-    if (!entry?.state || !isLegacyProfile(entry.state)) return entry
+    // A stash keeps its own copy until it is applied: upgraded without a backup of its own.
+    if (entry?.state && !isLegacyProfile(entry.state)) return { ...entry, state: contractUp(entry.state, { backup: false }) }
+    if (!entry?.state) return entry
     const { profile, activeSession } = migrateProfileV1ToV2({ ...entry.state, active: entry.active || entry.state.active }, LIB_BY_ID)
     const check = validateCanonicalProfile(profile)
     if (!check.ok) throw new Error(check.errors[0])
-    return { ...entry, state: profile, active: activeSession }
+    return { ...entry, state: contractUp(profile, { backup: false }), active: activeSession }
   }
   const readStashes = async () => {
     let all = {}
@@ -1389,6 +1466,7 @@ export const useStore = create((set, get) => {
     // A v1 document answered as it is can only come from an API not yet updated (this one's gate
     // answers migration-required): taken over DEF it would read as v2, and be pushed back so.
     if (isLegacyProfile(state)) { if (!owedMark) releaseAdopt(); await get().openMigration(); return { adopted: false, added: false } }
+    state = incoming(state)
     let asked = false
     const askAbout = async extras => {
       if (!(extras.workouts || extras.bodyweight || extras.customEx || extras.routines || extras.setup) || typeof ask !== 'function') return false
@@ -1400,7 +1478,7 @@ export const useStore = create((set, get) => {
     // the server's, so the next pull still brings in what changed.
     const reread = async () => {
       if (!asked) return
-      try { const r = await api('/api/data'); if (r && r.state) ({ state, rev } = r) } catch { /* the first read */ }
+      try { const r = await api('/api/data'); if (r && r.state && !isLegacyProfile(r.state)) ({ state, rev } = { state: incoming(r.state), rev: r.rev }) } catch { /* the first read */ }
     }
     const takeServer = () => {
       const copy = sanitizeAccent(Object.assign(clone(DEF), migrateWarmups(state)))
@@ -1525,6 +1603,7 @@ export const useStore = create((set, get) => {
     catch { set({ migration: { phase: 'error' } }); return }
     if (isLegacyProfile(saved)) { await get().openMigration(); return }
     if (!saved || (saved._ts || 0) <= (get().S._ts || 0)) return
+    try { saved = await nativeIncoming(saved) } catch { return }
     const of = await readJsonFile(MIRROR_OWNER_FILE)
     const who = remote?.user?.id || null
     let owner = null
@@ -1692,7 +1771,9 @@ export const useStore = create((set, get) => {
     // The engine migration screen (views/MigrationGate.jsx). null, or { phase: 'checking' |
     // 'confirm' | 'working' | 'error', stage, summary, serverRev, importData }. While set, persist,
     // pull and push are all off (gated) — see openMigration / confirmMigration.
-    migration: localNeedsGate() ? { phase: 'checking' } : null,
+    migration: localNeedsGate() ? { phase: 'checking' } : contractError ? { phase: 'error', reason: 'contract', error: contractError } : null,
+    // 'server-upgrade' while the server cannot read this copy's engine contract (doPush): nothing is pushed.
+    syncBlocked: null,
     // The connection as the screens show it — see statusOf above for every field.
     sync: sync0,
     /* Instance capabilities from GET /api/config. `config.coach` is present only when the owner
@@ -1759,6 +1840,9 @@ export const useStore = create((set, get) => {
       const draft = draftOf(prev)
       mut(draft.S)
       const S = draft.done()
+      // An edit that removed or swapped an occurrence a programme binds marks that programme for
+      // repair in the same change (lib/programmes.js), so the profile stays valid everywhere.
+      if (S.routines !== prev.routines) markBrokenProgrammes(S)
       // The stamps below write the change's records into these two maps in place (stampDeletions,
       // stampEdits); a draft that never touched them still shares them with the previous state.
       for (const k of ['deleted', 'edited']) if (S[k] && typeof S[k] === 'object' && S[k] === prev[k]) S[k] = clone(S[k])
@@ -1780,6 +1864,8 @@ export const useStore = create((set, get) => {
         backupTm = setTimeout(() => { backupTm = null; get().autoBackupNow() }, AUTO_BACKUP_SOON_MS)
       }
     },
+    // The engine-contract upgrade's summary (contractUp), shown until the person dismisses it.
+    dismissContractNotice() { if (get().S.contractNotice) get().update(s => { delete s.contractNotice }) },
     // An edit of a saved workout (lib/session-edit.js) is saved or dropped like any other change:
     // the store's own sync takes it to the server, and a conflict on the way is settled by
     // mergeStates like one between two devices. A save that cannot happen throws before anything
@@ -1887,7 +1973,7 @@ export const useStore = create((set, get) => {
       importRead = null
       const server = read?.state || null
       const now = Math.max(Date.now(), highestStamp(cur) + 1, highestStamp(server) + 1, highestStamp(backup) + 1)
-      const next = sanitizeAccent(Object.assign(clone(DEF), backup))
+      const next = sanitizeAccent(Object.assign(clone(DEF), incoming(backup)))
       const active = next.active
       delete next.active
       const check = validateCanonicalProfile(next)
@@ -2107,9 +2193,10 @@ export const useStore = create((set, get) => {
           const res = await api('/api/data')
           lastCheck = Date.now()
           reached()
-          const { state, rev } = res
+          let { state, rev } = res
           // As in runAdopt: a v1 document is an API still to be updated, never a copy to adopt.
           if (isLegacyProfile(state)) { await get().openMigration(); return }
+          state = incoming(state)
           const S = get().S
           const { base, owed } = metaOf()
           // Owed to the server: a push that failed, or a change made while boot was still pulling.
@@ -2491,6 +2578,7 @@ export const useStore = create((set, get) => {
         }
         const S = get().S
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
+          try { saved = await nativeIncoming(saved) } catch { finishBoot(); return }
           persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
         } else if (hasData(S)) {
           nativePersist(true)   // first run after an update from a file-less version: seed the mirror
