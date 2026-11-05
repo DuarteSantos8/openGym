@@ -102,14 +102,17 @@ h1, h2, h3 { font-weight: 700; letter-spacing: -.02em }
 .bilan-note{margin:0;line-height:1.4}
 .bilan-bars+.bilan-note{margin-top:14px}
 .bilan-bars{display:flex;flex-direction:column;gap:10px}
-.bilan-bar{display:grid;grid-template-columns:minmax(96px,32%) 1fr 40px;align-items:center;gap:10px;font-size:14px}
-.bilan-bar .nm{color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bilan-bar{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr) 34px;align-items:center;gap:12px;font-size:14px}
+.bilan-bar .nm{color:var(--label-2);line-height:1.25;overflow-wrap:anywhere}
 .bilan-bar .track{height:8px;border-radius:99px;background:var(--surface-3);overflow:hidden}
 .bilan-bar .track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--brand-coral),var(--brand-orange))}
 .bilan-bar .v{text-align:end;font-variant-numeric:tabular-nums;color:var(--label)}
 .bilan-balance{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid var(--sep)}
-.bilan-balance div{display:flex;flex-direction:column;gap:2px;min-width:0}
-.bilan-balance .l{font-size:12px;color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bilan-balance div{display:flex;flex-direction:column;justify-content:space-between;gap:4px;min-width:0}
+.bilan-balance .l{font-size:12px;line-height:1.25;color:var(--label-2)}
 .bilan-balance b{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
 .bilan-flag{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:14px;color:var(--orange)}
 .bilan-flag .icn{flex:none}
+
+/* French titles are not Title Case: the today row left a rest day as "Jour De Repos". */
+.today-row .ttl{text-transform:none}
