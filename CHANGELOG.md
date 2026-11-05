@@ -85,6 +85,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Stats: an exercise kept out of progression is kept out of the statistics too, while a deload's workouts still count (#813, thanks @lodepav).
 - iPhone and Android: the tab bar names are 11 px, the smallest size Apple's guidelines allow (#710, thanks @olestrr).
 - Rotation and day reminders: a routine named "Push + Pull" counts as done by its whole name, a workout dated in the future has not happened yet, a week without a date is not read as finished, and an old state file with an empty workout no longer stops the day reminder (#567, thanks @kurktchiev).
+- Import from Hevy: 429 of Hevy's templates now land on the exercise their own artwork shows, up from 297, so far fewer come in as custom exercises (#807, thanks @lodepav).
 
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
