@@ -3,17 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
-import { buildPlanBundle } from '../lib/plan-share.js'
-import { studentProgress, studentPerformance } from '../lib/student-progress.js'
 import { filterStudents, filterCounts, quietDays } from '../lib/student-filter.js'
 import { t } from '../lib/i18n.js'
-import { fmtDate, fmtNum, fmtVol, fmtDur, exerciseNameText } from '../lib/format.js'
-import { exOr } from '../lib/exercises.js'
+import { fmtDate, fmtNum } from '../lib/format.js'
 import { auditCat, auditLine, fmtWhen } from '../lib/audit.js'
-import { workoutVolume, setsDone } from '../lib/history.js'
-import { confirmSheet, menuSheet } from '../sheets.jsx'
+import { confirmSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
-import StudentPlanSheet from '../components/StudentPlanSheet.jsx'
 import { Button } from '../components/ui.jsx'
 import AdminCoach from './AdminCoach.jsx'
 import '../admin.css'
@@ -87,9 +82,8 @@ function TeacherSheet({ student, self, onChanged, close }) {
 
 function UserDetail({ id, viewerOwner, onChanged, close }) {
   const me = useStore(s => s.user)
+  const nav = useNavigate()
   const [d, setD] = useState(null)
-  const [showArchived, setShowArchived] = useState(false)
-  const [picked, setPicked] = useState(null)     // ids chosen for archive / delete; null = not selecting
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
   const load = () => api('/api/admin/user?id=' + encodeURIComponent(id)).then(setD).catch(e => toast(e.message))
@@ -157,59 +151,6 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       .then(r => { onChanged(); close(); openSheet(done => <RecoveryCodeSheet name={r.name} code={r.code} expires={r.expires} close={done} />, { locked: true }) })
       .catch(e => toast(e.message)),
   })
-  // The teacher's own routines and weekly schedule, as the plan file carries them, into the
-  // student's inbox: they accept it on their phone (sheets.jsx checkPlanInbox).
-  const sendPlan = () => {
-    const bundle = buildPlanBundle(useStore.getState().S, t('Plan from {0}', me?.name || t('your teacher')))
-    if (!bundle.routines.some(r => r.ex.length)) return toast(t('Build the plan in your own Plan tab first, then send it from here.'))
-    confirmSheet({
-      title: t('Send your plan to {0}?', u.name),
-      message: t('{0} routine(s) and your weekly schedule. They choose whether to add it. Nothing of theirs is changed until they do.', bundle.routines.length),
-      confirmText: t('Send plan'),
-      onConfirm: () => api('/api/admin/user/plan', { method: 'POST', body: JSON.stringify({ id: u.id, bundle }) })
-        .then(r => toast(t('Sent. {0} waiting for {1}.', r.pending, u.name))).catch(e => toast(e.message))
-    })
-  }
-  // Workouts: archive keeps them (out of the numbers, one tap to bring back); delete removes them
-  // from the student's own record too. The owner may delete anyone's, a teacher a student's.
-  const canDeleteWorkouts = viewerOwner || !u.admin
-  const act = (path, body, done) => api(path, { method: 'POST', body: JSON.stringify({ id: u.id, ...body }) })
-    .then(r => { done(r); setPicked(null); load(); onChanged() }).catch(e => toast(e.message))
-  const archive = (ids, archived) => act('/api/admin/user/workouts/archive', { workouts: ids, archived },
-    r => toast(archived ? t('{0} archived', r.changed) : t('{0} restored', r.changed)))
-  const removeWorkouts = ids => confirmSheet({
-    title: t('Delete {0} workout(s)?', ids.length),
-    message: t('They are removed from {0}’s own record too, on their phone as well, and this cannot be undone. Archive them instead to keep them.', u.name),
-    confirmText: t('Delete'), danger: true,
-    onConfirm: () => act('/api/admin/user/workouts/delete', { workouts: ids }, r => toast(t('{0} deleted', r.removed)))
-  })
-  const rowMenu = w => menuSheet({
-    title: w.name,
-    items: [
-      { icon: w.archived ? 'reset' : 'folder', label: w.archived ? t('Restore') : t('Archive'), sub: w.archived ? t('Counts in the numbers again') : t('Keeps it, leaves it out of the numbers'), onClick: () => archive([String(w.id)], !w.archived) },
-      canDeleteWorkouts && { icon: 'trash', label: t('Delete'), danger: true, onClick: () => removeWorkouts([String(w.id)]) }
-    ]
-  })
-  // The same two actions for a plan (a ficha): archive marks it for the teacher, delete removes it
-  // from the student's own plan, and the weekdays that held it, on their phone too.
-  const archiveRoutine = (r, archived) => act('/api/admin/user/routines/archive', { routines: [String(r.id)], archived },
-    x => toast(archived ? t('{0} archived', x.changed) : t('{0} restored', x.changed)))
-  const removeRoutine = r => confirmSheet({
-    title: t('Delete “{0}”?', r.name),
-    message: t('The plan is removed from {0}’s own plan too, on their phone as well, and this cannot be undone. Archive it instead to keep it.', u.name),
-    confirmText: t('Delete'), danger: true,
-    onConfirm: () => act('/api/admin/user/routines/delete', { routines: [String(r.id)] }, x => toast(t('{0} deleted', x.removed)))
-  })
-  const routineMenu = r => menuSheet({
-    title: r.name,
-    items: [
-      { icon: r.archived ? 'reset' : 'folder', label: r.archived ? t('Restore') : t('Archive'), sub: r.archived ? t('Not archived any more') : t('Marks it as archived for you; the student keeps it'), onClick: () => archiveRoutine(r, !r.archived) },
-      canDeleteWorkouts && { icon: 'trash', label: t('Delete'), danger: true, onClick: () => removeRoutine(r) }
-    ]
-  })
-  const prog = studentProgress(d)
-  const perf = studentPerformance(d)
-  const delta = (x, unit) => x?.delta == null ? '' : ' (' + (x.delta > 0 ? '+' : '') + x.delta + unit + ')'
   return <>
     <h3 className="capitalize">{u.name}</h3>
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '8px 0 12px' }}>
@@ -230,35 +171,8 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <div className="tile"><div className="l">Routines</div><div className="v v-sm">{d.routines.length}</div></div>
       <div className="tile"><div className="l">Last sync</div><div className="v" style={{ fontSize: 'var(--fs-subhead)' }}>{rel(d.lastSync)}</div></div>
     </div>
-    <h4 className="sec">{t('Progress')}</h4>
-    <div className="tiles" style={{ textAlign: 'start' }}>
-      <div className="tile"><div className="l">{t('Weight')}</div><div className="v" style={{ fontSize: '.95rem' }}>{prog.weight ? prog.weight.last + ' ' + d.unit + delta(prog.weight, '') : '–'}</div></div>
-      <div className="tile"><div className="l">{t('Body fat')}</div><div className="v" style={{ fontSize: '.95rem' }}>{prog.bodyFat ? prog.bodyFat.last + '%' + delta(prog.bodyFat, ' pts') : '–'}</div></div>
-      <div className="tile"><div className="l">{t('Workouts, 30 days')}</div><div className="v" style={{ fontSize: '.95rem' }}>{prog.last30.count} <span className="dim">{t('vs {0} before', prog.prev30.count)}</span></div></div>
-      <div className="tile"><div className="l">{t('Volume, 30 days')}</div><div className="v" style={{ fontSize: '.95rem' }}>{fmtVol(prog.last30.volume, d.unit)}</div></div>
-      <div className="tile"><div className="l">{t('PRs, 30 days')}</div><div className="v" style={{ fontSize: '.95rem' }}>{prog.last30.prs}</div></div>
-    </div>
-    <h4 className="sec">{t('Performance')}</h4>
-    <div className="tiles" style={{ textAlign: 'start' }}>
-      <div className="tile"><div className="l">{t('Sessions a week')}</div><div className="v" style={{ fontSize: '.95rem' }}>{perf.perWeek}{perf.planned ? <span className="dim"> {t('of {0} planned', perf.planned)}</span> : null}</div></div>
-      <div className="tile"><div className="l">{t('Adherence')}</div><div className="v" style={{ fontSize: '.95rem' }}>{perf.adherence == null ? '–' : perf.adherence + '%'}</div></div>
-    </div>
-    {perf.planned == null && <div className="adm-hint">{t('Adherence needs a plan with days set.')}</div>}
-    <div className="adm-lead" style={{ margin: '10px 0 4px' }}>{t('Volume per week, last 8 weeks')}</div>
-    <div role="img" aria-label={t('Volume per week, last 8 weeks')} style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 54 }}>
-      {perf.weeks.map((wk, i) => { const top = Math.max(1, ...perf.weeks.map(x => x.volume)); return <div key={i} title={fmtVol(wk.volume, d.unit) + ' · ' + wk.count} style={{ flex: 1, height: Math.max(3, Math.round(wk.volume / top * 54)), background: wk.count ? 'var(--acc)' : 'var(--sep)', borderRadius: 3, opacity: i === perf.weeks.length - 1 ? 1 : .7 }} /> })}
-    </div>
-    {perf.strength.length > 0 && <>
-      <div className="adm-lead" style={{ margin: '12px 0 2px' }}>{t('Estimated 1RM, last 120 days')}</div>
-      {perf.strength.map(x => <div key={x.id} className="row between" style={{ padding: '6px 2px', borderBottom: 'var(--hair) solid var(--sep)' }}>
-        <span className="small">{exerciseNameText(exOr(x.id))}</span>
-        <span className="small muted">{x.first} → {x.last} {d.unit} <b style={{ color: x.delta >= 0 ? 'var(--green)' : 'var(--red)' }}>{x.delta > 0 ? '+' : ''}{x.pct}%</b></span>
-      </div>)}
-    </>}
-    <button className="btn primary" style={{ margin: '12px 0 4px' }} onClick={() => openSheet(done => <StudentPlanSheet student={u} close={done} />)}>{t('Create plan for {0}', u.name)}</button>
-    <div className="adm-hint">{t('Build the routines right here. They go to {0}’s inbox and they add them with one tap.', u.name)}</div>
-    <button className="btn" style={{ margin: '12px 0 4px' }} onClick={sendPlan}>{t('Send my plan')}</button>
-    <div className="adm-hint">{t('Sends your routines and weekly schedule to {0}. They add it with one tap.', u.name)}</div>
+    <button className="btn primary" style={{ margin: '12px 0 4px' }} onClick={() => { close(); nav('/students/' + encodeURIComponent(u.id)) }}>{t('Open {0}’s page', u.name)}</button>
+    <div className="adm-hint">{t('Plans, performance and workouts live on the student’s page, under Students.')}</div>
     {viewerOwner && (!u.admin || u.owner) && <>
       <button className="btn" style={{ margin: '12px 0 4px' }} onClick={() => openSheet(done => <TeacherSheet student={u} self={u.owner} onChanged={onChanged} close={done} />)}>{t('Teacher: {0}', u.teacherName || t('none'))}</button>
       <div className="adm-hint">{t('Teachers see only their own students. A student who joins with a teacher’s invite code is theirs automatically.')}</div>
@@ -312,38 +226,6 @@ function UserDetail({ id, viewerOwner, onChanged, close }) {
       <div className="adm-hint">Lost every device and passkey? A one-time code gives a new device a passkey for this profile. Works with or without password sign-in.</div>
     </>}
     {u.owner && u.id !== me?.id && <div className="adm-hint" style={{ marginTop: 14 }}>A locked-out owner gets a recovery code from the server itself: <code>docker compose exec api node recover.js "{u.name}"</code></div>}
-    <h4 className="sec">{t('Plans')}</h4>
-    {d.routines.length ? <div className="list" style={{ gap: 0 }}>
-      {d.routines.map(r => <div key={r.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)', opacity: r.archived ? .55 : 1 }}>
-        <div className="grow"><div className="small" style={{ fontWeight: 600 }}>{r.emoji ? r.emoji + ' ' : ''}{r.name}{r.archived && <span className="adm-pill" style={{ marginInlineStart: 6 }}>{t('archived')}</span>}</div>
-          <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{t('{0} exercises', r.count)}</div></div>
-        <button className="iconbtn adm-iconbtn" onClick={() => routineMenu(r)} aria-label={t('Plan options')}><Icon name="more" /></button>
-      </div>)}
-    </div> : <div className="adm-empty">{t('No plans yet.')}</div>}
-    <div className="row between"><h4 className="sec" style={{ margin: 0 }}>Workout history</h4>
-      {workouts.length > 0 && <button className="btn" style={{ padding: '4px 10px' }} onClick={() => setPicked(picked ? null : [])}>{picked ? t('Done') : t('Select')}</button>}</div>
-    {perf.archived > 0 && <button className="chip" style={{ margin: '8px 0' }} aria-pressed={showArchived} onClick={() => setShowArchived(v => !v)}>{showArchived ? t('Hide archived') : t('Show archived ({0})', perf.archived)}</button>}
-    {(() => {
-      const rows = workouts.filter(w => showArchived || !w.archived)
-      if (!rows.length) return <div className="adm-empty">{workouts.length ? t('Everything is archived.') : 'No workouts logged.'}</div>
-      return <>
-        {picked && <div className="row" style={{ gap: 6, margin: '8px 0', flexWrap: 'wrap' }}>
-          <button className="btn" onClick={() => setPicked(rows.map(w => String(w.id)))}>{t('Select all')}</button>
-          <button className="btn" disabled={!picked.length} onClick={() => archive(picked, true)}>{t('Archive')} ({picked.length})</button>
-          {canDeleteWorkouts && <button className="btn danger" disabled={!picked.length} onClick={() => removeWorkouts(picked)}>{t('Delete')} ({picked.length})</button>}
-        </div>}
-        <div className="list" style={{ gap: 0 }}>
-          {rows.slice(0, 60).map(w => <div key={w.id} className="row between" style={{ padding: '9px 2px', borderBottom: '1px solid var(--sep)', opacity: w.archived ? .55 : 1 }}
-            onClick={picked ? () => setPicked(p => (p.includes(String(w.id)) ? p.filter(x => x !== String(w.id)) : [...p, String(w.id)])) : undefined}>
-            {picked && <input type="checkbox" readOnly checked={picked.includes(String(w.id))} aria-label={w.name} style={{ marginInlineEnd: 10 }} />}
-            <div className="grow"><div className="small" style={{ fontWeight: 600 }}>{w.name}{w.archived && <span className="adm-pill" style={{ marginInlineStart: 6 }}>{t('archived')}</span>}</div>
-              <div className="dim" style={{ fontSize: 'var(--fs-caption2)' }}>{fmtDate(w.d, true)} · {fmtDur((w.end || w.start) - w.start)} · {setsDone(w)} sets{w.prs?.length ? ' · ' + w.prs.length + ' PR' : ''}</div></div>
-            <span className="small muted">{fmtVol(w.vol ?? workoutVolume(w), d.unit)}</span>
-            {!picked && <button className="iconbtn adm-iconbtn" onClick={() => rowMenu(w)} aria-label={t('Workout options')}><Icon name="more" /></button>}
-          </div>)}
-        </div>
-      </>
-    })()}
   </>
 }
 
@@ -462,6 +344,7 @@ export default function Admin() {
   // Opened from Settings → AI Coach (the hosted app's way to the Coach, which is the server's):
   // straight to the Coach card rather than the top of the page.
   const toCoach = useLocation().state?.section === 'coach'
+  const openFromStudent = useLocation().state?.openUser
   const coachRef = useRef(null)
   useEffect(() => {
     if (!toCoach) return
@@ -497,6 +380,8 @@ export default function Admin() {
   // From the list rather than the stored session, which may predate a handover.
   const viewerOwner = !!(users || []).find(u => u.id === user.id)?.owner
   const openUser = id => openSheet(close => <UserDetail id={id} viewerOwner={viewerOwner} onChanged={loadUsers} close={close} />)
+  // Coming from a student's page ("Account and access"): open that person's sheet once the list knows who is the owner.
+  useEffect(() => { if (openFromStudent && users) { openUser(openFromStudent); nav('/admin', { replace: true, state: null }) } }, [!!users])
   const liveUsers = (users || []).filter(u => u.live)
   const activeCount = (users || []).filter(u => u.lastSync && Date.now() - u.lastSync < 7 * 86400000).length
   const disabledCount = (users || []).filter(u => u.disabled).length
@@ -517,6 +402,7 @@ export default function Admin() {
     </div>
     <div className="adm-intro">
       Everything about running this instance: who uses it, how they get in, the AI Coach, and what has happened on it. Nothing here shows anyone's training data beyond counts.
+      {' '}{t('Teaching someone? Their plans, performance and workouts are under')} <button style={{ background: 'none', border: 0, padding: 0, color: 'var(--acc)', font: 'inherit', textDecoration: 'underline' }} onClick={() => nav('/students')}>{t('Students')}</button>.
     </div>
 
     {usersErr && <div className="card" role="alert" style={{ borderColor: 'var(--red)' }}>
@@ -574,7 +460,6 @@ export default function Admin() {
             <div className="ss">{u.live ? 'training now · ' + u.live.name : u.workouts + ' workouts' + (u.lastWorkout ? ' · last ' + fmtDate(u.lastWorkout) : '') + ' · last sync ' + rel(u.lastSync)}</div>
             {viewerOwner && u.teacherName && u.teacher !== user.id && <div className="ss">{t('Teacher: {0}', u.teacherName)}</div>}
             {u.email && <div className="ss" title="sign-in e-mail">{u.email}</div>}</div>
-          {!u.admin && !u.disabled && <button className="iconbtn adm-iconbtn" onClick={e => { e.stopPropagation(); openSheet(done => <StudentPlanSheet student={u} close={done} />) }} aria-label={t('Create plan for {0}', u.name)} title={t('Create plan for {0}', u.name)}><Icon name="clipboard" /></button>}
           {u.hasPush && <Icon name="bell" title="push notifications on" style={{ fontSize: 'var(--fs-subhead)', color: 'var(--label-3)' }} />}<Icon name="chevronRight" className="chev" />
         </div>)}
         {users && !users.length && <div className="adm-empty">No users yet.</div>}

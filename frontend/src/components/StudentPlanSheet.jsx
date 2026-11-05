@@ -18,7 +18,7 @@ const letter = i => String.fromCharCode(65 + (i % 26))
 // exercises (the same picker and set editor as the Plan tab) and, if wanted, the weekdays each
 // one is for. It goes to the student's inbox, where they add it with one tap; nothing in their
 // own plan changes before they do. The teacher's own plan is not touched either.
-export default function StudentPlanSheet({ student, close }) {
+export default function StudentPlanSheet({ student, onSent, close }) {
   const toast = useUI(s => s.toast)
   const unit = useStore(s => s.S.unit) || 'kg'
   const [name, setName] = useState(t('Plan for {0}', student.name))
@@ -52,12 +52,13 @@ export default function StudentPlanSheet({ student, close }) {
     const S = { unit, routines: ready.map(r => ({ id: r.id, name: r.name.trim() || t('Routine'), ex: r.ex })), week, customEx: useStore.getState().S.customEx || [] }
     const bundle = buildPlanBundle(S, name.trim() || t('Plan for {0}', student.name))
     api('/api/admin/user/plan', { method: 'POST', body: JSON.stringify({ id: student.id, bundle }) })
-      .then(r => { toast(t('Sent. {0} waiting for {1}.', r.pending, student.name)); close() })
+      .then(r => { toast(t('Sent. {0} waiting for {1}.', r.pending, student.name)); onSent?.(); close() })
       .catch(e => { setBusy(false); toast(e.message) })
   }
 
   return <>
     <h3>{t('Plan for {0}', student.name)}</h3>
+    <div className="adm-pill acc" style={{ margin: '0 0 8px', display: 'inline-block' }}>{t('Not your own plan: this one is for {0}.', student.name)}</div>
     <div className="adm-lead">{t('Build the routines here. {0} adds the plan with one tap; nothing of theirs changes before that.', student.name)}</div>
     <input className="input" value={name} onChange={e => setName(e.target.value)} aria-label={t('Plan name')} placeholder={t('Plan name')} maxLength={80} style={{ marginBottom: 10 }} />
     {routines.map(r => <div key={r.id} className="card" style={{ marginBottom: 10 }}>

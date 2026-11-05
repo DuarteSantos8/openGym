@@ -19,6 +19,8 @@ const FILTERS = {
   live: u => !!u.live,
   quiet: (u, _me, now) => isQuiet(u, now),
   mine: (u, me) => !!me && u.teacher === me && u.id !== me,
+  // Nobody to train yet: no plan on their side and none on its way.
+  noplan: u => !u.admin && !u.disabled && u.routines === 0 && !u.pending,
   disabled: u => !!u.disabled
 }
 
@@ -43,4 +45,18 @@ export function filterStudents(users, { query = '', filter = 'all', sort = 'rece
   return users
     .filter(u => keep(u, me, now) && (!q || fold(u.name).includes(q) || fold(u.email).includes(q)))
     .sort(SORTS[sort] || SORTS.recent)
+}
+
+// The strip at the top of the Students screen: who the teacher looks after and who needs a word.
+// Other admins (and the teacher themself) are not students; a disabled profile is not "away".
+export function hubSummary(users, me, now = Date.now()) {
+  const students = users.filter(u => !u.admin && u.id !== me)
+  const active = students.filter(u => !u.disabled)
+  return {
+    students: students.length,
+    live: active.filter(u => u.live).length,
+    quiet: active.filter(u => FILTERS.quiet(u, me, now)).length,
+    noplan: active.filter(u => FILTERS.noplan(u)).length,
+    pending: active.reduce((n, u) => n + (u.pending || 0), 0)
+  }
 }

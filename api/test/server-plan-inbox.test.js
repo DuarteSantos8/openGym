@@ -223,3 +223,19 @@ test('a teacher deletes or archives a student\'s plan (ficha), and the weekdays 
   assert.equal((await call('tA', 'POST', '/api/admin/user/routines/delete', { id: 'sB', routines: ['x'] })).status, 404);
   assert.equal((await call('tA', 'POST', '/api/admin/user/routines/delete', { id: 'sA', routines: [] })).status, 400);
 });
+
+test('a teacher sees what is waiting for a student and takes a plan back', async t => {
+  const call = await startScoped(t, states());
+  await call('tA', 'POST', '/api/admin/user/plan', { id: 'sA', bundle: plan });
+  const d = (await call('tA', 'GET', '/api/admin/user?id=sA')).body;
+  assert.equal(d.pending.length, 1);
+  assert.deepEqual([d.pending[0].name, d.pending[0].from, d.pending[0].routines], ['Plan from Coach', 'TeacherA', 1]);
+  const row = (await call('tA', 'GET', '/api/admin/users')).body.users.find(u => u.id === 'sA');
+  assert.deepEqual([row.routines, row.pending], [2, 1]);
+
+  assert.equal((await call('tB', 'POST', '/api/admin/user/plan/cancel', { id: 'sA', plan: d.pending[0].id })).status, 404);
+  assert.equal((await call('tA', 'POST', '/api/admin/user/plan/cancel', { id: 'sA', plan: 'nope' })).status, 404);
+  const gone = await call('tA', 'POST', '/api/admin/user/plan/cancel', { id: 'sA', plan: d.pending[0].id });
+  assert.deepEqual([gone.status, gone.body.pending], [200, 0]);
+  assert.deepEqual((await call('sA', 'GET', '/api/plan-inbox')).body.plans, []);
+});

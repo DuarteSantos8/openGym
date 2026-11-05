@@ -2950,6 +2950,41 @@ paths:
                 properties:
                   ok: { type: boolean, const: true }
         '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/admin/user/plan/cancel:
+    post:
+      tags: [admin]
+      operationId: adminUserPlanCancel
+      summary: 'Admin: take back a plan the student has not accepted yet'
+      description: |
+        Removes one plan from the student's inbox. The ids come from `pending` in the drill-down.
+        Audited as `admin.user.plan.cancel`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, plan]
+              properties:
+                id: { type: string, description: The user id. }
+                plan: { type: string, description: The waiting plan's id. }
+      responses:
+        '200':
+          description: Taken back.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  pending: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or no such plan waiting.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
   /api/admin/user/teacher:
     post:
       tags: [admin]
@@ -4820,6 +4855,8 @@ components:
           description: The invite code this account was created with.
         teacher: { oneOf: [{ type: string }, { type: 'null' }], description: The admin (teacher) this profile belongs to. }
         teacherName: { oneOf: [{ type: string }, { type: 'null' }] }
+        routines: { type: integer, description: Plans (routines) in the profile. }
+        pending: { type: integer, description: Plans sent and not yet accepted. }
         workouts: { type: integer, description: Total logged workouts. }
         lastWorkout:
           oneOf: [{ type: string }, { type: 'null' }]
@@ -4878,6 +4915,26 @@ components:
         unit: { type: string, enum: [kg, lb] }
         lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
         plannedDays: { type: integer, minimum: 0, maximum: 7, description: Weekdays the plan puts a routine on. }
+        customEx:
+          type: array
+          description: Names of the profile's own exercises, for exports.
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              n: { type: string }
+              bp: { type: string }
+        pending:
+          type: array
+          description: Plans sent and not yet accepted.
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              from: { type: string }
+              at: { type: number }
+              routines: { type: integer }
         routines:
           type: array
           items:
@@ -4887,6 +4944,11 @@ components:
               name: { type: string }
               emoji: { type: string }
               count: { type: integer, description: Number of exercises. }
+              archived: { type: boolean, description: The teacher archived it (the student keeps it). }
+              ex:
+                type: array
+                description: The exercises as stored (id, sets, reps, weight, ...), at most 60.
+                items: { type: object }
         bodyweight:
           type: array
           items: { $ref: '#/components/schemas/BodyweightEntry' }

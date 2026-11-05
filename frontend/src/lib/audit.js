@@ -67,6 +67,7 @@ const LABELS = {
   'admin.user.enable': 'Re-enabled an account',
   'admin.user.delete': 'Deleted an account',
   'admin.user.plan': 'Sent a plan to a student',
+  'admin.user.plan.cancel': 'Took back a plan sent to a student',
   'admin.user.teacher': 'Changed a student’s teacher',
   'admin.user.workouts.delete': 'Deleted workouts from a profile',
   'admin.user.workouts.archive': 'Archived workouts of a student',

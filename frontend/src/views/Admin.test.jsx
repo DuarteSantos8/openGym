@@ -75,11 +75,8 @@ describe('Admin user drill-down', () => {
     await settle()
     const buttons = [...sheet.querySelectorAll('button')].map(b => b.textContent)
     expect(buttons).toContain('Disable account')
-    // The one real session is listed; the two shapeless entries are skipped, not drawn as blanks.
-    const rows = [...sheet.querySelectorAll('.list > div')]
-    expect(rows.length).toBe(1)
-    expect(rows[0].textContent).toContain('Push day')
-    expect(rows[0].textContent).toContain('1 sets')
+    // The workout list lives on the student's page now; the sheet points there.
+    expect(buttons).toContain('Open Mallory’s page')
   })
 })
 

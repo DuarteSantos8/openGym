@@ -2886,6 +2886,8 @@ const routes = {
         id: u.id, name: u.name, created: u.created || null,
         disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null,
         teacher: teacherOf(u), teacherName: db.users.find(x => x.id === teacherOf(u))?.name || null,
+        // What the Students screen needs to say who still has no plan, and whose plan is on its way.
+        routines: records(S.routines).length, pending: Array.isArray(u.planInbox) ? u.planInbox.length : 0,
         workouts: workouts.length,
         lastWorkout: last ? last.d : null,
         lastSync: lastSyncOf(u, S),
@@ -2917,7 +2919,11 @@ const routes = {
       },
       unit: S.unit || 'kg',
       lastSync: lastSyncOf(u, S),
-      routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length, ...(u.archivedRoutines?.[r.id] ? { archived: true } : {}) })),
+      routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length, ex: records(r.ex).slice(0, 60), ...(u.archivedRoutines?.[r.id] ? { archived: true } : {}) })),
+      // Plans sent and not yet accepted, so the teacher sees what is on its way and can take one back.
+      pending: (Array.isArray(u.planInbox) ? u.planInbox : []).map(p => ({ id: p.id, name: p.name || '', from: p.from || '', at: p.at || 0, routines: Array.isArray(p.bundle?.routines) ? p.bundle.routines.length : 0 })),
+      // The custom exercises' names, so an export of their workouts can say them.
+      customEx: records(S.customEx).map(c => ({ id: c.id, n: c.n, bp: c.bp })),
       // Weekdays the plan puts a routine on: what "sessions a week" is measured against.
       plannedDays: record(S.week) ? [0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week[d] || []).length).length : 0,
       bodyweight: records(S.bodyweight),
@@ -2967,6 +2973,21 @@ const routes = {
     saveDb();
     audit(req, 'admin.user.plan', { user: admin, target: u });
     json(res, 200, { ok: true, pending: inbox.length });
+  },
+
+  // Take back a plan that is still waiting in the student's inbox (they have not accepted it yet).
+  'POST /api/admin/user/plan/cancel': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
+    const inbox = Array.isArray(u.planInbox) ? u.planInbox : [];
+    if (typeof body.plan !== 'string' || !inbox.some(p => p.id === body.plan)) return json(res, 404, { error: 'no such plan waiting' });
+    u.planInbox = inbox.filter(p => p.id !== body.plan);
+    if (!u.planInbox.length) delete u.planInbox;
+    saveDb();
+    audit(req, 'admin.user.plan.cancel', { user: admin, target: u });
+    json(res, 200, { ok: true, pending: (u.planInbox || []).length });
   },
 
   // Who a student belongs to (owner only): an admin's id, or null for the owner's own. The owner

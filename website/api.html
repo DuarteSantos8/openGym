@@ -247,7 +247,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>100 endpoints</span>
+    <span>101 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3591,6 +3591,51 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </details>
 
+<details class="ep" id="op-adminUserPlanCancel">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/plan/cancel</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Take back a plan the student has not accepted yet</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes one plan from the student's inbox. The ids come from <code>pending</code> in the drill-down. Audited as <code>admin.user.plan.cancel</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The waiting plan's id.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Taken back.<span class="r-sig">{ ok: always true, pending: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such user, or no such plan waiting.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
 <details class="ep" id="op-adminUserTeacher">
   <summary>
     <span class="m post">POST</span>
@@ -5686,6 +5731,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc"></span>
   </div>
   <div class="prow">
+    <span class="p-name">routines</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Plans (routines) in the profile.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Plans sent and not yet accepted.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">workouts</span>
     <span class="p-type">integer</span>
     <span class="p-desc">Total logged workouts.</span>
@@ -5867,6 +5922,56 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc">Weekdays the plan puts a routine on.</span>
   </div>
   <div class="prow">
+    <span class="p-name">customEx</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">Names of the profile's own exercises, for exports.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].n</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx[].bp</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">Plans sent and not yet accepted.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].from</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].at</span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].routines</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
     <span class="p-name">routines</span>
     <span class="p-type">object[]</span>
     <span class="p-desc"></span>
@@ -5890,6 +5995,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">routines[].count</span>
     <span class="p-type">integer</span>
     <span class="p-desc">Number of exercises.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].archived</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">The teacher archived it (the student keeps it).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].ex</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">The exercises as stored (id, sets, reps, weight, ...), at most 60.</span>
   </div>
   <div class="prow">
     <span class="p-name">bodyweight</span>
