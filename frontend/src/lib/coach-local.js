@@ -20,7 +20,7 @@
 import * as payloadLib from '../../../api/coach/core/payload.js'
 import { runPipeline } from '../../../api/coach/core/pipeline.js'
 import { waitingProposal } from '../../../api/coach/core/pending.js'
-import { isDue } from '../../../api/coach/core/due.js'
+import { isDue, FINAL_FAILURES, RETRY_AFTER_MS } from '../../../api/coach/core/due.js'
 import { HTTP_PROVIDERS, baseUrlFor, phoneMayCall } from '../../../api/coach/core/providers.js'
 import anthropic from '../../../api/coach/core/adapters/anthropic.js'
 import openai from '../../../api/coach/core/adapters/openai.js'
@@ -134,9 +134,11 @@ export const localAdapt = async (S, { today, entry, reason, text, activeId } = {
    the way the server keeps its job history: a review the model answered counts, whether it
    proposed something, found nothing to change, or answered unusably (paid for all the same).
    Returns the started job, or null when nothing is due. Never throws: a skip is silent. */
+let scheduledFailAt = 0
 export async function localScheduled(S, now = new Date()) {
   const cadence = S?.coach?.cadence
   if (job || !cadence || cadence === 'off' || !S?.coach?.consent?.agreedAt) return null
+  if (now.getTime() - scheduledFailAt < RETRY_AFTER_MS) return null
   const d = await loadCoachDevice()
   if (d.mode !== 'byok' || !ADAPTERS[d.provider]) return null
   // A proposal nobody has answered is not replaced by the next one, as on the server.
@@ -236,7 +238,10 @@ async function run(S, kind, opts, d, adapter) {
       : null)
     lastError = { errorClass: attempt.errorClass, detail }
     last = { id: job.id, kind, outcome: 'failed', errorClass: attempt.errorClass, at: Date.now() }
-    if (kind === 'review' && attempt.errorClass === 'unusable') await markReviewed()
+    // A failure no retry fixes settles the round, as on the server (core/due.js); a passing one
+    // waits a quarter of an hour before the schedule tries again, instead of every minute.
+    if (kind === 'review' && FINAL_FAILURES.has(attempt.errorClass)) await markReviewed()
+    else if (kind === 'review' && opts.scheduled) scheduledFailAt = Date.now()
     if (notify) notify({ kind: 'failed', errorClass: attempt.errorClass, detail, scheduled: !!opts.scheduled })
     return
   }

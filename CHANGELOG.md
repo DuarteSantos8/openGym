@@ -86,6 +86,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - iPhone and Android: the tab bar names are 11 px, the smallest size Apple's guidelines allow (#710, thanks @olestrr).
 - Rotation and day reminders: a routine named "Push + Pull" counts as done by its whole name, a workout dated in the future has not happened yet, a week without a date is not read as finished, and an old state file with an empty workout no longer stops the day reminder (#567, thanks @kurktchiev).
 - Import from Hevy: 429 of Hevy's templates now land on the exercise their own artwork shows, up from 297, so far fewer come in as custom exercises (#807, thanks @lodepav).
+- AI Coach: a scheduled review that fails for a reason trying again will not fix (a refused key, a missing runtime) no longer gets queued every minute until the day's limit is gone. A passing hiccup waits a quarter of an hour, so the real slot still finds room (thanks adam934912 on Discord, idea and first version by @radu781 in #983).
 
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
