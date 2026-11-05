@@ -14,10 +14,9 @@ vi.mock('../components/BodyMap.jsx', () => ({ default: () => null }))
 
 import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { deleteRoutineWithUndo, takeOutOfLoop } from './Plan.jsx'
+import { deleteRoutineWithUndo } from './Plan.jsx'
 import { removeRoutineExercise } from './RoutineEdit.jsx'
 import { mergeStates, stampChange } from '../lib/sync-merge.js'
-import { saveRotation } from '../lib/rotation.js'
 import { stampPut } from '../../../api/sync-stamps.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
@@ -90,42 +89,6 @@ describe('Undo of an exercise swiped out of a routine', () => {
     undo()
     expect(S().routines[0].ex.map(e => `${e.id}x${e.sets}`)).toEqual(['0025x3', '0198x4', '0586x3'])
     expect(S().routines[0]._u).toBeUndefined()
-  })
-})
-
-describe('Undo of a routine swiped out of the loop', () => {
-  const loop = s => s.queue?.ids?.join(',')
-  const setSeq = ids => useStore.getState().update(s => { saveRotation(s, ids, 'Loop') })
-  const reorder = s => { const ids = ['c', 'a', 'b']; s.rotation = { ...s.rotation, sequence: ids }; s.queue = { ...s.queue, ids } }
-  beforeEach(() => {
-    clockAt(T1)
-    useStore.getState().update(s => { s.scheduleMode = 'rotation'; saveRotation(s, ['a', 'b', 'c'], 'Loop') })
-  })
-  it('a reorder made offline on another device before it saw the removal survives', () => {
-    const base = clone(S())
-    const other = change(base, reorder, T1 + 1000)
-    clockAt(T1 + 2000)
-    expect(takeOutOfLoop('b', setSeq, ['a', 'b', 'c'], 'Loop')).toBe(true)
-    const removed = clone(S())
-    clockAt(T1 + 3000)
-    undo()
-    expect(loop(S())).toBe('a,b,c')
-    for (const m of both(S(), other)) {
-      expect(loop(m)).toBe('c,a,b')
-      expect(m.rotation.sequence.join(',')).toBe('c,a,b')
-      for (const n of both(m, removed)) expect(loop(n)).toBe('c,a,b')
-    }
-  })
-  it('a reorder on the removal stamped the same as the Undo loses to it on every device', () => {
-    clockAt(T1 + 2000)
-    expect(takeOutOfLoop('b', setSeq, ['a', 'b', 'c'], 'Loop')).toBe(true)
-    const other = change(clone(S()), reorder, T1)   // clock behind: lifted past the removal
-    undo()
-    expect(S().edited.queue).toBe(other.edited.queue)
-    for (const m of both(S(), other)) {
-      expect(loop(m)).toBe('a,b,c')
-      expect(m.rotation.sequence.join(',')).toBe('a,b,c')
-    }
   })
 })
 

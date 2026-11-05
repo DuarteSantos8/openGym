@@ -9,8 +9,7 @@ import { DEF, useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { closeOpenRow } from '../lib/use-swipe-row.js'
 import { restoreRoutine, routineSnapshot, deleteRoutine } from '../lib/routines.js'
-import Plan, { deleteRoutineWithUndo, takeOutOfLoop } from './Plan.jsx'
-import { chooseFixedWeek, saveRotation, scheduleModeOf } from '../lib/rotation.js'
+import Plan, { deleteRoutineWithUndo } from './Plan.jsx'
 
 const nav = vi.fn()
 vi.mock('react-router-dom', () => ({ useNavigate: () => nav }))
@@ -173,130 +172,22 @@ describe('the routines list', () => {
   })
 })
 
-describe('the loop', () => {
-  const loop = { rotation: { id: 'rot', sequence: ['a', 'b', 'c'], label: 'My loop' },
-    queue: { ids: ['a', 'b', 'c'], since: 1, startsOn: '2026-10-01', label: 'My loop', rotationId: 'rot' },
-    scheduleMode: 'rotation', week: {}, dayPlan: { '2099-01-01': 'b' } }
-
-  it('a swipe toward the start takes the routine out, and Undo puts the loop and its pin back', () => {
-    mount('schedule', clone(loop))
-    expect(swrows()).toHaveLength(3)
-    // remove-only: no copy pane, and a swipe toward the end does nothing
-    expect(rowOf('Pull A').querySelector('.swpane.cp')).toBeNull()
-    expect(rowOf('Pull A').querySelector('.swpane.del').textContent).toBe('Remove')
-    swipe(rowOf('Pull A'), 60, 330)
-    expect(S().queue.ids).toEqual(['a', 'b', 'c'])
-
-    swipe(rowOf('Pull A'), 330, 60)
-    expect(S().queue.ids).toEqual(['a', 'c'])
-    expect(S().rotation.sequence).toEqual(['a', 'c'])
-    expect(S().dayPlan).toEqual({})          // its future pin was swept with it
-    expect(S().routines).toHaveLength(3)     // out of the loop, not deleted
-    expect(useUI.getState().toastMsg).toBe('“Pull A” is out of the loop.')
-
-    undo()
-    expect(S().queue).toEqual(loop.queue)
-    expect(S().rotation).toEqual(loop.rotation)
-    expect(S().dayPlan).toEqual(loop.dayPlan)
-  })
-
-  it('Undo after the loop changed again slots the routine back at its old place', () => {
-    mount('schedule', clone(loop))
-    swipe(rowOf('Pull A'), 330, 60)
-    const pending = useUI.getState().toastAction
-    act(() => useStore.getState().update(s => { s.queue = { ...s.queue, ids: ['c', 'a'] }; s.rotation = { ...s.rotation, sequence: ['c', 'a'] } }))
-    act(() => pending.run())
-    expect(S().queue.ids).toEqual(['c', 'b', 'a'])
-    expect(S().rotation.sequence).toEqual(['c', 'b', 'a'])
-  })
-
-  // The store's update, the way Plan's editor saves (Plan.jsx setSeq).
-  const setSeq = ids => useStore.getState().update(s => {
-    if (ids.length) saveRotation(s, ids, 'My loop')
-    else { s.queue = null; s.rotation = { ...s.rotation, sequence: [] }; s.scheduleMode = 'rotation' }
-  })
-
-  it('Undo after switching to Fixed week puts the routine back in the saved loop and stays on Fixed week', () => {
-    mount('schedule', clone(loop))
-    act(() => { takeOutOfLoop('b', setSeq, ['a', 'b', 'c'], 'My loop') })
-    const pending = useUI.getState().toastAction
-    act(() => useStore.getState().update(s => { chooseFixedWeek(s) }))
-    act(() => pending.run())
-    expect(S().queue).toBeNull()
-    expect(scheduleModeOf(S())).toBe('week')
-    expect(S().rotation.sequence).toEqual(['a', 'b', 'c'])
-  })
-
-  it('the same after taking out the last routine, where the loop itself did not change', () => {
-    mount('schedule', { ...clone(loop), rotation: { ...loop.rotation, sequence: ['a'] }, queue: { ...loop.queue, ids: ['a'] } })
-    act(() => { takeOutOfLoop('a', setSeq, ['a'], 'My loop') })
-    expect(S().queue).toBeNull()
-    const pending = useUI.getState().toastAction
-    act(() => useStore.getState().update(s => { chooseFixedWeek(s) }))
-    act(() => pending.run())
-    expect(S().queue).toBeNull()
-    expect(scheduleModeOf(S())).toBe('week')
-    expect(S().rotation.sequence).toEqual(['a'])
-  })
-
-  it('a coach’s queue written meanwhile is left alone by the Undo', () => {
-    mount('schedule', clone(loop))
-    act(() => { takeOutOfLoop('b', setSeq, ['a', 'b', 'c'], 'My loop') })
-    const pending = useUI.getState().toastAction
-    const coach = { ids: ['c', 'a'], since: 5, startsOn: '2026-10-02', label: 'Coach' }
-    act(() => useStore.getState().update(s => { s.queue = clone(coach) }))
-    act(() => pending.run())
-    expect(S().queue).toEqual(coach)
-    expect(S().rotation.sequence).toEqual(['a', 'b', 'c'])
-  })
-
-  it('Undo for a routine deleted meanwhile says it is too late', () => {
-    mount('schedule', clone(loop))
-    act(() => { takeOutOfLoop('b', setSeq, ['a', 'b', 'c'], 'My loop') })
-    const pending = useUI.getState().toastAction
-    act(() => useStore.getState().update(s => { deleteRoutine(s, 'b') }))
-    act(() => pending.run())
-    expect(S().queue.ids).toEqual(['a', 'c'])
-    expect(useUI.getState().toastMsg).toBe('Too late, that one’s gone')
-  })
-
-  it('the edit-mode minus has the same Undo, and weekday rows never swipe', () => {
-    mount('schedule', { ...clone(loop), week: { 1: ['c'], 2: ['a'] } })
-    click([...host.querySelectorAll('.plan-textbtn')].find(b => b.textContent === 'Edit'))
-    click(host.querySelector('button[aria-label="Remove Legs"]'))
-    expect(S().queue.ids).toEqual(['a', 'b'])
-    undo()
-    expect(S().queue.ids).toEqual(['a', 'b', 'c'])
-    act(() => root.unmount()); host.remove()
-
-    mount('schedule', { week: { 1: ['a'], 3: ['b'] } })   // a fixed week
-    expect(host.querySelectorAll('.plan-day').length).toBeGreaterThan(0)
-    expect(swrows()).toHaveLength(0)
-  })
-
-  it('a coach’s own queue does not swipe', () => {
-    mount('schedule', { ...clone(loop), queue: { ...loop.queue, rotationId: 'someone-else' } })
-    expect(swrows()).toHaveLength(0)
-  })
-})
-
 describe('restoreRoutine', () => {
   const base = () => ({
     routines: [routine('a', 'A'), routine('b', 'B'), routine('c', 'C')],
     week: { 1: ['a', 'b'], 3: 'b' }, dayPlan: { '2099-01-01': 'b', '2099-01-02': 'a' },
-    rotation: { id: 'r', sequence: ['b', 'c'] }, queue: { ids: ['c', 'b'] },
+    queue: { ids: ['c', 'b'] },
   })
 
   it('puts back what deleteRoutine took, at the same places', () => {
     const s = base()
     const snap = routineSnapshot(s, 'b')
     deleteRoutine(s, 'b')
-    s.rotation.sequence = ['c']; s.queue.ids = ['c']           // a save in between dropped it too
+    s.queue.ids = ['c']           // a save in between dropped it too
     expect(restoreRoutine(s, snap)).toBe(true)
     expect(s.routines.map(r => r.id)).toEqual(['a', 'b', 'c'])
     expect(s.week).toEqual({ 1: ['a', 'b'], 3: ['b'] })
     expect(s.dayPlan).toEqual(base().dayPlan)
-    expect(s.rotation.sequence).toEqual(['b', 'c'])
     expect(s.queue.ids).toEqual(['c', 'b'])
   })
 

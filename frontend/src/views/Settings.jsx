@@ -15,8 +15,6 @@ import { effortOf } from '../lib/history.js'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
-import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
-import { queueOf } from '../lib/queue.js'
 import { api, webauthnOK, passkeyRegister, passkeyError, IS_ANDROID } from '../lib/api.js'
 import { pushSupported, enablePush, disablePush, sendTestPush, syncPushSubscription } from '../lib/push.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
@@ -130,11 +128,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   // The gym reminder's switch lives on its own page and on this device only (lib/gym-reminder.js).
   const gymOn = MOBILE && readGymConfig().on
 
-  // A planner's own queue (no rotationId, or one that doesn't match the saved rotation here) is
-  // not this app's to switch off or overwrite. The Scheduling row goes read-only for it.
-  const liveQ = queueOf(S)
-  const externalQ = !!liveQ && (!S.rotation || liveQ.rotationId !== S.rotation.id)
-
   // Two honest choices on a unit switch (issue #22): convert the numbers, or keep them and only
   // change the label — the old behaviour, still right for someone who logged in lb all along
   // under a kg label. Closing the sheet leaves the unit as it was.
@@ -148,32 +141,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         { icon: 'pencil', label: t('Keep the numbers, change the label'), onClick: () => setUnit(v, { convert: false }) },
       ],
     })
-  }
-
-  // Fixed Week or Rotation. A live queue always wins (scheduleModeOf, lib/rotation.js) — a queue
-  // written by a planner switches the app to Rotation on its own — but choosing Rotation with
-  // nothing built yet has no queue to derive from, so S.scheduleMode is what keeps it selected
-  // (and the weekday grid hidden, on both Home and Plan) until the first routine is added.
-  // Fixed Week behaves as on Plan (views/Plan.jsx setMode), with the same words: with no loop
-  // running there is nothing to lose and it switches at once; a running loop asks first.
-  const setScheduleMode = v => {
-    if (v === scheduleModeOf(S)) return
-    if (v === 'week') {
-      // A planner's own queue is never this app's to drop — this control is text-only while one
-      // is live (below), but the guard stays here too rather than trust the render alone.
-      if (!liveQ) { update(s => { chooseFixedWeek(s) }); return }
-      confirmSheet({
-        title: t('Back to a fixed week?'),
-        message: t('The loop stops. Your weekdays stay as they are, and the loop is saved for later.'),
-        confirmText: t('Use Fixed Week'),
-        onConfirm: () => update(s => { chooseFixedWeek(s) }),
-      })
-      return
-    }
-    // The same switch as Plan's "How you train" (lib/rotation.js). With nothing to start (no
-    // saved sequence, or a malformed queue Plan has to sort out) the choice holds and you stay
-    // here: the page then offers the way to Plan (below), so picking a value never leaves it.
-    update(s => { chooseRotation(s) })
   }
 
   // --- update check state ---
@@ -437,7 +404,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
   }
-  const mode = scheduleModeOf(S)
   const layout = ['list', 'compact', 'focus'].includes(S.workoutView) ? S.workoutView : 'cards'
   const layoutLabel = { cards: t('Cards'), list: t('List'), compact: t('Compact') }[layout]
   const activeProfile = (S.equipProfiles || []).find(p => p.id === S.activeEquipId)
@@ -447,7 +413,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     workout: () => (S.restSec > 0 ? t('{0} rest', fmtRest(S.restSec)) : t('No rest timer')) + ' · ' + layoutLabel,
     alerts: () => [S.sound ? t('Sound') : null, canVibrate && S.vibrate !== false ? t('Vibrate') : null, S.timerFlash ? t('Flash') : null].filter(Boolean).join(' · ') || t('Silent'),
     reminders: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
-    plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
+    plan: () => t('Fixed Week') + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
     equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : ownsNoDumbbells(S) ? t('Everything but dumbbells') : t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
@@ -712,18 +678,6 @@ export default function Settings({ page = null, find = null, via = null, entryKe
 
     plan: () => <>
       <Section>
-        {/* Fixed Week (S.week) or Rotation (the live queue, lib/queue.js + lib/rotation.js).
-            Derived from the queue, never stored. */}
-        <Row icon="repeat" iconTint="var(--orange)" title={t('How you train')}>
-          {externalQ
-            ? <span className="small dim">{t('Rotation')} · {t('Externally managed')}</span>
-            : <Segmented className="seg-inline"
-                options={[{ value: 'week', label: t('Fixed Week') }, { value: 'rotation', label: t('Rotation') }]}
-                value={mode} onChange={setScheduleMode} />}
-        </Row>
-        {/* Rotation chosen with no loop running yet: the loop is built on Plan. */}
-        {mode === 'rotation' && !liveQ && <Row icon="calendar" iconTint="var(--orange)" title={t('Build your loop in Plan')}
-          accessory="chevron" onClick={() => nav('/plan')} />}
         {/* Monday or Sunday: the Plan list, the Home strip, the calendar grid and every "this
             week" total follow it. Stored as a getDay() index (see lib/format.js). */}
         <Row icon="calendar" iconTint="var(--orange)" title={t('Week starts on')}>

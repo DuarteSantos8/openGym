@@ -12,13 +12,9 @@
 //                           the DONE RULE is off. Plan's "Start new pass" sets it: the new pass
 //                           starts at that moment, and a session logged earlier the same day was
 //                           the old pass's, whatever its name says.
-//     rotationId?: string   set only by the in-app rotation editor (lib/rotation.js): this pass
-//                           is managed here and refills itself when complete. A planner's queue
-//                           omits it and is never rewritten by the app.
 //   }
 //
-// The app writes `S.queue` itself only for the in-app rotation feature (lib/rotation.js, marked
-// by `rotationId`); otherwise a planner does — any API client that PUTs state with a queue (a
+// The app never writes `S.queue`: a planner does — any API client that PUTs state with a queue (a
 // coaching agent, a script). null = the weekday model alone.
 //
 // PINS — a session can be given a day. The day sheet writes the per-date override that already
@@ -48,7 +44,7 @@ const nameParts = w => String(w.name || '').split(' + ')
 // Tolerant reader: whole-state sync is last-writer-wins, so a half-written or older-shaped
 // queue can arrive from another client. A bad shape reads as "no queue" rather than taking
 // Home down with it. A session whose routine no longer exists (deleted in the editor — a
-// planner's queue is never rewritten by the app; a rotation-managed one is, by lib/rotation.js)
+// planner's queue is never rewritten by the app)
 // is dropped from the week: it could never be started or logged,
 // and keeping it would pin the whole week on it; a queue left with no session at all reads as
 // no queue. A missing startsOn means active since the day of the apply.

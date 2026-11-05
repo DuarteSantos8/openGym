@@ -9,7 +9,6 @@ import { guestAllowed } from '../lib/guest.js'
 import { stateJson } from '../lib/state-json.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
 import { initHealthSync, syncHealth, readHealth } from '../lib/health-sync.js'
-import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
@@ -29,6 +28,7 @@ import { DEFAULT_TEMPLATE_ID } from '../lib/structuralBalanceTemplates.js'
 
 import { WC_DEFAULT } from '../lib/workout-controls.js'
 import { sanitizeAccent } from '../lib/accent.js'
+import { migrateRotationToWeek } from '../lib/week-migrate.js'
 import { registerExerciseAliases } from '../lib/exercise-aliases.js'
 
 const KEY = 'gym_state_v1'
@@ -87,6 +87,9 @@ const gainedWorkoutMedia = (prev, next) => {
   const had = new Set(workoutMediaHashes(prev))
   return workoutMediaHashes(next).some(h => !had.has(h))
 }
+// A profile loaded from anywhere (this device, the server, a backup): the accent is made valid and a
+// loop left over from the old Rotation mode becomes fixed week days (lib/week-migrate.js).
+const settleState = s => { migrateRotationToWeek(s); return sanitizeAccent(s) }
 export const DEF = {
   unit: 'kg', restSec: 90, restPauseSec: 15, sound: true, soundOnSilent: false, vibrateOnSilent: false, timerFlash: false, timedSetOvertime: false, keepAwake: true, lang: 'en',
   theme: 'dark', accent: 'red', body: 'male',
@@ -102,15 +105,7 @@ export const DEF = {
   // Body measurements (#82, #699): one check-in per day; canonical cm, kg or % according to
   // the field's unit (lib/measurements.js); merged like weigh-ins (lib/sync-merge.js).
   measurements: [], measurementEnabled: null, customMeasurements: [],
-  queue: null,   // a planner's floating week (lib/queue.js) — via the API, or by this rotation feature (below)
-  // The in-app rotation's reusable definition — { id, sequence, label } (lib/rotation.js). Never
-  // a live queue: it only ever feeds `queue`, and `queue.rotationId` says the pass is managed here.
-  rotation: null,
-  // null | 'week' | 'rotation' — which of the two scheduling screens Home/Plan show. A live
-  // queue always wins regardless of this (scheduleModeOf, lib/rotation.js): the flag exists only
-  // to keep Rotation selected, and the weekday grid hidden, from the moment it's chosen in
-  // Settings/Plan through to the first routine being added — there's no queue yet to derive it from.
-  scheduleMode: null,
+  queue: null,   // a floating week written by a planner through the API (lib/queue.js); the app never writes one
   exWeights: {}, workouts: [], active: null, customEx: [], gifSize: 'full',
   // Stats activity heatmap metric. Profiles without this key continue to open on time.
   heatmapMetric: 'time',
@@ -334,7 +329,7 @@ function loadState() {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const saved = JSON.parse(raw)
-      const s = sanitizeAccent(Object.assign(clone(DEF), saved))
+      const s = settleState(Object.assign(clone(DEF), saved))
       if (!saved.lang) s.lang = detectedLang()
       return s
     }
@@ -353,7 +348,7 @@ const hasData = st => !!((st.workouts || []).length || (st.routines || []).lengt
 // session belongs to the device that is currently running it.
 export function restoredStateFor(local, remote, dirty = false) {
   if (!remote || (hasData(local) && (dirty || (remote._ts || 0) < (local._ts || 0)))) return null
-  const next = sanitizeAccent(Object.assign(clone(DEF), remote))
+  const next = settleState(Object.assign(clone(DEF), remote))
   if (local.active) next.active = local.active
   return next
 }
@@ -742,12 +737,8 @@ export const useStore = create((set, get) => {
       local = Object.assign(clone(DEF), lifted.state)
     }
     if (legacy) clearLegacy()
-    const merged = Object.assign(clone(DEF), mergeStates(local, remote))
+    const merged = settleState(Object.assign(clone(DEF), mergeStates(local, remote)))
     merged.active = carryActive(local, merged)
-    // A pass of this app's rotation that the merge left complete (each copy finished a session of
-    // it, or one copy's refill lost to the other's older queue) starts its next pass here, as the
-    // finish that completed it would have (lib/rotation.js).
-    if (refillIfComplete(merged)) merged.edited = { ...(merged.edited || {}), queue: Math.max(Date.now(), highestStamp(merged) + 1) }
     persist(merged, false)
     if (rev == null) dropSync()
     else writeSync(rev, ts, remote?._wid)
@@ -1220,7 +1211,7 @@ export const useStore = create((set, get) => {
       try { const r = await api('/api/data'); if (r && r.state) ({ state, rev } = r) } catch { /* the first read */ }
     }
     const takeServer = () => {
-      const copy = sanitizeAccent(Object.assign(clone(DEF), state))
+      const copy = settleState(Object.assign(clone(DEF), state))
       copy.active = carryActive(get().S, copy)
       if (rev != null) adopt(copy, rev)
       else { dropSync(); persist(copy, false, false); markOwed(false) }
@@ -1346,7 +1337,7 @@ export const useStore = create((set, get) => {
     if (!who || of?.owner !== who || (owner && owner !== who) || of.ts !== (saved._ts || 0)) return
     try { if (!owner) localStorage.setItem('gym_owner', who) } catch { /* setUser writes it again */ }
     seenOwner = readOwner()
-    persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
+    persist(settleState(Object.assign(clone(DEF), saved)), false, false)
     dropSync()
     markOwed(true)
   }
@@ -1526,7 +1517,7 @@ export const useStore = create((set, get) => {
       importRead = null
       const server = read?.state || null
       const now = Math.max(Date.now(), highestStamp(cur) + 1, highestStamp(server) + 1, highestStamp(backup) + 1)
-      const next = sanitizeAccent(Object.assign(clone(DEF), backup))
+      const next = settleState(Object.assign(clone(DEF), backup))
       // A workout running here lives on this device only: no backup and no server copy holds it,
       // so the import keeps it (in the backup's unit). Only with none running does a backup taken
       // mid-workout bring its own session back. Both the replace and "Merge them in" dropped it.
@@ -1745,7 +1736,7 @@ export const useStore = create((set, get) => {
           if (!serverMoved) { if (changed) await get().pushState(); else confirmed(S); return }
           if (!state) { writeSync(rev, 0); if (hasData(S)) await get().pushState(); return }
           if (!descends) { mergeInto(S, state, rev); pushPending = false; await get().pushState(); return }
-          if (!changed) { const next = sanitizeAccent(Object.assign(clone(DEF), state)); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
+          if (!changed) { const next = settleState(Object.assign(clone(DEF), state)); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
           mergeInto(S, state, rev)
           pushPending = false
           await get().pushState()
@@ -2019,7 +2010,7 @@ export const useStore = create((set, get) => {
         const saved = await nativeLoad()
         const S = get().S
         if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
-          persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
+          persist(settleState(Object.assign(clone(DEF), saved)), false, false)
         } else if (hasData(S)) {
           nativePersist(true)   // first run after an update from a file-less version: seed the mirror
         }

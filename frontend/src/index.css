@@ -2170,12 +2170,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Schedule | Routines (views/Plan.jsx). A settings-like page, one column at every width. */
 .plan-views{margin-bottom:18px}
 .plan-views button{min-height:34px;font-size:15px}
-.plan .plan-mode .lrow-t{white-space:nowrap}
-/* The control takes the rest of the row when it fits, and a full line of its own when it does
-   not, rather than squeezing "Fixed Week" onto two lines. */
-.plan-mode .seg-inline{flex:1 1 200px;min-width:0}
-.plan-mode .seg-inline button{white-space:nowrap}
-.plan-mode-locked{margin-inline-start:auto;text-align:end}
 .plan-sec-h{margin:22px 0 8px;gap:8px;flex-wrap:wrap}
 /* Long words (German "Hinzufügen") push the loop's buttons off a 320 px screen; they drop
    to their own line instead and stay on the trailing edge. */
@@ -2192,13 +2186,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Arabic names the whole day: one column wide enough for the longest keeps the glyphs aligned */
 [dir="rtl"] .plan-day-n{min-width:88px}
 .item .lrow-i.rest{background:var(--surface-3);color:var(--label-2)}
-/* the loop: a numbered position, lit when up next, a tick once done this round */
-.plan-order{
-  width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;
-  font-size:13px;font-weight:600;color:var(--label-2);background:var(--surface-3);--icon-stroke:2.6;
-}
-.plan-order.next{background:var(--acc);color:var(--on-acc)}
-.rotation-row.is-done .tt{color:var(--label-2)}
 /* Edit mode, as on an iPhone: a red minus at the start, a handle at the end */
 .plan-minus{
   width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;

@@ -19,7 +19,6 @@ describe('routineSnapshot', () => {
       index: 0,
       week: { 1: 0, 5: 1 },
       dayPlan: { '2026-10-20': 'a' },
-      seqAt: 1,
       queueAt: 1,
     })
   })
@@ -31,7 +30,7 @@ describe('routineSnapshot', () => {
   })
   it('reads a weekday holding a single id and state without rotation or queue', () => {
     const snap = routineSnapshot({ routines: [{ id: 'b' }], week: { 3: 'b' } }, 'b')
-    expect(snap).toMatchObject({ index: 0, week: { 3: 0 }, dayPlan: {}, seqAt: -1, queueAt: -1 })
+    expect(snap).toMatchObject({ index: 0, week: { 3: 0 }, dayPlan: {}, queueAt: -1 })
   })
   it('is null for a routine that is not there', () => {
     expect(routineSnapshot(state(), 'zzz')).toBeNull()
@@ -45,8 +44,7 @@ describe('restoreRoutine', () => {
     const before = structuredClone(S)
     const snap = routineSnapshot(S, 'a')
     deleteRoutine(S, 'a')
-    // deleteRoutine leaves the loop and queue alone; a save in between may have dropped them.
-    S.rotation.sequence = S.rotation.sequence.filter(id => id !== 'a')
+    // deleteRoutine leaves the queue alone; a save in between may have dropped it.
     S.queue.ids = S.queue.ids.filter(id => id !== 'a')
     expect(restoreRoutine(S, snap)).toBe(true)
     expect(S).toEqual(before)

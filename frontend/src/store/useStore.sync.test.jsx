@@ -470,28 +470,3 @@ describe('removals and settings across a conflict', () => {
   })
 })
 
-describe('a rotation pass a merge leaves complete', () => {
-  it('starts its next pass, as the finish that completed it would have', async () => {
-    vi.useFakeTimers()
-    const now = Date.parse('2026-09-12T10:00:00')
-    vi.setSystemTime(now)
-    const plan = {
-      routines: [routine('a'), routine('b')],
-      rotation: { id: 'rot', sequence: ['a', 'b'], label: '' },
-      queue: { ids: ['a', 'b'], since: now - 5 * 86400000, startsOn: '2026-09-07', label: '', rotationId: 'rot' },
-    }
-    const done = (id, d) => ({ id: 'w-' + id, d, start: now - 86400000, routineIds: [id], routineId: id, name: id, entries: [] })
-    // this device trained A, the other trained B: each copy alone still has a session to go
-    signedIn({ ...clone(DEF), ...clone(plan), _ts: 300, workouts: [done('a', '2026-09-10')] })
-    localStorage.setItem('gym_sync', JSON.stringify({ rev: 1, ts: 100 }))
-    api.mockRejectedValueOnce(httpError(409, { error: 'conflict', rev: 2, state: { ...clone(DEF), ...clone(plan), _ts: 200, workouts: [done('b', '2026-09-11')], _rev: 2 } }))
-    api.mockResolvedValueOnce({ ok: true, rev: 3 })
-
-    await useStore.getState().pushState()
-
-    const q = puts().at(-1).state.queue
-    expect(q.ids).toEqual(['a', 'b'])
-    expect(q.startsOn).toBe('2026-09-12')
-    expect(q.since).toBeGreaterThanOrEqual(now)
-  })
-})

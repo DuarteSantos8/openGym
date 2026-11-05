@@ -10,7 +10,6 @@ import Icon from '../components/Icon.jsx'
 import QueueRow from '../components/QueueRow.jsx'
 import MiniBodyMap from '../components/MiniBodyMap.jsx'
 import { queueOf, queueView, weekTally, pinState } from '../lib/queue.js'
-import { scheduleModeOf } from '../lib/rotation.js'
 import { useConnectionTrouble } from '../components/SyncBanner.jsx'
 import { Button } from '../components/ui.jsx'
 import { tappable } from '../lib/use-sheet-keyboard.js'
@@ -78,23 +77,8 @@ export default function Home() {
   // A coach week (S.queue) read through the same tolerant reader QueueRow uses, so a malformed
   // queue from another client shows the weekday dots, never an empty card.
   const queue = queueView(S, todayISO())
-  // This card shows one thing or the other — QueueRow for a live queue, or Rotation chosen with
-  // nothing built yet (S.scheduleMode), in which case there is no queue for QueueRow to render and
-  // an empty-state card takes its place. Plan does the same in rotation mode: no weekday grid, only
-  // the days that add a routine the loop does not have (Plan.jsx, "Also on fixed days").
-  const rotating = scheduleModeOf(S) === 'rotation'
-  // A planner-written queue (no rotationId) still names its weekday when it hasn't started yet —
-  // that copy predates rotation and stays as it is. Our own rotation has no weekday of its own
-  // (lib/rotation.js): naming one here — including on the pass's own one-day empty gap (THE
-  // ONE-DAY BOUNDARY, rotation.js) or before a first routine is even added — would be the
-  // fixed-week model leaking into a schedule that was never weekday-based.
-  const liveQ = queueOf(S)
-  const plannerQueue = !!queue && !liveQ?.rotationId
-  // Ownership, not mere presence of a rotationId: a stale id left over from a rebuilt rotation
-  // would otherwise still read as "this app manages it" (lib/rotation.js).
-  const managedQueue = !!liveQ && !!S.rotation && liveQ.rotationId === S.rotation.id
   // On a rest day, saying when you train next beats leaving the row as a full stop.
-  const next = !S.active && !todayRoutines.length && !(rotating && !plannerQueue) ? nextTrainingDay(S, todayISO()) : null
+  const next = !S.active && !todayRoutines.length ? nextTrainingDay(S, todayISO()) : null
   // The streak card's fraction: this calendar week's workouts over the weekdays with a plan, or,
   // in a coach week, the queue's sessions and your own days together (lib/queue.js weekTally).
   const { done: doneThisWeek, planned: plannedPerWeek } = weekTally(S, todayISO())
@@ -114,13 +98,10 @@ export default function Home() {
     </div>
 
     <div className="card">
-      {/* A coach week runs by order, not by weekday, so its progress row stands in for the
+      {/* A planner's week runs by order, not by weekday, so its progress row stands in for the
           seven dots (components/QueueRow.jsx). The today row below stays as it is: the queue's
           next session reaches it through effectiveRoutineIds like any planned routine. */}
-      {rotating ? (queue ? <QueueRow S={S} today={todayISO()} onStart={onQueueStart} managed={managedQueue} /> : <div className="empty">
-        {t('No rotation yet. Add routines to it in Plan.')}
-        <div style={{ marginTop: 10 }}><Button size="sm" variant="tinted" onClick={() => nav('/plan')}>{t('Set up in Plan')}</Button></div>
-      </div>) : <>
+      {queue ? <QueueRow S={S} today={todayISO()} onStart={onQueueStart} /> : <>
         <div className="row between" style={{ marginBottom: 8 }}>
           <button className="iconbtn" style={{ width: 30, height: 30, fontSize: 15 }} onClick={() => setWeekOffset(w => w - 1)} aria-label={t('Previous week')}><Icon name="chevronLeft" /></button>
           <div className="small muted" style={{ fontWeight: 500 }}>{wkLabel}</div>

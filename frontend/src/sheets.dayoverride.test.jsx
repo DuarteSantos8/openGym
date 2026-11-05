@@ -113,14 +113,6 @@ describe('Day sheet list in a coach week', () => {
     expect(plain).toEqual(['US W1 D1', 'Core', 'Rest / skip this day'])
   })
 
-  it('your own loop is headed Your loop, not Coach week', () => {
-    setS({ queue: { ...queue, rotationId: 'r1' }, rotation: { id: 'r1', sequence: ['d1', 'd2'], label: 'Rotation' } })
-    try {
-    dayOverrideSheet(todayISO())
-    expect(heading(renderTop())).toBe('Your loop')
-    } finally { useStore.setState(s => ({ S: { ...s.S, rotation: null } })) }
-  })
-
   it('picking a coach row pins that session to the day', () => {
     const friday = daysFromToday(2)
     setS()

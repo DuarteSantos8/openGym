@@ -51,7 +51,6 @@ import { MOBILE, shareExport, shareExportBlob, printHtml } from './lib/mobile.js
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incline.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
-import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
 import { saveSessionAsRoutine, routineAdditions, addToRoutine } from './lib/session-routines.js'
@@ -2590,8 +2589,6 @@ function DayOverride({ iso, close }) {
   // already pinned to another day says so in place of its exercise count. Done sessions and
   // your own routines follow in the plain list.
   const remaining = queueRemaining(st)
-  // Your own rotation's pass (its rotationId matches the saved rotation) is your loop, not a coach's week.
-  const ownLoop = !!st.queue && !!st.rotation && st.queue.rotationId === st.rotation.id
   const coach = remaining.map(id => st.routines.find(r => r.id === id)).filter(Boolean)
   // Active pins straight from the plan (earliest day per session, today or later) — not the
   // row's 'pinned' items, which leave out the session pinned to today itself.
@@ -2620,7 +2617,7 @@ function DayOverride({ iso, close }) {
       </div>
     </div>}
     {coach.length > 0 && <>
-      <h4 className="sec" style={{ marginTop: 0 }}>{ownLoop ? t('Your loop') : t('Coach week')}</h4>
+      <h4 className="sec" style={{ marginTop: 0 }}>{t('Coach week')}</h4>
       <div className="list" style={{ marginBottom: 8 }}>{coach.map(row)}</div>
     </>}
     <div className="list">
@@ -3798,9 +3795,6 @@ function doFinishWorkout() {
       s.workouts.push(w)
     }
     s.active = null
-    // A rotation pass this app manages starts its next pass the moment the last session lands
-    // (lib/rotation.js). A planner's queue is left alone: it completes and waits for its writer.
-    refillAfter(s, w)
   })
   useStore.getState().autoBackupNow()
   useUI.getState().stopRest()
