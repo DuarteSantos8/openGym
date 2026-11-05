@@ -21,6 +21,7 @@ import { initialOf } from '../lib/avatar.js'
 import { Button, SearchField, Segmented, Check, TextField, TextArea } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
 import { confirmSheet } from '../sheets.jsx'
+import { useRevealActiveChip } from '../lib/use-sheet-keyboard.js'
 import './Community.css'
 
 const day = ms => fmtDate(isoOf(new Date(ms || 0)))
@@ -120,6 +121,9 @@ export default function Community() {
   const [mine, setMine] = useState(false)
   const [state, setState] = useState({ items: [], next: null, loading: true, error: '' })
   const seq = useRef(0)
+  // The chosen kind scrolls into view on a phone, like the body parts in Exercises.
+  const tabsRef = useRef(null)
+  useRevealActiveChip(tabsRef, type)
 
   const load = useCallback((more = false) => {
     if (!on) return
@@ -156,7 +160,7 @@ export default function Community() {
       <Button size="sm" variant="tinted" icon="plus" onClick={share}>{t('Share yours')}</Button>
     </div>
     <AvatarShareRow lib={lib} />
-    <div className="chips com-tabs" role="tablist" aria-label={t('Kinds')}>
+    <div className="chips com-tabs" role="tablist" aria-label={t('Kinds')} ref={tabsRef}>
       {tabs.map(x => <button key={x.id} type="button" role="tab" aria-selected={type === x.id} className={'chip nocap ichip' + (type === x.id ? ' on' : '')}
         onClick={() => setType(x.id)}><Icon name={x.icon} />{typeWords()[x.id]?.[0]}</button>)}
     </div>
