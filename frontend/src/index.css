@@ -639,9 +639,10 @@ h4.sec{
   border-top:var(--hair) solid var(--sep-op);
 }
 :root[data-theme="light"] #tabbar{background:rgba(249,249,251,.94)}
+/* 11px: the minimum text size Apple's HIG gives for iOS (11 pt) */
 #tabbar button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  color:var(--label-2);font-size:10px;font-weight:500;letter-spacing:.005em;padding-top:3px;
+  color:var(--label-2);font-size:11px;font-weight:500;letter-spacing:.005em;padding-top:3px;
   transition:color var(--fast);
 }
 /* The inactive tint is semi-transparent, so wherever two strokes cross inside an
@@ -2100,6 +2101,40 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sip-e{font-size:22px;border-radius:11px}
 .sip-e.on{box-shadow:inset 0 0 0 2px var(--acc)}
 .sip-bad{margin-top:6px;color:var(--red-ink)}
+
+/* --- machine cards (#923, components/MachinePicker.jsx) ---
+   One card per kind of machine: an equipment icon, the name and how many exercises it opens.
+   Picked is said twice, by the fill and by the check, never by colour alone. */
+.mk-gh{display:flex;align-items:center;gap:4px;margin:18px 0 8px}
+.mk-gh h4.sec{flex:1;margin:0}
+.mk-gb{padding:6px 10px;border-radius:var(--r-sm);font-size:var(--fs-footnote);color:var(--acc-ink);position:relative}
+.mk-gb::before{content:'';position:absolute;inset:-6px -2px}
+.mk-gb:disabled{color:var(--label-3)}
+.mk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.mk-card{
+  display:flex;align-items:center;gap:10px;min-height:60px;padding:10px 10px 10px 12px;text-align:start;
+  border-radius:var(--r-card);background:var(--surface);color:var(--label);
+  transition:background var(--fast),color var(--fast),transform var(--fast) var(--ease);
+}
+.mk-card:active{transform:scale(var(--press-scale-sm))}
+.mk-card:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.mk-ic{flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);color:var(--label-2);font-size:18px;transition:background var(--fast),color var(--fast)}
+.mk-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mk-n{font-size:var(--fs-subhead);font-weight:500;line-height:1.25;overflow-wrap:anywhere}
+.mk-c{font-size:var(--fs-caption);color:var(--label-2)}
+.mk-ck{flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 0 1.5px var(--label-4);font-size:14px}
+.mk-card.on{background:var(--acc-soft)}
+.mk-card.on .mk-ic{background:var(--acc-soft);color:var(--acc-ink)}
+.mk-card.on .mk-ck{background:var(--acc);color:var(--on-acc);box-shadow:none}
+.mk-foot{position:sticky;bottom:0;padding:12px 0 4px;margin-top:12px;background:var(--bg-el)}
+:root[data-theme="light"] .mk-foot{background:var(--bg)}
+.iconbtn.mk-not{color:var(--label-3);padding:8px;margin:-8px 0}
+.iconbtn.mk-not:active{color:var(--label)}
+/* In the card view it sits on the picture, under the quick action (or in its place in the Library). */
+.ex-grid .item>.mk-not{position:absolute;top:54px;inset-inline-end:14px;width:32px;height:32px;margin:0;padding:7px;border-radius:50%;background:var(--surface);color:var(--label-2)}
+@media (prefers-reduced-motion:reduce){.mk-card,.mk-ic{transition:none}.mk-card:active{transform:none}}
 
 /* --- big weight readout --- */
 .bwstep{display:flex;align-items:center;justify-content:center;gap:18px;margin:14px 0 6px}

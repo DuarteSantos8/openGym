@@ -3,6 +3,7 @@
   "name": "glute ham hyperextension twist",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "back-extension",
   "target": "spine",
   "secondaryMuscles": [
     "glutes",

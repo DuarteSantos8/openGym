@@ -3,6 +3,7 @@
   "name": "power sled high pull",
   "bodyPart": "shoulders",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "delts",
   "secondaryMuscles": [
     "upper back",

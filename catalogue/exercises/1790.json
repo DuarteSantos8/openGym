@@ -3,6 +3,7 @@
   "name": "assisted pulling arms in prone position chest stretch",
   "bodyPart": "chest",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "pectorals",
   "secondaryMuscles": [
     "shoulders",

@@ -3,6 +3,7 @@
   "name": "lever shrug (bench press machine)",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "traps",
   "secondaryMuscles": [
     "upper back",

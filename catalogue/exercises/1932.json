@@ -3,6 +3,7 @@
   "name": "assisted lying hip stretch in supine position",
   "bodyPart": "upper legs",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "glutes",
   "secondaryMuscles": [
     "hip flexors",

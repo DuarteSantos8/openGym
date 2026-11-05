@@ -3,6 +3,7 @@
   "name": "assisted standing triceps extension (with towel)",
   "bodyPart": "upper arms",
   "equipment": "assisted",
+  "machineKind": "none",
   "target": "triceps",
   "secondaryMuscles": [
     "shoulders"

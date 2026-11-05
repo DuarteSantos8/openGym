@@ -3,6 +3,7 @@
   "name": "lever lying t bar row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "lats",

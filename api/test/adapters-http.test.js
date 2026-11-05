@@ -195,6 +195,19 @@ test('compatible: a mount whose API has no version segment is reached on the 404
   }
 });
 
+// #520 (Bortlesboat): a busy versionless endpoint (503) after the /v1 404 was turned back into the
+// 404, so the call ended as "not found" instead of retrying.
+test('compatible: a 503 from the versionless form is retried, not reported as the first 404 (#520)', async () => {
+  const f = fakeFetch(n => (n % 2 === 1 ? { status: 404, body: '404 page not found' }
+    : n === 2 ? { status: 503, body: { error: { message: 'busy' } } }
+      : ok({ object: 'chat.completion', choices: [{ index: 0, message: { role: 'assistant', content: ANSWER }, finish_reason: 'stop' }] })));
+  // Its own base: the form that answered is remembered per base.
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'http://busy.lan:8080/' } } };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.text, ANSWER);
+});
+
 test('compatible: the 404 fallback keeps the first error when neither form answers, and never touches other providers (#508)', async () => {
   // Ollama answers an unknown model with a 404 of its own; that message must survive the retry.
   const f = fakeFetch(n => (n === 1
@@ -727,4 +740,40 @@ test('a normal answer that happens to carry an error field next to its choices i
   const f = fakeFetch([ok({ error: null, choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] })]);
   const r = await openai.invoke({ cfg: {}, prompt: 'P', env, fetch: f });
   assert.equal(r.code, 0, r.stderr);
+});
+
+// #546 (jijichen): DeepSeek behind CloudFront sends its 200 at once, then nothing while the model
+// thinks, and the CDN closes the idle connection at 60 s. The answer is asked for again as a
+// stream, which keeps bytes flowing, and that endpoint streams from then on.
+test('compatible: an answer cut off after the 200 is asked again as a stream, and remembered (#546)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://api.deepseek.test/' } } };
+  const bodies = [];
+  const sse = ['data: {"choices":[{"delta":{"content":"{\\"coach_contract\\":1,"}}]}', 'data: {"choices":[{"delta":{"content":"\\"nochange\\":true,\\"reading\\":\\"fine\\"}"},"finish_reason":"stop"}]}', 'data: [DONE]', ''].join('\n\n');
+  const f = async (url, init) => {
+    const body = JSON.parse(init.body);
+    bodies.push(body);
+    if (!body.stream) return { ok: true, status: 200, headers: new Headers(), text: async () => { throw new TypeError('terminated'); } };
+    return { ok: true, status: 200, headers: new Headers({ 'content-type': 'text/event-stream' }), text: async () => sse };
+  };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'deepseek-v4-pro', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.equal(r.text, ANSWER);
+  assert.deepEqual(bodies.map(b => !!b.stream), [false, true]);
+  await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'deepseek-v4-pro', fetch: f });
+  assert.equal(bodies[2].stream, true);
+});
+
+test('compatible: an endpoint that refuses to stream goes back to one answer (#546)', async () => {
+  const cfg = { provider: 'compatible', providerOptions: { compatible: { baseUrl: 'https://nostream.test/' } } };
+  const bodies = [];
+  const f = async (url, init) => {
+    const body = JSON.parse(init.body);
+    bodies.push(body);
+    if (bodies.length === 1) return { ok: true, status: 200, headers: new Headers(), text: async () => { throw new TypeError('terminated'); } };
+    if (body.stream) return { ok: false, status: 400, headers: new Headers(), text: async () => JSON.stringify({ error: { message: 'stream is not supported' } }) };
+    return { ok: true, status: 200, headers: new Headers(), text: async () => JSON.stringify({ choices: [{ message: { content: ANSWER }, finish_reason: 'stop' }] }) };
+  };
+  const r = await compatible.invoke({ cfg, prompt: 'P', env: {}, model: 'm', fetch: f });
+  assert.equal(r.code, 0, r.stderr);
+  assert.deepEqual(bodies.map(b => !!b.stream), [false, true, false]);
 });

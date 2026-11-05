@@ -3,6 +3,7 @@
   "name": "smith seated wrist curl",
   "bodyPart": "lower arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "forearms",
   "secondaryMuscles": [
     "biceps",

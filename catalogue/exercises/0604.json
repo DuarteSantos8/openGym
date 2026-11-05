@@ -3,6 +3,7 @@
   "name": "lever shrug",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "other",
   "target": "traps",
   "secondaryMuscles": [
     "shoulders"

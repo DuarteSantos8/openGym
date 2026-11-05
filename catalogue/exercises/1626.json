@@ -3,6 +3,7 @@
   "name": "smith machine reverse decline close grip bench press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",

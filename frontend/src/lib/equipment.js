@@ -1,6 +1,7 @@
 import { t } from './i18n-core.js'
 import { EXDB } from './exercises-data.js'
 import { ownsNoDumbbells } from './dumbbells.js'
+import { machineKindOf, profileMachines, NO_MACHINE } from './machine-kinds.js'
 
 // Pieces of kit the catalogue never names as an exercise's equipment — "dumbbell bench press" is
 // tagged `dumbbell`, yet it needs a bench; "chin-up" is tagged `body weight`, yet it needs a bar.
@@ -61,7 +62,7 @@ export function exAvailable(S, ex) {
   const p = activeProfile(S)
   if (!p) return true
   if (ownsNoDumbbells(S) && ex.eq === 'dumbbell') return false
-  return eqAvailable(profileEquipment(p), ex)
+  return eqAvailable(profileEquipment(p), ex, profileMachines(p))
 }
 
 // A profile saved before the bench and the bar were on the checklist (#464) never had the chance
@@ -79,9 +80,16 @@ export function profileEquipment(p) {
 }
 
 // The same test against a bare equipment list, for callers that hold a profile rather than S.
-export function eqAvailable(equipment, ex) {
+// `machines` is the profile's machine kinds (lib/machine-kinds.js): empty or left out, the four
+// machine equipment values decide as they always did; with kinds, they decide every catalogue
+// machine exercise instead, whatever its equipment value, and an "assisted" row that needs no
+// machine at all (a partner, a band) stays like body weight.
+export function eqAvailable(equipment, ex, machines) {
   const have = equipment || []
-  if (ex.eq && ex.eq !== ALWAYS_AVAILABLE) {
+  const kind = Array.isArray(machines) && machines.length ? machineKindOf(ex) : null
+  if (kind) {
+    if (kind !== NO_MACHINE && !machines.includes(kind)) return false
+  } else if (ex.eq && ex.eq !== ALWAYS_AVAILABLE) {
     // Equipment no profile can tick (an imported exercise's "custom") would hide the user's own
     // exercise under every profile, with no way to bring it back. It stays, like body weight.
     if (!ALL_EQUIPMENT.includes(ex.eq)) return true

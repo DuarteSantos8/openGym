@@ -3,6 +3,7 @@
   "name": "lever bent over single arm lats focused row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "lats",
   "secondaryMuscles": [
     "rhomboids",

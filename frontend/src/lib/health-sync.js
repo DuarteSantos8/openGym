@@ -27,7 +27,7 @@ import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null }
+const OFF = { on: false, kcalAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -114,10 +114,25 @@ export function syncHealth(S) {
   return running
 }
 
+// Whether the hub lets openGym write active energy (#724). Someone who turned Health on before
+// v1.4.5 never saw that permission: asked once, while the app is on screen, then never again.
+async function kcalAllowed(p, h) {
+  const st = await p.HC.status().catch(() => null)
+  if (st?.calories === true) return { kcal: true, h }
+  const onScreen = typeof document === 'undefined' || document.visibilityState !== 'hidden'
+  if (st?.calories !== false || !st.granted || h.kcalAsked || !onScreen) return { kcal: false, h }
+  const res = await p.HC.requestPermissions({ read: [], write: ['calories'] }).catch(() => null)
+  const out = { ...h, kcalAsked: true }
+  await saveHealth(out)
+  return { kcal: res?.calories === true, h: out }
+}
+
 async function syncOnce(S, h) {
   const p = await plugin()
   if (!p) return h
-  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S) }), h.written, goneIds(S))
+  const allowed = await kcalAllowed(p, h)
+  h = allowed.h
+  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S), kcal: allowed.kcal }), h.written, goneIds(S))
   const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
   if (nothing) {
     if (!h.error) return h
@@ -167,7 +182,8 @@ export async function enableHealth(S) {
   const granted = st.granted || (await p.HC.requestPermissions().catch(() => ({ granted: false }))).granted
   if (!granted) return { ok: false, reason: 'denied' }
   const h = await loadHealth()
-  await saveHealth({ ...h, on: true, error: null })
+  // The default ask includes active energy (optional: refusing it keeps the rest on).
+  await saveHealth({ ...h, on: true, error: null, kcalAsked: true })
   await mirrorOn(true)
   const after = await syncHealth(S)
   return { ok: !after?.error, reason: after?.error || null, health: after }

@@ -23,8 +23,16 @@ export const MUSCLES = list('trapezius, deltoids, chest, upper-back, serratus, b
 // dumbbell fly also needs a bench, an inverted row a bar. The app's profile checklist has these
 // two (frontend/src/lib/equipment.js ACCESSORIES), and reads most of them off the name.
 export const NEEDS = list('bench, pull-up bar')
+// The machine an exercise is done on (#923), for the four equipment values that are machines. An
+// equipment profile can then say "leg press yes, leg extension no". One kind per exercise: the
+// machine you need to do it, so a 45° sled leg press and a lever leg press are both "leg-press",
+// while a Smith leg press is "smith". "other" is the named fallback for a machine that has no card
+// of its own; "none" marks an "assisted" row that needs no machine (a partner, a band, a towel).
+// The app's cards (frontend/src/lib/machine-kinds.js) hold the same list, a test compares them.
+export const MACHINE_EQUIPMENT = list('leverage machine, sled machine, smith machine, assisted')
+export const MACHINE_KINDS = list('leg-press, hack-squat, squat-machine, belt-squat, leg-extension, leg-curl, calf-raise, hip-thrust, hip-abduction, glute-machine, chest-press, pec-deck, shoulder-press, lateral-raise, triceps-machine, lat-pulldown, seated-row, t-bar-row, biceps-curl, back-extension, smith, assisted-pullup, ab-machine, push-sled, cardio, pilates, other, none')
 export const LANGS = list('ar, bn, cs, de, es, fa, fr, hi, hu, it, ko, pl, pt, pt-BR, ru, sv, th, tr, uk, zh, zh-TW')
-const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'target', 'secondaryMuscles', 'category', 'hold', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
+const KEYS = ['id', 'name', 'bodyPart', 'equipment', 'machineKind', 'target', 'secondaryMuscles', 'category', 'hold', 'needs', 'description', 'instructions', 'muscleMap', 'femaleVariant', 'maleVariant', 'variantOf', 'textSource']
 const I18N_KEYS = ['name', 'description', 'instructions']
 
 export function validateCatalogue(dir) {
@@ -45,6 +53,10 @@ export function validateCatalogue(dir) {
     if (!isText(e.name) || e.name !== e.name.toLowerCase()) say(file, '"name" must be lowercase text without surrounding spaces')
     if (!BODY_PARTS.includes(e.bodyPart)) say(file, `"bodyPart" must be one of: ${BODY_PARTS.join(', ')}`)
     if (!EQUIPMENT.includes(e.equipment)) say(file, `"equipment" must be one of: ${EQUIPMENT.join(', ')}`)
+    if (MACHINE_EQUIPMENT.includes(e.equipment) ? !MACHINE_KINDS.includes(e.machineKind) : e.machineKind != null)
+      say(file, MACHINE_EQUIPMENT.includes(e.equipment)
+        ? `"machineKind" must be one of: ${MACHINE_KINDS.join(', ')} (a machine exercise needs one; "other" when no card fits)`
+        : '"machineKind" is only for machine equipment (' + MACHINE_EQUIPMENT.join(', ') + ')')
     if (!TARGETS.includes(e.target)) say(file, `"target" must be one of: ${TARGETS.join(', ')}`)
     if (!Array.isArray(e.secondaryMuscles) || e.secondaryMuscles.some(m => !SECONDARY.includes(m)))
       say(file, `"secondaryMuscles" must be a list of: ${SECONDARY.join(', ')}`)

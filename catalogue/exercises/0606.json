@@ -3,6 +3,7 @@
   "name": "lever t bar row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",

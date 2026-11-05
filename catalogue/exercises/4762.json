@@ -3,6 +3,7 @@
   "name": "glute ham developer hip extension",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "back-extension",
   "target": "glutes",
   "secondaryMuscles": [
     "hamstrings",

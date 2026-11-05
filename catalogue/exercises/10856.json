@@ -3,6 +3,7 @@
   "name": "pilates machine overhead",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "abs",
   "secondaryMuscles": [
     "shoulders",

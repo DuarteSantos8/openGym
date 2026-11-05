@@ -3,6 +3,7 @@
 // the page has many. The app turns it off at launch; nothing in openGym undoes by shaking.
 import { describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 describe('shake to undo on the iPhone (#921)', () => {
   const swift = readFileSync(new URL('../../ios/App/App/AppDelegate.swift', import.meta.url), 'utf8')
@@ -13,7 +14,7 @@ describe('shake to undo on the iPhone (#921)', () => {
   it('and the page itself never listens for a shake', async () => {
     const { readdirSync, statSync } = await import('node:fs')
     const { join } = await import('node:path')
-    const root = new URL('..', import.meta.url).pathname
+    const root = fileURLToPath(new URL('..', import.meta.url))
     const hits = []
     const walk = dir => {
       for (const name of readdirSync(dir)) {

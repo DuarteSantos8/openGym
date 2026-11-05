@@ -3,6 +3,7 @@
   "name": "smith wide grip decline bench press",
   "bodyPart": "chest",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "pectorals",
   "secondaryMuscles": [
     "triceps",

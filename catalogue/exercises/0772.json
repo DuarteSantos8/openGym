@@ -3,6 +3,7 @@
   "name": "smith standing behind head military press",
   "bodyPart": "shoulders",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "delts",
   "secondaryMuscles": [
     "triceps",

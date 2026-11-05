@@ -3,6 +3,7 @@
   "name": "lever lateral raise",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
+  "machineKind": "lateral-raise",
   "target": "delts",
   "secondaryMuscles": [
     "traps",

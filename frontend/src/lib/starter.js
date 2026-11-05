@@ -86,13 +86,13 @@ const NEEDS_BALL = /exercise ball|stability ball|swiss ball|bosu/i
 // same target muscle, then the movement by name, then helper muscles. When `ex` is a loaded
 // lift, one that is loaded too beats a body-weight drill — a push-up is not a bench press.
 // `taken` keeps a routine from ending up with the same exercise twice. null when nothing fits.
-export const substituteFor = (ex, equipment, taken) => {
+export const substituteFor = (ex, equipment, taken, machines) => {
   const hasBall = equipment.includes('stability ball') || equipment.includes('bosu ball')
   const exWords = words(ex), exSm = new Set([ex.mg, ...(ex.sm || [])])
   const loaded = ex.eq !== 'body weight'
   let best = null, bestScore = -Infinity
   for (const c of Object.values(EXIDX)) {
-    if (c.bp !== ex.bp || taken.has(c.id) || !eqAvailable(equipment, c)) continue
+    if (c.bp !== ex.bp || taken.has(c.id) || !eqAvailable(equipment, c, machines)) continue
     if (NOT_A_LIFT.test(c.n) || (!hasBall && NEEDS_BALL.test(c.n))) continue
     const sm = jaccard(exSm, new Set([c.mg, ...(c.sm || [])]))
     if (c.tg !== ex.tg && c.mg !== ex.mg && !sm) continue
@@ -107,7 +107,7 @@ export const substituteFor = (ex, equipment, taken) => {
 // Re-cuts a routine list for an equipment list: what you can already do stays, what you can't
 // is swapped for its closest match, and what has no match is dropped (with its routine, when
 // that leaves it empty). Sets and reps (or seconds) carry over unchanged.
-export const fitRoutines = (routines, equipment) => {
+export const fitRoutines = (routines, equipment, machines) => {
   let swapped = 0, dropped = 0
   const fitted = routines.map(([key, name, emoji, list]) => {
     const taken = new Set(list.map(([id]) => id))
@@ -115,8 +115,8 @@ export const fitRoutines = (routines, equipment) => {
     for (const line of list) {
       const [id, ...plan] = line
       const ex = EXIDX[id]
-      if (!ex || eqAvailable(equipment, ex)) { out.push(line); continue }
-      const sub = substituteFor(ex, equipment, taken)
+      if (!ex || eqAvailable(equipment, ex, machines)) { out.push(line); continue }
+      const sub = substituteFor(ex, equipment, taken, machines)
       if (!sub) { dropped++; continue }
       taken.add(sub.id)
       swapped++
@@ -130,10 +130,11 @@ export const fitRoutines = (routines, equipment) => {
 // Fresh routines plus the weekdays to put them on, or null for an unknown id — a caller that
 // treats null as "change nothing" can never half-apply a plan. With an equipment list the
 // plan is fitted to it first, and `fit` reports how many exercises that swapped or dropped.
-export const buildStarterPlan = (id, equipment) => {
+// `machines`, the profile's machine kinds (lib/machine-kinds.js), narrows the machines it may use.
+export const buildStarterPlan = (id, equipment, machines) => {
   const plan = PLANS[id]
   if (!plan) return null
-  const fit = equipment ? fitRoutines(plan.routines, equipment) : null
+  const fit = equipment ? fitRoutines(plan.routines, equipment, machines) : null
   const source = fit ? fit.routines : plan.routines
   const routines = build(source)
   // key → the id just minted for it, so the schedule below names its routine

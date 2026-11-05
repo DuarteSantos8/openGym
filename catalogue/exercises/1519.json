@@ -3,6 +3,7 @@
   "name": "smith good morning off pins",
   "bodyPart": "upper legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

@@ -3,6 +3,7 @@
   "name": "lever t-bar reverse grip row",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",

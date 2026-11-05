@@ -144,3 +144,13 @@ export function hintText(h, today = todayISO()) {
   return null
 }
 
+/**
+ * Settings → Recovery tips switched on or off. On also brings back a card put away for today with
+ * its ×: a switch that says on while the card stays gone read as broken (Discord, 2026-11-05).
+ * Mutates the draft `s`.
+ */
+export function setRecoveryHint(s, on) {
+  s.recoveryHint = !!on
+  if (on) s.recoveryHintDay = null
+  return s
+}

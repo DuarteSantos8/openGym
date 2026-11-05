@@ -5,7 +5,7 @@
 // either imports this file, so there is no cycle.
 import { buildSets, applyIntensifierPlan, modeOf, barFloor, isBw, lastEntryFor, insertWarmupRow } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
-import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, deloadTo, DELOAD_FACTOR, policyFor } from './progression.js'
+import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, deloadTo, DELOAD_FACTOR } from './progression.js'
 import { dropGrid } from './plates.js'
 import { backoffStepOf, applyBackoff } from './backoff.js'
 import { dbLoadFor, historyAs, ownedWeightsFor, withMeaning } from './dumbbells.js'
@@ -76,9 +76,9 @@ function carriedWarmups(st, cfg, routine, noProg) {
   // tweaks are today's, and the saved block is not overwritten by them (#525).
   if (warmupModeOf(cfg)) return null
   const mode = modeOf(cfg)
-  // Progression switched off (its own choice, or a pyramid's) builds warm-ups from the
-  // routine as before. A timed exercise's only policy is 'off', so the gate is reps-only.
-  if (mode !== 'time' && (mode === 'cardio' || policyFor(cfg, routine, mode) === 'off')) return null
+  // Cardio has no carried warm-up block. A rep exercise with progression off still carries
+  // marked warm-ups when it starts its work rows from the last session.
+  if (mode === 'cardio') return null
   const rows = lastEntryFor(st, cfg.id, routine?.id)?.warmups || []
   if (!rows.some(row => row.edited)) return null
   const fits = row => (mode === 'time' ? row.sec > 0 : isSideSet(row) || row.r > 0)

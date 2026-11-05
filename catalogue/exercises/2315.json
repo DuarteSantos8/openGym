@@ -3,6 +3,7 @@
   "name": "lever rotary calf",
   "bodyPart": "lower legs",
   "equipment": "leverage machine",
+  "machineKind": "calf-raise",
   "target": "calves",
   "secondaryMuscles": [
     "soleus",

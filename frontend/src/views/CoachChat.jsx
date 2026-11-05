@@ -18,7 +18,7 @@ import { closeThenNav } from '../lib/nav.js'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t, tn } from '../lib/i18n.js'
-import { fmtDate, fmtNum, DAYS, weekOrder, weekStartOf, isoOf } from '../lib/format.js'
+import { fmtDate, fmtNum, fmtChatTimestamp, DAYS, weekOrder, weekStartOf, isoOf } from '../lib/format.js'
 import { exLine } from '../lib/history.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { DEMO } from '../lib/demo.js'
@@ -36,6 +36,9 @@ import { useCoachStatus, requestReview, requestDebrief, requestPlan, refinePlan,
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 import { confirmSheet } from '../sheets.jsx'
+import { EXIDX } from '../lib/exercises.js'
+import { activeProfile } from '../lib/equipment.js'
+import { NotHereButton } from '../components/MachinePicker.jsx'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
 import LineChart from '../components/LineChart.jsx'
@@ -270,7 +273,7 @@ function Bubble({ role, kind, at, children }) {
   const cls = kind === 'error' ? ' err' : ''
   return <div className={'msg ' + role}>
     <div className={'bub' + cls}>{children}</div>
-    {at && <div className="msg-t">{stamp(at)}</div>}
+    {at && <div className="msg-t">{fmtChatTimestamp(at)}</div>}
   </div>
 }
 
@@ -287,20 +290,13 @@ function Message({ m, S, profile, openSheet }) {
     return <div className="msg coach" style={entry ? { maxWidth: '100%', width: '100%' } : undefined}>
       {!!m.text && <div className="bub">{m.text}</div>}
       {entry && <Recap entry={entry} S={S} openSheet={openSheet} />}
-      {m.at && <div className="msg-t">{stamp(m.at)}</div>}
+      {m.at && <div className="msg-t">{fmtChatTimestamp(m.at)}</div>}
     </div>
   }
   if (m.kind === 'reverted' || m.kind === 'nochange' || m.kind === 'error' || m.kind === 'text') {
     return <Bubble role={m.role} kind={m.kind} at={m.at}>{m.text}</Bubble>
   }
   return null
-}
-
-const stamp = at => {
-  const d = new Date(at)
-  const today = new Date()
-  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  return d.toDateString() === today.toDateString() ? time : fmtDate(isoOf(d)) + ' · ' + time
 }
 
 function Typing({ S, kind, coachLocal, config }) {
@@ -462,6 +458,9 @@ function ReviewCard({ p, S, update, toast, refresh }) {
       {marked.changes.map(c => {
         const stale = c.status === 'stale'
         return <ChangeRow key={c.id} c={c} S={S} stale={stale}>
+          {/* A machine the gym does not have (#923): one tap takes it off the gym's list and this suggestion with it. */}
+          {!stale && (c.type === 'add-exercise' || c.type === 'swap-exercise') && <NotHereButton profile={activeProfile(S)} ex={EXIDX[c.after?.id]}
+            onDone={() => { if (accepted.has(c.id)) toggle(c.id) }} />}
           {!stale && <Check checked={accepted.has(c.id)} onChange={() => toggle(c.id)} />}
         </ChangeRow>
       })}

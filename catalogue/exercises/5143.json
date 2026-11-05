@@ -3,6 +3,7 @@
   "name": "power sled drag",
   "bodyPart": "full body",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "hamstrings",
   "secondaryMuscles": [
     "glutes",

@@ -11,6 +11,7 @@
  * Adding a provider is a file here plus a row in config.PROVIDERS. Nothing else in the
  * codebase — routes, jobs, payload, validation, UI — knows which one is configured.
  */
+import { fileURLToPath } from 'node:url';
 import { run } from './spawn.js';
 import claude from './claude.js';
 import codex from './codex.js';
@@ -25,7 +26,7 @@ import compatible from '../core/adapters/compatible.js';
  * lets an instance owner see the entire Coach loop — intake, proposal, apply, revert —
  * before deciding whether to connect a real account to it.
  */
-const FIXTURE = new URL('../fixture-cli.mjs', import.meta.url).pathname;
+const FIXTURE = fileURLToPath(new URL('../fixture-cli.mjs', import.meta.url));
 const fixture = {
   id: 'fixture',
   spawns: true,

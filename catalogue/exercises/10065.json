@@ -3,6 +3,7 @@
   "name": "lever torso rotation",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "ab-machine",
   "target": "obliques",
   "secondaryMuscles": [
     "abdominals",

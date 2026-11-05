@@ -214,7 +214,7 @@ export async function apiBlob(path, { expectSize, idleMs = 30000, fetchImpl = gl
  * that is not the API's JSON (nginx's client_max_body_size, Cloudflare's 100 MB); 'timeout' after
  * `idleMs` without progress; no status at all when the network failed.
  */
-export function apiUpload(path, blob, mime, { onProgress, idleMs = 60000, XHR = globalThis.XMLHttpRequest } = {}) {
+export function apiUpload(path, blob, mime, { onProgress, idleMs = 60000, XHR = globalThis.XMLHttpRequest, headers = null } = {}) {
   if (MOBILE && !remoteBase) return Promise.reject(notPaired())
   return new Promise((resolve, reject) => {
     const xhr = new XHR()
@@ -224,6 +224,8 @@ export function apiUpload(path, blob, mime, { onProgress, idleMs = 60000, XHR = 
     xhr.open('PUT', mediaUrl(path))
     xhr.setRequestHeader('Content-Type', mime)
     for (const [k, v] of Object.entries(mediaHeaders())) xhr.setRequestHeader(k, v)
+    // The account the upload is meant for (GHSA-699c-6p5r-q574), and anything else the caller adds.
+    if (headers) for (const [k, v] of Object.entries(headers)) xhr.setRequestHeader(k, v)
     if (xhr.upload) xhr.upload.onprogress = e => { arm(); if (onProgress && e.lengthComputable) onProgress(e.loaded, e.total) }
     xhr.onprogress = arm
     xhr.onload = () => {

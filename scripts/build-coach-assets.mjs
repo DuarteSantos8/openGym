@@ -49,7 +49,7 @@ const outputs = [];
   } catch { /* no catalogue checked out: keep EXDB's order */ }
   const rank = e => (LATE.has(e.cat) ? 2 : classic.size && !classic.has(e.id) ? 1 : 0);
   const ranked = EXDB.map((e, i) => [rank(e), i, e]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-  const index = ranked.map(([, , e]) => ({ id: e.id, n: e.n, bp: e.bp, tg: e.tg, eq: e.eq }));
+  const index = ranked.map(([, , e]) => ({ id: e.id, n: e.n, bp: e.bp, tg: e.tg, eq: e.eq, ...(e.mk && e.mk !== 'none' ? { mk: e.mk } : {}) }));
   // Where the newer lifts and the late group start, so the slice can spread its picks over each
   // group instead of taking a catalogue prefix (#829).
   const startOf = r => { const at = ranked.findIndex(x => x[0] >= r); return at < 0 ? index.length : at; };

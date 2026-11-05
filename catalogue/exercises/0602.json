@@ -3,6 +3,7 @@
   "name": "lever seated reverse fly",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
+  "machineKind": "pec-deck",
   "target": "delts",
   "secondaryMuscles": [
     "trapezius",

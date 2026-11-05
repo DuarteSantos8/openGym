@@ -76,6 +76,7 @@ final class HealthRead {
         switch (name) {
             case "exercise": return "android.permission.health.WRITE_EXERCISE";
             case "weight": return "android.permission.health.WRITE_WEIGHT";
+            case "calories": return "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED";
             default: return null;
         }
     }

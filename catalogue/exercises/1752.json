@@ -3,6 +3,7 @@
   "name": "smith machine incline tricep extension",
   "bodyPart": "upper arms",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "triceps",
   "secondaryMuscles": [
     "shoulders"

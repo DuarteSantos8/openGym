@@ -3,6 +3,7 @@
   "name": "smith reverse calf raises",
   "bodyPart": "lower legs",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "calves",
   "secondaryMuscles": [
     "hamstrings"

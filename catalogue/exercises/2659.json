@@ -3,6 +3,7 @@
   "name": "lever incline chest press (plate loaded)",
   "bodyPart": "chest",
   "equipment": "leverage machine",
+  "machineKind": "chest-press",
   "target": "pectorals",
   "secondaryMuscles": [
     "upper chest",

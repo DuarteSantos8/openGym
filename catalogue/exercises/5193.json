@@ -3,6 +3,7 @@
   "name": "power sled rear drag v. 2",
   "bodyPart": "upper legs",
   "equipment": "sled machine",
+  "machineKind": "push-sled",
   "target": "quads",
   "secondaryMuscles": [
     "glutes",

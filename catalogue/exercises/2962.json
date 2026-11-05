@@ -3,6 +3,7 @@
   "name": "lever seated hammer grip shoulder press",
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
+  "machineKind": "shoulder-press",
   "target": "delts",
   "secondaryMuscles": [
     "triceps",

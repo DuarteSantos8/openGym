@@ -6,8 +6,9 @@ import { spawnSync } from 'node:child_process'
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const script = new URL('../../../scripts/catalogue/stage-media.mjs', import.meta.url).pathname
+const script = fileURLToPath(new URL('../../../scripts/catalogue/stage-media.mjs', import.meta.url))
 
 describe('staging the app\'s animations (#962)', () => {
   it('a WebP release folder asked for MP4 stops before copying anything', () => {

@@ -3,6 +3,7 @@
   "name": "pilates machine lying calf raise",
   "bodyPart": "upper legs",
   "equipment": "leverage machine",
+  "machineKind": "pilates",
   "target": "calves",
   "secondaryMuscles": [
     "soleus",

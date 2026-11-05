@@ -3,6 +3,7 @@
   "name": "lever seated twist",
   "bodyPart": "waist",
   "equipment": "leverage machine",
+  "machineKind": "ab-machine",
   "target": "obliques",
   "secondaryMuscles": [
     "abdominals",

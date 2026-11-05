@@ -212,7 +212,12 @@ function printInFrame(html) {
  * suggested PDF file; Android refuses a job without one.
  */
 export function printDocument(html, name) {
-  if (MOBILE) return printHtml(html, name || 'openGym', printOptions()).catch(() => { /* dismissed */ })
+  if (MOBILE) return printHtml(html, name || 'openGym', printOptions()).catch(err => {
+    // A dismissed sheet stays quiet. A phone with no print service at all (#991) says so: the
+    // store comes in through a dynamic import, since plain Node tests load this file too.
+    if (err?.code !== 'no-service') return
+    import('../store/useUI.js').then(({ useUI }) => useUI.getState().toast(t('This phone has no print service. Turn one on in its settings and try again.'))).catch(() => {})
+  })
   printInFrame(html)
   return Promise.resolve()
 }

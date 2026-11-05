@@ -3,6 +3,7 @@
   "name": "lever bent-over row with v-bar",
   "bodyPart": "back",
   "equipment": "leverage machine",
+  "machineKind": "t-bar-row",
   "target": "upper back",
   "secondaryMuscles": [
     "biceps",

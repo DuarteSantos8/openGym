@@ -2065,6 +2065,10 @@ paths:
         names the SHA-256 of the bytes, and the file is stored only if they hash to it.
         Idempotent: uploading a file the server already has answers 200 with `existed: true`.
 
+        Optional header `X-OpenGym-Account`: the account id the upload is meant for. When it is
+        not the session's account (the browser signed in as someone else meanwhile) the upload
+        is refused with 409 `account-mismatch` and nothing is stored.
+
         What is stored is decided by the file's first bytes, not by the declared type. The
         declared type only has to be in the same category, a still (JPEG, PNG, WebP, GIF) or a
         video (MP4, MOV, WebM), or a sound (a 16-bit PCM WAV, `audio/wav`): a JPEG declared as a GIF is stored as the JPEG it is, a video
@@ -2180,6 +2184,9 @@ paths:
         same call moves a guest's files into a new account, a phone's into its pairing, a
         backup's into the server, and re-sends a file the sweep removed while a device still
         had it. Answered from the caller's own folder only.
+
+        Takes the same optional `X-OpenGym-Account` header as the upload: another account than
+        the session's answers 409 `account-mismatch`.
       requestBody:
         required: true
         content:

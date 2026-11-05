@@ -1,4 +1,5 @@
 import { showsDashboard } from '../lib/trainer-api.js'
+import { setRecoveryHint } from '../lib/recovery-hint.js'
 import { useEffect, useRef, useState, forwardRef, useSyncExternalStore } from 'react'
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { useStore, DEF, hasData } from '../store/useStore.js'
@@ -64,6 +65,7 @@ import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } fro
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
+import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
 import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/progression.js'
 import { STEPS, profileStep, stepOverrides, applyStepToAll, fmtStepLabel } from '../lib/weight-step.js'
@@ -1081,7 +1083,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
             (lib/recovery-hint.js). One at a time, and it can be put away for the day. */}
         {on('health') && <Row icon="figureStrength" iconTint="var(--green)" title={t('Recovery tips')}
           subtitle={t('A small hint on Home about what has rested and what is still recovering.')}>
-          <Switch aria-label={t('Recovery tips')} checked={S.recoveryHint !== false} onChange={v => update(s => { s.recoveryHint = v })} />
+          <Switch aria-label={t('Recovery tips')} checked={S.recoveryHint !== false} onChange={v => update(s => { setRecoveryHint(s, v) })} />
         </Row>}
         {/* Three goals a month on Home, sized to how you train (lib/challenges.js). Off: no card,
             no Stats progress; badges already earned stay on the shelf. */}
@@ -1781,6 +1783,12 @@ function AccentSwatches({ S, update }) {
   </>
 }
 
+// "9 equipment types · 14 machines": what a profile has, in one line (the machines, #923, in their own words).
+function profileLine(p) {
+  const types = (p.equipment || []).filter(e => !MACHINE_EQ.includes(e)).length
+  return t('{0} equipment types', types) + ' · ' + machinesSummary(p)
+}
+
 function EquipmentCard({ S, update }) {
   const toast = useUI(s => s.toast)
   const profiles = S.equipProfiles || []
@@ -1834,7 +1842,7 @@ function EquipmentCard({ S, update }) {
     </Row>}
     {profiles.map(p => (
       <Row key={p.id} icon="house" iconTint="var(--teal)" title={p.name}
-        subtitle={t('{0} equipment types', p.equipment.length)} accessory="chevron"
+        subtitle={profileLine(p)} accessory="chevron"
         onClick={() => equipmentProfileSheet(p)}>
         <button className="iconbtn" aria-label={t('Delete')} onClick={ev => { ev.stopPropagation(); remove(p) }}><Icon name="trash" /></button>
       </Row>

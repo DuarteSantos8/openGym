@@ -72,6 +72,9 @@ public final class RestAlert {
 
     private static AudioTrack current;
     private static long firedFor;
+    // The end of the rest booked last (schedule, updateAlarm, chainNext): an alarm for another
+    // end is a left-over one (#995). 0 after cancel, and after the process restarted.
+    private static volatile long bookedAt;
 
     private RestAlert() {}
 
@@ -112,6 +115,7 @@ public final class RestAlert {
         intent.putExtra("localOnly", localOnly);
         intent.putExtra("at", at);
         intent.putExtra("cues", cues == null ? "" : cues);
+        bookedAt = at;
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, intent, FLAGS);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         boolean exact = canExact(am);
@@ -183,6 +187,7 @@ public final class RestAlert {
             next.putExtra("cues", rest.toString());
             lastAlertTitle = title;
             lastCues = rest.toString();
+            bookedAt = at;
             PendingIntent pi = PendingIntent.getBroadcast(ctx, NOTIFICATION_ID, next, FLAGS);
             AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
             try {
@@ -211,6 +216,7 @@ public final class RestAlert {
 
     public static void cancel(Context ctx, int id) {
         lastCues = "";
+        bookedAt = 0;
         stopCountdown(ctx);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, alarmIntent(ctx), FLAGS);
@@ -238,6 +244,7 @@ public final class RestAlert {
         intent.putExtra("channelId", lastChannel);
         intent.putExtra("at", at);
         intent.putExtra("cues", lastCues);
+        intent.putExtra("fromCountdown", true);
         new Thread(() -> fire(ctx, intent), "opengym-rest").start();
     }
 
@@ -250,14 +257,37 @@ public final class RestAlert {
 
     /** Runs off the main thread. Holds the CPU until the tone has finished. */
     public static void fire(Context ctx, Intent intent) {
-        if (!claim(intent.getLongExtra("at", 0))) return;
+        long at = intent.getLongExtra("at", 0);
+        int verdict = RestCountdownPlan.alarmVerdict(at, System.currentTimeMillis(), bookedAt,
+                intent.getBooleanExtra("fromCountdown", false));
+        if (verdict == RestCountdownPlan.STALE) {
+            Log.w("openGym", "rest alarm for an end no longer booked, ignored");
+            return;
+        }
+        if (verdict == RestCountdownPlan.REBOOK) {
+            Log.w("openGym", "rest alarm came " + (at - System.currentTimeMillis()) + " ms early, booked again");
+            rebook(ctx, intent, at);
+            return;
+        }
+        if (!claim(at)) return;
         PowerManager.WakeLock cpu = null;
         try {
             PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
             cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "opengym:rest");
-            cpu.acquire(10_000);
+            cpu.acquire(10_000 + RestCountdownPlan.WAIT_MAX_MS);
         } catch (Exception ignored) { /* tone still attempts without the lock */ }
         try {
+            // A few seconds early: wait for the end here rather than book an alarm that close.
+            if (verdict == RestCountdownPlan.WAIT) {
+                long booked = bookedAt;
+                try {
+                    Thread.sleep(Math.max(0, at - System.currentTimeMillis()));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                // Called off or replaced while it waited (skip, a new rest).
+                if (booked > 0 && bookedAt != booked) return;
+            }
             // The app is on screen: the page has chimed, buzzed and flashed the end itself, and
             // its bar says Ready. A tone and a banner on top would say it twice. Asking the page
             // to hush this alarm instead raced it: the page's last tick and this alarm land in
@@ -289,6 +319,24 @@ public final class RestAlert {
             stopCountdown(ctx);
         } finally {
             if (cpu != null && cpu.isHeld()) cpu.release();
+        }
+    }
+
+    /**
+     * The same alert again for its own end, after it came early. As an alarm clock where exact
+     * alarms are allowed: phones that move exact alarms forward leave those alone.
+     */
+    private static void rebook(Context ctx, Intent fired, long at) {
+        Intent again = alarmIntent(ctx);
+        if (fired.getExtras() != null) again.putExtras(fired.getExtras());
+        int id = fired.getIntExtra("id", NOTIFICATION_ID);
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, id, again, FLAGS);
+        AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+        try {
+            if (canExact(am)) am.setAlarmClock(new AlarmManager.AlarmClockInfo(at, openApp(ctx)), pi);
+            else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
+        } catch (SecurityException e) {
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi);
         }
     }
 
@@ -470,6 +518,7 @@ public final class RestAlert {
         // The chain's alerts are relative to this end, so a rest paused or lengthened on the card
         // moves them with it.
         intent.putExtra("cues", lastCues);
+        bookedAt = at;
         PendingIntent pi = PendingIntent.getBroadcast(ctx, NOTIFICATION_ID, intent, FLAGS);
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         try {

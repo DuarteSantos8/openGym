@@ -3,6 +3,7 @@
   "name": "smith rear delt row",
   "bodyPart": "shoulders",
   "equipment": "smith machine",
+  "machineKind": "smith",
   "target": "delts",
   "secondaryMuscles": [
     "trapezius",
