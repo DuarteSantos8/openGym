@@ -2178,14 +2178,14 @@ const routes = {
       // block is how the app knows this server does not take photos and videos at all.
       ...(MEDIA_ON ? { media: mediaConfig(MEDIA_LIMITS) } : {}),
       ...(readSession(req) ? { coach: coachConfig.publicConfig() } : {}),
+      // The community library: only to a session and only with LIBRARY=on.
+      ...(LIBRARY.on && readSession(req) ? { shared: publicLibraryConfig(LIBRARY, currentConsent('library')) } : {}),
       // Which integrations this server offers (only to a session, like the Coach block). Absent
       // with INTEGRATIONS unset, which is how the app knows to show the server cards as off.
       ...(readSession(req) && integrations.publicConfig() ? { integrations: integrations.publicConfig() } : {}),
       // Trainers and studios (docs/TRAINERS.md): only to a session and only when on, so the app
       // shows no trace of the feature anywhere else.
-      ...(TRAINERS && readSession(req) ? { trainers: { on: true, leadAccess: org.leadMode } } : {}),
-      // The community library: only to a session and only with LIBRARY=on.
-      ...(LIBRARY.on && readSession(req) ? { shared: publicLibraryConfig(LIBRARY, currentConsent('library')) } : {})
+      ...(TRAINERS && readSession(req) ? { trainers: { on: true, leadAccess: org.leadMode } } : {})
     });
   },
 

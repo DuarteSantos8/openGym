@@ -1278,9 +1278,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           Admin and Disconnect sit in the same block; a browser's account rows follow in their own. */}
       {user && !DEMO && <ServerSyncSection>
         {MOBILE && <>
+          {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
           {pageVisible('trainer', ctx) && <Row icon="personCircle" iconTint="var(--acc)" title={t('Trainer & gym')} subtitle={t('Who sees what of your training')} accessory="chevron" onClick={() => nav('/settings/trainer')} />}
-          {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
           {/* A code to sign in on a computer (#551), behind the same proof as in a browser. */}
           <DeviceLinkRow state={passkeys.st} />
           <AccountIdRow id={user.id} />
@@ -1304,9 +1304,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host openGym')} subtitle={t('Passkey sign-in, sync across your devices, your own data.')} accessory="chevron"
             onClick={() => window.open(REPO, '_blank', 'noopener')} />
         </> : user ? <>
+          {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
           {pageVisible('trainer', ctx) && <Row icon="personCircle" iconTint="var(--acc)" title={t('Trainer & gym')} subtitle={t('Who sees what of your training')} accessory="chevron" onClick={() => nav('/settings/trainer')} />}
-          {community && <Row icon="globe" iconTint="var(--blue)" title={t('Community')} subtitle={t('What people on this server shared')} accessory="chevron" onClick={() => nav('/community')} />}
           <PasskeysRow state={passkeys.st} changed={credsChanged} />
           <DeviceLinkRow state={passkeys.st} />
           <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
