@@ -16,6 +16,10 @@ import {
 } from '../lib/sharing-api.js'
 import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, SelectRow, Button, TextField } from '../components/ui.jsx'
+import Icon from '../components/Icon.jsx'
+import { getInbox, answerItem, markSeen, undoChange, previewGrant, changeLines, trainerError } from '../lib/trainer-api.js'
+import { noticeText } from '../lib/trainer-notice-text.js'
+import TrainerMember from '../components/TrainerMember.jsx'
 
 const ICON = { metrics: 'gauge', workouts: 'dumbbell', plans: 'calendar', bodyweight: 'scale', measurements: 'ruler', photos: 'image', notes: 'pencil', nutrition: 'heart' }
 const TINT = { metrics: 'var(--blue)', workouts: 'var(--green)', plans: 'var(--orange)', bodyweight: 'var(--teal)', measurements: 'var(--indigo)', photos: 'var(--pink)', notes: 'var(--yellow)', nutrition: 'var(--red)' }
@@ -81,6 +85,63 @@ function ConsentSheet({ code, preview, lang, close, done }) {
   </>
 }
 
+// A gym's join code (GY-…): no trainer, only the gym lead row, under the lead text.
+const LEAD_CONSENT = 'You are joining this gym. Its gym lead sees your name and the categories you mark here, never more than view. You can change this or leave the gym any time, and it stops working the moment you do.'
+function JoinGymSheet({ code, preview, lang, close, done }) {
+  const toast = useUI(s => s.toast)
+  const mode = preview.leadMode
+  const [lead, setLead] = useState(preview.leadDefaults || {})
+  const [busy, setBusy] = useState(false)
+  const yes = () => {
+    setBusy(true)
+    connectTrainer({ code, scopes: {}, leadScopes: lead, consent: preview.consent, lang })
+      .then(() => { close(); toast(t('Welcome to {0}', preview.gym.name)); done() })
+      .catch(e => { setBusy(false); toast(sharingError(e)) })
+  }
+  if (preview.member) return <><h3>{preview.gym.name}</h3><p className="intg-lead">{t('You are in this gym already.')}</p><Button onClick={close}>{t('Close')}</Button></>
+  return <>
+    <h3>{t('Join {0}?', preview.gym.name)}</h3>
+    {preview.gym.contact && <p className="intg-lead" style={{ marginBottom: 6 }}>{t('Responsible: {0}', preview.gym.contact)}</p>}
+    {mode !== 'none' ? <Section title={preview.gym.leads?.length ? t('Gym lead ({0})', preview.gym.leads.join(', ')) : t('Gym lead')}
+      footer={t('The gym lead only ever sees, never changes. Switch off what they should not see.')}>
+      <ScopeRows scopes={lead} onChange={setLead} cap="view" />
+    </Section> : <p className="intg-lead">{t('The gym lead sees your name, nothing else.')}</p>}
+    <p className="intg-lead">{preview.consent?.text === LEAD_CONSENT ? t(LEAD_CONSENT) : preview.consent?.text}</p>
+    <Button variant="primary" disabled={busy} onClick={yes}>{t('Join')}</Button>
+    <div style={{ height: 8 }} />
+    <Button onClick={close} disabled={busy}>{t('Not now')}</Button>
+  </>
+}
+
+// What a trainer or gym sent: suggestions to take or leave, comments, notices, the private offer.
+function InboxCard({ item, unit, onAnswer }) {
+  const who = item.from?.name || t('A former trainer')
+  const when = fmtDate(new Date(item.at).toISOString().slice(0, 10))
+  if (item.kind === 'suggest') return <div className="tr-card tr-inbox">
+    <div className="tr-inbox-h"><span className="tr-inbox-i" style={{ '--tint': 'var(--orange)' }}><Icon name="lightbulb" /></span>
+      <span><b>{t('{0} suggests', who)}</b><span className="tr-tile-s"> · {when}</span></span></div>
+    <ul className="tr-inbox-l">{changeLines(item.summary, unit).map((l, i) => <li key={i}>{l}</li>)}</ul>
+    {item.message && <p className="tr-quote">{item.message}</p>}
+    <div className="tr-code-a"><Button size="sm" variant="primary" onClick={() => onAnswer(item, true)}>{t('Take it')}</Button>
+      <Button size="sm" variant="tinted" onClick={() => onAnswer(item, false)}>{t('No thanks')}</Button></div>
+  </div>
+  if (item.kind === 'offer') return <div className="tr-card tr-inbox">
+    <div className="tr-inbox-h"><span className="tr-inbox-i" style={{ '--tint': 'var(--blue)' }}><Icon name="personCircle" /></span>
+      <span><b>{t('{0} left {1}', item.names?.[0] || who, item.names?.[1] || '')}</b></span></div>
+    <p className="tr-inbox-p">{t('Keep training together privately? Your sharing stays as it is, without the gym lead. Until {0}, then it ends by itself.', fmtDate(new Date(item.expires).toISOString().slice(0, 10)))}</p>
+    <div className="tr-code-a"><Button size="sm" variant="primary" onClick={() => onAnswer(item, true)}>{t('Stay connected')}</Button>
+      <Button size="sm" variant="tinted" onClick={() => onAnswer(item, false)}>{t('End it')}</Button></div>
+  </div>
+  const isComment = item.kind === 'comment'
+  const n = isComment ? null : noticeText(item.notice, item.names || [])
+  return <div className={'tr-card tr-inbox' + (item.seen ? '' : ' new')}>
+    <div className="tr-inbox-h"><span className="tr-inbox-i" style={{ '--tint': isComment ? 'var(--green)' : 'var(--indigo)' }}><Icon name={isComment ? 'chat' : 'bell'} /></span>
+      <span><b>{isComment ? (item.workout || item.about ? t('{0} on {1}', who, item.workout ? item.workout.name || t('Workout') : item.about) : who) : n.title}</b><span className="tr-tile-s"> · {when}</span></span>
+      <button className="tr-x" onClick={() => onAnswer(item, false)} aria-label={t('Dismiss')}><Icon name="xmark" /></button></div>
+    {isComment ? <p className="tr-quote">{item.text}</p> : n.body && <p className="tr-inbox-p">{n.body}</p>}
+  </div>
+}
+
 export default function MyTrainerPage() {
   const S = useStore(s => s.S)
   const lang = S.lang || baseLang(navigator.language || 'en')
@@ -94,18 +155,38 @@ export default function MyTrainerPage() {
   const [busy, setBusy] = useState(false)
   const autoChecked = useRef(false)
 
+  const [inbox, setInbox] = useState(null)
   const load = () => {
     getSharing().then(r => { setD(r); setErr(null) }).catch(e => setErr(sharingError(e)))
     sharingLog().then(r => setLog(r.log || [])).catch(() => setLog([]))
+    getInbox().then(setInbox).catch(() => setInbox(null))
   }
   useEffect(load, [])
+  // Opening the page is reading it: the notice on Home goes away.
+  useEffect(() => { if (inbox?.unseen) markSeen().catch(() => {}) }, [inbox?.unseen])
+  const answer = (item, yes) => {
+    const extra = item.kind === 'offer' && yes ? { consent: d?.consent ? { v: d.consent.v, hash: d.consent.hash } : null, lang } : null
+    answerItem(item.id, yes, extra).then(r => {
+      if (item.kind === 'suggest') toast(yes ? t('Done. It syncs to your devices in a moment.') : t('Turned down. No hard feelings.'))
+      if (item.kind === 'offer') toast(yes ? (r.paused ? t('Kept. It starts once they may train privately here.') : t('Kept. Same sharing, no gym in between.')) : t('Ended.'))
+      load()
+    }).catch(e => { toast(trainerError(e)); load() })
+  }
+  const undo = (u, force) => undoChange(u.id, force).then(() => { toast(t('Undone. Your devices catch up in a moment.')); load() }).catch(e => {
+    if (e?.data?.code === 'changed-since') return confirmSheet({ title: t('Undo anyway?'), message: t('You changed it yourself since. Undo puts it back the way it was before {0}.', u.by?.name || t('your trainer')), confirmText: t('Undo'), onConfirm: () => undo(u, true) })
+    toast(trainerError(e))
+  })
+  const preview = c => previewGrant(c.id).then(p => openSheet(close => <><TrainerMember d={p} preview /><Button onClick={close}>{t('Close')}</Button></>, { wide: true }))
+    .catch(e => toast(sharingError(e)))
 
   const check = c => {
     const typed = (c ?? code).trim()
     if (!typed) return
     setBusy(true)
     checkCode(typed)
-      .then(preview => openSheet(close => <ConsentSheet code={typed} preview={preview} lang={lang} close={close} done={() => { setCode(''); load() }} />))
+      .then(preview => openSheet(close => preview.kind === 'gym'
+        ? <JoinGymSheet code={typed} preview={preview} lang={lang} close={close} done={() => { setCode(''); load() }} />
+        : <ConsentSheet code={typed} preview={preview} lang={lang} close={close} done={() => { setCode(''); load() }} />))
       .catch(e => toast(sharingError(e)))
       .finally(() => setBusy(false))
   }
@@ -144,10 +225,15 @@ export default function MyTrainerPage() {
   if (err && !d) return <Section footer={err}><Row icon="reset" title={t('Try again')} onClick={load} accessory="chevron" /></Section>
   if (!d) return <div className="muted small" style={{ padding: 16 }}>{t('Loading…')}</div>
 
+  const open = (inbox?.items || []).filter(i => i.status === 'open')
+  const undos = (inbox?.undo || []).filter(u => u.canUndo || u.undoneAt).slice(0, 15)
   return <>
+    {open.length > 0 && <Section title={t('For you')}>
+      <div className="tr-inbox-list">{open.map(i => <InboxCard key={i.id} item={i} unit={S.unit === 'lb' ? 'lb' : 'kg'} onAnswer={answer} />)}</div>
+    </Section>}
     <Section title={t('Add a trainer')} footer={t('Your trainer gives you a code or a QR. Nothing is shared until you say yes.')}>
       <div className="intg-field" style={{ margin: '10px 12px' }}>
-        <label className="intg-label" htmlFor="trainer-code">{t('Trainer code')}</label>
+        <label className="intg-label" htmlFor="trainer-code">{t('Trainer or gym code')}</label>
         <TextField id="trainer-code" name="trainer-code" placeholder="TR-XXXXX-XXXXX" value={code} autoComplete="off" autoCapitalize="characters" spellCheck={false}
           maxLength={20} onChange={e => setCode(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') check() }} />
       </div>
@@ -169,13 +255,25 @@ export default function MyTrainerPage() {
             ? <ScopeRows scopes={c.lead.scopes} onChange={s => change(c.lead, s)} cap="view" ceiling={c.scopes} />
             : <Row title={shareLine(c.lead.scopes)} />}
         </Section>}
-        <Section><Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={() => disconnect(c, name)} /></Section>
+        <Section>
+          {c.status === 'active' && <Row icon="magnifier" iconTint="var(--blue)" title={t('See what {0} sees', name)} accessory="chevron" onClick={() => preview(c)} />}
+          <Row icon="signOut" iconTint="var(--red)" title={t('Disconnect')} danger onClick={() => disconnect(c, name)} />
+        </Section>
       </div>
     })}
 
     {d.gyms.length > 0 && <Section title={t('Your gyms')}>
       {d.gyms.map(g => <Row key={g.id} icon="mapPin" iconTint="var(--green)" title={g.name}
         subtitle={g.contact ? t('Responsible: {0}', g.contact) : null} value={t('Leave')} onClick={() => leave(g)} />)}
+    </Section>}
+
+    {undos.length > 0 && <Section title={t('What your trainers changed')} footer={t('Undo puts back what was there before, on all your devices. For 30 days.')}>
+      {undos.map(u => <Row key={u.id} icon={u.accepted ? 'lightbulb' : 'pencil'} iconTint={u.accepted ? 'var(--orange)' : 'var(--acc)'}
+        title={changeLines(u.summary, S.unit === 'lb' ? 'lb' : 'kg').join(', ') || t('A change')}
+        subtitle={(u.accepted ? t('{0} suggested, you took it', u.by?.name || t('A former trainer')) : t('By {0}', u.by?.name || t('A former trainer'))) + ' · ' + fmtDate(new Date(u.at).toISOString().slice(0, 10))}
+        value={u.undoneAt ? t('Undone') : null}>
+        {!u.undoneAt && <Button size="xs" variant="tinted" icon="undo" onClick={() => undo(u)}>{t('Undo')}</Button>}
+      </Row>)}
     </Section>}
 
     <Section title={t('Sharing log')} footer={t('Only you can read this.')}>

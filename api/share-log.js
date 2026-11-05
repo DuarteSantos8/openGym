@@ -11,7 +11,9 @@ import { atomicWrite } from './durable.js';
 const DAY = 86400000;
 const safe = uid => String(uid).replace(/[^a-zA-Z0-9_-]/g, '');
 
-export function createShareLog({ dir, maxEntries = 5000, keepDays = 365, now = Date.now } = {}) {
+const INBOX_DAYS = 365;
+
+export function createShareLog({ dir, maxEntries = 5000, keepDays = 365, undoDays = 30, now = Date.now } = {}) {
   const file = uid => path.join(dir, safe(uid) + '.json');
   const cache = new Map();
 
@@ -20,6 +22,8 @@ export function createShareLog({ dir, maxEntries = 5000, keepDays = 365, now = D
     let doc;
     try { doc = JSON.parse(fs.readFileSync(file(uid), 'utf8')); } catch { doc = null; }
     if (!doc || !Array.isArray(doc.log)) doc = { v: 1, log: [] };
+    if (!Array.isArray(doc.inbox)) doc.inbox = [];
+    if (!Array.isArray(doc.undo)) doc.undo = [];
     cache.set(uid, doc);
     return doc;
   }
@@ -27,6 +31,11 @@ export function createShareLog({ dir, maxEntries = 5000, keepDays = 365, now = D
     // Retention: older than keepDays goes, and the file never grows past maxEntries lines.
     const cut = keepDays > 0 ? now() - keepDays * DAY : -Infinity;
     doc.log = doc.log.filter(e => e.at >= cut).slice(-maxEntries);
+    // The inbox: an answered or expired item goes after INBOX_DAYS, an open one stays until it is
+    // answered or its offer runs out. Undo material lives UNDO_DAYS (design 4.3: 30 days).
+    const t = now();
+    doc.inbox = doc.inbox.filter(i => (i.status === 'open' ? !(i.expires && i.expires < t - INBOX_DAYS * DAY) : (i.answeredAt || i.at) >= t - INBOX_DAYS * DAY)).slice(-500);
+    doc.undo = doc.undo.filter(u => u.at >= t - undoDays * DAY).slice(-300);
     fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
     atomicWrite(file(uid), JSON.stringify(doc), 0o600);
     cache.set(uid, doc);
@@ -62,6 +71,40 @@ export function createShareLog({ dir, maxEntries = 5000, keepDays = 365, now = D
       return { log: rows, nextBefore: all.length > limit ? rows[rows.length - 1].at : null };
     },
     all: uid => read(uid).log.slice(),
+
+    /* The member's inbox (a trainer's suggestions and comments, notices about their connections)
+     * and the Undo material of every change a trainer made. Same file, so export and delete
+     * carry them without a second place to forget. */
+    inbox: uid => read(uid).inbox.slice(),
+    addInbox(uid, item) {
+      const doc = read(uid);
+      const row = { id: 'i_' + crypto.randomBytes(8).toString('base64url'), at: now(), status: 'open', seen: false, ...item };
+      doc.inbox.push(row);
+      write(uid, doc);
+      return row;
+    },
+    /** Changes the items `match` picks (a function); returns them. */
+    updateInbox(uid, match, patch) {
+      const doc = read(uid);
+      const hit = doc.inbox.filter(match);
+      for (const i of hit) Object.assign(i, typeof patch === 'function' ? patch(i) : patch);
+      if (hit.length) write(uid, doc);
+      return hit;
+    },
+    undos: uid => read(uid).undo.slice(),
+    addUndo(uid, rec) {
+      const doc = read(uid);
+      const row = { id: 'u_' + crypto.randomBytes(8).toString('base64url'), at: now(), ...rec };
+      doc.undo.push(row);
+      write(uid, doc);
+      return row;
+    },
+    markUndone(uid, id) {
+      const doc = read(uid);
+      const u = doc.undo.find(x => x.id === id);
+      if (u) { u.undoneAt = now(); write(uid, doc); }
+      return u || null;
+    },
     /** Account deleted: the member's own log goes with them. */
     remove(uid) {
       cache.delete(uid);
@@ -72,8 +115,8 @@ export function createShareLog({ dir, maxEntries = 5000, keepDays = 365, now = D
       for (const uid of memberIds) {
         const doc = read(uid);
         let changed = false;
-        for (const e of doc.log) {
-          for (const k of ['actor', 'peer']) {
+        for (const e of [...doc.log, ...doc.inbox, ...doc.undo]) {
+          for (const k of ['actor', 'peer', 'from', 'by']) {
             if (e[k]?.id === actorId && e[k].kind !== 'self') { e[k] = { kind: e[k].kind, id: null, name: '' }; changed = true; }
           }
         }

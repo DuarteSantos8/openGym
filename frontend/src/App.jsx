@@ -87,6 +87,8 @@ const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
 const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
 const StructuralBalance = lazyView(() => import('./views/StructuralBalance.jsx'))
 const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
+// The trainer dashboard (docs/TRAINERS.md): only for sessions that train someone or lead a gym.
+const Trainer = lazyView(() => import('./views/Trainer.jsx'))
 // The tabs and screens past Home (Stats, History, the Library, Settings, ...) as well: a start
 // only needs Home, and these are fetched right behind it the same way.
 const CheckIn = lazyView(() => import('./views/CheckIn.jsx'))
@@ -393,6 +395,9 @@ function Shell() {
       {isOn(S, 'coach') && <Route path="/coach/proposal" element={<Navigate to="/coach" replace />} />}
       {isOn(S, 'coach') && <Route path="/coach/setup" element={<CoachSetup />} />}
       <Route path="/admin" element={user?.admin ? <Admin /> : <Navigate to="/home" replace />} />
+      {/* The dashboard decides for itself once the config is in, so a deep link survives the boot. */}
+      {user && <Route path="/trainer" element={<Trainer />} />}
+      {user && <Route path="/trainer/m/:id" element={<Trainer />} />}
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
   ))

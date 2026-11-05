@@ -945,6 +945,18 @@ pre-filled from the trainer's read levels; `mirror` always shows the lead what t
 (capped at see); `none` shows the lead names only. Details and the API are in
 [TRAINERS.md](TRAINERS.md).
 
+Trainers and gym leads get the trainer dashboard (Settings → Account → Trainer dashboard). A
+trainer's change to a member's plan or weigh-ins is written on the server and reaches the
+member's devices on their next sync check like a change from another device; the member can undo
+each one for 30 days. Members are told by push when a connection is made or their sharing
+changes, so give the server push keys as for reminders (it does without, the notice in the app
+stays). To fill the nutrition category from openNutrition:
+
+```
+NUTRITION_SOURCE=opennutrition
+NUTRITION_URL=https://nutrition.example.com
+```
+
 Since 1.4.5 the admin dashboard no longer shows anyone's workouts or weigh-ins: the user detail
 has counts, storage and last sync only. The data is still readable on disk by whoever runs the
 server, just not in the app. For a small instance that liked the old view:

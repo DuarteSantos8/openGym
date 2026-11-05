@@ -4594,6 +4594,511 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+  /api/trainer/members:
+    get:
+      tags: [trainers]
+      operationId: trainerMembers
+      summary: 'The trainer: the member list'
+      description: >-
+        Every member connected to this trainer, with what each shares and, where key numbers are shared, the last workout, the streak (weeks), this week's sessions against the plan and flags: `missed` (planned days without a workout in the last 7), `pr` (records in the last 7 days), `inactive` (no workout for `inactive` days, default 7), `weight` (a change of 1 or more over two weeks, needs body weight), `pending` (suggestions not answered yet). A flag only appears when its category is shared. Each listed member's sharing log notes the look.
+      parameters:
+        - { name: today, in: query, required: false, schema: { type: string }, description: 'Client date (YYYY-MM-DD), used when within a day of the server' }
+        - { name: inactive, in: query, required: false, schema: { type: string }, description: 'Days without a workout before the inactive flag (2 to 60)' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/member:
+    get:
+      tags: [trainers]
+      operationId: trainerMember
+      summary: 'The trainer or gym lead: one member'
+      description: >-
+        The projection of one member: only the categories they share with this person (`shared`), never the document. Workouts come without media and, unless notes are shared, without notes; paged newest first by `before`. Plus this person's own comments, suggestions and changes. 404 for a member this person was never connected to, 403 `not-shared` once a connection ended.
+      parameters:
+        - { name: id, in: query, required: false, schema: { type: string }, description: 'Member id' }
+        - { name: before, in: query, required: false, schema: { type: string }, description: 'Workouts before this date (YYYY-MM-DD)' }
+        - { name: limit, in: query, required: false, schema: { type: string }, description: 'Workouts per page (1 to 100, default 20)' }
+        - { name: today, in: query, required: false, schema: { type: string }, description: 'Client date (YYYY-MM-DD)' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/ops:
+    post:
+      tags: [trainers]
+      operationId: trainerOps
+      summary: 'The trainer: change a member''s data'
+      description: >-
+        Whitelisted ops (`routine.put`, `routine.remove`, `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled `_by`, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memberId: { type: string }
+                ops: { type: array, items: { type: object } }
+                message: { type: string, maxLength: 300 }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/assign:
+    post:
+      tags: [trainers]
+      operationId: trainerAssign
+      summary: 'The trainer: assign one of their routines'
+      description: >-
+        Copies one of the trainer's own routines (with the custom exercises it needs, without media) to up to 50 members, optionally onto a weekday (`day`, 0 is Sunday). Per member the outcome is `applied`, `suggested` or `skipped` with a reason. The copy carries `origin` (kind trainer, sourceId); assigning it again replaces that copy.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memberIds: { type: array, items: { type: string }, maxItems: 50 }
+                routineId: { type: string }
+                day: { type: integer, minimum: 0, maximum: 6 }
+                message: { type: string, maxLength: 300 }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/comment:
+    post:
+      tags: [trainers]
+      operationId: trainerComment
+      summary: 'The trainer: comment on a workout'
+      description: >-
+        Needs workouts at See. The comment goes to the member's inbox (and a push), never into their training data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                memberId: { type: string }
+                workoutId: { type: string }
+                text: { type: string, maxLength: 1000 }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/leave-gym:
+    post:
+      tags: [trainers]
+      operationId: trainerLeaveGym
+      summary: 'The trainer: stop working at a gym'
+      description: >-
+        Ends the trainer role at that gym. The trainer's members there are paused and get the offer to stay connected privately for 30 days.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/gym:
+    get:
+      tags: [trainers]
+      operationId: gymOverview
+      summary: 'The gym lead: the gym'
+      description: >-
+        The gym's trainers (with member counts) and its members, each with their trainers and, where the member's own lead row shares key numbers, the summary. Never more than view.
+      parameters:
+        - { name: id, in: query, required: false, schema: { type: string }, description: 'Gym id' }
+        - { name: today, in: query, required: false, schema: { type: string }, description: 'Client date (YYYY-MM-DD)' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/gym/code:
+    post:
+      tags: [trainers]
+      operationId: gymCode
+      summary: 'The gym lead: a join code'
+      description: >-
+        A `GY-…` code (default 50 uses, 30 days) and the link that opens it. Members who use it join the gym and set their lead row; there is no trainer in it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string }
+                maxUses: { type: integer, minimum: 1, maximum: 200 }
+                days: { type: integer, minimum: 1, maximum: 30 }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/gym/staff:
+    post:
+      tags: [trainers]
+      operationId: gymStaff
+      summary: 'The gym lead: add or remove a trainer'
+      description: >-
+        By account id. Removing one pauses their gym members and sends each the private offer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string }
+                user: { type: string, description: 'Account id' }
+                on: { type: boolean }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/inbox:
+    get:
+      tags: [trainers]
+      operationId: sharingInbox
+      summary: 'The member: inbox and trainer changes'
+      description: >-
+        Suggestions, comments, notices (a new connection, changed sharing, a gym joined, a trainer's change) and offers to stay with a trainer privately, newest first; plus every change a trainer made, with `canUndo`.
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/inbox/answer:
+    post:
+      tags: [trainers]
+      operationId: sharingInboxAnswer
+      summary: 'The member: answer an inbox item'
+      description: >-
+        A suggestion: `accept` applies it (labelled with the trainer, undoable), otherwise it is declined; 410 when the connection ended. An offer: `accept` with the current consent makes a private connection, otherwise the paused one ends. A notice or comment: dismissed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+                accept: { type: boolean }
+                consent: { type: object }
+                lang: { type: string }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/inbox/seen:
+    post:
+      tags: [trainers]
+      operationId: sharingInboxSeen
+      summary: 'The member: mark inbox items seen'
+      description: >-
+        Without `ids`, all of them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids: { type: array, items: { type: string } }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/undo:
+    post:
+      tags: [trainers]
+      operationId: sharingUndo
+      summary: 'The member: undo a trainer''s change'
+      description: >-
+        Puts the entries back as they were, as the member's own newest change, so it wins on every device. 409 `changed-since` when the member changed them after the trainer did (send again with `force`), 409 `already-undone`, 410 after 30 days.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+                force: { type: boolean }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Not allowed at this level, or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/preview:
+    get:
+      tags: [trainers]
+      operationId: sharingPreview
+      summary: 'The member: see what a connection sees'
+      description: >-
+        The same projection the trainer or gym lead of that grant gets, so the preview cannot drift from the truth.
+      parameters:
+        - { name: grant, in: query, required: false, schema: { type: string }, description: 'Grant id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
   /api/admin/gyms:
     get:
       tags: [admin]

@@ -58,6 +58,15 @@ export function logLine(e) {
     case 'invite.decline': return t('You said not now to {0}', who(e.peer))
     case 'access': return t('{0} looked at {1}', who(e.actor), categoryLabel(e.cat))
     case 'data.admin-view': return t('An admin opened your training data')
+    case 'gym.join': return t('You joined {0}', who(e.peer))
+    case 'grant.private': return t('You kept {0} as a private trainer', who(e.peer))
+    case 'trainer.left-gym': return t('{0} left {1}', who(e.actor), who(e.peer))
+    case 'trainer.change': return t('{0} changed your training', who(e.actor))
+    case 'trainer.undo': return t('You undid a change by {0}', who(e.peer))
+    case 'trainer.comment': return t('{0} commented on a workout', who(e.actor))
+    case 'suggest.new': return t('{0} sent you a suggestion', who(e.actor))
+    case 'suggest.accept': return t('You took a suggestion from {0}', who(e.peer))
+    case 'suggest.decline': return t('You turned down a suggestion from {0}', who(e.peer))
     default: return e?.ev || ''
   }
 }
