@@ -125,6 +125,8 @@ api:
     MEDIA_UPLOADS: ""        # "0" = off
     INTEGRATIONS: ""         # "webhook" = Settings → Integrations → Webhooks (docs/INTEGRATIONS.md)
     INTEGRATIONS_ALLOW_LAN: ""  # "1" = webhooks may reach the home network
+    TRAINERS: ""             # "on" = gyms, gym leads and trainers (docs/TRAINERS.md)
+    ADMIN_DATA_VIEW: ""      # "on" = admins see workouts and weigh-ins again, every look logged
     MEDIA_QUOTA_MB: ""
     MEDIA_IMAGE_MAX_MB: ""
     MEDIA_GIF_MAX_MB: ""

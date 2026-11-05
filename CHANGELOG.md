@@ -94,6 +94,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Timed holds that run themselves (1.4.4): idea and first version by @kurktchiev (#490).
 - Ask the Coach mid-workout (1.4.4): idea and first version by @bbolinger (#852).
 
+**Trainers and gyms (self-hosted, `TRAINERS=on`, off by default)**
+- Gyms, gym leads and trainers on one server. An admin creates a gym and gives people the lead or trainer role, or lets someone train freely without a gym.
+- A trainer hands you a code or a QR. You see who they are, which gym and who answers for your data, and pick per category what they may see, suggest or change. Nothing is shared until you say yes and they confirm.
+- With a gym trainer, the gym lead gets a row of their own: pre-filled with what your trainer sees, never more than see, and you can switch any of it off (`TRAINERS_LEAD_ACCESS` picks `row`, `mirror` or `none`).
+- Settings → Account → Trainer & gym shows exactly what each side sees, lets you change it or disconnect, and it counts on their next tap. Your sharing log lists every connection, change and look, only you read it, and it comes along in "Download my sharing record" and goes with your account.
+- Groundwork for the trainer dashboard, the shared library and sign-in with OIDC: one permission check for every new route, versioned consent records, per-account limits. See docs/TRAINERS.md.
+
+**Admins see counts, not your training**
+- Behaviour change: the admin dashboard no longer opens anyone's workouts and weigh-ins. A person's detail shows counts, storage and last sync, and the list no longer says when someone last trained or what they are training right now. The data is still readable on disk by whoever runs the server, just not in the app.
+- `ADMIN_DATA_VIEW=on` brings the old view back for small instances that want it, and then every look is written to the activity log and to that person's own sharing log.
+
 **Security**
 - Sync: an answer from the server for the account you just left (another sign-in, a sign-out, a new server) can no longer land in the account you switched to, or be sent on in its name (GHSA-656w-p99j-x8hf, thanks Tiestow for the report).
 - Media sync: a photo or video still uploading from the account you just left can no longer land in the one you switched to (GHSA-699c-6p5r-q574, thanks @natgreenwood for the report).

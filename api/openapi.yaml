@@ -176,6 +176,13 @@ tags:
     description: >-
       AI Coach: plans, reviews and debriefs. Every route here answers 503 unless the
       instance has the Coach switched on and a provider connected.
+  - name: trainers
+    description: >-
+      Trainers, gym leads and studios (docs/TRAINERS.md). Off unless the server runs with
+      `TRAINERS=on`; then every route here answers, otherwise 404 `trainers-off`. A member
+      connects to a trainer with the trainer's code and a consent, decides per category what is
+      shared, and can change or end it any time, effective on the next request. Every route
+      spends a per-account budget (429 `rate-limited`, Retry-After).
   - name: integrations
     description: >-
       Settings → Integrations: outbound webhooks now, more providers later. Off unless the
@@ -2812,7 +2819,8 @@ paths:
       description: >-
         One row per user with workout counts, last sync, push status and live
         presence. `workouts` counts only the entries the drill-down can show.
-        Admin only.
+        Admin only. Without `ADMIN_DATA_VIEW` there is no `lastWorkout` and `live` carries only
+        `startedAt` (no routine, no progress); `data_view` says which.
       responses:
         '200':
           description: All users.
@@ -2838,8 +2846,11 @@ paths:
       operationId: adminUser
       summary: 'Admin: one user in detail'
       description: >-
-        Drill-down: full workout history (newest first) and body-weight log for one
-        user. Admin only. Anything in `routines`, `bodyweight` or `workouts` that is not
+        Drill-down for one user. Admin only. Since 1.4.5 it answers operational numbers only
+        (`counts`, `bytes`, `lastSync`, `hasPush`, roles with TRAINERS on) and `data_view: false`.
+        Only with `ADMIN_DATA_VIEW=on` does it add the full workout history (newest first), the
+        body-weight log and the routines, with `data_view: true`; every such look is written to
+        the activity log (`admin.data-view`) and to the member's own sharing log. Anything in `routines`, `bodyweight` or `workouts` that is not
         an object is left out, and a list that is not an array reads as empty: PUT
         /api/data drops those entries now, but a state file written before it did still
         has them and this route has to answer for it. A workout's `media` (its photos and
@@ -3831,6 +3842,640 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/sharing:
+    get:
+      tags: [trainers]
+      operationId: sharingOverview
+      summary: 'The member: my connections and gyms'
+      description: >-
+        Every trainer connection (pending or active) with its scopes, whether it is paused
+        (`left-gym`, `gym-off`, `not-trainer`) and its gym lead row; the gyms joined; the
+        current consent text with version and hash; the lead mode (`row`, `mirror`, `none`).
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/code:
+    post:
+      tags: [trainers]
+      operationId: sharingCode
+      summary: 'The member: read a trainer code'
+      description: >-
+        Who the code belongs to, which gym (name, data protection contact, leads), the default
+        scopes for the consent screen and the lead row, and the consent text. Creates nothing.
+        Wrong codes count per address and account (10 free, then a pause that doubles).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string, description: 'TR-XXXXX-XXXXX, any case, spaces and dashes optional' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/connect:
+    post:
+      tags: [trainers]
+      operationId: sharingConnect
+      summary: 'The member: say yes to a trainer'
+      description: >-
+        Creates a pending grant (the trainer confirms it), a consent record per row, and with a
+        studio trainer the studio membership and the gym lead row (never more than view). Levels
+        per category are off, view, suggest, apply; each category has its own ceiling.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string, description: 'The trainer code' }
+                scopes: { type: object, description: '{ category: level }' }
+                leadScopes: { type: object, description: 'The lead row; only narrows the pre-fill' }
+                consent: { type: object, description: '{ v, hash } of the consent text shown (GET /api/sharing). A stale one is 409 consent-outdated with the current text.' }
+                lang: { type: string, description: 'Language the consent was read in' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/decline:
+    post:
+      tags: [trainers]
+      operationId: sharingDecline
+      summary: 'The member: not now'
+      description: >-
+        Nothing is created and the code stays usable; the member's own log notes it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string, description: 'The trainer code' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/update:
+    post:
+      tags: [trainers]
+      operationId: sharingUpdate
+      summary: 'The member: change what one connection shares'
+      description: >-
+        New scopes for a trainer row (its lead row follows down, never up) or for a lead row
+        (only narrower than the trainer's). A new consent record replaces the old one.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Grant id' }
+                scopes: { type: object, description: '{ category: level }' }
+                consent: { type: object, description: '{ v, hash } of the consent text shown (GET /api/sharing). A stale one is 409 consent-outdated with the current text.' }
+                lang: { type: string, description: 'Language' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/disconnect:
+    post:
+      tags: [trainers]
+      operationId: sharingDisconnect
+      summary: 'The member: end a connection'
+      description: >-
+        Ends the grant (and a trainer grant's lead row) at once. The trainer loses access on
+        their next request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Grant id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/leave:
+    post:
+      tags: [trainers]
+      operationId: sharingLeave
+      summary: 'The member: leave a gym'
+      description: >-
+        Ends the membership, the lead row and every studio trainer grant of that gym. Private
+        trainers stay.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string, description: 'Gym id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/log:
+    get:
+      tags: [trainers]
+      operationId: sharingLog
+      summary: 'The member: my sharing log'
+      description: >-
+        Newest first: connections, changes, ends, gym joins, admin looks (ADMIN_DATA_VIEW) and
+        trainer looks folded per day and category. Only the member reads it.
+      parameters:
+        - name: before
+          in: query
+          required: false
+          schema: { type: number }
+          description: 'Page: entries older than this `at`'
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer }
+          description: 1 to 200, default 100
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/sharing/export:
+    get:
+      tags: [trainers]
+      operationId: sharingExport
+      summary: 'The member: everything about my sharing'
+      description: >-
+        Memberships, grants, consent records (version, hash, language, scopes) and the full
+        log, as an attachment. Account deletion removes all of it.
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer:
+    get:
+      tags: [trainers]
+      operationId: trainerOverview
+      summary: 'The trainer: roles, codes, requests, members'
+      description: >-
+        The gyms the caller trains in, whether they may invite as a free trainer, their live
+        codes, pending requests (member name and the scopes offered) and connected members with
+        the level each category grants right now. Never any member data.
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/codes:
+    post:
+      tags: [trainers]
+      operationId: trainerCode
+      summary: 'The trainer: new invite code'
+      description: >-
+        A code (shown once, only its hash is stored) and a link for the QR. Studio codes need a
+        trainer role in that gym, others free-trainer status. 20 a day.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string, description: 'Optional gym id' }
+                maxUses: { type: integer, description: '1 to 200, default 1' }
+                days: { type: integer, description: '1 to 30, default 7' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/codes/revoke:
+    post:
+      tags: [trainers]
+      operationId: trainerCodeRevoke
+      summary: 'The trainer: revoke a code'
+      description: >-
+        The code stops working; connections made with it stay.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Code id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/requests/answer:
+    post:
+      tags: [trainers]
+      operationId: trainerAnswer
+      summary: 'The trainer: confirm or decline a request'
+      description: >-
+        Confirming activates the grant and its lead row; declining ends both.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Grant id' }
+                accept: { type: boolean, description: 'true to confirm' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/trainer/disconnect:
+    post:
+      tags: [trainers]
+      operationId: trainerDisconnect
+      summary: 'The trainer: end a connection'
+      description: >-
+        Same as the member ending it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Grant id' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/gyms:
+    get:
+      tags: [admin]
+      operationId: adminGyms
+      summary: 'Admin: gyms and roles'
+      description: >-
+        Every gym with its staff (names and roles) and counts, the free trainers, the number of
+        active grants. Never member data. TRAINERS on only.
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/gyms/new:
+    post:
+      tags: [admin]
+      operationId: adminGymNew
+      summary: 'Admin: create a gym'
+      description: >-
+        A gym with a name (up to 60) and a data protection contact (up to 200) shown on the
+        consent screen.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, description: 'Gym name' }
+                contact: { type: string, description: 'Who is responsible, how to reach them' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/gyms/update:
+    post:
+      tags: [admin]
+      operationId: adminGymUpdate
+      summary: 'Admin: change or disable a gym'
+      description: >-
+        A disabled gym pauses every grant through it, lead and trainers alike.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Gym id' }
+                name: { type: string, description: 'New name' }
+                contact: { type: string, description: 'New contact' }
+                disabled: { type: boolean, description: 'Off or on' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/gyms/staff:
+    post:
+      tags: [admin]
+      operationId: adminGymStaff
+      summary: 'Admin: give or take a gym role'
+      description: >-
+        Lead or trainer. Taking the trainer role away pauses that trainer's studio grants at
+        once; giving it back resumes them.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gymId: { type: string, description: 'Gym id' }
+                userId: { type: string, description: 'Profile id' }
+                role: { type: string, description: 'lead or trainer' }
+                on: { type: boolean, description: 'false to take it away' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/admin/user/trainer:
+    post:
+      tags: [admin]
+      operationId: adminUserTrainer
+      summary: 'Admin: allow a free trainer'
+      description: >-
+        A trainer without a gym (a personal trainer). Taking it away pauses their private
+        members at once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string, description: 'Profile id' }
+                free: { type: boolean, description: 'true to allow' }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`) or too many wrong codes (`code-paused`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
 components:
   securitySchemes:
     cookieAuth:
@@ -4588,6 +5233,20 @@ components:
               description: Expiry (ms) of an unused recovery code (POST /api/admin/user/recovery, recover.js).
         unit: { type: string, enum: [kg, lb] }
         lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
+        data_view: { type: boolean, description: 'true only with ADMIN_DATA_VIEW on: then routines, bodyweight and workouts are present.' }
+        hasPush: { type: boolean }
+        bytes: { type: integer, description: Size of the state file on disk. }
+        counts:
+          type: object
+          properties:
+            workouts: { type: integer }
+            bodyweight: { type: integer }
+            measurements: { type: integer }
+            routines: { type: integer }
+        roles:
+          type: object
+          description: TRAINERS on only. Studio roles, free-trainer status, gyms joined.
+        grants: { type: integer, description: TRAINERS on only. Active sharing grants of this member. }
         routines:
           type: array
           items:

@@ -31,6 +31,8 @@ export const PAGES = {
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
+  // Trainers and gyms (TRAINERS=on on the server, docs/TRAINERS.md): who sees what of your training.
+  trainer: { title: 'Trainer & gym', icon: 'personCircle', tint: 'var(--acc)', parent: 'account', kw: 'trainer coach personal trainer gym studio share sharing consent privacy disconnect code qr' },
   // Phone app only (#614): the gyms that get you a nudge when you arrive, the search that adds one
   // and the editor for one of them.
   gym: { title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', parent: 'reminders' },
@@ -58,6 +60,8 @@ export function pageVisible(page, ctx) {
   if (PAGES[page]?.mod && ctx.mod && !ctx.mod(PAGES[page].mod)) return false
   if (page === 'reminders') return !!(ctx.user || ctx.mobile)
   if (page === 'coach') return !!ctx.mobile
+  // Only on a server that offers trainers, signed in: there is nobody to share with otherwise.
+  if (page === 'trainer') return !!ctx.trainers && !!ctx.user && !ctx.demo
   // The iPhone app only: the watch app ships inside it.
   if (page === 'watch') return !!ctx.ios
   // A Zepp OS watch reaches openGym through a server (lib/watch-relay.js). Signed in, the page pairs
