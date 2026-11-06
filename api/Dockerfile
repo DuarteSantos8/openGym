@@ -56,6 +56,7 @@ RUN npm ci --omit=dev --omit=optional && npm cache clean --force
 COPY server.js push-messages.js nudge.js nudge-copy.js wrapped.js wrapped-copy.js verify-error.js password.js rate-limit.js passkeys-store.js device-link.js watch-relay.js media.js queue.js sync-stamps.js durable.js admin-socket.js recover.js net-guard.js permissions.js consent.js share-log.js budgets.js role-claims.js origin.js ./
 COPY coach ./coach
 COPY library ./library
+COPY oidc ./oidc
 COPY integrations ./integrations
 COPY trainers ./trainers
 COPY sources ./sources
