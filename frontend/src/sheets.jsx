@@ -52,7 +52,9 @@ import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWei
 import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
 import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
-import { importHevyData, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
+import { importHevyData, parseHevyAccount, HevyApiError, HEVY_DEV_SETTINGS, mergeHevyRoutines, hevySummaryCounts } from './lib/import-hevy.js'
+import { aliasMatches, choiceOpts, combineNames, rememberPicks } from './lib/import-choices.js'
+import ImportChoices, { freshChoices, choicesChanged } from './components/ImportChoices.jsx'
 import { buildPlanBundle, buildProgrammeBundle, parsePlan, mergePlan } from './lib/plan-share.js'
 import PrintPlanSheet from './components/PrintPlanSheet.jsx'
 import { printWorkout } from './lib/report-print.js'
@@ -538,8 +540,18 @@ const effortLine = (effort, n, scale) => effort === 'none'
 // the one action where "just try it" is expensive — it's someone's entire training
 // history — so the numbers, the unit conversion and the exercises we couldn't recognise
 // are all on screen before the confirm button.
-function ImportSummary({ parsed, close }) {
+function ImportSummary({ parsed: initial, text, close }) {
   const st = useStore(s => s.S)
+  // What you chose under "Check and choose" (#931, #849): the file is read again with it, so the
+  // tiles and lines below show what Import will do. Nothing is written before Import.
+  const [choices, setChoices] = useState(freshChoices)
+  const parsed = useMemo(() => {
+    if (text == null || !choicesChanged(choices)) return initial
+    try {
+      const p = parseImportFile(text, choiceOpts(S(), choices))
+      return p && !p.error ? p : initial
+    } catch { return initial }
+  }, [text, choices, initial])
   const isBW = parsed.kind === 'bodyweight'
   // Our own body CSV brings measurement check-ins along (#718); a day that has one keeps it.
   const checkIns = isBW ? parsed.measurements || [] : []
@@ -559,6 +571,7 @@ function ImportSummary({ parsed, close }) {
     update(s => {
       res = mergeImport(s, parsed)
       if (plans) planRes = mergeImportedRoutines(s, plans)
+      rememberPicks(s, choices.picks)
     })
     close()
     const measured = res.measurements ? tn('{0} measurement check-in imported', '{0} measurement check-ins imported', res.measurements) : ''
@@ -625,6 +638,7 @@ function ImportSummary({ parsed, close }) {
         {unmatched.length > 12 && <span className="mchip">+{unmatched.length - 12}</span>}
       </div>
     </>}
+    {!isBW && <ImportChoicesFor parsed={parsed} plans={plans} bounds={initial} choices={choices} setChoices={setChoices} st={st} />}
 
     <Button variant="primary" onClick={doImport} disabled={!fresh}>
       {fresh ? t('Import') : t('Nothing new to import')}
@@ -634,12 +648,26 @@ function ImportSummary({ parsed, close }) {
   </>
 }
 
+// The summaries' "Check and choose", for a parse: its names with the plans' beside them.
+function ImportChoicesFor({ parsed, plans, bounds, choices, setChoices, st, extraNames }) {
+  const names = combineNames(parsed.names, plans?.names, extraNames)
+  const remembered = useMemo(() => new Set(aliasMatches(st).keys()), [st.exAliases, st.customEx]) // eslint-disable-line react-hooks/exhaustive-deps
+  if (!names.length) return null
+  return <ImportChoices names={names} choices={choices} setChoices={setChoices}
+    remembered={new Set(names.filter(n => remembered.has(n.key)).map(n => n.key))}
+    bounds={{ from: bounds?.from || '', to: bounds?.to || '' }}
+    notesSeen={parsed.notesSeen || 0} effortSeen={parsed.effortSeen || 0}
+    onMenu={menuSheet}
+    onLibrary={cb => { const picker = exercisePicker(ex => { picker.close(); cb(ex) }, { title: t('Pick from the library'), actionIcon: 'check' }) }} />
+}
+
 /** Read a CSV/XML/JSON export, then show what it would do. */
 export function importFromApp(file, onDone) {
   const rd = new FileReader()
   rd.onload = () => {
     let parsed
-    try { parsed = parseImportFile(String(rd.result), { unit: S().unit, customEx: S().customEx }) }
+    // Read with the names you already gave exercises, so a pick made on an earlier import holds.
+    try { parsed = parseImportFile(String(rd.result), choiceOpts(S(), freshChoices())) }
     catch (e) { toast(t('Could not read that file')); return }
     if (parsed.error === 'empty') { toast(t('That file is empty')); return }
     // It looks like that app's export but does not read as one: say so rather than guess.
@@ -649,7 +677,8 @@ export function importFromApp(file, onDone) {
     if (parsed.kind === 'bodyweight' ? !parsed.bodyweight.length && !parsed.measurements?.length : !parsed.workouts.length && !parsed.routines?.routines?.length) {
       toast(t('Nothing to import from that file')); return
     }
-    ui().openSheet(close => <ImportSummary parsed={parsed} close={close} />)
+    const text = String(rd.result)
+    ui().openSheet(close => <ImportSummary parsed={parsed} text={text} close={close} />)
     onDone && onDone()
   }
   rd.onerror = () => toast(t('Could not read that file'))
@@ -680,7 +709,13 @@ function HevyImportSheet({ close }) {
   const [apiKey, setApiKey] = useState('')
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(null)
-  const [payload, setPayload] = useState(null) // { workouts, routines, bodyweight }
+  const [payload, setPayload] = useState(null) // { workouts, routines, bodyweight, raw }
+  const [choices, setChoices] = useState(freshChoices)
+  // Read again from what Hevy sent when a choice changes (#931, #849); the key is long gone.
+  const view = useMemo(() => {
+    if (!payload || !choicesChanged(choices)) return payload
+    try { return parseHevyAccount(payload.raw, choiceOpts(S(), choices)) } catch { return payload }
+  }, [payload, choices])
   const [wantWorkouts, setWantWorkouts] = useState(true)
   const [wantRoutines, setWantRoutines] = useState(true)
   const [wantBody, setWantBody] = useState(true)
@@ -698,7 +733,7 @@ function HevyImportSheet({ close }) {
     setProgress({ stage: 'templates', page: 1, pageCount: 1 })
     setPayload(null)
     try {
-      const data = await importHevyData(key, { unit: st.unit, customEx: st.customEx, onProgress: setProgress })
+      const data = await importHevyData(key, { ...choiceOpts(S(), freshChoices()), onProgress: setProgress })
       wipeKey()
       const empty = !data.workouts.workouts.length && !data.routines.routines.length && !data.bodyweight.bodyweight.length
       if (empty) {
@@ -708,6 +743,7 @@ function HevyImportSheet({ close }) {
       setWantWorkouts(!!data.workouts.workouts.length)
       setWantRoutines(!!data.routines.routines.length)
       setWantBody(!!data.bodyweight.bodyweight.length)
+      setChoices(freshChoices())
       setPayload(data)
     } catch (e) {
       if (e instanceof HevyApiError && e.message === 'auth') toast(t('That Hevy API key was refused'))
@@ -721,7 +757,8 @@ function HevyImportSheet({ close }) {
   }
 
   const doImport = () => {
-    if (!payload) return
+    if (!view) return
+    const payload = view
     const parts = []
     let addedW = 0, addedR = 0, addedB = 0
     update(s => {
@@ -740,6 +777,7 @@ function HevyImportSheet({ close }) {
         addedB = res.added
         parts.push(tn('{0} weigh-in imported', '{0} weigh-ins imported', res.added))
       }
+      rememberPicks(s, choices.picks)
     })
     close()
     if (!addedW && !addedR && !addedB) toast(t('Nothing new to import'))
@@ -777,9 +815,9 @@ function HevyImportSheet({ close }) {
     </>
   }
 
-  const w = payload.workouts
-  const r = payload.routines
-  const b = payload.bodyweight
+  const w = view.workouts
+  const r = view.routines
+  const b = view.bodyweight
   const haveW = w.workouts.filter(x => st.workouts.some(y => y.d === x.d)).length
   const freshW = w.workouts.length - haveW
   const haveB = b.bodyweight.filter(x => importHasWeighIn(st, x)).length
@@ -843,6 +881,8 @@ function HevyImportSheet({ close }) {
         {unmatched.length > 12 && <span className="mchip">+{unmatched.length - 12}</span>}
       </div>
     </>}
+    {(wantWorkouts || wantRoutines) && <ImportChoicesFor parsed={wantWorkouts ? w : { names: [] }} plans={wantRoutines ? r : null}
+      bounds={payload.workouts} choices={choices} setChoices={setChoices} st={st} />}
 
     <Button variant="primary" onClick={doImport} disabled={!canImport}>
       {canImport ? t('Import') : t('Nothing new to import')}

@@ -2390,6 +2390,19 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
    readings at the top of the effort card. */
 .stat-v{font-size:26px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+/* The import summary's "Check and choose" (components/ImportChoices.jsx, #931 #849). Closed it is
+   one row like a menu item; open, the dates, two switches and one row per exercise name. */
+.imp-choices{margin:4px 0 14px}
+.imp-choices-h{color:var(--label)}
+.imp-choices-b{padding:0 2px}
+.imp-dates{gap:8px;flex-wrap:wrap}
+.imp-switches{margin-top:14px}
+.imp-switch{gap:12px;padding:8px 2px;font-size:var(--fs-callout)}
+.imp-names{gap:6px}
+.imp-name{min-height:56px}
+.imp-name.is-off .item-open{opacity:.5}
+.imp-name .imp-sets{flex:none;font-variant-numeric:tabular-nums}
+.imp-pick{margin-inline-start:6px;vertical-align:1px}
 .mchip{font-size:var(--fs-caption);padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--label-2)}
 /* Untrained muscles are an invitation, not an alarm (stats redesign): the chip in the quiet fill
    with the full ink, as any other chip; the words say what it is. */

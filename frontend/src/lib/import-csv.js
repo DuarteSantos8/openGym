@@ -32,6 +32,7 @@ import { isWarmupRow, completedVolumeOf, syncSideAggregate } from './workout-mod
 import { HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { clampIncline, inclineFrom, clampLevel, levelFrom } from './incline.js'
 import { NOTE_MAX } from './history.js'
+import { pickFor, inRange } from './import-choices.js'
 
 /* ----------------------------------------------------------------- CSV ---- */
 
@@ -628,7 +629,7 @@ export function parseWorkoutCSV(text, opts = {}) {
  * catalogue when the app's own display name leaves out what it means (Liftosaur's "Front Raise"
  * is a dumbbell one). `skipped` counts rows the caller already threw away.
  */
-export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0 } = {}) {
+export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = [], skipped: preSkipped = 0, matches, skip, from, to, notes: keepNotes = true, effort: keepEffort = true } = {}) {
   // Our own export (lib/export-csv.js) says more than the others: the catalogue id, which side of
   // a per-side set a row is, a drop-set's drops as rows of their own. Read that way only when the
   // header says it is ours.
@@ -655,6 +656,11 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
   const rowNotes = new Map()         // session key -> Strong's Note rows, as [exact title, name key, text]
   let sets = 0, skipped = preSkipped, matched = 0, warmups = 0, rpeSets = 0, rirSets = 0
   let sawLb = false, sawKg = false
+  // What the summary lets you choose (lib/import-choices.js): every name the file uses with what it
+  // became and what the automatic match would make it, and what was left out on purpose.
+  const autoOf = new Map()           // exact title -> the automatic match (null: your own)
+  const stats = new Map()            // exact title -> { name, sets, sessions }
+  let excluded = 0, notesSeen = 0, effortSeen = 0
 
   // The export puts an apostrophe in front of a name a spreadsheet would run as a formula.
   const cell = (r, f) => {
@@ -683,7 +689,8 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     // the sets have placed it.
     if (order === 'note') {
       const text = cell(r, 'note')
-      if (text) {
+      if (text) notesSeen++
+      if (text && keepNotes && inRange(when.d, from, to)) {
         const sk = sessionKeyOf(when, r)
         if (!rowNotes.has(sk)) rowNotes.set(sk, [])
         rowNotes.get(sk).push([name.trim().toLowerCase(), keyOf(name), text])
@@ -705,7 +712,8 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
 
     const reps = Math.round(num(cell(r, 'reps')))
     const secs = num(cell(r, 'seconds'))
-    const setNote = source === 'Hevy' ? hevyNote(cell(r, 'note')) : cell(r, 'note')
+    const setNoteRaw = source === 'Hevy' ? hevyNote(cell(r, 'note')) : cell(r, 'note')
+    const setNote = keepNotes ? setNoteRaw : ''
     // Ours keeps cardio minutes to hundredths, the way the app stores them.
     const mins = secs > 0 ? Math.round(secs / 60 * (own ? 100 : 10)) / (own ? 100 : 10) : toMinutes(cell(r, 'time'))
     const km = map.distanceKm !== undefined && cell(r, 'distanceKm')
@@ -718,8 +726,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     // broken, and kept it would show as an infinite PR or a NaN chart. Skip the row, say so.
     const maxW = rowUnit === 'lb' || (!rowUnit && unit === 'lb') ? MAX_KG / LB_TO_KG : MAX_KG
     if (w < 0 || reps < 0 || secs < 0 || mins < 0 || km < 0 || w > maxW || reps > MAX_REPS || mins > 24 * 60 || km > MAX_KM) { skipped++; continue }
+    // Sessions outside the days you chose stay in the file.
+    if (!inRange(when.d, from, to)) { excluded++; continue }
     const warmup = /warm/i.test(cell(r, 'setType')) || order === 'w'
-    if (warmup) warmups++
 
     // Our own file names the exercise by id: a catalogue id is taken as it is, and a custom one
     // keeps its id too, so the same exercise on another device is the same exercise. Never a key
@@ -741,10 +750,22 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
         // stays custom: it was not in the catalogue on purpose.
         const alt = map.matchName !== undefined ? cell(r, 'matchName') : ''
         const byName = () => (alt ? matchExercise(alt) || (isNoMatch(alt) ? null : matchExercise(name)) : matchExercise(name))
-        id = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || byName())
+        const auto = mine ? mine.id : fileId ? null : canonicalExId((source === 'Hevy' ? matchHevyTitle(name) : null) || byName())
+        autoOf.set(exact, auto)
+        // Your pick for the name beats every guess; "keep it as your own" still finds the one an
+        // earlier import made. Our own file names its exercises by id and has nothing to pick.
+        const pick = fileId ? undefined : pickFor(matches, name, customEx)
+        id = pick === undefined ? auto : pick === null ? (mine ? mine.id : null) : pick
       }
       resolved.set(exact, id)
     }
+    let st = stats.get(exact)
+    if (!st) stats.set(exact, st = { name, sets: 0, sessions: new Set() })
+    st.sets++
+    st.sessions.add(sessionKeyOf(when, r))
+    // An exercise you unticked stays out, and so does the exercise of your own it would have made.
+    if (skip && skip.has(nameKey(name))) { excluded++; continue }
+    if (warmup) warmups++
     if (id) matched++
     else {
       let c = created.get(key)
@@ -793,7 +814,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       // duration-based fatigue estimate. Keep RIR reserved for reps-mode exercises.
       const rir = isCardio ? null : effortNum(cell(r, 'rir'), true)
       const rpe = rir == null ? effortNum(cell(r, 'rpe'), false) : null
-      if (rir != null) { set.rir = rir; rirSets++ }
+      if (rir != null || rpe != null) effortSeen++
+      if (!keepEffort) { /* left behind on purpose */ }
+      else if (rir != null) { set.rir = rir; rirSets++ }
       else if (rpe != null) { set.rpe = rpe; rpeSets++ }
     }
 
@@ -808,7 +831,9 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       byDate.set(sessionKey, day)
     }
     if (!day.name) day.name = cell(r, 'workoutName') || ''
-    if (!day.note) day.note = source === 'Hevy' ? hevyNote(cell(r, 'workoutNote')) : cell(r, 'workoutNote')
+    const workoutNote = source === 'Hevy' ? hevyNote(cell(r, 'workoutNote')) : cell(r, 'workoutNote')
+    if (workoutNote && !day.seenNote) { day.seenNote = true; notesSeen++ }
+    if (!day.note && keepNotes) day.note = workoutNote
     // The end is kept as time since the start day's midnight, so a session that runs past
     // midnight ends on the next day's clock plus 24 h rather than before it began.
     if (map.endTime !== undefined) { const e = parseWhen(cell(r, 'endTime')); if (e && e.t != null) day.end = e.t + daysBetween(when.d, e.d) * 86400000 }
@@ -845,6 +870,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       list.push(row)
     } else list.push(set)
     // A note written against a set belongs to the exercise that day; the app keeps one per entry.
+    if (setNoteRaw) notesSeen++
     if (setNote) {
       const list = day.notes.get(id) || []
       if (!list.includes(setNote)) list.push(setNote)
@@ -930,16 +956,25 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
     return w
   })
 
+  // Only what lands in the history counts: an exercise you unticked was resolved, but brings nothing.
+  const used = new Set(workouts.flatMap(w => w.entries.map(e => e.id)))
+  const matchedIds = [...new Set([...resolved.values()].filter(id => id && used.has(id)))]
+  const names = [...stats.entries()].map(([exact, st]) => {
+    const id = resolved.get(exact) || created.get(keyOf(st.name))?.id || null
+    return { key: nameKey(st.name), name: st.name, id: id || null, auto: autoOf.has(exact) ? autoOf.get(exact) || null : id || null, sets: st.sets, workouts: st.sessions.size }
+  })
   return {
     kind: 'workouts', source, workouts, customEx: [...created.values()],
     // distinct library exercises behind the matched rows — the summary calls this
     // "exercises matched", and counting rows there made three exercises read as five
-    matched: new Set([...resolved.values()].filter(Boolean)).size,
-    matchedIds: [...new Set([...resolved.values()].filter(Boolean))],
+    matched: matchedIds.length,
+    matchedIds,
     matchedSets: matched,
     created: created.size, unmatchedNames: [...unmatched].sort(),
     sets, skipped, warmups, fileUnit, mixedUnits, converted, rpeSets, rirSets,
     from: dates[0] || null, to: dates[dates.length - 1] || null,
+    // For the summary's choices: every name with its match, what was left out, what could be.
+    names: own ? [] : names, excluded, notesSeen, effortSeen,
   }
 }
 
