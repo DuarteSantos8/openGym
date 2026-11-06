@@ -34,7 +34,7 @@ fi
 
 apk=${given:-$(ls app/build/outputs/apk/offline/*/*.apk 2>/dev/null | head -1 || true)}
 if [ -n "$apk" ] && [ -f "$apk" ]; then
-  if unzip -p "$apk" assets/capacitor.plugins.json | grep -q mlkit; then
+  if unzip -p "$apk" assets/capacitor.plugins.json | grep -c mlkit >/dev/null; then
     echo "$apk: capacitor.plugins.json still lists the ML Kit plugin"; fail=1
   fi
   aapt2=${AAPT2:-$(ls "${ANDROID_HOME:-/opt/android-sdk}"/build-tools/*/aapt2 2>/dev/null | sort -V | tail -1 || true)}
@@ -43,18 +43,18 @@ if [ -n "$apk" ] && [ -f "$apk" ]; then
   fi
   perms=$("$aapt2" dump permissions "$apk")
   for p in android.permission.INTERNET android.permission.ACCESS_NETWORK_STATE android.permission.ACCESS_WIFI_STATE android.permission.REQUEST_INSTALL_PACKAGES; do
-    if printf '%s\n' "$perms" | grep -qF "'$p'"; then
+    if grep -qF "'$p'" <<<"$perms"; then
       echo "$apk: asks for $p"; fail=1
     fi
   done
   manifest=$("$aapt2" dump xmltree --file AndroidManifest.xml "$apk")
-  if printf '%s\n' "$manifest" | grep -qE 'com\.google\.(android\.gms|mlkit|firebase)'; then
+  if grep -qE 'com\.google\.(android\.gms|mlkit|firebase)' <<<"$manifest"; then
     echo "$apk: the manifest names Google Play services"; fail=1
   fi
-  if printf '%s\n' "$manifest" | grep -qE 'com\.garmin\.android\.connectiq'; then
+  if grep -qE 'com\.garmin\.android\.connectiq' <<<"$manifest"; then
     echo "$apk: the manifest names Garmin's Connect IQ SDK"; fail=1
   fi
-  if ! printf '%s\n' "$manifest" | grep -q 'ch.duartesantos.opengym.offline'; then
+  if ! grep -q 'ch.duartesantos.opengym.offline' <<<"$manifest"; then
     echo "$apk: not the openGym Offline package (ch.duartesantos.opengym.offline)"; fail=1
   fi
   [ "$fail" = 0 ] && echo "$apk: no INTERNET, no network state, no installer, no Play services, no Garmin"
