@@ -80,6 +80,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **Android and Health**
 - Android: the workout you are doing lives in one notification now. It shows the exercise, the set and its target, the time since you started and how far along you are, with Log set and Next exercise right there. Log set works with the app closed and starts the rest, the rest counts down in that same notification with the next set on top, and finishing or discarding the workout takes it away. On Android 16 it is a Live Update, the little chip by the clock (#760, idea and first version by @Andrew-A-A (#874)).
+- Health Connect gets your sets, not just the session: each set is its own segment with the move (bench press, squat, lat pulldown and a few dozen more, the rest as weightlifting) and its reps, so other apps can show what you actually did. Workouts already written are rewritten once with them (idea and first version by @finngrr (#816)).
 
 **Fixes from your reports**
 - Cardio on a 320 px phone: a row with the incline pushed its tick off the card. Below 360 px the incline now takes a typed number without the − and +, and the tick is back.

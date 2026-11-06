@@ -11,6 +11,7 @@ import { isoOf } from './format.js'
 import { readingsOf, readingAt, cleanTime } from './weigh-ins.js'
 import { EXIDX } from './exercises.js'
 import { activeKcal, bodyKgFor } from './active-energy.js'
+import { workoutSegments } from './health-segments.js'
 
 const LB_PER_KG = 2.2046226218
 // Health Connect refuses a title or notes over 1000 characters (ExerciseSessionRecord).
@@ -105,7 +106,7 @@ function sessionNotes(w, opts) {
  * One exercise session per finished workout. A workout with no start or end (or an end not after
  * its start) is left out rather than given made-up times: Health Connect needs both.
  */
-export function sessionRecord(w, { unit, nameOf, speedUnit, kg = null }) {
+export function sessionRecord(w, { unit, nameOf, speedUnit, kg = null, segments = false, customEx = [] }) {
   const start = Number(w?.start), end = Number(w?.end)
   if (!w?.id || !(start > 0) || !(end > start)) return null
   const rec = {
@@ -119,6 +120,12 @@ export function sessionRecord(w, { unit, nameOf, speedUnit, kg = null }) {
   // `kg` is then the body weight to work it out with.
   const kcal = kg > 0 ? activeKcal(w, kg) : null
   if (kcal > 0) rec.kcal = kcal
+  // Health Connect (Android) takes the sets as segments of a strength session (lib/health-segments.js).
+  // Only there: Apple Health has no such thing, and an iPhone's records stay as they were written.
+  if (segments && rec.type === 'strength_training') {
+    const seg = workoutSegments(w, customEx)
+    if (seg.length) rec.segments = seg
+  }
   return rec
 }
 
@@ -157,13 +164,13 @@ function localMorning(iso) {
 export const isImportedWorkout = w => w?.src === 'import' || /^iw[0-9a-z]+$/.test(String(w?.id || ''))
 
 /** Everything the state has to give Health Connect: { sessions, weights }. */
-export function healthRecords(S, { nameOf, speedUnit, kcal = false }) {
+export function healthRecords(S, { nameOf, speedUnit, kcal = false, segments = false }) {
   const unit = S?.unit === 'lb' ? 'lb' : 'kg'
   // `kcal`: the hub allows active energy, so every session carries its estimate. A change of that
   // permission changes the records, so the next sync writes them all again, with or without.
   return {
     sessions: (S?.workouts || []).filter(w => !isImportedWorkout(w))
-      .map(w => sessionRecord(w, { unit, nameOf, speedUnit, kg: kcal ? bodyKgFor(S, w) : null })).filter(Boolean),
+      .map(w => sessionRecord(w, { unit, nameOf, speedUnit, kg: kcal ? bodyKgFor(S, w) : null, segments, customEx: S?.customEx })).filter(Boolean),
     // A weigh-in read from the hub (`src`, lib/health-read.js) is already there: never written back.
     // Every weigh-in of a day with several (lib/weigh-ins.js), each at its own time.
     weights: (S?.bodyweight || []).flatMap(b => (Array.isArray(b?.ins)

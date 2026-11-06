@@ -132,7 +132,8 @@ async function syncOnce(S, h) {
   if (!p) return h
   const allowed = await kcalAllowed(p, h)
   h = allowed.h
-  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S), kcal: allowed.kcal }), h.written, goneIds(S))
+  // Segments (the sets, #816) only for Health Connect. Adding them rewrites each workout once.
+  const plan = planSync(healthRecords(S, { nameOf, speedUnit: speedUnitOf(S), kcal: allowed.kcal, segments: p.platform === 'android' }), h.written, goneIds(S))
   const nothing = !plan.sessions.length && !plan.weights.length && !plan.remove.sessions.length && !plan.remove.weights.length
   if (nothing) {
     if (!h.error) return h

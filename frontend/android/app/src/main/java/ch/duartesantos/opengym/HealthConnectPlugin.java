@@ -9,6 +9,7 @@ import androidx.health.connect.client.HealthConnectClient;
 import androidx.health.connect.client.HealthConnectFeatures;
 import androidx.health.connect.client.PermissionController;
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord;
+import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.Record;
@@ -39,6 +40,7 @@ import java.util.concurrent.Executors;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlinx.coroutines.BuildersKt;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -432,12 +434,81 @@ public class HealthConnectPlugin extends Plugin {
         Instant end = Instant.ofEpochMilli(s.getLong("end"));
         String title = s.optString("title", "");
         String notes = s.optString("notes", "");
+        int type = exerciseType(s.optString("type"));
+        List<ExerciseSegment> segments = segments(s.optJSONArray("segments"), start, end);
+        if (!segments.isEmpty()) {
+            try {
+                return new ExerciseSessionRecord(start, offsetAt(start), end, offsetAt(end),
+                        Metadata.manualEntry(s.getString("id"), version), type,
+                        title.isEmpty() ? null : title, notes.isEmpty() ? null : notes, segments);
+            } catch (IllegalArgumentException e) {
+                // A segment Health Connect does not take for this session: the workout without them.
+                android.util.Log.w("openGym", "Health Connect segments left out: " + e.getMessage());
+            }
+        }
         return new ExerciseSessionRecord(
                 start, offsetAt(start), end, offsetAt(end),
                 Metadata.manualEntry(s.getString("id"), version),
-                exerciseType(s.optString("type")),
+                type,
                 title.isEmpty() ? null : title,
                 notes.isEmpty() ? null : notes);
+    }
+
+    // The sets as segments (lib/health-segments.js, idea from #816): in order, inside the session,
+    // never overlapping. One that breaks any of that is dropped, not the workout.
+    private static List<ExerciseSegment> segments(JSONArray list, Instant start, Instant end) {
+        List<ExerciseSegment> out = new ArrayList<>();
+        if (list == null) return out;
+        Instant floor = start;
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject g = list.optJSONObject(i);
+            if (g == null) continue;
+            Instant from = Instant.ofEpochMilli(g.optLong("start", 0));
+            Instant to = Instant.ofEpochMilli(g.optLong("end", 0));
+            if (from.isBefore(floor) || !to.isAfter(from) || to.isAfter(end)) continue;
+            try {
+                out.add(new ExerciseSegment(from, to, segmentType(g.optString("type")), Math.max(0, g.optInt("reps", 0))));
+                floor = to;
+            } catch (IllegalArgumentException ignored) { /* left out */ }
+        }
+        return out;
+    }
+
+    // The names lib/health-segments.js uses (SEGMENT_TYPES); anything else is weightlifting.
+    private static int segmentType(String name) {
+        switch (name) {
+            case "arm_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_ARM_CURL;
+            case "back_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BACK_EXTENSION;
+            case "barbell_shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BARBELL_SHOULDER_PRESS;
+            case "bench_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_PRESS;
+            case "bench_sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_SIT_UP;
+            case "burpee": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BURPEE;
+            case "crunch": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_CRUNCH;
+            case "deadlift": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DEADLIFT;
+            case "double_arm_triceps_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DOUBLE_ARM_TRICEPS_EXTENSION;
+            case "dumbbell_front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_FRONT_RAISE;
+            case "dumbbell_lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_LATERAL_RAISE;
+            case "dumbbell_row": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_ROW;
+            case "dumbbell_triceps_extension_two_arm": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_TRICEPS_EXTENSION_TWO_ARM;
+            case "front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_FRONT_RAISE;
+            case "hip_thrust": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_HIP_THRUST;
+            case "jumping_jack": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_JUMPING_JACK;
+            case "kettlebell_swing": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_KETTLEBELL_SWING;
+            case "lat_pull_down": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LAT_PULL_DOWN;
+            case "lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LATERAL_RAISE;
+            case "leg_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_CURL;
+            case "leg_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_EXTENSION;
+            case "leg_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_PRESS;
+            case "leg_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_RAISE;
+            case "lunge": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LUNGE;
+            case "mountain_climber": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_MOUNTAIN_CLIMBER;
+            case "plank": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PLANK;
+            case "pull_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PULL_UP;
+            case "shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SHOULDER_PRESS;
+            case "sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SIT_UP;
+            case "squat": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SQUAT;
+            default: return ExerciseSegment.EXERCISE_SEGMENT_TYPE_WEIGHTLIFTING;
+        }
     }
 
     // The estimate from lib/active-energy.js, over the session's own time.
