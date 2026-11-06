@@ -12,6 +12,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Every station lands in the workout as a normal set as it happens, so history, stats, records and progression just work. The workout keeps the rounds, the AMRAP score (rounds + reps), the round times and how that compares with last time ("Round 3 today: 12 s faster").
 - After a finished run: one more rep or five more seconds per station for next time, one tap to put it in the routine. The run/walk program moves up a level after three finished runs.
 - Apple Watch, Wear OS and Garmin show the station you are on and count down the circuit's rests.
+- Fixed: the + and − buttons of a number field told a screen reader "Increase" and "Decrease" in English whatever the app's language.
 
 **Tempo, rest sounds, backups, calendar and Strava**
 - Tempo per exercise or per set, like 3-1-1-0: set it in the exercise's settings or for one set from its menu. The workout shows it on the exercise, and a tap starts a guide that counts every rep through lower, pause, lift and squeeze, with a tone and a buzz per phase you can hear from the floor. It goes along in the CSV export and import, shared plans and the sync (#572, idea by @WENeko).

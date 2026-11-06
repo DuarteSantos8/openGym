@@ -146,3 +146,20 @@ describe('back from a root tab', () => {
     expect(h.handler({ canGoBack: true })).toBe('exit')
   })
 })
+
+describe('a full-screen layer takes back first', () => {
+  it('closes the layer when no sheet sits on it, and lets a sheet go first', async () => {
+    const { setOverlayBack, overlayTakesBack } = await import('./back.js')
+    const { useUI } = await import('../store/useUI.js')
+    let closed = 0
+    setOverlayBack(() => { closed++; return true })
+    useUI.setState({ sheets: [] })
+    expect(overlayTakesBack()).toBe(true)
+    useUI.setState({ sheets: [{ id: 1 }] })
+    expect(overlayTakesBack()).toBe(false)
+    setOverlayBack(null)
+    useUI.setState({ sheets: [] })
+    expect(overlayTakesBack()).toBe(false)
+    expect(closed).toBe(1)
+  })
+})

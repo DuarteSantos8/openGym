@@ -12,6 +12,7 @@ import { viewRow, exUnitOf } from '../lib/ex-unit.js'
 import { runStep, stepEndsAt, leftOf, nextWorkAfter, stationNow, stationSuggestions, compareResult, previousResult, plannedLength, stepAt } from '../lib/circuit.js'
 import { circuitLine, roundLabel, resultLine, compareLine, fmtClock } from '../lib/circuit-copy.js'
 import { useWakeLock } from '../lib/wakelock.js'
+import { setOverlayBack } from '../lib/back.js'
 import { circuitUnitAt } from '../store/useCircuit.js'
 import { stationsOf } from '../lib/circuit.js'
 import { modeOf } from '../lib/history.js'
@@ -241,8 +242,10 @@ export default function CircuitPlayer() {
     if (!open) return
     const onKey = e => { if (e.key === 'Escape') close() }
     window.addEventListener('keydown', onKey)
+    // Android's back closes the player (the clock keeps running), as Escape does.
+    setOverlayBack(() => { close(); return true })
     box.current?.focus?.()
-    return () => window.removeEventListener('keydown', onKey)
+    return () => { window.removeEventListener('keydown', onKey); setOverlayBack(null) }
   }, [open])
   if (!open || !S?.active && !result) return null
   return <div ref={box} className="cp" role="dialog" aria-modal="true" aria-label={t('Circuit timer')} tabIndex={-1}>
