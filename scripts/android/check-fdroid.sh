@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Checks the F-Droid build (flavour "fdroid", docs/APP_STORES.md) carries nothing non-free:
-#   1. its runtime classpath has nothing from Google Play services, Firebase, ML Kit or Play Core;
+#   1. its runtime classpath has nothing from Google Play services, Firebase, ML Kit, Play Core or
+#      Garmin's Connect IQ Mobile SDK (closed source, docs/GARMIN.md);
 #   2. the APK, if built, lists no ML Kit plugin and asks for no install permission, and its
 #      manifest names nothing from Google Play services.
 # Run from the repository root after `npm run build:mobile` (in frontend/) and, for part 2,
@@ -15,11 +16,11 @@ if [ -n "$given" ] && [ ! -f "$given" ]; then echo "no such APK: $1"; exit 2; fi
 fail=0
 deps=$(./gradlew -q --console=plain :app:dependencies --configuration fdroidReleaseRuntimeClasspath)
 # Every coordinate line of the tree; the legend underneath has the word "display" in it.
-bad=$(printf '%s\n' "$deps" | grep -E -- '--- ' | grep -iE 'gms|firebase|mlkit|datatransport|com\.google\.android\.play|play-services|odml' || true)
+bad=$(printf '%s\n' "$deps" | grep -E -- '--- ' | grep -iE 'gms|firebase|mlkit|datatransport|com\.google\.android\.play|play-services|odml|connectiq|com\.garmin' || true)
 if [ -n "$bad" ]; then
   echo "fdroid runtime classpath has non-free dependencies:"; printf '%s\n' "$bad"; fail=1
 else
-  echo "fdroid runtime classpath: nothing from Google Play services, Firebase or ML Kit"
+  echo "fdroid runtime classpath: nothing from Google Play services, Firebase, ML Kit or Garmin"
 fi
 
 apk=${given:-$(ls app/build/outputs/apk/fdroid/release/*.apk 2>/dev/null | head -1 || true)}
@@ -32,6 +33,9 @@ if [ -n "$apk" ] && [ -f "$apk" ]; then
     manifest=$("$aapt2" dump xmltree --file AndroidManifest.xml "$apk")
     if printf '%s\n' "$manifest" | grep -qE 'com\.google\.(android\.gms|mlkit|firebase)'; then
       echo "$apk: the manifest names Google Play services"; fail=1
+    fi
+    if printf '%s\n' "$manifest" | grep -qE 'com\.garmin\.android\.connectiq'; then
+      echo "$apk: the manifest names Garmin's Connect IQ SDK"; fail=1
     fi
     if "$aapt2" dump permissions "$apk" | grep -q REQUEST_INSTALL_PACKAGES; then
       echo "$apk: asks for REQUEST_INSTALL_PACKAGES (F-Droid updates the app, not the app itself)"; fail=1

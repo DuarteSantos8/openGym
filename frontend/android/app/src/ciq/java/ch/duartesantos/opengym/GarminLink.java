@@ -1,0 +1,235 @@
+package ch.duartesantos.opengym;
+
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import com.garmin.android.connectiq.ConnectIQ;
+import com.garmin.android.connectiq.IQApp;
+import com.garmin.android.connectiq.IQDevice;
+import com.getcapacitor.JSArray;
+import com.getcapacitor.JSObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * The phone's end of the Garmin link (docs/GARMIN.md, watch app in frontend/garmin): Garmin's
+ * Connect IQ Mobile SDK, which talks to the watch through Garmin Connect Mobile. One per process,
+ * started with the page's plugin (WatchBridgePlugin.load) and kept while the process lives, so a
+ * set logged on the watch while the page sleeps is in the queue file at once.
+ *
+ * Phone → watch: the page's Garmin snapshot (lib/garmin-snapshot.js) as a Connect IQ dictionary,
+ * to every connected Garmin that has the app. The last one is kept and sent again when a watch
+ * connects or the watch app says hello (it just started and has nothing yet).
+ *
+ * Watch → phone: `{ events: [...] }`; each event goes into the same queue file as the Wear OS
+ * watch's (WatchBridgePlugin.storeEvent), the page drains it the same way. The watch keeps each
+ * event until the snapshot's `acked` names it, so one lost on the way (the app was not running)
+ * comes again.
+ *
+ * Without Garmin Connect Mobile, or before the SDK is up, every call answers "no Garmin".
+ * Not in the F-Droid build (closed source): app/build.gradle.
+ */
+final class GarminLink {
+    /** The watch app's id (frontend/garmin/manifest.xml), without dashes as the SDK wants it. */
+    static final String APP_ID = "3c533c63754d40189c000ad529e400b9";
+    /** The app's id in the Connect IQ Store, once it is published (docs/GARMIN.md). Empty until then. */
+    static final String STORE_ID = "";
+
+    private static GarminLink instance;
+
+    private Context ctx;
+    private final Handler main = new Handler(Looper.getMainLooper());
+    private ConnectIQ ciq;
+    /** starting, ready, no-gcm, gcm-upgrade, error */
+    private volatile String state = "starting";
+    private final Map<Long, IQDevice> devices = new ConcurrentHashMap<>();
+    private final Map<Long, Boolean> installed = new ConcurrentHashMap<>();
+    private final Map<Long, String> deviceState = new ConcurrentHashMap<>();
+    /** The queue file is written off the main thread (it is synced to disk). */
+    private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private volatile Map<String, Object> lastSnapshot;
+    private long seq = 0;
+
+    private GarminLink(Context ctx) { this.ctx = ctx.getApplicationContext(); }
+
+    static synchronized GarminLink get(Context ctx) {
+        if (instance == null) {
+            instance = new GarminLink(ctx);
+            instance.main.post(instance::start);
+        }
+        return instance;
+    }
+
+    private final ConnectIQ.IQApplicationEventListener onMessage = (device, app, message, status) -> {
+        if (status != ConnectIQ.IQMessageStatus.SUCCESS) return;
+        // The watch talks to us: it has the app.
+        installed.put(device.getDeviceIdentifier(), true);
+        List<String> events = GarminMessages.events(message);
+        boolean hello = false;
+        for (String json : events) if (GarminMessages.isHello(json)) hello = true;
+        if (hello) {
+            sendTo(device, lastSnapshot);
+            WatchBridgePlugin.notifyState();
+        }
+        io.execute(() -> {
+            boolean any = false;
+            for (String json : events) {
+                if (GarminMessages.isHello(json)) continue;
+                if (WatchBridgePlugin.storeEvent(ctx, json, GarminMessages.seqOf(json, ++seq))) any = true;
+            }
+            if (any) WatchBridgePlugin.notifyEvent();
+        });
+    };
+
+    private final ConnectIQ.IQDeviceEventListener onDevice = (device, status) -> {
+        deviceState.put(device.getDeviceIdentifier(), status.name());
+        if (status == IQDevice.IQDeviceStatus.CONNECTED) {
+            askInstalled(device);
+            sendTo(device, lastSnapshot);
+        }
+        WatchBridgePlugin.notifyState();
+    };
+
+    private void start() {
+        try {
+            ciq = ConnectIQ.getInstance(ctx, ConnectIQ.IQConnectType.WIRELESS);
+            ciq.initialize(ctx, false, new ConnectIQ.ConnectIQListener() {
+                @Override public void onSdkReady() { state = "ready"; refresh(); }
+                @Override public void onInitializeError(ConnectIQ.IQSdkErrorStatus err) {
+                    state = err == ConnectIQ.IQSdkErrorStatus.GCM_NOT_INSTALLED ? "no-gcm"
+                        : err == ConnectIQ.IQSdkErrorStatus.GCM_UPGRADE_NEEDED ? "gcm-upgrade" : "error";
+                    WatchBridgePlugin.notifyState();
+                }
+                @Override public void onSdkShutDown() { state = "starting"; }
+            });
+        } catch (Throwable e) {
+            state = "error";
+        }
+    }
+
+    /** The Garmins Garmin Connect knows, each listened to; asked again on the page's request. */
+    void refresh() {
+        main.post(() -> {
+            if (!"ready".equals(state) || ciq == null) return;
+            try {
+                List<IQDevice> known = ciq.getKnownDevices();
+                IQApp app = new IQApp(APP_ID);
+                for (IQDevice d : known == null ? new ArrayList<IQDevice>() : known) {
+                    long id = d.getDeviceIdentifier();
+                    if (!devices.containsKey(id)) {
+                        try { ciq.registerForDeviceEvents(d, onDevice); } catch (Exception ignored) {}
+                        try { ciq.registerForAppEvents(d, app, onMessage); } catch (Exception ignored) {}
+                    }
+                    devices.put(id, d);
+                    try { deviceState.put(id, ciq.getDeviceStatus(d).name()); } catch (Exception ignored) {}
+                    askInstalled(d);
+                }
+            } catch (Exception e) {
+                // Garmin Connect went away (updated, stopped): the next refresh tries again.
+            }
+            WatchBridgePlugin.notifyState();
+        });
+    }
+
+    private void askInstalled(IQDevice d) {
+        try {
+            ciq.getApplicationInfo(APP_ID, d, new ConnectIQ.IQApplicationInfoListener() {
+                @Override public void onApplicationInfoReceived(IQApp app) {
+                    Boolean was = installed.put(d.getDeviceIdentifier(), true);
+                    if (was == null || !was) WatchBridgePlugin.notifyState();
+                }
+                @Override public void onApplicationNotInstalled(String appId) {
+                    Boolean was = installed.put(d.getDeviceIdentifier(), false);
+                    if (was == null || was) WatchBridgePlugin.notifyState();
+                }
+            });
+        } catch (Exception ignored) {}
+    }
+
+    private boolean connected(long id) { return "CONNECTED".equals(deviceState.get(id)); }
+
+    /** Whether a Garmin with the openGym app is there (connected now or not). */
+    boolean anyInstalled() {
+        for (Boolean b : installed.values()) if (Boolean.TRUE.equals(b)) return true;
+        return false;
+    }
+
+    boolean anyKnown() { return !devices.isEmpty(); }
+
+    boolean anyReachable() {
+        for (Long id : devices.keySet()) if (connected(id) && Boolean.TRUE.equals(installed.get(id))) return true;
+        return false;
+    }
+
+    /** For Settings → Garmin and WatchBridge.status: the state and every Garmin. */
+    JSObject status() {
+        JSObject out = new JSObject();
+        out.put("supported", true);
+        out.put("state", state);
+        out.put("installed", anyInstalled());
+        out.put("reachable", anyReachable());
+        out.put("store", !STORE_ID.isEmpty());
+        JSArray list = new JSArray();
+        for (Map.Entry<Long, IQDevice> e : devices.entrySet()) {
+            JSObject d = new JSObject();
+            d.put("id", String.valueOf(e.getKey()));
+            d.put("name", e.getValue().getFriendlyName());
+            d.put("connected", connected(e.getKey()));
+            Boolean inst = installed.get(e.getKey());
+            if (inst != null) d.put("installed", inst);
+            list.put(d);
+        }
+        out.put("devices", list);
+        return out;
+    }
+
+    /** The page's Garmin snapshot to every connected Garmin with the app. Whether any got it on its way. */
+    boolean send(String json) {
+        Map<String, Object> snap = GarminMessages.toMonkey(json);
+        if (snap == null) return false;
+        lastSnapshot = snap;
+        boolean any = false;
+        for (IQDevice d : new ArrayList<>(devices.values())) {
+            long id = d.getDeviceIdentifier();
+            if (connected(id) && !Boolean.FALSE.equals(installed.get(id))) { sendTo(d, snap); any = true; }
+        }
+        return any;
+    }
+
+    private void sendTo(IQDevice d, Map<String, Object> snap) {
+        if (snap == null || ciq == null || !"ready".equals(state)) return;
+        main.post(() -> {
+            try {
+                ciq.sendMessage(d, new IQApp(APP_ID), snap, (device, app, status) -> {
+                    // Not there after all: the next connect or hello sends the latest again.
+                    if (status == ConnectIQ.IQMessageStatus.FAILURE_DEVICE_NOT_CONNECTED) deviceState.put(device.getDeviceIdentifier(), "NOT_CONNECTED");
+                });
+            } catch (Exception ignored) {}
+        });
+    }
+
+    /** A workout started on the phone: each connected Garmin with the app asks "open openGym?". */
+    boolean open() {
+        if (ciq == null || !"ready".equals(state)) return false;
+        boolean any = false;
+        for (IQDevice d : new ArrayList<>(devices.values())) {
+            long id = d.getDeviceIdentifier();
+            if (!connected(id) || !Boolean.TRUE.equals(installed.get(id))) continue;
+            any = true;
+            main.post(() -> {
+                try { ciq.openApplication(d, new IQApp(APP_ID), (device, app, status) -> {}); } catch (Exception ignored) {}
+            });
+        }
+        return any;
+    }
+
+    /** The openGym page in the Connect IQ Store (in Garmin Connect), once it is published there. */
+    boolean openStore() {
+        if (ciq == null || !"ready".equals(state) || STORE_ID.isEmpty()) return false;
+        try { return ciq.openStore(STORE_ID); } catch (Exception e) { return false; }
+    }
+}
