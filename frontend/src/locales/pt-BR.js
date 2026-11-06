@@ -2938,6 +2938,12 @@ export const PT_BR_OVERRIDES = {
   "the person who shared it": "a pessoa que compartilhou",
   "{0} shared a new version. Yours stays as it is; take the new one as another copy if you like.": "{0} compartilhou uma nova versão. A sua continua como está; pegue a nova como outra cópia, se quiser.",
   "{0}× taken": "{0}× pego",
+  "Logo": "Logo",
+  "Opening…": "Abrindo…",
+  "A see-through PNG. Lay it over a photo you already have in Instagram.": "Um PNG transparente. Coloque por cima de uma foto que você já tem no Instagram.",
+  "Drag to move it, pinch to zoom. The photo never leaves this device on its own.": "Arraste para mover, use dois dedos para ampliar. A foto nunca sai sozinha deste dispositivo.",
+  "Pick one of yours. It stays on this device.": "Escolha uma das suas. Ela fica neste dispositivo.",
+  "On the card": "No card",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

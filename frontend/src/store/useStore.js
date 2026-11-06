@@ -237,9 +237,12 @@ export const DEF = {
   // stuck sync then shows as a dot on Home instead. Defaults on; an older profile without the
   // key reads as on (`!== false`).
   connStatus: true,
-  // Whether "Share as image" puts this session's muscle map on the card (sheets.jsx
-  // ShareWorkoutImage, #453). On by default; absent reads as on (`!== false`).
+  // Whether "Share as image" puts this session's muscle map on the card (components/
+  // ShareWorkout.jsx, #453). On by default; absent reads as on (`!== false`).
   shareMap: true,
+  // The other parts of the share card switched off (lib/share-card.js SHARE_ELEMENTS: 'title',
+  // 'hr', 'logo'...). Empty shows them all; absent reads as empty.
+  shareHide: [],
   // The quiet line a device with no server shows ("On this phone only…", "Guest mode…", #454).
   // That is a choice, not a fault, so its × hides it for good; a real problem still shows the bar.
   // Defaults on; an older profile without the key reads as on (`!== false`).

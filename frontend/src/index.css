@@ -2226,6 +2226,43 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .share-card img{max-height:52vh}
 .share-opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .share-opts .seg{flex:1 1 140px;min-width:0}
+/* The workout share sheet (components/ShareWorkout.jsx, 1.4.5): the card is a live canvas, scaled
+   to the sheet. A sticker sits on a checkerboard, the usual way to say "this part is see-through".
+   With a photo behind it the canvas takes the finger (drag, pinch), so the sheet must not scroll. */
+.sharew-stage{display:flex;justify-content:center;margin:0 auto 14px;max-width:420px}
+.sharew-canvas{display:block;max-width:100%;max-height:52vh;width:auto;height:auto;border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.30),0 0 0 .5px var(--sep);background:var(--surface-2)}
+.sharew-stage.is-sticker .sharew-canvas{width:100%;max-height:40vh;object-fit:contain;
+  background:repeating-conic-gradient(var(--surface-2) 0 25%,var(--surface) 0 50%) 0 0/20px 20px}
+.sharew-stage.can-move .sharew-canvas{touch-action:none;cursor:grab}
+.sharew-stage.can-move .sharew-canvas:active{cursor:grabbing}
+.sharew-tpl{margin-bottom:10px}
+.sharew-hint{margin:2px 2px 12px;text-wrap:pretty}
+.sharew-photo{margin-bottom:4px}
+.sharew-pick{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;overscroll-behavior-x:contain}
+.sharew-pick::-webkit-scrollbar{display:none}
+.sharew-thumb,.sharew-add{flex:none;width:72px;height:72px;border-radius:14px;overflow:hidden;background:var(--surface-2);
+  transition:transform var(--fast) var(--ease),box-shadow var(--fast)}
+.sharew-thumb:active,.sharew-add:active{transform:scale(var(--press-scale-card))}
+.sharew-thumb .thumb{width:100%;height:100%;object-fit:cover;border-radius:0}
+.sharew-thumb.on{box-shadow:0 0 0 3px var(--acc) inset}
+.sharew-thumb.on .thumb{opacity:.9}
+.sharew-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;
+  font-size:var(--fs-caption2);color:var(--label-2);line-height:1.15;text-align:center}
+.sharew-add .icn{width:24px;height:24px;color:var(--acc)}
+.sharew-add:disabled,.sharew-thumb:disabled{opacity:.5}
+.sharew-zoom{display:flex;align-items:center;gap:6px;margin:2px 0 0}
+.sharew-zoom .sld{flex:1;min-width:0}
+.sharew-zoom .btn{flex:none;width:44px;height:44px;padding:0;justify-content:center}
+.sharew .share-opts{flex-direction:column}
+.sharew .share-opts .seg{flex:none}
+.sharew-h{margin:2px 2px 8px}
+.sharew-els{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+/* On reads as a quiet tint of the accent, off as plain and dimmed: eleven solid green pills
+   shouted louder than the card they configure. */
+.sharew-els .chip{background:var(--surface-2);color:var(--label-2);text-transform:none;min-height:36px}
+.sharew-els .chip.on{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);font-weight:500}
+@media (prefers-reduced-motion:reduce){.sharew-thumb,.sharew-add{transition:none}}
 /* The finish summary's way out and its Share, side by side right under the numbers. */
 .fin-actions{display:flex;gap:10px}
 .fin-actions .btn{width:auto;flex:none}

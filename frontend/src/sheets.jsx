@@ -101,10 +101,7 @@ import { stampWorkout } from './lib/sync-merge.js'
 import { hrLabel } from './lib/heart-rate.js'
 import { weeklyWeights } from './lib/bodyweight.js'
 import { workoutText } from './lib/workout-text.js'
-import { workoutCardModel, layoutWorkoutCard, drawWorkoutCard, viewAspect, CARD_FONT } from './lib/workout-card.js'
-import { cardPalette } from './lib/card-draw.js'
-import { makeCanvas, toPng, currentAccent, isRtl } from './lib/share-image.js'
-import ShareCardSheet from './components/ShareCard.jsx'
+import ShareWorkout from './components/ShareWorkout.jsx'
 import { streakInfo } from './lib/streak.js'
 import { streakWeeks } from './lib/streak-explain.js'
 import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/StreakCalendar.jsx'
@@ -3507,44 +3504,10 @@ function WorkoutDetail({ w, close }) {
     </div>
   </>
 }
-// The workout as a picture (#453): "Share" on the finish summary and "Share as image" in a past
-// workout's options open this same sheet (components/ShareCard.jsx) with the card
-// lib/workout-card.js lays out: 9:16 or 1:1, dark or light, in the app's accent. The muscle map is
-// the finish summary's, for this one session; whether the card carries it is remembered with the
-// profile. The streak is the one as of that workout's week.
-function ShareWorkoutImage({ w, close }) {
-  const st = useStore(s => s.S)
-  const update = useStore(s => s.update)
-  const withMap = st.shareMap !== false
-  const warmups = countsWarmups(st)
-  const day = workoutDay(w) || todayISO()
-  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf: shareNameOf, warmups, streak: streakInfo(st, day).current }), [w, st.unit, warmups, st.workouts, st.weekStart, day]) // eslint-disable-line react-hooks/exhaustive-deps
-  return <ShareCardSheet title={t('Share workout')} close={close} toast={toast}
-    name={'opengym-workout-' + day + '.png'} shareTitle={w.name || 'openGym'}
-    deps={[model, withMap, st.body]}
-    render={pref => workoutCardImage(model, { ...pref, map: withMap, body: st.body })}>
-    {model.levels && <div className="sect-b" style={{ marginBottom: 12 }}>
-      <Row icon="figureStrength" iconTint="var(--acc)" title={t('Muscle map')} subtitle={t('Show which muscles this workout trained.')}>
-        <Switch checked={withMap} aria-label={t('Muscle map')} onChange={v => update(s => { s.shareMap = v })} />
-      </Row>
-    </div>}
-  </ShareCardSheet>
-}
-const shareNameOf = e => (EXIDX[e.id] ? exerciseNameFor(EXIDX[e.id]) : (e.n || e.id))
-export const shareWorkoutSheet = w => ui().openSheet(close => <ShareWorkoutImage w={w} close={close} />)
-async function workoutCardImage(model, { map, body, format, style }) {
-  const colors = cardPalette(style, currentAccent())
-  // The body geometry is ~90 KB and lazy everywhere else too (components/BodyMap.jsx).
-  const geometry = map && model.levels ? (await import('./lib/body-paths.js')).default : null
-  const shape = geometry && (geometry[body] || geometry.male)
-  const probe = makeCanvas(1, 1, CARD_FONT)
-  if (!probe) return null
-  const layout = layoutWorkoutCard(model, { measure: probe.measure, rtl: isRtl(), format, map: shape ? { aspect: viewAspect(shape.front) } : null })
-  const c = makeCanvas(layout.width, layout.height, CARD_FONT)
-  if (!c) return null
-  drawWorkoutCard(c.ctx, layout, colors, shape ? { body: shape, levels: model.levels } : null)
-  return toPng(c.canvas)
-}
+// The workout as a picture (#453, redone in 1.4.5): "Share" on the finish summary and "Share as
+// image" in a past workout's options open components/ShareWorkout.jsx: four templates, your own
+// photo, a switch per element, story, 4:5 or square.
+export const shareWorkoutSheet = w => ui().openSheet(close => <ShareWorkout w={w} close={close} />)
 // The .fit file goes out the way a backup does: the share sheet in the phone app (Files, Drive,
 // Garmin Connect itself), a download in the browser.
 async function saveFitFile(blob, name) {

@@ -41,6 +41,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Check-in: when a scan or a photo can't read your gym card, you can now type the number instead. EAN and UPC numbers have to pass their check digit, the others you type twice, and the code is drawn big so you can hold it next to the card. A typed card reminds you once to give it a test run at the turnstile (#550).
 - Cardio: how hard it felt is now a little chip right under the row (and on the Focus card): "Rate it", then "RPE 7" in its effort colour. It used to hide in the set menu where nobody found it (thanks thehypetrainhobo for saying so). Switch Effort off in Modules and the chip goes too.
 
+**Share your workout, your way**
+- The share card is new: Classic now fills the whole picture instead of sitting in a rounded box on black, Photo puts the numbers on a photo of yours, Lifts lists your best set of each exercise, and Sticker is a see-through PNG to lay over a picture you already have in Instagram (thanks Sharan for the idea, and w3ndo, ayeeebroham and seals187 for asking).
+- Your photo: pick one from the workout, the gallery or the camera, drag and pinch it into place. It stays on your device, and the picture that leaves carries no location or camera data.
+- Switch each part on or off: title, date, duration, volume, sets, PRs, exercises, muscle map, streak, heart rate and the logo. Stories keep clear of Instagram's own buttons, and there is a 4:5 size for the feed next to the 9:16 story and the square.
+
 **Advent calendar, reworked**
 - The advent calendar is now a gym thing: every door is something to do (or a number from your own year), each open door hangs a bauble on a little tree, and training that day lights it up. Swipe the doors open. What is behind them stays a surprise until 1 December.
 - Christmas shows up only in December now, every year, and it brought friends: a lot more to spot around the app, and someone with a shiny nose who likes hide and seek.
