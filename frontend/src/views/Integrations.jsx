@@ -172,7 +172,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   </>
 }
 
-const healthOn = h => !!(h && (h.on || h.readHr || h.readWeight))
+const healthOn = h => !!(h && (h.on || h.readHr || h.readWeight || h.readBody))
 
 function disconnectHealth(card, toast) {
   const where = card.name

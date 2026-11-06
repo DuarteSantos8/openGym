@@ -22,7 +22,7 @@ const run = packs => {
     mkdirSync(join(dir, 'src', 'locales'), { recursive: true })
     copyFileSync(script, join(dir, 'scripts', 'check-locales.mjs'))
     for (const [lang, dict] of Object.entries(packs))
-      writeFileSync(join(dir, 'src', 'locales', `${lang}.js`), `export default ${JSON.stringify(dict, null, 2)}\n`)
+      writeFileSync(join(dir, 'src', 'locales', `${lang}.js`), typeof dict === 'string' ? dict : `export default ${JSON.stringify(dict, null, 2)}\n`)
     const r = spawnSync(process.execPath, [join(dir, 'scripts', 'check-locales.mjs')], { encoding: 'utf8' })
     return { code: r.status, out: r.stdout + r.stderr }
   } finally { rmSync(dir, { recursive: true, force: true }) }
@@ -61,6 +61,14 @@ describe('check-locales.mjs', () => {
     const r = run({ de, fr: { Save: '   ', 'Next pass starts {0}': 'Le prochain cycle commence {0}' } })
     expect(r.code).toBe(1)
     expect(r.out).toContain('blank')
+  })
+
+  it('fails a key written twice in one pack, even with the other quote style', () => {
+    const fr = `// a comment with 'Save': 'no'\nexport default {\n  'Save': 'Enregistrer',\n  "Plural {0}": { "one": "{0} un", "other": "{0} des" },\n  "Next pass starts {0}": "Le prochain cycle commence {0}",\n  "Save": "Sauver",\n}\n`
+    const r = run({ de: { ...de, 'Plural {0}': { one: '{0} eins', other: '{0} viele' } }, fr })
+    expect(r.code).toBe(1)
+    expect(r.out).toContain('duplicate key, fr.js: "Save" on lines 3, 6')
+    expect(r.out).not.toContain('"one"')
   })
 
   it('still fails a key one pack does not carry', () => {

@@ -36,6 +36,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "setEnabled", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readHeartRate", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWeights", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readBody", returnType: CAPPluginReturnPromise),
     ]
 
     static let enabledKey = "healthEnabled"
@@ -84,6 +85,9 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             var types: Set<HKObjectType> = []
             if read.contains("heartRate"), let hr = HKObjectType.quantityType(forIdentifier: .heartRate) { types.insert(hr) }
             if read.contains("weight") { types.insert(bodyMass) }
+            // Body composition (v1.4.5): Apple Health has body fat and lean mass of the four.
+            if read.contains("bodyFat"), let fat = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage) { types.insert(fat) }
+            if read.contains("leanMass"), let lean = HKObjectType.quantityType(forIdentifier: .leanBodyMass) { types.insert(lean) }
             var share: Set<HKSampleType> = []
             if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal); types.insert(kcal) }
             store.requestAuthorization(toShare: share, read: types) { _, _ in
@@ -172,6 +176,33 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
                                        syncId: $0.metadata?[HKMetadataKeySyncIdentifier] as? String)
             }
             call.resolve(["records": HealthReadCore.weights(all)])
+        } failed: { self.fail(call, $0) }
+    }
+
+    /// Body fat (in percent) and lean body mass (kg) since `since`, as { kind, t, v, id, origin, clientId }
+    /// (lib/health-read.js mergeBodyComp). Not allowed reads nothing, as Apple Health keeps that private.
+    @objc func readBody(_ call: CAPPluginCall) {
+        guard let since = call.getDouble("since") else { call.reject("since is needed", "failed"); return }
+        guard let fat = HKQuantityType.quantityType(forIdentifier: .bodyFatPercentage),
+              let lean = HKQuantityType.quantityType(forIdentifier: .leanBodyMass) else {
+            call.resolve(["records": [[String: Any]]()])
+            return
+        }
+        let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: since / 1000), end: nil)
+        let row: (String, HKQuantitySample, Double) -> [String: Any] = { kind, sample, value in
+            var r: [String: Any] = [
+                "kind": kind, "t": sample.startDate.timeIntervalSince1970 * 1000, "v": value,
+                "id": sample.uuid.uuidString, "origin": sample.sourceRevision.source.bundleIdentifier,
+            ]
+            if let sync = sample.metadata?[HKMetadataKeySyncIdentifier] as? String { r["clientId"] = sync }
+            return r
+        }
+        query(fat, predicate) { fats in
+            let fatRows = fats.compactMap { $0 as? HKQuantitySample }.map { row("fat", $0, $0.quantity.doubleValue(for: .percent()) * 100) }
+            self.query(lean, predicate) { leans in
+                let leanRows = leans.compactMap { $0 as? HKQuantitySample }.map { row("lean", $0, $0.quantity.doubleValue(for: .gramUnit(with: .kilo))) }
+                call.resolve(["records": fatRows + leanRows])
+            } failed: { self.fail(call, $0) }
         } failed: { self.fail(call, $0) }
     }
 

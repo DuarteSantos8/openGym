@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // the workout screen's own tick, and only then taken out of the native queue.
 const h = vi.hoisted(() => { vi.stubEnv('VITE_MOBILE', '1'); return { platform: 'ios' } })
 vi.mock('./mobile.js', () => ({ MOBILE: true, nativePlatform: async () => h.platform }))
+vi.mock('@capacitor/core', () => ({ registerPlugin: name => h.registered?.(name) }))
 
 const L = await import('./live-activity.js')
 
@@ -302,18 +303,31 @@ describe('startLiveActivitySync', () => {
     stop()
   })
 
-  it('sends nothing where iOS has no Live Activities, and nothing off the iPhone app', async () => {
+  it('sends nothing where iOS has no Live Activities, and nothing off the phone apps', async () => {
     L._setLivePluginForTest(plugin(false))
     const stop = await L.startLiveActivitySync({ useStore, useUI })
     await vi.runAllTimersAsync()
     expect(calls).toEqual([])
     stop()
     L._resetLiveActivity()
-    h.platform = 'android'
+    h.platform = 'web'
     const stop2 = await L.startLiveActivitySync({ useStore, useUI })
     await vi.runAllTimersAsync()
     expect(calls).toEqual([])
     stop2()
     h.platform = 'ios'
+  })
+  it('drives the Android workout notification through the same plugin name (#760)', async () => {
+    L._resetLiveActivity()
+    h.platform = 'android'
+    const asked = []
+    h.registered = name => { asked.push(name); return plugin() }
+    const stop = await L.startLiveActivitySync({ useStore, useUI })
+    await vi.runAllTimersAsync()
+    expect(asked).toEqual(['LiveActivity'])
+    expect(calls).toEqual([['update', 'w1', expect.objectContaining({ name: 'Push', total: 2 })]])
+    stop()
+    h.platform = 'ios'
+    h.registered = null
   })
 })

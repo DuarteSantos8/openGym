@@ -19,7 +19,11 @@
 // exercise without ticking anything (Discord: Done read like "finish", and there was no way to
 // leave a machine somebody else took). The native side moves the activity on by itself for both.
 //
-// Text only: no exercise animations or pictures (Gym visual licence). iPhone app only.
+// Android (#760) gets the same card as one ongoing notification, a Live Update on Android 16
+// (android/.../LiveActivityPlugin.java, WorkoutNotification.java, WorkoutCard.java for the moves):
+// the same state, the same queued taps, and the rest after a Log set started natively too.
+//
+// Text only: no exercise animations or pictures (Gym visual licence). Phone apps only.
 import { MOBILE, nativePlatform } from './mobile.js'
 import { EXIDX } from './exercises.js'
 import { t } from './i18n.js'
@@ -254,7 +258,7 @@ export function applyLiveEvents (events, getState) {
 let pluginP = null
 // Inside an object: a Capacitor plugin proxy answers `then` (lib/rest-alert.js, the Coach hang #42).
 const livePlugin = () => pluginP || (pluginP = (async () => {
-  if (!MOBILE || (await nativePlatform()) !== 'ios') return null
+  if (!MOBILE || !['ios', 'android'].includes(await nativePlatform())) return null
   const { registerPlugin } = await import('@capacitor/core')
   return { LiveActivity: registerPlugin('LiveActivity') }
 })().catch(() => null))

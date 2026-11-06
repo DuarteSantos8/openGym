@@ -40,6 +40,9 @@ public final class RestAlert {
     static final String ACTION_SKIP = "ch.duartesantos.opengym.rest.SKIP";
     static final String ACTION_ACCENT = "ch.duartesantos.opengym.rest.ACCENT";
     static final String ACTION_HOLD = "ch.duartesantos.opengym.rest.HOLD";
+    // The workout card changed (WorkoutNotification): the countdown draws its next-set line again.
+    static final String ACTION_REFRESH = "ch.duartesantos.opengym.rest.REFRESH";
+    private static final String LAST_PREFS = "opengym_rest_last";
     static final String CHANNEL_ID = "rest-over";
     /**
      * Settings → Vibrate off. Android keeps a channel's vibration as it was when the channel was
@@ -139,8 +142,58 @@ public final class RestAlert {
         lastAlarmBuzz = alarmBuzz;
         lastChannel = channelId;
         lastCues = cues == null ? "" : cues;
+        remember(ctx, title, sound, tone, vibrate, alarmBuzz, channelId, visibility, importance, localOnly, countdownTitle);
         if (countdown) startCountdown(ctx, at, totalMs, countdownTitle);
         else stopCountdown(ctx);
+    }
+
+    /**
+     * The page's last rest settings, kept on disk: Log set on the workout card starts the rest after
+     * the set with the page asleep or the process gone, and it should sound like the page's own.
+     */
+    private static void remember(Context ctx, String title, boolean sound, String tone, boolean vibrate, boolean alarmBuzz,
+                                 String channelId, String visibility, String importance, boolean localOnly, String countdownTitle) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("title", title == null ? "" : title);
+            o.put("sound", sound);
+            o.put("tone", tone == null ? "chime" : tone);
+            o.put("vibrate", vibrate);
+            o.put("alarmBuzz", alarmBuzz);
+            o.put("channelId", channelId);
+            o.put("visibility", visibility == null ? "public" : visibility);
+            o.put("importance", importance == null ? "high" : importance);
+            o.put("localOnly", localOnly);
+            o.put("countdownTitle", countdownTitle == null ? "" : countdownTitle);
+            o.put("pause", labPause);
+            o.put("resume", labResume);
+            o.put("minus", labMinus);
+            o.put("plus", labPlus);
+            o.put("skip", labSkip);
+            o.put("accent", lastAccent);
+            o.put("ink", lastInk);
+            ctx.getApplicationContext().getSharedPreferences(LAST_PREFS, Context.MODE_PRIVATE).edit().putString("last", o.toString()).apply();
+        } catch (Exception ignored) { /* the defaults then */ }
+    }
+
+    /**
+     * A rest from the workout card's Log set: like the page's last one, ending at `at`. The page
+     * books it again when it applies the tap, from the tap's own time, so the two agree.
+     */
+    static void scheduleLikeLast(Context ctx, long at, long totalMs, String fallbackTitle) {
+        JSONObject o = null;
+        try {
+            String s = ctx.getApplicationContext().getSharedPreferences(LAST_PREFS, Context.MODE_PRIVATE).getString("last", null);
+            if (s != null) o = new JSONObject(s);
+        } catch (Exception ignored) { o = null; }
+        if (o == null) o = new JSONObject();
+        setLabels(o.optString("pause"), o.optString("resume"), o.optString("minus"), o.optString("plus"), o.optString("skip"));
+        if (o.has("accent")) setAccentColor(o.optInt("accent", lastAccent), o.optInt("ink", lastInk));
+        String title = o.optString("title", "");
+        schedule(ctx, at, NOTIFICATION_ID, title.isEmpty() ? fallbackTitle : title, o.optBoolean("sound", true),
+                o.optString("tone", "chime"), o.optBoolean("vibrate", true), o.optBoolean("alarmBuzz", false),
+                o.optString("channelId", CHANNEL_ID), o.optString("visibility", "public"), o.optString("importance", "high"),
+                o.optBoolean("localOnly", false), o.optString("countdownTitle", "Rest"), totalMs, "", true);
     }
 
     /** Whether the alert booked now has more after it (a chain of holds that run themselves). */
@@ -566,10 +619,17 @@ public final class RestAlert {
      * title/text/subtext slots are left empty: Samsung prints each of them, which stacked
      * the same time three times next to the bar.
      */
-    @SuppressWarnings("deprecation")
     static Notification countdownNotification(Context ctx, long leftMs, long totalMs, boolean paused,
                                               String pause, String resume, String minus, String plus, String skip,
                                               int accent, int ink) {
+        return countdownNotification(ctx, leftMs, totalMs, paused, pause, resume, minus, plus, skip, accent, ink, null);
+    }
+
+    /** `next`: the line about the set after the rest, from the workout card; null for none. */
+    @SuppressWarnings("deprecation")
+    static Notification countdownNotification(Context ctx, long leftMs, long totalMs, boolean paused,
+                                              String pause, String resume, String minus, String plus, String skip,
+                                              int accent, int ink, String next) {
         int max = (int) Math.max(1, Math.round(totalMs / 1000.0));
         int left = (int) Math.min(max, (Math.max(0, leftMs) + 999) / 1000);
         String clock = clock(left);
@@ -584,6 +644,10 @@ public final class RestAlert {
         RemoteViews expanded = new RemoteViews(ctx.getPackageName(), R.layout.rest_countdown_big);
         fillClock(expanded, clock, max, left, accent, paused, base);
         applyAccent(expanded, accent, ink);
+        if (next != null && !next.isEmpty()) {
+            expanded.setTextViewText(R.id.rest_next, next);
+            expanded.setViewVisibility(R.id.rest_next, View.VISIBLE);
+        }
         expanded.setTextViewText(R.id.rest_pause, paused ? resume : pause);
         expanded.setTextViewText(R.id.rest_minus, minus);
         expanded.setTextViewText(R.id.rest_plus, plus);
@@ -649,7 +713,7 @@ public final class RestAlert {
         }
     }
 
-    private static PendingIntent control(Context ctx, String action, int code) {
+    static PendingIntent control(Context ctx, String action, int code) {
         Intent i = new Intent(ctx, RestTimerService.class);
         i.setAction(action);
         return PendingIntent.getService(ctx, code, i, FLAGS);

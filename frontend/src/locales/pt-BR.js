@@ -2226,7 +2226,6 @@ export const PT_BR_OVERRIDES = {
   "At {0}": "Em {0}",
   "Copy from {0}": "Copiar de {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Começa com as anilhas, halteres e barras que você tem agora. Mude quando for a academia ativa.",
-  "Your gym": "Sua academia",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Anilhas, halteres, barras e placas de máquina ficam salvos por academia. Troque de academia e tudo troca junto.",
   "Active gym": "Academia ativa",
   "Pick a gym": "Escolha uma academia",
@@ -3001,6 +3000,11 @@ export const PT_BR_OVERRIDES = {
   "Today’s planned rows for {0} didn’t fit, so the routine’s own are up: {1}": "As séries planejadas para {0} não encaixaram, então valem as da rotina: {1}",
   "Today’s rows come from {0}. Your routine stays as it is.": "As séries de hoje vêm de {0}. Sua rotina continua como está.",
   "Today’s rows were planned for this day. Your routine stays as it is.": "As séries de hoje foram planejadas para este dia. Sua rotina continua como está.",
+  "Body composition from your scale": "Composição corporal da sua balança",
+  "Body fat and lean mass, as your scale saved them. Shown under Body measurements, never mixed into what you log.": "Gordura corporal e massa magra, do jeito que sua balança salvou. Aparecem em Medidas corporais e nunca se misturam com o que você registra.",
+  "Body fat, lean mass, bone mass and BMR, as your scale saved them. Shown under Body measurements, never mixed into what you log.": "Gordura corporal, massa magra, massa óssea e metabolismo basal, do jeito que sua balança salvou. Aparecem em Medidas corporais e nunca se misturam com o que você registra.",
+  "{0} in a month": "{0} em um mês",
+  "Straight from your scale, read-only. Change it where it was measured.": "Direto da sua balança, só leitura. Altere onde foi medido.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
