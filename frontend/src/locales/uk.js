@@ -4392,4 +4392,10 @@ export default {
   "Folder name": "Назва теки",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Групуй програми за блоками чи цілями. Старі клади в Архів, він лишається згорнутим.",
   "No folder": "Без теки",
+  "Sharper animations?": "Чіткіші анімації?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Вправи можуть рухатися в {0} px замість {1} px, чітко на цьому екрані.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Одноразове завантаження приблизно {0} з Google Play через Wi-Fi. Залишиться на цьому телефоні.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Одноразове завантаження з Google Play через Wi-Fi. Залишиться на цьому телефоні.",
+  "Download": "Завантажити",
+  "Changed your mind? Settings has it, any time.": "\u041f\u0435\u0440\u0435\u0434\u0443\u043c\u0430\u0432? \u0426\u0435 \u0432 \u041d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f\u0445, \u0431\u0443\u0434\u044c-\u043a\u043e\u043b\u0438.",
 }

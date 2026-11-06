@@ -4399,4 +4399,10 @@ export default {
   "Folder name": "Название папки",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Группируй программы по блокам или целям. Старые клади в Архив, он остаётся свёрнутым.",
   "No folder": "Без папки",
+  "Sharper animations?": "Чёткие анимации?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Упражнения могут двигаться в {0} px вместо {1} px, чётко на этом экране.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Разовая загрузка примерно {0} из Google Play по Wi-Fi. Останется на этом телефоне.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Разовая загрузка из Google Play по Wi-Fi. Останется на этом телефоне.",
+  "Download": "Скачать",
+  "Changed your mind? Settings has it, any time.": "\u041f\u0435\u0440\u0435\u0434\u0443\u043c\u0430\u043b? \u042d\u0442\u043e \u0432 \u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0430\u0445, \u0432 \u043b\u044e\u0431\u043e\u0439 \u043c\u043e\u043c\u0435\u043d\u0442.",
 }

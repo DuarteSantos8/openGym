@@ -4395,4 +4395,10 @@ export default {
   "Folder name": "Nom du dossier",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Range tes routines par bloc ou par objectif. Les anciennes vont dans Archives, qui reste replié.",
   "No folder": "Aucun dossier",
+  "Sharper animations?": "Des animations plus nettes ?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Tes exercices peuvent s’animer en {0} px au lieu de {1} px, bien nets sur cet écran.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Un seul téléchargement d’environ {0} depuis Google Play, en Wi-Fi. Il reste sur ce téléphone.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Un seul téléchargement depuis Google Play, en Wi-Fi. Il reste sur ce téléphone.",
+  "Download": "Télécharger",
+  "Changed your mind? Settings has it, any time.": "Chang\u00e9 d\u2019avis ? C\u2019est dans les R\u00e9glages, \u00e0 tout moment.",
 }

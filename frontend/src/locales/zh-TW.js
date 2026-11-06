@@ -4388,4 +4388,10 @@ export default {
   "Folder name": "資料夾名稱",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "依訓練週期或目標替計畫分組。舊的放進「封存」，它預設收合。",
   "No folder": "不放資料夾",
+  "Sharper animations?": "要更清晰的動畫嗎？",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "動作動畫可以用 {0} px 而不是 {1} px，在這個螢幕上更清晰。",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "透過 Wi-Fi 從 Google Play 一次下載約 {0}，存在這支手機上。",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "透過 Wi-Fi 從 Google Play 一次下載，存在這支手機上。",
+  "Download": "下載",
+  "Changed your mind? Settings has it, any time.": "\u6539\u8b8a\u4e3b\u610f\u4e86\uff1f\u96a8\u6642\u53ef\u4ee5\u5728\u8a2d\u5b9a\u88e1\u6539\u3002",
 }

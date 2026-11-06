@@ -4474,4 +4474,10 @@ export default {
   "Folder name": "ফোল্ডারের নাম",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "রুটিনগুলো ব্লক বা লক্ষ্য অনুযায়ী সাজান। পুরোনোগুলো আর্কাইভে রাখুন, সেটা গুটানো থাকে।",
   "No folder": "কোনো ফোল্ডার নেই",
+  "Sharper animations?": "আরও স্পষ্ট অ্যানিমেশন?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "আপনার ব্যায়ামগুলো {1} px-এর বদলে {0} px-এ চলতে পারে, এই স্ক্রিনে ঝকঝকে।",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Google Play থেকে Wi-Fi-তে প্রায় {0} একবারের ডাউনলোড। এটি এই ফোনেই থাকে।",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Google Play থেকে Wi-Fi-তে একবারের ডাউনলোড। এটি এই ফোনেই থাকে।",
+  "Download": "ডাউনলোড",
+  "Changed your mind? Settings has it, any time.": "\u09ae\u09a4 \u09ac\u09a6\u09b2\u09c7\u099b\u09c7\u09a8? \u09b8\u09c7\u099f\u09bf\u0982\u09b8\u09c7 \u09af\u09c7\u0995\u09cb\u09a8\u09cb \u09b8\u09ae\u09af\u09bc \u09aa\u09be\u09ac\u09c7\u09a8\u0964",
 }

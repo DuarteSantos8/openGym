@@ -4395,4 +4395,10 @@ export default {
   "Folder name": "폴더 이름",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "루틴을 블록이나 목표별로 묶어 보세요. 오래된 건 보관함에 넣으면 접힌 채로 있어요.",
   "No folder": "폴더 없음",
+  "Sharper animations?": "더 선명한 애니메이션?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "운동 동작을 {1} px 대신 {0} px로, 이 화면에서 선명하게 볼 수 있어요.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Wi-Fi로 Google Play에서 약 {0}를 한 번만 받아요. 이 휴대폰에 남아요.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Wi-Fi로 Google Play에서 한 번만 받아요. 이 휴대폰에 남아요.",
+  "Download": "다운로드",
+  "Changed your mind? Settings has it, any time.": "\ub9c8\uc74c\uc774 \ubc14\ub00c\uc5c8\ub098\uc694? \uc124\uc815\uc5d0\uc11c \uc5b8\uc81c\ub4e0 \ubc14\uafc0 \uc218 \uc788\uc5b4\uc694.",
 }

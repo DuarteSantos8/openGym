@@ -44,7 +44,7 @@ vi.mock('@capacitor/core', () => {
 })
 
 import Media from './Media.jsx'
-import { AnimationQualityRow, AnimationQualitySheet } from './Animations.jsx'
+import { AnimationQualityRow, AnimationQualitySheet, AnimOfferSheet } from './Animations.jsx'
 import * as packs from '../lib/anim-packs.js'
 import { EXIDX } from '../lib/exercises.js'
 
@@ -165,5 +165,28 @@ describe('sizes and details', () => {
     const h3 = host.querySelector('h3')
     for (let i = 0; i < 5; i++) await act(async () => { h3.click() })
     expect(host.textContent).toContain('Check the packs')
+  })
+})
+
+// 1.4.5, Google Play: the one-time offer. Download says yes and starts it; Later leaves it.
+describe('the offer sheet', () => {
+  const button = text => [...host.querySelectorAll('button')].find(b => b.textContent.trim() === text)
+  it('says what it would download and starts it on yes', async () => {
+    await packs.refresh()
+    let closed = 0
+    await mount(<AnimOfferSheet id="anim-360-female" close={() => { closed++ }} />)
+    expect(host.textContent).toContain('360 px instead of 180 px')
+    await act(async () => { button('Download').click() })
+    await settle()
+    expect(packs.readPrefs().offer).toBe('accepted')
+    expect(mocks.downloads).toContain('anim-360-female')
+    expect(closed).toBe(1)
+  })
+  it('Later downloads nothing and is not asked again', async () => {
+    await packs.refresh()
+    await mount(<AnimOfferSheet id="anim-360-female" close={() => {}} />)
+    await act(async () => { button('Later').click() })
+    expect(packs.readPrefs().offer).toBe('later')
+    expect(mocks.downloads).toEqual([])
   })
 })

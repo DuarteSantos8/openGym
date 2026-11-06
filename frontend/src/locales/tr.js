@@ -4395,4 +4395,10 @@ export default {
   "Folder name": "Klasör adı",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Rutinleri bloğa ya da hedefe göre grupla. Eskileri Arşiv’e koy, o kapalı kalır.",
   "No folder": "Klasör yok",
+  "Sharper animations?": "Daha net animasyonlar?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Egzersizlerin {1} px yerine {0} px hareket edebilir, bu ekranda jilet gibi.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Google Play’den Wi-Fi ile yaklaşık {0} tek seferlik indirme. Bu telefonda kalır.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Google Play’den Wi-Fi ile tek seferlik indirme. Bu telefonda kalır.",
+  "Download": "İndir",
+  "Changed your mind? Settings has it, any time.": "Fikrin mi de\u011fi\u015fti? Ayarlar\u2019da, istedi\u011fin zaman.",
 }

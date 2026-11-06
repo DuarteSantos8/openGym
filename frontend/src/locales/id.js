@@ -4359,4 +4359,10 @@ export default {
   "Folder name": "Nama folder",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Kelompokkan rutinitas per blok atau tujuan. Yang lama taruh di Arsip, itu tetap terlipat.",
   "No folder": "Tanpa folder",
+  "Sharper animations?": "Animasi lebih tajam?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Latihanmu bisa bergerak di {0} px, bukan {1} px, tajam di layar ini.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Unduhan sekali saja sekitar {0} dari Google Play, lewat Wi-Fi. Tetap di ponsel ini.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Unduhan sekali saja dari Google Play, lewat Wi-Fi. Tetap di ponsel ini.",
+  "Download": "Unduh",
+  "Changed your mind? Settings has it, any time.": "Berubah pikiran? Ada di Pengaturan, kapan saja.",
 };

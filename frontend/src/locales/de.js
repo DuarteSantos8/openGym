@@ -4415,4 +4415,10 @@ export default {
   "Folder name": "Ordnername",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Ordne Routinen nach Block oder Ziel. Alte kommen ins Archiv, das bleibt zugeklappt.",
   "No folder": "Kein Ordner",
+  "Sharper animations?": "Schärfere Animationen?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Deine Übungen können sich in {0} px statt {1} px bewegen, gestochen scharf auf diesem Bildschirm.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Ein einmaliger Download von etwa {0} aus Google Play, über WLAN. Er bleibt auf diesem Handy.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Ein einmaliger Download aus Google Play, über WLAN. Er bleibt auf diesem Handy.",
+  "Download": "Herunterladen",
+  "Changed your mind? Settings has it, any time.": "Doch anders entschieden? In den Einstellungen geht das jederzeit.",
 }

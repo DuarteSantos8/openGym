@@ -4395,4 +4395,10 @@ export default {
   "Folder name": "Nazwa folderu",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Grupuj rutyny według bloku lub celu. Stare wrzuć do Archiwum, które zostaje zwinięte.",
   "No folder": "Bez folderu",
+  "Sharper animations?": "Ostrzejsze animacje?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Twoje ćwiczenia mogą ruszać się w {0} px zamiast {1} px, ostro na tym ekranie.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Jednorazowe pobranie około {0} z Google Play, przez Wi-Fi. Zostaje na tym telefonie.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Jednorazowe pobranie z Google Play, przez Wi-Fi. Zostaje na tym telefonie.",
+  "Download": "Pobierz",
+  "Changed your mind? Settings has it, any time.": "Zmiana zdania? W Ustawieniach, w ka\u017cdej chwili.",
 }

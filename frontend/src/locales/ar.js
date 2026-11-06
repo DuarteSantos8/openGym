@@ -4450,4 +4450,10 @@ export default {
   "Folder name": "اسم المجلد",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "جمّع الروتينات حسب المرحلة أو الهدف. ضع القديمة في الأرشيف، فهو يبقى مطويًا.",
   "No folder": "بلا مجلد",
+  "Sharper animations?": "رسوم متحركة أوضح؟",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "يمكن أن تتحرك تمارينك بدقة {0} px بدلًا من {1} px، واضحة على هذه الشاشة.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "تنزيل لمرة واحدة بحجم {0} تقريبًا من Google Play عبر Wi-Fi. يبقى على هذا الهاتف.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "تنزيل لمرة واحدة من Google Play عبر Wi-Fi. يبقى على هذا الهاتف.",
+  "Download": "تنزيل",
+  "Changed your mind? Settings has it, any time.": "\u063a\u064a\u0651\u0631\u062a \u0631\u0623\u064a\u0643\u061f \u062a\u062c\u062f\u0647 \u0641\u064a \u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a \u0641\u064a \u0623\u064a \u0648\u0642\u062a.",
 }

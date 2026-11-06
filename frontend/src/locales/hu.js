@@ -4398,4 +4398,10 @@ export default {
   "Folder name": "Mappa neve",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Csoportosítsd a rutinokat blokk vagy cél szerint. A régiek az Archívumba mennek, az összecsukva marad.",
   "No folder": "Nincs mappa",
+  "Sharper animations?": "Élesebb animációk?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "A gyakorlataid {1} px helyett {0} px-ben mozoghatnak, élesen ezen a kijelzőn.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Egyszeri, nagyjából {0} letöltés a Google Playről, Wi-Fin. Ezen a telefonon marad.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Egyszeri letöltés a Google Playről, Wi-Fin. Ezen a telefonon marad.",
+  "Download": "Letöltés",
+  "Changed your mind? Settings has it, any time.": "Meggondoltad magad? A Be\u00e1ll\u00edt\u00e1sokban b\u00e1rmikor megv\u00e1ltoztathatod.",
 }

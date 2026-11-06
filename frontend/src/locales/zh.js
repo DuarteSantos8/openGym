@@ -4395,4 +4395,10 @@ export default {
   "Folder name": "文件夹名称",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "按训练周期或目标给计划分组。旧的放进“归档”，它默认收起。",
   "No folder": "不放文件夹",
+  "Sharper animations?": "要更清晰的动画吗？",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "动作动画可以用 {0} px 而不是 {1} px，在这块屏幕上更清晰。",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "通过 Wi-Fi 从 Google Play 一次性下载约 {0}，保存在这部手机上。",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "通过 Wi-Fi 从 Google Play 一次性下载，保存在这部手机上。",
+  "Download": "下载",
+  "Changed your mind? Settings has it, any time.": "\u6539\u4e3b\u610f\u4e86\uff1f\u968f\u65f6\u53ef\u4ee5\u5728\u8bbe\u7f6e\u91cc\u6539\u3002",
 }

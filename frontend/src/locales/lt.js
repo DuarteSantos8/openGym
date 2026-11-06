@@ -4391,4 +4391,10 @@ export default {
   "Folder name": "Aplanko pavadinimas",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Grupuokite rutinas pagal bloką ar tikslą. Senas perkelkite į Archyvą, jis lieka suskleistas.",
   "No folder": "Be aplanko",
+  "Sharper animations?": "Ryškesnės animacijos?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Jūsų pratimai gali judėti {0} px vietoj {1} px, ryškiai šiame ekrane.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Vienkartinis maždaug {0} atsisiuntimas iš Google Play per Wi-Fi. Jis lieka šiame telefone.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Vienkartinis atsisiuntimas iš Google Play per Wi-Fi. Jis lieka šiame telefone.",
+  "Download": "Atsisiųsti",
+  "Changed your mind? Settings has it, any time.": "Persigalvojote? Tai bet kada rasite nustatymuose.",
 }

@@ -4395,4 +4395,10 @@ export default {
   "Folder name": "Nome da pasta",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Agrupa rotinas por bloco ou por objetivo. As antigas vão para Arquivo, que fica fechado.",
   "No folder": "Sem pasta",
+  "Sharper animations?": "Animações mais nítidas?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Os teus exercícios podem mexer-se a {0} px em vez de {1} px, nítidos neste ecrã.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Uma única transferência de cerca de {0} do Google Play, por Wi-Fi. Fica neste telemóvel.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Uma única transferência do Google Play, por Wi-Fi. Fica neste telemóvel.",
+  "Download": "Transferir",
+  "Changed your mind? Settings has it, any time.": "Mudaste de ideias? Est\u00e1 nas Defini\u00e7\u00f5es, sempre que quiseres.",
 }

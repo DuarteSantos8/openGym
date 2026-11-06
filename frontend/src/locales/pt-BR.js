@@ -2951,6 +2951,11 @@ export const PT_BR_OVERRIDES = {
   "After the last set of an exercise, while you walk to the next machine.": "Depois da última série de um exercício, enquanto você vai para o próximo aparelho.",
   "The break after this exercise’s last set, to change machines before the next one.": "A pausa depois da última série deste exercício, para trocar de aparelho antes do próximo.",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Agrupe rotinas por bloco ou por objetivo. As antigas vão para Arquivo, que fica fechado.",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Seus exercícios podem se mexer a {0} px em vez de {1} px, nítidos nesta tela.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Um único download de cerca de {0} do Google Play, pelo Wi-Fi. Fica neste celular.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Um único download do Google Play, pelo Wi-Fi. Fica neste celular.",
+  "Download": "Baixar",
+  "Changed your mind? Settings has it, any time.": "Mudou de ideia? Est\u00e1 nas Configura\u00e7\u00f5es, quando quiser.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -4395,4 +4395,10 @@ export default {
   "Folder name": "फ़ोल्डर का नाम",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "रूटीन को ब्लॉक या लक्ष्य के हिसाब से समूह में रखें। पुराने आर्काइव में डालें, वह बंद रहता है।",
   "No folder": "कोई फ़ोल्डर नहीं",
+  "Sharper animations?": "और साफ़ ऐनिमेशन?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "आपकी एक्सरसाइज़ {1} px की जगह {0} px में चल सकती हैं, इस स्क्रीन पर एकदम साफ़।",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Google Play से Wi-Fi पर लगभग {0} का एक बार का डाउनलोड। यह इसी फ़ोन पर रहता है।",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Google Play से Wi-Fi पर एक बार का डाउनलोड। यह इसी फ़ोन पर रहता है।",
+  "Download": "डाउनलोड करें",
+  "Changed your mind? Settings has it, any time.": "\u092e\u0928 \u092c\u0926\u0932 \u0917\u092f\u093e? \u0938\u0947\u091f\u093f\u0902\u0917\u094d\u0938 \u092e\u0947\u0902 \u0915\u092d\u0940 \u092d\u0940 \u092c\u0926\u0932 \u0938\u0915\u0924\u0947 \u0939\u0948\u0902\u0964",
 }

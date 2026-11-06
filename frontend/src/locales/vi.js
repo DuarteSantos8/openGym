@@ -4360,4 +4360,10 @@ export default {
   "Folder name": "Tên thư mục",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Nhóm giáo án theo giai đoạn hoặc mục tiêu. Cái cũ cho vào Lưu trữ, thư mục đó luôn thu gọn.",
   "No folder": "Không có thư mục",
+  "Sharper animations?": "Hoạt ảnh sắc nét hơn?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Các bài tập của bạn có thể chuyển động ở {0} px thay vì {1} px, sắc nét trên màn hình này.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Tải một lần khoảng {0} từ Google Play, qua Wi-Fi. Nó nằm lại trên điện thoại này.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Tải một lần từ Google Play, qua Wi-Fi. Nó nằm lại trên điện thoại này.",
+  "Download": "Tải xuống",
+  "Changed your mind? Settings has it, any time.": "\u0110\u1ed5i \u00fd? C\u00f3 trong C\u00e0i \u0111\u1eb7t, b\u1ea5t c\u1ee9 l\u00fac n\u00e0o.",
 };

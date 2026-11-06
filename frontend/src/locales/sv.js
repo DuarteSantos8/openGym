@@ -4442,4 +4442,10 @@ export default {
   "Folder name": "Mappnamn",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Gruppera rutiner efter block eller mål. Gamla åker till Arkiv, som förblir hopfällt.",
   "No folder": "Ingen mapp",
+  "Sharper animations?": "Skarpare animationer?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Dina övningar kan röra sig i {0} px i stället för {1} px, knivskarpt på den här skärmen.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "En engångsnedladdning på cirka {0} från Google Play, via wifi. Den stannar på den här telefonen.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "En engångsnedladdning från Google Play, via wifi. Den stannar på den här telefonen.",
+  "Download": "Ladda ned",
+  "Changed your mind? Settings has it, any time.": "\u00c5ngrat dig? Det finns i Inst\u00e4llningar, n\u00e4r som helst.",
 }

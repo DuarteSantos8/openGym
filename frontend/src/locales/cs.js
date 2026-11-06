@@ -4360,4 +4360,10 @@ export default {
   "Folder name": "Název složky",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Seskup rutiny podle bloku nebo cíle. Staré dej do Archivu, ten zůstane sbalený.",
   "No folder": "Bez složky",
+  "Sharper animations?": "Ostřejší animace?",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "Tvoje cviky se můžou hýbat v {0} px místo {1} px, ostře na tomhle displeji.",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "Jednorázové stažení asi {0} z Google Play přes Wi-Fi. Zůstane v tomto telefonu.",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "Jednorázové stažení z Google Play přes Wi-Fi. Zůstane v tomto telefonu.",
+  "Download": "Stáhnout",
+  "Changed your mind? Settings has it, any time.": "Rozmyslel sis to? V Nastaven\u00ed, kdykoli.",
 }

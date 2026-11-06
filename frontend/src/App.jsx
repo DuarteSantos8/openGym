@@ -54,7 +54,7 @@ import TimerFlash from './components/TimerFlash.jsx'
 import { SeasonalLayer } from './components/Seasonal.jsx'
 import { WrappedLayer } from './components/WrappedEntry.jsx'
 import { openDeviceLinkRedeem } from './components/Passkeys.jsx'
-import { useAnimPacksBoot } from './components/Animations.jsx'
+import { useAnimPacksBoot, useAnimOffer } from './components/Animations.jsx'
 import { useNfcTagLinks } from './components/Nfc.jsx'
 import { useRoutineLinks } from './components/RoutineShare.jsx'
 import Login from './views/Login.jsx'
@@ -337,6 +337,8 @@ function Shell() {
   const tour = useTour()
   const tourAsked = useRef(false)
   const setupDone = authed && ready && !needsMobileOnboarding && !permSteps
+  // Google Play: the one-time offer of sharper animations, once set up and not mid-workout.
+  useAnimOffer(setupDone && !inWorkout)
   // A tapped NFC sticker (components/Nfc.jsx): one that opened the app waits for the setup.
   useNfcTagLinks(setupDone)
   // A friend's routine link (components/RoutineShare.jsx): the same wait for the setup.

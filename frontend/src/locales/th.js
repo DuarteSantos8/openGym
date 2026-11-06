@@ -4406,4 +4406,10 @@ export default {
   "Folder name": "ชื่อโฟลเดอร์",
   "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "จัดกลุ่มรูทีนตามช่วงหรือเป้าหมาย อันเก่าเก็บไว้ในคลัง ซึ่งจะพับไว้",
   "No folder": "ไม่มีโฟลเดอร์",
+  "Sharper animations?": "อยากได้แอนิเมชันที่คมขึ้นไหม",
+  "Your exercises can move at {0} px instead of {1} px, crisp on this screen.": "ท่าออกกำลังของคุณเคลื่อนไหวที่ {0} px แทน {1} px ได้ คมชัดบนจอนี้",
+  "A one-time download of about {0} from Google Play, over Wi-Fi. It stays on this phone.": "ดาวน์โหลดครั้งเดียวประมาณ {0} จาก Google Play ผ่าน Wi-Fi และอยู่บนโทรศัพท์เครื่องนี้",
+  "A one-time download from Google Play, over Wi-Fi. It stays on this phone.": "ดาวน์โหลดครั้งเดียวจาก Google Play ผ่าน Wi-Fi และอยู่บนโทรศัพท์เครื่องนี้",
+  "Download": "ดาวน์โหลด",
+  "Changed your mind? Settings has it, any time.": "\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e43\u0e08? \u0e44\u0e1b\u0e17\u0e35\u0e48\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e44\u0e14\u0e49\u0e17\u0e38\u0e01\u0e40\u0e21\u0e37\u0e48\u0e2d",
 }
