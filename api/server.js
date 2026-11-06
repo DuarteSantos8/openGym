@@ -51,6 +51,7 @@ import { OrgError } from './trainers/org-store.js';
 import { nutritionSourceFrom } from './sources/nutrition.js';
 import { createPermissions } from './permissions.js';
 import { createShareLog } from './share-log.js';
+import { createToken, findToken, touchToken, listTokens, revokeTokens, scopedState, mergeScoped, readCategories, ScopeError, TOKEN_CATEGORIES, TOKEN_DAYS, DEFAULT_DAYS, TOKEN_PREFIX } from './tokens.js';
 import { createBudgets, createCodeGuard } from './budgets.js';
 import { libraryConfig, publicLibraryConfig } from './library/config.js';
 import { createLibraryStore } from './library/store.js';
@@ -518,6 +519,65 @@ function writeStateAs(uid, fn, { skipIf = null } = {}) {
   try { integrations.onStateWrite(uid, cur, next); } catch (e) { console.error('integrations onStateWrite', e); }
   return result;
 }
+// The write every route that replaces a profile's document ends in: PUT /api/data, and a scoped
+// token's PUT /api/token/data (tokens.js). `cur` is the stored document, `state` the one to store
+// (mutated), `overRead` whether the writer sent the revision it read and it is the current one.
+// → { status, body } for the answer.
+function commitState(uid, cur, state, { overRead = false, stamped = false } = {}) {
+  const curRev = cur?._rev || 0;
+  delete state.active;              // in-progress workouts stay device-local
+  // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
+  // only moves forward: a write without it, or with an older one — a client from before it, a
+  // backup restored over the profile — keeps the stored stamp. Otherwise every device that saw
+  // the reset would take that copy for one older than the reset, and wipe it again on its next
+  // merge (frontend/src/lib/sync-merge.js).
+  const storedReset = Number(cur?.resetAt) || 0;
+  if (storedReset > (Number(state.resetAt) || 0)) {
+    state.resetAt = cur.resetAt;
+    if (cur.resetIds && typeof cur.resetIds === 'object') state.resetIds = cur.resetIds;
+    else delete state.resetIds;
+  }
+  // The records of removals and edits only grow, and what a writer that does not stamp its own
+  // changes (an older app, an API script) changed is stamped here, so it is neither wiped nor
+  // undone by the next device that merges (sync-stamps.js).
+  // A document nested too deep to compare is the bad request the stringify below refuses too.
+  const report = {};
+  try { stampPut(cur, state, { overRead, stamped, report }); }
+  catch (e) { if (e instanceof RangeError) return { status: 400, body: { error: 'invalid state' } }; throw e; }
+  state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
+  // A writer that does not stamp (an older app) takes the revision it is told for the document it
+  // sent, and only reads the profile again once the revision moves. When the server put back
+  // something it left out or set back (sync-stamps.js), the document stored is not that one: it
+  // goes in one revision further, so the writer's next check of the revision (every half minute)
+  // finds it moved and reads it, and its next push over the one it was told is a conflict to merge.
+  if (report.changed) state._rev = curRev + 2;
+  state._wids = [...(Array.isArray(cur?._wids) ? cur._wids : []), ...(cur?._wid ? [cur._wid] : [])]
+    .filter(x => typeof x === 'string').slice(-WID_KEEP);
+  state._wid = crypto.randomBytes(8).toString('hex');
+  // JSON.parse takes any nesting, JSON.stringify recurses and runs out of stack on a document
+  // nested some thousands deep. No client builds one; it is a bad request, not a server error.
+  let text;
+  try { text = JSON.stringify(state); }
+  catch (e) { if (e instanceof RangeError) return { status: 400, body: { error: 'invalid state' } }; throw e; }
+  atomicWrite(stateFile(uid), text);
+  // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
+  // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
+  // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms
+  // tick are the same (mtimeMs, size) key. A reader that sampled between them would then serve
+  // the old revision until some later write happened to land on a different tick. This is the
+  // only writer of a state file in the tree, so evicting here is the whole fix.
+  stateCache.delete(uid);
+  // Starts (or stops) the grace clock of every stored file this write stopped (or started)
+  // referencing. Bookkeeping only: the state is already saved, so nothing here may turn a
+  // successful write into an error.
+  if (MEDIA_ON) {
+    try { MEDIA.noteState(uid, state); } catch (e) { console.error('media noteState', e); }
+  }
+  // A finished workout, a record or a weigh-in the profile's integrations asked to hear about:
+  // queued for delivery (integrations/outbox.js), never sent from inside this request.
+  try { integrations.onStateWrite(uid, cur, state); } catch (e) { console.error('integrations onStateWrite', e); }
+  return { status: 200, body: { ok: true, ts: state._ts || null, rev: curRev + 1, wid: state._wid } };
+}
 // Missed-workout nudge (nudge.js): opt-in on top of the reminder, so it needs everything the
 // reminder does (a push subscription, the reminder on, a zone). Owed from 20:00 — or 2 h after the
 // reminder — until 21:30 on the user's clock, the same catch-up idea as the reminder's window: a
@@ -766,7 +826,9 @@ const clearCookie = COOKIE === LEGACY_COOKIE
 // token in the Authorization header, which no browser attaches on its own.
 // The phone's OIDC redeem is the same kind as pair/redeem: a one-time code and the verifier only
 // the app holds, in the body; the token comes back in the body, never as a cookie.
-const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem']);
+// A scoped token's write (tokens.js) is the same kind as the watch's: the token in the
+// Authorization header is the only credential the route reads, and no browser attaches one.
+const CSRF_EXEMPT = new Set(['POST /api/pair/redeem', 'POST /api/watch/redeem', 'POST /api/watch/box', 'POST /api/oidc/app/redeem', 'PUT /api/token/data']);
 // The routes that answer to the credential in the body and never to a Bearer. No Bearer is the
 // credential that acts there, so none buys the shortcut below: any valid token would do, the
 // attacker's own included.
@@ -1193,6 +1255,54 @@ function auditFail(req, ev, f) {
   audit(req, ev, f);
 }
 
+/* ---------- scoped tokens (tokens.js) ---------- */
+// API_TOKENS=off takes the routes away (404). MCP=on tells the app a /mcp endpoint is served next
+// to it (the mcp container, docs/MCP_REMOTE.md), so Settings can show its address.
+const API_TOKENS = !/^(0|false|no|off)$/i.test(process.env.API_TOKENS || '');
+const MCP_ON = /^(1|true|yes|on)$/i.test(process.env.MCP || '');
+// Per token: reads a minute and writes an hour. A client looping on a tool meets these long
+// before the profile's devices notice it; a refused token is not counted against an address,
+// since 256 random bits are nothing to guess, and the MCP container sends every client's request
+// from one address (only the audit of failures is throttled, auditFail).
+const TOKEN_READS = createWindow({ max: Math.max(1, +(process.env.TOKEN_READS_PER_MIN || 120) || 120), windowMs: 60000 });
+const TOKEN_WRITES = createWindow({ max: Math.max(1, +(process.env.TOKEN_WRITES_PER_HOUR || 60) || 60), windowMs: 3600000 });
+setInterval(() => { TOKEN_READS.sweep(); TOKEN_WRITES.sweep(); }, 60000).unref();
+const tokenActor = row => ({ kind: 'token', id: row.id, name: row.name });
+function logToken(uid, ev, row) {
+  try { shareLog.append(uid, { ev, actor: { kind: 'self', id: uid, name: '' }, peer: tokenActor(row), msg: Object.entries(row.scopes || {}).filter(([, v]) => v !== 'off').map(([k, v]) => k + ':' + v).join(' ') }); }
+  catch (e) { console.error('share log', e.message); }
+}
+// A look is noted once a day per token and category: the log folds them per day anyway, and a
+// client reads before every tool call.
+const tokenLooks = new Set();
+function noteTokenRead(t) {
+  const day = new Date().toISOString().slice(0, 10);
+  for (const cat of readCategories(t.row.scopes)) {
+    const k = `${t.row.id}|${cat}|${day}`;
+    if (tokenLooks.has(k)) continue;
+    if (tokenLooks.size > 20000) tokenLooks.clear();
+    tokenLooks.add(k);
+    try { shareLog.noteAccess(t.user.id, tokenActor(t.row), cat); } catch (e) { console.error('share log', e.message); }
+  }
+}
+// The token a request carries, and its profile, or null after answering 401 (or 429). Only the
+// token routes ask this: a token is never a session.
+function tokenAuth(req, res, { write = false } = {}) {
+  const auth = req.headers.authorization || '';
+  const tok = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  const row = tok.startsWith(TOKEN_PREFIX) ? findToken(db, tok, uid => db.users.find(u => u.id === uid) || null) : null;
+  if (!row) {
+    auditFail(req, 'auth.token.fail', { ok: false, msg: tok ? 'token-invalid' : 'no-token' });
+    json(res, 401, { error: 'token not accepted', code: 'token-invalid' }, { 'WWW-Authenticate': 'Bearer error="invalid_token"' });
+    return null;
+  }
+  const user = db.users.find(u => u.id === row.userId);
+  const wait = write ? 0 : TOKEN_READS.take(row.id);
+  if (wait) { tooMany(res, wait); return null; }
+  if (touchToken(row)) saveDb();
+  return { row, user };
+}
+
 /* ---------- password sign-in (#118) ---------- */
 // Optional, per instance (PASSWORD_LOGIN) and per profile: nobody has a password until they set
 // one. Passkeys stay the default and the recommended way in. What a password needs that a
@@ -1432,6 +1542,7 @@ function removeAccount(u) {
   dropDeviceLinks(db, u.id);
   dropWatchLinks(db, u.id);
   dropWatchCodes(watchCodes, u.id);
+  revokeTokens(db, u.id);
   presence.delete(u.id);
   // The training history and any Coach credential of theirs, both outside db.json.
   try { fs.unlinkSync(stateFile(u.id)); } catch { /* already gone */ }
@@ -2275,6 +2386,8 @@ const routes = {
       invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
       // Only when on, so an instance without passwords answers exactly as it did before (#118).
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
+      // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app.
+      ...(API_TOKENS ? { api_tokens: true } : {}), ...(API_TOKENS && MCP_ON ? { mcp: true } : {}),
       // Public like the flags above: the sign-in screen draws its provider button from it.
       ...(oidcApi ? { oidc: { label: OIDC.label, ...(OIDC.only ? { only: true } : {}) } } : {}),
       // Public: the sign-in screen is the first thing that reads it.
@@ -2474,6 +2587,9 @@ const routes = {
     for (const [k, v] of pairings) if (v.uid === user.id) pairings.delete(k);
     dropDeviceLinks(db, user.id);
     oidcApi?.forget(user.id);
+    // Every scoped token ends with the sessions (its version would stop matching anyway); gone
+    // from the list too, so Settings shows what still works.
+    for (const r of revokeTokens(db, user.id)) logToken(user.id, 'token.end', r);
     saveDb();
     audit(req, 'auth.logout.all', { user });
     json(res, 200, { ok: true }, { 'Set-Cookie': clearCookie });
@@ -2650,6 +2766,99 @@ const routes = {
     json(res, 200, { accepted, json: box.snapshot, at: box.snapAt });
   },
 
+  /* ---------- scoped tokens (tokens.js, docs/API_TOKENS.md) ---------- */
+  // Made and revoked by the profile itself, in Settings, with a session. The token is shown once.
+  // A token never reaches these three: they are session routes, and readSession() does not know
+  // a token.
+  ...(API_TOKENS ? {
+    'GET /api/tokens': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      json(res, 200, { tokens: listTokens(db, user), categories: TOKEN_CATEGORIES, days: TOKEN_DAYS, defaultDays: DEFAULT_DAYS, mcp: MCP_ON });
+    },
+    'POST /api/tokens': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const body = await readBody(req);
+      let made;
+      try { made = createToken(db, user, { name: text(body.name), scopes: body.scopes, days: body.days }); }
+      catch (e) { if (e instanceof ScopeError) return json(res, e.status, { error: e.message, code: e.code }); throw e; }
+      saveDb();
+      audit(req, 'auth.token.create', { user, msg: made.row.name });
+      logToken(user.id, 'token.create', made.row);
+      json(res, 200, { token: made.token, tokens: listTokens(db, user), id: made.row.id });
+    },
+    'POST /api/tokens/revoke': async (req, res) => {
+      const user = readSession(req);
+      if (!user) return json(res, 401, { error: 'not signed in' });
+      const body = await readBody(req);
+      const gone = revokeTokens(db, user.id, text(body.id) || null);
+      if (gone.length) {
+        saveDb();
+        audit(req, 'auth.token.revoke', { user, msg: gone.length === 1 ? gone[0].name : `${gone.length} tokens` });
+        for (const r of gone) logToken(user.id, 'token.end', r);
+      }
+      json(res, 200, { ok: true, revoked: gone.length, tokens: listTokens(db, user) });
+    },
+
+    // The token's side. Whose profile, and what it may do.
+    'GET /api/token/me': async (req, res) => {
+      const t = tokenAuth(req, res); if (!t) return;
+      json(res, 200, { user: { id: t.user.id, name: t.user.name || '' }, token: { id: t.row.id, name: t.row.name, scopes: { ...t.row.scopes }, exp: t.row.exp || null } });
+    },
+    // The part of the document the token may read (tokens.js scopedState), with the revision to
+    // write back over.
+    'GET /api/token/data': async (req, res) => {
+      const t = tokenAuth(req, res); if (!t) return;
+      const state = readStateStrict(t.user.id);
+      if (state === UNREADABLE) { console.error('state file unreadable for', t.user.id); return json(res, 503, { error: 'state unreadable' }); }
+      noteTokenRead(t);
+      json(res, 200, { state: state ? scopedState(state, t.row.scopes) : null, rev: state?._rev || 0, ...(state?._wid ? { wid: state._wid } : {}) });
+    },
+    'GET /api/token/data/rev': async (req, res) => {
+      const t = tokenAuth(req, res); if (!t) return;
+      const doc = readStateCached(t.user.id);
+      json(res, 200, { rev: doc?._rev || 0, ...(doc?._wid ? { wid: doc._wid } : {}) });
+    },
+    // A write: the keys the token may change, over the exact revision it read (no blind writes,
+    // a 409 carries the current scoped document). Everything else in the profile stays as stored,
+    // and the write is stamped like any other writer's that does not stamp (sync-stamps.js).
+    'PUT /api/token/data': async (req, res) => {
+      const t = tokenAuth(req, res, { write: true }); if (!t) return;
+      const body = await readBody(req);
+      if (!body.state || typeof body.state !== 'object' || Array.isArray(body.state)) return json(res, 400, { error: 'state required' });
+      if (!Number.isInteger(body.baseRev)) return json(res, 400, { error: 'baseRev required: write over the revision you read', code: 'base-rev' });
+      const cur = readStateStrict(t.user.id);
+      if (cur === UNREADABLE) { console.error('state file unreadable for', t.user.id); return json(res, 503, { error: 'state unreadable' }); }
+      if (!cur) return json(res, 409, { error: 'this profile has not synced from a device yet', code: 'not-synced' });
+      const curRev = cur._rev || 0;
+      if (body.baseRev !== curRev || (typeof body.baseWid === 'string' && cur._wid && body.baseWid !== cur._wid)) {
+        return json(res, 409, { error: 'conflict', rev: curRev, state: scopedState(cur, t.row.scopes), ...(cur._wid ? { wid: cur._wid } : {}) });
+      }
+      let merged;
+      try { merged = mergeScoped(cur, body.state, t.row.scopes); }
+      catch (e) {
+        if (e instanceof ScopeError) { audit(req, 'token.denied', { ok: false, user: t.user, msg: t.row.name }); return json(res, e.status, { error: e.message, code: e.code }); }
+        throw e;
+      }
+      if (!merged.touched.length) return json(res, 200, { ok: true, unchanged: true, rev: curRev, ...(cur._wid ? { wid: cur._wid } : {}) });
+      const next = merged.next;
+      const list = v => v == null || Array.isArray(v);
+      if (!list(next.workouts) || !list(next.routines)) return json(res, 400, { error: 'invalid state' });
+      for (const k of ['workouts', 'routines']) if (Array.isArray(next[k])) next[k] = records(next[k]);
+      const wait = TOKEN_WRITES.take(t.row.id);
+      if (wait) return tooMany(res, wait);
+      const done = commitState(t.user.id, cur, next, { overRead: true, stamped: false });
+      if (done.status === 200) {
+        audit(req, 'token.write', { user: t.user, msg: `${t.row.name}: ${merged.touched.join(', ')}` });
+        for (const cat of merged.touched) {
+          try { shareLog.append(t.user.id, { ev: 'token.write', actor: tokenActor(t.row), cat }); } catch (e) { console.error('share log', e.message); }
+        }
+      }
+      json(res, done.status, done.body);
+    },
+  } : {}),
+
   // Absent entirely while PASSWORD_LOGIN is off, so each of them is a plain 404.
   ...(PASSWORD_LOGIN ? passwordRoutes : {}),
 
@@ -2754,58 +2963,8 @@ const routes = {
         (body.baseRev != null && typeof body.baseWid === 'string' && cur?._wid && body.baseWid !== cur._wid)) {
       return json(res, 409, { error: 'conflict', rev: curRev, state: forClient(cur) });
     }
-    delete body.state.active;              // in-progress workouts stay device-local
-    // "Reset everything" stamps the profile (`resetAt`, with `resetIds`: what it wiped). The stamp
-    // only moves forward: a write without it, or with an older one — a client from before it, a
-    // backup restored over the profile — keeps the stored stamp. Otherwise every device that saw
-    // the reset would take that copy for one older than the reset, and wipe it again on its next
-    // merge (frontend/src/lib/sync-merge.js).
-    const storedReset = Number(cur?.resetAt) || 0;
-    if (storedReset > (Number(body.state.resetAt) || 0)) {
-      body.state.resetAt = cur.resetAt;
-      if (cur.resetIds && typeof cur.resetIds === 'object') body.state.resetIds = cur.resetIds;
-      else delete body.state.resetIds;
-    }
-    // The records of removals and edits only grow, and what a writer that does not stamp its own
-    // changes (an older app, an API script) changed is stamped here, so it is neither wiped nor
-    // undone by the next device that merges (sync-stamps.js).
-    // A document nested too deep to compare is the bad request the stringify below refuses too.
-    const report = {};
-    try { stampPut(cur, body.state, { overRead: body.baseRev != null && body.baseRev === curRev, stamped: body.stamped === true, report }); }
-    catch (e) { if (e instanceof RangeError) return json(res, 400, { error: 'invalid state' }); throw e; }
-    body.state._rev = curRev + 1;          // server-owned; whatever the client sent is ignored
-    // A writer that does not stamp (an older app) takes the revision it is told for the document it
-    // sent, and only reads the profile again once the revision moves. When the server put back
-    // something it left out or set back (sync-stamps.js), the document stored is not that one: it
-    // goes in one revision further, so the writer's next check of the revision (every half minute)
-    // finds it moved and reads it, and its next push over the one it was told is a conflict to merge.
-    if (report.changed) body.state._rev = curRev + 2;
-    body.state._wids = [...(Array.isArray(cur?._wids) ? cur._wids : []), ...(cur?._wid ? [cur._wid] : [])]
-      .filter(x => typeof x === 'string').slice(-WID_KEEP);
-    body.state._wid = crypto.randomBytes(8).toString('hex');
-    // JSON.parse takes any nesting, JSON.stringify recurses and runs out of stack on a document
-    // nested some thousands deep. No client builds one; it is a bad request, not a server error.
-    let text;
-    try { text = JSON.stringify(body.state); }
-    catch (e) { if (e instanceof RangeError) return json(res, 400, { error: 'invalid state' }); throw e; }
-    atomicWrite(stateFile(user.id), text);
-    // The stat cache cannot see this write on its own: mtime granularity is 4 ms here (ext4 on
-    // this kernel — 3901 of 3999 back-to-back same-size writes shared one timestamp), and a
-    // `_rev` going from 7 to 8 does not change the file's size, so two writes inside one 4 ms
-    // tick are the same (mtimeMs, size) key. A reader that sampled between them would then serve
-    // the old revision until some later write happened to land on a different tick. This is the
-    // only writer of a state file in the tree, so evicting here is the whole fix.
-    stateCache.delete(user.id);
-    // Starts (or stops) the grace clock of every stored file this write stopped (or started)
-    // referencing. Bookkeeping only: the state is already saved, so nothing here may turn a
-    // successful write into an error.
-    if (MEDIA_ON) {
-      try { MEDIA.noteState(user.id, body.state); } catch (e) { console.error('media noteState', e); }
-    }
-    // A finished workout, a record or a weigh-in the profile's integrations asked to hear about:
-    // queued for delivery (integrations/outbox.js), never sent from inside this request.
-    try { integrations.onStateWrite(user.id, cur, body.state); } catch (e) { console.error('integrations onStateWrite', e); }
-    json(res, 200, { ok: true, ts: body.state._ts || null, rev: curRev + 1, wid: body.state._wid });
+    const done = commitState(user.id, cur, body.state, { overRead: body.baseRev != null && body.baseRev === curRev, stamped: body.stamped === true });
+    json(res, done.status, done.body);
   },
 
   'GET /api/push/public-key': async (req, res) => json(res, 200, { key: vapid.publicKey }),

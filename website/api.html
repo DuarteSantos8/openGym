@@ -225,6 +225,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <a class="side-link" href="#media"><b>Media</b><span>Photos &amp; videos of your exercises &amp; workouts</span></a>
   <a class="side-link" href="#coach"><b>AI Coach</b><span>Plans, reviews, debriefs</span></a>
   <a class="side-link" href="#integrations"><b>Integrations</b><span>Webhooks (INTEGRATIONS)</span></a>
+  <a class="side-link" href="#tokens"><b>Scoped tokens</b><span>API tokens and MCP</span></a>
   <a class="side-link" href="#trainers"><b>Trainers</b><span>Studios, sharing &amp; consent (TRAINERS)</span></a>
   <a class="side-link" href="#shared"><b>Community</b><span>The shared library (LIBRARY)</span></a>
   <a class="side-link" href="#admin"><b>Admin</b><span>Users, invites, audit log, Coach</span></a>
@@ -250,7 +251,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>150 endpoints</span>
+    <span>157 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -3531,6 +3532,265 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </section>
 
+<section class="api-sec" id="tokens">
+  <h2>Scoped tokens</h2>
+  <p class="sub">Scoped tokens (docs/API_TOKENS.md): a key a profile makes in Settings for one program, an AI client over MCP, a planner, a script, holding per category <code>off</code>, <code>view</code> or <code>apply</code>. Only its SHA-256 is stored. A token reaches the <code>/api/token/*</code> routes and nothing else, never more than its profile, and ends with &quot;sign out everywhere&quot;. <code>API_TOKENS=off</code> makes every route here a 404.</p>
+  <div class="eps">
+
+<details class="ep" id="op-tokensList">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/tokens</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The profile's scoped tokens</span>
+  </summary>
+  <div class="ep-body">
+<p>Never the token itself, only a few characters of it (<code>hint</code>) to tell them apart.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The tokens, what a token can hold, and whether /mcp is served here.<span class="r-sig">{ tokens: <a href="#schema-ApiToken">ApiToken</a>[], categories: object[], days: integer[], defaultDays: integer, mcp: boolean }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-tokensCreate">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/tokens</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Make a scoped token</span>
+  </summary>
+  <div class="ep-body">
+<p>The answer is the only time the token is shown. At most 10 per profile; a token that may see nothing is refused. <code>days</code> is one of 7, 30, 90, 365 or 0 (until revoked).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string <span class="p-hint">(&le; 40 chars)</span></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">scopes</span>
+    <span class="p-type"><a href="#schema-TokenScopes">TokenScopes</a></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">days</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The new token (once), its id and the updated list.<span class="r-sig">{ token: string, id: string, tokens: <a href="#schema-ApiToken">ApiToken</a>[] }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Nothing granted (<code>nothing-granted</code>) or bad <code>days</code> (<code>bad-days</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">Ten tokens already (<code>too-many</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-tokensRevoke">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/tokens/revoke</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Revoke one token, or every token</span>
+  </summary>
+  <div class="ep-body">
+<p>Without an <code>id</code>, every token of the profile. It stops working on the next request.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">How many went, and the list.<span class="r-sig">{ ok: boolean, revoked: integer, tokens: <a href="#schema-ApiToken">ApiToken</a>[] }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-tokenMe">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/token/me</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Whose token this is and what it may do</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The profile (id, name) and the token (id, name, scopes, expiry).<span class="r-sig">{ user: object, token: object }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No token, an unknown, expired or revoked one, or its profile signed out everywhere or is disabled.<span class="r-sig"><code>{&quot;error&quot;:&quot;token not accepted&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many reads with this token this minute (<code>TOKEN_READS_PER_MIN</code></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-tokenData">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/token/data</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The part of the profile the token may read</span>
+  </summary>
+  <div class="ep-body">
+<p>The document's keys of every category the token holds at <code>view</code> or more, plus the profile's settings (units, week start, progression defaults). Never photos, the Coach's conversation, the live workout or linked services. Each category read is noted once a day in the profile's sharing log.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The scoped document (null before the profile first synced) and its revision.<span class="r-sig">{ state: object, rev: integer, wid: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No token, an unknown, expired or revoked one, or its profile signed out everywhere or is disabled.<span class="r-sig"><code>{&quot;error&quot;:&quot;token not accepted&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many reads with this token this minute.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-tokenDataPut">
+  <summary>
+    <span class="m put">PUT</span>
+    <span class="ep-path"><code>/api/token/data</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Change what the token may change</span>
+  </summary>
+  <div class="ep-body">
+<p>Over the exact revision read (<code>baseRev</code>, required: no blind writes). Every key sent that the token holds at <code>apply</code> is written; a key it may only see has to come back unchanged and is ignored; any other key is a 403 <code>scope</code>. The rest of the profile stays as stored, and the change is stamped like any API client's (sync-stamps.js), so every device merges it. A changed revision is a 409 with the current scoped document. Writes are counted per token (<code>TOKEN_WRITES_PER_HOUR</code>, 60).</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">state<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">baseRev<em class="p-req" title="required">required</em></span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">baseWid</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Saved (or <code>unchanged</code>), with the new revision.<span class="r-sig">{ ok: boolean, unchanged: boolean, rev: integer, wid: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">No state, no <code>baseRev</code> (<code>base-rev</code>), or an invalid document.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No token, an unknown, expired or revoked one, or its profile signed out everywhere or is disabled.<span class="r-sig"><code>{&quot;error&quot;:&quot;token not accepted&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">A key outside what the token may change (<code>scope</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">409</span>
+    <span class="p-desc">The revision moved (body has <code>state</code> and <code>rev</code>), or the profile never synced (<code>not-synced</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Too many writes with this token this hour.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-tokenDataRev">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/token/data/rev</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Just the revision, to read the document only when it moved</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The revision and write id.<span class="r-sig">{ rev: integer, wid: string }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No token, an unknown, expired or revoked one, or its profile signed out everywhere or is disabled.<span class="r-sig"><code>{&quot;error&quot;:&quot;token not accepted&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+  </div>
+</section>
+
 <section class="api-sec" id="trainers">
   <h2>Trainers</h2>
   <p class="sub">Trainers, gym leads and studios (docs/TRAINERS.md). Off unless the server runs with <code>TRAINERS=on</code>; then every route here answers, otherwise 404 <code>trainers-off</code>. A member connects to a trainer with the trainer's code and a consent, decides per category what is shared, and can change or end it any time, effective on the next request. Every route spends a per-account budget (429 <code>rate-limited</code>, Retry-After).</p>
@@ -6775,6 +7035,92 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">src</span>
     <span class="p-type">string</span>
     <span class="p-desc">Only on your own items.</span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-TokenScopes">
+  <summary>
+    <span class="sch-name"><code>TokenScopes</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Per category <code>off</code>, <code>view</code> or <code>apply</code> (notes at most <code>view</code>).</span>
+  </summary>
+  <div class="ep-body">
+<p>Missing is <code>off</code>.</p>
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">workouts</span>
+    <span class="p-type">&quot;off&quot; | &quot;view&quot; | &quot;apply&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plans</span>
+    <span class="p-type">&quot;off&quot; | &quot;view&quot; | &quot;apply&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bodyweight</span>
+    <span class="p-type">&quot;off&quot; | &quot;view&quot; | &quot;apply&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">measurements</span>
+    <span class="p-type">&quot;off&quot; | &quot;view&quot; | &quot;apply&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">notes</span>
+    <span class="p-type">&quot;off&quot; | &quot;view&quot;</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+  </div>
+</details>
+
+<details class="ep sch" id="schema-ApiToken">
+  <summary>
+    <span class="sch-name"><code>ApiToken</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum"></span>
+  </summary>
+  <div class="ep-body">
+
+<div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">hint</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The six characters after <code>ogt_</code>.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">scopes</span>
+    <span class="p-type"><a href="#schema-TokenScopes">TokenScopes</a></span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">created</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">exp</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">used</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Last use</span>
   </div>
 </div>
   </div>

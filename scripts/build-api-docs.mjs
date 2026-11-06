@@ -143,6 +143,7 @@ const TAGS = {
   // spec needs a line here.
   coach: { title: 'AI Coach', side: 'Plans, reviews, debriefs' },
   integrations: { title: 'Integrations', side: 'Webhooks (INTEGRATIONS)' },
+  tokens: { title: 'Scoped tokens', side: 'API tokens and MCP' },
   trainers: { title: 'Trainers', side: 'Studios, sharing &amp; consent (TRAINERS)' },
   shared: { title: 'Community', side: 'The shared library (LIBRARY)' },
   admin: { title: 'Admin', side: 'Users, invites, audit log, Coach' }

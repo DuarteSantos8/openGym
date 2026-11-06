@@ -198,6 +198,13 @@ tags:
       it and when. Importing copies the item into your own profile. Reports, admin review
       (`SHARE_REVIEW=on`), removal and bans are all logged. The built-in exercise media can
       never be shared (blocked by SHA-256). Every route spends a per-account budget.
+  - name: tokens
+    description: >-
+      Scoped tokens (docs/API_TOKENS.md): a key a profile makes in Settings for one program, an
+      AI client over MCP, a planner, a script, holding per category `off`, `view` or `apply`.
+      Only its SHA-256 is stored. A token reaches the `/api/token/*` routes and nothing else,
+      never more than its profile, and ends with "sign out everywhere". `API_TOKENS=off` makes
+      every route here a 404.
   - name: integrations
     description: >-
       Settings → Integrations: outbound webhooks now, more providers later. Off unless the
@@ -993,6 +1000,181 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
         '429':
           description: Too many wrong codes from this address.
+  /api/tokens:
+    get:
+      tags: [tokens]
+      operationId: tokensList
+      summary: The profile's scoped tokens
+      description: Never the token itself, only a few characters of it (`hint`) to tell them apart.
+      responses:
+        '200':
+          description: The tokens, what a token can hold, and whether /mcp is served here.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokens: { type: array, items: { $ref: '#/components/schemas/ApiToken' } }
+                  categories: { type: array, items: { type: object, properties: { id: { type: string }, max: { type: string } } } }
+                  days: { type: array, items: { type: integer } }
+                  defaultDays: { type: integer }
+                  mcp: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [tokens]
+      operationId: tokensCreate
+      summary: Make a scoped token
+      description: >-
+        The answer is the only time the token is shown. At most 10 per profile; a token that
+        may see nothing is refused. `days` is one of 7, 30, 90, 365 or 0 (until revoked).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, maxLength: 40 }
+                scopes: { $ref: '#/components/schemas/TokenScopes' }
+                days: { type: integer }
+      responses:
+        '200':
+          description: The new token (once), its id and the updated list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string, example: ogt_... }
+                  id: { type: string }
+                  tokens: { type: array, items: { $ref: '#/components/schemas/ApiToken' } }
+        '400': { description: 'Nothing granted (`nothing-granted`) or bad `days` (`bad-days`).' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: 'Ten tokens already (`too-many`).' }
+  /api/tokens/revoke:
+    post:
+      tags: [tokens]
+      operationId: tokensRevoke
+      summary: Revoke one token, or every token
+      description: Without an `id`, every token of the profile. It stops working on the next request.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: How many went, and the list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  revoked: { type: integer }
+                  tokens: { type: array, items: { $ref: '#/components/schemas/ApiToken' } }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/token/me:
+    get:
+      tags: [tokens]
+      operationId: tokenMe
+      summary: Whose token this is and what it may do
+      security: [{ tokenAuth: [] }]
+      responses:
+        '200':
+          description: The profile (id, name) and the token (id, name, scopes, expiry).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { type: object, properties: { id: { type: string }, name: { type: string } } }
+                  token: { type: object, properties: { id: { type: string }, name: { type: string }, scopes: { $ref: '#/components/schemas/TokenScopes' }, exp: { type: integer, nullable: true } } }
+        '401': { $ref: '#/components/responses/TokenRefused' }
+        '429': { description: Too many reads with this token this minute (`TOKEN_READS_PER_MIN`, 120). }
+  /api/token/data:
+    get:
+      tags: [tokens]
+      operationId: tokenData
+      summary: The part of the profile the token may read
+      description: >-
+        The document's keys of every category the token holds at `view` or more, plus the
+        profile's settings (units, week start, progression defaults). Never photos, the Coach's
+        conversation, the live workout or linked services. Each category read is noted once a
+        day in the profile's sharing log.
+      security: [{ tokenAuth: [] }]
+      responses:
+        '200':
+          description: The scoped document (null before the profile first synced) and its revision.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  state: { type: object, nullable: true }
+                  rev: { type: integer }
+                  wid: { type: string }
+        '401': { $ref: '#/components/responses/TokenRefused' }
+        '429': { description: Too many reads with this token this minute. }
+    put:
+      tags: [tokens]
+      operationId: tokenDataPut
+      summary: Change what the token may change
+      description: >-
+        Over the exact revision read (`baseRev`, required: no blind writes). Every key sent that
+        the token holds at `apply` is written; a key it may only see has to come back unchanged
+        and is ignored; any other key is a 403 `scope`. The rest of the profile stays as stored,
+        and the change is stamped like any API client's (sync-stamps.js), so every device merges
+        it. A changed revision is a 409 with the current scoped document. Writes are counted per
+        token (`TOKEN_WRITES_PER_HOUR`, 60).
+      security: [{ tokenAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state, baseRev]
+              properties:
+                state: { type: object }
+                baseRev: { type: integer }
+                baseWid: { type: string }
+      responses:
+        '200':
+          description: Saved (or `unchanged`), with the new revision.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  unchanged: { type: boolean }
+                  rev: { type: integer }
+                  wid: { type: string }
+        '400': { description: 'No state, no `baseRev` (`base-rev`), or an invalid document.' }
+        '401': { $ref: '#/components/responses/TokenRefused' }
+        '403': { description: 'A key outside what the token may change (`scope`).' }
+        '409': { description: 'The revision moved (body has `state` and `rev`), or the profile never synced (`not-synced`).' }
+        '429': { description: Too many writes with this token this hour. }
+  /api/token/data/rev:
+    get:
+      tags: [tokens]
+      operationId: tokenDataRev
+      summary: Just the revision, to read the document only when it moved
+      security: [{ tokenAuth: [] }]
+      responses:
+        '200':
+          description: The revision and write id.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rev: { type: integer }
+                  wid: { type: string }
+        '401': { $ref: '#/components/responses/TokenRefused' }
   /api/watch/links:
     get:
       tags: [watch]
@@ -5542,7 +5724,22 @@ components:
         the paired mobile app (obtained from `POST /api/pair/redeem`). Bearer requests
         skip the CSRF origin check; a browser never attaches this header on its own.
 
+    tokenAuth:
+      type: http
+      scheme: bearer
+      description: >-
+        A scoped token (`ogt_…`, Settings → API tokens), as `Authorization: Bearer ogt_…`.
+        Only the `/api/token/*` routes accept it.
+
   responses:
+    TokenRefused:
+      description: No token, an unknown, expired or revoked one, or its profile signed out everywhere or is disabled.
+      headers:
+        WWW-Authenticate: { schema: { type: string }, description: 'Bearer error="invalid_token"' }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: "token not accepted", code: token-invalid }
     Unauthorized:
       description: No session, expired/revoked session, or a disabled account.
       content:
@@ -5761,6 +5958,25 @@ components:
         at: { type: integer, description: When it was shared (ms). }
         mine: { type: boolean }
         src: { type: string, description: Only on your own items. }
+    TokenScopes:
+      type: object
+      description: Per category `off`, `view` or `apply` (notes at most `view`). Missing is `off`.
+      properties:
+        workouts: { type: string, enum: [off, view, apply] }
+        plans: { type: string, enum: [off, view, apply] }
+        bodyweight: { type: string, enum: [off, view, apply] }
+        measurements: { type: string, enum: [off, view, apply] }
+        notes: { type: string, enum: [off, view] }
+    ApiToken:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        hint: { type: string, description: The six characters after `ogt_`. }
+        scopes: { $ref: '#/components/schemas/TokenScopes' }
+        created: { type: integer }
+        exp: { type: integer, nullable: true }
+        used: { type: integer, nullable: true, description: Last use, to the minute. }
     Error:
       type: object
       required: [error]
