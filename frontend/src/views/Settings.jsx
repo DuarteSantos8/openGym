@@ -64,6 +64,7 @@ import { AnimationQualityRow } from '../components/Animations.jsx'
 import { ServerSyncSection, KeptChangesRows, leaveServer, connectServer, passkeySignIn } from '../components/ServerSync.jsx'
 import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } from '../components/PasswordAuth.jsx'
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
+import { OidcRow } from '../components/OidcAccount.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
 import { MACHINE_EQ, machinesSummary } from '../lib/machine-kinds.js'
@@ -1336,6 +1337,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           {pageVisible('trainer', ctx) && <Row icon="personCircle" iconTint="var(--acc)" title={t('Trainer & gym')} subtitle={t('Who sees what of your training')} accessory="chevron" onClick={() => nav('/settings/trainer')} />}
           {pageVisible('trainer', ctx) && showsDashboard(config) && <Row icon="clipboard" iconTint="var(--orange)" title={t('Trainer dashboard')} subtitle={t('The people you train, and how they are doing')} accessory="chevron" onClick={() => nav('/trainer')} />}
           <PasskeysRow state={passkeys.st} changed={credsChanged} />
+          <OidcRow state={passkeys.st} changed={credsChanged} />
           <DeviceLinkRow state={passkeys.st} />
           <Row icon="qr" iconTint="var(--blue)" title={t('Pair the mobile app')} subtitle={t('Connect the openGym app on your phone to this account.')} accessory="chevron"
             onClick={() => useUI.getState().openSheet(close => <PairSheet close={close} />)} />

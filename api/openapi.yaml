@@ -94,6 +94,9 @@ info:
       log served by `GET /api/admin/audit`.
     - `PASSWORD_LOGIN=1`: adds the `password` routes and `password_login: true` in
       `GET /api/config`. Off by default.
+    - `OIDC_ISSUER` + `OIDC_CLIENT_ID` (and usually `OIDC_CLIENT_SECRET`): adds the `oidc`
+      routes and `oidc` in `GET /api/config`. `OIDC_ONLY=1` refuses passkey and password
+      sign-ups, and passkey and password sign-ins for everyone but admins (`403 oidc-only`).
     - `DEFAULT_LANG` (e.g. `pt-BR`; unset by default): `default_lang` in `GET /api/config`,
       the language of the sign-in screen and of every profile that never picked one.
     - `TRUST_PROXY=1`: the throttle reads the client address from proxy headers (set by
@@ -148,6 +151,11 @@ tags:
     description: Passkey (WebAuthn) registration and login, sessions
   - name: pairing
     description: Mobile-app pairing (code from a signed-in browser tab)
+  - name: oidc
+    description: >-
+      Sign in with an identity provider (OpenID Connect), next to passkeys. Every route here
+      is a 404 unless the server runs with `OIDC_ISSUER` and `OIDC_CLIENT_ID`
+      (docs/SELF_HOSTING.md, "Sign in with your identity provider").
   - name: watch
     description: The watch relay for Zepp OS watches (docs/ZEPP_OS.md)
   - name: password
@@ -313,6 +321,15 @@ paths:
                       Present (and true) only when the instance runs with
                       PASSWORD_LOGIN=1; the client then offers name-and-password
                       sign-in next to passkeys.
+                  oidc:
+                    type: object
+                    description: >-
+                      Present only when sign-in with an identity provider is configured.
+                      `label` names the provider on the button; `only` is there (true) with
+                      OIDC_ONLY=1.
+                    properties:
+                      label: { type: string, example: Authentik }
+                      only: { type: boolean, const: true }
                   default_lang:
                     type: string
                     example: pt-BR
@@ -586,7 +603,169 @@ paths:
               schema: { type: string }
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  provider_logout:
+                    type: string
+                    format: uri
+                    description: >-
+                      With OIDC_LOGOUT=1, for a profile linked to the identity provider whose
+                      discovery document has an end_session_endpoint: where the browser goes
+                      next to end the provider's session too (RP-initiated logout).
+
+  /api/oidc/start:
+    get:
+      tags: [oidc]
+      operationId: oidcStart
+      summary: Leave for the identity provider
+      description: |
+        A browser navigation, not a fetch. Answers 302 to the provider's authorization
+        endpoint with the authorization code flow, PKCE (S256), a fresh `state` and `nonce`,
+        and sets a 10-minute `gymoidc` cookie (`__Host-gymoidc` over https) that ties the
+        callback to this browser. `mode`: `web` (default), `app` (the phone app, see below),
+        `link` (Settings, with the `ticket` from POST /api/oidc/link, in the browser signed in
+        as that profile), or `reauth` (sign in at the provider again, `prompt=login`, so the
+        next change to a way in may use `provider: true` as its proof).
+
+        For `mode=app`, `return` must be exactly `opengym://oidc`, `challenge` the base64url
+        SHA-256 of a verifier only the app holds (43 characters), and `astate` the app's own
+        state, which comes back unchanged. Anything else is a 400, never a redirect.
+      security: []
+      parameters:
+        - { name: mode, in: query, schema: { type: string, enum: [web, app, link, reauth] } }
+        - { name: ticket, in: query, schema: { type: string } }
+        - { name: return, in: query, schema: { type: string, enum: ['opengym://oidc'] } }
+        - { name: challenge, in: query, schema: { type: string, pattern: '^[A-Za-z0-9_-]{43}$' } }
+        - { name: astate, in: query, schema: { type: string, pattern: '^[A-Za-z0-9_-]{16,128}$' } }
+      responses:
+        '302':
+          description: >-
+            To the provider; or, when the start itself fails, back to the app with
+            `?oidc-error=<code>` (`throttled`, `provider`, `link-expired`).
+        '400':
+          description: An unknown mode, or app parameters that are not allowed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/oidc/callback:
+    get:
+      tags: [oidc]
+      operationId: oidcCallback
+      summary: Come back from the identity provider
+      description: |
+        The redirect URI to register at the provider: `<ORIGIN>/api/oidc/callback` (or
+        OIDC_REDIRECT_URI). Checks the `state` and the flow cookie, trades the code at the
+        token endpoint with the PKCE verifier, and verifies the ID token: the signature against
+        the provider's JWKS (RS*, PS*, ES*, EdDSA; never `none` or HS*), `iss`, `aud`/`azp`,
+        `exp`, `iat`, `nbf` and the `nonce`. Groups and the e-mail are read from userinfo when
+        the ID token has none.
+
+        Then: a profile linked to this identity signs in; otherwise, with OIDC_EMAIL_LINKING=1,
+        a profile whose sign-in e-mail matches a `email_verified: true` address is linked;
+        otherwise a new profile is made, if the groups let this person in (OIDC_ALLOWED_GROUPS,
+        or an `access=` rule in OIDC_ROLE_MAP) and FIRST_USER_ADMIN applies as for any sign-up.
+        Answers 302 to the app with `?oidc=signed-in|linked|confirmed` and a session cookie, or
+        `?oidc-error=<code>`: `state`, `token`, `provider`, `cancelled`, `group`, `link-needed`,
+        `invite`, `disabled`, `taken`, `already-linked`, `wrong-account`, `link-expired`,
+        `throttled`. In app mode, 302 to `opengym://oidc?code=…&astate=…` (or `error=`) and no
+        cookie. Rate-limited per address; wrong states and tokens count toward the address pause.
+      security: []
+      parameters:
+        - { name: state, in: query, schema: { type: string } }
+        - { name: code, in: query, schema: { type: string } }
+        - { name: error, in: query, schema: { type: string } }
+      responses:
+        '302':
+          description: Back to the app (see above).
+
+  /api/oidc/app/redeem:
+    post:
+      tags: [oidc]
+      operationId: oidcAppRedeem
+      summary: Trade the phone app's one-time code for a Bearer token
+      description: >-
+        The code from `opengym://oidc?code=…` and the verifier whose SHA-256 the app sent as
+        `challenge`. One try per code, 2 minutes. Returns the same token POST /api/pair/redeem
+        does. CSRF-exempt, like pair/redeem: the credential is in the body, and nothing comes
+        back as a cookie.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, verifier]
+              properties:
+                code: { type: string }
+                verifier: { type: string, minLength: 43, maxLength: 128 }
+      responses:
+        '200':
+          description: Signed in.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: '#/components/schemas/SessionUser' }
+        '400':
+          description: Unknown, used or expired code, or the wrong verifier (`oidc-invalid`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429': { description: Too many tries from this address. }
+
+  /api/oidc/link:
+    post:
+      tags: [oidc]
+      operationId: oidcLink
+      summary: Start linking the provider to this profile
+      description: >-
+        Asks the same proof as adding a passkey (a passkey assertion with `cid` and
+        `credential`, or the current password where that counts). Returns a one-time URL,
+        good for two minutes and only in this signed-in browser, to navigate to.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200':
+          description: The address to go to.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, example: /api/oidc/start?mode=link&ticket=… }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: The proof was missing or wrong. }
+        '409': { description: The profile is linked already (`already-linked`). }
+
+  /api/oidc/unlink:
+    post:
+      tags: [oidc]
+      operationId: oidcUnlink
+      summary: Unlink the provider from this profile
+      description: >-
+        Never the last way in (`409 last-way-in`). The same proof as removing a passkey;
+        `provider: true` counts within five minutes of a provider sign-in.
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200':
+          description: Unlinked (or was not linked).
+          content:
+            application/json:
               schema: { $ref: '#/components/schemas/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: The proof was missing or wrong (`reauth-required` for a stale provider proof). }
+        '409': { description: The provider is the only way in (`last-way-in`). }
 
   /api/logout/all:
     post:
@@ -3915,6 +4094,38 @@ paths:
               schema: { $ref: '#/components/schemas/Ok' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/admin/oidc:
+    get:
+      tags: [admin]
+      operationId: adminOidc
+      summary: OIDC status
+      description: >-
+        What the server was told (issuer, client id, scopes, groups claim, allowed groups, the
+        number of role-map rules, OIDC_ONLY, e-mail linking, logout) and what it found (the
+        discovery document reached, keys in the set, the signing algorithms accepted, the last
+        error). The client secret is never in it.
+      responses:
+        '200':
+          description: The status.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OidcStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/admin/oidc/check:
+    post:
+      tags: [admin]
+      operationId: adminOidcCheck
+      summary: Fetch the provider's discovery document and keys again
+      responses:
+        '200':
+          description: The status after the check.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OidcStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /api/admin/coach:
     get:
       tags: [admin, coach]
@@ -5618,6 +5829,31 @@ components:
         credential: { $ref: '#/components/schemas/WebAuthnAuthenticationCredential' }
         current: { type: string }
 
+    OidcStatus:
+      type: object
+      properties:
+        enabled: { type: boolean }
+        issuer: { type: string }
+        clientId: { type: string }
+        confidential: { type: boolean, description: Whether a client secret is set (never the secret). }
+        scopes: { type: array, items: { type: string } }
+        label: { type: string }
+        only: { type: boolean }
+        redirectUri: { type: string }
+        groupsClaim: { type: string }
+        allowedGroups: { type: array, items: { type: string } }
+        roleRules: { type: integer }
+        linkByEmail: { type: boolean }
+        logout: { type: boolean, description: OIDC_LOGOUT is on and the provider has an end_session_endpoint. }
+        logoutAsked: { type: boolean }
+        reachable: { type: boolean }
+        keys: { type: integer }
+        algs: { type: array, items: { type: string } }
+        lastOk: { type: [integer, 'null'] }
+        lastError: { type: [string, 'null'] }
+        lastErrorAt: { type: [integer, 'null'] }
+        linked: { type: integer, description: Profiles linked to the provider. }
+        plainHttp: { type: boolean }
     SessionUser:
       type: object
       description: The caller's identity, as returned by /api/me and the sign-in routes.
@@ -5626,6 +5862,7 @@ components:
         name: { type: string }
         owner: { type: boolean, description: Present (true) only for the instance owner. }
         admin: { type: boolean }
+        oidc: { type: boolean, description: Present (true) when the profile is linked to the configured identity provider. }
       example: { id: "Zk3q9XyPbA2LmN0v", name: "Ada", admin: false }
 
     # ------------------------------------------------------------------ WebAuthn

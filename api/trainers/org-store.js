@@ -373,7 +373,7 @@ export function createOrgStore({ file, now = Date.now, leadMode = 'row' } = {}) 
       });
     },
 
-    /** OIDC (later): bring the roles a sign-in's group claims grant in line, touching only rows
+    /** OIDC (api/oidc/routes.js applyRoles): bring the roles a sign-in's group claims grant in line, touching only rows
      *  that came from claims before (`source: 'oidc'`), so roles an admin gave by hand stay. */
     syncClaimRoles(uid, roles, source = 'oidc') {
       mutate(o => {

@@ -15,6 +15,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Sets logged on the watch after you saved the workout on the phone join the saved workout, even for an exercise the phone had left empty.
 - A late copy of a watch workout's start no longer starts it all over again, and a watch workout started while another one ran on the phone waits its turn instead of being thrown away.
 
+**Sign in with your identity provider (OIDC)**
+- Self-hosting with Authentik, Authelia, Keycloak, voidAuth or Pocket ID? openGym signs people in through it now, next to passkeys: set OIDC_ISSUER and OIDC_CLIENT_ID and the sign-in screen gets a "Sign in with ..." button (#130, idea and first version by @melduarmir (#391), testing by @austinwilcox).
+- The phone app signs in the same way from "Connect to my server", in the system browser, and comes straight back to the app. No pairing code needed.
+- Accounts make themselves: being in the right group at your provider is the invite (OIDC_ALLOWED_GROUPS), and leaving it ends that profile's sessions. FIRST_USER_ADMIN works for the first provider sign-in too.
+- Groups can hand out roles (OIDC_ROLE_MAP): admin, trainer, gym lead and member per studio. A role you gave by hand stays put.
+- Already have a passkey profile? Settings → Account → Sign in with ... links it, after the usual passkey check. Linking by e-mail is opt-in and only for addresses the provider says are verified.
+- OIDC_ONLY makes the provider the one way in (admins keep their passkeys for a rainy day), OIDC_LOGOUT signs you out at the provider as well, and Admin → Identity provider shows whether it all works.
+- Recipes for each provider are in docs/SELF_HOSTING.md.
+
 **New**
 - Android: Settings → Workout → Screen orientation keeps openGym upright (or sideways) while the rest of your phone rotates as it likes (#821, thanks @snike79 for the idea).
 - A machine's weight stack and your dumbbells take a whole list at once: type one per line or paste "5, 11.3, 18.1". The quick fill stays around after the first block, so a stack with a finer run on top is two fills (#926, thanks @johannes1984 for the idea).

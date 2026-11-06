@@ -115,6 +115,20 @@ api:
     ALLOW_GUEST: ""          # "0" = no "Continue without account"
     DEFAULT_LANG: ""         # en, de, pt-BR, th, ...
     PASSWORD_LOGIN: ""       # "1" = password sign-in next to passkeys
+    # Sign in with an identity provider (docs/SELF_HOSTING.md); OIDC_CLIENT_SECRET is in secretEnv.
+    OIDC_ISSUER: ""          # e.g. https://auth.example.com
+    OIDC_CLIENT_ID: ""
+    OIDC_LABEL: ""           # the button's provider name
+    OIDC_SCOPES: ""          # default "openid profile email"
+    OIDC_GROUPS_CLAIM: ""    # default groups
+    OIDC_ALLOWED_GROUPS: ""  # comma separated; empty = anyone the provider signs in
+    OIDC_ROLE_MAP: ""        # "access=opengym, admin=opengym-admins"
+    OIDC_ONLY: ""            # "1" = the provider is the way in
+    OIDC_EMAIL_LINKING: ""   # "1" = link by verified e-mail
+    OIDC_LOGOUT: ""          # "1" = RP-initiated logout
+    OIDC_TOKEN_AUTH: ""      # "post" = client_secret_post
+    OIDC_REDIRECT_URI: ""    # only for a subpath install
+    SESSION_SAMESITE: ""     # "strict" = stricter session cookie
     # TRUST_PROXY stays off here on purpose, see kubernetes/deployment.yaml.
     TRUST_PROXY: ""
     SESSION_DAYS: ""         # default 90
@@ -144,6 +158,7 @@ api:
   # Rendered into the Secret. Same rule: empty = left out.
   secretEnv:
     ADMIN_UIDS: ""           # comma-separated user ids from db.json
+    OIDC_CLIENT_SECRET: ""   # the identity provider's client secret
   livenessProbe:
     httpGet:
       path: /api/health

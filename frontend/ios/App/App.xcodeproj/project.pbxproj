@@ -27,6 +27,7 @@
 		AA0200000000000000000006 /* RestTone.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000005 /* RestTone.swift */; };
 		AA0200000000000000000008 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0200000000000000000007 /* PrivacyInfo.xcprivacy */; };
 		AA0300000000000000000002 /* DeviceAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0300000000000000000001 /* DeviceAuthPlugin.swift */; };
+		AA4600000000000000000002 /* OidcBrowserPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4600000000000000000001 /* OidcBrowserPlugin.swift */; };
 		AA0400000000000000000002 /* AnimationPacksPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0400000000000000000001 /* AnimationPacksPlugin.swift */; };
 		AA0300000000000000000004 /* NudgeCheckPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0300000000000000000003 /* NudgeCheckPlugin.swift */; };
 		AA0500000000000000000002 /* AppleHealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0500000000000000000001 /* AppleHealthPlugin.swift */; };
@@ -71,6 +72,7 @@
 		AA0200000000000000000005 /* RestTone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestTone.swift; sourceTree = "<group>"; };
 		AA0200000000000000000007 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA0300000000000000000001 /* DeviceAuthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceAuthPlugin.swift; sourceTree = "<group>"; };
+		AA4600000000000000000001 /* OidcBrowserPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OidcBrowserPlugin.swift; sourceTree = "<group>"; };
 		AA0400000000000000000001 /* AnimationPacksPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationPacksPlugin.swift; sourceTree = "<group>"; };
 		AA0400000000000000000003 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		AA0300000000000000000003 /* NudgeCheckPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NudgeCheckPlugin.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 				AA0200000000000000000003 /* RestAlertPlugin.swift */,
 				AA0200000000000000000005 /* RestTone.swift */,
 				AA0300000000000000000001 /* DeviceAuthPlugin.swift */,
+				AA4600000000000000000001 /* OidcBrowserPlugin.swift */,
 				AA0400000000000000000001 /* AnimationPacksPlugin.swift */,
 				AA0400000000000000000003 /* App.entitlements */,
 				AA0300000000000000000003 /* NudgeCheckPlugin.swift */,
@@ -377,6 +380,7 @@
 				AA0200000000000000000004 /* RestAlertPlugin.swift in Sources */,
 				AA0200000000000000000006 /* RestTone.swift in Sources */,
 				AA0300000000000000000002 /* DeviceAuthPlugin.swift in Sources */,
+				AA4600000000000000000002 /* OidcBrowserPlugin.swift in Sources */,
 				AA0400000000000000000002 /* AnimationPacksPlugin.swift in Sources */,
 				AA0300000000000000000004 /* NudgeCheckPlugin.swift in Sources */,
 				AA0500000000000000000002 /* AppleHealthPlugin.swift in Sources */,

@@ -22,6 +22,7 @@ class MainViewController: CAPBridgeViewController {
         bridge?.registerPluginInstance(PrintPlugin())
         bridge?.registerPluginInstance(RestAlertPlugin())
         bridge?.registerPluginInstance(DeviceAuthPlugin())
+        bridge?.registerPluginInstance(OidcBrowserPlugin())
         bridge?.registerPluginInstance(AnimationPacksPlugin())
         bridge?.registerPluginInstance(NudgeCheckPlugin())
         bridge?.registerPluginInstance(GymReminderPlugin())
