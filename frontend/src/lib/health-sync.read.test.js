@@ -38,6 +38,11 @@ vi.mock('@capacitor/core', () => ({
       if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
       return { records: h.weights.filter(r => r.t >= arg.since) }
     },
+    readBody: async arg => {
+      h.calls.push(['readBody', arg])
+      if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
+      return { records: (h.body || []).filter(r => r.t >= arg.since) }
+    },
     write: async () => { h.calls.push(['write']) },
     remove: async () => {},
     openSettings: async () => {},
@@ -246,5 +251,27 @@ describe('weigh-ins with the history permission', () => {
     h.calls = []
     await hs.enableRead('weight', getState, { apply })
     expect(h.calls[0]).toEqual(['request', { read: ['weight'], write: [] }])
+  })
+})
+
+describe('body composition (v1.4.5)', () => {
+  it('asks for the four reads, keeps what the scale saved in this phone\'s file, never in the log', async () => {
+    h.granted = { heartRate: false, weight: false, body: true }
+    h.body = [{ kind: 'fat', t: NOW - 3600e3, v: 18.2, id: 'a', origin: 'com.withings.wiscale2' }, { kind: 'bmr', t: NOW - 3600e3, v: 1790, id: 'b' }]
+    const r = await hs.enableRead('body', getState, { apply })
+    expect(r.ok).toBe(true)
+    expect(reads('request')[0][1].read).toEqual(['bodyFat', 'leanMass', 'boneMass', 'bmr'])
+    expect(reads('readBody')).toHaveLength(1)
+    expect(file().body.fat).toEqual([{ t: NOW - 3600e3, v: 18.2, id: 'a' }])
+    expect(file().body.bmr).toHaveLength(1)
+    expect(applied).toBe(0)
+    // Off keeps what came in.
+    const off = await hs.disableRead('body')
+    expect(off.readBody).toBe(false)
+    expect(off.body.fat).toHaveLength(1)
+  })
+  it('turns down when Health Connect refused all four', async () => {
+    h.granted = { heartRate: false, weight: false, body: false }
+    expect((await hs.enableRead('body', getState, { apply })).reason).toBe('denied')
   })
 })

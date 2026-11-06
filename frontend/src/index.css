@@ -958,6 +958,14 @@ body.chips-dragging *{cursor:inherit}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
 .measure-preview{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:11px;padding-top:10px;border-top:1px solid var(--sep);font-size:var(--fs-caption);color:var(--label-2)}
 .measure-preview b{color:var(--label);font-weight:500}
+/* Body composition from the health hub (components/HealthBodyCard.jsx): two tiles a row. */
+.hc-body{margin-top:12px}
+.hc-body-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-top:10px}
+.hc-body-cell{min-width:0;display:flex;flex-direction:column;gap:2px}
+.hc-body-k{font-size:var(--fs-caption);color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hc-body-cell b{font-size:var(--fs-title3);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label)}
+.hc-body-cell b i{font-style:normal;font-weight:400;font-size:var(--fs-footnote);color:var(--label-3)}
+.hc-body-s{font-size:var(--fs-caption);color:var(--label-3)}
 .exnote{
   background:var(--surface);border-radius:var(--r);padding:13px 15px;
   line-height:1.45;white-space:pre-wrap;font-size:var(--fs-subhead);margin-bottom:10px;color:var(--label-2);

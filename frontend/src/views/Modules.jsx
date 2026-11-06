@@ -31,7 +31,7 @@ function useConnections() {
     const put = patch => { if (!gone) setFound(f => ({ ...f, ...patch })) }
     if (MOBILE) {
       import('../lib/health-sync.js').then(m => m.loadHealth()).then(h => {
-        if (h && (h.on || h.readHr || h.readWeight)) put({ health: platformNow() === 'android' ? 'Health Connect' : 'Apple Health' })
+        if (h && (h.on || h.readHr || h.readWeight || h.readBody)) put({ health: platformNow() === 'android' ? 'Health Connect' : 'Apple Health' })
       }).catch(() => {})
       // An Apple Watch that has reported in, or a Garmin the watch link found (docs/GARMIN.md).
       if (readWatchStatus() || readGarminLink()) put({ watch: true })

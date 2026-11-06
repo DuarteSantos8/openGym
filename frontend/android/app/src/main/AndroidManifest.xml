@@ -371,6 +371,12 @@
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+    <!-- Body composition (v1.4.5), asked for together when its switch is turned on: what a smart
+         scale saves besides the weight, shown under Body measurements. Foreground only. -->
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
 
     <!-- Gym reminder (#614), off until switched on in Settings: where the phone is, for "I'm at
          the gym right now" and to watch the gyms the user added with the platform's proximity

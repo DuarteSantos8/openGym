@@ -240,9 +240,15 @@ that.
   one weigh-in removes its record; removing a day removes all of them. A workout without a real start and end is left
   out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
   pin it.
+  Since v1.4.5 each set of a strength session is an `ExerciseSegment` too (its move from
+  `src/lib/health-segments.js`, else weightlifting, with its reps, ending at the set's tick); a
+  segment Health Connect refuses leaves the session without segments rather than unwritten.
 - **Permissions.** The manifest declares `WRITE_EXERCISE`, `WRITE_WEIGHT` and, since v1.4.3,
-  `READ_HEART_RATE` and `READ_WEIGHT` (see "Reading back" below). Each is asked for only when its
-  switch is turned on. No background and no history permission.
+  `READ_HEART_RATE` and `READ_WEIGHT` (see "Reading back" below), and since v1.4.5 `READ_BODY_FAT`,
+  `READ_LEAN_BODY_MASS`, `READ_BONE_MASS` and `READ_BASAL_METABOLIC_RATE` for the body-composition
+  switch, shown under Body measurements and kept in `opengym-health.json` only (on the iPhone: body
+  fat and lean body mass from Apple Health). Each is asked for only when its switch is turned on.
+  No background permission.
 - **No duplicates.** Every record carries openGym's own id as its `clientRecordId`
   (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout
   or weigh-in is written again; a deleted one is removed from Health Connect.

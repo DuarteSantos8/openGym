@@ -61,11 +61,33 @@ final class HealthRead {
         return out;
     }
 
+    /** One body-composition reading as JS gets it: kind fat (%), lean or bone (kg), bmr (kcal a day). */
+    static final class Body {
+        final String kind, id, origin, clientId;
+        final long t;
+        final double v;
+
+        Body(String kind, long t, double v, String id, String origin, String clientId) {
+            this.kind = kind; this.t = t; this.v = v; this.id = id; this.origin = origin; this.clientId = clientId;
+        }
+    }
+
+    /** A reading worth handing over: a time and a positive, finite value. */
+    static Body body(String kind, long t, double v, Metadata m) {
+        if (t <= 0 || !(v > 0) || Double.isInfinite(v)) return null;
+        return new Body(kind, t, v, m.getId(), m.getDataOrigin().getPackageName(), m.getClientRecordId());
+    }
+
     /** The JS names of the read permissions, as the manifest declares them. */
     static String readPermission(String name) {
         switch (name) {
             case "heartRate": return "android.permission.health.READ_HEART_RATE";
             case "weight": return "android.permission.health.READ_WEIGHT";
+            // Body composition (v1.4.5): what a smart scale saves besides the weight.
+            case "bodyFat": return "android.permission.health.READ_BODY_FAT";
+            case "leanMass": return "android.permission.health.READ_LEAN_BODY_MASS";
+            case "boneMass": return "android.permission.health.READ_BONE_MASS";
+            case "bmr": return "android.permission.health.READ_BASAL_METABOLIC_RATE";
             // Not a data type: data older than 30 days before the first grant (#801).
             case "history": return "android.permission.health.READ_HEALTH_DATA_HISTORY";
             default: return null;

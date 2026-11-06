@@ -14,6 +14,7 @@ import { fmtDate, fmtNum, todayISO, uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
+import HealthBodyCard from '../components/HealthBodyCard.jsx'
 import { Button, NumberField, Section, Segmented, SelectRow, Switch, TextField } from '../components/ui.jsx'
 import { confirmSheet } from '../sheets.jsx'
 
@@ -258,6 +259,8 @@ export default function Measurements() {
         options={[{ value: 30, label: '1M' }, { value: 90, label: '3M' }, { value: 365, label: '1Y' }, { value: 0, label: t('All') }]} />
       <div className="chart"><LineChart points={points} h={170} unit={unit} color="var(--teal)" /></div>
     </div>
+
+    <HealthBodyCard unit={S.unit} />
 
     {!available.length && <div className="card">
       <div className="muted small">{t('Choose the measurements you want to track, then log your first check-in.')}</div>
