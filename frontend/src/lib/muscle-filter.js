@@ -6,10 +6,11 @@
 // with AND by default ("works the quads and the hamstrings", #885) or OR.
 import { MUSCLES } from './muscles.js'
 
-/** The groups, head to toe, with the muscles each opens into. `name` is the i18n key. */
+/** The groups, head to toe, with the muscles each opens into. `name` is the i18n key: 'Back muscles',
+ *  never plain 'Back', which every pack translates as the way back ("Zurück", "Назад"). */
 export const MUSCLE_GROUPS = [
   { id: 'chest', name: 'Chest', muscles: ['chest', 'serratus'] },
-  { id: 'back', name: 'Back', muscles: ['lats', 'upper-back', 'lower-back', 'trapezius'] },
+  { id: 'back', name: 'Back muscles', muscles: ['lats', 'upper-back', 'lower-back', 'trapezius'] },
   { id: 'shoulders', name: 'Shoulders', muscles: ['front-delts', 'side-delts', 'rear-delts'] },
   { id: 'arms', name: 'Arms', muscles: ['biceps', 'triceps', 'forearm'] },
   { id: 'core', name: 'Core', muscles: ['abs', 'obliques'] },
