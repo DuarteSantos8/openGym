@@ -2869,7 +2869,7 @@ const routes = {
     'GET /api/calendar/{token}.ics': async (req, res) => {
       const row = findToken(db, req.calToken, uid => db.users.find(u => u.id === uid) || null);
       if (!row || row.kind !== 'calendar') {
-        auditFail(req, 'auth.token.fail', { ok: false, msg: 'calendar-invalid' });
+        auditFail(req, 'auth.token.fail', { ok: false, msg: 'token-invalid' });
         return json(res, 404, { error: 'not found' });
       }
       const wait = TOKEN_READS.take(row.id);

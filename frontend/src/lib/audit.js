@@ -115,6 +115,9 @@ export const auditLabel = ev => LABELS[ev] || String(ev || 'Unknown event')
 
 const REASONS = {
   'challenge-expired': 'the sign-in took too long and expired',
+  // A scoped token or a calendar feed's address that is unknown, revoked or ended (api tokenAuth).
+  'token-invalid': 'an unknown, revoked or ended token',
+  'no-token': 'no token was sent',
   'unknown-credential': 'unknown passkey',
   'verify-error': 'the passkey could not be verified',
   'not-verified': 'the passkey was rejected',
