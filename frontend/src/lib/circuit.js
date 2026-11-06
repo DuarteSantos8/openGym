@@ -258,6 +258,8 @@ function begin(run, i, at, events) {
 function closeWork(run, at, events, { skipped = false } = {}) {
   const step = runStep(run)
   if (!step || step.k !== 'work') return
+  // An EMOM interval is logged at Done (its split); its end only moves the clock on.
+  if (step.emom && run.split && run.log.at(-1)?.i === run.i) return
   const from = run.at
   // EMOM: the work ended at Done (the split), the rest of the minute was rest.
   const to = step.emom && run.split ? run.split : at
@@ -304,7 +306,7 @@ export function doneStep(prev, now = Date.now()) {
   const events = [...ticked.events]
   const step = runStep(run)
   if (step.k === 'work' && step.emom) {
-    if (!run.split) { run.split = now; events.push({ type: 'split', i: run.i, at: now }) }
+    if (!run.split) { run.split = now; closeWork(run, now, events); events.push({ type: 'split', i: run.i, at: now }) }
     return { run, events }
   }
   if (step.k === 'work') closeWork(run, now, events)

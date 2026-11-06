@@ -161,19 +161,20 @@ function Running({ S, run, close }) {
   const showRest = phase !== 'work'
   // The station on now; in a rest or get ready, the one coming.
   const upNext = nextWorkAfter(run.cfg, run.stations, run.i)
-  const focus = step.k === 'work' ? step : upNext || step
+  // In a rest (an EMOM interval you finished counts as one) the screen is about what comes next.
+  const ahead = showRest
+  const focus = ahead ? upNext || step : step
   const focusSt = stationNow(run, focus.m)
   const ex = EXIDX[focusSt?.id]
-  const after = step.k === 'work' ? upNext : upNext ? nextWorkAfter(run.cfg, run.stations, stepIndexOf(run, upNext)) : null
+  const after = ahead ? (upNext ? nextWorkAfter(run.cfg, run.stations, stepIndexOf(run, upNext)) : null) : upNext
   const total = step.sec
   const frac = end != null && total ? (end - (run.paused ?? now)) / (total * 1000) : run.capEndsAt ? (run.capEndsAt - (run.paused ?? now)) / (run.cfg.cap * 1000) : null
   const word = phase === 'prep' ? t('Get ready') : phase === 'rest' ? (step.warm ? t('Warm-up walk') : t('Rest')) : t('Work')
-  // An open station counts up (how long you have been at it); the cap shows beside it.
   // An AMRAP's open station shows the cap, which is the clock that matters; a circuit's open
   // station counts up, so you see how long you have been at it.
   const capLeft = run.capEndsAt ? leftOf({ ...run, i: -1 }, now) : null
   const clock = end != null ? fmtClock(left) : capLeft != null ? fmtClock(capLeft) : fmtClock(Math.floor(((run.paused ?? now) - run.at) / 1000))
-  const repsStation = step.k === 'work' && base?.mode === 'reps'
+  const repsStation = !ahead && step.k === 'work' && base?.mode === 'reps'
   const doneLabel = step.k === 'work' ? (emomDone ? t('Next now') : t('Done')) : t('Go now')
   return <div className={'cp-body cp-run is-' + phase}>
     <div className="cp-top">
@@ -202,7 +203,7 @@ function Running({ S, run, close }) {
       </div> : <span className="cp-target">{focus.k === 'work' && focus.sec != null && focusSt?.mode !== 'reps' ? fmtClock(focus.sec) : targetLine(S, run.stations[focus.m], focusSt)}</span>}
       {emomDone && <span className="cp-cap">{t('Nice. The rest of the minute is yours.')}</span>}
     </section>
-    {after && step.k === 'work' && <div className="cp-after"><span className="cp-kicker">{t('Then')}</span><span>{nameOf(run.stations[after.m]?.id)}</span></div>}
+    {after && <div className="cp-after"><span className="cp-kicker">{t('Then')}</span><span>{nameOf(run.stations[after.m]?.id)}</span></div>}
     <div className="cp-ctrl">
       {run.paused != null
         ? <button type="button" className="cp-side" onClick={() => c.resume()}><Icon name="play" /><span>{t('Resume')}</span></button>

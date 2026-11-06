@@ -102,9 +102,12 @@ describe('the run', () => {
     run = doneStep(run, T + 1000).run          // go now from get ready
     expect(runStep(run).k).toBe('work')
     const d = doneStep(run, T + 1000 + 18_000)
-    expect(d.events.map(e => e.type)).toEqual(['split'])
+    // logged at Done, so the set is ticked while the rest of the minute runs
+    expect(d.events.map(e => e.type)).toEqual(['work', 'split'])
+    expect(d.events[0].sec).toBe(18)
     const { events } = tickRun(d.run, T + 1000 + 60_000)
-    expect(events.find(e => e.type === 'work').sec).toBe(18)
+    expect(events.filter(e => e.type === 'work')).toEqual([])
+    expect(runResult(stopRun(tickRun(d.run, T + 1000 + 60_000).run, T + 1000 + 61_000).run).stations[0].done).toBe(1)
   })
   it('pause moves every clock out', () => {
     let run = startRun({ unit: [0], cfg: { mode: 'amrap', cap: 60 }, stations: [S(0)] }, T)
