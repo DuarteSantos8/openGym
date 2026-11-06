@@ -313,7 +313,7 @@ at `web.root`.
     origin = "https://gym.example.com";
     rpName = "My gym";
 
-    adminUids  = "u-abc123";          # comma-separated; gets the admin dashboard
+    adminUids  = [ "u-abc123" ];      # list of user IDs; gets the admin dashboard
     inviteOnly = true;                # new signups need an invite code
     allowGuest = false;               # remove "Continue without account"
 
@@ -392,9 +392,9 @@ for other modules to consume — setting them yourself is an error.
 | `rpId` | `str` | `localhost` | WebAuthn Relying Party ID. Bare hostname, must match the address bar exactly. |
 | `origin` | `str` | `http://localhost:8080` | Full origin for CSRF validation. Must match the address bar exactly (scheme + host, no trailing slash). |
 | `rpName` | `str` | `openGym` | Display name shown when the browser prompts for a passkey. |
-| `defaultLang` | `str` | `""` | Default language for the sign-in screen and new profiles, as a language tag such as `pt-BR` or `de`. An empty string keeps the browser default. |
+| `defaultLang` | `string \| null` | `null` | Default language for the sign-in screen and new profiles, as a language tag such as `pt-BR` or `de`. `null` keeps the browser default. |
 | `sessionDays` | `ints.unsigned` | `90` | Session cookie lifetime, in days. |
-| `adminUids` | `str` | `""` | Comma-separated user IDs granted the admin dashboard. Empty = no admin. |
+| `adminUids` | `listOf str` | `[]` | User IDs granted the admin dashboard, as a list. Empty list = no admin. |
 | `inviteOnly` | `bool` | `false` | Require an invite code to create a new profile. |
 | `allowGuest` | `bool` | `true` | Offer "Continue without account" (guest mode — never touches the server). Set `false` to remove the button. |
 | `passwordLogin` | `bool` | `false` | Offer name-and-password sign-in next to passkeys. Passwords kept from when it was on are inert while it is off. |
@@ -405,6 +405,9 @@ for other modules to consume — setting them yourself is an error.
 | `auditDays` | `ints.unsigned` | `90` | Max days of audit events kept. |
 | `auditIp` | `enum ["off" "net" "full"]` | `"off"` | IP recording mode: `off` (none), `net` (network only, e.g. `203.0.113.0/24`), `full`. |
 | `vapidSubject` | `str` | `""` | Contact URL sent with web-push requests (e.g. `mailto:you@example.com`). Empty = the `origin` is sent. |
+| `coachDisabled` | `bool` | `false` | Switch the AI Coach off entirely. |
+| `coachJobTimeoutSeconds` | `ints.unsigned \| null` | `null` | Budget for a single Coach job, in seconds. `null` keeps the app's five-minute default; a set value is a floor of one minute. |
+| `allowedPrivateIps` | `listOf str` | `[]` | Private addresses and CIDR blocks the server may push to (webhooks), as a list. |
 | `environment` | `attrsOf str` | `{ }` | Extra environment variables set on the `opengym-api` unit — the escape hatch for variables the module doesn't manage yet (newly added to the project). On a conflict with a variable the module derives from its own options, the module's value wins. Mutually exclusive with `environmentFile`. |
 | `environmentFile` | `str` | `""` | Path to an env file (`KEY=VALUE` per line) read by the `opengym-api` unit via systemd `EnvironmentFile=`. systemd applies it *after* the declarative environment, so entries in the file may override module-managed variables. Mutually exclusive with `environment`. |
 
@@ -427,6 +430,24 @@ v1.4.0, when the media moved into the repository. A configuration that still set
 evaluate with a message saying what to do: delete `fetchAtBuild` and `dataDir`, and replace
 `imageRoot`/`gifRoot` (and the `/img/`, `/gif/` routes built on them) with `web.root` alone. An
 old `/var/lib/opengym/media` directory is no longer used and can be deleted.
+
+### `uploads.*` suboptions
+
+These are separate from `media.*` above: `media.root` is where the *bundled exercise* media live,
+while `uploads.*` tune what a *profile* may put on the server (photos and videos). Every default
+matches the API's own, so leaving them alone changes nothing.
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `uploads.enabled` | `bool` | `true` | Let profiles upload exercise and workout photos and videos. |
+| `uploads.quotaMb` | `ints.unsigned` | `200` | Per-profile media quota, in MB. `0` = no cap. |
+| `uploads.minFreeMb` | `ints.unsigned` | `512` | Uploads stop below this much free disk space, in MB. `0` = no floor. |
+| `uploads.imageMaxMb` | `ints.unsigned` | `2` | Max size for a photo and its thumbnails, in MB. |
+| `uploads.gifMaxMb` | `ints.unsigned` | `8` | Max size for an animated GIF, in MB. |
+| `uploads.videoMaxMb` | `ints.unsigned` | `40` | Max size for a video, in MB. |
+| `uploads.videoMaxSec` | `ints.unsigned` | `60` | Maximum video length, in seconds. |
+| `uploads.gcGraceDays` | `ints.unsigned` | `14` | Days an unused upload is kept before garbage collection. |
+| `uploads.perHour` | `ints.unsigned` | `600` | Uploads permitted per profile per hour. |
 
 ### `web.*` suboptions
 
@@ -457,13 +478,21 @@ table against the module: a variable the module sets that is not named here fail
 | `sessionDays` | `SESSION_DAYS` | `adminUids` | `ADMIN_UIDS` (set only when non-empty) |
 | `allowGuest` | `ALLOW_GUEST` (`1`/`0`) | `inviteOnly` | `INVITE_ONLY` (`1`/`0`) |
 | `trustProxy` | `TRUST_PROXY` (`1`/`0`) | `passwordLogin` | `PASSWORD_LOGIN` (`1`/`0`) |
-| `firstUserAdmin` | `FIRST_USER_ADMIN` (`1`/`0`) | `defaultLang` | `DEFAULT_LANG` (set only when non-empty) |
+| `firstUserAdmin` | `FIRST_USER_ADMIN` (`1`/`0`) | `defaultLang` | `DEFAULT_LANG` (set only when set) |
+| `uploads.enabled` | `MEDIA_UPLOADS` (`1`/`0`) | `uploads.quotaMb` | `MEDIA_QUOTA_MB` |
+| `uploads.minFreeMb` | `MEDIA_MIN_FREE_MB` | `uploads.imageMaxMb` | `MEDIA_IMAGE_MAX_MB` |
+| `uploads.gifMaxMb` | `MEDIA_GIF_MAX_MB` | `uploads.videoMaxMb` | `MEDIA_VIDEO_MAX_MB` |
+| `uploads.videoMaxSec` | `MEDIA_VIDEO_MAX_SEC` | `uploads.gcGraceDays` | `MEDIA_GC_GRACE_DAYS` |
+| `uploads.perHour` | `MEDIA_UPLOADS_PER_HOUR` | `coachDisabled` | `COACH_DISABLED` (`1`/`0`) |
+| `coachJobTimeoutSeconds` | `COACH_JOB_TIMEOUT_MS` (set only when set) | `allowedPrivateIps` | `ALLOWED_PRIVATE_IPS` (set only when non-empty) |
 
 Three deliberate differences from the API's own defaults, all of them NixOS's choice rather than the
 app's: `DATA_DIR` points at `/var/lib/opengym` (the API defaults to `/data` for its containers),
 `TRUST_PROXY` starts on because a NixOS deployment always fronts the API with a proxy (the API
-itself defaults it off), and the set-only-when-non-empty variables are left off rather than
-substituted (`VAPID_SUBJECT` defaults to the origin, `ADMIN_UIDS` to no admin).
+itself defaults it off), and the variables with an *unset* state — `DEFAULT_LANG`, `VAPID_SUBJECT`,
+`ADMIN_UIDS`, `COACH_JOB_TIMEOUT_MS`, `ALLOWED_PRIVATE_IPS` — are left off the unit entirely
+rather than substituted, so the app's own defaults apply (browser language, the origin as VAPID
+subject, no admin, the five-minute coach budget, no private address).
 
 `environment` and `environmentFile` are raw passthrough and don't appear here — they end up on the
 unit exactly as you write them (see [Extra environment variables](#extra-environment-variables)).

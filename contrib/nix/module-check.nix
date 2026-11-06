@@ -60,7 +60,8 @@ let
 
       config = evalConfig scenario.modules;
       # PATH is systemd's default for every unit, not the module's; the scenario's
-      # config sets the optional ones (defaultLang, vapidSubject, adminUids) so this
+      # config sets the optional ones (defaultLang, vapidSubject, adminUids,
+      # coachJobTimeoutSeconds, allowedPrivateIps) so this
       # sees every variable the module can put on the unit.
       vars = lib.filter (name: name != "PATH") (
         builtins.attrNames config.systemd.services.opengym-api.environment

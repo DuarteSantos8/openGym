@@ -101,6 +101,14 @@
                   ok = c: differs "0" (c.systemd.services.opengym-api.environment.PASSWORD_LOGIN or "<missing>");
                 }
                 {
+                  label = "uploads default on";
+                  ok = c: differs "1" (c.systemd.services.opengym-api.environment.MEDIA_UPLOADS or "<missing>");
+                }
+                {
+                  label = "the coach defaults on";
+                  ok = c: differs "0" (c.systemd.services.opengym-api.environment.COACH_DISABLED or "<missing>");
+                }
+                {
                   label = "the opengym user exists";
                   ok = c: c.users.users ? opengym;
                 }
@@ -163,8 +171,59 @@
                 (opengymConfig {
                   defaultLang = "pt-BR";
                   vapidSubject = "mailto:test@example.com";
-                  adminUids = "u-1";
+                  adminUids = [ "u-1" ];
+                  # These two only reach the unit when set, so set them: the table must name
+                  # their variables too.
+                  coachJobTimeoutSeconds = 300;
+                  allowedPrivateIps = [ "127.0.0.1" ];
                 })
+              ];
+            }
+
+            # The user-upload and coach knobs: the env-var render, including the seconds →
+            # milliseconds job budget and the comma-joined private-IP list.
+            {
+              label = "uploads and coach";
+              modules = [
+                (opengymConfig {
+                  uploads.enabled = false;
+                  uploads.quotaMb = 500;
+                  uploads.perHour = 100;
+                  coachDisabled = true;
+                  coachJobTimeoutSeconds = 120;
+                  allowedPrivateIps = [
+                    "10.0.0.0/8"
+                    "192.168.1.0/24"
+                  ];
+                })
+              ];
+              expect = [
+                {
+                  label = "uploads are off";
+                  ok = c: differs "0" c.systemd.services.opengym-api.environment.MEDIA_UPLOADS;
+                }
+                {
+                  label = "the quota is rendered";
+                  ok = c: differs "500" c.systemd.services.opengym-api.environment.MEDIA_QUOTA_MB;
+                }
+                {
+                  label = "the throttle is rendered";
+                  ok = c: differs "100" c.systemd.services.opengym-api.environment.MEDIA_UPLOADS_PER_HOUR;
+                }
+                {
+                  label = "the coach is off";
+                  ok = c: differs "1" c.systemd.services.opengym-api.environment.COACH_DISABLED;
+                }
+                {
+                  label = "the timeout is seconds → ms";
+                  ok = c: differs "120000" c.systemd.services.opengym-api.environment.COACH_JOB_TIMEOUT_MS;
+                }
+                {
+                  label = "the allowed IPs are joined";
+                  ok =
+                    c:
+                    differs "10.0.0.0/8,192.168.1.0/24" c.systemd.services.opengym-api.environment.ALLOWED_PRIVATE_IPS;
+                }
               ];
             }
 

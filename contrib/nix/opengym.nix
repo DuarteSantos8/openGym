@@ -32,13 +32,37 @@ let
     TRUST_PROXY = if cfg.trustProxy then "1" else "0";
     PASSWORD_LOGIN = if cfg.passwordLogin then "1" else "0";
     FIRST_USER_ADMIN = if cfg.firstUserAdmin then "1" else "0";
-    DEFAULT_LANG = if cfg.defaultLang != "" then cfg.defaultLang else null;
+    DEFAULT_LANG = if cfg.defaultLang != null then cfg.defaultLang else null;
     AUDIT_LOG = if cfg.auditLog then "1" else "0";
     AUDIT_MAX = toString cfg.auditMax;
     AUDIT_DAYS = toString cfg.auditDays;
     AUDIT_IP = cfg.auditIp;
     VAPID_SUBJECT = if cfg.vapidSubject != "" then cfg.vapidSubject else null;
-    ADMIN_UIDS = if cfg.adminUids != "" then cfg.adminUids else null;
+    ADMIN_UIDS = if cfg.adminUids != [ ] then (lib.concatStringsSep "," cfg.adminUids) else null;
+    # User-uploaded photos and videos (the MEDIA_* family): the app ships with uploads on at
+    # these caps; the options exist to tune them per instance. The values default to the API's
+    # own defaults, so leaving them alone changes nothing.
+    MEDIA_UPLOADS = if cfg.uploads.enabled then "1" else "0";
+    MEDIA_QUOTA_MB = toString cfg.uploads.quotaMb;
+    MEDIA_MIN_FREE_MB = toString cfg.uploads.minFreeMb;
+    MEDIA_IMAGE_MAX_MB = toString cfg.uploads.imageMaxMb;
+    MEDIA_GIF_MAX_MB = toString cfg.uploads.gifMaxMb;
+    MEDIA_VIDEO_MAX_MB = toString cfg.uploads.videoMaxMb;
+    MEDIA_VIDEO_MAX_SEC = toString cfg.uploads.videoMaxSec;
+    MEDIA_GC_GRACE_DAYS = toString cfg.uploads.gcGraceDays;
+    MEDIA_UPLOADS_PER_HOUR = toString cfg.uploads.perHour;
+    # The AI Coach: on by default, its job budget raised only for slow local models.
+    COACH_DISABLED = if cfg.coachDisabled then "1" else "0";
+    COACH_JOB_TIMEOUT_MS =
+      if cfg.coachJobTimeoutSeconds != null then
+        # The app takes milliseconds and floors the budget at one minute; the option is in
+        # seconds because that is the unit a human reasons about.
+        toString (cfg.coachJobTimeoutSeconds * 1000)
+      else
+        null;
+    # Private addresses the server may push to (webhooks), the same comma form the API parses.
+    ALLOWED_PRIVATE_IPS =
+      if cfg.allowedPrivateIps != [ ] then lib.concatStringsSep "," cfg.allowedPrivateIps else null;
   };
 
   # Hardening shared by the API and MCP units. The MCP server reads the same data files,
@@ -148,9 +172,10 @@ in
     };
 
     adminUids = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = "Comma-separated user IDs granted admin access.";
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [ "u-abc123" ];
+      description = "User IDs granted admin access, as a list (ADMIN_UIDS, comma-joined).";
     };
 
     inviteOnly = lib.mkEnableOption "require invite code for new signups";
@@ -171,11 +196,12 @@ in
     };
 
     defaultLang = lib.mkOption {
-      type = lib.types.str;
-      default = "";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "en";
       description = ''
         Default language for the sign-in screen and new profiles, as a language tag such as
-        `pt-BR` or `de` (DEFAULT_LANG). An empty string keeps the browser default.
+        `pt-BR` or `de` (DEFAULT_LANG). `null` keeps the browser default.
       '';
     };
 
@@ -217,6 +243,31 @@ in
       type = lib.types.str;
       default = "";
       description = "VAPID subject for push notifications (defaults to ORIGIN).";
+    };
+
+    coachDisabled = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = "Switch the AI Coach off (COACH_DISABLED).";
+    };
+
+    coachJobTimeoutSeconds = lib.mkOption {
+      type = lib.types.nullOr lib.types.ints.unsigned;
+      default = null;
+      description = ''
+        Raise the AI Coach's job budget for slow local models, in seconds (COACH_JOB_TIMEOUT_MS).
+        `null` keeps the app's five-minute default; a set value is a floor of one minute.
+      '';
+    };
+
+    allowedPrivateIps = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      example = [
+        "192.168.1.0/24"
+        "10.0.0.0/8"
+      ];
+      description = "Private addresses and CIDR blocks the server may push to (webhooks), as a list (ALLOWED_PRIVATE_IPS).";
     };
 
     environment = lib.mkOption {
@@ -266,6 +317,65 @@ in
           It is the exercise-media/ directory inside web.root, so a web server serving web.root
           already serves it; the option is only there for setups that need the path on its own.
         '';
+      };
+    };
+
+    # User uploads are a separate thing from the bundled exercise media above: these tune what a
+    # profile may put on the server (photos/videos), not where the exercise media live. They map
+    # to the API's MEDIA_* family, and each default matches the API's own default.
+    uploads = {
+      enabled = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Allow profiles to upload exercise and workout photos and videos (MEDIA_UPLOADS).";
+      };
+
+      quotaMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 200;
+        description = "Media quota per profile, in MB (MEDIA_QUOTA_MB). 0 = no cap.";
+      };
+
+      minFreeMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 512;
+        description = "Uploads stop below this much free disk space, in MB (MEDIA_MIN_FREE_MB). 0 = no floor.";
+      };
+
+      imageMaxMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 2;
+        description = "Max size for a photo and its thumbnails, in MB (MEDIA_IMAGE_MAX_MB).";
+      };
+
+      gifMaxMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 8;
+        description = "Max size for an animated GIF, in MB (MEDIA_GIF_MAX_MB).";
+      };
+
+      videoMaxMb = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 40;
+        description = "Max size for a video, in MB (MEDIA_VIDEO_MAX_MB).";
+      };
+
+      videoMaxSec = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 60;
+        description = "Maximum allowed video length, in seconds (MEDIA_VIDEO_MAX_SEC).";
+      };
+
+      gcGraceDays = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 14;
+        description = "Days an unused upload is kept before garbage collection (MEDIA_GC_GRACE_DAYS).";
+      };
+
+      perHour = lib.mkOption {
+        type = lib.types.ints.unsigned;
+        default = 600;
+        description = "Uploads permitted per profile per hour (MEDIA_UPLOADS_PER_HOUR).";
       };
     };
 
