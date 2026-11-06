@@ -79,7 +79,7 @@ module Core {
     function emptyState() {
         return {
             "w" => null, "rd" => null, "set" => {}, "u" => "kg", "rs" => 90, "stk" => null, "sy" => false,
-            "sh" => null, "fh" => [], "p" => {}, "pos" => 0, "sk" => [], "rest" => null, "ob" => [], "rec" => null
+            "sh" => null, "fh" => [], "p" => {}, "pos" => 0, "sk" => [], "rest" => null, "ob" => [], "obn" => 0, "rec" => null
         };
     }
 
@@ -128,11 +128,38 @@ module Core {
         return same(unitOf(s, e), "lb") ? 5.0 : 2.5;
     }
 
+    /* ---------- the outbox ---------- */
+
+    //! The events the phone has applied (the snapshot's `acked`) leave the outbox. Until then each
+    //! stays, sent or not: one the phone app missed (it was not running) goes again. `obn` counts
+    //! the ones at the front already sent; it shrinks with those taken out.
+    function ackOutbox(s, acked) {
+        if (acked.size() == 0) { return; }
+        var ob = s["ob"];
+        var sent = toI(s["obn"], 0);
+        var kept = [];
+        var n = 0;
+        for (var i = 0; i < ob.size(); i += 1) {
+            var ev = dictOf(ob[i]);
+            if (ev != null && inArr(acked, ev["id"])) { continue; }
+            kept.add(ob[i]);
+            if (i < sent) { n += 1; }
+        }
+        s["ob"] = kept;
+        s["obn"] = n;
+    }
+
+    //! Events not sent yet (the rest wait for the phone to say it has them).
+    function unsent(s) {
+        return s["ob"].size() - toI(s["obn"], 0);
+    }
+
     /* ---------- the phone's snapshot ---------- */
 
     //! A snapshot from the phone, over what the watch has. Returns the summary of a workout the
     //! phone ended (finished there while the watch had it running), else null.
     function applySnapshot(s, snap) {
+        ackOutbox(s, arrOf(snap["acked"]));
         s["rd"] = dictOf(snap["ready"]);
         s["sy"] = true;
         if (snap["unit"] instanceof Lang.String) { s["u"] = snap["unit"]; }

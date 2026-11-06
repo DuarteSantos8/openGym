@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { garminSnapshot, garminWindow, garminTotals, GARMIN_MAX_BYTES } from './garmin-snapshot.js'
+import { garminSnapshot, garminWindow, garminTotals, GARMIN_MAX_BYTES, GARMIN_ACKED_MAX } from './garmin-snapshot.js'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const wearSnap = () => JSON.parse(readFileSync(join(here, '..', '..', 'android', 'wear', 'src', 'test', 'resources', 'snapshot.json'), 'utf8'))
@@ -107,4 +107,14 @@ describe('the Garmin snapshot', () => {
     expect(out.unit).toBe('lb')
     expect(out.streak).toBeNull()
   })
+
+  it('carries the newest acked ids, a short list, and never cuts them for size', () => {
+    const ids = Array.from({ length: 40 }, (_, i) => 'g' + i)
+    const out = garminSnapshot({ ...wearSnap(), acked: [...ids, 7] })
+    expect(out.acked).toEqual(ids.slice(-GARMIN_ACKED_MAX))
+    const tight = garminSnapshot({ ...wearSnap(), acked: ids }, { max: 300 })
+    expect(tight.acked).toHaveLength(GARMIN_ACKED_MAX)
+    expect(garminSnapshot(wearSnap()).acked).toBeUndefined()
+  })
 })
+

@@ -180,4 +180,26 @@ module CoreTest {
         Test.assertEqual(Ui.fmtW(60.0), "60");
         return true;
     }
+
+    //! The outbox lets go of what the phone named in `acked`, sent or not, and nothing else.
+    (:test)
+    function outboxKeepsWhatThePhoneHasNotConfirmed(logger as Test.Logger) as Boolean {
+        var s = Core.emptyState();
+        s["ob"] = [{ "id" => "a" }, { "id" => "b" }, { "id" => "c" }, { "id" => "d" }];
+        s["obn"] = 3;
+        Test.assertEqual(Core.unsent(s), 1);
+        var sn = coreSnap();
+        sn["acked"] = ["a", "c", "zz"];
+        Core.applySnapshot(s, sn);
+        Test.assertEqual(s["ob"].size(), 2);
+        Test.assert(Core.same(s["ob"][0]["id"], "b"));
+        Test.assert(Core.same(s["ob"][1]["id"], "d"));
+        // b was sent and waits for its confirmation; d was never sent
+        Test.assertEqual(s["obn"], 1);
+        Test.assertEqual(Core.unsent(s), 1);
+        // a snapshot without acked changes nothing
+        Core.applySnapshot(s, coreSnap());
+        Test.assertEqual(s["ob"].size(), 2);
+        return true;
+    }
 }

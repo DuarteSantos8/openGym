@@ -102,4 +102,31 @@ describe('a Garmin on the watch link', () => {
     expect(readGarminLink()).toBe(false)
     stop()
   })
+
+  it('names the Garmin events applied here in its snapshot, so the watch lets go of them', async () => {
+    const b = bridge()
+    const ev = id => ({ id, type: 'setDone', wid: 'w-gone', exId: '0025', entryIdx: 0, setIdx: 0, w: 60, r: 8, at: 1 })
+    b.drain.mockResolvedValueOnce({ events: [ev('g1'), ev('g2')] })
+    const { stop } = await run(b, { ...S0, active })
+    await vi.runAllTimersAsync()
+    expect(b.ack).toHaveBeenCalledWith({ ids: ['g1', 'g2'] })
+    expect(JSON.parse(lastCall(b).garmin).acked).toEqual(['g1', 'g2'])
+    stop()
+  })
+
+  it('an event sent again long after is named again, even behind many newer ones', async () => {
+    // The watch was away for a whole workout: its first set is far back in the phone's list.
+    localStorage.setItem('gym_watch_applied', JSON.stringify(['g-old', ...Array.from({ length: 30 }, (_, i) => 'x' + i)]))
+    const b = bridge()
+    b.drain.mockResolvedValueOnce({ events: [{ id: 'g-old', type: 'setDone', wid: 'w-gone', at: 1 }] })
+    const { stop } = await run(b, { ...S0, active })
+    await vi.runAllTimersAsync()
+    expect(b.ack).toHaveBeenCalledWith({ ids: ['g-old'] })
+    const acked = JSON.parse(lastCall(b).garmin).acked
+    expect(acked).toHaveLength(16)
+    expect(acked.at(-1)).toBe('g-old')
+    // and still applied once: the list has it a single time
+    expect(JSON.parse(localStorage.getItem('gym_watch_applied')).filter(x => x === 'g-old')).toHaveLength(1)
+    stop()
+  })
 })
