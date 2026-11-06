@@ -58,6 +58,7 @@ struct RestView: View {
                     EdgeButton(systemImage: "gobackward.15", label: Text(verbatim: "−15 s"), size: 40) { store.minusRest() }
                     Button { store.skipRestAndGo() } label: {
                         Label { Text("Skip") } icon: { Image(systemName: "forward.end.fill") }
+                            .labelStyle(typeSize.isAccessibilitySize ? AnyLabelStyle(.iconOnly) : AnyLabelStyle(.titleAndIcon))
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(RowButtonStyle())

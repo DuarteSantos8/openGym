@@ -60,10 +60,10 @@ struct SetPanel: View {
     @ViewBuilder
     private func layout(_ entry: Entry, ref: SetRef, unit: String, fixing: Bool, height: CGFloat) -> some View {
         let row = entry.sets[ref.set]
-        let roomy = !typeSize.isAccessibilitySize
-        let twoLines = roomy && height >= 150
-        let partnerLine = roomy && height >= 160
-        let lastLine = roomy && height >= 186
+        let fit = room(entry, ref: ref, row: row, fixing: fixing, height: height)
+        let partnerLine = fit.partner
+        let lastLine = fit.last
+        let twoLines = fit.twoLines
         VStack(spacing: 3) {
             // The set's lines move with ‹ › (Motion.nudge); the arrows and the button stay still.
             VStack(spacing: 3) {
@@ -79,7 +79,7 @@ struct SetPanel: View {
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                placeLine(entry, ref: ref, row: row, fixing: fixing)
+                placeLine(entry, ref: ref, row: row, fixing: fixing, partner: partnerLine ? nil : partnerNames(ref.entry))
                 if partnerLine, let partners = partnerNames(ref.entry) {
                     Label { Text(verbatim: partners) } icon: { Image(systemName: "link") }
                         .font(.system(.caption2, design: .rounded))
@@ -117,7 +117,21 @@ struct SetPanel: View {
     }
 
     /// "Set 2 of 4" and what kind of set: warm-up, the side up, done (when it is a fix).
-    private func placeLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool) -> some View {
+    /// What fits, in order of use: the superset's partner on a line of its own, last time, a
+    /// second line for a long name. The set's place line, the boxes and the button always do.
+    private func room(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, height: CGFloat) -> (partner: Bool, last: Bool, twoLines: Bool) {
+        guard !typeSize.isAccessibilitySize else { return (false, false, false) }
+        var spare = height - 146
+        let partner = partnerNames(ref.entry) != nil && spare >= 15
+        if partner { spare -= 15 }
+        let hasLast = !fixing && !row.warmup && store.show.showLast && !(entry.last ?? "").isEmpty
+        let last = hasLast && spare >= 14
+        if last { spare -= 14 }
+        return (partner, last, spare >= 20)
+    }
+
+    /// `partner`: on a small screen the superset's partner goes on this line instead of one of its own.
+    private func placeLine(_ entry: Entry, ref: SetRef, row: SetRow, fixing: Bool, partner: String?) -> some View {
         let place = SetNav.place(entry, ref.set)
         let side = fixing ? store.fixSide : row.sideUp
         return HStack(spacing: 4) {
@@ -130,6 +144,14 @@ struct SetPanel: View {
             if !fixing, side == "L" { Tag(text: Text("Left"), color: Theme.teal) }
             if !fixing, side == "R" { Tag(text: Text("Right"), color: Theme.teal) }
             if fixing { Tag(text: Text("Done"), color: store.accent) }
+            if let partner = partner, !fixing {
+                Label { Text(verbatim: partner) } icon: { Image(systemName: "link") }
+                    .font(.system(.caption2, design: .rounded))
+                    .foregroundStyle(Theme.purple)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partner)"))
+            }
             if fixing, let end = store.restEndsAt, end > Date() {
                 // The rest runs on while a set is fixed: its time stays in sight.
                 Text(timerInterval: min(Date(), end)...end, countsDown: true)
@@ -501,7 +523,9 @@ struct KeypadView: View {
         }
         .lineLimit(1)
         .minimumScaleFactor(0.5)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        // Right-aligned: the sheet's own close button sits in the top-left corner.
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.leading, 34)
         .accessibilityElement(children: .combine)
     }
 
