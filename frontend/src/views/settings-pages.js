@@ -8,6 +8,7 @@
 import { t } from '../lib/i18n.js'
 import { ACCENT_NAMES } from '../lib/format.js'
 import { MODULES } from '../lib/modules.js'
+import { OFFLINE_OFF_MODULES } from '../lib/build-caps.js'
 import { available, shownThemes } from '../lib/seasonal.js'
 
 // `mod`: the module (lib/modules.js) a page belongs to; with it off the page and its rows are gone,
@@ -31,6 +32,8 @@ export const PAGES = {
   zepp: { title: 'Zepp OS watch', icon: 'watch', tint: 'var(--orange)', mod: 'watch' },
   data: { title: 'Data & backup', icon: 'folder', tint: 'var(--blue)' },
   about: { title: 'About & updates', icon: 'info', tint: 'var(--grey)' },
+  // The phone app's own list of what it sent where this session (lib/net-log.js, views/NetworkLog.jsx).
+  network: { title: 'Network log', icon: 'shield', tint: 'var(--green)', parent: 'about', kw: 'network log requests privacy internet offline connections traffic tracking telemetry data sent who what' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
   // Trainers and gyms (TRAINERS=on on the server, docs/TRAINERS.md): who sees what of your training.
@@ -63,7 +66,11 @@ export function pageVisible(page, ctx) {
   // A page of a module that is off (ctx.mod answers isOn for this profile; absent: all on).
   if (PAGES[page]?.mod && ctx.mod && !ctx.mod(PAGES[page].mod)) return false
   if (page === 'reminders') return !!(ctx.user || ctx.mobile)
-  if (page === 'coach') return !!ctx.mobile
+  if (page === 'coach') return !!ctx.mobile && !ctx.offline
+  // The phone app's network log: there only (a browser has its own developer tools for that).
+  if (page === 'network') return !!ctx.mobile
+  // openGym Offline (lib/build-caps.js) has no network: nothing that needs a server or a connection.
+  if (ctx.offline && (page === 'zepp' || page === 'api-tokens' || page === 'trainer')) return false
   // Only on a server that offers trainers, signed in: there is nobody to share with otherwise.
   if (page === 'trainer') return !!ctx.trainers && !!ctx.user && !ctx.demo
   // Signed in to a server that offers scoped tokens (API_TOKENS, on unless switched off).
@@ -120,6 +127,8 @@ export const SEARCH = [
   ...MODULES.map(m => ({ page: 'modules', title: m.title, icon: m.icon, tint: m.tint,
     // Community is a row only where the server has a library (views/Modules.jsx).
     ...(m.id === 'community' ? { when: c => !!c.library } : {}),
+    // Not built into openGym Offline at all (lib/build-caps.js).
+    ...(OFFLINE_OFF_MODULES.includes(m.id) ? { net: true } : {}),
     get kw() { return MODULE_KW[m.id] + (m.id === 'seasonal' ? ' ' + seasonKw() : '') + ' module turn on off hide' } })),
   // Workout
   { page: 'workout', title: 'Automatic warm-ups', icon: 'sunrise', tint: 'var(--orange)', mod: 'plates', kw: 'warm-up warmup ramp automatic generator compounds' },
@@ -234,18 +243,18 @@ export const SEARCH = [
   { page: 'data', title: 'Backup folder', icon: 'folder', tint: 'var(--blue)', kw: 'auto backup folder location directory', when: c => c.mobile && c.android && c.autoBackup },
   { page: 'data', title: 'Import backup', icon: 'download', tint: 'var(--teal)', kw: 'import restore backup json zip' },
   { page: 'data', title: 'Import from another app', icon: 'download', tint: 'var(--teal)', kw: 'strong hevy fitnotes gymmane apple health csv import' },
-  { page: 'data', title: 'Import from Hevy', icon: 'key', tint: 'var(--teal)', kw: 'hevy api import' },
+  { page: 'data', title: 'Import from Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api import' },
   { page: 'data', title: 'Photos & videos', icon: 'image', tint: 'var(--teal)', kw: 'media storage photos videos upload', when: c => c.hasMedia },
   { page: 'data', title: 'Delete workouts only', icon: 'trash', tint: 'var(--orange)', kw: 'delete workouts history log clear fresh start keep routines' },
   { page: 'data', title: 'Reset everything', icon: 'trash', tint: 'var(--red)', kw: 'delete wipe reset erase' },
   // Integrations: the cards (lib/integrations.js cardState says where each shows)
   { page: 'integrations', title: 'Apple Health', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'apple health healthkit iphone heart rate watch', when: c => !c.mobile },
   { page: 'integrations', title: 'Health Connect', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'health connect android google fit heart rate watch', when: c => !c.mobile },
-  { page: 'integrations', title: 'Webhooks', icon: 'webhook', tint: 'var(--indigo)', mod: 'integrations', kw: 'webhook webhooks home assistant n8n ntfy node-red zapier ifttt automation notify', when: c => c.demo || !c.user || (c.integrations || []).includes('webhook') || !!c.user?.admin },
-  { page: 'integrations', title: 'Hevy', icon: 'key', tint: 'var(--teal)', kw: 'hevy api key import', when: c => !c.demo },
+  { page: 'integrations', title: 'Webhooks', net: true, icon: 'webhook', tint: 'var(--indigo)', mod: 'integrations', kw: 'webhook webhooks home assistant n8n ntfy node-red zapier ifttt automation notify', when: c => c.demo || !c.user || (c.integrations || []).includes('webhook') || !!c.user?.admin },
+  { page: 'integrations', title: 'Hevy', net: true, icon: 'key', tint: 'var(--teal)', kw: 'hevy api key import', when: c => !c.demo },
   { page: 'integrations', title: 'Import a file', icon: 'download', tint: 'var(--teal)', kw: 'import strong fitnotes hevy csv gymmane apple health export file' },
   { page: 'integrations', title: 'Spreadsheet (CSV)', icon: 'share', tint: 'var(--green)', kw: 'csv spreadsheet excel export' },
-  { page: 'integrations', title: 'MCP server', icon: 'plug', tint: 'var(--purple)', mod: 'integrations', kw: 'mcp claude desktop cursor llm agent ai model context protocol api' },
+  { page: 'integrations', title: 'MCP server', net: true, icon: 'plug', tint: 'var(--purple)', mod: 'integrations', kw: 'mcp claude desktop cursor llm agent ai model context protocol api' },
   { page: 'integrations', mod: 'health', title: 'Garmin', icon: 'watch', tint: 'var(--grey)', kw: 'garmin fenix forerunner venu watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'COROS', icon: 'watch', tint: 'var(--grey)', kw: 'coros watch heart rate' },
   { page: 'integrations', mod: 'health', title: 'Polar', icon: 'watch', tint: 'var(--grey)', kw: 'polar watch heart rate strap' },
@@ -255,22 +264,23 @@ export const SEARCH = [
   { page: 'integrations', mod: 'health', title: 'Withings', icon: 'scale', tint: 'var(--grey)', kw: 'withings scale weight body' },
   { page: 'integrations', mod: 'health', title: 'Renpho', icon: 'scale', tint: 'var(--grey)', kw: 'renpho scale weight body' },
   // About & updates
-  { page: 'about', title: 'Check for updates', icon: 'download', tint: 'var(--green)', kw: 'update apk android version', when: c => c.mobile && c.android },
+  { page: 'about', title: 'Check for updates', net: true, icon: 'download', tint: 'var(--green)', kw: 'update apk android version', when: c => c.mobile && c.android },
   { page: 'about', title: 'Get the Android app', icon: 'download', tint: 'var(--green)', kw: 'apk android download app', when: c => !c.mobile },
   { page: 'about', title: 'Show the tour again', icon: 'lightbulb', tint: 'var(--yellow)', kw: 'tour tutorials intro introduction tutorial walkthrough guide help onboarding how to start' },
   { page: 'about', title: 'Build your first plan', icon: 'calendar', tint: 'var(--yellow)', kw: 'tutorial guide routine plan create first help how to' },
   { page: 'about', title: 'Create your own exercise', icon: 'plusCircle', tint: 'var(--yellow)', kw: 'tutorial guide custom exercise own new help how to' },
   { page: 'about', title: 'Edit your data', icon: 'pencil', tint: 'var(--yellow)', kw: 'tutorial guide edit fix change workout weigh-in history correct help how to' },
   { page: 'about', title: 'Export & import', icon: 'folder', tint: 'var(--yellow)', kw: 'tutorial guide export import backup restore csv strong hevy sync help how to' },
+  { page: 'network', title: 'Requests this session', icon: 'shield', tint: 'var(--green)', kw: 'network requests offline privacy internet' },
   { page: 'about', title: 'Version', icon: 'info', tint: 'var(--grey)', kw: 'version about licence license source code open source' },
   { page: 'about', title: 'In Chrome: ⋮ menu → Add to Home screen', icon: 'share', tint: 'var(--blue)', kw: 'install app home screen tip pwa', when: c => c.installTip && c.androidWeb },
   { page: 'about', title: 'In Safari: Share → Add to Home Screen', icon: 'share', tint: 'var(--blue)', kw: 'install app home screen tip pwa', when: c => c.installTip && !c.androidWeb && !c.desktopWeb },
   { page: 'about', title: 'In Chrome or Edge: the install icon in the address bar', icon: 'share', tint: 'var(--blue)', kw: 'install app home screen tip pwa desktop', when: c => c.installTip && c.desktopWeb },
   // Account
-  { page: 'account', title: 'Sync now', icon: 'reset', tint: 'var(--acc)', kw: 'server sync upload refresh status connection', when: c => !!c.user && !c.demo && c.synced },
+  { page: 'account', title: 'Sync now', net: true, icon: 'reset', tint: 'var(--acc)', kw: 'server sync upload refresh status connection', when: c => !!c.user && !c.demo && c.synced },
   { page: 'account', title: 'Passkeys', icon: 'fingerprint', tint: 'var(--acc)', kw: 'passkey security login', when: signedInWeb },
-  { page: 'zepp', title: 'Pair a watch', icon: 'watch', tint: 'var(--orange)', kw: 'zepp amazfit watch pair balance gtr gts active t-rex bip cheetah falcon', when: c => !!c.user && !c.demo },
-  { page: 'account', title: 'Add another device', icon: 'qr', tint: 'var(--blue)', kw: 'device link code phone computer', when: c => !!c.user && !c.demo },
+  { page: 'zepp', title: 'Pair a watch', net: true, icon: 'watch', tint: 'var(--orange)', kw: 'zepp amazfit watch pair balance gtr gts active t-rex bip cheetah falcon', when: c => !!c.user && !c.demo },
+  { page: 'account', title: 'Add another device', net: true, icon: 'qr', tint: 'var(--blue)', kw: 'device link code phone computer', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Pair the mobile app', icon: 'qr', tint: 'var(--blue)', kw: 'pair phone app android iphone', when: signedInWeb },
   { page: 'account', title: 'Password', icon: 'key', tint: 'var(--orange)', kw: 'password login', when: c => signedInWeb(c) && c.pwOn },
   { page: 'account', title: 'Sign out', icon: 'signOut', tint: 'var(--red)', kw: 'log out logout sign out', when: signedInWeb },
@@ -279,8 +289,8 @@ export const SEARCH = [
   { page: 'account', title: 'Choose a photo', icon: 'image', tint: 'var(--acc)', kw: 'profile picture avatar photo icon face', when: c => !c.demo },
   { page: 'account', title: 'Account ID', icon: 'personCircle', tint: 'var(--grey)', kw: 'id uid admin account', when: c => !!c.user && !c.demo },
   { page: 'account', title: 'Admin dashboard', icon: 'crown', tint: 'var(--indigo)', kw: 'admin users dashboard', when: c => !!c.user?.admin && !c.demo },
-  { page: 'account', title: 'Disconnect', icon: 'signOut', tint: 'var(--red)', kw: 'disconnect server local', when: c => c.mobile && !!c.user },
-  { page: 'account', title: 'Connect to my server', icon: 'cloud', tint: 'var(--indigo)', kw: 'server sync self-hosted connect', when: c => c.mobile && !c.user },
+  { page: 'account', title: 'Disconnect', net: true, icon: 'signOut', tint: 'var(--red)', kw: 'disconnect server local', when: c => c.mobile && !!c.user },
+  { page: 'account', title: 'Connect to my server', net: true, icon: 'cloud', tint: 'var(--indigo)', kw: 'server sync self-hosted connect', when: c => c.mobile && !c.user },
   { page: 'account', title: 'Sign in with passkey', icon: 'fingerprint', tint: 'var(--blue)', kw: 'login sign in log in passkey', when: c => !c.mobile && !c.demo && !c.user && c.webauthn },
   { page: 'account', title: 'Sign in with password', icon: 'key', tint: 'var(--orange)', kw: 'login sign in log in password', when: c => !c.mobile && !c.demo && !c.user && c.pwOn },
   { page: 'account', title: 'Create passkey profile', icon: 'plusCircle', tint: 'var(--acc)', kw: 'register account sign up create profile', when: c => !c.mobile && !c.demo && !c.user && c.webauthn },
@@ -339,6 +349,8 @@ export function searchSettings(query, ctx, tr = t) {
     // A page under another that its own module hides (Look & Home → Seasonal themes).
     if (PAGES[e.page].mod && !pageVisible(e.page, ctx)) continue
     if (e.when && !e.when(ctx)) continue
+    // A row that needs the network is not there in openGym Offline (lib/build-caps.js).
+    if (e.net && ctx.offline) continue
     if (e.mod && ctx.mod && !ctx.mod(e.mod)) continue
     consider(e, false)
   }

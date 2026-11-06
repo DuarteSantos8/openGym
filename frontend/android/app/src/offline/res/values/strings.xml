@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- openGym Offline sits next to the normal app on the home screen: its own name. -->
+    <string name="app_name">openGym Offline</string>
+    <string name="title_activity_main">openGym Offline</string>
+</resources>

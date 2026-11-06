@@ -9,6 +9,7 @@
 // github.com's download redirect has no CORS headers for a WebView fetch anyway), checked
 // against its SHA-256 by the native Install plugin and handed to the system installer.
 
+import { logRequest } from './net-log.js'
 import { MOBILE } from './mobile.js'
 import { APK_VARIANTS, APK_VARIANT } from './apk-variant.js'
 
@@ -99,6 +100,7 @@ export async function fetchChecksum(hashUrl) {
   let text
   if (MOBILE) {
     const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem')
+    logRequest(hashUrl, { via: 'native' })
     await Filesystem.downloadFile({ url: hashUrl, path: 'opengym-update.apk.sha256', directory: Directory.Cache })
     text = (await Filesystem.readFile({ path: 'opengym-update.apk.sha256', directory: Directory.Cache, encoding: Encoding.UTF8 })).data
   } else {
@@ -179,6 +181,7 @@ export async function downloadAndInstall(url, expectedHash, onProgress = null) {
     ? await Filesystem.addListener('progress', p => onProgress(p.bytes, p.contentLength))
     : null
   try {
+    logRequest(url, { via: 'native' })
     await Filesystem.downloadFile({ url, path: UPDATE_FILE, directory: Directory.Cache, progress: !!onProgress })
   } finally {
     await listener?.remove()

@@ -69,8 +69,17 @@ export const PRESET = Object.fromEntries(PRESETS.map(p => [p.id, p]))
 
 const isMap = v => !!v && typeof v === 'object' && !Array.isArray(v)
 
+// Modules this build cannot have at all (lib/build-caps.js: the Coach, Integrations and Community
+// in openGym Offline, which has no network). Off whatever S.modules says, and not offered on the
+// Modules page; the choice itself is kept, so the same profile on a normal build is unchanged.
+let unavailable = new Set()
+export function setUnavailableModules(ids) { unavailable = new Set(Array.isArray(ids) ? ids : []) }
+/** Whether this build has module `id` at all. */
+export const moduleBuilt = id => !unavailable.has(id)
+
 /** Whether module `id` is on for this profile. Unknown ids are on (a newer client's module). */
 export function isOn(S, id) {
+  if (unavailable.has(id)) return false
   const v = isMap(S?.modules) ? S.modules[id] : undefined
   if (typeof v === 'boolean') return v
   // Before 1.4.4 the check-in had its own switch in Look & Home; it decides until Modules does.
@@ -94,9 +103,11 @@ export function presetModules(presetId) {
 /** 'training' | 'body' | 'all' when the modules match a preset exactly, else 'custom'. */
 export function presetOf(S) {
   const now = moduleStates(S)
+  // A module this build lacks is left out of the comparison: "Everything" is still everything here.
+  const ids = MODULE_IDS.filter(moduleBuilt)
   for (const p of PRESETS) {
     const want = presetModules(p.id)
-    if (MODULE_IDS.every(id => now[id] === want[id])) return p.id
+    if (ids.every(id => now[id] === want[id])) return p.id
   }
   return 'custom'
 }
