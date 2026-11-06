@@ -48,6 +48,18 @@ function Vital({ label, value, unit, usual }) {
   </div>
 }
 
+// One computation per workout list (the store keeps the same array until a workout changes), so
+// coming back to Stats does not walk the whole history again.
+let perfCache = null
+export function cachedPerformance(S) {
+  // Everything workoutPerformance reads: the 1RM formula and what counts towards volume too.
+  const key = [S.workouts, S.unit, S.oneRmFormula, S.volumeWarmups, S.volumeBodyweight, S.bodyweight]
+  if (perfCache && perfCache.key.every((k, i) => k === key[i])) return perfCache.perf
+  const perf = workoutPerformance(S)
+  perfCache = { key, perf }
+  return perf
+}
+
 export default function DailyFormCard({ S }) {
   const [h, setH] = useState(null)
   const [platform, setPlatform] = useState(null)
@@ -61,12 +73,15 @@ export default function DailyFormCard({ S }) {
   }, [])
   const vitals = h?.readVitals ? h.vitals : null
   const today = todayISO()
-  const perf = useMemo(() => workoutPerformance(S), [S.workouts, S.unit, S.formula]) // eslint-disable-line react-hooks/exhaustive-deps
-  const insights = useMemo(() => formInsights(S, { vitals, perf }), [perf, S.dayForm, vitals]) // eslint-disable-line react-hooks/exhaustive-deps
   const days = formDays(S)
   const vs = vitals ? vitalsSummary(vitals, today) : null
   const anyVital = vs && Object.values(vs).some(Boolean)
   const offer = offerCheckin(S)
+  // The comparison reads every workout (about 120 ms over 2,000 of them), so only for the card that
+  // shows it: not for the one-time offer, not when the card is not there at all.
+  const needPerf = days.length > 0 || !!anyVital || S.dailyForm === true
+  const perf = useMemo(() => (needPerf ? cachedPerformance(S) : []), [needPerf, S.workouts, S.unit, S.oneRmFormula, S.volumeWarmups, S.volumeBodyweight, S.bodyweight]) // eslint-disable-line react-hooks/exhaustive-deps
+  const insights = useMemo(() => (needPerf ? formInsights(S, { vitals, perf }) : []), [needPerf, perf, S.dayForm, vitals]) // eslint-disable-line react-hooks/exhaustive-deps
   if (!days.length && !anyVital && S.dailyForm !== true && !offer) return null
   // Asked once, here and never on Start: switched on, the check-in opens before the next workout.
   const setOn = v => useStore.getState().update(s => { s.dailyForm = v })
