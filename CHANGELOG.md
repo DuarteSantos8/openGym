@@ -6,6 +6,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Journal, check-in reminders, blood pressure and recovery**
+- Journal: every note in one feed (workout, exercise and set notes, the always-on ones, routine tips, check-in notes, day notes, sauna notes), filtered by kind, exercise, dates, words or "with photos". Save a filter as a folder, open a note whole, jump to its workout, or pin it at a gym (Stats → More → Journal).
+- Notes per gym: "seat 4, pad 2" pinned at one gym shows on that exercise only while that gym is active, and a pin without an exercise sits at the top of every workout there. Pin from the journal or write it in the exercise's note (⋯ → Add note → Only at …).
+- Check-in reminders: how often for each measurement, the weigh-in, blood pressure and progress photos, at one morning time, bundled into one notification on the day anything is due. On the phone as a local notification, in the browser as a web push (Body measurements → Check-in reminders, also in Progress photos and Settings → Notifications).
+- Blood pressure and pulse (#313): systolic over diastolic in one field, charted as two lines, in the CSV export and back in on import (Body measurements → Fields → Blood pressure and pulse). A check-in can carry a note too.
+- Recovery sessions: sauna, ice bath, massage, mobility or an easy walk with how long it took, in History and the calendar. Not a workout, so the streak leaves it alone unless you say so (Settings → Look & Home → Recovery counts for the streak; #313).
+- Delete workouts only: clears the training log, or only what came before a date, and keeps routines, settings, gyms and body data. Offers a backup first and an Undo after (Settings → Data & backup).
+
 **Tempo, rest sounds, backups, calendar and Strava**
 - Tempo per exercise or per set, like 3-1-1-0: set it in the exercise's settings or for one set from its menu. The workout shows it on the exercise, and a tap starts a guide that counts every rep through lower, pause, lift and squeeze, with a tone and a buzz per phase you can hear from the floor. It goes along in the CSV export and import, shared plans and the sync (#572, idea by @WENeko).
 - A sound for each kind of rest: after a warm-up, between working sets, between superset rounds and before the next exercise can each end with their own sound, built-in or one of yours, on the phone's lock-screen alarm too (Settings → Timer alerts → Sound; #165, idea by @kurktchiev).

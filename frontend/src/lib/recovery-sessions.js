@@ -2,7 +2,7 @@
 // taps with how long it took. They are not workouts: no sets, no volume, no PRs, and they stay out
 // of everything that reads S.workouts. They show in History and the month calendar beside the
 // workouts, in the journal when they carry a note, and they count for the week streak only when
-// the profile asks for it (`S.recoveryStreak`, Settings → Workout → Streak; the walk is
+// the profile asks for it (`S.recoveryStreak`, Settings → Look & Home; the walk is
 // api/coach/core/streak.js, shared with the server so a trainer sees the same number).
 //
 // Stored one entry per session, keyed by its id, the way day photos are (lib/day-photos.js):

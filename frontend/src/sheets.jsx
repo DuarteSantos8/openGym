@@ -3328,7 +3328,7 @@ function DayOverride({ iso, close }) {
       </div>
     </div>}
     {/* Recovery sessions on this day (lib/recovery-sessions.js), and a way to log one on a past day or today. */}
-    {(recs.length > 0 || iso <= todayISO()) && <div className="list" style={{ marginBottom: 14 }}>
+    {(recs.length > 0 || iso <= todayISO()) && <div className="day-note day-recov" style={{ marginBottom: 14 }}>
       {recs.map(r => <RecoveryRow key={r.id} r={r} showDate={false} />)}
       {iso <= todayISO() && <div className="item rec-row" {...tappable(() => { close(); recoverySheet({ day: iso }) })}>
         <span className="lrow-i rec-i" aria-hidden="true"><Icon name="sparkles" /></span>

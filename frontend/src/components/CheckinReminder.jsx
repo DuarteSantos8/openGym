@@ -63,8 +63,9 @@ function CheckinReminder({ close }) {
       {keys.map(k => {
         const label = checkinLabel(S, k, t)
         if (!label) return null
-        return <SelectRow key={k} title={label} sheetTitle={label} value={r.items[k]?.every || 0}
-          options={choices.some(c => c.value === r.items[k]?.every) ? choices : [...choices, { value: r.items[k].every, label: everyLabel(r.items[k].every) }]}
+        const cur = r.items[k]?.every || 0
+        return <SelectRow key={k} title={label} sheetTitle={label} value={cur}
+          options={choices.some(c => c.value === cur) ? choices : [...choices, { value: cur, label: everyLabel(cur) }]}
           onChange={v => setEvery(k, Number(v) || 0)} />
       })}
     </Section>}
@@ -83,8 +84,8 @@ export const checkinReminderSheet = () => useUI.getState().openSheet(close => <C
 export function CheckinReminderRow() {
   const S = useStore(s => s.S)
   const r = reminderOf(S)
-  const n = Object.keys(r.items).length
-  return <Row icon="ruler" iconTint="var(--teal)" title={t('Check-in reminders')} accessory="chevron"
-    value={r.on && n ? String(n) : t('Off')} onClick={checkinReminderSheet} />
+  const on = r.on && Object.keys(r.items).length > 0
+  return <Row icon={on ? 'bell' : 'bellSlash'} iconTint="var(--orange)" title={t('Check-in reminders')} accessory="chevron"
+    value={on ? t('On') : t('Off')} onClick={checkinReminderSheet} />
 }
 

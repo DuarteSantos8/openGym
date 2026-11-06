@@ -11,8 +11,7 @@ import {
   measurementUnitLabel, zeroIsReading, lengthUnitOf, BP_KEY, pairKeys, bpOf, bpText, bpSeries, bpProblem,
   MEASUREMENT_NOTE_MAX,
 } from '../lib/measurements.js'
-import { checkinReminderSheet } from '../components/CheckinReminder.jsx'
-import { reminderOf } from '../lib/checkin-reminder.js'
+import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { fmtDate, fmtNum, todayISO, uid } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import LineChart from '../components/LineChart.jsx'
@@ -270,7 +269,6 @@ export default function Measurements() {
   const previous = all.at(-2)
   const delta = !isBp && latest && previous ? Math.round((latest.y - previous.y) * 10) / 10 : null
   const latestBp = isBp && latest ? bpOf(S.measurements.find(e => e.d === latest.d)) : null
-  const reminderOn = reminderOf(S).on
   const recent = [...S.measurements].reverse()
 
   const remove = entry => confirmSheet({
@@ -284,7 +282,6 @@ export default function Measurements() {
     <div className="hdr">
       <button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Body measurements')}</h1><div className="sub">{t('Circumference & composition')}</div></div>
-      <button className={'iconbtn' + (reminderOn ? ' on' : '')} onClick={checkinReminderSheet} aria-label={t('Check-in reminders')} title={t('Check-in reminders')}><Icon name={reminderOn ? 'bell' : 'bellSlash'} /></button>
       <button className="iconbtn" onClick={manageMeasurementsSheet} aria-label={t('Choose measurements')}><Icon name="gear" /></button>
     </div>
 
@@ -315,6 +312,9 @@ export default function Measurements() {
 
     <HealthBodyCard unit={S.unit} />
 
+    {/* Check-in reminders (components/CheckinReminder.jsx): how often, bundled into one notification. */}
+    <div className="sect-b" style={{ marginBottom: 14 }}><CheckinReminderRow /></div>
+
     {!available.length && <div className="card">
       <div className="muted small">{t('Choose the measurements you want to track, then log your first check-in.')}</div>
       <div style={{ height: 10 }} /><Button onClick={manageMeasurementsSheet}>{t('Choose measurements')}</Button>
@@ -325,7 +325,8 @@ export default function Measurements() {
       <Button size="sm" variant="ghost" icon="gear" onClick={manageMeasurementsSheet}>{t('Fields')}</Button>
     </div>
     {recent.length ? <div className="list">{recent.map(entry => {
-      const count = MEASUREMENT_KEYS.filter(k => entry[k] != null).length + (entry.other || []).filter(o => o.value != null).length
+      // Blood pressure is one reading, though two numbers (#313).
+      const count = MEASUREMENT_KEYS.filter(k => k !== 'bpDia' && entry[k] != null).length + (entry.other || []).filter(o => o.value != null).length
       const bp = bpOf(entry)
       const previewFields = enabledMeasurementFields(S).filter(f => !f.pair).map(f => ({ field: f, value: shownValue(entry, f, lengthUnitOf(S)) })).filter(x => x.value != null).slice(0, bp ? 2 : 3)
       return <div className="card measure-history" key={entry.d}>

@@ -4032,3 +4032,5 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .measure-bp .bp-slash{color:var(--label-3);font-size:var(--fs-title3)}
 .measure-note{margin-top:10px}
 .measure-history .measure-note-line{margin-top:6px;font-size:var(--fs-footnote);color:var(--label-2);white-space:pre-wrap;overflow-wrap:anywhere}
+/* A day's recovery sessions in the day sheet (sheets.jsx DayOverride), stacked like a list. */
+.day-recov{display:flex;flex-direction:column;gap:8px}
