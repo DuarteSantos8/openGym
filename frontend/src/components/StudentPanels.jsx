@@ -9,7 +9,7 @@ import { exLine } from '../lib/history.js'
 import { buildPlanBundle } from '../lib/plan-share.js'
 import { workoutVolume, setsDone } from '../lib/history.js'
 import { studentPerformance } from '../lib/student-progress.js'
-import { workoutExport, saveText } from '../lib/admin-export.js'
+import { workoutExport, planExport, saveText } from '../lib/admin-export.js'
 import { confirmSheet, menuSheet } from '../sheets.jsx'
 import StudentPlanSheet from './StudentPlanSheet.jsx'
 import Icon from './Icon.jsx'
@@ -32,6 +32,23 @@ export function useStudentDoc(id) {
 
 /* ------------------------------------------------------------------ plans (fichas) */
 
+// Another student to send one of these plans to: the same inbox, the same one-tap acceptance.
+function PickStudentSheet({ fromId, bundle, close }) {
+  const toast = useUI(s => s.toast)
+  const me = useStore(s => s.user)
+  const [list, setList] = useState(null)
+  useEffect(() => { api('/api/admin/users').then(r => setList(r.users.filter(u => u.id !== fromId && u.id !== me?.id && !u.admin && !u.disabled))).catch(e => toast(e.message)) }, [])
+  const send = u => api('/api/admin/user/plan', { method: 'POST', body: JSON.stringify({ id: u.id, bundle }) })
+    .then(r => { toast(t('Sent. {0} waiting for {1}.', r.pending, u.name)); close() }).catch(e => toast(e.message))
+  return <>
+    <h3>{t('Send “{0}” to…', bundle.name)}</h3>
+    <div className="adm-lead">{t('Pick the student who gets a copy. They add it with one tap; nothing of theirs changes before that.')}</div>
+    {!list ? <div className="muted small">{t('Loading…')}</div> : list.map(u => <button key={u.id} className="btn" style={{ marginBottom: 8 }} onClick={() => send(u)}>{u.name}</button>)}
+    {list && !list.length && <div className="adm-empty">{t('There is no other student to send it to.')}</div>}
+    <Button variant="ghost" className="dim" onClick={close}>{t('Cancel')}</Button>
+  </>
+}
+
 export function FichasPanel({ d, canDelete, act, reload }) {
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
@@ -46,9 +63,13 @@ export function FichasPanel({ d, canDelete, act, reload }) {
     confirmText: t('Delete'), danger: true,
     onConfirm: () => act('/api/admin/user/routines/delete', { routines: [String(r.id)] }, x => toast(t('{0} deleted', x.removed)))
   })
+  const save = f => saveText(f).then(() => toast(t('File saved'))).catch(() => { /* share sheet dismissed */ })
+  const copyTo = r => openSheet(done => <PickStudentSheet fromId={u.id} bundle={JSON.parse(planExport(d, [String(r.id)]).text)} close={done} />)
   const menu = r => menuSheet({
     title: r.name,
     items: [
+      { icon: 'download', label: t('Download plan file'), sub: t('The file the Plan tab imports'), onClick: () => save(planExport(d, [String(r.id)])) },
+      { icon: 'share', label: t('Send to another student…'), onClick: () => copyTo(r) },
       { icon: r.archived ? 'reset' : 'folder', label: r.archived ? t('Restore') : t('Archive'), sub: r.archived ? t('Not archived any more') : t('Marks it as archived for you; the student keeps it'), onClick: () => archive(r, !r.archived) },
       canDelete && { icon: 'trash', label: t('Delete'), danger: true, onClick: () => remove(r) }
     ]
@@ -109,6 +130,10 @@ export function FichasPanel({ d, canDelete, act, reload }) {
         </div>}
       </div>)}
     </div> : <div className="adm-empty">{t('No plans yet.')}</div>}
+    {d.routines.length > 0 && <>
+      <button className="btn" style={{ margin: '12px 0 4px' }} onClick={() => save(planExport(d, null))}>{t('Download all plans')}</button>
+      <div className="adm-hint">{t('A plan file can be imported in the Plan tab, or used to start a new plan for another student.')}</div>
+    </>}
   </>
 }
 
@@ -158,9 +183,15 @@ export function WorkoutsPanel({ d, canDelete, act }) {
     confirmText: t('Delete'), danger: true,
     onConfirm: () => act('/api/admin/user/workouts/delete', { workouts: ids }, r => { done(); toast(t('{0} deleted', r.removed)) })
   })
-  const download = (ids, format) => saveText(workoutExport(d, ids, format)).then(() => toast(t('File saved'))).catch(() => { /* share sheet dismissed */ })
+  const download = (ids, format) => {
+    const f = workoutExport(d, ids, format)
+    // A workout nobody ticked a set in has nothing to put in a spreadsheet; the JSON still has it.
+    if (format === 'csv' && f.rows === 0) { toast(t('Those workouts have no completed sets, so the spreadsheet would be empty. The JSON still has them.')); return Promise.resolve() }
+    return saveText(f).then(() => toast(t('File saved'))).catch(() => { /* share sheet dismissed */ })
+  }
   const downloadMenu = ids => menuSheet({
     title: ids ? t('Download {0} workout(s)', ids.length) : t('Download all workouts'),
+    subtitle: t('This is the workout history, not a plan. To copy a plan, use Plans.'),
     items: [
       { icon: 'download', label: t('Spreadsheet (CSV)'), sub: t('One row per set, opens in Excel or Sheets'), onClick: () => download(ids, 'csv') },
       { icon: 'download', label: 'JSON', sub: t('Everything as stored'), onClick: () => download(ids, 'json') }

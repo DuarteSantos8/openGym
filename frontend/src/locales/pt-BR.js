@@ -4,6 +4,22 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  "A plan file can be imported in the Plan tab, or used to start a new plan for another student.": "Um arquivo de ficha pode ser importado na aba Plano, ou usado para começar uma ficha nova para outro aluno.",
+  "Download all plans": "Baixar todas as fichas",
+  "Download plan file": "Baixar arquivo da ficha",
+  "Loaded. Change anything you like before sending.": "Carregada. Mude o que quiser antes de enviar.",
+  "Loaded. {0} exercise(s) in it do not exist here and were left out.": "Carregada. {0} exercício(s) dela não existem aqui e ficaram de fora.",
+  "Pick the student who gets a copy. They add it with one tap; nothing of theirs changes before that.": "Escolha o aluno que recebe uma cópia. Ele adiciona com um toque; nada muda para ele antes disso.",
+  "Plan of {0}": "Ficha de {0}",
+  "Send to another student…": "Enviar para outro aluno…",
+  "Send “{0}” to…": "Enviar “{0}” para…",
+  "Start from a plan file": "Começar de um arquivo de ficha",
+  "That plan file has no routines.": "Esse arquivo de ficha não tem rotinas.",
+  "The file the Plan tab imports": "O arquivo que a aba Plano importa",
+  "There is no other student to send it to.": "Não há outro aluno para receber.",
+  "This is the workout history, not a plan. To copy a plan, use Plans.": "Este é o histórico de treinos, não uma ficha. Para copiar uma ficha, use Fichas.",
+  "Those workouts have no completed sets, so the spreadsheet would be empty. The JSON still has them.": "Esses treinos não têm séries concluídas, então a planilha ficaria vazia. O JSON ainda os tem.",
+  "this file is a workout history, not a plan. Download the plan from the student’s Plans tab, or use “Export plan file” in the Plan options": "este arquivo é um histórico de treinos, não uma ficha. Baixe a ficha na aba Fichas do aluno, ou use “Exportar arquivo do plano” nas opções do Plano",
   "Account and access": "Conta e acesso",
   "An invite code is single use. Whoever joins with it becomes your student automatically.": "O código de convite vale uma vez. Quem entrar com ele vira seu aluno automaticamente.",
   "As the owner you can download the workouts of any profile on this server, in one file.": "Como owner, você pode baixar os treinos de qualquer perfil deste servidor, em um só arquivo.",

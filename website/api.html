@@ -5924,22 +5924,12 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow">
     <span class="p-name">customEx</span>
     <span class="p-type">object[]</span>
-    <span class="p-desc">Names of the profile's own exercises, for exports.</span>
+    <span class="p-desc">The profile's own exercises as stored (at most 200), for exports.</span>
   </div>
   <div class="prow">
-    <span class="p-name">customEx[].id</span>
-    <span class="p-type">string</span>
-    <span class="p-desc"></span>
-  </div>
-  <div class="prow">
-    <span class="p-name">customEx[].n</span>
-    <span class="p-type">string</span>
-    <span class="p-desc"></span>
-  </div>
-  <div class="prow">
-    <span class="p-name">customEx[].bp</span>
-    <span class="p-type">string</span>
-    <span class="p-desc"></span>
+    <span class="p-name">week</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Weekday (0 Sunday to 6) to the ids of the routines on it.</span>
   </div>
   <div class="prow">
     <span class="p-name">pending</span>
@@ -6000,6 +5990,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">routines[].archived</span>
     <span class="p-type">boolean</span>
     <span class="p-desc">The teacher archived it (the student keeps it).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].prog</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">The progression rule</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].excludeFromProgression</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
   </div>
   <div class="prow">
     <span class="p-name">routines[].ex</span>

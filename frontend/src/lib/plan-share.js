@@ -292,6 +292,11 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   const notPlan = () => Object.assign(new Error(t('this isn’t an openGym plan file')), { code: 'not-plan' })
   let data = raw
   if (typeof raw === 'string') { try { data = JSON.parse(raw) } catch { throw notPlan() } }
+  // A workout history (what an admin downloads from a student's Workouts) looks like a plan file at
+  // a glance and is not one: say what it is instead of the blunt refusal.
+  if (data && typeof data === 'object' && !Array.isArray(data) && !data.opengym_plan && Array.isArray(data.workouts)) {
+    throw Object.assign(new Error(t('this file is a workout history, not a plan. Download the plan from the student’s Plans tab, or use “Export plan file” in the Plan options')), { code: 'not-plan' })
+  }
   const destination = planUnit(destinationUnit)
   if (!data || typeof data !== 'object' || Array.isArray(data) || !data.opengym_plan || !Array.isArray(data.routines) || !destination) {
     throw notPlan()

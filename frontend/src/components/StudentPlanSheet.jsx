@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { api } from '../lib/api.js'
@@ -6,7 +6,7 @@ import { uid, exerciseNameText, DAYS } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { exLine, pickedExerciseConfig } from '../lib/history.js'
 import { exOr } from '../lib/exercises.js'
-import { buildPlanBundle } from '../lib/plan-share.js'
+import { buildPlanBundle, parsePlan } from '../lib/plan-share.js'
 import { exercisePicker, exConfigSheet } from '../sheets.jsx'
 import { Button } from './ui.jsx'
 import Icon from './Icon.jsx'
@@ -24,6 +24,26 @@ export default function StudentPlanSheet({ student, onSent, close }) {
   const [name, setName] = useState(t('Plan for {0}', student.name))
   const [routines, setRoutines] = useState(() => [{ id: uid(), name: t('Routine {0}', 'A'), ex: [], days: [] }])
   const [busy, setBusy] = useState(false)
+  const [brought, setBrought] = useState([])      // custom exercises that came with a plan file
+  const fileRef = useRef(null)
+
+  // Start from a plan file (a student's plan downloaded from the Plans tab, or one exported from
+  // anyone's Plan tab) instead of from nothing; everything stays editable before it is sent.
+  const loadFile = f => {
+    if (!f) return
+    const rd = new FileReader()
+    rd.onload = () => {
+      try {
+        const p = parsePlan(rd.result, unit)
+        if (!p.routines.length) return toast(t('That plan file has no routines.'))
+        setRoutines(p.routines.map(r => ({ ...r, id: r.id || uid(), ex: r.ex, days: WEEK.filter(d => [].concat(p.week?.[d] || []).includes(r.id)) })))
+        setBrought(p.customEx)
+        if (p.name) setName(p.name)
+        toast(p.dropped ? t('Loaded. {0} exercise(s) in it do not exist here and were left out.', p.dropped) : t('Loaded. Change anything you like before sending.'))
+      } catch (e) { toast(e?.code === 'not-plan' ? t('Import failed: {0}', e.message) : t('Couldn’t read that file.')) }
+    }
+    rd.readAsText(f)
+  }
 
   const edit = (id, fn) => setRoutines(rs => rs.map(r => (r.id === id ? fn({ ...r, ex: r.ex.slice(), days: r.days.slice() }) : r)))
   const addRoutine = () => setRoutines(rs => [...rs, { id: uid(), name: t('Routine {0}', letter(rs.length)), ex: [], days: [] }])
@@ -49,7 +69,9 @@ export default function StudentPlanSheet({ student, onSent, close }) {
     const week = {}
     for (const d of WEEK) { const ids = ready.filter(r => r.days.includes(d)).map(r => r.id); if (ids.length) week[d] = ids }
     // The teacher's own custom exercises travel with the plan when it uses them (buildPlanBundle).
-    const S = { unit, routines: ready.map(r => ({ id: r.id, name: r.name.trim() || t('Routine'), ex: r.ex })), week, customEx: useStore.getState().S.customEx || [] }
+    const mine = useStore.getState().S.customEx || []
+    const customEx = [...mine, ...brought.filter(c => !mine.some(m => m.id === c.id))]
+    const S = { unit, routines: ready.map(({ days, ...r }) => ({ ...r, name: r.name.trim() || t('Routine') })), week, customEx }
     const bundle = buildPlanBundle(S, name.trim() || t('Plan for {0}', student.name))
     api('/api/admin/user/plan', { method: 'POST', body: JSON.stringify({ id: student.id, bundle }) })
       .then(r => { toast(t('Sent. {0} waiting for {1}.', r.pending, student.name)); onSent?.(); close() })
@@ -60,6 +82,8 @@ export default function StudentPlanSheet({ student, onSent, close }) {
     <h3>{t('Plan for {0}', student.name)}</h3>
     <div className="adm-pill acc" style={{ margin: '0 0 8px', display: 'inline-block' }}>{t('Not your own plan: this one is for {0}.', student.name)}</div>
     <div className="adm-lead">{t('Build the routines here. {0} adds the plan with one tap; nothing of theirs changes before that.', student.name)}</div>
+    <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={e => { loadFile(e.target.files?.[0]); e.target.value = '' }} />
+    <Button size="sm" icon="download" onClick={() => fileRef.current?.click()} style={{ marginBottom: 8 }}>{t('Start from a plan file')}</Button>
     <input className="input" value={name} onChange={e => setName(e.target.value)} aria-label={t('Plan name')} placeholder={t('Plan name')} maxLength={80} style={{ marginBottom: 10 }} />
     {routines.map(r => <div key={r.id} className="card" style={{ marginBottom: 10 }}>
       <div className="row between" style={{ gap: 8 }}>

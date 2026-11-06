@@ -4917,13 +4917,14 @@ components:
         plannedDays: { type: integer, minimum: 0, maximum: 7, description: Weekdays the plan puts a routine on. }
         customEx:
           type: array
-          description: Names of the profile's own exercises, for exports.
-          items:
-            type: object
-            properties:
-              id: { type: string }
-              n: { type: string }
-              bp: { type: string }
+          description: The profile's own exercises as stored (at most 200), for exports.
+          items: { type: object }
+        week:
+          type: object
+          description: Weekday (0 Sunday to 6) to the ids of the routines on it.
+          additionalProperties:
+            type: array
+            items: { type: string }
         pending:
           type: array
           description: Plans sent and not yet accepted.
@@ -4945,6 +4946,8 @@ components:
               emoji: { type: string }
               count: { type: integer, description: Number of exercises. }
               archived: { type: boolean, description: The teacher archived it (the student keeps it). }
+              prog: { description: The progression rule, when the routine has one. }
+              excludeFromProgression: { type: boolean }
               ex:
                 type: array
                 description: The exercises as stored (id, sets, reps, weight, ...), at most 60.

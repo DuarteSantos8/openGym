@@ -158,7 +158,7 @@ test('a teacher cannot be their own student, and no other admin can be anyone\'s
 /* Deleting and archiving a student's workouts. */
 const wk = (id, d) => ({ id, d, name: id, start: Date.parse(d + 'T10:00:00Z'), end: Date.parse(d + 'T11:00:00Z'), entries: [{ id: '0001', sets: [{ w: 50, r: 8, done: true }] }] });
 const states = () => ({
-  sA: { _rev: 3, _ts: 1000, workouts: [wk('w1', '2026-10-01'), wk('w2', '2026-10-02')], routines: [{ id: 'r1', name: 'A', ex: [{ id: '0001', sets: 3, reps: 10 }] }, { id: 'r2', name: 'B', ex: [] }], week: { 1: ['r1', 'r2'], 3: ['r1'] }, dayPlan: { '2026-11-10': 'r1', '2026-11-11': 'r2' } },
+  sA: { _rev: 3, _ts: 1000, workouts: [wk('w1', '2026-10-01'), wk('w2', '2026-10-02')], routines: [{ id: 'r1', name: 'A', prog: 'linear', ex: [{ id: '0001', sets: 3, reps: 10 }] }, { id: 'r2', name: 'B', ex: [] }], customEx: [{ id: 'cx1', n: 'Cable fly', bp: 'chest' }], week: { 1: ['r1', 'r2'], 3: ['r1'] }, dayPlan: { '2026-11-10': 'r1', '2026-11-11': 'r2' } },
   sB: { _rev: 1, workouts: [wk('x1', '2026-10-01')], routines: [] },
   owner: { _rev: 1, workouts: [wk('o1', '2026-10-01')], routines: [] }
 });
@@ -238,4 +238,15 @@ test('a teacher sees what is waiting for a student and takes a plan back', async
   const gone = await call('tA', 'POST', '/api/admin/user/plan/cancel', { id: 'sA', plan: d.pending[0].id });
   assert.deepEqual([gone.status, gone.body.pending], [200, 0]);
   assert.deepEqual((await call('sA', 'GET', '/api/plan-inbox')).body.plans, []);
+});
+
+test('the drill-down carries what a plan file is made of: contents, weekdays, rules and the student\'s own exercises', async t => {
+  const call = await startScoped(t, states());
+  const d = (await call('tA', 'GET', '/api/admin/user?id=sA')).body;
+  assert.deepEqual(d.routines.map(r => [r.id, r.ex.length, r.prog || null]), [['r1', 1, 'linear'], ['r2', 0, null]]);
+  assert.deepEqual(d.week, { 1: ['r1', 'r2'], 3: ['r1'] });
+  assert.deepEqual(d.customEx.map(c => c.id), ['cx1']);
+  // A profile with none of it still answers with the same shape.
+  const bare = (await call('tB', 'GET', '/api/admin/user?id=sB')).body;
+  assert.deepEqual([bare.week, bare.customEx], [{}, []]);
 });

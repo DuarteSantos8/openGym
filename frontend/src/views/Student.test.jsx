@@ -131,6 +131,21 @@ describe('Student (one page)', () => {
     expect(text).toContain('Plan from Teacher')
     expect(text).toContain('Legs A')
   })
+  it('offers to download a plan, send it to another student, or download them all', async () => {
+    const page = render(<Student />)
+    await settle()
+    expect(button(page, 'Download all plans')).toBeTruthy()
+    act(() => page.querySelector('button[aria-label="Plan options"]').click())
+    const labels = mocks.sheets.at(-1).menu.items.filter(Boolean).map(i => i.label)
+    expect(labels).toEqual(expect.arrayContaining(['Download plan file', 'Send to another student…', 'Archive', 'Delete']))
+  })
+  it('explains in the download menu that workouts are a history, not a plan', async () => {
+    const page = render(<Student />)
+    await settle()
+    act(() => button(page, 'Workouts').click())
+    act(() => button(page, 'Download all').click())
+    expect(mocks.sheets.at(-1).menu.subtitle).toMatch(/not a plan/)
+  })
   it('takes back a plan that has not been added yet', async () => {
     const page = render(<Student />)
     await settle()

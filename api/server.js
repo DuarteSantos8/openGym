@@ -2919,11 +2919,13 @@ const routes = {
       },
       unit: S.unit || 'kg',
       lastSync: lastSyncOf(u, S),
-      routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length, ex: records(r.ex).slice(0, 60), ...(u.archivedRoutines?.[r.id] ? { archived: true } : {}) })),
+      routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length, ex: records(r.ex).slice(0, 60), ...(r.prog ? { prog: r.prog } : {}), ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}), ...(u.archivedRoutines?.[r.id] ? { archived: true } : {}) })),
       // Plans sent and not yet accepted, so the teacher sees what is on its way and can take one back.
       pending: (Array.isArray(u.planInbox) ? u.planInbox : []).map(p => ({ id: p.id, name: p.name || '', from: p.from || '', at: p.at || 0, routines: Array.isArray(p.bundle?.routines) ? p.bundle.routines.length : 0 })),
-      // The custom exercises' names, so an export of their workouts can say them.
-      customEx: records(S.customEx).map(c => ({ id: c.id, n: c.n, bp: c.bp })),
+      // The profile's own exercises (names for a workout export, the whole definition for a plan file).
+      customEx: records(S.customEx).slice(0, 200),
+      // The weekdays each routine is on, so a plan file can carry the schedule.
+      week: record(S.week) ? Object.fromEntries([0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week[d] || []).length).map(d => [d, [].concat(S.week[d]).map(String).slice(0, 20)])) : {},
       // Weekdays the plan puts a routine on: what "sessions a week" is measured against.
       plannedDays: record(S.week) ? [0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week[d] || []).length).length : 0,
       bodyweight: records(S.bodyweight),
