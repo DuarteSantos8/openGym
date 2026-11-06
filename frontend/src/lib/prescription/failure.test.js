@@ -71,6 +71,19 @@ describe('planned failure selection', () => {
     rows[2].reps = 6
     expect(verdictOf(all, summarizeActual(all, rows)).success).toBe(false)
   })
+  it('a planned failure set does not bring back into the effort floor the sets spec 11 leaves out (logged to failure, Max, AMRAP)', () => {
+    const r = rule('linear', { reps: { min: 5, max: 5 }, rir: { min: 2, max: 3 } })
+    // Set 2 marked "Taken to failure" by the lifter, set 3 planned to failure: only set 1 is an ordinary set.
+    const rows = [{ row: 0, reps: 5, rir: 2 }, { row: 1, reps: 7, rir: 0, failure: true }, { row: 2, reps: 8, rir: 0, failure: true }].map(s => ({ ...s, load: { value: 20, unit: 'kg' } }))
+    const plain = prescribe({}, r), planned = prescribe({ failureSets: [3] }, r)
+    expect(verdictOf(plain, summarizeActual(plain, rows)).success).toBe(true)
+    expect(summarizeActual(planned, rows).progressionRir).toBe(2)
+    expect(verdictOf(planned, summarizeActual(planned, rows)).success).toBe(true)
+    rows[1] = { ...rows[1], failure: undefined, max: true }
+    expect(verdictOf(planned, summarizeActual(planned, rows)).success).toBe(true)
+    rows[0].rir = 1
+    expect(verdictOf(planned, summarizeActual(planned, rows)).success).toBe(false)
+  })
   it('marks both limbs of selected timed sets, excludes warmups and leaves logged rows alone', () => {
     const rows = [{ phase: 'warmup' }, { side: 'L', sec: 30 }, { side: 'R', sec: 30 }, { side: 'L', sec: 30 }, { side: 'R', sec: 30, done: true }]
     expect(applyFailurePlan(rows, { mode: 'time', failureSets: [1] }).map(r => !!r.failure)).toEqual([false, true, true, false, false])

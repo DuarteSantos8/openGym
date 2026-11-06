@@ -307,7 +307,7 @@ Occurrence (`routine.ex[j]`):
 | `failureSets?` | Planned failure: `'all'`, `'last'`, or one-based set numbers such as `[1, 3]`; applies to work sets in reps or timed-hold mode |
 | `lastToFailure?` | Legacy last-only flag; used when `failureSets` is absent |
 
-Failure selection is frozen with new prescriptions as `failureSets` and `rows[].failure`. It never marks warm-ups; a timed L/R pair is one selected set. Selected rows retain the minimum reps or duration but may exceed the range maximum. RIR 0 on those planned rows is recorded normally; `actual.progressionRir` is the least RIR of the other deciding rows, so planned failure does not defeat a positive RIR floor. No migration or history rewrite is needed.
+Failure selection is frozen with new prescriptions as `failureSets` and `rows[].failure`. It never marks warm-ups; a timed L/R pair is one selected set. Selected rows retain the minimum reps or duration but may exceed the range maximum. RIR 0 on those planned rows is recorded normally; `actual.progressionRir` is the least RIR of the other deciding rows that are ordinary sets (not AMRAP, not Max, not marked taken to failure in the log), the same sets `actual.rir` reads, so planned failure does not defeat a positive RIR floor. No migration or history rewrite is needed.
 
 ### 3.4 `PlanRule` and its program
 
@@ -1053,23 +1053,30 @@ start asks for both choices. The end policy is `stop`, as the old programme was 
 week. The reference preference is the Config one (`S.refUpdates`, default ask); no reference
 decision, review or acknowledgement is created.
 
-### Editing a programme
+### The editor
 
-Plan → Programmes still edits a programme's weeks as legacy weeks (%1RM and RPE per lift, a deload
-flag), through the bridge in `lib/programmes.js` (`legacyWeeksOf`, `setLegacyWeek(s)`), until the
-programme editor replaces it. A week edit changes the definition in place: only that week's %1RM
-(`own: 'set'` at `percent_1rm`, the occurrence's phase for a week that had none), its RPE (`effort`)
-and its deload (`kind: 'recovery', close: 'calendar'`, an inherited week's `deload` factor), and the
-entry `seed` that an inherited week right after a fixed one needs (spec 6). Every other week, a week
-the Coach fixed (sets, reps, a weight, rest), each track's `policy`, `tm`, `refs` and slots, the
-schedule (its mode, order and sequence), `needs`, `src` and every id stay as they were. The length
-stepper keeps the weeks it keeps and copies the last one into a new one, without its deload. "Use my
-current plan" converts the weeks onto the plan's schedule, and an exercise it still plans keeps its
-own track. A running or paused programme keeps how it counts (weeks or rounds): the run reads its
-mode from the definition frozen at its start, so `saveProgramme` refuses a change of
-`schedule.mode` while it runs, whatever the route, and a Coach programme change keeps the schedule
-it revises (only its weeks change). Another exercise in an exercise's place
-(`replaceSlotExercise`) keeps neither its adopted `ref` nor its `refs`.
+The programme editor (Plan → Programmes → a programme, `views/Programmes.jsx`) edits the
+contract-1 definition in place; nothing converts it again from legacy weeks. Its helpers in
+`lib/programmes.js` each return a new definition with every stage id kept: `setSchedule` (calendar
+weeks with appointments, a preferred day each and an optional order, or a rotation counted in
+rounds; choosing one clears `needs: ['binding']`), `setDuration` (a new week copies the last work
+week without its seed), `setTarget`, `setStageKind` (work, recovery that needs its sessions done by
+default, rest), `copyStage`, `moveStage`, `linkSlots` (the same exercise with the same load meaning
+only), `applyTemplate` (`five_three_one` on a training max, or `copy`) and `setTrackChoice`
+(proposed policy, 1RM preference, training max). A week set by hand starts from the occurrence's
+first phase with its steps removed; a kept reps chain without its load step asks hold or reset
+(`resetOnCarry`), and a step new to a week asks its seed. `checkedEdit` saves only what
+`validateProgramme` passes against today's routines: it drops a slot whose occurrence is gone, adds
+a track for an occurrence new to the scheduled routines, and clears `repair`. A running or paused
+programme keeps how it counts (weeks or rounds): the run reads its mode from the definition frozen
+at its start, so `saveProgramme` refuses a change of `schedule.mode` while it runs, whatever the
+route, and a Coach programme change keeps the schedule it revises (only its weeks change). Weeks the Coach set,
+and each track's `policy`, `tm` and `refs`, are never rebuilt by an edit of another week. The PR2
+bridge (`legacyWeeksOf`, `setLegacyWeek(s)`) is gone; a format-1 plan file still goes through
+`convertLegacyProgramme`. The routine editor writes `routine.refs` and `occurrence.refs` (the
+exercise sheet, for a rule that needs a 1RM) and keeps the adopted `occurrence.ref` when the
+exercise is saved again; another exercise in its place (`replaceSlotExercise`) keeps neither
+`ref` nor `refs`.
 
 A session of a running programme is placed (`slotFor`) on the run's own date for its start
 (`dateIn(start, run.tz)`), the frame its saved work is read back in, never the device's date.

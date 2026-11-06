@@ -5,14 +5,14 @@
 import { useState } from 'react'
 import Icon from './Icon.jsx'
 import Stepper from './Stepper.jsx'
-import { Button, Row, Segmented, SelectButton, SelectRow, Switch } from './ui.jsx'
+import { Button, PickRow, Row, Segmented, SelectButton, SelectRow, Switch } from './ui.jsx'
 import { t } from '../lib/i18n.js'
 import { exerciseNameText, fmtNum, fmtSpread } from '../lib/format.js'
 import { EXIDX } from '../lib/exercises.js'
 import { durationSheet } from './DurationWheel.jsx'
 import { REST_MAX, fmtRest } from '../lib/duration.js'
 import { pyramidLabel, PYRAMID_PRESETS, PYRAMID_MAX, MAX_PYRAMID_SETS } from '../lib/pyramid.js'
-import { INCREMENT_TYPES, PRESETS, PRESET_IDS, defaultDeload, defaultPlanRule, editPlan, isTemplateRule, planOptions, pyramidDirection, rptOffsets, validatePlanRule } from '../lib/prescription/index.js'
+import { INCREMENT_TYPES, PRESETS, PRESET_IDS, defaultDeload, defaultPlanRule, editPlan, isTemplateRule, needsOneRm, planOptions, pyramidDirection, rptOffsets, validatePlanRule } from '../lib/prescription/index.js'
 
 export const PRESET_LABEL = {
   manual: 'Manual', linear: 'Linear', greyskull: 'Greyskull LP',
@@ -53,7 +53,7 @@ function RangeToggle({ ranged, onToggle }) {
 // policy (PRESETS[preset].ranges): 'fixed' one value, 'range' from/to, 'either' the planner's
 // choice. A fixed value is stored as min === max, so an 'either' field opened to a range keeps
 // showing from/to (open) until it is toggled back.
-function RangeField({ label, value, step = 1, policy = 'range', onChange }) {
+export function RangeField({ label, value, step = 1, policy = 'range', onChange }) {
   const [open, setOpen] = useState(false)
   const ranged = policy === 'range' || (policy === 'either' && (open || value.min !== value.max))
   const toggle = () => { if (ranged) onChange({ min: value.min, max: value.min }); setOpen(!ranged) }
@@ -158,12 +158,27 @@ function RungList({ rungs, regress, pickExercise, onChange }) {
   </div>
 }
 
+/**
+ * Whether a newer 1RM is offered for this exercise (occurrence.refs, spec 6.1), only for a rule that
+ * works from a 1RM: its default named with where it comes from (`fallback`, refPreference without
+ * the occurrence's own), asking, or keeping the 1RM it adopted (`adopted`).
+ */
+export function ReferenceRow({ value = 'inherit', adopted = null, fallback, onChange }) {
+  const word = pref => (pref === 'keep' ? t('Keep the one in use') : t('Ask me first'))
+  return <PickRow icon="chartLine" iconTint="var(--teal)" title={t('New 1RM estimates')} value={value} onChange={onChange} options={[
+    { value: 'inherit', label: t('Use my default ({0})', word(fallback.pref)), subtitle: fallback.from === 'routine' ? t('Set for this routine') : t('Set in Settings') },
+    { value: 'ask', label: t('Ask me') },
+    { value: 'keep', label: adopted ? t('Keep {0}', `${fmtNum(adopted.value)} ${adopted.unit}`) : t('Keep the 1RM it starts with') },
+  ]} />
+}
+
 // `restDefault`: the exercise takes the profile's rest (`defaultRest`) instead of its own; the wheel's 0:00 says so.
 // `tab` ('target' | 'progression') lays the form out as the exercise sheet's two tabs: both panels
 // stay mounted and the other one is hidden, so a field keeps what was typed while you switch.
 // Without it the editor is one flat form, Progression then Target. `extra` closes the Target form
-// with what the caller owns beside the rule (the sheet's sets to failure).
-export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, oneRm = null, restDefault = false, defaultRest = 90, onRestDefault, hidePreset = false, onChange, tab, extra = null, pickExercise = null }) {
+// with what the caller owns beside the rule (the sheet's sets to failure). `reference`: the
+// occurrence's 1RM preference (ReferenceRow's props), shown when the rule needs a 1RM.
+export default function RuleEditor({ rule, unit, effort, assisted = false, bodyweight = false, oneRm = null, restDefault = false, defaultRest = 90, onRestDefault, hidePreset = false, onChange, tab, extra = null, pickExercise = null, reference = null }) {
   const def = PRESETS[rule.preset]
   // The template's numbers (planOptions): the plan's sets, reps, load… and its extras (offsets, rungs…).
   const p = planOptions(rule)
@@ -183,6 +198,7 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       options={PRESET_IDS.filter(id => id !== 'triple' || !bodyweight || (p.load.mode === 'absolute' && p.load.value > 0) || rule.preset === 'triple').map(id => ({ value: id, label: t(PRESET_LABEL[id]), subtitle: t(PRESET_HINT[id]) }))} />
   </div>
   const errorLine = errors.length > 0 && <div className="small" role="alert" style={{ color: 'var(--red)', margin: '10px 0 14px' }}>{errors[0]}</div>
+  const refRow = reference && needsOneRm(rule) && <div className="sect-b" style={{ marginBottom: 14 }}><ReferenceRow {...reference} /></div>
   const panel = (name, children) => <div key={name} role="tabpanel" id={`xc-panel-${name}`} aria-labelledby={`xc-tab-${name}`} hidden={tab !== name}>{children}</div>
   // A program edited past its template (an import, a future builder) is shown, not edited: rebuilding
   // it from these numbers would drop what the template does not know. Choosing a template replaces it.
@@ -191,10 +207,11 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       {presetRow}
       <div className="small dim" style={{ marginBottom: 14 }}>{t('This plan was set up outside the editor. Pick a progression to replace it.')}</div>
     </>
-    if (tab) return <>{panel('target', <>{notice}{extra}</>)}{panel('progression', notice)}{errorLine}</>
+    if (tab) return <>{panel('target', <>{notice}{refRow}{extra}</>)}{panel('progression', notice)}{errorLine}</>
     return <>
       <h4 className="sec">{t('Progression')}</h4>
       {notice}
+      {refRow}
       {extra}
       {errorLine}
     </>
@@ -443,6 +460,7 @@ export default function RuleEditor({ rule, unit, effort, assisted = false, bodyw
       </div>
       {p.rir && <div className="small dim" style={{ marginTop: 6 }}>{t(phase.success.effort === 'ignore' ? 'progression.rir.ignoredHelp' : phase.exit?.type === 'exposures' ? 'progression.rir.scheduleHelp' : phase.progression.some(op => op.when === 'worked') ? 'progression.rir.doubleHelp' : !phase.progression.length && !phase.exit ? 'progression.rir.manualHelp' : 'progression.rir.floorHelp')}</div>}
     </div>}
+    {refRow}
     {extra}
   </>
   if (tab) return <>{panel('progression', progressionBody)}{panel('target', <>{presetBlock}{targetBody}</>)}{errorLine}</>

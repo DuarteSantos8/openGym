@@ -10,8 +10,8 @@ import { defaultPlanRule, planPhase } from '../lib/prescription/index.js'
 import { finishWorkout, finishWorkoutSheet } from '../sheets.jsx'
 import { discardedFor } from '../lib/watch-sync.js'
 import { isWarmupRow } from '../lib/workout-model.js'
-import { migratedFixture } from '../lib/test-fixtures.js'
-import { setLegacyWeeks, startProgramme } from '../lib/programmes.js'
+import { legacyProgramme, migratedFixture } from '../lib/test-fixtures.js'
+import { startProgramme } from '../lib/programmes.js'
 import { todayISO } from '../lib/format.js'
 
 const menuItemsOf = menu => (menu.sections ? menu.sections.flatMap(g => g.more ? g.more.flatMap(s => s.items || []) : g.items || []) : menu.items || []).filter(Boolean)
@@ -1158,7 +1158,7 @@ async function mountProgrammeSession({ tick = false, role = null } = {}) {
     ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }, { id: '0043', sets: 3, reps: 5, weight: 80 }] }] }),
     restSec: 90, sound: false, effort: 'none', gifSize: 'full', exWeights: {}, dayPlan: {}, programme: null,
   }
-  S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{}, {}], S, { days: { [new Date().getDay()]: ['r1'] } }) }
+  S.programmes = { P: legacyProgramme(S, { id: 'P', name: 'Block', at: 1, weeks: [{}, {}], days: { [new Date().getDay()]: ['r1'] } }) }
   const advance = { onFailure: 'advance', onSkipped: 'advance' }
   expect(startProgramme(S, 'P', { policies: Object.fromEntries(S.programmes.P.tracks.map(tr => [tr.id, advance])), end: 'stop', today, now: Date.now() })).toEqual({ ok: true })
   const exposures = buildSessionExposures(S, S.routines[0], { now: Date.now(), newId: x => x })

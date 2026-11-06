@@ -10,9 +10,9 @@ vi.mock('@capacitor/filesystem', () => ({
 }))
 
 import { NATIVE_BACKUP_FILE, nativeBackupOnce, writeAutoBackup } from './mobile.js'
-import { migratedFixture } from './test-fixtures.js'
+import { legacyProgramme, migratedFixture } from './test-fixtures.js'
 import { buildSessionExposures } from './session-start.js'
-import { programmeView, setLegacyWeeks, skipSlot, startProgramme } from './programmes.js'
+import { programmeView, skipSlot, startProgramme } from './programmes.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 
 beforeEach(() => files.clear())
@@ -59,7 +59,7 @@ describe('a full backup of a profile with a programme run', () => {
     const S = migratedFixture({ unit: 'kg', weekStart: 1, routines: [{ id: 'A', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }], workouts: [] })
     S.week = { 1: ['A'] }
     S.oneRepMaxes = { b100: { id: 'b100', exerciseId: '0025', value: 100, unit: 'kg', source: 'manual', capturedAt: '2026-10-01T00:00:00.000Z' } }
-    S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ rpe: 7, t: { '0025': { pct: 75 } } }, { rpe: 8, t: { '0025': { pct: 80 } } }], S, { days: { 1: ['A'] } }) }
+    S.programmes = { P: legacyProgramme(S, { id: 'P', name: 'Block', at: 1, weeks: [{ rpe: 7, t: { '0025': { pct: 75 } } }, { rpe: 8, t: { '0025': { pct: 80 } } }], days: { 1: ['A'] } }) }
     startProgramme(S, 'P', { policies: { 't:P:A:o0': { onFailure: 'repeat', onSkipped: 'advance' } }, end: 'extend', today: '2026-10-19' })
     const now = Date.parse('2026-10-19T17:00:00Z')
     const exposures = buildSessionExposures(S, S.routines[0], { now, newId: x => x })

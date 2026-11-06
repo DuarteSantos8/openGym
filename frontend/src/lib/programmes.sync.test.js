@@ -3,9 +3,9 @@
 import { describe, it, expect } from 'vitest'
 import { mergeStates, stampEdits, resetIdsOf, sinceReset } from './sync-merge.js'
 import { stampPut } from '../../../api/sync-stamps.js'
-import { migratedFixture } from './test-fixtures.js'
+import { legacyProgramme, migratedFixture } from './test-fixtures.js'
 import { buildSessionExposures } from './session-start.js'
-import { programmeView, setLegacyWeeks, setRunEnd, skipSlot, startProgramme } from './programmes.js'
+import { programmeView, setRunEnd, skipSlot, startProgramme } from './programmes.js'
 
 const clone = v => JSON.parse(JSON.stringify(v))
 const T = 1_800_000_000_000
@@ -67,7 +67,7 @@ describe('a programme run in the sync (engine contract 1)', () => {
   function running() {
     const s = migratedFixture({ unit: 'kg', weekStart: 1, routines: [{ id: 'A', name: 'A', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 60 }] }, { id: 'B', name: 'B', ex: [{ id: '0043', sets: 3, reps: 5, weight: 80 }] }], workouts: [] })
     Object.assign(s, { _ts: T, week: {}, programmes: {}, programme: null })
-    const def = setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ rpe: 7 }, { rpe: 8 }], s, { days: { 1: ['A'], 4: ['B'] } })
+    const def = legacyProgramme(s, { id: 'P', name: 'Block', at: 1, weeks: [{ rpe: 7 }, { rpe: 8 }], days: { 1: ['A'], 4: ['B'] } })
     s.programmes = { P: def }
     startProgramme(s, 'P', { policies: Object.fromEntries(def.tracks.map(t => [t.id, ADVANCE])), end: 'stop', today: '2026-10-19', now: T })
     return stampEdits(null, s, T)

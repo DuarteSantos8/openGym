@@ -95,7 +95,7 @@ import { failureFieldsOf, failureSetRange, failureSetsOf } from './lib/failure-s
 import { occurrenceTargets } from './lib/occurrence-view.js'
 import { profileRule } from './lib/prescription/vocabulary.js'
 import { auditFields, badgeFor, programmeLine } from './views/history-outcome.js'
-import { acceptOffer, bypassOf, bypassTo, programmeById, refWhen, reviewOffer, sessionChoices } from './lib/programmes.js'
+import { acceptOffer, bypassOf, bypassTo, programmeById, refPreference, refWhen, reviewOffer, sessionChoices } from './lib/programmes.js'
 import { findingText } from './lib/progression-copy.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { stampWorkout } from './lib/sync-merge.js'
@@ -2166,6 +2166,10 @@ function ExConfig({ ex, existing: stored, initial, onSave, onDelete, onReplace, 
   // No rest of its own: the profile's rest, whatever it is later (the wheel's 0:00).
   const [restDefault, setRestDefault] = useState(() => !!existing?.restFromProfile)
   const [note, setNote] = useState(() => existing?.note || '')
+  // Whether a newer 1RM is offered for this exercise of a routine (spec 6.1): its own, else the
+  // routine's or Settings'. Only where a routine's own slot is edited (the routine editor), not a workout's.
+  const [refs, setRefs] = useState(() => existing?.refs ?? 'inherit')
+  const ownsRefs = !!routine && !freestyle && backupsEditable
   const speedUnit = speedUnitOf(st)
   // The load of an assistance machine is the help given: the rule steps it down (issue #232).
   const [assistMode, setAssistMode] = useState(() => assistModeOf(existing))
@@ -2228,7 +2232,8 @@ function ExConfig({ ex, existing: stored, initial, onSave, onDelete, onReplace, 
     const trimmedNote = (note || '').trim().slice(0, 500)
     // A saved config replaces the occurrence, so what this sheet does not edit rides along: a
     // machine marked (not) assisted, a ramp's own rest, an exercise kept out of progression.
-    const kept = Object.fromEntries(['excludeFromProgression'].filter(key => existing?.[key] != null).map(key => [key, existing[key]]))
+    // The 1RM it adopted stays adopted (spec 10.1): an edit is no reason to take a newer one.
+    const kept = Object.fromEntries(['excludeFromProgression', ...(existing?.ref?.exerciseId === ex.id ? ['ref'] : [])].filter(key => existing?.[key] != null).map(key => [key, existing[key]]))
     const saved = {
       ...kept,
       ...(assistMode !== 'auto' ? { assisted: assistMode === 'on' } : {}),
@@ -2249,6 +2254,7 @@ function ExConfig({ ex, existing: stored, initial, onSave, onDelete, onReplace, 
       ...(canBackoff && backoff ? { backoff: true } : {}),
       ...(!cardio && bw !== isBodyweightEq(ex.id) ? { bodyweight: bw } : {}),
       ...(trimmedNote ? { note: trimmedNote } : {}),
+      ...(ownsRefs && ['ask', 'keep'].includes(refs) ? { refs } : {}),
     }
     onSave(storedTarget(live, ex.id, saved, stored))
   }
@@ -2326,7 +2332,8 @@ function ExConfig({ ex, existing: stored, initial, onSave, onDelete, onReplace, 
           onChange={v => setCardioCfg(x => ({ ...x, incline: clampIncline(v) }))} />}
       </div>)}
       {panel('progression', <div className="small dim">{t('Cardio uses intervals, duration and speed. Strength progression templates do not apply.')}</div>)}
-    </> : <RuleEditor tab={tab} hidePreset={freestyle === 'add'} rule={rule} unit={st.unit} oneRm={oneRmForMeaning(st, rule.exerciseId, currentDbLoad(st, rule.exerciseId))} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} pickExercise={exercisePicker} onChange={next => {
+    </> : <RuleEditor tab={tab} hidePreset={freestyle === 'add'} rule={rule}
+      reference={ownsRefs ? { value: refs, adopted: existing?.ref?.exerciseId === ex.id ? existing.ref : null, fallback: refPreference(st, { routine, occ: {} }), onChange: setRefs } : null} unit={st.unit} oneRm={oneRmForMeaning(st, rule.exerciseId, currentDbLoad(st, rule.exerciseId))} effort={effortOf(st) !== 'none'} assisted={assisted} bodyweight={bw} pickExercise={exercisePicker} onChange={next => {
       setRule(next)
       if (next.preset === 'greyskull' && !failureDecided.current) setFailure('last')
     }}

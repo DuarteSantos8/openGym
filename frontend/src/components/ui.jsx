@@ -122,7 +122,8 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // options: [{ value, label, icon? }]  — the selected pill slides between cells.
 // `tour`: the app tour's anchor for this control (data-tour, lib/tour.js); likewise below.
 // `ariaLabelledby` names the choice for a screen reader by its visible label (a group of
-// pressed buttons otherwise reads as three loose words).
+// pressed buttons otherwise reads as three loose words). An option may be `disabled`, with
+// `describedBy` the id of the line that says why.
 export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby }) {
   const i = options.findIndex(o => o.value === value)
   // Nothing chosen yet (a choice the person has to make, lib/programmes.js): no segment raised.
@@ -135,6 +136,8 @@ export function Segmented({ options, value, onChange, className = '', tour, aria
           key={o.value}
           className={o.value === value ? 'on' : ''}
           aria-pressed={o.value === value}
+          disabled={o.disabled}
+          aria-describedby={o.describedBy}
           onClick={() => onChange(o.value)}
         >
           {o.icon && <Icon name={o.icon} />}
@@ -362,6 +365,13 @@ export function SelectRow({ icon, iconTint, title, value, options, onChange, she
     <Row icon={icon} iconTint={iconTint} title={title} value={cur ? cur.label : value} accessory="chevron" onClick={open}
       className={stackedValue ? 'lrow-stack-value' : ''} />
   )
+}
+
+/** A choice with long answers (Programmes, the exercise sheet): a row that opens the picker, the answer
+ *  chosen shown under its title where it wraps (a segmented control or a row value cuts it on a phone). */
+export function PickRow({ icon, iconTint, title, value, options, onChange }) {
+  return <Row icon={icon} iconTint={iconTint} title={title} subtitle={options.find(o => o.value === value)?.label} accessory="chevron"
+    onClick={() => openSelectSheet({ title, value, options, onChange })} />
 }
 
 /** The picker sheet of SelectRow on its own, for a control that is not a row (Stats' menu buttons). */

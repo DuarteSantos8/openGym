@@ -237,7 +237,7 @@ describe('stageRule', () => {
     const { preset, ...bare } = occRule()
     const rule = compile(set(week()), { rule: bare })
     expect(preset).toBe('linear')
-    expect(rule.preset).toBe('autoregulated')
+    expect(rule.preset).toBe('manual')
     expect(gen(rule).rows).toHaveLength(3)
   })
 })

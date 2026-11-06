@@ -10,8 +10,8 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import Home from './Home.jsx'
 import { swapActiveWorkoutExercise, workoutDetailSheet } from '../sheets.jsx'
-import { migratedFixture, ruleOccurrence } from '../lib/test-fixtures.js'
-import { programmeView, setLegacyWeeks, startProgramme } from '../lib/programmes.js'
+import { legacyProgramme, migratedFixture, ruleOccurrence } from '../lib/test-fixtures.js'
+import { programmeView, startProgramme } from '../lib/programmes.js'
 import { buildSessionExposures, occurrenceFor } from '../lib/session-start.js'
 import { entriesForExposures } from '../lib/session-ui-adapter.js'
 import { buildCompletedSession } from '../lib/finish-session.js'
@@ -47,7 +47,7 @@ function running({ days, weeks = [{}, {}], ordered = false, startedOn, policy = 
     { id: 'r2', name: 'Legs', ex: [{ id: '0043', sets: 3, reps: 5, weight: 80 }] },
   ] })
   const S = { ...useStore.getState().S, ...base, weighIn: false, week: {}, dayPlan: {}, programmes: {}, programme: null, queue: null, rotation: null, scheduleMode: null, ...more }
-  const def = setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, weeks, S, { days })
+  const def = legacyProgramme(S, { id: 'P', name: 'Block', at: 1, weeks, days })
   S.programmes = { P: ordered ? { ...def, schedule: { ...def.schedule, ordered: true } } : def }
   expect(startProgramme(S, 'P', { policies: Object.fromEntries(def.tracks.map(t => [t.id, policy(t)])), end, today: startedOn, now: Date.parse(startedOn + 'T08:00:00') })).toEqual({ ok: true })
   useStore.setState({ S, A: null })

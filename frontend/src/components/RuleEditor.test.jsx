@@ -617,3 +617,51 @@ describe('RuleEditor: chain steps', () => {
     for (const b of rows().flatMap(r => [...r.querySelectorAll('button')])) expect(b.getAttribute('aria-label') || b.textContent.trim()).toBeTruthy()
   })
 })
+
+describe('the 1RM preference (spec 6.1)', () => {
+  const pct = () => editPlan(ruleOf('linear'), { load: { mode: 'percent_1rm', percent: 70 }, step: { type: 'percentage_points', value: 2.5 } })
+  const refRow = within => [...within.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent === 'New 1RM estimates')
+  // The row's picker opens through the bound UI (sheetFn above): its options, and one tapped.
+  const pickIn = (within, label) => {
+    act(() => refRow(within).click())
+    const sheet = document.createElement('div'); document.body.appendChild(sheet)
+    const r2 = createRoot(sheet)
+    act(() => r2.render(sheetFn(() => {})))
+    const options = [...sheet.querySelectorAll('button.lrow')].map(b => b.textContent)
+    if (label) act(() => [...sheet.querySelectorAll('button.lrow')].find(b => b.querySelector('.lrow-t').textContent === label).click())
+    act(() => r2.unmount()); sheet.remove()
+    return options
+  }
+
+  it('the reference row shows only for a rule that needs a 1RM, names where the default comes from, and writes occurrence.refs', async () => {
+    const reference = { value: 'inherit', adopted: null, fallback: { pref: 'ask', from: 'config' }, onChange: vi.fn() }
+    render({ rule: linear(), reference })
+    expect(refRow(host)).toBeUndefined()
+    render({ rule: pct(), reference })
+    expect(refRow(host).querySelector('.lrow-s').textContent).toBe('Use my default (Ask me first)')
+    expect(pickIn(host)).toEqual(['Use my default (Ask me first)Set in Settings', 'Ask me', 'Keep the 1RM it starts with'])
+
+    // In a routine's exercise sheet: the routine says keep, the occurrence adopted 100 kg.
+    const { exConfigSheet } = await import('../sheets.jsx')
+    const { useUI } = await import('../store/useUI.js')
+    const { useStore } = await import('../store/useStore.js')
+    useStore.setState(s => ({ S: { ...s.S, unit: 'kg', refUpdates: 'ask' } }))
+    useUI.setState({ sheets: [] })
+    const ref = { id: 'b1', exerciseId: '0025', value: 100, unit: 'kg', source: 'estimated', capturedAt: '2026-10-20T10:00:00.000Z' }
+    const occ = { occurrenceId: 'o1', exerciseId: '0025', rule: { ...pct(), exerciseId: '0025' }, ref }
+    const onSave = vi.fn()
+    exConfigSheet(EXIDX['0025'], occ, onSave, null, { id: 'r1', name: 'Push', refs: 'keep', ex: [occ] }, null, null, undefined, { backups: true })
+    const sheet = useUI.getState().sheets.at(-1)
+    const sheetHost = document.createElement('div'); document.body.appendChild(sheetHost)
+    const r = createRoot(sheetHost)
+    const draw = () => act(() => r.render(sheet.render(() => {})))
+    draw()
+    expect(refRow(sheetHost).querySelector('.lrow-s').textContent).toBe('Use my default (Keep the one in use)')
+    expect(pickIn(sheetHost, 'Ask me')).toEqual(['Use my default (Keep the one in use)Set for this routine', 'Ask me', 'Keep 100 kg'])
+    draw()
+    expect(refRow(sheetHost).querySelector('.lrow-s').textContent).toBe('Ask me')
+    act(() => [...sheetHost.querySelectorAll('button')].find(b => b.textContent.trim() === 'Save').click())
+    expect(onSave.mock.calls[0][0]).toMatchObject({ refs: 'ask', ref })
+    act(() => r.unmount()); sheetHost.remove()
+  })
+})

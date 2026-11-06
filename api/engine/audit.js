@@ -93,8 +93,10 @@ export function summarizeActual(prescription, performed) {
   const durationSeconds = least(deciding.map(s => s.durationSeconds))
   const speed = least(deciding.map(s => s.speed))
   // Spec 11: AMRAP, Max and to-failure (`failure`) sets are not ordinary sets, so the effort floor reads the others.
-  const rir = least(deciding.filter(s => !s.failure && !s.max && !rows[s.row]?.amrap && !rows[s.row]?.max).map(s => normalizeEffort(s).rir))
-  const progressionRir = least(deciding.filter(s => !rows[s.row]?.failure).map(s => normalizeEffort(s).rir))
+  const ordinary = s => !s.failure && !s.max && !rows[s.row]?.amrap && !rows[s.row]?.max
+  const rir = least(deciding.filter(ordinary).map(s => normalizeEffort(s).rir))
+  // With sets planned to failure the verdict reads this one: those rows left out as well.
+  const progressionRir = least(deciding.filter(s => ordinary(s) && !rows[s.row]?.failure).map(s => normalizeEffort(s).rir))
   const rpes = deciding.map(s => s.rpeEntered).filter(Number.isFinite)
   return {
     sets: done,

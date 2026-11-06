@@ -7,7 +7,8 @@ import { exView, shownWeight, storedWeight, withExUnit } from './ex-unit.js'
 import { convertStateUnit } from './units.js'
 import { sessionVolume } from './history.js'
 import { routineChangesFromEntry, updateRoutineFromEntry } from './routine-update.js'
-import { setLegacyWeeks, startProgramme } from './programmes.js'
+import { startProgramme } from './programmes.js'
+import { legacyProgramme } from './test-fixtures.js'
 
 const BENCH = '0025'
 const profile = (over = {}) => ({ engineSchemaVersion: 2, unit: 'kg', routines: [], workouts: [], prescriptions: {}, progression: {}, oneRepMaxes: {}, ...over })
@@ -42,7 +43,7 @@ describe('new main features on the v2 session path', () => {
   it('freezes programme targets and excludes its deload from advancement', () => {
     const r = routine(100)
     const S = profile({ routines: [r], oneRepMaxes: { one: { id: 'one', exerciseId: BENCH, value: 120, unit: 'kg', capturedAt: '2026-10-01T12:00:00Z', source: 'manual' } } })
-    S.programmes = { p: setLegacyWeeks({ id: 'p', name: 'P', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ deload: true, t: { [BENCH]: { pct: 75, rpe: 7 } } }], S, { days: { 1: ['r'] } }) }
+    S.programmes = { p: legacyProgramme(S, { id: 'p', name: 'P', at: 1, weeks: [{ deload: true, t: { [BENCH]: { pct: 75, rpe: 7 } } }], days: { 1: ['r'] } }) }
     // A heavier session in history does not move it: the run adopted the 120 kg 1RM at its start.
     S.workouts.push({ id: 'previous', d: '2026-10-01', exposures: [{ exerciseId: BENCH, performance: { sets: [{ role: 'work', status: 'completed', resistance: { kind: 'external-load', value: 100, unit: 'kg' }, observations: [{ metric: 'repetitions', value: 5 }] }] } }] })
     expect(startProgramme(S, 'p', { policies: { 't:p:o': { onFailure: 'advance', onSkipped: 'advance' } }, end: 'stop', today: '2026-10-19', now: ctx.now })).toEqual({ ok: true })

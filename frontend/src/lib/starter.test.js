@@ -3,7 +3,7 @@ import { planPhase } from './prescription/index.js'
 import { EXIDX } from './exercises.js'
 import { ALL_EQUIPMENT, eqAvailable } from './equipment.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions, starterRoutines, starterProgrammeOptions, buildStarterProgramme } from './starter.js'
-import { legacyWeeksOf, programmeRoutineIds } from './programmes.js'
+import { programmeRoutineIds } from './programmes.js'
 import { validateProgramme } from './prescription/index.js'
 
 // The approved prescription, written out again rather than imported: a test that reads the
@@ -206,8 +206,13 @@ describe('starter programmes (#159)', () => {
       expect(programme.needs).toBeUndefined()
       expect(validateProgramme(programme, { routines }).ok).toBe(true)
       expect(programmeRoutineIds({ routines }, programme).sort()).toEqual(routines.map(r => r.id).sort())
-      // Every week as written reads back unchanged through the editor's bridge.
-      expect(legacyWeeksOf(programme)).toEqual(legacy.weeks)
+      // Every week as written: each lift's %1RM, its RPE and the deload as a recovery week.
+      for (const tr of programme.tracks) tr.stages.forEach((st, i) => {
+        const w = legacy.weeks[i], x = st.targets[tr.slots[0].oid], own = w.t?.[`${tr.slots[0].rid}:${tr.exerciseId}`] ?? w.t?.[tr.exerciseId] ?? {}
+        expect(st.kind).toBe(w.deload ? 'recovery' : 'work')
+        expect(x.own === 'set' ? x.phase.parameters.load.percent : null).toBe(own.pct ?? null)
+        expect(x.effort?.rpe ?? null).toBe(own.rpe ?? w.rpe ?? null)
+      })
     }
     expect(buildStarterProgramme('nope', 'X')).toBeNull()
   })

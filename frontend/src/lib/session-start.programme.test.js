@@ -7,11 +7,11 @@ import { buildCombinedExposures } from './session-merge.js'
 import { historyAsOf } from './backfill.js'
 import { buildCompletedSession } from './finish-session.js'
 import { entriesForExposures } from './session-ui-adapter.js'
-import { migratedFixture } from './test-fixtures.js'
+import { migratedFixture, weekPcts } from './test-fixtures.js'
 import { isWarmupRow } from './workout-model.js'
 import { mergeStates } from './sync-merge.js'
 import { contentHash, defaultPlanRule, generatePrescription, slotFor, slotInputs } from './prescription/index.js'
-import { programmeView, startProgramme, saveProgramme, setLegacyWeek, legacyWeeksOf, discardEvents, bypassOf } from './programmes.js'
+import { programmeView, startProgramme, saveProgramme, setTarget, discardEvents, bypassOf } from './programmes.js'
 import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
@@ -170,11 +170,16 @@ describe('a session of a running programme', () => {
     const S = running(profile(), { ...BLOCK, days: { 1: ['A'], 4: ['A'] } })
     finish(S, session(S, 'A', '2026-10-19T10:00:00Z'))
     const def = S.programmes.P
-    saveProgramme(S, setLegacyWeek(setLegacyWeek(def, 0, { rpe: 7, t: { [BENCH]: { pct: 85 } } }, S), 1, { rpe: 8, t: { [BENCH]: { pct: 90 } } }, S), Date.parse('2026-10-20T09:00:00Z'))
+    // Weeks 1 and 2 of the bench raised to 85 and 90 %, as the editor does it (setTarget, the rest of the week kept).
+    const pct = (d, i, percent) => {
+      const tr = d.tracks.find(t => t.exerciseId === BENCH), st = tr.stages[i], x = st.targets[tr.slots[0].oid]
+      return setTarget(d, tr.id, st.id, tr.slots[0].oid, { ...x, phase: { ...x.phase, parameters: { ...x.phase.parameters, load: { mode: 'percent_1rm', percent } } } })
+    }
+    saveProgramme(S, pct(pct(def, 0, 85), 1, 90), Date.parse('2026-10-20T09:00:00Z'))
     const amends = Object.values(S.programmeEvents).filter(e => e.type === 'amend')
     expect(amends).toHaveLength(1)
     expect(amends[0].def.rev).toBe(def.rev + 1)
-    expect(legacyWeeksOf(amends[0].def)[0].t[BENCH].pct).toBe(85)
+    expect(weekPcts(amends[0].def, BENCH)[0]).toBe(85)
     // Thursday of the started week keeps its 75 %; next week takes the edit.
     const thu = session(S, 'A', '2026-10-22T10:00:00Z')
     expect(work(S, benchOf(thu))).toEqual([75, 75, 75])

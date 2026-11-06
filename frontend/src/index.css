@@ -1110,6 +1110,7 @@ body.chips-dragging *{cursor:inherit}
 .seg button .icn{font-size:var(--fs-callout)}
 .seg button:not(.on){color:var(--label-2);font-weight:400}
 .seg button:active{transform:scale(var(--press-scale))}
+.seg button:disabled{opacity:.4;cursor:default}
 /* sitting in a list row: shrink to content instead of filling the row. The control never
    shrinks below its labels, so a row whose title and control do not both fit — most translated
    packs at 390px: "Übungs-Animationen" against "Voll · Klein · Aus" — wraps the control onto its

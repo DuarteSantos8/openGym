@@ -9,14 +9,14 @@ import { uid, exerciseNameText, exCount, fmtNum } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { supersetUnits, moveRoutineEntry, cleanupSg, effortOf } from '../lib/history.js'
 import { Thumb } from '../components/Media.jsx'
-import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, menuSheet, printPlanSheet, quickOccurrence, supersetSheet } from '../sheets.jsx'
+import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, menuSheet, printPlanSheet, quickOccurrence, supersetSheet, referenceSheet } from '../sheets.jsx'
 import { PRESET_LABEL } from '../components/RuleEditor.jsx'
 import { occurrenceChips, occurrenceTargets, plannedSets } from '../lib/occurrence-view.js'
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
 import { glyphOf } from '../lib/glyphs.js'
-import { Button, Row, Switch } from '../components/ui.jsx'
+import { Button, PickRow, Row, Switch } from '../components/ui.jsx'
 import { shareRoutineSheet } from '../components/RoutineShare.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { workoutControls } from '../lib/workout-controls.js'
@@ -25,6 +25,8 @@ import { markEntryUndone } from '../lib/sync-merge.js'
 import BodyMap from '../components/BodyMap.jsx'
 import { loadOfRoutine, rankOf, MUSCLE_NAME } from '../lib/muscles.js'
 import { viewTarget } from '../lib/ex-unit.js'
+import { needsOneRm } from '../lib/prescription/index.js'
+import { referenceOffers } from '../lib/programmes.js'
 
 // The exercise a v2 occurrence points at. `exerciseId` is the canonical field (A57); `id` is
 // kept only as a fallback for pre-migration fixtures that never go through the sheet.
@@ -518,6 +520,17 @@ export default function RoutineEdit() {
     </div>
     {r.excludeFromProgression && <div className="small dim" style={{ margin: '-10px 2px 16px' }}>
       {t('The next regular target continues from the last included workout.')}
+    </div>}
+    {/* Whether a newer 1RM is offered for its exercises worked from one (routine.refs, spec 6.1),
+        and the review by hand of a newer one for the exercises set to keep theirs (spec 10.2). */}
+    {r.ex.some(o => o.rule && needsOneRm(o.rule)) && <div className="sect-b" style={{ marginBottom: 16 }}>
+      <PickRow icon="chartLine" iconTint="var(--teal)" title={t('New 1RM estimates')} value={r.refs ?? 'inherit'}
+        onChange={v => update(s => { const routine = s.routines.find(x => x.id === id); if (v === 'inherit') delete routine.refs; else routine.refs = v })}
+        options={[{ value: 'inherit', label: t('Use my default ({0})', S.refUpdates === 'keep' ? t('Keep the one in use') : t('Ask me first')), subtitle: t('Set in Settings') },
+          { value: 'ask', label: t('Ask me') }, { value: 'keep', label: t('Keep the one in use') }]} />
+      {referenceOffers(S, null, { kept: true }).map(o => ({ ...o, contexts: o.contexts.filter(c => c.routineId === id) })).filter(o => o.contexts.length)
+        .map(o => <Row key={o.exerciseId + o.candidateId} title={t('New 1RM for {0}', exerciseNameText(exOr(o.exerciseId)))} subtitle={t('You keep the 1RM in use. Review the newer one here.')}
+          accessory="chevron" onClick={() => referenceSheet(o)} />)}
     </div>}
 
     {missingCount > 0 && <div className="re-notice" role="status">

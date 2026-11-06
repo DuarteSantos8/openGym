@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { editPlan, planOptions, planPhase, validateProgramme } from './prescription/index.js'
 import { buildPlanBundle, buildProgrammeBundle, mergePlan, parsePlan, planPrintHTML } from './plan-share.js'
-import { canonicalProfile, migratedFixture, ruleOccurrence } from './test-fixtures.js'
-import { IMPORT_MAX_SEQUENCE, IMPORT_MAX_TARGETS, importedProgramme, legacyWeeksOf, pauseProgramme, setLegacyWeeks, startProgramme } from './programmes.js'
+import { canonicalProfile, legacyProgramme, migratedFixture, ruleOccurrence, weekPcts } from './test-fixtures.js'
+import { IMPORT_MAX_SEQUENCE, IMPORT_MAX_TARGETS, importedProgramme, pauseProgramme, startProgramme } from './programmes.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 
 // There was no test file for plan sharing at all, which is how a whole prescription field
@@ -451,7 +451,7 @@ describe('programmes in a plan file', () => {
   function running() {
     const s = migratedFixture({ unit: 'kg', weekStart: 1, routines: [{ id: 'A', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }] }, { id: 'B', name: 'Legs', ex: [{ id: '0043', sets: 3, reps: 5, weight: 80 }] }], workouts: [] })
     Object.assign(s, { week: { 1: ['A'] }, customEx: [], refUpdates: 'keep', programmeEnd: 'extend', refReviews: { 'occ:A:o0': { candidateId: 'c', decision: 'keep', at: 1 } } })
-    s.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{ rpe: 7, t: { '0025': { pct: 75 } } }, { deload: true }], s, { days: { 1: ['A'], 4: ['B'] } }) }
+    s.programmes = { P: legacyProgramme(s, { id: 'P', name: 'Block', at: 1, weeks: [{ rpe: 7, t: { '0025': { pct: 75 } } }, { deload: true }], days: { 1: ['A'], 4: ['B'] } }) }
     s.programmes.P.tracks[0].policy = { onFailure: 'repeat', onSkipped: 'advance' }
     startProgramme(s, 'P', { policies: Object.fromEntries(s.programmes.P.tracks.map(t => [t.id, ADVANCE])), end: 'stop', today: '2026-10-19' })
     pauseProgramme(s, Date.parse('2026-10-20T10:00:00Z'))
@@ -568,7 +568,8 @@ describe('programmes in a plan file', () => {
     const got = importedProgramme(file, { ridMap: { A: 'a1' } }, S, 7)
     expect(Object.keys(got).sort()).toEqual(['at', 'duration', 'end', 'id', 'name', 'refs', 'rev', 'schedule', 'tracks'])
     expect(got).toMatchObject({ at: 7, name: 'Block', schedule: { appts: [{ rid: 'a1', day: 1 }] } })
-    expect(legacyWeeksOf(got)).toEqual([{ t: { '0025': { pct: 72.5 } } }])
+    expect(weekPcts(got, '0025')).toEqual([72.5])
+    expect(got.tracks[0].stages[0].targets[got.tracks[0].slots[0].oid].effort).toBeUndefined()
     expect(importedProgramme({ ...file, days: { 1: ['constructor'] } }, { ridMap: { A: 'a1' } }, S)).toBeNull()
     // A loop and its targets only as long as anyone writes one.
     const long = importedProgramme({ name: 'Loop', sequence: Array(500).fill('A'), weeks: [{ t: Object.fromEntries(Array.from({ length: 900 }, (_, i) => ['e' + i, { pct: 70 }])) }] }, { ridMap: { A: 'a1' } }, S)

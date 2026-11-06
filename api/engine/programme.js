@@ -83,9 +83,8 @@ export function stageRule({ def, track, stage, oid, occRule, runId }) {
   if (t.effort?.mode === 'operational') {
     program.phases = program.phases.map(ph => ({ ...ph, parameters: { ...ph.parameters, rir: { min: 10 - t.effort.rpe, max: 10 } }, success: { ...ph.success, effort: 'rir_floor' } }))
   }
-  // pr3 renames the no-operator preset 'manual'.
   return {
-    ...copy(occRule), id: `${occRule.id}~${runId}~${stage.id}`, revision: def.rev, preset: occRule.preset ?? 'autoregulated', program,
+    ...copy(occRule), id: `${occRule.id}~${runId}~${stage.id}`, revision: def.rev, preset: occRule.preset ?? 'manual', program,
     ...(t.options ? { options: copy(t.options) } : {})
   }
 }

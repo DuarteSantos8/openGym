@@ -1,8 +1,7 @@
-// Plan → Programmes (#159): the list, a programme's weeks, and the running one's controls. The
-// model is lib/programmes.js; this screen only ever writes through it. Its weeks are still edited
-// as %1RM and RPE per lift, through the bridge (legacyWeeksOf / setLegacyWeek) that writes only
-// those numbers into the engine definition, until the programme editor replaces this screen.
-import { useId, useState } from 'react'
+// Plan → Programmes (#159): the list, the running one's controls, and a programme's editor (spec
+// 14): its schedule, and every training week of every exercise. The model is lib/programmes.js;
+// this screen only ever writes through it.
+import { useId, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -11,20 +10,24 @@ import { DAYN, DAYS, exerciseNameText, fmtNum, todayISO, weekOrder, weekStartOf 
 import { confirmSheet, exportProgrammeFile, menuSheet, referenceSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import EmptyState from '../components/EmptyState.jsx'
-import { Button, NumberField, Row, Section, Segmented, Stepper, Switch, openSelectSheet } from '../components/ui.jsx'
-import { effortOf, modeOf, isBw } from '../lib/history.js'
-import { exOr } from '../lib/exercises.js'
-import { planPhase, operatorFor } from '../lib/prescription/index.js'
-import { weightIncrement } from '../lib/exercises.js'
+import FailureSets from '../components/FailureSets.jsx'
+import { RangeField } from '../components/RuleEditor.jsx'
+import { Button, PickRow, Row, Section, Segmented, SelectButton, Stepper, Switch, openSelectSheet } from '../components/ui.jsx'
+import { effortOf, isBw } from '../lib/history.js'
+import { exOr, EXIDX } from '../lib/exercises.js'
+import { currentOneRm, operatorFor, planPhase, stageRule, supports, weeklyTemplate } from '../lib/prescription/index.js'
+import { scalable } from '../../../api/engine/programme.js'
 import { REST } from '../lib/rotation.js'
+import { speedUnitOf, toSpeed, fromSpeed, fmtSpeed } from '../lib/speed.js'
+import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
 import { starterProgrammeOptions, buildStarterProgramme } from '../lib/starter.js'
-import { exView, viewTarget, exUnitOf } from '../lib/ex-unit.js'
 import {
-  programmesOf, programmeById, programmeView, newProgramme, saveProgramme, deleteProgramme, resizeWeeks,
-  stepWeek, cleanWeek, currentSchedule, startProgramme, pauseProgramme, resumeProgramme, endProgramme,
-  repeatProgramme, programmeRoutineIds, pctWeight, rpeAs, cleanPct, programmeChip, MAX_WEEKS, REPEAT_BUMP,
-  legacyWeeksOf, setLegacyWeek, setLegacyWeeks, fixedOf, liftPcts, missingFor, firstWeekOf, bindProgramme, startReferences, openSessions,
+  programmesOf, programmeById, programmeView, newProgramme, saveProgramme, deleteProgramme,
+  currentSchedule, startProgramme, pauseProgramme, resumeProgramme, endProgramme,
+  repeatProgramme, rpeAs, programmeChip, MAX_WEEKS, REPEAT_BUMP,
+  missingFor, firstWeekOf, bindProgramme, startReferences, openSessions,
   stageNumber, closeWeek, resolveSlot, runChoices, setRunPolicy, setRunEnd, referenceOffers, refText,
+  occMode, loadedOcc, setSchedule, setDuration, setTarget, setStageKind, copyStage, moveStage, linkSlots, linkable, applyTemplate, setTrackChoice, checkedEdit,
 } from '../lib/programmes.js'
 
 // Names and blurbs as t() literals, for check-source-strings.mjs (see lib/starter.js).
@@ -36,18 +39,6 @@ const STARTER_COPY = {
 
 const RPES = [6, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 const rpeText = (rpe, S) => { const r = rpeAs(rpe, effortOf(S)); return `${r.k} ${fmtNum(r.v)}` }
-
-// `fixed`: what the week fixes beyond a %1RM (lib/programmes.js fixedOf), which this screen keeps but does not edit.
-export function weekSummary(w, S, fixed = []) {
-  const c = cleanWeek(w)
-  const parts = []
-  if (c.deload) parts.push(t('Deload week'))
-  if (c.rpe != null) parts.push(rpeText(c.rpe, S))
-  const n = Object.values(c.t || {}).filter(x => x.pct != null).length
-  if (n) parts.push(tn('{0} lift at a %1RM', '{0} lifts at a %1RM', n))
-  if (fixed.length) parts.push(t('fixed at {0}', fixed.join(', ')))
-  return parts.length ? parts.join(' · ') : t('Nothing set, progression as usual')
-}
 
 // A loop as the plan wrote it: a rotation, or a legacy loop kept (in `src`) until it is bound to weeks.
 const loopOf = p => (p.schedule.mode === 'rotation' ? p.schedule.sequence : Array.isArray(p.src?.sequence) ? p.src.sequence : null)
@@ -97,12 +88,6 @@ function PolicyRows({ def, policies, setPolicies }) {
   </>
 }
 
-// A choice with long answers: a row that opens the app's picker, the answer chosen shown under its
-// title where it wraps (a segmented control or a row value cannot hold these answers on a phone).
-function PickRow({ title, value, options, onChange }) {
-  return <Row title={title} subtitle={options.find(o => o.value === value)?.label} accessory="chevron"
-    onClick={() => openSelectSheet({ title, value, options, onChange })} />
-}
 
 /** Stop at the last week, or keep going until every goal is reached (spec 8.5); the Config default marked, not chosen. */
 function EndRow({ S, rounds, end, setEnd }) {
@@ -329,6 +314,8 @@ export default function Programmes() {
   const list = programmesOf(S)
   const runningId = programmeView(S)?.run.programmeId
   const offers = referenceOffers(S)
+  // Set to keep the 1RM in use: never offered by itself, reviewed here by hand (spec 10.2).
+  const kept = referenceOffers(S, null, { kept: true })
 
   const create = () => {
     const p = newProgramme(S, t('My programme'), 4)
@@ -355,9 +342,11 @@ export default function Programmes() {
     <AdoptionNotice S={S} />
     <RunningCard S={S} nav={nav} />
     {/* A newer 1RM a routine or this programme could take (sheets.jsx referenceSheet), listed while it is offered. */}
-    {offers.length > 0 && <Section>
+    {offers.length + kept.length > 0 && <Section>
       {offers.map(o => <Row key={o.exerciseId + o.candidateId} icon="chartLine" iconTint="var(--teal)" title={t('New 1RM for {0}', exName(o.exerciseId))}
         subtitle={t('Update future sessions?')} accessory="chevron" onClick={() => referenceSheet(o)} />)}
+      {kept.map(o => <Row key={'k' + o.exerciseId + o.candidateId} icon="chartLine" iconTint="var(--teal)" title={t('New 1RM for {0}', exName(o.exerciseId))}
+        subtitle={t('You keep the 1RM in use. Review the newer one here.')} accessory="chevron" onClick={() => referenceSheet(o)} />)}
     </Section>}
     <Section title={t('Your programmes')}>
       {list.length ? list.map(p => <Row key={p.id} icon="calendar" title={p.name || t('Programme')} accessory="chevron"
@@ -378,101 +367,393 @@ export default function Programmes() {
   </div>
 }
 
-/** The exercises a programme can give a %1RM: loaded, rep-counted lifts of its routines, once each. */
-function liftsOf(S, p) {
-  const ids = programmeRoutineIds(S, p)
-  const out = new Map()
-  for (const r of S.routines || []) {
-    if (!ids.includes(r.id)) continue
-    for (const occurrence of r.ex || []) {
-      const id = occurrence.exerciseId || occurrence.id
-      const phase = occurrence.rule && planPhase(occurrence.rule)
-      const step = phase && operatorFor(phase, 'load')?.step
-      const cfg = { ...occurrence, id, ...(step?.type === 'absolute' ? { inc: step.value } : {}) }
-      if (!out.has(id) && !phase?.parameters.durationSeconds && modeOf(cfg) === 'reps' && !isBw(cfg)) out.set(id, cfg)
-    }
+/* ------------------------------------ the editor (spec 14) ------------------------------------ */
+// Every change goes through lib/programmes.js's authoring helpers, each giving a new definition
+// with its week ids kept, and is saved only when checkedEdit (validateProgramme) passes; a refused
+// one leaves the saved programme as it was and says why in plain words.
+
+const occAt = (S, sl) => (S.routines || []).find(r => r.id === sl.rid)?.ex?.find(o => o.occurrenceId === sl.oid) || null
+const routineName = (S, rid) => (rid === REST ? t('Rest day') : (S.routines || []).find(r => r.id === rid)?.name || t('Routine'))
+// "Monday’s Push" where the schedule gives the routine a day, else "Push".
+const slotWhere = (S, p, sl) => apptLabel(S, (p.schedule.appts || []).find(a => a.rid === sl.rid && a.day != null) ?? { rid: sl.rid })
+const weekWord = (p, n) => (p.schedule.mode === 'rotation' ? t('Round {0}', n) : t('Week {0}', n))
+
+// validateProgramme's reasons in plain words: the first that applies, else a general one.
+const REASONS = [
+  [/needs seed\./, () => t('Choose where this week starts.')],
+  [/must say hold or reset/, () => t('Choose what happens at the top of the range.')],
+  [/needs a deciding set/, () => t('Every set this week is AMRAP or to failure, so effort cannot decide progress.')],
+  [/seed\.\w+ must be a number/, () => t('There is no earlier week to start from.')],
+  [/needs program\.trainingMax/, () => t('Set a training max for this exercise first.')],
+  [/schedule needs|tracks must hold/, () => t('Add a routine with exercises to the schedule.')],
+  [/is not in the schedule|is not in routine|has no valid rule/, () => t('An exercise of this programme is no longer in its routine.')],
+]
+const reasonOf = errors => (REASONS.find(([re]) => errors.some(e => re.test(e)))?.[1] ?? (() => t('That change does not fit this exercise.')))()
+// The weeks of one occurrence that must say where they start (validateProgramme: a step new in that week).
+const SEED_RE = /^tracks\[(\d+)\]\.stages\[(\d+)\]\.targets\.(.+): the (\w+) step is new in this stage and needs seed\.\w+$/
+const seedsWanted = (errors, ti, oid) => (errors || []).map(e => SEED_RE.exec(e)).filter(m => m && +m[1] === ti && m[3] === oid).map(m => ({ si: +m[2], metric: m[4] }))
+
+const range = r => (r.min === r.max ? fmtNum(r.min) : `${fmtNum(r.min)}–${fmtNum(r.max)}`)
+const stepText = (op, unit) => (op.metric === 'load' ? (op.step.type === 'absolute' ? `${fmtNum(op.step.value)} ${op.step.unit || unit}` : `${fmtNum(op.step.value)}%`) : fmtNum(op.step))
+const loadText = (g, p, unit) => (g.load.basis === 'training_max' ? t('{0}% of training max', fmtNum(g.load.percent))
+  : g.load.basis === 'absolute' ? `${fmtNum(g.load.value)} ${g.load.unit}`
+  : g.load.basis === 'anchor' && g.load.percent !== 100 ? t('{0}% of the top set', fmtNum(g.load.percent))
+  : p.load.mode === 'percent_1rm' ? t('{0}% of 1RM', fmtNum(p.load.percent))
+  : p.load.mode === 'absolute' && p.load.value > 0 ? `${fmtNum(p.load.value)} ${p.load.unit || unit}` : null)
+
+/**
+ * One week of one occurrence in a line: each value with where it comes from (spec 14): set by the
+ * week, progressing (with its bounds and step) or derived from the top set.
+ */
+function weekParts(S, st, x, occ) {
+  if (st.kind === 'rest') return [{ text: t('Rest') }]
+  const unit = S.unit === 'lb' ? 'lb' : 'kg'
+  const eff = x?.effort ? [{ text: `${rpeText(x.effort.rpe, S)} · ${x.effort.mode === 'operational' ? t('Decides progress') : t('For reference')}` }] : []
+  if (x?.own !== 'set') {
+    if (x?.deload) return [{ text: t('Lighter by {0}%', Math.round((1 - x.deload.factor) * 100)) }, ...eff]
+    return [{ text: t('Follow my progression'), src: occ && planPhase(occ.rule).progression.length ? 'progressing' : null }, ...eff]
   }
-  return [...out.values()]
+  const ph = x.phase, p = ph.parameters, mode = occMode(occ)
+  const op = m => ph.progression.find(o => o.metric === m)
+  if (mode !== 'reps') {
+    const each = mode === 'cardio' ? `${fmtNum(p.durationSeconds.min / 60)} min` : `${range(p.durationSeconds)} s`
+    return [{ text: `${range(p.sets)} × ${each}${mode === 'cardio' && p.speed ? ` · ${fmtSpeed(p.speed, speedUnitOf(S))}` : ''}`, src: 'set' }, ...eff]
+  }
+  // One group: its sets and reps, and its load, each with its source (consecutive values of one source share a chip).
+  if (ph.groups.length === 1) {
+    const g = ph.groups[0], load = loadText(g, p, unit)
+    const values = [{ text: `${range(p.sets)} × ${range(p.reps)}`, src: op('reps') || op('sets') ? 'progressing' : 'set' }, ...(load ? [{ text: load, src: op('load') ? 'progressing' : 'set' }] : [])]
+    const parts = values.reduce((out, v) => (out.at(-1)?.src === v.src ? [...out.slice(0, -1), { ...v, text: out.at(-1).text + ' · ' + v.text }] : [...out, v]), [])
+    for (const o of ph.progression) {
+      const r = o.metric === 'reps' ? p.reps : o.metric === 'sets' ? p.sets : null
+      parts.push({ text: r ? t('{0} to {1}, +{2} after a good session', fmtNum(r.min), fmtNum(r.max), stepText(o, unit)) : t('+{0} after a good session', stepText(o, unit)) })
+    }
+    return [...parts, ...eff]
+  }
+  // Several groups (a top set and back-offs, 5/3/1's sets): one line each, sourced by its load.
+  return [...ph.groups.map(g => {
+    const reps = g.max ? t('Max') : range(g.reps === 'parameters' ? p.reps : g.reps) + (g.amrap ? '+' : '')
+    const load = loadText(g, p, unit)
+    return { text: `${range(g.count === 'parameters' ? p.sets : g.count)} × ${reps}${load ? ' · ' + load : ''}`, src: g.load.basis === 'anchor' && g.load.percent !== 100 ? 'derived' : 'set' }
+  }), ...eff]
+}
+const SRC = { set: () => t('Set'), progressing: () => t('Progressing'), derived: () => t('From the top set') }
+const WeekLine = ({ parts }) => parts.map((x, i) => <span key={i}>{i > 0 && ' · '}{x.text}{x.src && <> <span className="tag nocap">{SRC[x.src]()}</span></>}</span>)
+
+// The occurrence's own steps a set week keeps: its reps (and sets) chain, its load step, or both.
+// With the load fixed the chain says what happens at its top (spec 6): the person's choice, never
+// the template's, so a chain kept without its load step asks again.
+function keptOps(occPh, ph, { reps, load }) {
+  const chain = o => o.metric === 'reps' || o.metric === 'sets'
+  const choice = !operatorFor(ph, 'load') ? ph.progression.find(o => chain(o) && typeof o.resetOnCarry === 'boolean')?.resetOnCarry : undefined
+  const progression = occPh.progression.filter(o => (chain(o) && reps) || (o.metric === 'load' && load)).map(o => {
+    if (!chain(o) || load) return o
+    const { resetOnCarry, ...rest } = o
+    return choice === undefined ? rest : { ...rest, resetOnCarry: choice }
+  })
+  return { ...ph, progression, target: load ? occPh.target : { mode: 'none' } }
 }
 
-function WeekSheet({ id, index, close }) {
+/** One week of one exercise (spec 14): work, recovery or rest; its targets for the exercise's mode; copied or moved. */
+function StageSheet({ id, trackId, stageId, close }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
-  const p = programmeById(S, id)
-  const weeks = p ? legacyWeeksOf(p) : []
-  if (!p || !weeks[index]) return null
-  const w = weeks[index]
-  const setWeek = fn => update(s => {
-    const cur = programmeById(s, id)
-    if (!cur) return
-    saveProgramme(s, setLegacyWeek(cur, index, cleanWeek(fn(clone(legacyWeeksOf(cur)[index] || {}))), s))
+  const saved = programmeById(S, id)
+  const [draft, setDraft] = useState(saved)
+  const [slotAt, setSlotAt] = useState(0)
+  // Each week asked where it starts stays on show once answered, to change the answer.
+  const asked = useRef(new Set())
+  const whyId = useId()
+  const track = draft?.tracks.find(tr => tr.id === trackId)
+  const stage = track?.stages.find(st => st.id === stageId)
+  const sl = track?.slots[Math.min(slotAt, track.slots.length - 1)]
+  const occ = sl && occAt(S, sl)
+  if (!saved || !stage || !occ) return null
+  const ti = draft.tracks.indexOf(track), at = track.stages.indexOf(stage)
+  const x = stage.targets[sl.oid] ?? { own: 'inherit' }
+  const mode = occMode(occ)
+  const occPh = planPhase(occ.rule)
+  const unit = occPh.parameters.load.unit || (S.unit === 'lb' ? 'lb' : 'kg')
+  const bw = isBw({ ...occ, id: occ.exerciseId })
+  const res = checkedEdit(S, draft)
+  const target = next => setDraft(d => setTarget(d, trackId, stageId, sl.oid, typeof next === 'function' ? next(d.tracks[ti].stages.find(st => st.id === stageId).targets[sl.oid] ?? { own: 'inherit' }) : next))
+  const phase = fn => target(cur => ({ ...cur, phase: fn(cur.phase) }))
+  const params = patch => phase(ph => ({ ...ph, parameters: { ...ph.parameters, ...patch } }))
+  const option = (k, v) => target(cur => { const options = { ...(cur.options || {}) }; if (v === undefined) delete options[k]; else options[k] = v; return Object.keys(options).length ? { ...cur, options } : (({ options: _, ...rest }) => rest)(cur) })
+  const rounds = draft.schedule.mode === 'rotation'
+  const save = () => {
+    if (!res.def) return
+    if (JSON.stringify(res.def) !== JSON.stringify(saved)) update(s => { saveProgramme(s, res.def) })
+    close()
+  }
+  // The rule this week compiles to, for what it can take (supports) and what a week before it left.
+  const ruleOf = st => { try { return stageRule({ def: draft, track, stage: st, oid: sl.oid, occRule: occ.rule, runId: 'edit' }) } catch { return null } }
+  const rule = ruleOf(stage)
+  const can = rule ? supports(rule) : {}
+  const ph = x.own === 'set' ? x.phase : null
+  const p = ph?.parameters
+  const op = m => (ph ? operatorFor(ph, m) : null)
+  const chainOp = op('reps') ?? op('sets')
+  const occChain = operatorFor(occPh, 'reps') ?? operatorFor(occPh, 'sets')
+  const occLoad = operatorFor(occPh, 'load')
+  const groupsRead = (m, g) => (m === 'reps' ? g.reps === 'parameters' : g.load.basis === 'anchor')
+  const loadKind = !ph ? null : ph.groups.some(g => g.load.basis === 'training_max') ? 'tm' : p.load.mode === 'percent_1rm' ? 'pct' : p.load.mode === 'absolute' ? 'abs' : 'none'
+  const loadFits = !!occLoad && !!ph && ph.groups.every(g => groupsRead('load', g)) && (occLoad.step.type === 'percentage_points') === (loadKind === 'pct') && loadKind !== 'none'
+  const setOps = flags => phase(cur => keptOps(occPh, cur, { reps: !!(operatorFor(cur, 'reps') ?? operatorFor(cur, 'sets')), load: !!operatorFor(cur, 'load'), ...flags }))
+  const decides = x.effort?.mode === 'operational'
+  const probe = checkedEdit(S, setTarget(draft, trackId, stageId, sl.oid, { ...x, effort: { mode: 'operational', rpe: x.effort?.rpe ?? 8 } }))
+  const decideWhy = effortOf(S) === 'none' ? t('Turn on effort per set in Settings') : probe.errors?.some(e => /needs a deciding set/.test(e)) ? t('Every set this week is AMRAP or to failure, so effort cannot decide progress.') : null
+  for (const w of seedsWanted(res.errors, ti, sl.oid)) asked.current.add(`${sl.oid}|${track.stages[w.si].id}|${w.metric}`)
+  for (const m of Object.keys(x.seed || {})) asked.current.add(`${sl.oid}|${stageId}|${m}`)
+  const seeds = [...asked.current].map(k => k.split('|')).filter(([oid, sid]) => oid === sl.oid && track.stages.some(st => st.id === sid))
+    .map(([, sid, metric]) => ({ si: track.stages.findIndex(st => st.id === sid), metric }))
+  const eff = (k, v) => x.options?.[k] ?? v
+  const intensifier = eff('intensifier', occ.intensifier)
+  const warm = eff('warmup', occ.warmup)
+  const setLoadKind = kind => phase(cur => {
+    const prev = cur.parameters.load, base = prev.mode === 'percent_1rm' ? prev.percent : 75
+    const top = Math.max(...cur.groups.map(g => (g.load.basis === 'training_max' ? g.load.percent : 0)), 0) || base
+    const groups = cur.groups.map(g => (kind === 'tm' && g.load.basis === 'anchor' ? { ...g, load: { basis: 'training_max', percent: Math.round(base * g.load.percent / 50) / 2 } }
+      : kind !== 'tm' && g.load.basis === 'training_max' ? { ...g, load: { basis: 'anchor', percent: Math.round(g.load.percent / top * 200) / 2 } } : g))
+    const load = kind === 'abs' ? { mode: 'absolute', value: prev.mode === 'absolute' ? prev.value : unit === 'lb' ? 45 : 20, unit }
+      : kind === 'pct' ? { mode: 'percent_1rm', percent: prev.mode === 'percent_1rm' ? prev.percent : top } : { mode: 'empty' }
+    const { loadTo, ...rest } = cur.parameters
+    // A step on the load fits one kind of load only: changing it lets the step go.
+    return keptOps(occPh, { ...cur, groups, parameters: { ...rest, load } }, { reps: !!(operatorFor(cur, 'reps') ?? operatorFor(cur, 'sets')), load: false })
   })
-  // A lift's %1RM is the same in every routine it is in. A routine's own entry ("A:0025", the Coach
-  // can set one) is read whole, so it takes the typed value too (its own RPE kept), or loses its own.
-  const ofLift = (k, exId) => k === exId || k.endsWith(':' + exId)
-  const setPct = (exId, v) => setWeek(x => {
-    const pct = cleanPct(v)
-    const tgt = Object.fromEntries(Object.entries(x.t || {}).map(([k, y]) => {
-      if (!ofLift(k, exId)) return [k, y]
-      const { pct: _, ...rest } = y
-      return [k, pct != null ? { ...rest, pct } : rest]
-    }))
-    if (pct != null) tgt[exId] = { ...(tgt[exId] || {}), pct }
-    return { ...x, t: tgt }
-  })
-  // The week's effort is for every lift: a lift's own RPE goes. A week whose lifts differ shows no choice.
-  const setRpe = v => setWeek(x => ({ ...x, rpe: v, t: Object.fromEntries(Object.entries(x.t || {}).map(([k, { rpe: _, ...rest }]) => [k, rest])) }))
-  const mixed = Object.values(w.t || {}).some(x => x.rpe != null)
+  const tmNeeded = loadKind === 'tm' && !track.tm
+  const setTm = value => setDraft(d => setTrackChoice(d, trackId, { tm: { value, unit, increment: track.tm?.increment ?? (unit === 'lb' ? 5 : 2.5) } }))
+  const tmDefault = () => { const rm = currentOneRm(S.oneRepMaxes, track.exerciseId); return rm?.unit === unit ? Math.round(rm.value * 0.9 / 2.5) * 2.5 : unit === 'lb' ? 225 : 100 }
+  const setGroup = (i, patch) => phase(cur => ({ ...cur, groups: cur.groups.map((g, j) => (j === i ? { ...g, ...patch } : g)) }))
+  const groupTitle = (g, i) => (g.id === 'top' ? t('Top set') : g.id === 'backoff' ? t('Back-off sets') : t('Set {0}', i + 1))
+  const others = track.stages.map((st, i) => ({ value: st.id, label: weekWord(draft, i + 1) })).filter(o => o.value !== stageId)
+  const work = stage.kind === 'work', recovery = stage.kind === 'recovery'
+  const lighter = !!rule && scalable(ruleOf({ ...stage, targets: { [sl.oid]: { own: 'inherit' } } }) ?? rule)
+
+  const fields = ph && <>
+    {mode === 'reps' && ph.groups.length === 1 && <>
+      <RangeField label={t('Sets')} value={p.sets} policy="either" onChange={sets => params({ sets })} />
+      {ph.groups[0].reps === 'parameters' && <RangeField label={t('Reps')} value={p.reps} policy="either" onChange={reps => params({ reps })} />}
+    </>}
+    {mode === 'time' && <>
+      <RangeField label={t('Sets')} value={p.sets} policy="either" onChange={sets => params({ sets })} />
+      <RangeField label={t('Seconds')} value={p.durationSeconds} step={5} policy="either" onChange={durationSeconds => params({ durationSeconds })} />
+    </>}
+    {mode === 'cardio' && <div className="row cfgrow cfgrow-4" style={{ marginBottom: 14 }}>
+      <Stepper label={t('Intervals')} value={p.sets.min} decimal={false} min={1} onChange={n => params({ sets: { min: n, max: n } })} />
+      <Stepper label={t('Minutes')} value={p.durationSeconds.min / 60} decimal={false} min={1} onChange={n => params({ durationSeconds: { min: n * 60, max: n * 60 } })} />
+      <Stepper label={speedUnitOf(S) === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} value={toSpeed(p.speed ?? 8, speedUnitOf(S))} step={0.5} min={0.5}
+        onChange={v => params({ speed: fromSpeed(v, speedUnitOf(S)) })} />
+      {(inclineFits(EXIDX[occ.exerciseId]) || eff('incline', occ.cardio?.incline) > 0) && <Stepper label={t('Incline (%)')} value={eff('incline', occ.cardio?.incline) ?? 0}
+        step={INCLINE_STEP} max={INCLINE_MAX} onChange={v => option('incline', clampIncline(v))} />}
+    </div>}
+    {mode !== 'cardio' && <div className="row cfgrow" style={{ marginBottom: 14, alignItems: 'flex-end' }}>
+      {loadKind === 'abs' || loadKind === 'none'
+        ? <Stepper label={t('Load')} value={p.load.value ?? 0} step={occ.rule.rounding.step ?? 2.5} unit={unit} disabled={loadKind === 'none'}
+          onChange={v => params({ load: { mode: 'absolute', value: v, unit } })} />
+        : loadKind === 'pct' ? <Stepper label={t('Load')} value={p.load.percent} step={2.5} unit="%" onChange={percent => params({ load: { mode: 'percent_1rm', percent } })} />
+        : ph.groups.length === 1 ? <Stepper label={t('% of training max')} value={ph.groups[0].load.percent} step={2.5} unit="%" onChange={percent => setGroup(0, { load: { basis: 'training_max', percent } })} /> : null}
+      {(mode === 'reps' && !bw) && <SelectButton className="unit-btn" title={t('Load')} value={loadKind}
+        onChange={setLoadKind} options={[{ value: 'abs', label: unit }, { value: 'pct', label: t('% 1RM') }, { value: 'tm', label: t('% of training max') }]} />}
+      {(mode === 'time' || bw) && <SelectButton className="unit-btn" title={t('Load')} value={loadKind === 'abs' ? 'abs' : 'none'}
+        onChange={setLoadKind} options={[{ value: 'none', label: t('None') }, { value: 'abs', label: unit }]} />}
+    </div>}
+    {loadKind === 'tm' && <div className="row cfgrow" style={{ marginBottom: 14 }}>
+      <Stepper label={t('Training max')} value={track.tm?.value ?? tmDefault()} step={2.5} unit={unit} onChange={setTm} />
+      {tmNeeded && <Button size="sm" variant="tinted" onClick={() => setTm(tmDefault())}>{t('Use')}</Button>}
+    </div>}
+    {mode === 'reps' && ph.groups.length > 1 && ph.groups.map((g, i) => <div key={g.id} className="sect-b" style={{ marginBottom: 10, padding: '10px 14px' }}>
+      <div className="small muted" style={{ marginBottom: 6 }}>{groupTitle(g, i)}</div>
+      <div className="row cfgrow">
+        {g.count !== 'parameters' && <Stepper label={t('Sets')} value={g.count.min} decimal={false} min={1} onChange={n => setGroup(i, { count: { min: n, max: n } })} />}
+        {g.reps !== 'parameters' && !g.max && <Stepper label={t('Reps')} value={g.reps.min} decimal={false} min={1} onChange={n => setGroup(i, { reps: { min: n, max: n } })} />}
+        {g.load.basis === 'anchor' && g.load.percent !== 100 && <Stepper label={t('From the top set')} value={g.load.percent} step={5} unit="%" decimal={false} onChange={percent => setGroup(i, { load: { basis: 'anchor', percent } })} />}
+        {g.load.basis === 'training_max' && <Stepper label={t('% of training max')} value={g.load.percent} step={2.5} unit="%" onChange={percent => setGroup(i, { load: { basis: 'training_max', percent } })} />}
+        {g.load.basis === 'absolute' && <Stepper label={t('Weight ({0})', g.load.unit)} value={g.load.value} step={occ.rule.rounding.step ?? 2.5} onChange={value => setGroup(i, { load: { ...g.load, value } })} />}
+      </div>
+      {g.count !== 'parameters' && g.count.max === 1 && !g.max && <Row title={t('As many reps as you can')}>
+        <Switch aria-label={`${t('As many reps as you can')}, ${groupTitle(g, i)}`} checked={!!g.amrap} onChange={v => setGroup(i, { amrap: v || undefined })} />
+      </Row>}
+    </div>)}
+    <div className="row cfgrow" style={{ marginBottom: 14 }}>
+      <Stepper label={mode === 'cardio' ? t('Recovery') : t('Rest (s)')} value={p.restSeconds ?? occPh.parameters.restSeconds} step={15} unit="s" decimal={false}
+        onChange={restSeconds => params({ restSeconds })} />
+      {mode === 'time' && occ.side && <Stepper label={t('Rest between sides')} value={eff('sideRestSec', occ.sideRestSec ?? 0)} step={5} unit="s" decimal={false} onChange={v => option('sideRestSec', v)} />}
+    </div>
+    {mode === 'reps' && (occChain || occLoad) && <Section>
+      {occChain && ph.groups.every(g => groupsRead('reps', g)) && <Row title={t('Keep progressing reps')}
+        subtitle={chainOp ? t('{0} to {1}, +{2} after a good session', fmtNum((chainOp.metric === 'reps' ? p.reps : p.sets).min), fmtNum((chainOp.metric === 'reps' ? p.reps : p.sets).max), fmtNum(chainOp.step)) : null}>
+        <Switch aria-label={t('Keep progressing reps')} checked={!!chainOp} onChange={v => setOps({ reps: v })} />
+      </Row>}
+      {loadFits && <Row title={t('Keep progressing load')} subtitle={op('load') ? t('+{0} after a good session', stepText(op('load'), unit)) : null}>
+        <Switch aria-label={t('Keep progressing load')} checked={!!op('load')} onChange={v => setOps({ load: v })} />
+      </Row>}
+      {chainOp && !op('load') && <PickRow title={t('At the top')} value={typeof chainOp.resetOnCarry === 'boolean' ? chainOp.resetOnCarry : null}
+        onChange={v => phase(cur => ({ ...cur, progression: cur.progression.map(o => (o.metric === 'reps' || o.metric === 'sets' ? { ...o, resetOnCarry: v } : o)) }))}
+        options={[{ value: false, label: t('Stay there') }, { value: true, label: t('Start the range again') }]} />}
+    </Section>}
+  </>
+
   return <>
-    <h3>{t('Week {0} of {1}', index + 1, weeks.length)}</h3>
-    <div className="sect-b" style={{ marginBottom: 14 }}>
-      <Row icon="chartLineSlash" iconTint="var(--orange)" title={t('Deload week')} subtitle={t('Lighter weights, and its sessions do not count toward progression.')}>
-        <Switch checked={w.deload === true} onChange={v => setWeek(x => ({ ...x, deload: v }))} />
-      </Row>
+    <h3>{weekWord(draft, at + 1)}</h3>
+    <div className="muted small capitalize" style={{ marginBottom: 12 }}>{exName(track.exerciseId)} · {track.slots.map(s => slotWhere(S, draft, s)).join(' · ')}</div>
+    {track.slots.length > 1 && <Section><PickRow title={t('Routine')} value={slotAt} onChange={setSlotAt}
+      options={track.slots.map((s, i) => ({ value: i, label: slotWhere(S, draft, s) }))} /></Section>}
+    <div style={{ marginBottom: 14 }}>
+      <Segmented value={stage.kind} onChange={kind => setDraft(d => setStageKind(d, trackId, stageId, kind))}
+        options={[{ value: 'work', label: t('Work') }, { value: 'recovery', label: t('Recovery') }, { value: 'rest', label: t('Rest') }]} />
     </div>
-    <div className="small muted" style={{ margin: '0 2px 6px' }}>{t('Effort for the week')}</div>
-    <div className="chips" style={{ marginBottom: 14 }}>
-      <button className={'chip' + (w.rpe == null && !mixed ? ' on' : '')} onClick={() => setRpe(null)}>{t('None')}</button>
-      {RPES.map(v => <button key={v} className={'chip' + (w.rpe === v && !mixed ? ' on' : '')} onClick={() => setRpe(v)}>{rpeText(v, S)}</button>)}
+    {work && <div style={{ marginBottom: 14 }}>
+      <Segmented value={x.own} onChange={own => target(cur => (own === 'set' ? { ...weeklyTemplate('copy', { oid: sl.oid, occRule: occ.rule })[0].targets[sl.oid], ...(cur.effort ? { effort: cur.effort } : {}), ...(cur.options ? { options: cur.options } : {}) }
+        : { own: 'inherit', ...(cur.effort ? { effort: cur.effort } : {}), ...(cur.options ? { options: cur.options } : {}) }))}
+        options={[{ value: 'inherit', label: t('Follow my progression') }, { value: 'set', label: t('Set the targets') }]} />
+    </div>}
+    {recovery && <div style={{ marginBottom: 14 }}>
+      <Segmented value={x.own === 'set' ? 'set' : 'light'} onChange={v => target(v === 'set' ? weeklyTemplate('copy', { oid: sl.oid, occRule: occ.rule })[0].targets[sl.oid] : { own: 'inherit', ...(lighter ? { deload: { factor: 0.9 } } : {}) })}
+        options={[{ value: 'light', label: lighter ? t('Lighter by {0}%', 10) : t('Follow my progression') }, { value: 'set', label: t('Set the targets') }]} />
+    </div>}
+    {stage.kind !== 'rest' && fields}
+    {seeds.map(({ si, metric }) => {
+      const st = track.stages[si], tx = st.targets[sl.oid] ?? { own: 'inherit' }, prev = track.stages.slice(0, si).findLastIndex(s => s.kind === 'work')
+      const at0 = ruleOf(st)?.program.phases[0].parameters
+      const typed = typeof tx.seed?.[metric] === 'number'
+      const seed = v => setDraft(d => setTarget(d, trackId, st.id, sl.oid, { ...tx, seed: { ...(tx.seed || {}), [metric]: v } }))
+      const now = metric === 'load' ? (at0?.load.value ?? at0?.load.percent ?? 0) : metric === 'reps' ? at0?.reps.min : at0?.sets.min
+      return <Section key={`${si}${metric}`} title={rounds ? t('Round {0} starts from', si + 1) : t('Week {0} starts from', si + 1)}>
+        <PickRow title={metric === 'load' ? t('Load') : metric === 'sets' ? t('Sets') : t('Reps')} value={typed ? 'type' : tx.seed?.[metric] === 'copy' ? 'copy' : null}
+          onChange={v => seed(v === 'copy' ? 'copy' : now ?? 0)}
+          options={[...(prev >= 0 ? [{ value: 'copy', label: weekWord(draft, prev + 1) }] : []), { value: 'type', label: t('Type a value') }]} />
+        {typed && <div className="row cfgrow" style={{ padding: '0 14px 10px' }}>
+          <Stepper value={tx.seed[metric]} step={metric === 'load' ? 2.5 : 1} unit={metric === 'load' ? (at0?.load.mode === 'percent_1rm' ? '%' : unit) : undefined} onChange={seed} />
+        </div>}
+      </Section>
+    })}
+    {stage.kind !== 'rest' && <Section>
+      <PickRow title={<span id={whyId + 'e'}>{t('Effort')}</span>} value={x.effort?.rpe ?? 0} onChange={rpe => target(cur => { const { effort, ...rest } = cur; return rpe ? { ...rest, effort: { mode: mode === 'reps' ? effort?.mode ?? 'advisory' : 'advisory', rpe } } : rest })}
+        options={[{ value: 0, label: t('None') }, ...RPES.map(v => ({ value: v, label: rpeText(v, S) }))]} />
+      {/* Holds and cardio keep effort for reference (spec 11); a rep week may let it decide. */}
+      {x.effort && mode === 'reps' && <div style={{ padding: '2px 14px 12px' }}>
+        <Segmented ariaLabelledby={whyId + 'e'} value={x.effort.mode} onChange={m => target(cur => ({ ...cur, effort: { ...cur.effort, mode: m } }))}
+          options={[{ value: 'advisory', label: t('For reference') }, { value: 'operational', label: t('Decides progress'), disabled: !!decideWhy && !decides, describedBy: decideWhy ? whyId + 'd' : undefined }]} />
+        {decideWhy && <div id={whyId + 'd'} className="small dim" style={{ marginTop: 6 }}>{decideWhy}</div>}
+      </div>}
+    </Section>}
+    {work && mode === 'reps' && rule && <Section>
+      {can.dropset && <Row title={t('Drop-set')}><Switch aria-label={t('Drop-set')} checked={intensifier?.type === 'dropset'} disabled={!x.options?.intensifier && occ.intensifier?.type === 'dropset'}
+        onChange={v => option('intensifier', v ? { type: 'dropset', count: 1, pct: 20 } : undefined)} /></Row>}
+      {can.restpause && <Row title={t('Rest-pause')}><Switch aria-label={t('Rest-pause')} checked={intensifier?.type === 'restpause'} disabled={!x.options?.intensifier && occ.intensifier?.type === 'restpause'}
+        onChange={v => option('intensifier', v ? { type: 'restpause', totalReps: 8, restSec: S.restPauseSec || 15 } : undefined)} /></Row>}
+      {can.warmup && <Row title={t('Warm-ups')}><Switch aria-label={t('Warm-ups')} checked={warm !== 'none' && warm?.mode !== 'off'}
+        onChange={v => option('warmup', v ? { mode: 'smart', count: 2 } : { mode: 'off' })} /></Row>}
+      {!bw && !['pyramid_reps', 'pyramid'].includes(occ.rule.preset) && intensifier?.type !== 'restpause' && <Row title={t('Back-off sets')}>
+        <Switch aria-label={t('Back-off sets')} checked={eff('backoff', occ.backoff === true)} onChange={v => option('backoff', v)} /></Row>}
+    </Section>}
+    {work && mode !== 'cardio' && rule && can.failure && intensifier?.type !== 'restpause' && <FailureSets rule={rule} value={eff('failureSets', occ.failureSets ?? (occ.lastToFailure ? 'last' : []))} onChange={v => option('failureSets', v)} />}
+    <Section>
+      {others.length > 0 && <PickRow title={t('Copy from')} value={null} onChange={from => setDraft(d => copyStage(d, trackId, from, stageId))} options={others} />}
+    </Section>
+    <div className="row" style={{ gap: 8, marginBottom: 14 }}>
+      <Button size="sm" icon="chevronUp" disabled={at === 0} onClick={() => setDraft(d => moveStage(d, trackId, stageId, -1))}>{t('Move up')}</Button>
+      <Button size="sm" icon="chevronDown" disabled={at === track.stages.length - 1} onClick={() => setDraft(d => moveStage(d, trackId, stageId, 1))}>{t('Move down')}</Button>
     </div>
-    <div className="small muted" style={{ margin: '0 2px 6px' }}>{t('%1RM per lift')}</div>
-    <div className="sect-b prog-lifts" style={{ marginBottom: 6 }}>
-      {liftsOf(S, p).map(cfg => {
-        // The lift's %1RM in each routine it is in: one shows in the field; different ones are listed, as
-        // the Coach's card says them, until one is typed for every routine.
-        const cells = [...new Set(liftPcts(p, w, cfg.id))]
-        const pct = cells.length > 1 ? null : cells.length ? cells[0] : w.t?.[cfg.id]?.pct ?? null
-        // Worked out and rounded in the lift's own weight unit (#657): 5 lb steps on a lb-pinned bar.
-        const unit = exUnitOf(S, cfg.id)
-        const est = pct != null ? pctWeight(exView(S, cfg.id), cfg.id, pct, { step: weightIncrement(viewTarget(S, cfg.id, cfg), unit) }) : null
-        const fixed = pct == null ? fixedOf(p, index, cfg.id) : []
-        const each = cells.length > 1 ? cells.filter(v => v != null) : []
-        return <div key={cfg.id} className="lrow prog-lift">
-          <span className="lrow-m"><span className="lrow-t">{exerciseNameText(exOr(cfg.id))}</span>
-            {pct != null && <span className="lrow-s">{est != null ? t('about {0}', fmtNum(est) + ' ' + unit) : t('Log a set first to work this out')}</span>}
-            {fixed.length > 0 && <span className="lrow-s">{t('fixed at {0}', fixed.join(', '))}</span>}
-            {each.length > 0 && <span className="lrow-s">{t('fixed at {0}', each.map(v => fmtNum(v) + '%').join(', '))}</span>}</span>
-          <PctField pct={pct} onChange={v => setPct(cfg.id, v)} label={t('%1RM for {0}', exerciseNameText(exOr(cfg.id)))} />
-        </div>
-      })}
-    </div>
-    <div className="small dim" style={{ margin: '0 2px 14px' }}>{t('Empty leaves the weight to your progression. A %1RM is worked out from your best estimated 1RM.')}</div>
-    {index > 0 && <Button variant="tinted" icon="copy" onClick={() => setWeek(() => stepWeek(weeks[index - 1]))}>{t('Same as last week, a bit heavier')}</Button>}
-    <Button variant="primary" onClick={close} style={{ marginTop: 8 }}>{t('Done')}</Button>
+    <Button variant="primary" disabled={!res.def} aria-describedby={res.errors ? whyId : undefined} onClick={save}>{t('Save')}</Button>
+    {res.errors && <div id={whyId} className="small dim" role="status" style={{ margin: '6px 2px 0' }}>{reasonOf(res.errors)}</div>}
   </>
 }
-const clone = v => JSON.parse(JSON.stringify(v))
+const stageSheet = (id, trackId, stageId) => useUI.getState().openSheet(close => <StageSheet id={id} trackId={trackId} stageId={stageId} close={close} />)
 
-// A %1RM typed digit by digit: "7" on the way to "75" is no target yet, and saving it would clear
-// the field under the finger. Saved once it is one (30 to 110), cleared on leaving it otherwise.
-function PctField({ pct, onChange, label }) {
-  const [v, setV] = useState(pct)
-  return <span className="prog-pct" onBlur={() => { if (cleanPct(v) == null) { setV(null); if (pct != null) onChange(null) } }}>
-    <NumberField nullable value={v} aria-label={label}
-      onChange={n => { setV(n); if (cleanPct(n) != null) onChange(n) }} /><i>%</i>
-  </span>
+/** 5/3/1 by week needs the training max it starts from (spec 12.3): 90% of the 1RM in use, else asked. */
+function TemplateSheet({ S, tr, unit, edit, close }) {
+  const rm = currentOneRm(S.oneRepMaxes, tr.exerciseId)
+  const [tm, setTm] = useState(() => tr.tm?.value ?? (rm?.unit === unit ? Math.round(rm.value * 0.9 / 2.5) * 2.5 : unit === 'lb' ? 225 : 100))
+  return <>
+    <h3>{t('5/3/1 by week (needs a training max)')}</h3>
+    <div className="row cfgrow" style={{ marginBottom: 14 }}><Stepper label={t('Training max')} value={tm} step={2.5} unit={unit} onChange={setTm} /></div>
+    <Button variant="primary" onClick={() => { edit((cur, s) => applyTemplate(cur, tr.id, 'five_three_one', { S: s, tm: { value: tm, unit, increment: unit === 'lb' ? 5 : 2.5 } })); close() }}>{t('Fill in')}</Button>
+  </>
 }
-const weekSheet = (id, index) => useUI.getState().openSheet(close => <WeekSheet id={id} index={index} close={close} />)
+
+/** One exercise of the programme: its training weeks with where each value comes from, its templates and links. */
+function TrackCard({ S, p, tr, edit, links, now }) {
+  const rounds = p.schedule.mode === 'rotation'
+  const occs = tr.slots.map(sl => occAt(S, sl))
+  const unit = occs[0] && planPhase(occs[0].rule).parameters.load.unit || (S.unit === 'lb' ? 'lb' : 'kg')
+  const where = sl => slotWhere(S, p, sl)
+  const word = v => (v === 'repeat' ? t('repeat it') : t('move on'))
+  const fill = () => menuSheet({ title: t('Fill from a template'), items: [
+    ...(occs.every(o => o && loadedOcc(o)) ? [{ icon: 'chartLine', label: t('5/3/1 by week (needs a training max)'), onClick: () => useUI.getState().openSheet(close => <TemplateSheet S={S} tr={tr} unit={unit} edit={edit} close={close} />) }] : []),
+    { icon: 'copy', label: t('Same work every week'), onClick: () => edit((cur, s) => applyTemplate(cur, tr.id, 'copy', { S: s })) },
+  ] })
+  return <Section title={<span className="capitalize">{exName(tr.exerciseId)} · <span className="dim">{tr.slots.map(where).join(' · ')}</span></span>}
+    footer={tr.policy ? (rounds ? t('{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.', exName(tr.exerciseId), word(tr.policy.onFailure), word(tr.policy.onSkipped))
+      : t('{0}: after a missed week, {1}; after a skipped week, {2}. You choose when you start it.', exName(tr.exerciseId), word(tr.policy.onFailure), word(tr.policy.onSkipped))) : null}>
+    {tr.stages.map((st, i) => <Row key={st.id} title={weekWord(p, i + 1)} accessory="chevron" className={now === st.id ? 'prog-now' : ''}
+      icon={st.kind === 'work' ? 'chartLine' : 'chartLineSlash'} iconTint={st.kind === 'work' ? undefined : 'var(--orange)'}
+      subtitle={<WeekLine parts={weekParts(S, st, st.targets[tr.slots[0].oid], occs[0])} />} onClick={() => stageSheet(p.id, tr.id, st.id)} />)}
+    <Row icon="clipboard" iconTint="var(--teal)" title={t('Fill from a template')} accessory="chevron" onClick={fill} />
+    {links.filter(([a]) => a === tr.id).map(([a, b]) => { const other = p.tracks.find(x => x.id === b)
+      return <Row key={b} icon="link" iconTint="var(--blue)" title={t('Count {0} in {1} and in {2} as one', exName(tr.exerciseId), tr.slots.map(where).join(', '), other.slots.map(where).join(', '))}
+        onClick={() => edit(cur => linkSlots(cur, [a, b]))} /> })}
+  </Section>
+}
+
+/** Calendar weeks (appointments, a preferred day each, in order or not) or a rotation, its length, its end and its 1RM preference. */
+function ScheduleSection({ S, p, edit }) {
+  const rounds = p.schedule.mode === 'rotation'
+  const binding = !!p.needs?.includes('binding')
+  const routines = (S.routines || []).filter(r => r.ex?.length).map(r => ({ value: r.id, label: r.name || t('Routine') }))
+  const appts = p.schedule.appts || [], seq = p.schedule.sequence || []
+  const setMode = mode => edit((cur, s) => (binding ? bindProgramme(cur, mode === 'rotation' ? 'rounds' : 'weeks')
+    : mode === 'rotation' ? setSchedule(cur, { mode, sequence: (cur.schedule.appts || []).map(a => a.rid) }, s)
+    : setSchedule(cur, { mode, appts: (cur.schedule.sequence || []).filter(x => x !== REST).map(rid => ({ rid })), ordered: true }, s)))
+  const setAppts = fn => edit((cur, s) => setSchedule(cur, { ...cur.schedule, appts: fn(cur.schedule.appts) }, s))
+  const setSeq = fn => edit((cur, s) => setSchedule(cur, { mode: 'rotation', sequence: fn(cur.schedule.sequence) }, s))
+  const days = [{ value: -1, label: t('No preferred day') }, ...weekOrder(weekStartOf(S)).map(d => ({ value: d, label: t(DAYN[d]) }))]
+  const pick = (title, value, options, onChange) => openSelectSheet({ title, value, options, onChange })
+  const apptMenu = i => menuSheet({ title: apptLabel(S, appts[i]), items: [
+    { icon: 'calendar', label: t('Routine'), sub: routineName(S, appts[i].rid), onClick: () => pick(t('Routine'), appts[i].rid, routines, rid => setAppts(a => a.map((x, j) => (j === i ? { ...x, rid } : x)))) },
+    { icon: 'calendar', label: t('Day'), sub: appts[i].day != null ? t(DAYN[appts[i].day]) : t('No preferred day'),
+      onClick: () => pick(t('Day'), appts[i].day ?? -1, days, d => setAppts(a => a.map((x, j) => (j === i ? { rid: x.rid, ...(d >= 0 ? { day: d } : {}) } : x)))) },
+    { icon: 'trash', label: t('Remove'), danger: true, onClick: () => setAppts(a => a.filter((_, j) => j !== i)) },
+  ] })
+  const seqMenu = i => menuSheet({ title: routineName(S, seq[i]), items: [
+    { icon: 'calendar', label: t('Routine'), sub: routineName(S, seq[i]), onClick: () => pick(t('Routine'), seq[i], [...routines, { value: REST, label: t('Rest day') }], rid => setSeq(q => q.map((x, j) => (j === i ? rid : x)))) },
+    ...(i > 0 ? [{ icon: 'chevronUp', label: t('Move up'), onClick: () => setSeq(q => { const n = q.slice(); [n[i - 1], n[i]] = [n[i], n[i - 1]]; return n }) }] : []),
+    ...(i < seq.length - 1 ? [{ icon: 'chevronDown', label: t('Move down'), onClick: () => setSeq(q => { const n = q.slice(); [n[i + 1], n[i]] = [n[i], n[i + 1]]; return n }) }] : []),
+    { icon: 'trash', label: t('Remove'), danger: true, onClick: () => setSeq(q => q.filter((_, j) => j !== i)) },
+  ] })
+  const add = () => pick(t('Add routine'), null, rounds ? [...routines, { value: REST, label: t('Rest day') }] : routines,
+    rid => (rounds ? setSeq(q => [...q, rid]) : setAppts(a => [...a, { rid }])))
+  const refsShown = startReferences(S, p).length > 0
+  const mine = S.refUpdates === 'keep' ? t('Keep the one in use') : t('Ask me first')
+  return <>
+    <Section title={t('Schedule')} footer={rounds ? t('A round is one pass through the list') : null}>
+      <div style={{ padding: '10px 14px' }}>
+        <Segmented value={binding ? null : p.schedule.mode} onChange={setMode}
+          options={[{ value: 'weeks', label: t('Calendar weeks') }, { value: 'rotation', label: t('Rotation') }]} />
+      </div>
+      {binding && <Row icon="swap" iconTint="var(--orange)" title={t('Choose how to count the weeks for this rotation')} />}
+      {!rounds && appts.map((a, i) => <Row key={i} title={routineName(S, a.rid)} subtitle={a.day != null ? t(DAYN[a.day]) : t('No preferred day')} accessory="chevron" onClick={() => apptMenu(i)} />)}
+      {rounds && seq.map((rid, i) => <Row key={i} title={routineName(S, rid)} accessory="chevron" onClick={() => seqMenu(i)} />)}
+      <Row icon="plus" title={t('Add routine')} onClick={add} />
+      {!rounds && !binding && <Row title={t('In this order')} subtitle={t('Skipping ahead counts the sessions in between as skipped')}>
+        <Switch aria-label={t('In this order')} checked={p.schedule.ordered === true} onChange={v => edit((cur, s) => setSchedule(cur, { ...cur.schedule, ...(v ? { ordered: true } : { ordered: undefined }) }, s))} />
+      </Row>}
+      <Row icon="download" title={t('Use my current plan')} subtitle={t('The schedule in your plan right now becomes this programme’s.')}
+        onClick={() => edit((cur, s) => { const c = currentSchedule(s); return setSchedule(cur, c.sequence ? { mode: 'rotation', sequence: c.sequence }
+          : { mode: 'weeks', appts: weekOrder(weekStartOf(s)).flatMap(d => (c.days[d] || []).map(rid => ({ rid, day: d }))) }, s) })} />
+    </Section>
+    <Section>
+      <div className="lrow prog-weeks">
+        <span className="lrow-m"><span className="lrow-t">{rounds ? t('Rounds') : t('Weeks')}</span></span>
+        <Stepper value={p.duration.n} min={1} max={MAX_WEEKS} decimal={false} ariaLabel={rounds ? t('Rounds') : t('Weeks')} onChange={n => edit(cur => setDuration(cur, n))} />
+      </div>
+      <EndRow S={S} rounds={rounds} end={p.end} setEnd={end => edit(cur => ({ ...cur, end }))} />
+      {refsShown && <PickRow title={t('New 1RM estimates')} value={p.refs} onChange={refs => edit(cur => ({ ...cur, refs }))}
+        options={[{ value: 'inherit', label: t('Use my default ({0})', mine), subtitle: t('Set in Settings') }, { value: 'ask', label: t('Ask me') }, { value: 'keep', label: t('Keep the 1RM it starts with') }]} />}
+    </Section>
+  </>
+}
 
 export function ProgrammeEdit() {
   const nav = useNavigate()
@@ -485,13 +766,19 @@ export function ProgrammeEdit() {
   </div><div className="empty">{t('This programme is gone.')}</div></div>
   const view = programmeView(S)
   const running = view?.run.programmeId === id
-  const nowWeek = view && !['stopped', 'complete', 'ended'].includes(view.status) ? Math.min(view.nominal.used + 1, view.nominal.of) : null
-  const weeks = legacyWeeksOf(p)
-  // A running programme keeps how it counts its weeks (saveProgramme refuses, and nothing is saved).
+  // Saved when it validates; else the saved one stays and the reason shows.
   const edit = fn => {
-    try { update(s => { const cur = programmeById(s, id); if (cur) saveProgramme(s, fn(cur, s)) }) }
-    catch (e) { if (e?.message !== 'running programme') throw e; useUI.getState().toast(t('Stop this programme before changing how it counts the weeks.')) }
+    let why = null
+    update(s => {
+      const cur = programmeById(s, id)
+      if (!cur) return
+      const res = checkedEdit(s, fn(cur, s))
+      if (res.errors) why = reasonOf(res.errors)
+      else saveProgramme(s, res.def)
+    })
+    if (why) useUI.getState().toast(why)
   }
+  const links = linkable(S, p)
   const summary = scheduleSummary(S, p)
   const remove = () => confirmSheet({
     title: t('Delete “{0}”?', p.name || t('Programme')),
@@ -505,26 +792,13 @@ export function ProgrammeEdit() {
       <button className="iconbtn" data-back="/plan/programmes" onClick={() => nav('/plan/programmes')} aria-label={t('Programmes')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, margin: '0 12px', minWidth: 0 }}>
         <input className="input" defaultValue={p.name} aria-label={t('Name')} style={{ fontWeight: 600, fontSize: 'var(--fs-title3)', letterSpacing: '-.021em', width: '100%' }}
-          onChange={e => { const v = e.target.value.trim(); edit(cur => ({ ...cur, name: v || t('Programme') })) }} />
+          onBlur={e => { const v = e.target.value.trim() || t('Programme'); if (v !== p.name) update(s => { const cur = programmeById(s, id); if (cur) saveProgramme(s, { ...cur, name: v }) }) }} />
       </div>
     </div>
     {running && <RunningCard S={S} nav={nav} />}
-    <div className="sect-b" style={{ marginBottom: 16 }}>
-      <div className="lrow prog-weeks">
-        <span className="lrow-m"><span className="lrow-t">{t('Weeks')}</span></span>
-        <Stepper value={weeks.length} min={1} max={MAX_WEEKS} decimal={false} ariaLabel={t('Weeks')}
-          onChange={n => edit((cur, s) => setLegacyWeeks(cur, resizeWeeks(legacyWeeksOf(cur), n), s))} />
-      </div>
-      <Row icon={loopOf(p) ? 'swap' : 'calendar'} title={loopOf(p) ? t('Rotation') : t('Schedule')}
-        subtitle={summary || t('No schedule yet. Put routines on your week or in a loop in Plan, then take it over here.')} />
-      <Row icon="download" title={t('Use my current plan')} subtitle={t('The schedule in your plan right now becomes this programme’s.')}
-        onClick={() => edit((cur, s) => setLegacyWeeks(cur, legacyWeeksOf(cur), s, currentSchedule(s)))} />
-    </div>
-    <Section title={t('Weeks')} footer={t('The week is the calendar week: week 1 is the one you start in. A pause holds it.')}>
-      {weeks.map((w, i) => <Row key={i} title={t('Week {0}', i + 1)} subtitle={weekSummary(w, S, fixedOf(p, i))} accessory="chevron"
-        icon={w.deload ? 'chartLineSlash' : 'chartLine'} iconTint={w.deload ? 'var(--orange)' : undefined}
-        className={running && nowWeek === i + 1 ? 'prog-now' : ''} onClick={() => weekSheet(id, i)} />)}
-    </Section>
+    <ScheduleSection S={S} p={p} edit={edit} />
+    <h4 className="sec">{t('Exercises')}</h4>
+    {p.tracks.map(tr => <TrackCard key={tr.id} S={S} p={p} tr={tr} edit={edit} links={links} now={running ? view.tracks[tr.id]?.stage : null} />)}
     <div className="prog-actions col">
       {!running && <Button variant="primary" icon="play" disabled={!summary} onClick={() => startSheet(id, nav)}>{t('Start programme')}</Button>}
       <Button variant="tinted" icon="share" onClick={() => exportProgrammeFile(id)}>{t('Share programme')}</Button>
