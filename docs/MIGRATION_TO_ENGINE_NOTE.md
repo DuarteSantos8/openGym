@@ -1081,10 +1081,14 @@ bridge (`legacyWeeksOf`, `setLegacyWeek(s)`) is gone; a format-1 plan file still
 `convertLegacyProgramme`. The routine editor writes `routine.refs` and `occurrence.refs` (the
 exercise sheet, for a rule that needs a 1RM) and keeps the adopted `occurrence.ref` when the
 exercise is saved again; another exercise in its place (`replaceSlotExercise`) keeps neither
-`ref` nor `refs`.
+`ref` nor `refs`. A running or paused run keeps the training max it holds (`tm`, grown by its own
+cycles), so the editor shows that one and does not change it until the programme is stopped.
 
 A session of a running programme is placed (`slotFor`) on the run's own date for its start
 (`dateIn(start, run.tz)`), the frame its saved work is read back in, never the device's date.
+
+`autoregulated`, a previous build's name for `manual`, is read as `manual` (a non-enumerable
+alias in `PRESETS`): a rule saved under it validates and generates as before, keeping its name.
 
 ### What cannot be recovered
 

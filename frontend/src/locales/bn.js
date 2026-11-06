@@ -4088,6 +4088,7 @@ export default {
   "Passes with the round": "রাউন্ডের সঙ্গে শেষ হয়",
   "Passes with the week": "সপ্তাহের সঙ্গে শেষ হয়",
   "Stop this programme before changing how it counts the weeks.": "সপ্তাহ গোনার নিয়ম বদলানোর আগে এই প্রোগ্রাম থামান।",
+  "Stop this programme before changing its training max.": "প্রশিক্ষণের সর্বোচ্চ ওজন বদলানোর আগে এই প্রোগ্রাম থামান।",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "এই প্রোগ্রামে যত ব্যায়াম ধরে তার চেয়ে বেশি আছে। সূচি থেকে একটি সেশন সরান বা প্রোগ্রামটি মুছে দিন।",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: পুরোনো প্রোগ্রামের কিছু সংখ্যা এই ব্যায়ামের সঙ্গে মেলে না। এর সপ্তাহগুলো দেখে নিন।",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: পুরোনো প্রোগ্রাম সপ্তাহ {2}-এ 1RM-এর {1}% চাইত। এর সেটগুলোর নিজস্ব ওজন আছে, তাই এর সপ্তাহগুলো এখন এর নিজের প্রগ্রেশন মেনে চলে।",

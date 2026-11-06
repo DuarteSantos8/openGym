@@ -4052,6 +4052,7 @@ export default {
   "Passes with the round": "Går över med varvet",
   "Passes with the week": "Går över med veckan",
   "Stop this programme before changing how it counts the weeks.": "Stoppa programmet innan du ändrar hur det räknar veckorna.",
+  "Stop this programme before changing its training max.": "Stoppa programmet innan du ändrar dess träningsmax.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "Programmet har fler övningar än det rymmer. Ta bort ett pass från schemat eller radera programmet.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: några siffror i det gamla programmet passar inte den här övningen. Kontrollera dess veckor.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: det gamla programmet bad om {1} % av 1RM vecka {2}. Dess set har egna vikter, så dess veckor följer nu sin egen progression.",

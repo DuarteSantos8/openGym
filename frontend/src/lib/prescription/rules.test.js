@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { PRESETS, PRESET_IDS, defaultPlanRule, editPlan, isTemplateRule, needsOneRm, planOptions, planPhase, policyOfPreset, presetForPolicy, pyramidDirection, rptOffsets, rungsOf, supports, validateIntensifier, validatePlanRule, withRest } from '../../../../api/engine/rules.js'
 import { planFingerprint } from '../../../../api/engine/context.js'
 import { operatorFor } from '../../../../api/engine/program.js'
+import { generatePrescription } from '../../../../api/engine/generate.js'
+import { validateCanonicalProfile } from '../../../../api/migration/profile-validation.js'
+import { migratedFixture } from '../test-fixtures.js'
 
 const rule = (preset, options = {}) => defaultPlanRule(preset, { id: 'r1', exerciseId: 'ex1', unit: 'kg', ...options })
 const errorsOf = r => validatePlanRule(r).errors
@@ -91,6 +94,25 @@ describe('template catalogue', () => {
 })
 
 describe('validatePlanRule', () => {
+  it('reads a rule a previous build named "autoregulated" as Manual: valid, the same work, its own name kept, never offered', () => {
+    const manual = rule('manual', { sets: { min: 3, max: 3 }, reps: { min: 8, max: 8 }, load: abs(40) })
+    const old = { ...manual, preset: 'autoregulated' }
+    expect(validatePlanRule(old)).toEqual({ ok: true, errors: [] })
+    expect(isTemplateRule(old)).toBe(true)
+    expect(editPlan(old, { restSeconds: 120 })).toMatchObject({ preset: 'autoregulated', program: editPlan(manual, { restSeconds: 120 }).program })
+    // Generated as Manual is, under its own name: what it already generated keeps its hash.
+    const gen = r => generatePrescription({ id: 'p', now: '2026-11-02T10:00:00.000Z', trackId: 't', rule: r })
+    const named = p => ({ ...p, preset: null, ruleSnapshot: { ...p.ruleSnapshot, preset: null }, contentHash: null })
+    expect(gen(old).preset).toBe('autoregulated')
+    expect(named(gen(old))).toEqual(named(gen(manual)))
+    expect(PRESET_IDS).not.toContain('autoregulated')
+    // A profile such a build wrote (v1's "off" under that name) passes the checks a sync and an upgrade run.
+    const S = migratedFixture({ unit: 'kg', workouts: [], routines: [{ id: 'r', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 8, weight: 40, prog: 'off' }] }] })
+    S.routines[0].ex[0].rule = { ...S.routines[0].ex[0].rule, preset: 'autoregulated' }
+    expect(S.routines[0].ex[0].rule.program.phases[0].progression).toEqual([])
+    expect(validateCanonicalProfile(S)).toMatchObject({ ok: true })
+  })
+
   it('rejects an unknown preset, min above max, non-finite numbers and a missing rest', () => {
     expect(errorsOf({ ...rule('linear'), preset: 'nope' })).toEqual(['preset "nope" is not a preset'])
     // An inherited Object.prototype name is not a preset.

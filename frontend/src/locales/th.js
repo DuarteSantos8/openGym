@@ -4020,6 +4020,7 @@ export default {
   "Passes with the round": "ผ่านไปพร้อมรอบ",
   "Passes with the week": "ผ่านไปพร้อมสัปดาห์",
   "Stop this programme before changing how it counts the weeks.": "หยุดโปรแกรมนี้ก่อนเปลี่ยนวิธีนับสัปดาห์",
+  "Stop this programme before changing its training max.": "หยุดโปรแกรมนี้ก่อนเปลี่ยนเทรนนิ่งแม็กซ์",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "โปรแกรมนี้มีท่ามากเกินกว่าที่รองรับได้ เอาเซสชันออกจากตารางเวลาหนึ่งเซสชัน หรือลบโปรแกรม",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: ตัวเลขบางส่วนของโปรแกรมเดิมไม่เข้ากับท่านี้ ตรวจสัปดาห์ของมัน",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: โปรแกรมเดิมกำหนด {1}% ของ 1RM ในสัปดาห์ที่ {2} เซ็ตของมันมีน้ำหนักของตัวเอง สัปดาห์ของมันจึงใช้การเพิ่มระดับของมันเองแล้ว",

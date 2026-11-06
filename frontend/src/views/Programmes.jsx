@@ -470,6 +470,14 @@ function keptOps(occPh, ph, { reps, load }) {
 }
 
 /** One week of one exercise (spec 14): work, recovery or rest; its targets for the exercise's mode; copied or moved. */
+// The training max a running or paused run holds for an exercise: the run keeps it and grows it by its
+// own cycles (programme-run.js), so an edit of the saved programme would change nothing while it runs.
+const heldTm = (S, id, trackId) => {
+  const v = programmeView(S)
+  return v?.run.programmeId === id && ['running', 'paused'].includes(v.status) ? v.tracks[trackId]?.tm ?? null : null
+}
+const TM_HELD = () => t('Stop this programme before changing its training max.')
+
 function StageSheet({ id, trackId, stageId, close }) {
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
@@ -480,6 +488,7 @@ function StageSheet({ id, trackId, stageId, close }) {
   // Each week asked where it starts stays on show once answered, to change the answer.
   const asked = useRef(new Set())
   const whyId = useId()
+  const tmWhyId = useId()
   const track = draft?.tracks.find(tr => tr.id === trackId)
   const stage = track?.stages.find(st => st.id === stageId)
   const sl = track?.slots[Math.min(slotAt, track.slots.length - 1)]
@@ -547,8 +556,9 @@ function StageSheet({ id, trackId, stageId, close }) {
     // A step on the load fits one kind of load only: changing it lets the step go.
     return keptOps(occPh, { ...cur, groups, parameters: { ...rest, load } }, { reps: !!(operatorFor(cur, 'reps') ?? operatorFor(cur, 'sets')), load: false })
   })
-  const tmNeeded = loadKind === 'tm' && !track.tm
-  const setTm = value => setDraft(d => setTrackChoice(d, trackId, { tm: { value, unit, increment: track.tm?.increment ?? (unit === 'lb' ? 5 : 2.5) } }))
+  const held = heldTm(S, id, trackId)
+  const tmNeeded = loadKind === 'tm' && !track.tm && !held
+  const setTm = value => { if (!held) setDraft(d => setTrackChoice(d, trackId, { tm: { value, unit, increment: track.tm?.increment ?? (unit === 'lb' ? 5 : 2.5) } })) }
   const tmDefault = () => { const rm = currentOneRm(S.oneRepMaxes, track.exerciseId); return rm?.unit === unit ? Math.round(rm.value * 0.9 / 2.5) * 2.5 : unit === 'lb' ? 225 : 100 }
   const setGroup = (i, patch) => phase(cur => ({ ...cur, groups: cur.groups.map((g, j) => (j === i ? { ...g, ...patch } : g)) }))
   const groupTitle = (g, i) => (g.id === 'top' ? t('Top set') : g.id === 'backoff' ? t('Back-off sets') : t('Set {0}', i + 1))
@@ -584,10 +594,11 @@ function StageSheet({ id, trackId, stageId, close }) {
       {(mode === 'time' || bw) && <SelectButton className="unit-btn" title={t('Load')} value={loadKind === 'abs' ? 'abs' : 'none'}
         onChange={setLoadKind} options={[{ value: 'none', label: t('None') }, { value: 'abs', label: unit }]} />}
     </div>}
-    {loadKind === 'tm' && <div className="row cfgrow" style={{ marginBottom: 14 }}>
-      <Stepper label={t('Training max')} value={track.tm?.value ?? tmDefault()} step={2.5} unit={unit} onChange={setTm} />
+    {loadKind === 'tm' && <div className="row cfgrow" role="group" aria-describedby={held ? tmWhyId : undefined} style={{ marginBottom: held ? 6 : 14 }}>
+      <Stepper label={t('Training max')} value={held?.value ?? track.tm?.value ?? tmDefault()} step={2.5} unit={unit} disabled={!!held} onChange={setTm} />
       {tmNeeded && <Button size="sm" variant="tinted" onClick={() => setTm(tmDefault())}>{t('Use')}</Button>}
     </div>}
+    {loadKind === 'tm' && held && <div id={tmWhyId} className="small dim" style={{ margin: '0 2px 14px' }}>{TM_HELD()}</div>}
     {mode === 'reps' && ph.groups.length > 1 && ph.groups.map((g, i) => <div key={g.id} className="sect-b" style={{ marginBottom: 10, padding: '10px 14px' }}>
       <div className="small muted" style={{ marginBottom: 6 }}>{groupTitle(g, i)}</div>
       <div className="row cfgrow">
@@ -694,13 +705,19 @@ function StageSheet({ id, trackId, stageId, close }) {
 const stageSheet = (id, trackId, stageId) => useUI.getState().openSheet(close => <StageSheet id={id} trackId={trackId} stageId={stageId} close={close} />)
 
 /** 5/3/1 by week needs the training max it starts from (spec 12.3): 90% of the 1RM in use, else asked. */
-function TemplateSheet({ S, tr, unit, edit, close }) {
+function TemplateSheet({ S, p, tr, unit, edit, close }) {
+  const whyId = useId()
   const rm = currentOneRm(S.oneRepMaxes, tr.exerciseId)
-  const [tm, setTm] = useState(() => tr.tm?.value ?? (rm?.unit === unit ? Math.round(rm.value * 0.9 / 2.5) * 2.5 : unit === 'lb' ? 225 : 100))
+  // While it runs, the weeks are filled around the training max the run holds; the saved one stays.
+  const held = heldTm(S, p.id, tr.id)
+  const [tm, setTm] = useState(() => held?.value ?? tr.tm?.value ?? (rm?.unit === unit ? Math.round(rm.value * 0.9 / 2.5) * 2.5 : unit === 'lb' ? 225 : 100))
   return <>
     <h3>{t('5/3/1 by week (needs a training max)')}</h3>
-    <div className="row cfgrow" style={{ marginBottom: 14 }}><Stepper label={t('Training max')} value={tm} step={2.5} unit={unit} onChange={setTm} /></div>
-    <Button variant="primary" onClick={() => { edit((cur, s) => applyTemplate(cur, tr.id, 'five_three_one', { S: s, tm: { value: tm, unit, increment: unit === 'lb' ? 5 : 2.5 } })); close() }}>{t('Fill in')}</Button>
+    <div className="row cfgrow" role="group" aria-describedby={held ? whyId : undefined} style={{ marginBottom: held ? 6 : 14 }}>
+      <Stepper label={t('Training max')} value={tm} step={2.5} unit={unit} disabled={!!held} onChange={setTm} />
+    </div>
+    {held && <div id={whyId} className="small dim" style={{ margin: '0 2px 14px' }}>{TM_HELD()}</div>}
+    <Button variant="primary" onClick={() => { edit((cur, s) => applyTemplate(cur, tr.id, 'five_three_one', { S: s, tm: held ? undefined : { value: tm, unit, increment: unit === 'lb' ? 5 : 2.5 } })); close() }}>{t('Fill in')}</Button>
   </>
 }
 
@@ -712,7 +729,7 @@ function TrackCard({ S, p, tr, edit, links, now }) {
   const where = sl => slotWhere(S, p, sl)
   const word = v => (v === 'repeat' ? t('repeat it') : t('move on'))
   const fill = () => menuSheet({ title: t('Fill from a template'), items: [
-    ...(occs.every(o => o && loadedOcc(o)) ? [{ icon: 'chartLine', label: t('5/3/1 by week (needs a training max)'), onClick: () => useUI.getState().openSheet(close => <TemplateSheet S={S} tr={tr} unit={unit} edit={edit} close={close} />) }] : []),
+    ...(occs.every(o => o && loadedOcc(o)) ? [{ icon: 'chartLine', label: t('5/3/1 by week (needs a training max)'), onClick: () => useUI.getState().openSheet(close => <TemplateSheet S={S} p={p} tr={tr} unit={unit} edit={edit} close={close} />) }] : []),
     { icon: 'copy', label: t('Same work every week'), onClick: () => edit((cur, s) => applyTemplate(cur, tr.id, 'copy', { S: s })) },
   ] })
   return <Section title={<span className="capitalize">{exName(tr.exerciseId)} · <span className="dim">{tr.slots.map(where).join(' · ')}</span></span>}

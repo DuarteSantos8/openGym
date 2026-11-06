@@ -4012,6 +4012,7 @@ export default {
   "Passes with the round": "A körrel lejár",
   "Passes with the week": "A héttel lejár",
   "Stop this programme before changing how it counts the weeks.": "Állítsd le ezt a programot, mielőtt megváltoztatod, hogyan számolja a heteket.",
+  "Stop this programme before changing its training max.": "Állítsd le ezt a programot, mielőtt megváltoztatod az edzési maximumát.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "Ebben a programban több gyakorlat van, mint amennyi belefér. Vegyél ki egy edzést az ütemezésből, vagy töröld a programot.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: a régi program néhány száma nem illik ehhez a gyakorlathoz. Nézd át a heteit.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: a régi program az 1RM {1}%-át kérte a(z) {2}. héten. A sorozatainak saját súlyuk van, ezért a hetei most a saját progresszióját követik.",

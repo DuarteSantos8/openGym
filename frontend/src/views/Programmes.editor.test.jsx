@@ -454,3 +454,38 @@ describe('fix round 2', () => {
     expect(mocks.toasts.at(-1)).toBe('Stop this programme before changing how it counts the weeks.')
   })
 })
+
+describe('final review', () => {
+  // The run keeps the training max it started with and grows it by its own cycles (programme-run.js):
+  // an edit of the saved programme would change nothing, so the editor offers none while it runs.
+  it('a running programme\'s training max cannot be changed in its weeks or by a template, and says why', () => {
+    mocks.S.oneRepMaxes = { b1: { id: 'b1', exerciseId: BENCH, value: 100, unit: 'kg', source: 'estimated', capturedAt: '2026-10-20T10:00:00.000Z' } }
+    seed({ 1: ['r3'] }, [{}, {}, {}, {}])
+    mocks.S.programmes.P = applyTemplate(def(), trackOf(BENCH).id, 'five_three_one', { S: mocks.S, tm: { value: 90, unit: 'kg', increment: 2.5 } })
+    const tmStepper = () => [...host.querySelectorAll('.stp-w')].find(w => w.querySelector('.stp-l').textContent === 'Training max')
+    const WHY = 'Stop this programme before changing its training max.'
+    openWeek(BENCH, 1)
+    expect([...tmStepper().querySelectorAll('button')].map(b => b.disabled)).toEqual([false, false])
+    expect(host.textContent).not.toContain(WHY)
+    const adv = { onFailure: 'advance', onSkipped: 'advance' }
+    expect(startProgramme(mocks.S, 'P', { policies: Object.fromEntries(def().tracks.map(t => [t.id, adv])), end: 'stop', today: '2026-10-26', now: Date.now() })).toEqual({ ok: true })
+    const before = structuredClone(def())
+    openWeek(BENCH, 1)
+    expect([...tmStepper().querySelectorAll('button')].map(b => b.disabled)).toEqual([true, true])
+    expect(tmStepper().querySelector('input').value).toBe('90')
+    expect(host.textContent).toContain(WHY)
+    click(tmStepper().querySelectorAll('button')[1])
+    sheet()
+    click(button('Save'))
+    expect(def()).toEqual(before)
+    // The template still fills the weeks, around the training max the run holds.
+    page()
+    click(rowOf('Fill from a template'))
+    act(() => mocks.menu.items[0].onClick())
+    sheet()
+    expect(host.querySelector('.stp button').disabled).toBe(true)
+    expect(host.textContent).toContain(WHY)
+    click(button('Fill in'))
+    expect(trackOf(BENCH).tm).toEqual({ value: 90, unit: 'kg', increment: 2.5 })
+  })
+})

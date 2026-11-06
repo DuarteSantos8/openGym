@@ -4009,6 +4009,7 @@ export default {
   "Passes with the round": "राउंड के साथ पूरा होता है",
   "Passes with the week": "हफ़्ते के साथ पूरा होता है",
   "Stop this programme before changing how it counts the weeks.": "हफ़्ते गिनने का तरीका बदलने से पहले यह प्रोग्राम रोकें।",
+  "Stop this programme before changing its training max.": "ट्रेनिंग मैक्स बदलने से पहले यह प्रोग्राम रोकें।",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "इस प्रोग्राम में उसकी सीमा से ज़्यादा व्यायाम हैं। शेड्यूल से एक सत्र हटाएँ या प्रोग्राम मिटा दें।",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: पुराने प्रोग्राम के कुछ अंक इस व्यायाम पर फिट नहीं बैठते। इसके हफ़्ते जाँच लें।",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: पुराना प्रोग्राम हफ़्ते {2} में 1RM का {1}% माँगता था। इसके सेट का अपना भार है, इसलिए इसके हफ़्ते अब इसके अपने प्रोग्रेशन पर चलते हैं।",

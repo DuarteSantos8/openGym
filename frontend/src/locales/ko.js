@@ -4009,6 +4009,7 @@ export default {
   "Passes with the round": "라운드가 끝나면 지나감",
   "Passes with the week": "주가 끝나면 지나감",
   "Stop this programme before changing how it counts the weeks.": "주를 세는 방식을 바꾸려면 먼저 이 프로그램을 멈추세요.",
+  "Stop this programme before changing its training max.": "트레이닝 맥스를 바꾸려면 먼저 이 프로그램을 멈추세요.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "이 프로그램에는 담을 수 있는 것보다 많은 운동이 있습니다. 일정에서 세션을 하나 빼거나 프로그램을 삭제하세요.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: 이전 프로그램의 일부 숫자가 이 운동에 맞지 않습니다. 주차를 확인하세요.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: 이전 프로그램은 {2}주차에 1RM의 {1}%를 요구했습니다. 세트마다 자체 중량이 있어 이제 각 주는 이 운동의 점진적 증가를 따릅니다.",

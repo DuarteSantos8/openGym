@@ -4009,6 +4009,7 @@ export default {
   "Passes with the round": "Pasa con la ronda",
   "Passes with the week": "Pasa con la semana",
   "Stop this programme before changing how it counts the weeks.": "Detén este programa antes de cambiar cómo cuenta las semanas.",
+  "Stop this programme before changing its training max.": "Detén este programa antes de cambiar su máximo de entrenamiento.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "Este programa tiene más ejercicios de los que caben. Quita una sesión del horario o elimina el programa.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: algunos números del programa anterior no encajan con este ejercicio. Revisa sus semanas.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: el programa anterior pedía el {1}% del 1RM en la semana {2}. Sus series tienen cargas propias, así que sus semanas siguen ahora su propia progresión.",

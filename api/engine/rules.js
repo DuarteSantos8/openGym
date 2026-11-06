@@ -38,6 +38,9 @@ export const PRESETS = {
   undulating: { metrics: ['cycle_count', 'training_max'], ranges: ranges('fixed'), steps: null, stalls: false }
 }
 export const PRESET_IDS = Object.keys(PRESETS)
+// A previous build named v1's "off" 'autoregulated': read as Manual, never offered (not enumerable),
+// never renamed, so a rule keeps working and what it generated keeps its hash.
+Object.defineProperty(PRESETS, 'autoregulated', { value: PRESETS.manual })
 
 // The v1 policies each logging mode accepted and the preset that is their exact equivalent.
 // Shared by the v1 → v2 migration and the Coach, which still speaks in v1 policies. v1's "Add
@@ -198,6 +201,7 @@ function regimes(o, policy, ladderFirst) {
 
 const BUILD = {
   manual: o => program(o, [phase('plan', o)]),
+  autoregulated: o => BUILD.manual(o),
   linear: o => program(o, o.unloadedLadder ? regimes(o, 'linear', false) : [policyPhase('linear', o)]),
   greyskull: o => program(o, o.unloadedLadder ? regimes(o, 'greyskull', false) : [policyPhase('greyskull', o)]),
   double: o => program(o, o.unloadedLadder ? regimes(o, 'double', false) : [policyPhase('double', o)]),

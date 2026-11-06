@@ -4009,6 +4009,7 @@ export default {
   "Passes with the round": "Turla birlikte geçer",
   "Passes with the week": "Haftayla birlikte geçer",
   "Stop this programme before changing how it counts the weeks.": "Haftaları nasıl saydığını değiştirmeden önce bu programı durdur.",
+  "Stop this programme before changing its training max.": "Antrenman maksimumunu değiştirmeden önce bu programı durdur.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "Bu programda alabileceğinden fazla egzersiz var. Takvimden bir seans çıkar ya da programı sil.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: eski programın bazı sayıları bu egzersize uymuyor. Haftalarını kontrol et.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: eski program {2}. haftada 1RM’in %{1} kadarını istiyordu. Setlerinin kendi ağırlıkları var, bu yüzden haftaları artık kendi ilerlemesini izliyor.",

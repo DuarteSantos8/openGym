@@ -2722,6 +2722,7 @@ export const PT_BR_OVERRIDES = {
   "Needs its sessions done": "Precisa que as sessões sejam feitas",
   "Passes with the round": "Passa com a rodada",
   "Stop this programme before changing how it counts the weeks.": "Encerre este programa antes de mudar como ele conta as semanas.",
+  "Stop this programme before changing its training max.": "Encerre este programa antes de mudar o máximo de treino dele.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "Este programa tem mais exercícios do que comporta. Tire uma sessão do horário ou exclua o programa.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: alguns números do programa antigo não servem para este exercício. Revise as semanas dele.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: o programa antigo pedia {1}% do 1RM na semana {2}. As séries dele têm cargas próprias, então as semanas dele agora seguem a própria progressão.",

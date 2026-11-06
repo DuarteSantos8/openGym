@@ -4005,6 +4005,7 @@ export default {
   "Passes with the round": "Минає з раундом",
   "Passes with the week": "Минає з тижнем",
   "Stop this programme before changing how it counts the weeks.": "Зупини цей цикл, перш ніж змінювати, як він рахує тижні.",
+  "Stop this programme before changing its training max.": "Зупини цей цикл, перш ніж змінювати його тренувальний максимум.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "У цьому циклі більше вправ, ніж він уміщує. Прибери заняття з розкладу або видали цикл.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: деякі числа старого циклу не підходять цій вправі. Перевір її тижні.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: старий цикл задавав {1}% від 1RM на тижні {2}. Її підходи мають власні ваги, тож її тижні тепер ідуть за її власною прогресією.",

@@ -4009,6 +4009,7 @@ export default {
   "Passes with the round": "随这一轮结束",
   "Passes with the week": "随这一周结束",
   "Stop this programme before changing how it counts the weeks.": "要改变计周方式，请先停止这个训练周期。",
+  "Stop this programme before changing its training max.": "要改变训练最大值，请先停止这个训练周期。",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "这个训练周期的动作超出了上限。请从日程中去掉一次训练，或删除这个训练周期。",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}：旧计划中的一些数字不适合这个动作。请检查它的各周。",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}：旧计划在第 {2} 周要求 1RM 的 {1}%。它的各组有自己的重量，所以它的各周现在按它自己的进阶方式进行。",

@@ -4063,6 +4063,7 @@ export default {
   "Passes with the round": "تنتهي مع الجولة",
   "Passes with the week": "تنتهي مع الأسبوع",
   "Stop this programme before changing how it counts the weeks.": "أوقف هذا البرنامج قبل تغيير طريقة عدّه للأسابيع.",
+  "Stop this programme before changing its training max.": "أوقف هذا البرنامج قبل تغيير أقصى التدريب له.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "في هذا البرنامج تمارين أكثر مما يتسع له. أزل جلسة من الجدول أو احذف البرنامج.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: بعض أرقام البرنامج القديم لا تناسب هذا التمرين. راجع أسابيعه.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: طلب البرنامج القديم {1}% من 1RM في الأسبوع {2}. لمجموعاته أحمال خاصة بها، لذا تتبع أسابيعه الآن تدرّجه الخاص.",

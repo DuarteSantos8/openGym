@@ -4013,6 +4013,7 @@ export default {
   "Passes with the round": "Проходит с раундом",
   "Passes with the week": "Проходит с неделей",
   "Stop this programme before changing how it counts the weeks.": "Остановите этот цикл, прежде чем менять, как он считает недели.",
+  "Stop this programme before changing its training max.": "Остановите этот цикл, прежде чем менять его тренировочный максимум.",
   "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "В этом цикле больше упражнений, чем он вмещает. Уберите тренировку из расписания или удалите цикл.",
   "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: некоторые числа старого цикла не подходят этому упражнению. Проверьте его недели.",
   "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: старый цикл задавал {1}% от 1RM на неделе {2}. У его подходов свои веса, поэтому его недели теперь идут по его собственной прогрессии.",

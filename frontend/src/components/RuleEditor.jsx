@@ -19,7 +19,9 @@ export const PRESET_LABEL = {
   double: 'Double progression', triple: 'Triple progression', hold_seconds: 'Timed hold progression',
   bodyweight_ladder: 'Bodyweight ladder', pyramid_reps: 'preset.pyramid_reps.name', pyramid: 'Pyramid', five_three_one: '5/3/1',
   top_set_backoff: 'Top set and back-off', accumulation_intensification: 'Accumulation then intensification', density: 'Density',
-  double_controlled: 'preset.double_controlled.name', undulating: 'preset.undulating.name'
+  double_controlled: 'preset.double_controlled.name', undulating: 'preset.undulating.name',
+  // A previous build's name for Manual (api/engine/rules.js): never offered, shown as what it is.
+  autoregulated: 'Manual'
 }
 export const PRESET_HINT = Object.fromEntries(PRESET_IDS.map(id => [id, `preset.${id}.desc`]))
 const INCREMENT_LABEL = {
