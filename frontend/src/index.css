@@ -2672,6 +2672,26 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .streak-badge .n{font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums}
 .streak-badge.got{color:var(--label)}
 .streak-next{margin-top:14px}
+/* Your level (lib/levels.js) on the streak card: the number in a soft tile, the bar to the next
+   one beside it; the whole row opens the badges sheet. Pinned badges sit beside the profile
+   picture, small and in a row, like pins on a jacket. */
+.level-bar{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:10px 12px;border:0;border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast)}
+.level-bar:active{background:var(--press-fill)}
+.level-n{flex:none;display:grid;justify-items:center;min-width:44px;line-height:1}
+.level-k{font-size:var(--fs-caption);color:var(--label-2)}
+.level-n b{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px;color:var(--streak-ink)}
+.level-m{flex:1;min-width:0;display:grid}
+.level-bar .chev{flex:none;color:var(--label-3)}
+.lv-parts{display:flex;flex-wrap:wrap;gap:6px 14px}
+.badge-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.badge-opt{position:relative;display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 12px;border:0;border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;font-size:var(--fs-footnote);text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast),box-shadow var(--fast)}
+.badge-opt:active{background:var(--press-fill)}
+.badge-opt.on{box-shadow:inset 0 0 0 2px var(--acc)}
+.badge-opt-art{flex:none;font-size:26px;display:inline-grid;place-items:center}
+.badge-opt-t{min-width:0;line-height:var(--lh-small);text-wrap:pretty}
+.badge-opt-pin{position:absolute;top:6px;inset-inline-end:6px;font-size:12px;color:var(--acc-ink)}
+.badge-crown{display:inline-grid;place-items:center;color:var(--gold-ink)}
+.pinned-badges{flex:none;display:inline-flex;gap:2px;font-size:20px;margin-inline-end:4px}
 .streak-hint{margin-top:10px}
 .streak-what{margin-top:2px}
 .streak-how{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;margin-top:8px;margin-bottom:-6px;padding:0;border:0;background:none;color:var(--acc-ink);font:inherit;font-size:var(--fs-subhead);text-align:start;cursor:pointer}
@@ -2897,6 +2917,12 @@ button.cal-wk:active{background:var(--press-fill)}
 .wk-ring{display:inline-block;width:.62em;height:.62em;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3)}
 .wk-ring.open{box-shadow:none;border:1.5px dashed var(--streak-ink);width:.72em;height:.72em;box-sizing:border-box}
 .wk-frz{display:inline-grid;place-items:center;color:var(--frost);--icon-stroke:2}
+/* A sick or travel week (1.4.5): the day note's icon, washed like a frozen week but in the plain
+   surface tint, so it reads as "carried, not earned" without borrowing the freeze's colour. */
+.wk-exc{display:inline-grid;place-items:center;color:var(--label-2);--icon-stroke:2;font-size:.92em}
+.cal-d.wk-excused{background:var(--surface-2)}
+.streak-excused{display:flex;align-items:flex-start;gap:6px;margin-top:6px}
+.streak-excused .wk-exc{flex:none;margin-top:2px}
 .wk-legend{flex-wrap:wrap;row-gap:6px;margin-top:8px}
 .wk-legend > span{display:inline-flex;align-items:center;gap:5px}
 .wk-legend-g{display:inline-grid;place-items:center;flex:none;width:18px;font-size:14px}
@@ -4158,3 +4184,38 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cr-v{font-size:var(--fs-title3,1.25rem);font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
 .cr-s{font-size:var(--fs-footnote);color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums;margin-top:2px}
 .cr-s.accent{color:var(--acc-ink)}
+/* Favourite routines (#327): the starred ones under their own quiet heading on Plan. */
+.plan-favs-h{display:flex;align-items:center;gap:2px;margin:4px 2px 8px}
+/* The skill ladder's next rung under the progression line (views/Workout.jsx LadderNext). */
+.ladder-next{display:flex;align-items:center;gap:10px;margin:6px 0 0;padding:10px 12px;border-radius:var(--r);background:var(--acc-soft);color:var(--label)}
+.ladder-next .grow{display:grid;gap:1px;min-width:0}
+.ladder-next b{font-weight:600;font-size:var(--fs-callout);overflow-wrap:anywhere}
+.ladder-next-i{flex:none;color:var(--acc-ink);font-size:20px}
+.ladder-next-ok{flex:none;color:var(--green)}
+/* The session builder (components/SessionBuilder.jsx): a duration switch, the picks as a plain
+   list with why each is there, the total, then Start and the two quieter actions. */
+.mx-build{margin-top:12px}
+.sb-note{display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:10px 12px;border-radius:var(--r);background:var(--surface);color:var(--label-2);line-height:var(--lh-small);text-wrap:pretty}
+.sb-note .icon,.sb-note svg{flex:none;margin-top:1px}
+.sb-item .ss{white-space:normal}
+.sb-total{margin:10px 2px 0}
+.sb-actions{display:grid;gap:8px;margin-top:16px}
+.sb-actions-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
+/* Skill ladders (components/Ladders.jsx): each chain a card, its rungs a vertical track with a dot
+   per rung, filled once reached, the next one ringed in the accent. Shapes as well as colour. */
+.ladder-card h3{font-size:var(--fs-title3)}
+.ladder-steps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:2px;position:relative}
+.ladder-step button{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:6px 8px;border:0;border-radius:10px;background:none;color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast)}
+.ladder-step button:active{background:var(--press-fill)}
+.ladder-dot{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);font-size:12px;color:var(--on-acc);--icon-stroke:2.6}
+.ladder-step.is-done .ladder-dot{background:var(--acc);box-shadow:none}
+.ladder-step.is-next .ladder-dot{box-shadow:inset 0 0 0 2.5px var(--acc)}
+.ladder-step.is-todo .ladder-n{color:var(--label-2)}
+.ladder-n{flex:1;min-width:0;font-size:var(--fs-subhead);line-height:var(--lh-small)}
+.ladder-step.is-next .ladder-n{font-weight:600}
+.ladder-tag{flex:none;font-size:var(--fs-caption);font-weight:600;color:var(--acc-ink)}
+.ladder-edit-list{list-style:none;padding:0}
+.ladder-num{flex:none;width:22px;text-align:center;color:var(--label-2);font-variant-numeric:tabular-nums}
+/* Your own kit (components/KitChips.jsx): the chips, then a field with a plus to name a new one. */
+.kit-add{display:flex;align-items:center;gap:8px}
+.kit-add .input{flex:1;min-width:0}

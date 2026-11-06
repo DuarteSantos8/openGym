@@ -5,13 +5,14 @@
 // either imports this file, so there is no cycle.
 import { buildSets, applyIntensifierPlan, modeOf, barFloor, isBw, isPerSide, lastEntryFor, insertWarmupRow } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
-import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, deloadTo, DELOAD_FACTOR } from './progression.js'
+import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, deloadTo, DELOAD_FACTOR, sessionsFor } from './progression.js'
 import { dropGrid } from './plates.js'
 import { backoffStepOf, applyBackoff } from './backoff.js'
 import { dbLoadFor, historyAs, ownedWeightsFor, withMeaning } from './dumbbells.js'
 import { isAssisted } from './exercises.js'
 import { sessionHistory } from './backfill.js'
-import { programmeSlot, pctWeight } from './programmes.js'
+import { programmeSlot, pctWeight, programmeStatus } from './programmes.js'
+import { isDeloadDay, deloadSets } from './deload-cycle.js'
 import { todayISO } from './format.js'
 import { exConverted, exView, viewTarget, storedTarget, storedRow } from './ex-unit.js'
 import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
@@ -114,6 +115,25 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // policy's prescription: the weight from the %1RM, the reps from the routine, so neither the
   // policy nor "Your last session" moves numbers the programme set.
   const slot = noProg ? null : programmeSlot(stored, routine?.id, cfg.id, stored?.active?.d || todayISO())
+  // A deload week of your own (lib/deload-cycle.js), with no programme running: fewer work sets,
+  // the weight and reps where they were, and the session kept out of progression (the caller
+  // reads `deload`). Only a lifting exercise of a routine; a timed hold or cardio trains as usual.
+  const iso = stored?.active?.d || todayISO()
+  const cycle = !noProg && !slot && !!routine && modeOf(cfg) === 'reps' && !(Array.isArray(cfg.pyramid) && cfg.pyramid.length)
+    && isDeloadDay(stored, iso, !!programmeStatus(stored, iso)?.current)
+  if (cycle) {
+    const lastW = sessionsFor(st, cfg.id, cfg, routine?.id).filter(x => x.mode === 'reps').at(-1)?.weight
+    const n = deloadSets(cfg.sets)
+    plan = {
+      policy: plan.policy, kind: 'deloadweek', sets: n,
+      ...(lastW > 0 ? { weight: lastW } : plan.weight != null && plan.kind !== 'up' ? { weight: plan.weight } : cfg.weight > 0 ? { weight: cfg.weight } : {}),
+      ...(cfg.reps > 0 ? { reps: cfg.reps } : {}),
+      why: ['Deload week: {0} of {1} sets, same weight. Lighter on purpose.', n, Math.max(1, cfg.sets || 1)],
+      prog: { deload: true },
+    }
+  }
+  // What the rows are built from: the routine's own, with a deload week's fewer sets.
+  const rowCfg = cycle ? { ...cfg, sets: plan.sets } : cfg
   const policyKind = plan.kind
   if (slot) plan = programmePlan(st, cfg, plan, slot, step)
   const planReps = !startsFromLast(st) || plan.kind === 'programme'
@@ -129,7 +149,7 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // A generated or saved warm-up block (lib/warmup-ramp.js) is built last too, from the weight the
   // first work set really opens at, on the active gym's plates and dumbbells.
   const block = !warmCarry && ['auto', 'own'].includes(warmupSource(st, cfg).kind)
-  const built = applyPrescription(buildSets(st, warmCarry || block ? { ...cfg, warmupSets: 0 } : cfg, { step: ramp, rid: routine?.id, useTarget: policyKind === 'off' && !fromLast, planReps }), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
+  const built = applyPrescription(buildSets(st, warmCarry || block ? { ...rowCfg, warmupSets: 0 } : rowCfg, { step: ramp, rid: routine?.id, useTarget: policyKind === 'off' && !fromLast, planReps }), plan, ramp, barFloor(st, cfg.id), isAssisted(cfg))
   const rows = backoffStep ? applyBackoff(built, backoffStep) : built
   const shaped = applyIntensifierPlan(rows, cfg, dropGrid(st, cfg))
   const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id))
@@ -165,7 +185,7 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
     && rows.some(s => !isWarmupRow(s) && s.r !== cfg.reps)
   // `planned` is what the routine asked for, kept apart from the target the prescription moved,
   // so the next session can tell an edited plan from a progressed one (nextPrescription).
-  return { target, plan, sets, planned: plannedOf(cfg), ...(carried ? { carried: true } : {}), ...(slot?.deload ? { deload: true } : {}) }
+  return { target, plan, sets, planned: plannedOf(cfg), ...(carried ? { carried: true } : {}), ...(slot?.deload || cycle ? { deload: true } : {}) }
 }
 
 // An exercise with a weight unit of its own (#657, lib/ex-unit.js) is built in that unit: on the

@@ -116,3 +116,29 @@ describe('going lighter', () => {
     expect(lighterChanges(null, 'load')).toEqual([])
   })
 })
+
+describe('the deload suggestion reads the check-ins', () => {
+  it('turns each answered day into a 0 to 1 score, only inside the window', async () => {
+    const { dailyFormSource } = await import('./daily-form.js')
+    const S = { dayForm: { '2026-10-20': { sleep: 5, energy: 5, _ts: 1 }, '2026-10-28': { sleep: 1, energy: 2, sore: 5, _ts: 1 }, '2026-11-05': { _ts: 1 } } }
+    expect(dailyFormSource(S, '2026-10-22', '2026-11-04')).toEqual([{ d: '2026-10-28', score: 0.08 }])
+    expect(dailyFormSource(S, '2026-10-01', '2026-11-04')[0]).toEqual({ d: '2026-10-20', score: 1 })
+    expect(dailyFormSource({ ...S, modules: { health: false } }, '2026-10-01', '2026-11-04')).toEqual([])
+  })
+  it('once registered, a run of rough check-ins and falling numbers suggest a deload for both reasons', async () => {
+    const { registerDailyFormSource } = await import('./daily-form.js')
+    const { deloadSuggestion, formTrend, setDailyFormSource } = await import('./deload-cycle.js')
+    const sess = (d, id, w) => ({ id: d + id, d, entries: [{ id, sets: [{ w, r: 5, done: true }, { w, r: 5, done: true }] }] })
+    const rough = { sleep: 1, energy: 2, sore: 4, stress: 4, _ts: 1 }
+    const S = {
+      weekStart: 1,
+      workouts: [sess('2026-10-12', '0025', 100), sess('2026-10-14', '0043', 120), sess('2026-10-27', '0025', 90), sess('2026-10-29', '0043', 105)],
+      dayForm: Object.fromEntries(['2026-10-25', '2026-10-27', '2026-10-30', '2026-11-01', '2026-11-03'].map(d => [d, rough])),
+    }
+    registerDailyFormSource()
+    try {
+      expect(formTrend(S, '2026-11-04')).toMatchObject({ low: true, n: 5 })
+      expect(deloadSuggestion(S, '2026-11-04')).toMatchObject({ reason: 'both' })
+    } finally { setDailyFormSource(null) }
+  })
+})

@@ -3,10 +3,10 @@ import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
 import { fmtDate } from '../lib/format.js'
-import { RULE_IDS, NEW_PROFILE_RULE, currentRule, streakRuleOf, setStreakRule } from '../lib/streak-rule.js'
+import { RULE_IDS, NEW_PROFILE_RULE, currentRule, streakRuleOf, setStreakRule, EXCUSE_CHOICES, excuseCapOf, setExcuseCap } from '../lib/streak-rule.js'
 import { ruleLabel, ruleDesc, fromNowOn } from '../lib/streak-explain.js'
 import Icon from './Icon.jsx'
-import { Button, Row } from './ui.jsx'
+import { Button, Row, Segmented } from './ui.jsx'
 
 /* How forgiving the week streak is (lib/streak-rule.js): no freezes, one, or two. Picked on a
    new profile's Home (StreakRuleWelcome) and in Settings → Look & Home (StreakRuleRow). It takes
@@ -51,6 +51,21 @@ export function StreakRuleSheet ({ close }) {
   </div>
 }
 export const streakRuleSheet = () => useUI.getState().openSheet(close => <StreakRuleSheet close={close} />)
+
+/**
+ * Settings → Look & Home: how many missed weeks a year a sick, travel or injured day note keeps
+ * the streak through (api/coach/core/streak.js). Off leaves those weeks to the freezes.
+ */
+export function StreakExcuseRow () {
+  const cap = useStore(s => excuseCapOf(s.S))
+  const update = useStore(s => s.update)
+  return <Row icon="cloud" iconTint="var(--indigo)" title={t('Sick and travel weeks')}
+    subtitle={t('A day note saying sick, travelling or injured keeps the streak going, this many weeks a year.')}>
+    <Segmented className="seg-inline"
+      options={EXCUSE_CHOICES.map(n => ({ value: String(n), label: n ? String(n) : t('Off') }))}
+      value={String(cap)} onChange={v => update(s => { setExcuseCap(s, Number(v)) })} />
+  </Row>
+}
 
 /** The Settings row. */
 export function StreakRuleRow () {

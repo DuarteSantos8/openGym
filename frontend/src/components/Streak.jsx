@@ -1,14 +1,18 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { t, tn } from '../lib/i18n.js'
 import { fmtDate } from '../lib/format.js'
-import { STREAK_BADGES, FREEZE_MAX, streakCelebration } from '../lib/streak.js'
+import { STREAK_BADGES, FREEZE_MAX, streakCelebration, streakInfo } from '../lib/streak.js'
 import { reducedMotion } from '../lib/use-swipe-row.js'
 import { vibrate } from '../lib/sound.js'
 import Icon from './Icon.jsx'
+import { Button } from './ui.jsx'
 import { SeasonDeco } from './Seasonal.jsx'
 import { iconChoice } from '../lib/streak-icons.js'
 import { freezeLine } from '../lib/streak-explain.js'
+import { levelOf, earnedBadges, pinnedBadges, pinnedIds, togglePin, PIN_MAX } from '../lib/levels.js'
+import { monthLabel } from '../lib/challenge-copy.js'
+import { useUI } from '../store/useUI.js'
 
 /* The week streak's extras (lib/streak.js): the best run and the freezes under the streak, the
    milestone badges on Stats, and Home's little party when a week is done or a badge is reached.
@@ -164,6 +168,7 @@ export function StreakCard ({ info, onHelp }) {
       </div>
     </div>
     <StreakBadges info={info} />
+    <LevelBar info={info} />
     {info.next
       ? <div className="streak-next">
         <div className="pbar-t small"><span>{nextLine}</span><span className="pbar-n">{info.current} / {info.next}</span></div>
@@ -174,12 +179,89 @@ export function StreakCard ({ info, onHelp }) {
       : null}
     <div className="muted small streak-hint">{info.next ? '' : nextLine + ' '}{hint}</div>
     <FrozenWeeks frozen={info.frozen} />
+    <ExcusedWeeks excused={info.excused} left={info.excuseLeft} />
     {/* The calendar with every week's mark and the how-to (components/StreakCalendar.jsx). */}
     {onHelp && <button type="button" className="streak-how" onClick={onHelp} aria-haspopup="dialog">
       <Icon name="calendar" /><span>{t('How streaks work')}</span><Icon name="chevronRight" className="chev" />
     </button>}
   </div>
 }
+
+/**
+ * Your level (lib/levels.js): the number, the points into it and how many the next one needs, from
+ * weeks trained, streak badges and finished challenges. Tap for where the points come from and to
+ * pin badges to your profile.
+ */
+export function LevelBar ({ info }) {
+  const S = useStore(s => s.S)
+  const lv = levelOf(S, info)
+  if (!lv) return null
+  const line = t('{0} points to level {1}', lv.need, lv.n + 1)
+  return <button type="button" className="level-bar" data-level={lv.n} onClick={() => profileBadgesSheet(info)} aria-haspopup="dialog"
+    aria-label={t('Level {0}', lv.n) + '. ' + line}>
+    <span className="level-n" aria-hidden="true"><span className="level-k">{t('Level')}</span><b>{lv.n}</b></span>
+    <span className="level-m">
+      <span className="pbar-t small"><span>{line}</span></span>
+      <span className="pbar" aria-hidden="true"><i style={{ '--p': Math.min(1, lv.pct) }} /></span>
+    </span>
+    <Icon name="chevronRight" className="chev" />
+  </button>
+}
+
+/** One earned badge as a medal with its name: a streak milestone or a challenge month. */
+export const badgeName = b => (b.kind === 'streak' ? t('{0} week streak', b.weeks) : (b.gold ? t('Gold month') + ' · ' : '') + monthLabel(b.key))
+export function BadgeMedal ({ b, className = '' }) {
+  return b.kind === 'month' && b.gold
+    ? <span className={'badge-crown ' + className} aria-hidden="true"><Icon name="crown" /></span>
+    : <Medal tier={b.tier} className={className} />
+}
+
+/** The badges pinned to the profile, beside the picture (Settings, the Account page). */
+export function PinnedBadges ({ className = '' }) {
+  const S = useStore(s => s.S)
+  const pins = pinnedIds(S)
+  // Only the pins' own badges are worked out, and only when there are pins.
+  const list = useMemo(() => (pins.length ? pinnedBadges(S, null, earnedBadges(S, streakInfo(S))) : []), [pins.join(), S.workouts, S.challenges, S.weekStart, S.streakRule, S.dayNotes, S.streakExcuse]) // eslint-disable-line react-hooks/exhaustive-deps
+  if (!list.length) return null
+  return <span className={'pinned-badges ' + className} role="img" aria-label={t('Pinned badges: {0}', list.map(badgeName).join(', '))}>
+    {list.map(b => <BadgeMedal key={b.id} b={b} />)}
+  </span>
+}
+
+/** Where the points come from, and up to three badges to pin to your profile. */
+export function ProfileBadgesSheet ({ info, close }) {
+  const S = useStore(s => s.S)
+  const update = useStore(s => s.update)
+  const lv = levelOf(S, info)
+  const earned = earnedBadges(S, info)
+  const pins = pinnedIds(S)
+  const flip = id => update(s => { s.profileBadges = togglePin(s, id); if (!s.profileBadges.length) delete s.profileBadges })
+  return <div className="badges-sheet">
+    <h3>{lv ? t('Level {0}', lv.n) : t('Your badges')}</h3>
+    {lv && <div className="lv-parts small muted" data-level-parts>
+      <span>{tn('{0} week trained', '{0} weeks trained', lv.parts.weeks)}</span>
+      <span>{tn('{0} streak badge', '{0} streak badges', lv.parts.badges)}</span>
+      <span>{tn('{0} challenge done', '{0} challenges done', lv.parts.challenges)}</span>
+    </div>}
+    <h4 className="sec" style={{ marginTop: 16 }}>{t('Pin to your profile')}</h4>
+    <div className="muted small" style={{ marginBottom: 10 }}>{t('Pick up to {0}. They sit next to your picture.', PIN_MAX)}</div>
+    {earned.length
+      ? <div className="badge-pick" role="group" aria-label={t('Pin to your profile')}>
+        {earned.map(b => {
+          const on = pins.includes(b.id)
+          return <button key={b.id} type="button" className={'badge-opt' + (on ? ' on' : '')} aria-pressed={on} onClick={() => flip(b.id)}>
+            <span className="badge-opt-art"><BadgeMedal b={b} /></span>
+            <span className="badge-opt-t">{badgeName(b)}</span>
+            {on && <Icon name="pin" className="badge-opt-pin" />}
+          </button>
+        })}
+      </div>
+      : <div className="muted small">{t('No badges yet. Four weeks in a row gets you the first one.')}</div>}
+    <div style={{ height: 14 }} />
+    <Button variant="primary" onClick={close}>{t('Done')}</Button>
+  </div>
+}
+export const profileBadgesSheet = info => useUI.getState().openSheet(close => <ProfileBadgesSheet info={info} close={close} />)
 
 /**
  * The weeks a freeze covered in the running streak, the newest three. Without it a streak that ran
@@ -192,6 +274,20 @@ export function FrozenWeeks ({ frozen }) {
   return <div className="muted small streak-frozen" data-streak-frozen>
     <FreezeGlyph />
     <span>{frozen.length === 1 ? t('A freeze covered the week of {0}, so the streak kept going.', shown) : t('Freezes covered the weeks of {0}, so the streak kept going.', shown)}</span>
+  </div>
+}
+
+/**
+ * The weeks a sick or travel note carried in the running streak (api/coach/core/streak.js), the
+ * newest three, with how many are left this year. Same idea as FrozenWeeks: a gap you can see on
+ * the calendar is never a mystery.
+ */
+export function ExcusedWeeks ({ excused, left }) {
+  if (!Array.isArray(excused) || !excused.length) return null
+  const shown = excused.slice(-3).map(wk => fmtDate(wk, false, wk.slice(0, 4) !== String(new Date().getFullYear()))).join(', ')
+  return <div className="muted small streak-excused" data-streak-excused>
+    <span className="wk-exc" aria-hidden="true"><Icon name="cloud" /></span>
+    <span>{excused.length === 1 ? t('A sick or travel note excused the week of {0}.', shown) : t('Sick or travel notes excused the weeks of {0}.', shown)}{' '}{tn('One left this year.', '{0} left this year.', left ?? 0)}</span>
   </div>
 }
 

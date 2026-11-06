@@ -26,6 +26,7 @@ import { applyAdapt } from './coach-adapt.js'
 import { isWarmupRow, hasCompletedWork } from './workout-model.js'
 import { setSessionNoProg } from './session-noprog.js'
 import { isOn } from './modules.js'
+import { setDailyFormSource } from './deload-cycle.js'
 
 export const FORM_KEYS = ['sleep', 'energy', 'sore', 'stress']
 // The two that read the other way round: 5 is bad.
@@ -151,3 +152,17 @@ export function goLighter(s, kind) {
 
 /** Whether a session can be made lighter at all in this way (the check-in offers only those that can). */
 export const canGoLighter = (active, kind) => lighterChanges(active, kind).length > 0
+
+/**
+ * The check-ins as the automatic deload suggestion reads them (lib/deload-cycle.js, docs/dev/
+ * DELOAD_WEEKS.md): the days from `from` to `to` (inclusive) with an answer, each as its form score
+ * turned into 0 (rough) to 1 (great). With the Health module off there is no daily form to read.
+ */
+export function dailyFormSource(S, from, to) {
+  if (!S || !isOn(S, 'health')) return []
+  return formDays(S).filter(f => f.d >= from && f.d <= to)
+    .map(f => ({ d: f.d, score: Math.round(((formScore(f) - 1) / 4) * 100) / 100 }))
+}
+
+/** Hands the check-ins to the deload suggestion. Called once at start-up (main.jsx). */
+export const registerDailyFormSource = () => setDailyFormSource(dailyFormSource)

@@ -101,7 +101,44 @@ export function exAvailable(S, ex) {
   const p = activeProfile(S)
   if (!p) return true
   if (ownsNoDumbbells(S) && ex.eq === 'dumbbell') return false
+  // Your own kit (1.4.5, #323): one of your exercises that needs a sandbag or rings shows only
+  // where the gym's profile has it. Without a profile that filters, everything shows, as ever.
+  if (p.id && !kitAvailable(p, ex)) return false
   return eqAvailable(profileEquipment(p), ex, profileMachines(p))
+}
+
+/* ---------- your own kit ---------- */
+// Kit the catalogue has no word for ("sandbag", "gymnastic rings", "the red band"), as tags:
+//   equipProfile.kit = ['Sandbag', 'Rings']   what that gym or home has
+//   customEx.kit     = ['Sandbag']            what one of your exercises needs
+// Names match without case or extra spaces. Both fields sync with their entry, field by field
+// (lib/sync-merge.js), and an older app keeps them as it keeps any key it does not know.
+export const KIT_MAX = 24
+export const KIT_NAME_MAX = 30
+export const cleanKitName = v => String(v ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, KIT_NAME_MAX)
+const kitKey = v => cleanKitName(v).toLowerCase()
+/** A kit list cleaned: names, no repeats (by key), at most KIT_MAX. */
+export function cleanKit(list) {
+  const out = [], seen = new Set()
+  for (const v of Array.isArray(list) ? list : []) {
+    const n = cleanKitName(v), k = n.toLowerCase()
+    if (!n || seen.has(k)) continue
+    seen.add(k); out.push(n)
+    if (out.length >= KIT_MAX) break
+  }
+  return out
+}
+export const kitOf = x => cleanKit(x?.kit)
+/** Whether profile `p` has every piece of your own kit `ex` needs. */
+export function kitAvailable(p, ex) {
+  const need = kitOf(ex)
+  if (!need.length) return true
+  const have = new Set(kitOf(p).map(kitKey))
+  return need.every(n => have.has(kitKey(n)))
+}
+/** Every kit name in use, on any profile or exercise, in the order first seen. */
+export function knownKit(S) {
+  return cleanKit([...(S?.equipProfiles || []).flatMap(kitOf), ...(S?.customEx || []).flatMap(kitOf)].slice(0, 200))
 }
 
 // A profile saved before the bench and the bar were on the checklist (#464) never had the chance

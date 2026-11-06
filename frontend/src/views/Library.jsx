@@ -1,3 +1,4 @@
+import { laddersSheet } from '../components/Ladders.jsx'
 import { useDeferredValue, useMemo, useRef, useState } from 'react'
 import { useUI } from '../store/useUI.js'
 import { useNavigate } from 'react-router-dom'
@@ -98,6 +99,8 @@ export default function Library() {
       <div className="row lib-hdr-btns" style={{ gap: 6 }}>
         {community && <Button size="sm" variant="tinted" icon="globe" onClick={() => nav('/community')}>{t('Community')}</Button>}
         <Button size="sm" variant="tinted" icon="figureStrength" onClick={() => nav('/muscles')}>{t('By muscle')}</Button>
+        {/* Bodyweight skill chains, easiest to hardest (components/Ladders.jsx). */}
+        <Button size="sm" variant="tinted" icon="stairs" onClick={laddersSheet} data-ladders>{t('Ladders')}</Button>
       </div>
       <div className="sub lib-count">{ownCount
         ? tn('{1} animated exercises + 1 of your own', '{1} animated exercises + {0} of your own', ownCount, EXDB.length)

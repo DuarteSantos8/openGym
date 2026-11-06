@@ -1,3 +1,5 @@
+import { favRoutinesFirst, isFavRoutine } from '../lib/routine-favs.js'
+import Icon from './Icon.jsx'
 import { useMemo } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -60,7 +62,8 @@ function StartPicker({ close }) {
   const today = todayISO()
   const sessions = daySessionsStatus(st, today).filter(x => x.routines.length)
   const planned = new Set(sessions.flatMap(x => x.ids))
-  const others = (st.routines || []).filter(r => !planned.has(r.id))
+  // Starred routines first (lib/routine-favs.js, #327), each half in Plan's order.
+  const others = favRoutinesFirst((st.routines || []).filter(r => !planned.has(r.id)))
   const go = ids => { close(); startOrPreview(ids) }
   const nameOf = s => deriveSessionName(s.routines.map(r => r.name))
   const firstOpen = sessions.find(x => !x.done)
@@ -88,7 +91,7 @@ function StartPicker({ close }) {
     {others.length > 0 && <>
       <h4 className="sec">{sessions.length ? t('Other routines') : t('Your routines')}</h4>
       <div className="list menu-list" style={{ marginBottom: 14 }}>
-        {others.map(r => <Row key={r.id} icon={glyphOf(r.emoji)} title={r.name} subtitle={exCount((r.ex || []).length)}
+        {others.map(r => <Row key={r.id} icon={glyphOf(r.emoji)} title={isFavRoutine(r) ? <><Icon name="starFill" className="fav-star" />{r.name}</> : r.name} subtitle={exCount((r.ex || []).length)}
           accessory="chevron" onClick={() => go([r.id])} />)}
       </div>
     </>}

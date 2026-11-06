@@ -213,6 +213,9 @@ function cleanIntensifier(x) {
   if (type === 'restpause') {
     return { type, totalReps: Math.max(1, Math.round(Number(x.totalReps)) || 1), restSec: Math.max(5, Math.round(Number(x.restSec)) || 15) }
   }
+  if (type === 'cluster') {
+    return { type, size: Math.min(50, Math.max(1, Math.round(Number(x.size)) || 3)), restSec: Math.max(5, Math.round(Number(x.restSec)) || 20) }
+  }
   return null
 }
 
@@ -471,7 +474,9 @@ function intensifierLine(x) {
   if (!intens) return ''
   return intens.type === 'dropset'
     ? `${t('Drop-set')} ${intens.count}× −${intens.pct}%`
-    : `${t('Rest-pause')} ${intens.totalReps} ${t('reps')}`
+    : intens.type === 'cluster'
+      ? `${t('Cluster')} ${intens.size} ${t('reps')} · ${intens.restSec}s`
+      : `${t('Rest-pause')} ${intens.totalReps} ${t('reps')}`
 }
 
 // Group consecutive exercises sharing a superset id into rendered units.

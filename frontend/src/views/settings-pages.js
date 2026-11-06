@@ -145,6 +145,8 @@ export const SEARCH = [
   { page: 'workout', title: 'Animation quality', icon: 'image', tint: 'var(--indigo)', kw: 'animation quality resolution sharp hd download pack still px', when: c => c.mobile },
   { page: 'workout', title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', kw: 'advanced more options' },
   // Fine-tuning
+  { page: 'advanced', title: 'Deload weeks', icon: 'battery', tint: 'var(--indigo)', kw: 'deload deloading lighter easy week recover rhythm every weeks cycle' },
+  { page: 'advanced', title: 'Suggest a deload when I need one', icon: 'sparkles', tint: 'var(--indigo)', kw: 'deload automatic suggest tired fatigue check-in performance' },
   { page: 'advanced', title: 'Default progression', icon: 'chartLine', tint: 'var(--blue)', kw: 'progression rule default linear off automatic weight increase', opts: ['No automatic progression', 'Linear progression', 'Greyskull LP', 'Double progression', 'Triple progression'] },
   { page: 'advanced', title: 'Planned sessions start from', icon: 'clipboard', tint: 'var(--green)', kw: 'start from plan last session reps carry over', opts: ['Your plan', 'Your last session'] },
   { page: 'advanced', title: 'Last time means', icon: 'history', tint: 'var(--indigo)', kw: 'last time previous session history routine workout across every any', opts: ['This routine', 'Any workout'] },
@@ -203,6 +205,7 @@ export const SEARCH = [
   { page: 'look', title: 'Accent color', icon: 'palette', tint: 'var(--purple)', kw: 'color colour accent tint custom own picker hex rgb', opts: [...Object.values(ACCENT_NAMES), 'Your own color'], tkw: () => t('custom color picker') },
   { page: 'look', title: 'Icons', icon: 'sparkles', tint: 'var(--orange)', kw: 'emoji icons flame medal snowflake pictures' },
   { page: 'look', title: 'Streak flame', icon: 'flame', tint: 'var(--orange)', mod: 'motivation', kw: 'streak flame fire icon emoji custom own symbol colour color' },
+  { page: 'look', title: 'Sick and travel weeks', icon: 'cloud', tint: 'var(--indigo)', mod: 'motivation', kw: 'streak sick ill travel travelling holiday vacation injured excuse day note week' },
   { page: 'look', title: 'Streak freezes', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze freezes rule strict gentle generous off missed week forgiving', opts: ['No freezes', 'Gentle', 'Generous'] },
   { page: 'look', title: 'Recovery counts for the streak', icon: 'sparkles', tint: 'var(--teal)', mod: 'motivation', kw: 'recovery sauna ice bath cold massage mobility streak count' },
   { page: 'look', title: 'Streak freeze', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze snowflake icon emoji custom own symbol colour color' },

@@ -20,6 +20,10 @@ const toast = m => useUI.getState().toast(m)
 const VIEW = 264   // px, the crop viewport: fits a 320 px phone inside the sheet's padding
 
 /** The sentence for a picked file that cannot be a picture. */
+import { PinnedBadges, profileBadgesSheet } from './Streak.jsx'
+import { streakInfo } from '../lib/streak.js'
+import { isOn } from '../lib/modules.js'
+
 export function avatarErrorText(e) {
   if (e?.code === 'type') return t('That isn’t a photo. Try a JPEG, PNG, WebP or HEIC.')
   return mediaErrorText(e)
@@ -75,6 +79,9 @@ export function AvatarSection({ name, signedIn }) {
     <Row icon="image" iconTint="var(--acc)" title={t('Choose a photo')} accessory="chevron" onClick={pick} />
     <Row icon="smile" iconTint="var(--orange)" title={t('Pick an icon')} accessory="chevron"
       onClick={() => useUI.getState().openSheet(close => <AvatarPresetSheet close={close} />)} />
+    {/* Badges pinned beside the picture (lib/levels.js); the same sheet as Stats → Week streak → Level. */}
+    {isOn(S, 'motivation') && <Row icon="medal" iconTint="var(--yellow)" title={t('Badges on your profile')} accessory="chevron"
+      value={<PinnedBadges />} onClick={() => profileBadgesSheet(streakInfo(S))} />}
     {a && <Row icon="trash" iconTint="var(--red)" title={t('Remove picture')} danger onClick={remove} />}
     {/* accept image/*: the phone's own chooser offers the camera and the library. */}
     <input ref={file} type="file" accept="image/*" hidden onChange={onFile} data-avatar-input />

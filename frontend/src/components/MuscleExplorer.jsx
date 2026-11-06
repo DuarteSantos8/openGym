@@ -19,7 +19,7 @@ const FAV = '☆'
 
 // One explorer for the Library and every catalogue picker. Supplying `onPick` turns
 // a result into a selection; without it the explorer behaves like the normal Library.
-export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'plus', initial = null }) {
+export default function MuscleExplorer({ onPick, onDetail, onPlan, onBuild, pickIcon = 'plus', initial = null }) {
   const S = useStore(s => s.S)
   // The filter (#885, #900, lib/muscle-filter.js): muscles and groups, AND by default. A group
   // chip picks the whole group and opens its muscles in the strip below, to pick one instead.
@@ -107,6 +107,9 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan, pickIcon = 'p
         <Segmented value={match} onChange={v => { setMatch(v); setShown(40) }}
           options={[{ value: 'all', label: t('All of them') }, { value: 'any', label: t('Any of them') }]} />
       </div>}
+      {/* Tap muscles, get a session (components/SessionBuilder.jsx), on the Library's explorer only. */}
+      {onBuild && selected && <Button variant="primary" icon="sparkles" className="mx-build" onClick={() => onBuild(terms)} data-build-session>
+        {t('Build a session')}</Button>}
     </div>
 
     {!selected && onPick && <div className="empty"><div className="ico"><Icon name="figureStrength" /></div>{t('Choose a muscle to see exercises that train it.')}</div>}
