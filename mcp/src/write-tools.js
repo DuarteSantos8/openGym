@@ -7,10 +7,11 @@
    the client turns what was said into exercises and sets, and this builds, checks and files them.
    What the lib will not guess at — a name the library spells twice, an exercise the user has not
    made yet — comes back as `problems` with candidates, for the LLM to put to the user. */
+import crypto from 'node:crypto'
 import { z } from 'zod'
 import { isoDate, entryView, withCustomsIndexed } from './tools.js'
 import { localUid, invalidate } from './state.js'
-import { apiConfig, apiFetch } from './api-client.js'
+import { apiConfig, apiFetch, profilePaths } from './api-client.js'
 import { buildLoggedWorkout, appendLoggedWorkout, findDuplicate, BODY_PARTS, LOG_LIMITS } from '../../frontend/src/lib/log-workout.js'
 import { friendlyDuration } from './labels.js'
 
@@ -19,12 +20,20 @@ const hhmm = t => { const d = new Date(t); return String(d.getHours()).padStart(
 // Two writers racing the same profile resolve in a round or two; past that something keeps
 // writing, and the user is better told than retried at.
 const MAX_ATTEMPTS = 3
-// Saves per hour, per MCP process. Logging a week someone forgot is a handful; a client looping on
-// the tool is not, and each save is a full profile write on the server that every device pulls.
+// Saves per hour, per profile (one process may serve several over HTTP). Logging a week someone
+// forgot is a handful; a client looping on the tool is not, and each save is a full profile write
+// on the server that every device pulls. The server counts a scoped token's writes too.
 export const WRITE_LIMIT = 20
 const WINDOW_MS = 60 * 60000
-let saves = []
-export const _resetWriteWindow = () => { saves = [] }
+const savesBy = new Map()
+export const _resetWriteWindow = () => { savesBy.clear() }
+/** This hour's saves for the profile `key` (a token's or the configured one). */
+export function savesOf(key, now) {
+  const list = (savesBy.get(key) || []).filter(t => now - t < WINDOW_MS)
+  if (savesBy.size > 1000 && !savesBy.has(key)) savesBy.clear()
+  savesBy.set(key, list)
+  return list
+}
 
 function fail(code, message) {
   const err = new Error(message)
@@ -132,16 +141,17 @@ export const logWorkout = {
     const opts = fetchImpl ? { fetchImpl } : {}
     // One clock for every attempt: a retry after a conflict files the same workout, not a later one.
     const now = Date.now()
-    saves = saves.filter(t => now - t < WINDOW_MS)
+    const paths = profilePaths(cfg)
+    const saves = savesOf(crypto.createHash('sha256').update(cfg.token).digest('hex'), now)
     if (!params.dry_run && saves.length >= WRITE_LIMIT) {
       throw fail('ERATE', `log_workout already saved ${WRITE_LIMIT} workouts in the last hour, the most it takes in one go; nothing was saved. Wait a bit, or log the rest in the app.`)
     }
     const input = inputOf({ ...params, date: params.date || localIso(new Date(now)) })
 
-    const me = await apiFetch(cfg, '/api/me', opts)
+    const me = await apiFetch(cfg, paths.me, opts)
     const uid = me.body?.user?.id
     // A guard that cannot read whose token this is refuses rather than steps aside.
-    if (typeof uid !== 'string' || !uid) throw fail('EAPI', 'the openGym server did not say which profile OPENGYM_TOKEN belongs to (GET /api/me); nothing was saved')
+    if (typeof uid !== 'string' || !uid) throw fail('EAPI', `the openGym server did not say which profile the token belongs to (GET ${paths.me}); nothing was saved`)
     const local = localUid()
     if (local && local !== uid) {
       // The ids go to the operator on stderr, not into the model's context (state.js ambiguousUid).
@@ -149,7 +159,7 @@ export const logWorkout = {
       throw fail('EPROFILE', 'OPENGYM_TOKEN belongs to another profile than the one this server reads: pair again from the right profile, or set OPENGYM_UID to match (the ids are on the server\'s stderr)')
     }
 
-    let got = await apiFetch(cfg, '/api/data', opts)
+    let got = await apiFetch(cfg, paths.data, opts)
     // A description without a unit is in the profile's, as the profile was when first read: a
     // retry after another device switched kg ↔ lb reads the same numbers the same way.
     let unit = null, meanings = null
@@ -180,7 +190,7 @@ export const logWorkout = {
       if (!added.added) {
         return { logged: false, duplicate: true, workout_id: added.workout.id, date: added.workout.d, message: 'This session is already in the history; nothing was added. If it really was a second session, call again with allow_duplicate: true and a different start or name.' }
       }
-      const put = await apiFetch(cfg, '/api/data', { ...opts, method: 'PUT', body: { state: S, baseRev: got.body.rev ?? 0, ...(typeof doc._wid === 'string' ? { baseWid: doc._wid } : {}) } })
+      const put = await apiFetch(cfg, paths.data, { ...opts, method: 'PUT', body: { state: S, baseRev: got.body.rev ?? 0, ...(typeof doc._wid === 'string' ? { baseWid: doc._wid } : {}) } })
       if (put.status !== 409) {
         invalidate()
         saves.push(now)

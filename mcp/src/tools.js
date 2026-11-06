@@ -127,6 +127,8 @@ export const listRoutines = {
     if (!S) return noState()
     return {
       unit: S.unit || 'kg',
+      // The profile's revision: what update_routine and delete_routine take as expected_revision.
+      revision: typeof S._rev === 'number' ? S._rev : null,
       routines: (S.routines || []).map(r => ({
         id: r.id,
         name: r.name,
@@ -158,6 +160,7 @@ export const getRoutine = {
       policy_name: policyName(policyFor(null, r, 'reps', profileRule(S))),
       exclude_from_progression: r.excludeFromProgression === true,
       unit: S.unit || 'kg',
+      revision: typeof S._rev === 'number' ? S._rev : null,
       exercises: (r.ex || []).map((cfg, i) => {
         const ex = exerciseOf(cfg.id, S)
         const mode = modeOf(cfg)
