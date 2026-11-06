@@ -53,6 +53,7 @@ import { useCoachGate } from '../lib/use-coach-gate.js'
 // Opened in the same tick as the menu closes, like every other sheet from that menu: a sheet that
 // opened a moment later (after a dynamic import) took the menu's history entry with it on close.
 import { workoutCoachSheet } from '../components/WorkoutCoachSheet.jsx'
+import { splitLabel } from '../lib/gym-split.js'
 import { hasConsent } from '../lib/coach.js'
 import { sessionNoProg, setSessionNoProg, setEntryNoProg, joinSessionNoProg } from '../lib/session-noprog.js'
 import { glyphOf } from '../lib/glyphs.js'
@@ -273,6 +274,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   }
   const trendSay = (i, label) => (trends?.[i] ? label + ', ' + trendLabel(trends[i], S.unit) : label)
   const standingNote = exNoteFor(S, entry.id)
+  // An exercise kept per gym (#988): which gym (and brand) its numbers come from today.
+  const splitTag = splitLabel(S, entry.id, S.active?.gym?.name)
   // Only worth surfacing while there is still work left: once the exercise is finished, a note
   // telling you what to do in it is behind you, and the block is already long.
   const pinnedNote = entry.sets.some(s => !s.done) ? pinnedNoteFor(S, entry.id) : null
@@ -289,7 +292,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // What the progression policy decided for this session, and why (issue #17). Computed when
   // the session was built so the reason matches the numbers already in the rows.
   const plan = entry.plan
-  const guidance = progressionGuidance(plan)
+  // Rows set for today by a session target (#972) are not the policy's, so its "why" would explain
+  // numbers that are not on screen. The plan line below still shows what the routine asks for.
+  const guidance = entry.sessionTarget ? null : progressionGuidance(plan)
   // The plan this exercise was built from (issue #275), on one quiet line in every view — the
   // routine's "2 × 10" is the thing the rows are measured against. When today's rows open
   // somewhere else, the same line says so: progression moved the sets or reps (a bodyweight
@@ -829,6 +834,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
       {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
+      {splitTag && <span className="tag nocap"><Icon name="mapPin" />{splitTag}</span>}
     </div>
     {/* Three notes can apply to one exercise and they are not interchangeable, so each keeps its
         own line and its own icon: the plan's instruction (cfg.note, from the routine), the
@@ -841,6 +847,9 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       {t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}
     </div>}
     {entry.note && <div className="exnote">{entry.note}</div>}
+    {/* Rows set for this one workout by a coach or planner (#972, lib/session-targets.js). */}
+    {entry.sessionTarget && <div className="exnote" style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}><Icon name="calendar" style={{ fontSize: 'var(--fs-footnote)', flex: 'none', transform: 'translateY(1px)' }} />
+      <span>{entry.sessionTarget.by ? t('Today’s rows come from {0}. Your routine stays as it is.', entry.sessionTarget.by) : t('Today’s rows were planned for this day. Your routine stays as it is.')}</span></div>}
     {planLine}
     {refLine}
     {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}
@@ -1587,7 +1596,10 @@ function ActiveWorkout() {
   // a superset member acts on that member, not on whatever the marker happens to point at.
   const swapExercise = idx => {
     if (focusMode) focusPointerEpoch.current++
-    swapActiveWorkoutExercise(idx)
+    // The Coach, for a machine that's taken (#1003): the same door as the ⋯ menu's Ask the Coach.
+    const coachOk = coachGate.ok && hasConsent(S) && !editing && (A.entries[idx]?.sets || []).some(x => !isWarmupRow(x) && !x.done)
+    if (coachOk) swapActiveWorkoutExercise(idx, { askCoach: () => workoutCoachSheet(idx, 'busy') })
+    else swapActiveWorkoutExercise(idx)
   }
   const blockProps = idx => ({
     editing,

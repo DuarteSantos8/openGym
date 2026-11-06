@@ -405,6 +405,10 @@ const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
   {r.ex.map((e, i) => <div key={i} className="pcard-ex">
     <div className="pcard-ex-r"><span className="pcard-ex-n">{exName(e.id)}</span><span className="pcard-ex-l">{exLine(e, unit, speedUnit)}</span></div>
     {!!e.why && <div className="pcard-ex-w">{e.why}</div>}
+    {/* What the routine keeps (#1003): the cue shown under the exercise in every workout, and
+        the backups a swap offers first. */}
+    {!!e.note && <div className="pcard-ex-x"><Icon name="info" />{e.note}</div>}
+    {Array.isArray(e.subs) && e.subs.length > 0 && <div className="pcard-ex-x"><Icon name="swap" />{t('Backups: {0}', e.subs.map(exName).join(', '))}</div>}
   </div>)}
 </div>
 

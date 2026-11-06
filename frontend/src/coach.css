@@ -135,6 +135,8 @@
 .pcard-ex-n{font-size:var(--fs-callout);font-weight:500;letter-spacing:-.01em;text-transform:capitalize}
 .pcard-ex-l{font-size:14px;color:var(--label-2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .pcard-ex-w{font-size:var(--fs-footnote);color:var(--label-2);line-height:1.42;margin-top:3px}
+.pcard-ex-x{display:flex;gap:6px;align-items:baseline;font-size:var(--fs-footnote);color:var(--label-2);line-height:1.42;margin-top:3px}
+.pcard-ex-x .icn{flex:none;color:var(--teal);transform:translateY(1px)}
 .pcard-week{display:flex;gap:5px;padding:10px 18px 4px}
 .pcard-wd{flex:1;text-align:center;font-size:var(--fs-caption2);font-weight:600;padding:7px 0;border-radius:var(--r-sm);background:var(--surface-2);color:var(--label-3)}
 .pcard-wd.on{background:var(--acc-soft);color:var(--acc-ink)}

@@ -333,7 +333,10 @@ export function lightBundle(b) {
         id: e.id, sets: e.sets, mode: e.mode || 'reps',
         ...(e.reps != null ? { reps: e.reps } : {}), ...(e.sec != null ? { sec: e.sec } : {}),
         ...(e.min != null ? { min: e.min } : {}), ...(e.weight ? { weight: e.weight } : {}),
-        ...(e.why ? { why: String(e.why).slice(0, 200) } : {})
+        ...(e.why ? { why: String(e.why).slice(0, 200) } : {}),
+        // The cue and the backups the routine kept (#1003), so an old proposal still shows them.
+        ...(e.note ? { note: String(e.note).slice(0, 300) } : {}),
+        ...(Array.isArray(e.subs) && e.subs.length ? { subs: e.subs.filter(x => typeof x === 'string').slice(0, 3) } : {})
       }))
     }))
   }

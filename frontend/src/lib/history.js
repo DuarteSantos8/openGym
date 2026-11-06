@@ -26,6 +26,7 @@ const workRowsForMode = (entry = {}, mode = 'reps') => {
 // for the hook — and it re-exports this very `t` from core, so nothing changes here except what
 // gets dragged along behind it.
 import { t } from './i18n-core.js'
+import { gymSplitView } from './gym-split.js'
 import { queueNext, pinState, queueLiveOn } from './queue.js'
 import { isPyramid, pyramidLabel, pyramidTargetAt, pyramidWeightAt, PYRAMID_MAX } from './pyramid.js'
 
@@ -423,6 +424,8 @@ export const lastAcrossRoutines = S => S?.lastFrom === 'any'
  * means → Any workout" (lastAcrossRoutines) the routine is ignored and the newest session wins.
  */
 export function lastEntryFor(S, exId, rid) {
+  // An exercise kept per gym (#988, lib/gym-split.js) reads only this gym's (or brand's) sessions.
+  S = gymSplitView(S, exId)
   if (rid && !lastAcrossRoutines(S)) {
     const own = lastEntryIn(S, exId, rid)
     if (own) return own
