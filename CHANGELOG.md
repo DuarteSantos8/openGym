@@ -14,6 +14,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Compare two to nine photos: side by side in tidy rows, every photo the same height (drag one to choose what shows), or the before/after slider for two. Share sends exactly what is on the screen as one picture, made on your phone (#950, idea by @Borgna02).
 - Progress photos stay yours: none of this shares them anywhere. Trainers still need your photos permission, and the community library still only shows a photo you share yourself.
 - Fixed: Progress photos could not be opened before your first workout, so there was no way to add the very first one.
+- Fixed: the before/after slider had lost its round grip, leaving only a thin line to aim for.
 
 **Importing, with a say in it**
 - Check and choose: the import summary lists every exercise in the file and what it becomes. Tap one to pick the right library exercise or keep it as your own, and the pick is remembered for the next import (#931, idea by @lodepav).
