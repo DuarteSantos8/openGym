@@ -12,7 +12,7 @@ describe('the directory', () => {
     expect(cardState('webhook', web)).toEqual({ status: 'server', action: null })
     expect(cardState('mcp', web)).toEqual({ status: 'server', action: null })
     expect(ids(web)).not.toContain('coach')   // the server's Coach, not offered here
-    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'automation', 'ai'])
+    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'backup', 'automation', 'ai'])
   })
 
   it('a phone shows its own store only, by what the store says', () => {
@@ -78,5 +78,38 @@ describe('normalizeWebhookUrl', () => {
     expect(normalizeWebhookUrl('ftp://nas/x')).toBe('ftp://nas/x')
     expect(normalizeWebhookUrl('not a url')).toBe('not a url')
     expect(normalizeWebhookUrl('')).toBe('')
+  })
+})
+
+describe('the WebDAV card (#582)', () => {
+  it('needs no server, says when the last backup failed, and stays out of the demo', async () => {
+    const { cardState } = await import('./integrations.js')
+    expect(cardState('webdav', { user: null })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('webdav', { webdav: { url: 'https://x/', lastOk: 1 } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('webdav', { webdav: { url: 'https://x/', last: { ok: false } } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(cardState('webdav', { demo: true })).toBeNull()
+  })
+})
+
+describe('the calendar card', () => {
+  it('needs the server and its tokens, and says when it is on', async () => {
+    const { cardState } = await import('./integrations.js')
+    expect(cardState('calendar', { user: null })).toEqual({ status: 'server', action: null })
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: false })).toBeNull()
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: true, calendar: { on: false } })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: true, calendar: { on: true } })).toEqual({ status: 'connected', action: 'manage' })
+  })
+})
+
+describe('the Strava card (#478)', () => {
+  it('only where the server offers it, an admin is told how; then connect, connected or attention', async () => {
+    const { cardState } = await import('./integrations.js')
+    const u = { user: { id: 'u' } }
+    expect(cardState('strava', { user: null })).toEqual({ status: 'server', action: null })
+    expect(cardState('strava', { ...u, offered: ['webhook'] })).toBeNull()
+    expect(cardState('strava', { ...u, admin: true, offered: [] })).toEqual({ status: 'off', action: 'open' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [] } })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [{ provider: 'strava', status: 'connected' }] } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [{ provider: 'strava', status: 'attention' }] } })).toEqual({ status: 'attention', action: 'manage' })
   })
 })

@@ -21,7 +21,7 @@ import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, transitionRestFor } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, transitionRestFor, restKindAfter } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
@@ -78,6 +78,8 @@ import { formulaOf } from '../lib/onerm.js'
 import { setNoteOf } from '../lib/set-notes.js'
 import { isOn } from '../lib/modules.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
+import { tempoSheet, tempoGuideSheet, TempoTag } from '../components/Tempo.jsx'
+import { tempoOf, normalizeTempo } from '../lib/tempo.js'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -198,6 +200,21 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       if (!row) return
       if (sec == null) delete row.restSec
       else row.restSec = Math.max(0, Math.min(REST_MAX, Math.round(sec)))
+    }, true)
+  }
+  // One set's own tempo for this session (#572): null goes back to the exercise's. On the set's
+  // first row, like its rest, with the same guard against a sheet that outlived its rows.
+  const setTempoAt = (i, tempo) => {
+    const at = useStore.getState().S.active
+    const ref = { id: at?.id, entryId: at?.entries?.[entryIdx]?.id, rows: at?.entries?.[entryIdx]?.sets?.length }
+    update(s => {
+      const e = s.active?.entries?.[entryIdx]
+      if (!e || s.active.id !== ref.id || e.id !== ref.entryId || e.sets.length !== ref.rows) return
+      const row = e.sets[setSpanAt(e.sets, i)[0]]
+      if (!row) return
+      const v = normalizeTempo(tempo)
+      if (!v || v === normalizeTempo(e.target?.tempo)) delete row.tempo
+      else row.tempo = v
     }, true)
   }
   const addDropRow = i => mutSet(i, row => {
@@ -349,6 +366,14 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // Zero added weight must stay editable: a bodyweight set can become weighted
   // later, or return to zero without losing its load control (issue #460).
   const cfg = { ...(entry.target || {}), id: entry.id }
+  // The tempo of the set up next (or of the last one, once all are done), and its guide.
+  const tempoIdx = (() => { const k = entry.sets.findIndex(x => !x.done && !isWarmupRow(x)); return k >= 0 ? k : entry.sets.length - 1 })()
+  const tempoNow = mode === 'reps' && tempoIdx >= 0 ? tempoOf(entry.target, entry.sets[tempoIdx]) : null
+  const openTempoGuide = () => {
+    const row = entry.sets[tempoIdx]
+    tempoGuideSheet({ tempo: tempoNow, reps: row?.r || entry.target?.reps || 8, name: exerciseNameText(ex),
+      onTick: !editing && row && !row.done && !isSideSet(row) ? () => onToggle(tempoIdx) : null })
+  }
   const bw = !cardio && isBw(cfg)
   // A unilateral exercise logs each side on its own (issue #60): work rows render as an L and an
   // R sub-row, each with its own weight/reps/effort and done tick. Warm-ups stay single.
@@ -621,6 +646,12 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           // its two sides either way (#575), so it goes back and forth like any other.
           !warm && mode === 'reps' && canBeWarmup(s) && entry.sets.some((x, j) => j !== i && !isWarmupRow(x)) && { icon: 'sunrise', label: t('Make it a warm-up set'), onClick: () => setPhaseAt(i, true) },
           warm && mode === 'reps' && { icon: 'dumbbell', label: t('Count it as a working set'), onClick: () => setPhaseAt(i, false) },
+          // Just this set's tempo, this session (#572): a slow first set, a paused one at the end.
+          !warm && mode === 'reps' && { icon: 'stopwatch', label: t('Tempo'), sub: tempoOf(entry.target, entry.sets[spanStart]) || t('None'), onClick: () => tempoSheet({
+            title: t('Tempo for this set'), value: tempoOf(entry.target, entry.sets[spanStart]),
+            clearLabel: normalizeTempo(entry.target?.tempo) ? t('Like the exercise ({0})', normalizeTempo(entry.target.tempo)) : t('No tempo'),
+            onDone: v => setTempoAt(spanStart, v),
+          }) },
           // Just this set's rest, this session (#609): a long one before the top set, none after a light one.
           !editing && { icon: 'timer', label: t('Rest after this set'), sub: ownRestHere == null ? t('Default ({0})', fmtRest(setRestDefault(i))) : ownRestHere === 0 ? t('No timer') : fmtRest(ownRestHere), onClick: () => openSetRest(i) },
         ] }] },
@@ -831,6 +862,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
           chip — which halved the combined total for display — is gone: the split is no longer
           derived, it is what you enter. The tag only flags that this is per-side. */}
       {!cardio && isPerSide(cfg) && <span className="tag acc nocap"><Icon name="sides" />{t('Per side')}</span>}
+      {/* Tempo (#572): the next set's, which is the exercise's unless that set has its own. */}
+      {tempoNow && <TempoTag tempo={tempoNow} onClick={openTempoGuide} />}
       {(ex.tg || ex.bp) && <span className="tag">{t(MUSCLE_NAME[ex.tg] || ex.tg || ex.bp)}</span>}
       {ex.eq && <span className="tag">{t(ex.eq)}</span>}
       {best > 0 && <span className="tag nocap">{t('Best:')} {fmtNum(best)} {S.unit}</span>}
@@ -2130,7 +2163,7 @@ function ActiveWorkout() {
       // still the rest you are in, held on purpose, and a re-check leaves it as it is.
       if (!progress.isNew) {
         const rest = useUI.getState().timer
-        if (restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (restOnRecheck({ timerRunning: !!(rest && !rest.ready), unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i, rest: restKindAfter({ row: fresh.entries[idx].sets[i], unitDone: freshUnitDone, superset: (freshUnit?.length || 0) > 1 }) })
         return
       }
 
@@ -2164,7 +2197,7 @@ function ActiveWorkout() {
       // stopRest() first so a rest that belongs after this set replaces the one that was running.
       if (freshUnitDone) stopRest()
       if (!freshUnit || freshUnit.length <= 1) {
-        if (restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i })
+        if (restAfterSet({ unitDone: freshUnitDone, lastUnit: freshWorkoutDone })) startRest(restAfter, idx, { forSet: i, rest: restKindAfter({ row: fresh.entries[idx].sets[i], unitDone: freshUnitDone }) })
         onFocusProgress?.({ unitDone: freshUnitDone })
         return
       }
@@ -2172,10 +2205,10 @@ function ActiveWorkout() {
       const step = supersetFlowStep(fresh.entries, freshUnit, idx)
       if (!step) { onFocusProgress?.({ unitDone: freshUnitDone }); return }
       if (step.unitDone) {
-        if (nextUnit?.length) startRest(restAfter, idx, { forSet: i })
+        if (nextUnit?.length) startRest(restAfter, idx, { forSet: i, rest: 'exercise' })
       } else {
         if (step.nextIdx != null) update(s => { if (s.active) s.active.cur = step.nextIdx })
-        if (step.roundDone) startRest(restAfter, idx, { forSet: i })
+        if (step.roundDone) startRest(restAfter, idx, { forSet: i, rest: 'superset' })
       }
       onFocusProgress?.({ unitDone: freshUnitDone })
     }

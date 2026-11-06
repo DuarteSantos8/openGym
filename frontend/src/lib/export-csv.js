@@ -12,6 +12,7 @@
 // mixed file would leave every workout row with twenty empty measurement columns.
 
 import { readingsOf } from './weigh-ins.js'
+import { tempoOf } from './tempo.js'
 import { EXIDX } from './exercises.js'
 import { capWords } from './format.js'
 import { MEASUREMENT_FIELDS, builtinCsvColumn, customCsvColumn, customDisplayValue } from './measurements.js'
@@ -23,7 +24,7 @@ import { hasLevel } from './incline.js'
 export const WORKOUT_COLUMNS = [
   'date', 'start_time', 'end_time', 'workout', 'workout_note', 'exercise', 'exercise_id', 'body_part',
   'superset_id', 'set', 'set_type', 'side', 'weight', 'unit', 'reps', 'rpe', 'rir', 'distance_km',
-  'seconds', 'incline', 'resistance_level', 'note', 'set_note',
+  'seconds', 'incline', 'resistance_level', 'note', 'set_note', 'tempo',
 ]
 
 /** One CSV field, RFC 4180: quoted when it holds a comma, a quote or a line break. */
@@ -101,7 +102,8 @@ export function workoutRows(S, { from = null, to = null } = {}) {
       let no = 0, noteLeft = e.note || ''
       // The entry's note rides on its first row only: the importer keeps one note per exercise.
       // A set's own note (lib/set-notes.js) on that set's row, its first one for a per-side set.
-      const push = (cells, setNote = '') => { rows.push([...head, ...exCells, ...cells, noteLeft, setNote]); noteLeft = '' }
+      // The tempo the set was done at (#572): its own, else the exercise's; blank without one.
+      const push = (cells, setNote = '', tempo = '') => { rows.push([...head, ...exCells, ...cells, noteLeft, setNote, tempo]); noteLeft = '' }
       const cardio = s => !(s.r > 0) && (s.min > 0 || s.speed > 0)
       for (const s of e.sets || []) {
         if (!hasCompletedWork(s)) continue
@@ -115,7 +117,7 @@ export function workoutRows(S, { from = null, to = null } = {}) {
         const effort = x => [x.rpe != null ? n(x.rpe) : '', x.rir != null ? n(x.rir) : '']
         const one = (x, side) => {
           if (side && !x.done) return
-          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', '', ''], setNote)
+          push([no, type, side, n(x.w || 0), unit, x.sec > 0 && !(x.r > 0) ? '' : n(x.r || 0), ...effort(x), '', x.sec > 0 && !(x.r > 0) ? n(x.sec) : '', '', ''], setNote, x.sec > 0 && !(x.r > 0) ? '' : tempoOf(e.target, s) || '')
           setNote = ''
           // A drop-set's drops follow as rows of their own under the same set number.
           for (const d of dropsOf(x)) push([no, 'drop', side, n(d.w || 0), unit, n(d.r || 0), '', '', '', '', '', ''])

@@ -1,10 +1,12 @@
+import { TempoTag, tempoGuideSheet } from '../components/Tempo.jsx'
+import { tempoOf } from '../lib/tempo.js'
 import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
 import { clampIncline, INCLINE_MAX, INCLINE_STEP, clampLevel, LEVEL_MAX, cardioCol } from '../lib/incline.js'
 import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
-import { fmtDate, fmtNum, fmtPlate } from '../lib/format.js'
+import { fmtDate, fmtNum, fmtPlate, exerciseNameText } from '../lib/format.js'
 import { EFFORT, effortOf, modeOf } from '../lib/history.js'
 import { lastEntryFor, pinnedNoteFor, setsRepsOf } from '../lib/history.js'
 import { effortColor, rirOf } from '../lib/effort.js'
@@ -323,6 +325,7 @@ export default function FocusView({
         <div className="focus-tags">
           {mode === 'cardio' && <span className="tag acc">{t('Cardio')}</span>}
           {isSideSet(set) && <span className="tag acc">{t('Per side')}</span>}
+          {mode === 'reps' && <TempoTag tempo={tempoOf(entry.target, set)} onClick={() => tempoGuideSheet({ tempo: tempoOf(entry.target, set), reps: set?.r || entry.target?.reps || 8, name: exerciseNameText(ex) })} />}
           {(ex.tg || ex.bp) && <span className="tag">{t(ex.tg || ex.bp)}</span>}
           {ex.eq && <span className="tag">{t(ex.eq)}</span>}
         </div>

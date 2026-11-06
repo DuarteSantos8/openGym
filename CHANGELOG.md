@@ -6,6 +6,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Tempo, rest sounds, backups, calendar and Strava**
+- Tempo per exercise or per set, like 3-1-1-0: set it in the exercise's settings or for one set from its menu. The workout shows it on the exercise, and a tap starts a guide that counts every rep through lower, pause, lift and squeeze, with a tone and a buzz per phase you can hear from the floor. It goes along in the CSV export and import, shared plans and the sync (#572, idea by @WENeko).
+- A sound for each kind of rest: after a warm-up, between working sets, between superset rounds and before the next exercise can each end with their own sound, built-in or one of yours, on the phone's lock-screen alarm too (Settings → Timer alerts → Sound; #165, idea by @kurktchiev).
+- Backup to WebDAV: a copy of everything once a day in your own Nextcloud, NAS or any WebDAV folder, Back up now, and Restore on a new phone with the same replace-or-merge question as a backup file. The password stays in the phone's secure storage. Works without a server; in a browser your WebDAV server has to allow it (docs/WEBDAV_BACKUP.md; #582, idea by @Mahaveer1013).
+- Calendar feed: your planned sessions, and finished workouts if you like, in Apple, Google or Outlook calendar through a private link. Make a new link or turn it off any time (Settings → Integrations → Calendar feed, docs/CALENDAR.md).
+- Strava: finished runs, rides and rows go up to Strava as what they were, strength sessions as Weight Training if you switch it on. For servers that register their own Strava app (`INTEGRATIONS=strava`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`; docs/INTEGRATIONS.md; #478, idea by @workhardbekind).
+- Webhooks: a cardio set logged by distance now carries `distanceKm`.
+
 **Things we promised and finally built**
 - Three new progression rules (exercise settings → Progression → Rule): Steady double progression (one rep at a time, every set has to hit it first), Undulating days (medium, heavy and light days in turn, weights from your estimated max) and Shorter rests (same weight, less rest each clean session, then more weight). Idea and first version by @giulioleuci (#823, #824, #825).
 - The shoulder is three muscles now: front, side and rear delts, and the lats are their own muscle apart from the upper back, in every muscle map, the balance, Weekly sets per muscle, recovery and the muscle filter (#638). Your custom exercises tagged "Shoulders" still count, for all three heads.

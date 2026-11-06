@@ -11,6 +11,7 @@
 export const CATEGORIES = [
   { id: 'health', title: 'Health & devices' },
   { id: 'training', title: 'Training apps' },
+  { id: 'backup', title: 'Backups & calendar' },
   { id: 'automation', title: 'Automation' },
   { id: 'ai', title: 'AI & API' },
 ]
@@ -33,6 +34,11 @@ export const CARDS = [
     syncs: ['Workouts, routines and weigh-ins, once.', 'The key is used for this import and then forgotten.'],
   },
   {
+    id: 'strava', cat: 'training', name: 'Strava', icon: 'figureRun', tint: 'var(--orange)',
+    desc: 'Your runs, rides and rows go up to Strava, strength too if you like.',
+    syncs: ['Finished cardio workouts, with their time and distance.', 'Strength sessions as Weight Training, if you switch it on.', 'Sent by your server, from whichever device you logged on.'],
+  },
+  {
     id: 'files', cat: 'training', name: 'Import a file', translate: true, icon: 'download', tint: 'var(--teal)',
     desc: 'Strong, FitNotes, Hevy CSV, GymMane or an Apple Health export.',
     syncs: ['Reads the export file of another app, once.', 'Exercises are matched to the library, you check the rest.'],
@@ -41,6 +47,16 @@ export const CARDS = [
     id: 'csv', cat: 'training', name: 'Spreadsheet (CSV)', translate: true, icon: 'share', tint: 'var(--green)',
     desc: 'Every set, weigh-in and measurement, for Excel and friends.',
     syncs: ['One row per set, plus body weight and measurements.', 'openGym can read it back in later.'],
+  },
+  {
+    id: 'webdav', cat: 'backup', name: 'WebDAV backup', translate: true, icon: 'cloud', tint: 'var(--blue)',
+    desc: 'A copy every day in your own Nextcloud or any WebDAV folder.',
+    syncs: ['The full backup, once a day while the app is open, and whenever you tap Back up now.', 'Restore it on a new phone in two taps.'],
+  },
+  {
+    id: 'calendar', cat: 'backup', name: 'Calendar feed', translate: true, icon: 'calendar', tint: 'var(--red)',
+    desc: 'Your planned sessions in Apple, Google or Outlook calendar.',
+    syncs: ['Planned sessions from a week back to eight weeks ahead, as all-day events.', 'Finished workouts too, if you like.'],
   },
   {
     id: 'webhook', cat: 'automation', name: 'Webhooks', translate: true, icon: 'webhook', tint: 'var(--indigo)',
@@ -90,7 +106,9 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  * ctx: { mobile, platform ('ios' | 'android' | null), user, demo, admin,
  *        health: { status, on, readHr, readWeight, error, readError } | null  (this phone's store)
  *        server: { providers: [id], connections: [..] } | null  (GET /api/integrations)
- *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode }
+ *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode,
+ *        webdav: this device's WebDAV backup settings (lib/webdav.js loadConfig) | null,
+ *        tokens: whether the server has scoped tokens (the calendar feed is one), calendar: GET /api/calendar | null }
  * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'import' | 'export' | 'open' | null }.
  */
 export function cardState(id, ctx) {
@@ -122,6 +140,28 @@ export function cardState(id, ctx) {
       if (mine.some(c => c.status === 'attention')) return { status: 'attention', action: 'manage' }
       return mine.every(c => c.paused) ? { status: 'off', action: 'manage' } : { status: 'connected', action: 'manage' }
     }
+    case 'strava': {
+      // Strava (#478): the server uploads, with the Strava app its admin registered.
+      if (ctx.demo || !ctx.user) return { status: 'server', action: null }
+      if (!(ctx.offered || []).includes('strava')) return ctx.admin ? { status: 'off', action: 'open' } : null
+      const mine = (ctx.server?.connections || []).filter(c => c.provider === 'strava')
+      if (!mine.length) return { status: 'off', action: 'connect' }
+      if (mine.some(c => c.status === 'attention')) return { status: 'attention', action: 'manage' }
+      return mine.every(c => c.paused) ? { status: 'off', action: 'manage' } : { status: 'connected', action: 'manage' }
+    }
+    case 'webdav': {
+      // This device talks to your WebDAV server itself: no openGym server needed (#582).
+      if (ctx.demo) return null
+      const w = ctx.webdav
+      if (!w) return { status: 'off', action: 'connect' }
+      if (w.last && w.last.ok === false) return { status: 'attention', action: 'manage' }
+      return { status: 'connected', action: 'manage' }
+    }
+    case 'calendar':
+      // A private address your server serves (api/integrations/calendar.js), on its token system.
+      if (ctx.demo || !ctx.user) return { status: 'server', action: null }
+      if (!ctx.tokens) return null
+      return ctx.calendar?.on ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
     case 'coach':
       if (ctx.mobile) return { status: ctx.coachMode ? 'connected' : 'off', action: ctx.coachMode ? 'manage' : 'connect' }
       return ctx.coach ? { status: 'connected', action: 'open' } : null
@@ -134,7 +174,7 @@ export function cardState(id, ctx) {
 }
 
 // The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
-export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', coach: 'coach' }
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', strava: 'integrations', coach: 'coach' }
 
 /** The directory for this device: categories with their visible cards, empty ones left out.
  *  `ctx.mod(id)` says whether a module is on (absent: all on). */

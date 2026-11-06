@@ -1,4 +1,6 @@
 import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { DEMO } from './lib/demo.js'
+import { useDailyWebdav } from './lib/use-daily-webdav.js'
 import { hideBoot } from './lib/boot.js'
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
@@ -150,6 +152,8 @@ function Shell() {
   // Store apps: which animation packs this device has, and the one the chosen quality wants for
   // the figure shown (components/Animations.jsx). Nothing on the web.
   useAnimPacksBoot()
+  // Backup to WebDAV (#582): this device's daily copy, when one is set up (lib/webdav-run.js).
+  useDailyWebdav(ready && !DEMO)
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const permSteps = useStore(s => s.permSteps)

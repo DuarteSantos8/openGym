@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { api } from '../lib/api.js'
+import { api, appBase } from '../lib/api.js'
 import { DEMO } from '../lib/demo.js'
 import { MOBILE } from '../lib/mobile.js'
 import { fmtAgo } from '../lib/format.js'
@@ -19,6 +19,9 @@ import EmptyState from '../components/EmptyState.jsx'
 import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
 import { isOn } from '../lib/modules.js'
 import { tokensOn } from '../lib/api-tokens.js'
+import { useWebdavConfig, webdavSheet } from '../components/WebDavBackup.jsx'
+import { calendarSheet } from '../components/CalendarFeed.jsx'
+import { getCalendar } from '../lib/api-tokens.js'
 
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
    with what it is, whether it is on, and the one thing to do next. The cards are thin on purpose:
@@ -120,7 +123,13 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const health = useHealth()
   const platform = MOBILE ? (ios ? 'ios' : android ? 'android' : health?.platform || platformNow()) : null
   const S = useStore(s => s.S)
+  const webdav = useWebdavConfig()
+  const tokens = tokensOn(config, user, DEMO) && isOn(S, 'integrations')
+  // The calendar feed's state, asked once per visit where the server has tokens.
+  const [calendar, setCalendarState] = useState(null)
+  useEffect(() => { if (tokens) getCalendar().then(setCalendarState).catch(() => {}) }, [tokens])
   const ctx = {
+    webdav, tokens, calendar,
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
@@ -128,7 +137,15 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const dir = directory(ctx)
 
   const webhookCtx = { server, lan: !!config?.integrations?.lan, toast }
-  const tokens = tokensOn(config, user, DEMO) && isOn(S, 'integrations')
+  // Back from Strava's sign-in (api/integrations/routes.js): ?intg=strava&connected=1 or &error=…
+  const loc = useLocation()
+  useEffect(() => {
+    const q = new URLSearchParams(loc.search)
+    if (q.get('intg') !== 'strava') return
+    toast(q.get('connected') ? t('Strava connected. Your next workout goes up by itself.') : t(STRAVA_ERRORS[q.get('error')] || 'Strava could not be connected. Try again.'))
+    server.load()
+    nav(loc.pathname, { replace: true })
+  }, [loc.search])
   const act = card => {
     const { action, status } = card.state
     switch (card.id) {
@@ -143,6 +160,15 @@ export default function IntegrationsPage({ android = false, ios = false }) {
         if (action === 'open') return infoSheet(card, t('Webhooks are off on this server. Add INTEGRATIONS=webhook to its .env and restart it.'), INTEGRATIONS_DOCS)
         if (action === 'connect') return addWebhookSheet(webhookCtx)
         return webhookListSheet(webhookCtx)
+      case 'strava':
+        if (status === 'server') return infoSheet(card, t('Strava uploads come from your own openGym server, so they need one. Connect this device to it in Account.'))
+        if (action === 'open') return infoSheet(card, t('Strava is off on this server. Register a Strava API app, then add strava to INTEGRATIONS and its STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET to the .env, and restart.'), INTEGRATIONS_DOCS + '#strava')
+        if (action === 'connect') return startStrava(card)
+        return stravaSheet((server.data?.connections || []).find(c => c.provider === 'strava'), webhookCtx)
+      case 'webdav': return webdavSheet()
+      case 'calendar':
+        if (status === 'server') return infoSheet(card, t('The calendar link is served by your own openGym server, so it needs one. Connect this device to it in Account.'))
+        return calendarSheet(setCalendarState)
       case 'coach': return nav(MOBILE ? '/coach/setup' : '/coach')
       case 'mcp':
         if (status === 'server') return infoSheet(card, t('The MCP server runs next to your own openGym server and reads your data there.'), MCP_DOCS)
@@ -156,6 +182,9 @@ export default function IntegrationsPage({ android = false, ios = false }) {
     // The health stores and the webhooks have more to say than a card holds.
     if (card.state.status === 'device' || card.state.status === 'server' || card.state.action === 'open' && card.id === 'webhook') return act(card)
     if (card.id === 'webhook') return card.state.action === 'connect' ? detailSheet(card, { act: () => act(card) }) : webhookListSheet(webhookCtx)
+    if (card.id === 'strava' && card.state.action === 'manage') return act(card)
+    if (card.id === 'webdav' && card.state.action === 'manage') return webdavSheet()
+    if (card.id === 'calendar' && card.state.action === 'manage') return calendarSheet(setCalendarState)
     if (card.id === 'apple-health' || card.id === 'health-connect') {
       return detailSheet(card, { act: () => act(card), health, onDisconnect: healthOn(health) ? () => disconnectHealth(card, toast) : null, retry: () => nav('/settings/' + card.id) })
     }
@@ -453,6 +482,70 @@ function WebhookDetail({ close, conn: initial, server, toast }) {
         subtitle={[fmtAgo(e.at), e.msg].filter(Boolean).join(' · ')} />)
         : <Row title={<span className="intg-line dim">{t('Nothing yet')}</span>} />}
     </Section>}
+    <DangerRow label={t('Disconnect')} disabled={busy} onClick={disconnect} />
+  </>
+}
+
+/* ---------------- Strava (#478) ---------------- */
+
+const STRAVA_ERRORS = {
+  denied: 'Strava was not given access. Nothing was connected.',
+  scope: 'Strava has to be allowed to upload activities. Connect again and leave that box ticked.',
+  state: 'That sign-in took too long or came from somewhere else. Start again from here.',
+  signin: 'Sign in to your server first, then connect Strava.',
+  off: 'Strava is off on this server.',
+}
+
+// The sign-in is a trip to Strava and back to this server's address, so it starts from a browser
+// that has the server's session. The phone apps upload through the same connection afterwards.
+function startStrava(card) {
+  if (MOBILE) return infoSheet(card, t('Connect Strava once from openGym in a browser, signed in to your server. Your workouts then go up from the server, whichever device you log them on.'), INTEGRATIONS_DOCS + '#strava')
+  window.location.assign(appBase().replace(/\/$/, '') + '/api/integrations/oauth/start?provider=strava')
+}
+
+function stravaSheet(conn, ctx) {
+  if (!conn) return
+  sheet(close => <StravaDetail close={close} conn={conn} {...ctx} />)
+}
+
+function StravaDetail({ close, conn: initial, server, toast }) {
+  const [c, setC] = useState(initial)
+  const [busy, setBusy] = useState(false)
+  const call = async (path, body, after) => {
+    setBusy(true)
+    try {
+      const r = await api(path, { method: 'POST', body: JSON.stringify({ id: c.id, ...body }) })
+      if (r?.connection) setC(r.connection)
+      after?.(r)
+      server.load()
+    } catch (e) { toast?.(errText(e, t('Something went wrong'))) }
+    setBusy(false)
+  }
+  const trouble = c.status === 'attention'
+  const disconnect = () => confirmSheet({
+    title: t('Disconnect Strava?'),
+    message: t('Your server forgets the sign-in and stops uploading. What is on Strava stays, and the Strava app keeps its access until you remove it on strava.com.'),
+    confirmText: t('Disconnect'), danger: true,
+    onConfirm: () => call('/api/integrations/disconnect', {}, () => { close(); toast?.(t('Strava disconnected')) }),
+  })
+  return <>
+    <SheetHead icon="figureRun" title="Strava" status={statusOf(c)} />
+    <p className="intg-lead" translate="no">{c.info?.athlete || c.label}</p>
+    <Section footer={t('Cardio goes up as what it was: a run, a ride, a row. Strength as Weight Training, with every set in the description.')}>
+      <Row icon="dumbbell" iconTint="var(--orange)" title={t('Strength workouts too')}>
+        <Switch aria-label={t('Strength workouts too')} checked={c.info?.strength === 'on'} disabled={busy} onChange={v => call('/api/integrations/update', { strength: v })} />
+      </Row>
+      <Row icon="play" iconTint="var(--green)" title={t('Uploading')} subtitle={c.paused ? t('Paused. Nothing is sent until you switch it back on.') : null}>
+        <Switch aria-label={t('Uploading')} checked={!c.paused} disabled={busy} onChange={v => call('/api/integrations/update', { paused: !v })} />
+      </Row>
+      <Row icon="clock" iconTint="var(--blue)" title={t('Last upload')} value={c.lastOk ? fmtAgo(c.lastOk) : t('Not yet')} />
+      {c.lastError && <Row icon="warning" iconTint={trouble ? 'var(--orange)' : 'var(--grey)'} title={<span className="intg-line">{c.lastError.msg}</span>}
+        subtitle={c.lastError.at ? fmtAgo(c.lastError.at) : null} />}
+    </Section>
+    <div className="sect-b intg-acts">
+      <ActRow icon="bolt" label={t('Check the connection')} disabled={busy} onClick={() => call('/api/integrations/test', {}, r => toast?.(r?.ok ? t('Strava is listening') : t('Test failed: {0}', r?.msg || '')))} />
+      {trouble && <ActRow icon="reset" label={t('Reconnect')} disabled={busy} onClick={() => startStrava({ icon: 'figureRun', name: 'Strava', state: {} })} />}
+    </div>
     <DangerRow label={t('Disconnect')} disabled={busy} onClick={disconnect} />
   </>
 }

@@ -134,3 +134,31 @@ describe('playing one in the page', () => {
     await new Promise(r => setTimeout(r, 0))
   })
 })
+
+describe('a sound for each kind of rest (#165)', () => {
+  const own = { id: 's1', name: 'Gong', m: ref('a'.repeat(64)) }
+  it('a kind plays its own sound, built-in or one of yours, else the rest’s', async () => {
+    const { kindChoice, setKindSound } = await import('./user-sounds.js')
+    const s = { restSound: 'bell', sounds: [own] }
+    expect(toneFor(s, 'rest', 'exercise')).toBe('bell')
+    setKindSound(s, 'exercise', 'whistle')
+    setKindSound(s, 'superset', 'u:s1')
+    expect(kindChoice(s, 'exercise')).toBe('whistle')
+    expect(toneFor(s, 'rest', 'exercise')).toBe('whistle')
+    expect(toneFor(s, 'rest', 'superset')).toBe('u:' + 'a'.repeat(64))
+    expect(toneFor(s, 'rest', 'work')).toBe('bell')
+    expect(toneFor(s, 'hold', 'exercise')).toBe('bell')
+    setKindSound(s, 'exercise', null)
+    expect(s.restSoundByKind).toEqual({ superset: 'u:s1' })
+  })
+  it('junk is ignored, and removing a sound frees the kinds that used it', async () => {
+    const { kindChoice, setKindSound } = await import('./user-sounds.js')
+    expect(kindChoice({ restSoundByKind: { work: 'kazoo' } }, 'work')).toBeNull()
+    expect(kindChoice({ restSoundByKind: { work: 'u:gone' } }, 'work')).toBeNull()
+    expect(kindChoice({ restSoundByKind: ['bell'] }, 'work')).toBeNull()
+    const s = { sounds: [own] }
+    setKindSound(s, 'work', 'u:s1')
+    removeSound(s, 's1')
+    expect('restSoundByKind' in s).toBe(false)
+  })
+})

@@ -311,11 +311,12 @@ describe('Workout set completion flow', () => {
       ],
     })])
     await toggleSet(0)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(45, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(45, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number), rest: 'warmup' }))
     await toggleSet(1)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number), rest: 'warmup' }))
     await toggleSet(2)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number), { forSet: expect.any(Number) })
+    // #165: the rest between working sets is its own kind, for its own sound
+    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number), rest: 'work' }))
     expect(mocks.startRest).toHaveBeenCalledTimes(3)
   })
 
@@ -327,12 +328,12 @@ describe('Workout set completion flow', () => {
       exercise('curl', [false]),
     ], 0, { nextRestSec: 180, active: { workoutView: 'list' } })
     await toggleSet(0)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
     await toggleSet(1)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(180, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(180, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
     // The row's own "No timer" into the next exercise beats the profile's.
     await toggleSet(2)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(0, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(0, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   // Discord "set-specific rest timers": "no timer" between ramp sets, a break between sides.
@@ -342,9 +343,9 @@ describe('Workout set completion flow', () => {
       sets: [{ w: 60, r: 8, done: false, phase: 'warmup' }, { w: 95, r: 5, done: false, phase: 'warmup' }, { w: 125, r: 6, done: false }, { w: 125, r: 6, done: false }],
     })])
     await toggleSet(0)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(0, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(0, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
     await toggleSet(1)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(150, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('a per-side set rests the exercise\'s break between sides; without one, nothing between them as before', async () => {
@@ -384,7 +385,7 @@ describe('Workout set completion flow', () => {
     await toggleSet(0)
 
     expect(mocks.startRest).toHaveBeenCalledOnce()
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
     expect(mocks.stopRest).not.toHaveBeenCalled()
 
     await unmount()
@@ -406,7 +407,7 @@ describe('Workout set completion flow', () => {
     expect(mocks.S.active.entries[0].topW).toBe(60)
     expect(mocks.S.exWeights['plain-bench']).toBeUndefined()   // written at the finish, not while ticking
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
 
     await pressNext()
 
@@ -430,7 +431,7 @@ describe('Workout set completion flow', () => {
     await toggleSet(1)
 
     expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
 
     await pressNext()
 
@@ -455,7 +456,7 @@ describe('Workout set completion flow', () => {
 
       expect(mocks.S.active.cur).toBe(0)
       expect(mocks.startRest).toHaveBeenCalledTimes(1)
-      expect(mocks.startRest).toHaveBeenCalledWith(expect.any(Number), 0, { forSet: 0 })
+      expect(mocks.startRest).toHaveBeenCalledWith(expect.any(Number), 0, expect.objectContaining({ forSet: 0 }))
     },
   )
 
@@ -476,7 +477,7 @@ describe('Workout set completion flow', () => {
 
     expect(mocks.S.active.cur).toBe(1)
     expect(mocks.startRest).toHaveBeenCalledTimes(1)
-    expect(mocks.startRest).toHaveBeenCalledWith(expect.any(Number), 1, { forSet: 0 })
+    expect(mocks.startRest).toHaveBeenCalledWith(expect.any(Number), 1, expect.objectContaining({ forSet: 0 }))
   })
 
   it('leaves the completed ordinary exercise selected and still rests before the next exercise\'s warm-up (#853)', async () => {
@@ -527,7 +528,7 @@ describe('Workout set completion flow', () => {
     await rerender()
     await toggleSet(0)
 
-    expect(mocks.startRest).toHaveBeenCalledWith(90, 0, { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, 0, expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('leaves a rest that is still counting down alone on a re-check', async () => {
@@ -551,7 +552,7 @@ describe('Workout set completion flow', () => {
     await toggleSet(5)
 
     expect(mocks.S.active.cur).toBe(1)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('does not auto-select an unfinished superset after completing an ordinary exercise', async () => {
@@ -567,7 +568,7 @@ describe('Workout set completion flow', () => {
     expect(mocks.S.active.cur).toBe(0)
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
     expect(mocks.toast).toHaveBeenCalledWith('Hold logged')
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('does not auto-select earlier unfinished work after completing an ordinary exercise', async () => {
@@ -580,7 +581,7 @@ describe('Workout set completion flow', () => {
 
     expect(mocks.S.active.cur).toBe(1)
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('leaves a completed ordinary exercise selected without declaring completion while work remains', async () => {
@@ -593,7 +594,7 @@ describe('Workout set completion flow', () => {
 
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('shows workout completion only when no unfinished unit remains', async () => {
@@ -1538,7 +1539,7 @@ describe('superset flow survives an exercise being removed mid-session', () => {
 
     // Partner closes the round (each still has a second set), which is what starts the rest.
     await toggleSet(2)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 })
 
@@ -1979,7 +1980,7 @@ describe('workout focus view', () => {
 
     await click(buttonNamed('Complete set'))
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
     expect(container.textContent).toContain('2/2')
 
     await click(buttonNamed('Complete set'))
@@ -2005,7 +2006,7 @@ describe('workout focus view', () => {
 
     await click(buttonNamed('Complete set'))
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
     await rerender()
     expect(container.textContent).toContain('Round 2')
 
@@ -2231,7 +2232,7 @@ describe('workout list view', () => {
 
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
     expect(mocks.S.active.cur).toBe(0)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('does not declare the workout complete after a set of a non-current exercise while sets remain', async () => {
@@ -2246,7 +2247,7 @@ describe('workout list view', () => {
 
     expect(mocks.S.active.entries[1].sets[0].done).toBe(true)
     expect(mocks.workoutCompleteSheet).not.toHaveBeenCalled()
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('renders a superset as one grouped unit with its own unpair control', async () => {
@@ -2410,7 +2411,7 @@ describe('workout compact view', () => {
     await toggleSet(0)
 
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 })
 
@@ -3031,7 +3032,7 @@ describe('workout controls: the more menu and the set menu', () => {
   it('opens a per-set menu from the set number with drop, burst and remove', async () => {
     await mount([exercise('plain-bench', [false, false])])
     await act(async () => { container.querySelector('button[aria-label="Set 2"]').dispatchEvent(new dom.Event('click', { bubbles: true })) })
-    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Note', 'Make it a warm-up set', 'Rest after this set', 'Remove this set'])
+    expect(menuItemsOf(lastMenu()).map(it => it.label)).toEqual(['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Note', 'Make it a warm-up set', 'Tempo', 'Rest after this set', 'Remove this set'])
     expect(item('Make it a warm-up set').icon).toBe('sunrise')
 
     await act(async () => { item('Drop set').onClick() })
@@ -3138,11 +3139,11 @@ describe('workout controls: the more menu and the set menu', () => {
 
     // The flow rests what the set says; an untouched set rests the exercise's rest.
     await toggleSet(0)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(0, 0, { forSet: 0 })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(0, 0, expect.objectContaining({ forSet: 0 }))
     await toggleSet(1)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(240, 0, { forSet: 1 })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(240, 0, expect.objectContaining({ forSet: 1 }))
     await toggleSet(2)
-    expect(mocks.startRest).toHaveBeenLastCalledWith(150, 0, { forSet: 2 })
+    expect(mocks.startRest).toHaveBeenLastCalledWith(150, 0, expect.objectContaining({ forSet: 2 }))
 
     // Default takes it away again.
     await openSet('Set 2')
@@ -3249,7 +3250,7 @@ describe('effort rating auto-ends the set', () => {
 
     expect(mocks.S.active.entries[0].sets[0].rir).toBe(2)
     expect(mocks.S.active.entries[0].sets[0].done).toBe(true)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
   })
 
   it('does not re-toggle a set that is already done — a rating change leaves it done', async () => {
@@ -3304,7 +3305,7 @@ describe('per-side effort completion', () => {
     await act(async () => { rightPick(scale === 'rir' ? 0 : 10) })
     set = mocks.S.active.entries[0].sets[0]
     expect(set.done).toBe(true)
-    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    expect(mocks.startRest).toHaveBeenCalledWith(90, expect.any(Number), expect.objectContaining({ forSet: expect.any(Number) }))
     const calls = mocks.startRest.mock.calls.length
     await act(async () => { rightPick(1) })
     expect(set.sides.R.done).toBe(true)
@@ -3764,7 +3765,7 @@ describe('the workout screen chrome (v1.3.11)', () => {
     await click(container.querySelector('button[aria-label="Set 1"]'))
     expect(lastMenu().sections.map(g => g.more ? ['More', menuItemsOf({ sections: g.more }).map(it => it.label)] : g.items.filter(Boolean).map(it => it.label))).toEqual([
       ['Taken to failure', 'Drop set', 'Rest-pause burst', 'Copy this set', 'Film this set', 'Note'],
-      ['More', ['Make it a warm-up set', 'Rest after this set']],
+      ['More', ['Make it a warm-up set', 'Tempo', 'Rest after this set']],
       ['Remove this set'],
     ])
   })
