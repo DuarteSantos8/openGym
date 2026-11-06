@@ -1066,11 +1066,16 @@ only), `applyTemplate` (`five_three_one` on a training max, or `copy`) and `setT
 (proposed policy, 1RM preference, training max). A week set by hand starts from the occurrence's
 first phase with its steps removed; a kept reps chain without its load step asks hold or reset
 (`resetOnCarry`), and a step new to a week asks its seed. `checkedEdit` saves only what
-`validateProgramme` passes against today's routines: it drops a slot whose occurrence is gone, adds
-a track for an occurrence new to the scheduled routines, and clears `repair`. A running or paused
-programme keeps how it counts (weeks or rounds): the run reads its mode from the definition frozen
-at its start, so `saveProgramme` refuses a change of `schedule.mode` while it runs, whatever the
-route, and a Coach programme change keeps the schedule it revises (only its weeks change). Weeks the Coach set,
+`validateProgramme` passes against today's routines: it drops a slot whose occurrence is gone and
+adds a track for an occurrence new to the scheduled routines. An edit never clears `repair`: the
+editor lists what to check (`repairNotes`, read again from `src`: per exercise, the %1RM the old
+programme asked and what it became; past 50 exercises, to remove a session or delete it) and only
+"I checked these" (`confirmRepair`) ends the wait. A running programme keeps how it counts (weeks or
+rounds): the run reads its mode from the definition frozen at its start, so `saveProgramme` refuses
+a change of `schedule.mode` while it runs or is paused, whatever the route, and a Coach programme
+change keeps the schedule it revises (only its weeks change). A recovery week needs its
+sessions done (`close: 'completion'`) or passes with the week (`'calendar'`); a copied week keeps the
+cycle end of the week it lands on. Weeks the Coach set,
 and each track's `policy`, `tm` and `refs`, are never rebuilt by an edit of another week. The PR2
 bridge (`legacyWeeksOf`, `setLegacyWeek(s)`) is gone; a format-1 plan file still goes through
 `convertLegacyProgramme`. The routine editor writes `routine.refs` and `occurrence.refs` (the

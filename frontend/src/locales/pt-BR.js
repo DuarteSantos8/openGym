@@ -2716,7 +2716,19 @@ export const PT_BR_OVERRIDES = {
   "Use my default ({0})": "Usar meu padrão ({0})",
   "Week {0} starts from": "A semana {0} começa em",
   "You keep the 1RM in use. Review the newer one here.": "Você mantém o 1RM em uso. Revise aqui o mais recente.",
+  "A routine of this programme changed. Check its exercises before you start.": "Uma rotina deste programa mudou. Revise os exercícios dela antes de começar.",
+  "Check these before you start": "Revise isto antes de começar",
+  "I checked these": "Já revisei",
+  "Needs its sessions done": "Precisa que as sessões sejam feitas",
+  "Passes with the round": "Passa com a rodada",
   "Stop this programme before changing how it counts the weeks.": "Encerre este programa antes de mudar como ele conta as semanas.",
+  "This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.": "Este programa tem mais exercícios do que comporta. Tire uma sessão do horário ou exclua o programa.",
+  "{0}: some numbers the old programme set do not fit this exercise. Check its weeks.": "{0}: alguns números do programa antigo não servem para este exercício. Revise as semanas dele.",
+  "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.": "{0}: o programa antigo pedia {1}% do 1RM na semana {2}. As séries dele têm cargas próprias, então as semanas dele agora seguem a própria progressão.",
+  "{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets work from a training max, so its weeks follow its own progression now.": "{0}: o programa antigo pedia {1}% do 1RM na semana {2}. As séries dele partem de um máximo de treino, então as semanas dele agora seguem a própria progressão.",
+  "{0}: the old programme gave two different answers for a missed or skipped week. You choose when you start it.": "{0}: o programa antigo dava duas respostas diferentes para uma semana perdida ou pulada. Você escolhe ao começar.",
+  "{0} round": "{0} rodada",
+  "{0} rounds": "{0} rodadas",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

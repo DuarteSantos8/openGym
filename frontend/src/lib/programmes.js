@@ -32,6 +32,8 @@ import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 
 export const MAX_WEEKS = 16
+// What a definition holds at most (api/engine/programme.js).
+const MAX_TRACKS = 50
 export const PCT_MIN = 30
 export const PCT_MAX = 110
 export const RPE_MIN = 6
@@ -132,7 +134,7 @@ export function currentSchedule(S) {
 
 // A legacy programme over this profile's routines as a definition: the one conversion the upgrade,
 // the starters and a plan file of format 1 share.
-const convert = (S, legacy) => convertLegacyProgramme(legacy, { routines: S?.routines || [], catalogue: LIB_BY_ID, customEx: S?.customEx, progression: S?.progression, weekStart: ws(S) })
+const convert = (S, legacy, summary = []) => convertLegacyProgramme(legacy, { routines: S?.routines || [], catalogue: LIB_BY_ID, customEx: S?.customEx, progression: S?.progression, weekStart: ws(S), summary })
 
 /** A new programme of `n` weeks over the schedule you train by now; not saved yet. */
 export function newProgramme(S, name, n = 4, now = Date.now()) {
@@ -900,16 +902,19 @@ export function setDuration(def, n) {
 /** One week's target for one occurrence of an exercise. */
 export const setTarget = (def, trackId, stageId, oid, target) => withStage(def, trackId, stageId, st => ({ ...st, targets: { ...map(st.targets), [oid]: clone(target) } }))
 
-/** A week made work, recovery (needs its sessions done until said otherwise, spec 9) or rest (no targets). */
-export const setStageKind = (def, trackId, stageId, kind) => withStage(def, trackId, stageId, ({ close, ...st }) => ({
-  ...st, kind, ...(kind === 'recovery' ? { close: close ?? 'completion' } : {}),
+/** A week made work, recovery or rest (no targets). A recovery week needs its sessions done
+ *  (`close` 'completion', the default, spec 9) or passes with the week ('calendar'). */
+export const setStageKind = (def, trackId, stageId, kind, release) => withStage(def, trackId, stageId, ({ close, ...st }) => ({
+  ...st, kind, ...(kind === 'recovery' ? { close: release ?? close ?? 'completion' } : {}),
   targets: Object.fromEntries(Object.entries(map(st.targets)).map(([oid, { deload, ...x }]) => [oid, kind === 'rest' ? { own: 'inherit' } : kind === 'recovery' && deload ? { ...x, deload } : x])),
 }))
 
-/** Week `fromId`'s work copied into week `toId`, which keeps its id. */
+/** Week `fromId`'s work copied into week `toId`, which keeps its id and whether a cycle ends with it (a training max steps there). */
 export function copyStage(def, trackId, fromId, toId) {
   const from = trackOf(def, trackId)?.stages.find(st => st.id === fromId)
-  return from ? withStage(def, trackId, toId, st => ({ ...clone(from), id: st.id, targets: unseeded(from.targets) })) : def
+  if (!from) return def
+  const { cycleEnd, ...work } = clone(from)
+  return withStage(def, trackId, toId, st => ({ ...work, id: st.id, ...(st.cycleEnd ? { cycleEnd: true } : {}), targets: unseeded(from.targets) }))
 }
 
 /** A week moved one place up (`dir` -1) or down (+1), its id with it. */
@@ -936,12 +941,17 @@ export function linkSlots(def, trackIds) {
   return { ...def, tracks: def.tracks.filter(tr => !rest.includes(tr)).map(tr => (tr === first ? merged : tr)) }
 }
 
-/** The pairs of exercises that may be counted as one: the same exercise, loaded the same way. */
+/** The pairs of exercises that may be counted as one: the same exercise, loaded the same way (one
+ *  load unit and meaning, validateProgramme's rule, read straight off the occurrences). */
 export function linkable(S, def) {
+  const meaning = tr => tr.slots.map(sl => occOf(S, sl.rid, sl.oid)).map(o => o && { unit: o.rule?.program.phases[0].parameters.load.unit, as: o.dbLoad ?? 'as' })
+  const fits = (a, b) => {
+    const all = [...meaning(a), ...meaning(b)]
+    return all.every(Boolean) && new Set(all.map(m => m.unit).filter(Boolean)).size <= 1 && new Set(all.map(m => m.as)).size === 1
+  }
   const out = []
   def.tracks.forEach((a, i) => def.tracks.slice(i + 1).forEach(b => {
-    const linked = linkSlots(def, [a.id, b.id])
-    if (!linked.error && !validateProgramme(linked, { routines: S?.routines || [] }).errors.some(e => e.includes('linked slots'))) out.push([a.id, b.id])
+    if (!linkSlots(def, [a.id, b.id]).error && fits(a, b)) out.push([a.id, b.id])
   }))
   return out
 }
@@ -971,14 +981,42 @@ export const setTrackChoice = (def, trackId, { policy, refs, tm } = {}) => withT
 }))
 
 /**
- * What the editor may save of `def`: `{ def }` when it validates against today's routines (a
- * repair it was waiting on is then done), else `{ errors }` (validateProgramme's) and nothing saved.
+ * What the editor may save of `def`: `{ def }` when it validates against today's routines, else
+ * `{ errors, checked }` (validateProgramme's errors, about the definition `checked`) and nothing saved.
+ * A repair it waits on stays: only confirmRepair, the person's own check, takes it away (spec 15.2).
  */
 export function checkedEdit(S, def) {
   const next = synced(def, S)
   const { errors } = validateProgramme(next, { routines: S?.routines || [] })
-  if (errors.length) return { errors }
-  const { needs, ...rest } = next
+  return errors.length ? { errors, checked: next } : { def: next }
+}
+
+/** The person checked what a repair asked (repairNotes): the programme no longer waits on it. */
+export function confirmRepair(def) {
+  const { needs, ...rest } = def
   const left = (needs || []).filter(n => n !== 'repair')
-  return { def: { ...rest, ...(left.length ? { needs: left } : {}) } }
+  return { ...rest, ...(left.length ? { needs: left } : {}) }
+}
+
+/**
+ * What a programme waiting on a repair asks you to check (spec 15.2), read again from the legacy
+ * programme it keeps (`src`) through the same conversion: `[{ reason, exerciseId?, week?, pct? }]`,
+ * `reason` one of 'training-max' | 'group-loads' (a %1RM it could not carry over, now following the
+ * exercise's progression), 'leaf', 'policy', 'too-many-tracks' (while it still plans more than 50
+ * exercises), 'empty', or 'changed' (a routine edit, or no source to read).
+ */
+export function repairNotes(S, def) {
+  if (!def?.needs?.includes('repair')) return []
+  const over = synced(def, S).tracks.length > MAX_TRACKS
+  const summary = []
+  const legacy = isMap(def.src) ? convert(S, { ...def.src, id: def.id }, summary) : null
+  const notes = summary.filter(x => x.kind === 'repair' && x.reason !== 'too-many-tracks' && (x.trackId || x.reason === 'empty')).map(x => {
+    const tr = legacy.tracks.find(t => t.id === x.trackId) ?? def.tracks.find(t => t.id === x.trackId)
+    if (!tr) return { reason: x.reason }
+    const key = wk => { const t = map(wk?.t); return t[`${tr.slots[0].rid}:${tr.exerciseId}`] ?? t[tr.exerciseId] }
+    const i = (Array.isArray(def.src.weeks) ? def.src.weeks : []).findIndex(wk => key(wk)?.pct != null)
+    return { reason: x.reason, exerciseId: tr.exerciseId, ...(i >= 0 ? { week: i + 1, pct: key(def.src.weeks[i]).pct } : {}) }
+  })
+  if (over) notes.push({ reason: 'too-many-tracks' })
+  return notes.length ? notes : [{ reason: 'changed' }]
 }

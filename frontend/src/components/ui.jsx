@@ -122,14 +122,14 @@ export function Switch({ checked, onChange, disabled, ...accessibility }) {
 // options: [{ value, label, icon? }]  — the selected pill slides between cells.
 // `tour`: the app tour's anchor for this control (data-tour, lib/tour.js); likewise below.
 // `ariaLabelledby` names the choice for a screen reader by its visible label (a group of
-// pressed buttons otherwise reads as three loose words). An option may be `disabled`, with
-// `describedBy` the id of the line that says why.
-export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby }) {
+// pressed buttons otherwise reads as three loose words); `ariaLabel` names it where no visible
+// label stands next to it. An option may be `disabled`, with `describedBy` the id of the line that says why.
+export function Segmented({ options, value, onChange, className = '', tour, ariaLabelledby, ariaLabel }) {
   const i = options.findIndex(o => o.value === value)
   // Nothing chosen yet (a choice the person has to make, lib/programmes.js): no segment raised.
   return (
     <div className={'seg ' + className} style={{ '--n': options.length, '--i': Math.max(0, i) }} data-tour={tour}
-      role={ariaLabelledby ? 'group' : undefined} aria-labelledby={ariaLabelledby}>
+      role={ariaLabelledby || ariaLabel ? 'group' : undefined} aria-labelledby={ariaLabelledby} aria-label={ariaLabel}>
       {i >= 0 && <span className="seg-sel" aria-hidden="true" />}
       {options.map(o => (
         <button

@@ -106,6 +106,16 @@ describe('the programme list', () => {
     expect(mocks.navs.at(-1)).toBe('/plan/prog/' + p.id)
   })
 
+  it('lists a rotation in rounds, calendar weeks in weeks', () => {
+    mocks.S.programmes = {
+      P: legacyProgramme(mocks.S, { id: 'P', name: 'Weeks', at: 2, weeks: [{}, {}, {}], days: { 1: ['r1'] } }),
+      Q: { ...legacyProgramme(mocks.S, { id: 'Q', name: 'Loop', at: 1, weeks: [{}, {}], days: { 1: ['r1'] } }), schedule: { mode: 'rotation', sequence: ['r1', 'r2'] }, duration: { n: 2, unit: 'blocks' } },
+    }
+    render(<Programmes />)
+    expect(valueOf('Weeks')).toBe('3 weeks')
+    expect(valueOf('Loop')).toBe('2 rounds')
+  })
+
   it('makes a new one from the plan you have', () => {
     render(<Programmes />)
     click(button('New programme'))

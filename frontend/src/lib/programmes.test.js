@@ -9,6 +9,7 @@ import {
   closeWeek, skipSlot, resolveSlot, setRunPolicy, setRunEnd, markBrokenProgrammes,
   setSchedule, setDuration, setTarget, setStageKind, copyStage, moveStage, linkSlots, linkable, applyTemplate, setTrackChoice, checkedEdit, referenceOffers, legacyScheduleOf,
   bindProgramme,
+  confirmRepair, repairNotes,
 } from './programmes.js'
 import * as programmesModule from './programmes.js'
 import { legacyProgramme, migratedFixture, weekPcts } from './test-fixtures.js'
@@ -17,7 +18,9 @@ import { entriesForExposures } from './session-ui-adapter.js'
 import { isWarmupRow } from './workout-model.js'
 import { queueOf } from './queue.js'
 import { todayISO } from './format.js'
-import { planPhase, referenceProposals } from './prescription/index.js'
+import { defaultPlanRule, planPhase, referenceProposals } from './prescription/index.js'
+import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
+import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 import { applyChangeSet, canRevert, markStale, revertLast } from './coach.js'
 import { validateReview } from '../../../api/coach/core/validate.js'
@@ -689,13 +692,19 @@ describe('authoring (the programme editor)', () => {
     expect(ids(copied, SQ)).toEqual(ids(def, SQ))
   })
 
-  it('an invalid edit is refused with the validator\'s reasons; a valid one clears a repair', () => {
+  it('an invalid edit is refused with the validator\'s reasons; an edit keeps a repair, only confirmRepair ends it', () => {
     const s = state()
     const def = { ...withBlock(s), needs: ['repair'] }
     // Week 1 has no week before it to start from.
     const bad = setTarget(def, B, 's1', BENCH_A, { own: 'inherit', seed: { load: 'copy' } })
     expect(checkedEdit(s, bad).errors[0]).toMatch(/seed\.load/)
-    expect(checkedEdit(s, setStageKind(def, B, 's2', 'recovery')).def).not.toHaveProperty('needs')
+    expect(checkedEdit(s, bad).checked.tracks[0].id).toBe(B)
+    expect(checkedEdit(s, setStageKind(def, B, 's2', 'recovery')).def.needs).toEqual(['repair'])
+    expect(confirmRepair({ ...def, needs: ['binding', 'repair'] }).needs).toEqual(['binding'])
+    expect(confirmRepair(def)).not.toHaveProperty('needs')
+    // A recovery week passes with the week when said so.
+    expect(setStageKind(def, B, 's2', 'recovery', 'calendar').tracks[0].stages[1]).toMatchObject({ kind: 'recovery', close: 'calendar' })
+    expect(setStageKind(setStageKind(def, B, 's2', 'recovery', 'calendar'), B, 's2', 'recovery').tracks[0].stages[1].close).toBe('calendar')
     // Recovery needs its sessions done until said otherwise (spec 9).
     expect(setStageKind(def, B, 's2', 'recovery').tracks[0].stages[1]).toMatchObject({ kind: 'recovery', close: 'completion' })
   })
@@ -739,5 +748,68 @@ describe('authoring (the programme editor)', () => {
     expect(referenceOffers(s, null, { kept: true })).toHaveLength(1)
     expect(acceptReference(s, ['occ:C:o0'], offer.contexts[0])).toEqual({ ok: true })
     expect(s.routines[2].ex[0].ref.value).toBe(110)
+  })
+})
+
+describe('the editor, fix round 1', () => {
+  const B = `t:P:${BENCH_A}`
+  const S531 = () => {
+    const s = state()
+    const o = s.routines[0].ex[0]
+    o.rule = { ...defaultPlanRule('five_three_one', { id: o.rule.id, exerciseId: BENCH, routineId: 'A', unit: 'kg' }), revision: 1 }
+    return s
+  }
+
+  it('a copied week keeps its own cycle end: the training max steps where it did before', () => {
+    const s = state()
+    const def = applyTemplate(setDuration(withBlock(s), 4), B, 'five_three_one', { S: s, tm: { value: 90, unit: 'kg', increment: 2.5 } })
+    const marks = d => d.tracks[0].stages.map(st => !!st.cycleEnd)
+    expect(marks(def)).toEqual([false, false, false, true])
+    expect(marks(copyStage(def, B, 's1', 's4'))).toEqual([false, false, false, true])
+    expect(marks(copyStage(def, B, 's4', 's2'))).toEqual([false, false, false, true])
+    expect(copyStage(def, B, 's4', 's2').tracks[0].stages[1]).toMatchObject({ id: 's2', kind: 'recovery' })
+  })
+
+  it('a converted programme waiting on a repair says per exercise what the old one asked; edits keep the wait, the check ends it', () => {
+    const s = S531()
+    const summary = []
+    const def = convertLegacyProgramme({ id: 'P', name: 'X', at: 1, days: { 1: ['A'] }, weeks: [{ t: { [BENCH]: { pct: 80 } } }, {}] }, { routines: s.routines, catalogue: LIB_BY_ID, progression: s.progression, weekStart: 1, summary })
+    expect(def.needs).toEqual(['repair'])
+    expect(repairNotes(s, def)).toEqual([{ reason: 'training-max', exerciseId: BENCH, week: 1, pct: 80 }])
+    // An edit of the squat, or of the length, saves and keeps the repair; the start still refuses.
+    const edited = checkedEdit(s, setDuration(setStageKind(def, `t:P:${SQUAT_A}`, 's2', 'recovery'), 3)).def
+    expect(edited.needs).toEqual(['repair'])
+    s.programmes = { P: edited }
+    expect(startProgramme(s, 'P', { policies: policies(s), end: 'stop', today: '2026-10-19' })).toEqual({ ok: false, missing: ['repair'] })
+    const checked = checkedEdit(s, confirmRepair(edited)).def
+    expect(checked).not.toHaveProperty('needs')
+    expect(repairNotes(s, checked)).toEqual([])
+    // A programme a routine edit broke has no old source to read: it says so in general.
+    expect(repairNotes(s, { ...withBlock(state()), needs: ['repair'] })).toEqual([{ reason: 'changed' }])
+  })
+
+  it('past 50 exercises the repair says so while it lasts; removing a session saves', () => {
+    const ids = ['0025', '0043', '0027', '0047', '0031', '0294', '0313', '0334', '0241']
+    const routines = Array.from({ length: 6 }, (_, i) => ({ id: 'R' + i, name: 'R' + i, ex: ids.map(id => ({ id, sets: 3, reps: 8, weight: 20 })) }))
+    const s = migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines })
+    const def = convertLegacyProgramme({ id: 'Q', name: 'Big', at: 1, days: Object.fromEntries(routines.map((r, i) => [i + 1, [r.id]])), weeks: [{}, {}] }, { routines: s.routines, catalogue: LIB_BY_ID, progression: s.progression, weekStart: 1 })
+    expect(def.tracks).toHaveLength(50)
+    expect(repairNotes(s, def)).toEqual([{ reason: 'too-many-tracks' }])
+    expect(checkedEdit(s, setDuration(def, 3)).errors).toContain('tracks must hold 1 to 50 tracks')
+    const fewer = checkedEdit(s, setSchedule(def, { mode: 'weeks', appts: def.schedule.appts.slice(0, 5) }, s)).def
+    expect(fewer.tracks).toHaveLength(45)
+    expect(repairNotes(s, fewer).some(n => n.reason === 'too-many-tracks')).toBe(false)
+  })
+
+  it('linking reads the load meaning off the occurrences, in milliseconds', () => {
+    const ids = ['0025', '0043', '0027', '0047', '0031', '0294']
+    const routines = [0, 1, 2, 3].map(i => ({ id: 'R' + i, name: 'R' + i, ex: ids.map(id => ({ id, sets: 3, reps: 8, weight: 20 })) }))
+    const s = migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines })
+    const def = setDuration(convertLegacyProgramme({ id: 'Q', name: 'UL', at: 1, days: { 1: ['R0'], 2: ['R1'], 4: ['R2'], 5: ['R3'] }, weeks: [{}] }, { routines: s.routines, catalogue: LIB_BY_ID, progression: s.progression, weekStart: 1 }), 12)
+    const t0 = performance.now()
+    const pairs = linkable(s, def)
+    expect(performance.now() - t0).toBeLessThan(20)
+    expect(pairs).toHaveLength(36)   // each of 6 exercises in 4 routines: 6 pairs each
+    expect(pairs.every(([a, b]) => checkedEdit(s, linkSlots(def, [a, b])).def)).toBe(true)
   })
 })

@@ -1,7 +1,7 @@
 // Plan → Programmes (#159): the list, the running one's controls, and a programme's editor (spec
 // 14): its schedule, and every training week of every exercise. The model is lib/programmes.js;
 // this screen only ever writes through it.
-import { useId, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
@@ -15,8 +15,7 @@ import { RangeField } from '../components/RuleEditor.jsx'
 import { Button, PickRow, Row, Section, Segmented, SelectButton, Stepper, Switch, openSelectSheet } from '../components/ui.jsx'
 import { effortOf, isBw } from '../lib/history.js'
 import { exOr, EXIDX } from '../lib/exercises.js'
-import { currentOneRm, operatorFor, planPhase, stageRule, supports, weeklyTemplate } from '../lib/prescription/index.js'
-import { scalable } from '../../../api/engine/programme.js'
+import { currentOneRm, operatorFor, planPhase, scalable, stageRule, supports, validateProgramme, weeklyTemplate } from '../lib/prescription/index.js'
 import { REST } from '../lib/rotation.js'
 import { speedUnitOf, toSpeed, fromSpeed, fmtSpeed } from '../lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
@@ -28,6 +27,7 @@ import {
   missingFor, firstWeekOf, bindProgramme, startReferences, openSessions,
   stageNumber, closeWeek, resolveSlot, runChoices, setRunPolicy, setRunEnd, referenceOffers, refText,
   occMode, loadedOcc, setSchedule, setDuration, setTarget, setStageKind, copyStage, moveStage, linkSlots, linkable, applyTemplate, setTrackChoice, checkedEdit,
+  legacyScheduleOf, repairNotes, confirmRepair,
 } from '../lib/programmes.js'
 
 // Names and blurbs as t() literals, for check-source-strings.mjs (see lib/starter.js).
@@ -40,13 +40,13 @@ const STARTER_COPY = {
 const RPES = [6, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 const rpeText = (rpe, S) => { const r = rpeAs(rpe, effortOf(S)); return `${r.k} ${fmtNum(r.v)}` }
 
-// A loop as the plan wrote it: a rotation, or a legacy loop kept (in `src`) until it is bound to weeks.
-const loopOf = p => (p.schedule.mode === 'rotation' ? p.schedule.sequence : Array.isArray(p.src?.sequence) ? p.src.sequence : null)
+// The schedule in a line, as the plan screens get it (legacyScheduleOf): weekdays, or a loop (a
+// rotation, a loop bound to weeks, sessions with no preferred day). Empty when nothing is planned.
 function scheduleSummary(S, p) {
   const name = id => (id === REST ? t('Rest day') : (S.routines || []).find(r => r.id === id)?.name)
-  if (loopOf(p)) return loopOf(p).map(name).filter(Boolean).join(' → ')
-  const days = {}
-  for (const a of p.schedule.appts || []) if (a.day != null) (days[a.day] ||= []).push(a.rid)
+  const plan = legacyScheduleOf(p)
+  if (plan.sequence) return plan.sequence.filter(id => id !== REST).length ? plan.sequence.map(name).filter(Boolean).join(' → ') : ''
+  const days = plan.days
   return weekOrder(weekStartOf(S)).filter(d => days[d]?.length)
     .map(d => `${t(DAYS[d])} ${days[d].map(name).filter(Boolean).join(' + ')}`).join(' · ')
 }
@@ -350,7 +350,7 @@ export default function Programmes() {
     </Section>}
     <Section title={t('Your programmes')}>
       {list.length ? list.map(p => <Row key={p.id} icon="calendar" title={p.name || t('Programme')} accessory="chevron"
-        subtitle={tn('{0} week', '{0} weeks', p.duration.n) + (p.id === runningId ? ' · ' + t('running') : '')}
+        subtitle={(p.schedule.mode === 'rotation' ? tn('{0} round', '{0} rounds', p.duration.n) : tn('{0} week', '{0} weeks', p.duration.n)) + (p.id === runningId ? ' · ' + t('running') : '')}
         onClick={() => nav('/plan/prog/' + p.id)} />)
         : <EmptyState className="in-sect" text={t('No programmes yet. Make one from your plan, or grab a starter below.')}>
           <Button variant="tinted" icon="plus" onClick={create}>{t('New programme')}</Button>
@@ -388,7 +388,21 @@ const REASONS = [
   [/schedule needs|tracks must hold/, () => t('Add a routine with exercises to the schedule.')],
   [/is not in the schedule|is not in routine|has no valid rule/, () => t('An exercise of this programme is no longer in its routine.')],
 ]
-const reasonOf = errors => (REASONS.find(([re]) => errors.some(e => re.test(e)))?.[1] ?? (() => t('That change does not fit this exercise.')))()
+const OVER = () => t('This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.')
+/**
+ * Why `def` (the definition the errors are about) is refused, in plain words, naming the exercise
+ * and the week where the validator says which: "Barbell Bench Press · Week 2: …". `here` ({ trackId,
+ * stageId }, a week's own sheet) leaves out what goes without saying.
+ */
+function reasonOf(errors, def = null, here = {}) {
+  if (def?.tracks.length > 50 && errors.some(e => /tracks must hold/.test(e))) return OVER()
+  const hit = REASONS.find(([re]) => errors.some(e => re.test(e)))
+  const said = hit ? hit[1]() : t('That change does not fit this exercise.')
+  const at = def && /^tracks\[(\d+)\](?:\.stages\[(\d+)\])?/.exec(errors.find(e => !hit || hit[0].test(e)) ?? '')
+  const tr = at && def.tracks[+at[1]], st = tr && at[2] != null ? tr.stages[+at[2]] : null
+  const where = [tr && tr.id !== here.trackId ? exName(tr.exerciseId) : null, st && st.id !== here.stageId ? weekWord(def, +at[2] + 1) : null].filter(Boolean)
+  return where.length ? t('{0}: {1}', where.join(' · '), said) : said
+}
 // The weeks of one occurrence that must say where they start (validateProgramme: a step new in that week).
 const SEED_RE = /^tracks\[(\d+)\]\.stages\[(\d+)\]\.targets\.(.+): the (\w+) step is new in this stage and needs seed\.\w+$/
 const seedsWanted = (errors, ti, oid) => (errors || []).map(e => SEED_RE.exec(e)).filter(m => m && +m[1] === ti && m[3] === oid).map(m => ({ si: +m[2], metric: m[4] }))
@@ -461,6 +475,7 @@ function StageSheet({ id, trackId, stageId, close }) {
   const saved = programmeById(S, id)
   const [draft, setDraft] = useState(saved)
   const [slotAt, setSlotAt] = useState(0)
+  const [saveWhy, setSaveWhy] = useState(null)
   // Each week asked where it starts stays on show once answered, to change the answer.
   const asked = useRef(new Set())
   const whyId = useId()
@@ -468,6 +483,14 @@ function StageSheet({ id, trackId, stageId, close }) {
   const stage = track?.stages.find(st => st.id === stageId)
   const sl = track?.slots[Math.min(slotAt, track.slots.length - 1)]
   const occ = sl && occAt(S, sl)
+  // Checked as you go on this exercise alone (the rest of the programme is not edited here), once per
+  // change; Save checks the whole programme. Whether its effort could decide progress, likewise.
+  const one = useMemo(() => track && { ...draft, tracks: [track] }, [draft, track])
+  const live = useMemo(() => one && validateProgramme(one, { routines: S.routines || [] }), [one, S.routines])
+  const probe = useMemo(() => {
+    const x0 = stage && sl ? stage.targets[sl.oid] ?? { own: 'inherit' } : null
+    return x0?.effort ? validateProgramme(setTarget(one, trackId, stageId, sl.oid, { ...x0, effort: { mode: 'operational', rpe: x0.effort.rpe } }), { routines: S.routines || [] }) : null
+  }, [one, stage, sl, trackId, stageId, S.routines])
   if (!saved || !stage || !occ) return null
   const ti = draft.tracks.indexOf(track), at = track.stages.indexOf(stage)
   const x = stage.targets[sl.oid] ?? { own: 'inherit' }
@@ -475,15 +498,17 @@ function StageSheet({ id, trackId, stageId, close }) {
   const occPh = planPhase(occ.rule)
   const unit = occPh.parameters.load.unit || (S.unit === 'lb' ? 'lb' : 'kg')
   const bw = isBw({ ...occ, id: occ.exerciseId })
-  const res = checkedEdit(S, draft)
+  const res = live.errors.length ? { errors: live.errors } : { ok: true }
+  const why = res.errors ? reasonOf(res.errors, one, { trackId, stageId }) : saveWhy
   const target = next => setDraft(d => setTarget(d, trackId, stageId, sl.oid, typeof next === 'function' ? next(d.tracks[ti].stages.find(st => st.id === stageId).targets[sl.oid] ?? { own: 'inherit' }) : next))
   const phase = fn => target(cur => ({ ...cur, phase: fn(cur.phase) }))
   const params = patch => phase(ph => ({ ...ph, parameters: { ...ph.parameters, ...patch } }))
   const option = (k, v) => target(cur => { const options = { ...(cur.options || {}) }; if (v === undefined) delete options[k]; else options[k] = v; return Object.keys(options).length ? { ...cur, options } : (({ options: _, ...rest }) => rest)(cur) })
   const rounds = draft.schedule.mode === 'rotation'
   const save = () => {
-    if (!res.def) return
-    if (JSON.stringify(res.def) !== JSON.stringify(saved)) update(s => { saveProgramme(s, res.def) })
+    const all = checkedEdit(S, draft)
+    if (all.errors) { setSaveWhy(reasonOf(all.errors, all.checked, { trackId, stageId })); return }
+    if (JSON.stringify(all.def) !== JSON.stringify(saved)) update(s => { saveProgramme(s, all.def) })
     close()
   }
   // The rule this week compiles to, for what it can take (supports) and what a week before it left.
@@ -501,9 +526,8 @@ function StageSheet({ id, trackId, stageId, close }) {
   const loadFits = !!occLoad && !!ph && ph.groups.every(g => groupsRead('load', g)) && (occLoad.step.type === 'percentage_points') === (loadKind === 'pct') && loadKind !== 'none'
   const setOps = flags => phase(cur => keptOps(occPh, cur, { reps: !!(operatorFor(cur, 'reps') ?? operatorFor(cur, 'sets')), load: !!operatorFor(cur, 'load'), ...flags }))
   const decides = x.effort?.mode === 'operational'
-  const probe = checkedEdit(S, setTarget(draft, trackId, stageId, sl.oid, { ...x, effort: { mode: 'operational', rpe: x.effort?.rpe ?? 8 } }))
-  const decideWhy = effortOf(S) === 'none' ? t('Turn on effort per set in Settings') : probe.errors?.some(e => /needs a deciding set/.test(e)) ? t('Every set this week is AMRAP or to failure, so effort cannot decide progress.') : null
-  for (const w of seedsWanted(res.errors, ti, sl.oid)) asked.current.add(`${sl.oid}|${track.stages[w.si].id}|${w.metric}`)
+  const decideWhy = effortOf(S) === 'none' ? t('Turn on effort per set in Settings') : probe?.errors.some(e => /needs a deciding set/.test(e)) ? t('Every set this week is AMRAP or to failure, so effort cannot decide progress.') : null
+  for (const w of seedsWanted(res.errors, 0, sl.oid)) asked.current.add(`${sl.oid}|${track.stages[w.si].id}|${w.metric}`)
   for (const m of Object.keys(x.seed || {})) asked.current.add(`${sl.oid}|${stageId}|${m}`)
   const seeds = [...asked.current].map(k => k.split('|')).filter(([oid, sid]) => oid === sl.oid && track.stages.some(st => st.id === sid))
     .map(([, sid, metric]) => ({ si: track.stages.findIndex(st => st.id === sid), metric }))
@@ -595,22 +619,27 @@ function StageSheet({ id, trackId, stageId, close }) {
   </>
 
   return <>
-    <h3>{weekWord(draft, at + 1)}</h3>
+    <h3 id={whyId + 'h'}>{weekWord(draft, at + 1)}</h3>
     <div className="muted small capitalize" style={{ marginBottom: 12 }}>{exName(track.exerciseId)} · {track.slots.map(s => slotWhere(S, draft, s)).join(' · ')}</div>
     {track.slots.length > 1 && <Section><PickRow title={t('Routine')} value={slotAt} onChange={setSlotAt}
       options={track.slots.map((s, i) => ({ value: i, label: slotWhere(S, draft, s) }))} /></Section>}
     <div style={{ marginBottom: 14 }}>
-      <Segmented value={stage.kind} onChange={kind => setDraft(d => setStageKind(d, trackId, stageId, kind))}
+      <Segmented ariaLabelledby={whyId + 'h'} value={stage.kind} onChange={kind => setDraft(d => setStageKind(d, trackId, stageId, kind))}
         options={[{ value: 'work', label: t('Work') }, { value: 'recovery', label: t('Recovery') }, { value: 'rest', label: t('Rest') }]} />
     </div>
     {work && <div style={{ marginBottom: 14 }}>
-      <Segmented value={x.own} onChange={own => target(cur => (own === 'set' ? { ...weeklyTemplate('copy', { oid: sl.oid, occRule: occ.rule })[0].targets[sl.oid], ...(cur.effort ? { effort: cur.effort } : {}), ...(cur.options ? { options: cur.options } : {}) }
+      <Segmented ariaLabel={t('Target')} value={x.own} onChange={own => target(cur => (own === 'set' ? { ...weeklyTemplate('copy', { oid: sl.oid, occRule: occ.rule })[0].targets[sl.oid], ...(cur.effort ? { effort: cur.effort } : {}), ...(cur.options ? { options: cur.options } : {}) }
         : { own: 'inherit', ...(cur.effort ? { effort: cur.effort } : {}), ...(cur.options ? { options: cur.options } : {}) }))}
         options={[{ value: 'inherit', label: t('Follow my progression') }, { value: 'set', label: t('Set the targets') }]} />
     </div>}
     {recovery && <div style={{ marginBottom: 14 }}>
-      <Segmented value={x.own === 'set' ? 'set' : 'light'} onChange={v => target(v === 'set' ? weeklyTemplate('copy', { oid: sl.oid, occRule: occ.rule })[0].targets[sl.oid] : { own: 'inherit', ...(lighter ? { deload: { factor: 0.9 } } : {}) })}
+      <Segmented ariaLabel={t('Target')} value={x.own === 'set' ? 'set' : 'light'} onChange={v => target(v === 'set' ? weeklyTemplate('copy', { oid: sl.oid, occRule: occ.rule })[0].targets[sl.oid] : { own: 'inherit', ...(lighter ? { deload: { factor: 0.9 } } : {}) })}
         options={[{ value: 'light', label: lighter ? t('Lighter by {0}%', 10) : t('Follow my progression') }, { value: 'set', label: t('Set the targets') }]} />
+      {/* Done once its sessions are, or with its week (round) whatever was done (spec 9). */}
+      <div style={{ marginTop: 10 }}>
+        <Segmented ariaLabel={t('Recovery')} value={stage.close ?? 'completion'} onChange={c => setDraft(d => setStageKind(d, trackId, stageId, 'recovery', c))}
+          options={[{ value: 'completion', label: t('Needs its sessions done') }, { value: 'calendar', label: rounds ? t('Passes with the round') : t('Passes with the week') }]} />
+      </div>
     </div>}
     {stage.kind !== 'rest' && fields}
     {seeds.map(({ si, metric }) => {
@@ -624,7 +653,7 @@ function StageSheet({ id, trackId, stageId, close }) {
           onChange={v => seed(v === 'copy' ? 'copy' : now ?? 0)}
           options={[...(prev >= 0 ? [{ value: 'copy', label: weekWord(draft, prev + 1) }] : []), { value: 'type', label: t('Type a value') }]} />
         {typed && <div className="row cfgrow" style={{ padding: '0 14px 10px' }}>
-          <Stepper value={tx.seed[metric]} step={metric === 'load' ? 2.5 : 1} unit={metric === 'load' ? (at0?.load.mode === 'percent_1rm' ? '%' : unit) : undefined} onChange={seed} />
+          <Stepper ariaLabel={metric === 'load' ? t('Load') : metric === 'sets' ? t('Sets') : t('Reps')} value={tx.seed[metric]} step={metric === 'load' ? 2.5 : 1} unit={metric === 'load' ? (at0?.load.mode === 'percent_1rm' ? '%' : unit) : undefined} onChange={seed} />
         </div>}
       </Section>
     })}
@@ -645,7 +674,7 @@ function StageSheet({ id, trackId, stageId, close }) {
         onChange={v => option('intensifier', v ? { type: 'restpause', totalReps: 8, restSec: S.restPauseSec || 15 } : undefined)} /></Row>}
       {can.warmup && <Row title={t('Warm-ups')}><Switch aria-label={t('Warm-ups')} checked={warm !== 'none' && warm?.mode !== 'off'}
         onChange={v => option('warmup', v ? { mode: 'smart', count: 2 } : { mode: 'off' })} /></Row>}
-      {!bw && !['pyramid_reps', 'pyramid'].includes(occ.rule.preset) && intensifier?.type !== 'restpause' && <Row title={t('Back-off sets')}>
+      {loadedOcc(occ) && !['pyramid_reps', 'pyramid'].includes(occ.rule.preset) && intensifier?.type !== 'restpause' && <Row title={t('Back-off sets')}>
         <Switch aria-label={t('Back-off sets')} checked={eff('backoff', occ.backoff === true)} onChange={v => option('backoff', v)} /></Row>}
     </Section>}
     {work && mode !== 'cardio' && rule && can.failure && intensifier?.type !== 'restpause' && <FailureSets rule={rule} value={eff('failureSets', occ.failureSets ?? (occ.lastToFailure ? 'last' : []))} onChange={v => option('failureSets', v)} />}
@@ -656,8 +685,8 @@ function StageSheet({ id, trackId, stageId, close }) {
       <Button size="sm" icon="chevronUp" disabled={at === 0} onClick={() => setDraft(d => moveStage(d, trackId, stageId, -1))}>{t('Move up')}</Button>
       <Button size="sm" icon="chevronDown" disabled={at === track.stages.length - 1} onClick={() => setDraft(d => moveStage(d, trackId, stageId, 1))}>{t('Move down')}</Button>
     </div>
-    <Button variant="primary" disabled={!res.def} aria-describedby={res.errors ? whyId : undefined} onClick={save}>{t('Save')}</Button>
-    {res.errors && <div id={whyId} className="small dim" role="status" style={{ margin: '6px 2px 0' }}>{reasonOf(res.errors)}</div>}
+    <Button variant="primary" disabled={!!res.errors} aria-describedby={why ? whyId : undefined} onClick={save}>{t('Save')}</Button>
+    {why && <div id={whyId} className="small dim" role="status" style={{ margin: '6px 2px 0' }}>{why}</div>}
   </>
 }
 const stageSheet = (id, trackId, stageId) => useUI.getState().openSheet(close => <StageSheet id={id} trackId={trackId} stageId={stageId} close={close} />)
@@ -697,8 +726,35 @@ function TrackCard({ S, p, tr, edit, links, now }) {
   </Section>
 }
 
+/**
+ * What a programme waiting on a repair asks you to check (spec 15.2): per exercise, what the old
+ * programme asked and what it became. Only "I checked these" ends the wait, never an edit; past 50
+ * exercises the way out is said instead (fewer sessions, or delete it).
+ */
+function RepairPanel({ S, p, edit }) {
+  const notes = repairNotes(S, p)
+  if (!notes.length) return null
+  const over = notes.some(n => n.reason === 'too-many-tracks')
+  const text = n => {
+    const ex = n.exerciseId ? exName(n.exerciseId) : ''
+    if (n.reason === 'training-max' && n.pct != null) return t('{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets work from a training max, so its weeks follow its own progression now.', ex, fmtNum(n.pct), n.week)
+    if (n.reason === 'group-loads' && n.pct != null) return t('{0}: the old programme asked {1}% of the 1RM in week {2}. Its sets have loads of their own, so its weeks follow its own progression now.', ex, fmtNum(n.pct), n.week)
+    if (n.reason === 'policy') return t('{0}: the old programme gave two different answers for a missed or skipped week. You choose when you start it.', ex)
+    if (n.reason === 'too-many-tracks') return OVER()
+    if (n.reason === 'empty') return t('Add a routine with exercises to the schedule.')
+    if (ex) return t('{0}: some numbers the old programme set do not fit this exercise. Check its weeks.', ex)
+    return t('A routine of this programme changed. Check its exercises before you start.')
+  }
+  return <div className="card prog-run">
+    <div className="ttl" style={{ fontWeight: 500 }}>{t('Check these before you start')}</div>
+    {notes.map((n, i) => <div key={i} className="small" style={{ marginTop: 6 }}>{text(n)}</div>)}
+    {!over && <div className="prog-actions"><Button size="sm" variant="tinted" icon="check" onClick={() => edit(cur => confirmRepair(cur))}>{t('I checked these')}</Button></div>}
+  </div>
+}
+
 /** Calendar weeks (appointments, a preferred day each, in order or not) or a rotation, its length, its end and its 1RM preference. */
-function ScheduleSection({ S, p, edit }) {
+function ScheduleSection({ S, p, edit, live = false }) {
+  const lockId = useId()
   const rounds = p.schedule.mode === 'rotation'
   const binding = !!p.needs?.includes('binding')
   const routines = (S.routines || []).filter(r => r.ex?.length).map(r => ({ value: r.id, label: r.name || t('Routine') }))
@@ -729,8 +785,10 @@ function ScheduleSection({ S, p, edit }) {
   return <>
     <Section title={t('Schedule')} footer={rounds ? t('A round is one pass through the list') : null}>
       <div style={{ padding: '10px 14px' }}>
-        <Segmented value={binding ? null : p.schedule.mode} onChange={setMode}
-          options={[{ value: 'weeks', label: t('Calendar weeks') }, { value: 'rotation', label: t('Rotation') }]} />
+        {/* A run counts its weeks or rounds as it started (programme-run.js): a running one keeps how. */}
+        <Segmented ariaLabel={t('Schedule')} value={binding ? null : p.schedule.mode} onChange={setMode}
+          options={[{ value: 'weeks', label: t('Calendar weeks') }, { value: 'rotation', label: t('Rotation') }].map(o => (live && o.value !== p.schedule.mode ? { ...o, disabled: true, describedBy: lockId } : o))} />
+        {live && <div id={lockId} className="small dim" style={{ marginTop: 6 }}>{t('Stop this programme before changing how it counts the weeks.')}</div>}
       </div>
       {binding && <Row icon="swap" iconTint="var(--orange)" title={t('Choose how to count the weeks for this rotation')} />}
       {!rounds && appts.map((a, i) => <Row key={i} title={routineName(S, a.rid)} subtitle={a.day != null ? t(DAYN[a.day]) : t('No preferred day')} accessory="chevron" onClick={() => apptMenu(i)} />)}
@@ -766,6 +824,7 @@ export function ProgrammeEdit() {
   </div><div className="empty">{t('This programme is gone.')}</div></div>
   const view = programmeView(S)
   const running = view?.run.programmeId === id
+  const startId = id + ':start'
   // Saved when it validates; else the saved one stays and the reason shows.
   const edit = fn => {
     let why = null
@@ -773,7 +832,7 @@ export function ProgrammeEdit() {
       const cur = programmeById(s, id)
       if (!cur) return
       const res = checkedEdit(s, fn(cur, s))
-      if (res.errors) why = reasonOf(res.errors)
+      if (res.errors) why = reasonOf(res.errors, res.checked)
       else saveProgramme(s, res.def)
     })
     if (why) useUI.getState().toast(why)
@@ -795,12 +854,14 @@ export function ProgrammeEdit() {
           onBlur={e => { const v = e.target.value.trim() || t('Programme'); if (v !== p.name) update(s => { const cur = programmeById(s, id); if (cur) saveProgramme(s, { ...cur, name: v }) }) }} />
       </div>
     </div>
+    <RepairPanel S={S} p={p} edit={edit} />
     {running && <RunningCard S={S} nav={nav} />}
-    <ScheduleSection S={S} p={p} edit={edit} />
+    <ScheduleSection S={S} p={p} edit={edit} live={running && ['running', 'paused'].includes(view.status)} />
     <h4 className="sec">{t('Exercises')}</h4>
     {p.tracks.map(tr => <TrackCard key={tr.id} S={S} p={p} tr={tr} edit={edit} links={links} now={running ? view.tracks[tr.id]?.stage : null} />)}
     <div className="prog-actions col">
-      {!running && <Button variant="primary" icon="play" disabled={!summary} onClick={() => startSheet(id, nav)}>{t('Start programme')}</Button>}
+      {!running && <Button variant="primary" icon="play" disabled={!summary} aria-describedby={summary ? undefined : startId} onClick={() => startSheet(id, nav)}>{t('Start programme')}</Button>}
+      {!running && !summary && <div id={startId} className="small dim" role="status">{t('Add a routine with exercises to the schedule.')}</div>}
       <Button variant="tinted" icon="share" onClick={() => exportProgrammeFile(id)}>{t('Share programme')}</Button>
       <Button variant="danger" icon="trash" onClick={remove}>{t('Delete programme')}</Button>
     </div>

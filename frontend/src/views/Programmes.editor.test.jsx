@@ -31,7 +31,8 @@ const { ProgrammeEdit } = await import('./Programmes.jsx')
 const { bindUI } = await import('../components/ui.jsx')
 bindUI((await import('../store/useUI.js')).useUI)
 const { legacyProgramme, migratedFixture } = await import('../lib/test-fixtures.js')
-const { applyTemplate, setTrackChoice } = await import('../lib/programmes.js')
+const { applyTemplate, setTrackChoice, startProgramme } = await import('../lib/programmes.js')
+const { defaultPlanRule } = await import('../lib/prescription/index.js')
 const { exerciseNameText } = await import('../lib/format.js')
 const { EXIDX } = await import('../lib/exercises.js')
 
@@ -192,7 +193,7 @@ describe('a training week (StageSheet)', () => {
     expect(status()).toBe('Choose where this week starts.')
     expect(sectionOf('Week 2 starts from')).toBeTruthy()
     choose('Load', 'Type a value')
-    click(sectionOf('Week 2 starts from').querySelector('button[aria-label="Increase"]'))
+    click(sectionOf('Week 2 starts from').querySelector('button[aria-label="Increase Load"]'))
     sheet()
     click(button('Save'))
     expect(trackOf(BENCH).stages[1].targets['r1:o0']).toMatchObject({ own: 'set', seed: { load: 52.5 }, phase: { progression: [expect.objectContaining({ metric: 'load' })] } })
@@ -335,5 +336,104 @@ describe('exercises', () => {
     page()
     click([...cardOf(PLANK).querySelectorAll('.lrow')].find(r => r.textContent === 'Fill from a template'))
     expect(mocks.menu.items.map(i => i.label)).toEqual(['Same work every week'])
+  })
+})
+
+describe('fix round 1', () => {
+  it('a recovery week says whether it needs its sessions done or passes with the week, and saves the choice', () => {
+    seed({ 1: ['r3'] })
+    openWeek(BENCH, 3)
+    segment('Recovery'); sheet()
+    expect(button('Needs its sessions done').getAttribute('aria-pressed')).toBe('true')
+    click(button('Passes with the week')); sheet()
+    click(button('Save'))
+    expect(trackOf(BENCH).stages[2]).toMatchObject({ kind: 'recovery', close: 'calendar' })
+    openWeek(BENCH, 3)
+    expect(button('Passes with the week').getAttribute('aria-pressed')).toBe('true')
+    expect(button('Needs its sessions done').closest('[role="group"]').getAttribute('aria-label')).toBe('Recovery')
+  })
+
+  it('calendar weeks with no preferred day can start, and run as the loop of their sessions', () => {
+    seed({ 1: ['r1'], 3: ['r2'] })
+    mocks.S.programmes.P = { ...def(), schedule: { mode: 'weeks', appts: [{ rid: 'r1' }, { rid: 'r2' }] } }
+    page()
+    expect(button('Start programme').disabled).toBe(false)
+    click(button('Start programme'))
+    sheet()
+    for (const row of ['After a missed week', 'After a skipped week']) click([...rowOf(row).querySelectorAll('button')].find(b => b.textContent === 'Move on'))
+    sheet()
+    choose('When the weeks run out', 'Stop')
+    click(button('Start programme'))
+    expect(Object.values(mocks.S.programmeRuns)).toHaveLength(1)
+    expect(mocks.S.rotation.sequence).toEqual(['r1', 'r2'])
+  })
+
+  it('with nothing to start from, Start says why', () => {
+    seed({ 1: ['r1'] })
+    mocks.S.programmes.P = { ...def(), schedule: { mode: 'weeks', appts: [] }, needs: ['repair'] }
+    page()
+    const start = button('Start programme')
+    expect(start.disabled).toBe(true)
+    expect(document.getElementById(start.getAttribute('aria-describedby')).textContent).toBe('Add a routine with exercises to the schedule.')
+  })
+
+  it('a programme waiting on a repair names each exercise; an edit keeps the wait, I checked these ends it', () => {
+    seed({ 1: ['r3'] })
+    const o = mocks.S.routines.find(r => r.id === 'r3').ex[0]
+    o.rule = { ...defaultPlanRule('five_three_one', { id: o.rule.id, exerciseId: BENCH, routineId: 'r3', unit: 'kg' }), revision: 1 }
+    mocks.S.programmes = { P: legacyProgramme(mocks.S, { id: 'P', name: 'Block', at: 1, weeks: [{ t: { [BENCH]: { pct: 80 } } }, {}], days: { 1: ['r3'] } }) }
+    expect(def().needs).toEqual(['repair'])
+    page()
+    expect(host.textContent).toContain('Check these before you start')
+    expect(host.textContent).toContain('Barbell Bench Press: the old programme asked 80% of the 1RM in week 1. Its sets work from a training max, so its weeks follow its own progression now.')
+    click(host.querySelector('.prog-weeks button[aria-label="Increase Weeks"]'))
+    expect(def().duration.n).toBe(3)
+    expect(def().needs).toEqual(['repair'])
+    page()
+    click(button('I checked these'))
+    expect(def().needs).toBeUndefined()
+    page()
+    expect(host.textContent).not.toContain('Check these before you start')
+  })
+
+  it('past 50 exercises the editor says what to do, and removing a session works', () => {
+    const ids = ['0025', '0043', '0027', '0047', '0031', '0294', '0313', '0334', '0241']
+    const routines = Array.from({ length: 6 }, (_, i) => ({ id: 'R' + i, name: 'Day ' + i, ex: ids.map(id => ({ id, sets: 3, reps: 8, weight: 20 })) }))
+    mocks.S = { ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines }), effort: 'rir', dayPlan: {}, programme: null }
+    mocks.S.programmes = { P: legacyProgramme(mocks.S, { id: 'P', name: 'Big', at: 1, weeks: [{}, {}], days: Object.fromEntries(routines.map((r, i) => [i + 1, [r.id]])) }) }
+    page()
+    const over = 'This programme has more exercises than it can hold. Remove a session from the schedule, or delete the programme.'
+    expect(host.textContent).toContain(over)
+    expect(button('I checked these')).toBeUndefined()
+    click(host.querySelector('.prog-weeks button[aria-label="Increase Weeks"]'))
+    expect(mocks.toasts.at(-1)).toBe(over)
+    expect(def().duration.n).toBe(2)
+    click(rowOf('Day 5'))
+    act(() => mocks.menu.items.find(i => i.label === 'Remove').onClick())
+    expect(def().tracks).toHaveLength(45)
+    page()
+    expect(host.textContent).not.toContain(over)
+  })
+
+  it('a running programme keeps how it counts its weeks, and says why', () => {
+    seed({ 1: ['r1'], 3: ['r2'] })
+    const adv = { onFailure: 'advance', onSkipped: 'advance' }
+    expect(startProgramme(mocks.S, 'P', { policies: Object.fromEntries(def().tracks.map(t => [t.id, adv])), end: 'stop', today: '2026-10-26', now: Date.now() })).toEqual({ ok: true })
+    const before = structuredClone(def())
+    page()
+    const rotation = button('Rotation')
+    expect(rotation.disabled).toBe(true)
+    expect(document.getElementById(rotation.getAttribute('aria-describedby')).textContent).toBe('Stop this programme before changing how it counts the weeks.')
+    click(rotation)
+    expect(def()).toEqual(before)
+  })
+
+  it('an assisted machine\'s week offers no back-off sets', () => {
+    mocks.S.routines = [...mocks.S.routines, ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r6', name: 'Pull', ex: [{ id: '0017', sets: 3, reps: 8, weight: 30 }] }] }).routines]
+    seed({ 1: ['r3'], 2: ['r6'] })
+    openWeek(BENCH, 1)
+    expect(rowOf('Back-off sets')).toBeTruthy()
+    openWeek('0017', 1)
+    expect(rowOf('Back-off sets')).toBeUndefined()
   })
 })
