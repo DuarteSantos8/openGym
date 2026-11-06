@@ -35,7 +35,7 @@ const L_PULL_UP_WEIGHTS = completeWeights({
   'hip-flexors': 0.4, triceps: 0
 })
 const T_BAR_ROW_WEIGHTS = completeWeights({
-  lats: 1, 'upper-back': 1, biceps: 0.4, 'rear-delts': 0.4, forearm: 0.4, trapezius: 0.4,
+  lats: 0.4, 'upper-back': 1, biceps: 0.4, 'rear-delts': 0.4, forearm: 0.4, trapezius: 0.4,
   chest: 0, triceps: 0
 })
 const CHEST_PRESS_WEIGHTS = completeWeights({ chest: 1, 'front-delts': 0.4, triceps: 0.4, biceps: 0 })

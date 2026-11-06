@@ -100,7 +100,7 @@ describe('owner-approved zero-credit overrides', () => {
     ],
     [
       ['1349', '0606'],
-      { lats: 1, 'upper-back': 1, biceps: 0.4, 'rear-delts': 0.4, forearm: 0.4, trapezius: 0.4, chest: 0, triceps: 0 },
+      { lats: 0.4, 'upper-back': 1, biceps: 0.4, 'rear-delts': 0.4, forearm: 0.4, trapezius: 0.4, chest: 0, triceps: 0 },
     ],
     [
       ['1254', '1256', '1257', '1299', '1300', '1301', '1479', '2144', '3758', '0025', '0033', '0045', '0047', '0122', '0151', '0169', '0289', '0301', '0314', '0748', '0577', '0576'],

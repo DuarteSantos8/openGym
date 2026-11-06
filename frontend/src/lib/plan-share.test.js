@@ -306,10 +306,12 @@ describe('custom exercises in a shared plan', () => {
   }
 
   it('exports equipment, muscles and description with the custom exercise', () => {
+    // Saved before the 1.4.5 split (no mv): its "Lats & upper back" goes out as both (#638).
     expect(buildPlanBundle(source, 'Plan').customEx[0]).toEqual({
-      id: 'c1', n: 'QA Landmine Row', bp: 'back', desc: 'Bar in the corner', eq: 'barbell', tg: 'upper-back',
-      primaries: ['upper-back'], secondaries: ['biceps'], muscleGroups: ['upper-back', 'biceps'],
+      id: 'c1', n: 'QA Landmine Row', bp: 'back', desc: 'Bar in the corner', eq: 'barbell', tg: 'lats',
+      primaries: ['lats', 'upper-back'], secondaries: ['biceps'], muscleGroups: ['lats', 'upper-back', 'biceps'], mv: 2,
     })
+    expect(buildPlanBundle({ ...source, customEx: [{ ...landmine, mv: 2 }] }, 'Plan').customEx[0]).toMatchObject({ primaries: ['upper-back'], tg: 'upper-back' })
   })
 
   it('stores the imported custom exercise the way the form would have created it', () => {
@@ -317,7 +319,7 @@ describe('custom exercises in a shared plan', () => {
     const target = { routines: [], week: {}, customEx: [] }
     mergePlan(target, parsed)
     const stored = target.customEx[0]
-    expect(stored).toMatchObject({ ...landmine, id: stored.id })
+    expect(stored).toMatchObject({ ...landmine, id: stored.id, tg: 'lats', primaries: ['lats', 'upper-back'], muscleGroups: ['lats', 'upper-back', 'biceps'], mv: 2 })
     expect(stored.id).not.toBe('c1')
     expect(target.routines[0].ex[0].id).toBe(stored.id)
   })
@@ -338,7 +340,7 @@ describe('custom exercises in a shared plan', () => {
     const bundle = { opengym_plan: 1, routines: [], customEx: [{ id: 'x', n: 'Odd', bp: 'back', eq: 'barbell', primaries: ['upper-back', 'wings'], secondaries: ['upper-back', 'biceps', 7] }] }
     const target = { routines: [], week: {}, customEx: [] }
     mergePlan(target, parsePlan(bundle))
-    expect(target.customEx[0]).toMatchObject({ primaries: ['upper-back'], secondaries: ['biceps'], muscleGroups: ['upper-back', 'biceps'], tg: 'upper-back', sm: ['biceps'] })
+    expect(target.customEx[0]).toMatchObject({ primaries: ['lats', 'upper-back'], secondaries: ['biceps'], muscleGroups: ['lats', 'upper-back', 'biceps'], tg: 'lats', sm: ['biceps'] })
   })
 
   it('still reuses a custom the recipient already has under the same name and body part', () => {

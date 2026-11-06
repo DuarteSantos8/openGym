@@ -48,7 +48,10 @@ export const expandSlug = slug => (GENERIC[slug] ? Object.keys(GENERIC[slug]) : 
 const LEGACY = { 'upper-back': ['lats', 'upper-back'] }
 /** The muscle-model version written on custom exercises and snapshots since the split. */
 export const MUSCLE_MODEL = 2
-const isLegacy = ex => !!ex && typeof ex === 'object' && ex.mv !== MUSCLE_MODEL && !isBuiltinEx(ex)
+// A catalogue exercise is always the current model, also as a copy of its row (a spread of
+// EXIDX[id]); only a custom exercise, a plan file's or a history snapshot can be older.
+const isCatalogueCopy = ex => !ex.custom && !ex.muscleWeights && !!ex.id && !!EXIDX[ex.id] && isBuiltinEx(EXIDX[ex.id])
+const isLegacy = ex => !!ex && typeof ex === 'object' && ex.mv !== MUSCLE_MODEL && !isBuiltinEx(ex) && !isCatalogueCopy(ex)
 /** A slug's weight in a weights map: a generic one counts as its strongest head. */
 export function slugWeight(weights, slug) {
   if (!weights) return 0

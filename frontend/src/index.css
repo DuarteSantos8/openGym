@@ -1271,9 +1271,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .own-wrap{position:relative}
 .own-wrap .own-flip{
   position:absolute;top:9px;inset-inline-end:9px;z-index:2;display:inline-flex;align-items:center;gap:4px;
-  min-height:32px;background:rgba(0,0,0,.45);color:#fff;border:none;border-radius:99px;padding:5px 11px;
+  min-height:32px;background:rgba(0,0,0,.62);color:#fff;border:none;border-radius:99px;padding:5px 11px;
   font-size:var(--fs-caption);font-weight:500;cursor:pointer;
-  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);transition:transform var(--fast),background var(--fast);
+  transition:transform var(--fast),background var(--fast);
 }
 .own-wrap .own-flip:active{transform:scale(.96);background:rgba(0,0,0,.6)}
 .own-wrap .own-flip .icn{font-size:var(--fs-footnote)}

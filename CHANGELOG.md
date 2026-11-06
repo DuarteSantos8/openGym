@@ -6,6 +6,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Things we promised and finally built**
+- Three new progression rules (exercise settings → Progression → Rule): Steady double progression (one rep at a time, every set has to hit it first), Undulating days (medium, heavy and light days in turn, weights from your estimated max) and Shorter rests (same weight, less rest each clean session, then more weight). Idea and first version by @giulioleuci (#823, #824, #825).
+- The shoulder is three muscles now: front, side and rear delts, and the lats are their own muscle apart from the upper back, in every muscle map, the balance, Weekly sets per muscle, recovery and the muscle filter (#638). Your custom exercises tagged "Shoulders" still count, for all three heads.
+- Bench: flat or adjustable (Settings → Equipment → Bench, or the gym's equipment profile). A flat bench keeps incline and decline work out of the library, the picker and the Coach's picks; no bench keeps bench work out.
+- Your own photo or video on any built-in exercise (exercise page → Your photo or video): it shows instead of the animation, with a switch on the picture to flip back. Private, synced with your account, never shared (#259, #534).
+- Fixed: incline push-ups, wall push-ups and cable pushdowns no longer need a bench to show up.
+- Fixed: the Coach did not see a routine's triple progression rule.
+
 **API tokens and MCP over HTTPS**
 - API tokens: in Settings → Integrations, make a key for one program (an AI assistant, a planner, a script). Pick per category what it may see and what it may change, and when it ends. It never gets more than you have, only your own profile, it is shown once and stored only as a hash, and revoking it stops it on the next request. Every look and change shows in your sharing log (#480, idea by @rkj; #566, idea by @kurktchiev).
 - MCP over HTTPS: an optional container serves openGym's MCP tools at https://your-server/mcp, so assistants on the web, a phone or another machine can use them with a token. Turn it on with `COMPOSE_PROFILES=mcp` and `MCP=on` (docs/MCP_REMOTE.md; #781, idea by @czepter; #314, idea by @mzspicoli).
