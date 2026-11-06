@@ -3126,6 +3126,8 @@ export const PT_BR_OVERRIDES = {
   "Animation": "Animação",
   "Show the animation": "Mostrar a animação",
   "Show yours": "Mostrar o seu",
+  "Restore it on a new phone in two taps.": "Restaure no celular novo em dois toques.",
+  "That file is not an openGym backup.": "Esse arquivo não é um backup do openGym.",
 
 }
 

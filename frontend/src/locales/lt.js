@@ -4670,7 +4670,7 @@ export default {
   "Strava is off on this server.": "Šiame serveryje Strava išjungta.",
   "Strava could not be connected. Try again.": "Nepavyko prijungti Strava. Bandykite dar kartą.",
   "Keeps the newest {0} backup, one per day.": "Saugoma naujausia kopija: {0}, po vieną per dieną.",
-  "Keeps the newest {0} backups, one per day.": "Saugomos naujausios kopijos: {0}, po vieną per dieną.",
+  "Keeps the newest {0} backups, one per day.": { one: "Saugoma {0} naujausia kopija, po vieną per dieną.", few: "Saugomos {0} naujausios kopijos, po vieną per dieną.", many: "Saugoma {0} naujausios kopijos, po vieną per dieną.", other: "Saugoma {0} naujausių kopijų, po vieną per dieną." },
   // --- promises-146: progression rules, shoulder heads and lats, bench, own media ---,
   "Steady double progression": "Tolygi dviguba progresija",
   "Undulating days": "Kintančios dienos",
