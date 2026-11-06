@@ -21,10 +21,12 @@ import { insertChronological, backfillStart } from './backfill.js'
 import { rebuildPrHistory } from './workout-date.js'
 import { stampWorkout } from './sync-merge.js'
 import { exerciseMuscleSnapshot } from './muscles.js'
+import { fromSpeed, speedUnitOf, KMH_PER_MPH } from './speed.js'
+import { clampIncline, inclineFits } from './incline.js'
 
 const LB_TO_KG = 0.45359237
 // The importer's bounds (import-csv.js MAX_KG / MAX_REPS): nobody lifts 2 t or does 1,000 reps.
-export const LOG_LIMITS = { maxKg: 2000, maxReps: 1000, maxSec: 6 * 3600, maxSets: 50, maxExercises: 40, maxDurationMin: 24 * 60 }
+export const LOG_LIMITS = { maxKg: 2000, maxReps: 1000, maxSec: 6 * 3600, maxSets: 50, maxExercises: 40, maxDurationMin: 24 * 60, maxCardioMin: 360, maxKmh: 60, maxIncline: 40 }
 export const BODY_PARTS = ['back', 'cardio', 'chest', 'lower arms', 'lower legs', 'neck', 'shoulders', 'upper arms', 'upper legs', 'waist']
 
 // The least a "just did" squeezed in after today's last session lasts.
@@ -95,6 +97,49 @@ function rowOf(set, mode, toProfile) {
   return { row }
 }
 
+// A cardio exercise's described sets as the rows the app stores: { min, speed (km/h), km?, incline?,
+// rpe?, done }, as a cardio set finished on the phone. Minutes are whole, as the app's stepper is;
+// a distance stands in for the speed (and is kept, lib/distance.js); no weight, reps or RIR.
+function cardioRows(sets, at, ex, speedUnit, problems) {
+  const rows = []
+  const before = problems.length
+  const distUnit = speedUnit === 'mph' ? 'mi' : 'km'
+  sets.forEach((s, j) => {
+    const where = `${at}.sets[${j}]`
+    for (const k of ['reps', 'seconds', 'weight', 'rir']) if (s?.[k] != null) { problems.push({ field: where, problem: `a cardio set is minutes (and speed or distance), not ${k}` }); return }
+    if (s?.warmup === true || s?.failure === true) { problems.push({ field: where, problem: 'a cardio set is not a warm-up or taken to failure' }); return }
+    const min = num(s?.minutes)
+    if (!Number.isInteger(min) || min < 1 || min > LOG_LIMITS.maxCardioMin) { problems.push({ field: where + '.minutes', problem: `whole minutes, 1–${LOG_LIMITS.maxCardioMin}` }); return }
+    if (s.speed != null && s.distance != null) { problems.push({ field: where, problem: 'give the speed or the distance, not both' }); return }
+    const row = { min, speed: 0, done: true }
+    if (s.speed != null) {
+      const v = num(s.speed)
+      if (v == null || v < 0) { problems.push({ field: where + '.speed', problem: 'must be 0 or more' }); return }
+      row.speed = fromSpeed(v, speedUnit)
+    } else if (s.distance != null) {
+      const d = num(s.distance)
+      if (d == null || d <= 0) { problems.push({ field: where + '.distance', problem: 'must be more than 0' }); return }
+      const km = distUnit === 'mi' ? d * KMH_PER_MPH : d
+      row.km = Math.round(km * 10000) / 10000
+      row.speed = Math.round(km / (min / 60) * 100) / 100
+    }
+    if (row.speed > LOG_LIMITS.maxKmh) { problems.push({ field: where, problem: `over ${LOG_LIMITS.maxKmh} km/h: check the unit (speed_unit) or the minutes` }); return }
+    if (s.incline != null) {
+      if (!inclineFits(ex)) { problems.push({ field: where + '.incline', problem: 'this exercise has no incline (a bike or a rower)' }); return }
+      const g = clampIncline(s.incline)
+      if (g == null || num(s.incline) < 0 || num(s.incline) > LOG_LIMITS.maxIncline) { problems.push({ field: where + '.incline', problem: `percent, 0–${LOG_LIMITS.maxIncline}` }); return }
+      if (g > 0) row.incline = g
+    }
+    if (s.rpe != null) {
+      const v = num(s.rpe), e = EFFORT.rpe
+      if (v == null || v < e.min || v > e.max) { problems.push({ field: where + '.rpe', problem: `RPE must be between ${e.min} and ${e.max}` }); return }
+      row.rpe = v
+    }
+    rows.push(row)
+  })
+  return problems.length > before ? null : rows
+}
+
 /**
  * Build the workout a description stands for, against profile `S`, without touching it.
  *
@@ -123,6 +168,9 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
   const profileUnit = S.unit === 'lb' ? 'lb' : 'kg'
   const unit = input?.unit == null ? (fallbackUnit === 'lb' || fallbackUnit === 'kg' ? fallbackUnit : profileUnit) : input.unit
   if (unit !== 'kg' && unit !== 'lb') problems.push({ field: 'unit', problem: "must be 'kg' or 'lb'" })
+  // Cardio speeds and distances: in the unit given, else the profile's speed unit; stored in km/h and km.
+  const speedUnit = input?.speedUnit == null ? speedUnitOf(S) : input.speedUnit
+  if (speedUnit !== 'kmh' && speedUnit !== 'mph') problems.push({ field: 'speedUnit', problem: "must be 'kmh' or 'mph'" })
   const toProfile = {
     toKg: w => (unit === 'lb' ? w * LB_TO_KG : w),
     // Converted only when the description is in the other unit, to the tenth the importer keeps.
@@ -154,13 +202,22 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
       problems.push({ field: at + '.exercise', exercise: ex?.exercise ?? null, problem: hit.problem, ...(hit.candidates ? { candidates: hit.candidates } : {}) })
       return
     }
-    if (isCardio(hit.id) || customEx.find(c => c.id === hit.id)?.bp === 'cardio') {
-      problems.push({ field: at + '.exercise', exercise: ex.exercise, problem: 'cardio (time and speed) cannot be logged this way yet' })
-      return
-    }
     const sets = Array.isArray(ex.sets) ? ex.sets : []
     if (!sets.length || sets.length > LOG_LIMITS.maxSets) {
       problems.push({ field: at + '.sets', problem: `1–${LOG_LIMITS.maxSets} sets` })
+      return
+    }
+    const own = [...(S.customEx || []), ...customEx].find(c => c?.id === hit.id)
+    if (isCardio(hit.id) || own?.bp === 'cardio') {
+      const rows = cardioRows(sets, at, own || EXIDX[hit.id], speedUnit, problems)
+      if (!rows) return
+      const note = String(ex.note ?? '').trim().slice(0, 280)
+      entries.push({ id: hit.id, sets: rows, target: { id: hit.id, mode: 'cardio' }, ...(note ? { note } : {}) })
+      resolved.push({ input: ex.exercise, id: hit.id, name: hit.name, mode: 'cardio', ...(hit.created ? { created: true } : {}) })
+      return
+    }
+    if (sets.some(st => st?.minutes != null || st?.speed != null || st?.distance != null || st?.incline != null)) {
+      problems.push({ field: at + '.sets', problem: 'minutes, speed, distance and incline are for cardio exercises; this one takes reps or seconds' })
       return
     }
     const timed = sets.some(s => s?.seconds != null), counted = sets.some(s => s?.reps != null)
@@ -196,6 +253,11 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
   if (problems.length) return { problems }
 
   const past = date < today
+  // The minutes of cardio and holds are logged facts: a length nobody gave covers them, and a
+  // length or start someone gave has to hold them.
+  const timedMin = entries.reduce((m, e) => m + e.sets.reduce((a, r) => a + (Number(r.min) || 0) + (Number(r.sec) || 0) / 60, 0), 0)
+  if (dur != null && dur < timedMin) return { problems: [{ field: 'durationMin', problem: `the timed work alone is ${Math.ceil(timedMin)} minutes, longer than the session` }] }
+  const fallMin = Math.max(60, Math.ceil(timedMin))
   // A length nobody gave is the backfill's hour (backfill.js), as when a session is logged in the
   // app. Into the past without a start: the backfill's 18:00. Today without one it is "just did":
   // it ended now. A length the caller gave is kept as given; the hour that stands in for a missing
@@ -204,11 +266,11 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
   let start, end
   if (input.start != null) {
     start = new Date(`${date}T${input.start}:00`).getTime()
-    end = start + (dur ?? 60) * 60000
+    end = start + (dur ?? fallMin) * 60000
     if (dur == null && !past) end = Math.max(start, Math.min(end, now))
   } else if (past) {
     start = backfillStart(date)
-    end = start + (dur ?? 60) * 60000
+    end = start + (dur ?? fallMin) * 60000
   } else {
     end = now
     const midnight = new Date(date + 'T00:00:00').getTime()
@@ -217,7 +279,7 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
       if (start < midnight) return { problems: [{ field: 'durationMin', problem: 'a session that long ending now began yesterday: give the date and start it began on' }] }
     } else {
       const lastEnd = Math.max(0, ...(S.workouts || []).filter(w => w?.d === date).map(w => Number(w.end) || Number(w.start) || 0))
-      start = Math.max(end - 60 * 60000, lastEnd, midnight)
+      start = Math.max(end - fallMin * 60000, Math.min(lastEnd, end - Math.ceil(timedMin) * 60000), midnight)
       // Too little room after it — a session on file that ended moments ago, or ends after now
       // (another device's clock ahead) — would make a session of seconds, read back as "0 min":
       // the floor instead, overlapping the last minutes of the one before as the app's backfill
@@ -239,7 +301,13 @@ export function buildLoggedWorkout(S, input, { now = Date.now(), unit: fallbackU
   const id = importId('mw', JSON.stringify([
     date, input.start ?? null, dur ?? null, input.name ?? null, input.note ?? null, input.unit ?? null,
     exercises.map(ex => [ex.exercise, ex.createCustom === true, ex.note ?? null,
-      ex.sets.map(s => [s.reps ?? null, s.seconds ?? null, s.weight ?? null, s.warmup === true, s.failure === true, s.rir ?? null, s.rpe ?? null])]),
+      ex.sets.map(s => {
+        const row = [s.reps ?? null, s.seconds ?? null, s.weight ?? null, s.warmup === true, s.failure === true, s.rir ?? null, s.rpe ?? null]
+        // Cardio's fields join only when there are any: every lifting description keeps the id it
+        // always had, so a retry across versions still finds its workout.
+        const cardio = [s.minutes, s.speed, s.distance, s.incline]
+        return cardio.some(v => v != null) ? [...row, ...cardio.map(v => v ?? null), input.speedUnit ?? null] : row
+      })]),
   ]))
   // A custom exercise's muscles go with the entry, as Finish writes them: a device that deletes
   // the exercise without ever having seen this workout would otherwise leave its sets crediting

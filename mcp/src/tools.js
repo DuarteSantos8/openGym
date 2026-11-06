@@ -4,6 +4,7 @@
 import { z } from 'zod'
 import { getState, getUser } from './state.js'
 import { setNoteOf } from '../../frontend/src/lib/set-notes.js'
+import { speedUnitOf } from '../../frontend/src/lib/speed.js'
 import {
   fmt, setLabel, exLine, muscleName, policyName, friendlyDuration, ratio, muscleOrder
 } from './labels.js'
@@ -55,7 +56,7 @@ export function withCustomsIndexed(S, build) {
   try { return build() } finally { registerCustom([]) }
 }
 
-export function entryView(e, S) {
+export function entryView(e, S, speedUnit = speedUnitOf(S)) {
   const ex = exerciseOf(e.id, S)
   // Spread id into the cfg the way every call site in the app does (Workout.jsx, Stats.jsx,
   // progression.js) — the sheet saves a cardio target as {sets, min, speed} with no id and no
@@ -70,7 +71,8 @@ export function entryView(e, S) {
     target: e.target || null,
     sets: (e.sets || []).map(s => ({
       done: !!s.done,
-      label: setLabel(e.id, { ...s, done: undefined }, cfg),
+      // Cardio in the profile's speed unit (mph on an lb profile that never chose), as the app shows it.
+      label: setLabel(e.id, { ...s, done: undefined }, cfg, speedUnit),
       // Taken to failure (the app's "F"): RIR 0 for effort when nothing was rated by hand.
       ...(isFailureSet(s) ? { failure: true } : {}),
       w: Number(s.w) || 0,
