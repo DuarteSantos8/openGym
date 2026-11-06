@@ -246,7 +246,7 @@ that.
   segment Health Connect refuses leaves the session without segments rather than unwritten.
 - **Permissions.** The manifest declares `WRITE_EXERCISE`, `WRITE_WEIGHT` and, since v1.4.3,
   `READ_HEART_RATE` and `READ_WEIGHT` (see "Reading back" below), and since v1.4.5 `READ_BODY_FAT`,
-  `READ_LEAN_BODY_MASS`, `READ_BONE_MASS` and `READ_BASAL_METABOLIC_RATE` for the body-composition
+  `READ_LEAN_BODY_MASS`, `READ_BONE_MASS`, `READ_BODY_WATER_MASS` (#1014) and `READ_BASAL_METABOLIC_RATE` for the body-composition
   switch, shown under Body measurements and kept in `opengym-health.json` only (on the iPhone: body
   fat and lean body mass from Apple Health). Also since v1.4.5 `READ_SLEEP`, `READ_RESTING_HEART_RATE`,
   `READ_HEART_RATE_VARIABILITY` and `READ_STEPS` for the vitals switch (`readVitals`, lib/vitals.js:

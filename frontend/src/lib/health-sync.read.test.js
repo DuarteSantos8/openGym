@@ -265,7 +265,7 @@ describe('body composition (v1.4.5)', () => {
     h.body = [{ kind: 'fat', t: NOW - 3600e3, v: 18.2, id: 'a', origin: 'com.withings.wiscale2' }, { kind: 'bmr', t: NOW - 3600e3, v: 1790, id: 'b' }]
     const r = await hs.enableRead('body', getState, { apply })
     expect(r.ok).toBe(true)
-    expect(reads('request')[0][1].read).toEqual(['bodyFat', 'leanMass', 'boneMass', 'bmr'])
+    expect(reads('request')[0][1].read).toEqual(['bodyFat', 'leanMass', 'boneMass', 'bodyWater', 'bmr'])
     expect(reads('readBody')).toHaveLength(1)
     expect(file().body.fat).toEqual([{ t: NOW - 3600e3, v: 18.2, id: 'a' }])
     expect(file().body.bmr).toHaveLength(1)

@@ -3813,7 +3813,7 @@ export const PT_BR_OVERRIDES = {
   "Today’s rows were planned for this day. Your routine stays as it is.": "As séries de hoje foram planejadas para este dia. Sua rotina continua como está.",
   "Body composition from your scale": "Composição corporal da sua balança",
   "Body fat and lean mass, as your scale saved them. Shown under Body measurements, never mixed into what you log.": "Gordura corporal e massa magra, do jeito que sua balança salvou. Aparecem em Medidas corporais e nunca se misturam com o que você registra.",
-  "Body fat, lean mass, bone mass and BMR, as your scale saved them. Shown under Body measurements, never mixed into what you log.": "Gordura corporal, massa magra, massa óssea e metabolismo basal, do jeito que sua balança salvou. Aparecem em Medidas corporais e nunca se misturam com o que você registra.",
+  "Body fat, lean mass, bone mass, body water and BMR, as your scale saved them. Shown under Body measurements, never mixed into what you log.": "Gordura corporal, massa magra, massa óssea, água corporal e metabolismo basal, do jeito que sua balança salvou. Aparecem em Medidas corporais e nunca se misturam com o que você registra.",
   "{0} in a month": "{0} em um mês",
   "Straight from your scale, read-only. Change it where it was measured.": "Direto da sua balança, só leitura. Altere onde foi medido.",
   // --- promises-146: progression rules, shoulder heads and lats, bench, own media ---

@@ -118,17 +118,18 @@ export function mergeWeighIns(S, records, { src, seen = {} } = {}) {
   return [...days].sort()
 }
 
-/* ---------- body composition (body fat, lean mass, bone mass, BMR) ---------- */
+/* ---------- body composition (body fat, lean mass, bone mass, body water, BMR) ---------- */
 //
 // What a smart scale saves to the hub besides the weight (idea by @baron-de-ropp (#197) and
-// @TheBlackSide243 (#589)). Health Connect has all four, Apple Health body fat and lean mass. It
+// @TheBlackSide243 (#589), body water from @elmillgoa (#1014)). Health Connect has all five, Apple
+// Health body fat and lean mass. It
 // is shown under Body measurements as the hub has it, read-only: kept in this phone's health file
 // (lib/health-sync.js), not in the log, so it never syncs, never rides in a backup and never
 // competes with a measurement you typed in. The hub stays the place it lives.
 
-export const BODY_KINDS = ['fat', 'lean', 'bone', 'bmr']
+export const BODY_KINDS = ['fat', 'lean', 'bone', 'water', 'bmr']
 // Plausible bounds per kind: anything outside is another person's profile or a scale's hiccup.
-const BODY_RANGE = { fat: [2, 75], lean: [15, 200], bone: [0.3, 10], bmr: [500, 5000] }
+const BODY_RANGE = { fat: [2, 75], lean: [15, 200], bone: [0.3, 10], water: [10, 120], bmr: [500, 5000] }
 // Readings kept per kind: a weigh-in a day for well over half a year.
 export const BODY_KEEP = 240
 

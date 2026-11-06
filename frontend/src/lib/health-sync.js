@@ -270,7 +270,7 @@ let lastVitalsRead = 0
 let lastSportRead = 0
 
 // The hub's names for what the body-composition switch reads; Apple Health has the first two.
-export const BODY_READS = ['bodyFat', 'leanMass', 'boneMass', 'bmr']
+export const BODY_READS = ['bodyFat', 'leanMass', 'boneMass', 'bodyWater', 'bmr']
 // Vitals (v1.4.5, lib/vitals.js): sleep, resting heart rate, heart rate variability and steps, one
 // switch for the four, each its own permission in the store's dialog.
 export const VITAL_READS = ['sleep', 'restingHeartRate', 'hrv', 'steps']

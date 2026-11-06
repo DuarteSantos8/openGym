@@ -12,6 +12,7 @@ import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord;
 import androidx.health.connect.client.records.BasalMetabolicRateRecord;
 import androidx.health.connect.client.records.BodyFatRecord;
 import androidx.health.connect.client.records.BoneMassRecord;
+import androidx.health.connect.client.records.BodyWaterMassRecord;
 import androidx.health.connect.client.records.LeanBodyMassRecord;
 import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
@@ -110,6 +111,7 @@ public class HealthConnectPlugin extends Plugin {
     private static final String READ_BODY_FAT = "android.permission.health.READ_BODY_FAT";
     private static final String READ_LEAN_MASS = "android.permission.health.READ_LEAN_BODY_MASS";
     private static final String READ_BONE_MASS = "android.permission.health.READ_BONE_MASS";
+    private static final String READ_BODY_WATER = "android.permission.health.READ_BODY_WATER_MASS";
     private static final String READ_BMR = "android.permission.health.READ_BASAL_METABOLIC_RATE";
     // Vitals (v1.4.5, gm-insights), each its own permission; whichever were granted are read.
     private static final String READ_SLEEP = "android.permission.health.READ_SLEEP";
@@ -358,7 +360,7 @@ public class HealthConnectPlugin extends Plugin {
     }
 
     /**
-     * Body composition since `since`: body fat (%), lean and bone mass (kg) and BMR (kcal a day),
+     * Body composition since `since`: body fat (%), lean, bone and water mass (kg) and BMR (kcal a day),
      * each only where its permission was granted, so a partial grant still reads the rest.
      */
     @PluginMethod
@@ -383,6 +385,9 @@ public class HealthConnectPlugin extends Plugin {
                     all.add(HealthRead.body("lean", r.getTime().toEpochMilli(), r.getMass().getKilograms(), r.getMetadata()));
                 if (got.contains(READ_BONE_MASS)) for (BoneMassRecord r : read(BoneMassRecord.class, range))
                     all.add(HealthRead.body("bone", r.getTime().toEpochMilli(), r.getMass().getKilograms(), r.getMetadata()));
+                // Body water (#1014): what Renpho and friends save as the water in you, in kg.
+                if (got.contains(READ_BODY_WATER)) for (BodyWaterMassRecord r : read(BodyWaterMassRecord.class, range))
+                    all.add(HealthRead.body("water", r.getTime().toEpochMilli(), r.getMass().getKilograms(), r.getMetadata()));
                 if (got.contains(READ_BMR)) for (BasalMetabolicRateRecord r : read(BasalMetabolicRateRecord.class, range))
                     all.add(HealthRead.body("bmr", r.getTime().toEpochMilli(), r.getBasalMetabolicRate().getKilocaloriesPerDay(), r.getMetadata()));
                 JSArray records = new JSArray();
@@ -591,9 +596,10 @@ public class HealthConnectPlugin extends Plugin {
         r.put("heartRate", granted.contains(READ_HEART_RATE));
         r.put("weight", granted.contains(READ_WEIGHT));
         r.put("history", granted.contains(READ_HISTORY));
-        // Body composition: on when any of its four was granted.
+        // Body composition: on when any of its five was granted.
         r.put("body", granted.contains(READ_BODY_FAT) || granted.contains(READ_LEAN_MASS)
-                || granted.contains(READ_BONE_MASS) || granted.contains(READ_BMR));
+                || granted.contains(READ_BONE_MASS) || granted.contains(READ_BMR)
+                || granted.contains(READ_BODY_WATER));
         // Vitals (v1.4.5): on when any of its four was granted.
         r.put("vitals", granted.contains(READ_SLEEP) || granted.contains(READ_RESTING_HR)
                 || granted.contains(READ_HRV) || granted.contains(READ_STEPS));

@@ -7,6 +7,17 @@ const DAY = 24 * 3600e3
 const T = 1_762_400_000_000
 
 describe('mergeBodyComp', () => {
+  // #1014: the water a Renpho or a Withings scale saves, in kg like the other masses.
+  it('keeps body water as its own kind, in kg and within a plausible range', () => {
+    const got = mergeBodyComp({}, [
+      { kind: 'water', t: T, v: 41.27, id: 'w1' },
+      { kind: 'water', t: T - DAY, v: 3, id: 'w2' },
+      { kind: 'water', t: T - 2 * DAY, v: 400, id: 'w3' },
+    ])
+    expect(got.water).toEqual([{ t: T, v: 41.27, id: 'w1' }])
+    expect(bodyCompSummary(got).map(r => r.kind)).toEqual(['water'])
+    expect(bodyCompValue('water', 41.27, 'lb')).toEqual({ v: 91, unit: 'lb' })
+  })
   it('keeps each kind in order, once per reading, and leaves out our own and the implausible', () => {
     const got = mergeBodyComp({}, [
       { kind: 'fat', t: T, v: 18.24, id: 'a', origin: 'com.withings' },

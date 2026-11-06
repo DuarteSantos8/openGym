@@ -382,6 +382,7 @@
     <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
     <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" />
     <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BODY_WATER_MASS" />
     <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
     <!-- Vitals (v1.4.5), asked for together when their switch is turned on, after an explanation
          in the app: last night's sleep, resting heart rate, heart rate variability and steps, for

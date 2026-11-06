@@ -2213,7 +2213,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         <Switch checked={!!h.readWeight} disabled={busy} onChange={toggleRead('weight')} />
       </Row>
       <Row icon="scale" iconTint="var(--purple)" title={t('Body composition from your scale')}
-        subtitle={ios ? t('Body fat and lean mass, as your scale saved them. Shown under Body measurements, never mixed into what you log.') : t('Body fat, lean mass, bone mass and BMR, as your scale saved them. Shown under Body measurements, never mixed into what you log.')}>
+        subtitle={ios ? t('Body fat and lean mass, as your scale saved them. Shown under Body measurements, never mixed into what you log.') : t('Body fat, lean mass, bone mass, body water and BMR, as your scale saved them. Shown under Body measurements, never mixed into what you log.')}>
         <Switch checked={!!h.readBody} disabled={busy} onChange={toggleRead('body')} />
       </Row>
       {/* Vitals (v1.4.5, lib/vitals.js): what the Daily form card and the check-in use. Explained

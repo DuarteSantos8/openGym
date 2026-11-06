@@ -88,6 +88,7 @@ final class HealthRead {
             case "bodyFat": return "android.permission.health.READ_BODY_FAT";
             case "leanMass": return "android.permission.health.READ_LEAN_BODY_MASS";
             case "boneMass": return "android.permission.health.READ_BONE_MASS";
+            case "bodyWater": return "android.permission.health.READ_BODY_WATER_MASS";
             case "bmr": return "android.permission.health.READ_BASAL_METABOLIC_RATE";
             // Vitals (v1.4.5): the Daily form card and the check-in's sleep.
             case "sleep": return "android.permission.health.READ_SLEEP";

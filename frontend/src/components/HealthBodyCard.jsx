@@ -8,7 +8,7 @@ import { MOBILE, nativePlatform } from '../lib/mobile.js'
 import { fmtDate, fmtNum, isoOf } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 
-const LABEL = { fat: 'Body fat', lean: 'Lean mass', bone: 'Bone mass', bmr: 'Basal metabolic rate' }
+const LABEL = { fat: 'Body fat', lean: 'Lean mass', bone: 'Bone mass', water: 'Body water', bmr: 'Basal metabolic rate' }
 
 /** One row's number and unit in the profile's weight unit: { v, unit }. */
 export function bodyCompValue(kind, v, unit) {
