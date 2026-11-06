@@ -2603,9 +2603,13 @@ const routes = {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
     const body = await readBody(req);
-    if (!record(body) || Object.keys(body).sort().join() !== 'baseRev,confirmed' || body.confirmed !== true || !Number.isInteger(body.baseRev)) {
+    if (!record(body) || Object.keys(body).filter(k => k !== 'tz').sort().join() !== 'baseRev,confirmed' || body.confirmed !== true || !Number.isInteger(body.baseRev)) {
       return json(res, 400, { error: 'invalid-migration-request' });
     }
+    // The device's timezone, which a running programme keeps its weeks in (the reminder's own wins);
+    // one Intl does not know is left out, as if not sent.
+    let tz;
+    try { if (typeof body.tz === 'string' && body.tz) { new Intl.DateTimeFormat(undefined, { timeZone: body.tz }); tz = body.tz; } } catch { tz = undefined; }
     const fail = (status, reason) => {
       audit(req, 'data.migrate.fail', { ok: false, user, msg: reason });
       json(res, status, { error: status === 409 ? reason : 'migration-failed', reason });
@@ -2622,7 +2626,7 @@ const routes = {
     let profile;
     try {
       // Converted and checked before any backup is written: a refusal leaves nothing behind.
-      ({ profile } = migrateProfileV1ToV2(source.state, LIB_BY_ID));
+      ({ profile } = migrateProfileV1ToV2(source.state, LIB_BY_ID, { tz }));
       const check = validateCanonicalProfile(profile);
       if (!check.ok) throw new Error('invalid-output: ' + check.errors[0]);
       profile._rev = status.revision + 1;

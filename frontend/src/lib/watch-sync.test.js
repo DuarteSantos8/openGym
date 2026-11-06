@@ -3,7 +3,8 @@
 // watch's events applied once each through the workout screen's own actions, drained from the
 // native queue and acknowledged only when done.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { loggedExposure, ruleOccurrence } from './test-fixtures.js'
+import { legacyProgramme, loggedExposure, ruleOccurrence } from './test-fixtures.js'
+import { startProgramme } from './programmes.js'
 import { rowsOfPerformance } from './session-ui-adapter.js'
 import { buildSnapshot, buildReady, applyEvents, bindWatchActions, bindWatchAppActions, drainWatchEvents, _setWatchPluginForTest, _resetWatchSync, SNAPSHOT_VERSION } from './watch-sync.js'
 
@@ -155,6 +156,24 @@ describe('starting and finishing on the watch', () => {
     const snap = buildSnapshot(S, { ready })
     expect(snap.active).toBeNull()
     expect(snap.ready.today.name).toBe('Push')
+  })
+
+  // A routine that would pass an earlier session of an ordered week is started on the phone as
+  // extra work (sheets.jsx startSession): ready on the watch the same way, never empty.
+  it('a routine that would skip an earlier session of an ordered programme week is ready as extra work, with its exercises', () => {
+    vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date(2026, 9, 13, 9, 0))   // Tuesday
+    try {
+      const S = { unit: 'kg', weekStart: 1, workouts: [], routines, week: {}, dayPlan: {}, prescriptions: {}, progression: {}, oneRepMaxes: {}, programmes: {}, programme: null }
+      S.programmes = { P: legacyProgramme(S, { id: 'P', name: 'Block', at: 1, weeks: [{}, {}], days: { 1: ['r-push'], 3: ['r-pull'] } }) }
+      S.programmes.P.schedule = { ...S.programmes.P.schedule, ordered: true }
+      const policies = Object.fromEntries(S.programmes.P.tracks.map(t => [t.id, { onFailure: 'advance', onSkipped: 'advance' }]))
+      expect(startProgramme(S, 'P', { policies, end: 'stop', today: '2026-10-12', now: Date.parse('2026-10-12T08:00:00Z') })).toEqual({ ok: true })
+      const ready = buildReady(S, '2026-10-13')
+      const pull = ready.others.find(o => o.routineIds[0] === 'r-pull')
+      expect(pull.entries.map(e => e.id)).toEqual(['0001'])
+      expect(pull.entries[0].sets.length).toBeGreaterThan(0)
+      expect(ready.others.find(o => o.routineIds[0] === 'r-push').entries.map(e => e.id)).toEqual(['0025'])
+    } finally { vi.useRealTimers() }
   })
 
   // #799: the watch's Apple Health workout used to be strength training whatever was planned.

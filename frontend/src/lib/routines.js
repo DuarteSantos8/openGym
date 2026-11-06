@@ -142,8 +142,9 @@ export function replaceSlotExercise(slot, id, S, rid) {
     const kept = Object.fromEntries(['sg', 'note', 'subs'].filter(key => old[key] != null).map(key => [key, old[key]]))
     return dropSelfBackup({ occurrenceId, exerciseId: id, rule: fresh, ...kept })
   }
-  // "Assisted" describes the movement, not the prescription: the new exercise follows its own.
-  const { assisted: _movement, ...carried } = old
+  // "Assisted" describes the movement, not the prescription: the new exercise follows its own. So
+  // are the 1RM the old one adopted and its 1RM preference: the new exercise asks for its own.
+  const { assisted: _movement, ref: _ref, refs: _refs, ...carried } = old
   return dropSelfBackup({ ...carried, occurrenceId, exerciseId: id, rule: { ...old.rule, id: occurrenceId, exerciseId: id, revision: 1 } })
 }
 

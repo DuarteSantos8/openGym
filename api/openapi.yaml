@@ -1140,8 +1140,10 @@ paths:
       tags: [data]
       summary: Convert the caller's v1 profile to the v2 engine
       description: |
-        Body must be exactly `{ "confirmed": true, "baseRev": <revision from migration-status> }`.
-        Converts and validates the profile and checks its sync size, then writes
+        Body must be exactly `{ "confirmed": true, "baseRev": <revision from migration-status> }`,
+        plus an optional `tz`: the device's IANA timezone (`Europe/Rome`). A running programme keeps
+        its weeks in the reminder's timezone, else in this one, else in UTC; a `tz` the server's
+        `Intl` does not know is ignored, as if not sent. Converts and validates the profile and checks its sync size, then writes
         `state-<uid>.pre-engine-v1.json` once (never replaced; a v1 source newer than an earlier
         attempt's backup is kept beside it as `state-<uid>.pre-engine-v1.r<_rev>.json`), then
         atomically replaces the state file with `_rev` + 1. A v2 profile answers

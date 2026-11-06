@@ -416,6 +416,7 @@ const applyError = e => ({
   'stale programme': t('That programme changed since the Coach looked at it. Ask for a fresh review.'),
   'missing programme': t('That programme is gone, so nothing changed.'),
   'bad programme': t('Those weeks do not fit the programme’s exercises, so nothing changed.'),
+  'running programme': t('Stop this programme before changing how it counts the weeks.'),
 })[e?.message] ?? (e?.message === t('That proposal can’t be read.') ? e.message : t('Could not apply those changes'))
 
 function ReviewCard({ p, S, update, toast, refresh }) {

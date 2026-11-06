@@ -19,7 +19,7 @@ import { ENGINE_SCHEMA, migrationStatus } from './profile-version.js';
 import { validOneRepMax, validateCanonicalProfile } from './profile-validation.js';
 import { upgradeEngineContract } from './programme-upgrade.js';
 import {
-  PRESETS, REPS_MAX, SET_REPS_MAX, currentOneRm, defaultPlanRule, estimate1RM,
+  PRESETS, REPS_MAX, SET_REPS_MAX, cmp, currentOneRm, defaultPlanRule, estimate1RM,
   generatePrescription, isValidDeloadFactor, migrateOccurrence, normalizeEffort, planFingerprint, planOptions, planPhase, presetForPolicy, replayProgression, summarizeActual, validateIntensifier, validatePlanRule
 } from '../engine/index.js';
 
@@ -633,8 +633,9 @@ function migrateActive(active, ctx) {
 }
 
 /* ---------- public ---------- */
-/** `catalogue`: Map of built-in exercise id → catalogue entry (LIB_BY_ID). */
-export function migrateProfileV1ToV2(state, catalogue) {
+/** `catalogue`: Map of built-in exercise id → catalogue entry (LIB_BY_ID). `tz`: the device's timezone,
+ *  for a running programme (upgradeEngineContract). */
+export function migrateProfileV1ToV2(state, catalogue, { tz } = {}) {
   // Without it every built-in exercise would silently migrate as a plain reps/external-load one.
   if (typeof catalogue?.get !== 'function') throw new Error('migration-needs-catalogue');
   if (!migrationStatus(state).required) return { profile: state, activeSession: null };
@@ -668,7 +669,7 @@ export function migrateProfileV1ToV2(state, catalogue) {
   const routines = draftRoutines(state, ctx);
   const drafts = routines.flatMap(r => r.drafts);
   // Which logged entries belong, beyond doubt, to which occurrence — oldest first.
-  const oldestFirst = workouts.map((_, i) => i).sort((a, b) => dayOf(workouts[a]) - dayOf(workouts[b]) || whenOf(workouts[a]) - whenOf(workouts[b]) || ctx.workoutIds[a].localeCompare(ctx.workoutIds[b]) || a - b);
+  const oldestFirst = workouts.map((_, i) => i).sort((a, b) => dayOf(workouts[a]) - dayOf(workouts[b]) || whenOf(workouts[a]) - whenOf(workouts[b]) || cmp(ctx.workoutIds[a], ctx.workoutIds[b]) || a - b);
   for (const i of oldestFirst) list(workouts[i].entries).forEach((entry, j) => {
     const d = isObj(entry) ? linkOf(workouts[i], entry, ctx.byRoutine) : null;
     if (d) d.links.push({ i, j, workoutId: ctx.workoutIds[i], at: iso(whenOf(workouts[i])), values: targetValues(entry.target), planned: isObj(entry.planned) ? entry.planned : null, intensifier: entry.target?.intensifier ?? entry.intensifier, assisted: entry.target?.assisted ?? entry.assisted, skipped: !hasDoneWork(entry) });
@@ -719,7 +720,7 @@ export function migrateProfileV1ToV2(state, catalogue) {
     return { ...snap, routines: converted.routines, migrationAudit: converted.migrationAudit };
   });
   // In the same pass, programmes become engine definitions (contract 1); `summary` is for the adoption notice.
-  const upgraded = upgradeEngineContract(profile, catalogue);
+  const upgraded = upgradeEngineContract(profile, catalogue, { tz });
   const activeCheck = validateCanonicalActive(upgraded.state, activeSession);
   if (!activeCheck.ok) throw new Error(`invalid-active ${activeCheck.errors[0]}`);
   return { profile: upgraded.state, activeSession, summary: upgraded.summary };

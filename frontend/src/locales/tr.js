@@ -3895,4 +3895,5 @@ export default {
   "They count from the next round you have not started.": "Henüz başlamadığın bir sonraki turdan itibaren geçerli.",
   "{0} has no 1RM yet; its first session asks for one.": "{0} için henüz 1RM yok; ilk seansı onu soracak.",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: kaçırılan turdan sonra {1}; atlanan turdan sonra {2}. Başlatırken sen seçersin.",
+  "Stop this programme before changing how it counts the weeks.": "Haftaları nasıl saydığını değiştirmeden önce bu programı durdur.",
 }

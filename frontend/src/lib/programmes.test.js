@@ -7,14 +7,15 @@ import {
   programmeView, startProgramme, pauseProgramme, resumeProgramme, endProgramme, repeatProgramme, programmeChip,
   pctWeight, programmeRoutineIds, rpeAs, refPreference, referenceContexts, acceptReference, reviewReference,
   legacyWeeksOf, setLegacyWeek, setLegacyWeeks, closeWeek, skipSlot, resolveSlot, setRunPolicy, setRunEnd, markBrokenProgrammes,
+  bindProgramme, currentSchedule,
 } from './programmes.js'
-import { migratedFixture } from './test-fixtures.js'
+import { legacyProgramme, migratedFixture, weekPcts } from './test-fixtures.js'
 import { buildSessionExposures } from './session-start.js'
 import { entriesForExposures } from './session-ui-adapter.js'
 import { isWarmupRow } from './workout-model.js'
 import { queueOf } from './queue.js'
 import { todayISO } from './format.js'
-import { planPhase, referenceProposals } from './prescription/index.js'
+import { planPhase, referenceProposals, validateProgramme } from './prescription/index.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
 import { applyChangeSet, canRevert, markStale, revertLast } from './coach.js'
 import { validateReview } from '../../../api/coach/core/validate.js'
@@ -579,3 +580,143 @@ describe('a Coach programme change', () => {
     expect(s.coach.snapshots).toHaveLength(0)
   })
 })
+
+describe('the Coach and how a running programme counts', () => {
+  const review = changes => ({ id: 'r1', kind: 'review', summary: 's', changes: changes.map((c, i) => ({ id: 'c' + i, why: 'w', status: 'proposed', ...c })) })
+  const change = (s, weeks) => ({ type: 'programme', target: { programmeId: 'P' }, before: { name: 'Strength block', weeks: 3, rev: programmeById(s, 'P').rev }, after: { name: 'Strength block', weeks } })
+  const heavier = [{ t: { [BENCH]: { pct: 85 } } }, { t: { [BENCH]: { pct: 90 } } }, { deload: true }]
+  const amends = s => Object.values(s.programmeEvents || {}).filter(e => e.type === 'amend')
+  // The block as a loop, bound at its start: by rounds (a rotation) or one round a week (an ordered week).
+  const running = (sequence, how) => {
+    const s = state({ week: { 1: ['A'], 4: ['B'] } })
+    withBlock(s, { sequence })
+    s.programmes.P = bindProgramme(s.programmes.P, how)
+    expect(start(s, '2026-10-19')).toEqual({ ok: true })
+    return s
+  }
+
+  it('a Coach change on a running rotation programme revises its rounds, an amend; it never makes it count weeks', () => {
+    const s = running(['A', 'rest', 'B'], 'rounds')
+    applyChangeSet(s, markStale(review([change(s, heavier)]), s), ['c0'])
+    const def = programmeById(s, 'P')
+    expect(def).toMatchObject({ schedule: { mode: 'rotation', sequence: ['A', 'rest', 'B'] }, duration: { n: 3, unit: 'blocks' } })
+    expect(def).not.toHaveProperty('needs')
+    expect(weekPcts(def, BENCH)).toEqual([85, 90, null])
+    expect(amends(s)).toHaveLength(1)
+    expect(amends(s)[0].def.schedule.mode).toBe('rotation')
+    expect(programmeView(s, '2026-10-21')).toMatchObject({ status: 'running', nominal: { unit: 'blocks' } })
+  })
+
+  it('a Coach change on a running weeks programme still applies as an amend, its order and sessions kept, no binding asked', () => {
+    const s = running(['A', 'B'], 'weeks')
+    applyChangeSet(s, markStale(review([change(s, heavier)]), s), ['c0'])
+    const def = programmeById(s, 'P')
+    expect(def.schedule).toEqual({ mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }], ordered: true })
+    expect(def).not.toHaveProperty('needs')
+    expect(weekPcts(def, BENCH)).toEqual([85, 90, null])
+    expect(amends(s)).toHaveLength(1)
+    expect(startProgramme(s, 'P', { policies: policies(s), end: 'stop', today: '2026-10-21' }).ok).toBe(true)
+  })
+
+  it('whatever the route, a save that would switch how the running programme counts is refused and nothing changes', () => {
+    const s = running(['A', 'B'], 'rounds')
+    const before = clone(s)
+    // As the store does: the change is made on a draft, kept only when it returns.
+    const draft = clone(s)
+    expect(() => saveProgramme(draft, { ...programmeById(draft, 'P'), schedule: { mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }] }, duration: { n: 3, unit: 'weeks' } })).toThrow('running programme')
+    expect(amends(draft)).toHaveLength(0)
+    expect(s).toEqual(before)
+    // The same programme once stopped, or another one, saves.
+    endProgramme(draft, '2026-10-21')
+    expect(saveProgramme(draft, { ...programmeById(draft, 'P'), schedule: { mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }] }, duration: { n: 3, unit: 'weeks' } }).schedule.mode).toBe('weeks')
+  })
+})
+
+// The week editor of this screen (setLegacyWeek, the stepper, "Use my current plan") reads and writes
+// only a week's %1RM, RPE and deload: what it cannot show stays exactly as it was.
+describe('the legacy week editor leaves what it cannot show alone', () => {
+  const TM = { value: 90, unit: 'kg' }, CHOICE = { onFailure: 'repeat', onSkipped: 'advance' }
+  // Five weeks; week 5 is one the Coach fixed (5 × 3 at 100 kg, with its answer for a missed week),
+  // and the bench carries a training max and a 1RM preference the editor has no field for.
+  const coached = s => {
+    const def = legacyProgramme(s, { id: 'P', name: 'Block', at: 1, days: { 1: ['A'], 4: ['B'] }, weeks: [
+      { rpe: 7, t: { [BENCH]: { pct: 75 } } }, { rpe: 8, t: { [BENCH]: { pct: 80 } } }, { t: { [BENCH]: { pct: 82.5 } } }, {},
+      { t: { [BENCH]: { sets: 5, reps: 3, weight: 100, policy: CHOICE } } }] })
+    def.tracks[0] = { ...def.tracks[0], tm: TM, refs: 'keep' }
+    s.programmes = { P: def }
+    return def
+  }
+  const bench = def => def.tracks.find(tr => tr.exerciseId === BENCH && tr.slots[0].rid === 'A')
+  const without = (def, i) => ({ ...def, tracks: def.tracks.map(tr => ({ ...tr, stages: tr.stages.filter((_, j) => j !== i) })) })
+
+  it('editing week 3 changes its %1RM, RPE and deload, and leaves every other week, the Coach\'s week 5 and each choice byte-identical', () => {
+    const s = state()
+    const def = coached(s)
+    expect(bench(def)).toMatchObject({ policy: CHOICE, tm: TM, refs: 'keep' })
+    const next = setLegacyWeek(def, 2, { deload: true, rpe: 9, t: { [BENCH]: { pct: 85 } } }, s)
+    // What was asked.
+    expect(weekPcts(next, BENCH)).toEqual([75, 80, 85, null, null])
+    expect(bench(next).stages[2]).toMatchObject({ kind: 'recovery', close: 'calendar', targets: { [BENCH_A]: { own: 'set', effort: { mode: 'advisory', rpe: 9 } } } })
+    expect(legacyWeeksOf(next)[2]).toEqual({ deload: true, rpe: 9, t: { [BENCH]: { pct: 85 } } })
+    // Nothing else: the Coach's fixed week, the exercise's answer, training max and 1RM preference, the schedule, the ids.
+    expect(JSON.stringify(without(next, 2))).toBe(JSON.stringify(without(def, 2)))
+    expect(bench(next).stages[4].targets[BENCH_A].phase.parameters).toMatchObject({ load: { mode: 'absolute', value: 100, unit: 'kg' }, sets: { min: 5, max: 5 }, reps: { min: 3, max: 3 } })
+    expect(validateProgramme(next, { routines: s.routines }).ok).toBe(true)
+  })
+
+  it('a rotation stays a rotation, running or not', () => {
+    const s = state({ week: { 1: ['A'], 4: ['B'] } })
+    withBlock(s, { sequence: ['A', 'rest', 'B'] })
+    s.programmes.P = bindProgramme(s.programmes.P, 'rounds')
+    const def = programmeById(s, 'P')
+    const next = setLegacyWeek(def, 1, { rpe: 9, t: { [BENCH]: { pct: 85 } } }, s)
+    expect(next.schedule).toEqual({ mode: 'rotation', sequence: ['A', 'rest', 'B'] })
+    expect(next.duration).toEqual({ n: 3, unit: 'blocks' })
+    expect(next).not.toHaveProperty('needs')
+    expect(weekPcts(next, BENCH)).toEqual([75, 85, null])
+    // Running, the edit is an amend of the same rotation.
+    expect(start(s, '2026-10-19')).toEqual({ ok: true })
+    saveProgramme(s, setLegacyWeek(programmeById(s, 'P'), 2, { deload: true, rpe: 6 }, s))
+    const [amend] = events(s, 'amend')
+    expect(amend.def.schedule.mode).toBe('rotation')
+    expect(legacyWeeksOf(amend.def)[2]).toEqual({ deload: true, rpe: 6 })
+  })
+
+  it('a %1RM set in an empty week writes what the conversion writes, the next week\'s entry seed with it; cleared, the week is as before', () => {
+    const s = state()
+    const stub = { id: 'P', name: 'B', at: 1, rev: 1, end: 'stop', refs: 'inherit' }
+    const blank = setLegacyWeeks(stub, [{}, {}, {}], s, { days: { 1: ['A'] } })
+    const week1 = { t: { [BENCH]: { pct: 75 } } }
+    const edited = setLegacyWeek(blank, 0, week1, s)
+    expect(edited.tracks).toEqual(setLegacyWeeks(stub, [week1, {}, {}], s, { days: { 1: ['A'] } }).tracks)
+    expect(bench(edited).stages[1].targets[BENCH_A].seed).toBeDefined()
+    expect(validateProgramme(edited, { routines: s.routines }).ok).toBe(true)
+    expect(setLegacyWeek(edited, 0, {}, s)).toEqual(blank)
+  })
+
+  it('the length stepper adds weeks as copies of the last and keeps the rest; taking over the plan keeps each exercise\'s own', () => {
+    const s = state({ week: { 1: ['A'], 4: ['B'] } })
+    const def = coached(s)
+    const grown = setLegacyWeeks(def, resizeWeeks(legacyWeeksOf(def), 6), s)
+    expect(legacyWeeksOf(grown)).toEqual(resizeWeeks(legacyWeeksOf(def), 6))
+    expect(bench(grown).stages.slice(0, 5)).toEqual(bench(def).stages)
+    expect(bench(grown).stages[5]).toMatchObject({ id: 's6', kind: 'work', targets: { [BENCH_A]: { own: 'set', phase: { parameters: { load: { mode: 'absolute', value: 100 } } } } } })
+    expect(bench(grown)).toMatchObject({ policy: CHOICE, tm: TM, refs: 'keep' })
+    expect(validateProgramme(grown, { routines: s.routines }).ok).toBe(true)
+    expect(setLegacyWeeks(grown, resizeWeeks(legacyWeeksOf(grown), 5), s)).toEqual(def)
+    // "Use my current plan" on the same days: every exercise keeps its weeks and choices.
+    expect(setLegacyWeeks(def, legacyWeeksOf(def), s, currentSchedule(s)).tracks).toEqual(def.tracks)
+  })
+
+  it('an exercise added to a routine since gets its weeks once one of its own numbers is set', () => {
+    const s = state()
+    const def = coached(s)
+    const rows = state({}, []).routines.find(r => r.id === 'C').ex[0]
+    s.routines = s.routines.map(r => (r.id === 'A' ? { ...r, ex: [...r.ex, { ...rows, occurrenceId: 'A:new', exerciseId: '0047', rule: { ...rows.rule, id: 'A:new', exerciseId: '0047', routineId: 'A' } }] } : r))
+    expect(setLegacyWeek(def, 3, {}, s).tracks).toHaveLength(def.tracks.length)
+    const next = setLegacyWeek(def, 3, { t: { '0047': { pct: 70 } } }, s)
+    expect(next.tracks.slice(0, def.tracks.length)).toEqual(def.tracks)
+    expect(weekPcts(next, '0047')).toEqual([null, null, null, 70, null])
+  })
+})
+

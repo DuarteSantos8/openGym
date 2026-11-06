@@ -20,6 +20,14 @@ describe('replaceSlotExercise', () => {
     expect(planPhase(out.rule).parameters).toEqual(planPhase(s.rule).parameters)
   })
 
+  it('the 1RM the old exercise adopted, and its 1RM preference, stay with it: the new one asks for its own', () => {
+    const s = slot(BENCH, { ref: { id: 'b100', exerciseId: BENCH, value: 100, unit: 'kg', source: 'manual', capturedAt: '2026-10-01T00:00:00.000Z' }, refs: 'keep', note: 'pause' })
+    const out = replaceSlotExercise(s, '0047', { unit: 'kg' }, 'r')
+    expect(out).toMatchObject({ exerciseId: '0047', note: 'pause' })
+    expect(out).not.toHaveProperty('ref')
+    expect(out).not.toHaveProperty('refs')
+  })
+
   it('an assisted override belongs to the movement: a replacement follows its own, and a catalogue machine counts as one', () => {
     const out = replaceSlotExercise(slot(BENCH, { assisted: true }), '0026', { unit: 'kg' }, 'r')
     expect(out).not.toHaveProperty('assisted')

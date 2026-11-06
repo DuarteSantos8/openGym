@@ -3898,4 +3898,5 @@ export default {
   "They count from the next round you have not started.": "A következő, még el nem kezdett körtől számítanak.",
   "{0} has no 1RM yet; its first session asks for one.": "{0} gyakorlatnak még nincs 1RM-je; az első edzése megkérdezi.",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: elrontott kör után {1}; kihagyott kör után {2}. Az indításkor te döntesz.",
+  "Stop this programme before changing how it counts the weeks.": "Állítsd le ezt a programot, mielőtt megváltoztatod, hogyan számolja a heteket.",
 }

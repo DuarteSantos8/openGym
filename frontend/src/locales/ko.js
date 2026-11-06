@@ -3895,4 +3895,5 @@ export default {
   "They count from the next round you have not started.": "아직 시작하지 않은 다음 라운드부터 적용돼요.",
   "{0} has no 1RM yet; its first session asks for one.": "{0}은(는) 아직 1RM이 없어요. 첫 세션에서 물어봐요.",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: 못 채운 라운드 다음에는 {1}, 건너뛴 라운드 다음에는 {2}. 시작할 때 직접 골라요.",
+  "Stop this programme before changing how it counts the weeks.": "주를 세는 방식을 바꾸려면 먼저 이 프로그램을 멈추세요.",
 }

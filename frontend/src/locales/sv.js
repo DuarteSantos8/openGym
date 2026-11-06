@@ -3941,4 +3941,5 @@ export default {
   "They count from the next round you have not started.": "De gäller från nästa runda du inte har påbörjat.",
   "{0} has no 1RM yet; its first session asks for one.": "{0} har inget 1RM än; dess första pass frågar efter det.",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: efter en missad runda {1}; efter en hoppad runda {2}. Du väljer när du startar det.",
+  "Stop this programme before changing how it counts the weeks.": "Stoppa programmet innan du ändrar hur det räknar veckorna.",
 }

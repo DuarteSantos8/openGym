@@ -32,6 +32,7 @@ import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { bestSetFor } from './exercise-history.js'
 import { sessionHistory } from './backfill.js'
 import { buildCombinedExposures, deriveSessionName } from './session-merge.js'
+import { bypassOf } from './programmes.js'
 import { entriesForExposures, rowsOfPerformance, exposuresWithPerformance } from './session-ui-adapter.js'
 import { todayISO, exerciseNameText } from './format.js'
 import { sanitizeHr } from './heart-rate.js'
@@ -155,7 +156,11 @@ export function buildReady (S, today = todayISO()) {
   const session = ids => {
     try {
       const draft = { ...S, prescriptions: { ...(S.prescriptions || {}) } }
-      const { exposures, routineIds, routines } = buildCombinedExposures(draft, ids, { now: Date.now(), newId: seed => seed, unit: S.unit })
+      // A start that would pass earlier sessions of an ordered week or a rotation is logged as extra,
+      // as sheets.jsx startSession logs a start the watch made: its exercises are built all the same.
+      const now = Date.now()
+      const extra = ids.some(rid => bypassOf(draft, rid, now).length > 0)
+      const { exposures, routineIds, routines } = buildCombinedExposures(draft, ids, { now, newId: seed => seed, unit: S.unit, extra })
       if (!routines.length) return null
       const built = entriesForExposures(exposures, draft.prescriptions)
       const healthType = plannedType(built)

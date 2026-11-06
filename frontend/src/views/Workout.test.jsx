@@ -1110,7 +1110,7 @@ describe('Workout discard timer lifecycle', () => {
 // Spec 8.2: a discarded session of a running programme says what it leaves on each exercise's
 // week before the confirm, and records exactly that: missed once a work set was ticked, else skipped.
 // A session of a running programme (Push: bench and squat, planned today), mounted on the screen.
-async function mountProgrammeSession({ tick = false } = {}) {
+async function mountProgrammeSession({ tick = false, role = null } = {}) {
   const today = todayISO()
   const S = {
     ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }, { id: '0043', sets: 3, reps: 5, weight: 80 }] }] }),
@@ -1120,6 +1120,7 @@ async function mountProgrammeSession({ tick = false } = {}) {
   const advance = { onFailure: 'advance', onSkipped: 'advance' }
   expect(startProgramme(S, 'P', { policies: Object.fromEntries(S.programmes.P.tracks.map(tr => [tr.id, advance])), end: 'stop', today, now: Date.now() })).toEqual({ ok: true })
   const exposures = buildSessionExposures(S, S.routines[0], { now: Date.now(), newId: x => x })
+  if (role) exposures[0] = { ...exposures[0], programme: { ...exposures[0].programme, role } }   // the bench's slot was taken already
   const entries = entriesForExposures(exposures, S.prescriptions).map(e => ({ ...e, rid: 'r1' }))
   if (tick) entries[0].sets.find(row => !isWarmupRow(row)).done = true   // a bench set ticked, squat untouched
   mocks.S = S
@@ -1152,6 +1153,14 @@ describe('changing a programme exercise mid-session', () => {
     await act(async () => { save(editable) })
     expect(mocks.A.exposures[0].programme).toMatchObject({ slot, role: 'work' })
     expect(mocks.A.exposures[0].excludedFromProgression).toBe(false)
+  })
+
+  it('extra work in a programme session earns nothing, so a ticked set never keeps its settings', async () => {
+    await mountProgrammeSession({ tick: true, role: 'extra' })
+    mocks.exConfigSheet.mockClear()
+    await pressProgression(0)
+    expect(mocks.exConfigSheet).toHaveBeenCalledTimes(1)
+    expect(mocks.toast).not.toHaveBeenCalledWith('Its sets already count for your programme, so this session keeps these settings.')
   })
 
   it('after a ticked work set its settings stay, and it says why', async () => {

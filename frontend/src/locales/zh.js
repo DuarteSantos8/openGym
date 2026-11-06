@@ -3895,4 +3895,5 @@ export default {
   "They count from the next round you have not started.": "从你还没开始的下一轮起生效。",
   "{0} has no 1RM yet; its first session asks for one.": "{0} 还没有 1RM；它的第一次训练会问你。",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}：未完成一轮后{1}；跳过一轮后{2}。开始时由你选择。",
+  "Stop this programme before changing how it counts the weeks.": "要改变计周方式，请先停止这个训练周期。",
 }

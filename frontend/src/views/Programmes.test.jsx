@@ -35,8 +35,8 @@ const { default: Programmes, ProgrammeEdit } = await import('./Programmes.jsx')
 // SelectRow opens its picker through the bound UI store: the mocked one here.
 const { bindUI } = await import('../components/ui.jsx')
 bindUI((await import('../store/useUI.js')).useUI)
-const { migratedFixture } = await import('../lib/test-fixtures.js')
-const { legacyWeeksOf, setLegacyWeeks, startProgramme, programmeView } = await import('../lib/programmes.js')
+const { legacyProgramme, migratedFixture } = await import('../lib/test-fixtures.js')
+const { bindProgramme, legacyWeeksOf, setLegacyWeeks, startProgramme, programmeView } = await import('../lib/programmes.js')
 const { buildSessionExposures } = await import('../lib/session-start.js')
 const { entriesForExposures } = await import('../lib/session-ui-adapter.js')
 const { buildCompletedSession } = await import('../lib/finish-session.js')
@@ -172,6 +172,40 @@ describe('a programme', () => {
     render(sheet(close))
     click(button('Same as last week, a bit heavier'))
     expect(weeks()[1]).toEqual({ rpe: 7 })
+  })
+
+  // A week the Coach fixed (a weight and sets × reps) is shown as such, and an edit of the week's
+  // effort leaves it fixed: the sheet edits only the %1RM, the effort and the deload.
+  it('a week the Coach fixed says so, and the week sheet keeps it while it sets the effort', () => {
+    mocks.S.programmes = { P: legacyProgramme(mocks.S, { id: 'P', name: 'Block', at: 1, days: { 1: ['r1'] }, weeks: [{ t: { '0025': { pct: 75 } } }, { t: { '0025': { sets: 5, reps: 3, weight: 100 } } }] }) }
+    mocks.params = { id: 'P' }
+    const fixedWeek = () => mocks.S.programmes.P.tracks[0].stages[1].targets['r1:o0']
+    const before = structuredClone(fixedWeek())
+    render(<ProgrammeEdit />)
+    const row = [...host.querySelectorAll('.lrow.tap')].find(r => r.textContent.startsWith('Week 2'))
+    expect(row.textContent).toContain('fixed at 100 kg 5×3')
+    click(row)
+    sheet()
+    expect(host.querySelector('.prog-lift').textContent).toContain('fixed at 100 kg 5×3')
+    click(button('RPE 8.5'))
+    expect(fixedWeek()).toEqual({ ...before, effort: { mode: 'advisory', rpe: 8.5 } })
+    expect(weeks()[1]).toEqual({ rpe: 8.5 })
+    sheet()
+    expect(host.querySelector('.prog-lift').textContent).toContain('fixed at 100 kg 5×3')
+  })
+
+  // A running rotation counts rounds as it started (lib/programmes.js saveProgramme): taking over the
+  // plan's weekly schedule is refused, nothing is saved, and the screen says what to do.
+  it('a running rotation keeps counting rounds: taking over the plan is refused and says why', () => {
+    mocks.S.programmes = { P: bindProgramme(setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{}, {}], mocks.S, { sequence: ['r1', 'r2'] }), 'rounds') }
+    mocks.params = { id: 'P' }
+    const advance = { onFailure: 'advance', onSkipped: 'advance' }
+    expect(startProgramme(mocks.S, 'P', { policies: Object.fromEntries(mocks.S.programmes.P.tracks.map(tr => [tr.id, advance])), end: 'stop' })).toEqual({ ok: true })
+    const before = structuredClone(mocks.S)
+    render(<ProgrammeEdit />)
+    click(rowOf('Use my current plan'))
+    expect(mocks.toasts.at(-1)).toBe('Stop this programme before changing how it counts the weeks.')
+    expect(mocks.S).toEqual(before)
   })
 
   it('delete asks first, and ends it when running', () => {

@@ -1,7 +1,7 @@
 // Plan → Programmes (#159): the list, a programme's weeks, and the running one's controls. The
 // model is lib/programmes.js; this screen only ever writes through it. Its weeks are still edited
-// as %1RM and RPE per lift, through the bridge (legacyWeeksOf / setLegacyWeek) that converts
-// every save into the engine definition, until the programme editor replaces this screen.
+// as %1RM and RPE per lift, through the bridge (legacyWeeksOf / setLegacyWeek) that writes only
+// those numbers into the engine definition, until the programme editor replaces this screen.
 import { useId, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -23,7 +23,7 @@ import {
   programmesOf, programmeById, programmeView, newProgramme, saveProgramme, deleteProgramme, resizeWeeks,
   stepWeek, cleanWeek, currentSchedule, startProgramme, pauseProgramme, resumeProgramme, endProgramme,
   repeatProgramme, programmeRoutineIds, pctWeight, rpeAs, cleanPct, programmeChip, MAX_WEEKS, REPEAT_BUMP,
-  legacyWeeksOf, setLegacyWeek, setLegacyWeeks, missingFor, firstWeekOf, bindProgramme, startReferences, openSessions,
+  legacyWeeksOf, setLegacyWeek, setLegacyWeeks, fixedOf, missingFor, firstWeekOf, bindProgramme, startReferences, openSessions,
   stageNumber, closeWeek, resolveSlot, runChoices, setRunPolicy, setRunEnd, referenceOffers, refText,
 } from '../lib/programmes.js'
 
@@ -37,13 +37,15 @@ const STARTER_COPY = {
 const RPES = [6, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 const rpeText = (rpe, S) => { const r = rpeAs(rpe, effortOf(S)); return `${r.k} ${fmtNum(r.v)}` }
 
-export function weekSummary(w, S) {
+// `fixed`: what the week fixes beyond a %1RM (lib/programmes.js fixedOf), which this screen keeps but does not edit.
+export function weekSummary(w, S, fixed = []) {
   const c = cleanWeek(w)
   const parts = []
   if (c.deload) parts.push(t('Deload week'))
   if (c.rpe != null) parts.push(rpeText(c.rpe, S))
   const n = Object.values(c.t || {}).filter(x => x.pct != null).length
   if (n) parts.push(tn('{0} lift at a %1RM', '{0} lifts at a %1RM', n))
+  if (fixed.length) parts.push(t('fixed at {0}', fixed.join(', ')))
   return parts.length ? parts.join(' · ') : t('Nothing set, progression as usual')
 }
 
@@ -430,9 +432,11 @@ function WeekSheet({ id, index, close }) {
         // Worked out and rounded in the lift's own weight unit (#657): 5 lb steps on a lb-pinned bar.
         const unit = exUnitOf(S, cfg.id)
         const est = pct != null ? pctWeight(exView(S, cfg.id), cfg.id, pct, { step: weightIncrement(viewTarget(S, cfg.id, cfg), unit) }) : null
+        const fixed = pct == null ? fixedOf(p, index, cfg.id) : []
         return <div key={cfg.id} className="lrow prog-lift">
           <span className="lrow-m"><span className="lrow-t">{exerciseNameText(exOr(cfg.id))}</span>
-            {pct != null && <span className="lrow-s">{est != null ? t('about {0}', fmtNum(est) + ' ' + unit) : t('Log a set first to work this out')}</span>}</span>
+            {pct != null && <span className="lrow-s">{est != null ? t('about {0}', fmtNum(est) + ' ' + unit) : t('Log a set first to work this out')}</span>}
+            {fixed.length > 0 && <span className="lrow-s">{t('fixed at {0}', fixed.join(', '))}</span>}</span>
           <PctField pct={pct} onChange={v => setPct(cfg.id, v)} label={t('%1RM for {0}', exerciseNameText(exOr(cfg.id)))} />
         </div>
       })}
@@ -468,7 +472,11 @@ export function ProgrammeEdit() {
   const running = view?.run.programmeId === id
   const nowWeek = view && !['stopped', 'complete', 'ended'].includes(view.status) ? Math.min(view.nominal.used + 1, view.nominal.of) : null
   const weeks = legacyWeeksOf(p)
-  const edit = fn => update(s => { const cur = programmeById(s, id); if (cur) saveProgramme(s, fn(cur, s)) })
+  // A running programme keeps how it counts its weeks (saveProgramme refuses, and nothing is saved).
+  const edit = fn => {
+    try { update(s => { const cur = programmeById(s, id); if (cur) saveProgramme(s, fn(cur, s)) }) }
+    catch (e) { if (e?.message !== 'running programme') throw e; useUI.getState().toast(t('Stop this programme before changing how it counts the weeks.')) }
+  }
   const summary = scheduleSummary(S, p)
   const remove = () => confirmSheet({
     title: t('Delete “{0}”?', p.name || t('Programme')),
@@ -498,7 +506,7 @@ export function ProgrammeEdit() {
         onClick={() => edit((cur, s) => setLegacyWeeks(cur, legacyWeeksOf(cur), s, currentSchedule(s)))} />
     </div>
     <Section title={t('Weeks')} footer={t('The week is the calendar week: week 1 is the one you start in. A pause holds it.')}>
-      {weeks.map((w, i) => <Row key={i} title={t('Week {0}', i + 1)} subtitle={weekSummary(w, S)} accessory="chevron"
+      {weeks.map((w, i) => <Row key={i} title={t('Week {0}', i + 1)} subtitle={weekSummary(w, S, fixedOf(p, i))} accessory="chevron"
         icon={w.deload ? 'chartLineSlash' : 'chartLine'} iconTint={w.deload ? 'var(--orange)' : undefined}
         className={running && nowWeek === i + 1 ? 'prog-now' : ''} onClick={() => weekSheet(id, i)} />)}
     </Section>

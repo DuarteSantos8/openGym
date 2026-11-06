@@ -3891,4 +3891,5 @@ export default {
   "They count from the next round you have not started.": "Вони діють з найближчого кола, яке ти ще не почав.",
   "{0} has no 1RM yet; its first session asks for one.": "У {0} ще немає 1RM; перше заняття спитає його.",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: після невиконаного кола {1}; після пропущеного {2}. Обираєш під час запуску.",
+  "Stop this programme before changing how it counts the weeks.": "Зупини цей цикл, перш ніж змінювати, як він рахує тижні.",
 }

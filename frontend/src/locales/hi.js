@@ -3895,4 +3895,5 @@ export default {
   "They count from the next round you have not started.": "ये अगले उस राउंड से लागू होते हैं जो आपने अभी शुरू नहीं किया।",
   "{0} has no 1RM yet; its first session asks for one.": "{0} का अभी 1RM नहीं है; इसका पहला सेशन इसे पूछेगा।",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: अधूरे राउंड के बाद {1}; छोड़े गए राउंड के बाद {2}। शुरू करते समय आप चुनते हैं।",
+  "Stop this programme before changing how it counts the weeks.": "हफ़्ते गिनने का तरीका बदलने से पहले यह प्रोग्राम रोकें।",
 }

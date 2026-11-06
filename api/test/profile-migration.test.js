@@ -866,3 +866,21 @@ test('a v1 profile with a running programme migrates straight to contract 1', ()
   // Running it again changes nothing: a contract-1 profile is not a v1 one.
   assert.equal(migrate(profile).profile, profile);
 });
+
+test('a running programme keeps its weeks in the zone given for this device, the reminder\'s own first, else UTC', () => {
+  const input = v1({
+    routines: [{ id: 'r1', name: 'Push', ex: [{ id: BENCH, sets: 3, reps: 5, weight: 60, prog: 'linear' }] }], workouts: [],
+    programmes: { pg: { id: 'pg', name: 'Block', at: 1, days: { 1: ['r1'] }, weeks: [{}, {}] } },
+    programme: { id: 'pg', startedOn: '2026-10-26', cycle: 1, bump: 0, saved: { week: { 1: 'r1' } } }
+  });
+  const tzOf = (state, opts) => migrateProfileV1ToV2(state, LIB_BY_ID, opts).profile.programmeRuns['run:pg:2026-10-26:1'].tz;
+  assert.equal(tzOf(input, { tz: 'Australia/Sydney' }), 'Australia/Sydney');
+  assert.equal(tzOf({ ...input, reminder: { on: true, time: '18:00', tz: 'Europe/Rome' } }, { tz: 'Australia/Sydney' }), 'Europe/Rome');
+  assert.equal(tzOf(input, { tz: 'Mars/Olympus' }), 'UTC');
+  assert.equal(tzOf(input), 'UTC');
+});
+
+test('workouts logged at the same instant keep a code-point order of their ids, the same on every runtime', () => {
+  const w = id => ({ id, d: '2026-01-05', start: 1000, routineIds: ['r1'], entries: [{ id: BENCH, rid: 'r1', target: { sets: 1, reps: 5, weight: 60 }, sets: [row(5, 60)] }] });
+  assert.deepEqual(migrate(v1({ workouts: [w('a1'), w('B1')] })).profile.workouts.map(x => x.id), ['B1', 'a1']);
+});

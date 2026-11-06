@@ -3899,4 +3899,5 @@ export default {
   "They count from the next round you have not started.": "Они действуют с ближайшего круга, который вы ещё не начали.",
   "{0} has no 1RM yet; its first session asks for one.": "У {0} пока нет 1RM; первая тренировка спросит его.",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: после невыполненного круга {1}; после пропущенного {2}. Вы выбираете при запуске.",
+  "Stop this programme before changing how it counts the weeks.": "Остановите этот цикл, прежде чем менять, как он считает недели.",
 }

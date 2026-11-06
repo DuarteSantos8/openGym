@@ -3906,4 +3906,5 @@ export default {
   "They count from the next round you have not started.": "มีผลตั้งแต่รอบถัดไปที่คุณยังไม่เริ่ม",
   "{0} has no 1RM yet; its first session asks for one.": "{0} ยังไม่มี 1RM เซสชันแรกของมันจะถาม",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: หลังรอบที่ทำไม่ถึง {1}; หลังรอบที่ข้าม {2} คุณเลือกเองตอนเริ่ม",
+  "Stop this programme before changing how it counts the weeks.": "หยุดโปรแกรมนี้ก่อนเปลี่ยนวิธีนับสัปดาห์",
 }

@@ -1819,7 +1819,8 @@ function ActiveWorkout() {
   // A programme exercise with a work set ticked (spec 13): those sets were judged against the
   // prescription they were done under, so its settings stay for this session. Before that, it is
   // built again on its own appointment.
-  const lockedByProgramme = (entry, exposure) => !!exposure?.programme && (entry?.sets || []).some(x => !isWarmupRow(x) && (x.done || x.sides?.L?.done || x.sides?.R?.done))
+  // Extra and maintenance work earns nothing, so only work keeps its settings.
+  const lockedByProgramme = (entry, exposure) => exposure?.programme?.role === 'work' && (entry?.sets || []).some(x => !isWarmupRow(x) && (x.done || x.sides?.L?.done || x.sides?.R?.done))
   const openProgressionSettings = idx => {
     const activeState = useStore.getState().A
     const entry = activeState?.entries?.[idx]

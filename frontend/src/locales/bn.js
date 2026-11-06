@@ -3974,4 +3974,5 @@ export default {
   "They count from the next round you have not started.": "যে রাউন্ড এখনো শুরু করেননি তার পরের থেকে কার্যকর।",
   "{0} has no 1RM yet; its first session asks for one.": "{0}-এর এখনো 1RM নেই; এর প্রথম সেশন এটা জিজ্ঞেস করবে।",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: অপূর্ণ রাউন্ডের পরে {1}; বাদ দেওয়া রাউন্ডের পরে {2}। শুরু করার সময় আপনিই বেছে নেবেন।",
+  "Stop this programme before changing how it counts the weeks.": "সপ্তাহ গোনার নিয়ম বদলানোর আগে এই প্রোগ্রাম থামান।",
 }

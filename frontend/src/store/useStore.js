@@ -124,9 +124,8 @@ function contractUp(state, { backup = true, raw = null } = {}) {
     localStorage.setItem(CONTRACT_BACKUP_KEY, raw ?? stringifyState(state))
     if (localStorage.getItem(CONTRACT_BACKUP_KEY) == null) throw new Error('contract-backup-failed')
   }
-  const { state: up, summary } = upgradeEngineContract({ ...state, reminder: { ...state.reminder, tz: state.reminder?.tz || localTZ() } }, LIB_BY_ID)
+  const { state: up, summary } = upgradeEngineContract(state, LIB_BY_ID, { tz: localTZ() })
   const out = { ...up }
-  if ('reminder' in state) out.reminder = state.reminder; else delete out.reminder
   const check = validateCanonicalProfile(out)
   if (!check.ok) throw new Error('invalid-upgrade ' + check.errors[0])
   // Packed as it travels, from copies of the lists (pack's identity cache must never hold ours).
@@ -1272,7 +1271,7 @@ export const useStore = create((set, get) => {
     // A stash keeps its own copy until it is applied: upgraded without a backup of its own.
     if (entry?.state && !isLegacyProfile(entry.state)) return { ...entry, state: contractUp(entry.state, { backup: false }) }
     if (!entry?.state) return entry
-    const { profile, activeSession } = migrateProfileV1ToV2({ ...entry.state, active: entry.active || entry.state.active }, LIB_BY_ID)
+    const { profile, activeSession } = migrateProfileV1ToV2({ ...entry.state, active: entry.active || entry.state.active }, LIB_BY_ID, { tz: localTZ() })
     const check = validateCanonicalProfile(profile)
     if (!check.ok) throw new Error(check.errors[0])
     return { ...entry, state: contractUp(profile, { backup: false }), active: activeSession }
@@ -1656,7 +1655,8 @@ export const useStore = create((set, get) => {
         import('../../../api/migration/profile-migration.js'),
         import('../../../api/coach/core/library.js')
       ])
-      const lib = { ...mod, migrateProfileV1ToV2: state => mod.migrateProfileV1ToV2(state, LIB_BY_ID) }
+      // This device's timezone: a running programme keeps its weeks in it (as the server's copy does, below).
+      const lib = { ...mod, migrateProfileV1ToV2: state => mod.migrateProfileV1ToV2(state, LIB_BY_ID, { tz: localTZ() }) }
       if (m.importData) return await finishImport(m.importData, lib, stage)
       const local = localLegacy()
       const native = MOBILE ? await nativeLegacy() : null
@@ -1710,7 +1710,7 @@ export const useStore = create((set, get) => {
         if ((await nativeLoadText()) !== stringifyState(fromNative.profile) || (fromNative.activeSession && (await nativeLoadText(ACTIVE_FILE)) !== JSON.stringify(fromNative.activeSession))) throw new Error('native-migration-not-durable')
       }
       if (m.serverRev != null) {
-        try { await api('/api/data/migrate-engine-v2', { method: 'POST', body: JSON.stringify({ confirmed: true, baseRev: m.serverRev }) }) }
+        try { await api('/api/data/migrate-engine-v2', { method: 'POST', body: JSON.stringify({ confirmed: true, baseRev: m.serverRev, tz: localTZ() }) }) }
         catch (e) {
           // Written between the status and the conversion: start over from a fresh status, never a
           // stale snapshot. Twice at most; then the screen offers Try again.

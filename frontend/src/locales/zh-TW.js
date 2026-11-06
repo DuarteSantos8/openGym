@@ -3887,4 +3887,5 @@ export default {
   "They count from the next round you have not started.": "從你還沒開始的下一輪起生效。",
   "{0} has no 1RM yet; its first session asks for one.": "{0} 還沒有 1RM；它的第一次訓練會問你。",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}：未完成一輪後{1}；略過一輪後{2}。開始時由你選擇。",
+  "Stop this programme before changing how it counts the weeks.": "要改變計週方式，請先停止這個訓練週期。",
 }

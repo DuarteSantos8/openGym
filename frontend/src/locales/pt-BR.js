@@ -2624,6 +2624,7 @@ export const PT_BR_OVERRIDES = {
   "They count from the next round you have not started.": "Valem a partir da próxima volta que você ainda não começou.",
   "{0} has no 1RM yet; its first session asks for one.": "{0} ainda não tem 1RM; a primeira sessão pede um.",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: depois de uma volta não cumprida, {1}; depois de uma pulada, {2}. Você escolhe ao começar.",
+  "Stop this programme before changing how it counts the weeks.": "Encerre este programa antes de mudar como ele conta as semanas.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

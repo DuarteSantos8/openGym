@@ -96,6 +96,22 @@ describe('a v1 copy on this device', () => {
     expect(S.prescriptions[A.exposures[0].prescriptionId]).toBeTruthy()
   })
 
+  it('a running programme keeps its weeks in this device\'s timezone', async () => {
+    const was = process.env.TZ
+    process.env.TZ = 'Australia/Sydney'
+    try {
+      const { active, ...rest } = V1
+      localStorage.setItem(KEY, JSON.stringify({ ...rest, programmes: { pg: { id: 'pg', name: 'Block', at: 1, days: { 1: ['r1'] }, weeks: [{}, {}] } },
+        programme: { id: 'pg', startedOn: '2026-01-05', cycle: 1, bump: 0, saved: null } }))
+      guest()
+      const useStore = await fresh()
+      byPath({ '/api/config': {}, '/api/me': refused(401, 'not signed in') })
+      await useStore.getState().boot()
+      await useStore.getState().confirmMigration()
+      expect(Object.values(useStore.getState().S.programmeRuns).map(r => r.tz)).toEqual(['Australia/Sydney'])
+    } finally { if (was === undefined) delete process.env.TZ; else process.env.TZ = was }
+  })
+
   it('never replaces a backup an earlier attempt left', async () => {
     localStorage.setItem(KEY, raw); localStorage.setItem(BACKUP, 'older'); guest()
     const useStore = await fresh()
@@ -165,7 +181,8 @@ describe('a v1 profile on the server', () => {
     expect(useStore.getState().migration).toMatchObject({ phase: 'confirm', serverRev: 7 })
     await vi.waitFor(() => expect(useStore.getState().migration).toBeNull())
     const post = apiMock.mock.calls.find(([p]) => p === '/api/data/migrate-engine-v2')
-    expect(JSON.parse(post[1].body)).toEqual({ confirmed: true, baseRev: 7 })
+    // With this device's timezone, which a running programme's weeks keep (a reminder's own wins on the server).
+    expect(JSON.parse(post[1].body)).toEqual({ confirmed: true, baseRev: 7, tz: Intl.DateTimeFormat().resolvedOptions().timeZone })
     expect(useStore.getState().migration).toBeNull()
     expect(JSON.parse(localStorage.getItem('gym_sync')).rev).toBe(8)
   })

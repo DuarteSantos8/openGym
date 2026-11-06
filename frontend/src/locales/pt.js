@@ -3895,4 +3895,5 @@ export default {
   "They count from the next round you have not started.": "Contam a partir da próxima volta que ainda não começaste.",
   "{0} has no 1RM yet; its first session asks for one.": "{0} ainda não tem 1RM; a primeira sessão pede-o.",
   "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: depois de uma volta falhada, {1}; depois de uma saltada, {2}. Escolhes ao começá-lo.",
+  "Stop this programme before changing how it counts the weeks.": "Termina este programa antes de mudar a forma como conta as semanas.",
 }

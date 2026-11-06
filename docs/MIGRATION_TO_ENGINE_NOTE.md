@@ -590,13 +590,14 @@ in `discarded`, with their original paths and values (**ATTENTION** (A12)).
    the browser keeps only the newest such copy. A backup that is not v1, or newer than the copy,
    stops the upgrade.
 2. **convert** — this browser's copy and the phone's copy are each converted in memory with
-   `migrateProfileV1ToV2(state, LIB_BY_ID)`.
+   `migrateProfileV1ToV2(state, LIB_BY_ID, { tz })`, `tz` this device's timezone.
 3. **check** — `validateCanonicalProfile` plus active/dictionary validation and the sync-body size check (measured on the compact form); errors abort before primary replacement.
 4. **write** — `gym_state_v1` and its converted `gym_active_v1` / strict `nativeSave` +
    `nativeActiveSave`; exact read-back verifies durability. A pending journal retains the original
    source strings until both writes and references validate, so retry/restart resumes partial writes (**A28**).
 5. **server** — if the server holds v1: `POST /api/data/migrate-engine-v2 { confirmed: true,
-   baseRev }`. `baseRev` is the revision the status gave; if the file changed meanwhile the
+   baseRev, tz }`, `tz` this device's timezone (the same the local conversion gave
+   `migrateProfileV1ToV2(state, LIB_BY_ID, { tz })`). `baseRev` is the revision the status gave; if the file changed meanwhile the
    server answers `409 migration-state-changed` and the upgrade starts over from a fresh status,
    twice at most before the error state.
 6. **load** — `releaseMigration()` reloads the canonical copy and runs the normal `boot()`/sync;
@@ -611,10 +612,11 @@ undone, and nothing is pushed.
 
 `POST /api/data/migrate-engine-v2` — synchronous from the read to the rename, like `PUT /api/data`:
 
-1. Body must be exactly `{ baseRev, confirmed: true }` (else `400 invalid-migration-request`).
+1. Body must be exactly `{ baseRev, confirmed: true }`, plus an optional `tz` (else `400 invalid-migration-request`).
+   A `tz` the server's `Intl` does not know is ignored, as if not sent.
 2. Read the file; `baseRev` must equal `_rev` (else `409 migration-state-changed`); already v2 →
    `200 { migrated: false }`.
-3. `migrateProfileV1ToV2(source.state, LIB_BY_ID)`, `validateCanonicalProfile`
+3. `migrateProfileV1ToV2(source.state, LIB_BY_ID, { tz })`, `validateCanonicalProfile`
    (`invalid-output: …` aborts) and the sync-size check (`profile-too-large` aborts), all before
    anything is written.
 4. Write `data/state-<uid>.pre-engine-v1.json` **once** (atomic). If it exists it must itself be
@@ -1012,10 +1014,10 @@ output must pass `validateCanonicalProfile`, fit the 16 MiB packed sync limit an
 | `deload: true` with a %1RM | `kind: 'recovery', close: 'calendar'`, the percentage as authored, no further factor |
 | `deload: true` without a %1RM | `kind: 'recovery', close: 'calendar'`, `own: 'inherit'` with `deload: { factor: 0.9 }` where a load is scaled (reps work under an external load), without one elsewhere |
 | a routine kept out of progression | no track: it never took programme targets |
-| a running `S.programme` | `S.programmeRuns[run:<pid>:<startedOn>:<cycle>]` with the definition (the run's bump applied), `policy: advance/advance`, `ack: 'legacy'`, `end: 'stop'`, references captured with `currentOneRm`, seeds from the ordinary tracks, `legacy.weekOffset` = weeks already spent; `S.programme = { runId, saved }` |
+| a running `S.programme` | `S.programmeRuns[run:<pid>:<startedOn>:<cycle>]` with the definition (the run's bump applied), `policy: advance/advance`, `ack: 'legacy'`, `end: 'stop'`, references captured with `currentOneRm`, seeds from the ordinary tracks, `legacy.weekOffset` = weeks already spent, `tz` the reminder's timezone, else the device's (`upgradeEngineContract(state, catalogue, { tz })`), else UTC; `S.programme = { runId, saved }` |
 | `pausedOn` | a `pause` event at that date; the run starts in the paused week |
 | a run past its last week | `legacy.weekOffset` = every week: the run reads as stopped |
-| this week's sessions logged before the upgrade (by the day they were logged on, `workout.d`) | `assign` events, each session once, earliest first, only onto a slot of its own occurrence and routine; listed in the summary as `credit`. The engine credits unstamped work only through such an event, and only onto its own occurrence |
+| this week's sessions logged before the upgrade (by the day they were logged on, `workout.d`) | `assign` events, each session once, earliest first, only onto a slot of its own occurrence and routine; listed in the summary as `credit`. The engine credits unstamped work only through such an event, only onto its own occurrence, and only when the day it was logged on (`workout.d`, else its time in the run's zone) falls in that slot's week |
 | `cycle`, `bump` | kept on the run; the bump is added to its percentage stages only (capped at 110), never to kg, reps, seconds or group ratios |
 | an occurrence whose own rule needs a 1RM | `occurrence.ref = currentOneRm(...)`, else `reference-missing` in the summary |
 | more than 50 occurrences | the first 50 become tracks, the programme `needs: ['repair']` |
@@ -1031,6 +1033,27 @@ adoption notice (`summary` kind `legacy-choices`) shows it as preserved legacy b
 start asks for both choices. The end policy is `stop`, as the old programme was done after its last
 week. The reference preference is the Config one (`S.refUpdates`, default ask); no reference
 decision, review or acknowledgement is created.
+
+### Editing a programme
+
+Plan → Programmes still edits a programme's weeks as legacy weeks (%1RM and RPE per lift, a deload
+flag), through the bridge in `lib/programmes.js` (`legacyWeeksOf`, `setLegacyWeek(s)`), until the
+programme editor replaces it. A week edit changes the definition in place: only that week's %1RM
+(`own: 'set'` at `percent_1rm`, the occurrence's phase for a week that had none), its RPE (`effort`)
+and its deload (`kind: 'recovery', close: 'calendar'`, an inherited week's `deload` factor), and the
+entry `seed` that an inherited week right after a fixed one needs (spec 6). Every other week, a week
+the Coach fixed (sets, reps, a weight, rest), each track's `policy`, `tm`, `refs` and slots, the
+schedule (its mode, order and sequence), `needs`, `src` and every id stay as they were. The length
+stepper keeps the weeks it keeps and copies the last one into a new one, without its deload. "Use my
+current plan" converts the weeks onto the plan's schedule, and an exercise it still plans keeps its
+own track. A running or paused programme keeps how it counts (weeks or rounds): the run reads its
+mode from the definition frozen at its start, so `saveProgramme` refuses a change of
+`schedule.mode` while it runs, whatever the route, and a Coach programme change keeps the schedule
+it revises (only its weeks change). Another exercise in an exercise's place
+(`replaceSlotExercise`) keeps neither its adopted `ref` nor its `refs`.
+
+A session of a running programme is placed (`slotFor`) on the run's own date for its start
+(`dateIn(start, run.tz)`), the frame its saved work is read back in, never the device's date.
 
 ### What cannot be recovered
 

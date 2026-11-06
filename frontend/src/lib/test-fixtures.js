@@ -1,5 +1,6 @@
 import { migrateProfileV1ToV2 } from '../../../api/migration/profile-migration.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
+import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
 import { buildSessionExposures } from './session-start.js'
 import { entriesForExposures } from './session-ui-adapter.js'
 import { defaultPlanRule } from './prescription/index.js'
@@ -49,3 +50,13 @@ export function startMigratedFixture(state, routine) {
   const exposures = buildSessionExposures(profile, profile.routines.find(r => r.id === id), { now: Date.parse('2026-10-09T12:00:00Z'), newId: s => s })
   return { profile, exposures, entries: entriesForExposures(exposures, profile.prescriptions) }
 }
+
+/** A programme definition written as legacy weeks (`{ id, name, at, weeks, days | sequence }`) over
+ *  this profile's routines, through the converter the upgrade, the starters and format-1 files use. */
+export const legacyProgramme = (S, legacy) => convertLegacyProgramme(legacy, { routines: S.routines || [], catalogue: LIB_BY_ID, customEx: S.customEx, progression: S.progression, weekStart: S.weekStart === 0 ? 0 : 1 })
+
+/** The %1RM each week of an exercise's (first) programme track asks for, null where it follows its progression. */
+export const weekPcts = (def, exerciseId) => def.tracks.find(tr => tr.exerciseId === exerciseId).stages.map(st => {
+  const x = Object.values(st.targets)[0]
+  return x?.own === 'set' && x.phase.parameters.load.mode === 'percent_1rm' ? x.phase.parameters.load.percent : null
+})

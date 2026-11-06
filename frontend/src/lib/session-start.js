@@ -7,7 +7,7 @@ import { oneRmForMeaning } from './onerm.js'
 import { exView, exConverted, viewTarget, profileUnit } from './ex-unit.js'
 import { convertExact, convertStep, convPrescription } from './units.js'
 import { captureReference, programmeView } from './programmes.js'
-import { isoOf } from './format.js'
+import { dateIn } from '../../../api/engine/programme-run.js'
 import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
 import { dropGrid } from './plates.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
@@ -30,7 +30,7 @@ export function missingOneRms(profile, routines) {
   for (const routine of routines) {
     for (const occ of routine.ex || []) {
       if (currentOneRm(profile.oneRepMaxes, occ.exerciseId)) continue
-      const at = view && slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date: isoOf(new Date()) }).assignment
+      const at = view && slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date: dateIn(Date.now(), view.run.tz || 'UTC') }).assignment
       const own = at ? slotInputs({ view, run: view.run, assignment: at, occRule: occ.rule }).blocked === 'reference-missing' : occ.rule && needsOneRm(occ.rule) && !occ.ref
       if (own) ids.add(occ.exerciseId)
     }
@@ -77,13 +77,15 @@ export function buildSessionExposures(stored, routine, ctx) {
   const past = ctx.history || stored
   // The workout in progress (`ctx.active`): an exercise added to it never takes a slot it holds already.
   const active = ctx.active ?? stored.active ?? null
-  const date = ctx.date || active?.d || isoOf(new Date(ctx.now))
   // Only the records a run reads: spreading the draft would copy the whole profile.
   const runView = () => programmeView(ctx.replaceId == null ? stored : { programme: stored.programme, programmeRuns: stored.programmeRuns, programmeEvents: stored.programmeEvents,
     prescriptions: stored.prescriptions, routines: stored.routines, workouts: (stored.workouts || []).filter(w => w.id !== ctx.replaceId) }, null, active)
   // Logged as extra (`ctx.extra`, the person's answer to a bypass): outside the run, moving nothing.
   const outside = routine?.excludeFromProgression === true || ctx.extra === true
   let view = outside ? null : runView()
+  // The session's day in the run's own timezone, the one its saved work is read back in (deriveRun):
+  // the start of the workout in progress an exercise joins, else now. Never the device's own date.
+  const date = view && (ctx.date || dateIn(Number.isFinite(active?.start) ? active.start : ctx.now, view.run.tz || 'UTC'))
   const placed = (routine?.ex || []).map(occ => (view ? slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date, appt: ctx.appts?.[routine.id] ?? null }) : null))
   const bypass = [...new Set(placed.flatMap(x => x?.bypass || []))]
   if (bypass.length) return Object.assign([], { bypass })

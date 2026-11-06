@@ -29,10 +29,14 @@ const half = (v, lo, hi) => (typeof v === 'number' && v >= lo && v <= hi ? Math.
 const isDate = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
 // The first day of a date's calendar week, on engine/programme-run.js's day numbers.
 const weekStartOf = (date, ws) => weekOf(dayOf(date), ws);
-// The zone the reminder fires by is the profile's own (api/queue.js reads it the same way); UTC without one.
-function zoneOf(tz) {
-  if (typeof tz !== 'string' || !tz) return 'UTC';
-  try { new Intl.DateTimeFormat('en-CA', { timeZone: tz }); return tz; } catch { return 'UTC'; }
+// The zone the reminder fires by is the profile's own (api/queue.js reads it the same way), else the
+// one the caller names for this device; UTC without either. The first of `zones` Intl knows.
+function zoneOf(...zones) {
+  for (const tz of zones) {
+    if (typeof tz !== 'string' || !tz) continue;
+    try { new Intl.DateTimeFormat('en-CA', { timeZone: tz }); return tz; } catch { /* the next one */ }
+  }
+  return 'UTC';
 }
 
 // The Coach's leaf edits on a week's target (api/coach/core/validate.js, spec 13): whole numbers in
@@ -262,10 +266,11 @@ function convertRun(s, legacyRun, def, ctx) {
 /**
  * Upgrade a canonical (v2) profile to contract 1: `S.programmes` as engine definitions, a running
  * `S.programme` as `S.programmeRuns[runId]` with `S.programme = { runId, saved }`, occurrences whose
- * own rule needs a 1RM given their adopted reference. `summary` feeds the adoption notice.
+ * own rule needs a 1RM given their adopted reference. `summary` feeds the adoption notice. `tz`: the
+ * device's timezone, which a running programme keeps its weeks in when the reminder names none.
  * A contract-1 profile comes back as it is; an output that does not validate throws, the input untouched.
  */
-export function upgradeEngineContract(state, catalogue) {
+export function upgradeEngineContract(state, catalogue, { tz } = {}) {
   if (contractOf(state) >= ENGINE_CONTRACT) return { state, summary: [] };
   if (state?.engineSchemaVersion !== ENGINE_SCHEMA) throw new Error('upgrade-needs-v2');
   if (typeof catalogue?.get !== 'function') throw new Error('upgrade-needs-catalogue');
@@ -292,7 +297,7 @@ export function upgradeEngineContract(state, catalogue) {
     // A run whose programme is gone keeps only the plan to put back, as lib/programmes.js did.
     if (!def || !isDate(selector.startedOn)) selector = { runId: null, saved };
     else {
-      const run = convertRun(s, selector, def, { ws, tz: zoneOf(state.reminder?.tz), summary, events });
+      const run = convertRun(s, selector, def, { ws, tz: zoneOf(state.reminder?.tz, tz), summary, events });
       runs[run.id] = run;
       selector = { runId: run.id, saved };
     }

@@ -680,7 +680,12 @@ const CHANGE_APPLY = {
     })
     const snaps = coachOf(s).snapshots || []
     const snap = snaps[snaps.length - 1]
-    const saved = saveProgramme(s, { ...out, rev: base.rev, end: base.end, refs: base.refs, tracks })
+    // The weeks change, never the schedule: its sessions, their order, how it counts them (weeks or
+    // rounds, which a running one keeps) and a binding it still waits on stay as they were.
+    const { needs, src, ...weeksOnly } = out
+    const kept = { schedule: clone(base.schedule), duration: { n: out.duration.n, unit: base.duration.unit },
+      ...(base.needs?.length ? { needs: [...base.needs] } : {}), ...(base.src !== undefined ? { src: clone(base.src) } : {}) }
+    const saved = saveProgramme(s, { ...weeksOnly, ...kept, rev: base.rev, end: base.end, refs: base.refs, tracks })
     if (snap && !snap.programmeRestore) snap.programmeRestore = { id: saved.id, prev: was ? clone(was) : null, written: writtenOf(saved) }
   },
   week: (s, c) => {

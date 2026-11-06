@@ -8,7 +8,7 @@
 // The v1 → v2 profile migration uses this engine but is not part of it: it lives in api/migration,
 // because it is a one-off data conversion and needs the built-in exercise catalogue to tell
 // cardio, bodyweight and assisted exercises apart — a dependency this folder does not take.
-export { canonicalJSON, contentHash, deepFreeze } from './canonical.js'
+export { canonicalJSON, cmp, contentHash, deepFreeze } from './canonical.js'
 export { roundLoad, resolveExpression, resolveLoad, applyIncrement } from './load.js'
 export { PRESETS, PRESET_IDS, SET_REPS_MAX, REPS_MAX, INCREMENT_TYPES, COMPLETION_METRICS, OPERATOR_METRICS, RECOVERY_METHODS, MAX_PHASES, MAX_GROUPS, MAX_ROWS, MAX_OPERATORS, WENDLER_CYCLE, cardioParameters, defaultPlanRule, editPlan, isTemplateRule, needsOneRm, planOptions, planPhase, pyramidDirection, rptOffsets, rungsOf, supports, validateIntensifier, validatePlanRule, withRest, presetForPolicy, policyOfPreset } from './rules.js'
 export { DELOAD_AFTER, DELOAD_FACTOR, DELOAD_FACTOR_MAX, DELOAD_FACTOR_MIN, defaultDeload, deloadLoad, deloadedLoad, isValidDeloadFactor, selectDeloadCandidate } from './deload.js'
