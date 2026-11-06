@@ -516,7 +516,7 @@ test('a start date that is not on the calendar is not a running programme', () =
 
 test('an occurrence the app made without a stored mode takes its %1RM; a hold or cardio one does not', () => {
   const occ = (oid, exerciseId, opts) => ({ occurrenceId: oid, exerciseId, rule: defaultPlanRule('linear', { id: oid, exerciseId, routineId: 'rA', unit: 'kg', ...opts }) });
-  const routines = [{ id: 'rA', name: 'A', ex: [occ('rA:o0', '0025', { sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 } }), { ...occ('rA:o1', '0025', {}), rule: defaultPlanRule('autoregulated', { id: 'rA:o1', exerciseId: '0025', routineId: 'rA', durationSeconds: { min: 30, max: 30 }, reps: { min: 1, max: 1 } }) }, { ...occ('rA:o2', '3666', {}), rule: defaultPlanRule('autoregulated', { id: 'rA:o2', exerciseId: '3666', routineId: 'rA' }) }] }];
+  const routines = [{ id: 'rA', name: 'A', ex: [occ('rA:o0', '0025', { sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 } }), { ...occ('rA:o1', '0025', {}), rule: defaultPlanRule('manual', { id: 'rA:o1', exerciseId: '0025', routineId: 'rA', durationSeconds: { min: 30, max: 30 }, reps: { min: 1, max: 1 } }) }, { ...occ('rA:o2', '3666', {}), rule: defaultPlanRule('manual', { id: 'rA:o2', exerciseId: '3666', routineId: 'rA' }) }] }];
   const def = convertLegacyProgramme({ id: 'pg', name: 'X', at: 1, days: { 1: ['rA'] }, weeks: [{ t: { '0025': { pct: 75 }, '3666': { pct: 75 } } }] }, { routines, catalogue: LIB_BY_ID });
   const own = oid => def.tracks.find(t => t.slots[0].oid === oid).stages[0].targets[oid].own;
   assert.deepEqual(['rA:o0', 'rA:o1', 'rA:o2'].map(own), ['set', 'inherit', 'inherit']);

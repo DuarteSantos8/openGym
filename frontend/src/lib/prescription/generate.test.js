@@ -256,7 +256,7 @@ describe('session semantics (v1.3.9)', () => {
   // A programme week at a %1RM (a fixed stage: no load step) declares its load: the screen opens at
   // it, not at what the week before lifted. Without a 1RM the rows have no load, and it still offers that.
   it('a %1RM phase with no progression opens at its own resolved load, not at the last session\'s', () => {
-    const r = rule('autoregulated', { load: { mode: 'percent_1rm', percent: 90 } })
+    const r = rule('manual', { load: { mode: 'percent_1rm', percent: 90 } })
     const lastLog = logOf({ sets: 3, reps: 8, load: kg(87.5) })
     const p = gen(r, { oneRm: oneRm(116.7), lastLog })
     expect(p.rows.map(row => row.load.value)).toEqual([105, 105, 105])

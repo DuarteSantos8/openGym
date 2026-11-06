@@ -106,7 +106,7 @@ describe('a session of a running programme', () => {
     // (backfill.js historyAsOf), as beginBackfill does.
     const start = Date.parse('2026-10-19T17:00:00Z')
     const backfill = S => buildCombinedExposures(S, ['A', 'R'], { now: start, newId: s => 'bf:' + s, history: historyAsOf(S, { d: '2026-10-19', start }) })
-    const pct = { occurrenceId: 'r-bench', exerciseId: BENCH, rule: defaultPlanRule('autoregulated', { id: 'r-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
+    const pct = { occurrenceId: 'r-bench', exerciseId: BENCH, rule: defaultPlanRule('manual', { id: 'r-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
     const withR = S => ({ ...S, routines: [...S.routines, { id: 'R', name: 'Standalone', ex: [pct, occ(SQUAT, 'r-squat', 'R', 3, 5, 80)] }] })
     // Tuesday's A already holds this week's Monday appointment: the late Monday is extra, never a second credit.
     const S = running(withR(profile()))
@@ -185,7 +185,7 @@ describe('a session of a running programme', () => {
   })
 
   it('first use of a percent rule captures its reference into the occurrence', () => {
-    const pct = { occurrenceId: 'p-bench', exerciseId: BENCH, rule: defaultPlanRule('autoregulated', { id: 'p-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
+    const pct = { occurrenceId: 'p-bench', exerciseId: BENCH, rule: defaultPlanRule('manual', { id: 'p-bench', exerciseId: BENCH, routineId: 'R', sets: { min: 3, max: 3 }, reps: { min: 5, max: 5 }, load: { mode: 'percent_1rm', percent: 80 } }) }
     const S = profile({ routines: [{ id: 'R', name: 'Bench', ex: [pct] }] })
     const [x] = buildSessionExposures(S, S.routines[0], { now: Date.parse('2026-10-21T10:00:00Z'), newId: s => s })
     expect(S.routines[0].ex[0].ref).toMatchObject({ id: 'b100', value: 100 })

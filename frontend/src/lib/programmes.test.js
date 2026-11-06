@@ -46,7 +46,7 @@ const logged = (d, exId, w, r, rid = 'C') => ({
   entries: [{ id: exId, rid, target: { id: exId, sets: 3, reps: r, weight: w }, sets: Array.from({ length: 3 }, () => ({ w, r, done: true })) }],
 })
 // A v2 profile on contract 1, from v1 routines (and history) through the canonical migration.
-const state = (extra = {}, workouts = []) => ({ ...migratedFixture({ unit: 'kg', weekStart: extra.weekStart ?? 1, routines: routines(), workouts }), week: { 1: ['C'] }, dayPlan: {}, programmes: {}, programme: null, ...extra })
+const state = (extra = {}, workouts = []) => ({ ...migratedFixture({ oneRmFormula: 'epley', unit: 'kg', weekStart: extra.weekStart ?? 1, routines: routines(), workouts }), week: { 1: ['C'] }, dayPlan: {}, programmes: {}, programme: null, ...extra })
 const block = (extra = {}) => ({
   id: 'P', name: 'Strength block', at: 1, days: { 1: ['A'], 4: ['B'] },
   weeks: [{ rpe: 7, t: { [BENCH]: { pct: 75 } } }, { rpe: 8, t: { [BENCH]: { pct: 80 }, [`B:${SQUAT}`]: { pct: 70, rpe: 9 } } }, { deload: true }],

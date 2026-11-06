@@ -221,7 +221,7 @@ describe('stageRule', () => {
   })
 
   it('explicit zero rest and a 0% incline survive compile; absent values inherit', () => {
-    const run = occRule('autoregulated', { ...cardioParameters({ sets: 3, min: 5, speed: 8 }), load: { mode: 'empty' }, restSeconds: 90 })
+    const run = occRule('manual', { ...cardioParameters({ sets: 3, min: 5, speed: 8 }), load: { mode: 'empty' }, restSeconds: 90 })
     const flat = week({ sets: 3, reps: 1, load: { mode: 'empty' }, restSeconds: 0, durationSeconds: range(300), speed: 8 })
     const zero = compile(set(flat, { options: { incline: 0 } }), { rule: run })
     expect(zero.program.phases[0].parameters.restSeconds).toBe(0)
@@ -317,7 +317,7 @@ describe('validateProgramme', () => {
 
   it('week options: an incline of 1 then 2 % and a dropset survive validation; an option the rule cannot take is rejected', () => {
     const RUN = 'rA:o1'
-    const run = occRule('autoregulated', { exerciseId: 'run', ...cardioParameters({ sets: 3, min: 5, speed: 8 }), load: { mode: 'empty' } })
+    const run = occRule('manual', { exerciseId: 'run', ...cardioParameters({ sets: 3, min: 5, speed: 8 }), load: { mode: 'empty' } })
     const routines = routinesOf(occurrence(), occurrence(run, { occurrenceId: RUN, exerciseId: 'run', mode: 'cardio' }))
     const dropset = { type: 'dropset', count: 2, pct: 20 }
     const bench = trackOf([stage('w1', { own: 'inherit', options: { intensifier: dropset } }), stage('w2', INHERIT)])
