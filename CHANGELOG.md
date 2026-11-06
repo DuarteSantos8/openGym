@@ -6,6 +6,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Daily form, vitals and your month as a story**
+- Daily check-in before a workout: sleep, energy, soreness and stress, 1 to 5, four taps, every one optional. Off until you switch it on (Settings → Workout → Before and during → Daily check-in, or the Daily form card in Stats asks once).
+- On a rough day the check-in offers to go lighter: 10% off the open sets (rounded to your plates) or one set fewer per exercise. Today only, never picked for you, and the session sits out of progression so your next targets stay put.
+- Stats → Overview → Daily form: what your check-ins and your sleep say about how the workouts went (estimated strength, volume, reps in reserve), only once there is enough to compare, with the number of workouts on each side and a plain word on how sure it is.
+- Vitals from Health Connect and Apple Health: last night's sleep, resting heart rate, HRV and steps next to your usual, on the Daily form card. Settings → Integrations → Health Connect (or Apple Health) → Sleep, resting heart rate, HRV and steps. Read on the phone only, never synced. The check-in fills its sleep from it.
+- Your month in openGym: the year's stories for one month (workouts, hours, volume, weeks with a workout, records, exercise of the month on the muscle map, what was new, one line to go out on), every card shareable. Stats → More → Your month, or Play your month on the recap card on the 1st.
+
 **Circuits, AMRAP, EMOM, Tabata and run/walk** (ideas by @Seexelas #560, @dodo-rieder and @yogainalift #725, @maku #765, @Space-Hermes #626, @rubenixnagios #507)
 - A routine can run on the clock now: Plan → a routine → Routine type → Circuit, AMRAP, EMOM, Intervals (Tabata 20/10 × 8 is one tap) or Run/walk program. A superset can do the same from its name above the exercises (How it runs), so a finisher can sit after your strength work, and a one-exercise EMOM is fine.
 - A full-screen player with a big clock, the station you are on with its animation, what comes next, Pause, Done and Skip. Beeps, a buzz and 3-2-1 at the end of each interval, the voice says "Go! Burpees" when Spoken cues are on (the speaker in the player switches them), the screen stays on, and a locked phone still rings every interval. The Lock Screen and the workout notification count it down too.

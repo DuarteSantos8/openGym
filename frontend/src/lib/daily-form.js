@@ -1,9 +1,10 @@
 // Daily form (v1.4.5, gm-insights): a four-tap check-in before a workout, and "go lighter" when
 // the day is a rough one. Optional on every level:
 //
-//   - S.dailyForm: undefined until asked once (the first workout started with the Health module on
-//     shows the check-in with a short "want this?" line), then true or false. Settings → Workout →
-//     Before and during switches it either way. Never asked with the Health module off.
+//   - S.dailyForm: off until switched on. Undefined means never asked: the Daily form card in Stats
+//     asks once (Turn it on / Not for me), and Settings → Workout → Before and during switches it
+//     either way. Starting a workout is never held up by the question. Nothing asks with the Health
+//     module off.
 //   - every row is optional, and Skip starts the workout as planned;
 //   - "go lighter" is offered only when the answers add up to a rough day, and is never picked
 //     for you: "As planned" stays the default.
@@ -74,16 +75,16 @@ export function isRough(f) {
 }
 
 /**
- * Whether starting a workout shows the check-in, and how:
- *   null      not at all (switched off, Health module off, or today is answered already)
- *   'intro'   never asked: the check-in with its one-time "want this?" line
- *   'ask'     switched on
+ * Whether starting a workout shows the check-in: 'ask' when it is switched on, else null (off, never
+ * asked, the Health module off, or today answered already).
  */
 export function checkinMode(S, today) {
-  if (!S || !isOn(S, 'health') || S.dailyForm === false) return null
-  if (formOf(S, today)) return null
-  return S.dailyForm === true ? 'ask' : 'intro'
+  if (!S || !isOn(S, 'health') || S.dailyForm !== true) return null
+  return formOf(S, today) ? null : 'ask'
 }
+
+/** Whether the Daily form card asks once whether to switch the check-in on: never asked, and training. */
+export const offerCheckin = S => !!S && isOn(S, 'health') && S.dailyForm == null && (S.workouts || []).length >= 3
 
 /** S.dayForm with `iso` set to the answers in `f`, stamped `now`. Empty answers clear the day. */
 export function withForm(map, iso, f, now = Date.now()) {

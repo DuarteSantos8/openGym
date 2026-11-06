@@ -10,33 +10,33 @@ import { fmtNum } from '../lib/format.js'
 
 // Each row: its icon, its question, and the words at both ends of the scale.
 export const FORM_ROWS = {
-  sleep: { icon: 'moon', label: 'Sleep', lo: 'Barely slept', hi: 'Slept like a log' },
-  energy: { icon: 'bolt', label: 'Energy', lo: 'Running on fumes', hi: 'Full of beans' },
-  sore: { icon: 'figureStrength', label: 'Soreness', lo: 'Nothing aches', hi: 'Everything aches' },
-  stress: { icon: 'cloud', label: 'Stress', lo: 'Calm', hi: 'Frazzled' },
+  sleep: () => ({ icon: 'moon', label: t('Sleep'), lo: t('Barely slept'), hi: t('Slept like a log') }),
+  energy: () => ({ icon: 'bolt', label: t('Energy'), lo: t('Running on fumes'), hi: t('Full of beans') }),
+  sore: () => ({ icon: 'figureStrength', label: t('Soreness'), lo: t('Nothing aches'), hi: t('Everything aches') }),
+  stress: () => ({ icon: 'cloud', label: t('Stress'), lo: t('Calm'), hi: t('Frazzled') }),
 }
 
 function Scale({ k, value, onChange }) {
-  const row = FORM_ROWS[k]
+  const row = FORM_ROWS[k]()
   const id = 'dfc-' + k
   return <div className="dfc-row">
-    <div className="dfc-q" id={id}><Icon name={row.icon} /><span>{t(row.label)}</span></div>
+    <div className="dfc-q" id={id}><Icon name={row.icon} /><span>{row.label}</span></div>
     <div className="dfc-scale" role="radiogroup" aria-labelledby={id}>
       {[1, 2, 3, 4, 5].map(n => <button key={n} type="button" role="radio" aria-checked={value === n}
-        aria-label={n === 1 ? `1, ${t(row.lo)}` : n === 5 ? `5, ${t(row.hi)}` : String(n)}
+        aria-label={n === 1 ? `1, ${row.lo}` : n === 5 ? `5, ${row.hi}` : String(n)}
         className={'dfc-pip' + (value === n ? ' on' : '')} onClick={() => onChange(value === n ? null : n)}>{n}</button>)}
     </div>
-    <div className="dfc-ends" aria-hidden="true"><span>{t(row.lo)}</span><span>{t(row.hi)}</span></div>
+    <div className="dfc-ends" aria-hidden="true"><span>{row.lo}</span><span>{row.hi}</span></div>
   </div>
 }
 
 /**
- * `mode` 'intro' (asked for the first time) or 'ask'. `lighter`: which ways of going lighter this
+ * `lighter`: which ways of going lighter this
  * session can take (['load', 'sets'], from lib/daily-form.js canGoLighter). `sleep`: a promise of
  * last night's sleep from the phone's health store ({ hours, platform } or null), to fill the sleep row.
- * `onDone({ form, lighter })` starts the workout; `onSkip(never)` starts it as planned.
+ * `onDone({ form, lighter })` starts the workout; `onSkip()` starts it as planned.
  */
-export default function DailyCheckin({ mode, lighter = [], sleep = null, onDone, onSkip }) {
+export default function DailyCheckin({ lighter = [], sleep = null, onDone, onSkip }) {
   const [f, setF] = useState({ sleep: null, energy: null, sore: null, stress: null })
   const [hours, setHours] = useState(null)
   const [source, setSource] = useState(null)
@@ -58,10 +58,8 @@ export default function DailyCheckin({ mode, lighter = [], sleep = null, onDone,
   const start = () => onDone({ form: f, lighter: rough && pick !== 'planned' ? pick : null })
   const h = Math.floor(hours || 0), min = Math.round(((hours || 0) - h) * 60)
   return <div className="dfc">
-    <h3>{mode === 'intro' ? t('Quick check-in?') : t('How are you today?')}</h3>
-    <div className="muted small dfc-sub">{mode === 'intro'
-      ? t('Four taps before you train. On a rough day openGym can make the session a little easier. Every answer is optional.')
-      : t('Tap what fits, skip what does not.')}</div>
+    <h3>{t('How are you today?')}</h3>
+    <div className="muted small dfc-sub">{t('Tap what fits, skip what does not.')}</div>
     {FORM_KEYS.map(k => <div key={k}>
       <Scale k={k} value={f[k]} onChange={set(k)} />
       {k === 'sleep' && hours > 0 && <div className="small dim dfc-hint">
@@ -77,9 +75,6 @@ export default function DailyCheckin({ mode, lighter = [], sleep = null, onDone,
     </div>}
     <Button variant="primary" icon="play" onClick={start}>{answered ? t('Start workout') : t('Start without answering')}</Button>
     <div style={{ height: 8 }} />
-    {mode === 'intro'
-      ? <Button variant="ghost" className="dim" onClick={() => onSkip(true)}>{t('No thanks, don’t ask again')}</Button>
-      : <Button variant="ghost" className="dim" onClick={() => onSkip(false)}>{t('Skip for today')}</Button>}
-    {mode === 'intro' && <div className="small dim dfc-foot">{t('Change it any time in Settings → Workout.')}</div>}
+    <Button variant="ghost" className="dim" onClick={onSkip}>{t('Skip for today')}</Button>
   </div>
 }

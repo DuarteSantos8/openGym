@@ -3865,17 +3865,16 @@ export function DayNoteRow({ iso, note }) {
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
 // `opts.lead`: exercises a last session did not get to (lib/leftovers.js, #985), done first.
 export function startFlow(routineIds, opts = {}) {
-  // The daily-form check-in comes first (v1.4.5, lib/daily-form.js): asked once, then only when
-  // switched on (Settings → Workout), never with the Health module off, once a day.
-  const mode = opts.checked ? null : checkinMode(S(), todayISO())
-  if (mode) { dailyCheckinSheet(routineIds, opts, mode); return }
+  // The daily-form check-in comes first (v1.4.5, lib/daily-form.js): only when switched on
+  // (Settings → Workout), never with the Health module off, once a day.
+  if (!opts.checked && checkinMode(S(), todayISO())) { dailyCheckinSheet(routineIds, opts); return }
   // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
   // into the session with no body weight on it, same as "Start without weighing in".
   // Off in Settings → Workout, or with the Body module (Settings → Modules): straight into the session.
   if (S().weighIn === false || !isOn(S(), 'body')) { beginWorkout(routineIds, null, opts); return }
   bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw, opts) })
 }
-function dailyCheckinSheet(routineIds, opts, mode) {
+function dailyCheckinSheet(routineIds, opts) {
   const st = S()
   const today = todayISO()
   // Which ways of going lighter this session can take, worked out on the entries it will start with.
@@ -3885,23 +3884,13 @@ function dailyCheckinSheet(routineIds, opts, mode) {
   const sleep = MOBILE ? Promise.all([loadHealth(), nativePlatform()])
     .then(([h, platform]) => (h?.readVitals ? { hours: sleepHoursOn(h.vitals, today), platform } : null)).catch(() => null) : null
   const go = more => startFlow(routineIds, { ...opts, checked: true, ...more })
-  ui().openSheet(close => <DailyCheckin mode={mode} lighter={lighter} sleep={sleep}
+  ui().openSheet(close => <DailyCheckin lighter={lighter} sleep={sleep}
     onDone={({ form, lighter: kind }) => {
       close()
-      update(s => {
-        if (mode === 'intro') s.dailyForm = true
-        if (readForm(form)) s.dayForm = withForm(s.dayForm, today, { ...form, lighter: kind })
-      })
+      if (readForm(form)) update(s => { s.dayForm = withForm(s.dayForm, today, { ...form, lighter: kind }) })
       go(kind ? { lighter: kind } : {})
     }}
-    onSkip={never => {
-      close()
-      if (never) {
-        update(s => { s.dailyForm = false })
-        toast(t('Check-in is off. Settings → Workout brings it back.'))
-      }
-      go({})
-    }} />)
+    onSkip={() => { close(); go({}) }} />)
 }
 // `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id,
 // so the sets ticked on it find it, and its start time, however late the phone hears of it.

@@ -9,22 +9,24 @@ import { fmtNum, todayISO } from '../lib/format.js'
 import { MOBILE, nativePlatform } from '../lib/mobile.js'
 import { loadHealth, onHealthChange } from '../lib/health-sync.js'
 import { vitalsSummary } from '../lib/vitals.js'
-import { formDays, formScore } from '../lib/daily-form.js'
+import { formDays, formScore, offerCheckin } from '../lib/daily-form.js'
+import { useStore } from '../store/useStore.js'
+import { Button } from './ui.jsx'
 import { formInsights, insightProgress, workoutPerformance } from '../lib/form-insights.js'
 import { displayScale } from '../lib/effort.js'
 import CardHead from './CardHead.jsx'
 
 // The good side of each factor, as the row's title.
 const FACTOR_LABEL = {
-  sleepHours: 'After 7 hours of sleep or more',
-  sleep: 'When you rate your sleep 4 or 5',
-  energy: 'When your energy is 4 or 5',
-  sore: 'When soreness is 1 or 2',
-  stress: 'When stress is 1 or 2',
-  form: 'On your good-form days',
+  sleepHours: () => t('After 7 hours of sleep or more'),
+  sleep: () => t('When you rate your sleep 4 or 5'),
+  energy: () => t('When your energy is 4 or 5'),
+  sore: () => t('When soreness is 1 or 2'),
+  stress: () => t('When stress is 1 or 2'),
+  form: () => t('On your good-form days'),
 }
-const METRIC_LABEL = { strength: 'Estimated strength', volume: 'Volume', effort: 'Reps in reserve' }
-const SURE = { chance: 'Could easily be chance', maybe: 'Leaning that way', consistent: 'Pretty consistent so far' }
+const METRIC_LABEL = { strength: () => t('Estimated strength'), volume: () => t('Volume'), effort: () => t('Reps in reserve') }
+const SURE = { chance: () => t('Could easily be chance'), maybe: () => t('Leaning that way'), consistent: () => t('Pretty consistent so far') }
 
 const signed = (n, digits = 0) => (n > 0 ? '+' : n < 0 ? '−' : '±') + fmtNum(Math.abs(Math.round(n * 10 ** digits) / 10 ** digits))
 
@@ -34,8 +36,8 @@ export function insightWords(x, S) {
     : x.metric === 'effort'
       ? (displayScale(S) === 'rpe' ? t('{0} RPE', signed(-x.diff, 1)) : t('{0} RIR', signed(x.diff, 1)))
       : signed(x.diff) + ' %'
-  const sub = [t(METRIC_LABEL[x.metric]), t('{0} vs {1} workouts', fmtNum(x.good.n), fmtNum(x.other.n)), t(SURE[x.confidence])].join(' · ')
-  return { title: t(FACTOR_LABEL[x.factor]), value, sub }
+  const sub = [METRIC_LABEL[x.metric](), t('{0} vs {1} workouts', fmtNum(x.good.n), fmtNum(x.other.n)), SURE[x.confidence]()].join(' · ')
+  return { title: FACTOR_LABEL[x.factor](), value, sub }
 }
 
 function Vital({ label, value, unit, usual }) {
@@ -64,7 +66,18 @@ export default function DailyFormCard({ S }) {
   const days = formDays(S)
   const vs = vitals ? vitalsSummary(vitals, today) : null
   const anyVital = vs && Object.values(vs).some(Boolean)
-  if (!days.length && !anyVital && S.dailyForm !== true) return null
+  const offer = offerCheckin(S)
+  if (!days.length && !anyVital && S.dailyForm !== true && !offer) return null
+  // Asked once, here and never on Start: switched on, the check-in opens before the next workout.
+  const setOn = v => useStore.getState().update(s => { s.dailyForm = v })
+  if (offer && !days.length && !anyVital) return <div className="card dform-card" data-daily-form="offer">
+    <CardHead icon="moon" tint="var(--indigo)" eyebrow={t('Daily form')} title={t('Check in before workouts?')}
+      sub={t('Four taps on sleep, energy, soreness and stress. On a rough day openGym offers to go lighter, and after a few weeks you see what your good days have in common.')} />
+    <div className="card-head-indent row" style={{ gap: 8, marginTop: 10 }}>
+      <Button size="sm" variant="tinted" icon="check" onClick={() => setOn(true)}>{t('Turn it on')}</Button>
+      <Button size="sm" variant="ghost" onClick={() => setOn(false)}>{t('Not for me')}</Button>
+    </div>
+  </div>
 
   const recent = days.filter(d => d.d > isoBack(today, 14))
   const todays = days.find(d => d.d === today)

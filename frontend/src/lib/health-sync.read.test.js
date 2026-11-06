@@ -43,6 +43,11 @@ vi.mock('@capacitor/core', () => ({
       if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
       return { records: (h.body || []).filter(r => r.t >= arg.since) }
     },
+    readVitals: async arg => {
+      h.calls.push(['readVitals', arg])
+      if (h.fail) throw Object.assign(new Error('no'), { code: h.fail })
+      return h.vitals || {}
+    },
     write: async () => { h.calls.push(['write']) },
     remove: async () => {},
     openSettings: async () => {},
@@ -273,5 +278,29 @@ describe('body composition (v1.4.5)', () => {
   it('turns down when Health Connect refused all four', async () => {
     h.granted = { heartRate: false, weight: false, body: false }
     expect((await hs.enableRead('body', getState, { apply })).reason).toBe('denied')
+  })
+})
+
+describe('vitals (v1.4.5)', () => {
+  it('asks for sleep, resting heart rate, HRV and steps, keeps them in this phone\'s file, never in the log', async () => {
+    h.granted = { heartRate: false, weight: false, vitals: true }
+    h.vitals = {
+      sleep: [{ s: new Date(2026, 9, 14, 23).getTime(), e: new Date(2026, 9, 15, 7).getTime(), a: 0 }],
+      rhr: [{ t: NOW - 3600e3 * 10, v: 54 }], hrv: [], steps: [{ d: '2026-10-15', n: 6400 }], hrvKind: 'rmssd',
+    }
+    const r = await hs.enableRead('vitals', getState, { apply })
+    expect(r.ok).toBe(true)
+    expect(reads('request')[0][1].read).toEqual(['sleep', 'restingHeartRate', 'hrv', 'steps'])
+    // The first read goes a month back.
+    expect(reads('readVitals')[0][1]).toEqual({ from: '2026-09-15' })
+    expect(file().vitals.days['2026-10-15']).toEqual({ sleepMin: 480, rhr: 54, steps: 6400 })
+    expect(applied).toBe(0)
+    const off = await hs.disableRead('vitals')
+    expect(off.readVitals).toBe(false)
+    expect(off.vitals.days['2026-10-15'].steps).toBe(6400)
+  })
+  it('turns down when none of the four was allowed', async () => {
+    h.granted = { heartRate: false, weight: false, vitals: false }
+    expect((await hs.enableRead('vitals', getState, { apply })).reason).toBe('denied')
   })
 })

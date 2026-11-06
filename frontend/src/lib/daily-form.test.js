@@ -1,6 +1,6 @@
 // The daily-form check-in (lib/daily-form.js): what it stores, when it asks, and going lighter.
 import { describe, it, expect } from 'vitest'
-import { readForm, formOf, formDays, formScore, isRough, checkinMode, withForm, sleepRatingOf, lighterChanges, goLighter, canGoLighter, LIGHTER_PCT } from './daily-form.js'
+import { offerCheckin, readForm, formOf, formDays, formScore, isRough, checkinMode, withForm, sleepRatingOf, lighterChanges, goLighter, canGoLighter, LIGHTER_PCT } from './daily-form.js'
 import { isWarmupRow } from './workout-model.js'
 import { STAMPED_MAPS, mergeStates } from './sync-merge.js'
 
@@ -64,10 +64,18 @@ describe('how good a day looks', () => {
 
 describe('when the check-in shows', () => {
   const today = '2026-11-06'
-  it('asks once with an intro, then only when switched on', () => {
-    expect(checkinMode({}, today)).toBe('intro')
+  it('only when switched on: off and never asked start the workout straight away', () => {
+    expect(checkinMode({}, today)).toBeNull()
     expect(checkinMode({ dailyForm: true }, today)).toBe('ask')
     expect(checkinMode({ dailyForm: false }, today)).toBeNull()
+  })
+  it('is offered once on the Stats card, to people who train', () => {
+    const three = [{}, {}, {}]
+    expect(offerCheckin({ workouts: three })).toBe(true)
+    expect(offerCheckin({ workouts: three, dailyForm: false })).toBe(false)
+    expect(offerCheckin({ workouts: three, dailyForm: true })).toBe(false)
+    expect(offerCheckin({ workouts: [{}] })).toBe(false)
+    expect(offerCheckin({ workouts: three, modules: { health: false } })).toBe(false)
   })
   it('never with the Health module off, and not twice a day', () => {
     expect(checkinMode({ dailyForm: true, modules: { health: false } }, today)).toBeNull()

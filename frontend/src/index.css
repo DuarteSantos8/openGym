@@ -986,7 +986,6 @@ body.chips-dragging *{cursor:inherit}
 .dfc-light{background:var(--surface-2);border-radius:var(--r);padding:12px 14px;margin:4px 0 14px;display:flex;flex-direction:column;gap:8px}
 .dfc-light .seg-inline{margin-inline-start:0;width:100%}
 .dfc-light-t{font-weight:600;color:var(--label)}
-.dfc-foot{text-align:center;margin-top:6px}
 .dform-card .dfc-vitals{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-top:12px}
 .dfc-vital{min-width:0;display:flex;flex-direction:column;gap:2px}
 .dfc-vital-k{font-size:var(--fs-caption);color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
