@@ -248,7 +248,11 @@ that.
   `READ_HEART_RATE` and `READ_WEIGHT` (see "Reading back" below), and since v1.4.5 `READ_BODY_FAT`,
   `READ_LEAN_BODY_MASS`, `READ_BONE_MASS` and `READ_BASAL_METABOLIC_RATE` for the body-composition
   switch, shown under Body measurements and kept in `opengym-health.json` only (on the iPhone: body
-  fat and lean body mass from Apple Health). Each is asked for only when its switch is turned on.
+  fat and lean body mass from Apple Health). Also since v1.4.5 `READ_SLEEP`, `READ_RESTING_HEART_RATE`,
+  `READ_HEART_RATE_VARIABILITY` and `READ_STEPS` for the vitals switch (`readVitals`, lib/vitals.js:
+  the Daily form card in Stats and the check-in's sleep), kept in `opengym-health.json` only; on the
+  iPhone sleep analysis, resting heart rate, HRV (SDNN) and step count from Apple Health. Each is
+  asked for only when its switch is turned on, after an explanation in the app.
   No background permission.
 - **No duplicates.** Every record carries openGym's own id as its `clientRecordId`
   (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout

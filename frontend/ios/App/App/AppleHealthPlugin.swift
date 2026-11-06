@@ -37,6 +37,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "readHeartRate", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readWeights", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readBody", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readVitals", returnType: CAPPluginReturnPromise),
     ]
 
     static let enabledKey = "healthEnabled"
@@ -88,6 +89,11 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             // Body composition (v1.4.5): Apple Health has body fat and lean mass of the four.
             if read.contains("bodyFat"), let fat = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage) { types.insert(fat) }
             if read.contains("leanMass"), let lean = HKObjectType.quantityType(forIdentifier: .leanBodyMass) { types.insert(lean) }
+            // Vitals (v1.4.5, lib/vitals.js): the Daily form card and the check-in's sleep.
+            if read.contains("sleep"), let sleep = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) { types.insert(sleep) }
+            if read.contains("restingHeartRate"), let rhr = HKObjectType.quantityType(forIdentifier: .restingHeartRate) { types.insert(rhr) }
+            if read.contains("hrv"), let hrv = HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN) { types.insert(hrv) }
+            if read.contains("steps"), let steps = HKObjectType.quantityType(forIdentifier: .stepCount) { types.insert(steps) }
             var share: Set<HKSampleType> = []
             if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal); types.insert(kcal) }
             store.requestAuthorization(toShare: share, read: types) { _, _ in
@@ -204,6 +210,79 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
                 call.resolve(["records": fatRows + leanRows])
             } failed: { self.fail(call, $0) }
         } failed: { self.fail(call, $0) }
+    }
+
+    /// Vitals from local midnight of `from` ('YYYY-MM-DD') on, as lib/vitals.js reads them: sleep
+    /// stretches (from the noon before, so the first night is whole; asleep 0, awake 1, only in bed 2),
+    /// resting heart rate and HRV (SDNN, ms) samples, and the steps per local day as Apple Health
+    /// totals them (HKStatisticsCollectionQuery, which leaves out the iPhone and Watch counting the
+    /// same walk twice). Not allowed reads nothing, as everywhere else here.
+    @objc func readVitals(_ call: CAPPluginCall) {
+        let fmt = DateFormatter()
+        fmt.calendar = Calendar(identifier: .gregorian)
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.timeZone = TimeZone.current
+        fmt.dateFormat = "yyyy-MM-dd"
+        guard let from = call.getString("from"), let day = fmt.date(from: from) else { call.reject("from is needed", "failed"); return }
+        guard HKHealthStore.isHealthDataAvailable() else { call.reject("Apple Health is not available", "unavailable"); return }
+        let start = Calendar.current.startOfDay(for: day)
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: nil)
+        let nights = HKQuery.predicateForSamples(withStart: start.addingTimeInterval(-12 * 3600), end: nil)
+        Task {
+            var sleepRows: [[String: Any]] = []
+            if let type = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) {
+                let found = await self.samples(type, nights)
+                for case let c as HKCategorySample in found {
+                    let a: Int
+                    switch c.value {
+                    case HKCategoryValueSleepAnalysis.inBed.rawValue: a = 2
+                    case HKCategoryValueSleepAnalysis.awake.rawValue: a = 1
+                    default: a = 0
+                    }
+                    sleepRows.append(["s": c.startDate.timeIntervalSince1970 * 1000, "e": c.endDate.timeIntervalSince1970 * 1000, "a": a])
+                }
+            }
+            let perMinute = HKUnit.count().unitDivided(by: .minute())
+            let rhr = await self.points(.restingHeartRate, perMinute, predicate)
+            let hrv = await self.points(.heartRateVariabilitySDNN, .secondUnit(with: .milli), predicate)
+            let steps = await self.dailySteps(from: start, fmt: fmt)
+            call.resolve(["sleep": sleepRows, "rhr": rhr, "hrv": hrv, "steps": steps, "hrvKind": "sdnn"])
+        }
+    }
+
+    /// Every sample of `type` matching `predicate`, or none when reading is not allowed or fails.
+    private func samples(_ type: HKSampleType, _ predicate: NSPredicate) async -> [HKSample] {
+        await withCheckedContinuation { cont in
+            let sort = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: true)
+            let q = HKSampleQuery(sampleType: type, predicate: predicate, limit: HealthReadCore.maxSamples, sortDescriptors: [sort]) { _, found, _ in
+                cont.resume(returning: found ?? [])
+            }
+            store.execute(q)
+        }
+    }
+
+    private func points(_ id: HKQuantityTypeIdentifier, _ unit: HKUnit, _ predicate: NSPredicate) async -> [[String: Any]] {
+        guard let type = HKObjectType.quantityType(forIdentifier: id) else { return [] }
+        return await samples(type, predicate).compactMap { $0 as? HKQuantitySample }.map {
+            ["t": $0.startDate.timeIntervalSince1970 * 1000, "v": $0.quantity.doubleValue(for: unit)]
+        }
+    }
+
+    private func dailySteps(from start: Date, fmt: DateFormatter) async -> [[String: Any]] {
+        guard let type = HKObjectType.quantityType(forIdentifier: .stepCount) else { return [] }
+        return await withCheckedContinuation { cont in
+            let q = HKStatisticsCollectionQuery(quantityType: type, quantitySamplePredicate: HKQuery.predicateForSamples(withStart: start, end: nil),
+                                                options: .cumulativeSum, anchorDate: start, intervalComponents: DateComponents(day: 1))
+            q.initialResultsHandler = { _, results, _ in
+                var rows: [[String: Any]] = []
+                results?.enumerateStatistics(from: start, to: Date()) { stat, _ in
+                    let n = stat.sumQuantity()?.doubleValue(for: .count()) ?? 0
+                    if n > 0 { rows.append(["d": fmt.string(from: stat.startDate), "n": n.rounded()]) }
+                }
+                cont.resume(returning: rows)
+            }
+            store.execute(q)
+        }
     }
 
     /// Every sample of `type` matching `predicate`, oldest first.

@@ -677,6 +677,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('Asks for your body weight when a workout starts. Off starts the session straight away.')}>
           <Switch checked={S.weighIn !== false} onChange={v => update(s => { s.weighIn = v })} />
         </Row>}
+        {/* The daily-form check-in (v1.4.5, lib/daily-form.js): asked once on its own, then this. */}
+        {on('health') && <Row icon="moon" iconTint="var(--indigo)" title={t('Daily check-in')}
+          subtitle={t('Sleep, energy, soreness and stress in four taps before you train. On a rough day it offers to go lighter.')}>
+          <Switch aria-label={t('Daily check-in')} checked={S.dailyForm === true} onChange={v => update(s => { s.dailyForm = v })} />
+        </Row>}
         {(wakeOK || !MOBILE) && (
           <Row icon="phoneScreen" iconTint="var(--yellow)" title={t('Keep screen awake')}
             subtitle={wakeOK ? t('The screen stays on while a workout is running, so you don’t have to unlock your phone between sets.') : t('Not supported in this browser.')}>
@@ -2139,7 +2144,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
     } catch { toast(c.failed) }
     setBusy(false)
   }
-  const reading = h.readHr || h.readWeight || h.readBody
+  const reading = h.readHr || h.readWeight || h.readBody || h.readVitals
 
   // Off can mean two things for what is already there, so it asks; closing the sheet keeps it on.
   const askOff = () => menuSheet({
@@ -2172,9 +2177,21 @@ function HealthConnectCard({ S, toast, android, page = false }) {
         subtitle={ios ? t('Body fat and lean mass, as your scale saved them. Shown under Body measurements, never mixed into what you log.') : t('Body fat, lean mass, bone mass and BMR, as your scale saved them. Shown under Body measurements, never mixed into what you log.')}>
         <Switch checked={!!h.readBody} disabled={busy} onChange={toggleRead('body')} />
       </Row>
+      {/* Vitals (v1.4.5, lib/vitals.js): what the Daily form card and the check-in use. Explained
+          before the system's own dialog, which asks for each of the four on its own. */}
+      <Row icon="moon" iconTint="var(--indigo)" title={t('Sleep, resting heart rate, HRV and steps')}
+        subtitle={t('For the Daily form card in Stats and your check-in. Read on this phone only, never sent anywhere.')}>
+        <Switch checked={!!h.readVitals} disabled={busy} onChange={v => (v
+          ? confirmSheet({ title: t('Read your vitals?'),
+            message: ios
+              ? t('openGym asks Apple Health for your sleep, resting heart rate, heart rate variability and steps. Allow the ones you like. They stay on this phone, in openGym’s own file, and never go to a server.')
+              : t('openGym asks Health Connect for your sleep, resting heart rate, heart rate variability and steps. Allow the ones you like. They stay on this phone, in openGym’s own file, and never go to a server.'),
+            confirmText: t('Continue'), onConfirm: () => toggleRead('vitals')(true) })
+          : toggleRead('vitals')(false))} />
+      </Row>
       {reading && h.readError === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron"
-        onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : 'body')(true)} />}
+        onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : 'vitals')(true)} />}
       {(h.on || reading) && <Row icon="list" iconTint="var(--blue)" title={c.open}
         accessory="chevron" onClick={() => openHealthConnect().catch(() => {})} />}
     </Section>

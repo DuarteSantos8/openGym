@@ -19,6 +19,8 @@
 //
 // The web build never gets here (MOBILE is a build-time flag).
 import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp } from './health-read.js'
+import { mergeVitals } from './vitals.js'
+import { isoOf } from './format.js'
 import { MOBILE, nativePlatform, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds, goneIds } from './health-connect.js'
 import { isOn } from './modules.js'
@@ -27,7 +29,7 @@ import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, kcalAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0 }
+const OFF = { on: false, kcalAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {} }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -52,7 +54,7 @@ export async function loadHealth() {
   if (cached) return cached
   const f = await readJsonFile(HEALTH_FILE)
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {})
-  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), body: map(f.body) } : { ...OFF }
+  cached = f && typeof f === 'object' ? { ...OFF, ...f, written: map(f.written), seen: map(f.seen), hrTried: map(f.hrTried), body: map(f.body), vitals: map(f.vitals) } : { ...OFF }
   return cached
 }
 const saveHealth = h => { cached = h; return writeJsonFile(HEALTH_FILE, h) }
@@ -263,13 +265,18 @@ let applyRef = null
 let readRunning = null
 let lastWeightRead = 0
 let lastBodyRead = 0
+let lastVitalsRead = 0
 
 // The hub's names for what the body-composition switch reads; Apple Health has the first two.
 export const BODY_READS = ['bodyFat', 'leanMass', 'boneMass', 'bmr']
-const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : 'readWeight')
+// Vitals (v1.4.5, lib/vitals.js): sleep, resting heart rate, heart rate variability and steps, one
+// switch for the four, each its own permission in the store's dialog.
+export const VITAL_READS = ['sleep', 'restingHeartRate', 'hrv', 'steps']
+const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : kind === 'vitals' ? 'readVitals' : 'readWeight')
+const anyRead = h => !!(h && (h.readHr || h.readWeight || h.readBody || h.readVitals))
 
 /**
- * Turns one of the reads on (`kind`: 'hr' | 'weight' | 'body'): asks for that read permission
+ * Turns one of the reads on (`kind`: 'hr' | 'weight' | 'body' | 'vitals'): asks for that read permission
  * only, then reads once. Resolves with { ok, reason }; reason 'denied' when it was not granted.
  */
 export async function enableRead(kind, getState, { apply = null } = {}) {
@@ -277,10 +284,10 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
   if (!p) return { ok: false, reason: 'unsupported' }
   const st = await p.HC.status().catch(() => ({ status: 'unsupported' }))
   if (st.status !== 'available') return { ok: false, reason: st.status }
-  const perm = kind === 'hr' ? 'heartRate' : kind === 'body' ? 'body' : 'weight'
+  const perm = kind === 'hr' ? 'heartRate' : kind === 'body' ? 'body' : kind === 'vitals' ? 'vitals' : 'weight'
   // The history permission only where Health Connect has it (status says so); Apple Health has none.
   const history = kind === 'weight' && p.platform !== 'ios' && st.history === true
-  const read = kind === 'body' ? BODY_READS : history ? [perm, 'history'] : [perm]
+  const read = kind === 'body' ? BODY_READS : kind === 'vitals' ? VITAL_READS : history ? [perm, 'history'] : [perm]
   const res = await p.HC.requestPermissions({ read, write: [] }).catch(() => null)
   // Apple Health never says whether reading was allowed (that it was refused is itself private):
   // `read` is then missing, and a refusal just reads nothing. Body composition: any one of them.
@@ -300,7 +307,7 @@ export async function disableRead(kind) {
   if (readRunning) await readRunning.catch(() => {})
   const h = await loadHealth()
   const out = kind === 'hr' ? { ...h, readHr: false, hrTried: {} } : { ...h, [readKey(kind)]: false }
-  if (!out.readHr && !out.readWeight && !out.readBody) out.readError = null
+  if (!anyRead(out)) out.readError = null
   await saveHealth(out)
   told(out)
   return out
@@ -313,7 +320,7 @@ export async function disableRead(kind) {
  * `force`). The log changes only when something new came in.
  */
 export function readHealth(getState, { force = false, now = Date.now(), apply = null } = {}) {
-  if (!MOBILE || !cached || !(cached.readHr || cached.readWeight || cached.readBody)) return Promise.resolve(cached)
+  if (!MOBILE || !cached || !anyRead(cached)) return Promise.resolve(cached)
   if (!isOn(getState?.(), 'health')) return Promise.resolve(cached)   // paused with the Health module
   if (readRunning) return readRunning
   readRunning = readOnce(getState, force, now, apply || applyRef).finally(() => { readRunning = null })
@@ -393,6 +400,18 @@ async function readOnce(getState, force, now, applyFn) {
       if (body) h.body = body
       const newest = records.reduce((m, r) => Math.max(m, Number(r?.t) || 0), 0)
       if (newest > h.bCursor) h.bCursor = newest
+    } catch (e) { if (!error) fail(e) }
+  }
+
+  // Vitals: the last two days again (today's steps are still growing, last night's sleep may have
+  // synced late from a watch), the month before the first time. Into this phone's file only.
+  if (h.readVitals && (force ? now - lastVitalsRead >= RESUME_EVERY_MS : now - lastVitalsRead >= READ_EVERY_MS)) {
+    try {
+      const known = Object.keys(h.vitals?.days || {}).length > 0
+      const from = isoOf(new Date(now - (known ? 2 : 30) * 24 * 3600e3))
+      const res = await p.HC.readVitals({ from })
+      lastVitalsRead = now
+      h.vitals = mergeVitals(h.vitals, res || {}, { from, today: isoOf(new Date(now)) })
     } catch (e) { if (!error) fail(e) }
   }
 
