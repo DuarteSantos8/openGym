@@ -4355,4 +4355,9 @@ export default {
   "Rest before the next exercise": "Nghỉ trước bài tiếp theo",
   "After the last set of an exercise, while you walk to the next machine.": "Sau hiệp cuối của một bài, trong lúc bạn đi sang máy tiếp theo.",
   "The break after this exercise’s last set, to change machines before the next one.": "Quãng nghỉ sau hiệp cuối của bài này, để đổi máy trước bài tiếp theo.",
+  "Archive": "Lưu trữ",
+  "Folder": "Thư mục",
+  "Folder name": "Tên thư mục",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Nhóm giáo án theo giai đoạn hoặc mục tiêu. Cái cũ cho vào Lưu trữ, thư mục đó luôn thu gọn.",
+  "No folder": "Không có thư mục",
 };

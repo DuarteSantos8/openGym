@@ -4390,4 +4390,9 @@ export default {
   "Rest before the next exercise": "Sonraki egzersizden önce dinlenme",
   "After the last set of an exercise, while you walk to the next machine.": "Bir egzersizin son setinden sonra, sıradaki makineye yürürken.",
   "The break after this exercise’s last set, to change machines before the next one.": "Bu egzersizin son setinden sonraki mola, sıradakinden önce makine değiştirmek için.",
+  "Archive": "Arşiv",
+  "Folder": "Klasör",
+  "Folder name": "Klasör adı",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Rutinleri bloğa ya da hedefe göre grupla. Eskileri Arşiv’e koy, o kapalı kalır.",
+  "No folder": "Klasör yok",
 }

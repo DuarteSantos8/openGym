@@ -4383,4 +4383,9 @@ export default {
   "Rest before the next exercise": "下一個動作前的休息",
   "After the last set of an exercise, while you walk to the next machine.": "一個動作的最後一組之後，走去下一台器材的時間。",
   "The break after this exercise’s last set, to change machines before the next one.": "這個動作最後一組之後的休息，好在下一個動作前換器材。",
+  "Archive": "封存",
+  "Folder": "資料夾",
+  "Folder name": "資料夾名稱",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "依訓練週期或目標替計畫分組。舊的放進「封存」，它預設收合。",
+  "No folder": "不放資料夾",
 }

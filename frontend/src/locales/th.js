@@ -4401,4 +4401,9 @@ export default {
   "Rest before the next exercise": "พักก่อนท่าถัดไป",
   "After the last set of an exercise, while you walk to the next machine.": "หลังเซ็ตสุดท้ายของท่า ระหว่างเดินไปเครื่องถัดไป",
   "The break after this exercise’s last set, to change machines before the next one.": "ช่วงพักหลังเซ็ตสุดท้ายของท่านี้ เพื่อย้ายเครื่องก่อนท่าถัดไป",
+  "Archive": "คลัง",
+  "Folder": "โฟลเดอร์",
+  "Folder name": "ชื่อโฟลเดอร์",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "จัดกลุ่มรูทีนตามช่วงหรือเป้าหมาย อันเก่าเก็บไว้ในคลัง ซึ่งจะพับไว้",
+  "No folder": "ไม่มีโฟลเดอร์",
 }

@@ -2260,11 +2260,12 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .sharew .share-opts{flex-direction:column}
 .sharew .share-opts .seg{flex:none}
 .sharew-h{margin:2px 2px 8px}
-.sharew-els{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.sharew-els,.folder-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.folder-chips{margin-top:10px}
 /* On reads as a quiet tint of the accent, off as plain and dimmed: eleven solid green pills
    shouted louder than the card they configure. */
-.sharew-els .chip{background:var(--surface-2);color:var(--label-2);text-transform:none;min-height:36px}
-.sharew-els .chip.on{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);font-weight:500}
+.sharew-els .chip,.folder-chips .chip{background:var(--surface-2);color:var(--label-2);text-transform:none;min-height:36px}
+.sharew-els .chip.on,.folder-chips .chip.on{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);font-weight:500}
 @media (prefers-reduced-motion:reduce){.sharew-thumb,.sharew-add{transition:none}}
 /* The finish summary's way out and its Share, side by side right under the numbers. */
 .fin-actions{display:flex;gap:10px}
@@ -3774,3 +3775,14 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cardio-bar.now.met{background:var(--acc)}
 .cardio-goal{position:absolute;inset-inline:0;bottom:calc(var(--g,0) * 100%);border-top:1.5px dashed color-mix(in srgb,var(--label) 35%,transparent);pointer-events:none}
 .cardio-axis{margin-top:4px}
+
+/* Plan: routines in folders (1.4.5, Q11). The folder is a quiet header that folds its routines
+   away; the chevron turns with it. */
+.plan-folder{display:flex;align-items:center;gap:10px;width:100%;padding:14px 4px 8px;color:var(--label-2);text-align:start;font-size:var(--fs-subhead);font-weight:600}
+.plan-folder .icn{flex:none}
+.plan-folder .grow{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--label)}
+.plan-folder .n{font-weight:400;font-variant-numeric:tabular-nums}
+.plan-folder .chev{transition:transform var(--fast) var(--ease)}
+.plan-folder[aria-expanded="true"] .chev{transform:rotate(90deg)}
+[dir="rtl"] .plan-folder[aria-expanded="false"] .chev{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.plan-folder .chev{transition:none}}

@@ -4355,4 +4355,9 @@ export default {
   "Rest before the next exercise": "Pauza před dalším cvikem",
   "After the last set of an exercise, while you walk to the next machine.": "Po poslední sérii cviku, než dojdeš k dalšímu stroji.",
   "The break after this exercise’s last set, to change machines before the next one.": "Pauza po poslední sérii tohoto cviku, abys stihl přejít k dalšímu stroji.",
+  "Archive": "Archiv",
+  "Folder": "Složka",
+  "Folder name": "Název složky",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Seskup rutiny podle bloku nebo cíle. Staré dej do Archivu, ten zůstane sbalený.",
+  "No folder": "Bez složky",
 }

@@ -4410,4 +4410,9 @@ export default {
   "Rest before the next exercise": "Pause vor der nächsten Übung",
   "After the last set of an exercise, while you walk to the next machine.": "Nach dem letzten Satz einer Übung, während du zum nächsten Gerät gehst.",
   "The break after this exercise’s last set, to change machines before the next one.": "Die Pause nach dem letzten Satz dieser Übung, um vor der nächsten das Gerät zu wechseln.",
+  "Archive": "Archiv",
+  "Folder": "Ordner",
+  "Folder name": "Ordnername",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Ordne Routinen nach Block oder Ziel. Alte kommen ins Archiv, das bleibt zugeklappt.",
+  "No folder": "Kein Ordner",
 }

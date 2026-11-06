@@ -4445,4 +4445,9 @@ export default {
   "Rest before the next exercise": "راحة قبل التمرين التالي",
   "After the last set of an exercise, while you walk to the next machine.": "بعد آخر مجموعة من التمرين، وأنت في طريقك إلى الجهاز التالي.",
   "The break after this exercise’s last set, to change machines before the next one.": "الاستراحة بعد آخر مجموعة من هذا التمرين، لتنتقل إلى جهاز آخر قبل التالي.",
+  "Archive": "الأرشيف",
+  "Folder": "مجلد",
+  "Folder name": "اسم المجلد",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "جمّع الروتينات حسب المرحلة أو الهدف. ضع القديمة في الأرشيف، فهو يبقى مطويًا.",
+  "No folder": "بلا مجلد",
 }

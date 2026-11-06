@@ -4469,4 +4469,9 @@ export default {
   "Rest before the next exercise": "পরের ব্যায়ামের আগে বিশ্রাম",
   "After the last set of an exercise, while you walk to the next machine.": "একটি ব্যায়ামের শেষ সেটের পরে, পরের মেশিনে যাওয়ার সময়।",
   "The break after this exercise’s last set, to change machines before the next one.": "এই ব্যায়ামের শেষ সেটের পরের বিরতি, পরেরটার আগে মেশিন বদলানোর জন্য।",
+  "Archive": "আর্কাইভ",
+  "Folder": "ফোল্ডার",
+  "Folder name": "ফোল্ডারের নাম",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "রুটিনগুলো ব্লক বা লক্ষ্য অনুযায়ী সাজান। পুরোনোগুলো আর্কাইভে রাখুন, সেটা গুটানো থাকে।",
+  "No folder": "কোনো ফোল্ডার নেই",
 }

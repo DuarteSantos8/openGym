@@ -4393,4 +4393,9 @@ export default {
   "Rest before the next exercise": "Pihenő a következő gyakorlat előtt",
   "After the last set of an exercise, while you walk to the next machine.": "Egy gyakorlat utolsó sorozata után, amíg átsétálsz a következő géphez.",
   "The break after this exercise’s last set, to change machines before the next one.": "A szünet a gyakorlat utolsó sorozata után, hogy gépet válts a következő előtt.",
+  "Archive": "Archívum",
+  "Folder": "Mappa",
+  "Folder name": "Mappa neve",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Csoportosítsd a rutinokat blokk vagy cél szerint. A régiek az Archívumba mennek, az összecsukva marad.",
+  "No folder": "Nincs mappa",
 }

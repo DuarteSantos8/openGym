@@ -50,6 +50,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Bikes, rowers, cross trainers and steppers get a resistance level (1 to 30) where a treadmill has its incline: in the set row, the focus view, the routine as a starting point, and in the history as "Level 8" (thanks mimesis_98178 and shadowzgz on Discord).
 - The compact workout layout shows a small still of each exercise beside its name, so you can tell the machines apart at a glance; a tap opens How to do it (thanks imacrackers on Discord).
 - Rest before the next exercise: give the walk to the next machine its own break, for every exercise in Settings → Workout → Rest, or per exercise in its settings. Untouched, it rests like the work sets, as before (D#487, thanks @YannLoreth).
+- Folders for routines: give a routine a folder in its settings (a block, a goal, or Archive) and Plan lists it under a header that folds away. Archive starts folded, and each folder stays open or shut the way you left it (thanks adam934912, zkssyth, krakenkitty88 and @spantelis03).
 - Stats: under Lifted in total you now get your all-time workouts, sets and hours, plus a sense of scale ("About 8× a blue whale", thanks seconds21ive on Discord).
 - Stats: Cardio this week adds up your cardio minutes, with the seven weeks before it and an optional weekly goal of 75, 150 or 300 minutes (D#84, thanks @turdutra).
 - Searching "plank" opens on the front plank instead of jack plank and five cousins, and "crunch" and "row" open on the everyday one too (thanks ad08008 on Discord).

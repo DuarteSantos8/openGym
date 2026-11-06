@@ -4354,4 +4354,9 @@ export default {
   "Rest before the next exercise": "Istirahat sebelum latihan berikutnya",
   "After the last set of an exercise, while you walk to the next machine.": "Setelah set terakhir sebuah latihan, selagi kamu pindah ke mesin berikutnya.",
   "The break after this exercise’s last set, to change machines before the next one.": "Jeda setelah set terakhir latihan ini, untuk pindah mesin sebelum yang berikutnya.",
+  "Archive": "Arsip",
+  "Folder": "Folder",
+  "Folder name": "Nama folder",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Kelompokkan rutinitas per blok atau tujuan. Yang lama taruh di Arsip, itu tetap terlipat.",
+  "No folder": "Tanpa folder",
 };

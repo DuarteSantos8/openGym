@@ -4390,4 +4390,9 @@ export default {
   "Rest before the next exercise": "Repos avant l’exercice suivant",
   "After the last set of an exercise, while you walk to the next machine.": "Après la dernière série d’un exercice, le temps d’aller à la machine suivante.",
   "The break after this exercise’s last set, to change machines before the next one.": "La pause après la dernière série de cet exercice, pour changer de machine avant le suivant.",
+  "Archive": "Archives",
+  "Folder": "Dossier",
+  "Folder name": "Nom du dossier",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Range tes routines par bloc ou par objectif. Les anciennes vont dans Archives, qui reste replié.",
+  "No folder": "Aucun dossier",
 }

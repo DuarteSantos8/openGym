@@ -4390,4 +4390,9 @@ export default {
   "Rest before the next exercise": "다음 운동 전 휴식",
   "After the last set of an exercise, while you walk to the next machine.": "한 운동의 마지막 세트 후, 다음 기구로 가는 동안이에요.",
   "The break after this exercise’s last set, to change machines before the next one.": "이 운동의 마지막 세트 후 쉬는 시간이에요. 다음 운동 전에 기구를 바꿔요.",
+  "Archive": "보관함",
+  "Folder": "폴더",
+  "Folder name": "폴더 이름",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "루틴을 블록이나 목표별로 묶어 보세요. 오래된 건 보관함에 넣으면 접힌 채로 있어요.",
+  "No folder": "폴더 없음",
 }

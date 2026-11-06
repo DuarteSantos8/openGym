@@ -4390,4 +4390,9 @@ export default {
   "Rest before the next exercise": "Descanso antes del siguiente ejercicio",
   "After the last set of an exercise, while you walk to the next machine.": "Tras la última serie de un ejercicio, mientras vas a la siguiente máquina.",
   "The break after this exercise’s last set, to change machines before the next one.": "La pausa tras la última serie de este ejercicio, para cambiar de máquina antes del siguiente.",
+  "Archive": "Archivo",
+  "Folder": "Carpeta",
+  "Folder name": "Nombre de la carpeta",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Agrupa rutinas por bloque o por objetivo. Las viejas, a Archivo, que se queda plegado.",
+  "No folder": "Sin carpeta",
 }

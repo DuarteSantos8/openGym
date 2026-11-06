@@ -4390,4 +4390,9 @@ export default {
   "Rest before the next exercise": "下一个动作前的休息",
   "After the last set of an exercise, while you walk to the next machine.": "一个动作的最后一组之后，走去下一台器械的时间。",
   "The break after this exercise’s last set, to change machines before the next one.": "这个动作最后一组之后的休息，好在下一个动作前换器械。",
+  "Archive": "归档",
+  "Folder": "文件夹",
+  "Folder name": "文件夹名称",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "按训练周期或目标给计划分组。旧的放进“归档”，它默认收起。",
+  "No folder": "不放文件夹",
 }

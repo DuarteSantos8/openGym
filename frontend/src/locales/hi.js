@@ -4390,4 +4390,9 @@ export default {
   "Rest before the next exercise": "अगली एक्सरसाइज़ से पहले आराम",
   "After the last set of an exercise, while you walk to the next machine.": "किसी एक्सरसाइज़ के आख़िरी सेट के बाद, जब आप अगली मशीन तक जाते हैं।",
   "The break after this exercise’s last set, to change machines before the next one.": "इस एक्सरसाइज़ के आख़िरी सेट के बाद का ब्रेक, अगली से पहले मशीन बदलने के लिए।",
+  "Archive": "आर्काइव",
+  "Folder": "फ़ोल्डर",
+  "Folder name": "फ़ोल्डर का नाम",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "रूटीन को ब्लॉक या लक्ष्य के हिसाब से समूह में रखें। पुराने आर्काइव में डालें, वह बंद रहता है।",
+  "No folder": "कोई फ़ोल्डर नहीं",
 }

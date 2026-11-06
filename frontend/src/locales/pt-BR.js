@@ -2950,6 +2950,7 @@ export const PT_BR_OVERRIDES = {
   "Cardio this week": "Cardio nesta semana",
   "After the last set of an exercise, while you walk to the next machine.": "Depois da última série de um exercício, enquanto você vai para o próximo aparelho.",
   "The break after this exercise’s last set, to change machines before the next one.": "A pausa depois da última série deste exercício, para trocar de aparelho antes do próximo.",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Agrupe rotinas por bloco ou por objetivo. As antigas vão para Arquivo, que fica fechado.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

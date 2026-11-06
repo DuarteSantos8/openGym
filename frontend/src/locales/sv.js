@@ -4437,4 +4437,9 @@ export default {
   "Rest before the next exercise": "Vila före nästa övning",
   "After the last set of an exercise, while you walk to the next machine.": "Efter sista setet i en övning, medan du går till nästa maskin.",
   "The break after this exercise’s last set, to change machines before the next one.": "Pausen efter övningens sista set, för att byta maskin före nästa.",
+  "Archive": "Arkiv",
+  "Folder": "Mapp",
+  "Folder name": "Mappnamn",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Gruppera rutiner efter block eller mål. Gamla åker till Arkiv, som förblir hopfällt.",
+  "No folder": "Ingen mapp",
 }

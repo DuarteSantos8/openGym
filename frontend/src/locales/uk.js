@@ -4387,4 +4387,9 @@ export default {
   "Rest before the next exercise": "Відпочинок перед наступною вправою",
   "After the last set of an exercise, while you walk to the next machine.": "Після останнього підходу вправи, поки йдеш до наступного тренажера.",
   "The break after this exercise’s last set, to change machines before the next one.": "Пауза після останнього підходу цієї вправи, щоб перейти до іншого тренажера.",
+  "Archive": "Архів",
+  "Folder": "Тека",
+  "Folder name": "Назва теки",
+  "Group routines by block or by goal. Put old ones in Archive, it stays folded.": "Групуй програми за блоками чи цілями. Старі клади в Архів, він лишається згорнутим.",
+  "No folder": "Без теки",
 }
