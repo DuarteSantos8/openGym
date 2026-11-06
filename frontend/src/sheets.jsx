@@ -71,7 +71,7 @@ import { isBackoff, backoffWeights } from './lib/backoff.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
 import { MOBILE, shareExport, shareExportBlob } from './lib/mobile.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
-import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incline.js'
+import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP, clampLevel, levelFits, LEVEL_MAX } from './lib/incline.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
@@ -2486,7 +2486,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     }
     // The treadmill's grade, only when it has one, so a flat slot keeps the shape it had.
     const incline = clampIncline(c.incline)
-    if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...withNote, ...withRest, ...withSubs })
+    const level = clampLevel(c.level)
+    if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...withNote, ...withRest, ...withSubs })
     else if (mode === 'time') saveAs({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
@@ -2560,6 +2561,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             take it from here when last time had none. */}
         {(inclineFits(ex) || c.incline > 0) && <Stepper label={t('Incline (%)')} value={c.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX}
           onChange={v => setC(x => ({ ...x, incline: clampIncline(v) }))} />}
+        {/* The resistance level it starts at on a bike, a rower or a cross trainer. */}
+        {(levelFits(ex) || c.level > 0) && <Stepper label={t('Level')} value={c.level || 0} step={1} decimal={false} max={LEVEL_MAX}
+          onChange={v => setC(x => ({ ...x, level: clampLevel(v) }))} />}
       </> : mode === 'time' ? <>
         <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Seconds')} value={c.sec} step={5} decimal={false} onChange={v => setC(x => ({ ...x, sec: v }))} />

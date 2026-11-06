@@ -4385,4 +4385,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "Haftada 150 dakika, sağlık tavsiyelerinin hep tekrarladığı sayı. Kendininkini seç ya da hiç seçme.",
   "{0} h": "{0} sa",
   "{0} of {1} min": "{0} / {1} dk",
+  "Level": "Seviye",
+  "Level {0}": "Seviye {0}",
 }

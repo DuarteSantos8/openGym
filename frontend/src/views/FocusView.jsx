@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { exOr } from '../lib/exercises.js'
-import { clampIncline, hasIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from '../lib/incline.js'
+import { clampIncline, INCLINE_MAX, INCLINE_STEP, clampLevel, LEVEL_MAX, cardioCol } from '../lib/incline.js'
 import { exerciseNameClass, exerciseNameFor, t } from '../lib/i18n.js'
 import { fmtDate, fmtNum, fmtPlate } from '../lib/format.js'
 import { EFFORT, effortOf, modeOf } from '../lib/history.js'
@@ -349,8 +349,11 @@ export default function FocusView({
             <Stepper label={speedUnit === 'mph' ? t('Speed (mph)') : t('Speed (km/h)')} ariaLabel="speed" value={toSpeed(set.speed || 0, speedUnit)} step={0.5} disabled={readOnly}
               onChange={value => onField(setIdx, 'speed', fromSpeed(value, speedUnit))} />
             {/* The treadmill's grade, where the exercise has one (lib/incline.js). */}
-            {(inclineFits(ex) || entry.sets.some(hasIncline)) && <Stepper label={t('Incline (%)')} ariaLabel="incline" value={set.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX} disabled={readOnly}
+            {cardioCol(ex, entry.sets) === 'incline' && <Stepper label={t('Incline (%)')} ariaLabel="incline" value={set.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX} disabled={readOnly}
               onChange={value => onField(setIdx, 'incline', clampIncline(value))} />}
+            {/* A bike's, a rower's or a cross trainer's resistance level instead. */}
+            {cardioCol(ex, entry.sets) === 'level' && <Stepper label={t('Level')} ariaLabel="level" value={set.level || 0} step={1} decimal={false} max={LEVEL_MAX} disabled={readOnly}
+              onChange={value => onField(setIdx, 'level', clampLevel(value))} />}
           </> : <>
             <Stepper label={t('Load ({0})', S.unit)} ariaLabel="load" value={set.w || 0} step={loadStep} onStep={stepLoad} disabled={readOnly}
               onChange={value => onField(setIdx, 'w', value)} />

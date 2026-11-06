@@ -4350,4 +4350,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 minut týdně je číslo, které zdravotní rady pořád opakují. Vyber si své, nebo žádné.",
   "{0} h": "{0} h",
   "{0} of {1} min": "{0} z {1} min",
+  "Level": "Úroveň",
+  "Level {0}": "Úroveň {0}",
 }

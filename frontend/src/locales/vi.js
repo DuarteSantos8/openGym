@@ -4350,4 +4350,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 phút mỗi tuần là con số mà lời khuyên sức khỏe cứ nhắc mãi. Chọn mức của bạn, hoặc không chọn.",
   "{0} h": "{0} giờ",
   "{0} of {1} min": "{0} / {1} phút",
+  "Level": "Mức",
+  "Level {0}": "Mức {0}",
 };

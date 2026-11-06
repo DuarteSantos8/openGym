@@ -4385,4 +4385,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "हफ़्ते में 150 मिनट, यही संख्या सेहत की सलाहें दोहराती रहती हैं। अपना चुनें, या कोई नहीं।",
   "{0} h": "{0} घं",
   "{0} of {1} min": "{1} में से {0} मिनट",
+  "Level": "लेवल",
+  "Level {0}": "लेवल {0}",
 }

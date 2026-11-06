@@ -4349,4 +4349,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 menit seminggu adalah angka yang terus diulang saran kesehatan. Pilih punyamu, atau tidak sama sekali.",
   "{0} h": "{0} j",
   "{0} of {1} min": "{0} dari {1} mnt",
+  "Level": "Level",
+  "Level {0}": "Level {0}",
 };

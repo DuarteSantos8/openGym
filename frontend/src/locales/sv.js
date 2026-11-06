@@ -4432,4 +4432,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 minuter i veckan är siffran hälsoråden tjatar om. Välj din, eller ingen.",
   "{0} h": "{0} h",
   "{0} of {1} min": "{0} av {1} min",
+  "Level": "Nivå",
+  "Level {0}": "Nivå {0}",
 }

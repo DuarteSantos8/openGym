@@ -4388,4 +4388,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "Heti 150 perc: ezt a számot ismétlik az egészségügyi tanácsok. Válaszd a sajátod, vagy egyiket sem.",
   "{0} h": "{0} ó",
   "{0} of {1} min": "{0} / {1} perc",
+  "Level": "Fokozat",
+  "Level {0}": "{0}. fokozat",
 }

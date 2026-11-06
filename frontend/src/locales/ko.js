@@ -4385,4 +4385,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "주 150분은 건강 조언에서 늘 나오는 숫자예요. 내 목표를 고르거나, 없어도 돼요.",
   "{0} h": "{0}시간",
   "{0} of {1} min": "{1}분 중 {0}분",
+  "Level": "강도",
+  "Level {0}": "강도 {0}",
 }

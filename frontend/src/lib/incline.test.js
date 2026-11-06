@@ -1,7 +1,7 @@
 // Treadmill incline per cardio set (Discord "Add incline level for treadmill"): optional on the
 // set, offered where a grade means something, and carried everywhere a cardio set is read back.
 import { describe, it, expect } from 'vitest'
-import { INCLINE_MAX, clampIncline, inclineFits, hasIncline, inclineFrom } from './incline.js'
+import { INCLINE_MAX, clampIncline, inclineFits, hasIncline, inclineFrom, LEVEL_MAX, clampLevel, levelFits, levelFrom, cardioCol } from './incline.js'
 import { EXIDX } from './exercises.js'
 import { setLabel, buildSets, insertWarmupRow, copyRowAt, exLine } from './history.js'
 import { buildPlanBundle, parsePlan } from './plan-share.js'
@@ -157,5 +157,34 @@ describe('importing an incline', () => {
   it('never puts a grade on a lifting set', () => {
     const csv = [head, '2026/01/01,1:11 PM,Push Day,,11,11,Chin Up,No,1,Normal,11,11,0,,5,,,'].join('\n')
     expect(parseWorkoutCSV(csv, { unit: 'kg' }).workouts[0].entries[0].sets[0]).toEqual({ w: 11, r: 11, done: true })
+  })
+})
+
+// Discord 2026-11-05: a resistance level for the machines that have a knob instead of a grade.
+describe('resistance level', () => {
+  it('fits bikes, rowers, ellipticals and steppers, never a treadmill, a run or a rope', () => {
+    const fits = n => levelFits({ n, eq: '' })
+    expect(['stationary bike', 'rowing machine', 'elliptical', 'cross trainer', 'lever stepper', 'ski erg'].every(fits)).toBe(true)
+    expect(['run on treadmill', 'jump rope', 'riding outdoor bicycle', 'walking'].some(fits)).toBe(false)
+    expect(levelFits({ n: 'run on treadmill', eq: 'stationary bike' })).toBe(false)
+    expect(levelFits({ n: 'stationary bike run v. 3', eq: 'stationary bike' })).toBe(true)
+  })
+  it('stores a whole level from 1 to 30, and nothing for 0 or a cleared field', () => {
+    expect(clampLevel(8.4)).toBe(8)
+    expect(clampLevel(99)).toBe(LEVEL_MAX)
+    expect(clampLevel(0)).toBeNull()
+    expect(clampLevel('')).toBeNull()
+    expect(levelFrom({ level: 7 })).toEqual({ level: 7 })
+    expect(levelFrom({})).toEqual({})
+  })
+  it('picks the third cardio column: what the rows carry first, then the machine', () => {
+    expect(cardioCol({ n: 'elliptical machine walk', eq: 'elliptical machine' })).toBe('level')
+    expect(cardioCol({ n: 'elliptical machine walk', eq: 'elliptical machine' }, [{ incline: 5 }])).toBe('incline')
+    expect(cardioCol({ n: 'run on treadmill', eq: 'stationary bike' })).toBe('incline')
+    expect(cardioCol({ n: 'jump rope', eq: 'rope' })).toBeNull()
+  })
+  it('reads in the history and in the routine line', () => {
+    expect(setLabel('2138', { min: 20, speed: 25, level: 8, done: true }, { mode: 'cardio' })).toBe('20 min @ 25 km/h · Level 8')
+    expect(exLine({ id: '2138', mode: 'cardio', sets: 2, min: 20, speed: 25, level: 6 }, 'kg')).toContain('Level 6')
   })
 })

@@ -4396,4 +4396,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 นาทีต่อสัปดาห์คือตัวเลขที่คำแนะนำด้านสุขภาพพูดซ้ำอยู่เสมอ เลือกของคุณเอง หรือไม่ต้องตั้งก็ได้",
   "{0} h": "{0} ชม.",
   "{0} of {1} min": "{0} จาก {1} นาที",
+  "Level": "ระดับ",
+  "Level {0}": "ระดับ {0}",
 }

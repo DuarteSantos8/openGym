@@ -4385,4 +4385,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 minutes par semaine, c’est le chiffre que répètent les conseils santé. Choisis le tien, ou aucun.",
   "{0} h": "{0} h",
   "{0} of {1} min": "{0} sur {1} min",
+  "Level": "Niveau",
+  "Level {0}": "Niveau {0}",
 }

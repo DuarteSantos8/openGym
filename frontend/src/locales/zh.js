@@ -4385,4 +4385,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "每周 150 分钟是健康建议反复提到的数字。选你自己的，或者不设。",
   "{0} h": "{0} 小时",
   "{0} of {1} min": "{0} / {1} 分钟",
+  "Level": "阻力档",
+  "Level {0}": "阻力 {0} 档",
 }

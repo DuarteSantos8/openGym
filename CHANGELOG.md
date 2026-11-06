@@ -47,6 +47,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Switch each part on or off: title, date, duration, volume, sets, PRs, exercises, muscle map, streak, heart rate and the logo. Stories keep clear of Instagram's own buttons, and there is a 4:5 size for the feed next to the 9:16 story and the square.
 
 **Small things you asked for**
+- Bikes, rowers, cross trainers and steppers get a resistance level (1 to 30) where a treadmill has its incline: in the set row, the focus view, the routine as a starting point, and in the history as "Level 8" (thanks mimesis_98178 and shadowzgz on Discord).
 - Stats: under Lifted in total you now get your all-time workouts, sets and hours, plus a sense of scale ("About 8× a blue whale", thanks seconds21ive on Discord).
 - Stats: Cardio this week adds up your cardio minutes, with the seven weeks before it and an optional weekly goal of 75, 150 or 300 minutes (D#84, thanks @turdutra).
 - Searching "plank" opens on the front plank instead of jack plank and five cousins, and "crunch" and "row" open on the everyday one too (thanks ad08008 on Discord).

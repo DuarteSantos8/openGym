@@ -15,7 +15,7 @@ import { effectiveRoutines, effectiveRoutineIds, lastEntryFor, bestWeightFor, be
 import { cleanNum, fmtNum, fmtPlate, fmtVol, exerciseNameText, fmtDate, fmtDaysAgo, todayISO, exCount, DAYN } from '../lib/format.js'
 import { speedUnitOf, toSpeed, fromSpeed } from '../lib/speed.js'
 import { byDistance, withCardioBy, distUnitOf, distLabel, toDist, fromDist, distanceKmOf, settleSpeed } from '../lib/distance.js'
-import { clampIncline, hasIncline, inclineFits, inclineFrom, INCLINE_STEP } from '../lib/incline.js'
+import { clampIncline, inclineFrom, INCLINE_STEP, clampLevel, levelFrom, cardioCol } from '../lib/incline.js'
 import { beep, vibrate, unlock } from '../lib/sound.js'
 import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -388,8 +388,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // Cardio's third column is the treadmill's incline (lib/incline.js), on the exercises that have
   // one and on any whose rows already carry a grade. `opt` again: a cleared field is no incline,
   // and `store` keeps whatever is typed on the half percent between 0 and 40.
-  const inclineCol = cardio && (inclineFits(ex) || entry.sets.some(hasIncline))
-    ? { f: 'incline', step: INCLINE_STEP, dec: true, opt: true, hd: t('Incline (%)'), store: clampIncline } : null
+  // A bike, a rower or a cross trainer gets its resistance level there instead (cardioCol).
+  const third = cardio ? cardioCol(ex, entry.sets) : null
+  const inclineCol = third === 'incline'
+    ? { f: 'incline', step: INCLINE_STEP, dec: true, opt: true, hd: t('Incline (%)'), store: clampIncline }
+    : third === 'level' ? { f: 'level', step: 1, dec: false, opt: true, hd: t('Level'), store: clampLevel } : null
   const col3 = cardio ? inclineCol : mode === 'reps' && eff ? { f: eff.f, eff: kind, hd: t(eff.hd) } : null
   // The effort column walks its own scale — see stepEffort. Weight and reps step up from 0
   // with no ceiling, as they always did.
@@ -1425,7 +1428,7 @@ function ActiveWorkout() {
   const addSet = idx => mutEntry(idx, e => {
     const l = e.sets[e.sets.length - 1]
     const m = modeOf({ ...(e.target || {}), id: e.id })
-    if (m === 'cardio') e.sets.push({ min: l ? l.min : (e.target.min || 20), speed: l ? l.speed : (e.target.speed || 8), ...(Number(l?.km) > 0 ? { km: l.km } : {}), ...inclineFrom(l || e.target), done: false })
+    if (m === 'cardio') e.sets.push({ min: l ? l.min : (e.target.min || 20), speed: l ? l.speed : (e.target.speed || 8), ...(Number(l?.km) > 0 ? { km: l.km } : {}), ...inclineFrom(l || e.target), ...levelFrom(l || e.target), done: false })
     else if (m === 'time') {
       const sec = l ? l.sec : (e.target.sec || 45)
       const w = l ? (l.w || 0) : (e.target.weight || 0)

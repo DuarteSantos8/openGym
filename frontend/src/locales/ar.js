@@ -4440,4 +4440,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 دقيقة في الأسبوع هو الرقم الذي تكرره النصائح الصحية. اختر رقمك، أو لا شيء.",
   "{0} h": "{0} س",
   "{0} of {1} min": "{0} من {1} د",
+  "Level": "المستوى",
+  "Level {0}": "المستوى {0}",
 }

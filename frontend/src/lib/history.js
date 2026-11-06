@@ -4,7 +4,7 @@ import { isOn } from './modules.js'
 import { todayISO, isoOf, weekKey, weekStartOf, fmtNum } from './format.js'
 import { fmtSpeed } from './speed.js'
 import { fmtDist, fmtPace } from './distance.js'
-import { hasIncline, inclineFrom } from './incline.js'
+import { hasIncline, inclineFrom, hasLevel, levelFrom } from './incline.js'
 import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
 import { barWeightFor } from './bar.js'
 import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
@@ -161,9 +161,9 @@ export function setLabel(id, s, cfg, speedUnit) {
   // A set logged by its distance (#887, lib/distance.js) reads as the distance and the pace.
   if (mode === 'cardio' && Number(s.km) > 0) {
     const du = speedUnit === 'mph' ? 'mi' : 'km'
-    return [`${s.min || 0} min`, fmtDist(s.km, du), fmtPace(s, du)].filter(Boolean).join(' · ') + (hasIncline(s) ? ' · ' + t('{0}% incline', fmtNum(Number(s.incline))) : '')
+    return [`${s.min || 0} min`, fmtDist(s.km, du), fmtPace(s, du)].filter(Boolean).join(' · ') + (hasIncline(s) ? ' · ' + t('{0}% incline', fmtNum(Number(s.incline))) : '') + (hasLevel(s) ? ' · ' + t('Level {0}', fmtNum(Number(s.level))) : '')
   }
-  if (mode === 'cardio') return `${s.min || 0} min @ ${fmtSpeed(s.speed || 0, speedUnit)}` + (hasIncline(s) ? ' · ' + t('{0}% incline', fmtNum(Number(s.incline))) : '')
+  if (mode === 'cardio') return `${s.min || 0} min @ ${fmtSpeed(s.speed || 0, speedUnit)}` + (hasIncline(s) ? ' · ' + t('{0}% incline', fmtNum(Number(s.incline))) : '') + (hasLevel(s) ? ' · ' + t('Level {0}', fmtNum(Number(s.level))) : '')
   // A set taken to failure carries its "F" behind the numbers, the mark lifting logs use for it;
   // the history, the text export and the set menu all read it from here.
   const fail = isFailureSet(s) ? ' ' + t('F') : ''
@@ -300,7 +300,7 @@ export function exLine(cfg, unit, speedUnit) {
   const load = !cfg.weight ? ''
     : backoff ? ' · ' + (isBw(cfg) ? '+' : '') + backoffWeights(cfg.weight, n, backoff).map(fmtNum).join(' → ') + ' ' + unit
       : ' · ' + (isBw(cfg) ? '+' : '') + fmtNum(cfg.weight) + ' ' + unit
-  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtSpeed(cfg.speed || 8, speedUnit)}` + (hasIncline(cfg) ? ' · ' + t('{0}% incline', fmtNum(Number(cfg.incline))) : '')
+  if (mode === 'cardio') return `${n} × ${cfg.min || 20} min @ ${fmtSpeed(cfg.speed || 8, speedUnit)}` + (hasIncline(cfg) ? ' · ' + t('{0}% incline', fmtNum(Number(cfg.incline))) : '') + (hasLevel(cfg) ? ' · ' + t('Level {0}', fmtNum(Number(cfg.level))) : '')
   // A timed hold has no rep count to spell a split out of ("8/side" below) — "per side" says it
   // happens twice, once each side (buildWorkSets), rather than trying to divide a duration.
   if (mode === 'time') return `${setsRepsOf(cfg)}${load}${isPerSide(cfg) ? ' · ' + t('per side') : ''}`
@@ -648,7 +648,7 @@ function buildWorkSets(S, cfg, options = {}) {
       const prev = prevAt(i)
       // The grade is last time's when it had one, else the routine's own (set in the exercise's
       // settings, Discord "can not set incline"): a flat walk last time never hides it.
-      sets.push({ min: prev ? prev.min : (cfg.min || 20), speed: prev ? prev.speed : (cfg.speed || 8), ...inclineFrom(hasIncline(prev) ? prev : cfg), done: false })
+      sets.push({ min: prev ? prev.min : (cfg.min || 20), speed: prev ? prev.speed : (cfg.speed || 8), ...inclineFrom(hasIncline(prev) ? prev : cfg), ...levelFrom(hasLevel(prev) ? prev : cfg), done: false })
     }
     return sets
   }
@@ -1158,6 +1158,7 @@ export function insertWarmupRow(rows, mode, target, step = 2.5, floor = 0) {
       min: prev ? prev.min : (work ? work.min : (target.min || 20)),
       speed: prev ? prev.speed : (work ? work.speed : (target.speed || 8)),
       ...inclineFrom(prev || work),
+      ...levelFrom(prev || work),
       done: false, phase: 'warmup', warmup: true,
     }
     : mode === 'time'

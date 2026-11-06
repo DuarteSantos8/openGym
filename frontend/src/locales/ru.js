@@ -4389,4 +4389,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 минут в неделю повторяют все советы о здоровье. Выбери свою цель или никакой.",
   "{0} h": "{0} ч",
   "{0} of {1} min": "{0} из {1} мин",
+  "Level": "Уровень",
+  "Level {0}": "Уровень {0}",
 }

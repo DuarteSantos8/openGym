@@ -4464,4 +4464,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "সপ্তাহে ১৫০ মিনিট, স্বাস্থ্য পরামর্শে এই সংখ্যাটাই বারবার আসে। নিজেরটা বেছে নিন, বা কোনোটাই না।",
   "{0} h": "{0} ঘ",
   "{0} of {1} min": "{1} এর মধ্যে {0} মিনিট",
+  "Level": "লেভেল",
+  "Level {0}": "লেভেল {0}",
 }

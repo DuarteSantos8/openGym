@@ -4381,4 +4381,6 @@ export default {
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 minučių per savaitę: tokį skaičių kartoja sveikatos patarimai. Pasirinkite savo arba jokio.",
   "{0} h": "{0} val.",
   "{0} of {1} min": "{0} iš {1} min",
+  "Level": "Lygis",
+  "Level {0}": "{0} lygis",
 }
