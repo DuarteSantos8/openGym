@@ -209,7 +209,7 @@ export function AddPhotosSheet({ items, close, save }) {
     </div>}
     <label className="measure-date" style={{ display: 'block', margin: '12px 0 4px' }}>
       <span className="small">{t('Date')}</span>
-      <DateField key={at} value={dates[at] || today} max={today} onChange={setDate} label={t('Date')} />
+      <DateField key={at} value={dates[at]} max={today} onChange={setDate} label={t('Date')} />
     </label>
     <div className={'small ' + (okDay(dates[at]) && it.source !== 'file' ? 'muted' : 'pp-warn')} style={{ marginBottom: 14 }}>
       {dates[at] && dates[at] !== (it.d || '') ? t('Your pick.') : sourceLine(it)}
@@ -297,7 +297,7 @@ export default function ProgressPhotos() {
   const firstOfDay = new Set()
   return <>
     <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12, minWidth: 0 }}><h1>{t('Progress photos')}</h1>
+      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Progress photos')}</h1>
         <div className="sub">{tn('{0} photo', '{0} photos', photos.length)}</div></div>
       {photos.length >= 2 && (comparing
         ? <Button size="sm" variant="ghost" onClick={cancelCompare}>{t('Cancel')}</Button>

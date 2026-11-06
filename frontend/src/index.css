@@ -704,6 +704,7 @@ h4.sec{
    Same opaque fills, on every translucent surface. */
 @media (prefers-reduced-transparency: reduce){
   #tabbar,#timer,#toast,.conn-bar,.whdr.stick,.stats-index,.tr-bulk{-webkit-backdrop-filter:none;backdrop-filter:none}
+  .pp-pill{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(0,0,0,.78)}
   .tr-bulk{background:var(--bg-el)}
   #tabbar{background:var(--bg-el)}
   :root[data-theme="light"] #tabbar{background:#f9f9fb}

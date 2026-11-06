@@ -98,6 +98,7 @@ describe('adding photos, each with its own day (#940)', () => {
     act(() => button('Next').click())
     expect(host.textContent).toContain('2 of 3')
     expect(host.textContent).toContain('No date found. Which day was it?')
+    expect(host.querySelector('[data-datefield]').value).toBe('')   // "Pick a day", not a silent today
     act(() => button('Next').click())
     expect(host.textContent).toContain('A guess from the file date. Worth a look.')
     expect(host.querySelector('[data-datefield]').value).toBe('2026-08-01')
