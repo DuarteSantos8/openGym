@@ -5136,7 +5136,7 @@ export default {
   "Check-in notes": "ملاحظات القياس",
   "Check-in reminders": "تذكيرات القياس",
   "Check-in time": "وقت القياس",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "يمسح سجل تمارينك ويحتفظ بالباقي: الروتينات والخطة والإعدادات والصالات ووزن الجسم والمقاسات وجلسات الاستشفاء وصور التقدّم المحفوظة تحت يوم.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "يمسح سجل تمارينك ويحتفظ بالباقي: الروتينات والخطة والإعدادات والصالات ووزن الجسم والمقاسات والأنشطة مثل الجري أو ركوب الدراجة وجلسات الاستشفاء وصور التقدّم المحفوظة تحت يوم.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "يصل من هذا الهاتف، حتى دون اتصال. سجّله فيبدأ ذلك التذكير من جديد.",
   "Copy text": "نسخ النص",
   "Day notes": "ملاحظات اليوم",
@@ -5408,4 +5408,7 @@ export default {
   "From the phone itself": "من الهاتف نفسه",
   "Something it showed": "شيء عرضه",
   "Something the page loaded": "شيء حمّلته الصفحة",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "هذه النسخة الاحتياطية تخص حسابًا آخر",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "أعدّها شخص آخر على هذا الجهاز، لذلك لا يذهب شيء من بياناتك إلى مجلده. افصلها لتعدّ نسختك الخاصة.",
 }

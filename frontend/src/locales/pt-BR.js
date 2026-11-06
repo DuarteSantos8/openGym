@@ -400,7 +400,7 @@ export const PT_BR_OVERRIDES = {
   "Check-in notes": "Notas de registro",
   "Check-in reminders": "Lembretes de registro",
   "Check-in time": "Hora do registro",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Limpa seu histórico de treinos e mantém o resto: rotinas, plano, configurações, academias, peso corporal, medidas, sessões de recuperação e fotos de progresso salvas em um dia.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Limpa seu histórico de treinos e mantém o resto: rotinas, plano, configurações, academias, peso corporal, medidas, atividades como corridas ou pedaladas, sessões de recuperação e fotos de progresso salvas em um dia.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Vem deste celular, mesmo offline. Registre e esse lembrete recomeça.",
   "Copy text": "Copiar texto",
   "Day notes": "Notas do dia",
@@ -3763,6 +3763,8 @@ export const PT_BR_OVERRIDES = {
   "Restore it on a new phone in two taps.": "Restaure no celular novo em dois toques.",
   "That file is not an openGym backup.": "Esse arquivo não é um backup do openGym.",
 
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Outra pessoa configurou neste dispositivo, então nada seu vai para a pasta dela. Desconecte para configurar a sua.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

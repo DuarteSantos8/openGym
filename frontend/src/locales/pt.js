@@ -5081,7 +5081,7 @@ export default {
   "Check-in notes": "Notas de registo",
   "Check-in reminders": "Lembretes de registo",
   "Check-in time": "Hora do registo",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Limpa o teu registo de treinos e guarda o resto: rotinas, plano, definições, ginásios, peso corporal, medidas, sessões de recuperação e fotos de progresso guardadas num dia.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Limpa o teu registo de treinos e guarda o resto: rotinas, plano, definições, ginásios, peso corporal, medidas, atividades como corridas ou voltas de bicicleta, sessões de recuperação e fotos de progresso guardadas num dia.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Vem deste telemóvel, mesmo offline. Regista e esse lembrete recomeça.",
   "Copy text": "Copiar texto",
   "Day notes": "Notas do dia",
@@ -5353,4 +5353,7 @@ export default {
   "From the phone itself": "Do próprio telemóvel",
   "Something it showed": "Algo que mostrou",
   "Something the page loaded": "Algo que a página carregou",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Esta cópia pertence a outra conta",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Outra pessoa configurou-a neste dispositivo, por isso nada teu vai para a pasta dela. Desliga-a para configurares a tua.",
 }

@@ -5078,7 +5078,7 @@ export default {
   "Check-in notes": "Нотатки до замірів",
   "Check-in reminders": "Нагадування про заміри",
   "Check-in time": "Час заміру",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Очищає журнал тренувань і лишає решту: програми, план, налаштування, зали, вагу, заміри, відновлення та фото прогресу, прив’язані до дня.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Очищає журнал тренувань і лишає решту: програми, план, налаштування, зали, вагу, заміри, активності на кшталт пробіжок чи велопрогулянок, відновлення та фото прогресу, прив’язані до дня.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Приходить із цього телефона, навіть офлайн. Запишіть замір, і нагадування почнеться знову.",
   "Copy text": "Скопіювати текст",
   "Day notes": "Нотатки дня",
@@ -5350,4 +5350,7 @@ export default {
   "From the phone itself": "Із самого телефона",
   "Something it showed": "Те, що він показав",
   "Something the page loaded": "Те, що завантажила сторінка",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Ця резервна копія належить іншому акаунту",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Її налаштував на цьому пристрої хтось інший, тож нічого твого в його теку не потрапить. Відключи її, щоб налаштувати свою.",
 }

@@ -5081,7 +5081,7 @@ export default {
   "Check-in notes": "测量笔记",
   "Check-in reminders": "测量提醒",
   "Check-in time": "测量时间到",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "清空训练记录，其余保留：计划、日程、设置、健身房、体重、围度、恢复记录和按日期保存的进度照。",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "清空训练记录，其余保留：计划、日程、设置、健身房、体重、围度、跑步、骑行等活动、恢复记录和按日期保存的进度照。",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "来自这部手机，离线也行。记录一下，这个提醒就重新计时。",
   "Copy text": "复制文字",
   "Day notes": "当日笔记",
@@ -5353,4 +5353,7 @@ export default {
   "From the phone itself": "来自手机本身",
   "Something it showed": "它显示的内容",
   "Something the page loaded": "页面加载的内容",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "这个备份属于另一个账号",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "这是别人在这台设备上设置的，所以你的数据不会进入对方的文件夹。断开连接后就能设置你自己的。",
 }

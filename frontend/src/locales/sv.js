@@ -5128,7 +5128,7 @@ export default {
   "Check-in notes": "Avstämningsanteckningar",
   "Check-in reminders": "Påminnelser om avstämning",
   "Check-in time": "Dags för avstämning",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Tömmer din träningslogg och behåller resten: rutiner, plan, inställningar, gym, kroppsvikt, mått, återhämtning och framstegsbilder sparade under en dag.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Tömmer din träningslogg och behåller resten: rutiner, plan, inställningar, gym, kroppsvikt, mått, aktiviteter som löprundor eller cykelturer, återhämtning och framstegsbilder sparade under en dag.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Kommer från den här telefonen, även offline. Logga det, så börjar påminnelsen om.",
   "Copy text": "Kopiera text",
   "Day notes": "Dagsanteckningar",
@@ -5400,4 +5400,7 @@ export default {
   "From the phone itself": "Från telefonen själv",
   "Something it showed": "Något den visade",
   "Something the page loaded": "Något sidan laddade",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Den här säkerhetskopian tillhör ett annat konto",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Någon annan har ställt in den på den här enheten, så inget av ditt hamnar i deras mapp. Koppla från den för att ställa in din egen.",
 }

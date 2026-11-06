@@ -5047,7 +5047,7 @@ export default {
   "Check-in notes": "یادداشت‌های اندازه‌گیری",
   "Check-in reminders": "یادآوری اندازه‌گیری",
   "Check-in time": "وقت اندازه‌گیری",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "گزارش تمرین‌ها را خالی می‌کند و بقیه را نگه می‌دارد: روتین‌ها، برنامه، تنظیمات، باشگاه‌ها، وزن، اندازه‌ها، جلسه‌های ریکاوری و عکس‌های پیشرفتی که زیر یک روز ذخیره شده‌اند.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "گزارش تمرین‌ها را خالی می‌کند و بقیه را نگه می‌دارد: روتین‌ها، برنامه، تنظیمات، باشگاه‌ها، وزن، اندازه‌ها، فعالیت‌هایی مثل دویدن یا دوچرخه‌سواری، جلسه‌های ریکاوری و عکس‌های پیشرفتی که زیر یک روز ذخیره شده‌اند.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "از همین گوشی می‌آید، حتی آفلاین. ثبتش کن تا آن یادآوری از نو شروع شود.",
   "Copy text": "کپی متن",
   "Day notes": "یادداشت‌های روز",
@@ -5319,4 +5319,7 @@ export default {
   "From the phone itself": "از خود گوشی",
   "Something it showed": "چیزی که نشان داد",
   "Something the page loaded": "چیزی که صفحه بارگذاری کرد",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "این پشتیبان مال حساب دیگری است",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "کس دیگری آن را روی این دستگاه راه انداخته، پس هیچ چیز شما به پوشه او نمی‌رود. قطعش کنید تا مال خودتان را راه بیندازید.",
 }

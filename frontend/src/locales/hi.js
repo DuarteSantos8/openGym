@@ -5081,7 +5081,7 @@ export default {
   "Check-in notes": "चेक-इन नोट",
   "Check-in reminders": "चेक-इन रिमाइंडर",
   "Check-in time": "चेक-इन का समय",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "आपका ट्रेनिंग लॉग खाली करता है और बाकी रखता है: रूटीन, प्लान, सेटिंग्स, जिम, शरीर का वज़न, नाप, रिकवरी सेशन और किसी दिन में रखी प्रोग्रेस फ़ोटो।",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "आपका ट्रेनिंग लॉग खाली करता है और बाकी रखता है: रूटीन, प्लान, सेटिंग्स, जिम, शरीर का वज़न, नाप, दौड़ या साइकलिंग जैसी एक्टिविटी, रिकवरी सेशन और किसी दिन में रखी प्रोग्रेस फ़ोटो।",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "इसी फ़ोन से आता है, ऑफ़लाइन भी। दर्ज करें और वह रिमाइंडर फिर से शुरू होगा।",
   "Copy text": "टेक्स्ट कॉपी करें",
   "Day notes": "दिन के नोट",
@@ -5353,4 +5353,7 @@ export default {
   "From the phone itself": "ख़ुद फ़ोन से",
   "Something it showed": "कुछ जो उसने दिखाया",
   "Something the page loaded": "कुछ जो पेज ने लोड किया",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "यह बैकअप किसी और अकाउंट का है",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "इसे इस डिवाइस पर किसी और ने सेट किया है, इसलिए आपका कुछ भी उनके फ़ोल्डर में नहीं जाता। अपना सेट करने के लिए इसे डिस्कनेक्ट करें।",
 }

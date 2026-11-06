@@ -5047,7 +5047,7 @@ export default {
   "Check-in notes": "Poznámky k měření",
   "Check-in reminders": "Připomínky měření",
   "Check-in time": "Čas na měření",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Vymaže deník tréninků a nechá zbytek: rutiny, plán, nastavení, posilovny, váhu, míry, regeneraci a fotky pokroku uložené pod dnem.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Vymaže deník tréninků a nechá zbytek: rutiny, plán, nastavení, posilovny, váhu, míry, aktivity jako běhy nebo jízdy na kole, regeneraci a fotky pokroku uložené pod dnem.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Přijde z tohoto telefonu, i offline. Zapiš to a připomínka začne znovu.",
   "Copy text": "Kopírovat text",
   "Day notes": "Poznámky dne",
@@ -5319,4 +5319,7 @@ export default {
   "From the phone itself": "Ze samotného telefonu",
   "Something it showed": "Něco, co zobrazila",
   "Something the page loaded": "Něco, co načetla stránka",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Tahle záloha patří jinému účtu",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Nastavil ji na tomhle zařízení někdo jiný, takže nic tvého do jeho složky nejde. Odpoj ji a nastav si vlastní.",
 }

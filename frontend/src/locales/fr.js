@@ -5081,7 +5081,7 @@ export default {
   "Check-in notes": "Notes de bilan",
   "Check-in reminders": "Rappels de bilan",
   "Check-in time": "C’est l’heure du bilan",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Vide ton journal d’entraînement et garde le reste : routines, plan, réglages, salles, poids, mensurations, séances de récupération et photos de progrès rangées sous un jour.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Vide ton journal d’entraînement et garde le reste : routines, plan, réglages, salles, poids, mensurations, activités comme les courses ou les sorties vélo, séances de récupération et photos de progrès rangées sous un jour.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Vient de ce téléphone, même hors ligne. Note-le et ce rappel repart de zéro.",
   "Copy text": "Copier le texte",
   "Day notes": "Notes du jour",
@@ -5353,4 +5353,7 @@ export default {
   "From the phone itself": "Depuis le téléphone lui-même",
   "Something it showed": "Quelque chose qu’elle a affiché",
   "Something the page loaded": "Quelque chose que la page a chargé",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Cette sauvegarde appartient à un autre compte",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Quelqu’un d’autre l’a configurée sur cet appareil, donc rien de toi ne part dans son dossier. Déconnecte-la pour configurer la tienne.",
 }

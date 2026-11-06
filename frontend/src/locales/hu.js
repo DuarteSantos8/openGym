@@ -5084,7 +5084,7 @@ export default {
   "Check-in notes": "Mérési jegyzetek",
   "Check-in reminders": "Mérési emlékeztetők",
   "Check-in time": "Mérés ideje",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Kiüríti az edzésnaplót, a többit megtartja: rutinok, terv, beállítások, termek, testsúly, méretek, regeneráció és a naphoz mentett fotók.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Kiüríti az edzésnaplót, a többit megtartja: rutinok, terv, beállítások, termek, testsúly, méretek, tevékenységek, mint a futás vagy a bringázás, regeneráció és a naphoz mentett fotók.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Erről a telefonról jön, offline is. Rögzítsd, és az emlékeztető újraindul.",
   "Copy text": "Szöveg másolása",
   "Day notes": "Napi jegyzetek",
@@ -5356,4 +5356,7 @@ export default {
   "From the phone itself": "Magáról a telefonról",
   "Something it showed": "Valami, amit megjelenített",
   "Something the page loaded": "Valami, amit az oldal betöltött",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Ez a mentés egy másik fiókhoz tartozik",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Valaki más állította be ezen az eszközön, így semmi sem kerül tőled az ő mappájába. Bontsd a kapcsolatot, és állítsd be a sajátodat.",
 }

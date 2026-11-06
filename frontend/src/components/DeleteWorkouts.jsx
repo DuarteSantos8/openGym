@@ -37,7 +37,7 @@ function DeleteWorkouts({ close, onBackup, signedIn }) {
   return <>
     <h3>{t('Delete workouts only')}</h3>
     <div className="muted small" style={{ marginBottom: 12, lineHeight: 1.5 }}>
-      {t('Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.')}
+      {t('Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.')}
     </div>
     <div className="sect-b" style={{ marginBottom: 12 }}>
       <Row icon="calendar" iconTint="var(--blue)" title={t('Only workouts before a date')}>

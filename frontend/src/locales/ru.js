@@ -5085,7 +5085,7 @@ export default {
   "Check-in notes": "Заметки к замерам",
   "Check-in reminders": "Напоминания о замерах",
   "Check-in time": "Время замера",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Очищает журнал тренировок и оставляет остальное: программы, план, настройки, залы, вес, замеры, восстановление и фото прогресса, привязанные к дню.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Очищает журнал тренировок и оставляет остальное: программы, план, настройки, залы, вес, замеры, активности вроде пробежек или велопрогулок, восстановление и фото прогресса, привязанные к дню.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Приходит с этого телефона, даже офлайн. Запишите замер, и напоминание начнётся заново.",
   "Copy text": "Скопировать текст",
   "Day notes": "Заметки дня",
@@ -5357,4 +5357,7 @@ export default {
   "From the phone itself": "Из самого телефона",
   "Something it showed": "То, что оно показало",
   "Something the page loaded": "То, что загрузила страница",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Эта резервная копия принадлежит другому аккаунту",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Её настроил на этом устройстве кто-то другой, поэтому ничего твоего в его папку не попадёт. Отключи её, чтобы настроить свою.",
 }

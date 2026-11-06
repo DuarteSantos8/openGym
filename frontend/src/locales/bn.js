@@ -5160,7 +5160,7 @@ export default {
   "Check-in notes": "চেক-ইন নোট",
   "Check-in reminders": "চেক-ইন রিমাইন্ডার",
   "Check-in time": "চেক-ইনের সময়",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "আপনার ট্রেনিং লগ খালি করে, বাকি সব রাখে: রুটিন, প্ল্যান, সেটিংস, জিম, ওজন, মাপ, রিকভারি সেশন আর কোনো দিনের নিচে রাখা প্রগ্রেস ফটো।",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "আপনার ট্রেনিং লগ খালি করে, বাকি সব রাখে: রুটিন, প্ল্যান, সেটিংস, জিম, ওজন, মাপ, দৌড় বা সাইকেল চালানোর মতো অ্যাক্টিভিটি, রিকভারি সেশন আর কোনো দিনের নিচে রাখা প্রগ্রেস ফটো।",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "এই ফোন থেকেই আসে, অফলাইনেও। লিখে রাখুন, তাহলে সেই রিমাইন্ডার আবার শুরু হবে।",
   "Copy text": "টেক্সট কপি করুন",
   "Day notes": "দিনের নোট",
@@ -5432,4 +5432,7 @@ export default {
   "From the phone itself": "ফোন নিজে থেকে",
   "Something it showed": "যা এটি দেখিয়েছে",
   "Something the page loaded": "পেজ যা লোড করেছে",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "এই ব্যাকআপ অন্য একটি অ্যাকাউন্টের",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "এই ডিভাইসে এটা অন্য কেউ সেট করেছে, তাই আপনার কিছুই তার ফোল্ডারে যায় না। নিজেরটা সেট করতে এটা ডিসকানেক্ট করুন।",
 }

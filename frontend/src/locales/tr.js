@@ -5081,7 +5081,7 @@ export default {
   "Check-in notes": "Ölçüm notları",
   "Check-in reminders": "Ölçüm hatırlatıcıları",
   "Check-in time": "Ölçüm zamanı",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Antrenman kaydını temizler, gerisini korur: rutinler, plan, ayarlar, salonlar, kilo, ölçüler, toparlanma ve bir güne kaydedilmiş ilerleme fotoğrafları.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Antrenman kaydını temizler, gerisini korur: rutinler, plan, ayarlar, salonlar, kilo, ölçüler, koşu ya da bisiklet gibi aktiviteler, toparlanma ve bir güne kaydedilmiş ilerleme fotoğrafları.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Bu telefondan gelir, çevrimdışıyken bile. Kaydet, hatırlatıcı baştan başlasın.",
   "Copy text": "Metni kopyala",
   "Day notes": "Gün notları",
@@ -5353,4 +5353,7 @@ export default {
   "From the phone itself": "Telefonun kendisinden",
   "Something it showed": "Gösterdiği bir şey",
   "Something the page loaded": "Sayfanın yüklediği bir şey",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Bu yedek başka bir hesaba ait",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Bu cihazda başka biri kurmuş, yani senin hiçbir şeyin onun klasörüne gitmez. Kendininkini kurmak için bağlantıyı kes.",
 }

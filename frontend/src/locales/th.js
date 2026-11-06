@@ -5092,7 +5092,7 @@ export default {
   "Check-in notes": "โน้ตการวัด",
   "Check-in reminders": "เตือนการวัด",
   "Check-in time": "ถึงเวลาวัดแล้ว",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "ล้างบันทึกการฝึกและเก็บที่เหลือไว้: รูทีน แผน การตั้งค่า ยิม น้ำหนัก สัดส่วน การฟื้นตัว และรูปความคืบหน้าที่เก็บตามวัน",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "ล้างบันทึกการฝึกและเก็บที่เหลือไว้: รูทีน แผน การตั้งค่า ยิม น้ำหนัก สัดส่วน กิจกรรมอย่างการวิ่งหรือปั่นจักรยาน การฟื้นตัว และรูปความคืบหน้าที่เก็บตามวัน",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "มาจากโทรศัพท์เครื่องนี้ แม้ออฟไลน์ บันทึกแล้วการเตือนนั้นจะเริ่มนับใหม่",
   "Copy text": "คัดลอกข้อความ",
   "Day notes": "โน้ตประจำวัน",
@@ -5364,4 +5364,7 @@ export default {
   "From the phone itself": "จากตัวโทรศัพท์เอง",
   "Something it showed": "สิ่งที่มันแสดง",
   "Something the page loaded": "สิ่งที่หน้าเว็บโหลด",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "ข้อมูลสำรองนี้เป็นของบัญชีอื่น",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "มีคนอื่นตั้งค่าไว้บนอุปกรณ์นี้ ข้อมูลของคุณจึงไม่ถูกส่งไปที่โฟลเดอร์ของเขา ยกเลิกการเชื่อมต่อเพื่อตั้งค่าของคุณเอง",
 }

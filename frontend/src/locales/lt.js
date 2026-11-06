@@ -5077,7 +5077,7 @@ export default {
   "Check-in notes": "Matavimų pastabos",
   "Check-in reminders": "Matavimų priminimai",
   "Check-in time": "Laikas matuotis",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "Išvalo treniruočių žurnalą ir palieka kita: rutinas, planą, nustatymus, sporto sales, svorį, matmenis, atsigavimą ir pažangos nuotraukas, priskirtas dienai.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "Išvalo treniruočių žurnalą ir palieka kita: rutinas, planą, nustatymus, sporto sales, svorį, matmenis, veiklas, pvz., bėgimus ar važiavimus dviračiu, atsigavimą ir pažangos nuotraukas, priskirtas dienai.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "Ateina iš šio telefono, net neprisijungus. Įrašyk, ir priminimas prasidės iš naujo.",
   "Copy text": "Kopijuoti tekstą",
   "Day notes": "Dienos pastabos",
@@ -5349,4 +5349,7 @@ export default {
   "From the phone itself": "Iš paties telefono",
   "Something it showed": "Kažkas, ką ji parodė",
   "Something the page loaded": "Kažkas, ką įkėlė puslapis",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "Ši atsarginė kopija priklauso kitai paskyrai",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Šiame įrenginyje ją nustatė kažkas kitas, todėl niekas iš tavo duomenų nekeliauja į jo aplanką. Atjunk ją ir nusistatyk savo.",
 }

@@ -5081,7 +5081,7 @@ export default {
   "Check-in notes": "측정 메모",
   "Check-in reminders": "측정 알림",
   "Check-in time": "측정할 시간이에요",
-  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, recovery sessions and progress photos filed under a day.": "운동 기록만 비우고 나머지는 남겨요: 루틴, 계획, 설정, 헬스장, 체중, 치수, 회복 기록, 날짜에 저장한 진행 사진.",
+  "Clears your training log and keeps the rest: routines, plan, settings, gyms, body weight, measurements, activities like runs or rides, recovery sessions and progress photos filed under a day.": "운동 기록만 비우고 나머지는 남겨요: 루틴, 계획, 설정, 헬스장, 체중, 치수, 달리기나 라이딩 같은 활동, 회복 기록, 날짜에 저장한 진행 사진.",
   "Comes from this phone, even offline. Log the thing and that reminder resets.": "이 휴대폰에서 와요, 오프라인이어도요. 기록하면 그 알림은 처음부터 다시 세요.",
   "Copy text": "텍스트 복사",
   "Day notes": "하루 메모",
@@ -5353,4 +5353,7 @@ export default {
   "From the phone itself": "휴대폰 자체에서",
   "Something it showed": "화면에 보여 준 것",
   "Something the page loaded": "페이지가 불러온 것",
+  // --- WebDAV backup on a shared device (qa2-146) ---
+  "This backup belongs to another account": "이 백업은 다른 계정의 것이에요",
+  "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "다른 사람이 이 기기에서 설정했어요. 그래서 내 데이터는 그 폴더로 가지 않아요. 연결을 끊고 내 백업을 설정하세요.",
 }

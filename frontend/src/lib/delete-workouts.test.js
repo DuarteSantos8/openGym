@@ -1,11 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { workoutsToDelete, deleteWorkoutsOnly, restoreWorkouts } from './delete-workouts.js'
 import { stampDeletions } from './sync-merge.js'
+import { readFileSync, readdirSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 const base = () => ({
   workouts: [{ id: 'b', d: '2026-10-05', start: 2 }, { id: 'a', d: '2026-10-01', start: 1 }, { d: '2026-11-01', start: 3 }],
   routines: [{ id: 'R', name: 'Push', ex: [] }], bodyweight: [{ d: '2026-10-01', w: 80 }], measurements: [{ d: '2026-10-01', waist: 80 }],
   exWeights: { '0025': 60 }, recoverySessions: { r: { d: '2026-10-02', kind: 'sauna', min: 10, _ts: 1 } }, restSec: 90,
+  activities: { run1: { d: '2026-10-03', sport: 'run', min: 42, km: 8.1, src: 'hc', _ts: 1 } },
 })
 
 describe('delete workouts only', () => {
@@ -33,5 +36,16 @@ describe('delete workouts only', () => {
     stampDeletions(S, after, 200)
     expect(after.deleted.workouts).toEqual({ a: -200, b: -200 })
     expect(restoreWorkouts(after, removed)).toBe(0)
+  })
+  it('the sheet says what stays, runs and recovery sessions included, in every language (QA2 1.4.5)', () => {
+    const src = readFileSync(fileURLToPath(new URL('../components/DeleteWorkouts.jsx', import.meta.url)), 'utf8')
+    const key = src.match(/t\('(Clears your training log[^']*)'\)/)[1]
+    expect(key).toMatch(/activities like runs or rides, recovery sessions/)
+    const dir = fileURLToPath(new URL('../locales/', import.meta.url))
+    for (const f of readdirSync(dir).filter(f => /^[a-z-]+\.js$/i.test(f))) {
+      const line = readFileSync(dir + f, 'utf8').split('\n').find(l => l.trim().startsWith(JSON.stringify(key) + ':'))
+      expect(line, f).toBeTruthy()
+      expect(line.slice(line.indexOf(':', JSON.stringify(key).length) + 1).trim(), f).not.toBe(JSON.stringify(key) + ',')
+    }
   })
 })
