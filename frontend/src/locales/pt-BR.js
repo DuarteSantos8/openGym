@@ -48,7 +48,7 @@ export const PT_BR_OVERRIDES = {
   "There is no other student to send it to.": "Não há outro aluno para receber.",
   "This is the workout history, not a plan. To copy a plan, use Plans.": "Este é o histórico de treinos, não uma ficha. Para copiar uma ficha, use Fichas.",
   "Those workouts have no completed sets, so the spreadsheet would be empty. The JSON still has them.": "Esses treinos não têm séries concluídas, então a planilha ficaria vazia. O JSON ainda os tem.",
-  "this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it": "este arquivo é um histórico de treinos e nenhum dos treinos tem exercício, então não há ficha para montar a partir dele",
+  "this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it. Download the plan from the student’s Plans tab instead": "este arquivo é um histórico de treinos e nenhum dos treinos tem exercício, então não há ficha para montar a partir dele. Baixe a ficha na aba Fichas do aluno",
   "Account and access": "Conta e acesso",
   "An invite code is single use. Whoever joins with it becomes your student automatically.": "O código de convite vale uma vez. Quem entrar com ele vira seu aluno automaticamente.",
   "As the owner you can download the workouts of any profile on this server, in one file.": "Como owner, você pode baixar os treinos de qualquer perfil deste servidor, em um só arquivo.",

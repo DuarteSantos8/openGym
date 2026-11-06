@@ -331,8 +331,11 @@ export function parsePlan(raw, destinationUnit = 'kg') {
   // routine per workout name, from its latest session. A history with no logged exercise has
   // nothing to build a plan from, and says so.
   if (data && typeof data === 'object' && !Array.isArray(data) && !data.opengym_plan && Array.isArray(data.workouts)) {
-    const built = planFromHistory(data)
-    if (!built) throw Object.assign(new Error(t('this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it')), { code: 'not-plan' })
+    // A file that carries the plans (the admin's download does) is read from them; otherwise the
+    // plan is rebuilt from what was trained.
+    const carried = Array.isArray(data.routines) && data.routines.some(r => r && Array.isArray(r.ex) && r.ex.length)
+    const built = carried ? { opengym_plan: PLAN_FMT, name: '', unit: data.unit === 'lb' ? 'lb' : 'kg', week: {}, routines: data.routines, customEx: Array.isArray(data.customEx) ? data.customEx : [] } : planFromHistory(data)
+    if (!built) throw Object.assign(new Error(t('this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it. Download the plan from the student’s Plans tab instead')), { code: 'not-plan' })
     data = built
   }
   const destination = planUnit(destinationUnit)

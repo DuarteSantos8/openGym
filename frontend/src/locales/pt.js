@@ -57,7 +57,7 @@ export default {
   "There is no other student to send it to.": "Não há outro aluno para receber.",
   "This is the workout history, not a plan. To copy a plan, use Plans.": "Este é o histórico de treinos, não uma ficha. Para copiar uma ficha, usa Fichas.",
   "Those workouts have no completed sets, so the spreadsheet would be empty. The JSON still has them.": "Esses treinos não têm séries concluídas, por isso a folha ficaria vazia. O JSON ainda os tem.",
-  "this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it": "este ficheiro é um histórico de treinos e nenhum dos treinos tem exercício, por isso não há ficha para montar a partir dele",
+  "this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it. Download the plan from the student’s Plans tab instead": "este ficheiro é um histórico de treinos e nenhum dos treinos tem exercício, por isso não há ficha para montar a partir dele. Descarrega a ficha no separador Fichas do aluno",
   "Account and access": "Conta e acesso",
   "An invite code is single use. Whoever joins with it becomes your student automatically.": "O código de convite vale uma vez. Quem entrar com ele passa a ser teu aluno automaticamente.",
   "As the owner you can download the workouts of any profile on this server, in one file.": "Como owner, podes descarregar os treinos de qualquer perfil deste servidor, num só ficheiro.",

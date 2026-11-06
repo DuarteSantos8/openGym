@@ -97,6 +97,14 @@ describe('a workout history opens as a plan', () => {
     expect(p.routineCount).toBe(2)
     expect(p.routines[1].ex[0]).toMatchObject({ id: '0001', sets: 1, reps: 8, weight: 60 })
   })
+  it('a session finished with no set opens as the plan it was trained from', () => {
+    const d = { ...doc, routines: [{ id: 'r1', name: 'TREINO A', emoji: '💪', ex: [{ id: '0001', sets: 3, reps: 10, weight: 20 }] }, { id: 'r2', name: 'Other', ex: [{ id: '0001', sets: 1, reps: 5, weight: 0 }] }], workouts: [{ id: 'e', d: '2026-11-04', name: 'TREINO A', routineIds: ['r1'], routineId: 'r1', entries: [] }] }
+    const file = JSON.parse(workoutExport(d, null, 'json', now).text)
+    expect(file.routines.map(r => r.id)).toEqual(['r1'])
+    const p = parsePlan(JSON.stringify(file), 'kg')
+    expect(p.routines.map(r => r.name)).toEqual(['TREINO A'])
+    expect(p.exerciseCount).toBe(1)
+  })
   it('says so when no workout has an exercise (an empty history)', () => {
     const empty = { ...doc, workouts: [{ id: 'e', d: '2026-11-04', name: 'Empty', entries: [] }] }
     try { parsePlan(JSON.stringify(empty), 'kg'); throw new Error('no') } catch (e) { expect(e.code).toBe('not-plan'); expect(e.message).toMatch(/workout history/) }

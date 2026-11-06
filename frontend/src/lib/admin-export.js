@@ -26,7 +26,13 @@ export function workoutExport(d, ids, format = 'csv', now = Date.now()) {
   const base = `workouts-${fileSlug(d.user?.name)}-${day(now)}`
   if (format === 'json') {
     const workouts = S.workouts.map(({ media, ...w }) => w)
-    return { name: base + '.json', mime: 'application/json', text: JSON.stringify({ exported: new Date(now).toISOString(), user: { id: d.user?.id, name: d.user?.name }, unit: S.unit, workouts }, null, 2) }
+    // The plans these workouts were trained from travel along, so the file also opens as a plan
+    // (a session finished with no set marked keeps no exercise of its own).
+    const used = new Set(workouts.flatMap(w => [].concat(w.routineIds || [], w.routineId || [])).map(String))
+    const routines = (Array.isArray(d.routines) ? d.routines : []).filter(r => r && Array.isArray(r.ex) && used.has(String(r.id)))
+    const inUse = new Set(routines.flatMap(r => r.ex.map(e => e.id)))
+    const customEx = S.customEx.filter(c => inUse.has(c.id))
+    return { name: base + '.json', mime: 'application/json', text: JSON.stringify({ exported: new Date(now).toISOString(), user: { id: d.user?.id, name: d.user?.name }, unit: S.unit, workouts, ...(routines.length ? { routines, customEx } : {}) }, null, 2) }
   }
   const rows = workoutRows(S)
   return { name: base + '.csv', mime: 'text/csv;charset=utf-8', text: csvText(WORKOUT_COLUMNS, rows), rows: rows.length }
