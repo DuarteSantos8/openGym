@@ -2226,7 +2226,6 @@ export const PT_BR_OVERRIDES = {
   "At {0}": "Em {0}",
   "Copy from {0}": "Copiar de {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Começa com as anilhas, halteres e barras que você tem agora. Mude quando for a academia ativa.",
-  "Your gym": "Sua academia",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Anilhas, halteres, barras e placas de máquina ficam salvos por academia. Troque de academia e tudo troca junto.",
   "Active gym": "Academia ativa",
   "Pick a gym": "Escolha uma academia",
@@ -2985,6 +2984,11 @@ export const PT_BR_OVERRIDES = {
   "{0} is the only way into this profile, so it stays linked. Add a passkey first.": "O {0} é o único jeito de entrar neste perfil, então ele continua conectado. Adicione uma chave de acesso antes.",
   "{0} let you in, but this server only takes certain groups. Ask whoever runs it to add you.": "O {0} deixou você entrar, mas este servidor só aceita certos grupos. Peça para quem administra adicionar você.",
   "{0} sent back something we could not verify, so nobody was signed in. If it keeps happening, the admin page shows why.": "O {0} devolveu algo que não conseguimos verificar, então ninguém entrou. Se continuar acontecendo, a página de administração mostra o motivo.",
+  "Body composition from your scale": "Composição corporal da sua balança",
+  "Body fat and lean mass, as your scale saved them. Shown under Body measurements, never mixed into what you log.": "Gordura corporal e massa magra, do jeito que sua balança salvou. Aparecem em Medidas corporais e nunca se misturam com o que você registra.",
+  "Body fat, lean mass, bone mass and BMR, as your scale saved them. Shown under Body measurements, never mixed into what you log.": "Gordura corporal, massa magra, massa óssea e metabolismo basal, do jeito que sua balança salvou. Aparecem em Medidas corporais e nunca se misturam com o que você registra.",
+  "{0} in a month": "{0} em um mês",
+  "Straight from your scale, read-only. Change it where it was measured.": "Direto da sua balança, só leitura. Altere onde foi medido.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

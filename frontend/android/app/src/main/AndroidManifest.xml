@@ -286,6 +286,12 @@
             </intent-filter>
         </receiver>
 
+        <!-- The running workout's notification (#760): Log set, Next exercise and Skip rest,
+             applied here with the app closed (WorkoutCardReceiver). Only the card's own intents. -->
+        <receiver
+            android:name=".WorkoutCardReceiver"
+            android:exported="false" />
+
         <!-- The widget's set buttons while a workout runs (v1.4.5): − and +, and Log set, which
              queues the set for the app (WidgetActionReceiver). Only the widget's own intents. -->
         <receiver
@@ -339,6 +345,9 @@
          WebView drops every vibrate call from an app without this permission, so the phone
          stayed still. A normal permission: granted at install, no prompt. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Android 16: the running workout's card and its rest as a Live Update, the chip by the
+         clock (WorkoutNotification). A normal permission, no prompt; older phones ignore it. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -362,6 +371,12 @@
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+    <!-- Body composition (v1.4.5), asked for together when its switch is turned on: what a smart
+         scale saves besides the weight, shown under Body measurements. Foreground only. -->
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
+    <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
 
     <!-- Gym reminder (#614), off until switched on in Settings: where the phone is, for "I'm at
          the gym right now" and to watch the gyms the user added with the platform's proximity

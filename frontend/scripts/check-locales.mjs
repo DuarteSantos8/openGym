@@ -10,7 +10,7 @@
 // The reference is the union of all locales, not one blessed file: a key added to a
 // single locale then flags the other ten instead of passing unnoticed.
 
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -58,7 +58,42 @@ const union = [...seen.keys()]
 // translation is free to move the placeholders around the sentence, never to change the set.
 const marks = s => [...String(s).matchAll(/\{\d+\}/g)].map(m => m[0]).sort().join(' ')
 
+// A key written twice in one pack is legal JavaScript, and the second copy quietly wins, so the
+// first one is dead text that a translator will happily fix in vain. Read from the source, since
+// the imported object has already thrown the evidence away.
+const topLevelKeys = src => {
+  const keys = []
+  let depth = 0, line = 1
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i]
+    if (c === '\n') line++
+    else if (c === '/' && src[i + 1] === '/') { while (i < src.length && src[i + 1] !== '\n') i++ }
+    else if (c === '/' && src[i + 1] === '*') { const end = src.indexOf('*/', i + 2); line += src.slice(i, end).split('\n').length - 1; i = end + 1 }
+    else if (c === '{') depth++
+    else if (c === '}') depth--
+    else if (c === '"' || c === "'" || c === '`') {
+      let j = i + 1
+      while (j < src.length && src[j] !== c) j += src[j] === '\\' ? 2 : 1
+      const literal = src.slice(i, j + 1)
+      if (depth === 1 && /^\s*:/.test(src.slice(j + 1, j + 40))) keys.push([Function(`return ${literal}`)(), line])
+      line += literal.split('\n').length - 1
+      i = j
+    }
+  }
+  return keys
+}
+const duplicates = []
+for (const file of files) {
+  const lines = new Map()
+  for (const [k, n] of topLevelKeys(readFileSync(join(localesDir, file), 'utf8'))) lines.set(k, [...(lines.get(k) || []), n])
+  for (const [k, ns] of lines) if (ns.length > 1) duplicates.push(`${file}: ${JSON.stringify(k)} on lines ${ns.join(', ')}`)
+}
+
 let failed = false
+if (duplicates.length) {
+  failed = true
+  for (const d of duplicates) console.error(`duplicate key, ${d}`)
+}
 if (locales.has('it')) {
   for (const key of italianOnlyKeys) {
     if (!locales.get('it')?.[key]) {

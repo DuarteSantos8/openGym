@@ -9,6 +9,11 @@ import androidx.health.connect.client.HealthConnectClient;
 import androidx.health.connect.client.HealthConnectFeatures;
 import androidx.health.connect.client.PermissionController;
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord;
+import androidx.health.connect.client.records.BasalMetabolicRateRecord;
+import androidx.health.connect.client.records.BodyFatRecord;
+import androidx.health.connect.client.records.BoneMassRecord;
+import androidx.health.connect.client.records.LeanBodyMassRecord;
+import androidx.health.connect.client.records.ExerciseSegment;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.Record;
@@ -39,6 +44,7 @@ import java.util.concurrent.Executors;
 import kotlin.coroutines.EmptyCoroutineContext;
 import kotlin.jvm.JvmClassMappingKt;
 import kotlinx.coroutines.BuildersKt;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,6 +77,7 @@ import org.json.JSONObject;
  *   await HC.requestPermissions({ read: ['heartRate'], write: [] });  // { granted, read: { heartRate, weight } }
  *   await HC.readHeartRate({ from, to });   // { samples: [[ms, bpm]], origins: [package] }
  *   await HC.readWeights({ since });        // { records: [{ t, kg, id, origin, clientId }] }
+ *   await HC.readBody({ since });           // { records: [{ kind, t, v, id, origin, clientId }] } (v1.4.5)
  * Foreground only: no READ_HEALTH_DATA_IN_BACKGROUND. Without READ_HEALTH_DATA_HISTORY Health
  * Connect gives 30 days back from the first grant, plenty for the workout just done; weigh-ins
  * ask for it too (read: ['weight', 'history']) where Health Connect has the feature, which
@@ -88,6 +95,11 @@ public class HealthConnectPlugin extends Plugin {
     private static final String READ_HEART_RATE = "android.permission.health.READ_HEART_RATE";
     private static final String READ_WEIGHT = "android.permission.health.READ_WEIGHT";
     private static final String READ_HISTORY = "android.permission.health.READ_HEALTH_DATA_HISTORY";
+    // Body composition (v1.4.5), each its own permission; whichever were granted are read.
+    private static final String READ_BODY_FAT = "android.permission.health.READ_BODY_FAT";
+    private static final String READ_LEAN_MASS = "android.permission.health.READ_LEAN_BODY_MASS";
+    private static final String READ_BONE_MASS = "android.permission.health.READ_BONE_MASS";
+    private static final String READ_BMR = "android.permission.health.READ_BASAL_METABOLIC_RATE";
     // Records per page when reading, and pages at most: a few hours of heart rate fit easily.
     private static final int PAGE = 1000;
     private static final int MAX_PAGES = 50;
@@ -327,6 +339,57 @@ public class HealthConnectPlugin extends Plugin {
         });
     }
 
+    /**
+     * Body composition since `since`: body fat (%), lean and bone mass (kg) and BMR (kcal a day),
+     * each only where its permission was granted, so a partial grant still reads the rest.
+     */
+    @PluginMethod
+    public void readBody(PluginCall call) {
+        if (!"available".equals(sdkStatus())) {
+            call.reject("Health Connect is not available", "unavailable");
+            return;
+        }
+        Long since = millis(call, "since");
+        if (since == null) {
+            call.reject("since is needed", "failed");
+            return;
+        }
+        worker.execute(() -> {
+            try {
+                Set<String> got = granted();
+                TimeRangeFilter range = TimeRangeFilter.after(Instant.ofEpochMilli(since));
+                List<HealthRead.Body> all = new ArrayList<>();
+                if (got.contains(READ_BODY_FAT)) for (BodyFatRecord r : read(BodyFatRecord.class, range))
+                    all.add(HealthRead.body("fat", r.getTime().toEpochMilli(), r.getPercentage().getValue(), r.getMetadata()));
+                if (got.contains(READ_LEAN_MASS)) for (LeanBodyMassRecord r : read(LeanBodyMassRecord.class, range))
+                    all.add(HealthRead.body("lean", r.getTime().toEpochMilli(), r.getMass().getKilograms(), r.getMetadata()));
+                if (got.contains(READ_BONE_MASS)) for (BoneMassRecord r : read(BoneMassRecord.class, range))
+                    all.add(HealthRead.body("bone", r.getTime().toEpochMilli(), r.getMass().getKilograms(), r.getMetadata()));
+                if (got.contains(READ_BMR)) for (BasalMetabolicRateRecord r : read(BasalMetabolicRateRecord.class, range))
+                    all.add(HealthRead.body("bmr", r.getTime().toEpochMilli(), r.getBasalMetabolicRate().getKilocaloriesPerDay(), r.getMetadata()));
+                JSArray records = new JSArray();
+                for (HealthRead.Body b : all) {
+                    if (b == null) continue;
+                    JSObject o = new JSObject();
+                    o.put("kind", b.kind);
+                    o.put("t", b.t);
+                    o.put("v", b.v);
+                    o.put("id", b.id);
+                    o.put("origin", b.origin);
+                    o.put("clientId", b.clientId);
+                    records.put(o);
+                }
+                JSObject out = new JSObject();
+                out.put("records", records);
+                call.resolve(out);
+            } catch (SecurityException e) {
+                call.reject(e.getMessage(), "permission");
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
+    }
+
     // Every page of one record type in the window, oldest first.
     @SuppressWarnings("unchecked")
     private <T extends Record> List<T> read(Class<T> type, TimeRangeFilter range) throws InterruptedException {
@@ -376,6 +439,9 @@ public class HealthConnectPlugin extends Plugin {
         r.put("heartRate", granted.contains(READ_HEART_RATE));
         r.put("weight", granted.contains(READ_WEIGHT));
         r.put("history", granted.contains(READ_HISTORY));
+        // Body composition: on when any of its four was granted.
+        r.put("body", granted.contains(READ_BODY_FAT) || granted.contains(READ_LEAN_MASS)
+                || granted.contains(READ_BONE_MASS) || granted.contains(READ_BMR));
         return r;
     }
 
@@ -432,12 +498,81 @@ public class HealthConnectPlugin extends Plugin {
         Instant end = Instant.ofEpochMilli(s.getLong("end"));
         String title = s.optString("title", "");
         String notes = s.optString("notes", "");
+        int type = exerciseType(s.optString("type"));
+        List<ExerciseSegment> segments = segments(s.optJSONArray("segments"), start, end);
+        if (!segments.isEmpty()) {
+            try {
+                return new ExerciseSessionRecord(start, offsetAt(start), end, offsetAt(end),
+                        Metadata.manualEntry(s.getString("id"), version), type,
+                        title.isEmpty() ? null : title, notes.isEmpty() ? null : notes, segments);
+            } catch (IllegalArgumentException e) {
+                // A segment Health Connect does not take for this session: the workout without them.
+                android.util.Log.w("openGym", "Health Connect segments left out: " + e.getMessage());
+            }
+        }
         return new ExerciseSessionRecord(
                 start, offsetAt(start), end, offsetAt(end),
                 Metadata.manualEntry(s.getString("id"), version),
-                exerciseType(s.optString("type")),
+                type,
                 title.isEmpty() ? null : title,
                 notes.isEmpty() ? null : notes);
+    }
+
+    // The sets as segments (lib/health-segments.js, idea from #816): in order, inside the session,
+    // never overlapping. One that breaks any of that is dropped, not the workout.
+    private static List<ExerciseSegment> segments(JSONArray list, Instant start, Instant end) {
+        List<ExerciseSegment> out = new ArrayList<>();
+        if (list == null) return out;
+        Instant floor = start;
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject g = list.optJSONObject(i);
+            if (g == null) continue;
+            Instant from = Instant.ofEpochMilli(g.optLong("start", 0));
+            Instant to = Instant.ofEpochMilli(g.optLong("end", 0));
+            if (from.isBefore(floor) || !to.isAfter(from) || to.isAfter(end)) continue;
+            try {
+                out.add(new ExerciseSegment(from, to, segmentType(g.optString("type")), Math.max(0, g.optInt("reps", 0))));
+                floor = to;
+            } catch (IllegalArgumentException ignored) { /* left out */ }
+        }
+        return out;
+    }
+
+    // The names lib/health-segments.js uses (SEGMENT_TYPES); anything else is weightlifting.
+    private static int segmentType(String name) {
+        switch (name) {
+            case "arm_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_ARM_CURL;
+            case "back_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BACK_EXTENSION;
+            case "barbell_shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BARBELL_SHOULDER_PRESS;
+            case "bench_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_PRESS;
+            case "bench_sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BENCH_SIT_UP;
+            case "burpee": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_BURPEE;
+            case "crunch": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_CRUNCH;
+            case "deadlift": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DEADLIFT;
+            case "double_arm_triceps_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DOUBLE_ARM_TRICEPS_EXTENSION;
+            case "dumbbell_front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_FRONT_RAISE;
+            case "dumbbell_lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_LATERAL_RAISE;
+            case "dumbbell_row": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_ROW;
+            case "dumbbell_triceps_extension_two_arm": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_DUMBBELL_TRICEPS_EXTENSION_TWO_ARM;
+            case "front_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_FRONT_RAISE;
+            case "hip_thrust": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_HIP_THRUST;
+            case "jumping_jack": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_JUMPING_JACK;
+            case "kettlebell_swing": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_KETTLEBELL_SWING;
+            case "lat_pull_down": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LAT_PULL_DOWN;
+            case "lateral_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LATERAL_RAISE;
+            case "leg_curl": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_CURL;
+            case "leg_extension": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_EXTENSION;
+            case "leg_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_PRESS;
+            case "leg_raise": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LEG_RAISE;
+            case "lunge": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_LUNGE;
+            case "mountain_climber": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_MOUNTAIN_CLIMBER;
+            case "plank": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PLANK;
+            case "pull_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_PULL_UP;
+            case "shoulder_press": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SHOULDER_PRESS;
+            case "sit_up": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SIT_UP;
+            case "squat": return ExerciseSegment.EXERCISE_SEGMENT_TYPE_SQUAT;
+            default: return ExerciseSegment.EXERCISE_SEGMENT_TYPE_WEIGHTLIFTING;
+        }
     }
 
     // The estimate from lib/active-energy.js, over the session's own time.
