@@ -38,6 +38,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "readWeights", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readBody", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "readVitals", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "readWorkouts", returnType: CAPPluginReturnPromise),
     ]
 
     static let enabledKey = "healthEnabled"
@@ -94,6 +95,8 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             if read.contains("restingHeartRate"), let rhr = HKObjectType.quantityType(forIdentifier: .restingHeartRate) { types.insert(rhr) }
             if read.contains("hrv"), let hrv = HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN) { types.insert(hrv) }
             if read.contains("steps"), let steps = HKObjectType.quantityType(forIdentifier: .stepCount) { types.insert(steps) }
+            // Sport (v1.4.5, gm-hooks, lib/activities.js): other apps' workouts, as activities.
+            if read.contains("exercise") { types.insert(HKObjectType.workoutType()) }
             var share: Set<HKSampleType> = []
             if let write = call.getArray("write") as? [String], write.contains("calories"), let kcal = activeEnergy { share.insert(kcal); types.insert(kcal) }
             store.requestAuthorization(toShare: share, read: types) { _, _ in
@@ -247,6 +250,53 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
             let hrv = await self.points(.heartRateVariabilitySDNN, .secondUnit(with: .milli), predicate)
             let steps = await self.dailySteps(from: start, fmt: fmt)
             call.resolve(["sleep": sleepRows, "rhr": rhr, "hrv": hrv, "steps": steps, "hrvKind": "sdnn"])
+        }
+    }
+
+    /// Workouts since `since` (ms) from any app, openGym's own included (JS skips those by origin,
+    /// lib/activities.js isOwnRecord), as { id, sport, start, end, km?, origin, clientId? }, the
+    /// sport named the way lib/activities.js names it (sportName). Not allowed reads nothing.
+    @objc func readWorkouts(_ call: CAPPluginCall) {
+        guard let since = call.getDouble("since") else { call.reject("since is needed", "failed"); return }
+        let predicate = HKQuery.predicateForSamples(withStart: Date(timeIntervalSince1970: since / 1000), end: nil)
+        query(HKObjectType.workoutType(), predicate) { found in
+            let rows: [[String: Any]] = found.compactMap { $0 as? HKWorkout }.map { w in
+                var r: [String: Any] = [
+                    "id": w.uuid.uuidString, "sport": AppleHealthPlugin.sportName(w.workoutActivityType),
+                    "start": w.startDate.timeIntervalSince1970 * 1000, "end": w.endDate.timeIntervalSince1970 * 1000,
+                    "origin": w.sourceRevision.source.bundleIdentifier,
+                ]
+                if let km = w.totalDistance?.doubleValue(for: .meterUnit(with: .kilo)), km > 0 { r["km"] = km }
+                if let sync = w.metadata?[HKMetadataKeySyncIdentifier] as? String { r["clientId"] = sync }
+                return r
+            }
+            call.resolve(["records": rows])
+        } failed: { self.fail(call, $0) }
+    }
+
+    /// Apple Health's activity types to lib/activities.js SPORTS, plus 'strength', 'gym' (machines,
+    /// HIIT, classes) and 'walk', which JS keeps out of the activities. Anything else is 'other'.
+    static func sportName(_ type: HKWorkoutActivityType) -> String {
+        switch type {
+        case .running: return "run"
+        case .cycling, .handCycling: return "ride"
+        case .swimming, .swimBikeRun, .waterSports, .surfingSports: return "swim"
+        case .hiking: return "hike"
+        case .climbing: return "climb"
+        case .rowing, .paddleSports, .sailing: return "row"
+        case .downhillSkiing, .crossCountrySkiing, .snowboarding, .snowSports, .skatingSports: return "ski"
+        case .soccer: return "football"
+        case .tennis, .badminton, .squash, .tableTennis, .racquetball: return "racket"
+        case .basketball, .volleyball, .handball, .rugby, .hockey, .baseball, .softball, .cricket,
+             .americanFootball, .australianFootball, .lacrosse, .waterPolo, .discSports: return "ball"
+        case .boxing, .kickboxing, .martialArts, .wrestling, .fencing: return "fight"
+        case .yoga, .pilates, .mindAndBody, .taiChi: return "yoga"
+        case .socialDance, .cardioDance, .barre: return "dance"
+        case .walking, .wheelchairWalkPace, .wheelchairRunPace: return "walk"
+        case .traditionalStrengthTraining, .functionalStrengthTraining, .coreTraining: return "strength"
+        case .elliptical, .stairClimbing, .stairs, .stepTraining, .highIntensityIntervalTraining, .mixedCardio,
+             .crossTraining, .jumpRope, .flexibility, .cooldown, .preparationAndRecovery, .fitnessGaming: return "gym"
+        default: return "other"
         }
     }
 

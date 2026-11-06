@@ -435,6 +435,17 @@ function fatigueStimuli(workouts, current, opts = {}) {
       byMuscle[slug].push({ slug, timestamp: item.timestamp, stimulus: stimulus / FATIGUE_SETS_PER_UNIT * gain })
     }
   }
+  // Sport outside the gym (lib/activities.js activityStimuli: a run, a football match), already in
+  // hard-set equivalents per muscle. No acute:chronic gain (there is no lifting history to adapt
+  // against), the same per-session cap as a workout, the same causal window.
+  for (const a of opts.activities || []) {
+    const ts = Number(a?.timestamp)
+    if (!(ts > scanCutoff) || ts > current || !a.sets) continue
+    for (const [slug, v] of Object.entries(a.sets)) {
+      if (!Object.prototype.hasOwnProperty.call(MUSCLES_BY_SLUG, slug) || !(v > 0)) continue
+      byMuscle[slug].push({ slug, timestamp: ts, stimulus: Math.min(v, FATIGUE_MAX_SETS_PER_SESSION) / FATIGUE_SETS_PER_UNIT })
+    }
+  }
   return byMuscle
 }
 
@@ -477,8 +488,9 @@ function fatigueValue(events, now, slug) {
  *
  * @param {Array<object>} workouts Workout history with `start`/`d` and entry set arrays.
  * @param {number} now Current time in milliseconds; injected to keep this function deterministic.
- * @param {{unit?: string, bodyweightKg?: number}} options Profile unit for unstamped loads and the
- * profile bodyweight (kg) for bodyweight exercises; both are supplied at the UI boundary.
+ * @param {{unit?: string, bodyweightKg?: number, activities?: Array}} options Profile unit for unstamped loads and the
+ * profile bodyweight (kg) for bodyweight exercises; both are supplied at the UI boundary. `activities`
+ * is lib/activities.js activityStimuli(S): runs and matches, loading the muscles they use.
  * @returns {Record<string, number>} Fatigue values keyed by every drawable muscle slug.
  */
 export function fatigueOf(workouts, now, opts = {}) {

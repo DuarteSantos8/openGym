@@ -88,6 +88,7 @@ import org.json.JSONObject;
  *   await HC.readWeights({ since });        // { records: [{ t, kg, id, origin, clientId }] }
  *   await HC.readBody({ since });           // { records: [{ kind, t, v, id, origin, clientId }] } (v1.4.5)
  *   await HC.readVitals({ from: 'YYYY-MM-DD' });  // { sleep, rhr, hrv, steps, hrvKind } (v1.4.5, lib/vitals.js)
+ *   await HC.readWorkouts({ since });       // { records: [{ id, sport, start, end, title, origin, clientId }] } (v1.4.5, lib/activities.js)
  * Foreground only: no READ_HEALTH_DATA_IN_BACKGROUND. Without READ_HEALTH_DATA_HISTORY Health
  * Connect gives 30 days back from the first grant, plenty for the workout just done; weigh-ins
  * ask for it too (read: ['weight', 'history']) where Health Connect has the feature, which
@@ -115,6 +116,8 @@ public class HealthConnectPlugin extends Plugin {
     private static final String READ_RESTING_HR = "android.permission.health.READ_RESTING_HEART_RATE";
     private static final String READ_HRV = "android.permission.health.READ_HEART_RATE_VARIABILITY";
     private static final String READ_STEPS = "android.permission.health.READ_STEPS";
+    // Sport (v1.4.5, gm-hooks): other apps' exercise sessions, read as activities (lib/activities.js).
+    private static final String READ_EXERCISE = "android.permission.health.READ_EXERCISE";
     // Records per page when reading, and pages at most: a few hours of heart rate fit easily.
     private static final int PAGE = 1000;
     private static final int MAX_PAGES = 50;
@@ -479,6 +482,51 @@ public class HealthConnectPlugin extends Plugin {
         });
     }
 
+    /**
+     * Exercise sessions since `since` (ms) that any app saved, openGym's own included (JS skips
+     * those, lib/activities.js isOwnRecord), with the sport as lib/activities.js names it
+     * (HealthRead.sportName). Only with READ_EXERCISE granted; distance needs a permission of its
+     * own and is left out.
+     */
+    @PluginMethod
+    public void readWorkouts(PluginCall call) {
+        if (!"available".equals(sdkStatus())) {
+            call.reject("Health Connect is not available", "unavailable");
+            return;
+        }
+        Long since = millis(call, "since");
+        if (since == null) {
+            call.reject("since is needed", "failed");
+            return;
+        }
+        worker.execute(() -> {
+            try {
+                JSArray records = new JSArray();
+                if (granted().contains(READ_EXERCISE)) {
+                    for (ExerciseSessionRecord r : read(ExerciseSessionRecord.class, TimeRangeFilter.after(Instant.ofEpochMilli(since)))) {
+                        Metadata m = r.getMetadata();
+                        JSObject o = new JSObject();
+                        o.put("id", m.getId());
+                        o.put("sport", HealthRead.sportName(r.getExerciseType()));
+                        o.put("start", r.getStartTime().toEpochMilli());
+                        o.put("end", r.getEndTime().toEpochMilli());
+                        if (r.getTitle() != null) o.put("title", r.getTitle());
+                        o.put("origin", m.getDataOrigin().getPackageName());
+                        if (m.getClientRecordId() != null) o.put("clientId", m.getClientRecordId());
+                        records.put(o);
+                    }
+                }
+                JSObject out = new JSObject();
+                out.put("records", records);
+                call.resolve(out);
+            } catch (SecurityException e) {
+                call.reject(e.getMessage(), "permission");
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
+    }
+
     private static JSObject span(Instant s, Instant e, int awake) {
         JSObject o = new JSObject();
         o.put("s", s.toEpochMilli());
@@ -549,6 +597,7 @@ public class HealthConnectPlugin extends Plugin {
         // Vitals (v1.4.5): on when any of its four was granted.
         r.put("vitals", granted.contains(READ_SLEEP) || granted.contains(READ_RESTING_HR)
                 || granted.contains(READ_HRV) || granted.contains(READ_STEPS));
+        r.put("exercise", granted.contains(READ_EXERCISE));
         return r;
     }
 

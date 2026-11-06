@@ -16,7 +16,8 @@ import { setUnavailableModules } from './modules.js'
 // The modules that are nothing but network: off and out of Settings → Modules in this build.
 export const OFFLINE_OFF_MODULES = ['coach', 'integrations', 'community']
 // The Integrations cards (lib/integrations.js) that would need the network.
-export const OFFLINE_OFF_CARDS = ['hevy', 'strava', 'webdav', 'calendar', 'webhook', 'coach', 'mcp']
+// opennutrition: the sister-app link (lib/sister-nutrition.js, gm-hooks) talks to another server.
+export const OFFLINE_OFF_CARDS = ['hevy', 'strava', 'webdav', 'calendar', 'webhook', 'coach', 'mcp', 'opennutrition']
 
 let offline = false
 const subs = new Set()

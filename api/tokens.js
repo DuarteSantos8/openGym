@@ -48,7 +48,7 @@ export const KEY_CATEGORY = {
   bodyweight: ['bodyweight'], targetW: ['bodyweight'], rateGoal: ['bodyweight'],
   measurements: ['measurements'], customMeasurements: ['measurements'], measurementEnabled: ['measurements'],
   dayNotes: ['notes'], exNotes: ['notes'], gymNotes: ['notes'], journalFolders: ['notes'],
-  recoverySessions: ['workouts'],
+  recoverySessions: ['workouts'], activities: ['workouts'],
   // Body facts the Tools page and the strength levels read (v1.4.5): personal, so not a setting
   // that rides along with a plans-only token.
   heightCm: ['bodyweight', 'measurements'], birthYear: ['bodyweight', 'measurements'], sex: ['bodyweight', 'measurements'],

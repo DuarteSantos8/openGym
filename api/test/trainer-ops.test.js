@@ -231,3 +231,10 @@ test('nutrition: nothing linked by default; the openNutrition adapter asks with 
   assert.equal(asked[0][1], 'Bearer tok');
   assert.equal(cleanDay({ date: 'x' }), null);
 });
+
+test('nutrition: reads openNutrition\'s own summary.v1 names (energy, carbohydrate, targets), a missing value stays missing', () => {
+  assert.deepEqual(
+    cleanDay({ date: '2026-10-05', energy: 2512, protein: 171, carbohydrate: 280, fat: null, complete: true, targets: { energy: 2600, protein: 170 }, proteinMeals: 4 }),
+    { date: '2026-10-05', kcal: 2512, protein: 171, carbs: 280, fat: null, target: { kcal: 2600, protein: 170 }, logged: true, proteinMeals: 4 });
+  assert.equal(cleanDay({ date: '2026-10-05', kcal: null }).kcal, null);
+});

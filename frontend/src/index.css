@@ -2606,6 +2606,8 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   --red-ink:var(--red);
   /* Teal as words (a gym pin, a recovery row's glyph): #30b0c7 is 2.4:1 on white in the light theme. */
   --teal-ink:var(--teal);
+  /* Blue as words (an activity row's glyph, gm-hooks): #0a84ff is 3.6:1 on white in the light theme. */
+  --blue-ink:var(--blue);
 }
 :root[data-theme="light"]{
   --streak-ink:#e06a00; --win-ink:#1e9e47; --frost:#0a7fc4; --frost-soft:rgba(10,127,196,.12);
@@ -2614,6 +2616,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   --green-ink:#1a7f37; --orange-ink:#a85200;
   --red-ink:#d70015;
   --teal-ink:#0e7490;
+  --blue-ink:#0058c4;
 }
 /* The flame: a warm gradient with a light core; three gentle flickers when it appears, then still. */
 .flame{display:inline-block;flex:none;overflow:visible;vertical-align:-.12em}
@@ -2891,12 +2894,19 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .cal-d i.ovr{background:var(--orange)}
 .cal-d i.noted{background:var(--indigo)}
 .cal-d i.recov{background:var(--teal)}
+/* A day with a run or a match (lib/activities.js). */
+.cal-d i.sport{background:var(--blue)}
+/* openNutrition's fasting window on Home (components/SisterApps.jsx FastingLine). */
+.fast-line{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:6px;text-align:center}
 /* A note pinned at the active gym (lib/journal.js): the gym's map pin, in teal. */
 .exnote.gym-pin{color:var(--teal-ink)}
 .wk-gym-pin{margin:0 2px 10px}
 /* A recovery session's row (components/RecoverySheet.jsx): the teal of its calendar dot. */
 .rec-i{background:color-mix(in srgb,var(--teal) 16%,transparent);color:var(--teal-ink)}
 @supports not (color: color-mix(in srgb, red 50%, blue)){.rec-i{background:var(--surface-3)}}
+/* An activity's row (components/ActivitySheet.jsx): the blue of its calendar dot. */
+.act-i{background:color-mix(in srgb,var(--blue) 16%,transparent);color:var(--blue-ink)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){.act-i{background:var(--surface-3)}}
 /* A planned day gone by without a workout: a hollow ring, not the plan's grey dot (that one is a
    day still to come). A trained day that was moved: the trained dot with an orange ring round it. */
 .cal-d i.miss,.cal-legend i.miss{background:transparent;box-shadow:inset 0 0 0 1.3px var(--label-2)}

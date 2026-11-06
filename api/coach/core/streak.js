@@ -112,6 +112,15 @@ export function streakWalk(S, today, { log = null, weekKey = weekKeyOf } = {}) {
       if (k <= cur) trained.add(k);
     }
   }
+  // Activities (frontend/src/lib/activities.js: a run, a football match, read from the health store
+  // or an import) count the same way, only when the profile opted in (S.activityStreak).
+  if (S?.activityStreak === true && S.activities && typeof S.activities === 'object') {
+    for (const a of Object.values(S.activities)) {
+      if (!a || !isISO(a.d) || !(Number(a.min) >= 1)) continue;
+      const k = weekKey(a.d, ws);
+      if (k <= cur) trained.add(k);
+    }
+  }
   // The weeks a sick, travel or injured note sits in (a cleared note is `{ _ts }`, no tag).
   const excusable = new Map();
   if (S?.dayNotes && typeof S.dayNotes === 'object' && !Array.isArray(S.dayNotes)) {

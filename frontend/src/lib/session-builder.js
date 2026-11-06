@@ -28,6 +28,7 @@ import { fatigueOf, LB_TO_KG } from './recovery.js'
 import { FATIGUE_RECOVERING_BELOW } from './recovery-view.js'
 import { favIds } from './favourites.js'
 import { defaultConfig, lastBW } from './history.js'
+import { activityStimuli } from './activities.js'
 
 export const DURATIONS = [20, 40, 60]
 export const MAX_PICKS = 9
@@ -114,7 +115,7 @@ export function buildSession (S, { terms = [], minutes = 40, seed = 1, now = Dat
   const bw = Array.isArray(S?.bodyweight) ? lastBW(S) : null
   const bodyweightKg = bw && bw.w > 0 ? (S.unit === 'lb' ? bw.w * LB_TO_KG : bw.w) : undefined
   let fatigue = {}
-  try { fatigue = fatigueOf(S?.workouts || [], now, { bodyweightKg, unit: S?.unit }) || {} } catch { fatigue = {} }
+  try { fatigue = fatigueOf(S?.workouts || [], now, { bodyweightKg, unit: S?.unit, activities: activityStimuli(S, now) }) || {} } catch { fatigue = {} }
   const { muscles, tired, fresh, allTired } = targetMuscles(terms, fatigue)
   const profile = activeProfile(S)
   const out = { picks: [], minutes: 0, muscles, tired: allTired ? [] : tired, allTired, profileName: profile?.name || null }

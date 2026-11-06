@@ -20,6 +20,7 @@
 // The web build never gets here (MOBILE is a build-time flag).
 import { mergeHeartRate, mergeWeighIns, lacksHeartRate, mergeBodyComp } from './health-read.js'
 import { mergeVitals } from './vitals.js'
+import { mergeHealthActivities } from './activities.js'
 import { isoOf } from './format.js'
 import { MOBILE, nativePlatform, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds, goneIds } from './health-connect.js'
@@ -29,7 +30,7 @@ import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
 
 export const HEALTH_FILE = 'opengym-health.json'
-const OFF = { on: false, kcalAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {} }
+const OFF = { on: false, kcalAsked: false, written: {}, at: 0, error: null, readHr: false, readWeight: false, wHistory: false, wCursor: 0, seen: {}, hrTried: {}, readError: null, readBody: false, body: {}, bCursor: 0, readVitals: false, vitals: {}, readSport: false, sCursor: 0 }
 
 // Wrapped in an object, as in rest-alert.js: a Capacitor plugin proxy answers `then`, so a
 // promise resolved with the bare proxy never settles.
@@ -266,17 +267,21 @@ let readRunning = null
 let lastWeightRead = 0
 let lastBodyRead = 0
 let lastVitalsRead = 0
+let lastSportRead = 0
 
 // The hub's names for what the body-composition switch reads; Apple Health has the first two.
 export const BODY_READS = ['bodyFat', 'leanMass', 'boneMass', 'bmr']
 // Vitals (v1.4.5, lib/vitals.js): sleep, resting heart rate, heart rate variability and steps, one
 // switch for the four, each its own permission in the store's dialog.
 export const VITAL_READS = ['sleep', 'restingHeartRate', 'hrv', 'steps']
-const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : kind === 'vitals' ? 'readVitals' : 'readWeight')
-const anyRead = h => !!(h && (h.readHr || h.readWeight || h.readBody || h.readVitals))
+// Sport (v1.4.5, gm-hooks, lib/activities.js): other apps' workouts (a run from Strava or the watch,
+// a padel match) as activities. One permission: the store's exercise sessions / workouts.
+export const SPORT_READS = ['exercise']
+const readKey = kind => (kind === 'hr' ? 'readHr' : kind === 'body' ? 'readBody' : kind === 'vitals' ? 'readVitals' : kind === 'sport' ? 'readSport' : 'readWeight')
+const anyRead = h => !!(h && (h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport))
 
 /**
- * Turns one of the reads on (`kind`: 'hr' | 'weight' | 'body' | 'vitals'): asks for that read permission
+ * Turns one of the reads on (`kind`: 'hr' | 'weight' | 'body' | 'vitals' | 'sport'): asks for that read permission
  * only, then reads once. Resolves with { ok, reason }; reason 'denied' when it was not granted.
  */
 export async function enableRead(kind, getState, { apply = null } = {}) {
@@ -284,10 +289,10 @@ export async function enableRead(kind, getState, { apply = null } = {}) {
   if (!p) return { ok: false, reason: 'unsupported' }
   const st = await p.HC.status().catch(() => ({ status: 'unsupported' }))
   if (st.status !== 'available') return { ok: false, reason: st.status }
-  const perm = kind === 'hr' ? 'heartRate' : kind === 'body' ? 'body' : kind === 'vitals' ? 'vitals' : 'weight'
+  const perm = kind === 'hr' ? 'heartRate' : kind === 'body' ? 'body' : kind === 'vitals' ? 'vitals' : kind === 'sport' ? 'exercise' : 'weight'
   // The history permission only where Health Connect has it (status says so); Apple Health has none.
   const history = kind === 'weight' && p.platform !== 'ios' && st.history === true
-  const read = kind === 'body' ? BODY_READS : kind === 'vitals' ? VITAL_READS : history ? [perm, 'history'] : [perm]
+  const read = kind === 'body' ? BODY_READS : kind === 'vitals' ? VITAL_READS : kind === 'sport' ? SPORT_READS : history ? [perm, 'history'] : [perm]
   const res = await p.HC.requestPermissions({ read, write: [] }).catch(() => null)
   // Apple Health never says whether reading was allowed (that it was refused is itself private):
   // `read` is then missing, and a refusal just reads nothing. Body composition: any one of them.
@@ -412,6 +417,22 @@ async function readOnce(getState, force, now, applyFn) {
       const res = await p.HC.readVitals({ from })
       lastVitalsRead = now
       h.vitals = mergeVitals(h.vitals, res || {}, { from, today: isoOf(new Date(now)) })
+    } catch (e) { if (!error) fail(e) }
+  }
+
+  // Sport: other apps' workouts since the newest seen (minus a margin for a watch that syncs late),
+  // the last 30 days the first time. Into the log as activities (lib/activities.js), so they sync,
+  // count for the streak when asked and show in the calendar; openGym's own are skipped there.
+  if (h.readSport && (force ? now - lastSportRead >= RESUME_EVERY_MS : now - lastSportRead >= READ_EVERY_MS)) {
+    try {
+      const since = h.sCursor > 0 ? Math.max(h.sCursor - WEIGHT_MARGIN_MS, now - WEIGHT_FIRST_MS) : now - WEIGHT_FIRST_MS
+      const res = await p.HC.readWorkouts({ since })
+      lastSportRead = now
+      const records = Array.isArray(res?.records) ? res.records : []
+      if (records.length) apply(probe => mergeHealthActivities(probe, records, { src, now }).length > 0,
+        s => { mergeHealthActivities(s, records, { src, now }) })
+      const newest = records.reduce((m, r) => Math.max(m, Number(r?.start) || 0), 0)
+      if (newest > h.sCursor) h.sCursor = newest
     } catch (e) { if (!error) fail(e) }
   }
 

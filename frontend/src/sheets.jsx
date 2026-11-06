@@ -123,6 +123,8 @@ import { streakWeeks } from './lib/streak-explain.js'
 import { gymNoteText, withGymNote } from './lib/journal.js'
 import { recoveryDays, recoveryOn } from './lib/recovery-sessions.js'
 import { recoverySheet, RecoveryRow } from './components/RecoverySheet.jsx'
+import { activityDays, activitiesOn } from './lib/activities.js'
+import { activitySheet, ActivityRow } from './components/ActivitySheet.jsx'
 import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/StreakCalendar.jsx'
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
@@ -589,7 +591,9 @@ function ImportSummary({ parsed: initial, text, close }) {
   // Liftosaur and Liftoff bring plans as well (lib/import-apps.js); one already imported stays as it is.
   const plans = !isBW && parsed.routines?.routines?.length ? parsed.routines : null
   const newPlans = plans ? freshRoutines(st, plans) : 0
-  const fresh = (isBW ? parsed.bodyweight.length + checkIns.length : parsed.workouts.length) - have + newPlans
+  // Activities from an Apple Health export (lib/activities.js): one already here is not new.
+  const newActs = (parsed.activities || []).filter(a => !Object.hasOwn(st.activities || {}, a.id)).length
+  const fresh = (isBW ? parsed.bodyweight.length + checkIns.length : parsed.workouts.length) - have + newPlans + newActs
   const hasWorkouts = isBW || parsed.workouts.length > 0
   const unmatched = [...new Set([...(isBW ? [] : parsed.unmatchedNames), ...(plans?.unmatchedNames || [])])].sort()
 
@@ -603,9 +607,11 @@ function ImportSummary({ parsed: initial, text, close }) {
     close()
     const measured = res.measurements ? tn('{0} measurement check-in imported', '{0} measurement check-ins imported', res.measurements) : ''
     const routinesLine = planRes?.added ? tn('{0} routine imported', '{0} routines imported', planRes.added) : ''
+    // Runs and matches (lib/activities.js): the export's workouts, or sessions that were only sport.
+    const sportLine = res.activities ? tn('{0} activity imported', '{0} activities imported', res.activities) : ''
     toast(isBW
-      ? (res.added || !measured ? tn('{0} weigh-in imported', '{0} weigh-ins imported', res.added) + (measured ? ' · ' + measured : '') : measured)
-      : [res.added || !routinesLine ? tn('{0} workout imported', '{0} workouts imported', res.added) : '', routinesLine].filter(Boolean).join(' · '))
+      ? [res.added || (!measured && !sportLine) ? tn('{0} weigh-in imported', '{0} weigh-ins imported', res.added) : '', measured, sportLine].filter(Boolean).join(' · ')
+      : [res.added || (!routinesLine && !sportLine) ? tn('{0} workout imported', '{0} workouts imported', res.added) : '', routinesLine, sportLine].filter(Boolean).join(' · '))
   }
 
   return <>
@@ -617,6 +623,7 @@ function ImportSummary({ parsed: initial, text, close }) {
     <div className="tiles" style={{ textAlign: 'start' }}>
       {isBW ? <>
         <div className="tile"><div className="l">{t('Weigh-ins')}</div><div className="v v-sm">{parsed.bodyweight.length}</div></div>
+        {parsed.activities?.length > 0 && <div className="tile"><div className="l">{t('Activities')}</div><div className="v v-sm">{parsed.activities.length}</div></div>}
         {checkIns.length > 0 && <div className="tile"><div className="l">{t('Body measurements')}</div><div className="v v-sm">{checkIns.length}</div></div>}
         <div className="tile"><div className="l">{t('New')}</div><div className="v v-sm">{fresh}</div></div>
       </> : <>
@@ -3334,6 +3341,7 @@ function DayOverride({ iso, close }) {
   // logged, kept in view on any day that already has one. Quiet on purpose: a row, not a button.
   const note = dayNoteOf(st, iso)
   const recs = recoveryOn(st, iso)
+  const acts = activitiesOn(st, iso)
   const canNote = !!note || (canNoteDay(iso) && !workoutsOn(st, iso).length)
   // The coach week's sessions still to do come first, in slot order: picking one here pins it
   // to this day — the same per-date override, read back by queueNext (lib/queue.js). A session
@@ -3368,6 +3376,15 @@ function DayOverride({ iso, close }) {
           : <div className="tt">{t('Add a note for this day')}</div>}</div>
         <Icon name={note ? 'pencil' : 'plus'} className="chev" />
       </div>
+    </div>}
+    {/* Activities on this day (lib/activities.js): a run, a match. Logged by hand here too. */}
+    {(acts.length > 0 || iso <= todayISO()) && <div className="day-note day-recov" style={{ marginBottom: 14 }}>
+      {acts.map(a => <ActivityRow key={a.id} a={a} showDate={false} />)}
+      {iso <= todayISO() && <div className="item act-row" {...tappable(() => { close(); activitySheet({ day: iso }) })}>
+        <span className="lrow-i act-i" aria-hidden="true"><Icon name="figureRun" /></span>
+        <div className="grow"><div className="tt">{t('Log an activity')}</div><div className="ss">{t('A run, a ride, a match')}</div></div>
+        <Icon name="plus" className="chev" />
+      </div>}
     </div>}
     {/* Recovery sessions on this day (lib/recovery-sessions.js), and a way to log one on a past day or today. */}
     {(recs.length > 0 || iso <= todayISO()) && <div className="day-note day-recov" style={{ marginBottom: 14 }}>
@@ -3802,9 +3819,11 @@ function Calendar({ start, close, help = false }) {
   // The streak's week by week (components/StreakCalendar.jsx), with Motivation on and a workout
   // to count: a mark at the end of each row, the frozen weeks washed, one tapped week explained.
   const streakOn = isOn(st, 'motivation') && st.workouts.length > 0
-  const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart, st.streakRule, st.recoverySessions, st.recoveryStreak]) // eslint-disable-line react-hooks/exhaustive-deps
+  const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart, st.streakRule, st.recoverySessions, st.recoveryStreak, st.activities, st.activityStreak]) // eslint-disable-line react-hooks/exhaustive-deps
   // Days with a sauna, an ice bath, a massage (lib/recovery-sessions.js): a teal dot of their own.
   const recDays = useMemo(() => recoveryDays(st), [st.recoverySessions]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Days with a run or a match (lib/activities.js): a blue dot of their own.
+  const actDays = useMemo(() => activityDays(st), [st.activities]) // eslint-disable-line react-hooks/exhaustive-deps
   const [selWk, setSelWkRaw] = useState(null)
   // A tapped missed planned day (its line in WeekNote); a week and a day are never both picked.
   const [selDay, setSelDay] = useState(null)
@@ -3842,7 +3861,8 @@ function Calendar({ start, close, help = false }) {
     // A trained day that was moved keeps a hint of the orange (index.css .cal-d i.moved).
     const moved = !!ws && ovr && st.dayPlan[iso] !== 'rest'
     const rec = !ws && recDays.has(iso)
-    const dotCls = ws ? (moved ? 'done moved' : 'done') : note ? 'noted' : rec ? 'recov' : missed ? 'miss' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
+    const act = !ws && actDays.has(iso)
+    const dotCls = ws ? (moved ? 'done moved' : 'done') : note ? 'noted' : act ? 'sport' : rec ? 'recov' : missed ? 'miss' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
     const wkOf = weeks ? weekKey(iso, weekStartOf(st)) : null
     const frozenDay = !!wkOf && weeks.log.get(wkOf)?.s === 'frozen'
     const excusedDay = !!wkOf && weeks.log.get(wkOf)?.s === 'excused'
@@ -3878,6 +3898,8 @@ function Calendar({ start, close, help = false }) {
         <span><i style={{ background: 'var(--indigo)' }} />{t('Day note')}</span>}
       {[...recDays].some(k => k.startsWith(y + '-' + String(mo + 1).padStart(2, '0'))) &&
         <span><i style={{ background: 'var(--teal)' }} />{t('Recovery')}</span>}
+      {[...actDays].some(k => k.startsWith(y + '-' + String(mo + 1).padStart(2, '0'))) &&
+        <span><i style={{ background: 'var(--blue)' }} />{t('Sport')}</span>}
     </div>
     {weeks && <><StreakLegend /><WeekNote wk={selWk} day={selDay}
       entry={selDay ? weeks.log.get(weekKey(selDay, weekStartOf(st))) : selWk ? weeks.log.get(selWk) : null}

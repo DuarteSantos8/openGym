@@ -51,6 +51,7 @@ import { tappable } from '../lib/use-sheet-keyboard.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { exView, exUnitOf, shownWeight } from '../lib/ex-unit.js'
 import { isOn } from '../lib/modules.js'
+import { activityStimuli } from '../lib/activities.js'
 
 // Set 1 to 5 on the per-set chart — system colours, so each line keeps its hue in dark mode.
 const SET_COLORS = ['var(--blue)', 'var(--green)', 'var(--orange)', 'var(--purple)', 'var(--pink)']
@@ -213,7 +214,8 @@ function MusclesCard({ S, planFocus = false }) {
   const lang = getLang()
   const workouts = S.workouts
   const bodyweightKg = useMemo(() => profileBodyweightKg(S), [S.bodyweight, S.unit])
-  const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
+  // Runs and matches (lib/activities.js) load the muscles they use, next to the workouts.
+  const fatigue = useMemo(() => fatigueOf(workouts, now, { bodyweightKg, unit: S.unit, activities: activityStimuli(S, now) }), [workouts, now, bodyweightKg, S.unit, S.activities, S.activityRecovery]) // eslint-disable-line react-hooks/exhaustive-deps
   const strength = useMemo(() => strengthOf(workouts, now, { bodyweightKg, unit: S.unit }), [workouts, now, bodyweightKg, S.unit])
   const muscleExercises = useMemo(() => (sel ? strengthExerciseRowsForMuscle(S, now, sel) : []), [S, now, sel, lang])
   const lastTrained = useMemo(() => latestMuscleTraining(workouts), [workouts])

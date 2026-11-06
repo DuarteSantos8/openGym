@@ -6,6 +6,18 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Sister apps: openNutrition, runs and matches**
+- Link openNutrition, read-only: Settings → Integrations → Sister apps → openNutrition, its address and the code it shows (or a token with summary access). openGym never changes anything there, and the link stays on this device.
+- With it linked: calories, protein and protein meals a day in the performance report (a Nutrition section) and a Fuel card in Your month, each with its own switch on the openNutrition sheet.
+- Your fasting window on Home, under today's session: "Fasting until 12:00" or "Eating window open until 20:00", when openNutrition sends it.
+- Runs, rides and matches from other apps: Strava, your watch, Runna and friends save them to Apple Health or Health Connect, and openGym now reads them as activities (Settings → Integrations → Apple Health / Health Connect → Runs, rides and matches from other apps). No sets, no volume, no records.
+- Activities show in History, as a blue dot in the calendar and on a day's sheet, where you can also log one by hand (a padel match, a climbing night).
+- They tire the muscles they used: 90 minutes of football leaves your legs recovering in the muscle map and the Home hint, a yoga class barely registers.
+- Sport counts for the streak, if you want it to: Settings → Look & Home → Sport counts for the streak. Off by default, like recovery.
+- Imports keep your sport: the workouts in an Apple Health export (runs, tennis, swims) come in as activities instead of being dropped, and a Hevy or Strong session that was only sport (Padel, Football, minutes and nothing else) becomes an activity instead of an empty workout.
+- Fixed: the trainer's nutrition card read openNutrition's days as all empty (it looked for kcal and carbs where openNutrition says energy and carbohydrate), and an unlogged macro read as zero.
+- Fixed: the Apple Health / Health Connect card said Off while only body composition or vitals were being read, and Disconnect on it left those two reads running.
+
 **openGym Offline, network log, reminder sounds**
 - openGym Offline: a second Android app without the internet permission, so Android itself makes sure it never talks to anyone. Everything that works on the phone alone, 180 px animations, no sync, Coach, YouTube, update check, webhooks, Strava, WebDAV, calendar feed, API tokens, community library or gym search. Its own name and package, so it sits next to the normal app.
 - Network log in the phone app (Settings → About & updates → Network log): every request this session, by host, with the time. A phone on its own shows 0.

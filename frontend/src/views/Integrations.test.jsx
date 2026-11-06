@@ -86,7 +86,7 @@ const type = (input, v) => act(() => {
 describe('the cards', () => {
   it('a guest in a browser: the health stores live in the phone app, webhooks need a server, nothing fake to connect', async () => {
     await mount()
-    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'Backups & calendar', 'Automation', 'AI & API'])
+    expect([...host.querySelectorAll('.sect-t')].map(e => e.textContent)).toEqual(['Health & devices', 'Works with', 'Training apps', 'Backups & calendar', 'Automation', 'AI & API', 'Sister apps'])
     expect(pill('apple-health')).toBe('Not available on this device')
     expect(pill('health-connect')).toBe('Not available on this device')
     expect(action('apple-health')).toBeNull()

@@ -384,6 +384,10 @@
     <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
     <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <!-- Sport (v1.4.5), asked for when its switch is turned on: other apps' exercise sessions (a
+         run from Strava or the watch, a padel match), shown as activities in the calendar and
+         the recovery map. Foreground only, the last 30 days. -->
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
 
     <!-- Gym reminder (#614), off until switched on in Settings: where the phone is, for "I'm at
          the gym right now" and to watch the gyms the user added with the platform's proximity
