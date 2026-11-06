@@ -26,7 +26,7 @@ export const MIN_REVIEW_SESSIONS = 12;
 // by api/test/payload-parity.test.js), so a note the athlete wrote arrives whole and the bound only
 // holds for a document edited outside the app. It was 300 here, and a 500-character note reached
 // the model cut off mid-sentence.
-export const NOTE_MAX = 500;
+export const NOTE_MAX = 2000;
 // Last-resort ceiling for a free-text note/refine (issue #267). The real limit is the admin's
 // `maxMessageLen`, enforced in jobs.js before a message ever reaches this module — this module
 // stays a pure allowlist with no config import of its own, so it keeps its own constant instead.

@@ -319,6 +319,22 @@ describe('Workout set completion flow', () => {
     expect(mocks.startRest).toHaveBeenCalledTimes(3)
   })
 
+  // D#487: a rest of its own after an exercise's last set, into the next one.
+  it('rests the transition rest after the last set when another exercise follows, the work rest between sets', async () => {
+    await mount([
+      exercise('bench', [false, false], { target: { mode: 'reps', reps: 5, weight: 60, bodyweight: false, restSec: 90 } }),
+      exercise('row', [false], { target: { mode: 'reps', reps: 5, weight: 60, bodyweight: false, restSec: 90, nextRestOff: true } }),
+      exercise('curl', [false]),
+    ], 0, { nextRestSec: 180, active: { workoutView: 'list' } })
+    await toggleSet(0)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(90, expect.any(Number), { forSet: expect.any(Number) })
+    await toggleSet(1)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(180, expect.any(Number), { forSet: expect.any(Number) })
+    // The row's own "No timer" into the next exercise beats the profile's.
+    await toggleSet(2)
+    expect(mocks.startRest).toHaveBeenLastCalledWith(0, expect.any(Number), { forSet: expect.any(Number) })
+  })
+
   // Discord "set-specific rest timers": "no timer" between ramp sets, a break between sides.
   it('with "no timer" for warm-ups, a ramp set starts no rest; the last ramp set still rests the work rest', async () => {
     await mount([exercise('ramped-squat', [false, false, false], {
@@ -3761,11 +3777,19 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(mocks.S.gifSize).toBe('full')
   })
 
-  it('has no thumbnail with full animations, or in the compact layout', async () => {
+  it('has no thumbnail with full animations', async () => {
     await mount([exercise('plain-bench', [false])], 0, { gifSize: 'full' })
     expect(container.querySelector('.wthumb')).toBeNull()
+  })
+
+  // Discord 11-02: the compact layout showed no picture at all. Now a small still, unless off.
+  it('keeps a small still in the compact layout, and none with animations off', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { gifSize: 'full', active: { workoutView: 'compact' } })
+    expect(container.querySelector('.wthumb')).toBeTruthy()
+    await click(container.querySelector('.wthumb'))
+    expect(mocks.S.gifSize).toBe('full')
     await unmount()
-    await mount([exercise('plain-bench', [false])], 0, { gifSize: 'mini', active: { workoutView: 'compact' } })
+    await mount([exercise('plain-bench', [false])], 0, { gifSize: 'off', active: { workoutView: 'compact' } })
     expect(container.querySelector('.wthumb')).toBeNull()
   })
 })

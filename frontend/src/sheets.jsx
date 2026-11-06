@@ -71,7 +71,7 @@ import { isBackoff, backoffWeights } from './lib/backoff.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
 import { MOBILE, shareExport, shareExportBlob } from './lib/mobile.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
-import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP } from './lib/incline.js'
+import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP, clampLevel, levelFits, LEVEL_MAX } from './lib/incline.js'
 import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
@@ -101,10 +101,7 @@ import { stampWorkout } from './lib/sync-merge.js'
 import { hrLabel } from './lib/heart-rate.js'
 import { weeklyWeights } from './lib/bodyweight.js'
 import { workoutText } from './lib/workout-text.js'
-import { workoutCardModel, layoutWorkoutCard, drawWorkoutCard, viewAspect, CARD_FONT } from './lib/workout-card.js'
-import { cardPalette } from './lib/card-draw.js'
-import { makeCanvas, toPng, currentAccent, isRtl } from './lib/share-image.js'
-import ShareCardSheet from './components/ShareCard.jsx'
+import ShareWorkout from './components/ShareWorkout.jsx'
 import { streakInfo } from './lib/streak.js'
 import { streakWeeks } from './lib/streak-explain.js'
 import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/StreakCalendar.jsx'
@@ -2368,6 +2365,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // No warm-up rest of its own: the profile's (Settings > Workout) when it has one, else the work rest.
   const warmAll = typeof st.warmupRestSec === 'number' ? st.warmupRestSec : null
   const warmLikeAll = warmAll === null ? t('Like the work sets') : t('Default ({0})', warmAll > 0 ? fmtRest(warmAll) : t('No timer'))
+  // And the rest into the next exercise (D#487): the profile's, else like the work sets.
+  const nextAll = typeof st.nextRestSec === 'number' ? st.nextRestSec : null
+  const nextLikeAll = nextAll === null ? t('Like the work sets') : t('Default ({0})', nextAll > 0 ? fmtRest(nextAll) : t('No timer'))
   // A hold's switch-sides pause when it has none of its own (Workout.jsx SWITCH_SIDES_SEC).
   const sideDefault = t('Default ({0})', fmtRest(10))
   // No rest of its own: the default rest timer's, which may itself be off.
@@ -2479,8 +2479,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // Planned substitutes (lib/routine-backups.js): kept whenever the slot has them, whichever
     // sheet saves it, so an edit here never drops them; only real exercises, never itself.
     const withSubs = withBackups(c.subs, ex.id, id => !!EXIDX[id], c.subCfg)
+    // The rest into the next exercise (D#487), only when picked: else the profile's or the work rest.
+    const withNext = c.nextRestOff === true ? { nextRestOff: true } : c.nextRestSec > 0 ? { nextRestSec: Math.round(c.nextRestSec) } : {}
     const withSetRests = {
       ...(c.warmupRestOff === true ? { warmupRestOff: true } : c.warmupRestSec > 0 ? { warmupRestSec: Math.round(c.warmupRestSec) } : {}),
+      ...withNext,
       ...(perSide && mode === 'time' && c.sideRestOff === true ? { sideRestOff: true }
         : perSide && c.sideRestSec > 0 ? { sideRestSec: Math.round(c.sideRestSec) } : {}),
       // Holds that start by themselves, this exercise's own say (lib/auto-holds.js autoHoldsFor):
@@ -2489,7 +2492,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     }
     // The treadmill's grade, only when it has one, so a flat slot keeps the shape it had.
     const incline = clampIncline(c.incline)
-    if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...withNote, ...withRest, ...withSubs })
+    const level = clampLevel(c.level)
+    if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...withNote, ...withRest, ...withNext, ...withSubs })
     else if (mode === 'time') saveAs({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
@@ -2563,6 +2567,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
             take it from here when last time had none. */}
         {(inclineFits(ex) || c.incline > 0) && <Stepper label={t('Incline (%)')} value={c.incline || 0} step={INCLINE_STEP} max={INCLINE_MAX}
           onChange={v => setC(x => ({ ...x, incline: clampIncline(v) }))} />}
+        {/* The resistance level it starts at on a bike, a rower or a cross trainer. */}
+        {(levelFits(ex) || c.level > 0) && <Stepper label={t('Level')} value={c.level || 0} step={1} decimal={false} max={LEVEL_MAX}
+          onChange={v => setC(x => ({ ...x, level: clampLevel(v) }))} />}
       </> : mode === 'time' ? <>
         <Stepper label={t('Sets')} value={c.sets} step={1} decimal={false} onChange={v => setC(x => ({ ...x, sets: v }))} />
         <Stepper label={t('Seconds')} value={c.sec} step={5} decimal={false} onChange={v => setC(x => ({ ...x, sec: v }))} />
@@ -2661,6 +2668,27 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     <div className="small dim" style={{ marginBottom: 18 }}>
       {t('Rest after each set of this exercise. No timer means no countdown, you go when you’re ready.')}
     </div>
+    {/* The rest after this exercise's last set, into the next one (D#487). */}
+    {<>
+      <div className="sect-b cfg-rest" style={{ marginBottom: 6 }}>
+        <Row icon="timer" iconTint="var(--teal)" title={t('Rest before the next exercise')} accessory="chevron"
+          value={c.nextRestOff === true ? t('No timer') : c.nextRestSec > 0 ? fmtRest(c.nextRestSec) : nextLikeAll}
+          onClick={() => menuSheet({
+            title: t('Rest before the next exercise'),
+            items: [
+              { icon: 'timer', label: nextLikeAll, on: !(c.nextRestOff === true) && !(c.nextRestSec > 0), onClick: () => setC(x => { const { nextRestOff, nextRestSec, ...rest } = x; return rest }) },
+              { icon: 'pause', label: t('No timer'), on: c.nextRestOff === true, onClick: () => setC(x => { const { nextRestSec, ...rest } = x; return { ...rest, nextRestOff: true } }) },
+              { icon: 'clock', label: t('Pick a time'), on: c.nextRestOff !== true && c.nextRestSec > 0, onClick: () => durationSheet({
+                title: t('Rest before the next exercise'), value: c.nextRestSec > 0 ? c.nextRestSec : (nextAll > 0 ? nextAll : 120), max: REST_MAX, off: t('No timer'),
+                onDone: v => setC(x => { const { nextRestOff, nextRestSec, ...rest } = x; return v > 0 ? { ...rest, nextRestSec: v } : { ...rest, nextRestOff: true } }),
+              }) },
+            ],
+          })} />
+      </div>
+      <div className="small dim" style={{ marginBottom: 18 }}>
+        {t('The break after this exercise’s last set, to change machines before the next one.')}
+      </div>
+    </>}
     {/* The warm-ups' own rest: the profile's or like the work sets (no field, as always), no timer,
         or a time of their own. The last warm-up still rests the full work rest before the first work set. */}
     {!cardio && <>
@@ -3507,44 +3535,10 @@ function WorkoutDetail({ w, close }) {
     </div>
   </>
 }
-// The workout as a picture (#453): "Share" on the finish summary and "Share as image" in a past
-// workout's options open this same sheet (components/ShareCard.jsx) with the card
-// lib/workout-card.js lays out: 9:16 or 1:1, dark or light, in the app's accent. The muscle map is
-// the finish summary's, for this one session; whether the card carries it is remembered with the
-// profile. The streak is the one as of that workout's week.
-function ShareWorkoutImage({ w, close }) {
-  const st = useStore(s => s.S)
-  const update = useStore(s => s.update)
-  const withMap = st.shareMap !== false
-  const warmups = countsWarmups(st)
-  const day = workoutDay(w) || todayISO()
-  const model = useMemo(() => workoutCardModel(w, { unit: st.unit, nameOf: shareNameOf, warmups, streak: streakInfo(st, day).current }), [w, st.unit, warmups, st.workouts, st.weekStart, day]) // eslint-disable-line react-hooks/exhaustive-deps
-  return <ShareCardSheet title={t('Share workout')} close={close} toast={toast}
-    name={'opengym-workout-' + day + '.png'} shareTitle={w.name || 'openGym'}
-    deps={[model, withMap, st.body]}
-    render={pref => workoutCardImage(model, { ...pref, map: withMap, body: st.body })}>
-    {model.levels && <div className="sect-b" style={{ marginBottom: 12 }}>
-      <Row icon="figureStrength" iconTint="var(--acc)" title={t('Muscle map')} subtitle={t('Show which muscles this workout trained.')}>
-        <Switch checked={withMap} aria-label={t('Muscle map')} onChange={v => update(s => { s.shareMap = v })} />
-      </Row>
-    </div>}
-  </ShareCardSheet>
-}
-const shareNameOf = e => (EXIDX[e.id] ? exerciseNameFor(EXIDX[e.id]) : (e.n || e.id))
-export const shareWorkoutSheet = w => ui().openSheet(close => <ShareWorkoutImage w={w} close={close} />)
-async function workoutCardImage(model, { map, body, format, style }) {
-  const colors = cardPalette(style, currentAccent())
-  // The body geometry is ~90 KB and lazy everywhere else too (components/BodyMap.jsx).
-  const geometry = map && model.levels ? (await import('./lib/body-paths.js')).default : null
-  const shape = geometry && (geometry[body] || geometry.male)
-  const probe = makeCanvas(1, 1, CARD_FONT)
-  if (!probe) return null
-  const layout = layoutWorkoutCard(model, { measure: probe.measure, rtl: isRtl(), format, map: shape ? { aspect: viewAspect(shape.front) } : null })
-  const c = makeCanvas(layout.width, layout.height, CARD_FONT)
-  if (!c) return null
-  drawWorkoutCard(c.ctx, layout, colors, shape ? { body: shape, levels: model.levels } : null)
-  return toPng(c.canvas)
-}
+// The workout as a picture (#453, redone in 1.4.5): "Share" on the finish summary and "Share as
+// image" in a past workout's options open components/ShareWorkout.jsx: four templates, your own
+// photo, a switch per element, story, 4:5 or square.
+export const shareWorkoutSheet = w => ui().openSheet(close => <ShareWorkout w={w} close={close} />)
 // The .fit file goes out the way a backup does: the share sheet in the phone app (Files, Drive,
 // Garmin Connect itself), a download in the browser.
 async function saveFitFile(blob, name) {

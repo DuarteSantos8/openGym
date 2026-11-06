@@ -294,6 +294,15 @@ describe('parseHevyRoutines', () => {
     expect(pull.sg).toBe(row.sg)
   })
 
+  // D#876: a long Hevy note (form cues, a whole warm-up) came over cut at 280 characters.
+  it('keeps a long exercise note whole', () => {
+    const long = 'Keep the elbows tucked and squeeze at the top. '.repeat(20).trim()
+    expect(long.length).toBeGreaterThan(900)
+    const routine = { ...ROUTINE, exercises: ROUTINE.exercises.map((e, i) => (i === 1 ? { ...e, notes: long } : e)) }
+    const parsed = parseHevyRoutines([routine], TEMPLATES, { unit: 'kg' })
+    expect(parsed.routines[0].ex[1].note).toBe(long)
+  })
+
   it('mergeHevyRoutines replaces a routine it imported before instead of duplicating it', () => {
     const parsed = parseHevyRoutines([ROUTINE], TEMPLATES, { unit: 'kg' })
     const S = { routines: [], customEx: [] }

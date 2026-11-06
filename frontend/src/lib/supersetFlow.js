@@ -127,6 +127,26 @@ export function ownExerciseRest(target) {
 }
 
 /**
+ * The rest after the last set of an exercise (or a superset's last round), into the next one
+ * (D#487): walking to another machine, loading another bar. The exercise's own `nextRestSec`
+ * (`nextRestOff` for "No timer"), the longest across a superset; else the profile's
+ * (Settings > Workout, `profileSec`, 0 = no timer); else null, which means "like the work sets",
+ * the rest every exercise took into the next before this existed.
+ */
+export function transitionRestFor(entries, unit, profileSec) {
+  const idxs = Array.isArray(unit) && unit.length ? unit : []
+  let own = null
+  for (const idx of idxs) {
+    const tg = entries?.[idx]?.target
+    const v = Math.round(Number(tg?.nextRestSec)) || 0
+    if (v > 0) own = Math.max(own ?? 0, v)
+    else if (tg?.nextRestOff === true) own = Math.max(own ?? 0, 0)
+  }
+  if (own !== null) return own
+  return typeof profileSec === 'number' && Number.isFinite(profileSec) && profileSec >= 0 ? Math.round(profileSec) : null
+}
+
+/**
  * The rest a completed set earns when it was a warm-up ramp set.
  *
  * Ramp sets are light and short, so an exercise may carry its own `warmupRestSec` in its target

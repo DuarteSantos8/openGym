@@ -31,6 +31,7 @@ import {
 import { isWarmupRow, completedVolumeOf, syncSideAggregate } from './workout-model.js'
 import { HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { clampIncline, inclineFrom } from './incline.js'
+import { NOTE_MAX } from './history.js'
 
 /* ----------------------------------------------------------------- CSV ---- */
 
@@ -906,7 +907,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
         return { ...s, w: c(s.w), ...drops(s.drops) }
       })
       const mx = Math.max(0, ...conv2.filter(s => !isWarmupRow(s)).map(s => s.w || 0))
-      const note = (day.notes.get(id) || []).join(' · ').slice(0, 280)
+      const note = (day.notes.get(id) || []).join(' · ').slice(0, NOTE_MAX)
       return { id, sets: conv2, topW: mx || null, ...(day.sg.has(id) ? { sg: day.sg.get(id) } : {}), ...(note ? { note } : {}) }
     })
     // A superset is exercises next to each other; one left without a neighbour sharing its

@@ -398,7 +398,10 @@ and **Delete**.
 - **Android:** in the `play` flavour the same interface goes through Play Asset Delivery (status,
   download with progress, Wi-Fi only with Play's own prompt for mobile data, remove) for the packs
   its `assets/anim-packs.json` lists, and serves their files to the page at
-  `https://localhost/_opengym_pack/<packId>/<drawing>.webp`, never a file path. The pack modules
+  `https://localhost/_opengym_pack/<packId>/<drawing>.webp`, never a file path. Nothing downloads
+  unasked there: at the first start on an unmetered network with the pack's size plus 1 GB free
+  (the plugin's `network()`), a one-time sheet offers the quality Auto picks, with Later; a pick in
+  Settings is a yes too (`lib/anim-packs.js` offerFor, needsConsent). The pack modules
   are generated on the release machine by `scripts/android/make-asset-packs.mjs` and never
   committed. The `sideload` flavour (the APKs) answers "unavailable" and only ever has its
   built-in animations: 180 px in the Standard APK, 240 px in Plus, 360 px in HD. Each APK's updater

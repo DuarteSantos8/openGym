@@ -8,7 +8,10 @@ import { lastBW, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesFo
 import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
 import { entryTimes, exerciseTimeRows } from '../lib/exercise-time.js'
 import { speedUnitOf, speedLabel, toSpeed } from '../lib/speed.js'
-import { t, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
+import { t, tn, exerciseNameFor, exerciseNameClass, getLang } from '../lib/i18n.js'
+import { lifetimeTotals, likenessOf } from '../lib/lifetime.js'
+import { LB_KG } from '../lib/units.js'
+import CardioWeekCard from '../components/CardioWeek.jsx'
 import { bwSheet, goalSheet, calendarSheet, dayOverrideSheet, workoutDetailSheet, exerciseHistorySheet, WorkoutRow, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import WeightRate from '../components/WeightRate.jsx'
@@ -589,6 +592,8 @@ export default function Stats() {
   const workouts = S.workouts
   const monthW = workouts.filter(w => workoutDay(w)?.slice(0, 7) === todayISO().slice(0, 7)).length
   const lifetime = lifetimeVolume(S)
+  const totals = useMemo(() => lifetimeTotals(S), [S.workouts]) // eslint-disable-line react-hooks/exhaustive-deps
+  const likeness = likenessOf(S.unit === 'lb' ? lifetime * LB_KG : lifetime)
   // The streak with its best run, freezes and badges (lib/streak.js).
   const streak = streakInfo(S)
 
@@ -894,12 +899,18 @@ export default function Stats() {
       {bodyOn && <div className="tile"><div className="l">{t('Weight 30d')}</div><div className="v" style={{ color: bwDelta30 === null ? 'inherit' : bwDeltaColor(bwDelta30, (lastBW(S) || {}).w || 0) }}>{bwDelta30 === null ? '–' : (bwDelta30 > 0 ? '+' : '') + fmtNum(bwDelta30) + ' ' + S.unit}</div></div>}
       {/* Everything ever lifted (Discord): imports included, warm-ups only when the profile
           counts them (#719). */}
-      {lifetime > 0 && <div className="tile wide" data-lifetime-volume><SeasonDeco spot="stats-tile" /><div className="l">{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div></div>}
+      {/* With the rest of the all-time sums under it (Discord, 10-22), and a size to picture. */}
+      {lifetime > 0 && <div className="tile wide" data-lifetime-volume><SeasonDeco spot="stats-tile" /><div className="l">{t('Lifted in total')}</div><div className="v">{fmtVol(Math.round(lifetime), S.unit)}</div>
+        <div className="small muted lifetime-sub" data-lifetime-totals>{[tn('{0} workout', '{0} workouts', totals.workouts), tn('{0} set', '{0} sets', totals.sets), ...(totals.hours >= 1 ? [t('{0} h', fmtNum(Math.round(totals.hours)))] : [])].join(' · ')}</div>
+        {likeness && <div className="small lifetime-like">{likeness}</div>}
+      </div>}
     </div>
 
     {workouts.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} />}
     {/* The month's challenges and the trophy shelf (lib/challenges.js), folded to one line. */}
     {workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} />}
+    {/* Cardio minutes a week, with a goal if you set one (D#84). */}
+    {workouts.length > 0 && <CardioWeekCard S={S} />}
 
     <div className="card">
       <SeasonDeco spot="stats-heatmap" />

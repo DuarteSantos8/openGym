@@ -88,7 +88,7 @@ const PUSHUP = /\bpush[\s-]?ups?\b/
 const workRows = e => (Array.isArray(e?.sets) ? e.sets : []).filter(s => s && !isWarmupRow(s))
 const repsOf = e => workRows(e).reduce((n, s) => n + completedRepsOf(s), 0)
 // Cardio minutes of one entry: a cardio row's `min`, or a timed row's `sec` on a cardio exercise.
-function cardioMinOf(e) {
+export function cardioMinOf(e) {
   const cardio = isCardio(e?.id)
   let m = 0
   for (const s of workRows(e)) {

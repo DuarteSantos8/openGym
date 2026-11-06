@@ -1220,6 +1220,9 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .wthumb{position:relative;flex:none;width:48px;height:48px;border-radius:10px;overflow:hidden;padding:0}
 .wthumb .thumb{width:48px;height:48px;border-radius:10px}
 .wthumb .thumb-x{background:var(--surface-3)}
+/* The compact layout's still (1.4.5): smaller, a quiet glance at which machine it is. */
+.wthumb.dense,.wthumb.dense .thumb{width:40px;height:40px;border-radius:9px}
+.wthumb:active{transform:scale(var(--press-scale-sm))}
 .wthumb-x{
   position:absolute;inset-inline-end:3px;bottom:3px;width:16px;height:16px;border-radius:5px;
   display:flex;align-items:center;justify-content:center;font-size:10px;
@@ -2226,6 +2229,44 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .share-card img{max-height:52vh}
 .share-opts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
 .share-opts .seg{flex:1 1 140px;min-width:0}
+/* The workout share sheet (components/ShareWorkout.jsx, 1.4.5): the card is a live canvas, scaled
+   to the sheet. A sticker sits on a checkerboard, the usual way to say "this part is see-through".
+   With a photo behind it the canvas takes the finger (drag, pinch), so the sheet must not scroll. */
+.sharew-stage{display:flex;justify-content:center;margin:0 auto 14px;max-width:420px}
+.sharew-canvas{display:block;max-width:100%;max-height:52vh;width:auto;height:auto;border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.30),0 0 0 .5px var(--sep);background:var(--surface-2)}
+.sharew-stage.is-sticker .sharew-canvas{width:100%;max-height:40vh;object-fit:contain;
+  background:repeating-conic-gradient(var(--surface-2) 0 25%,var(--surface) 0 50%) 0 0/20px 20px}
+.sharew-stage.can-move .sharew-canvas{touch-action:none;cursor:grab}
+.sharew-stage.can-move .sharew-canvas:active{cursor:grabbing}
+.sharew-tpl{margin-bottom:10px}
+.sharew-hint{margin:2px 2px 12px;text-wrap:pretty}
+.sharew-photo{margin-bottom:4px}
+.sharew-pick{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;overscroll-behavior-x:contain}
+.sharew-pick::-webkit-scrollbar{display:none}
+.sharew-thumb,.sharew-add{flex:none;width:72px;height:72px;border-radius:14px;overflow:hidden;background:var(--surface-2);
+  transition:transform var(--fast) var(--ease),box-shadow var(--fast)}
+.sharew-thumb:active,.sharew-add:active{transform:scale(var(--press-scale-card))}
+.sharew-thumb .thumb{width:100%;height:100%;object-fit:cover;border-radius:0}
+.sharew-thumb.on{box-shadow:0 0 0 3px var(--acc) inset}
+.sharew-thumb.on .thumb{opacity:.9}
+.sharew-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;
+  font-size:var(--fs-caption2);color:var(--label-2);line-height:1.15;text-align:center}
+.sharew-add .icn{width:24px;height:24px;color:var(--acc)}
+.sharew-add:disabled,.sharew-thumb:disabled{opacity:.5}
+.sharew-zoom{display:flex;align-items:center;gap:6px;margin:2px 0 0}
+.sharew-zoom .sld{flex:1;min-width:0}
+.sharew-zoom .btn{flex:none;width:44px;height:44px;padding:0;justify-content:center}
+.sharew .share-opts{flex-direction:column}
+.sharew .share-opts .seg{flex:none}
+.sharew-h{margin:2px 2px 8px}
+.sharew-els,.folder-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.folder-chips{margin-top:10px}
+/* On reads as a quiet tint of the accent, off as plain and dimmed: eleven solid green pills
+   shouted louder than the card they configure. */
+.sharew-els .chip,.folder-chips .chip{background:var(--surface-2);color:var(--label-2);text-transform:none;min-height:36px}
+.sharew-els .chip.on,.folder-chips .chip.on{background:var(--surface-3);background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);font-weight:500}
+@media (prefers-reduced-motion:reduce){.sharew-thumb,.sharew-add{transition:none}}
 /* The finish summary's way out and its Share, side by side right under the numbers. */
 .fin-actions{display:flex;gap:10px}
 .fin-actions .btn{width:auto;flex:none}
@@ -3719,3 +3760,29 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-wo .tr-comment+.tr-wo-a{margin-top:0}
 .btn.tr-danger{color:var(--red)}
 .tr-foot-a{display:flex;justify-content:flex-start}
+
+/* Stats: the all-time sums under "Lifted in total", and the cardio week card (1.4.5, Q9/Q13). */
+.kpis .lifetime-sub{margin-top:2px;font-variant-numeric:tabular-nums}
+.kpis .lifetime-like{margin-top:2px;color:var(--label-2);font-style:italic}
+.cardio-week .cardio-num{font-size:var(--fs-title2,22px);font-weight:700;letter-spacing:-.01em;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.cardio-week .cardio-done{color:var(--win-ink);margin-bottom:4px}
+.cardio-week .pbar{margin:8px 0 2px}
+.cardio-week .pbar i{background:var(--acc)}
+.cardio-bars{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:end;gap:6px;height:64px;margin-top:12px}
+.cardio-bar{display:block;height:calc(max(var(--h,0),.04) * 100%);border-radius:5px 5px 2px 2px;background:var(--surface-3);background:color-mix(in srgb,var(--acc) 34%,var(--surface-2))}
+.cardio-bar.now{background:var(--acc)}
+.cardio-bar.met{background:var(--acc);background:color-mix(in srgb,var(--acc) 70%,var(--surface-2))}
+.cardio-bar.now.met{background:var(--acc)}
+.cardio-goal{position:absolute;inset-inline:0;bottom:calc(var(--g,0) * 100%);border-top:1.5px dashed var(--sep);border-top:1.5px dashed color-mix(in srgb,var(--label) 35%,transparent);pointer-events:none}
+.cardio-axis{margin-top:4px}
+
+/* Plan: routines in folders (1.4.5, Q11). The folder is a quiet header that folds its routines
+   away; the chevron turns with it. */
+.plan-folder{display:flex;align-items:center;gap:10px;width:100%;padding:14px 4px 8px;color:var(--label-2);text-align:start;font-size:var(--fs-subhead);font-weight:600}
+.plan-folder .icn{flex:none}
+.plan-folder .grow{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--label)}
+.plan-folder .n{font-weight:400;font-variant-numeric:tabular-nums}
+.plan-folder .chev{transition:transform var(--fast) var(--ease)}
+.plan-folder[aria-expanded="true"] .chev{transform:rotate(90deg)}
+[dir="rtl"] .plan-folder[aria-expanded="false"] .chev{transform:rotate(180deg)}
+@media (prefers-reduced-motion:reduce){.plan-folder .chev{transition:none}}

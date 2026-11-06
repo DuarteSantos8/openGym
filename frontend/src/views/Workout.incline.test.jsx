@@ -69,12 +69,24 @@ describe('the incline column', () => {
     expect('incline' in stored()).toBe(false)
   })
 
-  it('is not offered on a bike, unless its rows already carry a grade', () => {
+  // Since 1.4.5 a bike's third column is its resistance level (Discord 11-05), not a grade.
+  it('gives a bike its level instead, unless its rows already carry a grade', () => {
     mount(BIKE, [{ min: 20, speed: 25, done: false }])
-    expect(cells()).toHaveLength(2)
-    expect(inclineCell()).toBe(null)
+    expect(cells()).toHaveLength(3)
+    expect(container.querySelector('.sethead').textContent).toContain('Level')
+    expect(container.querySelector('.sethead').textContent).not.toContain('Incline')
+    act(() => inclineCell().querySelector('button[aria-label^="Increase"], button:last-child').click())
+    expect(stored().level).toBe(1)
     mount(BIKE, [{ min: 20, speed: 25, incline: 3, done: false }])
     expect(inclineCell().querySelector('input').value).toBe('3')
+    expect(container.querySelector('.sethead').textContent).toContain('Incline')
+  })
+
+  it('copies the level onto a set added below', () => {
+    mount(BIKE, [{ min: 20, speed: 25, level: 9, done: true }])
+    const add = [...container.querySelectorAll('button')].find(b => /Add set/.test(b.textContent))
+    act(() => add.click())
+    expect(useStore.getState().S.active.entries[0].sets[1]).toMatchObject({ min: 20, speed: 25, level: 9, done: false })
   })
 
   it('copies the grade onto a set added below', () => {
@@ -92,5 +104,6 @@ describe('the incline column', () => {
     expect(stored().incline).toBe(4.5)
     mount(BIKE, [{ min: 20, speed: 25, done: false }], { workoutView: 'focus' })
     expect(container.querySelector('button[aria-label="Increase incline"]')).toBe(null)
+    expect(container.querySelector('button[aria-label="Increase level"]')).not.toBe(null)
   })
 })

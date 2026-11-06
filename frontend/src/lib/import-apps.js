@@ -16,6 +16,7 @@ import { parseCSV, parseImport, parseWorkoutRows, matchExercise, isNoMatch, impo
 import { EXIDX, canonicalExId } from './exercises.js'
 import { uid } from './format.js'
 import { LIFTOSAUR_EXERCISES } from './liftosaur-exercises.js'
+import { NOTE_MAX } from './history.js'
 
 const LB_TO_KG = 0.45359237
 const p2 = n => String(n).padStart(2, '0')
@@ -295,7 +296,7 @@ export function liftoscriptDay(text, { unit = 'kg', resolve, templates = new Map
     // the plain numbers above leave something out of (a range, an AMRAP set, a weight in % or RPE).
     const exact = !merged.pct && sets.every(s => !s.pct && !s.hi && !s.amrap)
     const note = [exact ? '' : merged.scheme, ...merged.script].filter(Boolean).join(' / ')
-    if (note) cfg.note = note.slice(0, 280)
+    if (note) cfg.note = note.slice(0, NOTE_MAX)
     if (o.superset) {
       if (!groups.has(o.superset)) groups.set(o.superset, 'ls' + uid())
       cfg.sg = groups.get(o.superset)
@@ -438,7 +439,7 @@ function parseLiftoffRoutines(presets, { customEx = [] } = {}) {
         : v.seconds > 0 && !v.reps ? { id, sets: n, sec: Math.round(v.seconds), weight: 0, mode: 'time' }
           : { id, sets: n, reps: v.reps || 10, weight: roundWeight(v.weight || 0), mode: 'reps' }
       if (sets.length > work.length) cfg.warmupSets = Math.min(5, sets.length - work.length)
-      if (str(e.exerciseNotes)) cfg.note = str(e.exerciseNotes).slice(0, 280)
+      if (str(e.exerciseNotes)) cfg.note = str(e.exerciseNotes).slice(0, NOTE_MAX)
       if (str(e.superset)) {
         if (!groups.has(str(e.superset))) groups.set(str(e.superset), 'lo' + uid())
         cfg.sg = groups.get(str(e.superset))

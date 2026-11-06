@@ -50,6 +50,22 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Check-in: when a scan or a photo can't read your gym card, you can now type the number instead. EAN and UPC numbers have to pass their check digit, the others you type twice, and the code is drawn big so you can hold it next to the card. A typed card reminds you once to give it a test run at the turnstile (#550).
 - Cardio: how hard it felt is now a little chip right under the row (and on the Focus card): "Rate it", then "RPE 7" in its effort colour. It used to hide in the set menu where nobody found it (thanks thehypetrainhobo for saying so). Switch Effort off in Modules and the chip goes too.
 
+**Share your workout, your way**
+- The share card is new: Classic now fills the whole picture instead of sitting in a rounded box on black, Photo puts the numbers on a photo of yours, Lifts lists your best set of each exercise, and Sticker is a see-through PNG to lay over a picture you already have in Instagram (thanks Sharan for the idea, and w3ndo, ayeeebroham and seals187 for asking).
+- Your photo: pick one from the workout, the gallery or the camera, drag and pinch it into place. It stays on your device, and the picture that leaves carries no location or camera data.
+- Switch each part on or off: title, date, duration, volume, sets, PRs, exercises, muscle map, streak, heart rate and the logo. Stories keep clear of Instagram's own buttons, and there is a 4:5 size for the feed next to the 9:16 story and the square.
+
+**Small things you asked for**
+- Bikes, rowers, cross trainers and steppers get a resistance level (1 to 30) where a treadmill has its incline: in the set row, the focus view, the routine as a starting point, and in the history as "Level 8" (thanks mimesis_98178 and shadowzgz on Discord).
+- The compact workout layout shows a small still of each exercise beside its name, so you can tell the machines apart at a glance; a tap opens How to do it (thanks imacrackers on Discord).
+- Rest before the next exercise: give the walk to the next machine its own break, for every exercise in Settings → Workout → Rest, or per exercise in its settings. Untouched, it rests like the work sets, as before (D#487, thanks @YannLoreth).
+- Folders for routines: give a routine a folder in its settings (a block, a goal, or Archive) and Plan lists it under a header that folds away. Archive starts folded, and each folder stays open or shut the way you left it (thanks adam934912, zkssyth, krakenkitty88 and @spantelis03).
+- Google Play: the app offers the sharper exercise animations once, at the first start on Wi-Fi with room to spare, in the quality that fits your screen and with its size. Later means later, nothing downloads unasked, and Settings has it any time.
+- Stats: under Lifted in total you now get your all-time workouts, sets and hours, plus a sense of scale ("About 8× a blue whale", thanks seconds21ive on Discord).
+- Stats: Cardio this week adds up your cardio minutes, with the seven weeks before it and an optional weekly goal of 75, 150 or 300 minutes (D#84, thanks @turdutra).
+- Searching "plank" opens on the front plank instead of jack plank and five cousins, and "crunch" and "row" open on the everyday one too (thanks ad08008 on Discord).
+- Notes come over whole when you import from Hevy, Strong, FitNotes and friends: no more cut at 280 characters, and any note in the app can now run to 2,000 (D#876, thanks @MiquelAlvarez).
+
 **Advent calendar, reworked**
 - The advent calendar is now a gym thing: every door is something to do (or a number from your own year), each open door hangs a bauble on a little tree, and training that day lights it up. Swipe the doors open. What is behind them stays a surprise until 1 December.
 - Christmas shows up only in December now, every year, and it brought friends: a lot more to spot around the app, and someone with a shiny nose who likes hide and seek.

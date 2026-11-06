@@ -897,7 +897,8 @@ phone only** on (or for a server from before v1.4.4, whose `/api/config` does no
 The file is uploaded to this server and stored under
 `./data/uploads/<profile id>/`, named by its SHA-256. Only its owner can download it again — no
 admin route, no Coach, no MCP tool (it is told how many sets were filmed, nothing more), no
-share card, PDF or shared plan reads it. It is on by default, with these limits, all
+PDF or shared plan reads it, and a share card only shows a workout photo you picked for it
+yourself, drawn on your device. It is on by default, with these limits, all
 set in `.env`:
 
 | Variable | Default | Meaning |
