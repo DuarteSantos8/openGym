@@ -20,16 +20,17 @@ import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRo
 import { EXIDX, isAssisted, isLoadedEq, defaultIncrement } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
+import { nextRung } from './ladders.js'
 import { gymSplitView } from './gym-split.js'
 import { isPyramid } from './pyramid.js'
 import { backoffAt } from './backoff.js'
 import { ownedWeightsFor, ownedKindFor, ownedUp, ownedDeload, ownedAround } from './dumbbells.js'
 
-export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density', 'time']
+export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density', 'ladder', 'time']
 
 // Which policies can sensibly drive which logging mode.
 export const POLICIES_FOR = {
-  reps: ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density'],
+  reps: ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density', 'ladder'],
   time: ['off', 'time'],
   cardio: ['off']
 }
@@ -43,6 +44,7 @@ export const POLICY_NAME = {
   steady: 'Steady double progression',
   undulating: 'Undulating days',
   density: 'Shorter rests',
+  ladder: 'Skill ladder',
   time: 'Add time'
 }
 export const POLICY_DESC = {
@@ -54,6 +56,7 @@ export const POLICY_DESC = {
   steady: 'Work up a rep range one rep at a time. Every set has to hit the target before it moves, and at the top of the range the weight goes up.',
   undulating: 'Each session rotates: a medium day at your reps, a heavy day with fewer, a light day with more. The weights come from your estimated max, so they climb as you get stronger.',
   density: 'Same weight, a bit less rest each time every set is clean. At your shortest rest the weight goes up and the rest starts over.',
+  ladder: 'For bodyweight skills. One more rep each clean session up to the top of the range, then the next, harder variation of the ladder, back at the bottom.',
   time: 'Hold every set for the full duration and the target goes up.'
 }
 
@@ -563,6 +566,7 @@ export function nextPrescription(S, cfg, routine) {
   // Steady double progression starts a range at its bottom, every set together.
   const steady = policy === 'steady' && mode === 'reps'
   const rangeS = steady ? normalizeRepRange(cfg.reps || last?.goal || 10, cfg.repsMin, repStep(cfg)) : null
+  if (policy === 'ladder' && mode === 'reps') return ladderPrescription(S, cfg, last, policy)
   if (policy === 'undulating' && mode === 'reps') {
     const out = undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted })
     if (out) return out
@@ -909,6 +913,28 @@ export function nextPrescription(S, cfg, routine) {
 // The undulating day's prescription, or null to fall back to the shared rules: nothing loaded yet
 // (a bodyweight lift climbs reps, a first session sets the baseline) or an assistance machine,
 // whose "max" would be the help it gives.
+// The skill ladder (lib/ladders.js): reps climb one at a time while every set is clean, at the
+// top of the range every set has to hit it, and then the plan names the next rung (`next`, an
+// exercise id) for the workout to offer. The reps start at the bottom on the new rung (a new
+// exercise has its own history). No deload: a missed session just repeats. A weighted rung
+// (a belt, a vest) keeps its weight; nothing here ever adds any.
+export const LADDER_TOP = 12
+export const LADDER_BOTTOM = 5
+function ladderPrescription(S, cfg, last, policy) {
+  const range = normalizeRepRange(cfg.reps || LADDER_TOP, cfg.repsMin ?? Math.min(LADDER_BOTTOM, Math.max(1, (cfg.reps || LADDER_TOP) - 1)), 1)
+  const weight = last && last.weight > 0 ? { weight: last.weight } : {}
+  if (!last) return { policy, kind: 'first', reps: range.repsMin, why: ['Nothing logged yet, so this session sets the baseline.'] }
+  const goal = Math.max(range.repsMin, Math.min(range.reps, last.goal || range.repsMin))
+  if (!last.ok) return { policy, kind: 'hold', ...weight, reps: goal, why: ['Not every set made {0} yet. Same again.', goal] }
+  if (goal >= range.reps) {
+    const next = nextRung(S, cfg.id)
+    return next
+      ? { policy, kind: 'ladder', ...weight, reps: range.reps, next, why: ['Every set at {0}. You’re ready for the next rung.', range.reps] }
+      : { policy, kind: 'hold', ...weight, reps: range.reps, why: ['Top of the ladder. Add weight, slow the tempo or make your own next rung.'] }
+  }
+  return { policy, kind: 'up', ...weight, reps: goal + 1, why: ['Every set hit {0}. One more rep each.', goal] }
+}
+
 function undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted }) {
   if (assisted) return null
   const all = sessionsFor(S, cfg.id, cfg, null).filter(s => s.mode === 'reps')

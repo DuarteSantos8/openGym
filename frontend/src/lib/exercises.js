@@ -598,6 +598,13 @@ const STAPLES = new Set([
   '0274', '0463', '0472', '0175',                                                         // core
 ])
 const STRETCHY = new Set(['stretching', 'mobility', 'rehab', 'yoga', 'pilates'])
+/**
+ * How everyday an exercise is: a gym staple, the classic core of the catalogue, the common kit
+ * and a lift before a stretch, the same signals the search breaks ties with. Higher is more
+ * familiar; the session builder (lib/session-builder.js) leans on it.
+ */
+export const everydayScore = e => (e ? (STAPLES.has(e.id) ? 6 : 0) + priorOf(e) : 0)
+export const isClassicEx = e => !!e && CLASSIC.has(e.id)
 // Body part and target muscle words of an exercise, in English and in the reader's language.
 const bodyWordsOf = e => new Set(normalizeStr([e?.bp || '', t(e?.bp || ''), e?.tg || '', t(e?.tg || '')].join(' ')).split(' ').filter(Boolean))
 

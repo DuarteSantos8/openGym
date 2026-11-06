@@ -4150,3 +4150,33 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cr-s.accent{color:var(--acc-ink)}
 /* Favourite routines (#327): the starred ones under their own quiet heading on Plan. */
 .plan-favs-h{display:flex;align-items:center;gap:2px;margin:4px 2px 8px}
+/* The skill ladder's next rung under the progression line (views/Workout.jsx LadderNext). */
+.ladder-next{display:flex;align-items:center;gap:10px;margin:6px 0 0;padding:10px 12px;border-radius:var(--r);background:var(--acc-soft);color:var(--label)}
+.ladder-next .grow{display:grid;gap:1px;min-width:0}
+.ladder-next b{font-weight:600;font-size:var(--fs-callout);overflow-wrap:anywhere}
+.ladder-next-i{flex:none;color:var(--acc-ink);font-size:20px}
+.ladder-next-ok{flex:none;color:var(--green)}
+/* The session builder (components/SessionBuilder.jsx): a duration switch, the picks as a plain
+   list with why each is there, the total, then Start and the two quieter actions. */
+.mx-build{margin-top:12px}
+.sb-note{display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:10px 12px;border-radius:var(--r);background:var(--surface);color:var(--label-2);line-height:var(--lh-small);text-wrap:pretty}
+.sb-note .icon,.sb-note svg{flex:none;margin-top:1px}
+.sb-item .ss{white-space:normal}
+.sb-total{margin:10px 2px 0}
+.sb-actions{display:grid;gap:8px;margin-top:16px}
+.sb-actions .row > *{flex:1}
+/* Skill ladders (components/Ladders.jsx): each chain a card, its rungs a vertical track with a dot
+   per rung, filled once reached, the next one ringed in the accent. Shapes as well as colour. */
+.ladder-card h3{font-size:var(--fs-title3)}
+.ladder-steps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:2px;position:relative}
+.ladder-step button{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:6px 8px;border:0;border-radius:10px;background:none;color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast)}
+.ladder-step button:active{background:var(--press-fill)}
+.ladder-dot{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);font-size:12px;color:var(--on-acc);--icon-stroke:2.6}
+.ladder-step.is-done .ladder-dot{background:var(--acc);box-shadow:none}
+.ladder-step.is-next .ladder-dot{box-shadow:inset 0 0 0 2.5px var(--acc)}
+.ladder-step.is-todo .ladder-n{color:var(--label-2)}
+.ladder-n{flex:1;min-width:0;font-size:var(--fs-subhead);line-height:var(--lh-small)}
+.ladder-step.is-next .ladder-n{font-weight:600}
+.ladder-tag{flex:none;font-size:var(--fs-caption);font-weight:600;color:var(--acc-ink)}
+.ladder-edit-list{list-style:none;padding:0}
+.ladder-num{flex:none;width:22px;text-align:center;color:var(--label-2);font-variant-numeric:tabular-nums}

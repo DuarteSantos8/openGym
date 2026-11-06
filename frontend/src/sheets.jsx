@@ -21,7 +21,7 @@ import { toScale, rirOf, EFFORT_PRESETS, effortColor } from './lib/effort.js'
 import { beep, vibrate } from './lib/sound.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
 import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
-import { buildStarterPlan, starterPlanDays, starterPlanOptions } from './lib/starter.js'
+import { buildStarterPlan, starterPlanDays, starterPlanOptions, AWAY_PLANS } from './lib/starter.js'
 import OwnExerciseMedia from './components/OwnExerciseMedia.jsx'
 import Media, { Thumb } from './components/Media.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
@@ -253,7 +253,11 @@ const PLAN_COPY = {
   ppl: () => ({ name: t('Push / Pull / Legs'), about: t('Push, pull and legs each get their own day.') }),
   'upper-lower': () => ({ name: t('Upper / Lower'), about: t('Upper body twice, lower body twice.') }),
   'full-body': () => ({ name: t('Full Body'), about: t('Three sessions, the whole body each time.') }),
-  '5x5': () => ({ name: t('5×5'), about: t('Five sets of five on the main barbell lifts.') })
+  '5x5': () => ({ name: t('5×5'), about: t('Five sets of five on the main barbell lifts.') }),
+  'home-bw': () => ({ name: t('No equipment'), about: t('Your body and the floor. A table for rows, that’s it.') }),
+  dumbbells: () => ({ name: t('Dumbbells only'), about: t('One pair of dumbbells, no bench needed.') }),
+  bands: () => ({ name: t('Resistance bands'), about: t('A set of bands and a door to anchor them.') }),
+  hotel: () => ({ name: t('Hotel room'), about: t('Twenty-five minutes between the bed and the desk chair.') })
 }
 
 // Adds the plan's routines (reusing one you already have under the same name) and puts them on
@@ -315,16 +319,19 @@ function StarterPlanChooser({ close }) {
           {profiles.map(p => <button key={p.id} className={'chip nocap' + (fit?.id === p.id ? ' on' : '')} onClick={() => setFitId(p.id)}>{p.name}</button>)}
         </div>
       : <div className="small dim" style={{ margin: '0 0 10px' }}>{t('Add an equipment profile in Settings to fit a plan to what you own.')}</div>}
-    <div className="list">
-      {starterPlanOptions().map(({ id, days }) => {
-        const { name, about } = PLAN_COPY[id]()
-        return <div key={id} className="item" {...tappable(() => choose(id, name))}>
-          <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name="clipboard" /></span>
-          <div className="grow"><div className="tt">{name}</div><div className="ss">{t('{0} days per week', days)} · {about}</div></div>
-          <Icon name="chevronRight" className="chev" />
-        </div>
-      })}
-    </div>
+    {[starterPlanOptions().filter(o => !AWAY_PLANS.includes(o.id)), starterPlanOptions().filter(o => AWAY_PLANS.includes(o.id))].map((list, gi) => <Fragment key={gi}>
+      {gi === 1 && <h4 className="sec" style={{ marginTop: 16 }}>{t('Away from the gym')}</h4>}
+      <div className="list">
+        {list.map(({ id, days }) => {
+          const { name, about } = PLAN_COPY[id]()
+          return <div key={id} className="item" data-plan={id} {...tappable(() => choose(id, name))}>
+            <span className="lrow-i" style={{ background: 'var(--surface-3)' }}><Icon name={gi ? (id === 'hotel' ? 'bed' : id === 'dumbbells' ? 'dumbbell' : 'house') : 'clipboard'} /></span>
+            <div className="grow"><div className="tt">{name}</div><div className="ss">{t('{0} days per week', days)} · {about}</div></div>
+            <Icon name="chevronRight" className="chev" />
+          </div>
+        })}
+      </div>
+    </Fragment>)}
   </>
 }
 
@@ -3956,6 +3963,32 @@ export function repeatWorkout(w, close) {
     if (skipped) toast(tn('{0} exercise no longer exists and was left out.', '{0} exercises no longer exist and were left out.', skipped))
   }
   if (st.weighIn === false) { go(null); return }
+  if (close) close()
+  bwSheet({ required: true, onDone: go })
+}
+
+// A built session (components/SessionBuilder.jsx, lib/session-builder.js) as a freestyle workout
+// dated today: each exercise built the way one added to a running session is (buildSessionEntry),
+// so it opens at last time's numbers, or the pick's own sets and reps for an exercise new to you.
+export function startBuiltSession(cfgs, name, close) {
+  const st = S()
+  if (st.active) { toast(t('Finish the current workout first.')); return }
+  const go = bw => {
+    if (S().active) { toast(t('Finish the current workout first.')); return }
+    const now = S()
+    const entries = cfgs.map(c => ({ id: c.id, ...buildSessionEntry(now, c.id, c, null) }))
+    update(s => {
+      s.active = {
+        id: uid(), d: todayISO(), start: Date.now(), routineIds: [],
+        name: name || t('Freestyle'), bw: bw || null, cur: 0, entries,
+        workoutView: s.workoutView || 'cards',
+      }
+    })
+    useUI.getState().stopRest()
+    if (close) closeThenNav(close, '/workout'); else navToWorkout()
+    autoGymHere()
+  }
+  if (st.weighIn === false || !isOn(st, 'body')) { go(null); return }
   if (close) close()
   bwSheet({ required: true, onDone: go })
 }

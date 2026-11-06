@@ -51,7 +51,7 @@ import { defaultIncrement, weightIncrement, stepWeight } from '../lib/progressio
 import { progressionGuidance } from '../lib/progression-copy.js'
 import { rpeAs } from '../lib/programmes.js'
 import { buildPlannedEntry, buildSessionEntry, plannedConfigOf, builtOutOfProgression } from '../lib/session-start.js'
-import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotIndex, ownWarmupsChange, keepOwnWarmups } from '../lib/routines.js'
+import { routineChangesFromEntry, updateRoutineFromEntry, routineSlotIndex, ownWarmupsChange, keepOwnWarmups, replaceSlotExercise } from '../lib/routines.js'
 import { ownRowsLine } from '../lib/warmup-ramp.js'
 import { useCoachGate } from '../lib/use-coach-gate.js'
 // Opened in the same tick as the menu closes, like every other sheet from that menu: a sheet that
@@ -157,6 +157,34 @@ const RTL_LETTER = /[֐-ࣿיִ-﷿ﹰ-﻿]/
 // The pause between the left and the right side of one timed per-side set (owner's call): long
 // enough to turn over, far shorter than the rest the set earns once both sides are held.
 const SWITCH_SIDES_SEC = 10
+
+// The next rung of a skill ladder, offered under the progression line: what it is, and Swap in
+// routine, which puts it in this exercise's slot from the next session on (today stays as it is).
+function LadderNext ({ entry, next }) {
+  const update = useStore(s => s.update)
+  const live = useStore(s => s.S)
+  const routine = entry?.rid ? (live.routines || []).find(r => r.id === entry.rid) : null
+  const slot = routine ? routine.ex.findIndex(x => x.id === entry.id) : -1
+  const [done, setDone] = useState(false)
+  const swap = () => {
+    update(s => {
+      const r = (s.routines || []).find(x => x.id === entry.rid)
+      const i = r ? r.ex.findIndex(x => x.id === entry.id) : -1
+      if (i < 0) return
+      const cur = r.ex[i]
+      // Back to the bottom of the range on the new rung, the rule kept.
+      r.ex[i] = { ...replaceSlotExercise(cur, next, s, r.id), prog: cur.prog || 'ladder' }
+    })
+    setDone(true)
+    useUI.getState().toast(t('{0} is in {1} from next time.', exerciseNameText(EXIDX[next]), routine.name))
+  }
+  return <div className="ladder-next" data-ladder-next={next}>
+    <Icon name="stairs" className="ladder-next-i" />
+    <span className="grow"><span className="small dim">{t('Next rung')}</span><b>{exerciseNameText(EXIDX[next])}</b></span>
+    {slot >= 0 && !done && <Button size="sm" variant="tinted" onClick={swap}>{t('Swap in routine')}</Button>}
+    {done && <Icon name="check" className="ladder-next-ok" />}
+  </div>
+}
 
 function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSide, onField, onAddSet, onRemoveSet, onAddWarmup, onKeepWarmups, onAskCoach, onRemoveSetAt, onCopySetAt, onStartTimed, onPairPrev, onPairNext, onSetRowRef, onProgressionSettings, onRest, onNoProg, routineUpdate, onSwap, onSwapBackup, onMoveUp, onMoveDown, canMoveUp, canMoveDown, onRemoveExercise, busy }) {
   // The block reads the state as its exercise sees it (lib/ex-unit.js): in the exercise's own
@@ -920,6 +948,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       <Icon name={plan.kind === 'up' ? 'arrowUp' : plan.kind === 'deload' || plan.prog?.deload ? 'arrowDown' : plan.kind === 'programme' ? 'calendar' : 'lightbulb'} />
       <span><strong>{t(guidance.policyLabel)}</strong> · {t(...guidance.why)}{guidance.prog?.rpe != null && <> · {t('aim for {0}', (r => `${r.k} ${fmtNum(r.v)}`)(rpeAs(guidance.prog.rpe, effortOf(S))))}</>}</span>
     </button>}
+    {/* The skill ladder (lib/ladders.js): the next rung, and one tap to put it in the routine. */}
+    {plan?.kind === 'ladder' && plan.next && EXIDX[plan.next] && <LadderNext entry={entry} next={plan.next} />}
     </>}
     <div className="card" style={{ marginTop: 10, marginBottom: 0 }}>
       {/* the header carries the same eff3/timed sizing as the rows, or the labels drift off their
