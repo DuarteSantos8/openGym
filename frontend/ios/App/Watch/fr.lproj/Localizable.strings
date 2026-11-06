@@ -37,6 +37,8 @@
 "Edit" = "Modifier";
 "Overview" = "Aperçu";
 "Discard workout?" = "Abandonner la séance ?";
+"Up next" = "À suivre";
+"How hard was that set?" = "Cette série, c’était dur comment ?";
 "Last time: %@" = "La dernière fois: %@";
 "No workout running" = "Aucune séance en cours";
 "Not synced yet" = "Pas encore synchronisé";

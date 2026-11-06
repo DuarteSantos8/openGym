@@ -94,6 +94,7 @@ struct SetPanel: View {
             } else {
                 numbers(entry, row: row, unit: unit)
             }
+            if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
             if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
                 Text("Last time: \(last)")
                     .font(.system(size: 11, design: .rounded))
@@ -149,6 +150,32 @@ struct SetPanel: View {
                 .accessibilityAddTraits(store.fixSide == side ? AccessibilityTraits.isSelected : AccessibilityTraits())
             }
         }
+    }
+
+    /// The effort on a set being fixed: a tap goes through the quick ratings and back to as it was.
+    private func fixEffort(_ kind: String) -> some View {
+        let v = store.fixEffort
+        let color = v.map { Effort.color(kind, $0) } ?? Theme.label2
+        return Button {
+            let chips = Effort.chips(kind)
+            if let cur = v, let i = chips.firstIndex(of: cur) {
+                store.fixEffort = i + 1 < chips.count ? chips[i + 1] : nil
+            } else {
+                store.fixEffort = chips.first
+            }
+            WKInterfaceDevice.current().play(.click)
+        } label: {
+            Text(verbatim: "\(Effort.name(kind)) \(v.map { Effort.chipLabel(kind, $0) } ?? "–")")
+                .font(.system(.caption2, design: .rounded).weight(.semibold).monospacedDigit())
+                .foregroundStyle(color)
+                .padding(.horizontal, 10)
+                .frame(minHeight: 24)
+                .background(Capsule().fill(color.opacity(0.18)))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text("Effort"))
+        .accessibilityValue(v.map { Text(verbatim: "\(Effort.name(kind)) \(Effort.chipLabel(kind, $0))") } ?? Text("None"))
+        .accessibilityHint(Text("Tap to change it."))
     }
 
     /// The boxes: weight and reps; reps and the added weight on a bodyweight set; a hold's seconds.

@@ -106,6 +106,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private static let heardKey = "heardFromPhone"
     @Published private(set) var restEndsAt: Date?
     @Published private(set) var restStartedAt: Date?
+    /// The last rest end a snapshot carried (ms): followed once, not again.
+    private var phoneRestEnd: Double?
     /// "All done?": the workout has had no set logged for 20 minutes (WatchCore's Idle).
     @Published var askDone = false
     /// A set picked by hand in an exercise (entry index → set index); otherwise the first not done.
@@ -117,7 +119,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var lastTick: Date?
     /// Taps ignored for a second after the watch turns the page by itself (WatchCore's TouchLock).
     private var touchLock = TouchLock()
-    private var touchAllowed: Bool { touchLock.allows(at: Date()) }
+    var touchAllowed: Bool { touchLock.allows(at: Date()) }
     /// When this watch first had the running workout (its start, for a phone that sends none).
     private var workoutSeenAt: Date?
     /// The rest running after a set, for that rest's heart rate once it is over.
@@ -392,29 +394,73 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         fixW = n.w ?? 0
         fixR = n.r ?? 0
         fixSec = n.sec ?? 0
+        fixEffort = nil
     }
 
     /// Whether the numbers on a set being fixed differ from what was logged.
     var fixChanged: Bool {
         guard let f = fixFrom, viewing != nil else { return false }
-        return fixW != (f.w ?? 0) || fixR != (f.r ?? 0) || fixSec != (f.sec ?? 0)
+        return fixW != (f.w ?? 0) || fixR != (f.r ?? 0) || fixSec != (f.sec ?? 0) || fixEffort != nil
     }
 
     /// Save on a set being fixed: the phone gets it as the set done again (SetFix.correct).
     func saveFix() {
         guard let ref = viewing, fixChanged else { return }
+        let rated = effortKind.flatMap { k in fixEffort.map { Effort.Rating(kind: k, value: $0) } }
         let (next, event) = SetFix.correct(state, entry: ref.entry, set: ref.set, side: fixSide,
-                                           to: SetFix.Numbers(w: fixW, r: fixR, sec: fixSec),
+                                           to: SetFix.Numbers(w: fixW, r: fixR, sec: fixSec), effort: rated,
                                            now: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString)
         guard let ev = event else { return }
         send(event: ev)
         state = next
+        if ref == lastLogged, let r = fixEffort { lastRated = r }
         viewing = nil
         fixFrom = nil
         noteActivity()
         Haptics.done()
         loadTargets()
     }
+
+    /* ---------- the effort, rated during the rest ---------- */
+
+    /// The set logged last here (its side, for a per-side set), and what the rest rated it.
+    @Published private(set) var lastLogged: SetRef?
+    private var lastSide: String?
+    @Published private(set) var lastRated: Double?
+
+    /// The rest offers the chips: the profile rates effort and the set just done is a work set.
+    var canRateLast: Bool {
+        guard effortKind != nil, let ref = lastLogged, let w = workout, w.entries.indices.contains(ref.entry),
+              w.entries[ref.entry].sets.indices.contains(ref.set) else { return false }
+        let e = w.entries[ref.entry]
+        return !e.isCardio && !e.sets[ref.set].warmup
+    }
+
+    /// A chip: the set just done gets this effort (the setDone again, its numbers as logged).
+    func rateLast(_ v: Double) {
+        guard touchAllowed, let kind = effortKind, let ref = lastLogged, let w = workout,
+              w.entries.indices.contains(ref.entry), w.entries[ref.entry].sets.indices.contains(ref.set),
+              let n = SetFix.logged(w.entries[ref.entry].sets[ref.set], side: lastSide) else { return }
+        ackRestOver()
+        let (next, event) = SetFix.correct(state, entry: ref.entry, set: ref.set, side: lastSide, to: n,
+                                           effort: Effort.Rating(kind: kind, value: v),
+                                           now: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString)
+        guard let ev = event else { return }
+        send(event: ev)
+        state = next
+        lastRated = v
+        WKInterfaceDevice.current().play(.click)
+    }
+
+    /// ‹ on the rest: the set just done, open to be fixed while the rest runs on.
+    func fixLast() {
+        guard let ref = lastLogged else { return }
+        open(ref)
+        if let side = lastSide, viewing != nil { setFixSide(side) }
+    }
+
+    /// The effort picked on a set being fixed (nil: left as it was).
+    @Published var fixEffort: Double?
 
     /// Back to the set up next without saving.
     func closeFix() {
@@ -527,9 +573,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             for tick in SessionCore.phoneTicks(before.workout, next.workout) {
                 self.phoneTicked(tick, wid: next.workout?.id ?? "", resting: snap.active?.rest != nil)
             }
+            // Only a rest end the phone has not sent before: the same one again (with some other
+            // change) would undo a ±15 here, or bring back a rest skipped here.
             if let rest = snap.active?.rest, next.workout?.id == snap.active?.id {
-                let end = Date(timeIntervalSince1970: rest.endsAt / 1000)
-                if end != self.restEndsAt { self.startRest(until: end, notify: true) }
+                if RestMath.follows(rest.endsAt, last: self.phoneRestEnd) {
+                    self.phoneRestEnd = rest.endsAt
+                    let end = Date(timeIntervalSince1970: rest.endsAt / 1000)
+                    if end != self.restEndsAt { self.startRest(until: end, notify: true) }
+                }
+            } else {
+                self.phoneRestEnd = nil
             }
             self.health.syncSetting(next.settings.health)
             // What the phone has applied leaves the outbox; what it lacks goes again.
@@ -602,7 +655,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             startRest(until: now.addingTimeInterval(restFor), notify: true)
             restAfter = (e.id, ei, si, w.id ?? "", now)
             rested = true
+            // The thumb that hit Done is still there: the rest's buttons wait a second for it.
+            touchLock.lock(at: now)
         }
+        lastLogged = SetRef(entry: ei, set: si)
+        lastSide = side
+        lastRated = nil
         if to != ei { state.entryIndex = to }
         loadTargets()
         overviewIfDone()
@@ -687,8 +745,21 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// Skip on the rest: the rest ends, and a hold that starts by itself counts in.
     func skipRestAndGo() {
+        guard touchAllowed else { return }
         skipRest()
+        // The set page comes back under the finger that hit Skip.
+        touchLock.lock(at: Date())
         autoHoldIfDue()
+    }
+
+    /// −15 s on the rest; with 15 s or less left, a Skip (as on the phone).
+    func minusRest() {
+        guard touchAllowed, let end = restEndsAt else { return }
+        ackRestOver()
+        guard let to = RestMath.minus(end: end, now: Date()) else { skipRestAndGo(); return }
+        let start = restStartedAt
+        startRest(until: to, notify: true)
+        restStartedAt = start
     }
 
     /// The hold starts: a countdown from the seconds on the screen; at zero it is done by itself.
@@ -708,7 +779,16 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         holdTimer = Timer.scheduledTimer(withTimeInterval: seconds, repeats: false) { [weak self] _ in
             DispatchQueue.main.async { self?.endHold(early: false) }
         }
+        // The last three seconds, one click each, so the wrist knows without a look.
+        holdTicks.forEach { $0.cancel() }
+        holdTicks = [3.0, 2.0, 1.0].filter { seconds > $0 + 1 }.map { left in
+            let item = DispatchWorkItem { Haptics.count() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + seconds - left, execute: item)
+            return item
+        }
     }
+
+    private var holdTicks: [DispatchWorkItem] = []
 
     /// Stopped by hand: done with the seconds it lasted (a hold under a second is not one).
     func endHold(early: Bool) {
@@ -722,6 +802,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     func stopHold() {
         holdTimer?.invalidate()
         holdTimer = nil
+        holdTicks.forEach { $0.cancel() }
+        holdTicks = []
         holdEndsAt = nil
         holdStartedAt = nil
     }
@@ -968,6 +1050,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
     /// ended (a workout left running ends at its last set), else now.
     func finish(at end: Date = Date(), idle: Bool = false) {
+        // Finished mid-hold: the seconds held so far are that set, not lost.
+        if !idle, holdEndsAt != nil { endHold(early: true) }
         closeRest(at: end)
         let now = end.timeIntervalSince1970 * 1000
         let ended = workout
@@ -1013,7 +1097,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     }
 
     func addRest(_ seconds: TimeInterval) {
-        guard let end = restEndsAt else { return }
+        guard touchAllowed, let end = restEndsAt else { return }
         ackRestOver()
         let start = restStartedAt
         startRest(until: end.addingTimeInterval(seconds), notify: true)
@@ -1339,7 +1423,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if show == "noclip" { self.state.settings.show = WatchShow(clip: false) }
             }
             self.loadTargets()
-            if screen == "rest" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen == "rest" || screen == "effort" { self.startRest(until: Date().addingTimeInterval(83), notify: false) }
+            if screen == "effort" {
+                self.state.settings.effort = "rir"
+                self.lastLogged = SetRef(entry: 0, set: 1)
+            }
             if screen == "hold" { self.startHold() }
             if screen == "offline" { self.reachable = false; self.queued = 3 }
             if screen == "summary" || screen == "summary-end" || screen == "ended" {

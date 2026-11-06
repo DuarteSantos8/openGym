@@ -37,6 +37,8 @@
 "Edit" = "编辑";
 "Overview" = "概览";
 "Discard workout?" = "放弃训练？";
+"Up next" = "下一个";
+"How hard was that set?" = "这组有多吃力？";
 "Last time: %@" = "上次: %@";
 "No workout running" = "没有进行中的训练";
 "Not synced yet" = "尚未同步";

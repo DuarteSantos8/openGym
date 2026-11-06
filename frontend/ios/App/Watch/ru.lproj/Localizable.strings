@@ -37,6 +37,8 @@
 "Edit" = "Изменить";
 "Overview" = "Обзор";
 "Discard workout?" = "Отменить тренировку?";
+"Up next" = "Далее";
+"How hard was that set?" = "Насколько тяжёлым был подход?";
 "Last time: %@" = "В прошлый раз: %@";
 "No workout running" = "Тренировка не идёт";
 "Not synced yet" = "Ещё не синхронизировано";

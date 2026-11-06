@@ -37,6 +37,8 @@
 "Edit" = "แก้ไข";
 "Overview" = "ภาพรวม";
 "Discard workout?" = "ทิ้งการออกกำลังกายนี้?";
+"Up next" = "ถัดไป";
+"How hard was that set?" = "เซ็ตนั้นหนักแค่ไหน?";
 "Last time: %@" = "ครั้งก่อน: %@";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";

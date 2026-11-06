@@ -167,7 +167,7 @@ struct CountdownView: View {
 extension Effort {
     /// The phone's band colours (index.css --purple … --green, then the accent's soft tone).
     static func color(_ kind: String, _ value: Double) -> Color {
-        [Color.purple, .red, .orange, .yellow, Theme.accent, .teal][band(kind, value)]
+        [Theme.purple, Theme.red, Theme.orange, Theme.yellow, Theme.accent, Theme.teal][band(kind, value)]
     }
 }
 
@@ -284,112 +284,6 @@ struct CountdownRing: View {
             }
         }
         .accessibilityHidden(true)
-    }
-}
-
-struct RestView: View {
-    @EnvironmentObject var store: SessionStore
-    let end: Date
-    @Environment(\.isLuminanceReduced) private var dimmed
-    @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 42
-
-    var body: some View {
-        // The ring and the countdown in it take the space above the two corner buttons, so nothing
-        // overlaps on any size (it did on 46 mm when the ring filled the whole screen).
-        VStack(spacing: 2) {
-            ZStack {
-                if store.show.restRing {
-                    CountdownRing(start: store.restStartedAt ?? end.addingTimeInterval(-90), end: end)
-                }
-                VStack(spacing: 1) {
-                    Text("Rest").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
-                    Text(timerInterval: min(Date(), end)...end, countsDown: true)
-                        .font(.system(size: store.show.restRing ? countdownSize : countdownSize * 1.35, weight: .semibold, design: .rounded).monospacedDigit())
-                        .minimumScaleFactor(0.5)
-                        .lineLimit(1)
-                        .multilineTextAlignment(.center)
-                    if store.show.showNext, let e = store.entry, let si = store.setIndex {
-                        Group {
-                            if let side = store.sideUp {
-                                Text("Next: \(e.name), set \(si + 1)") + Text(verbatim: " · ") + Text(side == "L" ? LocalizedStringKey("Left") : LocalizedStringKey("Right"))
-                            } else {
-                                Text("Next: \(e.name), set \(si + 1)")
-                            }
-                        }
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.7)
-                        .multilineTextAlignment(.center)
-                        // What to load during the rest (#911): the next set's weight and reps,
-                        // brighter than the line above, the thing you walk to the rack for.
-                        if let numbers = store.nextSetNumbers {
-                            Text(verbatim: numbers)
-                                .font(.caption.weight(.semibold).monospacedDigit())
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.6)
-                        }
-                    }
-                    if store.offline {
-                        Text("Saved on the watch, syncs later")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
-                    }
-                }
-                .padding(.horizontal, 18)
-            }
-            .aspectRatio(1, contentMode: .fit)
-            .padding(.horizontal, 6)
-            // Always On: the countdown stays, the buttons go (nothing to tap with the wrist down).
-            HStack {
-                EdgeButton(systemImage: "goforward.15", label: Text("+15s")) { store.addRest(15) }
-                Spacer()
-                LockButton(health: store.health)
-                Spacer()
-                EdgeButton(systemImage: "forward.end.fill", label: Text("Skip")) { store.skipRestAndGo() }
-            }
-            .opacity(dimmed ? 0 : 1)
-        }
-        .ignoresSafeArea(edges: .bottom)
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
-    }
-}
-
-/// A timed set running: the ring counts the hold down; Stop ends it early with what it lasted.
-struct HoldView: View {
-    @EnvironmentObject var store: SessionStore
-    let end: Date
-    @Environment(\.isLuminanceReduced) private var dimmed
-    @ScaledMetric(relativeTo: .largeTitle) private var countdownSize: CGFloat = 42
-
-    var body: some View {
-        VStack(spacing: 2) {
-            ZStack {
-                CountdownRing(start: store.holdStartedAt ?? end, end: end, color: .cyan)
-                VStack(spacing: 1) {
-                    Text(store.entry?.name ?? "").font(.caption2.weight(.semibold)).foregroundStyle(.secondary).lineLimit(1)
-                    Text(timerInterval: min(Date(), end)...end, countsDown: true)
-                        .font(.system(size: countdownSize, weight: .semibold, design: .rounded).monospacedDigit())
-                        .minimumScaleFactor(0.5)
-                        .lineLimit(1)
-                        .multilineTextAlignment(.center)
-                    Text("Hold").font(.caption2).foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 18)
-            }
-            .aspectRatio(1, contentMode: .fit)
-            .padding(.horizontal, 6)
-            HStack {
-                LockButton(health: store.health)
-                Spacer()
-                EdgeButton(systemImage: "stop.fill", label: Text("Stop")) { store.endHold(early: true) }
-            }
-            .opacity(dimmed ? 0 : 1)
-        }
-        .ignoresSafeArea(edges: .bottom)
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 }
 
