@@ -3756,3 +3756,18 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-wo .tr-comment+.tr-wo-a{margin-top:0}
 .btn.tr-danger{color:var(--red)}
 .tr-foot-a{display:flex;justify-content:flex-start}
+
+/* Stats: the all-time sums under "Lifted in total", and the cardio week card (1.4.5, Q9/Q13). */
+.kpis .lifetime-sub{margin-top:2px;font-variant-numeric:tabular-nums}
+.kpis .lifetime-like{margin-top:2px;color:var(--label-2);font-style:italic}
+.cardio-week .cardio-num{font-size:var(--fs-title2,22px);font-weight:700;letter-spacing:-.01em;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.cardio-week .cardio-done{color:var(--win-ink);margin-bottom:4px}
+.cardio-week .pbar{margin:8px 0 2px}
+.cardio-week .pbar i{background:var(--acc)}
+.cardio-bars{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:end;gap:6px;height:64px;margin-top:12px}
+.cardio-bar{display:block;height:calc(max(var(--h,0),.04) * 100%);border-radius:5px 5px 2px 2px;background:color-mix(in srgb,var(--acc) 34%,var(--surface-2))}
+.cardio-bar.now{background:var(--acc)}
+.cardio-bar.met{background:color-mix(in srgb,var(--acc) 70%,var(--surface-2))}
+.cardio-bar.now.met{background:var(--acc)}
+.cardio-goal{position:absolute;inset-inline:0;bottom:calc(var(--g,0) * 100%);border-top:1.5px dashed color-mix(in srgb,var(--label) 35%,transparent);pointer-events:none}
+.cardio-axis{margin-top:4px}

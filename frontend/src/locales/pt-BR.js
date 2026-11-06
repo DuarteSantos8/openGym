@@ -2944,6 +2944,10 @@ export const PT_BR_OVERRIDES = {
   "Drag to move it, pinch to zoom. The photo never leaves this device on its own.": "Arraste para mover, use dois dedos para ampliar. A foto nunca sai sozinha deste dispositivo.",
   "Pick one of yours. It stays on this device.": "Escolha uma das suas. Ela fica neste dispositivo.",
   "On the card": "No card",
+  "Goal reached. Your heart says thanks.": "Meta batida. Seu coração agradece.",
+  "Weekly cardio goal": "Meta semanal de cardio",
+  "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 minutos por semana é o número que as dicas de saúde não param de repetir. Escolha o seu, ou nenhum.",
+  "Cardio this week": "Cardio nesta semana",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }
