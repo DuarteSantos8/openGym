@@ -15,6 +15,7 @@ import { hideBoot, handOverFromLaunchScreen } from './lib/boot.js'
 import { guardFocusZoom } from './lib/viewport-zoom.js'
 import { initBuildCaps } from './lib/channel.js'
 import { startNetLog } from './lib/net-log.js'
+import { applyDisplay } from './lib/display-prefs.js'
 
 // App.jsx restores per-route scroll itself; the browser's own attempt races it.
 // A script that dies before the app draws would otherwise leave the boot logo lifting forever.
@@ -25,6 +26,9 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
 
 // The web build lets people pinch to zoom; on iOS a focused small field must not zoom the page.
 if (!MOBILE) guardFocusZoom()
+
+// Settings → Look & Home → Motion and Text size, before anything draws.
+applyDisplay()
 
 // Settings → About → Network log (lib/net-log.js): from the very first request on.
 if (MOBILE) startNetLog()

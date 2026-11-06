@@ -107,6 +107,7 @@ import { useOfflineBuild } from '../lib/use-offline-build.js'
 import { offlineBuild } from '../lib/build-caps.js'
 import NetworkLogPage, { NetworkLogRow } from './NetworkLog.jsx'
 import ReminderSounds from '../components/ReminderSounds.jsx'
+import DisplayRows from '../components/DisplayRows.jsx'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -1081,6 +1082,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Recovery counts for the streak')} checked={S.recoveryStreak === true}
             onChange={v => update(s => { if (v) s.recoveryStreak = true; else delete s.recoveryStreak })} />
         </Row>}
+        {/* Motion and text size (lib/display-prefs.js): this device only, like the app icon. */}
+        <DisplayRows />
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}

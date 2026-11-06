@@ -4226,3 +4226,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .netlog-n{font-size:var(--fs-title2);font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-top:6px}
 .netlog-lead{margin:0;max-width:34ch;font-size:var(--fs-subhead);color:var(--label-2);line-height:1.4;text-wrap:pretty}
 .netlog-url{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--fs-footnote);word-break:break-all}
+
+/* Settings → Look & Home → Motion: Less (lib/display-prefs.js), the app's own Reduce Motion. */
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}

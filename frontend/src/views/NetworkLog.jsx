@@ -25,11 +25,10 @@ const clock = at => {
 }
 
 // How it went out, in words a person reads.
-const VIA = {
-  fetch: 'From the app', xhr: 'From the app', eventsource: 'From the app', websocket: 'From the app', beacon: 'From the app',
-  native: 'From the phone, past the WebView', img: 'A picture', iframe: 'An embedded page', video: 'A video', audio: 'A sound', css: 'A style sheet', link: 'A style sheet', script: 'A script',
-}
-const viaLabel = v => t(VIA[v] || 'Something the page loaded')
+const SCRIPTED = new Set(['fetch', 'xhr', 'eventsource', 'websocket', 'beacon'])
+const SHOWN = new Set(['img', 'iframe', 'video', 'audio', 'image'])
+const viaLabel = v => SCRIPTED.has(v) ? t('From the app') : v === 'native' ? t('From the phone itself')
+  : SHOWN.has(v) ? t('Something it showed') : t('Something the page loaded')
 
 export function NetworkLogRow() {
   const log = useSyncExternalStore(subscribeNetLog, read, read)
