@@ -4485,6 +4485,9 @@ export default {
   "{0} in a month": "{0} ในหนึ่งเดือน",
   "Straight from your scale, read-only. Change it where it was measured.": "มาจากเครื่องชั่งโดยตรง อ่านได้อย่างเดียว แก้ไขได้ที่ที่วัดมา",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "คุณสร้างโทเค็น {0}",
+  "The token {0} was revoked": "โทเค็น {0} ถูกเพิกถอนแล้ว",
+  "The token {0} changed {1}": "โทเค็น {0} แก้ไข{1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "โทเค็นให้โปรแกรมหนึ่ง เช่น ผู้ช่วย AI ดูหรือแก้ได้เฉพาะสิ่งที่คุณติ๊ก ไม่เกินสิทธิ์ของคุณ และเฉพาะโปรไฟล์ของคุณเท่านั้น",
   "API token": "โทเค็น API",
   "API tokens": "โทเค็น API",

@@ -4521,6 +4521,9 @@ export default {
   "{0} in a month": "{0} på en månad",
   "Straight from your scale, read-only. Change it where it was measured.": "Direkt från din våg, bara läsning. Ändra där det mättes.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Du skapade token {0}",
+  "The token {0} was revoked": "Token {0} återkallades",
+  "The token {0} changed {1}": "Token {0} ändrade {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "En token låter ett program, som en AI-assistent, se eller ändra bara det du bockar för. Aldrig mer än du själv får, och bara din egen profil.",
   "API token": "API-token",
   "API tokens": "API-tokens",

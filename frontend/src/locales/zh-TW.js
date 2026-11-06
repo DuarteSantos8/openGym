@@ -4467,6 +4467,9 @@ export default {
   "{0} in a month": "一個月 {0}",
   "Straight from your scale, read-only. Change it where it was measured.": "直接來自體重計，唯讀。要改請到測量的地方改。",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "你建立了權杖 {0}",
+  "The token {0} was revoked": "權杖 {0} 已撤銷",
+  "The token {0} changed {1}": "權杖 {0} 修改了{1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "權杖讓一個程式（例如 AI 助理）只能查看或修改你勾選的內容。絕不超過你自己的權限，也只限你自己的個人檔案。",
   "API token": "API 權杖",
   "API tokens": "API 權杖",

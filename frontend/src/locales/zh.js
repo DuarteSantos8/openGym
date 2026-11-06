@@ -4474,6 +4474,9 @@ export default {
   "{0} in a month": "一个月 {0}",
   "Straight from your scale, read-only. Change it where it was measured.": "直接来自体重秤，只读。要改请去测量的地方改。",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "你创建了令牌 {0}",
+  "The token {0} was revoked": "令牌 {0} 已撤销",
+  "The token {0} changed {1}": "令牌 {0} 修改了{1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "令牌让一个程序（比如 AI 助手）只能查看或修改你勾选的内容。绝不超过你自己的权限，也只限你自己的档案。",
   "API token": "API 令牌",
   "API tokens": "API 令牌",

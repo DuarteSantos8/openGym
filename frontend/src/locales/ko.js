@@ -4474,6 +4474,9 @@ export default {
   "{0} in a month": "한 달 동안 {0}",
   "Straight from your scale, read-only. Change it where it was measured.": "체중계에서 바로 가져온 읽기 전용 값이에요. 측정한 곳에서 바꾸세요.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "토큰 {0}을(를) 만들었어요",
+  "The token {0} was revoked": "토큰 {0}이(가) 취소됐어요",
+  "The token {0} changed {1}": "토큰 {0}이(가) {1}을(를) 바꿨어요",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "토큰은 AI 어시스턴트 같은 프로그램 하나가 체크한 것만 보거나 바꾸게 해요. 내 권한보다 많을 수 없고, 내 프로필에만 해당돼요.",
   "API token": "API 토큰",
   "API tokens": "API 토큰",

@@ -4440,6 +4440,9 @@ export default {
   "{0} in a month": "{0} trong một tháng",
   "Straight from your scale, read-only. Change it where it was measured.": "Lấy thẳng từ cân của bạn, chỉ đọc. Muốn sửa thì sửa ở nơi đã đo.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Bạn đã tạo token {0}",
+  "The token {0} was revoked": "Token {0} đã bị thu hồi",
+  "The token {0} changed {1}": "Token {0} đã sửa {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Token cho một chương trình, như trợ lý AI, chỉ xem hoặc sửa những gì bạn đánh dấu. Không bao giờ hơn quyền của bạn, và chỉ hồ sơ của riêng bạn.",
   "API token": "Token API",
   "API tokens": "Token API",

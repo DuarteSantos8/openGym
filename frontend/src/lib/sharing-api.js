@@ -67,6 +67,10 @@ export function logLine(e) {
     case 'suggest.new': return t('{0} sent you a suggestion', who(e.actor))
     case 'suggest.accept': return t('You took a suggestion from {0}', who(e.peer))
     case 'suggest.decline': return t('You turned down a suggestion from {0}', who(e.peer))
+    // Scoped tokens (Settings → API tokens): a look reads like anyone's ("Claude looked at Workouts").
+    case 'token.create': return t('You made the token {0}', who(e.peer))
+    case 'token.end': return t('The token {0} was revoked', who(e.peer))
+    case 'token.write': return t('The token {0} changed {1}', who(e.actor), categoryLabel(e.cat))
     default: return e?.ev || ''
   }
 }

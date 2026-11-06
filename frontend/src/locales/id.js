@@ -4439,6 +4439,9 @@ export default {
   "{0} in a month": "{0} dalam sebulan",
   "Straight from your scale, read-only. Change it where it was measured.": "Langsung dari timbanganmu, hanya baca. Ubah di tempat diukurnya.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Kamu membuat token {0}",
+  "The token {0} was revoked": "Token {0} dicabut",
+  "The token {0} changed {1}": "Token {0} mengubah {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Token membuat satu program, seperti asisten AI, hanya melihat atau mengubah yang kamu centang. Tidak pernah lebih dari hakmu, dan hanya profilmu sendiri.",
   "API token": "Token API",
   "API tokens": "Token API",

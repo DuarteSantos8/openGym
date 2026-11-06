@@ -43,6 +43,13 @@ const LABELS = {
   'auth.watch.ok': 'Paired a Zepp OS watch',
   'auth.watch.fail': 'Watch pairing failed',
   'auth.watch.unlink': 'Unpaired a watch',
+  // Scoped tokens (Settings → API tokens). `msg` is the token's name, never the token; on a write,
+  // also the categories it changed. A refused token is throttled like other anonymous failures.
+  'auth.token.create': 'Made an API token',
+  'auth.token.revoke': 'Revoked an API token',
+  'auth.token.fail': 'An API token was refused',
+  'token.write': 'An API token changed the profile',
+  'token.denied': 'An API token tried a change outside its scopes',
   // Password sign-in (#118), where the instance offers it.
   'auth.password.ok': 'Signed in with a password',
   'auth.password.fail': 'Password sign-in failed',

@@ -5,6 +5,9 @@ import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Você criou o token {0}",
+  "The token {0} was revoked": "O token {0} foi revogado",
+  "The token {0} changed {1}": "O token {0} alterou {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Um token deixa um programa, como um assistente de IA, ver ou alterar só o que você marcar. Nunca mais do que você pode, e só o seu próprio perfil.",
   "API token": "Token de API",
   "API tokens": "Tokens de API",

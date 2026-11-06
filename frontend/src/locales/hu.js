@@ -4477,6 +4477,9 @@ export default {
   "{0} in a month": "{0} egy hónap alatt",
   "Straight from your scale, read-only. Change it where it was measured.": "Egyenesen a mérlegedről, csak olvasható. Ott módosíthatod, ahol mérték.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Létrehoztad a(z) {0} tokent",
+  "The token {0} was revoked": "A(z) {0} token visszavonva",
+  "The token {0} changed {1}": "A(z) {0} token módosította: {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Egy token egyetlen programnak, például egy MI-asszisztensnek csak azt engedi látni vagy módosítani, amit bejelölsz. Soha nem többet, mint te, és csak a saját profilodat.",
   "API token": "API-token",
   "API tokens": "API-tokenek",

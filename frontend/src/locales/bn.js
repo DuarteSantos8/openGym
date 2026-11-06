@@ -4553,6 +4553,9 @@ export default {
   "{0} in a month": "এক মাসে {0}",
   "Straight from your scale, read-only. Change it where it was measured.": "সরাসরি আপনার স্কেল থেকে, শুধু পড়ার জন্য। যেখানে মাপা হয়েছে সেখানেই বদলান।",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "আপনি টোকেন {0} তৈরি করেছেন",
+  "The token {0} was revoked": "টোকেন {0} বাতিল হয়েছে",
+  "The token {0} changed {1}": "টোকেন {0} বদলেছে: {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "টোকেন একটি প্রোগ্রামকে, যেমন AI সহকারীকে, শুধু আপনার টিক দেওয়া জিনিস দেখতে বা বদলাতে দেয়। আপনার চেয়ে বেশি কখনো নয়, আর শুধু আপনার নিজের প্রোফাইল।",
   "API token": "API টোকেন",
   "API tokens": "API টোকেন",

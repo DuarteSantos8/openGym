@@ -4474,6 +4474,9 @@ export default {
   "{0} in a month": "{0} en un mes",
   "Straight from your scale, read-only. Change it where it was measured.": "Directo de tu báscula, solo lectura. Se cambia donde se midió.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Creaste el token {0}",
+  "The token {0} was revoked": "Se revocó el token {0}",
+  "The token {0} changed {1}": "El token {0} cambió {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Un token deja que un programa, como un asistente de IA, vea o cambie solo lo que marques. Nunca más de lo que puedes tú, y solo tu propio perfil.",
   "API token": "Token de API",
   "API tokens": "Tokens de API",

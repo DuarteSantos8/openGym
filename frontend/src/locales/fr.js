@@ -4474,6 +4474,9 @@ export default {
   "{0} in a month": "{0} en un mois",
   "Straight from your scale, read-only. Change it where it was measured.": "Tout droit de ta balance, en lecture seule. Ça se modifie là où ça a été mesuré.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Tu as créé le jeton {0}",
+  "The token {0} was revoked": "Le jeton {0} a été révoqué",
+  "The token {0} changed {1}": "Le jeton {0} a modifié {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Un jeton laisse un programme, comme un assistant IA, voir ou modifier seulement ce que tu coches. Jamais plus que toi, et seulement ton propre profil.",
   "API token": "Jeton d’API",
   "API tokens": "Jetons d’API",

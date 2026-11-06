@@ -4529,6 +4529,9 @@ export default {
   "{0} in a month": "{0} خلال شهر",
   "Straight from your scale, read-only. Change it where it was measured.": "مباشرة من ميزانك، للقراءة فقط. غيّرها حيث قيست.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "أنشأت الرمز {0}",
+  "The token {0} was revoked": "أُلغي الرمز {0}",
+  "The token {0} changed {1}": "غيّر الرمز {0}: {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "يسمح الرمز لبرنامج واحد، مثل مساعد ذكاء اصطناعي، برؤية أو تغيير ما تحدده فقط. لا أكثر مما يحق لك أبدًا، وملفك الشخصي فقط.",
   "API token": "رمز API",
   "API tokens": "رموز API",

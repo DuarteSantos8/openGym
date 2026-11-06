@@ -4470,6 +4470,9 @@ export default {
   "{0} in a month": "{0} per mėnesį",
   "Straight from your scale, read-only. Change it where it was measured.": "Tiesiai iš jūsų svarstyklių, tik skaityti. Keiskite ten, kur buvo matuota.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Sukūrei žetoną {0}",
+  "The token {0} was revoked": "Žetonas {0} atšauktas",
+  "The token {0} changed {1}": "Žetonas {0} pakeitė: {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Žetonas leidžia vienai programai, pvz., DI asistentui, matyti ar keisti tik tai, ką pažymi. Niekada daugiau nei gali tu, ir tik tavo profilį.",
   "API token": "API žetonas",
   "API tokens": "API žetonai",

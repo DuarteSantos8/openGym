@@ -4440,6 +4440,9 @@ export default {
   "{0} in a month": "{0} در یک ماه",
   "Straight from your scale, read-only. Change it where it was measured.": "مستقیم از ترازوی شما، فقط خواندنی. هر جا اندازه گرفته شده همان‌جا تغییرش دهید.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "توکن {0} را ساختی",
+  "The token {0} was revoked": "توکن {0} لغو شد",
+  "The token {0} changed {1}": "توکن {0} تغییر داد: {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "توکن به یک برنامه، مثل دستیار هوش مصنوعی، اجازه می‌دهد فقط چیزهایی را که تیک می‌زنی ببیند یا تغییر دهد. هرگز بیشتر از خودت، و فقط پروفایل خودت.",
   "API token": "توکن API",
   "API tokens": "توکن‌های API",

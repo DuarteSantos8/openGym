@@ -4440,6 +4440,9 @@ export default {
   "{0} in a month": "{0} za měsíc",
   "Straight from your scale, read-only. Change it where it was measured.": "Rovnou z tvé váhy, jen ke čtení. Měnit se to dá tam, kde se měřilo.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "Vytvořil sis token {0}",
+  "The token {0} was revoked": "Token {0} byl zrušen",
+  "The token {0} changed {1}": "Token {0} změnil: {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Token dovolí jednomu programu, třeba AI asistentovi, vidět nebo měnit jen to, co zaškrtneš. Nikdy víc, než smíš ty, a jen tvůj vlastní profil.",
   "API token": "API token",
   "API tokens": "API tokeny",

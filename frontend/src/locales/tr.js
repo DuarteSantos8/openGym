@@ -4474,6 +4474,9 @@ export default {
   "{0} in a month": "Bir ayda {0}",
   "Straight from your scale, read-only. Change it where it was measured.": "Doğrudan tartından, salt okunur. Ölçüldüğü yerde değiştir.",
   // --- API tokens and MCP over HTTPS (mcp-146) ---
+  "You made the token {0}": "{0} token’ını oluşturdun",
+  "The token {0} was revoked": "{0} token’ı iptal edildi",
+  "The token {0} changed {1}": "{0} token’ı şunu değiştirdi: {1}",
   "A token lets one program, like an AI assistant, see or change only what you tick. Never more than you can, and only your own profile.": "Token, bir yapay zekâ asistanı gibi tek bir programın yalnızca işaretlediklerini görmesine veya değiştirmesine izin verir. Asla senden fazlası değil, yalnızca kendi profilin.",
   "API token": "API token’ı",
   "API tokens": "API token’ları",

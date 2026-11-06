@@ -17,6 +17,9 @@ describe('sharing helpers', () => {
   it('reads every log event as a sentence, a deleted trainer as a former one', () => {
     expect(logLine({ ev: 'grant.create', peer: { kind: 'trainer', name: 'Marco' } })).toBe('You connected Marco')
     expect(logLine({ ev: 'grant.accept', actor: { kind: 'trainer', name: '' } })).toBe('A former trainer said yes')
+    expect(logLine({ ev: 'token.create', peer: { kind: 'token', name: 'Claude' } })).toBe('You made the token Claude')
+    expect(logLine({ ev: 'token.write', actor: { kind: 'token', name: 'Claude' }, cat: 'plans' })).toBe('The token Claude changed Plans & routines')
+    expect(logLine({ ev: 'token.end', peer: { kind: 'token', name: 'Claude' } })).toBe('The token Claude was revoked')
     expect(logLine({ ev: 'grant.end', actor: { kind: 'self', name: 'Lea' }, peer: { kind: 'gym', name: 'FitBox' } })).toBe('You ended the connection with FitBox')
     expect(logLine({ ev: 'grant.end', actor: { kind: 'trainer', name: 'Marco' } })).toBe('Marco ended the connection')
     expect(logLine({ ev: 'access', actor: { kind: 'trainer', name: 'Marco' }, cat: 'workouts' })).toBe('Marco looked at Workouts')
