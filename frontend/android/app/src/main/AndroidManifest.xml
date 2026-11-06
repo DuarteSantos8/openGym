@@ -410,6 +410,12 @@
         <intent>
             <action android:name="android.media.action.VIDEO_CAPTURE" />
         </intent>
+        <!-- The progress-photo camera's fallback (components/PhotoCamera.jsx): where the live
+             camera is refused, a file input with capture="user" opens the camera app for a
+             still, which needs the same answer from the package manager as the video one. -->
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
         <!-- Spoken cues (SpeechCue.java): the phone's text-to-speech engine is another app, and
              since Android 11 the app cannot bind to it without saying so here. -->
         <intent>

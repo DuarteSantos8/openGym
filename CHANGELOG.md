@@ -22,6 +22,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - log_workout logs cardio: minutes, speed or distance, incline, in mph or km/h (#942, idea by @matthewjablack).
 - Fixed: log_workout's dry run said no PRs even when the save then gave PR badges (#942).
 - Fixed: the MCP's workout labels showed cardio in km/h on a profile that uses mph.
+**Progress photos, grown up** (ideas by @Borgna02, #939)
+- Every photo you add at once gets its own day: one at a time, with a preview and "2 of 5". The day comes from the photo's own date (JPEG, PNG, WebP and HEIC now), else the file name, else the file date, and the sheet says which, so a guess is easy to spot (#940, idea by @Borgna02).
+- Wrong day? Tap the date in the full-size view and pick the right one. The photo moves there, onto that day's workout if it has one (#940, idea by @Borgna02).
+- The gallery is one grid cut into months with the date on every photo, a line on top that says how long since the last one, and a chart of your photo days. Tap a day to jump to it (#949, idea by @Borgna02).
+- Take photo: an in-app camera with your previous photo laid faintly over the live view, so you stand in the same spot every time. Pick another photo for the overlay or switch it off, set how strong it is, flip between front and rear. Where the live camera is not allowed, the phone's camera app takes over (#951, idea by @Borgna02).
+- Compare two to nine photos: side by side in tidy rows, every photo the same height (drag one to choose what shows), or the before/after slider for two. Share sends exactly what is on the screen as one picture, made on your phone (#950, idea by @Borgna02).
+- Progress photos stay yours: none of this shares them anywhere. Trainers still need your photos permission, and the community library still only shows a photo you share yourself.
+- Fixed: Progress photos could not be opened before your first workout, so there was no way to add the very first one.
+- Fixed: the before/after slider had lost its round grip, leaving only a thin line to aim for.
 
 **Importing, with a say in it**
 - Check and choose: the import summary lists every exercise in the file and what it becomes. Tap one to pick the right library exercise or keep it as your own, and the pick is remembered for the next import (#931, idea by @lodepav).

@@ -112,3 +112,22 @@ it.each([0, 1])('retains week start %i when switching the activity metric', week
   expect(dayLabels()).toEqual(labels)
   expect(host.textContent).toContain('More volume')
 })
+
+// #949: the progress-photo gallery draws photo counts per day with the same chart, no Time/Volume switch.
+it('draws given counts per day, with the caller legend and no metric switch', () => {
+  const now = new Date()
+  const day = n => { const d = new Date(now); d.setDate(d.getDate() - n); return isoOf(d) }
+  const counts = { [day(1)]: 1, [day(2)]: 4, [day(3)]: 0 }
+  const onDay = vi.fn()
+  host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host)
+  act(() => root.render(<Heatmap S={{ workouts: [{ d: day(5), start: 1, end: 60001 }], dayNotes: {} }} counts={counts} onDay={onDay}
+    legend={['Fewer', 'More']} countLabel={n => n + ' photos'} />))
+  expect(host.querySelector('.seg')).toBeNull()
+  expect(host.querySelector('.hm-legend').textContent).toContain('Fewer')
+  const cell = d => [...host.querySelectorAll('.hm-c[title]')].find(e => e.title.startsWith(d))
+  expect(cell(day(2)).title).toBe(day(2) + ' · 4 photos')
+  expect(cell(day(2)).classList.contains('l4')).toBe(true)
+  expect(cell(day(3)).classList.contains('l0')).toBe(true)
+  expect(cell(day(5)).classList.contains('l0')).toBe(true)     // a workout is not a photo
+  act(() => cell(day(1)).click()); expect(onDay).toHaveBeenCalledWith(day(1))
+})
