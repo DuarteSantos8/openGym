@@ -80,14 +80,8 @@ struct RootView: View {
                 CountdownView(from: from)
             } else if store.workout == nil {
                 HomeView()
-            } else if let from = store.holdCountFrom {
-                CountdownView(from: from, label: Text("Start hold"), start: { store.startHold(auto: true) }, cancel: { store.stopHoldCount() })
-            } else if let end = store.holdEndsAt {
-                HoldView(end: end)
-            } else if let end = store.restEndsAt, end > Date() {
-                RestView(end: end)
             } else {
-                ExercisePager()
+                SessionView()
             }
         }
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
@@ -96,12 +90,12 @@ struct RootView: View {
         .environment(\.accent, store.accent)
         .environment(\.onAccent, store.onAccent)
         .tint(store.accent)
-        // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Finish page.
+        // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Overview's hold.
         .alert(Text("All done?"), isPresented: $store.askDone) {
             Button("Continue workout", role: .cancel) { store.keepGoing() }
             Button("Finish workout") {
                 store.keepGoing()
-                store.show(entry: store.workout?.entries.count ?? 0)
+                store.tab = .overview
             }
         }
         // Any touch: the rest-over alarm was noticed (it would tap once more otherwise).
@@ -171,21 +165,6 @@ struct CountdownView: View {
 }
 
 /* ---------- the exercises, one per page ---------- */
-
-struct ExercisePager: View {
-    @EnvironmentObject var store: SessionStore
-
-    var body: some View {
-        // Vertical pages, swiped; the crown belongs to the numbers on the page (like a volume).
-        TabView(selection: Binding(get: { store.entryIndex }, set: { store.show(entry: $0) })) {
-            ForEach(Array((store.workout?.entries ?? []).enumerated()), id: \.offset) { pair in
-                ExercisePage(index: pair.offset).tag(pair.offset)
-            }
-            FinishPage().tag(store.workout?.entries.count ?? 0)
-        }
-        .tabViewStyle(.verticalPage)
-    }
-}
 
 /// What a tap on a number opens for editing.
 enum EditField: String, Identifiable {
@@ -763,37 +742,6 @@ struct SetDots: View {
             case .decrement: if at > 0 { pick(open[at - 1]) }
             @unknown default: break
             }
-        }
-    }
-}
-
-/// After the last exercise: one round button, finish and save (on the phone, as its Finish and save).
-struct FinishPage: View {
-    @EnvironmentObject var store: SessionStore
-    @State private var confirming = false
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text(verbatim: store.workout?.name ?? "")
-                .font(.system(.footnote, design: .rounded).weight(.semibold))
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
-            RoundButton(systemImage: "flag.checkered", label: Text("Finish workout")) { confirming = true }
-            let p = store.progress
-            if p.total > 0 {
-                Text("\(p.done) of \(p.total) sets").font(.caption2).foregroundStyle(.secondary)
-            }
-            if store.offline {
-                Text("Saved on the watch, syncs later").font(.caption2).foregroundStyle(.secondary).multilineTextAlignment(.center)
-            }
-            LockButton(health: store.health)
-        }
-        .padding(.horizontal, 6)
-        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
-        .confirmationDialog("Finish workout?", isPresented: $confirming) {
-            Button("Finish and save") { store.finish() }
-            Button("Discard workout", role: .destructive) { store.discard() }
-            Button("Cancel", role: .cancel) {}
         }
     }
 }

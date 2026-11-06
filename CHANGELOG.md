@@ -19,6 +19,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Watch redesign: idea and first versions by @cubetes (#832 to #966).
 - The watch wears openGym's look: the app's greys, its rounded type and its accent colour (your own, if you picked one on the phone). The start screen says Today beside the clock, tells you how big the routine is (exercises and sets) and has one big Start, with the other routines as rows under it.
 - The watch speaks all 24 of openGym's languages: Czech, Persian, Indonesian, Lithuanian, Swedish and Vietnamese are new.
+- One session screen instead of a stack of pages: the set in the middle, the rest on the same page after it, and a swipe right for the Overview with every exercise, its sets and supersets grouped. Tap a row to jump there. Finish is a one-second hold at the bottom of the Overview, so a workout never ends on a stray tap, and the Overview comes up by itself after the last set.
 
 **Sign in with your identity provider (OIDC)**
 - Self-hosting with Authentik, Authelia, Keycloak, voidAuth or Pocket ID? openGym signs people in through it now, next to passkeys: set OIDC_ISSUER and OIDC_CLIENT_ID and the sign-in screen gets a "Sign in with ..." button (#130, idea and first version by @melduarmir (#391), testing by @austinwilcox).

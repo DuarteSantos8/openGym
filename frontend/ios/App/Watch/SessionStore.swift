@@ -299,13 +299,27 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if ei == entryIndex { loadTargets() }
     }
 
-    /// Paging to another exercise (a vertical swipe).
+    /// Another exercise on the set page, picked by hand (an Overview row).
     func show(entry ei: Int) {
         guard ei != state.entryIndex else { return }
         ackRestOver()
         state.entryIndex = ei
-        touchLock.unlock()          // swiped by hand: the page is the lifter's own choice
+        touchLock.unlock()          // picked by hand: the page is the lifter's own choice
         loadTargets()
+    }
+
+    /// The page of the session screen on show (SessionView): the set, unless the lifter swiped.
+    @Published var tab: SessionTab = .set
+
+    /// A tap on an Overview row: that exercise, on the set page.
+    func jump(to ei: Int) {
+        show(entry: ei)
+        tab = .set
+    }
+
+    /// Every set done or passed over: the Overview, where Finish is.
+    private func overviewIfDone() {
+        if Overview.atEnd(state) { tab = .overview }
     }
 
     /// What the complications and the Smart Stack widget show (WidgetState), in the app's language.
@@ -403,6 +417,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.setStartedAt = Date()
                 self.workoutSeenAt = Date()
                 self.picked = [:]
+                self.tab = .set
                 self.summary = nil
                 self.health.start(workoutId: next.workout?.id, type: next.workout?.healthType)
             }
@@ -503,6 +518,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         if to != ei { state.entryIndex = to }
         loadTargets()
+        overviewIfDone()
         // A hold with no rest after it (the other side, or the rest timer off): the next one counts in.
         if heldFor != nil && !rested { autoHoldIfDue() }
     }
@@ -541,6 +557,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             state.entryIndex = to
         }
         loadTargets()
+        overviewIfDone()
         Haptics.skip()
     }
 
@@ -755,6 +772,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         send(event: event)
         state = next
         picked = [:]
+        tab = .set
         setStartedAt = now
         workoutSeenAt = now
         restAfter = nil
@@ -1215,7 +1233,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3
             case "superset": self.state.entryIndex = 4
-            case "finish": self.state.entryIndex = self.workout?.entries.count ?? 0
+            case "finish", "overview": self.picked[0] = 2; self.tab = .overview
             case "weighin":
                 self.bodyWeight = 81.4
                 self.weighInFor = ReadySession(routineIds: ["r1"], name: "Push day", entries: [])
