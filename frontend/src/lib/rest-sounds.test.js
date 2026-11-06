@@ -57,7 +57,7 @@ describe('RestTone.java plays what the page plays', () => {
   })
 
   it('takes the sound from the page by name, and the old classic switch from a page before it', () => {
-    expect(java('RestAlertPlugin')).toMatch(/call\.getString\("tone", Boolean\.TRUE\.equals\(call\.getBoolean\("classic", Boolean\.FALSE\)\) \? "classic" : "chime"\)/)
+    expect(java('RestAlertPlugin')).toMatch(/data\.getString\("tone", Boolean\.TRUE\.equals\(data\.getBoolean\("classic", Boolean\.FALSE\)\) \? "classic" : "chime"\)/)
     const alert = java('RestAlert')
     expect(alert).toMatch(/intent\.getStringExtra\("tone"\)/)
     expect(alert).toMatch(/RestTone\.render\(tone\)/)

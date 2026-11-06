@@ -124,6 +124,11 @@ imported. When you change one side, change the other in the same pull request:
 The last two have no test that compares the code itself, so a change on one side only is not
 caught automatically.
 
+The phones have one such pair too: what the workout card's Log set does while the page sleeps
+(the next set, the rest that follows) is `LiveActivityTick.tick` in
+`ios/App/App/WorkoutActivity.swift` and `WorkoutCard.java` on Android, each with its own tests
+(`WorkoutCardTest.java`), nothing comparing the two.
+
 Equipment per gym (#808) needed no new rule on either side, on purpose. Each equipment profile
 carries its gym's `plates`, `dumbbells`, `barDefaults` and `stackWeights` as ordinary entry fields
 (merged field by field like any other, and put back by the server when an older app leaves them
