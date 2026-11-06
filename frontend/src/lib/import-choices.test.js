@@ -196,3 +196,12 @@ describe('the Hevy API import (#815)', () => {
     expect(EXIDX[bench]).toBeTruthy()
   })
 })
+
+// Found on the way: Strong's "Lat Pulldown (Cable)" missed the 'lat pulldown' alias (the bag has
+// "cable" in it) and fell to five near ties, so the most common pulldown became a custom exercise.
+describe('Strong’s bracketed pulldowns', () => {
+  it('match the lat pulldown', () => {
+    expect(matchExercise('Lat Pulldown (Cable)')).toBe('2330')
+    expect(EXIDX[matchExercise('Lat Pulldown (Machine)')].n).toMatch(/pulldown/)
+  })
+})

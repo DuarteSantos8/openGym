@@ -212,6 +212,9 @@ const ALIAS_EX = {
   squat: '0043', 'back squat': '0043', 'barbell squat': '0043', 'front squat': '0042',
   deadlift: '0032', 'romanian deadlift': '0085', rdl: '0085', 'sumo deadlift': '0117',
   'lat pulldown': '2330', 'lat pull down': '2330', pulldown: '2330',
+  // Strong names the equipment in brackets; the bag with "cable" in it missed the alias above and
+  // fell to five near ties, so the most common pulldown arrived as a new exercise of your own.
+  'lat pulldown (cable)': '2330', 'lat pulldown (machine)': '0579',
   shrug: '0095', shrugs: '0095',
   'overhead press': '0091', 'military press': '0091', 'shoulder press': '0091', ohp: '0091',
   'barbell row': '0027', 'bent over row': '0027', 'bent-over row': '0027',

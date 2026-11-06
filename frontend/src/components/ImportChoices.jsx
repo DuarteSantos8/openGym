@@ -55,8 +55,8 @@ export default function ImportChoices({ names, choices, setChoices, remembered, 
 
   const summary = [
     tn('{0} exercise', '{0} exercises', names.length),
-    withSets.length - kept > 0 ? tn('{0} left out', '{0} left out', withSets.length - kept) : '',
-    picked ? tn('{0} picked by you', '{0} picked by you', picked) : '',
+    withSets.length - kept > 0 ? t('Left out: {0}', withSets.length - kept) : '',
+    picked ? t('Picked by you: {0}', picked) : '',
   ].filter(Boolean).join(', ')
 
   return <div className="imp-choices">

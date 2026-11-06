@@ -6,6 +6,12 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Importing, with a say in it**
+- Check and choose: the import summary lists every exercise in the file and what it becomes. Tap one to pick the right library exercise or keep it as your own, and the pick is remembered for the next import (#931, idea by @lodepav).
+- Untick exercises you don't want, narrow the dates, or leave the notes and RPE/RIR behind; the counts follow before anything is written (#849, idea by @Suslicke).
+- Hevy API import keeps workout and exercise notes, routine rest timers and rep ranges, which become double progression (#815, idea by @lodepav).
+- Fixed: Strong's "Lat Pulldown (Cable)" and "Lat Pulldown (Machine)" arrived as new exercises of your own instead of the lat pulldown.
+
 **Watch sync, rebuilt to not lose a single set**
 - Apple Watch and Wear OS keep every set, start, finish and discard in an outbox of their own and send it again until the phone confirms it applied it. A failed transfer, a killed app or a phone that was off all day no longer eats a set.
 - Apple Watch: sets reach the iPhone in a moment while it is near, instead of whenever the system felt like it, so logging on both devices back and forth stays in step (#882).

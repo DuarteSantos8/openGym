@@ -4,6 +4,27 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- import: check and choose (#931, #849) ---
+  "A pick is remembered as another name of that exercise, so the next import finds it too.": "Uma escolha fica salva como outro nome do exercício, para a próxima importação encontrar também.",
+  "All dates": "Todas as datas",
+  "Becomes {0}": "Vira {0}",
+  "Bring the RPE and RIR ratings": "Trazer as avaliações RPE e RIR",
+  "Bring the notes": "Trazer as anotações",
+  "Check and choose": "Conferir e escolher",
+  "Dates": "Datas",
+  "Exercises in the file": "Exercícios no arquivo",
+  "Import {0}": "Importar {0}",
+  "Keep it as your own exercise": "Manter como exercício seu",
+  "Pick from the library": "Escolher da biblioteca",
+  "Select all": "Selecionar tudo",
+  "Select none": "Não selecionar nada",
+  "Use the automatic match": "Usar a correspondência automática",
+  "a new exercise of your own": "um novo exercício seu",
+  "your own “{0}”": "seu “{0}”",
+  "your pick": "sua escolha",
+  "{0}: change what it becomes": "{0}: mudar no que vira",
+  "Left out: {0}": "Deixados de fora: {0}",
+  "Picked by you: {0}": "Escolhidos por você: {0}",
   'The search finds it by these too. Separate them with commas.': 'A busca também encontra o exercício por estes. Separe com vírgulas.',
   'Save names': 'Salvar nomes',
   'Handy when you compare with another app. Records ignore warm-ups either way.': 'Ajuda quando você compara com outro app. Os recordes ignoram o aquecimento de qualquer jeito.',

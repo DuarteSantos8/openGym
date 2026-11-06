@@ -116,7 +116,22 @@ With **Hevy Pro** you can skip the CSV:
    import only and isn't saved.
 3. Choose workouts, routines, weigh-ins or any mix, then confirm.
 
-Routines always arrive as new plans; nothing you already have is overwritten.
+Routines always arrive as new plans; nothing you already have is overwritten. A workout's
+description becomes its note and an exercise's notes the entry's note. A routine keeps each
+exercise's rest timer, and a rep range ("8 to 12") becomes a double-progression range (#815).
+
+## Check and choose before you import
+
+Every summary, for a file from another app and for the Hevy API, has a **Check and choose** row
+(#931, #849). Open it to see every exercise name in the file and what it becomes: a library
+exercise, one of your own, or a new exercise of your own. Tap one to pick it from the library,
+keep it as your own exercise, or go back to the automatic match. Untick an exercise to leave its
+sets out, narrow the dates, or leave the notes or the RPE and RIR ratings behind. The tiles show
+what Import will do, and nothing is written before you tap it.
+
+A pick is remembered as another name of that exercise (Edit → Other names), so the next import of
+the same name lands there too, and you can take it back there. Names you gave an exercise yourself
+steer an import the same way. An openGym export names exercises by id, so it has nothing to check.
 
 ## Body weight from Apple Health
 
