@@ -22,8 +22,7 @@ managed by your NixOS configuration. This document covers both.
 | `apps.default` | Alias for `opengym`. |
 | `devShells.default` | Development shell: Node.js 22, coreutils, git. |
 | `checks.nixos-module-eval` | Evaluates the module against a list of scenarios (`module-check.nix`) and asserts the resulting services/users/nginx state, environment, hardening and TLS config — plus the configurations that must fail to evaluate (mutually exclusive options, removed options). |
-| `checks.opengym-nixos-test` *(Linux)* | Boots a NixOS VM and exercises the HTTP contract end to end (API health, nginx vhost proxy, SPA, exercise media). |
-| `nixosTests.opengym` | The same VM test under the conventional `nixosTests` output. |
+| `checks.opengym-nixos-test` *(Linux)* | Boots a NixOS VM and exercises the HTTP contract end to end (API health, nginx vhost proxy, SPA, exercise media — including the cache and Cross-Origin-Resource-Policy headers). The only VM-test output: the flake has no `nixosTests` attribute, and building one warns. |
 | `nixosModules.opengym` | The NixOS module (`nixosModules.default` aliases it). |
 
 ### What the NixOS module does
@@ -62,7 +61,8 @@ browser ── HTTPS ──▶ your web server (Caddy / nginx / …)         eve
 
 ```text
 contrib/nix/
-  flake.nix          Flake entry point — packages, apps, devShell, module alias
+  flake.nix          Flake entry point — packages, apps, devShell, module alias, eval-check
+                     scenarios (the module's test data; the machinery is module-check.nix)
   flake.lock         Locked inputs
   opengym.nix        The NixOS module (options + systemd/nginx wiring)
   node-package.nix   The packaging module shared by the API and the MCP server: stages the
@@ -73,6 +73,8 @@ contrib/nix/
   api.nix            The API's layout over node-package.nix → bin/opengym-api
   mcp.nix            The MCP server's layout over node-package.nix → bin/opengym-mcp
   frontend.nix       buildNpmPackage → $out/share/opengym (+ exercise-media/ from catalogue/media)
+  tests.nix          The VM integration test (checks.opengym-nixos-test): boots the stack and
+                     exercises the HTTP contract
   default.nix        package-set aggregator (used by both the flake and the module); reads the
                      release version from api/package.json
 ```
@@ -96,8 +98,16 @@ nix build .#opengym-mcp
 nix run .#opengym                    # full local stack on http://localhost:8080 (see below)
 nix develop                          # dev shell: nodejs_22, git, coreutils
 nix flake check                      # eval check + (on Linux) the VM integration test
-nix build .#nixosTests.opengym       # run just the VM integration test
+nix build .#checks.x86_64-linux.nixos-module-eval   # just the eval check (scenarios)
+nix build .#checks.x86_64-linux.opengym-nixos-test  # just the VM integration test
 ```
+
+`nix flake check` is the full gate: the eval check (a few seconds) and, on Linux, the VM
+integration test (builds and boots a QEMU image — minutes). Nothing runs it in CI yet, so run it
+after touching anything under `contrib/nix/`. Separately from the checks, building `opengym-api`
+or `opengym-mcp` proves at build time that every relative import the package ships resolves —
+a package that would boot as `ERR_MODULE_NOT_FOUND` fails the build instead, which is the point of
+`node-package.nix` (see §2).
 
 `nix run .#opengym` starts the API and the built frontend (exercise media included) behind a
 throwaway Caddy — open `http://localhost:8080` and use it (passkeys work on `localhost`). Overrides via env
@@ -202,8 +212,9 @@ manage one:
 ```
 
 That renders a `services.nginx.virtualHosts."gym.example.com"` with the SPA root + fallback, the
-`/api` proxy, a cache header on `/exercise-media/`, gzip/optimisation settings, and — when `enableACME` — TLS.
-It's ordinary `services.nginx` config afterwards, so you can still extend the vhost or add your own
+`/api` proxy, the serving contract's headers on `/exercise-media/` (a month of caching plus
+Cross-Origin-Resource-Policy), gzip/optimisation settings, and — when `enableACME` — TLS. It's
+ordinary `services.nginx` config afterwards, so you can still extend the vhost or add your own
 virtualHosts alongside it.
 
 Note: the module declares no web server of its own, so on the Caddy-native default it leaves
@@ -381,10 +392,14 @@ for other modules to consume — setting them yourself is an error.
 | `rpId` | `str` | `localhost` | WebAuthn Relying Party ID. Bare hostname, must match the address bar exactly. |
 | `origin` | `str` | `http://localhost:8080` | Full origin for CSRF validation. Must match the address bar exactly (scheme + host, no trailing slash). |
 | `rpName` | `str` | `openGym` | Display name shown when the browser prompts for a passkey. |
+| `defaultLang` | `str` | `""` | Default language for the sign-in screen and new profiles, as a language tag such as `pt-BR` or `de`. An empty string keeps the browser default. |
 | `sessionDays` | `ints.unsigned` | `90` | Session cookie lifetime, in days. |
 | `adminUids` | `str` | `""` | Comma-separated user IDs granted the admin dashboard. Empty = no admin. |
 | `inviteOnly` | `bool` | `false` | Require an invite code to create a new profile. |
 | `allowGuest` | `bool` | `true` | Offer "Continue without account" (guest mode — never touches the server). Set `false` to remove the button. |
+| `passwordLogin` | `bool` | `false` | Offer name-and-password sign-in next to passkeys. Passwords kept from when it was on are inert while it is off. |
+| `firstUserAdmin` | `bool` | `false` | Grant the first profile created on an empty instance admin access. |
+| `trustProxy` | `bool` | `true` | Let the sign-in throttle and audit log read the client address from the headers a proxy sets. Defaults to true because a NixOS deployment always fronts the API with a reverse proxy. Set false only if the API port is directly reachable, where those headers could be spoofed. |
 | `auditLog` | `bool` | `true` | Record sign-ins, signouts, failed attempts and admin actions to `audit.log`. |
 | `auditMax` | `ints.unsigned` | `5000` | Max audit events kept (`0` = unlimited). |
 | `auditDays` | `ints.unsigned` | `90` | Max days of audit events kept. |
@@ -485,6 +500,8 @@ routine update — see the passkey caveat in §4.
 | `nginx` is silently gone after enabling the module | No longer expected, and a bug if you see it: the module used to force `services.nginx.enable = false`, which took a user's own nginx down with it. Set `services.opengym.nginx.enable = true` to have the module configure nginx for openGym, or leave it off and bring your own web server — the module then touches neither. |
 | Service won't start | `journalctl -u opengym-api -xe`. Common: custom `dataDir` not created/owned correctly (the tmpfiles rule should handle it; check `systemd-tmpfiles --create`). |
 | Eval fails: `environment and environmentFile are mutually exclusive` | Pick one. Set extra vars either as a Nix attrset (`environment`) or in a file (`environmentFile`), never both. |
+| `nix flake check` fails with `opengym module check failed:` | Each line under it names a scenario and the expectation that did not hold (`defaults :: apiPort is 3000: expected 3000, got 4000`). Read the top line, open the scenario it names in `flake.nix`, and check the module against it — the check is data, so a failure points straight at the config and the predicate. A `docs ::` line means the option → environment table in this file no longer names a variable the module sets. |
+| A package build fails with `a module the package ships does not resolve` | The staging is missing a file the package's sources import — `node-package.nix`'s build-time proof that the package would boot. If a new subdirectory appeared under `api/` or `mcp/`, the fix is in `api.nix`/`mcp.nix` (usually nothing: the staging copies every runtime directory; check `excludeDirs`), not in the package's sources. |
 | You expected a binary cache | The flake builds from source; override `services.opengym.package` (or `packages.*` via a cache/overlay) to substitute binaries. |
 | Exercise media licensing | © Aliaksandr Makatserchyk, Gym visual, licensed for use in openGym only and not covered by the AGPL. They ship at 180 px; don't re-host them on their own. See [`NOTICE.md`](../NOTICE.md) |
 | `nix run .#opengym` serves a blank site | The app now serves frontend + API + media behind a local Caddy. If something's off, check the log line it prints (ports/`DATA_DIR`) and that nothing else already binds `:3000`/`:8080` — pass `OPENGYM_API_PORT`/`OPENGYM_WEB_PORT` to move them. |

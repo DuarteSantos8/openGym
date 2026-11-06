@@ -57,6 +57,10 @@ node scripts/catalogue/build.mjs --check
 node scripts/build-coach-assets.mjs --check
 node scripts/build-api-docs.mjs --check
 
+# Nix (contrib/nix) — the flake's checks, run by hand: CI has no contrib/** path filter
+cd contrib/nix && nix flake check          # eval check (scenarios) +, on Linux, the VM test
+cd contrib/nix && nix build .#opengym-api .#opengym-mcp   # also proves each package's imports resolve
+
 # Builds
 cd frontend && npm run build
 cd frontend && npm run build:mobile   # VITE_MOBILE build + 180 px media from catalogue/media + cap sync

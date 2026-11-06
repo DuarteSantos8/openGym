@@ -18,7 +18,8 @@ This guide takes you from "just cloned it" to "using it from my phone over the i
 - [Troubleshooting](#troubleshooting)
 
 HTTPS on a LAN without a public domain has [its own guide](SELF_HOSTING_HTTPS.md), and so do
-[a Mac at home with Tailscale](SELF_HOSTING_MAC.md) and [Kubernetes](SELF_HOSTING_KUBERNETES.md). Short answers to common questions are in the [FAQ](FAQ.md).
+[a Mac at home with Tailscale](SELF_HOSTING_MAC.md) and [Kubernetes](SELF_HOSTING_KUBERNETES.md). Running NixOS natively — no Docker, the flake and a NixOS module — is [its own
+guide](NIX.md) too; the passkey, admin, audit and environment-var details on this page apply there unchanged. Short answers to common questions are in the [FAQ](FAQ.md).
 
 ## 1. Run it locally (5 minutes)
 
