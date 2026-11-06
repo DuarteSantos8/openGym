@@ -135,7 +135,7 @@ export function errorText(e) {
     case 'no-password': return 'Type the password again: this device does not have it.'
     case 'not-backup': return 'That file is not an openGym backup.'
     case 'empty': return 'Nothing to back up yet: log a workout first.'
-    default: return 'The server answered with an error' + (e?.status ? ` (${e.status}).` : '.')
+    default: return 'The server answered with an error.'
   }
 }
 

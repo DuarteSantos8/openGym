@@ -6,6 +6,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Tempo, rest sounds, backups, calendar and Strava**
+- Tempo per exercise or per set, like 3-1-1-0: set it in the exercise's settings or for one set from its menu. The workout shows it on the exercise, and a tap starts a guide that counts every rep through lower, pause, lift and squeeze, with a tone and a buzz per phase you can hear from the floor. It goes along in the CSV export and import, shared plans and the sync (#572, idea by @WENeko).
+- A sound for each kind of rest: after a warm-up, between working sets, between superset rounds and before the next exercise can each end with their own sound, built-in or one of yours, on the phone's lock-screen alarm too (Settings → Timer alerts → Sound; #165, idea by @kurktchiev).
+- Backup to WebDAV: a copy of everything once a day in your own Nextcloud, NAS or any WebDAV folder, Back up now, and Restore on a new phone with the same replace-or-merge question as a backup file. The password stays in the phone's secure storage. Works without a server; in a browser your WebDAV server has to allow it (docs/WEBDAV_BACKUP.md; #582, idea by @Mahaveer1013).
+- Calendar feed: your planned sessions, and finished workouts if you like, in Apple, Google or Outlook calendar through a private link. Make a new link or turn it off any time (Settings → Integrations → Calendar feed, docs/CALENDAR.md).
+- Strava: finished runs, rides and rows go up to Strava as what they were, strength sessions as Weight Training if you switch it on. For servers that register their own Strava app (`INTEGRATIONS=strava`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`; docs/INTEGRATIONS.md; #478, idea by @workhardbekind).
+- Webhooks: a cardio set logged by distance now carries `distanceKm`.
+
 **API tokens and MCP over HTTPS**
 - API tokens: in Settings → Integrations, make a key for one program (an AI assistant, a planner, a script). Pick per category what it may see and what it may change, and when it ends. It never gets more than you have, only your own profile, it is shown once and stored only as a hash, and revoking it stops it on the next request. Every look and change shows in your sharing log (#480, idea by @rkj; #566, idea by @kurktchiev).
 - MCP over HTTPS: an optional container serves openGym's MCP tools at https://your-server/mcp, so assistants on the web, a phone or another machine can use them with a token. Turn it on with `COMPOSE_PROFILES=mcp` and `MCP=on` (docs/MCP_REMOTE.md; #781, idea by @czepter; #314, idea by @mzspicoli).
