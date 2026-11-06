@@ -3834,7 +3834,7 @@ function beginBackfill({ iso, time, durationMin, routineIds, replaceId }) {
     s.active = {
       id: uid(), d: iso, start,
       routineIds: rids,
-      name: routines.length ? deriveSessionName(routines.map(r => r.name)) : first.length ? deriveSessionName(lead.routines.map(r => r.name)) : t('Freestyle'),
+      name: routines.length ? deriveSessionName(routines.map(r => r.name)) : t('Freestyle'),
       bw: null, cur: 0, entries,
       backfill: { durationMin, replaceId: replaceId || null },
       // Same layout snapshot as a live session (see beginWorkout).
