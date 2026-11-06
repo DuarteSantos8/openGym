@@ -182,6 +182,8 @@ export default function Plan() {
         <button className="iconbtn" data-tour="plan-menu" onClick={openMenu} aria-label={t('Plan options')} title={t('Plan options')}><Icon name="share" /></button>
       </div>
     </div>
+    {/* A teacher's own Plan tab looks just like a student's; this says which one it is. */}
+    {user?.admin && <div className="muted small" style={{ margin: '0 2px 10px', lineHeight: 1.45 }}>{t('This is your own plan. To make a plan for a student, open')} <button className="linkbtn" style={{ background: 'none', border: 0, padding: 0, color: 'var(--acc)', font: 'inherit', textDecoration: 'underline' }} onClick={() => nav('/students')}>{t('Students')}</button>.</div>}
     <input ref={fileRef} type="file" accept="application/json,.json" onChange={pickFile} hidden />
     <Segmented className="plan-views" tour="plan-views" value={view} onChange={setView}
       options={[{ value: 'schedule', label: t('Schedule') }, { value: 'routines', label: t('Routines') }]} />

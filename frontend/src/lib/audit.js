@@ -66,6 +66,15 @@ const LABELS = {
   'admin.user.disable': 'Disabled an account',
   'admin.user.enable': 'Re-enabled an account',
   'admin.user.delete': 'Deleted an account',
+  'admin.user.plan': 'Sent a plan to a student',
+  'admin.user.plan.cancel': 'Took back a plan sent to a student',
+  'admin.user.teacher': 'Changed a student’s teacher',
+  'admin.user.workouts.delete': 'Deleted workouts from a profile',
+  'admin.user.workouts.archive': 'Archived workouts of a student',
+  'admin.user.workouts.restore': 'Restored archived workouts of a student',
+  'admin.user.routines.delete': 'Deleted plans from a profile',
+  'admin.user.routines.archive': 'Archived plans of a student',
+  'admin.user.routines.restore': 'Restored archived plans of a student',
   'admin.password.reset': 'Issued a password reset code',
   'admin.role.grant': 'Made someone an admin',
   'admin.role.revoke': 'Removed someone as admin',
@@ -108,6 +117,9 @@ const REASONS = {
   'passkey-limit': 'the profile already has as many passkeys as it can hold',
   // An `admin.denied` for a recovery code: only the owner makes one for an admin (#584).
   'recovery': 'a recovery code for an admin, which only the owner can make',
+  // An `admin.denied` for deleting workouts out of an admin's profile: only the owner may.
+  'workouts': 'deleting workouts from an admin’s profile, which only the owner can do',
+  'routines': 'deleting plans from an admin’s profile, which only the owner can do',
   // What an `auth.throttled` pause was for.
   'password': 'wrong passwords or reset codes',
   'signup': 'wrong invite codes on password signup',

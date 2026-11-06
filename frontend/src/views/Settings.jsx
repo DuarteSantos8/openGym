@@ -1191,6 +1191,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           Admin and Disconnect sit in the same block; a browser's account rows follow in their own. */}
       {user && !DEMO && <ServerSyncSection>
         {MOBILE && <>
+          {user.admin && <Row icon="person" iconTint="var(--indigo)" title={t('Students')} accessory="chevron" onClick={() => nav('/students')} />}
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
           {/* A code to sign in on a computer (#551), behind the same proof as in a browser. */}
           <DeviceLinkRow state={passkeys.st} />
@@ -1215,6 +1216,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Row icon="rocket" iconTint="var(--indigo)" title={t('Self-host openGym')} subtitle={t('Passkey sign-in, sync across your devices, your own data.')} accessory="chevron"
             onClick={() => window.open(REPO, '_blank', 'noopener')} />
         </> : user ? <>
+          {user.admin && <Row icon="person" iconTint="var(--indigo)" title={t('Students')} accessory="chevron" onClick={() => nav('/students')} />}
           {user.admin && <Row icon="crown" iconTint="var(--indigo)" title={t('Admin dashboard')} accessory="chevron" onClick={() => nav('/admin')} />}
           <PasskeysRow state={passkeys.st} changed={credsChanged} />
           <DeviceLinkRow state={passkeys.st} />

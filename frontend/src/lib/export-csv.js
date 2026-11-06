@@ -38,7 +38,7 @@ export function csvField(v) {
 const line = cells => cells.map(csvField).join(',')
 // The BOM is for Excel, which reads a UTF-8 file without one as the system code page and turns
 // every "ü" into two characters. The importer strips it again.
-const csvText = (header, rows) => '﻿' + [line(header), ...rows.map(line)].join('\r\n') + '\r\n'
+export const csvText = (header, rows) => '﻿' + [line(header), ...rows.map(line)].join('\r\n') + '\r\n'
 
 // Dot decimal, no grouping, no float noise ("62.5", never "62,5" or "62.50000001").
 const n = v => (Number.isFinite(+v) && v !== '' && v != null ? String(Math.round(+v * 1e6) / 1e6) : '')

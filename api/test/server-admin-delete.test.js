@@ -33,7 +33,8 @@ async function startServer(t, { twoAdmins = false } = {}) {
     users,
     creds: [{ id: 'c-victim', userId: VICTIM, publicKey: 'x' }, { id: 'c-admin', userId: ADMIN, publicKey: 'y' }],
     subs: [{ endpoint: 'https://push/victim', userId: VICTIM }, { endpoint: 'https://push/admin', userId: ADMIN }],
-    invites: [{ code: 'CODE1', usedBy: VICTIM, usedAt: new Date().toISOString() }],
+    // The second admin is a teacher: the one who made the invite, so Mallory is their student.
+    invites: [{ code: 'CODE1', usedBy: VICTIM, usedAt: new Date().toISOString(), ...(twoAdmins ? { createdBy: ADMIN2 } : {}) }],
   }));
   fs.writeFileSync(path.join(dataDir, `state-${VICTIM}.json`), JSON.stringify({ unit: 'kg', workouts: [], _rev: 3 }));
   const child = spawn(process.execPath, ['server.js'], {
@@ -130,7 +131,7 @@ test('only the owner appoints and removes admins, and can hand the role on', asy
 
   assert.equal((await h.post('/api/admin/owner', { id: VICTIM })).status, 400, 'only an admin can become owner');
   assert.equal((await h.post('/api/admin/owner', { id: ADMIN2 })).status, 200);
-  const list = (await (await fetch(`${h.api}/api/admin/users`, { headers: as(ADMIN) })).json()).users;
+  const list = (await (await fetch(`${h.api}/api/admin/users`, { headers: as(ADMIN2) })).json()).users;
   assert.deepEqual(list.filter(u => u.owner).map(u => u.id), [ADMIN2]);
   // The old owner is an admin like any other now.
   assert.equal((await h.post('/api/admin/audit/clear', {}, ADMIN)).status, 403);

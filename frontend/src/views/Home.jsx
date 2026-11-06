@@ -130,6 +130,13 @@ export default function Home() {
       <button className="iconbtn" data-tour="settings-gear" onClick={() => nav('/settings')} aria-label={trouble ? t('Settings') + ', ' + t('Connection problem') : t('Settings')}><Icon name="gear" />{trouble && <span className="tab-dot" aria-hidden="true" />}</button>
     </div>
 
+    {/* For a teacher: the way to their students, always one tap from Home. */}
+    {user?.admin && <div className="card" style={{ padding: 0 }}><div className="item" {...tappable(() => nav('/students'))}>
+      <span className="lrow-i" style={{ background: 'var(--indigo)' }}><Icon name="person" /></span>
+      <div className="grow"><div className="tt">{t('Students')}</div><div className="ss">{t('Plans, progress and workouts of the people you train')}</div></div>
+      <Icon name="chevronRight" className="chev" />
+    </div></div>}
+
     <div className="card">
       {/* A running programme (lib/programmes.js) wrote this week's plan: where it stands, one tap from its screen. */}
       {progChip && <button type="button" className="chip ichip prog-chip" onClick={() => nav('/plan/programmes')}><Icon name="calendar" /><span>{progChip}</span></button>}

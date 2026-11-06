@@ -2856,6 +2856,349 @@ paths:
               schema: { $ref: '#/components/schemas/Error' }
               example: { error: "no such user" }
 
+  /api/admin/user/plan:
+    post:
+      tags: [admin]
+      operationId: adminUserPlan
+      summary: 'Admin: send a plan to a student'
+      description: |
+        Puts a plan file (the bundle `Export plan file` makes) in the user's inbox. Nothing of
+        theirs changes until they accept it on their device. At most 5 waiting plans of 512 KB
+        each per user. Audited as `admin.user.plan`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, bundle]
+              properties:
+                id: { type: string, description: The user id. }
+                bundle: { type: object, description: 'A plan bundle: `opengym_plan` and a non-empty `routines`.' }
+      responses:
+        '200':
+          description: In their inbox.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  pending: { type: integer }
+        '400':
+          description: 'Not a plan, or the inbox is full (code inbox-full).'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No user with that id.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '413':
+          description: The plan is over 512 KB.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/plan-inbox:
+    get:
+      tags: [data]
+      operationId: planInbox
+      summary: Plans a teacher sent to the signed-in user
+      responses:
+        '200':
+          description: The waiting plans, oldest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plans:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        from: { type: string, description: The sender's name. }
+                        at: { type: integer, description: Epoch ms. }
+                        name: { type: string }
+                        bundle: { type: object }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/plan-inbox/done:
+    post:
+      tags: [data]
+      operationId: planInboxDone
+      summary: Remove a plan from the inbox (accepted or dismissed)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string }
+      responses:
+        '200':
+          description: Removed (also when it was already gone).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/admin/user/plan/cancel:
+    post:
+      tags: [admin]
+      operationId: adminUserPlanCancel
+      summary: 'Admin: take back a plan the student has not accepted yet'
+      description: |
+        Removes one plan from the student's inbox. The ids come from `pending` in the drill-down.
+        Audited as `admin.user.plan.cancel`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, plan]
+              properties:
+                id: { type: string, description: The user id. }
+                plan: { type: string, description: The waiting plan's id. }
+      responses:
+        '200':
+          description: Taken back.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  pending: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or no such plan waiting.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/teacher:
+    post:
+      tags: [admin]
+      operationId: adminUserTeacher
+      summary: 'Owner: set which teacher a student belongs to'
+      description: |
+        A non-owner admin (a teacher) sees and acts on their own students only: those who joined
+        with an invite code the teacher made, or that the owner assigned here. The owner sees
+        everyone. The owner can also pick a teacher for themself (`id` is their own): that teacher
+        then sees them as a student, and `teacher: null` takes it back. No other admin can be
+        anyone's student. Owner only. Audited as `admin.user.teacher`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, teacher]
+              properties:
+                id: { type: string, description: The student's user id. }
+                teacher: { type: [string, 'null'], description: An admin's user id, or null for the owner's own (for the owner themself, none). }
+      responses:
+        '200':
+          description: Assigned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  teacher: { type: [string, 'null'] }
+        '400':
+          description: The teacher is not an admin, or is the student.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such student.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/workouts/delete:
+    post:
+      tags: [admin]
+      operationId: adminUserWorkoutsDelete
+      summary: 'Admin: delete workouts from a profile'
+      description: |
+        Removes workouts from a profile for good: a teacher for one of their students, the owner for
+        anyone. The change is written the way a device writes it (the entry gone, a removal on
+        record, the revision moved), so the person's phone reads it and the removal holds. Ids that
+        match no workout are ignored. A teacher cannot do this to an admin's profile, the owner as a
+        student included (403); archiving is the way there. Audited as `admin.user.workouts.delete`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, workouts]
+              properties:
+                id: { type: string, description: The user id. }
+                workouts: { type: array, minItems: 1, maxItems: 200, items: { type: string }, description: Workout ids. }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  removed: { type: integer }
+        '400':
+          description: 'workouts is not 1 to 200 ids.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or not one of yours.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/workouts/archive:
+    post:
+      tags: [admin]
+      operationId: adminUserWorkoutsArchive
+      summary: 'Admin: archive or restore workouts of a student'
+      description: |
+        Puts workouts aside for the teacher without touching the student's record: they stay in the
+        history, the drill-down marks them `archived: true`, and the Admin view leaves them out of
+        the performance numbers until restored with `archived: false`. Ids that match no workout are
+        ignored. Audited as `admin.user.workouts.archive` / `.restore`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, workouts, archived]
+              properties:
+                id: { type: string, description: The user id. }
+                workouts: { type: array, minItems: 1, maxItems: 200, items: { type: string }, description: Workout ids. }
+                archived: { type: boolean }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  changed: { type: integer }
+        '400':
+          description: 'workouts is not 1 to 200 ids, or archived is not a boolean.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or not one of yours.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/routines/delete:
+    post:
+      tags: [admin]
+      operationId: adminUserRoutinesDelete
+      summary: 'Admin: delete routines from a profile'
+      description: |
+        Removes routines (a student's plan, their fichas) from a profile for good: a teacher for one of their students, the owner for
+        anyone. The change is written the way a device writes it (the entry gone, a removal on
+        record, the revision moved), so the person's phone reads it and the removal holds. Ids that
+        match no routine are ignored. A teacher cannot do this to an admin's profile, the owner as a
+        student included (403); archiving is the way there. Audited as `admin.user.routines.delete`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, routines]
+              properties:
+                id: { type: string, description: The user id. }
+                routines: { type: array, minItems: 1, maxItems: 200, items: { type: string }, description: Routine ids. }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  removed: { type: integer }
+        '400':
+          description: 'routines is not 1 to 200 ids.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or not one of yours.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/admin/user/routines/archive:
+    post:
+      tags: [admin]
+      operationId: adminUserRoutinesArchive
+      summary: 'Admin: archive or restore routines of a student'
+      description: |
+        Puts routines aside for the teacher without touching the student's record: they stay in the
+        plan, the drill-down marks them `archived: true`, until restored with `archived: false`. Ids that match no workout are
+        ignored. Audited as `admin.user.routines.archive` / `.restore`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, routines, archived]
+              properties:
+                id: { type: string, description: The user id. }
+                routines: { type: array, minItems: 1, maxItems: 200, items: { type: string }, description: Routine ids. }
+                archived: { type: boolean }
+      responses:
+        '200':
+          description: Done.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean, const: true }
+                  changed: { type: integer }
+        '400':
+          description: 'routines is not 1 to 200 ids, or archived is not a boolean.'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404':
+          description: No such user, or not one of yours.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
   /api/admin/user/disable:
     post:
       tags: [admin]
@@ -4510,6 +4853,10 @@ components:
         invitedBy:
           oneOf: [{ type: string }, { type: 'null' }]
           description: The invite code this account was created with.
+        teacher: { oneOf: [{ type: string }, { type: 'null' }], description: The admin (teacher) this profile belongs to. }
+        teacherName: { oneOf: [{ type: string }, { type: 'null' }] }
+        routines: { type: integer, description: Plans (routines) in the profile. }
+        pending: { type: integer, description: Plans sent and not yet accepted. }
         workouts: { type: integer, description: Total logged workouts. }
         lastWorkout:
           oneOf: [{ type: string }, { type: 'null' }]
@@ -4553,6 +4900,8 @@ components:
             owner: { type: boolean, description: The one admin who manages the others. }
             admin: { type: boolean }
             invitedBy: { oneOf: [{ type: string }, { type: 'null' }] }
+            teacher: { oneOf: [{ type: string }, { type: 'null' }], description: The admin (teacher) this profile belongs to. }
+            teacherName: { oneOf: [{ type: string }, { type: 'null' }] }
             password: { type: boolean, description: PASSWORD_LOGIN instances only. }
             email:
               oneOf: [{ type: string }, { type: 'null' }]
@@ -4565,6 +4914,28 @@ components:
               description: Expiry (ms) of an unused recovery code (POST /api/admin/user/recovery, recover.js).
         unit: { type: string, enum: [kg, lb] }
         lastSync: { oneOf: [{ type: number }, { type: 'null' }] }
+        plannedDays: { type: integer, minimum: 0, maximum: 7, description: Weekdays the plan puts a routine on. }
+        customEx:
+          type: array
+          description: The profile's own exercises as stored (at most 200), for exports.
+          items: { type: object }
+        week:
+          type: object
+          description: Weekday (0 Sunday to 6) to the ids of the routines on it.
+          additionalProperties:
+            type: array
+            items: { type: string }
+        pending:
+          type: array
+          description: Plans sent and not yet accepted.
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              from: { type: string }
+              at: { type: number }
+              routines: { type: integer }
         routines:
           type: array
           items:
@@ -4574,6 +4945,13 @@ components:
               name: { type: string }
               emoji: { type: string }
               count: { type: integer, description: Number of exercises. }
+              archived: { type: boolean, description: The teacher archived it (the student keeps it). }
+              prog: { description: The progression rule, when the routine has one. }
+              excludeFromProgression: { type: boolean }
+              ex:
+                type: array
+                description: The exercises as stored (id, sets, reps, weight, ...), at most 60.
+                items: { type: object }
         bodyweight:
           type: array
           items: { $ref: '#/components/schemas/BodyweightEntry' }

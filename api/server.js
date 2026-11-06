@@ -100,6 +100,7 @@ const TRUST_PROXY = /^(1|true|yes|on)$/i.test(process.env.TRUST_PROXY || '');
 // baked into each cookie when it's issued, so lowering this never cuts an existing session short.
 const SESSION_DAYS = Math.max(1, +(process.env.SESSION_DAYS || 90) || 90);
 const MAX_BODY = 5 * 1024 * 1024;
+const PLAN_INBOX_MAX = 5, PLAN_INBOX_BYTES = 512 * 1024;
 // Secure cookies require HTTPS; over plain http://localhost the flag would drop the cookie
 const SECURE = /^https:/i.test(ORIGIN) ? ' Secure;' : '';
 
@@ -175,6 +176,15 @@ function ownerId() {
   return db.users.find(isAdmin)?.id || null;
 }
 const isOwner = user => !!user && isAdmin(user) && user.id === ownerId();
+// A teacher (a non-owner admin) works with their own students only. A student's teacher is the one
+// who made the invite they joined with, unless the owner reassigned them (`teacher`: an admin's id,
+// or null for "the owner's"). The owner sees everyone; nobody but the owner sees another admin,
+// except that the owner may pick a teacher for themself and that teacher then sees them as a student.
+const teacherOf = u => 'teacher' in u ? u.teacher : (db.invites.find(i => i.code === u.invitedBy)?.createdBy || null);
+const canSee = (admin, u) => isOwner(admin) || u.id === admin.id || ((!isAdmin(u) || isOwner(u)) && teacherOf(u) === admin.id);
+// The action routes hide a student who is not theirs; an admin target falls through to each route's
+// own refusal (only the owner touches an admin), which says why instead of pretending it is not there.
+const canAct = (admin, u) => canSee(admin, u) || isAdmin(u);
 // 0600: db.json holds passkey credential material. It used to be covered by a blanket 0700 on
 // the whole directory; now that the directory stays traversable, the file carries its own mode.
 // Once the new version is on disk, a second copy of it goes to db.json.bak, the same durable
@@ -238,6 +248,96 @@ function forClient(S) {
 // there is the honest reading of such a file — what was dropped carried nothing to show.
 const record = x => !!x && typeof x === 'object' && !Array.isArray(x);
 const records = v => (Array.isArray(v) ? v.filter(record) : []);
+// A workout's key in the removal records: its id, or day|start for one an older app saved without
+// (the same rule as sync-stamps.js).
+const workoutKey = w => (w?.id != null ? w.id : `${w?.d}|${w?.start}`);
+const ARCHIVE_MAX = 5000;
+// The ids an admin route was asked about: 1 to 200 strings, de-duplicated; null when it is not that.
+const workoutIdsOf = v => {
+  if (!Array.isArray(v) || !v.length || v.length > 200 || !v.every(x => typeof x === 'string' && x && x.length <= 80)) return null;
+  return [...new Set(v)];
+};
+// What an admin can take out of or set aside in a profile: logged workouts, and the plan's routines
+// (the student's "fichas"). `archive` is the db.json map that remembers what a teacher archived.
+const PROFILE_KINDS = {
+  workouts: { key: workoutKey, archive: 'archived' },
+  routines: { key: r => r?.id, archive: 'archivedRoutines' },
+};
+// `S` without the entries named, each recorded in `deleted.<kind>` at `now`. A routine also leaves
+// the weekdays and rescheduled days that held it, as deleting it on a device does. Pure: returns a copy.
+function removeEntries(S, kind, ids, now) {
+  const { key } = PROFILE_KINDS[kind];
+  const gone = new Set(ids);
+  const all = Array.isArray(S[kind]) ? S[kind] : [];
+  const hit = w => record(w) && gone.has(String(key(w)));
+  const keep = all.filter(w => !hit(w));
+  const removed = all.length - keep.length;
+  if (!removed) return { state: S, removed: 0 };
+  const del = S.deleted && typeof S.deleted === 'object' && !Array.isArray(S.deleted) ? { ...S.deleted } : {};
+  const mark = { ...(del[kind] && typeof del[kind] === 'object' ? del[kind] : {}) };
+  for (const w of all) if (hit(w)) mark[key(w)] = now;
+  del[kind] = mark;
+  const state = { ...S, [kind]: keep, deleted: del };
+  if (kind === 'routines') {
+    if (record(S.week)) {
+      state.week = {};
+      for (const [d, v] of Object.entries(S.week)) {
+        const rest = [].concat(v || []).filter(id => !gone.has(String(id)));
+        if (rest.length) state.week[d] = rest;
+      }
+    }
+    if (record(S.dayPlan)) state.dayPlan = Object.fromEntries(Object.entries(S.dayPlan).filter(([, id]) => !gone.has(String(id))));
+  }
+  return { state, removed };
+}
+
+// The two admin routes behind "delete" and "archive", the same for workouts and routines.
+async function adminProfileDelete(req, res, kind) {
+  const admin = requireAdmin(req, res); if (!admin) return;
+  const body = await readBody(req);
+  const u = db.users.find(x => x.id === body.id);
+  if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
+  if (isAdmin(u) && u.id !== admin.id && !isOwner(admin)) { audit(req, 'admin.denied', { ok: false, user: admin, target: u, msg: kind }); return json(res, 403, { error: `only the owner can delete an admin's ${kind}` }); }
+  const ids = workoutIdsOf(body[kind]);
+  if (!ids) return json(res, 400, { error: `${kind} must be 1 to 200 ids` });
+  const cur = readStateStrict(u.id);
+  if (cur === UNREADABLE) return json(res, 503, { error: 'state unreadable' });
+  const next = removeEntries(cur || {}, kind, ids, Date.now());
+  if (!next.removed) return json(res, 200, { ok: true, removed: 0 });
+  next.state._rev = (cur?._rev || 0) + 1;
+  next.state._wids = [...(Array.isArray(cur?._wids) ? cur._wids : []), ...(cur?._wid ? [cur._wid] : [])].filter(x => typeof x === 'string').slice(-WID_KEEP);
+  next.state._wid = crypto.randomBytes(8).toString('hex');
+  atomicWrite(stateFile(u.id), JSON.stringify(next.state));
+  stateCache.delete(u.id);
+  if (MEDIA_ON) { try { MEDIA.noteState(u.id, next.state); } catch (e) { console.error('media noteState', e); } }
+  const mapName = PROFILE_KINDS[kind].archive;
+  if (u[mapName]) { for (const k of ids) delete u[mapName][k]; saveDb(); }
+  audit(req, `admin.user.${kind}.delete`, { user: admin, target: u, msg: String(next.removed) });
+  json(res, 200, { ok: true, removed: next.removed });
+}
+
+async function adminProfileArchive(req, res, kind) {
+  const admin = requireAdmin(req, res); if (!admin) return;
+  const body = await readBody(req);
+  const u = db.users.find(x => x.id === body.id);
+  if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
+  if (typeof body.archived !== 'boolean') return json(res, 400, { error: 'archived must be true or false' });
+  const ids = workoutIdsOf(body[kind]);
+  if (!ids) return json(res, 400, { error: `${kind} must be 1 to 200 ids` });
+  const { key, archive } = PROFILE_KINDS[kind];
+  const have = new Set(records((readState(u.id) || {})[kind]).map(x => String(key(x))));
+  const known = ids.filter(k => have.has(k));
+  const map = u[archive] && typeof u[archive] === 'object' ? u[archive] : {};
+  const now = Date.now();
+  for (const k of known) { if (body.archived) map[k] = now; else delete map[k]; }
+  // Bounded like every other list in db.json: the oldest archive marks fall off first.
+  const keys = Object.keys(map);
+  if (keys.length > ARCHIVE_MAX) for (const k of keys.sort((a, b) => map[a] - map[b]).slice(0, keys.length - ARCHIVE_MAX)) delete map[k];
+  if (Object.keys(map).length) u[archive] = map; else delete u[archive];
+  saveDb();
+  audit(req, `admin.user.${kind}.${body.archived ? 'archive' : 'restore'}`, { user: admin, target: u, msg: String(known.length) });
+  json(res, 200, { ok: true, changed: known.length });
+}
 
 /* ---------- push notifications (Web Push / VAPID) ---------- */
 const vapidFile = path.join(DATA, 'vapid.json');
@@ -1582,7 +1682,7 @@ const passwordRoutes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
     if (isAdmin(u)) return json(res, 400, { error: 'an admin sets their own password in Settings' });
     if (nameTaken(u.name, u.id)) return json(res, 409, { error: 'another profile already signs in with this name', code: 'name-taken' });
     const code = makeResetCode();
@@ -2526,6 +2626,24 @@ const routes = {
     json(res, 200, { date, done, nudge, rev: doc._rev || 0 });
   },
 
+  // A plan a teacher (an admin) sent to this profile, waiting for the person to accept it. The
+  // server only holds it: merging into the routines happens on the device (lib/plan-share.js
+  // mergePlan), so the sync stamps stay the client's business and nothing is copied here.
+  'GET /api/plan-inbox': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    json(res, 200, { plans: Array.isArray(user.planInbox) ? user.planInbox : [] });
+  },
+  // Accepted or dismissed: either way it leaves the inbox.
+  'POST /api/plan-inbox/done': async (req, res) => {
+    const user = readSession(req);
+    if (!user) return json(res, 401, { error: 'not signed in' });
+    const body = await readBody(req);
+    user.planInbox = (Array.isArray(user.planInbox) ? user.planInbox : []).filter(p => p.id !== body.id);
+    saveDb();
+    json(res, 200, { ok: true });
+  },
+
   'PUT /api/data': async (req, res) => {
     const user = readSession(req);
     if (!user) return json(res, 401, { error: 'not signed in' });
@@ -2759,14 +2877,17 @@ const routes = {
   /* ---------- admin dashboard ---------- */
   // One row per user, cheap enough for a personal instance (reads each state file once).
   'GET /api/admin/users': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
-    const users = db.users.map(u => {
+    const viewer = requireAdmin(req, res); if (!viewer) return;
+    const users = db.users.filter(u => canSee(viewer, u)).map(u => {
       const S = readState(u.id) || {};
       const workouts = records(S.workouts);
       const last = workouts[workouts.length - 1];
       return {
         id: u.id, name: u.name, created: u.created || null,
         disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null,
+        teacher: teacherOf(u), teacherName: db.users.find(x => x.id === teacherOf(u))?.name || null,
+        // What the Students screen needs to say who still has no plan, and whose plan is on its way.
+        routines: records(S.routines).length, pending: Array.isArray(u.planInbox) ? u.planInbox.length : 0,
         workouts: workouts.length,
         lastWorkout: last ? last.d : null,
         lastSync: lastSyncOf(u, S),
@@ -2782,14 +2903,14 @@ const routes = {
 
   // Drill-down: full workout history + body-weight log for one user.
   'GET /api/admin/user': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    const viewer = requireAdmin(req, res); if (!viewer) return;
     const id = new URL(req.url, 'http://x').searchParams.get('id');
     const u = db.users.find(x => x.id === id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canSee(viewer, u)) return json(res, 404, { error: 'no such user' });
     const S = readState(u.id) || {};
     json(res, 200, {
       user: {
-        id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null,
+        id: u.id, name: u.name, created: u.created || null, disabled: !!u.disabled, admin: isAdmin(u), owner: isOwner(u), invitedBy: u.invitedBy || null, teacher: teacherOf(u), teacherName: db.users.find(x => x.id === teacherOf(u))?.name || null,
         // Only on an instance with password sign-in: whether they have one, and until when an
         // unused reset code is good.
         ...(PASSWORD_LOGIN ? { password: hasPassword(u), email: u.email || null, resetUntil: u.pwReset?.exp > Date.now() ? u.pwReset.exp : null } : {}),
@@ -2798,11 +2919,20 @@ const routes = {
       },
       unit: S.unit || 'kg',
       lastSync: lastSyncOf(u, S),
-      routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length })),
+      routines: records(S.routines).map(r => ({ id: r.id, name: r.name, emoji: r.emoji, count: records(r.ex).length, ex: records(r.ex).slice(0, 60), ...(r.prog ? { prog: r.prog } : {}), ...(r.excludeFromProgression === true ? { excludeFromProgression: true } : {}), ...(u.archivedRoutines?.[r.id] ? { archived: true } : {}) })),
+      // Plans sent and not yet accepted, so the teacher sees what is on its way and can take one back.
+      pending: (Array.isArray(u.planInbox) ? u.planInbox : []).map(p => ({ id: p.id, name: p.name || '', from: p.from || '', at: p.at || 0, routines: Array.isArray(p.bundle?.routines) ? p.bundle.routines.length : 0 })),
+      // The profile's own exercises (names for a workout export, the whole definition for a plan file).
+      customEx: records(S.customEx).slice(0, 200),
+      // The weekdays each routine is on, so a plan file can carry the schedule.
+      week: record(S.week) ? Object.fromEntries([0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week[d] || []).length).map(d => [d, [].concat(S.week[d]).map(String).slice(0, 20)])) : {},
+      // Weekdays the plan puts a routine on: what "sessions a week" is measured against.
+      plannedDays: record(S.week) ? [0, 1, 2, 3, 4, 5, 6].filter(d => [].concat(S.week[d] || []).length).length : 0,
       bodyweight: records(S.bodyweight),
+      measurements: records(S.measurements),   // body check-ins, bioimpedance body fat included
       // records() already copied, so this reverse is ours: newest first for display. A workout's
       // photos and videos are the owner's own: the admin view gets no refs to them.
-      workouts: records(S.workouts).reverse().map(({ media, ...w }) => w)
+      workouts: records(S.workouts).reverse().map(({ media, ...w }) => (u.archived?.[workoutKey(w)] ? { ...w, archived: true } : w))
     });
   },
 
@@ -2816,7 +2946,7 @@ const routes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
     if (u.id === admin.id) return json(res, 400, { error: 'you are signed in: add a passkey in Settings instead', code: 'self' });
     if (isOwner(u)) return json(res, 403, { error: 'the owner recovers with the server command (recover.js)', code: 'owner' });
     if (isAdmin(u) && !isOwner(admin)) { audit(req, 'admin.denied', { ok: false, user: admin, target: u, msg: 'recovery' }); return json(res, 403, { error: 'only the owner can make a recovery code for an admin' }); }
@@ -2825,11 +2955,79 @@ const routes = {
     json(res, 200, { ok: true, name: u.name, code, expires: link.exp });
   },
 
+  // A teacher's plan for a student: any admin to any other profile (an admin already reads their
+  // whole log, see the drill-down above). Held in the student's inbox until they accept it.
+  // Bounded: a few pending plans of a few hundred KB, so an inbox cannot grow the db unbounded.
+  'POST /api/admin/user/plan': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
+    const b = body.bundle;
+    if (!b || typeof b !== 'object' || !b.opengym_plan || !Array.isArray(b.routines) || !b.routines.length) {
+      return json(res, 400, { error: 'not a plan' });
+    }
+    if (JSON.stringify(b).length > PLAN_INBOX_BYTES) return json(res, 413, { error: 'plan too large' });
+    const inbox = Array.isArray(u.planInbox) ? u.planInbox : [];
+    if (inbox.length >= PLAN_INBOX_MAX) return json(res, 400, { error: 'the inbox is full: they have plans waiting', code: 'inbox-full' });
+    inbox.push({ id: crypto.randomBytes(6).toString('hex'), from: admin.name, at: Date.now(), name: String(b.name || '').slice(0, 80), bundle: b });
+    u.planInbox = inbox;
+    saveDb();
+    audit(req, 'admin.user.plan', { user: admin, target: u });
+    json(res, 200, { ok: true, pending: inbox.length });
+  },
+
+  // Take back a plan that is still waiting in the student's inbox (they have not accepted it yet).
+  'POST /api/admin/user/plan/cancel': async (req, res) => {
+    const admin = requireAdmin(req, res); if (!admin) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
+    const inbox = Array.isArray(u.planInbox) ? u.planInbox : [];
+    if (typeof body.plan !== 'string' || !inbox.some(p => p.id === body.plan)) return json(res, 404, { error: 'no such plan waiting' });
+    u.planInbox = inbox.filter(p => p.id !== body.plan);
+    if (!u.planInbox.length) delete u.planInbox;
+    saveDb();
+    audit(req, 'admin.user.plan.cancel', { user: admin, target: u });
+    json(res, 200, { ok: true, pending: (u.planInbox || []).length });
+  },
+
+  // Who a student belongs to (owner only): an admin's id, or null for the owner's own. The owner
+  // can also name a teacher for themself (null: none); no other admin can be anyone's student.
+  'POST /api/admin/user/teacher': async (req, res) => {
+    const owner = requireOwner(req, res); if (!owner) return;
+    const body = await readBody(req);
+    const u = db.users.find(x => x.id === body.id);
+    if (!u || (isAdmin(u) && !isOwner(u))) return json(res, 404, { error: 'no such student' });
+    const t = body.teacher == null ? null : db.users.find(x => x.id === body.teacher && isAdmin(x) && !x.disabled);
+    if (body.teacher != null && !t) return json(res, 400, { error: 'teacher must be an admin' });
+    if (t && t.id === u.id) return json(res, 400, { error: 'a teacher cannot be their own student' });
+    u.teacher = t ? t.id : null;
+    saveDb();
+    audit(req, 'admin.user.teacher', { user: owner, target: u, msg: t ? t.name : null });
+    json(res, 200, { ok: true, teacher: u.teacher });
+  },
+
+  // Take workouts or routines (a student's "fichas") out of a profile for good: a teacher for a
+  // student, the owner for anyone. Written the way a device would write it (the entry gone, a
+  // removal on record with the time, the revision moved), so the person's phone reads the new
+  // document and the removal wins the next merge instead of the entry coming back. A teacher
+  // cannot do this to an admin's profile, the owner-as-a-student included: archiving is the way
+  // there, and it touches nothing of theirs.
+  'POST /api/admin/user/workouts/delete': (req, res) => adminProfileDelete(req, res, 'workouts'),
+  'POST /api/admin/user/routines/delete': (req, res) => adminProfileDelete(req, res, 'routines'),
+
+  // Archive: the teacher's own way to put something aside without touching the student's record.
+  // It stays where it is, comes back with `archived: false`, and the Admin view leaves archived
+  // workouts out of the performance numbers.
+  'POST /api/admin/user/workouts/archive': (req, res) => adminProfileArchive(req, res, 'workouts'),
+  'POST /api/admin/user/routines/archive': (req, res) => adminProfileArchive(req, res, 'routines'),
+
   'POST /api/admin/user/disable': async (req, res) => {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
     if (isAdmin(u)) return json(res, 400, { error: 'cannot disable an admin' });
     u.disabled = !!body.disabled;
     if (u.disabled) presence.delete(u.id);   // drop them off "training now" at once
@@ -2850,7 +3048,7 @@ const routes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const u = db.users.find(x => x.id === body.id);
-    if (!u) return json(res, 404, { error: 'no such user' });
+    if (!u || !canAct(admin, u)) return json(res, 404, { error: 'no such user' });
     if (u.id === admin.id) return json(res, 400, { error: 'you cannot delete your own account' });
     if (isAdmin(u) && db.users.filter(isAdmin).length <= 1) return json(res, 400, { error: 'cannot delete the last admin' });
     if (isOwner(u)) return json(res, 400, { error: 'the owner cannot be deleted; hand the role to another admin first' });
@@ -2890,15 +3088,16 @@ const routes = {
     if (!isAdmin(u) || u.disabled) return json(res, 400, { error: 'make them an admin first' });
     for (const x of db.users) delete x.owner;
     u.owner = true;
+    delete u.teacher;   // a teacher picked while they were a student does not carry over to the owner
     saveDb();
     audit(req, 'admin.owner.transfer', { user: owner, target: u });
     json(res, 200, { ok: true, id: u.id });
   },
 
   'GET /api/admin/invites': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    const viewer = requireAdmin(req, res); if (!viewer) return;
     // resolve usedBy uid → name for display
-    const invites = db.invites.map(i => ({
+    const invites = db.invites.filter(i => isOwner(viewer) || i.createdBy === viewer.id).map(i => ({
       ...i, usedByName: i.usedBy ? (db.users.find(u => u.id === i.usedBy) || {}).name || null : null
     }));
     json(res, 200, { invites, invite_only: INVITE_ONLY });
@@ -2924,7 +3123,7 @@ const routes = {
     const admin = requireAdmin(req, res); if (!admin) return;
     const body = await readBody(req);
     const inv = db.invites.find(i => i.code === text(body.code).toUpperCase());
-    if (!inv) return json(res, 404, { error: 'no such code' });
+    if (!inv || !(isOwner(admin) || inv.createdBy === admin.id)) return json(res, 404, { error: 'no such code' });
     if (inv.usedBy) return json(res, 400, { error: 'already used, cannot revoke' });
     db.invites = db.invites.filter(i => i.code !== inv.code);
     saveDb();
@@ -2937,8 +3136,9 @@ const routes = {
   // offset cursor would repeat a row whenever an event lands between two pages; and not by
   // timestamp, because two events can share a millisecond. auditKeep() runs on read as well as
   // on the hourly compaction, so nothing past its retention is ever served.
+  // Owner only: it names every profile and every failed sign-in, which a teacher has no part in.
   'GET /api/admin/audit': async (req, res) => {
-    if (!requireAdmin(req, res)) return;
+    if (!requireOwner(req, res)) return;
     const q = new URL(req.url, 'http://x').searchParams;
     const limit = Math.max(1, Math.min(200, +q.get('limit') || 100));
     const before = +q.get('before') || Infinity;

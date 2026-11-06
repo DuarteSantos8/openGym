@@ -247,7 +247,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>92 endpoints</span>
+    <span>101 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -1955,6 +1955,64 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     </div>
   </div>
 </details>
+
+<details class="ep" id="op-planInbox">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/plan-inbox</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Plans a teacher sent to the signed-in user</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The waiting plans, oldest first.<span class="r-sig">{ plans: object[] }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-planInboxDone">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/plan-inbox/done</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Remove a plan from the inbox (accepted or dismissed)</span>
+  </summary>
+  <div class="ep-body">
+
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Removed (also when it was already gone).<span class="r-sig">{ ok: always true }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
   </div>
 </section>
 
@@ -3475,6 +3533,359 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <div class="prow rrow">
     <span class="r-code s4">404</span>
     <span class="p-desc">No user with that id.<span class="r-sig"><code>{&quot;error&quot;:&quot;no such user&quot;}</code></span></span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserPlan">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/plan</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Send a plan to a student</span>
+  </summary>
+  <div class="ep-body">
+<p>Puts a plan file (the bundle <code>Export plan file</code> makes) in the user's inbox. Nothing of theirs changes until they accept it on their device. At most 5 waiting plans of 512 KB each per user. Audited as <code>admin.user.plan</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">bundle<em class="p-req" title="required">required</em></span>
+    <span class="p-type">object</span>
+    <span class="p-desc">A plan bundle: <code>opengym_plan</code> and a non-empty <code>routines</code>.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">In their inbox.<span class="r-sig">{ ok: always true, pending: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Not a plan, or the inbox is full (code inbox-full).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No user with that id.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">413</span>
+    <span class="p-desc">The plan is over 512 KB.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserPlanCancel">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/plan/cancel</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Take back a plan the student has not accepted yet</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes one plan from the student's inbox. The ids come from <code>pending</code> in the drill-down. Audited as <code>admin.user.plan.cancel</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">plan<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The waiting plan's id.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Taken back.<span class="r-sig">{ ok: always true, pending: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such user, or no such plan waiting.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserTeacher">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/teacher</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Owner: set which teacher a student belongs to</span>
+  </summary>
+  <div class="ep-body">
+<p>A non-owner admin (a teacher) sees and acts on their own students only: those who joined with an invite code the teacher made, or that the owner assigned here. The owner sees everyone. The owner can also pick a teacher for themself (<code>id</code> is their own): that teacher then sees them as a student, and <code>teacher: null</code> takes it back. No other admin can be anyone's student. Owner only. Audited as <code>admin.user.teacher</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The student's user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">teacher<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc">An admin's user id</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Assigned.<span class="r-sig">{ ok: always true, teacher: string | null }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">The teacher is not an admin, or is the student.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such student.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserWorkoutsDelete">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/workouts/delete</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Delete workouts from a profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes workouts from a profile for good: a teacher for one of their students, the owner for anyone. The change is written the way a device writes it (the entry gone, a removal on record, the revision moved), so the person's phone reads it and the removal holds. Ids that match no workout are ignored. A teacher cannot do this to an admin's profile, the owner as a student included (403); archiving is the way there. Audited as <code>admin.user.workouts.delete</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">workouts<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc">Workout ids.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">{ ok: always true, removed: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">workouts is not 1 to 200 ids.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such user, or not one of yours.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserWorkoutsArchive">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/workouts/archive</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Archive or restore workouts of a student</span>
+  </summary>
+  <div class="ep-body">
+<p>Puts workouts aside for the teacher without touching the student's record: they stay in the history, the drill-down marks them <code>archived: true</code>, and the Admin view leaves them out of the performance numbers until restored with <code>archived: false</code>. Ids that match no workout are ignored. Audited as <code>admin.user.workouts.archive</code> / <code>.restore</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">workouts<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc">Workout ids.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">archived<em class="p-req" title="required">required</em></span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">{ ok: always true, changed: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">workouts is not 1 to 200 ids, or archived is not a boolean.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such user, or not one of yours.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserRoutinesDelete">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/routines/delete</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Delete routines from a profile</span>
+  </summary>
+  <div class="ep-body">
+<p>Removes routines (a student's plan, their fichas) from a profile for good: a teacher for one of their students, the owner for anyone. The change is written the way a device writes it (the entry gone, a removal on record, the revision moved), so the person's phone reads it and the removal holds. Ids that match no routine are ignored. A teacher cannot do this to an admin's profile, the owner as a student included (403); archiving is the way there. Audited as <code>admin.user.routines.delete</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc">Routine ids.</span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">{ ok: always true, removed: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">routines is not 1 to 200 ids.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such user, or not one of yours.</span>
+  </div>
+    </div>
+  </div>
+</details>
+
+<details class="ep" id="op-adminUserRoutinesArchive">
+  <summary>
+    <span class="m post">POST</span>
+    <span class="ep-path"><code>/api/admin/user/routines/archive</code><span class="ep-chip admin">admin</span></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">Archive or restore routines of a student</span>
+  </summary>
+  <div class="ep-body">
+<p>Puts routines aside for the teacher without touching the student's record: they stay in the plan, the drill-down marks them <code>archived: true</code>, until restored with <code>archived: false</code>. Ids that match no workout are ignored. Audited as <code>admin.user.routines.archive</code> / <code>.restore</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Admin only: a signed-in session whose user is an admin (<code>ADMIN_UIDS</code> or <code>admin:true</code>), as the session cookie or a Bearer token.</span></p>
+
+<p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The user id.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines<em class="p-req" title="required">required</em></span>
+    <span class="p-type">string[]</span>
+    <span class="p-desc">Routine ids.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">archived<em class="p-req" title="required">required</em></span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+</div>
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">Done.<span class="r-sig">{ ok: always true, changed: integer }</span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">routines is not 1 to 200 ids, or archived is not a boolean.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Signed in, but not an admin. The attempt is recorded in the audit log.<span class="r-sig"><code>{&quot;error&quot;:&quot;forbidden&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">No such user, or not one of yours.</span>
   </div>
     </div>
   </div>
@@ -5310,6 +5721,26 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc">The invite code this account was created with.</span>
   </div>
   <div class="prow">
+    <span class="p-name">teacher</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc">The admin (teacher) this profile belongs to.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">teacherName</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Plans (routines) in the profile.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc">Plans sent and not yet accepted.</span>
+  </div>
+  <div class="prow">
     <span class="p-name">workouts</span>
     <span class="p-type">integer</span>
     <span class="p-desc">Total logged workouts.</span>
@@ -5446,6 +5877,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc"></span>
   </div>
   <div class="prow">
+    <span class="p-name">user.teacher</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc">The admin (teacher) this profile belongs to.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">user.teacherName</span>
+    <span class="p-type">string | null</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
     <span class="p-name">user.password</span>
     <span class="p-type">boolean</span>
     <span class="p-desc">PASSWORD_LOGIN instances only.</span>
@@ -5476,6 +5917,51 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-desc"></span>
   </div>
   <div class="prow">
+    <span class="p-name">plannedDays</span>
+    <span class="p-type">integer <span class="p-hint">(0&ndash;7)</span></span>
+    <span class="p-desc">Weekdays the plan puts a routine on.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">customEx</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">The profile's own exercises as stored (at most 200), for exports.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">week</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">Weekday (0 Sunday to 6) to the ids of the routines on it.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">Plans sent and not yet accepted.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].name</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].from</span>
+    <span class="p-type">string</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].at</span>
+    <span class="p-type">number</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">pending[].routines</span>
+    <span class="p-type">integer</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
     <span class="p-name">routines</span>
     <span class="p-type">object[]</span>
     <span class="p-desc"></span>
@@ -5499,6 +5985,26 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-name">routines[].count</span>
     <span class="p-type">integer</span>
     <span class="p-desc">Number of exercises.</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].archived</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc">The teacher archived it (the student keeps it).</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].prog</span>
+    <span class="p-type">object</span>
+    <span class="p-desc">The progression rule</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].excludeFromProgression</span>
+    <span class="p-type">boolean</span>
+    <span class="p-desc"></span>
+  </div>
+  <div class="prow">
+    <span class="p-name">routines[].ex</span>
+    <span class="p-type">object[]</span>
+    <span class="p-desc">The exercises as stored (id, sets, reps, weight, ...), at most 60.</span>
   </div>
   <div class="prow">
     <span class="p-name">bodyweight</span>
