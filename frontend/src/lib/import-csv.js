@@ -25,6 +25,7 @@ import { normalizeTempo } from './tempo.js'
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
 import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
+import { activitiesFromHealthExport, splitSportWorkouts, mergeImportedActivities } from './activities.js'
 import {
   MEASUREMENT_FIELDS, builtinCsvColumn, parseCustomCsvColumn, fromCsvUnit, sameMeasurementKind,
   emptyMeasurement, measurementEntryHasValues, normalizeMeasurementEntry, normalizeMeasurementsState,
@@ -1009,6 +1010,9 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     out.set(d, day)
   }
   let fileUnit = '', source = 'Apple Health', measurements = []
+  // The export's runs, rides and matches come along as activities (lib/activities.js, gm-hooks):
+  // they used to be dropped on the floor, every one of them.
+  const activities = activitiesFromHealthExport(s)
 
   if (s.includes('HKQuantityTypeIdentifierBodyMass')) {
     const re = /<Record[^>]*type="HKQuantityTypeIdentifierBodyMass"[^>]*>/g
@@ -1029,6 +1033,8 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
       if (!isFinite(w) || !w || !bodyOk(w, recUnit || unit)) continue
       put(when.d, { w, unit: recUnit, t: new Date(dt[1]).getTime() || null }, when.t)
     }
+  } else if (activities.length) {
+    // An export with workouts and no weigh-in at all: the activities alone.
   } else {
     const rows = parseCSV(s)
     if (rows.length < 2) return { error: 'empty' }
@@ -1064,7 +1070,7 @@ export function parseBodyweight(text, { unit = 'kg' } = {}) {
     }
   }
 
-  return finishBodyweight(out, unit, source, fileUnit, measurements)
+  return finishBodyweight(out, unit, source, fileUnit, measurements, activities)
 }
 
 // Our own body CSV (lib/export-csv.js bodyCSV) carries the measurements too (#718): a column per
@@ -1095,8 +1101,8 @@ function bodyCsvMeasurements(rows) {
 
 /** The weigh-ins collected per day, converted to `unit` — each in its own record's unit if it
  *  had one, else the file's. Measurements from our own body CSV ride along as they are. */
-function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
-  if (!out.size && !measurements.length) return { error: 'unrecognised' }
+function finishBodyweight(out, unit, source, fileUnit = '', measurements = [], activities = []) {
+  if (!out.size && !measurements.length && !activities.length) return { error: 'unrecognised' }
   const units = new Set([...out.values()].flat().map(b => b.unit || fileUnit).filter(Boolean))
   fileUnit = [...units].sort().join(' / ')
   const converted = [...units].some(sourceUnit => sourceUnit !== unit)
@@ -1108,7 +1114,7 @@ function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
     return roundWeight(w)
   }
   const dates = [...out.keys()].sort()
-  const all = [...new Set([...dates, ...measurements.map(m => m.d)])].sort()
+  const all = [...new Set([...dates, ...measurements.map(m => m.d), ...activities.map(a => a.d)])].sort()
   return {
     kind: 'bodyweight', source,
     // One entry per weigh-in, several on a day that has them, each with its time (`at`) when the
@@ -1116,6 +1122,7 @@ function finishBodyweight(out, unit, source, fileUnit = '', measurements = []) {
     bodyweight: dates.flatMap(d => out.get(d).slice().sort((x, y) => (x.at || '') < (y.at || '') ? -1 : 1)
       .map(b => ({ d, w: conv(b), t: b.t || new Date(d).getTime(), ...(b.at ? { at: b.at } : {}) }))),
     ...(measurements.length ? { measurements } : {}),
+    ...(activities.length ? { activities } : {}),
     fileUnit, converted, from: all[0], to: all[all.length - 1],
   }
 }
@@ -1204,8 +1211,15 @@ export function mergeImport(S, parsed) {
     }
     const res = { added, skipped: parsed.bodyweight.length - added }
     if (parsed.measurements?.length) res.measurements = mergeMeasurements(S, parsed.measurements)
+    if (parsed.activities?.length) res.activities = mergeImportedActivities(S, parsed.activities)
     return res
   }
+  // A session that was only sport (Hevy's "Padel", Strong's "Football", minutes and nothing else)
+  // comes in as an activity, not as a workout with no sets worth the name (lib/activities.js).
+  const named = e => parsed.customEx?.find(c => c.id === e.id)?.n || EXIDX[e.id]?.n || e.ex?.n || ''
+  const split = splitSportWorkouts(parsed.workouts, named)
+  const sportIn = split.activities.length ? mergeImportedActivities(S, split.activities) : 0
+  parsed = { ...parsed, workouts: split.workouts }
   const have = new Set(S.workouts.map(w => w.d))
   // Every parse invents fresh ids for the names it cannot match, and a later export of the same
   // account names those exercises again. So a custom exercise is looked up by name among the ones
@@ -1231,5 +1245,5 @@ export function mergeImport(S, parsed) {
     const mx = Math.max(0, ...e.sets.map(s => s.w || 0), e.topW || 0)
     if (mx > 0) { const cur = S.exWeights[e.id]; if (!cur || w.d >= cur.d) S.exWeights[e.id] = { w: mx, d: w.d } }
   }))
-  return { added: fresh.length, skipped: parsed.workouts.length - fresh.length }
+  return { added: fresh.length, skipped: parsed.workouts.length - fresh.length, ...(split.activities.length ? { activities: sportIn } : {}) }
 }

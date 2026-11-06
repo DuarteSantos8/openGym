@@ -208,7 +208,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   </>
 }
 
-const healthOn = h => !!(h && (h.on || h.readHr || h.readWeight || h.readBody || h.readVitals))
+const healthOn = h => !!(h && (h.on || h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport))
 
 function disconnectHealth(card, toast) {
   const where = card.name
@@ -224,8 +224,8 @@ function disconnectHealth(card, toast) {
 async function offAll(removeWritten, toast) {
   try {
     await disableHealth({ removeWritten })
-    await disableRead('hr')
-    await disableRead('weight')
+    // Every read, not just the first two: body composition and vitals kept reading after a disconnect.
+    for (const kind of ['hr', 'weight', 'body', 'vitals', 'sport']) await disableRead(kind)
   } catch { toast?.(t('Something went wrong')) }
 }
 

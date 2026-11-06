@@ -1,5 +1,6 @@
 package ch.duartesantos.opengym;
 
+import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.WeightRecord;
 import androidx.health.connect.client.records.metadata.Metadata;
@@ -93,10 +94,57 @@ final class HealthRead {
             case "restingHeartRate": return "android.permission.health.READ_RESTING_HEART_RATE";
             case "hrv": return "android.permission.health.READ_HEART_RATE_VARIABILITY";
             case "steps": return "android.permission.health.READ_STEPS";
+            // Sport (v1.4.5, gm-hooks): other apps' exercise sessions, as activities.
+            case "exercise": return "android.permission.health.READ_EXERCISE";
             // Not a data type: data older than 30 days before the first grant (#801).
             case "history": return "android.permission.health.READ_HEALTH_DATA_HISTORY";
             default: return null;
         }
+    }
+
+    // Health Connect's exercise types to the sports lib/activities.js knows (SPORTS), plus
+    // 'strength', 'gym' (machines, HIIT, classes) and 'walk', which JS keeps out of the activities.
+    private static final java.util.Map<Integer, String> SPORT = new java.util.HashMap<>();
+    private static void sport(String name, int... types) { for (int t : types) SPORT.put(t, name); }
+    static {
+        sport("run", ExerciseSessionRecord.EXERCISE_TYPE_RUNNING);
+        sport("ride", ExerciseSessionRecord.EXERCISE_TYPE_BIKING);
+        sport("swim", ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL, ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER);
+        sport("hike", ExerciseSessionRecord.EXERCISE_TYPE_HIKING, ExerciseSessionRecord.EXERCISE_TYPE_SNOWSHOEING);
+        sport("row", ExerciseSessionRecord.EXERCISE_TYPE_ROWING, ExerciseSessionRecord.EXERCISE_TYPE_PADDLING);
+        sport("ski", ExerciseSessionRecord.EXERCISE_TYPE_SKIING, ExerciseSessionRecord.EXERCISE_TYPE_SNOWBOARDING,
+                ExerciseSessionRecord.EXERCISE_TYPE_ICE_SKATING, ExerciseSessionRecord.EXERCISE_TYPE_SKATING);
+        sport("football", ExerciseSessionRecord.EXERCISE_TYPE_SOCCER);
+        sport("racket", ExerciseSessionRecord.EXERCISE_TYPE_TENNIS, ExerciseSessionRecord.EXERCISE_TYPE_BADMINTON,
+                ExerciseSessionRecord.EXERCISE_TYPE_SQUASH, ExerciseSessionRecord.EXERCISE_TYPE_TABLE_TENNIS,
+                ExerciseSessionRecord.EXERCISE_TYPE_RACQUETBALL);
+        sport("ball", ExerciseSessionRecord.EXERCISE_TYPE_BASKETBALL, ExerciseSessionRecord.EXERCISE_TYPE_VOLLEYBALL,
+                ExerciseSessionRecord.EXERCISE_TYPE_HANDBALL, ExerciseSessionRecord.EXERCISE_TYPE_RUGBY,
+                ExerciseSessionRecord.EXERCISE_TYPE_ICE_HOCKEY, ExerciseSessionRecord.EXERCISE_TYPE_ROLLER_HOCKEY,
+                ExerciseSessionRecord.EXERCISE_TYPE_BASEBALL, ExerciseSessionRecord.EXERCISE_TYPE_SOFTBALL,
+                ExerciseSessionRecord.EXERCISE_TYPE_CRICKET, ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AMERICAN,
+                ExerciseSessionRecord.EXERCISE_TYPE_FOOTBALL_AUSTRALIAN, ExerciseSessionRecord.EXERCISE_TYPE_WATER_POLO,
+                ExerciseSessionRecord.EXERCISE_TYPE_FRISBEE_DISC);
+        sport("climb", ExerciseSessionRecord.EXERCISE_TYPE_ROCK_CLIMBING);
+        sport("fight", ExerciseSessionRecord.EXERCISE_TYPE_BOXING, ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS,
+                ExerciseSessionRecord.EXERCISE_TYPE_FENCING);
+        sport("yoga", ExerciseSessionRecord.EXERCISE_TYPE_YOGA, ExerciseSessionRecord.EXERCISE_TYPE_PILATES);
+        sport("dance", ExerciseSessionRecord.EXERCISE_TYPE_DANCING);
+        sport("walk", ExerciseSessionRecord.EXERCISE_TYPE_WALKING, ExerciseSessionRecord.EXERCISE_TYPE_WHEELCHAIR);
+        sport("strength", ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING, ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
+                ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS);
+        sport("gym", ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL, ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
+                ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL, ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
+                ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE, ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING,
+                ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING, ExerciseSessionRecord.EXERCISE_TYPE_BOOT_CAMP,
+                ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS, ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING,
+                ExerciseSessionRecord.EXERCISE_TYPE_GUIDED_BREATHING);
+    }
+
+    /** The sport name JS reads (lib/activities.js), 'other' for anything not listed. */
+    static String sportName(int type) {
+        String s = SPORT.get(type);
+        return s == null ? "other" : s;
     }
 
     static String writePermission(String name) {

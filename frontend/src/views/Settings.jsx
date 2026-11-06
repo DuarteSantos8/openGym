@@ -1072,6 +1072,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Recovery counts for the streak')} checked={S.recoveryStreak === true}
             onChange={v => update(s => { if (v) s.recoveryStreak = true; else delete s.recoveryStreak })} />
         </Row>}
+        {/* Runs, rides, matches (lib/activities.js): off, they leave the streak alone. */}
+        {on('motivation') && <Row icon="figureRun" iconTint="var(--blue)" title={t('Sport counts for the streak')}
+          subtitle={t('A week with only a run or a padel match keeps the streak going.')}>
+          <Switch aria-label={t('Sport counts for the streak')} checked={S.activityStreak === true}
+            onChange={v => update(s => { if (v) s.activityStreak = true; else delete s.activityStreak })} />
+        </Row>}
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
@@ -2164,7 +2170,7 @@ function HealthConnectCard({ S, toast, android, page = false }) {
     } catch { toast(c.failed) }
     setBusy(false)
   }
-  const reading = h.readHr || h.readWeight || h.readBody || h.readVitals
+  const reading = h.readHr || h.readWeight || h.readBody || h.readVitals || h.readSport
 
   // Off can mean two things for what is already there, so it asks; closing the sheet keeps it on.
   const askOff = () => menuSheet({
@@ -2209,9 +2215,15 @@ function HealthConnectCard({ S, toast, android, page = false }) {
             confirmText: t('Continue'), onConfirm: () => toggleRead('vitals')(true) })
           : toggleRead('vitals')(false))} />
       </Row>
+      {/* Sport (v1.4.5, gm-hooks, lib/activities.js): runs, rides and matches other apps saved,
+          as activities in the calendar and the recovery map. openGym's own workouts stay out. */}
+      <Row icon="figureRun" iconTint="var(--blue)" title={t('Runs, rides and matches from other apps')}
+        subtitle={t('Strava, your watch, Runna and friends: their sessions show in your calendar and tire the right muscles. No sets, no volume.')}>
+        <Switch checked={!!h.readSport} disabled={busy} onChange={toggleRead('sport')} />
+      </Row>
       {reading && h.readError === 'permission' && <Row icon="warning" iconTint="var(--orange)"
         title={t('Permission withdrawn. Tap to allow again')} accessory="chevron"
-        onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : 'vitals')(true)} />}
+        onClick={() => toggleRead(h.readHr ? 'hr' : h.readWeight ? 'weight' : h.readBody ? 'body' : h.readVitals ? 'vitals' : 'sport')(true)} />}
       {(h.on || reading) && <Row icon="list" iconTint="var(--blue)" title={c.open}
         accessory="chevron" onClick={() => openHealthConnect().catch(() => {})} />}
     </Section>

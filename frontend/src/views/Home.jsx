@@ -117,7 +117,7 @@ export default function Home() {
   const left = workoutsLeft(S, todayISO())
   // The streak with its best run and freezes (lib/streak.js), read back from the workouts.
   const todayKey = todayISO()
-  const streak = useMemo(() => streakInfo(S, todayKey), [S.workouts, S.weekStart, S.streakRule, S.recoverySessions, S.recoveryStreak, todayKey]) // eslint-disable-line react-hooks/exhaustive-deps
+  const streak = useMemo(() => streakInfo(S, todayKey), [S.workouts, S.weekStart, S.streakRule, S.recoverySessions, S.recoveryStreak, S.activities, S.activityStreak, todayKey]) // eslint-disable-line react-hooks/exhaustive-deps
   // Settings → Modules (lib/modules.js): what a module switched off hides here.
   const on = id => isOn(S, id)
   const bwPoints = S.bodyweight.slice(-30).map(b => ({ t: weighInAt(b), y: b.w, d: b.d }))
