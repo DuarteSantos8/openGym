@@ -6,6 +6,11 @@
          needs 9. The app keeps running on older phones, where HealthConnectPlugin answers
          "unsupported" before touching the library. -->
     <uses-sdk tools:overrideLibrary="androidx.health.connect.client" />
+
+    <!-- Android 16+ shows the workout card and the rest countdown as Live Updates (status-bar
+         chips). Without this permission the system ignores android.requestPromotedOngoing, so
+         no chip appears. Normal permission; the user can switch it off per app. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
     <application
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
