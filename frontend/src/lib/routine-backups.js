@@ -29,7 +29,7 @@ export function cleanBackups(list, selfId, known = () => true) {
 // takes the slot's plan, as it always did (backupSlotConfig).
 // What a backup's plan may not hold: who it is, its own backups, and the superset it sits in
 // (that belongs to the slot).
-const NOT_IN_BACKUP_CFG = ['id', 'subs', 'subCfg', 'sg', 'sgName', 'sgRest']
+const NOT_IN_BACKUP_CFG = ['id', 'subs', 'subCfg', 'sg', 'sgName', 'sgRest', 'sgCircuit']
 
 /** One backup's plan as it may be stored, or null when there is nothing usable. */
 export function cleanBackupConfig(cfg) {
@@ -80,7 +80,7 @@ export function backupSlotConfig(slot, backupId, S, rid, known) {
   // A backup with its own plan (#978) opens at that plan, in the slot's superset; one without
   // takes the slot's, carried as Replace carries it.
   const out = own
-    ? { ...own, id: backupId, ...(old.sg ? { sg: old.sg, ...(old.sgName ? { sgName: old.sgName } : {}), ...(old.sgRest ? { sgRest: old.sgRest } : {}) } : {}) }
+    ? { ...own, id: backupId, ...(old.sg ? { sg: old.sg, ...(old.sgName ? { sgName: old.sgName } : {}), ...(old.sgRest ? { sgRest: old.sgRest } : {}), ...(old.sgCircuit ? { sgCircuit: old.sgCircuit } : {}) } : {}) }
     : replaceSlotExercise(old, backupId, S, rid)
   delete out.subs
   delete out.subCfg

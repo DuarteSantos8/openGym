@@ -34,6 +34,7 @@ import { isWarmupRow } from './workout-model.js'
 import { nextUnfinishedUnit, restSecFor } from './supersetFlow.js'
 import { speedUnitOf } from './speed.js'
 import { accentPair, accentValue } from './accent.js'
+import { circuitClock } from './circuit.js'
 
 export const LIVE_VERSION = 2
 const APPLIED_KEY = 'gym_live_applied'
@@ -124,11 +125,14 @@ export function buildLiveActivity (S, timer = null, hold = {}) {
   const next = upcomingSets(S)
   let done = 0, total = 0
   for (const e of A.entries) for (const s of e?.sets || []) { total++; if (s?.done) done++ }
-  const rest = timer && !timer.ready && timer.kind !== 'switch' ? timer : null
+  // A circuit's clock (lib/circuit.js circuitClock) stands in for the rest and the hold it
+  // replaces while it runs: its rests and get ready count down as a rest, its timed work as a hold.
+  const cc = circuitClock(hold && hold.circuit)
+  const rest = cc ? (cc.kind === 'rest' ? cc : null) : timer && !timer.ready && timer.kind !== 'switch' ? timer : null
   // A hold counting down, or the 3-2-1 before one (lib/auto-holds.js): the Lock Screen counts it
   // down like the rest, under its own word, and offers Stop auto beside Log set while a chain runs.
-  const ci = hold && hold.countIn
-  const wk = !ci && hold && hold.work ? hold.work : null
+  const ci = !cc && hold && hold.countIn
+  const wk = cc ? (cc.kind === 'hold' ? cc : null) : !ci && hold && hold.work ? hold.work : null
   const clock = ci || wk
   const auto = !!(ci || (wk && wk.auto) || (timer && !timer.ready && hold && hold.autoNext))
   const pair = accentPair(accentValue(S))
@@ -301,7 +305,7 @@ export function bindLiveActions (h) {
  * change (debounced, only what differs from the last one sent), and drains the Done taps when the
  * app comes back or the native side says one came in. Resolves with the stop function.
  */
-export async function startLiveActivitySync ({ useStore, useUI }) {
+export async function startLiveActivitySync ({ useStore, useUI, useCircuit = null }) {
   const p = await livePlugin()
   if (!p) return () => {}
   getStateRef = () => useStore.getState()
@@ -315,7 +319,7 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
     if (!storeReady()) return
     try {
       const ui = useUI.getState()
-      const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext })
+      const live = buildLiveActivity(useStore.getState().S, ui.timer, { work: ui.work, countIn: ui.countIn, autoNext: !!ui.timer?.autoNext, circuit: useCircuit?.getState().run || null })
       const json = live ? JSON.stringify(live) : ''
       if (json === last) return
       if (live) await p.LiveActivity.update({ wid: live.attributes.wid, attributes: JSON.stringify(live.attributes), state: JSON.stringify(live.state) })
@@ -340,13 +344,16 @@ export async function startLiveActivitySync ({ useStore, useUI }) {
     const same = a && b && !a.paused && !b.paused && a.endsAt === b.endsAt && !!a.ready === !!b.ready
     if (!same && restOf(a) !== restOf(b)) schedule()
   })
+  // A circuit's step starting, pausing or ending (lib/circuit.js), not its every second.
+  const stepOf = r => (r ? `${r.i}|${r.at}|${r.paused}|${r.ended}|${r.split}` : '')
+  const offCircuit = useCircuit ? useCircuit.subscribe((s, prev) => { if (stepOf(s.run) !== stepOf(prev.run)) schedule() }) : () => {}
   const sub = await p.LiveActivity.addListener('liveActivityEvent', () => { drainLiveEvents() }).catch(() => null)
   const onVisible = () => { if (document.visibilityState === 'visible') { drainLiveEvents(); schedule() } }
   document.addEventListener('visibilitychange', onVisible)
   // At launch: a workout that ended while the app was gone takes its activity with it.
   if (supported) send()
   drainLiveEvents()
-  return () => { offStore(); offUI(); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { offStore(); offUI(); offCircuit(); sub?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.

@@ -191,7 +191,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
   })
   const inner = (
     <div className={'stp ' + className}>
-      <button {...holdProps(-1)} aria-label={ariaLabel ? `Decrease ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
+      <button {...holdProps(-1)} aria-label={ariaLabel ? `${t('Decrease')} ${ariaLabel}` : t('Decrease')} disabled={disabled}><Icon name="minus" /></button>
       <span className="val" onBlur={() => { const v = +value || 0; if (clamp(v) !== v) onChange(clamp(v)) }}>
         {/* `display`: a word instead of the number at a special value ("Bar" for an empty bar), the
             +/- still step from `value`. */}
@@ -199,7 +199,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
           : <NumberField value={value} decimal={decimal} step={step} onChange={onChange} disabled={disabled} aria-invalid={invalid ? 'true' : undefined} />}
         {display == null && unit && <i>{unit}</i>}
       </span>
-      <button {...holdProps(1)} aria-label={ariaLabel ? `Increase ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
+      <button {...holdProps(1)} aria-label={ariaLabel ? `${t('Increase')} ${ariaLabel}` : t('Increase')} disabled={disabled}><Icon name="plus" /></button>
     </div>
   )
   if (!label) return inner

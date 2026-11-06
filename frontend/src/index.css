@@ -4034,3 +4034,91 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .measure-history .measure-note-line{margin-top:6px;font-size:var(--fs-footnote);color:var(--label-2);white-space:pre-wrap;overflow-wrap:anywhere}
 /* A day's recovery sessions in the day sheet (sheets.jsx DayOverride), stacked like a list. */
 .day-recov{display:flex;flex-direction:column;gap:8px}
+/* ---- The circuit player (components/CircuitPlayer.jsx): one clock, the whole screen ----
+   Flat ground, the phase in one colour (work: the accent, rest: blue, get ready: orange), the
+   numbers tabular so the clock never jitters, every control a thumb-sized target. Above the
+   app, under the sheets (#modal-root, z 100), so a confirm can still open over it. */
+.cp{position:fixed;inset:0;z-index:95;background:var(--bg);color:var(--label);display:flex;justify-content:center;
+  overflow-y:auto;overscroll-behavior:contain;outline:none;
+  padding:calc(var(--sat) + 8px) 16px calc(var(--sab) + 16px);
+  --cp-phase:var(--acc);animation:cp-in 260ms var(--ease)}
+@keyframes cp-in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.cp-body{width:100%;max-width:520px;display:flex;flex-direction:column;align-items:center;gap:14px;min-height:100%}
+.cp-run.is-rest{--cp-phase:var(--blue)}
+.cp-run.is-prep{--cp-phase:var(--orange)}
+.cp-top{width:100%;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:8px;min-height:44px}
+.cp-top .iconbtn{width:40px;height:40px}
+.cp-top-t{text-align:center;font-size:var(--fs-subhead);font-weight:600;color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums}
+.cp-voice{position:relative;justify-self:end}
+.cp-voice[aria-pressed="true"]{background:var(--acc-soft);color:var(--acc-ink)}
+.cp-voice-off{position:absolute;width:22px;height:2px;background:currentColor;transform:rotate(-45deg);border-radius:1px}
+.cp-num{font-variant-numeric:tabular-nums}
+.cp-clock{position:relative;width:min(72vw,40vh,320px);aspect-ratio:1;display:grid;place-items:center;flex:none}
+.cp-ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.cp-ring circle{fill:none;stroke-width:5}
+.cp-ring-bg{stroke:var(--surface-raised)}
+.cp-ring-fg{stroke:var(--cp-phase);stroke-linecap:round}
+.cp-clock-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px}
+.cp-word{font-size:var(--fs-callout);font-weight:600;color:var(--cp-phase)}
+.cp-time{font-size:clamp(3.5rem,19vw,6.5rem);font-weight:700;line-height:1;letter-spacing:-.04em}
+.cp-cap{font-size:var(--fs-footnote);color:var(--label-dim);text-align:center}
+.cp-station{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.cp-kicker{font-size:var(--fs-footnote);font-weight:600;color:var(--cp-phase)}
+.cp-media{width:min(100%,46vh,320px)}
+.cp-media .exmedia{border-radius:var(--r-lg)}
+.cp-name{margin:0;font-size:var(--fs-title2,1.375rem);line-height:var(--lh-title);letter-spacing:var(--ls-title);text-transform:capitalize}
+.cp-target{font-size:var(--fs-body);color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums;min-width:7.5em}
+.cp-reps{display:flex;align-items:center;gap:12px}
+.cp-round-btn{width:48px;height:48px;border-radius:50%;background:var(--surface);color:var(--label);display:grid;place-items:center;font-size:20px;
+  transition:transform var(--fast) var(--ease),background var(--fast)}
+.cp-round-btn:active{transform:scale(var(--press-scale-sm))}
+.cp-after{display:flex;gap:6px;font-size:var(--fs-subhead);color:var(--label-dim);text-transform:capitalize}
+.cp-after .cp-kicker{text-transform:none;color:var(--label-dim)}
+.cp-ctrl{width:100%;display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:10px;margin-top:auto;padding-top:8px}
+.cp-ctrl button{min-height:64px;border-radius:var(--r-xl);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:var(--fs-footnote);font-weight:600;transition:transform var(--fast) var(--ease),opacity var(--fast)}
+.cp-ctrl button .ic,.cp-ctrl button svg{font-size:22px}
+.cp-ctrl button:active:not(:disabled){transform:scale(var(--press-scale))}
+.cp-ctrl button:disabled{opacity:.4}
+.cp-side{background:var(--surface);color:var(--label)}
+.cp-main{background:var(--cp-phase);color:var(--on-acc);font-size:var(--fs-callout)!important}
+.cp-run.is-rest .cp-main,.cp-run.is-prep .cp-main{color:#fff}
+.cp-stop{min-height:44px;padding:0 16px;color:var(--red);font-size:var(--fs-subhead);font-weight:500}
+.cp-ready-h{margin:12px 0 0;font-size:var(--fs-large);line-height:var(--lh-tight);letter-spacing:var(--ls-large);text-align:center}
+.cp-ready-s{margin:0;color:var(--label-2,var(--label-dim));font-size:var(--fs-subhead);text-align:center;display:flex;gap:6px;align-items:center;justify-content:center}
+.cp-stations{list-style:none;margin:6px 0 0;padding:0;width:100%;display:flex;flex-direction:column;gap:2px;background:var(--surface);border-radius:var(--r-card);overflow:hidden}
+.cp-st{display:flex;align-items:center;gap:12px;padding:10px 14px;min-height:56px}
+.cp-st+.cp-st{box-shadow:inset 0 var(--hair) 0 var(--sep)}
+.cp-st-m{display:flex;flex-direction:column;min-width:0}
+.cp-st-n{font-weight:600;text-transform:capitalize}
+.cp-st-s{font-size:var(--fs-footnote);color:var(--label-dim);font-variant-numeric:tabular-nums}
+.cp-ready-go{width:100%;margin-top:auto;padding-top:12px}
+.cp-ready-go .btn,.cp-result>.btn,.cp-ask>.btn{width:100%;min-height:56px}
+.cp-ask{justify-content:center}
+.cp-ask-n{font-size:5rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.cp-ask-row{display:flex;gap:24px;margin-bottom:12px}
+.cp-ask-row .cp-round-btn{width:64px;height:64px;font-size:26px}
+.cp-result-ico{font-size:52px;color:var(--acc-ink);display:flex;margin-top:8px}
+.cp-score{font-size:clamp(2rem,9vw,2.75rem);font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;text-align:center}
+.cp-rounds,.cp-next-l{list-style:none;margin:0;padding:0;width:100%;background:var(--surface);border-radius:var(--r-card)}
+.cp-rounds li,.cp-next-l li{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;min-height:44px;align-items:center}
+.cp-rounds li+li,.cp-next-l li+li{box-shadow:inset 0 var(--hair) 0 var(--sep)}
+.cp-next-l li span:first-child{text-transform:capitalize}
+.cp-next{width:100%;display:flex;flex-direction:column;gap:8px}
+.cp-next-h{margin:6px 2px 0;font-size:var(--fs-subhead);font-weight:600;color:var(--label-dim)}
+.cp-result>.btn:last-child{margin-top:auto}
+@media (prefers-reduced-motion: reduce){.cp{animation:none}}
+@media (max-height:640px){.cp-media{width:min(100%,34vh)}.cp-clock{width:min(60vw,32vh)}}
+/* The circuit's card in the workout (views/Workout.jsx CircuitCard). */
+.cc{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 0 10px;border-radius:var(--r-card);background:var(--acc-soft)}
+.cc-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cc-t{font-weight:600;font-variant-numeric:tabular-nums}
+.cc-s{font-size:var(--fs-footnote);color:var(--label-2,var(--label-dim))}
+.cc .btn{flex:none}
+/* A saved workout's circuits (components/CircuitCard.jsx CircuitResults). */
+.cr{display:flex;flex-direction:column;gap:8px;margin:0 0 12px;text-align:start}
+.cr-i{padding:12px 14px;border-radius:var(--r-card);background:var(--surface)}
+.cr-h{display:flex;align-items:center;gap:6px;font-size:var(--fs-footnote);font-weight:600;color:var(--acc-ink)}
+.cr-v{font-size:var(--fs-title3,1.25rem);font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.cr-s{font-size:var(--fs-footnote);color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums;margin-top:2px}
+.cr-s.accent{color:var(--acc-ink)}

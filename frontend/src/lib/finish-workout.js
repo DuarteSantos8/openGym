@@ -160,6 +160,9 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
     prs,
     ...(allNoProg ? { excludeFromProgression: true } : {}),
     ...(sessionNote ? { note: sessionNote } : {}),
+    // Circuits, AMRAPs, EMOMs and intervals run on the clock (lib/circuit.js runResult): rounds,
+    // the AMRAP score, the round times, so the history can show them and the next run compare.
+    ...(Array.isArray(active.circuits) && active.circuits.length ? { circuits: active.circuits.map(c => ({ ...c })) } : {}),
     // The gym it was done at (#808, lib/gym-inventory.js): { id, name }, so editing it later loads
     // that gym's plates and the history can say where. Only when there are gyms.
     ...(active.gym && typeof active.gym === 'object' && active.gym.id != null ? { gym: { id: active.gym.id, name: String(active.gym.name || '') } } : {}),

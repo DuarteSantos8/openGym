@@ -8,6 +8,7 @@
 //  2. A clean, printable page (Save as PDF) where a single exercise never splits across
 //     a page break — each exercise, and each routine that fits, stays in one place.
 
+import { cleanCircuit } from './circuit.js'
 import { normalizeTempo } from './tempo.js'
 import { warmupModeOf, ownRowsOf } from './warmup-ramp.js'
 import { EXIDX, canonicalExId, isBodyweightEq, isCustomEx } from './exercises.js'
@@ -155,6 +156,9 @@ function cleanEx(e) {
     const name = cleanSgName(e.sgName), rest = cleanRestSec(e.sgRest)
     if (name) o.sgName = name
     if (rest) o.sgRest = rest
+    // A circuit, AMRAP, EMOM or intervals (lib/circuit.js) is how the group is done, so it travels too.
+    const circuit = cleanCircuit(e.sgCircuit)
+    if (circuit) o.sgCircuit = circuit
   }
   if (e.note) o.note = e.note
   // The lifting tempo (#572) is how the exercise is prescribed too; reps work only.
@@ -335,13 +339,14 @@ export function parsePlan(raw, destinationUnit = 'kg') {
       // Superset meta only means something on a member of a superset; on a lone exercise it is dropped.
       const sgName = e.sg ? cleanSgName(e.sgName) : ''
       const sgRest = e.sg ? cleanRestSec(e.sgRest) : 0
+      const sgCircuit = e.sg ? cleanCircuit(e.sgCircuit) : null
       const pyramid = normalizePyramid(e.pyramid)
       const pyramidRest = pyramid.length ? normalizePyramidRest(e.pyramidRest, pyramid.length) : []
       const pyramidWeight = pyramid.length ? normalizePyramidWeight(e.pyramidWeight, pyramid.length) : []
       const warmChoice = cleanWarmupChoice(e)
-      const { warmupSets, warmup: _warmup, warmupRows: _warmupRows, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, subCfg: _subCfg, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, incline: _incline, level: _level, tempo: _tempo, ...passthrough } = e
+      const { warmupSets, warmup: _warmup, warmupRows: _warmupRows, intensifier, restSec, restOff: _restOff, warmupRestSec, warmupRestOff: _warmOff, sideRestSec: _sideRest, sideRestOff: _sideOff, subs: _subs, subCfg: _subCfg, pyramid: _pyramid, pyramidRest: _pyramidRest, pyramidWeight: _pyramidWeight, sgName: _sgName, sgRest: _sgRest, sgCircuit: _sgCircuit, incline: _incline, level: _level, tempo: _tempo, ...passthrough } = e
       if (!known.has(passthrough.id)) passthrough.id = canonicalExId(passthrough.id)
-      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...warmChoice, ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...(normalizeTempo(_tempo) ? { tempo: normalizeTempo(_tempo) } : {}) }, sourceUnit || destination, destination)
+      return convertedExercise({ ...passthrough, ...(pyramid.length ? { pyramid } : {}), ...(pyramidRest.length ? { pyramidRest } : {}), ...(pyramidWeight.length ? { pyramidWeight } : {}), ...(warm ? { warmupSets: warm } : {}), ...warmChoice, ...(intens ? { intensifier: intens } : {}), ...(rest ? { restSec: rest } : restOff ? { restOff: true } : {}), ...(warmOff ? { warmupRestOff: true } : warmRest ? { warmupRestSec: warmRest } : {}), ...(sideOff ? { sideRestOff: true } : sideRest ? { sideRestSec: sideRest } : {}), ...(subs.length ? { subs } : {}), ...(sgName ? { sgName } : {}), ...(sgRest ? { sgRest } : {}), ...(sgCircuit ? { sgCircuit } : {}), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...(normalizeTempo(_tempo) ? { tempo: normalizeTempo(_tempo) } : {}) }, sourceUnit || destination, destination)
     })
   }))
   // Exercise units (#657): only kg or lb, and only for exercises the plan still holds.
