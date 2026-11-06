@@ -2415,8 +2415,8 @@ function BackupsSheet({ ex, slot, routine, subs: initial, configs: initialConfig
     {suggestions.length > 0 && <>
       <h4 className="sec">{t('Suggested')}</h4>
       <div className="sect-b" style={{ marginBottom: 12 }}>
-        {suggestions.map(b => <div key={b.id} className="lrow backup-row">
-          <span className="lrow-m" style={{ paddingInlineStart: 4 }}>
+        {suggestions.map(b => <div key={b.id} className="lrow backup-row backup-suggest">
+          <span className="lrow-m">
             <span className="lrow-t">{exerciseNameText(b)}</span>
             <span className="lrow-s">{[b.eq ? t(b.eq) : '', b.tg ? t(MUSCLE_NAME[b.tg] || b.tg) : ''].filter(Boolean).join(' · ')}</span>
           </span>

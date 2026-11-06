@@ -848,8 +848,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
     </div>}
     {entry.note && <div className="exnote">{entry.note}</div>}
     {/* Rows set for this one workout by a coach or planner (#972, lib/session-targets.js). */}
-    {entry.sessionTarget && <div className="exnote"><Icon name="calendar" style={{ fontSize: 'var(--fs-footnote)', marginInlineEnd: 5, verticalAlign: '-2px' }} />
-      {entry.sessionTarget.by ? t('Today’s rows come from {0}. Your routine stays as it is.', entry.sessionTarget.by) : t('Today’s rows were planned for this day. Your routine stays as it is.')}</div>}
+    {entry.sessionTarget && <div className="exnote" style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}><Icon name="calendar" style={{ fontSize: 'var(--fs-footnote)', flex: 'none', transform: 'translateY(1px)' }} />
+      <span>{entry.sessionTarget.by ? t('Today’s rows come from {0}. Your routine stays as it is.', entry.sessionTarget.by) : t('Today’s rows were planned for this day. Your routine stays as it is.')}</span></div>}
     {planLine}
     {refLine}
     {guidance && onProgressionSettings && <button type="button" className={'progline' + (plan.kind === 'deload' ? ' warn' : '')}

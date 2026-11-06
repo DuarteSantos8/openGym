@@ -2064,7 +2064,11 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .picker-coach .icn{color:var(--acc)}
 /* Per gym (#988): the brand field under its label, full width inside the grouped row. */
 .gym-brand-row .lrow-m{gap:6px}
-.gym-brand-row .field{width:100%}
+.gym-brand-row .field{width:100%;background:var(--surface-3)}
+.gym-brand-row{padding-block:12px}
+/* The Backups sheet's one-tap suggestions (#1003): a row's breathing room, the kit line capitalised. */
+.backup-suggest{padding-block:10px}
+.backup-suggest .lrow-s::first-letter{text-transform:uppercase}
 .center{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:min(84vw,300px);background:var(--surface-raised);border-radius:var(--r-lg);padding:20px;
