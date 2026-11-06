@@ -20,7 +20,7 @@ const base = () => ({
   routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 8 }], _ts: 900 }],
   workouts: [{ id: 'w1', d: '2026-11-01', start: 1, end: 2, entries: [], _ts: 900 }],
   measurements: [], bodyweight: [], customEx: [], equipProfiles: [{ id: 'g1', name: 'Gym', equip: ['barbell'], _ts: 900 }],
-  dayForm: {}, recoverySessions: {}, gymNotes: {}, journalFolders: {}, exGym: {}, sessionTargets: {}, exMedia: {},
+  dayForm: {}, recoverySessions: {}, activities: {}, gymNotes: {}, journalFolders: {}, exGym: {}, sessionTargets: {}, exMedia: {},
 })
 
 describe('two devices, new 1.4.5 fields, one merge', () => {
@@ -30,6 +30,7 @@ describe('two devices, new 1.4.5 fields, one merge', () => {
       const phone = edit(S, s => {
         s.dayForm['2026-11-06'] = { sleep: 2, energy: 3, _ts: 1 }
         s.recoverySessions.rs1 = { d: '2026-11-05', kind: 'sauna', min: 20, _ts: 1 }
+        s.activities.a1 = { d: '2026-11-05', sport: 'run', min: 42, src: 'manual', _ts: 1 }
         s.measurements.push({ d: '2026-11-06', bp: { sys: 121, dia: 79 }, pulse: 60, t: 1 })
         s.routines[0].fav = true
         s.routines[0].ex[0].tempo = '3-1-1-0'
@@ -44,6 +45,8 @@ describe('two devices, new 1.4.5 fields, one merge', () => {
         s.equipProfiles[0].kit = ['sandbag']
         s.workouts.push({ id: 'w2', d: '2026-11-06', start: 3, end: 4, entries: [], recovery: false, _ts: 1 })
         s.streakExcuse = { max: 4 }
+        s.activities.a2 = { d: '2026-11-04', sport: 'football', min: 90, src: 'hc', _ts: 1 }
+        s.activityStreak = true
       }, order === 'phone newer' ? 3000 : 5000)
       for (const [a, b] of [[phone, laptop], [laptop, phone]]) {
         const m = mergeStates(a, b)
@@ -61,6 +64,9 @@ describe('two devices, new 1.4.5 fields, one merge', () => {
         expect(m.equipProfiles[0].kit).toEqual(['sandbag'])
         expect(m.workouts.map(w => w.id).sort()).toEqual(['w1', 'w2'])
         expect(m.streakExcuse).toEqual({ max: 4 })
+        expect(m.activities.a1.sport).toBe('run')
+        expect(m.activities.a2.sport).toBe('football')
+        expect(m.activityStreak).toBe(true)
       }
     })
   }
