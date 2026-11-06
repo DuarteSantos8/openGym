@@ -58,10 +58,12 @@ struct LivePage: View {
             CountdownView(from: from, label: Text("Start hold"), start: { store.startHold(auto: true) }, cancel: { store.stopHoldCount() })
         } else if let end = store.holdEndsAt {
             HoldView(end: end)
+        } else if store.viewing != nil {
+            SetPanel()
         } else if let end = store.restEndsAt, end > Date() {
             RestView(end: end)
         } else if store.entry != nil {
-            ExercisePage(index: store.entryIndex)
+            SetPanel()
         } else {
             AllDonePanel()
         }

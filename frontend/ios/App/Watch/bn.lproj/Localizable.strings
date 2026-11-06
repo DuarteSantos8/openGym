@@ -28,11 +28,15 @@
 "Save & start workout" = "সেভ করে ওয়ার্কআউট শুরু করুন";
 "Start without weighing in" = "ওজন না মেপেই শুরু করুন";
 "Body weight" = "শরীরের ওজন";
-"Less" = "কম";
-"More" = "বেশি";
 "Effort" = "পরিশ্রম";
 "None" = "কিছু না";
 "Exercises" = "ব্যায়াম";
+"Save" = "সেভ করুন";
+"Previous set" = "আগের সেট";
+"Next set" = "পরের সেট";
+"Edit" = "সম্পাদনা";
+"Overview" = "সংক্ষেপে";
+"Discard workout?" = "ওয়ার্কআউট বাদ দেবেন?";
 "Last time: %@" = "গতবার: %@";
 "No workout running" = "কোনো ওয়ার্কআউট চলছে না";
 "Not synced yet" = "এখনো সিঙ্ক হয়নি";
@@ -61,3 +65,7 @@
 "Added weight" = "অতিরিক্ত ওজন";
 "Your rest, your next set, or today's workout." = "আপনার বিশ্রাম, পরের সেট, বা আজকের ওয়ার্কআউট।";
 "Opens openGym." = "openGym খোলে।";
+"Hold to finish" = "শেষ করতে চেপে ধরুন";
+"iPhone out of reach" = "iPhone নাগালের বাইরে";
+"No set for %lld min. Still at it?" = "%lld মিনিট ধরে কোনো সেট নেই। এখনো চলছে?";
+"A skipped set is still waiting." = "বাদ দেওয়া একটি সেট এখনো বাকি।";

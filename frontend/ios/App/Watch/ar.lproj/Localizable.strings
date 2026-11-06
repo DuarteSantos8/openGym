@@ -28,11 +28,15 @@
 "Save & start workout" = "حفظ وبدء التمرين";
 "Start without weighing in" = "بدء دون تسجيل الوزن";
 "Body weight" = "وزن الجسم";
-"Less" = "أقل";
-"More" = "أكثر";
 "Effort" = "الجهد";
 "None" = "بدون";
 "Exercises" = "التمارين";
+"Save" = "حفظ";
+"Previous set" = "المجموعة السابقة";
+"Next set" = "المجموعة التالية";
+"Edit" = "تعديل";
+"Overview" = "نظرة عامة";
+"Discard workout?" = "تجاهل التمرين؟";
 "Last time: %@" = "المرة السابقة: %@";
 "No workout running" = "لا يوجد تمرين جارٍ";
 "Not synced yet" = "لم تتم المزامنة بعد";
@@ -61,3 +65,7 @@
 "Added weight" = "وزن إضافي";
 "Your rest, your next set, or today's workout." = "راحتك، أو مجموعتك التالية، أو تمرين اليوم.";
 "Opens openGym." = "يفتح openGym.";
+"Hold to finish" = "اضغط مطولًا للإنهاء";
+"iPhone out of reach" = "iPhone خارج النطاق";
+"No set for %lld min. Still at it?" = "لا مجموعة منذ %lld دقيقة. ما زلت تتمرن؟";
+"A skipped set is still waiting." = "مجموعة متخطاة ما زالت تنتظر.";

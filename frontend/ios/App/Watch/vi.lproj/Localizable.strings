@@ -28,11 +28,15 @@
 "Save & start workout" = "Lưu & bắt đầu buổi tập";
 "Start without weighing in" = "Bắt đầu không cần cân";
 "Body weight" = "Thể trọng";
-"Less" = "Ít";
-"More" = "Nhiều";
 "Effort" = "Độ gắng sức";
 "None" = "Không";
 "Exercises" = "Bài tập";
+"Save" = "Lưu";
+"Previous set" = "Hiệp trước";
+"Next set" = "Hiệp tiếp theo";
+"Edit" = "Chỉnh sửa";
+"Overview" = "Tổng quan";
+"Discard workout?" = "Hủy buổi tập?";
 "Last time: %@" = "Lần trước: %@";
 "No workout running" = "Không có buổi tập nào đang chạy";
 "Not synced yet" = "Chưa đồng bộ";
@@ -61,3 +65,7 @@
 "Added weight" = "Tạ thêm";
 "Your rest, your next set, or today's workout." = "Thời gian nghỉ, hiệp tiếp theo hoặc buổi tập hôm nay.";
 "Opens openGym." = "Mở openGym.";
+"Hold to finish" = "Giữ để kết thúc";
+"iPhone out of reach" = "iPhone ngoài tầm kết nối";
+"No set for %lld min. Still at it?" = "Đã %lld phút không có hiệp nào. Bạn còn tập không?";
+"A skipped set is still waiting." = "Vẫn còn một hiệp đã bỏ qua đang chờ.";

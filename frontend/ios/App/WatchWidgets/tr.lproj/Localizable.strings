@@ -28,11 +28,15 @@
 "Save & start workout" = "Kaydet ve antrenmana başla";
 "Start without weighing in" = "Tartılmadan başla";
 "Body weight" = "Vücut ağırlığı";
-"Less" = "Az";
-"More" = "Çok";
 "Effort" = "Zorluk";
 "None" = "Yok";
 "Exercises" = "Egzersizler";
+"Save" = "Kaydet";
+"Previous set" = "Önceki set";
+"Next set" = "Sonraki set";
+"Edit" = "Düzenle";
+"Overview" = "Genel bakış";
+"Discard workout?" = "Antrenman iptal edilsin mi?";
 "Last time: %@" = "Geçen sefer: %@";
 "No workout running" = "Devam eden antrenman yok";
 "Not synced yet" = "Henüz eşitlenmedi";
@@ -61,3 +65,7 @@
 "Added weight" = "Ek ağırlık";
 "Your rest, your next set, or today's workout." = "Dinlenmen, sıradaki setin ya da bugünkü antrenman.";
 "Opens openGym." = "openGym’i açar.";
+"Hold to finish" = "Bitirmek için basılı tut";
+"iPhone out of reach" = "iPhone menzil dışında";
+"No set for %lld min. Still at it?" = "%lld dakikadır set yok. Hâlâ orada mısın?";
+"A skipped set is still waiting." = "Atlanan bir set hâlâ bekliyor.";

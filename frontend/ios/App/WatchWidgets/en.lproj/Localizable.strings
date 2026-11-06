@@ -28,11 +28,15 @@
 "Save & start workout" = "Save & start workout";
 "Start without weighing in" = "Start without weighing in";
 "Body weight" = "Body weight";
-"Less" = "Less";
-"More" = "More";
 "Effort" = "Effort";
 "None" = "None";
 "Exercises" = "Exercises";
+"Save" = "Save";
+"Previous set" = "Previous set";
+"Next set" = "Next set";
+"Edit" = "Edit";
+"Overview" = "Overview";
+"Discard workout?" = "Discard workout?";
 "Last time: %@" = "Last time: %@";
 "No workout running" = "No workout running";
 "Not synced yet" = "Not synced yet";
@@ -61,3 +65,7 @@
 "Added weight" = "Added weight";
 "Your rest, your next set, or today's workout." = "Your rest, your next set, or today's workout.";
 "Opens openGym." = "Opens openGym.";
+"Hold to finish" = "Hold to finish";
+"iPhone out of reach" = "iPhone out of reach";
+"No set for %lld min. Still at it?" = "No set for %lld min. Still at it?";
+"A skipped set is still waiting." = "A skipped set is still waiting.";

@@ -28,11 +28,15 @@
 "Save & start workout" = "Mentés és edzés indítása";
 "Start without weighing in" = "Indítás mérés nélkül";
 "Body weight" = "Testsúly";
-"Less" = "Kevesebb";
-"More" = "Több";
 "Effort" = "Megerőltetés";
 "None" = "Nincs";
 "Exercises" = "Gyakorlatok";
+"Save" = "Mentés";
+"Previous set" = "Előző sorozat";
+"Next set" = "Következő sorozat";
+"Edit" = "Szerkesztés";
+"Overview" = "Áttekintés";
+"Discard workout?" = "Elveted az edzést?";
 "Last time: %@" = "Legutóbb: %@";
 "No workout running" = "Nincs folyamatban edzés";
 "Not synced yet" = "Még nincs szinkronizálva";
@@ -61,3 +65,7 @@
 "Added weight" = "Plusz súly";
 "Your rest, your next set, or today's workout." = "A pihenőd, a következő sorozat vagy a mai edzés.";
 "Opens openGym." = "Megnyitja az openGymet.";
+"Hold to finish" = "Tartsd nyomva a befejezéshez";
+"iPhone out of reach" = "Az iPhone nincs a közelben";
+"No set for %lld min. Still at it?" = "%lld perce nincs sorozat. Még edzel?";
+"A skipped set is still waiting." = "Egy kihagyott sorozat még vár.";

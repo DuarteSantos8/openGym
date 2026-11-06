@@ -50,11 +50,15 @@ const FROM_APP = {
   'Save & start workout': 'Save & start workout',
   'Start without weighing in': 'Start without weighing in',
   'Body weight': 'Body weight',
-  'Less': 'Less',
-  'More': 'More',
   'Effort': 'Effort',
   'None': 'None',
   'Exercises': 'Exercises',
+  'Save': 'Save',
+  'Previous set': 'Previous set',
+  'Next set': 'Next set',
+  'Edit': 'Edit',
+  'Overview': 'Overview',
+  'Discard workout?': 'Discard workout?',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
@@ -210,6 +214,18 @@ const OWN = {
   'Opens openGym.': {
     de: 'Öffnet openGym.', fr: 'Ouvre openGym.', es: 'Abre openGym.', it: 'Apre openGym.', 'pt-PT': 'Abre o openGym.', 'pt-BR': 'Abre o openGym.', pl: 'Otwiera openGym.', hu: 'Megnyitja az openGymet.', tr: 'openGym’i açar.', ru: 'Открывает openGym.', uk: 'Відкриває openGym.', ar: 'يفتح openGym.', hi: 'openGym खोलता है।', bn: 'openGym খোলে।', th: 'เปิด openGym', ko: 'openGym을 열어요.', 'zh-Hans': '打开 openGym。', 'zh-Hant': '打開 openGym。',
     cs: 'Otevře openGym.', fa: 'openGym را باز می‌کند.', id: 'Membuka openGym.', lt: 'Atidaro „openGym“.', sv: 'Öppnar openGym.', vi: 'Mở openGym.',
+  },
+  'Hold to finish': {
+    de: 'Halten zum Beenden', fr: 'Maintiens pour terminer', es: 'Mantén para terminar', it: 'Tieni premuto per finire', 'pt-PT': 'Mantém premido para terminar', 'pt-BR': 'Segure para terminar', pl: 'Przytrzymaj, by zakończyć', hu: 'Tartsd nyomva a befejezéshez', tr: 'Bitirmek için basılı tut', ru: 'Удерживайте, чтобы завершить', uk: 'Утримуй, щоб завершити', ar: 'اضغط مطولًا للإنهاء', hi: 'खत्म करने के लिए दबाए रखें', bn: 'শেষ করতে চেপে ধরুন', th: 'กดค้างเพื่อจบ', ko: '길게 눌러 끝내기', 'zh-Hans': '按住以结束', 'zh-Hant': '按住以結束', cs: 'Podrž pro dokončení', fa: 'برای پایان نگه دارید', id: 'Tahan untuk selesai', lt: 'Palaikykite, kad baigtumėte', sv: 'Håll in för att avsluta', vi: 'Giữ để kết thúc',
+  },
+  'iPhone out of reach': {
+    de: 'iPhone außer Reichweite', fr: 'iPhone hors de portée', es: 'iPhone fuera de alcance', it: 'iPhone fuori portata', 'pt-PT': 'iPhone fora de alcance', 'pt-BR': 'iPhone fora de alcance', pl: 'iPhone poza zasięgiem', hu: 'Az iPhone nincs a közelben', tr: 'iPhone menzil dışında', ru: 'iPhone вне зоны', uk: 'iPhone поза зоною', ar: 'iPhone خارج النطاق', hi: 'iPhone पहुँच से बाहर', bn: 'iPhone নাগালের বাইরে', th: 'iPhone อยู่นอกระยะ', ko: 'iPhone이 멀리 있어요', 'zh-Hans': 'iPhone 不在附近', 'zh-Hant': 'iPhone 不在附近', cs: 'iPhone je mimo dosah', fa: 'iPhone خارج از دسترس است', id: 'iPhone di luar jangkauan', lt: 'iPhone nepasiekiamas', sv: 'iPhone utom räckhåll', vi: 'iPhone ngoài tầm kết nối',
+  },
+  'No set for %lld min. Still at it?': {
+    de: 'Seit %lld Min. kein Satz. Noch dabei?', fr: 'Aucune série depuis %lld min. Toujours là ?', es: 'Ninguna serie en %lld min. ¿Sigues?', it: 'Nessuna serie da %lld min. Ci sei ancora?', 'pt-PT': 'Nenhuma série há %lld min. Ainda aí?', 'pt-BR': 'Nenhuma série há %lld min. Ainda aí?', pl: 'Brak serii od %lld min. Dalej ćwiczysz?', hu: '%lld perce nincs sorozat. Még edzel?', tr: '%lld dakikadır set yok. Hâlâ orada mısın?', ru: 'Ни одного подхода %lld мин. Ещё тренируетесь?', uk: 'Жодного підходу %lld хв. Ще тренуєшся?', ar: 'لا مجموعة منذ %lld دقيقة. ما زلت تتمرن؟', hi: '%lld मिनट से कोई सेट नहीं। अभी भी लगे हैं?', bn: '%lld মিনিট ধরে কোনো সেট নেই। এখনো চলছে?', th: 'ไม่มีเซ็ตมา %lld นาทีแล้ว ยังฝึกอยู่ไหม', ko: '%lld분째 세트가 없어요. 아직 운동 중이세요?', 'zh-Hans': '已经 %lld 分钟没有记录组了。还在练吗？', 'zh-Hant': '已經 %lld 分鐘沒有記錄組了。還在練嗎？', cs: 'Už %lld min žádná série. Pořád cvičíš?', fa: '%lld دقیقه است که ستی ثبت نشده. هنوز تمرین می‌کنید؟', id: 'Tidak ada set selama %lld mnt. Masih latihan?', lt: 'Jau %lld min. be serijos. Dar treniruojatės?', sv: 'Inget set på %lld min. Kör du fortfarande?', vi: 'Đã %lld phút không có hiệp nào. Bạn còn tập không?',
+  },
+  'A skipped set is still waiting.': {
+    de: 'Ein übersprungener Satz wartet noch.', fr: 'Une série passée attend encore.', es: 'Una serie saltada aún te espera.', it: 'Una serie saltata ti aspetta ancora.', 'pt-PT': 'Uma série saltada ainda está à espera.', 'pt-BR': 'Uma série pulada ainda está esperando.', pl: 'Pominięta seria wciąż czeka.', hu: 'Egy kihagyott sorozat még vár.', tr: 'Atlanan bir set hâlâ bekliyor.', ru: 'Пропущенный подход ещё ждёт.', uk: 'Пропущений підхід ще чекає.', ar: 'مجموعة متخطاة ما زالت تنتظر.', hi: 'छोड़ा गया एक सेट अभी बाकी है।', bn: 'বাদ দেওয়া একটি সেট এখনো বাকি।', th: 'ยังมีเซ็ตที่ข้ามไว้รออยู่', ko: '건너뛴 세트가 아직 남아 있어요.', 'zh-Hans': '还有一组跳过的在等你。', 'zh-Hant': '還有一組跳過的在等你。', cs: 'Přeskočená série pořád čeká.', fa: 'یک ست ردشده هنوز منتظر است.', id: 'Satu set yang dilewati masih menunggu.', lt: 'Praleista serija vis dar laukia.', sv: 'Ett överhoppat set väntar fortfarande.', vi: 'Vẫn còn một hiệp đã bỏ qua đang chờ.',
   },
 }
 

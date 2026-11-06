@@ -90,10 +90,6 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published var reps: Double = 0 { didSet { if reps != oldValue { ackRestOver() } } }
     /// A hold's seconds, for the set up next (the crown turns it).
     @Published var seconds: Double = 0 { didSet { if seconds != oldValue { ackRestOver() } } }
-    /// The effort rated for the set up next (RPE or RIR, the profile's scale), nil until rated.
-    /// It belongs to that one set: another set coming up starts empty again (loadTargets).
-    @Published private(set) var effort: Double?
-    private var effortFor: String?
     /// The scale the phone's profile logs, when it logs one ("rpe" / "rir"): the set page offers it.
     var effortKind: String? { Effort.notches(state.settings.effort) != nil ? state.settings.effort : nil }
     /// A hold running: when it ends, and when it started.
@@ -295,6 +291,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func pick(set si: Int, in ei: Int) {
         ackRestOver()
+        viewing = nil
         picked[ei] = si
         if ei == entryIndex { loadTargets() }
     }
@@ -313,6 +310,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// A tap on an Overview row: that exercise, on the set page.
     func jump(to ei: Int) {
+        closeFix()
         show(entry: ei)
         tab = .set
     }
@@ -320,6 +318,108 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Every set done or passed over: the Overview, where Finish is.
     private func overviewIfDone() {
         if Overview.atEnd(state) { tab = .overview }
+    }
+
+    /* ---------- ‹ › and fixing a logged set (WatchCore SetNav, SetFix) ---------- */
+
+    /// A done set open on the set page to be fixed; nil: the set up next is there.
+    @Published private(set) var viewing: SetRef?
+    /// The numbers of the set being fixed (the crown and the keypad turn these, not the next set's).
+    @Published var fixW: Double = 0
+    @Published var fixR: Double = 0
+    @Published var fixSec: Double = 0
+    /// The side of a per-side set being fixed.
+    @Published private(set) var fixSide: String?
+    /// What was logged, to tell whether anything changed.
+    private var fixFrom: SetFix.Numbers?
+
+    /// The set on the set page: the one being fixed, else the one up next.
+    var shownRef: SetRef? {
+        viewing ?? setIndex.map { SetRef(entry: entryIndex, set: $0) }
+    }
+
+    var shownEntry: Entry? {
+        guard let w = workout, let ref = shownRef, w.entries.indices.contains(ref.entry) else { return entry }
+        return w.entries[ref.entry]
+    }
+
+    private func fixRow(_ ref: SetRef) -> SetRow? {
+        guard let w = workout, w.entries.indices.contains(ref.entry), w.entries[ref.entry].sets.indices.contains(ref.set) else { return nil }
+        let row = w.entries[ref.entry].sets[ref.set]
+        return row.done ? row : nil
+    }
+
+    /// Where ‹ (-1) or › (+1) goes from the set on the page; from an exercise with nothing left,
+    /// ‹ is its last set.
+    private func target(_ d: Int) -> SetRef? {
+        if let ref = shownRef {
+            guard let e = shownEntry, let to = SetNav.step(e, from: ref.set, by: d) else { return nil }
+            return SetRef(entry: ref.entry, set: to)
+        }
+        guard let e = entry, !e.sets.isEmpty else { return nil }
+        return d < 0 ? SetRef(entry: entryIndex, set: e.sets.count - 1) : nil
+    }
+
+    func canStep(_ d: Int) -> Bool { target(d) != nil }
+
+    func step(_ d: Int) {
+        guard let to = target(d) else { return }
+        open(to)
+    }
+
+    /// A set on the set page: a done one opens to be fixed, one still to do becomes the set up next.
+    func open(_ ref: SetRef) {
+        ackRestOver()
+        if let row = fixRow(ref) {
+            viewing = ref
+            fixSide = row.sides != nil ? "L" : nil
+            loadFix()
+        } else {
+            viewing = nil
+            if ref.entry != entryIndex { show(entry: ref.entry) }
+            pick(set: ref.set, in: ref.entry)
+        }
+    }
+
+    func setFixSide(_ side: String) {
+        fixSide = side
+        loadFix()
+    }
+
+    private func loadFix() {
+        guard let ref = viewing, let row = fixRow(ref), let n = SetFix.logged(row, side: fixSide) else { viewing = nil; return }
+        fixFrom = n
+        fixW = n.w ?? 0
+        fixR = n.r ?? 0
+        fixSec = n.sec ?? 0
+    }
+
+    /// Whether the numbers on a set being fixed differ from what was logged.
+    var fixChanged: Bool {
+        guard let f = fixFrom, viewing != nil else { return false }
+        return fixW != (f.w ?? 0) || fixR != (f.r ?? 0) || fixSec != (f.sec ?? 0)
+    }
+
+    /// Save on a set being fixed: the phone gets it as the set done again (SetFix.correct).
+    func saveFix() {
+        guard let ref = viewing, fixChanged else { return }
+        let (next, event) = SetFix.correct(state, entry: ref.entry, set: ref.set, side: fixSide,
+                                           to: SetFix.Numbers(w: fixW, r: fixR, sec: fixSec),
+                                           now: Date().timeIntervalSince1970 * 1000, id: UUID().uuidString)
+        guard let ev = event else { return }
+        send(event: ev)
+        state = next
+        viewing = nil
+        fixFrom = nil
+        noteActivity()
+        Haptics.done()
+        loadTargets()
+    }
+
+    /// Back to the set up next without saving.
+    func closeFix() {
+        viewing = nil
+        fixFrom = nil
     }
 
     /// What the complications and the Smart Stack widget show (WidgetState), in the app's language.
@@ -418,6 +518,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.workoutSeenAt = Date()
                 self.picked = [:]
                 self.tab = .set
+                self.viewing = nil
                 self.summary = nil
                 self.health.start(workoutId: next.workout?.id, type: next.workout?.healthType)
             }
@@ -438,23 +539,10 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
     }
 
-    /// The set up next, as the effort remembers it (exercise, set, side).
-    private var setKey: String? {
-        guard let e = entry, let si = setIndex else { return nil }
-        return SessionCore.key(e.id, si, e.sets[si].sideUp)
-    }
-
-    /// The effort for the set up next, from its editor; nil clears it.
-    func rate(_ v: Double?) {
-        ackRestOver()
-        effort = v
-        effortFor = v == nil ? nil : setKey
-    }
-
     /// The weight and reps the crown starts from: the set's own target.
     func loadTargets() {
-        // A rating stays with its set through snapshots; another set starts unrated.
-        if effortFor != setKey { effort = nil; effortFor = nil }
+        // A set being fixed that is no longer done (unticked on the phone): nothing left to fix.
+        if let v = viewing, fixRow(v) == nil { viewing = nil }
         guard let e = entry else { return }
         let s = setIndex.map { e.sets[$0] } ?? e.sets.last
         if let row = s, let side = row.sideUp, let one = row.sides?[side] {
@@ -493,9 +581,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             tw = weight
             tr = reps
         }
-        let rated = effortKind.flatMap { k in effort.map { Effort.Rating(kind: k, value: $0) } }
         let (next, event) = SessionCore.tick(state, entry: ei, set: si, side: side, w: tw, r: tr, sec: tsec,
-                                             at: now.timeIntervalSince1970 * 1000, id: UUID().uuidString, hr: hr, effort: rated)
+                                             at: now.timeIntervalSince1970 * 1000, id: UUID().uuidString, hr: hr)
         // Sent first, saved second: killed in between, the phone still has the tick (and the next
         // snapshot brings it back here); the other way round the tick would be lost on the phone.
         if let event = event { send(event: event) }
@@ -773,6 +860,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         state = next
         picked = [:]
         tab = .set
+        viewing = nil
         setStartedAt = now
         workoutSeenAt = now
         restAfter = nil
@@ -892,6 +980,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         stopHold()
         skipRest()
         dropClips()
+        closeFix()
         send(event: ev)
         state = next
         Haptics.finished()
@@ -907,6 +996,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         stopHold()
         skipRest()
         dropClips()
+        closeFix()
         send(event: ev)
         state = next
         summary = nil
@@ -1228,7 +1318,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         if screen != "empty" { apply(json: screen == "idle" ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
         DispatchQueue.main.async {
             switch screen {
-            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps": self.picked[0] = 2
+            case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
+            case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
             case "hold": self.state.entryIndex = 1
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3

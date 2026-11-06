@@ -28,11 +28,15 @@
 "Save & start workout" = "บันทึกแล้วเริ่มออกกำลังกาย";
 "Start without weighing in" = "เริ่มโดยไม่ชั่งน้ำหนัก";
 "Body weight" = "น้ำหนักตัว";
-"Less" = "น้อย";
-"More" = "มาก";
 "Effort" = "ความหนัก";
 "None" = "ไม่มี";
 "Exercises" = "ท่าออกกำลังกาย";
+"Save" = "บันทึก";
+"Previous set" = "เซ็ตก่อนหน้า";
+"Next set" = "เซ็ตถัดไป";
+"Edit" = "แก้ไข";
+"Overview" = "ภาพรวม";
+"Discard workout?" = "ทิ้งการออกกำลังกายนี้?";
 "Last time: %@" = "ครั้งก่อน: %@";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";
@@ -61,3 +65,7 @@
 "Added weight" = "น้ำหนักเพิ่ม";
 "Your rest, your next set, or today's workout." = "ช่วงพัก เซ็ตถัดไป หรือการฝึกวันนี้";
 "Opens openGym." = "เปิด openGym";
+"Hold to finish" = "กดค้างเพื่อจบ";
+"iPhone out of reach" = "iPhone อยู่นอกระยะ";
+"No set for %lld min. Still at it?" = "ไม่มีเซ็ตมา %lld นาทีแล้ว ยังฝึกอยู่ไหม";
+"A skipped set is still waiting." = "ยังมีเซ็ตที่ข้ามไว้รออยู่";

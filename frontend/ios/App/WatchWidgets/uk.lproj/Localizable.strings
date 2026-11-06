@@ -28,11 +28,15 @@
 "Save & start workout" = "Зберегти й почати тренування";
 "Start without weighing in" = "Почати без зважування";
 "Body weight" = "Вага тіла";
-"Less" = "Менше";
-"More" = "Більше";
 "Effort" = "Зусилля";
 "None" = "Немає";
 "Exercises" = "Вправи";
+"Save" = "Зберегти";
+"Previous set" = "Попередній підхід";
+"Next set" = "Наступний підхід";
+"Edit" = "Змінити";
+"Overview" = "Огляд";
+"Discard workout?" = "Скасувати тренування?";
 "Last time: %@" = "Минулого разу: %@";
 "No workout running" = "Тренування не триває";
 "Not synced yet" = "Ще не синхронізовано";
@@ -61,3 +65,7 @@
 "Added weight" = "Додаткова вага";
 "Your rest, your next set, or today's workout." = "Відпочинок, наступний підхід або сьогоднішнє тренування.";
 "Opens openGym." = "Відкриває openGym.";
+"Hold to finish" = "Утримуй, щоб завершити";
+"iPhone out of reach" = "iPhone поза зоною";
+"No set for %lld min. Still at it?" = "Жодного підходу %lld хв. Ще тренуєшся?";
+"A skipped set is still waiting." = "Пропущений підхід ще чекає.";

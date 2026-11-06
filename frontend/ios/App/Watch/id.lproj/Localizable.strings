@@ -28,11 +28,15 @@
 "Save & start workout" = "Simpan & mulai latihan";
 "Start without weighing in" = "Mulailah tanpa menimbang";
 "Body weight" = "Berat badan";
-"Less" = "Lebih sedikit";
-"More" = "Lebih banyak";
 "Effort" = "Tingkat usaha";
 "None" = "Tidak ada";
 "Exercises" = "Daftar Latihan";
+"Save" = "Simpan";
+"Previous set" = "Set sebelumnya";
+"Next set" = "Set berikutnya";
+"Edit" = "Edit";
+"Overview" = "Ringkasan";
+"Discard workout?" = "Buang sesi latihan?";
 "Last time: %@" = "Terakhir kali: %@";
 "No workout running" = "Tidak ada latihan berjalan";
 "Not synced yet" = "Belum disinkronkan";
@@ -61,3 +65,7 @@
 "Added weight" = "Beban tambahan";
 "Your rest, your next set, or today's workout." = "Istirahatmu, set berikutnya, atau latihan hari ini.";
 "Opens openGym." = "Membuka openGym.";
+"Hold to finish" = "Tahan untuk selesai";
+"iPhone out of reach" = "iPhone di luar jangkauan";
+"No set for %lld min. Still at it?" = "Tidak ada set selama %lld mnt. Masih latihan?";
+"A skipped set is still waiting." = "Satu set yang dilewati masih menunggu.";

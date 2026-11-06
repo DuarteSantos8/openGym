@@ -28,11 +28,15 @@
 "Save & start workout" = "Įrašyti ir pradėti treniruotę";
 "Start without weighing in" = "Pradėti neįsvertus";
 "Body weight" = "Kūno svoris";
-"Less" = "Mažiau";
-"More" = "Daugiau";
 "Effort" = "Pastangos";
 "None" = "Nėra";
 "Exercises" = "Pratimai";
+"Save" = "Išsaugoti";
+"Previous set" = "Ankstesnė serija";
+"Next set" = "Kita serija";
+"Edit" = "Redaguoti";
+"Overview" = "Apžvalga";
+"Discard workout?" = "Atsisakyti treniruotės?";
 "Last time: %@" = "Paskutinį kartą: %@";
 "No workout running" = "Treniruotė nevyksta";
 "Not synced yet" = "Dar nesinchronizuota";
@@ -61,3 +65,7 @@
 "Added weight" = "Papildomas svoris";
 "Your rest, your next set, or today's workout." = "Jūsų poilsis, kita serija arba šiandienos treniruotė.";
 "Opens openGym." = "Atidaro „openGym“.";
+"Hold to finish" = "Palaikykite, kad baigtumėte";
+"iPhone out of reach" = "iPhone nepasiekiamas";
+"No set for %lld min. Still at it?" = "Jau %lld min. be serijos. Dar treniruojatės?";
+"A skipped set is still waiting." = "Praleista serija vis dar laukia.";

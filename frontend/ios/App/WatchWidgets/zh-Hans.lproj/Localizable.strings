@@ -28,11 +28,15 @@
 "Save & start workout" = "保存并开始训练";
 "Start without weighing in" = "不称重直接开始";
 "Body weight" = "体重";
-"Less" = "更少";
-"More" = "更多";
 "Effort" = "强度";
 "None" = "无";
 "Exercises" = "动作库";
+"Save" = "保存";
+"Previous set" = "上一组";
+"Next set" = "下一组";
+"Edit" = "编辑";
+"Overview" = "概览";
+"Discard workout?" = "放弃训练？";
 "Last time: %@" = "上次: %@";
 "No workout running" = "没有进行中的训练";
 "Not synced yet" = "尚未同步";
@@ -61,3 +65,7 @@
 "Added weight" = "附加重量";
 "Your rest, your next set, or today's workout." = "你的休息、下一组或今天的训练。";
 "Opens openGym." = "打开 openGym。";
+"Hold to finish" = "按住以结束";
+"iPhone out of reach" = "iPhone 不在附近";
+"No set for %lld min. Still at it?" = "已经 %lld 分钟没有记录组了。还在练吗？";
+"A skipped set is still waiting." = "还有一组跳过的在等你。";

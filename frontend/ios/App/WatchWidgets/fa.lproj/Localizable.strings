@@ -28,11 +28,15 @@
 "Save & start workout" = "ذخیره و شروع تمرین";
 "Start without weighing in" = "شروع بدون وزن‌کشی";
 "Body weight" = "وزن بدن";
-"Less" = "کمتر";
-"More" = "بیشتر";
 "Effort" = "شدت";
 "None" = "هیچ‌کدام";
 "Exercises" = "تمرینات";
+"Save" = "ذخیره";
+"Previous set" = "ست قبلی";
+"Next set" = "ست بعدی";
+"Edit" = "ویرایش";
+"Overview" = "نمای کلی";
+"Discard workout?" = "تمرین کنار گذاشته شود؟";
 "Last time: %@" = "آخرین بار: %@";
 "No workout running" = "هیچ تمرینی در جریان نیست";
 "Not synced yet" = "هنوز همگام نشده";
@@ -61,3 +65,7 @@
 "Added weight" = "وزن اضافه";
 "Your rest, your next set, or today's workout." = "استراحت شما، ست بعدی یا تمرین امروز.";
 "Opens openGym." = "openGym را باز می‌کند.";
+"Hold to finish" = "برای پایان نگه دارید";
+"iPhone out of reach" = "iPhone خارج از دسترس است";
+"No set for %lld min. Still at it?" = "%lld دقیقه است که ستی ثبت نشده. هنوز تمرین می‌کنید؟";
+"A skipped set is still waiting." = "یک ست ردشده هنوز منتظر است.";

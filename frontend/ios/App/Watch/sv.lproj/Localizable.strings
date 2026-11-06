@@ -28,11 +28,15 @@
 "Save & start workout" = "Spara och starta passet";
 "Start without weighing in" = "Starta utan att väga in";
 "Body weight" = "Kroppsvikt";
-"Less" = "Mindre";
-"More" = "Mer";
 "Effort" = "Ansträngning";
 "None" = "Ingen";
 "Exercises" = "Övningar";
+"Save" = "Spara";
+"Previous set" = "Föregående set";
+"Next set" = "Nästa set";
+"Edit" = "Redigera";
+"Overview" = "Översikt";
+"Discard workout?" = "Släng passet?";
 "Last time: %@" = "Förra gången: %@";
 "No workout running" = "Inget pass pågår";
 "Not synced yet" = "Inte synkat än";
@@ -61,3 +65,7 @@
 "Added weight" = "Extra vikt";
 "Your rest, your next set, or today's workout." = "Din vila, ditt nästa set eller dagens pass.";
 "Opens openGym." = "Öppnar openGym.";
+"Hold to finish" = "Håll in för att avsluta";
+"iPhone out of reach" = "iPhone utom räckhåll";
+"No set for %lld min. Still at it?" = "Inget set på %lld min. Kör du fortfarande?";
+"A skipped set is still waiting." = "Ett överhoppat set väntar fortfarande.";

@@ -28,11 +28,15 @@
 "Save & start workout" = "儲存並開始訓練";
 "Start without weighing in" = "不量體重直接開始";
 "Body weight" = "體重";
-"Less" = "較少";
-"More" = "較多";
 "Effort" = "強度表現";
 "None" = "無";
 "Exercises" = "動作庫";
+"Save" = "儲存";
+"Previous set" = "上一組";
+"Next set" = "下一組";
+"Edit" = "編輯";
+"Overview" = "總覽";
+"Discard workout?" = "捨棄本次訓練？";
 "Last time: %@" = "上次: %@";
 "No workout running" = "沒有進行中的訓練";
 "Not synced yet" = "尚未同步";
@@ -61,3 +65,7 @@
 "Added weight" = "附加重量";
 "Your rest, your next set, or today's workout." = "你的休息、下一組或今天的訓練。";
 "Opens openGym." = "打開 openGym。";
+"Hold to finish" = "按住以結束";
+"iPhone out of reach" = "iPhone 不在附近";
+"No set for %lld min. Still at it?" = "已經 %lld 分鐘沒有記錄組了。還在練嗎？";
+"A skipped set is still waiting." = "還有一組跳過的在等你。";
