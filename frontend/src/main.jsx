@@ -5,6 +5,7 @@ import { MOBILE } from './lib/mobile.js'
 import { useStore } from './store/useStore.js'
 import { startMediaSync } from './lib/media-sync.js'
 import { startNativeKeyboard } from './lib/native-keyboard.js'
+import { registerDailyFormSource } from './lib/daily-form.js'
 // The Coach's and the admin dashboard's styles stay in the main stylesheet, in the place they
 // always had (before index.css), although their screens are now loaded on demand (App.jsx).
 import './admin.css'
@@ -44,6 +45,8 @@ startMediaSync(useStore)
 // Android 15 does not resize the page for the soft keyboard; the app says how much it covers and
 // this keeps the focused field above it. Idle everywhere else.
 startNativeKeyboard()
+// The daily-form check-in feeds the automatic deload suggestion (lib/deload-cycle.js).
+registerDailyFormSource()
 
 // Not in the mobile build: the native shell already serves everything from disk.
 if (!MOBILE && 'serviceWorker' in navigator && location.protocol === 'https:') {

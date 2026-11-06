@@ -5,7 +5,7 @@
 import { Suspense, lazy, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { useWrappedUI, openWrapped } from '../lib/wrapped-ui.js'
+import { useWrappedUI, openWrapped, openMonthStory } from '../lib/wrapped-ui.js'
 import { homeCardYear, wrappedYears, wrappedNow, withYear, notifyOn } from '../lib/wrapped.js'
 import { syncWrappedNotification, onWrappedNotificationOpen } from '../lib/wrapped-notify.js'
 import { t } from '../lib/i18n.js'
@@ -35,6 +35,7 @@ export function WrappedHomeCard({ S }) {
  */
 export function WrappedLayer({ ready }) {
   const year = useWrappedUI(s => s.year)
+  const month = useWrappedUI(s => s.month)
   const S = useStore(s => s.S)
   const update = useStore(s => s.update)
   const loc = useLocation()
@@ -48,10 +49,12 @@ export function WrappedLayer({ ready }) {
   useEffect(() => {
     if (!ready) return
     const m = /[?&]wrapped=(\d{4})\b/.exec(loc.search || '')
-    if (!m) return
-    openWrapped(Number(m[1]))
+    // Your month (v1.4.5): #/stats?month=2026-10.
+    const mm = /[?&]month=(\d{4}-\d{2})\b/.exec(loc.search || '')
+    if (!m && !mm) return
+    if (m) openWrapped(Number(m[1])); else openMonthStory(mm[1])
     nav(loc.pathname, { replace: true })
   }, [ready, loc.search]) // eslint-disable-line react-hooks/exhaustive-deps
-  if (!year) return null
+  if (!year && !month) return null
   return <Suspense fallback={null}><Wrapped /></Suspense>
 }

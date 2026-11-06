@@ -967,6 +967,42 @@ body.chips-dragging *{cursor:inherit}
 .hc-body-cell b{font-size:var(--fs-title3);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label)}
 .hc-body-cell b i{font-style:normal;font-weight:400;font-size:var(--fs-footnote);color:var(--label-3)}
 .hc-body-s{font-size:var(--fs-caption);color:var(--label-3)}
+/* Daily form (v1.4.5, gm-insights): the check-in sheet before a workout (components/DailyCheckin.jsx)
+   and the card in Stats (components/DailyFormCard.jsx). The scale is five equal pips in a tone-step
+   track; the chosen one takes the accent. No borders, the surfaces step in tone. */
+.dfc-sub{margin:-2px 0 14px;line-height:1.45}
+.dfc-row{margin-bottom:12px}
+.dfc-q{display:flex;align-items:center;gap:8px;font-size:var(--fs-subhead);font-weight:600;color:var(--label);margin-bottom:6px}
+.dfc-q .ico,.dfc-q svg{width:18px;height:18px;color:var(--label-2)}
+.dfc-scale{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:var(--surface-2);border-radius:12px;padding:3px}
+.dfc-pip{min-height:44px;border:0;border-radius:9px;background:transparent;color:var(--label-2);font:inherit;font-size:var(--fs-body);font-weight:600;font-variant-numeric:tabular-nums;cursor:pointer;
+  transition:background-color var(--fast,160ms) var(--ease,ease-out),color var(--fast,160ms) var(--ease,ease-out),transform 120ms ease-out;touch-action:manipulation}
+.dfc-pip:active{transform:scale(.95)}
+.dfc-pip.on{background:var(--acc);color:var(--on-acc)}
+.dfc-pip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.dfc-ends{display:flex;justify-content:space-between;gap:12px;margin-top:4px;font-size:var(--fs-caption);color:var(--label-2)}
+.dfc-ends span:last-child{text-align:end}
+.dfc-hint{margin:-6px 0 12px}
+.dfc-light{background:var(--surface-2);border-radius:var(--r);padding:12px 14px;margin:4px 0 14px;display:flex;flex-direction:column;gap:8px}
+.dfc-light .seg-inline{margin-inline-start:0;width:100%}
+.dfc-light-t{font-weight:600;color:var(--label)}
+.dform-card .dfc-vitals{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-top:12px}
+.dfc-vital{min-width:0;display:flex;flex-direction:column;gap:2px}
+.dfc-vital-k{font-size:var(--fs-caption);color:var(--label-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dfc-vital b{font-size:var(--fs-title3);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label)}
+.dfc-vital b i{font-style:normal;font-weight:400;font-size:var(--fs-footnote);color:var(--label-2)}
+.dfc-vital-s{font-size:var(--fs-caption);color:var(--label-2)}
+.dfc-src{margin-top:8px}
+.dfc-ins{display:flex;flex-direction:column;margin-top:12px;background:var(--surface-2);border-radius:var(--r);overflow:hidden}
+.dfc-in{display:flex;align-items:center;gap:12px;padding:11px 14px}
+.dfc-in+.dfc-in{box-shadow:inset 0 .5px 0 var(--sep)}
+.dfc-in-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.dfc-in-t{font-size:var(--fs-subhead);color:var(--label);font-weight:500}
+.dfc-in-s{font-size:var(--fs-caption);color:var(--label-2)}
+.dfc-in-v{flex:none;font-size:var(--fs-title3);font-weight:600;font-variant-numeric:tabular-nums;color:var(--label)}
+.dfc-in-v.up{color:var(--green-ink)}
+.dfc-note{margin-top:10px;line-height:1.45}
+@media (prefers-reduced-motion:reduce){.dfc-pip{transition:background-color 120ms ease,color 120ms ease}.dfc-pip:active{transform:none}}
 .exnote{
   background:var(--surface);border-radius:var(--r);padding:13px 15px;
   line-height:1.45;white-space:pre-wrap;font-size:var(--fs-subhead);margin-bottom:10px;color:var(--label-2);

@@ -82,7 +82,8 @@ import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, PO
 import { normalizeRepRange } from './lib/rep-range.js'
 import { isBackoff, backoffWeights } from './lib/backoff.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
-import { MOBILE, shareExport, shareExportBlob } from './lib/mobile.js'
+import { MOBILE, shareExport, shareExportBlob, nativePlatform } from './lib/mobile.js'
+import { loadHealth } from './lib/health-sync.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP, clampLevel, levelFits, LEVEL_MAX } from './lib/incline.js'
 import { savedEntryRecords, repRecordTable, liveRecordsOn } from './lib/set-records.js'
@@ -127,6 +128,9 @@ import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
 import { DAY_NOTE_TAGS, DAY_NOTE_LABEL, DAY_NOTE_ICON, dayNoteOf, dayNoteLine, canNoteDay, withDayNote } from './lib/day-notes.js'
 import { isOn } from './lib/modules.js'
+import { checkinMode, withForm, readForm, goLighter, canGoLighter, LIGHTER_KINDS } from './lib/daily-form.js'
+import { sleepHoursOn } from './lib/vitals.js'
+import DailyCheckin from './components/DailyCheckin.jsx'
 
 const S = () => useStore.getState().S
 const update = (...a) => useStore.getState().update(...a)
@@ -3914,15 +3918,36 @@ export function DayNoteRow({ iso, note }) {
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
 // `opts.lead`: exercises a last session did not get to (lib/leftovers.js, #985), done first.
 export function startFlow(routineIds, opts = {}) {
+  // The daily-form check-in comes first (v1.4.5, lib/daily-form.js): only when switched on
+  // (Settings → Workout), never with the Health module off, once a day.
+  if (!opts.checked && checkinMode(S(), todayISO())) { dailyCheckinSheet(routineIds, opts); return }
   // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
   // into the session with no body weight on it, same as "Start without weighing in".
   // Off in Settings → Workout, or with the Body module (Settings → Modules): straight into the session.
   if (S().weighIn === false || !isOn(S(), 'body')) { beginWorkout(routineIds, null, opts); return }
   bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw, opts) })
 }
+function dailyCheckinSheet(routineIds, opts) {
+  const st = S()
+  const today = todayISO()
+  // Which ways of going lighter this session can take, worked out on the entries it will start with.
+  const preview = { entries: buildCombinedEntries(st, routineIds).entries }
+  const lighter = LIGHTER_KINDS.filter(k => canGoLighter(preview, k))
+  // Last night's sleep from the phone's health store, when its vitals are read (lib/vitals.js).
+  const sleep = MOBILE ? Promise.all([loadHealth(), nativePlatform()])
+    .then(([h, platform]) => (h?.readVitals ? { hours: sleepHoursOn(h.vitals, today), platform } : null)).catch(() => null) : null
+  const go = more => startFlow(routineIds, { ...opts, checked: true, ...more })
+  ui().openSheet(close => <DailyCheckin lighter={lighter} sleep={sleep}
+    onDone={({ form, lighter: kind }) => {
+      close()
+      if (readForm(form)) update(s => { s.dayForm = withForm(s.dayForm, today, { ...form, lighter: kind }) })
+      go(kind ? { lighter: kind } : {})
+    }}
+    onSkip={() => { close(); go({}) }} />)
+}
 // `opts` from the Apple Watch (lib/watch-sync.js): a session started there keeps the watch's id,
 // so the sets ticked on it find it, and its start time, however late the phone hears of it.
-export function beginWorkout(routineIds, bw, { id = null, start = null, lead = null } = {}) {
+export function beginWorkout(routineIds, bw, { id = null, start = null, lead = null, lighter = null } = {}) {
   const st = S()
   const built = buildCombinedEntries(st, routineIds)
   const { routineIds: rids, routines } = built
@@ -3944,6 +3969,12 @@ export function beginWorkout(routineIds, bw, { id = null, start = null, lead = n
       workoutView: st.workoutView || 'cards',
     }
   })
+  // "Go lighter" from the check-in (lib/daily-form.js): today's numbers only, said so.
+  if (lighter) {
+    let n = 0
+    update(s => { n = goLighter(s, lighter) })
+    if (n) toast(lighter === 'load' ? t('Lighter day: 10% off the weights. Progression sits this one out.') : t('Lighter day: one set fewer per exercise. Progression sits this one out.'))
+  }
   useUI.getState().stopRest()
   navToWorkout()
   // Started inside a gym reminder place linked to an equipment profile: that gym's (#808).

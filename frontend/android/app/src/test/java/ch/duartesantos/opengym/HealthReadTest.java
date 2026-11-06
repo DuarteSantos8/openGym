@@ -70,6 +70,11 @@ public class HealthReadTest {
         assertEquals("android.permission.health.READ_WEIGHT", HealthRead.readPermission("weight"));
         assertEquals("android.permission.health.READ_HEALTH_DATA_HISTORY", HealthRead.readPermission("history"));
         assertEquals("android.permission.health.WRITE_EXERCISE", HealthRead.writePermission("exercise"));
-        assertNull(HealthRead.readPermission("steps"));
+        // Vitals (v1.4.5): each one declared in AndroidManifest.xml.
+        assertEquals("android.permission.health.READ_SLEEP", HealthRead.readPermission("sleep"));
+        assertEquals("android.permission.health.READ_RESTING_HEART_RATE", HealthRead.readPermission("restingHeartRate"));
+        assertEquals("android.permission.health.READ_HEART_RATE_VARIABILITY", HealthRead.readPermission("hrv"));
+        assertEquals("android.permission.health.READ_STEPS", HealthRead.readPermission("steps"));
+        assertNull(HealthRead.readPermission("menstruation"));
     }
 }

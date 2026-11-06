@@ -21,7 +21,9 @@ import Icon from '../components/Icon.jsx'
 import { StreakCard } from '../components/Streak.jsx'
 import { ChallengesStatsCard } from '../components/Challenges.jsx'
 import { wrappedYears } from '../lib/wrapped.js'
-import { openWrapped } from '../lib/wrapped-ui.js'
+import { openWrapped, openMonthStory } from '../lib/wrapped-ui.js'
+import DailyFormCard from '../components/DailyFormCard.jsx'
+import { offeredMonth, monthLabel } from '../lib/month-story.js'
 import { streakInfo } from '../lib/streak.js'
 import { reportSheet } from '../components/ReportSheet.jsx'
 import { muscleTargetsSheet } from '../components/WeeklySets.jsx'
@@ -873,6 +875,8 @@ export default function Stats() {
   ]
   const recent = [...workouts].reverse().slice(0, RECENT_ROWS)
   const wrapped = motivationOn ? wrappedYears(S).slice(0, 4) : []
+  // Your month (v1.4.5): last month's story once it is over, this month's so far before that.
+  const storyMonth = motivationOn ? offeredMonth(S, todayISO()) : null
   const thisYear = new Date().getFullYear()
   const exLegend = onSets && !rangeTooShort && perSetChart.ns.length > 0
   // The pages behind Stats as one grouped list (stats redesign): they were four cards with a
@@ -889,6 +893,8 @@ export default function Stats() {
     // Every note in one feed (views/Journal.jsx): workouts, sets, exercises, check-ins, days off.
     <Row key="j" title={t('Journal')} subtitle={t('Every note you wrote, in one place.')} accessory="chevron" className="stats-link" onClick={() => nav('/journal')} />,
     <Row key="t" title={t('Tools')} subtitle={t('1RM table, RPE load, DOTS, BMI, body fat, pace.')} accessory="chevron" className="stats-link" onClick={() => nav('/tools')} />,
+    storyMonth && <Row key="month" title={t('Your month')} value={storyMonth === todayISO().slice(0, 7) ? t('So far') : monthLabel(storyMonth)} accessory="chevron"
+      className="stats-link month-story" onClick={() => openMonthStory(storyMonth)} />,
     ...wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
       className="stats-link" onClick={() => openWrapped(y)} />),
   ].filter(Boolean)
@@ -929,6 +935,8 @@ export default function Stats() {
     {workouts.length > 0 && motivationOn && <StreakCard info={streak} onHelp={() => calendarSheet(undefined, { help: true })} />}
     {/* The month's challenges and the trophy shelf (lib/challenges.js), folded to one line. */}
     {workouts.length > 0 && motivationOn && <ChallengesStatsCard S={S} />}
+    {/* Daily form (v1.4.5): vitals from the phone's health store and what the check-ins say. */}
+    {on('health') && <DailyFormCard S={S} />}
     {/* Cardio minutes a week, with a goal if you set one (D#84). */}
     {workouts.length > 0 && <CardioWeekCard S={S} />}
 

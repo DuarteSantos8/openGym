@@ -18,6 +18,12 @@ import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.HeartRateRecord;
 import androidx.health.connect.client.records.Record;
 import androidx.health.connect.client.records.WeightRecord;
+import androidx.health.connect.client.records.SleepSessionRecord;
+import androidx.health.connect.client.records.RestingHeartRateRecord;
+import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord;
+import androidx.health.connect.client.records.StepsRecord;
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod;
+import androidx.health.connect.client.request.AggregateGroupByPeriodRequest;
 import androidx.health.connect.client.records.metadata.Metadata;
 import androidx.health.connect.client.request.ReadRecordsRequest;
 import androidx.health.connect.client.response.ReadRecordsResponse;
@@ -31,7 +37,10 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -78,6 +87,7 @@ import org.json.JSONObject;
  *   await HC.readHeartRate({ from, to });   // { samples: [[ms, bpm]], origins: [package] }
  *   await HC.readWeights({ since });        // { records: [{ t, kg, id, origin, clientId }] }
  *   await HC.readBody({ since });           // { records: [{ kind, t, v, id, origin, clientId }] } (v1.4.5)
+ *   await HC.readVitals({ from: 'YYYY-MM-DD' });  // { sleep, rhr, hrv, steps, hrvKind } (v1.4.5, lib/vitals.js)
  * Foreground only: no READ_HEALTH_DATA_IN_BACKGROUND. Without READ_HEALTH_DATA_HISTORY Health
  * Connect gives 30 days back from the first grant, plenty for the workout just done; weigh-ins
  * ask for it too (read: ['weight', 'history']) where Health Connect has the feature, which
@@ -100,6 +110,11 @@ public class HealthConnectPlugin extends Plugin {
     private static final String READ_LEAN_MASS = "android.permission.health.READ_LEAN_BODY_MASS";
     private static final String READ_BONE_MASS = "android.permission.health.READ_BONE_MASS";
     private static final String READ_BMR = "android.permission.health.READ_BASAL_METABOLIC_RATE";
+    // Vitals (v1.4.5, gm-insights), each its own permission; whichever were granted are read.
+    private static final String READ_SLEEP = "android.permission.health.READ_SLEEP";
+    private static final String READ_RESTING_HR = "android.permission.health.READ_RESTING_HEART_RATE";
+    private static final String READ_HRV = "android.permission.health.READ_HEART_RATE_VARIABILITY";
+    private static final String READ_STEPS = "android.permission.health.READ_STEPS";
     // Records per page when reading, and pages at most: a few hours of heart rate fit easily.
     private static final int PAGE = 1000;
     private static final int MAX_PAGES = 50;
@@ -390,6 +405,95 @@ public class HealthConnectPlugin extends Plugin {
         });
     }
 
+    /**
+     * Vitals from local midnight of `from` on (lib/vitals.js): sleep sessions (from the noon before,
+     * so the first night is whole) with their awake stages, resting heart rate and HRV (RMSSD)
+     * samples, and the steps per local day as Health Connect totals them (its aggregate leaves out
+     * the double counts of two apps tracking the same walk). Only what was granted is read.
+     */
+    @PluginMethod
+    public void readVitals(PluginCall call) {
+        if (!"available".equals(sdkStatus())) {
+            call.reject("Health Connect is not available", "unavailable");
+            return;
+        }
+        LocalDate day;
+        try {
+            day = LocalDate.parse(call.getString("from", ""));
+        } catch (Exception e) {
+            call.reject("from is needed", "failed");
+            return;
+        }
+        worker.execute(() -> {
+            try {
+                Set<String> got = granted();
+                ZoneId zone = ZoneId.systemDefault();
+                Instant start = day.atStartOfDay(zone).toInstant();
+                TimeRangeFilter range = TimeRangeFilter.after(start);
+                JSArray sleep = new JSArray();
+                if (got.contains(READ_SLEEP)) {
+                    for (SleepSessionRecord r : read(SleepSessionRecord.class, TimeRangeFilter.after(start.minus(Duration.ofHours(12))))) {
+                        sleep.put(span(r.getStartTime(), r.getEndTime(), 0));
+                        for (SleepSessionRecord.Stage st : r.getStages()) {
+                            int k = st.getStage();
+                            if (k == SleepSessionRecord.STAGE_TYPE_AWAKE || k == SleepSessionRecord.STAGE_TYPE_OUT_OF_BED
+                                    || k == SleepSessionRecord.STAGE_TYPE_AWAKE_IN_BED) sleep.put(span(st.getStartTime(), st.getEndTime(), 1));
+                        }
+                    }
+                }
+                JSArray rhr = new JSArray();
+                if (got.contains(READ_RESTING_HR)) for (RestingHeartRateRecord r : read(RestingHeartRateRecord.class, range))
+                    rhr.put(point(r.getTime(), r.getBeatsPerMinute()));
+                JSArray hrv = new JSArray();
+                if (got.contains(READ_HRV)) for (HeartRateVariabilityRmssdRecord r : read(HeartRateVariabilityRmssdRecord.class, range))
+                    hrv.put(point(r.getTime(), r.getHeartRateVariabilityMillis()));
+                JSArray steps = new JSArray();
+                if (got.contains(READ_STEPS)) {
+                    AggregateGroupByPeriodRequest req = new AggregateGroupByPeriodRequest(
+                            Collections.singleton(StepsRecord.COUNT_TOTAL), TimeRangeFilter.after(day.atStartOfDay()),
+                            Period.ofDays(1), Collections.emptySet());
+                    @SuppressWarnings("unchecked")
+                    List<AggregationResultGroupedByPeriod> groups = (List<AggregationResultGroupedByPeriod>) BuildersKt.runBlocking(
+                            EmptyCoroutineContext.INSTANCE, (scope, cont) -> client().aggregateGroupByPeriod(req, cont));
+                    for (AggregationResultGroupedByPeriod g : groups) {
+                        Long n = g.getResult().get(StepsRecord.COUNT_TOTAL);
+                        if (n == null || n <= 0) continue;
+                        JSObject o = new JSObject();
+                        o.put("d", g.getStartTime().toLocalDate().toString());
+                        o.put("n", n);
+                        steps.put(o);
+                    }
+                }
+                JSObject out = new JSObject();
+                out.put("sleep", sleep);
+                out.put("rhr", rhr);
+                out.put("hrv", hrv);
+                out.put("steps", steps);
+                out.put("hrvKind", "rmssd");
+                call.resolve(out);
+            } catch (SecurityException e) {
+                call.reject(e.getMessage(), "permission");
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
+    }
+
+    private static JSObject span(Instant s, Instant e, int awake) {
+        JSObject o = new JSObject();
+        o.put("s", s.toEpochMilli());
+        o.put("e", e.toEpochMilli());
+        o.put("a", awake);
+        return o;
+    }
+
+    private static JSObject point(Instant t, double v) {
+        JSObject o = new JSObject();
+        o.put("t", t.toEpochMilli());
+        o.put("v", v);
+        return o;
+    }
+
     // Every page of one record type in the window, oldest first.
     @SuppressWarnings("unchecked")
     private <T extends Record> List<T> read(Class<T> type, TimeRangeFilter range) throws InterruptedException {
@@ -442,6 +546,9 @@ public class HealthConnectPlugin extends Plugin {
         // Body composition: on when any of its four was granted.
         r.put("body", granted.contains(READ_BODY_FAT) || granted.contains(READ_LEAN_MASS)
                 || granted.contains(READ_BONE_MASS) || granted.contains(READ_BMR));
+        // Vitals (v1.4.5): on when any of its four was granted.
+        r.put("vitals", granted.contains(READ_SLEEP) || granted.contains(READ_RESTING_HR)
+                || granted.contains(READ_HRV) || granted.contains(READ_STEPS));
         return r;
     }
 

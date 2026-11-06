@@ -88,6 +88,11 @@ final class HealthRead {
             case "leanMass": return "android.permission.health.READ_LEAN_BODY_MASS";
             case "boneMass": return "android.permission.health.READ_BONE_MASS";
             case "bmr": return "android.permission.health.READ_BASAL_METABOLIC_RATE";
+            // Vitals (v1.4.5): the Daily form card and the check-in's sleep.
+            case "sleep": return "android.permission.health.READ_SLEEP";
+            case "restingHeartRate": return "android.permission.health.READ_RESTING_HEART_RATE";
+            case "hrv": return "android.permission.health.READ_HEART_RATE_VARIABILITY";
+            case "steps": return "android.permission.health.READ_STEPS";
             // Not a data type: data older than 30 days before the first grant (#801).
             case "history": return "android.permission.health.READ_HEALTH_DATA_HISTORY";
             default: return null;

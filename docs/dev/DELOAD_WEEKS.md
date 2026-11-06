@@ -37,3 +37,7 @@ setDailyFormSource((S, from, to) => myCheckins(S).filter(c => c.d >= from && c.d
 With at least 4 check-ins in the window, a mean under 0.4 counts as low, and the suggestion needs
 low form plus numbers that are not climbing. With no source registered, or fewer check-ins,
 falling numbers alone trigger it. A source that throws reads as no data.
+
+The daily check-in (lib/daily-form.js, v1.4.5) is that source: `registerDailyFormSource()` runs in
+main.jsx and hands over each answered day's form score (sleep, energy, soreness and stress, the last
+two turned round) as `(score - 1) / 4`. Nothing with the Health module off.

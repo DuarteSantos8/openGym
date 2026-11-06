@@ -98,6 +98,10 @@ export const DEF = {
   // A note per day off (#261): { [iso]: { tag, text, _ts } } (lib/day-notes.js). A noted day is
   // excused from the missed-day nudge; each day merges on its own stamp (lib/sync-merge.js).
   dayNotes: {},
+  // The daily-form check-in before a workout (v1.4.5): { [iso]: { sleep, energy, sore, stress, lighter, _ts } }
+  // (lib/daily-form.js), merged per day like dayNotes. `dailyForm` is its switch: undefined until
+  // asked once, then true or false.
+  dayForm: {},
   // Body measurements (#82, #699): one check-in per day; canonical cm, kg or % according to
   // the field's unit (lib/measurements.js); merged like weigh-ins (lib/sync-merge.js).
   measurements: [], measurementEnabled: null, customMeasurements: [],

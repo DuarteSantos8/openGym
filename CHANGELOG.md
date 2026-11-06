@@ -6,6 +6,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Daily form, vitals and your month as a story**
+- Daily check-in before a workout: sleep, energy, soreness and stress, 1 to 5, four taps, every one optional. Off until you switch it on (Settings → Workout → Before and during → Daily check-in, or the Daily form card in Stats asks once).
+- A run of rough check-ins now counts towards the automatic deload-week suggestion, together with lifts that stopped climbing.
+- On a rough day the check-in offers to go lighter: 10% off the open sets (rounded to your plates) or one set fewer per exercise. Today only, never picked for you, and the session sits out of progression so your next targets stay put.
+- Stats → Overview → Daily form: what your check-ins and your sleep say about how the workouts went (estimated strength, volume, reps in reserve), only once there is enough to compare, with the number of workouts on each side and a plain word on how sure it is.
+- Vitals from Health Connect and Apple Health: last night's sleep, resting heart rate, HRV and steps next to your usual, on the Daily form card. Settings → Integrations → Health Connect (or Apple Health) → Sleep, resting heart rate, HRV and steps. Read on the phone only, never synced. The check-in fills its sleep from it.
+- Your month in openGym: the year's stories for one month (workouts, hours, volume, weeks with a workout, records, exercise of the month on the muscle map, what was new, one line to go out on), every card shareable. Stats → More → Your month, or Play your month on the recap card on the 1st.
 **Build a session, skill ladders, deload weeks and streak levels**
 - Build a session from the muscle map: tap muscles or groups, pick 20, 40 or 60 minutes, and get a session that fits the active gym (bench, dumbbells, machines, your own kit), leaves out muscles still recovering and puts what you already do and your favourites first, each with a line on why. Swap one, shuffle, start it or save it as a routine (Exercises → By muscle → Build a session).
 - Skill ladders: push-up, pull-up, dip, single-leg squat, hinge, core and handstand chains from easy to hard, with the rungs you reached. Train it puts the next rung in a routine on the new Skill ladder rule: a rep more each clean session, and at the top of the range in every set the workout offers the next rung with Swap in routine. Make your own ladders too (Exercises → Ladders).

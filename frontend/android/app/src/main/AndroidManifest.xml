@@ -377,6 +377,13 @@
     <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" />
     <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
     <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
+    <!-- Vitals (v1.4.5), asked for together when their switch is turned on, after an explanation
+         in the app: last night's sleep, resting heart rate, heart rate variability and steps, for
+         the Daily form card and the pre-workout check-in. Foreground only, kept on the phone. -->
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
 
     <!-- Gym reminder (#614), off until switched on in Settings: where the phone is, for "I'm at
          the gym right now" and to watch the gyms the user added with the platform's proximity
