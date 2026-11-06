@@ -250,7 +250,7 @@ export default function ProgressPhotos() {
 
   const toggle = p => setPicked(cur => {
     if (cur.includes(p.key)) return cur.filter(k => k !== p.key)
-    if (cur.length >= COMPARE_MAX) { toast(tn('Up to {0} photo at once.', 'Up to {0} photos at once.', COMPARE_MAX)); return cur }
+    if (cur.length >= COMPARE_MAX) { toast(t('Up to {0} photos at once.', COMPARE_MAX)); return cur }
     return [...cur, p.key]
   })
   const cancelCompare = () => { setComparing(false); setPicked([]) }
@@ -317,7 +317,7 @@ export default function ProgressPhotos() {
     </div>}
 
     {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
-      {picked.length < 2 ? tn('Pick two or more photos, up to {0}.', 'Pick two or more photos, up to {0}.', COMPARE_MAX) : tn('{0} photo picked.', '{0} photos picked.', picked.length)}
+      {picked.length < 2 ? t('Pick two or more photos, up to {0}.', COMPARE_MAX) : tn('{0} photo picked.', '{0} photos picked.', picked.length)}
     </div>}
 
     {!comparing && photos.length > 0 && <div className="card pp-activity">

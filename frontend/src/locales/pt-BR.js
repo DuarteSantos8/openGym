@@ -4,6 +4,25 @@
 import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
+  // --- progress photos: own day, gallery, camera, comparison (#940, #949, #950, #951) ---
+  "A guess from the file date. Worth a look.": "Um palpite pela data do arquivo. Vale conferir.",
+  "Date from the file name.": "Data do nome do arquivo.",
+  "Drag a photo to move what shows.": "Arraste uma foto para mudar o que aparece.",
+  "Line up with {0}": "Alinhe com {0}",
+  "No live camera here (a browser only offers one on HTTPS). The camera app still works.": "Sem câmera ao vivo aqui (um navegador só oferece em HTTPS). O app da câmera continua funcionando.",
+  "No progress photos yet. Take one now, or add one for any day before.": "Ainda não há fotos de progresso. Tire uma agora ou adicione uma de um dia anterior.",
+  "Slider": "Controle deslizante",
+  "Still loading the photos. Try again in a second.": "As fotos ainda estão carregando. Tente daqui a um segundo.",
+  "Switch camera": "Trocar de câmera",
+  "The camera is switched off for openGym. Allow it in your settings, or use the camera app instead.": "A câmera está desligada para o openGym. Permita nas configurações ou use o app da câmera.",
+  "The photo you just took": "A foto que você acabou de tirar",
+  "Today's photo is in. Looking good.": "A foto de hoje já está. Mandou bem.",
+  "Use the camera app": "Usar o app da câmera",
+  "Waking up the camera…": "Acordando a câmera…",
+  "Your pick.": "Sua escolha.",
+  "Pick two or more photos, up to {0}.": "Escolha duas ou mais fotos, até {0}.",
+  "Last photo: {0} day ago. Same spot, same light?": "Última foto: há {0} dia. Mesmo lugar, mesma luz?",
+  "Last photo: {0} days ago. Same spot, same light?": "Última foto: há {0} dias. Mesmo lugar, mesma luz?",
   // --- import: check and choose (#931, #849) ---
   "A pick is remembered as another name of that exercise, so the next import finds it too.": "Uma escolha fica salva como outro nome do exercício, para a próxima importação encontrar também.",
   "All dates": "Todas as datas",
