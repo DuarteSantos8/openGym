@@ -1287,7 +1287,7 @@ function noteTokenRead(t) {
 }
 // The token a request carries, and its profile, or null after answering 401 (or 429). Only the
 // token routes ask this: a token is never a session.
-function tokenAuth(req, res, { write = false } = {}) {
+function tokenAuth(req, res) {
   const auth = req.headers.authorization || '';
   const tok = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
   const row = tok.startsWith(TOKEN_PREFIX) ? findToken(db, tok, uid => db.users.find(u => u.id === uid) || null) : null;
@@ -1297,7 +1297,9 @@ function tokenAuth(req, res, { write = false } = {}) {
     return null;
   }
   const user = db.users.find(u => u.id === row.userId);
-  const wait = write ? 0 : TOKEN_READS.take(row.id);
+  // Every request spends the per-minute budget, a write too (its own hourly one comes on top,
+  // once it would change something).
+  const wait = TOKEN_READS.take(row.id);
   if (wait) { tooMany(res, wait); return null; }
   if (touchToken(row)) saveDb();
   return { row, user };
@@ -2386,8 +2388,9 @@ const routes = {
       invite_only: INVITE_ONLY, allow_guest: ALLOW_GUEST,
       // Only when on, so an instance without passwords answers exactly as it did before (#118).
       ...(PASSWORD_LOGIN ? { password_login: true } : {}),
-      // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app.
-      ...(API_TOKENS ? { api_tokens: true } : {}), ...(API_TOKENS && MCP_ON ? { mcp: true } : {}),
+      // Scoped tokens (Settings → API tokens), and whether /mcp is served beside the app: for a
+      // signed-in profile only, which is who can make one, so a stranger's answer stays as it was.
+      ...(API_TOKENS && readSession(req) ? { api_tokens: true, ...(MCP_ON ? { mcp: true } : {}) } : {}),
       // Public like the flags above: the sign-in screen draws its provider button from it.
       ...(oidcApi ? { oidc: { label: OIDC.label, ...(OIDC.only ? { only: true } : {}) } } : {}),
       // Public: the sign-in screen is the first thing that reads it.
@@ -2824,7 +2827,7 @@ const routes = {
     // a 409 carries the current scoped document). Everything else in the profile stays as stored,
     // and the write is stamped like any other writer's that does not stamp (sync-stamps.js).
     'PUT /api/token/data': async (req, res) => {
-      const t = tokenAuth(req, res, { write: true }); if (!t) return;
+      const t = tokenAuth(req, res); if (!t) return;
       const body = await readBody(req);
       if (!body.state || typeof body.state !== 'object' || Array.isArray(body.state)) return json(res, 400, { error: 'state required' });
       if (!Number.isInteger(body.baseRev)) return json(res, 400, { error: 'baseRev required: write over the revision you read', code: 'base-rev' });
@@ -2838,7 +2841,7 @@ const routes = {
       let merged;
       try { merged = mergeScoped(cur, body.state, t.row.scopes); }
       catch (e) {
-        if (e instanceof ScopeError) { audit(req, 'token.denied', { ok: false, user: t.user, msg: t.row.name }); return json(res, e.status, { error: e.message, code: e.code }); }
+        if (e instanceof ScopeError) { auditFail(req, 'token.denied', { ok: false, user: t.user, msg: t.row.name }); return json(res, e.status, { error: e.message, code: e.code }); }
         throw e;
       }
       if (!merged.touched.length) return json(res, 200, { ok: true, unchanged: true, rev: curRev, ...(cur._wid ? { wid: cur._wid } : {}) });

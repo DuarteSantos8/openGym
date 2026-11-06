@@ -189,16 +189,18 @@ test('rate limited per token, and API_TOKENS=off takes the routes away', async t
   const r = await h.call('GET', '/api/token/data', { headers: bearer(token) });
   assert.equal(r.status, 429);
   assert.ok(+r.headers.get('retry-after') > 0);
-  // Writes have their own budget.
+  // Writes have their own budget (a fresh token: every request spends the minute's too).
+  const { body: { token: wtok } } = await h.call('POST', '/api/tokens', { headers: page('u_t_1'), body: { scopes: { bodyweight: 'apply' } } });
   const S = JSON.parse(fs.readFileSync(path.join(h.dataDir, 'state-u_t_1.json'), 'utf8'));
-  const w = n => h.call('PUT', '/api/token/data', { headers: bearer(token), body: { state: { bodyweight: [...S.bodyweight, { d: '2026-11-0' + n, w: 79 }] }, baseRev: S._rev + (n - 2) } });
+  const w = n => h.call('PUT', '/api/token/data', { headers: bearer(wtok), body: { state: { bodyweight: [...S.bodyweight, { d: '2026-11-0' + n, w: 79 }] }, baseRev: S._rev + (n - 2) } });
   assert.equal((await w(2)).status, 200);
   assert.equal((await w(3)).status, 429);
 
   const off = await startServer(t, { API_TOKENS: 'off' });
   assert.equal((await off.call('GET', '/api/tokens', { headers: page('u_t_1') })).status, 404);
   assert.equal((await off.call('GET', '/api/token/me', { headers: bearer(token) })).status, 404);
-  const cfg = await off.call('GET', '/api/config');
+  const cfg = await off.call('GET', '/api/config', { headers: page('u_t_1') });
   assert.equal(cfg.body.api_tokens, undefined);
-  assert.equal((await h.call('GET', '/api/config')).body.api_tokens, true);
+  assert.equal((await h.call('GET', '/api/config', { headers: page('u_t_1') })).body.api_tokens, true);
+  assert.equal((await h.call('GET', '/api/config')).body.api_tokens, undefined, 'not for a stranger');
 });

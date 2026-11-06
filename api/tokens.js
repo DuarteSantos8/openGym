@@ -156,7 +156,8 @@ export function revokeTokens(db, userId, id = null) {
 function keyClass(k) {
   if (NEVER.has(k) || NEVER_RE.test(k)) return false;
   if (BOOK.has(k)) return 'book';
-  return KEY_CATEGORY[k] || null;
+  // Own keys only: `constructor` or `__proto__` sent in a document names no category.
+  return Object.hasOwn(KEY_CATEGORY, k) ? KEY_CATEGORY[k] : null;
 }
 const readable = (k, scopes) => {
   const c = keyClass(k);

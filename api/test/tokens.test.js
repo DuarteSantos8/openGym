@@ -136,4 +136,10 @@ test('mergeScoped: writes what it may, ignores what it read back unchanged, refu
   const r = mergeScoped(S, { customEx: [] }, { plans: 'apply', workouts: 'view' });
   assert.deepEqual(r.touched, ['plans']);
   assert.throws(() => mergeScoped(S, [], scopes), e => e.code === 'bad-state');
+  // Keys every object inherits name no category: refused like any other, never a crash.
+  for (const k of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+    assert.throws(() => mergeScoped(S, JSON.parse(`{"${k}": {"polluted": 1}}`), scopes), e => e.code === 'scope', k);
+  }
+  assert.equal({}.polluted, undefined);
+  assert.equal('constructor' in scopedState({ constructor: 1, workouts: [] }, scopes), true, 'an own key named constructor is a setting');
 });
