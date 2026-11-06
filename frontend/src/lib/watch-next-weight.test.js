@@ -6,12 +6,12 @@ import { readFileSync } from 'node:fs'
 const read = p => readFileSync(new URL(p, import.meta.url), 'utf8')
 
 describe('next set weight on the watch rest screen (#911)', () => {
-  it('Apple Watch: RestView shows SessionStore.nextSetNumbers under "Next"', () => {
+  it('Apple Watch: RestView shows SessionStore.nextSetNumbers under "Up next"', () => {
     const store = read('../../ios/App/Watch/SessionStore.swift')
-    const app = read('../../ios/App/Watch/OpenGymWatchApp.swift')
+    const app = read('../../ios/App/Watch/RestHold.swift')
     expect(store).toMatch(/var nextSetNumbers: String\? \{[\s\S]*?sides\[side\]\.w[\s\S]*?e\.weightUnit\(w\.unit\)/)
-    const rest = app.slice(app.indexOf('struct RestView'))
-    expect(rest.slice(0, rest.indexOf('if store.offline'))).toMatch(/store\.nextSetNumbers/)
+    const rest = app.slice(app.indexOf('struct RestView'), app.indexOf('struct EffortChips'))
+    expect(rest).toMatch(/Text\("Up next"\)[\s\S]*?store\.nextSetNumbers/)
   })
   it('Wear OS: the rest screen shows nextSetNumbers, tested in NextSetNumbersTest.kt', () => {
     const screens = read('../../android/wear/src/main/java/ch/duartesantos/opengym/wear/ui/Screens.kt')

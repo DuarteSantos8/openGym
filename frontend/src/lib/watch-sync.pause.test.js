@@ -18,6 +18,7 @@ it('sends pausedAt only while paused, and the watch stands its clock on it', () 
   expect('pausedAt' in buildSnapshot(S()).active).toBe(false)
   const model = readFileSync(resolve('ios/App/WatchCore/Sources/WatchCore/Model.swift'), 'utf8')
   expect(model).toMatch(/struct ActiveWorkout[\s\S]*?var pausedAt: Double\? = nil[\s\S]*?\n\}/)
-  const app = readFileSync(resolve('ios/App/Watch/OpenGymWatchApp.swift'), 'utf8')
+  // The Metrics page beside the set (1.4.5 redesign) carries the workout clock.
+  const app = readFileSync(resolve('ios/App/Watch/SideScreens.swift'), 'utf8')
   expect(app).toContain('pauseTime: store.workoutPausedAt')
 })
