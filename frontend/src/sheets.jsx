@@ -1516,30 +1516,36 @@ export function detailTags(ex) {
   return out
 }
 
+// The star beside an exercise's name: the detail sheet and the sheet a picked exercise opens in
+// (adding one mid-workout, #1006), so a favourite can be made right where you meet the exercise.
+function FavButton({ id }) {
+  const fav = useStore(s => isFav(s.S, id))
+  const flipFav = () => {
+    let on = false
+    update(s => { on = toggleFav(s, id) })
+    toast(on ? t('Added to favourites') : t('Removed from favourites'))
+  }
+  return <button type="button" className={'iconbtn fav-btn' + (fav ? ' on' : '')} aria-pressed={fav}
+    aria-label={fav ? t('Remove from favourites') : t('Add to favourites')} onClick={flipFav}>
+    <Icon name={fav ? 'starFill' : 'star'} />
+  </button>
+}
+
 function ExerciseDetail({ ex, close }) {
   useLang() // the description and steps arrive in their own chunk the first time a sheet asks
   // The best and last time in the exercise's own weight unit (#657).
   const st = exView(useStore(s => s.S), ex.id)
   const last = lastEntryFor(st, ex.id)
   const best = bestWeightFor(st, ex.id, currentDbLoad(st, ex.id))
-  const fav = isFav(st, ex.id)
   const nfcOK = useNfcSupported()
   // Merge into… is offered for your own exercise, or a catalogue one with something logged or
   // planned to move.
   const canMerge = !ex.missing && (isCustomEx(ex) || (() => { const p = mergePreview(st, ex.id, null); return p.workouts + p.routines > 0 })())
   const [showOther, setShowOther] = useState(false)
-  const flipFav = () => {
-    let on = false
-    update(s => { on = toggleFav(s, ex.id) })
-    toast(on ? t('Added to favourites') : t('Removed from favourites'))
-  }
   return <>
     <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
       <h3 className={'exdetail-name ' + exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
-      <button className={'iconbtn fav-btn' + (fav ? ' on' : '')} aria-pressed={fav}
-        aria-label={fav ? t('Remove from favourites') : t('Add to favourites')} onClick={flipFav}>
-        <Icon name={fav ? 'starFill' : 'star'} />
-      </button>
+      <FavButton id={ex.id} />
     </div>
     <Media ex={ex} />
     <div className="row" style={{ gap: 6, flexWrap: 'wrap', margin: '10px 0' }}>
@@ -2747,7 +2753,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     }
   }
   return <>
-    <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
+    {ex.missing ? <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
+      : <div className="row between" style={{ gap: 8, alignItems: 'flex-start' }}>
+          <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
+          <FavButton id={ex.id} />
+        </div>}
     <Media ex={ex} notes={c.notes} />
     {/* The same tags the exercise detail sheet shows, secondaries included: choosing what goes
         into a plan is exactly when "what else does this hit" matters, and until now that was
