@@ -2595,6 +2595,7 @@ export default {
   'Everything else': 'Mọi thứ khác',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'Máy đang có người dùng? Chọn bài bạn sẽ tập thay, và khi đổi bài giữa buổi tập, các bài này sẽ được gợi ý trước.',
   'Remove “{0}”': 'Xóa “{0}”',
+  "Rename “{0}”": "Đổi tên “{0}”",
   'That’s plenty of backups.': 'Vậy là đủ bài dự phòng rồi.',
   'Your backups': 'Bài dự phòng của bạn',
   'Swap to {0}': 'Đổi sang {0}',

@@ -2590,6 +2590,7 @@ export default {
   'Everything else': 'Minden más',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'Foglalt a gép? Válaszd ki, mit csinálsz helyette, és edzés közbeni cserénél ezeket kínálja elsőnek.',
   'Remove “{0}”': '„{0}” eltávolítása',
+  "Rename “{0}”": "„{0}” átnevezése",
   'That’s plenty of backups.': 'Ennyi helyettesítő bőven elég.',
   'Your backups': 'A helyettesítőid',
   'Swap to {0}': 'Csere erre: {0}',

@@ -2556,6 +2556,7 @@ export default {
   "Everything else": "هر چیز دیگری",
   "Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.": "دستگاه اشغال است؟ حرکت‌های جایگزین را انتخاب کنید تا هنگام تعویض تمرین در طول جلسه، اول پیشنهاد شوند.",
   "Remove “{0}”": "حذف «{0}»",
+  "Rename “{0}”": "تغییر نام «{0}»",
   "That’s plenty of backups.": "تعداد حرکت‌های جایگزین کافی است.",
   "Your backups": "حرکت‌های جایگزین شما",
   "Swap to {0}": "تعویض به {0}",

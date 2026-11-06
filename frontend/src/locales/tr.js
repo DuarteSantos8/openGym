@@ -2587,6 +2587,7 @@ export default {
   'Everything else': 'Geri kalan her şey',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'Makine dolu mu? Yerine ne yapacağını seç, antrenman ortasında değiştirirken önce bunlar çıkar.',
   'Remove “{0}”': '“{0}” kaldır',
+  "Rename “{0}”": "“{0}” adını değiştir",
   'That’s plenty of backups.': 'Bu kadar yedek yeter.',
   'Your backups': 'Yedeklerin',
   'Swap to {0}': '{0} ile değiştir',

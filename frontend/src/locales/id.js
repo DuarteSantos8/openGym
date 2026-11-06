@@ -2585,6 +2585,7 @@ export default {
   "Everything else": "Segala sesuatu yang lain",
   "Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.": "Mesin sedang dipakai orang? Pilih variasi penggantinya, dan opsi ganti di tengah sesi akan mengutamakan pilihan ini.",
   "Remove “{0}”": "Hapus “{0}”",
+  "Rename “{0}”": "Ganti nama “{0}”",
   "That’s plenty of backups.": "Latihan cadangan sudah cukup banyak.",
   "Your backups": "Latihan cadanganmu",
   "Swap to {0}": "Tukar ke {0}",

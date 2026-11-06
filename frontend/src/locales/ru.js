@@ -2591,6 +2591,7 @@ export default {
   'Everything else': 'Всё остальное',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'Тренажёр занят? Выберите, что сделаете вместо него, и при замене посреди тренировки они будут первыми.',
   'Remove “{0}”': 'Убрать «{0}»',
+  "Rename “{0}”": "Переименовать «{0}»",
   'That’s plenty of backups.': 'Замен уже достаточно.',
   'Your backups': 'Ваши замены',
   'Swap to {0}': 'Заменить на {0}',

@@ -2587,6 +2587,7 @@ export default {
   'Everything else': 'बाकी सब',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'मशीन खाली नहीं? उसकी जगह क्या करेंगे चुनें, वर्कआउट के बीच बदलते समय ये पहले दिखेंगे।',
   'Remove “{0}”': '“{0}” हटाएँ',
+  "Rename “{0}”": "“{0}” का नाम बदलें",
   'That’s plenty of backups.': 'इतने विकल्प काफ़ी हैं।',
   'Your backups': 'आपके विकल्प',
   'Swap to {0}': '{0} पर बदलें',

@@ -2587,6 +2587,7 @@ export default {
   'Everything else': 'Todo o resto',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'Máquina ocupada? Escolhe o que farias em vez dela, e uma troca a meio do treino mostra estes primeiro.',
   'Remove “{0}”': 'Remover «{0}»',
+  "Rename “{0}”": "Renomear “{0}”",
   'That’s plenty of backups.': 'Já chega de substitutos.',
   'Your backups': 'Os teus substitutos',
   'Swap to {0}': 'Trocar para {0}',

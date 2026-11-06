@@ -174,11 +174,25 @@ function ManageMeasurements({ close }) {
     const item = state.customMeasurements.find(c => c.id === id)
     if (item && customMeasurementUnits(item, state.measurements).includes(value)) item.unit = value
   })
+  // A custom field's name (#1009): its readings hang on its id, so a new name keeps every one of
+  // them. Empty or taken leaves it as it was.
+  const [renaming, setRenaming] = useState(null)
+  const nameTaken = (clean, id) => S.customMeasurements.some(c => c.id !== id && c.name.toLowerCase() === clean.toLowerCase()) ||
+    MEASUREMENT_FIELDS.some(f => f.label.toLowerCase() === clean.toLowerCase())
+  const rename = (field, value) => {
+    setRenaming(null)
+    const clean = String(value || '').trim().slice(0, 60)
+    if (!clean || clean === field.name) return
+    if (nameTaken(clean, field.id)) { toast(t('A custom measurement with that name already exists.')); return }
+    update(state => {
+      const item = state.customMeasurements.find(c => c.id === field.id)
+      if (item) item.name = clean
+    })
+  }
   const add = () => {
     const clean = name.trim()
     if (!clean) return
-    if (S.customMeasurements.some(c => c.name.toLowerCase() === clean.toLowerCase()) ||
-      MEASUREMENT_FIELDS.some(f => f.label.toLowerCase() === clean.toLowerCase())) {
+    if (nameTaken(clean, null)) {
       toast(t('A custom measurement with that name already exists.')); return
     }
     update(state => { state.customMeasurements.push({ id: uid(), name: clean.slice(0, 60), enabled: true, unit }) })
@@ -209,7 +223,12 @@ function ManageMeasurements({ close }) {
       </div>)}
       {group === 'Other' && S.customMeasurements.map(field => <div key={field.id}>
         <div className="lrow">
-          <span className="lrow-m"><span className="lrow-t">{field.name}</span><span className="lrow-s">{t('Custom')}</span></span>
+          {renaming === field.id
+            ? <span className="lrow-m"><TextField autoFocus defaultValue={field.name} maxLength={60} aria-label={t('Rename “{0}”', field.name)}
+                onBlur={e => rename(field, e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); e.currentTarget.value = field.name; e.currentTarget.blur() } }} /></span>
+            : <span className="lrow-m"><span className="lrow-t">{field.name}</span><span className="lrow-s">{t('Custom')}</span></span>}
+          {renaming !== field.id && <button type="button" className="iconbtn" aria-label={t('Rename “{0}”', field.name)} onClick={() => setRenaming(field.id)}><Icon name="pencil" /></button>}
           <button type="button" className="iconbtn" aria-label={t('Remove “{0}”', field.name)} onClick={() => removeCustom(field)}><Icon name="trash" /></button>
           <Switch checked={field.enabled !== false} onChange={on => toggleCustom(field.id, on)} />
         </div>

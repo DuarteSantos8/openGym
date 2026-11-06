@@ -2587,6 +2587,7 @@ export default {
   'Everything else': '나머지 전부',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': '기구가 사용 중인가요? 대신 할 운동을 골라 두면 운동 중 교체할 때 먼저 보여 줘요.',
   'Remove “{0}”': '“{0}” 빼기',
+  "Rename “{0}”": "“{0}” 이름 바꾸기",
   'That’s plenty of backups.': '대체 운동은 이 정도면 충분해요.',
   'Your backups': '내 대체 운동',
   'Swap to {0}': '{0}(으)로 바꾸기',

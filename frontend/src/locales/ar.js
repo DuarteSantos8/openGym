@@ -2642,6 +2642,7 @@ export default {
   'Everything else': 'كل ما عدا ذلك',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'الجهاز مشغول؟ اختر ما ستفعله بدلًا منه، وسيعرضها التبديل أثناء التمرين أولًا.',
   'Remove “{0}”': 'إزالة «{0}»',
+  "Rename “{0}”": "إعادة تسمية «{0}»",
   'That’s plenty of backups.': 'هذا عدد كافٍ من البدائل.',
   'Your backups': 'بدائلك',
   'Swap to {0}': 'التبديل إلى {0}',

@@ -2618,6 +2618,7 @@ export default {
   'Everything else': 'Allt annat',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'Maskinen upptagen? Välj vad du gör i stället, så föreslås de först när du byter mitt i passet.',
   'Remove “{0}”': 'Ta bort ”{0}”',
+  "Rename “{0}”": "Byt namn på ”{0}”",
   'That’s plenty of backups.': 'Det räcker gott med reserver.',
   'Your backups': 'Dina reserver',
   'Swap to {0}': 'Byt till {0}',

@@ -2587,6 +2587,7 @@ export default {
   'Everything else': '其他全部',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': '器械被占了？选好你要换做的动作，训练中替换时会先显示这些。',
   'Remove “{0}”': '移除“{0}”',
+  "Rename “{0}”": "重命名“{0}”",
   'That’s plenty of backups.': '备选动作已经够多了。',
   'Your backups': '你的备选动作',
   'Swap to {0}': '换成{0}',

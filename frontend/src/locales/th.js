@@ -2598,6 +2598,7 @@ export default {
   'Everything else': 'อย่างอื่นทั้งหมด',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'เครื่องไม่ว่างใช่ไหม เลือกว่าจะทำอะไรแทน แล้วตอนสลับท่าระหว่างออกกำลังกายจะเห็นพวกนี้ก่อน',
   'Remove “{0}”': 'เอา “{0}” ออก',
+  "Rename “{0}”": "เปลี่ยนชื่อ “{0}”",
   'That’s plenty of backups.': 'ท่าสำรองเท่านี้ก็พอแล้ว',
   'Your backups': 'ท่าสำรองของคุณ',
   'Swap to {0}': 'เปลี่ยนเป็น {0}',

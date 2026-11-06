@@ -2595,6 +2595,7 @@ export default {
   'Everything else': 'Všechno ostatní',
   'Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.': 'Stroj obsazený? Vyber, co bys dělal místo něj, a výměna během tréninku ti nabídne nejdřív tohle.',
   'Remove “{0}”': 'Odebrat „{0}“',
+  "Rename “{0}”": "Přejmenovat „{0}“",
   'That’s plenty of backups.': 'To je záloh až dost.',
   'Your backups': 'Tvoje zálohy',
   'Swap to {0}': 'Vyměnit za {0}',

@@ -173,4 +173,24 @@ describe('lengths in cm on a pounds profile (#932)', () => {
     expect(S.customMeasurements.map(c => c.id)).toEqual(['Neck'])
     expect(S.measurements[0].other.map(o => o.id)).toEqual(['Neck'])
   })
+
+  // #1009: two fields for one thing, or a typo in the name.
+  it('a custom field can be renamed and keeps its readings, but not to a name already taken', () => {
+    install({ customMeasurements: [custom('Knee', 'cm'), custom('Neck', 'cm')], measurements: [{ d: '2026-10-19', t: 1, other: [{ id: 'Knee', value: 40, unit: 'cm' }] }] })
+    manageMeasurementsSheet()
+    const host = topSheet()
+    act(() => buttons(host).find(b => b.getAttribute('aria-label') === 'Rename “Knee”').click())
+    let input = host.querySelector('input[aria-label="Rename “Knee”"]')
+    type(input, 'Neck')
+    act(() => { input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    expect(useStore.getState().S.customMeasurements.map(c => c.name)).toEqual(['Knee', 'Neck'])
+    act(() => buttons(host).find(b => b.getAttribute('aria-label') === 'Rename “Knee”').click())
+    input = host.querySelector('input[aria-label="Rename “Knee”"]')
+    type(input, '  Left knee ')
+    act(() => { input.dispatchEvent(new FocusEvent('focusout', { bubbles: true })) })
+    const S = useStore.getState().S
+    expect(S.customMeasurements.map(c => [c.id, c.name])).toEqual([['Knee', 'Left knee'], ['Neck', 'Neck']])
+    expect(S.measurements[0].other.find(o => o.id === 'Knee')).toMatchObject({ value: 40, unit: 'cm' })
+    expect(host.textContent).toContain('Left knee')
+  })
 })

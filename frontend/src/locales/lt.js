@@ -2578,6 +2578,7 @@ export default {
   "Everything else": "Viskas kita",
   "Machine taken? Pick what you’d do instead, and a swap mid-workout offers these first.": "Treniruoklis užimtas? Pasirinkite alternatyvą, o perjungus per treniruotę šie variantai bus pasiūlyti pirmiausia.",
   "Remove “{0}”": "Pašalinti „{0}“",
+  "Rename “{0}”": "Pervadinti „{0}“",
   "That’s plenty of backups.": "Atsarginių pakanka.",
   "Your backups": "Jūsų atsarginės",
   "Swap to {0}": "Perjungti į {0}",
