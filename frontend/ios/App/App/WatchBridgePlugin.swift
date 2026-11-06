@@ -28,6 +28,11 @@ import WatchConnectivity
  *
  * Without a paired watch nothing happens: status says so and sendSnapshot is a no-op.
  *
+ * A Garmin rides along (GarminLink.swift, docs/GARMIN.md): status says `garmin: true` when one with
+ * the openGym app was picked in Garmin Connect, the page then adds its cut-down snapshot
+ * (`garmin`) to each sendSnapshot, and the Garmin's events land in the same queue file. The Apple
+ * Watch keeps its own snapshot; both can be there at once.
+ *
  * Usage from JS:
  *   const WatchBridge = registerPlugin('WatchBridge')
  *   await WatchBridge.status()            // { supported, paired, installed, reachable }
@@ -59,6 +64,9 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "sendClips", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openOnWatch", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "dropClips", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "garminStatus", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "garminPick", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "garminStore", returnType: CAPPluginReturnPromise),
     ]
 
     override public func load() {
@@ -69,18 +77,38 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     /* ---------- the page's calls ---------- */
 
     @objc func status(_ call: CAPPluginCall) {
+        // A Garmin with the openGym app counts as a watch for the page: it then sends snapshots.
+        let g = GarminLink.shared
+        let garmin = GarminLink.onMain { g.anyInstalled() }
         guard WCSession.isSupported() else {
-            call.resolve(["supported": false, "paired": false, "installed": false, "reachable": false])
+            call.resolve(["supported": garmin, "paired": garmin, "installed": garmin, "reachable": GarminLink.onMain { g.anyReachable() }, "garmin": garmin])
             return
         }
         let s = WCSession.default
         call.resolve([
             "supported": true,
-            "activated": s.activationState == .activated,
-            "paired": s.isPaired,
-            "installed": s.isWatchAppInstalled,
-            "reachable": s.isReachable,
+            // A Garmin needs no WatchConnectivity session to be up.
+            "activated": s.activationState == .activated || garmin,
+            "paired": s.isPaired || garmin,
+            "installed": s.isWatchAppInstalled || garmin,
+            "reachable": s.isReachable || GarminLink.onMain { g.anyReachable() },
+            "garmin": garmin,
         ])
+    }
+
+    /* ---------- the Garmin (Settings → Garmin, views/GarminSettings.jsx) ---------- */
+
+    @objc func garminStatus(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { call.resolve(GarminLink.shared.status()) }
+    }
+
+    /// Garmin Connect Mobile opens with its list of watches; the picked ones come back by URL.
+    @objc func garminPick(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { call.resolve(["ok": GarminLink.shared.pick()]) }
+    }
+
+    @objc func garminStore(_ call: CAPPluginCall) {
+        DispatchQueue.main.async { call.resolve(["ok": GarminLink.shared.openStore()]) }
     }
 
     /// A workout started on the phone: the watch app opens with it (Settings → Apple Watch, "Open on
@@ -89,10 +117,12 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
     /// delegate). Only with a paired watch that has the app; anything else resolves { ok: false }
     /// and nothing happens.
     @objc func openOnWatch(_ call: CAPPluginCall) {
+        // A Garmin with the app shows its own "open openGym?" prompt.
+        let garmin = GarminLink.onMain { GarminLink.shared.open() }
         guard WCSession.isSupported(), WCSession.default.activationState == .activated,
               WCSession.default.isPaired, WCSession.default.isWatchAppInstalled,
               HKHealthStore.isHealthDataAvailable() else {
-            call.resolve(["ok": false])
+            call.resolve(["ok": garmin])
             return
         }
         let config = HKWorkoutConfiguration()
@@ -100,7 +130,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         config.activityType = AppleHealthPlugin.activityTypes[call.getString("type") ?? ""] ?? .traditionalStrengthTraining
         config.locationType = .indoor
         WatchBridgePlugin.health.startWatchApp(with: config) { ok, _ in
-            call.resolve(["ok": ok])
+            call.resolve(["ok": ok || garmin])
         }
     }
 
@@ -112,10 +142,13 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         WatchBridgePlugin.keepActivity(of: json)
-        guard WCSession.isSupported() else { call.resolve(["sent": false]); return }
+        // The Garmin's cut-down snapshot (lib/garmin-snapshot.js), when the page made one.
+        var garminSent = false
+        if let g = call.getString("garmin") { garminSent = GarminLink.onMain { GarminLink.shared.send(g) } }
+        guard WCSession.isSupported() else { call.resolve(["sent": garminSent]); return }
         let s = WCSession.default
         guard s.activationState == .activated, s.isPaired, s.isWatchAppInstalled else {
-            call.resolve(["sent": false])
+            call.resolve(["sent": garminSent])
             return
         }
         // Stamped: iOS does not deliver an application context equal to the last one, and the page
@@ -125,7 +158,7 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         do {
             try s.updateApplicationContext(payload)
         } catch {
-            call.resolve(["sent": false, "error": error.localizedDescription])
+            call.resolve(["sent": garminSent, "error": error.localizedDescription])
             return
         }
         if s.isReachable {
@@ -300,7 +333,7 @@ final class WatchLink: NSObject, WCSessionDelegate {
         if session.activationState != .activated { session.activate() }
     }
 
-    private func tell(_ name: String, _ data: [String: Any]) {
+    func tell(_ name: String, _ data: [String: Any]) {
         DispatchQueue.main.async { self.plugin?.notifyListeners(name, data: data) }
     }
 
