@@ -2462,7 +2462,9 @@ const intensifierToSave = x => (x.type === 'dropset'
   ? { ...x, count: Math.max(1, Math.round(x.count) || 0), pct: Math.max(5, Number(x.pct) || 0) }
   : x.type === 'restpause'
     ? { ...x, totalReps: Math.max(1, Math.round(x.totalReps) || 0), restSec: Math.max(5, Number(x.restSec) || 0) }
-    : x)
+    : x.type === 'cluster'
+      ? { ...x, size: Math.max(1, Math.round(x.size) || 0), restSec: Math.max(5, Number(x.restSec) || 0) }
+      : x)
 
 // The slot's planned substitutes: listed, each removable, and added from the library (the same
 // picker a swap uses, opened on the same muscle). A tap on one sets its own plan (#978): sets,
@@ -3015,7 +3017,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     </div>}
     {/* A pyramid already shapes every set; a drop-set or rest-pause would reshape them again. */}
     {mode === 'reps' && !pyramid && <>
-      <h4 className="sec">{t('Drop-set / rest-pause')}</h4>
+      <h4 className="sec">{t('Set type')}</h4>
       <div className="sect-b" style={{ marginBottom: 8 }}>
         <SelectRow title={t('Intensifier')} sheetTitle={t('Intensifier')} value={c.intensifier?.type || ''}
           onChange={v => setC(x => ({
@@ -3025,12 +3027,16 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
               // The activation set's own reps are whatever "Reps" above already says — a
               // rest-pause plan only adds two new numbers: the total extra reps wanted past
               // it, and the rest between the bursts that total gets split into.
-              : { type: 'restpause', totalReps: x.intensifier?.totalReps || x.reps || 8, restSec: x.intensifier?.restSec || st.restPauseSec || 15 },
+              : v === 'cluster'
+                // A cluster set keeps the sets and reps above and cuts each set into mini-sets.
+                ? { type: 'cluster', size: x.intensifier?.size || Math.min(3, Math.max(1, Math.round((x.reps || 9) / 3))), restSec: x.intensifier?.type === 'cluster' ? x.intensifier.restSec : 20 }
+                : { type: 'restpause', totalReps: x.intensifier?.totalReps || x.reps || 8, restSec: x.intensifier?.restSec || st.restPauseSec || 15 },
           }))}
           options={[
             { value: '', label: t('None') },
             { value: 'dropset', label: t('Drop-set') },
             { value: 'restpause', label: t('Rest-pause') },
+            { value: 'cluster', label: t('Cluster') },
           ]} />
       </div>
       {c.intensifier?.type === 'dropset' && <div className="row cfgrow" style={{ marginBottom: 8 }}>
@@ -3045,9 +3051,17 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         <Stepper label={t('Rest (s)')} value={c.intensifier.restSec} step={5} min={5} decimal={false}
           onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, restSec: v } }))} />
       </div>}
+      {c.intensifier?.type === 'cluster' && <div className="row cfgrow" style={{ marginBottom: 8 }}>
+        <Stepper label={t('Reps per mini-set')} value={c.intensifier.size} step={1} min={1} decimal={false}
+          onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, size: v } }))} />
+        <Stepper label={t('Rest (s)')} value={c.intensifier.restSec} step={5} min={5} decimal={false}
+          onChange={v => setC(x => ({ ...x, intensifier: { ...x.intensifier, restSec: v } }))} />
+      </div>}
       {c.intensifier?.type && <div className="small dim" style={{ marginTop: -2, marginBottom: 18 }}>
         {c.intensifier.type === 'dropset'
           ? t('Every set becomes a drop-set: after the main set, {0} drop(s) with no rest, each about {1}% lighter.', c.intensifier.count, c.intensifier.pct)
+          : c.intensifier.type === 'cluster'
+            ? t('Every set becomes a cluster: {0} reps in mini-sets of {1}, {2}s to breathe between them, same weight throughout. Heavy work with fewer ugly last reps.', c.reps || 0, c.intensifier.size, c.intensifier.restSec)
           : t('Every set becomes rest-pause: {0} reps to start, then {1} more split into short bursts, {2}s rest before each, roughly halving each time.', c.reps || 0, c.intensifier.totalReps, c.intensifier.restSec)}
       </div>}
     </>}

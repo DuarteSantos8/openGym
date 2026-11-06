@@ -7,7 +7,7 @@ import { fmtDist, fmtPace } from './distance.js'
 import { hasIncline, inclineFrom, hasLevel, levelFrom } from './incline.js'
 import { isCardio, isHold, isOneLimb, isBodyweightEq, isAssisted, betterWeight } from './exercises.js'
 import { barWeightFor } from './bar.js'
-import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
+import { phaseForSet, modeForSet, modeForEntry, isWarmupRow, isFailureSet, isDropSet, isRestPauseSet, normalizeMode, completedVolumeOf, hasCompletedWork, nextDropWeight, splitBurstReps, splitClusterReps, makeSideSet, isSideSet, syncSideAggregate, WEIGHT_ORIGIN_MANUAL, dropsOf, clustersOf } from './workout-model.js'
 import { backoffAt, backoffStepOf, backoffWeights } from './backoff.js'
 import { dbLoadOf, bellsIn, volumeFactor, historyAs, ownedFloor } from './dumbbells.js'
 import { isRungRow, rungWeight } from './warmup-snap.js'
@@ -188,7 +188,7 @@ export function setLabel(id, s, cfg, speedUnit) {
   // the extra reps belong to is not known, so such a set reads as its plain total. The target
   // says whether the exercise plans rest-pause; a row added to it and given bursts live can only
   // be told apart by that, and reads as its plain total too, which is still what was lifted.
-  const planned = c.intensifier?.type === 'restpause'
+  const planned = c.intensifier?.type === 'restpause' || c.intensifier?.type === 'cluster'
   const repsOf = side => {
     const reps = side.r || 0
     const bursts = clustersOf(side).map(b => Number(b?.r) || 0).filter(r => r > 0)
@@ -759,7 +759,20 @@ export function applyFailurePlan(sets, cfg) {
 
 function shapeRows(sets, cfg, grid) {
   const kind = cfg && cfg.intensifier && cfg.intensifier.type
-  if (kind !== 'dropset' && kind !== 'restpause') return sets
+  if (kind !== 'dropset' && kind !== 'restpause' && kind !== 'cluster') return sets
+  if (kind === 'cluster') {
+    // Every work set becomes a cluster set: its own reps cut into mini-sets of `size` at the same
+    // weight, `restSec` between them (lib/workout-model.js isClusterSet). The sets, the warm-ups
+    // and the progression stay what they were; only how each set is done changes.
+    const size = Math.max(1, Math.round(cfg.intensifier.size) || 3)
+    const restSec = Math.max(5, Math.round(cfg.intensifier.restSec) || 20)
+    const cut = row => ({ ...row, type: 'restpause', cluster: true, clusters: splitClusterReps(row.r, size).map(r => ({ r, restSec })) })
+    return sets.map(s => {
+      if (isWarmupRow(s) || modeForSet(s) === 'time') return s
+      if (isSideSet(s)) return syncSideAggregate({ ...s, type: 'restpause', cluster: true, sides: { L: cut(s.sides.L), R: cut(s.sides.R) } })
+      return cut(s)
+    })
+  }
   if (kind === 'dropset') {
     const count = Math.max(1, Math.round(cfg.intensifier.count) || 1)
     const pct = cfg.intensifier.pct
