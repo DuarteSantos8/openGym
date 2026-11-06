@@ -80,7 +80,7 @@ import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeig
 import { MOBILE, shareExport, shareExportBlob } from './lib/mobile.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP, clampLevel, levelFits, LEVEL_MAX } from './lib/incline.js'
-import { buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
+import { sessionPrs, buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
@@ -4474,22 +4474,12 @@ function doFinishWorkout() {
   const A = st.active
   if (!A) return
   const past = !!A.backfill
-  const prs = []
-  const e1prs = []
   // A workout logged into the past is held against the history before it, the way an edit of a
   // saved one is (rebuildPrHistory, below): it gains a badge it leads with, and a later session
   // it outdoes loses its own. It used to report none at all while the editor's Save awarded them
   // (QA 1.3.9). The confirmed weights are left alone either way.
-  if (!past) A.entries.forEach(e => {
-    const loads = e.sets.filter(s => s.done && !isWarmupRow(s)).map(s => s.w).filter(w => w > 0)
-    const mx = loads.length ? loads.reduce((a, b) => betterWeight(e.id, a, b)) : 0
-    // Held against history read the way this session logged a dumbbell weight (lib/dumbbells.js).
-    if (beatsWeight(e.id, mx, bestWeightFor(st, e.id, entryDbLoad(e)))) prs.push(e.id)
-    // A heavier estimate without a heavier top set is its own kind of progress —
-    // same weight for more reps. Reported separately so it can't be read as a load PR.
-    const rec = is1RMRecord(st, e.id, e)
-    if (rec && !prs.includes(e.id)) e1prs.push({ id: e.id, ...rec })
-  })
+  // The decision itself is lib/finish-workout.js sessionPrs, shared with the live trophy.
+  const { prs, e1prs } = past ? { prs: [], e1prs: [] } : sessionPrs(st, A.entries)
   const w = buildCompletedWorkout(A, {
     end: past ? backfillEnd(A) : sessionEnd(A),
     prs,

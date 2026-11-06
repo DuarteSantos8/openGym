@@ -1,8 +1,11 @@
 // The persisted boundary for a finished session. Keep this pure so compatibility tests can
 // exercise the exact shape the UI writes without mounting React or mutating store state.
 import { stopAt } from './workout-pause.js'
-import { bestWeightForEntry, cleanupSg } from './history.js'
-import { hasCompletedWork, isSideSet } from './workout-model.js'
+import { bestWeightForEntry, bestWeightFor, cleanupSg } from './history.js'
+import { hasCompletedWork, isSideSet, isWarmupRow } from './workout-model.js'
+import { beatsWeight, betterWeight } from './exercises.js'
+import { is1RMRecord } from './onerm.js'
+import { entryDbLoad } from './dumbbells.js'
 import { cleanBrand } from './gym-split.js'
 
 // planSec is live-session bookkeeping: a hold displaced before it finished puts its plan aside so
@@ -66,6 +69,28 @@ export function sessionEnd(active, now = Date.now(), gap = FORGOTTEN_GAP_MS) {
     reach = Math.max(reach, at + len)
   }
   return now - reach > gap ? reach : now
+}
+
+// The records a finished session set, one decision for the finish summary, the saved workout's
+// `prs` and the live trophy on a set (lib/set-records.js): a load PR is a load that beats every
+// load in the history before it (on an assistance machine, less help), read the way this session
+// logs a dumbbell weight (lib/dumbbells.js). Kept here so the live mark and the summary can never
+// disagree about what counts.
+export const isWeightPr = (H, exId, w, as = 'as') => beatsWeight(exId, Number(w) || 0, bestWeightFor(H, exId, as))
+
+// `prs`: the exercises whose top load is a PR. `e1prs`: a heavier estimate without a heavier top
+// set (same weight, more reps), reported apart so it can't be read as a load PR.
+export function sessionPrs(H, entries, { formula } = {}) {
+  const prs = []
+  const e1prs = []
+  ;(entries || []).forEach(e => {
+    const loads = (e.sets || []).filter(s => s.done && !isWarmupRow(s)).map(s => s.w).filter(w => w > 0)
+    const mx = loads.length ? loads.reduce((a, b) => betterWeight(e.id, a, b)) : 0
+    if (isWeightPr(H, e.id, mx, entryDbLoad(e))) prs.push(e.id)
+    const rec = formula ? is1RMRecord(H, e.id, e, formula) : is1RMRecord(H, e.id, e)
+    if (rec && !prs.includes(e.id)) e1prs.push({ id: e.id, ...rec })
+  })
+  return { prs, e1prs }
 }
 
 // `brandFor(exId)`: the machine brand an exercise kept per gym was done on (#988, lib/gym-split.js),
