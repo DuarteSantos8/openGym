@@ -4398,7 +4398,6 @@ export default {
   "Backups: {0}": "جایگزین‌ها: {0}",
   "Suggested": "پیشنهادها",
   "Add “{0}” as a backup": "افزودن «{0}» به‌عنوان جایگزین",
-  "Pick another": "انتخاب یکی دیگر",
   "Ask the Coach for a swap": "جایگزین را از مربی بپرس",
   "Per gym": "بر اساس باشگاه",
   "Separate numbers per gym": "اعداد جدا برای هر باشگاه",

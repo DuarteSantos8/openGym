@@ -4443,7 +4443,6 @@ export default {
   "Backups: {0}": "ท่าสำรอง: {0}",
   "Suggested": "แนะนำ",
   "Add “{0}” as a backup": "เพิ่ม “{0}” เป็นท่าสำรอง",
-  "Pick another": "เลือกท่าอื่น",
   "Ask the Coach for a swap": "ขอให้โค้ชช่วยหาท่าแทน",
   "Per gym": "แยกตามยิม",
   "Separate numbers per gym": "แยกตัวเลขตามยิม",

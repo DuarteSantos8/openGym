@@ -4397,7 +4397,6 @@ export default {
   "Backups: {0}": "Cadangan: {0}",
   "Suggested": "Saran",
   "Add “{0}” as a backup": "Tambahkan “{0}” sebagai cadangan",
-  "Pick another": "Pilih yang lain",
   "Ask the Coach for a swap": "Minta Coach cari pengganti",
   "Per gym": "Per gym",
   "Separate numbers per gym": "Angka terpisah per gym",

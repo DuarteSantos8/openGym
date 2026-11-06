@@ -4398,7 +4398,6 @@ export default {
   "Backups: {0}": "Bài dự phòng: {0}",
   "Suggested": "Gợi ý",
   "Add “{0}” as a backup": "Thêm “{0}” làm bài dự phòng",
-  "Pick another": "Chọn bài khác",
   "Ask the Coach for a swap": "Nhờ Coach gợi ý bài thay",
   "Per gym": "Theo phòng tập",
   "Separate numbers per gym": "Số liệu riêng cho từng phòng tập",

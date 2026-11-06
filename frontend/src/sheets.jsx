@@ -2426,7 +2426,7 @@ function BackupsSheet({ ex, slot, routine, subs: initial, configs: initialConfig
       </div>
     </>}
     {subs.length < MAX_BACKUPS
-      ? <Button icon="plus" onClick={add}>{suggestions.length ? t('Pick another') : t('Add a backup')}</Button>
+      ? <Button icon="plus" onClick={add}>{t('Add a backup')}</Button>
       : <div className="small dim">{t('That’s plenty of backups.')}</div>}
     <div style={{ height: 8 }} />
     <Button variant="ghost" className="dim" onClick={close}>{t('Done')}</Button>

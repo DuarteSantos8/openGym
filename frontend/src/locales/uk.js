@@ -4429,7 +4429,6 @@ export default {
   "Backups: {0}": "Заміни: {0}",
   "Suggested": "Пропозиції",
   "Add “{0}” as a backup": "Додати «{0}» як заміну",
-  "Pick another": "Обрати іншу",
   "Ask the Coach for a swap": "Запитати в тренера заміну",
   "Per gym": "За залами",
   "Separate numbers per gym": "Окремі цифри для кожного залу",

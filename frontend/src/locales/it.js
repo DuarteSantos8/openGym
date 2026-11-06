@@ -4442,7 +4442,6 @@ export default {
   "Backups: {0}": "Alternative: {0}",
   "Suggested": "Suggeriti",
   "Add “{0}” as a backup": "Aggiungi «{0}» come alternativa",
-  "Pick another": "Scegline un altro",
   "Ask the Coach for a swap": "Chiedi un cambio al Coach",
   "Per gym": "Per palestra",
   "Separate numbers per gym": "Numeri separati per palestra",

@@ -4432,7 +4432,6 @@ export default {
   "Backups: {0}": "Yedekler: {0}",
   "Suggested": "Öneriler",
   "Add “{0}” as a backup": "“{0}” yedek olarak ekle",
-  "Pick another": "Başka seç",
   "Ask the Coach for a swap": "Koç’tan değişim iste",
   "Per gym": "Salona göre",
   "Separate numbers per gym": "Her salon için ayrı rakamlar",

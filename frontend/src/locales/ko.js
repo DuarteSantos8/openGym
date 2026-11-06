@@ -4432,7 +4432,6 @@ export default {
   "Backups: {0}": "대체 운동: {0}",
   "Suggested": "추천",
   "Add “{0}” as a backup": "“{0}”을(를) 대체 운동으로 추가",
-  "Pick another": "다른 운동 고르기",
   "Ask the Coach for a swap": "코치에게 대체 운동 묻기",
   "Per gym": "헬스장별",
   "Separate numbers per gym": "헬스장마다 기록 따로",

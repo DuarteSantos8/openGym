@@ -4398,7 +4398,6 @@ export default {
   "Backups: {0}": "Náhradní cviky: {0}",
   "Suggested": "Návrhy",
   "Add “{0}” as a backup": "Přidat „{0}“ jako náhradu",
-  "Pick another": "Vybrat jiný",
   "Ask the Coach for a swap": "Zeptat se trenéra na náhradu",
   "Per gym": "Podle posilovny",
   "Separate numbers per gym": "Čísla zvlášť pro každou posilovnu",

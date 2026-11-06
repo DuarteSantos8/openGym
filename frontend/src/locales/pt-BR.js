@@ -2987,7 +2987,6 @@ export const PT_BR_OVERRIDES = {
   "Backups: {0}": "Alternativas: {0}",
   "Suggested": "Sugestões",
   "Add “{0}” as a backup": "Adicionar “{0}” como alternativa",
-  "Pick another": "Escolher outro",
   "Ask the Coach for a swap": "Pedir uma troca ao Coach",
   "Per gym": "Por academia",
   "Separate numbers per gym": "Números separados por academia",

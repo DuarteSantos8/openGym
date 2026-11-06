@@ -4452,7 +4452,6 @@ export default {
   "Backups: {0}": "Ausweichübungen: {0}",
   "Suggested": "Vorschläge",
   "Add “{0}” as a backup": "„{0}“ als Ausweichübung hinzufügen",
-  "Pick another": "Andere wählen",
   "Ask the Coach for a swap": "Coach nach Ersatz fragen",
   "Per gym": "Pro Studio",
   "Separate numbers per gym": "Werte pro Studio getrennt",

@@ -4487,7 +4487,6 @@ export default {
   "Backups: {0}": "بدائل: {0}",
   "Suggested": "مقترحات",
   "Add “{0}” as a backup": "أضف «{0}» كبديل",
-  "Pick another": "اختر غيره",
   "Ask the Coach for a swap": "اطلب من المدرب بديلًا",
   "Per gym": "حسب النادي",
   "Separate numbers per gym": "أرقام منفصلة لكل نادٍ",

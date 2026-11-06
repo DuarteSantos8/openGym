@@ -4511,7 +4511,6 @@ export default {
   "Backups: {0}": "বিকল্প: {0}",
   "Suggested": "প্রস্তাবিত",
   "Add “{0}” as a backup": "“{0}” বিকল্প হিসেবে যোগ করুন",
-  "Pick another": "অন্যটি বেছে নিন",
   "Ask the Coach for a swap": "কোচের কাছে বদল চান",
   "Per gym": "জিম অনুযায়ী",
   "Separate numbers per gym": "প্রতিটি জিমের জন্য আলাদা সংখ্যা",

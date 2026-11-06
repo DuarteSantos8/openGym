@@ -4436,7 +4436,6 @@ export default {
   "Backups: {0}": "Замены: {0}",
   "Suggested": "Предложения",
   "Add “{0}” as a backup": "Добавить «{0}» как замену",
-  "Pick another": "Выбрать другое",
   "Ask the Coach for a swap": "Спросить у тренера замену",
   "Per gym": "По залам",
   "Separate numbers per gym": "Отдельные цифры для каждого зала",

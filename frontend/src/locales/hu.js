@@ -4435,7 +4435,6 @@ export default {
   "Backups: {0}": "Tartalékok: {0}",
   "Suggested": "Javaslatok",
   "Add “{0}” as a backup": "„{0}” hozzáadása tartaléknak",
-  "Pick another": "Másik választása",
   "Ask the Coach for a swap": "Csere kérése az edzőtől",
   "Per gym": "Termenként",
   "Separate numbers per gym": "Külön számok termenként",

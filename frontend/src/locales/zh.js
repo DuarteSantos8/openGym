@@ -4432,7 +4432,6 @@ export default {
   "Backups: {0}": "备选动作：{0}",
   "Suggested": "推荐",
   "Add “{0}” as a backup": "把“{0}”加为备选",
-  "Pick another": "选择其他",
   "Ask the Coach for a swap": "让教练推荐替换动作",
   "Per gym": "按健身房",
   "Separate numbers per gym": "每个健身房分开记录",

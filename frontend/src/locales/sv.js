@@ -4479,7 +4479,6 @@ export default {
   "Backups: {0}": "Reserver: {0}",
   "Suggested": "Förslag",
   "Add “{0}” as a backup": "Lägg till ”{0}” som reserv",
-  "Pick another": "Välj en annan",
   "Ask the Coach for a swap": "Fråga coachen om ett byte",
   "Per gym": "Per gym",
   "Separate numbers per gym": "Separata siffror per gym",

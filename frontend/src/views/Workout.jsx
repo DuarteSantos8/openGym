@@ -1598,7 +1598,8 @@ function ActiveWorkout() {
     if (focusMode) focusPointerEpoch.current++
     // The Coach, for a machine that's taken (#1003): the same door as the ⋯ menu's Ask the Coach.
     const coachOk = coachGate.ok && hasConsent(S) && !editing && (A.entries[idx]?.sets || []).some(x => !isWarmupRow(x) && !x.done)
-    swapActiveWorkoutExercise(idx, coachOk ? { askCoach: () => workoutCoachSheet(idx, 'busy') } : {})
+    if (coachOk) swapActiveWorkoutExercise(idx, { askCoach: () => workoutCoachSheet(idx, 'busy') })
+    else swapActiveWorkoutExercise(idx)
   }
   const blockProps = idx => ({
     editing,

@@ -4432,7 +4432,6 @@ export default {
   "Backups: {0}": "Zamienniki: {0}",
   "Suggested": "Propozycje",
   "Add “{0}” as a backup": "Dodaj „{0}” jako zamiennik",
-  "Pick another": "Wybierz inny",
   "Ask the Coach for a swap": "Zapytaj Coacha o zamiennik",
   "Per gym": "Według siłowni",
   "Separate numbers per gym": "Osobne wyniki dla każdej siłowni",

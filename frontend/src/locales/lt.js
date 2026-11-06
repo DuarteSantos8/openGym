@@ -4428,7 +4428,6 @@ export default {
   "Backups: {0}": "Atsarginiai: {0}",
   "Suggested": "Pasiūlymai",
   "Add “{0}” as a backup": "Pridėti „{0}“ kaip atsarginį",
-  "Pick another": "Pasirinkti kitą",
   "Ask the Coach for a swap": "Paklausti trenerio pakaitalo",
   "Per gym": "Pagal sporto klubą",
   "Separate numbers per gym": "Atskiri skaičiai kiekvienam klubui",

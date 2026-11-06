@@ -4432,7 +4432,6 @@ export default {
   "Backups: {0}": "बैकअप: {0}",
   "Suggested": "सुझाव",
   "Add “{0}” as a backup": "“{0}” को बैकअप के रूप में जोड़ें",
-  "Pick another": "कोई और चुनें",
   "Ask the Coach for a swap": "कोच से बदलाव पूछें",
   "Per gym": "जिम के हिसाब से",
   "Separate numbers per gym": "हर जिम के लिए अलग आंकड़े",

@@ -4425,7 +4425,6 @@ export default {
   "Backups: {0}": "備選動作：{0}",
   "Suggested": "推薦",
   "Add “{0}” as a backup": "把「{0}」加為備選",
-  "Pick another": "選擇其他",
   "Ask the Coach for a swap": "請教練推薦替換動作",
   "Per gym": "依健身房",
   "Separate numbers per gym": "每間健身房分開記錄",
