@@ -192,7 +192,8 @@ export async function remove(id) {
 export function ensureWanted(figure, device = deviceInfo()) {
   if (!state.available) return null
   // Google Play asks first (offerFor): hundreds of MB nobody agreed to are not a nice surprise.
-  if (needsConsent(state) && state.prefs.offer !== 'accepted') return null
+  // A pack already here (downloaded before the offer existed) counts as a yes.
+  if (needsConsent(state) && state.prefs.offer !== 'accepted' && !Object.values(state.packs).some(p => p.state === 'ready')) return null
   const id = targetPack(state.prefs.choice, figure, device)
   if (!id) return null
   const st = state.packs[id]?.state

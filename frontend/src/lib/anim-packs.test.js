@@ -222,6 +222,13 @@ describe('the one-time offer (Google Play)', () => {
     expect(packs.needsConsent()).toBe(false)
     expect(packs.offerFor('male', wifi, phone)).toBeNull()
   })
+  it('keeps a phone that already has a pack in step without asking', async () => {
+    mocks.ready.add('anim-240-male')
+    await packs.refresh()
+    packs.ensureWanted('female', phone)
+    await new Promise(r => setTimeout(r, 0))
+    expect(mocks.calls.find(c => c[0] === 'download')?.[1]).toBe('anim-360-female')
+  })
   it('reads the network from the phone, and offers nothing when it cannot say', async () => {
     expect(await packs.networkInfo()).toBeNull()   // an older native side without network()
     mocks.network = { unmetered: true, freeBytes: 123 }
