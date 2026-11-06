@@ -12,7 +12,20 @@ describe('the directory', () => {
     expect(cardState('webhook', web)).toEqual({ status: 'server', action: null })
     expect(cardState('mcp', web)).toEqual({ status: 'server', action: null })
     expect(ids(web)).not.toContain('coach')   // the server's Coach, not offered here
-    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'backup', 'automation', 'ai'])
+    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'backup', 'automation', 'ai', 'sister'])
+  })
+
+  it('openNutrition (gm-hooks): this device links itself, no server needed; off until linked, never in the demo', () => {
+    expect(cardState('opennutrition', web)).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('opennutrition', { ...web, nutrition: { url: 'https://n.example', at: 1 } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('opennutrition', { ...web, nutrition: { url: 'https://n.example', error: 'revoked' } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(cardState('opennutrition', { ...web, demo: true })).toBeNull()
+    expect(ids({ ...web, mod: id => id !== 'integrations' })).not.toContain('opennutrition')
+  })
+
+  it('a phone reading only vitals or sport counts as connected, not off', () => {
+    const android = { ...web, mobile: true, platform: 'android' }
+    for (const k of ['readBody', 'readVitals', 'readSport']) expect(cardState('health-connect', { ...android, health: { status: 'available', [k]: true } }).status).toBe('connected')
   })
 
   it('a phone shows its own store only, by what the store says', () => {

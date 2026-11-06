@@ -246,7 +246,7 @@ export function monthCards(st, S, extras = null) {
     const h = sport.min / 60
     const km = sport.km > 0 ? (st.unit === 'lb' ? t('{0} mi', nf(sport.km / 1.609344, 1)) : t('{0} km', nf(sport.km, 1))) : null
     cards.push({ id: 'sport', kicker: t('Beyond the gym'), big: nf(sport.n), num: sport.n, bigKind: 'number',
-      title: tn('Run, ride or match', 'Runs, rides and matches', sport.n),
+      title: t('Runs, rides and matches'),
       lines: [[t('{0} hours of it', nf(h, h < 10 ? 1 : 0)), km].filter(Boolean).join(' · '), t('Your legs remember every one.')] })
   }
   const food = extras?.food
