@@ -4721,6 +4721,7 @@ export default {
   "Show the animation": "Afficher l’animation",
   "Show yours": "Afficher la tienne",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Il faut ta masse grasse",
   "% of your 1RM": "% de ton 1RM",
   "12+ reps": "12+ rép.",
   "1RM ({0})": "1RM ({0})",

@@ -4776,6 +4776,7 @@ export default {
   "Show the animation": "اعرض الرسوم المتحركة",
   "Show yours": "اعرض ما لك",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "يحتاج نسبة دهونك",
   "% of your 1RM": "% من 1RM لديك",
   "12+ reps": "12+ تكرار",
   "1RM ({0})": "1RM ‏({0})",

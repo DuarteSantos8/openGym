@@ -4800,6 +4800,7 @@ export default {
   "Show the animation": "অ্যানিমেশন দেখান",
   "Show yours": "আপনারটা দেখান",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "আপনার বডি ফ্যাট লাগবে",
   "% of your 1RM": "আপনার 1RM-এর %",
   "12+ reps": "12+ রেপ",
   "1RM ({0})": "1RM ({0})",

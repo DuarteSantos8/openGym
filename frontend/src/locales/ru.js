@@ -4725,6 +4725,7 @@ export default {
   "Show the animation": "Показать анимацию",
   "Show yours": "Показать твоё",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Нужен процент жира",
   "% of your 1RM": "% от твоего 1ПМ",
   "12+ reps": "12+ повт.",
   "1RM ({0})": "1ПМ ({0})",

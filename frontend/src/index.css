@@ -3975,12 +3975,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tools-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:var(--fs-body);font-weight:600;letter-spacing:-.01em}
 .tools-h .icn{color:var(--acc-ink);font-size:18px}
 .tools-sub{margin:14px 0 6px;font-size:var(--fs-subhead);font-weight:600}
-.tools-chips{margin-bottom:10px}
+.tools-chips{margin-bottom:10px;flex-wrap:wrap;overflow:visible}
+.tools-chips .chip{flex:none}
+.tools-chips .chip.add{display:inline-flex;align-items:center;gap:4px;color:var(--acc-ink)}
 .tools-result{display:flex;flex-direction:column;gap:2px;padding:6px 0 2px}
 .tools-big{font-size:var(--fs-title2);font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .tools-tiles{margin-bottom:4px}
 .tools-tiles .tile{background:var(--surface-2)}
 .tools-table td:first-of-type{text-align:start}
+.tools-table tbody th{width:auto;white-space:nowrap}
 .tools-time{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
 .tools-time .stp-l{text-align:start}
 .tools-time input{width:100%;font-variant-numeric:tabular-nums}

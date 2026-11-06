@@ -5,6 +5,7 @@ import pt from './pt.js'
 
 export const PT_BR_OVERRIDES = {
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Precisa da sua gordura corporal",
   "% of your 1RM": "% do seu 1RM",
   "12+ reps": "12+ reps",
   "1RM ({0})": "1RM ({0})",

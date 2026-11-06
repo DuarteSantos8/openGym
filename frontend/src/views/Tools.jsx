@@ -187,7 +187,8 @@ function BodyCard({ S, update, unit, toKg, bwNow, lenUnit, toCm, fromCm, neck, w
   const navy = navyBodyFat({ sex, heightCm: h, neckCm: n, waistCm: w, hipCm: hp })
   const fat = bf ?? bodyFat ?? navy ?? 0
   const b = bmi(toKg(body), h)
-  const f = ffmi(toKg(body), h, fat)
+  // No body fat known, no FFMI: at 0 % it would read the whole body weight as lean.
+  const f = fat > 0 ? ffmi(toKg(body), h, fat) : null
   const lean = f ? (unit === 'lb' ? f.lean * LB_PER_KG : f.lean) : null
   const step = lenUnit === 'in' ? 0.5 : 1
   const setLen = key => v => setTape(t0 => ({ ...t0, [key]: toCm(v) }))
@@ -202,7 +203,8 @@ function BodyCard({ S, update, unit, toKg, bwNow, lenUnit, toCm, fromCm, neck, w
       <div className="tile"><div className="l">BMI</div><div className="v v-sm">{b == null ? '–' : fmtNum(b)}</div>
         {b != null && <div className="small dim">{t(BMI_LABEL[bmiBand(b)])}</div>}</div>
       <div className="tile"><div className="l">FFMI</div><div className="v v-sm">{f ? fmtNum(f.normalized) : '–'}</div>
-        {f && <div className="small dim">{t('Lean mass {0}', fmtNum(Math.round(lean * 10) / 10) + ' ' + unit)}</div>}</div>
+        {f ? <div className="small dim">{t('Lean mass {0}', fmtNum(Math.round(lean * 10) / 10) + ' ' + unit)}</div>
+          : <div className="small dim">{t('Needs your body fat')}</div>}</div>
     </div>
     <h3 className="tools-sub">{t('Navy body fat')}</h3>
     <SexPicker value={sex} onChange={setSex} />

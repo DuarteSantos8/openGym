@@ -4732,6 +4732,7 @@ export default {
   "Show the animation": "แสดงแอนิเมชัน",
   "Show yours": "แสดงของคุณ",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "ต้องใช้ไขมันของคุณ",
   "% of your 1RM": "% ของ 1RM",
   "12+ reps": "12+ ครั้ง",
   "1RM ({0})": "1RM ({0})",

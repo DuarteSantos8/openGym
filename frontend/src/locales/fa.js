@@ -4687,6 +4687,7 @@ export default {
   "Show the animation": "نمایش انیمیشن",
   "Show yours": "نمایش مال تو",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "چربی بدنت لازم است",
   "% of your 1RM": "٪ از 1RM تو",
   "12+ reps": "۱۲+ تکرار",
   "1RM ({0})": "1RM ‏({0})",

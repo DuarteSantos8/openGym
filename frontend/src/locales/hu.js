@@ -4724,6 +4724,7 @@ export default {
   "Show the animation": "Animáció mutatása",
   "Show yours": "A tiéd mutatása",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Kell hozzá a testzsírod",
   "% of your 1RM": "Az 1RM-ed %-a",
   "12+ reps": "12+ ism.",
   "1RM ({0})": "1RM ({0})",

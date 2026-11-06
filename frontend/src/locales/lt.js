@@ -4717,6 +4717,7 @@ export default {
   "Show the animation": "Rodyti animaciją",
   "Show yours": "Rodyti tavo",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Reikia tavo riebalų procento",
   "% of your 1RM": "% tavo 1RM",
   "12+ reps": "12+ pak.",
   "1RM ({0})": "1RM ({0})",

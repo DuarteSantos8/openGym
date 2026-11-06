@@ -4721,6 +4721,7 @@ export default {
   "Show the animation": "एनिमेशन दिखाएँ",
   "Show yours": "तुम्हारा दिखाएँ",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "आपका बॉडी फ़ैट चाहिए",
   "% of your 1RM": "आपके 1RM का %",
   "12+ reps": "12+ रेप",
   "1RM ({0})": "1RM ({0})",

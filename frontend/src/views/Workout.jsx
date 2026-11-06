@@ -952,7 +952,6 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
               </div>
             </div>
           ) : pairHead ? <>{plainRow(s, i)}{plainRow(entry.sets[i + 1], i + 1)}</> : plainRow(s, i))}
-          {!pairTail && recordLine(i)}
           {/* Cardio's "how hard it felt", on the row instead of only in the set menu (Q5). Its own
               line under the inputs, so a narrow phone keeps all three columns. */}
           {!pairTail && cardio && effortOn && !isWarmupRow(s) && <div className="cardio-eff-line">
@@ -964,6 +963,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
             </button>
           </div>}
           {loadLine(String(i))}
+          {/* The trophy a set earned, and how close the next one is (lib/set-records.js), under its plates. */}
+          {!pairTail && recordLine(i)}
           {/* The set's own note (lib/set-notes.js): a quiet line under the row, a tap edits it. */}
           {!pairTail && setNoteOf(s) && <button type="button" className="setnote-line" aria-label={t('Edit note') + ': ' + setNoteOf(s)}
             onClick={() => setNoteSheet(entryIdx, i, isWarmupRow(s) ? t('Warm-up') : t('Set {0}', setNumOf(s, i)))}>

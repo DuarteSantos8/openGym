@@ -4686,6 +4686,7 @@ export default {
   "Show the animation": "Tampilkan animasi",
   "Show yours": "Tampilkan milikmu",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Butuh lemak tubuhmu",
   "% of your 1RM": "% dari 1RM-mu",
   "12+ reps": "12+ repetisi",
   "1RM ({0})": "1RM ({0})",

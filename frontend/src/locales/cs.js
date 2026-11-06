@@ -4687,6 +4687,7 @@ export default {
   "Show the animation": "Zobrazit animaci",
   "Show yours": "Zobrazit tvoje",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Potřebuje tvůj tělesný tuk",
   "% of your 1RM": "% tvého 1RM",
   "12+ reps": "12+ opak.",
   "1RM ({0})": "1RM ({0})",

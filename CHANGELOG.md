@@ -14,6 +14,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Strava: finished runs, rides and rows go up to Strava as what they were, strength sessions as Weight Training if you switch it on. For servers that register their own Strava app (`INTEGRATIONS=strava`, `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`; docs/INTEGRATIONS.md; #478, idea by @workhardbekind).
 - Webhooks: a cardio set logged by distance now carries `distanceKm`.
 
+**Records on the set, and a Tools page**
+- A trophy on the set the moment you tick it, with a buzz and two happy notes: heaviest yet, most reps at this weight, best e1RM or biggest set, each said apart. History and the day's workout show the same trophy. Settings → Workout → Record trophies.
+- Before a set, a quiet line says how close it is: "97% of your best e1RM · 2 more reps for a record at this weight". Settings → Workout → How close to a record.
+- Rep records in an exercise's history (also from the workout's ⋯ → History): the heaviest you did for 1 to 12 reps with the date, and greyed what your best e1RM says is possible.
+- Recovery in hours: Stats → Muscles → Fatigue lists every tired muscle and when it is ready again, like "Chest ~18h, Thu 7:00", with the split shoulder and the lats.
+- Stats → More → Tools: % of 1RM rounded to your plates, load for reps at an RPE, DOTS, Wilks and IPF GL, BMI, FFMI, Navy body fat and a pace calculator, filled in from your log.
+
 **Things we promised and finally built**
 - Three new progression rules (exercise settings → Progression → Rule): Steady double progression (one rep at a time, every set has to hit it first), Undulating days (medium, heavy and light days in turn, weights from your estimated max) and Shorter rests (same weight, less rest each clean session, then more weight). Idea and first version by @giulioleuci (#823, #824, #825).
 - The shoulder is three muscles now: front, side and rear delts, and the lats are their own muscle apart from the upper back, in every muscle map, the balance, Weekly sets per muscle, recovery and the muscle filter (#638). Your custom exercises tagged "Shoulders" still count, for all three heads.

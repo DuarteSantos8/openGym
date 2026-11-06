@@ -4768,6 +4768,7 @@ export default {
   "Show the animation": "Visa animationen",
   "Show yours": "Visa ditt",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Behöver ditt kroppsfett",
   "% of your 1RM": "% av ditt 1RM",
   "12+ reps": "12+ rep",
   "1RM ({0})": "1RM ({0})",

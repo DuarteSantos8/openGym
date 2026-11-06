@@ -4721,6 +4721,7 @@ export default {
   "Show the animation": "애니메이션 보기",
   "Show yours": "내 것 보기",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "체지방이 필요해요",
   "% of your 1RM": "1RM의 %",
   "12+ reps": "12회 이상",
   "1RM ({0})": "1RM ({0})",

@@ -4687,6 +4687,7 @@ export default {
   "Show the animation": "Hiện hoạt ảnh",
   "Show yours": "Hiện của bạn",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Cần mỡ cơ thể của bạn",
   "% of your 1RM": "% 1RM của bạn",
   "12+ reps": "12+ lần",
   "1RM ({0})": "1RM ({0})",

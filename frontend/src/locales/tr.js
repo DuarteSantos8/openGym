@@ -4721,6 +4721,7 @@ export default {
   "Show the animation": "Animasyonu göster",
   "Show yours": "Seninkini göster",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "Vücut yağın gerekli",
   "% of your 1RM": "1RM'inin %'si",
   "12+ reps": "12+ tekrar",
   "1RM ({0})": "1RM ({0})",

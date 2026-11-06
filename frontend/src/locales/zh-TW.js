@@ -4714,6 +4714,7 @@ export default {
   "Show the animation": "顯示動畫",
   "Show yours": "顯示你的",
   // --- records on the set + tools (gm-live-146) ---
+  "Needs your body fat": "需要你的體脂",
   "% of your 1RM": "1RM 的百分比",
   "12+ reps": "12 次以上",
   "1RM ({0})": "1RM（{0}）",

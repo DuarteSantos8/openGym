@@ -45,5 +45,5 @@ export function recordHintText(hint) {
 export function RecordHintLine({ hint }) {
   const text = recordHintText(hint)
   if (!text) return null
-  return <div className="setrec-hint"><Icon name="target" /><span>{text}</span></div>
+  return <div className="setrec-hint"><Icon name="chartLine" /><span>{text}</span></div>
 }
