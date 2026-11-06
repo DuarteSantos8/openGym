@@ -110,16 +110,25 @@ class OpenGymApp extends Application.AppBase {
 }
 
 //! Events to the phone (Communications.transmit), kept in the state until the phone has them: a set
-//! ticked with the phone away is not lost. The phone applies each event once, by its id, so one
-//! sent twice does no harm.
+//! ticked with the phone away is not lost. Sent once, then kept until the snapshot names it
+//! (`acked`, Core.ackOutbox): a message Garmin Connect took while openGym on the phone was not
+//! running goes again after a minute. The phone applies each event once, by its id, so one sent
+//! twice does no harm.
 module Link {
     var busy = false;
     var lastTry = 0;
+    //! The most events kept for a phone that never answers: the oldest sent ones go first.
+    const MAX = 60;
 
     //! An event for the phone: stored, then sent.
     function send(ev) {
         if (ev == null) {
             return;
+        }
+        var ob = G.state["ob"];
+        if (ob.size() >= MAX && Core.toI(G.state["obn"], 0) > 0) {
+            G.state["ob"] = ob.slice(1, null);
+            G.state["obn"] = Core.toI(G.state["obn"], 0) - 1;
         }
         G.state["ob"].add(ev);
         G.save();
@@ -137,18 +146,27 @@ module Link {
 
     function flush() {
         var ob = G.state["ob"];
-        if (busy || ob.size() == 0 || !(Communications has :transmit)) {
+        var from = Core.toI(G.state["obn"], 0);
+        if (busy || from >= ob.size() || !(Communications has :transmit)) {
             return;
         }
         busy = true;
         lastTry = System.getTimer();
         // A few at a time: a Connect IQ message is small.
-        var n = ob.size() > 4 ? 4 : ob.size();
-        Communications.transmit({ "events" => ob.slice(0, n) }, null, new SendListener(n));
+        var n = ob.size() - from > 4 ? 4 : ob.size() - from;
+        Communications.transmit({ "events" => ob.slice(from, from + n) }, null, new SendListener(n));
     }
 
+    //! Once a second: what was not sent yet after 30 s, what the phone has not confirmed after 60 s.
     function retry() {
-        if (!busy && G.state["ob"].size() > 0 && System.getTimer() - lastTry > 30000) {
+        if (busy || G.state["ob"].size() == 0) {
+            return;
+        }
+        var since = System.getTimer() - lastTry;
+        if (Core.unsent(G.state) > 0 && since > 30000) {
+            flush();
+        } else if (Core.unsent(G.state) == 0 && since > 60000) {
+            G.state["obn"] = 0;
             flush();
         }
     }
@@ -156,8 +174,8 @@ module Link {
     function sent(n) {
         busy = false;
         if (n > 0) {
-            var ob = G.state["ob"];
-            G.state["ob"] = ob.size() > n ? ob.slice(n, null) : [];
+            var next = Core.toI(G.state["obn"], 0) + n;
+            G.state["obn"] = next > G.state["ob"].size() ? G.state["ob"].size() : next;
             G.save();
         }
         flush();

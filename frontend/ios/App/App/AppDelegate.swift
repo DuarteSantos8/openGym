@@ -17,6 +17,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // the app in the background for a set the watch sends, and only a session that is activated
         // then receives it (and answers the watch's "still going?") with the app closed.
         WatchLink.shared.start()
+        // The Garmin link (GarminLink.swift): up at launch when a Garmin was picked before, so a
+        // Bluetooth relaunch for the watch finds it listening. Without one it waits (no Bluetooth
+        // question for an iPhone that has no Garmin).
+        GarminLink.shared.start()
         // No shake to undo (#921): iOS offers "Undo Typing" on a shake after any text was typed in
         // the page, and a phone carried in a pocket or jostled between sets shakes. The alert then
         // waited on screen at the next unlock, an Undo nobody asked for. Nothing in openGym undoes

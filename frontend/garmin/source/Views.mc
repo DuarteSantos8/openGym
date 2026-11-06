@@ -70,7 +70,7 @@ class IdleView extends WatchUi.View {
         } else {
             startBox = null;
         }
-        if (G.state["ob"].size() > 0 && G.awayAt != null) {
+        if (Core.unsent(G.state) > 0 && G.awayAt != null) {
             Ui.line(dc, h * 0.90, Graphics.FONT_XTINY, Ui.t(Rez.Strings.saved_later), Ui.quiet());
         }
     }
@@ -586,7 +586,7 @@ class SummaryView extends WatchUi.View {
         var hr = sm["hr"];
         if (hr != null) {
             Ui.line(dc, h * 0.90, Graphics.FONT_XTINY, hr[0].toString() + " / " + hr[1].toString() + " bpm", Ui.heart());
-        } else if (G.state["ob"].size() > 0) {
+        } else if (Core.unsent(G.state) > 0) {
             Ui.line(dc, h * 0.90, Graphics.FONT_XTINY, Ui.t(Rez.Strings.saved_later), Ui.quiet());
         }
     }

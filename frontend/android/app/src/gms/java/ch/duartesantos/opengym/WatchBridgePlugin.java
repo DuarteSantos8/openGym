@@ -50,12 +50,20 @@ import org.json.JSONObject;
  * Without Google Play services, or without a watch that has the app, every call answers "no watch"
  * and nothing else happens: the page then sends nothing at all (lib/watch-sync.js checkLink).
  *
- *   status()             { supported, activated, paired, installed, reachable }
- *   sendSnapshot({json}) { sent }
+ * A Garmin rides along (GarminLink, src/ciq, docs/GARMIN.md): status says `garmin: true` when one
+ * with the openGym app is there, the page then adds its cut-down snapshot (`garmin`) to each
+ * sendSnapshot, and the Garmin's events land in the same queue file.
+ *
+ *   status()             { supported, activated, paired, installed, reachable, garmin }
+ *   sendSnapshot({json, garmin?}) { sent }
  *   drain()              { events }
  *   ack({ids})
  *   openOnWatch({type})  { ok }: a workout started here shows on the watch
  *   sendClips / dropClips   no animations go to Wear OS watches: { sent: 0 }
+ *   garminStatus()       { supported, state, installed, reachable, store, devices: [{ id, name, connected, installed? }] }
+ *   garminPick()         asks Garmin Connect for its watches again (Android has no picker: Garmin
+ *                        Connect pairs them) { ok }
+ *   garminStore()        the app's page in the Connect IQ Store { ok }
  *   listeners: watchEvent, watchState
  */
 @CapacitorPlugin(name = "WatchBridge")
@@ -74,6 +82,7 @@ public class WatchBridgePlugin extends Plugin {
     @Override
     public void load() {
         live = this;
+        GarminLink.get(getContext());
         try {
             capListener = info -> notifyListeners("watchState", new JSObject().put("installed", !info.getNodes().isEmpty()));
             Wearable.getCapabilityClient(getContext()).addListener(capListener, CAPABILITY_WEAR);
@@ -97,23 +106,28 @@ public class WatchBridgePlugin extends Plugin {
     public void status(PluginCall call) {
         io.execute(() -> {
             JSObject out = new JSObject();
+            boolean paired = false, installed = false, reachable = false, supported = false;
             try {
                 Context ctx = getContext();
                 List<Node> connected = Tasks.await(Wearable.getNodeClient(ctx).getConnectedNodes(), 5, TimeUnit.SECONDS);
                 CapabilityInfo all = Tasks.await(Wearable.getCapabilityClient(ctx).getCapability(CAPABILITY_WEAR, CapabilityClient.FILTER_ALL), 5, TimeUnit.SECONDS);
                 CapabilityInfo near = Tasks.await(Wearable.getCapabilityClient(ctx).getCapability(CAPABILITY_WEAR, CapabilityClient.FILTER_REACHABLE), 5, TimeUnit.SECONDS);
-                boolean installed = !all.getNodes().isEmpty();
-                out.put("supported", true);
-                out.put("activated", true);
-                out.put("paired", installed || !connected.isEmpty());
-                out.put("installed", installed);
-                out.put("reachable", !near.getNodes().isEmpty());
+                installed = !all.getNodes().isEmpty();
+                supported = true;
+                paired = installed || !connected.isEmpty();
+                reachable = !near.getNodes().isEmpty();
             } catch (Exception e) {
-                out.put("supported", false);
-                out.put("paired", false);
-                out.put("installed", false);
-                out.put("reachable", false);
+                // No Play services (or no answer): no Wear OS watch. A Garmin may still be there.
             }
+            // A Garmin with the openGym app counts as a watch for the page: it then sends snapshots.
+            GarminLink g = GarminLink.get(getContext());
+            boolean garmin = g.anyInstalled();
+            out.put("supported", supported || garmin);
+            out.put("activated", true);
+            out.put("paired", paired || garmin);
+            out.put("installed", installed || garmin);
+            out.put("reachable", reachable || g.anyReachable());
+            out.put("garmin", garmin);
             call.resolve(out);
         });
     }
@@ -122,6 +136,9 @@ public class WatchBridgePlugin extends Plugin {
     public void sendSnapshot(PluginCall call) {
         String json = call.getString("json");
         if (json == null) { call.reject("json is required"); return; }
+        // The Garmin's cut-down snapshot (lib/garmin-snapshot.js), when the page made one.
+        String garmin = call.getString("garmin");
+        boolean garminSent = garmin != null && GarminLink.get(getContext()).send(garmin);
         try {
             PutDataMapRequest req = PutDataMapRequest.create(SNAPSHOT);
             req.getDataMap().putString("snapshot", json);
@@ -130,9 +147,9 @@ public class WatchBridgePlugin extends Plugin {
             PutDataRequest put = req.asPutDataRequest().setUrgent();
             Wearable.getDataClient(getContext()).putDataItem(put)
                 .addOnSuccessListener(item -> call.resolve(new JSObject().put("sent", true)))
-                .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", false).put("error", String.valueOf(e.getMessage()))));
+                .addOnFailureListener(e -> call.resolve(new JSObject().put("sent", garminSent).put("error", String.valueOf(e.getMessage()))));
         } catch (Exception e) {
-            call.resolve(new JSObject().put("sent", false));
+            call.resolve(new JSObject().put("sent", garminSent));
         }
     }
 
@@ -178,9 +195,25 @@ public class WatchBridgePlugin extends Plugin {
                     ok = true;
                 }
             } catch (Exception ignored) {}
+            // A Garmin with the app shows its own "open openGym?" prompt.
+            if (GarminLink.get(getContext()).open()) ok = true;
             call.resolve(new JSObject().put("ok", ok));
         });
     }
+
+    /* ---------- the Garmin (Settings → Garmin, views/GarminSettings.jsx) ---------- */
+
+    @PluginMethod
+    public void garminStatus(PluginCall call) { call.resolve(GarminLink.get(getContext()).status()); }
+
+    @PluginMethod
+    public void garminPick(PluginCall call) {
+        GarminLink.get(getContext()).refresh();
+        call.resolve(new JSObject().put("ok", true));
+    }
+
+    @PluginMethod
+    public void garminStore(PluginCall call) { call.resolve(new JSObject().put("ok", GarminLink.get(getContext()).openStore())); }
 
     /** No animations go to a Wear OS watch (text and numbers only): nothing to send or cancel. */
     @PluginMethod
@@ -221,6 +254,21 @@ public class WatchBridgePlugin extends Plugin {
             items.release();
         } catch (Exception ignored) {}
         return any;
+    }
+
+    /** One event as JSON (the Garmin's, GarminLink) into the queue file. Whether it is new there. */
+    static boolean storeEvent(Context ctx, String json, long seq) {
+        synchronized (LOCK) {
+            JSONArray before = readQueue(ctx);
+            JSONArray next = WatchEventQueue.add(before, json, seq);
+            return next != null && next != before && writeQueue(ctx, next);
+        }
+    }
+
+    /** The link changed (a Garmin connected, the app found on it): the page asks status again. */
+    static void notifyState() {
+        WatchBridgePlugin p = live;
+        if (p != null) p.notifyListeners("watchState", new JSObject());
     }
 
     /** The page, if it is there, drains now. */

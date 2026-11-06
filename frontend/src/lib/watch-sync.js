@@ -392,7 +392,9 @@ function applyEach (events, getState, now = Date.now()) {
   const done = []
   for (const ev of inWatchOrder(events)) {
     if (!ev || typeof ev.id !== 'string') continue
-    if (applied.includes(ev.id)) { done.push(ev.id); continue }
+    // Applied before and sent again (the watch had not heard yet): named as the newest again, so the
+    // next snapshot's `acked` carries it even when many came after it (a Garmin's list is short).
+    if (applied.includes(ev.id)) { applied.splice(applied.indexOf(ev.id), 1); applied.push(ev.id); done.push(ev.id); continue }
     const S = getState()?.S
     const A = S?.active
     const ours = A && Array.isArray(A.entries) && (!ev.wid || ev.wid === A.id)
@@ -942,6 +944,18 @@ function lateRow (w, exId, setIdx) {
 }
 
 /** Whether a watch is paired and has the app, for Settings → Apple Watch. */
+/**
+ * Settings → Garmin (views/GarminSettings.jsx): the native Garmin calls of WatchBridge
+ * (garminStatus, garminPick, garminStore; docs/GARMIN.md). No phone app, or a build without them:
+ * null.
+ */
+export async function garminCall (name, args = {}) {
+  if (!['garminStatus', 'garminPick', 'garminStore'].includes(name)) return null
+  const p = await watchPlugin()
+  if (!p) return null
+  try { return (await p.WatchBridge[name](args)) || null } catch { return null }
+}
+
 export async function watchStatus () {
   const p = await watchPlugin()
   if (!p) return { paired: false, installed: false }

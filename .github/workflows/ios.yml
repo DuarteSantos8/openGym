@@ -111,6 +111,10 @@ jobs:
       # The widgets and the Live Activity's extension, likewise until it is committed.
       - run: ruby ios/ci/add-widgets.rb
         working-directory: frontend
+      # Garmin's Connect IQ Mobile SDK (a Swift package, closed source, fetched at build time):
+      # with it GarminLink.swift is the real Garmin link (docs/GARMIN.md).
+      - run: ruby ios/ci/add-garmin.rb
+        working-directory: frontend
       - name: Build for the simulator
         working-directory: frontend/ios/App
         run: |
@@ -345,6 +349,10 @@ jobs:
       # The widgets and the Live Activity's extension, likewise until it is committed.
       - run: ruby ios/ci/add-widgets.rb
         working-directory: frontend
+      # Garmin's Connect IQ Mobile SDK (a Swift package, closed source, fetched at build time):
+      # with it GarminLink.swift is the real Garmin link (docs/GARMIN.md).
+      - run: ruby ios/ci/add-garmin.rb
+        working-directory: frontend
       - run: ruby ios/ci/add-ui-tests.rb
         working-directory: frontend
       - name: Run the UI tests
@@ -415,6 +423,10 @@ jobs:
         working-directory: frontend
       # The widgets and the Live Activity's extension, likewise until it is committed.
       - run: ruby ios/ci/add-widgets.rb
+        working-directory: frontend
+      # Garmin's Connect IQ Mobile SDK (a Swift package, closed source, fetched at build time):
+      # with it GarminLink.swift is the real Garmin link (docs/GARMIN.md).
+      - run: ruby ios/ci/add-garmin.rb
         working-directory: frontend
       - name: Archive, unsigned
         working-directory: frontend/ios/App
