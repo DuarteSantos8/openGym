@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 // Settings → Look & Home → Motion and Text size (lib/display-prefs.js).
 import { afterEach, describe, expect, it } from 'vitest'
 import { readDisplay, applyDisplay, _resetDisplay } from './display-prefs.js'

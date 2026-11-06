@@ -15,7 +15,7 @@ vi.mock('@capacitor/core', () => ({
 }))
 
 const HASH = 'a'.repeat(64)
-const S0 = { sounds: [{ id: 's1', name: 'Gong', m: { kind: 'audio', hash: HASH, mime: 'audio/wav', size: 1000 } }] }
+const S0 = { sounds: [{ id: 's1', name: 'Gong', m: { kind: 'audio', hash: HASH, mime: 'audio/wav', size: 4000, width: 1, height: 1, dur: 1.5, at: 1 } }] }
 
 let m
 beforeEach(async () => {

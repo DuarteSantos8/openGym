@@ -43,7 +43,7 @@ export function applyDisplay(d = readDisplay(), { save = false, win = globalThis
   if (root) {
     root.classList.toggle('reduce-motion', less)
     const k = TEXT_SIZES[d.text] || 1
-    if (k === 1) root.style.removeProperty('font-size'); else root.style.fontSize = (k * 100) + '%'
+    if (k === 1) root.style.removeProperty('font-size'); else root.style.fontSize = Math.round(k * 100) + '%'
   }
   if (save) { try { localStorage.setItem(KEY, JSON.stringify({ motion: d.motion, text: d.text })) } catch { /* private mode */ } }
   return d
