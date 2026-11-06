@@ -8,4 +8,6 @@
     <string name="rest_channel_name">Rest timer</string>
     <string name="rest_quiet_channel_name">Rest timer, without vibration</string>
     <string name="rest_channel_desc">Rest between sets, in the notification shade. The lock screen shows it only when notifications are allowed there.</string>
+    <string name="workout_channel_name">Workout in progress</string>
+    <string name="workout_channel_desc">The workout you are doing right now: the next set, the rest and Log set, without opening the app.</string>
 </resources>

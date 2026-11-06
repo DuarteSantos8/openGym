@@ -78,6 +78,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - On top of the calendar: what the number counts (weeks in a row with at least one workout), your freezes and how the next one is earned, and the first time, four short lines on how it all works. Stats → Week streak says it too, with How streaks work one tap away.
 - Settings → Look & Home → Icons: pick your own streak flame and freeze, from openGym's icons or any emoji. The colors around it (the flame's glow and bar, the frozen week, the freeze chips) follow its color in light and dark mode, and Reset to default is right there. Syncs like the rest of your settings; the watches and widgets keep their own flame.
 
+**Android and Health**
+- Android: the workout you are doing lives in one notification now. It shows the exercise, the set and its target, the time since you started and how far along you are, with Log set and Next exercise right there. Log set works with the app closed and starts the rest, the rest counts down in that same notification with the next set on top, and finishing or discarding the workout takes it away. On Android 16 it is a Live Update, the little chip by the clock (#760, idea and first version by @Andrew-A-A (#874)).
+
 **Fixes from your reports**
 - Cardio on a 320 px phone: a row with the incline pushed its tick off the card. Below 360 px the incline now takes a typed number without the − and +, and the tick is back.
 - Your own sounds come back from a backup with photos and videos too. They went into the zip, but the import left them out.

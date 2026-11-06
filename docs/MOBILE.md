@@ -801,3 +801,15 @@ web assets; `scripts/ios/finish-ipa.sh` adds them and signs it on the release ma
   it: a foreground service (`specialUse`) keeps the countdown in the notification and holds a
   wake lock until the end, so the end of a rest sounds on time with the screen locked; the
   rest-over alarm is only its fallback.
+- **The running workout as one notification (Android, #760).** While a workout runs, the shade
+  holds one ongoing card: the exercise, the set and its target, the time since the start and how
+  many sets are done, with Log set and Next exercise. It is the iPhone's Live Activity on the same
+  page code (`lib/live-activity.js`, the `LiveActivity` plugin name), drawn by
+  `WorkoutNotification.java`. Log set works with the app closed: `WorkoutCardReceiver` moves the
+  card on (`WorkoutCard.java`, the same moves as `LiveActivityTick` in Swift), queues the tap for
+  the page and starts the rest after the set with the page's last rest settings. During a rest the
+  rest countdown takes the card's place under the same notification id, with the set after it on
+  top, so there is never a card and a countdown at once; the rest-over alert stays separate. On
+  Android 16 the card and its rest are a Live Update (promoted ongoing, `POST_PROMOTED_NOTIFICATIONS`,
+  a normal permission) with a progress bar; older phones get a plain ongoing notification. Nothing
+  is posted without notification permission. Finishing or discarding the workout takes it away.
