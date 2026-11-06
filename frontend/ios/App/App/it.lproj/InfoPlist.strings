@@ -1,2 +1,2 @@
 "NSCameraUsageDescription" = "Serve per scansionare il QR code della tua tessera in palestra, per scattare le foto dei progressi, per fotografare o registrare gli esercizi che aggiungi tu e per filmare una serie e controllare la tecnica.";
-"NSMicrophoneUsageDescription" = "Serve per registrare l’audio dei video che fai degli esercizi che aggiungi tu o delle serie che filmi.";
+"NSMicrophoneUsageDescription" = "Serve per registrare l’audio dei video che fai degli esercizi che aggiungi tu o delle serie che filmi, e le clip vocali che registri per il timer di recupero.";

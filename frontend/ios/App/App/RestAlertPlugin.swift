@@ -32,6 +32,7 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         CAPPluginMethod(name: "setAccent", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "speak", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "hush", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "voices", returnType: CAPPluginReturnPromise),
     ]
 
     static let requestId = "opengym.rest"
@@ -222,6 +223,8 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
         }
         let lang = call.getString("lang") ?? ""
         let rate = Float(call.getDouble("rate") ?? 1)
+        let pitch = Float(call.getDouble("pitch") ?? 1)
+        let voiceId = call.getString("voice") ?? ""
         let onSilent = call.getBool("onSilent") ?? false
         let flush = call.getBool("flush") ?? false
         DispatchQueue.main.async {
@@ -240,7 +243,11 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
                 self.speech.stopSpeaking(at: .immediate)
             }
             let utterance = AVSpeechUtterance(string: text)
-            if !lang.isEmpty {
+            // Settings → Timer alerts → Voice (v1.4.5): the voice picked there, by its identifier;
+            // one that is not on this phone (any more) leaves the language's default.
+            if !voiceId.isEmpty, let picked = AVSpeechSynthesisVoice(identifier: voiceId) {
+                utterance.voice = picked
+            } else if !lang.isEmpty {
                 let base = String(lang.split(separator: "-").first ?? "")
                 if let voice = AVSpeechSynthesisVoice(language: lang) ?? AVSpeechSynthesisVoice(language: base) {
                     utterance.voice = voice
@@ -248,8 +255,25 @@ public class RestAlertPlugin: CAPPlugin, CAPBridgedPlugin, AVSpeechSynthesizerDe
             }
             let wanted = AVSpeechUtteranceDefaultSpeechRate * max(0.5, min(2, rate))
             utterance.rate = max(AVSpeechUtteranceMinimumSpeechRate, min(AVSpeechUtteranceMaximumSpeechRate, wanted))
+            utterance.pitchMultiplier = max(0.5, min(2, pitch))
             self.speech.speak(utterance)
             call.resolve()
+        }
+    }
+
+    /// The phone's voices for Settings → Timer alerts → Voice: { voices: [{ id, name, lang, online, quality }] }.
+    /// Every voice here is on the phone, so none needs the internet. Personal Voice is left out:
+    /// it needs its own permission, and a voice made of someone's own recordings stays theirs.
+    @objc func voices(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            var out: [[String: Any]] = []
+            for v in AVSpeechSynthesisVoice.speechVoices() {
+                if #available(iOS 17.0, *), v.voiceTraits.contains(.isPersonalVoice) { continue }
+                var quality = v.quality == .enhanced ? "enhanced" : "default"
+                if #available(iOS 16.0, *), v.quality == .premium { quality = "premium" }
+                out.append(["id": v.identifier, "name": v.name, "lang": v.language, "online": false, "quality": quality])
+            }
+            call.resolve(["voices": out])
         }
     }
 

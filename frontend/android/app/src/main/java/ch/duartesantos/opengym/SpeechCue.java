@@ -5,6 +5,7 @@ import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +20,9 @@ import java.util.Set;
  * to say: music ducks, it never pauses.
  *
  * The engine starts the first time something is said; what arrives before it is ready waits.
+ *
+ * Settings → Timer alerts → Voice (v1.4.5): one of the engine's voices by its name, and a pitch.
+ * voices() lists them for the picker; a name the engine does not know is the default voice.
  */
 final class SpeechCue {
     private static final AudioAttributes ATTRS = new AudioAttributes.Builder()
@@ -31,6 +35,10 @@ final class SpeechCue {
     private static boolean failed;
     private static Context app;
     private static final List<Line> waiting = new ArrayList<>();
+    // Who asked for the list of voices before the engine was ready.
+    private static final List<VoicesCallback> askers = new ArrayList<>();
+
+    interface VoicesCallback { void done(List<Voice> voices); }
     // The lines handed to the engine and not finished yet; the duck ends when this empties.
     private static final Set<String> open = new HashSet<>();
     private static Object focus;
@@ -40,22 +48,57 @@ final class SpeechCue {
         final String text;
         final String lang;
         final float rate;
+        final float pitch;
+        final String voice;
         final boolean flush;
-        Line(String text, String lang, float rate, boolean flush) {
+        Line(String text, String lang, float rate, float pitch, String voice, boolean flush) {
             this.text = text;
             this.lang = lang;
             this.rate = rate;
+            this.pitch = pitch;
+            this.voice = voice;
             this.flush = flush;
         }
     }
 
     private SpeechCue() { }
 
-    /** Says `text` in `lang` (a BCP 47 tag, empty for the phone's default) at `rate` (1 is normal). */
-    static synchronized boolean speak(Context ctx, String text, String lang, float rate, boolean flush) {
+    /**
+     * Says `text` in `lang` (a BCP 47 tag, empty for the phone's default) at `rate` and `pitch`
+     * (1 is normal), in the voice named `voice` (empty for the language's default).
+     */
+    static synchronized boolean speak(Context ctx, String text, String lang, float rate, float pitch, String voice, boolean flush) {
         if (failed || text == null || text.isEmpty()) return false;
+        Line line = new Line(text, lang == null ? "" : lang, rate > 0 ? rate : 1f, pitch > 0 ? pitch : 1f, voice == null ? "" : voice, flush);
+        start(ctx);
+        if (!ready) {
+            if (flush) waiting.clear();
+            waiting.add(line);
+            return true;
+        }
+        say(line);
+        return true;
+    }
+
+    /** The engine's voices, once it is ready; an empty list when there is no engine. */
+    static synchronized void voices(Context ctx, VoicesCallback cb) {
+        if (failed) { cb.done(new ArrayList<>()); return; }
+        start(ctx);
+        if (!ready) { askers.add(cb); return; }
+        cb.done(listVoices());
+    }
+
+    private static List<Voice> listVoices() {
+        List<Voice> out = new ArrayList<>();
+        try {
+            Set<Voice> all = tts.getVoices();
+            if (all != null) out.addAll(all);
+        } catch (Exception ignored) { /* an engine that cannot list them */ }
+        return out;
+    }
+
+    private static void start(Context ctx) {
         app = ctx.getApplicationContext();
-        Line line = new Line(text, lang == null ? "" : lang, rate > 0 ? rate : 1f, flush);
         if (tts == null) {
             tts = new TextToSpeech(app, status -> started(status));
             tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
@@ -65,13 +108,6 @@ final class SpeechCue {
                 @Override public void onStop(String id, boolean interrupted) { finished(id); }
             });
         }
-        if (!ready) {
-            if (flush) waiting.clear();
-            waiting.add(line);
-            return true;
-        }
-        say(line);
-        return true;
     }
 
     /** Stops speaking now and forgets what was waiting. */
@@ -88,6 +124,9 @@ final class SpeechCue {
         if (status != TextToSpeech.SUCCESS) {
             failed = true;
             waiting.clear();
+            List<VoicesCallback> cbs = new ArrayList<>(askers);
+            askers.clear();
+            for (VoicesCallback cb : cbs) cb.done(new ArrayList<>());
             return;
         }
         ready = true;
@@ -95,6 +134,12 @@ final class SpeechCue {
         List<Line> lines = new ArrayList<>(waiting);
         waiting.clear();
         for (Line l : lines) say(l);
+        List<VoicesCallback> cbs = new ArrayList<>(askers);
+        askers.clear();
+        if (!cbs.isEmpty()) {
+            List<Voice> vs = listVoices();
+            for (VoicesCallback cb : cbs) cb.done(vs);
+        }
     }
 
     private static void say(Line line) {
@@ -104,7 +149,15 @@ final class SpeechCue {
                 int ok = tts.setLanguage(loc);
                 if (ok == TextToSpeech.LANG_MISSING_DATA || ok == TextToSpeech.LANG_NOT_SUPPORTED) tts.setLanguage(new Locale(loc.getLanguage()));
             }
+            // The voice picked in Settings, after the language (setLanguage picks that language's
+            // default voice, which this then replaces). An unknown name keeps the default.
+            if (!line.voice.isEmpty()) {
+                for (Voice v : listVoices()) {
+                    if (line.voice.equals(v.getName())) { tts.setVoice(v); break; }
+                }
+            }
             tts.setSpeechRate(line.rate);
+            tts.setPitch(line.pitch);
             if (line.flush) open.clear();
             if (open.isEmpty() && focus == null) {
                 AudioManager am = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);

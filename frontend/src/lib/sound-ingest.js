@@ -89,11 +89,12 @@ export async function decodeToMono (file, { Offline = globalThis.OfflineAudioCon
  * A picked file → { media, blob, dur }: `media` a MediaRef of kind 'audio' (width and height 1)
  * and `blob` the WAV for the local store. Throws MediaError.
  */
-export async function ingestSoundFile (file, { decode = decodeToMono } = {}) {
+// `maxSec`: a shorter cut for a voice clip (lib/voice-clips.js CLIP_SEC).
+export async function ingestSoundFile (file, { decode = decodeToMono, maxSec = MAX_SEC } = {}) {
   if (!file) throw new MediaError('unreadable')
   if (file.size > RAW_MAX_MB * MB) throw new MediaError('too-large', { mb: RAW_MAX_MB })
   const mono = await decode(file)
-  const shaped = shapeSound(mono)
+  const shaped = shapeSound(mono, RATE, Math.min(MAX_SEC, maxSec))
   if (!shaped) throw new MediaError('silent')
   const wav = encodeWav(shaped)
   const blob = new Blob([wav], { type: 'audio/wav' })

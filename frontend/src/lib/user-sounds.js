@@ -32,11 +32,15 @@ const TONE_RE = /^u:[0-9a-f]{64}$/
 const cleanName = n => String(n ?? '').replace(/\s+/g, ' ').trim().slice(0, NAME_MAX)
 
 /** The profile's own sounds as they may be used: each with a usable WAV ref, ids unique, at most SOUNDS_MAX. */
+// A voice clip (lib/voice-clips.js) lives in the same list, marked with the moment it is for
+// (`voice`): it is not a sound for a slot, and never offered to the community library.
+export const isVoiceClip = e => !!e && typeof e === 'object' && typeof e.voice === 'string' && !!e.voice
+
 export function soundsOf (S) {
   const out = []
   const seen = new Set()
   for (const e of Array.isArray(S?.sounds) ? S.sounds : []) {
-    if (!e || typeof e !== 'object' || typeof e.id !== 'string' || !e.id || seen.has(e.id)) continue
+    if (!e || typeof e !== 'object' || typeof e.id !== 'string' || !e.id || seen.has(e.id) || isVoiceClip(e)) continue
     const m = normalizeMediaRef(e.m)
     if (!m || m.kind !== 'audio') continue
     seen.add(e.id)

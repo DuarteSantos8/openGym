@@ -193,11 +193,26 @@ export function toneNative(kind, { onSilent = false } = {}) {
 // anywhere it cannot (the web, an app from before v1.4.5, a failed call), for lib/speech.js to
 // use the page's own speechSynthesis instead. Never resolves with the plugin itself.
 // `flush`: cut off what is still being said first (a countdown number).
-export function speakNative(text, { lang = '', rate = 1, onSilent = false, flush = false } = {}) {
+// `voice`: a voice's id from voicesNative (Settings → Timer alerts → Voice), '' for the default;
+// `pitch` 0.5 to 2. An app from before v1.4.5's voice picker ignores both.
+export function speakNative(text, { lang = '', rate = 1, pitch = 1, voice = '', onSilent = false, flush = false } = {}) {
   if (!MOBILE || !text) return Promise.resolve(false)
   return restPlugin()
-    .then(plugin => (plugin ? plugin.RestAlert.speak({ text: String(text), lang: String(lang || ''), rate: Number(rate) || 1, onSilent: onSilent === true, flush: flush === true }).then(() => true) : false))
+    .then(plugin => (plugin ? plugin.RestAlert.speak({ text: String(text), lang: String(lang || ''), rate: Number(rate) || 1, pitch: Number(pitch) || 1, voice: String(voice || ''), onSilent: onSilent === true, flush: flush === true }).then(() => true) : false))
     .catch(() => false)
+}
+
+/**
+ * The phone's own voices: [{ id, name, lang, online }] (Android TextToSpeech.getVoices, the
+ * iPhone's AVSpeechSynthesisVoice.speechVoices). null where there is no such call (the web, an
+ * app from before v1.4.5): lib/speech.js then asks the page's speechSynthesis.
+ */
+export function voicesNative() {
+  if (!MOBILE) return Promise.resolve(null)
+  return restPlugin()
+    .then(plugin => (plugin ? plugin.RestAlert.voices() : null))
+    .then(res => (res && Array.isArray(res.voices) ? res.voices.filter(v => v && typeof v.id === 'string') : null))
+    .catch(() => null)
 }
 
 /** Stops whatever the phone is saying. */

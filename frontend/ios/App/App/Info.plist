@@ -104,7 +104,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Used to scan your gym membership QR code, to take progress photos and photos or videos of exercises you add yourself, and to film a set so you can check your form.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Used to record the sound of a video you take of an exercise you add yourself or of a set you film.</string>
+	<string>Used to record the sound of a video you take of an exercise you add yourself or of a set you film, and the voice clips you record for the rest timer.</string>
 	<key>BAAppGroupID</key>
 	<string>group.ch.opengym.app</string>
 	<key>BAHasManagedAssetPacks</key>

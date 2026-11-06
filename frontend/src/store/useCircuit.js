@@ -20,7 +20,7 @@ import { modeOf, supersetUnits } from '../lib/history.js'
 import { EXIDX } from '../lib/exercises.js'
 import { exerciseNameText } from '../lib/format.js'
 import { beep, chime, vibrate, unlock } from '../lib/sound.js'
-import { speak, speechRateOf, SPEECH_RATES } from '../lib/speech.js'
+import { speak, voiceOpts } from '../lib/speech.js'
 import { MOBILE } from '../lib/mobile.js'
 import { armRestAlert, disarmRestAlert } from '../lib/rest-alert.js'
 import { accentValue } from '../lib/accent.js'
@@ -58,7 +58,7 @@ export function circuitUnitAt(active, idx) {
 function say(text, opts) {
   const st = S()
   if (!text || st?.spokenCues !== true) return
-  speak(text, { rate: SPEECH_RATES[speechRateOf(st)] || 1, ...(opts || {}) })
+  speak(text, { ...voiceOpts(st), ...(opts || {}) })
 }
 
 // The session, written as the stations finish.
