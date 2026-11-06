@@ -110,6 +110,16 @@ test('scopedState: a category reads its keys, settings ride along, the never lis
   assert.deepEqual(readCategories({ workouts: 'view', plans: 'apply', notes: 'off' }), ['workouts', 'plans']);
 });
 
+test('scopedState: own sounds never, body facts only with body weight or measurements (v1.4.5)', () => {
+  const S = { ...doc(), sounds: [{ id: 's1', name: 'mine', m: { hash: 'a'.repeat(64) } }], heightCm: 181, birthYear: 1990, sex: 'female' };
+  const plans = scopedState(S, { plans: 'view' });
+  for (const k of ['sounds', 'heightCm', 'birthYear', 'sex']) assert.equal(k in plans, false, k);
+  const bw = scopedState(S, { bodyweight: 'view' });
+  assert.equal(bw.heightCm, 181); assert.equal(bw.sex, 'female'); assert.equal('sounds' in bw, false);
+  assert.equal(scopedState(S, { measurements: 'view' }).birthYear, 1990);
+  assert.throws(() => mergeScoped(S, { sounds: [] }, { workouts: 'apply' }), e => e.code === 'scope');
+});
+
 test('mergeScoped: writes what it may, ignores what it read back unchanged, refuses the rest', () => {
   const S = doc();
   const scopes = { workouts: 'apply', plans: 'view' };

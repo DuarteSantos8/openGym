@@ -165,6 +165,15 @@ test('projections show only the shared categories, without media or notes', () =
   assert.deepEqual(Object.keys(project(S, {}, { today: '2026-11-05' })).sort(), ['customEx', 'shared', 'unit']);
 });
 
+test('a body check-in note goes to the trainer only with notes shared (v1.4.5)', () => {
+  const S = { unit: 'kg', measurements: [{ d: '2026-11-01', bp: { sys: 120, dia: 80 }, note: 'cuff on the left', t: 1 }] };
+  const lv = { measurements: 'view', notes: 'off' };
+  const e = project(S, lv, { today: '2026-11-05' }).measurements.entries[0];
+  assert.deepEqual(e.bp, { sys: 120, dia: 80 });
+  assert.equal(e.note, undefined);
+  assert.equal(project(S, { ...lv, notes: 'view' }, { today: '2026-11-05' }).measurements.entries[0].note, 'cuff on the left');
+});
+
 test('the summary: streak, this week, flags only where their category is shared', () => {
   const S = {
     unit: 'kg', week: { 1: 'r1', 3: 'r1' }, routines: [{ id: 'r1', name: 'Push', ex: [] }],

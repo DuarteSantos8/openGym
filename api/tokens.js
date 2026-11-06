@@ -49,10 +49,14 @@ export const KEY_CATEGORY = {
   measurements: ['measurements'], customMeasurements: ['measurements'], measurementEnabled: ['measurements'],
   dayNotes: ['notes'], exNotes: ['notes'], gymNotes: ['notes'], journalFolders: ['notes'],
   recoverySessions: ['workouts'],
+  // Body facts the Tools page and the strength levels read (v1.4.5): personal, so not a setting
+  // that rides along with a plans-only token.
+  heightCm: ['bodyweight', 'measurements'], birthYear: ['bodyweight', 'measurements'], sex: ['bodyweight', 'measurements'],
 };
 // Never in a token's read, whatever it holds: pictures and videos (their own category, not
 // offered), the Coach's conversation, the live workout, linked services, and the server's notes.
-const NEVER = new Set(['dayPhotos', 'exMedia', 'dayForm', 'avatar', 'active', 'coach', 'integrations', '_unstamped', '_prior', 'deleted', 'edited', 'undone']);
+// Your own sounds (`sounds`, v1.4.5) are recordings of yours like the photos.
+const NEVER = new Set(['dayPhotos', 'exMedia', 'dayForm', 'avatar', 'sounds', 'active', 'coach', 'integrations', '_unstamped', '_prior', 'deleted', 'edited', 'undone']);
 const NEVER_RE = /photo|avatar|video|secret|token|password|integration/i;
 // What the server keeps itself and the token reads along with the document, never writes.
 const BOOK = new Set(['_rev', '_wid', '_wids', '_ts']);

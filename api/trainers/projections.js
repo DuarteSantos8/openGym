@@ -260,7 +260,8 @@ export function project(S, levels, { today, before = null, limit = 20, nutrition
   if (on(levels, 'measurements')) {
     out.measurements = {
       entries: records(S.measurements).filter(e => isISO(e.d)).sort((a, b) => (a.d < b.d ? -1 : 1)).slice(-200)
-        .map(e => { const { t, _ts, _f, _u, ...rest } = e; return rest; }),
+        // A check-in's own note (v1.4.5) is a note: it goes along only when notes are shared.
+        .map(e => { const { t, _ts, _f, _u, note, ...rest } = e; return on(levels, 'notes') && typeof note === 'string' && note ? { ...rest, note: str(note, 500) } : rest; }),
       custom: records(S.customMeasurements).map(c => ({ id: c.id, name: str(c.name, 60), ...(c.unit ? { unit: c.unit } : {}) })),
     };
   }
