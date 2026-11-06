@@ -3897,3 +3897,18 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .plan-folder[aria-expanded="true"] .chev{transform:rotate(90deg)}
 [dir="rtl"] .plan-folder[aria-expanded="false"] .chev{transform:rotate(180deg)}
 @media (prefers-reduced-motion:reduce){.plan-folder .chev{transition:none}}
+
+/* Tempo (#572, components/Tempo.jsx): the tag on an exercise, the picker's big readout and the
+   guide's stage. The phase tints the stage so a glance from the bench says lower or lift. */
+.tag.tempo-tag{border:0;font:inherit;font-size:var(--fs-caption);font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
+.tag.tempo-tag .icn{font-size:12px}
+.tempo-big{font-size:34px;font-weight:700;letter-spacing:.04em;text-align:center;margin:4px 0 12px;font-variant-numeric:tabular-nums;color:var(--label)}
+.tempo-stage{display:grid;place-items:center;gap:2px;min-height:168px;margin:6px 0 14px;padding:18px 12px;border-radius:18px;
+  background:var(--surface-2);text-align:center;transition:background-color .25s ease}
+.tempo-stage.ph-down{background:color-mix(in srgb,var(--blue) 18%,var(--surface-2))}
+.tempo-stage.ph-up{background:color-mix(in srgb,var(--green) 20%,var(--surface-2))}
+.tempo-stage.ph-bottom,.tempo-stage.ph-top{background:color-mix(in srgb,var(--orange) 16%,var(--surface-2))}
+.tempo-phase{font-size:var(--fs-title2);font-weight:700;color:var(--label)}
+.tempo-count{font-size:64px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;color:var(--label)}
+.tempo-sub{font-size:var(--fs-footnote);color:var(--label-2)}
+@media (prefers-reduced-motion:reduce){.tempo-stage{transition:none}}

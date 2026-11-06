@@ -1,3 +1,5 @@
+import { tempoSheet } from './components/Tempo.jsx'
+import { normalizeTempo, repSec } from './lib/tempo.js'
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
@@ -2623,6 +2625,8 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
         reps = range.reps
       }
       const out = { sets, mode: 'reps', reps, weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withSubs }
+      const tempo = normalizeTempo(c.tempo)
+      if (tempo) out.tempo = tempo
       // The list is the prescription; sets and reps follow it, so everything that reads the
       // flat target (a config sheet reopened with the toggle off, older builds) still makes sense.
       const list = pyramid ? normalizePyramid(c.pyramid, stride) : []
@@ -2918,6 +2922,12 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
           ? { ...x, pyramid: x.pyramidDraft || pyramidFromFlat(x), intensifier: undefined }
           : { ...x, ...flatFromPyramid(x.pyramid), pyramidDraft: x.pyramid, pyramid: undefined }))} />
       </Row>}
+      {/* Tempo (#572): seconds down, pause, up, squeeze, shown on the exercise in every workout
+          with a guide that counts it. Written only when set, so a slot without keeps its shape. */}
+      {mode === 'reps' && <Row icon="stopwatch" iconTint="var(--teal)" title={t('Tempo')}
+        subtitle={normalizeTempo(c.tempo) ? t('{0} s per rep, a guide in the workout counts it for you.', repSec(c.tempo)) : t('Like 3-1-1-0: three seconds down, one at the bottom, one up.')}
+        value={normalizeTempo(c.tempo) || t('None')} accessory="chevron"
+        onClick={() => tempoSheet({ value: normalizeTempo(c.tempo), onDone: v => setC(x => ({ ...x, tempo: v || undefined })) })} />}
     </div>}
     {/* A stepper is too wide to sit in a list row next to a label — it squeezes the text to
         one word per line — so added weight gets the same full-width treatment as sets and

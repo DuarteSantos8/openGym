@@ -72,10 +72,10 @@ const setTimbre = (ctx, o, name) => {
 // fades from there at once. `peak`, `hold` (the share of the tone kept at its peak before the
 // fade), `timbre` (one of TIMBRES; `bright: true` is the chime's) and `glide` (a frequency the
 // tone slides to by its end, for the whistle) exist for the end-of-rest sounds below.
-const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre = bright ? 'bright' : null, glide = 0 } = {}) => {
+const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre = bright ? 'bright' : null, glide = 0 } = {}, dest = null) => {
   const ctx = wake()
   const o = ctx.createOscillator(), g = ctx.createGain()
-  o.connect(g); g.connect(ctx.destination)
+  o.connect(g); g.connect(dest || ctx.destination)
   if (timbre && TIMBRES[timbre]) setTimbre(ctx, o, timbre); else o.type = 'sine'
   const t0 = ctx.currentTime + when
   o.frequency.value = freq
@@ -91,6 +91,21 @@ const tone = (freq, dur, when, { peak = 0.35, hold = 0, bright = false, timbre =
 export function beep(enabled, freq, dur, when) {
   if (!enabled) return
   try { tone(freq || 880, dur || 0.18, when || 0) } catch (e) { /* */ }
+}
+
+// A run of beeps queued at once ([freq, dur, when] each, `when` in seconds from now), all through
+// one gain node, so the whole run can be called off: the tempo guide (components/Tempo.jsx)
+// queues a set's every phase inside the Start tap, where it plays on the audio clock even with
+// the screen locked, and Stop takes it back. Answers the function that calls it off.
+export function queueTones(enabled, notes) {
+  if (!enabled || !Array.isArray(notes) || !notes.length) return () => {}
+  try {
+    const ctx = wake()
+    const bus = ctx.createGain()
+    bus.connect(ctx.destination)
+    for (const [freq, dur, when] of notes) tone(freq || 880, dur || 0.18, Math.max(0, when || 0), {}, bus)
+    return () => { try { bus.disconnect() } catch (e) { /* already gone */ } }
+  } catch (e) { return () => {} }
 }
 
 // The end of a rest or a hold (store/useUI.js). It used to be three of the beeps above and went

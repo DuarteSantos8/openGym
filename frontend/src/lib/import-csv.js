@@ -21,6 +21,7 @@
 // body-weight records are interesting here. parseBodyweight() scans for those without
 // building a DOM.
 
+import { normalizeTempo } from './tempo.js'
 import { EXDB, EXIDX, canonicalExId, isCardio as isCardioEx } from './exercises.js'
 import { uid } from './format.js'
 import { addWeighIn, readingsOf, hashId } from './weigh-ins.js'
@@ -125,6 +126,8 @@ const COLUMNS = [
   ['measurementType', ['measurement type']],
   ['value', ['value']],
   ['note', ['comment', 'comments', 'notes', 'note', 'exercise notes']],
+  // The lifting tempo of a set, "3-1-1-0" (ours writes it, #572).
+  ['tempo', ['tempo']],
 ]
 
 function mapHeader(header) {
@@ -806,6 +809,8 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       : isCardio
         ? { min: mins || 0, speed: mins > 0 ? Math.round(km / (mins / 60) * (own ? 100 : 10)) / (own ? 100 : 10) : 0, ...inclineFrom({ incline: clampIncline(num(cell(r, 'incline'))) }), ...levelFrom({ level: clampLevel(num(cell(r, 'level'))) }), done: true, ...(warmup ? { phase: 'warmup' } : {}) }
         : { w, r: reps || 0, done: true, u: rowUnit, ...(warmup ? { phase: 'warmup' } : {}) }
+    const tempo = !timed && !isCardio ? normalizeTempo(cell(r, 'tempo')) : null
+    if (tempo) set.tempo = tempo
     // A "failure" set type (Hevy's CSV writes one) is the app's set taken to failure; not on
     // cardio, which has no effort to read it as.
     if (!warmup && !isCardio && (/^(f|fail|failure)$/i.test(String(cell(r, 'setType') || '').trim()) || order === 'f')) set.failure = true
@@ -868,6 +873,7 @@ export function parseWorkoutRows(rows, map, source, { unit = 'kg', customEx = []
       }
       const row = { done: true, u: rowUnit, sides: { L: { w: 0, r: 0, done: false }, R: { w: 0, r: 0, done: false } }, _no: setNo, _sides: [side] }
       row.sides[side] = half
+      if (set.tempo) row.tempo = set.tempo
       if (set.phase) row.phase = set.phase
       if (set.failure) row.failure = true
       list.push(row)
