@@ -47,7 +47,7 @@ function rng (seed) {
 
 // Name words that are not the movement, so "barbell bench press" and "dumbbell bench press" read
 // as one movement and a session never gets both.
-const KIT = /\b(barbell|dumbbells?|cable|lever(age)?|machine|smith|band|kettlebell|ez|body ?weight|weighted|sled|assisted|seated|standing|lying|incline|decline|close[- ]grip|wide[- ]grip|v\.? ?\d|\(.*?\))\b/gi
+const KIT = /\b(barbell|dumbbells?|cable|lever(age)?|machine|smith|band|kettlebell|ez|body ?weight|weighted|sled|assisted|seated|standing|lying|close[- ]grip|wide[- ]grip|v\.? ?\d|\(.*?\))\b/gi
 const movementOf = e => String(e?.n || '').toLowerCase().replace(KIT, ' ').replace(/\s+/g, ' ').trim()
 
 /** How often each exercise was logged, and the last day it was. */
@@ -150,7 +150,8 @@ export function buildSession (S, { terms = [], minutes = 40, seed = 1, now = Dat
     const helpers = Object.keys(w).filter(m => w[m] > 0 && w[m] < 1 && tiredSet.has(m)).length
     const recent = !!last[e.id] && last[e.id] >= recentCut
     const familiar = everydayScore(e) + (isClassicEx(e) ? 3 : -4) - (ODD.test(name) ? 6 : 0)
-    const score = (favs.has(e.id) ? 10 : 0) + Math.min(6, n) * 2.5 + familiar * (n ? 0.5 : 1.6)
+    // What you already do leads: anything logged beats an unfamiliar staple, more often more so.
+    const score = (favs.has(e.id) ? 14 : 0) + (n ? 18 + Math.min(6, n) * 3 : 0) + familiar * (n ? 0.8 : 1.6)
       + (custom ? 4 : 0) + (main.length - 1) * 2 - helpers * 3 - (recent ? 5 : 0) + rand() * 4
     pool.push({ e, w, main, score, n, compound: COMPOUND.test(name) || main.length >= 2 })
   }
