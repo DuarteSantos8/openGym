@@ -101,6 +101,9 @@ ENV BASE_PATH=""
 # Above the API's own video cap (MEDIA_VIDEO_MAX_MB, 100 by default) so the API, which says why,
 # is the one that refuses a file — raise both together.
 ENV MEDIA_UPLOAD_MAX=112m
+# Where /mcp goes, the optional mcp container (docs/MCP_REMOTE.md).
+ENV MCP_BACKEND=mcp
+ENV MCP_PORT=3100
 # Sent on every page and file. Scripts run only from this origin, plus the one inline script in
 # frontend/index.html by its hash (src/lib/csp.test.js keeps the two in step). The only frame
 # allowed is the privacy-enhanced YouTube player (youtube-nocookie.com) an exercise's video link

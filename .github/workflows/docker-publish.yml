@@ -54,6 +54,10 @@ jobs:
           - image: web
             context: .
             file: ./web/Dockerfile
+          # The optional MCP-over-HTTPS container (docker-compose.yml profile `mcp`).
+          - image: mcp
+            context: .
+            file: ./mcp/Dockerfile
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
