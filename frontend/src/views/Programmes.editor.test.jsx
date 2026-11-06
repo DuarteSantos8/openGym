@@ -437,3 +437,20 @@ describe('fix round 1', () => {
     expect(rowOf('Back-off sets')).toBeUndefined()
   })
 })
+
+describe('fix round 2', () => {
+  it('"Use my current plan" on a running programme keeps how it counts its weeks, and says why', () => {
+    seed({ 1: ['r1'], 3: ['r2'] })
+    mocks.S.programmes.P = { ...def(), schedule: { mode: 'weeks', appts: [{ rid: 'r1' }, { rid: 'r2' }] } }
+    const adv = { onFailure: 'advance', onSkipped: 'advance' }
+    expect(startProgramme(mocks.S, 'P', { policies: Object.fromEntries(def().tracks.map(t => [t.id, adv])), end: 'stop', today: '2026-10-26', now: Date.now() })).toEqual({ ok: true })
+    // The plan is now the loop of its sessions: taking it over would make the programme a rotation.
+    expect(mocks.S.rotation.sequence).toEqual(['r1', 'r2'])
+    const before = structuredClone(def())
+    page()
+    click(rowOf('Use my current plan'))
+    expect(def()).toEqual(before)
+    expect(def().schedule.mode).toBe('weeks')
+    expect(mocks.toasts.at(-1)).toBe('Stop this programme before changing how it counts the weeks.')
+  })
+})

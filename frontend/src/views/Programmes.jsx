@@ -380,6 +380,7 @@ const weekWord = (p, n) => (p.schedule.mode === 'rotation' ? t('Round {0}', n) :
 
 // validateProgramme's reasons in plain words: the first that applies, else a general one.
 const REASONS = [
+  [/cannot change while the programme runs/, () => t('Stop this programme before changing how it counts the weeks.')],
   [/needs seed\./, () => t('Choose where this week starts.')],
   [/must say hold or reset/, () => t('Choose what happens at the top of the range.')],
   [/needs a deciding set/, () => t('Every set this week is AMRAP or to failure, so effort cannot decide progress.')],
@@ -499,7 +500,8 @@ function StageSheet({ id, trackId, stageId, close }) {
   const unit = occPh.parameters.load.unit || (S.unit === 'lb' ? 'lb' : 'kg')
   const bw = isBw({ ...occ, id: occ.exerciseId })
   const res = live.errors.length ? { errors: live.errors } : { ok: true }
-  const why = res.errors ? reasonOf(res.errors, one, { trackId, stageId }) : saveWhy
+  // A refusal at Save stands until the next change.
+  const why = res.errors ? reasonOf(res.errors, one, { trackId, stageId }) : saveWhy?.draft === draft ? saveWhy.why : null
   const target = next => setDraft(d => setTarget(d, trackId, stageId, sl.oid, typeof next === 'function' ? next(d.tracks[ti].stages.find(st => st.id === stageId).targets[sl.oid] ?? { own: 'inherit' }) : next))
   const phase = fn => target(cur => ({ ...cur, phase: fn(cur.phase) }))
   const params = patch => phase(ph => ({ ...ph, parameters: { ...ph.parameters, ...patch } }))
@@ -507,7 +509,7 @@ function StageSheet({ id, trackId, stageId, close }) {
   const rounds = draft.schedule.mode === 'rotation'
   const save = () => {
     const all = checkedEdit(S, draft)
-    if (all.errors) { setSaveWhy(reasonOf(all.errors, all.checked, { trackId, stageId })); return }
+    if (all.errors) { setSaveWhy({ draft, why: reasonOf(all.errors, all.checked, { trackId, stageId }) }); return }
     if (JSON.stringify(all.def) !== JSON.stringify(saved)) update(s => { saveProgramme(s, all.def) })
     close()
   }

@@ -813,3 +813,23 @@ describe('the editor, fix round 1', () => {
     expect(pairs.every(([a, b]) => checkedEdit(s, linkSlots(def, [a, b])).def)).toBe(true)
   })
 })
+
+describe('the editor, fix round 2', () => {
+  it('the running programme refuses a change of weeks into rounds (or back); a stopped one, or another, takes it', () => {
+    const s = state({ week: { 1: ['A'], 4: ['B'] } })
+    const def = withBlock(s)
+    const toRounds = d => setSchedule(d, { mode: 'rotation', sequence: ['A', 'B'] }, s)
+    expect(checkedEdit(s, toRounds(def)).def.schedule.mode).toBe('rotation')
+    start(s, '2026-10-19')
+    const refused = checkedEdit(s, toRounds(programmeById(s, 'P')))
+    expect(refused.def).toBeUndefined()
+    expect(refused.errors).toEqual(['schedule.mode cannot change while the programme runs'])
+    // The same mode with other sessions is an amend from the next week, as before; another programme is free.
+    expect(checkedEdit(s, setSchedule(programmeById(s, 'P'), { mode: 'weeks', appts: [{ rid: 'A', day: 1 }] }, s)).def).toBeTruthy()
+    expect(checkedEdit(s, toRounds({ ...def, id: 'Other' })).def.schedule.mode).toBe('rotation')
+    pauseProgramme(s, Date.parse('2026-10-20T10:00:00Z'))
+    expect(checkedEdit(s, toRounds(programmeById(s, 'P'))).errors).toEqual(['schedule.mode cannot change while the programme runs'])
+    endProgramme(s, '2026-10-21')
+    expect(checkedEdit(s, toRounds(programmeById(s, 'P'))).def.schedule.mode).toBe('rotation')
+  })
+})

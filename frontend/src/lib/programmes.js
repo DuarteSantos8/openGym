@@ -984,12 +984,18 @@ export const setTrackChoice = (def, trackId, { policy, refs, tm } = {}) => withT
  * What the editor may save of `def`: `{ def }` when it validates against today's routines, else
  * `{ errors, checked }` (validateProgramme's errors, about the definition `checked`) and nothing saved.
  * A repair it waits on stays: only confirmRepair, the person's own check, takes it away (spec 15.2).
+ * The running programme keeps how it counts (weeks or rounds): its run reads that from the
+ * definition frozen at its start (programme-run.js), so a change of it waits for the run to end.
  */
 export function checkedEdit(S, def) {
   const next = synced(def, S)
   const { errors } = validateProgramme(next, { routines: S?.routines || [] })
+  const v = programmeView(S)
+  if (v?.run.programmeId === next.id && ['running', 'paused'].includes(v.status) && next.schedule.mode !== v.run.def.schedule.mode) errors.push(COUNTING_LOCKED)
   return errors.length ? { errors, checked: next } : { def: next }
 }
+// checkedEdit's refusal of a change of weeks into rounds (or back) while the programme runs.
+const COUNTING_LOCKED = 'schedule.mode cannot change while the programme runs'
 
 /** The person checked what a repair asked (repairNotes): the programme no longer waits on it. */
 export function confirmRepair(def) {

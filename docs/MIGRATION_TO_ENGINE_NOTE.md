@@ -1072,8 +1072,8 @@ editor lists what to check (`repairNotes`, read again from `src`: per exercise, 
 programme asked and what it became; past 50 exercises, to remove a session or delete it) and only
 "I checked these" (`confirmRepair`) ends the wait. A running programme keeps how it counts (weeks or
 rounds): the run reads its mode from the definition frozen at its start, so `saveProgramme` refuses
-a change of `schedule.mode` while it runs or is paused, whatever the route, and a Coach programme
-change keeps the schedule it revises (only its weeks change). A recovery week needs its
+a change of `schedule.mode` while it runs or is paused, whatever the route (`checkedEdit` says why in
+the editor), and a Coach programme change keeps the schedule it revises (only its weeks change). A recovery week needs its
 sessions done (`close: 'completion'`) or passes with the week (`'calendar'`); a copied week keeps the
 cycle end of the week it lands on. Weeks the Coach set,
 and each track's `policy`, `tm` and `refs`, are never rebuilt by an edit of another week. The PR2
