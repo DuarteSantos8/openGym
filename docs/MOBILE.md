@@ -181,9 +181,10 @@ never stored.
   (`res/xml/backup_rules.xml`, `res/xml/data_extraction_rules.xml`): Auto Backup drops an
   app's whole backup past 25 MB, and a few videos would take the state file down with them. A
   device-to-device transfer keeps it. iOS includes Library in iCloud and computer backups.
-- **Permissions:** Android already has the camera. iOS asks for the camera
-  (`NSCameraUsageDescription`, now also for photos and videos of exercises and for filming a
-  set) and, to record a video with sound from the picker, the microphone
+- **Permissions:** Android already has the camera (Capacitor's WebView answers the progress-photo
+  camera's `getUserMedia` with it). iOS asks for the camera
+  (`NSCameraUsageDescription`, now also for photos and videos of exercises, for filming a
+  set and for the progress-photo camera) and, to record a video with sound from the picker, the microphone
   (`NSMicrophoneUsageDescription`).
 
 ### Filming a set

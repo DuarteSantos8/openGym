@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dayPhotosOf, readDayPhoto, addDayPhoto, removeDayPhoto, restoreDayPhoto, serverTakesDayPhotos, fileProgressPhoto, workoutOn } from './day-photos.js'
+import { dayPhotosOf, readDayPhoto, addDayPhoto, removeDayPhoto, restoreDayPhoto, serverTakesDayPhotos, fileProgressPhoto, workoutOn, moveProgressPhoto } from './day-photos.js'
 import { referencedHashes, referencedFiles, WORKOUT_MEDIA_MAX } from './media-refs.js'
 import { mergeStates, STAMPED_MAPS } from './sync-merge.js'
 
@@ -90,5 +90,56 @@ describe('kept, synced and merged like every other photo', () => {
     const a = state({ _ts: 10, workouts: [{ id: 'w', d: '2026-10-02', start: 1, entries: [], _ts: 10 }] })
     const b = state({ _ts: 20 })
     expect('dayPhotos' in mergeStates(a, b)).toBe(false)
+  })
+})
+
+/* #940: the day of a photo already added can be changed. It moves by the rule a new photo goes
+   by, and lands in its new place before it leaves the old one. */
+describe('moving a photo to another day', () => {
+  const wk = (id, d, media = []) => ({ id, d, start: 1, entries: [], media })
+  const entryOf = (S, h) => ({ d: S.dayPhotos[h].d, m: S.dayPhotos[h].m, day: true })
+  it('a day photo to a day without a workout keeps its entry, with the new day and a new stamp', () => {
+    const S = state()
+    addDayPhoto(S, '2026-10-02', photo(H(1)), 5)
+    expect(moveProgressPhoto(S, entryOf(S, H(1)), '2026-09-30', { now: 8 })).toBe('day')
+    expect(S.dayPhotos[H(1)]).toEqual({ d: '2026-09-30', m: photo(H(1)), _ts: 8 })
+  })
+  it('a day photo to a day with a workout goes onto the workout, and the day entry is cleared', () => {
+    const S = state({ workouts: [wk('w1', '2026-09-30')] })
+    addDayPhoto(S, '2026-10-02', photo(H(1)), 5)
+    expect(moveProgressPhoto(S, entryOf(S, H(1)), '2026-09-30', { now: 8 })).toBe('workout')
+    expect(S.workouts[0].media.map(m => m.hash)).toEqual([H(1)])
+    expect(S.dayPhotos[H(1)]).toEqual({ _ts: 8 })
+  })
+  it('a workout photo to a quiet day is filed under it and comes off the workout', () => {
+    const S = state({ workouts: [wk('w1', '2026-10-01', [photo(H(1)), photo(H(2))])] })
+    expect(moveProgressPhoto(S, { d: '2026-10-01', w: S.workouts[0], m: photo(H(1)) }, '2026-09-20', { now: 9 })).toBe('day')
+    expect(S.workouts[0].media.map(m => m.hash)).toEqual([H(2)])
+    expect(S.dayPhotos[H(1)]).toMatchObject({ d: '2026-09-20', _ts: 9 })
+  })
+  it('a workout photo stays put where the server cannot keep day photos', () => {
+    const S = state({ workouts: [wk('w1', '2026-10-01', [photo(H(1))])] })
+    expect(moveProgressPhoto(S, { d: '2026-10-01', w: S.workouts[0], m: photo(H(1)) }, '2026-09-20', { canDay: false })).toBe('no-room')
+    expect(S.workouts[0].media.map(m => m.hash)).toEqual([H(1)])
+    expect(S.dayPhotos).toBeUndefined()
+  })
+  it('a workout photo to another workout with room moves across; a full one sends it under the day', () => {
+    const full = Array.from({ length: WORKOUT_MEDIA_MAX }, (_, i) => photo(H(i + 3)))
+    const S = state({ workouts: [wk('w1', '2026-10-01', [photo(H(1)), photo(H(2))]), wk('w2', '2026-10-03'), wk('w3', '2026-10-04', full)] })
+    expect(moveProgressPhoto(S, { d: '2026-10-01', w: S.workouts[0], m: photo(H(1)) }, '2026-10-03')).toBe('workout')
+    expect(S.workouts[1].media.map(m => m.hash)).toEqual([H(1)])
+    expect(moveProgressPhoto(S, { d: '2026-10-01', w: S.workouts[0], m: photo(H(2)) }, '2026-10-04')).toBe('day')
+    expect(S.workouts[0].media || []).toEqual([])
+    expect(S.workouts[2].media).toHaveLength(WORKOUT_MEDIA_MAX)
+    expect(S.dayPhotos[H(2)].d).toBe('2026-10-04')
+  })
+  it('the same day, a bad day or a bad photo changes nothing', () => {
+    const S = state()
+    addDayPhoto(S, '2026-10-02', photo(H(1)), 5)
+    const before = structuredClone(S)
+    expect(moveProgressPhoto(S, entryOf(S, H(1)), '2026-10-02')).toBe('same')
+    expect(moveProgressPhoto(S, entryOf(S, H(1)), 'soon')).toBe('invalid')
+    expect(moveProgressPhoto(S, { d: '2026-10-02', m: { hash: 'x' }, day: true }, '2026-10-01')).toBe('invalid')
+    expect(S).toEqual(before)
   })
 })
