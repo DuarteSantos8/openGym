@@ -3,9 +3,8 @@
   "name": "band rear delt row",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids",
     "biceps"

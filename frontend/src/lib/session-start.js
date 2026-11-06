@@ -151,6 +151,12 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   // (progression.js readSession) holds each set to its own weight even after the plan changes.
   if (backoffStep) target.backoffStep = backoffStep
   else delete target.backoffStep
+  // Undulating's day (progression.js DUP_DAYS): the next session reads it to pick the day after.
+  if (Number.isInteger(plan.dup)) target.dup = plan.dup
+  else delete target.dup
+  // Shorter rests (density): the rest this session runs on, which the next one steps down from.
+  // "No timer" on the exercise stays no timer.
+  if (plan.rest > 0 && !target.restOff) target.restSec = plan.rest
   // Rows that opened at last session's reps rather than the plan's ("Your last session", and no
   // policy that decided reps), so the workout card can say where the number came from. Written
   // only when true, and never saved with the finished workout.

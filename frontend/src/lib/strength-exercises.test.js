@@ -183,7 +183,7 @@ describe('strengthExerciseRowsForMuscle', () => {
     expect(benchRow.weight).toBe(1)
     expect(benchRow.primary).toBe('chest')
     expect(flyRow.weight).toBe(0.4)
-    expect(flyRow.primary).toBe('deltoids')
+    expect(flyRow.primary).toBe('front-delts') // a generic shoulder leads with the front head
     expect(flyRow.decay).toBe(1) // chest is at full retention
     expect(flyRow.current).toBe(28)
   })
@@ -222,7 +222,7 @@ describe('primaryMuscleOf', () => {
   it('prefers the catalogue, then the logged snapshot, and handles missing metadata', () => {
     expect(primaryMuscleOf({ id: 'bench', muscleWeights: {} }).slug).toBe('chest') // catalogue wins
     expect(primaryMuscleOf({ muscleWeights: { chest: 1, triceps: 0.4 } }).slug).toBe('chest') // snapshot fallback
-    expect(primaryMuscleOf({ tg: 'back', mg: 'biceps' }).slug).toBe('upper-back') // canonicalised
+    expect(primaryMuscleOf({ tg: 'back', mg: 'biceps' }).slug).toBe('lats') // canonicalised: the old "Lats & upper back" reads as both, the lats first
     expect(primaryMuscleOf({})).toBeNull()
     expect(primaryMuscleOf(null)).toBeNull()
   })

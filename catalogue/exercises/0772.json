@@ -4,10 +4,11 @@
   "bodyPart": "shoulders",
   "equipment": "smith machine",
   "machineKind": "smith",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A standing overhead press with the smith bar lowered behind the head. It builds the shoulders and triceps and needs good shoulder mobility.",
@@ -24,13 +25,14 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

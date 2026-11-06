@@ -3,13 +3,14 @@
   "name": "barbell overhead carry",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "upper back",
     "trapezius",
-    "glutes"
+    "glutes",
+    "side delts"
   ],
   "category": "strength",
   "description": "Walking while holding a barbell locked out overhead. It trains shoulder stability and whole-body bracing.",

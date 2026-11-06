@@ -3,11 +3,12 @@
   "name": "dumbbell face down lying shoulder press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper back",
-    "rear deltoids"
+    "rear delts",
+    "side delts"
   ],
   "category": "strength",
   "description": "A face down press on an incline bench that works the rear shoulder.",

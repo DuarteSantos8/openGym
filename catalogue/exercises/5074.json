@@ -3,11 +3,12 @@
   "name": "landmine press",
   "bodyPart": "shoulders",
   "equipment": "landmine",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "upper chest",
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "Press the end of an angled barbell up and forward. The arc is friendly to the shoulder and trains pressing and trunk stability.",

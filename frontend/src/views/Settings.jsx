@@ -16,6 +16,7 @@ import { ACCENTS, ACCENT_NAMES, todayISO, localTZ, weekStartOf, MONDAY, SUNDAY, 
 import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
+import { activeProfile as activeEquipment, benchKindOf, withBench, profileEquipment, ACC_V } from '../lib/equipment.js'
 import { effortOf } from '../lib/history.js'
 import NewExDefaultsSheet, { newExLine } from '../components/NewExDefaultsSheet.jsx'
 import { figureOf } from '../lib/exercises.js'
@@ -477,7 +478,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     reminders: () => (S.reminder?.on ? (S.reminder.time || DEF.reminder?.time || '') : t('Off')),
     plan: () => (mode === 'rotation' ? t('Rotation') : t('Fixed Week')) + ' · ' + shortWeekday(weekStartOf(S) === SUNDAY ? 0 : 1),
     units: () => (S.unit || 'kg') + ' · ' + (LANGS[lang] || lang),
-    equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : ownsNoDumbbells(S) ? t('Everything but dumbbells') : t('Everything')),
+    equipment: () => (S.equipFilterOn && activeProfile ? activeProfile.name : activeEquipment(S)?.name || t('Everything')),
     look: () => themeLabel + ' · ' + accentLabel(S),
     modules: () => { const p = presetOf(S); return p === 'custom' ? t('Custom') : presetCopy()[p][0] },
     coach: () => (coachLocal?.mode === 'server' ? t('Your server') : coachLocal?.mode === 'byok' ? t('Your API key') : t('Off')),
@@ -1850,6 +1851,12 @@ function profileLine(p) {
 function EquipmentCard({ S, update }) {
   const toast = useUI(s => s.toast)
   const profiles = S.equipProfiles || []
+  const setBench = kind => update(s => {
+    const p = s.equipFilterOn ? (s.equipProfiles || []).find(x => x.id === s.activeEquipId) : null
+    if (p) { p.equipment = withBench(profileEquipment(p), kind); p.accV = ACC_V }
+    // Kept as a value even when it is the default, so the change wins a sync like any setting.
+    else s.bench = kind
+  })
   // Each profile is a gym with its own plates, dumbbells, bars and stacks (#808, lib/gym-inventory.js);
   // the rows below edit the active one's, and switching here switches all of it.
   const gym = activeGym(S)
@@ -1895,6 +1902,15 @@ function EquipmentCard({ S, update }) {
     <Row icon="plate" iconTint="var(--orange)" title={t('Plates')} subtitle={plateSummary} accessory="chevron" onClick={() => plateInventorySheet()} />
     <Row icon="dumbbell" iconTint="var(--teal)" title={t('Dumbbells')} subtitle={dumbbellSummary} accessory="chevron" onClick={() => dumbbellInventorySheet()} />
     <Row icon="barbell" iconTint="var(--blue)" title={t('Your bars')} subtitle={barSummary} accessory="chevron" onClick={() => barDefaultsSheet()} />
+    {/* Flat or adjustable (1.4.5): incline and decline work needs a bench that tilts. With a
+        profile filtering, it is that gym's bench; without one, a switch of its own like the
+        dumbbells' (lib/equipment.js benchKindOf). */}
+    <SelectRow icon="bench" iconTint="var(--purple)" title={t('Bench')} sheetTitle={t('Bench')} value={benchKindOf(S)} onChange={setBench}
+      options={[
+        { value: 'adjustable', label: t('Adjustable'), subtitle: t('Flat, incline and decline. Everything goes.') },
+        { value: 'flat', label: t('Flat only'), subtitle: t('No incline or decline work in the library or the Coach’s picks.') },
+        { value: 'none', label: t('No bench'), subtitle: t('Bench work stays out of the library until you get one.') },
+      ]} />
     {profiles.length > 0 && <Row icon="kettlebell" iconTint="var(--acc)" title={t('Filter by equipment')}>
       <Switch checked={!!S.equipFilterOn} onChange={v => update(s => { s.equipFilterOn = v })} />
     </Row>}

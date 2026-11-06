@@ -400,7 +400,11 @@ export function createMediaSync(deps = {}) {
       const ids = new Set()
       ;(S?.routines || []).forEach(r => (r?.ex || []).forEach(e => { if (e?.id) ids.add(e.id) }))
       ;(S?.active?.entries || []).forEach(en => { if (en?.id) ids.add(en.id) })
-      const used = { customEx: (S?.customEx || []).filter(c => c && ids.has(c.id)) }
+      const used = {
+        customEx: (S?.customEx || []).filter(c => c && ids.has(c.id)),
+        // Your own picture on a planned built-in exercise is what its card shows: fetched early too.
+        exMedia: Object.fromEntries(Object.entries(S?.exMedia && typeof S.exMedia === 'object' ? S.exMedia : {}).filter(([id]) => ids.has(id))),
+      }
       const withMedia = (Array.isArray(S?.workouts) ? S.workouts : []).filter(w => (Array.isArray(w?.media) && w.media.length) || hasSetMedia(w))
       // Set videos count as workouts with media too; one kept on the phone that filmed it is never
       // asked for (uploadableFiles).
@@ -423,7 +427,7 @@ export function createMediaSync(deps = {}) {
     const schedule = () => { clearTimeout(timer); timer = setTimeout(runPrefetch, delay) }
     let seen = store.getState().S
     const unsub = store.subscribe(s => {
-      if (s.S?.routines === seen?.routines && s.S?.active === seen?.active && s.S?.customEx === seen?.customEx && s.S?.workouts === seen?.workouts) return
+      if (s.S?.routines === seen?.routines && s.S?.active === seen?.active && s.S?.customEx === seen?.customEx && s.S?.exMedia === seen?.exMedia && s.S?.workouts === seen?.workouts) return
       seen = s.S
       schedule()
     })

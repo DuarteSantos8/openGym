@@ -7,6 +7,16 @@ import Icon from './Icon.jsx'
 import CustomMedia, { CustomThumb, LinkCard } from './CustomMedia.jsx'
 import { youtubeId, youtubeLinks } from '../lib/youtube.js'
 import { useAnimSources } from './Animations.jsx'
+import { OwnMediaFlip } from './OwnExerciseMedia.jsx'
+import { exMediaOf } from '../lib/ex-media.js'
+
+// Your own photo or video on this built-in exercise (lib/ex-media.js), or null. The raw entry is
+// selected, then read, so the store hands back the same value until it changes.
+function useOwnMedia(ex) {
+  const id = ex && !isCustomEx(ex) ? ex.id : null
+  const entry = useStore(s => (id ? s.S.exMedia?.[id] : undefined))
+  return id && entry ? exMediaOf({ exMedia: { [id]: entry } }, id) : null
+}
 
 // An exercise's picture, wherever one shows. A custom exercise goes to CustomMedia.jsx — its own
 // photo, GIF, video or link, from the local media store — and never through imgSrc/gifSrc, which
@@ -15,9 +25,15 @@ import { useAnimSources } from './Animations.jsx'
 export default function Media(p) {
   const size = useStore(s => s.S.gifSize)
   const custom = isCustomEx(p.ex)
+  const own = useOwnMedia(p.ex)
   const links = youtubeLinks(p.notes).filter(url => !custom || youtubeId(url) !== youtubeId(p.ex?.url))
+  // Yours or the animation, whichever the exercise shows first, with a switch on the picture.
+  const flip = own && p.ex?.gif ? <OwnMediaFlip exId={p.ex.id} showing={own.show} /> : null
   return <>
-    {custom ? <CustomMedia {...p} /> : <BuiltinMedia {...p} />}
+    {custom ? <CustomMedia {...p} />
+      : own && (own.show === 'own' || !p.ex?.gif)
+        ? <div className="own-wrap"><CustomMedia {...p} ex={{ ...p.ex, custom: true, media: own.m, url: undefined }} />{flip}</div>
+        : own ? <div className="own-wrap"><BuiltinMedia {...p} />{flip}</div> : <BuiltinMedia {...p} />}
     {(!p.minimizable || size !== 'off') && links.map(url => <LinkCard key={url} url={url} compact={p.compact} mini={p.minimizable && size === 'mini'} />)}
   </>
 }
@@ -174,6 +190,8 @@ export function autoplayClip(el) {
 // broken-image glyph in a list of them (#281). The failure is remembered per image, so a list
 // that re-renders does not ask again; a new exercise in the same slot tries its own.
 export function Thumb(p) {
+  const own = useOwnMedia(p.ex)
+  if (own && own.show === 'own') return <CustomThumb ex={{ custom: true, media: own.m }} />
   return isCustomEx(p.ex) ? <CustomThumb {...p} /> : <BuiltinThumb {...p} />
 }
 function BuiltinThumb({ ex }) {

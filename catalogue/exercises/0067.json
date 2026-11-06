@@ -3,11 +3,12 @@
   "name": "barbell one arm snatch",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "traps",
     "forearms",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "olympic",
   "description": "A one-handed snatch that takes the bar from the floor to overhead in one fast pull. Needs power and coordination.",
@@ -28,7 +29,7 @@
       "gluteal",
       "hamstring",
       "trapezius",
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "calves",
@@ -36,7 +37,8 @@
       "triceps",
       "lower-back",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

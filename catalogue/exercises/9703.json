@@ -3,12 +3,13 @@
   "name": "kettlebell z press",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "core",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press done seated on the floor with legs straight. It removes leg drive and challenges the core.",

@@ -4,9 +4,8 @@
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
   "machineKind": "pec-deck",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids"
   ],

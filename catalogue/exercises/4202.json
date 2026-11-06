@@ -3,11 +3,12 @@
   "name": "landmine resistance band one arm shoulder press",
   "bodyPart": "shoulders",
   "equipment": "landmine",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "One arm landmine press with a band.",

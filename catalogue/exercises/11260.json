@@ -3,12 +3,13 @@
   "name": "cable kneeling military press v. 3",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
     "core",
-    "glutes"
+    "glutes",
+    "side delts"
   ],
   "category": "strength",
   "description": "A kneeling overhead press with cables. The position keeps your legs out of it, so the shoulders do the work.",

@@ -4,10 +4,10 @@
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
   "machineKind": "lateral-raise",
-  "target": "delts",
+  "target": "side delts",
   "secondaryMuscles": [
     "trapezius",
-    "rear deltoids"
+    "rear delts"
   ],
   "category": "strength",
   "description": "Plate-loaded machine raise that targets the side of the shoulders.",

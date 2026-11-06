@@ -20,6 +20,7 @@ import { beep, vibrate } from './lib/sound.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
 import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions } from './lib/starter.js'
+import OwnExerciseMedia from './components/OwnExerciseMedia.jsx'
 import Media, { Thumb } from './components/Media.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
@@ -53,7 +54,7 @@ import { suggestedSubstitutes, relatedSubstitutes } from './lib/exercise-substit
 import { backupSuggestions } from './lib/backup-suggestions.js'
 import { refusalsFor, markUsed } from './lib/session-targets.js'
 import { isGymSplit, brandAt, withExGym, currentGymId, cleanBrand, BRAND_MAX, placesOf, onlyPlace } from './lib/gym-split.js'
-import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle } from './lib/muscles.js'
+import { exerciseMuscleSnapshot, loadOfWorkouts, MUSCLES, MUSCLE_NAME, muscleWeightsOf, muscleGroupsOf, hasExplicitMuscleMetadata, inMuscleOrder, canonicalMuscle, MUSCLE_MODEL } from './lib/muscles.js'
 import { mergeImport, importHasWeighIn } from './lib/import-csv.js'
 import { addWeighIn, editWeighIn, removeWeighIn, restoreWeighIn, readingsOf, readingTime, allReadings, defaultTimeFor, cleanTime, timeOf, dailyModeOf, DEFAULT_TIME } from './lib/weigh-ins.js'
 import { parseImportFile, mergeImportedRoutines, freshRoutines } from './lib/import-apps.js'
@@ -72,7 +73,7 @@ import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep, parseWeightList } from './lib/dumbbells.js'
 import { nextStep } from './lib/weight-step.js'
-import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS } from './lib/progression.js'
+import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS, DENSITY_FLOOR, dupReps } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { isBackoff, backoffWeights } from './lib/backoff.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
@@ -1528,6 +1529,9 @@ function ExerciseDetail({ ex, close }) {
       })}
     </div>
     <ExerciseAliasesEditor key={ex.id} ex={ex} />
+    {/* Your own photo or video on a built-in exercise (#259, #534): shown instead of the animation
+        or beside it, private to your account (components/OwnExerciseMedia.jsx). */}
+    <OwnExerciseMedia ex={ex} />
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {/* One line of text that wraps as a sentence: as a flex row, the last session became a
         separate column beside "Best: 105 kg" once it wrapped (design review 1.4.5). */}
@@ -1737,14 +1741,18 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     if ('media' in patch) { setMedia(patch.media); setMediaTouched(true) }
     if ('url' in patch) setUrl(patch.url)
   }
+  // Saved before the 1.4.5 split (#638, no `mv: 2`): "Lats & upper back" was one muscle, so it
+  // opens as both. A plain "Shoulders" stays as it is, a chip of its own until it is swapped for a head.
+  const legacyEx = !!existing && existing.mv !== MUSCLE_MODEL
+  const fromLegacy = list => (legacyEx ? [...new Set(list.flatMap(m => (m === 'upper-back' ? ['lats', 'upper-back'] : [m])))] : list)
   const [primaries, setPrimaries] = useState(() => {
-    if (existing && Array.isArray(existing.primaries) && existing.primaries.length) return [...existing.primaries]
+    if (existing && Array.isArray(existing.primaries) && existing.primaries.length) return fromLegacy([...existing.primaries])
     if (existing?.bp === 'cardio') return ['cardiovascular system']
     const norm = hasExplicitMuscleMetadata(existing || {}) ? muscleGroupsOf(existing || {}) : []
     return norm.length ? [norm[0]] : []
   })
   const [secondaries, setSecondaries] = useState(() => {
-    if (existing && Array.isArray(existing.primaries) && existing.primaries.length) return [...(existing.secondaries || [])]
+    if (existing && Array.isArray(existing.primaries) && existing.primaries.length) return fromLegacy([...(existing.secondaries || [])])
     const norm = hasExplicitMuscleMetadata(existing || {}) ? muscleGroupsOf(existing || {}) : []
     return norm.slice(1)
   })
@@ -1753,6 +1761,8 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   // muscles are stored. The taps are the only record of the user's own order, and they decide the
   // target when the one the exercise had is un-ticked.
   const [primaryTaps, setPrimaryTaps] = useState([])
+  // The map's muscles, plus the whole shoulder while an older exercise still names it.
+  const chipMuscles = [...primaries, ...secondaries].includes('deltoids') ? inMuscleOrder([...MUSCLES, 'deltoids']) : MUSCLES
   const togglePrimary = value => {
     setPrimaryTaps(current => [...current, value])
     setPrimaries(current => current.includes(value) ? current.filter(m => m !== value) : [...current, value])
@@ -1794,11 +1804,12 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     }
     if (existing) update(s => { const c = (s.customEx || []).find(x => x.id === id); if (c) {
       c.n = name; c.bp = bp; c.desc = d; c.tg = tg; c.sm = sm; c.muscleGroups = groups; c.primaries = prim; c.secondaries = sm; c.eq = eq
+      c.mv = MUSCLE_MODEL
       extra(c)
     } })
     else {
       id = 'c' + uid()
-      update(s => { const c = { id, n: name, bp, desc: d, tg, sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq, custom: true }; extra(c); (s.customEx = s.customEx || []).push(c) })
+      update(s => { const c = { id, n: name, bp, desc: d, tg, sm, muscleGroups: groups, primaries: prim, secondaries: sm, eq, custom: true, mv: MUSCLE_MODEL }; extra(c); (s.customEx = s.customEx || []).push(c) })
     }
     // The file goes to the server now rather than after the state's own debounce: another device
     // that sees the reference first shows a tile until it arrives.
@@ -1825,12 +1836,12 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     {bp && <>
       {bp !== 'cardio' && <MultiSelectRow title={t('Primary muscle groups')} sheetTitle={t('Primary muscle groups')}
         values={primaries}
-        options={MUSCLES.map(m => ({ value: m, label: t(MUSCLE_NAME[m]) }))}
+        options={chipMuscles.map(m => ({ value: m, label: t(MUSCLE_NAME[m]) }))}
         onToggle={togglePrimary} noneLabel={t('No explicit muscle group')} doneLabel={t('Done')} />
       }
       <MultiSelectRow title={t('Additional muscle groups')} sheetTitle={t('Additional muscle groups')}
         values={secondaries}
-        options={MUSCLES.filter(m => !primaries.includes(m)).map(m => ({ value: m, label: t(MUSCLE_NAME[m]) }))}
+        options={chipMuscles.filter(m => !primaries.includes(m)).map(m => ({ value: m, label: t(MUSCLE_NAME[m]) }))}
         onToggle={toggleSecondary} noneLabel={t('No explicit muscle group')} doneLabel={t('Done')} />
     </>}
     {bp === 'cardio' && <div className="small dim row" style={{ marginBottom: 10, gap: 5 }}><Icon name="figureRun" style={{ fontSize: 'var(--fs-footnote)' }} />{t('Cardio exercises log time + speed instead of weight × reps.')}</div>}
@@ -2296,7 +2307,7 @@ const backoffOffered = (c, mode, ex, bw) => mode === 'reps' && !bw && !isAssiste
 
 // Double and triple progression both climb a rep range (`repsMin`..`reps`), so the sheet keeps it
 // normalised for either.
-const climbsRange = policy => policy === 'double' || policy === 'triple'
+const climbsRange = policy => policy === 'double' || policy === 'steady' || policy === 'triple'
 // Triple progression's set ceiling while it is being edited: never below the starting sets.
 const setsMaxOf = c => Math.max(Math.max(1, Math.round(c.sets) || 1), Math.min(MAX_TRIPLE_SETS, Math.round(c.setsMax) || 0))
 
@@ -2304,7 +2315,9 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
   // Triple progression adds sets and then load. Bodyweight work with nothing added already climbs
   // reps and then sets on its own (the rep ceiling below), and has no load to finish the cycle
   // with, so it is not offered there.
-  const options = (POLICIES_FOR[mode] || ['off']).filter(p => p !== 'triple' || !bw || c.weight > 0 || c.prog === 'triple')
+  // Undulating days and shorter rests move a load too, so the same holds for them.
+  const LOADED_ONLY = ['triple', 'undulating', 'density']
+  const options = (POLICIES_FOR[mode] || ['off']).filter(p => !LOADED_ONLY.includes(p) || !bw || c.weight > 0 || c.prog === p)
   if (options.length < 2) return null
   const inherited = policyFor({ id: ex.id }, routine, mode, fallback)
   // Freestyle has no routine to follow (#910). An exercise added there opens at what you did last
@@ -2376,6 +2389,13 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
         onChange={v => setC(x => ({ ...x, setsMax: v }))} />}
       {epleyEligible && <Stepper label={t('Deload 1RM (%)')} value={deloadPercent} step={5} min={50} max={95} decimal={false}
         onChange={v => setC(x => ({ ...x, deloadFactor: Number(v) / 100 }))} />}
+      {/* Shorter rests stop at this floor; the start is the exercise's own rest (or the default). */}
+      {active === 'density' && <Stepper label={t('Rest down to (s)')} value={c.restMin ?? DENSITY_FLOOR} step={15} min={15} max={600} decimal={false}
+        onChange={v => setC(x => ({ ...x, restMin: v }))} />}
+    </div>}
+    {/* What the three undulating days ask for, from the reps above. */}
+    {active === 'undulating' && mode === 'reps' && <div className="small dim" style={{ marginTop: -8, marginBottom: 18 }}>
+      {t('Medium {0} reps · heavy {1} · light {2}', dupReps({ ...c, id: ex.id }, 'medium'), dupReps({ ...c, id: ex.id }, 'heavy'), dupReps({ ...c, id: ex.id }, 'light'))}
     </div>}
     {invalid && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: -10, marginBottom: 18 }}>
       {t('Enter a positive step to use this progression rule.')}
@@ -2557,6 +2577,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     if (mode === 'reps' && !bw && (activePolicy === 'linear' || climbsRange(activePolicy))) {
       const deloadFactor = Math.max(0.5, Math.min(0.95, Number(c.deloadFactor) || 0.9))
       if (deloadFactor !== 0.9) prog.deloadFactor = deloadFactor
+    }
+    // Shorter rests: the floor, only when it is not the default.
+    if (mode === 'reps' && activePolicy === 'density') {
+      const restMin = Math.max(15, Math.min(600, Math.round(Number(c.restMin)) || DENSITY_FLOOR))
+      if (restMin !== DENSITY_FLOOR) prog.restMin = restMin
     }
     // Written only when it differs from what the dataset already says, so a barbell config
     // stays exactly the shape it was before these flags existed.

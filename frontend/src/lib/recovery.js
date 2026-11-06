@@ -52,8 +52,8 @@ const FATIGUE_HL_24H = 24 * 60 * 60 * 1000
 const FATIGUE_HL_30H = 30 * 60 * 60 * 1000
 const FATIGUE_HL_48H = 48 * 60 * 60 * 1000
 const FATIGUE_HL_BY_MUSCLE = {
-  trapezius: FATIGUE_HL_30H, deltoids: FATIGUE_HL_24H, chest: FATIGUE_HL_30H,
-  'upper-back': FATIGUE_HL_30H, serratus: FATIGUE_HL_24H,
+  trapezius: FATIGUE_HL_30H, deltoids: FATIGUE_HL_24H, 'front-delts': FATIGUE_HL_24H, 'side-delts': FATIGUE_HL_24H, 'rear-delts': FATIGUE_HL_24H,
+  chest: FATIGUE_HL_30H, lats: FATIGUE_HL_30H, 'upper-back': FATIGUE_HL_30H, serratus: FATIGUE_HL_24H,
   biceps: FATIGUE_HL_24H, triceps: FATIGUE_HL_24H, forearm: FATIGUE_HL_24H,
   abs: FATIGUE_HL_24H, obliques: FATIGUE_HL_24H, 'lower-back': FATIGUE_HL_48H,
   gluteal: FATIGUE_HL_48H, quadriceps: FATIGUE_HL_48H, hamstring: FATIGUE_HL_48H,

@@ -3,7 +3,7 @@
   "name": "barbell rear delt row",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
     "rhomboids",

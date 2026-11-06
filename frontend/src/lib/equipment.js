@@ -8,17 +8,27 @@ import { machineKindOf, profileMachines, NO_MACHINE } from './machine-kinds.js'
 // Mostly read off the exercise name instead of stored on 1,300 rows; the ones the name does not
 // give away (a dumbbell fly lies on a bench, an inverted row hangs under a bar) carry `nd` from the
 // catalogue's "needs". They sit in the profile checklist beside the real equipment values.
-export const ACCESSORIES = ['bench', 'pull-up bar']
+// "adjustable bench" (1.4.5): one that tilts, for the incline and decline work a flat bench can't do.
+export const ACCESSORIES = ['bench', 'adjustable bench', 'pull-up bar']
 
 // Machines that carry their own seat, bar or bench: "lever incline chest press" needs no bench.
 const SELF_CONTAINED = new Set(['leverage machine', 'sled machine', 'assisted'])
 
-// Which accessories an exercise needs, e.g. ['bench'] for "dumbbell incline bench press".
+// "Incline" and "decline" in a name that is not about lying or sitting on a bench: a push-up with
+// the hands up on something (a box, a wall, a Smith bar, a chair), a plank, a pushdown, a push press,
+// a jump. A flat bench or any step does those, or nothing at all does.
+const NO_TILT_BENCH = /push[- ]?ups?\b|pushups?\b|plank|pushdown|push press|jump|against (the |a )?wall|on (a )?box|chair|smith bar|suspender|stability ball|step[- ]?up|treadmill|walk|run\b|sprint|bike|cycl/
+
+// Which accessories an exercise needs, e.g. ['bench', 'adjustable bench'] for "dumbbell incline
+// bench press" and ['bench'] for "dumbbell bench press". Incline and decline work on a bench needs
+// one that tilts (#1.4.5 "flat vs adjustable"), so a flat-bench gym is not offered it.
 export function accessoriesOf(ex) {
   if (!ex.n || SELF_CONTAINED.has(ex.eq)) return []
   const n = ex.n.toLowerCase()
   const need = []
-  if (/\bbench\b|\bincline\b|\bdecline\b/.test(n)) need.push('bench')
+  const tilt = /\bincline\b|\bdecline\b/.test(n) && !NO_TILT_BENCH.test(n)
+  if (/\bbench\b/.test(n) || tilt) need.push('bench')
+  if (tilt) need.push('adjustable bench')
   if (/pull-up|pull up|chin-up|\bchin\b|hanging|dead hang|muscle-up|muscle up/.test(n)) need.push('pull-up bar')
   for (const a of Array.isArray(ex.nd) ? ex.nd : []) if (ACCESSORIES.includes(a) && !need.includes(a)) need.push(a)
   return need
@@ -45,13 +55,42 @@ const ALWAYS_AVAILABLE = 'body weight'
 // everything but the dumbbell. It stands in as the active profile, so the library, the picker and
 // a routine's missing-equipment flags all filter by it, and their Show all still shows all. No id,
 // so nothing that picks a saved profile (the starter plan's fitting) mistakes it for one.
-const noDumbbellsProfile = () => ({
-  id: '', name: t('Everything but dumbbells'), equipment: ALL_EQUIPMENT.filter(e => e !== 'dumbbell'), accV: ACC_V, noDumbbells: true,
-})
+// The bench without a profile (Settings → Equipment → Bench, `S.bench`): 'adjustable' (the default,
+// so nothing changes for anyone who never says), 'flat' or 'none'. Like the dumbbell switch it
+// stands in as the active profile when no profile filters, everything but what it rules out.
+export const BENCH_KINDS = ['adjustable', 'flat', 'none']
+export const benchSetting = S => (S?.bench === 'flat' || S?.bench === 'none' ? S.bench : 'adjustable')
+/** The bench an equipment list has: 'adjustable', 'flat' or 'none'. */
+export function benchIn(equipment) {
+  const have = equipment || []
+  return !have.includes('bench') ? 'none' : have.includes('adjustable bench') ? 'adjustable' : 'flat'
+}
+/** An equipment list with its bench set to `kind`. */
+export function withBench(equipment, kind) {
+  const rest = (equipment || []).filter(e => e !== 'bench' && e !== 'adjustable bench')
+  return kind === 'none' ? rest : kind === 'flat' ? [...rest, 'bench'] : [...rest, 'bench', 'adjustable bench']
+}
+/** What the Bench row shows and edits: the profile that filters, else the profile-free setting. */
+export function benchKindOf(S) {
+  const p = filteringProfile(S)
+  return p ? benchIn(profileEquipment(p)) : benchSetting(S)
+}
+
+const filteringProfile = S => (S.equipFilterOn ? S.equipProfiles || [] : []).find(p => p.id === S.activeEquipId) || null
+
+const homeKitProfile = S => {
+  const noBells = ownsNoDumbbells(S)
+  const bench = benchSetting(S)
+  const name = noBells && bench === 'adjustable' ? t('Everything but dumbbells')
+    : !noBells && bench === 'flat' ? t('Everything, flat bench only')
+      : !noBells && bench === 'none' ? t('Everything but a bench')
+        : t('Your equipment')
+  const equipment = withBench(ALL_EQUIPMENT.filter(e => !(noBells && e === 'dumbbell')), bench)
+  return { id: '', name, equipment, accV: ACC_V, ...(noBells ? { noDumbbells: true } : {}), ...(bench !== 'adjustable' ? { bench } : {}) }
+}
 
 export function activeProfile(S) {
-  const profiles = S.equipFilterOn ? S.equipProfiles || [] : []
-  return profiles.find(p => p.id === S.activeEquipId) || (ownsNoDumbbells(S) ? noDumbbellsProfile() : null)
+  return filteringProfile(S) || (ownsNoDumbbells(S) || benchSetting(S) !== 'adjustable' ? homeKitProfile(S) : null)
 }
 
 // Whether an exercise is usable under the active profile. With filtering off, or no profile
@@ -70,12 +109,15 @@ export function exAvailable(S, ex) {
 // It counts as having both until it is saved again, and the sheet shows them ticked.
 // Version 2 split the massage ball off the foam roller: a profile that had the roller kept the
 // ball exercises it always showed, again until it is saved.
-export const ACC_V = 2
+// Version 3 split the adjustable bench off the bench (1.4.5): a profile that had a bench kept its
+// incline and decline work, again until it is saved.
+export const ACC_V = 3
 export function profileEquipment(p) {
   const have = p?.equipment || []
   if (!p || p.accV === ACC_V) return have
   const add = (p.accV || 0) < 1 ? [...ACCESSORIES] : []
-  if (have.includes('roller')) add.push('massage ball')
+  if ((p.accV || 0) < 2 && have.includes('roller')) add.push('massage ball')
+  if ((p.accV || 0) < 3 && (have.includes('bench') || add.includes('bench'))) add.push('adjustable bench')
   return [...new Set([...have, ...add])]
 }
 

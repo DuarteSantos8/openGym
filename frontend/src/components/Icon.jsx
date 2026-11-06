@@ -63,6 +63,8 @@ const P = {
   // meet) so the body no longer reads as tangled lines behind a transparent head.
   pullup: <><path d="M3.6 5.1h16.8M8.5 5.5v2.3M15.5 5.5v2.3" /><circle cx="12" cy="9.6" r="1.8" /><path d="m8.5 7.8 3.5 5 3.5-5M12 13.3v3.9M12 17.2l-2.1 3.2M12 17.2l2.1 3.2" /></>,
   kettlebell: <><path d="M9.5 11V9.6a2.5 2.5 0 0 1 5 0V11" /><path d="M14.9 11.8c2.2 1.5 3.6 3.9 3.6 6.4a1.6 1.6 0 0 1-1.6 1.6H7.1a1.6 1.6 0 0 1-1.6-1.6c0-2.5 1.4-4.9 3.6-6.4Z" /></>,
+  // An adjustable bench: the seat, its legs, and the backrest tilted up (Settings → Equipment → Bench).
+  bench: <path d="M3.4 14.2h10.4M5.6 14.2v4.6M11.6 14.2v4.6M13.8 14.2l5.4-7.6M16.6 17.4l-1.8-2.2M16.6 17.4v1.4" />,
   plate: <><circle cx="12" cy="12" r="8.2" /><circle cx="12" cy="12" r="2.7" /></>,
   machine: <><path d="M12 3.6v3.1" /><rect x="6.6" y="6.7" width="10.8" height="12.9" rx="1.9" /><path d="M9 10.1h6M9 13.2h6M9 16.3h6" /></>,
   // "Not at my gym" (#923): the machine, struck through

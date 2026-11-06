@@ -3,10 +3,9 @@
   "name": "dumbbell seated external rotation",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "A seated rotator cuff exercise using a light dumbbell. It strengthens the small muscles that stabilize the shoulder.",

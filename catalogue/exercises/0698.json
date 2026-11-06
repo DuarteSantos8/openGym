@@ -3,11 +3,12 @@
   "name": "shoulder press (with band)",
   "bodyPart": "shoulders",
   "equipment": "band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead press using a band for resistance. It builds the shoulders and triceps.",

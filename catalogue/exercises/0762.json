@@ -4,7 +4,7 @@
   "bodyPart": "shoulders",
   "equipment": "smith machine",
   "machineKind": "smith",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
     "rhomboids",
@@ -21,10 +21,11 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "rear-delts"
     ],
     "secondaries": [
       "trapezius",
+      "lats",
       "upper-back"
     ]
   },

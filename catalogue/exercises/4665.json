@@ -3,11 +3,12 @@
   "name": "overhead clap",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "upper back",
     "core",
-    "triceps"
+    "triceps",
+    "side delts"
   ],
   "category": "mobility",
   "description": "Reaching your arms overhead and clapping to warm up the shoulders. It improves shoulder mobility and activation.",

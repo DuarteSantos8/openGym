@@ -3,9 +3,8 @@
   "name": "ring reverse fly",
   "bodyPart": "shoulders",
   "equipment": "suspension trainer",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids"
   ],

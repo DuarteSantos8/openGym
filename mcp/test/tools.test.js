@@ -978,7 +978,7 @@ describe('muscle_balance', () => {
     expect(r.workouts_in_period).toBe(0)
     expect(r.worked).toEqual([])
     expect(r.neglected.length).toBe(r.muscle_order_head_to_toe.length)
-    expect(r.neglected.length).toBe(18)
+    expect(r.neglected.length).toBe(21)  // 18 muscles, the shoulder in three heads and the lats on their own since 1.4.5 (#638)
   })
 })
 

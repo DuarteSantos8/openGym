@@ -3,9 +3,8 @@
   "name": "cable half kneeling face pull",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rotator cuff",
     "core"

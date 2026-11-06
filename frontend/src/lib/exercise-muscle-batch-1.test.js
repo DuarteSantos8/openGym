@@ -39,18 +39,18 @@ describe('compound-lift muscle metadata batch 1', () => {
       secondaries: ['quadriceps', 'adductors', 'calves', 'abs', 'obliques']
     })
     expect(COMPOUND_LIFT_BATCH_1['0025']).toEqual({
-      bp: 'chest', primaries: ['chest'], secondaries: ['triceps', 'deltoids', 'biceps']
+      bp: 'chest', primaries: ['chest'], secondaries: ['triceps', 'front-delts', 'biceps']
     })
     expect(COMPOUND_LIFT_BATCH_1['0091']).toEqual({
-      bp: 'shoulders', primaries: ['deltoids'],
-      secondaries: ['chest', 'triceps', 'trapezius', 'serratus']
+      bp: 'shoulders', primaries: ['front-delts'],
+      secondaries: ['chest', 'triceps', 'trapezius', 'serratus', 'side-delts']
     })
     expect(COMPOUND_LIFT_BATCH_1['0027']).toEqual({
-      bp: 'back', primaries: ['upper-back'],
-      secondaries: ['biceps', 'deltoids', 'forearm']
+      bp: 'back', primaries: ['lats', 'upper-back'],
+      secondaries: ['biceps', 'rear-delts', 'forearm']
     })
     expect(COMPOUND_LIFT_BATCH_1['0652']).toEqual({
-      bp: 'back', primaries: ['upper-back'], secondaries: ['biceps', 'deltoids', 'forearm']
+      bp: 'back', primaries: ['lats'], secondaries: ['biceps', 'rear-delts', 'forearm']
     })
     expect(musclesOf(EXDB.find(exercise => exercise.id === '0587'))).toMatchObject({ chest: 0.4 })
     expect(musclesOf(EXIDX['0587'])).toMatchObject({ chest: 0.4 })
@@ -58,11 +58,11 @@ describe('compound-lift muscle metadata batch 1', () => {
 
   it('keeps torso bracing secondary and does not label the twisting press full body', () => {
     expect(COMPOUND_LIFT_BATCH_1['0414']).toEqual({
-      bp: 'shoulders', primaries: ['deltoids'], secondaries: ['triceps', 'trapezius', 'abs']
+      bp: 'shoulders', primaries: ['front-delts'], secondaries: ['triceps', 'trapezius', 'abs', 'side-delts']
     })
     expect(COMPOUND_LIFT_BATCH_1['1012']).toEqual({
-      bp: 'shoulders', primaries: ['deltoids'],
-      secondaries: ['triceps', 'trapezius', 'abs', 'obliques']
+      bp: 'shoulders', primaries: ['front-delts'],
+      secondaries: ['triceps', 'trapezius', 'abs', 'obliques', 'side-delts']
     })
     expect(COMPOUND_LIFT_BATCH_1['1012'].primaries).not.toContain('abs')
     expect(COMPOUND_LIFT_BATCH_1['1012'].secondaries).toContain('obliques')
@@ -88,25 +88,25 @@ describe('owner-approved zero-credit overrides', () => {
   const cases = [
     [
       ['1429', '1432', '0652', '0651', '0017', '0015', '0970', '0841'],
-      { 'upper-back': 1, biceps: 0.4, deltoids: 0.4, forearm: 0.4, triceps: 0 },
+      { lats: 1, biceps: 0.4, 'rear-delts': 0.4, forearm: 0.4, triceps: 0 },
     ],
     [
       ['1325', '1347', '2330', '2616', '2736', '3563', '0007', '0150', '0153', '0177', '0198', '0197', '0205', '0245', '0579', '0673', '0818'],
-      { 'upper-back': 1, biceps: 0.4, deltoids: 0.4, forearm: 0.4, trapezius: 0.4, triceps: 0 },
+      { lats: 1, biceps: 0.4, 'rear-delts': 0.4, forearm: 0.4, trapezius: 0.4, triceps: 0 },
     ],
     [
       ['3418'],
-      { 'upper-back': 1, abs: 1, biceps: 0.4, deltoids: 0.4, forearm: 0.4, 'hip-flexors': 0.4, triceps: 0 },
+      { lats: 1, abs: 1, biceps: 0.4, 'rear-delts': 0.4, forearm: 0.4, 'hip-flexors': 0.4, triceps: 0 },
     ],
     [
       ['1349', '0606'],
-      { 'upper-back': 1, biceps: 0.4, deltoids: 0.4, forearm: 0.4, trapezius: 0.4, chest: 0, triceps: 0 },
+      { lats: 0.4, 'upper-back': 1, biceps: 0.4, 'rear-delts': 0.4, forearm: 0.4, trapezius: 0.4, chest: 0, triceps: 0 },
     ],
     [
       ['1254', '1256', '1257', '1299', '1300', '1301', '1479', '2144', '3758', '0025', '0033', '0045', '0047', '0122', '0151', '0169', '0289', '0301', '0314', '0748', '0577', '0576'],
-      { chest: 1, deltoids: 0.4, triceps: 0.4, biceps: 0 },
+      { chest: 1, 'front-delts': 0.4, triceps: 0.4, biceps: 0 },
     ],
-    [['0030', '0751'], { triceps: 1, chest: 0.4, deltoids: 0.4, biceps: 0 }],
+    [['0030', '0751'], { triceps: 1, chest: 0.4, 'front-delts': 0.4, biceps: 0 }],
     [['2289', '2335', '0738'], { calves: 1, hamstring: 0 }],
     [['1391'], { calves: 1, quadriceps: 0.4, hamstring: 0 }],
     [['2334', '1392'], { calves: 1, gluteal: 0.4, hamstring: 0 }],
@@ -119,8 +119,8 @@ describe('owner-approved zero-credit overrides', () => {
       ['0755'],
       { quadriceps: 1, gluteal: 1, adductors: 1, hamstring: 0.4, 'lower-back': 0.4, abs: 0.4, obliques: 0.4, calves: 0 },
     ],
-    [['0596'], { chest: 1, deltoids: 0.4, serratus: 0.4, biceps: 0 }],
-    [['0607'], { triceps: 1, deltoids: 0 }],
+    [['0596'], { chest: 1, 'front-delts': 0.4, serratus: 0.4, biceps: 0 }],
+    [['0607'], { triceps: 1, 'front-delts': 0 }],
   ]
 
   it.each(cases)('keeps the complete reviewed map for %s', (ids, expected) => {

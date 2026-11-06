@@ -3,13 +3,14 @@
   "name": "barbell split jerk",
   "bodyPart": "full body",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "quadriceps",
     "glutes",
     "core",
-    "calves"
+    "calves",
+    "side delts"
   ],
   "category": "olympic",
   "description": "An overhead lift where you dip, drive and catch the bar with locked arms in a split stance.",

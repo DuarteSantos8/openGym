@@ -50,6 +50,35 @@ export function machineAllows(machines, id) {
 export const ownsNoDumbbells = S => S?.dumbbells?.none?.on === true;
 export const isDumbbellLift = id => (LIB_BY_ID.get(id)?.eq || '').toLowerCase() === 'dumbbell';
 
+/* The bench (v1.4.5, Settings → Equipment → Bench, frontend lib/equipment.js benchKindOf and
+   accessoriesOf, hand-copied here because the API cannot import the frontend): 'adjustable',
+   'flat' or 'none'. A flat bench gets no incline or decline work, no bench gets no bench work.
+   The profile that filters says it with its ticks; without one, S.bench does. */
+const SELF_CONTAINED = new Set(['leverage machine', 'sled machine', 'assisted']);
+const NO_TILT_BENCH = /push[- ]?ups?\b|pushups?\b|plank|pushdown|push press|jump|against (the |a )?wall|on (a )?box|chair|smith bar|suspender|stability ball|step[- ]?up|treadmill|walk|run\b|sprint|bike|cycl/;
+export function benchNeedOf(id) {
+  const e = LIB_BY_ID.get(id);
+  if (!e || !e.n || SELF_CONTAINED.has(e.eq)) return null;
+  const n = String(e.n).toLowerCase();
+  if (/\bincline\b|\bdecline\b/.test(n) && !NO_TILT_BENCH.test(n)) return 'adjustable';
+  return /\bbench\b/.test(n) ? 'flat' : null;
+}
+export function benchKind(S) {
+  const prof = S?.equipFilterOn && Array.isArray(S.equipProfiles) ? S.equipProfiles.find(p => p && p.id === S.activeEquipId) : null;
+  if (prof) {
+    const have = Array.isArray(prof.equipment) ? prof.equipment : [];
+    if ((prof.accV || 0) < 1) return 'adjustable';
+    if (!have.includes('bench')) return 'none';
+    return have.includes('adjustable bench') || (prof.accV || 0) < 3 ? 'adjustable' : 'flat';
+  }
+  return S?.bench === 'flat' || S?.bench === 'none' ? S.bench : 'adjustable';
+}
+export function benchAllows(kind, id) {
+  if (kind !== 'flat' && kind !== 'none') return true;
+  const need = benchNeedOf(id);
+  return !need || (kind === 'flat' && need === 'flat');
+}
+
 /* ---------- the library slice the model gets to choose from ----------
    Bounded. The whole catalogue is 1,324 rows — 10k+ tokens on every job, which costs real money
    against a cloud API and does not fit a small local model's context at all; and a model does
@@ -182,8 +211,9 @@ export function librarySlice(S, equipment, { keep = [], max = MAX_LIBRARY, focus
   // slightly larger payload.
   const noDumbbells = ownsNoDumbbells(S);
   const machines = gymMachines(S);
+  const bench = benchKind(S);
   const filtered = (wanted.length ? LIBRARY.filter(e => equipmentAllows(wanted, e.id)) : LIBRARY)
-    .filter(e => (!noDumbbells || !isDumbbellLift(e.id)) && machineAllows(machines, e.id));
+    .filter(e => (!noDumbbells || !isDumbbellLift(e.id)) && machineAllows(machines, e.id) && benchAllows(bench, e.id));
   const equipped = filtered.length ? filtered : LIBRARY;
   // Same reasoning as the equipment fallback: a filter that removed everything is not a filter
   // worth honouring. Someone whose only kit reaches nothing but stretches gets the stretches.
@@ -241,7 +271,8 @@ export function swapSlice(S, equipment, exId, { keep = [], max = 36 } = {}) {
   const wanted = (equipment || []).map(x => String(x).toLowerCase());
   const noDumbbells = ownsNoDumbbells(S);
   const machines = gymMachines(S);
-  const fits = e => equipmentAllows(wanted, e.id) && !(noDumbbells && isDumbbellLift(e.id)) && machineAllows(machines, e.id) && !isStretch(e) && e.id !== exId;
+  const bench = benchKind(S);
+  const fits = e => equipmentAllows(wanted, e.id) && !(noDumbbells && isDumbbellLift(e.id)) && machineAllows(machines, e.id) && benchAllows(bench, e.id) && !isStretch(e) && e.id !== exId;
   const out = [];
   const taken = new Set();
   const add = e => { if (e && !taken.has(e.id) && out.length < max) { taken.add(e.id); out.push(e); } };

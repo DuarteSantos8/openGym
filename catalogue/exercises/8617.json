@@ -3,10 +3,9 @@
   "name": "seated external rotation on a chair",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "rotator cuff",
-    "rear deltoids",
     "upper back"
   ],
   "category": "rehab",

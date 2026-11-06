@@ -3,12 +3,13 @@
   "name": "dumbbell single arm z press",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "obliques",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated overhead press on the floor with legs straight, using one arm. It removes leg drive and challenges your trunk.",

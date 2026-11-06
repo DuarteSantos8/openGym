@@ -3,11 +3,12 @@
   "name": "pike push up",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "calisthenics",
   "description": "A push-up with hips lifted high so you press more overhead. It builds shoulder strength using only your body weight.",

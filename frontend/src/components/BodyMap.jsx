@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { MUSCLES, INERT, MUSCLE_NAME, levelsOf } from '../lib/muscles.js'
 import { t } from '../lib/i18n.js'
+import { regionLevel } from '../lib/body-geometry-level.js'
 
 // Front and back views of a body, each muscle shaded by how hard it was worked.
 //
@@ -19,7 +20,7 @@ function useBodyPaths() {
   useEffect(() => {
     if (CACHE) return
     let alive = true
-    PENDING = PENDING || import('../lib/body-paths.js').then(m => (CACHE = m.default))
+    PENDING = PENDING || import('../lib/body-geometry.js').then(m => (CACHE = m.default))
     PENDING.then(p => { if (alive) setPaths(p) }).catch(() => {})
     return () => { alive = false }
   }, [])
@@ -41,7 +42,7 @@ function View({ view, levels, onMuscle, selected }) {
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
         <path
           key={slug + i}
-          className={'bm-m l' + (levels[slug] || 0) + (isSel(selected, slug) ? ' sel' : '')}
+          className={'bm-m l' + regionLevel(levels, slug, view) + (isSel(selected, slug) ? ' sel' : '')}
           d={d}
           onClick={onMuscle ? () => onMuscle(slug) : undefined}
           onKeyDown={onMuscle ? event => activate(event, slug) : undefined}

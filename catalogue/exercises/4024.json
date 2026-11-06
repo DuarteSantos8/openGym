@@ -3,11 +3,12 @@
   "name": "resistance band standing overhead warming up",
   "bodyPart": "shoulders",
   "equipment": "resistance band",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "upper back",
     "rotator cuff",
-    "triceps"
+    "triceps",
+    "side delts"
   ],
   "category": "mobility",
   "description": "A light band warm-up that presses the arms overhead to wake up the shoulders before training.",

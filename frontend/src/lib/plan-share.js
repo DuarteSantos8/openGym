@@ -25,7 +25,7 @@ import { convertStep, convertWeight } from './units.js'
 import { exUnitPin, withExUnit, viewTarget, exUnitOf } from './ex-unit.js'
 import { fmtSpeed, speedUnitOf } from './speed.js'
 import { clampIncline, hasIncline, clampLevel, hasLevel } from './incline.js'
-import { MUSCLES, inMuscleOrder } from './muscles.js'
+import { MUSCLES, MUSCLE_MODEL, inMuscleOrder } from './muscles.js'
 import { SG_NAME_MAX } from './superset-meta.js'
 import { esc, printShell, printDocument, probeMarks } from './print-doc.js'
 import { MEDIA_CREDIT, isPrintPicture, loadPrintPictures } from './print-pictures.js'
@@ -132,6 +132,8 @@ function cleanEx(e) {
   // Triple progression's set ceiling (progression.js tripleSetsOf), rep work only.
   if (mode === 'reps' && e.setsMax > 0) o.setsMax = Math.min(MAX_TRIPLE_SETS, Math.round(e.setsMax))
   if (e.repsMax != null) o.repsMax = e.repsMax
+  // Shorter rests' floor (progression.js densityRestOf), rep work only.
+  if (mode === 'reps' && e.restMin > 0) o.restMin = Math.round(e.restMin)
   // The exercise's own rest (issue #10) is part of how it is prescribed, so it travels too —
   // only when set, so a plan that never asked for one leaves the recipient's own default
   // timer in charge. parsePlan and mergePlan carry it through by spread.
@@ -211,7 +213,8 @@ function cleanIntensifier(x) {
 }
 
 // The muscles the map can draw, plus the one label the form gives a cardio exercise.
-const CUSTOM_MUSCLES = new Set([...MUSCLES, 'cardiovascular system'])
+// The whole shoulder ('deltoids') still travels: an exercise nobody split into heads yet (#638).
+const CUSTOM_MUSCLES = new Set([...MUSCLES, 'deltoids', 'cardiovascular system'])
 const muscleList = v => inMuscleOrder([...new Set((Array.isArray(v) ? v : []).filter(m => CUSTOM_MUSCLES.has(m)))])
 
 /** A custom exercise with its own metadata — equipment, muscles, description — in the shape
@@ -232,14 +235,17 @@ function cleanCustom(c) {
   const url = cleanUrl(c.url)
   if (url) o.url = url
   if (typeof c.eq === 'string' && c.eq) o.eq = c.eq
-  const prim = muscleList(c.primaries)
-  const sm = muscleList(c.secondaries).filter(m => !prim.includes(m))
+  // From before the 1.4.5 split (no `mv: 2`, an older app's file or exercise): "Lats & upper back"
+  // was one muscle, so it is both, and what goes on is in the new model and says so.
+  const split = list => (c.mv === MUSCLE_MODEL || !Array.isArray(list) ? list : list.flatMap(m => (m === 'upper-back' ? ['lats', 'upper-back'] : [m])))
+  const prim = muscleList(split(c.primaries))
+  const sm = muscleList(split(c.secondaries)).filter(m => !prim.includes(m))
   // `tg` is the legacy single primary; the form keeps it equal to the first primary.
   const tg = prim[0] || (CUSTOM_MUSCLES.has(c.tg) ? c.tg : '')
   if (tg) o.tg = tg
   if (prim.length) o.primaries = prim
   if (sm.length) o.secondaries = sm
-  if (prim.length || sm.length) o.muscleGroups = [...prim, ...sm]
+  if (prim.length || sm.length) { o.muscleGroups = [...prim, ...sm]; o.mv = MUSCLE_MODEL }
   return o
 }
 

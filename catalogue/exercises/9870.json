@@ -3,12 +3,11 @@
   "name": "cable incline single arm y raise with back support",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
     "upper back",
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "A single-arm Y raise while supported on an incline bench, working the shoulders and upper back.",

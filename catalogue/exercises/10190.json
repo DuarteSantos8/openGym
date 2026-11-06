@@ -3,12 +3,13 @@
   "name": "landmine single arm push press",
   "bodyPart": "shoulders",
   "equipment": "landmine",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
     "quadriceps",
-    "glutes"
+    "glutes",
+    "side delts"
   ],
   "category": "strength",
   "description": "A one-arm push press with a landmine, using leg drive to move the bar up and the shoulder to control it.",

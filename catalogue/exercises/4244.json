@@ -3,12 +3,13 @@
   "name": "kettlebell overhead carry",
   "bodyPart": "full body",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "core",
     "trapezius",
     "forearms",
-    "obliques"
+    "obliques",
+    "side delts"
   ],
   "category": "strength",
   "description": "Walking while holding a kettlebell locked out overhead. It builds shoulder stability, core control and grip.",
