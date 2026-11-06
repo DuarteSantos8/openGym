@@ -2226,7 +2226,6 @@ export const PT_BR_OVERRIDES = {
   "At {0}": "Em {0}",
   "Copy from {0}": "Copiar de {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Começa com as anilhas, halteres e barras que você tem agora. Mude quando for a academia ativa.",
-  "Your gym": "Sua academia",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Anilhas, halteres, barras e placas de máquina ficam salvos por academia. Troque de academia e tudo troca junto.",
   "Active gym": "Academia ativa",
   "Pick a gym": "Escolha uma academia",

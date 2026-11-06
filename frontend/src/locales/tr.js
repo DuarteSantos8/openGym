@@ -3324,7 +3324,6 @@ export default {
   "At {0}": "{0} salonunda",
   "Copy from {0}": "{0} salonundan kopyala",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Şu an ayarlı plakalar, dambıllar ve barlarla başlar. Aktif salon olunca değiştir.",
-  "Your gym": "Salonun",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Plakalar, dambıllar, barlar ve makine ağırlık yığınları salon başına tutulur. Salonu değiştir, hepsi değişsin.",
   "Active gym": "Aktif salon",
   "Pick a gym": "Bir salon seç",

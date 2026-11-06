@@ -3328,7 +3328,6 @@ export default {
   "At {0}": "В {0}",
   "Copy from {0}": "Скопировать из {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Начнёт с блинов, гантелей и грифов, которые у тебя сейчас. Поменяй их, когда этот зал станет активным.",
-  "Your gym": "Твой зал",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Блины, гантели, грифы и стеки тренажёров хранятся для каждого зала. Смени зал, и сменится всё.",
   "Active gym": "Активный зал",
   "Pick a gym": "Выбери зал",

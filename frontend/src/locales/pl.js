@@ -3324,7 +3324,6 @@ export default {
   "At {0}": "W {0}",
   "Copy from {0}": "Kopiuj z {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Zaczyna z talerzami, hantlami i sztangami, które masz teraz ustawione. Zmień je, gdy będzie aktywną siłownią.",
-  "Your gym": "Twoja siłownia",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "Talerze, hantle, sztangi i stosy ciężarów są zapisywane dla każdej siłowni. Zmień siłownię, a zmieni się wszystko.",
   "Active gym": "Aktywna siłownia",
   "Pick a gym": "Wybierz siłownię",

@@ -3327,7 +3327,6 @@ export default {
   "At {0}": "Itt: {0}",
   "Copy from {0}": "Másolás innen: {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "Azokkal a tárcsákkal, kézisúlyzókkal és rudakkal indul, amik most be vannak állítva. Módosítsd, ha ez lesz az aktív terem.",
-  "Your gym": "A termed",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "A tárcsák, kézisúlyzók, rudak és gépi súlytömbök termenként vannak. Válts termet, és minden vele vált.",
   "Active gym": "Aktív terem",
   "Pick a gym": "Válassz termet",

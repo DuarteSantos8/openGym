@@ -3335,7 +3335,6 @@ export default {
   "At {0}": "ที่ {0}",
   "Copy from {0}": "คัดลอกจาก {0}",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "เริ่มด้วยแผ่นน้ำหนัก ดัมเบล และบาร์ที่ตั้งไว้ตอนนี้ เปลี่ยนได้เมื่อเป็นยิมที่ใช้งานอยู่",
-  "Your gym": "ยิมของคุณ",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "แผ่นน้ำหนัก ดัมเบล บาร์ และชุดน้ำหนักเครื่องจะแยกตามยิม เปลี่ยนยิมแล้วทุกอย่างเปลี่ยนตาม",
   "Active gym": "ยิมที่ใช้งานอยู่",
   "Pick a gym": "เลือกยิม",

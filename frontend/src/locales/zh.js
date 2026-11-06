@@ -3324,7 +3324,6 @@ export default {
   "At {0}": "在{0}",
   "Copy from {0}": "从{0}复制",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "它会以你现在设置的杠铃片、哑铃和杠铃杆开始。设为当前健身房后再修改。",
-  "Your gym": "你的健身房",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "杠铃片、哑铃、杠铃杆和器械配重片按健身房分别保存。切换健身房，这些也一起切换。",
   "Active gym": "当前健身房",
   "Pick a gym": "选择健身房",

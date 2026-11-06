@@ -3403,7 +3403,6 @@ export default {
   "At {0}": "{0}-এ",
   "Copy from {0}": "{0} থেকে কপি করুন",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "এখন যে প্লেট, ডাম্বেল আর বার সেট করা আছে সেগুলো দিয়েই শুরু হয়। এটি সক্রিয় জিম হলে বদলে নিন।",
-  "Your gym": "আপনার জিম",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "প্লেট, ডাম্বেল, বার আর মেশিনের ওজন-স্ট্যাক প্রতিটি জিমের জন্য আলাদা থাকে। জিম বদলালে সবই বদলায়।",
   "Active gym": "সক্রিয় জিম",
   "Pick a gym": "একটি জিম বেছে নিন",

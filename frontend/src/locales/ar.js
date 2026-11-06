@@ -2558,7 +2558,6 @@ export default {
   'Medium fits most gyms. Go bigger if the nudge comes late, smaller if it pings you on the street.': 'المتوسطة تناسب معظم الصالات. كبّرها إن وصل التذكير متأخرًا، وصغّرها إن رنّ وأنت ما زلت في الشارع.',
   'Remind me here': 'ذكّرني هنا',
   'Open in Apple Maps': 'فتح في خرائط Apple',
-  'Your gym': 'صالتك',
   'Lost access?': 'فقدت الوصول؟',
   'No panic: your training is safe on the server. One of these gets you back in.': 'لا داعي للقلق: تمارينك محفوظة على الخادم. إحدى هذه الطرق تعيدك.',
   'Your passkey may be synced': 'ربما يكون مفتاح المرور متزامنًا',

@@ -3324,7 +3324,6 @@ export default {
   "At {0}": "{0}에서",
   "Copy from {0}": "{0}에서 복사",
   "It starts with the plates, dumbbells and bars you have set now. Change them once it’s the active gym.": "지금 설정된 원판, 덤벨, 바로 시작해요. 활성 헬스장이 되면 바꿔 주세요.",
-  "Your gym": "내 헬스장",
   "Plates, dumbbells, bars and machine stacks are kept per gym. Switch gyms and all of it switches.": "원판, 덤벨, 바, 머신 중량 스택은 헬스장마다 따로 저장돼요. 헬스장을 바꾸면 모두 함께 바뀌어요.",
   "Active gym": "활성 헬스장",
   "Pick a gym": "헬스장 선택",

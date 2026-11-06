@@ -2814,7 +2814,6 @@ export default {
   "Show me": "Parodykite",
   "Show the tour again": "Peržiūrėti turą dar kartą",
   "Skip tour": "Praleisti turą",
-  "Step {0} of {1}": "Žingsnis {0} iš {1}",
   "Swipe a set": "Perbraukite seriją",
   "Swipe a set sideways to copy or remove it. Its number opens even more.": "Perbraukite seriją į šoną, kad nukopijuotumėte arba pašalintumėte. Spustelėjus numerį, atsiveria daugiau.",
   "The big Start button": "Didelis mygtukas „Pradėti“",
