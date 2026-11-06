@@ -6,7 +6,14 @@
  * The rules (lib/streak.js has the long version): a trained week adds one, every 4th trained week
  * of a run earns a freeze up to what the rule keeps, a missed week spends a freeze or starts the
  * run over, and this week, still empty, is open. S.streakRule = { rule, since, history } is not
- * retroactive: each week is judged by the rule in force that week. */
+ * retroactive: each week is judged by the rule in force that week.
+ *
+ * SICK AND TRAVEL WEEKS (1.4.5). A missed week with a day note tagged sick, travel or injured
+ * (frontend lib/day-notes.js, S.dayNotes) is excused: the streak carries on, no freeze is spent,
+ * and the week adds nothing to the count, like a freeze would. At most S.streakExcuse such weeks
+ * a calendar year (the year the week starts in), EXCUSE_DEFAULT when never set, 0 turns it off.
+ * Past the cap the week falls back to the freezes. A note says the week was out of your hands,
+ * so it is read for every week, including the ones before this version. */
 
 export const FREEZE_EVERY = 4;
 export const FREEZE_MAX = 2;
@@ -20,6 +27,16 @@ export const RULE_IDS = ['off', 'gentle', 'generous'];
 export const LEGACY_RULE = 'generous';
 export const NEW_PROFILE_RULE = 'gentle';
 export const HISTORY_MAX = 24;
+// Sick, travel and injured day notes excuse their week; a rest day is a choice, so it does not.
+export const EXCUSE_TAGS = ['sick', 'travel', 'injured'];
+export const EXCUSE_DEFAULT = 4;
+export const EXCUSE_CHOICES = [0, 2, 4, 6];
+export const EXCUSE_MAX = 12;
+/** How many weeks a year a sick or travel note may excuse, for this profile. */
+export const excuseCapOf = S => {
+  const n = S?.streakExcuse;
+  return Number.isInteger(n) && n >= 0 && n <= EXCUSE_MAX ? n : EXCUSE_DEFAULT;
+};
 // Far enough back for any real history, short enough that a typo'd year cannot spin the loop.
 const MAX_WEEKS = 1500;
 
@@ -95,18 +112,29 @@ export function streakWalk(S, today, { log = null, weekKey = weekKeyOf } = {}) {
       if (k <= cur) trained.add(k);
     }
   }
+  // The weeks a sick, travel or injured note sits in (a cleared note is `{ _ts }`, no tag).
+  const excusable = new Map();
+  if (S?.dayNotes && typeof S.dayNotes === 'object' && !Array.isArray(S.dayNotes)) {
+    for (const [iso, n] of Object.entries(S.dayNotes)) {
+      if (!isISO(iso) || !n || typeof n !== 'object' || !EXCUSE_TAGS.includes(n.tag)) continue;
+      const k = weekKey(iso, ws);
+      if (k <= cur && !excusable.has(k)) excusable.set(k, n.tag);
+    }
+  }
+  const excuseCap = excuseCapOf(S);
+  const usedIn = new Map();
   // The rules and the weeks they start, in this profile's weeks.
   const timeline = ruleTimeline(S).map(e => ({ rule: e.rule, since: e.since === null ? null : weekKey(e.since, ws) }));
   const nowRule = ruleAt(timeline, cur);
   const max = STREAK_RULES[nowRule].max;
-  const empty = { current: 0, best: 0, freezes: 0, frozen: [], thisWeekDone: false, badges: [], next: STREAK_BADGES[0], toNextFreeze: max ? FREEZE_EVERY : 0, weekKey: cur, rule: nowRule, max };
+  const empty = { current: 0, best: 0, freezes: 0, frozen: [], excused: [], excuseCap, excuseLeft: excuseCap, thisWeekDone: false, badges: [], next: STREAK_BADGES[0], toNextFreeze: max ? FREEZE_EVERY : 0, weekKey: cur, rule: nowRule, max };
   if (!trained.size) return empty;
   let wk = [...trained].sort()[0];
   const floor = plusWeek(cur, -MAX_WEEKS);
   if (wk < floor) wk = floor;
-  let run = 0, best = 0, freezes = 0, earned = 0, frozen = [];
+  let run = 0, best = 0, freezes = 0, earned = 0, frozen = [], excused = [];
   for (let i = 0; i <= MAX_WEEKS && wk <= cur; i++, wk = plusWeek(wk)) {
-    let s = 'open', got = false;
+    let s = 'open', got = false, why = null;
     const rule = ruleAt(timeline, wk), cap = STREAK_RULES[rule].max;
     // A rule that keeps fewer: the bank shrinks to it, the streak stays as counted.
     if (freezes > cap) freezes = cap;
@@ -116,16 +144,23 @@ export function streakWalk(S, today, { log = null, weekKey = weekKeyOf } = {}) {
       if (earned % FREEZE_EVERY === 0 && freezes < cap) { freezes++; got = true; }
       s = 'on';
     } else if (wk !== cur) {
-      if (freezes > 0) { freezes--; frozen.push(wk); s = 'frozen'; } else { s = run > 0 ? 'broke' : 'missed'; run = 0; earned = 0; freezes = 0; frozen = []; }
+      const year = wk.slice(0, 4), used = usedIn.get(year) || 0;
+      if (run > 0 && excusable.has(wk) && used < excuseCap) {
+        // Out of your hands: carried, nothing spent, nothing added.
+        usedIn.set(year, used + 1); excused.push(wk); s = 'excused'; why = excusable.get(wk);
+      } else if (freezes > 0) { freezes--; frozen.push(wk); s = 'frozen'; } else { s = run > 0 ? 'broke' : 'missed'; run = 0; earned = 0; freezes = 0; frozen = []; excused = []; }
     }
     if (run > best) best = run;
-    if (log) log.set(wk, { s, run, bank: freezes, earned: got, rule });
+    if (log) log.set(wk, why ? { s, run, bank: freezes, earned: got, rule, tag: why } : { s, run, bank: freezes, earned: got, rule });
   }
   return {
     current: run,
     best,
     freezes,
     frozen,
+    excused,
+    excuseCap,
+    excuseLeft: Math.max(0, excuseCap - (usedIn.get(cur.slice(0, 4)) || 0)),
     thisWeekDone: trained.has(cur),
     badges: STREAK_BADGES.filter(b => best >= b),
     next: STREAK_BADGES.find(b => best < b) ?? null,

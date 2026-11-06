@@ -35,7 +35,7 @@ export function streakWeeks (S, today = todayISO()) {
   return { info, log }
 }
 
-/** A week's mark in the calendar: 'on' | 'frozen' | 'broke' | 'missed' | 'open', or null (none). */
+/** A week's mark in the calendar: 'on' | 'excused' | 'frozen' | 'broke' | 'missed' | 'open', or null (none). */
 export const markOf = entry => (entry ? entry.s : null)
 
 /** The sentence a tapped week gets. `entry` is the log's record for that week. */
@@ -46,6 +46,10 @@ export function explainWeek (entry) {
       const base = t('You trained, so this week counts. Streak: {0}.', entry.run)
       return entry.earned ? base + ' ' + t('It also earned a freeze.') : base
     }
+    case 'excused': return ({
+      sick: t('You were sick, so this week is excused. The streak kept going and no freeze was spent.'),
+      injured: t('You were injured, so this week is excused. The streak kept going and no freeze was spent.'),
+    }[entry.tag] || t('You were travelling, so this week is excused. The streak kept going and no freeze was spent.'))
     case 'frozen': return t('No workout, so a freeze covered it. The streak kept going, but this week adds nothing to the count.')
     case 'broke': return entry.rule === 'off' ? t('No workout, and your rule has no freezes, so the streak started over.') : t('No workout and no freeze left, so the streak started over.')
     case 'missed': return t('No workout this week.')
@@ -72,4 +76,14 @@ export function explainMissedDay (weekEntry) {
   if (s === 'on') return t('Planned, not trained. No harm done: you trained another day that week, so it still counts.')
   if (s === 'open') return t('Planned, not trained. Any other day this week still counts.')
   return t('Planned, not trained. Any workout that week would have counted.')
+}
+
+/** The sick and travel weeks a year, as the Settings row shows it. */
+export const excuseLabel = n => (n > 0 ? tn('{0} week a year', '{0} weeks a year', n) : t('Off'))
+
+/** The line under the sick and travel picker: how many are left this year. */
+export function excuseLine (info) {
+  const cap = info?.excuseCap ?? 0
+  if (!cap) return t('Sick and travel notes leave the streak to the freezes.')
+  return tn('One left this year.', '{0} left this year.', info.excuseLeft ?? cap)
 }

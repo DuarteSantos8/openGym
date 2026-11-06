@@ -15,12 +15,14 @@ import { Button } from './ui.jsx'
    Discord, 11-04: a 43-week streak through a visibly patchy October read as a bug, and nobody
    knew what the snowflakes were. The walk itself is lib/streak.js; this only shows it. */
 
-export const weekMarkLabel = s => ({ on: t('Counted'), frozen: t('Frozen'), open: t('Still open') }[s] || t('Missed'))
+export const weekMarkLabel = s => ({ on: t('Counted'), frozen: t('Frozen'), excused: t('Excused'), open: t('Still open') }[s] || t('Missed'))
 
 /** A week's mark: the flame, the freeze, a hollow ring (missed) or a dashed one (this week, open). */
-export function MarkGlyph ({ s }) {
+export function MarkGlyph ({ s, tag = null }) {
   if (s === 'on') return <StreakFlame />
   if (s === 'frozen') return <span className="wk-frz"><FreezeGlyph /></span>
+  // A sick, travel or injured week (api/coach/core/streak.js): the day note's own icon.
+  if (s === 'excused') return <span className="wk-exc" aria-hidden="true"><Icon name={tag === 'travel' ? 'globe' : tag === 'injured' ? 'warning' : 'cloud'} /></span>
   return <span className={'wk-ring' + (s === 'open' ? ' open' : '')} aria-hidden="true" />
 }
 
@@ -30,7 +32,7 @@ export function WeekMark ({ wk, entry, selected, onSelect }) {
   const label = t('Week of {0}', fmtDate(wk)) + ': ' + weekMarkLabel(entry.s)
   return <button type="button" className={'cal-wk is-' + entry.s + (selected ? ' sel' : '')} data-wk={wk}
     aria-label={label} aria-pressed={selected} title={label} onClick={() => onSelect(selected ? null : wk)}>
-    <MarkGlyph s={entry.s} />
+    <MarkGlyph s={entry.s} tag={entry.tag} />
   </button>
 }
 
@@ -48,7 +50,7 @@ export function WeekNote ({ wk, entry, day = null, onOpenDay }) {
         <span className="grow"><b>{fmtDate(day, true)}.</b> {explainMissedDay(entry)}
           {onOpenDay && <button type="button" className="wk-note-a" onClick={() => onOpenDay(day)}>{t('Open this day')}</button>}</span></>
       : wk && entry
-        ? <><span className="wk-note-g" aria-hidden="true"><MarkGlyph s={entry.s} /></span>
+        ? <><span className="wk-note-g" aria-hidden="true"><MarkGlyph s={entry.s} tag={entry.tag} /></span>
           <span><b>{t('Week of {0}', fmtDate(wk))}.</b> {explainWeek(entry)}{note ? <span className="wk-note-r"> {note}</span> : null}</span></>
         : <span className="muted">{t("Tap a week's mark to see how it counted.")}</span>}
   </div>
@@ -74,6 +76,7 @@ export function StreakHowTo ({ onDone, rule = 'generous' }) {
           <li><span className="wk-legend-g" aria-hidden="true"><MarkGlyph s="frozen" /></span>{rule === 'gentle' ? t('Every 4th week you train earns a freeze. You can bank 1.') : t('Every 4th week you train earns a freeze. You can bank 2.')}</li>
           <li><span className="wk-legend-g" aria-hidden="true"><MarkGlyph s="missed" /></span>{rule === 'gentle' ? t('Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. Two missed weeks in a row, and it starts over.') : t('Miss a week and a freeze covers it: the streak keeps going, that week just adds nothing. No freeze left, and it starts over.')}</li>
         </>}
+      <li><span className="wk-legend-g" aria-hidden="true"><MarkGlyph s="excused" /></span>{t('Sick or travelling? Mark a day of that week with a day note and the week is excused, no freeze spent (a few times a year).')}</li>
       <li><span className="wk-legend-g" aria-hidden="true"><MarkGlyph s="open" /></span>{t('This week stays open until it ends. No pressure yet.')}</li>
     </ul>
     <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>

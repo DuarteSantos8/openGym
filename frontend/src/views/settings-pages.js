@@ -202,6 +202,7 @@ export const SEARCH = [
   { page: 'look', title: 'Accent color', icon: 'palette', tint: 'var(--purple)', kw: 'color colour accent tint custom own picker hex rgb', opts: [...Object.values(ACCENT_NAMES), 'Your own color'], tkw: () => t('custom color picker') },
   { page: 'look', title: 'Icons', icon: 'sparkles', tint: 'var(--orange)', kw: 'emoji icons flame medal snowflake pictures' },
   { page: 'look', title: 'Streak flame', icon: 'flame', tint: 'var(--orange)', mod: 'motivation', kw: 'streak flame fire icon emoji custom own symbol colour color' },
+  { page: 'look', title: 'Sick and travel weeks', icon: 'cloud', tint: 'var(--indigo)', mod: 'motivation', kw: 'streak sick ill travel travelling holiday vacation injured excuse day note week' },
   { page: 'look', title: 'Streak freezes', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze freezes rule strict gentle generous off missed week forgiving', opts: ['No freezes', 'Gentle', 'Generous'] },
   { page: 'look', title: 'Recovery counts for the streak', icon: 'sparkles', tint: 'var(--teal)', mod: 'motivation', kw: 'recovery sauna ice bath cold massage mobility streak count' },
   { page: 'look', title: 'Streak freeze', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze snowflake icon emoji custom own symbol colour color' },

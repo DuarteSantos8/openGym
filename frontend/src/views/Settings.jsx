@@ -27,7 +27,8 @@ import OwnSounds from '../components/OwnSounds.jsx'
 import { confirmBackupImport } from '../components/backup-restore.js'
 import { WebDavRow } from '../components/WebDavBackup.jsx'
 import { StreakIconRows } from '../components/StreakIconPicker.jsx'
-import { StreakRuleRow } from '../components/StreakRule.jsx'
+import { StreakRuleRow, StreakExcuseRow } from '../components/StreakRule.jsx'
+import { PinnedBadges } from '../components/Streak.jsx'
 import { deleteWorkoutsSheet } from '../components/DeleteWorkouts.jsx'
 import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
@@ -1056,6 +1057,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {on('motivation') && <StreakIconRows />}
         {/* How forgiving the streak is (components/StreakRule.jsx), from the moment it is saved. */}
         {on('motivation') && <StreakRuleRow />}
+        {on('motivation') && <StreakExcuseRow />}
         {/* Sauna, ice bath, massage (lib/recovery-sessions.js): off, they leave the streak alone. */}
         {on('motivation') && <Row icon="sparkles" iconTint="var(--teal)" title={t('Recovery counts for the streak')}
           subtitle={t('A week with only a sauna or an ice bath keeps the streak going.')}>
@@ -1439,6 +1441,8 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
         <button className="lrow tap sp-acct" data-tour="settings-account" onClick={() => open('account')}>
           <AvatarFace name={faceName} />
           <span className="lrow-m"><span className="lrow-t">{acct.title}</span><span className="lrow-s">{acct.sub}</span></span>
+          {/* Badges pinned to the profile (lib/levels.js), from Stats → Week streak → Level. */}
+          {ctx.mod('motivation') && <PinnedBadges />}
           <Icon name="chevronRight" className="lrow-c" />
         </button>
       </Section>

@@ -3807,7 +3807,8 @@ function Calendar({ start, close, help = false }) {
     const dotCls = ws ? (moved ? 'done moved' : 'done') : note ? 'noted' : rec ? 'recov' : missed ? 'miss' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
     const wkOf = weeks ? weekKey(iso, weekStartOf(st)) : null
     const frozenDay = !!wkOf && weeks.log.get(wkOf)?.s === 'frozen'
-    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (missed ? ' missed' : '') + (selDay === iso ? ' sel-day' : '') + (frozenDay ? ' wk-frozen' : '') + (iso === today ? ' today' : '')}
+    const excusedDay = !!wkOf && weeks.log.get(wkOf)?.s === 'excused'
+    cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (missed ? ' missed' : '') + (selDay === iso ? ' sel-day' : '') + (frozenDay ? ' wk-frozen' : '') + (excusedDay ? ' wk-excused' : '') + (iso === today ? ' today' : '')}
       title={note ? dayNoteLine(note, t) : undefined} aria-pressed={missed && weeks ? selDay === iso : undefined}
       aria-label={missed ? fmtDate(iso, true) + ': ' + t('Missed plan') : undefined} onClick={() => {
       // With the streak shown, a missed planned day first says what it meant; its line has the way in.

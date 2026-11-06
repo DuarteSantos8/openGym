@@ -130,9 +130,10 @@ describe('buildWidgetSnapshot: the configurable widget\'s blocks', () => {
     expect(buildWidgetSnapshot(S(), { today: TODAY }).volume).toMatchObject({ now: 0, prev: 0, pct: null })
   })
 
-  it('leaves the level hook empty until points exist, and has every block\'s words', () => {
+  it('fills the level hook (lib/levels.js), empty with Motivation off, and has every block\'s words', () => {
     const snap = buildWidgetSnapshot(S(), { today: TODAY })
-    expect(snap.level).toBeNull()
+    expect(snap.level).toMatchObject({ n: 1, text: 'Level 1' })
+    expect(buildWidgetSnapshot({ ...S(), modules: { motivation: false } }, { today: TODAY }).level).toBeNull()
     for (const k of ['weightGoal', 'nextWorkout', 'records', 'volume', 'freezes', 'nothingPlanned', 'noWeighIn', 'startNow']) {
       expect(typeof snap.labels[k], k).toBe('string')
     }
