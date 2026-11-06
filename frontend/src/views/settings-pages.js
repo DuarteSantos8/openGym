@@ -36,6 +36,8 @@ export const PAGES = {
   network: { title: 'Network log', icon: 'shield', tint: 'var(--green)', parent: 'about', kw: 'network log requests privacy internet offline connections traffic tracking telemetry data sent who what' },
   account: { title: 'Account', icon: 'personCircle', tint: 'var(--grey)' },
   advanced: { title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', parent: 'workout' },
+  // How the spoken cues sound (components/VoiceSettings.jsx, v1.4.5).
+  voice: { title: 'Voice', icon: 'chat', tint: 'var(--teal)', parent: 'alerts', kw: 'voice voices speak speech tts spoken cues style hype drill sergeant calm deadpan lines clip record recording microphone pitch speed' },
   // Trainers and gyms (TRAINERS=on on the server, docs/TRAINERS.md): who sees what of your training.
   // Settings → Integrations → API tokens (docs/API_TOKENS.md): scoped tokens for MCP and scripts.
   'api-tokens': { title: 'API tokens', icon: 'key', tint: 'var(--purple)', parent: 'integrations', mod: 'integrations', kw: 'api token tokens key mcp claude chatgpt cursor assistant planner script access revoke' },
@@ -174,7 +176,12 @@ export const SEARCH = [
   { page: 'alerts', title: 'Vibrate on silent too', icon: 'vibrate', tint: 'var(--indigo)', kw: 'alarm silent vibrate android', when: c => c.mobile && c.android && c.canVibrate && c.vibrate },
   { page: 'alerts', title: 'Flash the screen', icon: 'sun', tint: 'var(--yellow)', kw: 'flash light blink screen' },
   { page: 'alerts', title: 'Spoken cues', icon: 'chat', tint: 'var(--teal)', kw: 'voice speak speech talk tts announce next set countdown read aloud audio' },
-  { page: 'alerts', title: 'Speaking rate', icon: 'speaker', tint: 'var(--teal)', kw: 'voice speed speech rate slow fast', opts: ['Slow', 'Normal', 'Fast'], when: c => c.spokenCues },
+  { page: 'alerts', title: 'Voice', icon: 'chat', tint: 'var(--teal)', kw: 'voice voices speech style lines clips', when: c => c.spokenCues },
+  // Timer alerts → Voice
+  { page: 'voice', title: 'Speed', icon: 'gauge', tint: 'var(--teal)', kw: 'voice speed speech rate slow fast speaking rate' },
+  { page: 'voice', title: 'Pitch', icon: 'speaker', tint: 'var(--teal)', kw: 'voice pitch high low deep' },
+  { page: 'voice', title: 'Hype man', icon: 'chat', tint: 'var(--teal)', kw: 'style personality calm drill sergeant deadpan your own lines motivation shout' },
+  { page: 'voice', title: 'When the rest is over', icon: 'bell', tint: 'var(--orange)', kw: 'moment lines clip record recording microphone own voice friend' },
   // Reminders
   { page: 'reminders', title: PUSH, icon: 'bell', tint: 'var(--red)', kw: 'push notification alerts', when: c => !c.mobile && !!c.user && c.pushOK },
   { page: 'reminders', title: 'Workout day reminder', icon: 'calendar', tint: 'var(--orange)', kw: 'reminder notification remind', when: remind, via: PUSH },

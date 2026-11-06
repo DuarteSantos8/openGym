@@ -4251,3 +4251,18 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Settings → Look & Home → Motion: Less (lib/display-prefs.js), the app's own Reduce Motion. */
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+
+/* Settings → Timer alerts → Voice (components/VoiceSettings.jsx): speed and pitch as a slider under
+   the row's title, with its value beside the title and the two ends named under the track; a
+   line of your own as a field with its play and bin buttons; the record row while it records. */
+.voice-sld{align-items:flex-start}
+.voice-sld .lrow-i{margin-top:1px}
+.voice-sld .lrow-m{gap:4px;min-width:0}
+.voice-sld-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.voice-sld-h .lrow-v{font-variant-numeric:tabular-nums;color:var(--label-2)}
+.voice-sld-ends{display:flex;justify-content:space-between;font-size:var(--fs-caption, 12px);color:var(--label-2)}
+.voice-line{gap:6px;padding-block:8px}
+.voice-line .field{flex:1;min-width:0;background:var(--surface-2)}
+.voice-rec .lrow-i{animation:voice-rec-pulse 1.2s var(--ease) infinite alternate}
+@keyframes voice-rec-pulse{from{opacity:1}to{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.voice-rec .lrow-i{animation:none}}

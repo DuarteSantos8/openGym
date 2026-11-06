@@ -91,6 +91,9 @@ const P = {
   link: <><path d="M10.2 13.8a3.6 3.6 0 0 0 5.4.4l2.6-2.6a3.6 3.6 0 0 0-5.1-5.1l-1.5 1.5" /><path d="M13.8 10.2a3.6 3.6 0 0 0-5.4-.4l-2.6 2.6a3.6 3.6 0 0 0 5.1 5.1l1.5-1.5" /></>,
   play: <path d="M8.4 5.6 18 12l-9.6 6.4Z" />,
   pause: <path d="M9.4 5.8v12.4M14.6 5.8v12.4" />,
+  // Settings → Timer alerts → Voice: recording a clip of your own, and stopping it.
+  mic: <><rect x="9" y="3.6" width="6" height="10.4" rx="3" /><path d="M5.8 11.2a6.2 6.2 0 0 0 12.4 0M12 17.4v3" /></>,
+  stop: <rect x="6.6" y="6.6" width="10.8" height="10.8" rx="2" />,
   skipForward: <><path d="M6.4 5.8 15.2 12l-8.8 6.2Z" /><path d="M18.2 5.8v12.4" /></>,
   reset: <><path d="M4.4 12a7.6 7.6 0 1 0 2.3-5.4" /><path d="M4 4.4v4.4h4.4" /></>,
   // undo: an arrow curling back to the start

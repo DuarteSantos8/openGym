@@ -212,7 +212,7 @@ export function Stepper({ value, step = 1, min = 0, max = Infinity, onChange, de
 // pseudo-elements, which is the only way the control looks identical on every
 // platform and can pick up the accent colour.
 export const SLIDER_GRAB_PX = 22
-export function Slider({ value, min = 0, max = 100, step = 1, onChange, className = '', disabled = false }) {
+export function Slider({ value, min = 0, max = 100, step = 1, onChange, onEnd, className = '', disabled = false, ariaLabel, ariaValueText }) {
   const ref = useRef(null)
   const [drag, setDrag] = useState(false)
   // Grabbing the knob drags it relative to where the finger landed; a finger
@@ -240,7 +240,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       e.preventDefault()
       onChange(posToValue((e.touches ? e.touches[0].clientX : e.clientX) - offset.current))
     }
-    const up = () => setDrag(false)
+    const up = () => { setDrag(false); onEnd?.() }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
     window.addEventListener('pointercancel', up)
@@ -249,7 +249,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
     }
-  }, [drag, onChange, posToValue])
+  }, [drag, onChange, onEnd, posToValue])
 
   const key = e => {
     if (disabled) return
@@ -261,6 +261,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
     if (!d) return
     e.preventDefault()
     onChange(Math.min(max, Math.max(min, Math.round((value + d) * 1000) / 1000)))
+    onEnd?.()
   }
 
   return (
@@ -270,6 +271,7 @@ export function Slider({ value, min = 0, max = 100, step = 1, onChange, classNam
       role="slider"
       tabIndex={disabled ? -1 : 0}
       aria-valuenow={value} aria-valuemin={min} aria-valuemax={max}
+      aria-label={ariaLabel} aria-valuetext={ariaValueText}
       aria-disabled={disabled}
       data-nodrag                                  /* keeps the sheet from swipe-dismissing */
       onKeyDown={key}

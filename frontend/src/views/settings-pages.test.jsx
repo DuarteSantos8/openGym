@@ -308,7 +308,7 @@ describe('the pages', () => {
   it('each search entry is a row on its page (guest in a browser)', () => {
     const byPage = {}
     for (const e of SEARCH) if (pageVisible(PAGES[e.page].parent || e.page, guestWeb) && (!e.when || e.when(guestWeb))) (byPage[e.page] ||= []).push(e.title)
-    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'look', 'modules', 'plan', 'themes', 'units', 'workout'])
+    expect(Object.keys(byPage).sort()).toEqual(['about', 'account', 'advanced', 'alerts', 'data', 'equipment', 'integrations', 'look', 'modules', 'plan', 'themes', 'units', 'voice', 'workout'])
     for (const [page, want] of Object.entries(byPage)) {
       mount(page)
       // A row, or a button with the same words (the "Works with" chips on Integrations).

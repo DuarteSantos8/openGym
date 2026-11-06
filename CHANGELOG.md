@@ -6,6 +6,12 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Voice for the spoken cues**
+- Pick the voice that says your cues: Settings → Timer alerts → Voice. Every voice your phone or browser has for the app's language, with a preview, plus speed and pitch sliders.
+- Styles: Just the facts (as before), Calm coach, Drill sergeant, Hype man (LET'S GO! ONE MORE, CHAMP!) and Deadpan, in every language, with new lines as a rest starts, at 10 seconds, when it ends, before your last set and on a new record.
+- Your own lines: edit any style's lines per moment, or write your own from scratch.
+- Your own clips: record a friend shouting "you can do it" (or pick a file), up to three per moment, played instead of the line. They sync to your own devices and are never shared to the community library.
+
 **Sister apps: openNutrition, runs and matches**
 - Link openNutrition, read-only: Settings → Integrations → Sister apps → openNutrition, its address and the code it shows (or a token with summary access). openGym never changes anything there, and the link stays on this device.
 - With it linked: calories, protein and protein meals a day in the performance report (a Nutrition section) and a Fuel card in Your month, each with its own switch on the openNutrition sheet.
