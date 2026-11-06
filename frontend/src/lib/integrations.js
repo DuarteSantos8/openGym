@@ -34,6 +34,11 @@ export const CARDS = [
     syncs: ['Workouts, routines and weigh-ins, once.', 'The key is used for this import and then forgotten.'],
   },
   {
+    id: 'strava', cat: 'training', name: 'Strava', icon: 'figureRun', tint: 'var(--orange)',
+    desc: 'Your runs, rides and rows go up to Strava, strength too if you like.',
+    syncs: ['Finished cardio workouts, with their time and distance.', 'Strength sessions as Weight Training, if you switch it on.', 'Sent by your server, from whichever device you logged on.'],
+  },
+  {
     id: 'files', cat: 'training', name: 'Import a file', translate: true, icon: 'download', tint: 'var(--teal)',
     desc: 'Strong, FitNotes, Hevy CSV, GymMane or an Apple Health export.',
     syncs: ['Reads the export file of another app, once.', 'Exercises are matched to the library, you check the rest.'],
@@ -135,6 +140,15 @@ export function cardState(id, ctx) {
       if (mine.some(c => c.status === 'attention')) return { status: 'attention', action: 'manage' }
       return mine.every(c => c.paused) ? { status: 'off', action: 'manage' } : { status: 'connected', action: 'manage' }
     }
+    case 'strava': {
+      // Strava (#478): the server uploads, with the Strava app its admin registered.
+      if (ctx.demo || !ctx.user) return { status: 'server', action: null }
+      if (!(ctx.offered || []).includes('strava')) return ctx.admin ? { status: 'off', action: 'open' } : null
+      const mine = (ctx.server?.connections || []).filter(c => c.provider === 'strava')
+      if (!mine.length) return { status: 'off', action: 'connect' }
+      if (mine.some(c => c.status === 'attention')) return { status: 'attention', action: 'manage' }
+      return mine.every(c => c.paused) ? { status: 'off', action: 'manage' } : { status: 'connected', action: 'manage' }
+    }
     case 'webdav': {
       // This device talks to your WebDAV server itself: no openGym server needed (#582).
       if (ctx.demo) return null
@@ -160,7 +174,7 @@ export function cardState(id, ctx) {
 }
 
 // The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
-export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', coach: 'coach' }
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', strava: 'integrations', coach: 'coach' }
 
 /** The directory for this device: categories with their visible cards, empty ones left out.
  *  `ctx.mod(id)` says whether a module is on (absent: all on). */

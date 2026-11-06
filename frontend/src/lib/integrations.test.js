@@ -100,3 +100,16 @@ describe('the calendar card', () => {
     expect(cardState('calendar', { user: { id: 'u' }, tokens: true, calendar: { on: true } })).toEqual({ status: 'connected', action: 'manage' })
   })
 })
+
+describe('the Strava card (#478)', () => {
+  it('only where the server offers it, an admin is told how; then connect, connected or attention', async () => {
+    const { cardState } = await import('./integrations.js')
+    const u = { user: { id: 'u' } }
+    expect(cardState('strava', { user: null })).toEqual({ status: 'server', action: null })
+    expect(cardState('strava', { ...u, offered: ['webhook'] })).toBeNull()
+    expect(cardState('strava', { ...u, admin: true, offered: [] })).toEqual({ status: 'off', action: 'open' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [] } })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [{ provider: 'strava', status: 'connected' }] } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('strava', { ...u, offered: ['strava'], server: { connections: [{ provider: 'strava', status: 'attention' }] } })).toEqual({ status: 'attention', action: 'manage' })
+  })
+})

@@ -137,8 +137,9 @@ api:
     AUDIT_DAYS: ""           # default 90
     AUDIT_IP: ""             # off | net | full
     MEDIA_UPLOADS: ""        # "0" = off
-    INTEGRATIONS: ""         # "webhook" = Settings → Integrations → Webhooks (docs/INTEGRATIONS.md)
+    INTEGRATIONS: ""         # "webhook", "strava" (comma-separated) = Settings → Integrations (docs/INTEGRATIONS.md)
     INTEGRATIONS_ALLOW_LAN: ""  # "1" = webhooks may reach the home network
+    STRAVA_CLIENT_ID: ""     # with "strava" in INTEGRATIONS; STRAVA_CLIENT_SECRET is in secretEnv
     TRAINERS: ""             # "on" = gyms, gym leads and trainers (docs/TRAINERS.md)
     LIBRARY: ""              # "on" = the community library (docs/SELF_HOSTING.md); data/shared on the same volume
     SHARE_REVIEW: ""         # "on" = an admin approves shared items first
@@ -159,6 +160,7 @@ api:
   secretEnv:
     ADMIN_UIDS: ""           # comma-separated user ids from db.json
     OIDC_CLIENT_SECRET: ""   # the identity provider's client secret
+    STRAVA_CLIENT_SECRET: "" # your Strava API application's secret (docs/INTEGRATIONS.md)
   livenessProbe:
     httpGet:
       path: /api/health

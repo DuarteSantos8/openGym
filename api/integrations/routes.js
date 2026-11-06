@@ -4,7 +4,12 @@
  * looked up in the caller's own file, so another profile's id is simply "no such connection".
  * Documented in api/openapi.yaml (tag Integrations). */
 
-export function integrationRoutes({ json, readBody, readSession, hub, audit = () => {} }) {
+export function integrationRoutes({ json, readBody, readSession, hub, audit = () => {}, origin = 'http://localhost:8080' }) {
+  // OAuth (Strava): the browser goes to the provider and comes back here; both answers are
+  // redirects, the second back to Settings → Integrations with how it went in the query.
+  const base = String(origin).replace(/\/$/, '');
+  const callbackUrl = base + '/api/integrations/oauth/callback';
+  const back = (res, q) => { res.writeHead(302, { Location: base + '/settings/integrations?' + new URLSearchParams(q).toString(), 'Cache-Control': 'no-store' }); res.end(); };
   // A refusal the hub throws ({ status, code, message }) is the caller's to read, never a 500.
   const guard = fn => async (req, res) => {
     const user = readSession(req);
@@ -52,6 +57,35 @@ export function integrationRoutes({ json, readBody, readSession, hub, audit = ()
       const body = await readBody(req);
       json(res, 200, await hub.retry(user.id, idOf(body)));
     }),
+
+    'GET /api/integrations/oauth/start': async (req, res) => {
+      const user = readSession(req);
+      const provider = (new URL(req.url, 'http://x').searchParams.get('provider') || '').slice(0, 40);
+      if (!user) return back(res, { intg: provider, error: 'signin' });
+      try {
+        const to = hub.oauthStart(user.id, provider, callbackUrl);
+        res.writeHead(302, { Location: to, 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+        res.end();
+      } catch (e) {
+        if (!e?.status) throw e;
+        back(res, { intg: provider, error: e.code || 'error' });
+      }
+    },
+
+    // Strava sends the person back with ?state&code&scope (or ?error). The state names the profile;
+    // a browser that sent its cookie has to be signed in as that one.
+    'GET /api/integrations/oauth/callback': async (req, res) => {
+      const q = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
+      const user = readSession(req);
+      try {
+        const out = await hub.oauthFinish(q, user?.id || null);
+        audit(req, 'integration.connect', { user: user || { id: out.uid }, msg: `${out.connection.provider}: ${out.connection.label}` });
+        back(res, { intg: out.connection.provider, connected: '1' });
+      } catch (e) {
+        if (!e?.status) throw e;
+        back(res, { intg: 'strava', error: e.code || 'error' });
+      }
+    },
 
     'GET /api/integrations/log': guard(async (req, res, user) => {
       const id = new URL(req.url, 'http://x').searchParams.get('id');

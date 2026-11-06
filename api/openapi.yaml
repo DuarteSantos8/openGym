@@ -3434,6 +3434,32 @@ paths:
         '404': { $ref: '#/components/responses/IntegrationsOff' }
         '429': { $ref: '#/components/responses/IntegrationsSlowDown' }
 
+  /api/integrations/oauth/start:
+    get:
+      tags: [integrations]
+      operationId: integrationsOauthStart
+      summary: Start a sign-in with an OAuth service (Strava)
+      description: A browser navigation, not a fetch. Redirects to the service's consent page with a state bound to the signed-in profile (valid ten minutes, once), or back to Settings → Integrations with `error` when that is not possible.
+      parameters:
+        - name: provider
+          in: query
+          required: true
+          schema: { type: string, enum: [strava] }
+      responses:
+        '302': { description: To the service, or back to the app with `intg` and `error`. }
+  /api/integrations/oauth/callback:
+    get:
+      tags: [integrations]
+      operationId: integrationsOauthCallback
+      summary: Where the OAuth service sends the person back
+      description: Checks the state (its profile, its time, used once; a browser that sends its session cookie has to be that profile), exchanges the code for tokens (sealed, never shown) and stores the connection, replacing an earlier one of the same service. Redirects to Settings → Integrations with `intg` and `connected=1`, or `error`.
+      parameters:
+        - { name: state, in: query, schema: { type: string } }
+        - { name: code, in: query, schema: { type: string } }
+        - { name: scope, in: query, schema: { type: string } }
+        - { name: error, in: query, schema: { type: string } }
+      responses:
+        '302': { description: Back to the app. }
   /api/integrations/log:
     get:
       tags: [integrations]
