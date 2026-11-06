@@ -3,10 +3,9 @@
   "name": "side lying external rotation",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "rehab",
   "description": "A light side-lying rotation for the back of the shoulder. Often used for shoulder stability.",

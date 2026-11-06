@@ -4,11 +4,12 @@
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
   "machineKind": "shoulder-press",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper chest",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated machine shoulder press with a neutral hammer grip. It trains the delts with a joint-friendly hand position.",

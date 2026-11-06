@@ -3,10 +3,11 @@
   "name": "seated shoulder press on a chair",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "trapezius"
+    "trapezius",
+    "side delts"
   ],
   "category": "strength",
   "description": "A seated overhead press without equipment that trains the shoulders and triceps.",

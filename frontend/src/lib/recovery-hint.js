@@ -34,14 +34,14 @@ const FATIGUED = 0.5
 // The two regions the hint talks about, by their main muscles.
 export const REGIONS = {
   legs: ['quadriceps', 'hamstring', 'gluteal'],
-  upper: ['chest', 'upper-back', 'deltoids'],
+  upper: ['chest', 'lats', 'upper-back', 'front-delts', 'side-delts', 'rear-delts'],
 }
 // The groups a "left alone" hint names, most important first on a tie.
 export const GROUPS = {
   legs: ['quadriceps', 'hamstring', 'gluteal'],
-  back: ['upper-back'],
+  back: ['lats', 'upper-back'],
   chest: ['chest'],
-  shoulders: ['deltoids'],
+  shoulders: ['front-delts', 'side-delts', 'rear-delts'],
 }
 
 const iso = ms => { const x = new Date(ms); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}` }

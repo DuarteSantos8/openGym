@@ -3,10 +3,9 @@
   "name": "pvc external rotation",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "mobility",
   "description": "Using a light pipe to practice rotating the shoulders outward, building control and range for overhead lifts.",

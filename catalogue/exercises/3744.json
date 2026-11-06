@@ -3,9 +3,8 @@
   "name": "rear delt fly with bed sheet",
   "bodyPart": "shoulders",
   "equipment": "body weight",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids"
   ],

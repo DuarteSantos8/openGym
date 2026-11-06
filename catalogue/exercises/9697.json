@@ -3,12 +3,13 @@
   "name": "kettlebell bottoms up single arm overhead carry",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "rotator cuff",
     "forearms",
     "grip muscles",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "strength",
   "description": "Carrying a kettlebell upside down overhead with one arm. It builds shoulder stability and a strong grip.",

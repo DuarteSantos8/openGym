@@ -18,6 +18,7 @@ import { beep, vibrate } from './lib/sound.js'
 import { t, tn, dateLocale, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameClass, getLang, useLang } from './lib/i18n.js'
 import { nav, closeThenNav, navToWorkout } from './lib/nav.js'
 import { buildStarterPlan, starterPlanDays, starterPlanOptions } from './lib/starter.js'
+import OwnExerciseMedia from './components/OwnExerciseMedia.jsx'
 import Media, { Thumb } from './components/Media.jsx'
 import CustomMediaField from './components/CustomMediaField.jsx'
 import WorkoutMediaSection, { workoutMediaCount } from './components/WorkoutMedia.jsx'
@@ -1526,6 +1527,9 @@ function ExerciseDetail({ ex, close }) {
       })}
     </div>
     <ExerciseAliasesEditor key={ex.id} ex={ex} />
+    {/* Your own photo or video on a built-in exercise (#259, #534): shown instead of the animation
+        or beside it, private to your account (components/OwnExerciseMedia.jsx). */}
+    <OwnExerciseMedia ex={ex} />
     {descFor(ex) && <div className="exnote">{descFor(ex)}</div>}
     {/* One line of text that wraps as a sentence: as a flex row, the last session became a
         separate column beside "Best: 105 kg" once it wrapped (design review 1.4.5). */}

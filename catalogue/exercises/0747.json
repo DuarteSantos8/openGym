@@ -4,10 +4,11 @@
   "bodyPart": "shoulders",
   "equipment": "smith machine",
   "machineKind": "smith",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "On the smith machine, you press the bar overhead from behind your neck. Works the shoulders and triceps, so keep it controlled.",

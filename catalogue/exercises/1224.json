@@ -4,10 +4,11 @@
   "bodyPart": "shoulders",
   "equipment": "smith machine",
   "machineKind": "smith",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "A standing overhead press on the Smith machine. The fixed bar path lets you focus on pushing.",

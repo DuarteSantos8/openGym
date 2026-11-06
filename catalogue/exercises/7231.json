@@ -3,10 +3,9 @@
   "name": "dumbbell incline single arm y raise",
   "bodyPart": "shoulders",
   "equipment": "dumbbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
-    "rear deltoids",
     "upper back"
   ],
   "category": "strength",

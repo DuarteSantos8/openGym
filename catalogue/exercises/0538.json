@@ -3,10 +3,11 @@
   "name": "kettlebell one arm jerk",
   "bodyPart": "shoulders",
   "equipment": "kettlebell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "core"
+    "core",
+    "side delts"
   ],
   "category": "olympic",
   "description": "Dip and drive with your legs to throw a kettlebell from the shoulder to overhead with one arm. Builds explosive shoulder and leg power.",
@@ -25,7 +26,7 @@
     "primaries": [
       "quadriceps",
       "gluteal",
-      "deltoids",
+      "front-delts",
       "triceps"
     ],
     "secondaries": [
@@ -35,7 +36,8 @@
       "forearm",
       "lower-back",
       "abs",
-      "obliques"
+      "obliques",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

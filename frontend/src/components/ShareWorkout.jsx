@@ -120,7 +120,7 @@ export default function ShareWorkout({ w, close }) {
   useEffect(() => {
     if (!model.levels || !show.map || body) return
     let alive = true
-    import('../lib/body-paths.js').then(m => { if (alive) setBody(m.default) }).catch(() => {})
+    import('../lib/body-geometry.js').then(m => { if (alive) setBody(m.default) }).catch(() => {})
     return () => { alive = false }
   }, [model.levels, show.map, body])
 

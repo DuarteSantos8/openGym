@@ -26,7 +26,7 @@ import './Wrapped.css'
 /** A card's picture: the card laid out on a 9:16 or 1:1 canvas, PNG. */
 export async function wrappedCardImage(card, { format, style, year, body }) {
   const colors = cardPalette(style, currentAccent())
-  const geometry = card.map ? (await import('../lib/body-paths.js')).default : null
+  const geometry = card.map ? (await import('../lib/body-geometry.js')).default : null
   const shape = geometry && (geometry[body] || geometry.male)
   const probe = makeCanvas(1, 1, CARD_FONT)
   if (!probe) return null

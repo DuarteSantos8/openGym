@@ -3,12 +3,13 @@
   "name": "weighted stone standing power overhead press",
   "bodyPart": "shoulders",
   "equipment": "weighted",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "upper back",
     "core",
-    "glutes"
+    "glutes",
+    "side delts"
   ],
   "category": "strength",
   "description": "A strongman-style overhead press with a heavy stone, using a small leg drive for power.",

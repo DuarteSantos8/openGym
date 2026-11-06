@@ -13,6 +13,7 @@ import { sessionSections, workoutVolume, workoutDuration, workoutDay, doneUnits 
 import { EXIDX } from './exercises.js'
 import { isWarmupRow } from './workout-model.js'
 import { MUSCLES, INERT, levelsOf, loadOfWorkouts } from './muscles.js'
+import { regionLevel } from './body-geometry-level.js'
 import { fmtDate, fmtDur, fmtNum, fmtVol, capWords } from './format.js'
 import { t, exerciseNameClass } from './i18n-core.js'
 import { parseColor, mixColor, FORMATS, drawBrand, roundRect } from './card-draw.js'
@@ -425,7 +426,7 @@ export function drawView(ctx, view, box, levels, shades) {
   ctx.fillStyle = shades.sil
   for (const slug of INERT) for (const d of view.p[slug] || []) ctx.fill(new Path2D(d))
   for (const slug of MUSCLES) {
-    ctx.fillStyle = shades.levels[levels?.[slug] || 0]
+    ctx.fillStyle = shades.levels[regionLevel(levels, slug, view)]
     for (const d of view.p[slug] || []) ctx.fill(new Path2D(d))
   }
   ctx.restore()

@@ -3,11 +3,12 @@
   "name": "cable kneeling shoulder press",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
     "core",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "An overhead cable press from a kneeling position. It builds the shoulders and demands core stability.",

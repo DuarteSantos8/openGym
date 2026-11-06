@@ -3,11 +3,10 @@
   "name": "cable standing cross-over high reverse fly",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
-    "rhomboids",
-    "rear deltoids"
+    "rhomboids"
   ],
   "category": "strength",
   "description": "A standing cable reverse fly that crosses over at the end. You open the arms out and back to hit the rear delts and upper back.",

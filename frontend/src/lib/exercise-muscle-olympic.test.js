@@ -46,7 +46,7 @@ it('keeps every overlay mapping canonical, multi-primary, and weighted for the l
 it('distinguishes overhead pressing from a pull and keeps trunk bracing secondary', () => {
   expect(EXIDX['0028'].primaries).toContain('triceps')
   expect(EXIDX['0776'].primaries).not.toContain('triceps')
-  expect(EXIDX['0067'].primaries).toContain('deltoids')
+  expect(EXIDX['0067'].primaries).toContain('front-delts')
   expect(EXIDX['0648'].secondaries).toContain('abs')
   expect(EXIDX['0648'].primaries).not.toContain('abs')
 })
@@ -65,5 +65,5 @@ it('does not classify clean-grip squats as Olympic clean movements or duplicate 
   expect(OLYMPIC_LIFT_METADATA['0029']).toBeUndefined()
   expect(OLYMPIC_LIFT_METADATA['1433']).toBeUndefined()
   expect(OLYMPIC_LIFT_METADATA['0786']).toBeUndefined()
-  expect(EXIDX['0786'].primaries).toContain('deltoids')
+  expect(EXIDX['0786'].primaries).toContain('front-delts')
 })

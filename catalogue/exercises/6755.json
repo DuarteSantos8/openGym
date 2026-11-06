@@ -3,10 +3,9 @@
   "name": "cable kneeling shoulder external rotation",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rotator cuff",
-    "rear deltoids"
+    "rotator cuff"
   ],
   "category": "strength",
   "description": "A light rotation drill with a cable that turns the arm outward. It strengthens the rotator cuff.",

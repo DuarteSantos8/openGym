@@ -4,10 +4,11 @@
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
   "machineKind": "shoulder-press",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "chest"
+    "chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "A machine shoulder press, pushing the handles overhead. Builds shoulder and triceps strength.",
@@ -21,13 +22,14 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "front-delts"
     ],
     "secondaries": [
       "chest",
       "triceps",
       "trapezius",
-      "serratus"
+      "serratus",
+      "side-delts"
     ]
   },
   "textSource": "exercisedb"

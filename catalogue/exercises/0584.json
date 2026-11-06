@@ -4,7 +4,7 @@
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
   "machineKind": "lateral-raise",
-  "target": "delts",
+  "target": "side delts",
   "secondaryMuscles": [
     "traps",
     "upper back"
@@ -20,7 +20,7 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "side-delts"
     ],
     "secondaries": [
       "trapezius",

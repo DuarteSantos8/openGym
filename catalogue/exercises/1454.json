@@ -4,10 +4,11 @@
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
   "machineKind": "shoulder-press",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper chest"
+    "upper chest",
+    "side delts"
   ],
   "category": "strength",
   "description": "A machine overhead press that builds the shoulders and triceps with a fixed, stable path.",

@@ -137,7 +137,7 @@ it('shows a labelled suggestions section for Dead Hang Stretch with a gym profil
   expect(section.querySelectorAll('.item')).toHaveLength(3)
   expect(section.textContent).not.toContain('dead hang stretch')
   // the list under the suggestions is the same-muscle one the swap opened on (#473)
-  expect([...host.querySelectorAll('h4.sec')].map(h => h.textContent)).toContain('Same muscle: lats')
+  expect([...host.querySelectorAll('h4.sec')].map(h => h.textContent)).toContain('Same muscle: Lats')
 })
 
 describe('gym selection in a swap', () => {

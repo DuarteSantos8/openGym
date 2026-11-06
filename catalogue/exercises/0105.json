@@ -3,10 +3,11 @@
   "name": "barbell standing bradford press",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "front delts",
   "secondaryMuscles": [
     "triceps",
-    "upper back"
+    "upper back",
+    "side delts"
   ],
   "category": "strength",
   "description": "A standing Bradford press, lifting the bar from the front of the shoulders to behind the head and back. Works the delts.",

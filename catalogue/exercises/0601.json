@@ -4,7 +4,7 @@
   "bodyPart": "shoulders",
   "equipment": "leverage machine",
   "machineKind": "pec-deck",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
     "trapezius",
     "rhomboids"
@@ -20,7 +20,7 @@
   ],
   "muscleMap": {
     "primaries": [
-      "deltoids"
+      "rear-delts"
     ],
     "secondaries": [
       "trapezius",

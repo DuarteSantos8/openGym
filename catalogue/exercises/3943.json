@@ -3,9 +3,8 @@
   "name": "cable seated rear delt fly with chest support",
   "bodyPart": "shoulders",
   "equipment": "cable",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "rhomboids",
     "upper back"
   ],

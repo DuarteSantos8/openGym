@@ -110,7 +110,7 @@ describe('Stats redesign: Muscles', () => {
 
   it('draws each main muscle against its range, five rows until Show more, the plan as a tick', () => {
     mount(small({ workouts: [done('2026-09-30', 'chest', 8), done('2026-09-30', 'biceps', 3), done('2026-09-30', 'forearm', 2)] }))
-    expect(rows().map(r => r.dataset.muscleVolume)).toEqual(['chest', 'biceps', 'triceps', 'deltoids', 'upper-back'])
+    expect(rows().map(r => r.dataset.muscleVolume)).toEqual(['chest', 'biceps', 'triceps', 'front-delts', 'side-delts'])
     const chest = rowOf('chest')
     expect(chest.querySelector('.sbar-v').textContent).toBe('8 / 10–20')
     expect(chest.classList.contains('below')).toBe(true)

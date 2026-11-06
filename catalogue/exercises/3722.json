@@ -3,9 +3,8 @@
   "name": "barbell incline lying rear delt raise",
   "bodyPart": "shoulders",
   "equipment": "barbell",
-  "target": "delts",
+  "target": "rear delts",
   "secondaryMuscles": [
-    "rear deltoids",
     "upper back",
     "rhomboids",
     "trapezius"

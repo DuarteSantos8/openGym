@@ -9,8 +9,8 @@ import { MUSCLES } from './muscles.js'
 /** The groups, head to toe, with the muscles each opens into. `name` is the i18n key. */
 export const MUSCLE_GROUPS = [
   { id: 'chest', name: 'Chest', muscles: ['chest', 'serratus'] },
-  { id: 'back', name: 'Back', muscles: ['upper-back', 'lower-back', 'trapezius'] },
-  { id: 'shoulders', name: 'Shoulders', muscles: ['deltoids'] },
+  { id: 'back', name: 'Back', muscles: ['lats', 'upper-back', 'lower-back', 'trapezius'] },
+  { id: 'shoulders', name: 'Shoulders', muscles: ['front-delts', 'side-delts', 'rear-delts'] },
   { id: 'arms', name: 'Arms', muscles: ['biceps', 'triceps', 'forearm'] },
   { id: 'core', name: 'Core', muscles: ['abs', 'obliques'] },
   { id: 'legs', name: 'Legs', muscles: ['gluteal', 'quadriceps', 'hamstring', 'adductors', 'hip-flexors', 'calves', 'tibialis'] },
