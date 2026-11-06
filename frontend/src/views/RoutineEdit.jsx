@@ -1,3 +1,4 @@
+import { isFavRoutine, toggleFavRoutine } from '../lib/routine-favs.js'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
@@ -502,6 +503,11 @@ export default function RoutineEdit() {
         <input className="input" data-tour="routine-name" aria-label={t('Routine name')} defaultValue={r.name} style={{ fontWeight: 600, fontSize: 'var(--fs-title3)', letterSpacing: '-.021em' }}
           onChange={e => update(s => { s.routines.find(x => x.id === id).name = e.target.value.trim() || t('Routine') })} />
       </div>
+      {/* The star (#327, lib/routine-favs.js): a favourite leads Plan's list and the Start sheet. */}
+      <button className={'iconbtn fav-btn' + (isFavRoutine(r) ? ' on' : '')} aria-pressed={isFavRoutine(r)} data-routine-fav
+        aria-label={isFavRoutine(r) ? t('Remove from favourites') : t('Add to favourites')}
+        onClick={() => { let on = false; update(s => { on = toggleFavRoutine(s, id) }); toast(on ? t('Starred. It leads your routines now.') : t('No longer a favourite.')) }}>
+        <Icon name={isFavRoutine(r) ? 'starFill' : 'star'} /></button>
       <button className="iconbtn" aria-label={t('Pick an icon')} onClick={() => glyphPicker(r.emoji, g => update(s => { s.routines.find(x => x.id === id).emoji = g }))}><Icon name={glyphOf(r.emoji)} /></button>
     </div>
 

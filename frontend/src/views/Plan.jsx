@@ -32,6 +32,7 @@ import {
 } from '../lib/rotation.js'
 import { isOn } from '../lib/modules.js'
 import { groupRoutines, folderOpen, setFolderOpen, folderOf } from '../lib/routine-folders.js'
+import { isFavRoutine } from '../lib/routine-favs.js'
 
 // Plan has two views (v1.3.11): Schedule (how you train, and when) and Routines (what you
 // train). The last one you looked at comes back: a per-device convenience, never synced, so it
@@ -476,13 +477,16 @@ function Routines({ S, update, nav }) {
             {routines.length > 1 && <button className="plan-handle" aria-label={t('Move {0}', r.name)} title={t('Drag to reorder')}
               {...reorder.handle(i)}><Icon name="chevronsUpDown" /></button>}
           </div>)}</div>
-        : groupRoutines(routines).map(g => {
+        // Starred routines first, under Favourites (#327, lib/routine-favs.js): out of their
+        // folder while starred, so each routine shows once. Edit still orders S.routines itself.
+        : [...(routines.some(isFavRoutine) ? [{ folder: '', fav: true, routines: routines.filter(isFavRoutine) }] : []),
+          ...groupRoutines(routines.filter(r => !isFavRoutine(r)))].map(g => {
           if (!g.routines.length) return null
           const open = !g.folder || (openFolders[g.folder.toLowerCase()] ?? folderOpen(g.folder))
-          const list = open && <div key={'l' + g.folder} className="list routine-list plan-routines" data-folder={g.folder || undefined}>{g.routines.map(r => {
+          const list = open && <div key={'l' + (g.fav ? '*' : g.folder)} className="list routine-list plan-routines" data-folder={g.folder || undefined} data-favs={g.fav || undefined}>{g.routines.map(r => {
           const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
-            <div className="grow"><div className="tt">{r.name}</div><div className="ss">{sub(r)}</div></div>
+            <div className="grow"><div className="tt">{isFavRoutine(r) && <Icon name="starFill" className="fav-star" />}{r.name}</div><div className="ss">{sub(r)}</div></div>
             <MiniBodyMap routines={[r]} body={S.body} />
             <Icon name="chevronRight" className="chev" /></div>
           // Swipe (v1.3.11, Settings → Swipe actions): toward the start deletes with an Undo,
@@ -494,6 +498,10 @@ function Routines({ S, update, nav }) {
               flash={flash?.id === r.id ? flash.n : 0}>{row}</SwipeRow>
             : row
         })}</div>
+          if (g.fav) return <div key="favs" className="plan-folder-sect plan-favs">
+            <h4 className="sec plan-favs-h"><Icon name="starFill" className="fav-star" />{t('Favourites')}</h4>
+            {list}
+          </div>
           if (!g.folder) return list
           // A folder's header folds its routines away; where it was left is remembered here.
           return <div key={'f' + g.folder} className="plan-folder-sect">

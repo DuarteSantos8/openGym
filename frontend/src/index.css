@@ -4148,3 +4148,5 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cr-v{font-size:var(--fs-title3,1.25rem);font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
 .cr-s{font-size:var(--fs-footnote);color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums;margin-top:2px}
 .cr-s.accent{color:var(--acc-ink)}
+/* Favourite routines (#327): the starred ones under their own quiet heading on Plan. */
+.plan-favs-h{display:flex;align-items:center;gap:2px;margin:4px 2px 8px}
