@@ -412,7 +412,7 @@ function nutritionHTML(R) {
     card(t('Protein a day'), N.protein != null ? `${esc(fmtNum(N.protein))}<small>g</small>` : '–', sub(N.proteinTarget ? t('Target {0}', fmtNum(N.proteinTarget) + ' g') : '')),
     ...(N.proteinMeals != null ? [card(t('Protein meals a day'), esc(fmtNum(N.proteinMeals)))] : []),
     card(t('Days logged'), esc(N.of ? `${fmtNum(N.days)} / ${fmtNum(N.of)}` : fmtNum(N.days)),
-      sub(N.proteinHit != null ? t('Protein target hit on {0}', tn('{0} day', '{0} days', N.proteinHit)) : '')),
+      sub(N.proteinHit != null ? t('Protein target hit on {0}', `${fmtNum(N.proteinHit)}/${fmtNum(N.proteinDays)}`) : '')),
   ]
   const notes = [t('From openNutrition. Averages count only the days you logged.'), N.partial ? t('Some days had foods without numbers, so their totals are a little low.') : ''].filter(Boolean)
   return `<div class="cards">${cards.join('')}</div><div class="note-line">${esc(notes.join(' '))}</div>`

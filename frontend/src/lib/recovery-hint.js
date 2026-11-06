@@ -21,6 +21,7 @@ import { loadOfWorkouts, loadOfRoutine } from './muscles.js'
 import { workoutAt, effectiveRoutines } from './history.js'
 import { t } from './i18n.js'
 import { DAYN, fmtDate, todayISO } from './format.js'
+import { activityStimuli } from './activities.js'
 
 const DAY = 86400000
 export const HINT_NEGLECT_DAYS = 7
@@ -78,6 +79,11 @@ export function recoveryHint(S, { now = Date.now(), today = iso(now), fatigue = 
   const recent = workouts.filter(w => { const at = workoutAt(w); return at > now - 30 * DAY && at <= now })
   if (recent.length < HINT_MIN_RECENT_WORKOUTS) return null
   const last = lastWorked(workouts)
+  // A run or a match (lib/activities.js) worked the muscles it leans on: no "legs neglected" the day
+  // after football.
+  for (const a of activityStimuli(S, now)) {
+    for (const [m, v] of Object.entries(a.sets)) if (v >= 1 && a.timestamp > (last[m] || 0)) last[m] = a.timestamp
+  }
   const lastDay = slugs => {
     const at = Math.max(...slugs.map(m => last[m] || 0))
     return at > 0 ? iso(at) : null

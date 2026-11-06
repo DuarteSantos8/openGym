@@ -145,3 +145,4 @@ describe('activities: imports', () => {
     expect(mergeImportedActivities(S, activities)).toBe(0)
   })
 })
+

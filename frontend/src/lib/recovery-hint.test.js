@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import { recoveryHint, lastWorked, HINT_NEGLECT_DAYS, hintText, hintDay } from './recovery-hint.js'
 import { fatigueOf } from './recovery.js'
+import { activityStimuli } from './activities.js'
 
 const SQUAT = '0043', BENCH = '0025', ROW = '0027', RDL = '0085', OHP = '0091'
 // Wednesday 28 Oct 2026, 09:00.
@@ -114,5 +115,15 @@ describe('Recovery tips switched back on', () => {
     const s = { recoveryHint: true, recoveryHintDay: '2026-11-05' }
     setRecoveryHint(s, false)
     expect(s).toEqual({ recoveryHint: false, recoveryHintDay: '2026-11-05' })
+  })
+})
+
+describe('recoveryHint with activities (gm-hooks)', () => {
+  it('football two days ago counts as leg work: the legs are not called neglected', () => {
+    const S = state([upper(20), legs(12), upper(10), legs(9), upper(3)])
+    expect(hint(S)).toEqual({ kind: 'neglect', group: 'legs', days: 9 })
+    const withBall = { ...S, activities: { x: { d: '2026-10-26', sport: 'football', min: 90, at: new Date(2026, 9, 26, 18).getTime() } } }
+    const h = recoveryHint(withBall, { now: NOW, today: TODAY, fatigue: fatigueOf(S.workouts, NOW, { unit: 'kg', activities: activityStimuli(withBall, NOW) }) })
+    expect(h?.group).not.toBe('legs')
   })
 })
