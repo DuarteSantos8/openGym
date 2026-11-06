@@ -93,6 +93,31 @@ describe('buildLiveActivity', () => {
   })
 })
 
+describe('timed holds that run themselves on the Lock Screen', () => {
+  const A = { id: 'w1', cur: 0, entries: [entry('0025', [set(), set()])] }
+  it('counts the count-in and the hold down under their own words, and says the chain runs', () => {
+    const live = L.buildLiveActivity(S(A), null, { countIn: { endsAt: 9000, total: 3, left: 3 } })
+    expect(live.state).toMatchObject({ holdEndsAt: 9000, holdTotal: 3, holdLeft: null, holdKind: 'countin', auto: true })
+    for (const k of ['hold', 'getReady', 'stopAuto']) expect(typeof live.attributes.labels[k], k).toBe('string')
+    expect(L.buildLiveActivity(S(A), null, { work: { endsAt: 40_000, total: 30, left: 30, auto: true } }).state).toMatchObject({ holdEndsAt: 40_000, holdKind: 'hold', auto: true })
+    expect(L.buildLiveActivity(S(A), null, { work: { endsAt: 0, total: 30, left: 12, paused: true, auto: true } }).state).toMatchObject({ holdEndsAt: null, holdLeft: 12 })
+  })
+  it('shows a hold started by hand without the chain, and the rest before an auto hold as part of it', () => {
+    expect(L.buildLiveActivity(S(A), null, { work: { endsAt: 40_000, total: 30, left: 30 } }).state).toMatchObject({ holdKind: 'hold', auto: false })
+    expect(L.buildLiveActivity(S(A), { endsAt: 5000, total: 90, left: 40 }, { autoNext: true }).state).toMatchObject({ restEndsAt: 5000, holdEndsAt: null, auto: true })
+    expect(L.buildLiveActivity(S(A)).state).toMatchObject({ holdEndsAt: null, holdKind: null, auto: false })
+  })
+  it('applies Stop auto through the workout screen', () => {
+    localStorage.clear(); L._resetLiveActivity()
+    const autoStop = vi.fn()
+    const unbind = L.bindLiveActions({ setDone: vi.fn(), autoStop })
+    const state = S({ ...A })
+    expect(L.applyLiveEvents([{ id: 'x1', type: 'autoStop', wid: 'w1', at: 1 }], () => ({ S: state }))).toEqual(['x1'])
+    expect(autoStop).toHaveBeenCalledOnce()
+    unbind()
+  })
+})
+
 describe('the Done taps', () => {
   let state, calls
   const A = () => ({ id: 'w1', cur: 0, entries: [entry('0025', [set(), set()]), entry('0043', [set()])] })

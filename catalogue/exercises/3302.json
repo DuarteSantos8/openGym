@@ -3,9 +3,9 @@
   "name": "handstand",
   "bodyPart": "upper arms",
   "equipment": "body weight",
-  "target": "triceps",
+  "target": "delts",
   "secondaryMuscles": [
-    "shoulders",
+    "triceps",
     "core"
   ],
   "category": "isometric",

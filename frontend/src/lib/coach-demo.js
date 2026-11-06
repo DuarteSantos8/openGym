@@ -213,7 +213,32 @@ export const demoAsk = (S, text) => start('ask', () => ({
   planHash: planHash(S), iteration: 1, prev: waitingProposal(pending),
   answer: t('This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.', String(text || '').slice(0, 80)),
 }))
-export const demoResolve = () => { pending = pending?.kind === 'ask' ? waitingProposal(pending.prev) : null; return { ok: true } }
+// "Ask the Coach" mid-workout: a canned answer aimed at the exercise asked about, with the same
+// change types and fields a real one carries, so ticking and applying them runs the real code.
+export const demoAdapt = (S, { today, entry, reason, activeId } = {}) => start('adapt', () => {
+  const en = today?.entries?.[entry]
+  const open = (en?.sets || []).filter(x => !x.warmup && !x.done).length
+  const name = EXIDX[en?.id]?.n || ''
+  const inSession = new Set((today?.entries || []).map(e => e.id))
+  const like = EXDB.find(e => e.tg === EXIDX[en?.id]?.tg && e.id !== en?.id && !inSession.has(e.id) && /dumbbell|cable|lever/.test(e.eq || ''))
+  const at = { entry, exId: en?.id }
+  const changes = !en || !open ? []
+    : reason === 'pain' ? [
+      ...(like ? [{ id: 'a0', type: 'swap', ...at, to: like.id, toName: like.n, why: t('It pinches, so the sets you have left go to a movement that loads the same muscle from a kinder angle.') }]
+        : [{ id: 'a0', type: 'weight', ...at, pct: -20, why: t('It pinches, so lighter for the rest of it. Stop if it still hurts.') }]),
+    ]
+      : reason === 'great' ? [{ id: 'a0', type: 'weight', ...at, pct: 5, why: t('You feel strong, so a little more on the bar for what is left. Not a new max, just a nudge.') }]
+        : reason === 'busy' && !(en.sets || []).some(x => x.done) ? [{ id: 'a0', type: 'move', ...at, place: 'last', why: t('The rack is taken, so do it at the end. The rest of the session does not need it.') }]
+          : [{ id: 'a0', type: 'sets', ...at, sets: Math.max(0, open - 1), before: open, why: t('One set less keeps the session doable today and still counts.') }]
+  return {
+    id: 'demo-adapt-' + Date.now().toString(36), kind: 'adapt', createdAt: Date.now(), expiresAt: Date.now() + 864e5,
+    planHash: planHash(S), iteration: 1, prev: waitingProposal(pending), activeId: activeId || null,
+    focus: en ? { entry, exId: en.id, name, reason: reason || 'other' } : null,
+    summary: t('This is the demo, so there is no AI model behind me. On your own server I read your session and suggest changes like these.'),
+    changes,
+  }
+})
+export const demoResolve = () => { pending = pending?.kind === 'ask' || pending?.kind === 'adapt' ? waitingProposal(pending.prev) : null; return { ok: true } }
 export const demoDisclosure = () => ({
   provider: 'demo', providerLabel: t('the configured AI provider'),
   categories: ['plan', 'training', 'bodyweight', 'profile', 'prefs'], version: 1

@@ -3,9 +3,9 @@
   "name": "landmine cossack squat",
   "bodyPart": "upper legs",
   "equipment": "landmine",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
-    "quadriceps",
+    "glutes",
     "adductors",
     "hamstrings",
     "core"

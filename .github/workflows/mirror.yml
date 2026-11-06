@@ -5,9 +5,11 @@
 # nothing there is merged by hand. Every push to main and every v* tag is forwarded here.
 # Pull mirroring on gitlab.com is a paid feature, so the push runs from this side.
 #
-# Only fast-forward pushes: a rewrite on main, or a commit that landed on GitLab directly,
-# makes this job fail loudly instead of overwriting anything. Branches are never deleted
-# on the mirror from here.
+# main is pushed fast-forward only: a rewrite on main, or a commit that landed on GitLab
+# directly, makes this job fail loudly instead of overwriting anything. The v* tags are
+# forced: GitHub is the source of truth for them, and a tag moved here (v1.4.4 was, after
+# its first build) has to move on the mirror too instead of failing every later push.
+# Branches and tags are never deleted on the mirror from here.
 #
 # Needs one secret, GITLAB_MIRROR_TOKEN: a *project* access token of the GitLab project
 # (Settings → Access tokens) with the single scope `write_repository` and the Maintainer
@@ -55,5 +57,21 @@ jobs:
           git config credential.helper '!f() { echo "username=oauth2"; echo "password=$GITLAB_MIRROR_TOKEN"; }; f'
           # main first, then the tags: a tag pipeline on GitLab checks that its commit is on
           # main, so the branch has to be there before the tag arrives.
-          git push https://gitlab.com/DuarteSantos8/opengym.git refs/remotes/origin/main:refs/heads/main
-          git push https://gitlab.com/DuarteSantos8/opengym.git 'refs/tags/v*:refs/tags/v*'
+          remote=https://gitlab.com/DuarteSantos8/opengym.git
+          git push "$remote" refs/remotes/origin/main:refs/heads/main
+          if git push --force "$remote" 'refs/tags/v*:refs/tags/v*'; then exit 0; fi
+          # Something was refused even with --force. Usually a moved tag that GitLab protects
+          # (protected tags cannot be updated there, only deleted by a Maintainer in the UI):
+          # name it as a warning and keep the run green. A *new* tag that could not be
+          # created is a real failure.
+          existing=$(git ls-remote --tags "$remote" 'refs/tags/v*' | awk '{print $2}' | sed 's#^refs/tags/##; s#\^{}$##' | sort -u)
+          fail=0
+          for t in $(git tag -l 'v*'); do
+            git push --force "$remote" "refs/tags/$t:refs/tags/$t" > /dev/null 2>&1 && continue
+            if printf '%s\n' "$existing" | grep -qxF "$t"; then
+              echo "::warning::Tag $t differs on GitLab and was refused there (protected tag?). Delete it on gitlab.com (Code > Tags) and re-run this workflow to mirror it again."
+            else
+              echo "::error::New tag $t could not be pushed to GitLab."; fail=1
+            fi
+          done
+          exit $fail

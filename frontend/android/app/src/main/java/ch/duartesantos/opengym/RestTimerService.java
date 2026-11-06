@@ -291,13 +291,18 @@ public class RestTimerService extends Service {
         running = false;
         handler.removeCallbacks(tick);
         releaseCpu();
+        // Skipped before a hold that starts by itself: its count-in rings now, and the chain goes
+        // on from here (RestAlert.chainNext). The page hears when (endsAt is the skip's time).
+        boolean chained = RestAlert.hasCues();
+        long now = System.currentTimeMillis();
         RestAlert.cancelAlarmOnly(this, RestAlert.NOTIFICATION_ID);
-        RestAlertPlugin.emit("skip", 0, 0, 0, false);
+        RestAlertPlugin.emit("skip", now, 0, 0, false);
         // Also queued for the page: a frozen page can miss the event above (lib/live-activity.js).
         if (LiveActivityPlugin.card(this) != null) {
             LiveActivityPlugin.queue(this, LiveActivityPlugin.event("restSkip", LiveActivityPlugin.cardWid(this)));
             LiveActivityPlugin.changed();
         }
+        if (chained) RestAlert.fireFromCountdown(getApplicationContext(), now);
         endRest();
     }
 

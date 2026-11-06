@@ -3,8 +3,9 @@
   "name": "full squat mobility",
   "bodyPart": "upper legs",
   "equipment": "body weight",
-  "target": "glutes",
+  "target": "quads",
   "secondaryMuscles": [
+    "glutes",
     "adductors",
     "hip flexors",
     "ankles",

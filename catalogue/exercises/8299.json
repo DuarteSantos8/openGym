@@ -3,9 +3,9 @@
   "name": "cable half kneeling single arm row v. 2",
   "bodyPart": "back",
   "equipment": "cable",
-  "target": "lats",
+  "target": "upper back",
   "secondaryMuscles": [
-    "upper back",
+    "lats",
     "biceps",
     "core",
     "rhomboids"
