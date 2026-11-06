@@ -2265,7 +2265,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* On reads as a quiet tint of the accent, off as plain and dimmed: eleven solid green pills
    shouted louder than the card they configure. */
 .sharew-els .chip,.folder-chips .chip{background:var(--surface-2);color:var(--label-2);text-transform:none;min-height:36px}
-.sharew-els .chip.on,.folder-chips .chip.on{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);font-weight:500}
+.sharew-els .chip.on,.folder-chips .chip.on{background:var(--surface-3);background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc);font-weight:500}
 @media (prefers-reduced-motion:reduce){.sharew-thumb,.sharew-add{transition:none}}
 /* The finish summary's way out and its Share, side by side right under the numbers. */
 .fin-actions{display:flex;gap:10px}
@@ -3769,11 +3769,11 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cardio-week .pbar{margin:8px 0 2px}
 .cardio-week .pbar i{background:var(--acc)}
 .cardio-bars{position:relative;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));align-items:end;gap:6px;height:64px;margin-top:12px}
-.cardio-bar{display:block;height:calc(max(var(--h,0),.04) * 100%);border-radius:5px 5px 2px 2px;background:color-mix(in srgb,var(--acc) 34%,var(--surface-2))}
+.cardio-bar{display:block;height:calc(max(var(--h,0),.04) * 100%);border-radius:5px 5px 2px 2px;background:var(--surface-3);background:color-mix(in srgb,var(--acc) 34%,var(--surface-2))}
 .cardio-bar.now{background:var(--acc)}
-.cardio-bar.met{background:color-mix(in srgb,var(--acc) 70%,var(--surface-2))}
+.cardio-bar.met{background:var(--acc);background:color-mix(in srgb,var(--acc) 70%,var(--surface-2))}
 .cardio-bar.now.met{background:var(--acc)}
-.cardio-goal{position:absolute;inset-inline:0;bottom:calc(var(--g,0) * 100%);border-top:1.5px dashed color-mix(in srgb,var(--label) 35%,transparent);pointer-events:none}
+.cardio-goal{position:absolute;inset-inline:0;bottom:calc(var(--g,0) * 100%);border-top:1.5px dashed var(--sep);border-top:1.5px dashed color-mix(in srgb,var(--label) 35%,transparent);pointer-events:none}
 .cardio-axis{margin-top:4px}
 
 /* Plan: routines in folders (1.4.5, Q11). The folder is a quiet header that folds its routines
