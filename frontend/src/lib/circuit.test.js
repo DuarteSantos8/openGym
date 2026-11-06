@@ -3,8 +3,10 @@ import {
   cleanCircuit, defaultCircuit, circuitOf, setCircuit, roundsPerStation, stationsOf, stepAt, stepCount,
   startRun, tickRun, doneStep, skipStep, pauseRun, resumeRun, stopRun, leftOf, runStep, logStation,
   trimUnlogged, runResult, nextProgram, previousResult, compareResult, stationSuggestions, lockCues,
-  plannedLength, nextWorkAfter, PREP_SEC, RUNWALK, RUNWALK_WARM,
+  plannedLength, nextWorkAfter, PREP_SEC, RUNWALK, RUNWALK_WARM, rememberRegular, restoreRegular,
 } from './circuit.js'
+import { setSupersetMeta } from './superset-meta.js'
+import { cleanupSg } from './history.js'
 
 const S = (id, mode = 'reps', extra = {}) => ({ idx: Number(id), id: String(id), mode, reps: 10, w: 0, sec: 0, ...extra })
 const steps = (cfg, st) => Array.from({ length: Math.min(60, stepCount(cfg, st.length)) }, (_, i) => stepAt(cfg, st, i))
@@ -216,5 +218,46 @@ describe('lockCues', () => {
     expect(lockCues(run, words, String).cues).toEqual([])
     const amrap = doneStep(startRun({ unit: [0], cfg: { mode: 'amrap', cap: 300 }, stations: [S(0)] }, 0), 1000).run
     expect(lockCues(amrap, words, String)).toEqual({ at: 301_000, title: 'Time', cues: [] })
+  })
+})
+
+// QA 1.4.5: Routine type → Intervals → Regular left every exercise at 8 sets in one superset.
+describe('routine type round trip (rememberRegular / restoreRegular)', () => {
+  // The steps RoutineEdit's pickRoutineType and saveGroup take.
+  const toType = (ex, cfg) => {
+    rememberRegular(ex)
+    for (const e of ex) e.sg = 'sgT'
+    setSupersetMeta(ex, 'sgT', { name: '', rest: 0 })
+    setCircuit(ex, 'sgT', cfg)
+    const n = roundsPerStation(cfg, ex.length)
+    for (const e of ex) e.sets = n
+    cleanupSg(ex)
+    return ex
+  }
+  const regular = () => [
+    { id: '0025', sets: 4, reps: 8 },
+    { id: '0047', sets: 3, reps: 10, sg: 'sgA', sgName: 'Arms', sgRest: 60 },
+    { id: '0048', sets: 3, reps: 10, sg: 'sgA', sgName: 'Arms', sgRest: 60 },
+    { id: '0334', sets: 2, reps: 12 },
+  ]
+  it('Intervals and back gives the routine its own sets and supersets again', () => {
+    const ex = toType(regular(), defaultCircuit('intervals'))
+    expect(ex.every(e => e.sg === 'sgT' && e.sets === 8)).toBe(true)
+    restoreRegular(ex); cleanupSg(ex)
+    expect(ex).toEqual(regular())
+  })
+  it('a type changed to another type still remembers the regular routine', () => {
+    const ex = toType(regular(), defaultCircuit('intervals'))
+    setCircuit(ex, 'sgT', defaultCircuit('amrap'))
+    rememberRegular(ex)   // already remembered: kept as it was
+    restoreRegular(ex); cleanupSg(ex)
+    expect(ex).toEqual(regular())
+  })
+  it('an exercise added while on the clock leaves the group when it goes back', () => {
+    const ex = toType(regular(), defaultCircuit('emom'))
+    ex.push({ id: '0251', sets: 8, reps: 10, sg: 'sgT', sgCircuit: { ...ex[0].sgCircuit } })
+    restoreRegular(ex); cleanupSg(ex)
+    expect(ex[4]).toEqual({ id: '0251', sets: 8, reps: 10 })
+    expect(ex.slice(0, 4)).toEqual(regular())
   })
 })

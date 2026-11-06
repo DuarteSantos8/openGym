@@ -97,6 +97,38 @@ export function setCircuit(ex, sg, cfg) {
   return ex
 }
 
+/**
+ * Plan → routine → Routine type (views/RoutineEdit.jsx) puts every exercise into one group and gives
+ * each as many sets as the clock has rounds. Before that, each exercise keeps what it was as a
+ * regular routine (`preType`: its sets and its own superset), so picking Regular again gives the
+ * routine back the way it was instead of eight sets of everything in one giant superset. Switching
+ * from one type to another keeps the first copy. Mutates and returns `ex`.
+ */
+export function rememberRegular(ex) {
+  for (const e of ex || []) {
+    if (!e || e.preType) continue
+    e.preType = { sets: e.sets, sg: e.sg || null, ...(e.sgName ? { sgName: e.sgName } : {}), ...(e.sgRest ? { sgRest: e.sgRest } : {}) }
+  }
+  return ex
+}
+/** Back to a regular routine: the clock off, each exercise's own sets and superset back. An exercise
+ *  added while it ran on the clock leaves the routine's group. The caller tidies the groups. */
+export function restoreRegular(ex) {
+  const typeSg = new Set((ex || []).filter(e => e?.sgCircuit && e.sg).map(e => e.sg))
+  for (const e of ex || []) {
+    if (!e) continue
+    delete e.sgCircuit
+    const was = e.preType
+    delete e.preType
+    if (!was || typeof was !== 'object') { if (typeSg.has(e.sg)) { delete e.sg; delete e.sgName; delete e.sgRest } continue }
+    if (Number(was.sets) > 0) e.sets = was.sets
+    if (was.sg) e.sg = was.sg; else delete e.sg
+    if (was.sgName) e.sgName = was.sgName; else delete e.sgName
+    if (was.sgRest) e.sgRest = was.sgRest; else delete e.sgRest
+  }
+  return ex
+}
+
 /** How many rows each station needs before the run starts (AMRAP grows them as it goes). */
 export function roundsPerStation(cfg, stations) {
   const n = Math.max(1, stations || 1)

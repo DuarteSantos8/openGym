@@ -155,7 +155,8 @@ function planEntry(stored, cfg, routine, { noProg = false } = {}) {
   const sets = warmCarry ? withCarriedWarmups(shaped, warmCarry, modeOf(cfg), cfg, ramp, barFloor(st, cfg.id))
     : block ? withWarmupBlock(st, cfg, shaped, { grid: dropGrid(st, cfg), floor: barFloor(st, cfg.id), unit: st.unit })
       : shaped
-  const target = { ...cfg }
+  // `preType` is the routine editor's memory of the slot before a routine type (lib/circuit.js), not a target.
+  const { preType: _preType, ...target } = cfg
   // Stamped on the session, so the meaning it was logged with stays with it (dumbbells.js).
   if (meaning !== 'as') target.dbLoad = meaning
   if (plan.weight != null) target.weight = plan.weight

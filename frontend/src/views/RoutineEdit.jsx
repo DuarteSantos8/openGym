@@ -11,7 +11,7 @@ import { supersetUnits, moveRoutineEntry, cleanupSg, exLine, pickedExerciseConfi
 import { Thumb } from '../components/Media.jsx'
 import { glyphPicker, exercisePicker, exConfigSheet, confirmSheet, supersetSheet, printPlanSheet } from '../sheets.jsx'
 import { supersetMeta, setSupersetMeta } from '../lib/superset-meta.js'
-import { circuitOf, setCircuit, roundsPerStation, defaultCircuit } from '../lib/circuit.js'
+import { circuitOf, setCircuit, roundsPerStation, defaultCircuit, rememberRegular, restoreRegular } from '../lib/circuit.js'
 import { circuitLine, modeName, MODE_HINT } from '../lib/circuit-copy.js'
 import { fmtRest } from '../lib/duration.js'
 import Icon from '../components/Icon.jsx'
@@ -478,13 +478,13 @@ export default function RoutineEdit() {
   const routineType = allCircuit ? (allCircuit.program === 'runwalk' ? 'runwalk' : allCircuit.mode) : 'regular'
   const pickRoutineType = v => {
     if (v === routineType) return
-    if (v === 'regular') { edit(ex => { for (const e of ex) delete e.sgCircuit; cleanupSg(ex) }); return }
+    if (v === 'regular') { edit(ex => { restoreRegular(ex); cleanupSg(ex) }); return }
     // A run/walk program with nothing in it yet starts with a run.
     if (!r.ex.length && v === 'runwalk') edit(ex => { ex.push({ id: '0685', ...pickedExerciseConfig('0685', undefined, useStore.getState().S) }) })
     else if (!r.ex.length) { toast(t('Add an exercise first, then pick how it runs.')); return }
     const sg = useStore.getState().S.routines.find(x => x.id === id)?.ex.find(e => e.sg)?.sg || ('sg' + uid())
     const cfg = defaultCircuit(v)
-    edit(ex => { for (const e of ex) e.sg = sg })
+    edit(ex => { if (routineType === 'regular') rememberRegular(ex); for (const e of ex) e.sg = sg })
     saveGroup(sg, { ...supersetMeta(useStore.getState().S.routines.find(x => x.id === id).ex, units[0] || [0]), circuit: cfg })
     // Straight to its numbers, which is what anyone picking a type wants to set next.
     const ex2 = useStore.getState().S.routines.find(x => x.id === id).ex
