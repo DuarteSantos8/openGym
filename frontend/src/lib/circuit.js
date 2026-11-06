@@ -126,6 +126,9 @@ export function stationsOf(entries, unit, modeOf) {
       reps: Math.max(0, Math.round(Number(first.r ?? target.reps) || 0)),
       w: Number(first.w) || 0,
       sec: Math.max(0, Math.round(Number(first.sec ?? target.sec) || 0)),
+      // Rows already ticked before the clock started (by hand, or a run before this one): the
+      // run's rounds are written after them, never over them.
+      base: rows.filter(s => s.done).length,
     }
   })
 }
@@ -377,14 +380,15 @@ export function logStation(entries, station, r, { reps, w, sec, at }) {
   if (!e) return
   if (!Array.isArray(e.sets)) e.sets = []
   const workIdx = () => e.sets.map((s, i) => (isWarmupRow(s) ? -1 : i)).filter(i => i >= 0)
+  const at0 = (Number(station.base) || 0) + r
   let rows = workIdx()
-  while (rows.length <= r) {
+  while (rows.length <= at0) {
     const last = rows.length ? e.sets[rows[rows.length - 1]] : {}
     const { done: _d, at: _a, rpe: _r, note: _n, ...shape } = last || {}
     e.sets.push({ ...shape, done: false })
     rows = workIdx()
   }
-  const row = e.sets[rows[r]]
+  const row = e.sets[rows[at0]]
   row.done = true
   row.at = at
   if (station.mode === 'time') row.sec = Math.max(1, Math.round(sec))
@@ -492,7 +496,8 @@ export function compareResult(today, last) {
  */
 export function stationSuggestions(run, entries) {
   const out = []
-  if (!run || run.ended === 'stopped' && !run.log.length) return out
+  // Only a run that went the distance says anything about next time.
+  if (!run || run.ended === 'stopped') return out
   run.stations.forEach((s, m) => {
     const rows = (entries?.[s.idx]?.sets || []).filter(x => !isWarmupRow(x) && x.done)
     if (!rows.length) return
@@ -535,4 +540,22 @@ export function lockCues(run, words, nameOf, max = 16) {
     if (!stepAt(run.cfg, run.stations, i)) break
   }
   return { at: end, title: titleFor(run.i + 1), cues }
+}
+
+/**
+ * The run's clock for the Lock Screen, the watch and the phone's notification, which know a rest
+ * and a hold: `{ kind: 'rest' | 'hold', endsAt, total, left, paused }`, or null (no run, or an open
+ * station with nothing to count down). Get ready and rests are a rest; a timed work step (an
+ * interval, a timed station) a hold; an open AMRAP station counts down the cap.
+ */
+export function circuitClock(run, now = Date.now()) {
+  if (!run || run.ended) return null
+  const step = runStep(run)
+  if (!step) return null
+  let end = stepEndsAt(run), total = step.sec
+  if (end == null && run.capEndsAt) { end = run.capEndsAt; total = run.cfg.cap }
+  if (end == null) return null
+  const restLike = step.k !== 'work' || (step.emom && run.split)
+  const paused = run.paused != null
+  return { kind: restLike ? 'rest' : 'hold', endsAt: end, total, left: Math.max(1, Math.ceil((end - (paused ? run.paused : now)) / 1000)), paused }
 }

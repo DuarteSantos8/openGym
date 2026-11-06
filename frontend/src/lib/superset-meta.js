@@ -33,12 +33,17 @@ export function setSupersetMeta(ex, sg, { name = '', rest = 0 } = {}) {
 export function syncSupersetMeta(ex) {
   const groups = new Map()
   for (const e of ex || []) {
-    if (!e?.sg) { if (e) { delete e.sgName; delete e.sgRest }; continue }
-    const g = groups.get(e.sg) || { name: '', rest: 0 }
+    if (!e?.sg) { if (e) { delete e.sgName; delete e.sgRest; delete e.sgCircuit }; continue }
+    const g = groups.get(e.sg) || { name: '', rest: 0, circuit: null }
     if (!g.name && e.sgName) g.name = e.sgName
     if (!g.rest && Number(e.sgRest) > 0) g.rest = Number(e.sgRest)
+    // A circuit (lib/circuit.js) follows its members the same way: one that joins takes it.
+    if (!g.circuit && e.sgCircuit && typeof e.sgCircuit === 'object') g.circuit = e.sgCircuit
     groups.set(e.sg, g)
   }
-  for (const [sg, g] of groups) setSupersetMeta(ex, sg, g)
+  for (const [sg, g] of groups) {
+    setSupersetMeta(ex, sg, g)
+    for (const e of ex) if (e?.sg === sg) { if (g.circuit) e.sgCircuit = { ...g.circuit }; else delete e.sgCircuit }
+  }
   return ex
 }

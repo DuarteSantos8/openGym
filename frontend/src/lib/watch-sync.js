@@ -51,6 +51,22 @@ import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
 import { accentValue, accentPair, customAccentVars } from './accent.js'
+import { circuitClock } from './circuit.js'
+
+// A circuit's clock (lib/circuit.js, store/useCircuit.js), when one runs: its rests and its get
+// ready go to the watch as the rest it already counts down; the station on now is the current
+// exercise (`cur`). The watch apps have no screen for a circuit's work interval or its round, so
+// those stay on the phone. The store tells this module, rather than this module importing it.
+let circuitRun = () => null
+const circuitListeners = new Set()
+export function bindCircuitSource (get) { circuitRun = typeof get === 'function' ? get : () => null }
+export function circuitChanged () { for (const fn of circuitListeners) { try { fn() } catch { /* the next change tries again */ } } }
+/** The rest the watch should count: a circuit's rest when its clock runs, else the rest timer. */
+export function watchRestTimer (timer, run = circuitRun()) {
+  const cc = circuitClock(run)
+  if (cc) return cc.kind === 'rest' && !cc.paused ? { endsAt: cc.endsAt } : null
+  return timer
+}
 
 export const SNAPSHOT_VERSION = 1
 const APPLIED_KEY = 'gym_watch_applied'
@@ -776,7 +792,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
       const prefs = isOn(S, 'watch') ? readWatchPrefs() : { ...readWatchPrefs(), enabled: false }
       // Settings → Apple Watch: off, the watch is told there is nothing (no workout, nothing ready).
       const snap = prefs.enabled
-        ? buildSnapshot(S, { timer: useUI.getState().timer, ready: readyFor(S), activeAt: phoneActiveAt(S.active) })
+        ? buildSnapshot(S, { timer: watchRestTimer(useUI.getState().timer), ready: readyFor(S), activeAt: phoneActiveAt(S.active) })
         : { v: SNAPSHOT_VERSION, unit: S.unit === 'lb' ? 'lb' : 'kg', active: null, ready: null }
       // Apple Health on the watch pauses with the Health module, as the phone's own sync does.
       const hOn = healthOn && isOn(S, 'health')
@@ -842,6 +858,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   const offUI = useUI.subscribe((s, prev) => { if (s.timer !== prev.timer && restOf(s.timer) !== restOf(prev.timer)) schedule() })
   const offPrefs = onWatchPrefs(() => schedule())
   ackListeners.add(schedule)
+  circuitListeners.add(schedule)
   // The watch speaks the app's language, not its own system's: told again when it changes (the
   // exercise names in the snapshot change with it too).
   let offLang = () => {}
@@ -865,7 +882,7 @@ async function runLink (p, { useStore, useUI }, { health = true, clips: withClip
   if (!linked) await checkLink()
   schedule()
   drainWatchEvents()
-  return () => { ackListeners.delete(schedule); offStore(); offUI(); offPrefs(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
+  return () => { ackListeners.delete(schedule); circuitListeners.delete(schedule); offStore(); offUI(); offPrefs(); offHealth(); offLang(); sub?.remove?.(); subLink?.remove?.(); document.removeEventListener('visibilitychange', onVisible); clearTimeout(tm) }
 }
 
 // Test seams.

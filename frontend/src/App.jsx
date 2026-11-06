@@ -35,6 +35,8 @@ import { startWidgetActions } from './lib/widget-logger.js'
 import { startWidgetLinks } from './lib/widget-links.js'
 import { startVoice, todayRoutineIds } from './lib/voice.js'
 import { startLiveActivitySync } from './lib/live-activity.js'
+import CircuitPlayer from './components/CircuitPlayer.jsx'
+import { useCircuit, wireCircuit, restoreCircuit } from './store/useCircuit.js'
 import { useWakeLock } from './lib/wakelock.js'
 import { installViewportGuard } from './lib/viewport-guard.js'
 import { installChipDrag } from './lib/hchips.js'
@@ -155,6 +157,8 @@ function Shell() {
   useAnimPacksBoot()
   // Backup to WebDAV (#582): this device's daily copy, when one is set up (lib/webdav-run.js).
   useDailyWebdav(ready && !DEMO)
+  // A circuit's clock that was running before a reload carries on from where it is now.
+  useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit() }, [ready])
   const isGuest = useStore(s => s.isGuest())
   const needsMobileOnboarding = useStore(s => s.needsMobileOnboarding)
   const permSteps = useStore(s => s.permSteps)
@@ -429,6 +433,8 @@ function Shell() {
       {!noTabs && <TabBar onStart={startOrPreview} onPick={startPickerSheet} />}
       {!noTabs && authed && <ScrollTopButton off={loc.pathname === '/workout'} path={loc.pathname} />}
       <RestTimer />
+      {/* A circuit's clock, the whole screen (lib/circuit.js): opened from its card in the workout. */}
+      <CircuitPlayer />
       <Modals />
       <Toast />
       <TimerFlash />
@@ -530,7 +536,7 @@ export default function App() {
     startWidgetSync({ useStore }).then(keep).catch(() => {})
     // Sets logged from the widget while the app was away (lib/widget-logger.js).
     startWidgetActions({ useStore }).then(keep).catch(() => {})
-    startLiveActivitySync({ useStore, useUI }).then(keep).catch(() => {})
+    startLiveActivitySync({ useStore, useUI, useCircuit }).then(keep).catch(() => {})
     return () => { gone.v = true; stops.forEach(fn => fn()) }
   }, [])
   // Phone app: a tap on a widget opens the screen it is about (lib/widget-links.js).

@@ -313,7 +313,8 @@ export function exLine(cfg, unit, speedUnit) {
 // Drop superset ids that no longer have an adjacent partner (after unlink/reorder/remove).
 export function cleanupSg(ex) {
   ex.forEach((e, i) => {
-    if (e.sg && !(ex[i - 1]?.sg === e.sg || ex[i + 1]?.sg === e.sg)) delete e.sg
+    // A circuit may be one exercise (a one-movement EMOM, lib/circuit.js): its tag stays.
+    if (e.sg && !(ex[i - 1]?.sg === e.sg || ex[i + 1]?.sg === e.sg) && !e.sgCircuit) delete e.sg
   })
   // A superset's name and rest (#292) follow its members in and out of the group.
   syncSupersetMeta(ex)

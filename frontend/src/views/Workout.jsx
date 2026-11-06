@@ -29,6 +29,10 @@ import { filmSetSheet, SetVideoBadge, ActiveSetVideo } from '../components/SetVi
 import { setVideoOf, filmTarget } from '../lib/set-videos.js'
 import { fmtClip } from '../lib/media-refs.js'
 import { supersetMeta } from '../lib/superset-meta.js'
+import { circuitOf } from '../lib/circuit.js'
+import { circuitLine } from '../lib/circuit-copy.js'
+import CircuitCard from '../components/CircuitCard.jsx'
+import { useCircuit } from '../store/useCircuit.js'
 import WorkoutThumb, { hasWorkoutMedia } from '../components/WorkoutThumb.jsx'
 import { workoutSettingsSheet } from '../components/WorkoutSettingsSheet.jsx'
 import { SessionMapButton } from '../components/SessionMuscles.jsx'
@@ -1206,6 +1210,9 @@ function ActiveWorkout() {
   // A superset's heading: its own name and rest between rounds when it has them (#292).
   const ssTitle = u => {
     const m = supersetMeta(A.entries, u, { onTarget: true })
+    // A circuit says what it is: "Finisher · AMRAP · 12:00 on the clock" (lib/circuit.js).
+    const circ = circuitOf(A.entries, u, { onTarget: true })
+    if (circ) return m.name ? `${m.name} · ${circuitLine(circ)}` : circuitLine(circ)
     if (m.rest > 0) return t('{0} · back-to-back, {1} rest after each round', m.name || t('Superset'), fmtRest(m.rest))
     return m.name ? t('{0} · do these back-to-back, rest when done', m.name) : t('Superset · do these back-to-back, rest when done')
   }
@@ -1217,6 +1224,17 @@ function ActiveWorkout() {
   const collapseOn = listMode && !!(A.collapseCompleted ?? S.collapseCompleted)
   // Cards and Focus: Prev, Next and the swipe jump over finished exercises (#523).
   const skipDone = !listMode && S.skipCompleted === true
+  // A routine that is one circuit and nothing else (Plan → routine → Routine type) opens on its
+  // player, ready to start: that is the whole point of it. Once per workout, and only before any set.
+  useEffect(() => {
+    const live = useStore.getState().S.active
+    if (!live || live.editingWorkoutId || live.backfill || circuitAutoOpened.has(live.id)) return
+    const us = supersetUnits(live.entries || [])
+    if (us.length !== 1 || !circuitOf(live.entries, us[0], { onTarget: true })) return
+    if (live.entries.some(e => e.sets?.some(x => x.done))) return
+    circuitAutoOpened.add(live.id)
+    if (!useCircuit.getState().run) useCircuit.getState().openAt(us[0][0])
+  }, [A.id])
   // Cards and Focus: when the rest after a timed exercise's last set runs out, the next exercise
   // comes up on its own (#532, lib/supersetFlow.js advanceAfterTimedRest). Once per rest.
   useEffect(() => {
@@ -2595,6 +2613,7 @@ function ActiveWorkout() {
               </span>
             </div>
             <div id={'workout-unit-' + u.join('-')}>
+            {!isCollapsed && <CircuitCard unit={u} />}
             {/* One line per exercise, and the line is the way back in: a tap opens the sets again
                 to fix a number, without making it the current exercise. */}
             {isCollapsed ? <button type="button" className="wl-summary" aria-expanded="false" title={t('Show the sets')}
@@ -2632,6 +2651,8 @@ function ActiveWorkout() {
       {/* The chips stand in for "Exercise 2 / 5": the number is on the current chip, and the
           others say what is done and what is waiting (#323). */}
       {chipRow || <div className="muted small" style={{ marginBottom: 6 }}>{isSuperset ? t('Superset {0} / {1}', unitIdx + 1, units.length) : t('Exercise {0} / {1}', unitIdx + 1, units.length)}</div>}
+      {/* A circuit's clock: one tap opens the full-screen player (components/CircuitPlayer.jsx). */}
+      <CircuitCard unit={unit} />
       <SwipeCards index={unitIdx} count={units.length} revision={A}
         timerKey={timerKey} workKey={workKey}
         onNavigate={navigateUnit} renderPreview={direction => {
@@ -2741,6 +2762,9 @@ function ActiveWorkout() {
     <div className="workout-end-spacer" />
   </WorkoutScrollAnchor>
 }
+
+// Workouts whose circuit player already opened by itself (ActiveWorkout), so closing it sticks.
+const circuitAutoOpened = new Set()
 
 // The swipe hint's quiet moment (see the hint in the screen below): the last touch anywhere.
 export const HINT_DELAY_MS = 600

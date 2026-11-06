@@ -1,4 +1,6 @@
 import { tempoSheet } from './components/Tempo.jsx'
+import { useCircuit } from './store/useCircuit.js'
+import { CircuitResults } from './components/CircuitCard.jsx'
 import { normalizeTempo, repSec } from './lib/tempo.js'
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
@@ -37,7 +39,9 @@ import { replaceSlotExercise } from './lib/routines.js'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
-import { REST_MAX, fmtRest, restWheelValue } from './lib/duration.js'
+import { cleanCircuit, defaultCircuit, RUNWALK, RUNWALK_WARM } from './lib/circuit.js'
+import { modeName, MODE_HINT } from './lib/circuit-copy.js'
+import { REST_MAX, fmtRest, restWheelValue, fmtDuration } from './lib/duration.js'
 import Icon from './components/Icon.jsx'
 import CommunityBits from './components/CommunityBits.jsx'
 import './views/Community.css'
@@ -3669,6 +3673,8 @@ function WorkoutDetail({ w, close }) {
   return <>
     <h3>{w.name}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
+    {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}
+    <CircuitResults w={w} />
     {grouped ? groups.map(g => {
       const r = g.rid ? st.routines.find(x => x.id === g.rid) : null
       const items = g.items.map(i => w.entries[i])
@@ -4248,29 +4254,59 @@ function RenameWorkout({ close }) {
 export const renameWorkoutSheet = () => ui().openSheet(close => <RenameWorkout close={close} />)
 
 // A superset's own name and rest between rounds (#292), from the routine editor.
-function SupersetSettings({ meta, onSave, close }) {
+// A group's settings: its name, and how it is done (lib/circuit.js). A superset at your own pace,
+// or on the clock: a circuit, an AMRAP, an EMOM, intervals or the run/walk program. Each type shows
+// only what it needs, so an EMOM asks for two numbers and nothing else.
+const CIRCUIT_TYPES = ['superset', 'circuit', 'amrap', 'emom', 'intervals', 'runwalk']
+const typeOf = c => (!c ? 'superset' : c.program === 'runwalk' ? 'runwalk' : c.mode)
+function SupersetSettings({ meta, onSave, close, single = false }) {
   const inputRef = useRef(null)
   const onFocus = useSheetKeyboard(inputRef)
   const [name, setName] = useState(meta.name || '')
   const [rest, setRest] = useState(meta.rest || 0)
-  const save = () => { onSave({ name: name.trim().slice(0, SG_NAME_MAX), rest }); close() }
+  const [circuit, setCircuitCfg] = useState(cleanCircuit(meta.circuit))
+  const type = typeOf(circuit)
+  const patch = p => setCircuitCfg(c => cleanCircuit({ ...c, ...p }))
+  const save = () => { onSave({ name: name.trim().slice(0, SG_NAME_MAX), rest, circuit }); close() }
+  const pick = v => setCircuitCfg(v === 'superset' ? null : defaultCircuit(v))
+  const typeName = v => (v === 'superset' ? t('Superset') : modeName(v === 'runwalk' ? { program: 'runwalk' } : { mode: v }))
+  const timeRow = (icon, title, field, { min = 0, max = REST_MAX, off = null } = {}) => <Row icon={icon} iconTint="var(--orange)" title={title}
+    value={fmtDuration(circuit[field], off ? { off } : {})} accessory="chevron"
+    onClick={() => durationSheet({ title, value: circuit[field], min, max, off, onDone: v => patch({ [field]: v }) })} />
+  const countRow = (icon, title, field, min, max) => <Row icon={icon} title={title}>
+    <Stepper value={circuit[field]} min={min} max={max} decimal={false} ariaLabel={title} onChange={v => patch({ [field]: v })} />
+  </Row>
+  const roundRest = <Row icon="timer" iconTint="var(--orange)" title={t('Rest after each round')}
+    value={rest > 0 ? fmtRest(rest) : type === 'superset' ? t('Longest exercise rest') : t('Off')} accessory="chevron"
+    onClick={() => durationSheet({ title: t('Rest after each round'), value: rest, max: REST_MAX, off: type === 'superset' ? t('Longest exercise rest') : t('Off'),
+      footer: type === 'superset' ? t('Without one, the superset rests as long as its longest exercise rest.') : null, onDone: setRest })} />
   return <>
-    <h3>{t('Superset')}</h3>
+    <h3>{type === 'superset' ? t('Superset') : typeName(type)}</h3>
     <input ref={inputRef} className="input" type="text" maxLength={SG_NAME_MAX} value={name}
       placeholder={t('Name, e.g. Arm finisher')} onFocus={onFocus} onChange={e => setName(e.target.value)}
       onKeyDown={e => { if (e.key === 'Enter') save() }} />
     <div style={{ height: 12 }} />
     <div className="list">
-      <Row icon="timer" iconTint="var(--orange)" title={t('Rest after each round')}
-        value={rest > 0 ? fmtRest(rest) : t('Longest exercise rest')} accessory="chevron"
-        onClick={() => durationSheet({ title: t('Rest after each round'), value: rest, max: REST_MAX, off: t('Longest exercise rest'),
-          footer: t('Without one, the superset rests as long as its longest exercise rest.'), onDone: setRest })} />
+      <SelectRow icon="stopwatch" title={t('How it runs')} sheetTitle={t('How it runs')} value={type} onChange={pick}
+        options={CIRCUIT_TYPES.filter(v => !(single && v === 'superset')).map(v => ({ value: v, label: typeName(v), subtitle: t(MODE_HINT[v]) }))} />
     </div>
+    {circuit && <div className="small dim" style={{ margin: '6px 2px 0' }}>{t(MODE_HINT[type])}</div>}
+    <div style={{ height: 12 }} />
+    <div className="list">
+      {type === 'superset' && roundRest}
+      {type === 'circuit' && <>{countRow('repeat', t('Rounds'), 'rounds', 1, 50)}{timeRow('timer', t('Rest between stations'), 'gap', { max: 300, off: t('Off') })}{roundRest}</>}
+      {type === 'amrap' && timeRow('stopwatch', t('Time cap'), 'cap', { min: 60, max: 3600 })}
+      {type === 'emom' && <>{timeRow('stopwatch', t('A new interval every'), 'every', { min: 10, max: 600 })}{countRow('repeat', t('Intervals'), 'count', 1, 99)}</>}
+      {type === 'intervals' && <>{timeRow('bolt', t('Work'), 'work', { min: 5, max: 3600 })}{timeRow('timer', t('Rest'), 'rest', { max: 600, off: t('Off') })}{countRow('repeat', t('Rounds'), 'rounds', 1, 50)}{roundRest}</>}
+      {type === 'runwalk' && <>{countRow('figureRun', t('Level'), 'level', 1, RUNWALK.length)}
+        <Row icon="info" title={t('Run {0}, walk {1}, {2} times', fmtDuration(circuit.work), fmtDuration(circuit.rest), circuit.rounds)} subtitle={t('After a {0} warm-up walk.', fmtDuration(RUNWALK_WARM))} /></>}
+    </div>
+    {circuit && <div className="small dim" style={{ margin: '6px 2px 0' }}>{t('Each exercise is a station. Its own reps and weight are what one round asks for.')}</div>}
     <div style={{ height: 18 }} />
     <Button variant="primary" onClick={save}>{t('Save')}</Button>
   </>
 }
-export const supersetSheet = (meta, onSave) => ui().openSheet(close => <SupersetSettings meta={meta} onSave={onSave} close={close} />)
+export const supersetSheet = (meta, onSave, opts = {}) => ui().openSheet(close => <SupersetSettings meta={meta} onSave={onSave} close={close} single={!!opts.single} />)
 
 /* Drop-set drops and rest-pause bursts are edited inline on the set row itself (Workout.jsx) —
    no sheet, no timer. A planned exercise (see the "Intensifier" config below) arrives with them
@@ -4448,6 +4484,7 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
       {prs.map(id => <div key={id} className="small accent row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="trophy" style={{ fontSize: 'var(--fs-footnote)', marginTop: 2, flex: 'none' }} /><span>{t('New PR:')} <span className={exerciseNameClass(EXIDX[id])}>{EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id}</span></span></div>)}
       {e1prs.map(p => <div key={p.id} className="small accent row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="chartLine" style={{ fontSize: 'var(--fs-footnote)', marginTop: 2, flex: 'none' }} /><span>{t('Best estimated 1RM:')} <span className={exerciseNameClass(EXIDX[p.id])}>{EXIDX[p.id] ? exerciseNameFor(EXIDX[p.id]) : p.id}</span> · {fmtNum(p.est)} {st.unit}</span></div>)}
     </div>}
+    <CircuitResults w={w} />
     {/* Done is one tap away right under the numbers: the body map, what's next and the photo
         corner sit below it for whoever wants them, nobody has to scroll to leave (Discord). */}
     <div className="fin-actions">
@@ -4502,6 +4539,8 @@ export function finishWorkoutSheet({ onDiscard } = {}) {
 // what the phone's Finish and save runs.
 export const finishWorkoutNow = () => doFinishWorkout()
 function doFinishWorkout() {
+  // A circuit's clock still running (store/useCircuit.js) stops first, so its result is saved too.
+  useCircuit.getState().wrapUp()
   const st = S()
   const A = st.active
   if (!A) return
