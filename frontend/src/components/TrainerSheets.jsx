@@ -277,7 +277,8 @@ export function MeasureSheet({ member, level, close, done }) {
       .then(r => { toast(sentToast(r, member)); close(); done?.() })
       .catch(e => { setBusy(false); toast(trainerError(e)) })
   }
-  const fields = MEASUREMENT_FIELDS.filter(f => all || !f.optional)
+  // Blood pressure stays the member's own: a trainer check-in is the tape and the body fat (api/trainers/ops.js).
+  const fields = MEASUREMENT_FIELDS.filter(f => !f.pair && (all || !f.optional))
   return <>
     <h3>{level === 'apply' ? t('Log a check-in') : t('Suggest a check-in')}</h3>
     <p className="intg-lead">{t('Fill in what you measured, leave the rest.')} {landsLine(level)}</p>

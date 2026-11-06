@@ -15,6 +15,7 @@
 // own "photos" grant (api/permissions.js), the community library only when the person shares one
 // themselves on a server that allows personal media (api/library/config.js), and the comparison
 // picture only goes where the person sends it from the share sheet.
+import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -316,6 +317,8 @@ export default function ProgressPhotos() {
       <Icon name={nudge.kind === 'today' ? 'checkCircle' : 'camera'} /><span>{nudgeLine(nudge)}</span>
     </div>}
 
+    {/* A reminder for the next one (components/CheckinReminder.jsx), bundled with the measurements. */}
+    {!comparing && <div className="sect-b" style={{ marginBottom: 14 }}><CheckinReminderRow /></div>}
     {comparing && <div className="small dim" style={{ margin: '0 0 12px' }}>
       {picked.length < 2 ? t('Pick two or more photos, up to {0}.', COMPARE_MAX) : tn('{0} photo picked.', '{0} photos picked.', picked.length)}
     </div>}

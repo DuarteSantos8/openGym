@@ -76,6 +76,7 @@ import { isPaused, canPause, pauseWorkout, resumeWorkout } from '../lib/workout-
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
 import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets } from '../lib/gym-inventory.js'
+import { gymNoteFor } from '../lib/journal.js'
 import { exView, viewEntry, inEntryUnit } from '../lib/ex-unit.js'
 import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-trend.js'
 import { formulaOf } from '../lib/onerm.js'
@@ -297,6 +298,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   }
   const trendSay = (i, label) => (trends?.[i] ? label + ', ' + trendLabel(trends[i], S.unit) : label)
   const standingNote = exNoteFor(S, entry.id)
+  // A note pinned at the gym you are at (lib/journal.js gymNoteFor): "seat 4" for this machine only.
+  const gymNote = gymNoteFor(S, entry.id)
   // An exercise kept per gym (#988): which gym (and brand) its numbers come from today.
   const splitTag = splitLabel(S, entry.id, S.active?.gym?.name)
   // Only worth surfacing while there is still work left: once the exercise is finished, a note
@@ -897,6 +900,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
         session. Today's own note is edited through the button in the header and shown last. */}
     {cfg.note && <div className="exnote">{cfg.note}</div>}
     {standingNote && <div className="exnote"><Icon name="info" style={{ fontSize: 'var(--fs-footnote)', marginInlineEnd: 5, verticalAlign: '-2px' }} />{standingNote}</div>}
+    {gymNote && <div className="exnote gym-pin" title={t('Pinned at {0}', gymNote.gym.name || t('My gym'))}><Icon name="mapPin" style={{ fontSize: 'var(--fs-footnote)', marginInlineEnd: 5, verticalAlign: '-2px' }} />{gymNote.text}</div>}
     {pinnedNote && <div className="exnote" style={{ color: 'var(--yellow)' }}>
       <Icon name="pin" style={{ fontSize: 'var(--fs-footnote)', marginInlineEnd: 5, verticalAlign: '-2px' }} />
       {t('From {0}:', fmtDate(pinnedNote.d, true))} {pinnedNote.note}
@@ -1826,6 +1830,7 @@ function ActiveWorkout() {
   const gyms = gymsOf(S)
   const gymNow = activeGym(S)
   const gymSwitchable = !editing && !A.backfill && gyms.length > 1
+  const sessionPin = gymNoteFor(sessionGymView(S))
   const gymShown = editing ? (A.gym?.name || null) : gymSwitchable && gymNow ? gymLabel(gymNow) : null
   const askSwitchGym = g => {
     if (!g || g.id === gymNow?.id) return
@@ -2592,6 +2597,9 @@ function ActiveWorkout() {
     </div>}
     {editing && <p className="muted small">{t('Editing a saved workout. Date and duration stay unchanged.')}</p>}
     {A.backfill && <div className="muted small" style={{ marginBottom: 8 }}>{t('Logging a past workout, so no rest timers.')}</div>}
+    {/* A note pinned at this gym for every workout here (journal → Pin at a gym): the locker code, "squat rack 3 wobbles". */}
+    {sessionPin && <div className="exnote gym-pin wk-gym-pin" role="note"><Icon name="mapPin" style={{ fontSize: 'var(--fs-footnote)', marginInlineEnd: 5, verticalAlign: '-2px' }} />
+      <b>{sessionPin.gym.name || t('My gym')}:</b> {sessionPin.text}</div>}
 
     {A.entries.length ? (listMode ? (
       <div className="workout-list" data-testid="workout-list" ref={listRef}>

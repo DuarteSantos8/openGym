@@ -28,6 +28,8 @@ import { confirmBackupImport } from '../components/backup-restore.js'
 import { WebDavRow } from '../components/WebDavBackup.jsx'
 import { StreakIconRows } from '../components/StreakIconPicker.jsx'
 import { StreakRuleRow } from '../components/StreakRule.jsx'
+import { deleteWorkoutsSheet } from '../components/DeleteWorkouts.jsx'
+import { CheckinReminderRow } from '../components/CheckinReminder.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
 import { queueOf } from '../lib/queue.js'
 import { weekTargetOf } from '../lib/week-left.js'
@@ -1059,6 +1061,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {on('motivation') && <StreakIconRows />}
         {/* How forgiving the streak is (components/StreakRule.jsx), from the moment it is saved. */}
         {on('motivation') && <StreakRuleRow />}
+        {/* Sauna, ice bath, massage (lib/recovery-sessions.js): off, they leave the streak alone. */}
+        {on('motivation') && <Row icon="sparkles" iconTint="var(--teal)" title={t('Recovery counts for the streak')}
+          subtitle={t('A week with only a sauna or an ice bath keeps the streak going.')}>
+          <Switch aria-label={t('Recovery counts for the streak')} checked={S.recoveryStreak === true}
+            onChange={v => update(s => { if (v) s.recoveryStreak = true; else delete s.recoveryStreak })} />
+        </Row>}
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
@@ -1208,6 +1216,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       </Section>
       {hasMedia && <Section><MediaRow /></Section>}
       <Section>
+        {/* The log only (components/DeleteWorkouts.jsx): routines, settings and body data stay. */}
+        <Row icon="trash" iconTint="var(--orange)" title={t('Delete workouts only')} subtitle={t('Routines, settings and body data stay.')}
+          accessory="chevron" onClick={() => deleteWorkoutsSheet({ onBackup: doExport, signedIn: !!user })} />
         <Row icon="trash" iconTint="var(--red)" title={t('Reset everything')} danger onClick={resetEverything} />
       </Section>
       <input ref={fileRef} type="file" accept=".json,.zip,application/json,application/zip" style={{ display: 'none' }} onChange={doImport} />
@@ -1648,6 +1659,7 @@ function MobileReminderCard({ S, update, toast }) {
         </Row>
       )}
       {S.reminder?.on && <NudgeRows S={S} setReminder={setReminder} />}
+      <CheckinReminderRow />
       <WrappedNotifyRow S={S} update={update} />
     </Section>
   )
@@ -1751,6 +1763,7 @@ function PushCard({ S, update, toast }) {
       {on && S.reminder?.on && (
         <NudgeRows S={S} setReminder={patch => update(s => { s.reminder = { ...(s.reminder || DEF.reminder), ...patch, tz: localTZ() } })} />
       )}
+      {on && <CheckinReminderRow />}
       {on && <WrappedNotifyRow S={S} update={update} />}
     </Section>
     {on && <div style={{ marginTop: -12, marginBottom: 22 }}><Button size="sm" icon="bell" onClick={test}>{t('Send test notification')}</Button></div>}

@@ -17,6 +17,7 @@ import { coachRoutes } from './coach/routes.js';
 import { startCadence } from './coach/cadence.js';
 import { startWarmup } from './coach/warmup.js';
 import { dayReminderPush, nudgePush, restTimerPush, testPush } from './push-messages.js';
+import { reminderOf as checkinReminderOf, dueKeys as checkinDueKeys, dueKind as checkinDueKind, checkinPush } from './checkin-reminder.js';
 import { verifyError, isMisconfigured, originHint } from './verify-error.js';
 import {
   hashPassword, verifyPassword, needsRehash, passwordProblem, passwordLength, nameKey, BusyError,
@@ -618,9 +619,28 @@ function stateSummary(uid) {
     consent: !!S?.coach?.consent?.agreedAt,
     settled: '',   // a local date the reminder was found to owe nothing on, for this file
     wrapped: wrappedSummary(S),   // the December push (wrapped.js): a flag, a year, a few years
+    chk: (() => { const c = checkinReminderOf(S); return { on: c.on && Object.keys(c.items).length > 0, tz: c.tz || r?.tz, time: c.time }; })(),
+    chkSettled: '',   // a local date the check-in reminder was found to owe nothing on
   };
   stateSummaries.set(uid, sum);
   return sum;
+}
+// The check-in reminder (checkin-reminder.js, frontend/src/lib/checkin-reminder.js): one push on a
+// day where a measurement, a weigh-in or a progress photo is due, at its own time on the user's
+// clock, with the same catch-up window and once-per-date rule as the workout reminder
+// (`user.lastCheckin`). Its own switch: it goes out with the workout reminder off too.
+function checkinTick(user, sum) {
+  const now = userNow(sum.chk.tz || 'UTC');
+  if (!now || user.lastCheckin === now.date || sum.chkSettled === now.date) return;
+  const late = minutesLate(sum.chk.time, now);
+  if (!(late >= 0 && late <= REMINDER_WINDOW_MIN)) return;
+  const S = readStateCached(user.id);
+  const kind = checkinDueKind(checkinDueKeys(S, now.date));
+  if (!kind) { sum.chkSettled = now.date; return; }
+  console.log('checkin reminder firing', user.id, kind);
+  user.lastCheckin = now.date;
+  saveDb();
+  sendPush(user.id, checkinPush(S?.lang, kind));
 }
 // "Your year in openGym" (wrapped.js): once per user and year, on Dec 1 from 18:00 server time.
 // The year it went out for is written to db.json before the send, so a crash after it, a restart
@@ -644,6 +664,7 @@ setInterval(() => {
     try {
       const sum = stateSummary(user.id);
       if (wrappedYear && sum && user.wrappedPush !== wrappedYear) wrappedTick(user, sum, wrappedYear);
+      if (sum?.chk?.on) checkinTick(user, sum);
       if (!sum?.rem.on) continue;
       const now = userNow(sum.rem.tz || 'UTC');
       if (!now) continue;

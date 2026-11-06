@@ -47,7 +47,8 @@ export const KEY_CATEGORY = {
   scheduleMode: ['plans'], programmes: ['plans'], programme: ['plans'],
   bodyweight: ['bodyweight'], targetW: ['bodyweight'], rateGoal: ['bodyweight'],
   measurements: ['measurements'], customMeasurements: ['measurements'], measurementEnabled: ['measurements'],
-  dayNotes: ['notes'], exNotes: ['notes'],
+  dayNotes: ['notes'], exNotes: ['notes'], gymNotes: ['notes'], journalFolders: ['notes'],
+  recoverySessions: ['workouts'],
 };
 // Never in a token's read, whatever it holds: pictures and videos (their own category, not
 // offered), the Coach's conversation, the live workout, linked services, and the server's notes.

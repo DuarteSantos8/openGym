@@ -15,6 +15,7 @@ import { effectiveRoutineIds } from './history.js'
 import { NUDGE_COPY, lineIndex, nudgeFor, nudgeMinute, toneOf } from './nudge.js'
 import { excusedOn } from './day-notes.js'
 import { stateJson } from './state-json.js'
+import { buildCheckinNotifications, checkinNames, reminderOf, CHECKIN_WINDOW_DAYS, CHECKIN_ID_BASE } from './checkin-reminder.js'
 
 export const MOBILE = import.meta.env.VITE_MOBILE === '1'
 
@@ -243,16 +244,20 @@ export async function syncReminder(S, interactive = false) {
       ...LEGACY_REMINDER_IDS,
       ...Array.from({ length: REMINDER_WINDOW_DAYS }, (_, d) => ({ id: REMINDER_ID_BASE + d })),
       ...Array.from({ length: NUDGE_WINDOW_DAYS }, (_, d) => ({ id: NUDGE_ID_BASE + d })),
+      ...Array.from({ length: CHECKIN_WINDOW_DAYS }, (_, d) => ({ id: CHECKIN_ID_BASE + d })),
     ] }).catch(() => {})
     const r = S.reminder
+    // The check-in reminder (lib/checkin-reminder.js) is its own switch: on without the workout one.
+    const checkin = reminderOf(S).on
     // The background check (lib/nudge-check.js) follows what is scheduled: nothing, nothing to check.
     const check = notifications => import('./nudge-check.js').then(m => m.armNudgeCheck(S, notifications)).catch(() => {})
-    if (!r?.on) { await check([]); return true }
+    if (!r?.on && !checkin) { await check([]); return true }
     let perm = await LocalNotifications.checkPermissions()
     if (perm.display !== 'granted' && interactive) perm = await LocalNotifications.requestPermissions()
     if (perm.display !== 'granted') { await check([]); return false }
-    const notifications = [...buildReminderNotifications(S), ...buildNudgeNotifications(S)]
-    if (notifications.length) await LocalNotifications.schedule({ notifications })
+    const notifications = r?.on ? [...buildReminderNotifications(S), ...buildNudgeNotifications(S)] : []
+    const checkins = checkin ? buildCheckinNotifications(S, { t, names: keys => checkinNames(S, keys, t) }) : []
+    if (notifications.length || checkins.length) await LocalNotifications.schedule({ notifications: [...notifications, ...checkins] })
     await check(notifications)
     return true
   } catch (e) { return false }
