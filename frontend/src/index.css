@@ -2896,6 +2896,8 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 .cal-d i.recov{background:var(--teal)}
 /* A day with a run or a match (lib/activities.js). */
 .cal-d i.sport{background:var(--blue)}
+/* openNutrition's fasting window on Home (components/SisterApps.jsx FastingLine). */
+.fast-line{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:6px;text-align:center}
 /* A note pinned at the active gym (lib/journal.js): the gym's map pin, in teal. */
 .exnote.gym-pin{color:var(--teal-ink)}
 .wk-gym-pin{margin:0 2px 10px}

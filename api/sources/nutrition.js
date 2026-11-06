@@ -22,14 +22,20 @@ export const nullSource = Object.freeze({
 
 const DAY = 86400000;
 const iso = t => new Date(t).toISOString().slice(0, 10);
-const num = v => (Number.isFinite(+v) ? Math.round(+v * 10) / 10 : null);
+// A missing value stays missing: +null is 0, which read an unlogged macro as zero.
+const num = v => (v === null || v === undefined || v === '' ? null : Number.isFinite(+v) ? Math.round(+v * 10) / 10 : null);
 
-/** One day of whatever an outside app answered, in the shape above (unknown fields dropped). */
+/** One day of whatever an outside app answered, in the shape above (unknown fields dropped).
+ *  openNutrition's own contract (opennutrition.summary.v1, its docs/integration-opengym.md) names
+ *  them energy / carbohydrate / targets.energy; both spellings are read, so a linked member's days
+ *  are not all nulls (before 1.4.5 only kcal / carbs / target were looked at). */
 export function cleanDay(d) {
   if (!d || typeof d !== 'object' || !/^\d{4}-\d{2}-\d{2}$/.test(d.date || '')) return null;
-  const t = d.target && typeof d.target === 'object' ? { kcal: num(d.target.kcal), protein: num(d.target.protein) } : null;
-  return { date: d.date, kcal: num(d.kcal), protein: num(d.protein), carbs: num(d.carbs), fat: num(d.fat),
-    ...(d.fibre != null ? { fibre: num(d.fibre) } : {}), ...(t ? { target: t } : {}), logged: d.logged !== false };
+  const src = d.target && typeof d.target === 'object' ? d.target : d.targets && typeof d.targets === 'object' ? d.targets : null;
+  const t = src ? { kcal: num(src.kcal ?? src.energy), protein: num(src.protein) } : null;
+  return { date: d.date, kcal: num(d.kcal ?? d.energy), protein: num(d.protein), carbs: num(d.carbs ?? d.carbohydrate), fat: num(d.fat),
+    ...(d.fibre != null ? { fibre: num(d.fibre) } : {}), ...(t ? { target: t } : {}), logged: d.logged !== false,
+    ...(Number.isInteger(d.proteinMeals) && d.proteinMeals >= 0 && d.proteinMeals <= 12 ? { proteinMeals: d.proteinMeals } : {}) };
 }
 
 /**

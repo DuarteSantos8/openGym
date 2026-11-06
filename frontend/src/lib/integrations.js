@@ -14,6 +14,8 @@ export const CATEGORIES = [
   { id: 'backup', title: 'Backups & calendar' },
   { id: 'automation', title: 'Automation' },
   { id: 'ai', title: 'AI & API' },
+  // openGym's own family (gm-hooks, docs/dev/SISTER_APPS.md): read-only links, off until linked.
+  { id: 'sister', title: 'Sister apps' },
 ]
 
 // `syncs`: the lines of "What it does" in the detail sheet.
@@ -73,6 +75,11 @@ export const CARDS = [
     desc: 'Let Claude Desktop, Cursor and friends read your training log.',
     syncs: ['Runs next to your server, or over HTTPS with a token from Settings.', 'Sees and changes only what the token was given.'],
   },
+  {
+    id: 'opennutrition', cat: 'sister', name: 'openNutrition', icon: 'tree', tint: 'var(--green)',
+    desc: 'Calories, protein and your fasting window, next to your training.',
+    syncs: ['Reads what you ate, never changes it.', 'Shows in your report, your month story and on Home.', 'The link stays on this device.'],
+  },
 ]
 export const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]))
 
@@ -109,7 +116,8 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  *        server: { providers: [id], connections: [..] } | null  (GET /api/integrations)
  *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode,
  *        webdav: this device's WebDAV backup settings (lib/webdav.js loadConfig) | null,
- *        tokens: whether the server has scoped tokens (the calendar feed is one), calendar: GET /api/calendar | null }
+ *        tokens: whether the server has scoped tokens (the calendar feed is one), calendar: GET /api/calendar | null,
+ *        nutrition: this device's openNutrition link (lib/sister-nutrition.js loadLink) | null }
  * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'import' | 'export' | 'open' | null }.
  */
 export function cardState(id, ctx) {
@@ -169,13 +177,20 @@ export function cardState(id, ctx) {
     case 'mcp':
       if (ctx.demo || !ctx.user) return { status: 'server', action: null }
       return { status: null, action: 'open' }
+    case 'opennutrition': {
+      // This device talks to openNutrition itself (lib/sister-nutrition.js): no openGym server needed.
+      if (ctx.demo) return null
+      const l = ctx.nutrition
+      if (!l) return { status: 'off', action: 'connect' }
+      return l.error ? { status: 'attention', action: 'manage' } : { status: 'connected', action: 'manage' }
+    }
     default:
       return null
   }
 }
 
 // The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
-export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', strava: 'integrations', coach: 'coach' }
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', strava: 'integrations', coach: 'coach', opennutrition: 'integrations' }
 
 /** The directory for this device: categories with their visible cards, empty ones left out.
  *  `ctx.mod(id)` says whether a module is on (absent: all on). */

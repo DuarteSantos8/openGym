@@ -21,6 +21,7 @@ import { isOn } from '../lib/modules.js'
 import { tokensOn } from '../lib/api-tokens.js'
 import { useWebdavConfig, webdavSheet } from '../components/WebDavBackup.jsx'
 import { calendarSheet } from '../components/CalendarFeed.jsx'
+import { useNutritionLink, nutritionSheet } from '../components/SisterApps.jsx'
 import { getCalendar } from '../lib/api-tokens.js'
 
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
@@ -124,12 +125,13 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const platform = MOBILE ? (ios ? 'ios' : android ? 'android' : health?.platform || platformNow()) : null
   const S = useStore(s => s.S)
   const webdav = useWebdavConfig()
+  const nutrition = useNutritionLink()
   const tokens = tokensOn(config, user, DEMO) && isOn(S, 'integrations')
   // The calendar feed's state, asked once per visit where the server has tokens.
   const [calendar, setCalendarState] = useState(null)
   useEffect(() => { if (tokens) getCalendar().then(setCalendarState).catch(() => {}) }, [tokens])
   const ctx = {
-    webdav, tokens, calendar,
+    webdav, tokens, calendar, nutrition,
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
@@ -170,6 +172,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
         if (status === 'server') return infoSheet(card, t('The calendar link is served by your own openGym server, so it needs one. Connect this device to it in Account.'))
         return calendarSheet(setCalendarState)
       case 'coach': return nav(MOBILE ? '/coach/setup' : '/coach')
+      case 'opennutrition': return nutritionSheet()
       case 'mcp':
         if (status === 'server') return infoSheet(card, t('The MCP server runs next to your own openGym server and reads your data there.'), MCP_DOCS)
         // A server with scoped tokens: the token page, where the address and the keys are.
@@ -185,6 +188,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
     if (card.id === 'strava' && card.state.action === 'manage') return act(card)
     if (card.id === 'webdav' && card.state.action === 'manage') return webdavSheet()
     if (card.id === 'calendar' && card.state.action === 'manage') return calendarSheet(setCalendarState)
+    if (card.id === 'opennutrition' && card.state.action === 'manage') return nutritionSheet()
     if (card.id === 'apple-health' || card.id === 'health-connect') {
       return detailSheet(card, { act: () => act(card), health, onDisconnect: healthOn(health) ? () => disconnectHealth(card, toast) : null, retry: () => nav('/settings/' + card.id) })
     }
@@ -199,6 +203,8 @@ export default function IntegrationsPage({ android = false, ios = false }) {
         {cat.cards.map(card => <Card key={card.id} card={card} onOpen={() => open(card)} onAction={() => act(card)} />)}
       </Section>
       {cat.id === 'health' && <WorksWith platform={platform} nav={nav} />}
+      {/* openRunning has no app yet (docs/dev/SISTER_APPS.md): said once, no fake Connect button. */}
+      {cat.id === 'sister' && <p className="sect-f intg-intro">{t('openRunning is on its way. Until it lands, runs and matches come in from Apple Health or Health Connect.')}</p>}
     </div>)}
     {tokens && <Section footer={t('For AI assistants over MCP, planners and scripts. Each sees only what you tick.')}>
       <Row icon="key" iconTint="var(--purple)" title={t('API tokens')} accessory="chevron" onClick={() => nav('/settings/api-tokens')} />
