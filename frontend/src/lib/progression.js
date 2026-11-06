@@ -20,6 +20,7 @@ import { modeOf, repStep, rerampWarmups, isBw, isPerSide, entryExcluded, entryRo
 import { EXIDX, isAssisted, isLoadedEq, defaultIncrement } from './exercises.js'
 import { isWarmupRow, isSideSet, syncSideAggregate, makeSideSet } from './workout-model.js'
 import { normalizeRepRange } from './rep-range.js'
+import { gymSplitView } from './gym-split.js'
 import { isPyramid } from './pyramid.js'
 import { backoffAt } from './backoff.js'
 import { ownedWeightsFor, ownedKindFor, ownedUp, ownedDeload, ownedAround } from './dumbbells.js'
@@ -460,6 +461,9 @@ export function stallCount(sessions, policy) {
  * startsFromLast in session-start.js).
  */
 export function nextPrescription(S, cfg, routine) {
+  // An exercise kept per gym (#988, lib/gym-split.js) progresses from this gym's (or brand's)
+  // sessions only: 15 kg on one cable stack says nothing about the next weight on another.
+  S = gymSplitView(S, cfg?.id)
   const mode = modeOf(cfg)
   const policy = policyFor(cfg, routine, mode, profileRule(S))
   const unit = S.unit || 'kg'

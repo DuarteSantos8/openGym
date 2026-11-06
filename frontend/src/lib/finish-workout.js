@@ -3,6 +3,7 @@
 import { stopAt } from './workout-pause.js'
 import { bestWeightForEntry, cleanupSg } from './history.js'
 import { hasCompletedWork, isSideSet } from './workout-model.js'
+import { cleanBrand } from './gym-split.js'
 
 // planSec is live-session bookkeeping: a hold displaced before it finished puts its plan aside so
 // the row still knows what it is asking for (Workout.startTimed). A finished session keeps only
@@ -67,7 +68,9 @@ export function sessionEnd(active, now = Date.now(), gap = FORGOTTEN_GAP_MS) {
   return now - reach > gap ? reach : now
 }
 
-export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snapshotFor } = {}) {
+// `brandFor(exId)`: the machine brand an exercise kept per gym was done on (#988, lib/gym-split.js),
+// for an entry that does not carry one yet.
+export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snapshotFor, brandFor } = {}) {
   const entries = (active?.entries || []).map(entry => {
     const completed = {
       id: entry.id,
@@ -87,6 +90,10 @@ export function buildCompletedWorkout(active, { end = Date.now(), prs = [], snap
       // the workout forgot at finish what it had been all session.
       ...(entry.sg ? { sg: entry.sg } : {}),
     }
+    // Which machine brand it was done on, for an exercise kept per gym (#988): what tells the
+    // next session at another gym with the same brand that these numbers are its numbers too.
+    const brand = cleanBrand(entry.brand) || (typeof brandFor === 'function' ? cleanBrand(brandFor(entry.id)) : '')
+    if (brand) completed.brand = brand
     const snapshot = typeof snapshotFor === 'function' ? snapshotFor(entry) : null
     if (snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot) && Object.keys(snapshot).length) {
       completed.muscleSnapshot = { ...snapshot }

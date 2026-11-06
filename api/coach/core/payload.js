@@ -49,6 +49,8 @@ export const MAX_PAYLOAD_CHARS = 300_000;
    payload, to the limits the intake screen shows (CoachIntake.jsx). The system prompt already
    reads this text as data rather than instruction (common rule 3); the bound is about size.
    A field of the wrong type reads as absent rather than as "[object Object]". */
+// A routine exercise's plan note as the model reads it: enough for a cue or two.
+export const EX_NOTE_MAX = 300;
 export const PROFILE_TEXT_MAX = { limitations: 600, likes: 300, dislikes: 300, notes: 600 };
 // Goal and experience are enum words today (strength, returning, ...); 40 leaves room for new
 // ones without letting either carry a paragraph.
@@ -221,6 +223,10 @@ function cleanEx(e) {
   if (e.side) o.side = true;
   // A superset tag is an id the app mints (sg-0-1, hs + uid()), so it is bounded like one.
   if (e.sg) o.sg = ident(e.sg);
+  // The plan's own note on the exercise and its backups (#1003), so a review or a revision
+  // keeps what the person (or an earlier plan) wrote instead of starting it over.
+  if (typeof e.note === 'string' && e.note.trim()) o.note = text(e.note.trim(), EX_NOTE_MAX);
+  if (Array.isArray(e.subs)) { const subs = e.subs.filter(x => typeof x === 'string' && x).slice(0, 5).map(ident); if (subs.length) o.subs = subs; }
   // How the slot warms up (frontend/src/lib/warmup-ramp.js), so the Coach can explain it or
   // suggest another: its own choice, a block of its own as shares of the work weight, or the
   // older number of ramp sets. Absent means it follows the app's setting (`prefs.warmups`).

@@ -3,7 +3,7 @@
 // to identical entries, or the two paths drift apart the first time a prescription rule changes.
 // Imports both history.js and progression.js (which itself imports history.js); nothing in
 // either imports this file, so there is no cycle.
-import { buildSets, applyIntensifierPlan, modeOf, barFloor, isBw, lastEntryFor, insertWarmupRow } from './history.js'
+import { buildSets, applyIntensifierPlan, modeOf, barFloor, isBw, isPerSide, lastEntryFor, insertWarmupRow } from './history.js'
 import { isWarmupRow, isSideSet, syncSideAggregate } from './workout-model.js'
 import { nextPrescription, applyPrescription, defaultIncrement, weightIncrement, plannedOf, deloadTo, DELOAD_FACTOR } from './progression.js'
 import { dropGrid } from './plates.js'
@@ -15,6 +15,7 @@ import { programmeSlot, pctWeight } from './programmes.js'
 import { todayISO } from './format.js'
 import { exConverted, exView, viewTarget, storedTarget, storedRow } from './ex-unit.js'
 import { warmupSource, warmupModeOf, withWarmupBlock } from './warmup-ramp.js'
+import { withSessionTarget } from './session-targets.js'
 
 /**
  * Where a planned session's reps come from (Settings → During a workout). 'plan', the default:
@@ -271,9 +272,13 @@ export function buildSessionEntries(st, r) {
   // The prescription is applied as the session is built, so you walk up to the bar with the
   // right weight already on the screen instead of being told about it afterwards.
   const noProg = r?.excludeFromProgression === true
-  return (r ? r.ex : []).map(cfg => {
+  const entries = (r ? r.ex : []).map(cfg => {
     const { deload, ...built } = buildPlannedEntry(st, cfg, r, { noProg })
     // A programme's deload week stays out of progression, as a deload routine does.
     return { id: cfg.id, sg: cfg.sg, ...built, ...(noProg || deload ? { noProg: true } : {}) }
   })
+  // The rows a coach or planner set for this routine on this day (#972, lib/session-targets.js),
+  // in place of the prescription's; the routine and its targets stay what they built.
+  return withSessionTarget(st, r, entries, st?.active?.d || todayISO(), TARGET_HELPERS)
 }
+const TARGET_HELPERS = { modeOf, isPerSide }

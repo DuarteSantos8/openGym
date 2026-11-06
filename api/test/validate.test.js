@@ -765,3 +765,31 @@ test('a created plan written in Russian validates, custom exercises included', (
   assert.equal(r.bundle.customEx[0].n, 'Перенос мешка с песком');
   assert.equal(r.bundle.routines[0].name, 'Верх тела');
 });
+
+/* ---------------- plan notes and backups (#1003) ---------------- */
+
+test('a created plan keeps a short note and up to three library backups per exercise', () => {
+  const r = validatePlan({
+    routines: [{ name: 'A', ex: [{ id: '0009', sets: 3, reps: 10, note: 'Brace your core before each rep.', subs: ['1274', '0001', 'nope', '0009', '0007', '0043'] }] }]
+  });
+  assert.equal(r.ok, true);
+  const ex = r.bundle.routines[0].ex[0];
+  assert.equal(ex.note, 'Brace your core before each rep.');
+  // The unknown id and the exercise itself are left out, the rest kept up to three.
+  assert.deepEqual(ex.subs, ['1274', '0001', '0007']);
+});
+
+test('backups off the gym equipment are dropped, a missing note or list leaves no field', () => {
+  const ctx = { equipment: ['dumbbell'], offered: new Set(['1274', '0001']) };
+  const r = validatePlan({ routines: [{ name: 'A', ex: [{ id: '1274', sets: 3, reps: 10, subs: ['0009', '0001'] }, { id: '0001', sets: 3, reps: 10, subs: [] }] }] }, ctx);
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.bundle.routines[0].ex[0].subs, ['0001']);
+  assert.equal('subs' in r.bundle.routines[0].ex[1], false);
+  assert.equal('note' in r.bundle.routines[0].ex[1], false);
+});
+
+test('a plan note is held to a cue or two', () => {
+  const r = validatePlan({ routines: [{ name: 'A', ex: [{ id: '0001', sets: 3, reps: 10, note: 'Keep it slow. '.repeat(60) }] }] });
+  assert.equal(r.ok, true);
+  assert.ok(r.bundle.routines[0].ex[0].note.length <= 301);
+});
