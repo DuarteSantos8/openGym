@@ -69,23 +69,39 @@ struct DemoEnvironment: ViewModifier {
 
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    /// Which whole screen is up: a change fades (Motion), never cuts.
+    private enum Screen: Hashable { case weighIn, summary, countdown, home, prompt, session }
+
+    private var screen: Screen {
+        if store.weighInFor != nil { return .weighIn }
+        if store.summary != nil { return .summary }
+        if store.workout == nil { return store.countdownFrom != nil ? .countdown : .home }
+        if store.askDone && store.restEndsAt == nil && store.holdEndsAt == nil { return .prompt }
+        return .session
+    }
 
     var body: some View {
-        Group {
-            if store.weighInFor != nil {
-                WeighInView()
-            } else if let summary = store.summary {
-                SummaryView(summary: summary)
-            } else if store.workout == nil, let from = store.countdownFrom {
-                CountdownView(from: from)
-            } else if store.workout == nil {
-                HomeView()
-            } else if store.askDone && store.restEndsAt == nil && store.holdEndsAt == nil {
-                IdlePrompt()
-            } else {
-                SessionView()
+        ZStack {
+            switch screen {
+            case .weighIn: WeighInView().transition(.opacity)
+            case .summary:
+                if let summary = store.summary { SummaryView(summary: summary).transition(.opacity) }
+            case .countdown:
+                if let from = store.countdownFrom { CountdownView(from: from).transition(.opacity) }
+            case .home: HomeView().transition(.opacity)
+            case .prompt: IdlePrompt().transition(.opacity)
+            case .session: SessionView().transition(.opacity)
+            }
+            // GO! over the workout that has just started under it.
+            if store.goAt != nil {
+                GoView().transition(.opacity).zIndex(1)
             }
         }
+        .animation(Motion.fade(reduceMotion, dimmed), value: screen)
+        .animation(Motion.fade(reduceMotion, dimmed), value: store.goAt)
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
         // Text's words up by this locale), and the app's accent.
         .environment(\.locale, store.locale)
@@ -106,74 +122,10 @@ struct RootView: View {
     }
 }
 
-/// The 3-2-1 before a workout started here: big numbers in a ring that empties once. A tap
-/// starts at once; the small button cancels (nothing starts, nothing is logged).
-struct CountdownView: View {
-    @EnvironmentObject var store: SessionStore
-    let from: Date
-    /// The same 3-2-1 before a hold that starts by itself (the phone's setting): its own words and actions.
-    var label: Text? = nil
-    var start: (() -> Void)? = nil
-    var cancel: (() -> Void)? = nil
-
-    var body: some View {
-        VStack(spacing: 2) {
-            TimelineView(.periodic(from: from, by: 1)) { ctx in
-                let n = max(1, Countdown.number(at: ctx.date.timeIntervalSince(from)))
-                Button { if let start = start { start() } else { store.startNow() } } label: {
-                    ZStack {
-                        CountdownRing(start: from, end: from.addingTimeInterval(Double(Countdown.seconds)))
-                        Text(verbatim: "\(n)")
-                            .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
-                            .foregroundStyle(Theme.accent)
-                    }
-                    .aspectRatio(1, contentMode: .fit)
-                    .contentShape(Circle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(label ?? Text("Start workout"))
-                .accessibilityValue(Text(verbatim: "\(n)"))
-            }
-            .padding(.horizontal, 6)
-            HStack {
-                EdgeButton(systemImage: "xmark", label: Text("Cancel")) { if let cancel = cancel { cancel() } else { store.cancelCountdown() } }
-                Spacer()
-            }
-        }
-        .ignoresSafeArea(edges: .bottom)
-    }
-}
-
 extension Effort {
     /// The phone's band colours (index.css --purple … --green, then the accent's soft tone).
     static func color(_ kind: String, _ value: Double) -> Color {
         [Theme.purple, Theme.red, Theme.orange, Theme.yellow, Theme.accent, Theme.teal][band(kind, value)]
-    }
-}
-
-/* ---------- the rest, and a hold: a ring counting down ---------- */
-
-/// A ring that empties from `start` to `end`. With the wrist down (Always On) it moves once a
-/// second, not four times: the screen is updated rarely then anyway, and each update costs.
-struct CountdownRing: View {
-    let start: Date
-    let end: Date
-    var color: Color = Theme.accent
-    @Environment(\.isLuminanceReduced) private var dimmed
-
-    var body: some View {
-        TimelineView(.periodic(from: .now, by: dimmed ? 1 : 0.25)) { ctx in
-            let total = max(1, end.timeIntervalSince(start))
-            let left = max(0, end.timeIntervalSince(ctx.date))
-            ZStack {
-                Circle().stroke(Theme.dim, lineWidth: 7)
-                Circle()
-                    .trim(from: 0, to: CGFloat(left / total))
-                    .stroke(color.opacity(dimmed ? 0.6 : 1), style: StrokeStyle(lineWidth: 7, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-            }
-        }
-        .accessibilityHidden(true)
     }
 }
 

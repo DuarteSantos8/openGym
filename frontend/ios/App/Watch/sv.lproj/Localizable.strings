@@ -8,15 +8,12 @@
 "Rest" = "Vila";
 "Skip" = "Hoppa över";
 "Finish workout" = "Avsluta passet";
-"Finish workout?" = "Avsluta passet?";
-"Finish and save" = "Avsluta och spara";
 "Discard workout" = "Släng passet";
 "Continue workout" = "Fortsätt passet";
 "Cancel" = "Avbryt";
 "Rest’s over. Next set!" = "Vilan är slut. Nästa set!";
 "Left" = "Vänster";
 "Right" = "Höger";
-"Bodyweight" = "Kroppsvikt";
 "Superset" = "Superset";
 "Weight" = "Vikt";
 "Sets" = "Set";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "Hur tungt var setet?";
 "Waiting to sync" = "Väntar på synk";
 "All synced" = "Allt synkat";
+"Go!" = "Kör!";
 "Last time: %@" = "Förra gången: %@";
 "No workout running" = "Inget pass pågår";
 "Not synced yet" = "Inte synkat än";

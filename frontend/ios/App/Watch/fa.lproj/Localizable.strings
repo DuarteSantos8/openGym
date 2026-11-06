@@ -8,15 +8,12 @@
 "Rest" = "استراحت";
 "Skip" = "رد کردن";
 "Finish workout" = "پایان تمرین";
-"Finish workout?" = "تمرین تمام شود؟";
-"Finish and save" = "پایان و ذخیره";
 "Discard workout" = "تمرین را کنار بگذارید";
 "Continue workout" = "ادامه تمرین";
 "Cancel" = "لغو";
 "Rest’s over. Next set!" = "استراحت تمام شد. ست بعدی!";
 "Left" = "چپ";
 "Right" = "راست";
-"Bodyweight" = "وزن بدن";
 "Superset" = "سوپرست";
 "Weight" = "وزن";
 "Sets" = "ست‌ها";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "این ست چقدر سخت بود؟";
 "Waiting to sync" = "در انتظار همگام‌سازی";
 "All synced" = "همه همگام‌سازی شدند";
+"Go!" = "برو!";
 "Last time: %@" = "آخرین بار: %@";
 "No workout running" = "هیچ تمرینی در جریان نیست";
 "Not synced yet" = "هنوز همگام نشده";

@@ -8,15 +8,12 @@
 "Rest" = "Dinlenme";
 "Skip" = "Atla";
 "Finish workout" = "Antrenmanı bitir";
-"Finish workout?" = "Antrenman bitirilsin mi?";
-"Finish and save" = "Bitir ve kaydet";
 "Discard workout" = "Antrenmanı iptal et";
 "Continue workout" = "Antrenmana devam et";
 "Cancel" = "İptal";
 "Rest’s over. Next set!" = "Dinlenme bitti. Sıradaki set!";
 "Left" = "Sol";
 "Right" = "Sağ";
-"Bodyweight" = "Vücut ağırlığı";
 "Superset" = "Süperset";
 "Weight" = "Ağırlık";
 "Sets" = "Set";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "O set ne kadar zordu?";
 "Waiting to sync" = "Eşitlenmeyi bekliyor";
 "All synced" = "Her şey eşitlendi";
+"Go!" = "Başla!";
 "Last time: %@" = "Geçen sefer: %@";
 "No workout running" = "Devam eden antrenman yok";
 "Not synced yet" = "Henüz eşitlenmedi";

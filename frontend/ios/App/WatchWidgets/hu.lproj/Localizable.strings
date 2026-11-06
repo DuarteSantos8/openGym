@@ -8,15 +8,12 @@
 "Rest" = "Pihenő";
 "Skip" = "Kihagyás";
 "Finish workout" = "Edzés befejezése";
-"Finish workout?" = "Befejezed az edzést?";
-"Finish and save" = "Befejezés és mentés";
 "Discard workout" = "Edzés elvetése";
 "Continue workout" = "Edzés folytatása";
 "Cancel" = "Mégse";
 "Rest’s over. Next set!" = "Vége a pihenőnek. Jöhet a következő sorozat!";
 "Left" = "Bal";
 "Right" = "Jobb";
-"Bodyweight" = "Testsúly";
 "Superset" = "Szuperszett";
 "Weight" = "Súly";
 "Sets" = "Sorozatok";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "Mennyire volt nehéz ez a sorozat?";
 "Waiting to sync" = "Szinkronizálásra vár";
 "All synced" = "Minden szinkronizálva";
+"Go!" = "Rajt!";
 "Last time: %@" = "Legutóbb: %@";
 "No workout running" = "Nincs folyamatban edzés";
 "Not synced yet" = "Még nincs szinkronizálva";

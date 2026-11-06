@@ -8,15 +8,12 @@
 "Rest" = "Відпочинок";
 "Skip" = "Пропустити";
 "Finish workout" = "Завершити тренування";
-"Finish workout?" = "Завершити тренування?";
-"Finish and save" = "Завершити й зберегти";
 "Discard workout" = "Скасувати тренування";
 "Continue workout" = "Продовжити тренування";
 "Cancel" = "Скасувати";
 "Rest’s over. Next set!" = "Відпочинок скінчився. Наступний підхід!";
 "Left" = "Ліва";
 "Right" = "Права";
-"Bodyweight" = "Власна вага";
 "Superset" = "Суперсет";
 "Weight" = "Вага";
 "Sets" = "Підходи";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "Наскільки важким був підхід?";
 "Waiting to sync" = "Очікує синхронізації";
 "All synced" = "Усе синхронізовано";
+"Go!" = "Пішов!";
 "Last time: %@" = "Минулого разу: %@";
 "No workout running" = "Тренування не триває";
 "Not synced yet" = "Ще не синхронізовано";

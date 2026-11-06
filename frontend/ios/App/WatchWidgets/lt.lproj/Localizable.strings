@@ -8,15 +8,12 @@
 "Rest" = "Poilsis";
 "Skip" = "Praleisti";
 "Finish workout" = "Užbaigti treniruotę";
-"Finish workout?" = "Baigti treniruotę?";
-"Finish and save" = "Baigti ir išsaugoti";
 "Discard workout" = "Atšaukti treniruotę";
 "Continue workout" = "Tęsti treniruotę";
 "Cancel" = "Atšaukti";
 "Rest’s over. Next set!" = "Poilsis baigtas. Kita serija!";
 "Left" = "Kairė";
 "Right" = "Dešinė";
-"Bodyweight" = "Kūno svoris";
 "Superset" = "Supersetas";
 "Weight" = "Svoris";
 "Sets" = "Serijos";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "Kiek sunki buvo ta serija?";
 "Waiting to sync" = "Laukiama sinchronizacijos";
 "All synced" = "Viskas sinchronizuota";
+"Go!" = "Pradėti!";
 "Last time: %@" = "Paskutinį kartą: %@";
 "No workout running" = "Treniruotė nevyksta";
 "Not synced yet" = "Dar nesinchronizuota";

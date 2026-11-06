@@ -8,15 +8,12 @@
 "Rest" = "বিশ্রাম";
 "Skip" = "এড়িয়ে যান";
 "Finish workout" = "ওয়ার্কআউট শেষ করুন";
-"Finish workout?" = "ওয়ার্কআউট শেষ করবেন?";
-"Finish and save" = "শেষ করে সেভ করুন";
 "Discard workout" = "ওয়ার্কআউট বাদ দিন";
 "Continue workout" = "ওয়ার্কআউট চালিয়ে যান";
 "Cancel" = "বাতিল";
 "Rest’s over. Next set!" = "বিশ্রাম শেষ। পরের সেট!";
 "Left" = "বাঁ";
 "Right" = "ডান";
-"Bodyweight" = "শরীরের ওজন";
 "Superset" = "সুপারসেট";
 "Weight" = "ওজন";
 "Sets" = "সেট";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "সেটটি কতটা কঠিন ছিল?";
 "Waiting to sync" = "সিঙ্কের অপেক্ষায়";
 "All synced" = "সব সিঙ্ক হয়েছে";
+"Go!" = "শুরু!";
 "Last time: %@" = "গতবার: %@";
 "No workout running" = "কোনো ওয়ার্কআউট চলছে না";
 "Not synced yet" = "এখনো সিঙ্ক হয়নি";

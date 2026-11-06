@@ -110,24 +110,42 @@ struct SyncLine: View {
     }
 }
 
-/// The set page: the set up next, or the rest after one, or a hold while it runs.
+/// The set page: the set up next, or the rest after one, or a hold while it runs. Each comes in
+/// with a short fade (the rest is an entrance), never a cut.
 struct LivePage: View {
     @EnvironmentObject var store: SessionStore
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    private enum Panel: Hashable { case count, hold, fix, rest, set, done }
+
+    private var panel: Panel {
+        if store.holdCountFrom != nil { return .count }
+        if store.holdEndsAt != nil { return .hold }
+        if store.viewing != nil { return .fix }
+        if let end = store.restEndsAt, end > Date() { return .rest }
+        return store.entry != nil ? .set : .done
+    }
 
     var body: some View {
-        if let from = store.holdCountFrom {
-            CountdownView(from: from, label: Text("Start hold"), start: { store.startHold(auto: true) }, cancel: { store.stopHoldCount() })
-        } else if let end = store.holdEndsAt {
-            HoldView(end: end)
-        } else if store.viewing != nil {
-            SetPanel()
-        } else if let end = store.restEndsAt, end > Date() {
-            RestView(end: end)
-        } else if store.entry != nil {
-            SetPanel()
-        } else {
-            AllDonePanel()
+        ZStack {
+            switch panel {
+            case .count:
+                if let from = store.holdCountFrom {
+                    CountdownView(from: from, label: Text("Start hold"), start: { store.startHold(auto: true) }, cancel: { store.stopHoldCount() })
+                        .transition(.opacity)
+                }
+            case .hold:
+                if let end = store.holdEndsAt { HoldView(end: end).transition(.opacity) }
+            case .rest:
+                if let end = store.restEndsAt { RestView(end: end).transition(.opacity) }
+            case .fix, .set:
+                SetPanel().transition(.opacity)
+            case .done:
+                AllDonePanel().transition(.opacity)
+            }
         }
+        .animation(Motion.fade(reduceMotion, dimmed), value: panel)
     }
 }
 

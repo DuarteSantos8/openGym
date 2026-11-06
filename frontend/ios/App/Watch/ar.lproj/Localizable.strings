@@ -8,15 +8,12 @@
 "Rest" = "راحة";
 "Skip" = "تخطّي";
 "Finish workout" = "إنهاء التمرين";
-"Finish workout?" = "إنهاء التمرين؟";
-"Finish and save" = "إنهاء وحفظ";
 "Discard workout" = "تجاهل التمرين";
 "Continue workout" = "متابعة التمرين";
 "Cancel" = "إلغاء";
 "Rest’s over. Next set!" = "انتهت الراحة. المجموعة التالية!";
 "Left" = "يسار";
 "Right" = "يمين";
-"Bodyweight" = "وزن الجسم";
 "Superset" = "سوبر سِت";
 "Weight" = "الوزن";
 "Sets" = "المجموعات";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "ما مدى صعوبة تلك المجموعة؟";
 "Waiting to sync" = "بانتظار المزامنة";
 "All synced" = "تمت مزامنة كل شيء";
+"Go!" = "انطلق!";
 "Last time: %@" = "المرة السابقة: %@";
 "No workout running" = "لا يوجد تمرين جارٍ";
 "Not synced yet" = "لم تتم المزامنة بعد";

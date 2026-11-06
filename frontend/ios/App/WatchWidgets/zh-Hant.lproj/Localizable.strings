@@ -8,15 +8,12 @@
 "Rest" = "休息";
 "Skip" = "略過";
 "Finish workout" = "結束訓練";
-"Finish workout?" = "結束訓練？";
-"Finish and save" = "結束並儲存";
 "Discard workout" = "捨棄本次訓練";
 "Continue workout" = "繼續訓練";
 "Cancel" = "取消";
 "Rest’s over. Next set!" = "休息結束，下一組！";
 "Left" = "左側";
 "Right" = "右側";
-"Bodyweight" = "徒手動作";
 "Superset" = "超級組";
 "Weight" = "重量";
 "Sets" = "組數";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "這組感覺有多吃力？";
 "Waiting to sync" = "等待同步中";
 "All synced" = "已全數同步";
+"Go!" = "開始！";
 "Last time: %@" = "上次: %@";
 "No workout running" = "沒有進行中的訓練";
 "Not synced yet" = "尚未同步";

@@ -8,15 +8,12 @@
 "Rest" = "Nghỉ";
 "Skip" = "Bỏ qua";
 "Finish workout" = "Kết thúc buổi tập";
-"Finish workout?" = "Hoàn thành buổi tập?";
-"Finish and save" = "Hoàn thành và lưu";
 "Discard workout" = "Hủy buổi tập";
 "Continue workout" = "Tiếp tục buổi tập";
 "Cancel" = "Hủy";
 "Rest’s over. Next set!" = "Hết giờ nghỉ. Vào hiệp tiếp theo!";
 "Left" = "Trái";
 "Right" = "Phải";
-"Bodyweight" = "Thể trọng";
 "Superset" = "Superset";
 "Weight" = "Mức tạ";
 "Sets" = "Hiệp";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "Hiệp đó nặng đến mức nào?";
 "Waiting to sync" = "Đang chờ đồng bộ";
 "All synced" = "Đã đồng bộ tất cả";
+"Go!" = "Bắt đầu!";
 "Last time: %@" = "Lần trước: %@";
 "No workout running" = "Không có buổi tập nào đang chạy";
 "Not synced yet" = "Chưa đồng bộ";

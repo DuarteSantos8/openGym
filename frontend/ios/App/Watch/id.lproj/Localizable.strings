@@ -8,15 +8,12 @@
 "Rest" = "Istirahat";
 "Skip" = "Lewati";
 "Finish workout" = "Selesaikan latihan";
-"Finish workout?" = "Selesai latihan?";
-"Finish and save" = "Selesaikan dan simpan";
 "Discard workout" = "Buang latihan";
 "Continue workout" = "Lanjutkan latihan";
 "Cancel" = "Batal";
 "Rest’s over. Next set!" = "Istirahat sudah berakhir. Lakukan set berikutnya!";
 "Left" = "Kiri";
 "Right" = "Kanan";
-"Bodyweight" = "Bodyweight";
 "Superset" = "Superset";
 "Weight" = "Beban";
 "Sets" = "Set";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "Seberapa berat set tersebut?";
 "Waiting to sync" = "Menunggu untuk disinkronkan";
 "All synced" = "Semua disinkronkan";
+"Go!" = "Mulai!";
 "Last time: %@" = "Terakhir kali: %@";
 "No workout running" = "Tidak ada latihan berjalan";
 "Not synced yet" = "Belum disinkronkan";

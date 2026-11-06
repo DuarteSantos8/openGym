@@ -8,15 +8,12 @@
 "Rest" = "Descanso";
 "Skip" = "Saltar";
 "Finish workout" = "Terminar treino";
-"Finish workout?" = "Terminar o treino?";
-"Finish and save" = "Terminar e guardar";
 "Discard workout" = "Descartar treino";
 "Continue workout" = "Continuar treino";
 "Cancel" = "Cancelar";
 "Rest’s over. Next set!" = "Acabou o descanso. Próxima série!";
 "Left" = "Esquerda";
 "Right" = "Direita";
-"Bodyweight" = "Peso do corpo";
 "Superset" = "Supersérie";
 "Weight" = "Peso";
 "Sets" = "Séries";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "Quão dura foi a série?";
 "Waiting to sync" = "À espera de sincronizar";
 "All synced" = "Tudo sincronizado";
+"Go!" = "Já!";
 "Last time: %@" = "Da última vez: %@";
 "No workout running" = "Nenhum treino a decorrer";
 "Not synced yet" = "Ainda não sincronizado";

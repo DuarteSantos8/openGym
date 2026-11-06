@@ -8,15 +8,12 @@
 "Rest" = "Pauza";
 "Skip" = "Přeskočit";
 "Finish workout" = "Dokončit trénink";
-"Finish workout?" = "Dokončit trénink?";
-"Finish and save" = "Dokončit a uložit";
 "Discard workout" = "Zahodit trénink";
 "Continue workout" = "Pokračovat v tréninku";
 "Cancel" = "Zrušit";
 "Rest’s over. Next set!" = "Pauza skončila. Další série!";
 "Left" = "Levá";
 "Right" = "Pravá";
-"Bodyweight" = "Vlastní váha";
 "Superset" = "Supersérie";
 "Weight" = "Váha";
 "Sets" = "Série";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "Jak těžká byla série?";
 "Waiting to sync" = "Čeká na synchronizaci";
 "All synced" = "Vše synchronizováno";
+"Go!" = "Teď!";
 "Last time: %@" = "Naposledy: %@";
 "No workout running" = "Žádný trénink neběží";
 "Not synced yet" = "Zatím nesynchronizováno";

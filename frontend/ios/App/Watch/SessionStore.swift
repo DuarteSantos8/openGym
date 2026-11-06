@@ -373,6 +373,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func step(_ d: Int) {
         guard let to = target(d) else { return }
+        lastStep = d < 0 ? -1 : 1
         open(to)
     }
 
@@ -669,6 +670,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         lastLogged = SetRef(entry: ei, set: si)
         lastSide = side
         lastRated = nil
+        lastStep = 1
         if to != ei { state.entryIndex = to }
         loadTargets()
         overviewIfDone()
@@ -737,6 +739,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 if Countdown.number(at: Date().timeIntervalSince(from) + 0.05) == 0 {
                     self.stopHoldCount()
                     self.startHold(auto: true)
+                    if self.holdEndsAt != nil { self.showGo() }
                 } else {
                     Haptics.count()
                 }
@@ -926,7 +929,22 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // A workout came from the phone meanwhile: that one runs (its session took the prepared one).
         guard workout == nil else { return }
         begin(c.session, bw: c.bw)
+        showGo()
     }
+
+    /// GO! on top of what just started, for a moment (Motion's GoView).
+    @Published private(set) var goAt: Date?
+
+    private func showGo() {
+        let at = Date()
+        goAt = at
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
+            if self?.goAt == at { self?.goAt = nil }
+        }
+    }
+
+    /// Which way the set page last moved (‹ -1, › and Done +1): the set's lines come in from there.
+    @Published private(set) var lastStep = 1
 
     /// Cancel on the countdown: nothing starts, the prepared session is dropped.
     func cancelCountdown() {
@@ -1413,7 +1431,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// One screen of the demo workout (demoJSON: every kind of set), as CI photographs it.
     private func startDemo() {
         let screen = SessionStore.demoScreen ?? "set"
-        if screen != "empty" { apply(json: screen == "idle" ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
+        if screen != "empty" { apply(json: screen == "idle" || screen == "countdown" ? SessionStore.demoReadyJSON : SessionStore.demoJSON) }
+        // The 3-2-1 as it runs before a workout started here (without Apple Health, which the demo has not).
+        if screen == "countdown" { countdownFrom = Date() }
         DispatchQueue.main.async {
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
@@ -1421,6 +1441,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "metrics": self.picked[0] = 2; self.tab = .metrics
             case "music": self.tab = .music
             case "prompt": self.idleMinutes = 23; self.askDone = true
+            case "go": self.goAt = .distantFuture
             case "hold": self.state.entryIndex = 1
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3

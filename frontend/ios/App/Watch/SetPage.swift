@@ -26,6 +26,8 @@ struct SetPanel: View {
     @State private var keypad: NumberField?
     @State private var confirmSkip = false
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isLuminanceReduced) private var dimmed
 
     var body: some View {
         if let w = store.workout, let ref = store.shownRef,
@@ -40,6 +42,7 @@ struct SetPanel: View {
             }
             .padding(.horizontal, 2)
             .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+            .animation(Motion.fade(reduceMotion, dimmed), value: ref)
             .onAppear { pickCrown(entry) }
             .onChange(of: ref) { _ in pickCrown(entry) }
             .sheet(item: $keypad) { field in
@@ -62,47 +65,52 @@ struct SetPanel: View {
         let partnerLine = roomy && height >= 160
         let lastLine = roomy && height >= 186
         VStack(spacing: 3) {
-            HStack(spacing: 6) {
-                // The exercise's animation, as the phone sent it for this workout (only the one on show moves).
-                if store.show.showClip, let clip = store.clips[entry.id] {
-                    ClipView(clip: clip, animating: store.tab == .set).frame(width: 28, height: 28)
+            // The set's lines move with ‹ › (Motion.nudge); the arrows and the button stay still.
+            VStack(spacing: 3) {
+                HStack(spacing: 6) {
+                    // The exercise's animation, as the phone sent it for this workout (only the one on show moves).
+                    if store.show.showClip, let clip = store.clips[entry.id] {
+                        ClipView(clip: clip, animating: store.tab == .set).frame(width: 28, height: 28)
+                    }
+                    Text(verbatim: entry.name)
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .lineLimit(twoLines ? 2 : 1)
+                        .minimumScaleFactor(0.75)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Text(verbatim: entry.name)
-                    .font(.system(size: 16, weight: .semibold, design: .rounded))
-                    .lineLimit(twoLines ? 2 : 1)
-                    .minimumScaleFactor(0.75)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+                placeLine(entry, ref: ref, row: row, fixing: fixing)
+                if partnerLine, let partners = partnerNames(ref.entry) {
+                    Label { Text(verbatim: partners) } icon: { Image(systemName: "link") }
+                        .font(.system(.caption2, design: .rounded))
+                        .foregroundStyle(Theme.purple)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                        .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partners)"))
+                }
+                if fixing, row.sides != nil { sideSwitch }
+                Spacer(minLength: 2)
+                if entry.isCardio {
+                    Text("Log this one on your iPhone.")
+                        .font(.footnote)
+                        .foregroundStyle(Theme.label2)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.7)
+                } else {
+                    numbers(entry, row: row, unit: unit)
+                }
+                if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
+                if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
+                    Text("Last time: \(last)")
+                        .font(.system(size: 11, design: .rounded))
+                        .foregroundStyle(Theme.label2)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .dynamicTypeSize(...DynamicTypeSize.large)
+                }
             }
-            placeLine(entry, ref: ref, row: row, fixing: fixing)
-            if partnerLine, let partners = partnerNames(ref.entry) {
-                Label { Text(verbatim: partners) } icon: { Image(systemName: "link") }
-                    .font(.system(.caption2, design: .rounded))
-                    .foregroundStyle(Theme.purple)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    .accessibilityLabel(Text("Superset") + Text(verbatim: ", \(partners)"))
-            }
-            if fixing, row.sides != nil { sideSwitch }
-            Spacer(minLength: 2)
-            if entry.isCardio {
-                Text("Log this one on your iPhone.")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.label2)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.7)
-            } else {
-                numbers(entry, row: row, unit: unit)
-            }
-            if fixing, !row.warmup, !entry.isCardio, let kind = store.effortKind { fixEffort(kind) }
-            if lastLine, !fixing, !row.warmup, store.show.showLast, let last = entry.last, !last.isEmpty {
-                Text("Last time: \(last)")
-                    .font(.system(size: 11, design: .rounded))
-                    .foregroundStyle(Theme.label2)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .dynamicTypeSize(...DynamicTypeSize.large)
-            }
+            .id(ref)
+            .transition(Motion.nudge(store.lastStep, reduceMotion: reduceMotion))
             Spacer(minLength: 2)
             bottomRow(entry, fixing: fixing)
         }
@@ -306,7 +314,8 @@ struct SetPanel: View {
             : entry.isTimed ? .seconds
             : (store.crownStartsOnWeight && !entry.isBodyweight ? .weight : .reps)
         if SessionStore.demoScreen == "edit-weight" { selected = .weight } else { selected = field }
-        focus = selected
+        // After the set's lines came back in (‹ › gives them a new identity), not before.
+        DispatchQueue.main.async { focus = selected }
         if SessionStore.demoScreen == "keypad" { keypad = .weight }
     }
 

@@ -30,15 +30,12 @@ const FROM_APP = {
   'Rest': 'Rest',
   'Skip': 'Skip',
   'Finish workout': 'Finish workout',
-  'Finish workout?': 'Finish workout?',
-  'Finish and save': 'Finish and save',
   'Discard workout': 'Discard workout',
   'Continue workout': 'Continue workout',
   'Cancel': 'Cancel',
   'Rest’s over. Next set!': 'Rest’s over. Next set!',
   'Left': 'Left',
   'Right': 'Right',
-  'Bodyweight': 'Bodyweight',
   'Superset': 'Superset',
   'Weight': 'Weight',
   'Sets': 'Sets',
@@ -63,6 +60,7 @@ const FROM_APP = {
   'How hard was that set?': 'How hard was that set?',
   'Waiting to sync': 'Waiting to sync',
   'All synced': 'All synced',
+  'Go!': 'Go!',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }

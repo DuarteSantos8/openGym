@@ -8,15 +8,12 @@
 "Rest" = "आराम";
 "Skip" = "छोड़ें";
 "Finish workout" = "वर्कआउट समाप्त करें";
-"Finish workout?" = "वर्कआउट समाप्त करें?";
-"Finish and save" = "समाप्त करें और सहेजें";
 "Discard workout" = "वर्कआउट छोड़ें";
 "Continue workout" = "वर्कआउट जारी रखें";
 "Cancel" = "रद्द करें";
 "Rest’s over. Next set!" = "आराम खत्म। अगला सेट!";
 "Left" = "बायाँ";
 "Right" = "दायाँ";
-"Bodyweight" = "बॉडीवेट";
 "Superset" = "सुपरसेट";
 "Weight" = "वज़न";
 "Sets" = "सेट";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "वह सेट कितना मुश्किल था?";
 "Waiting to sync" = "सिंक होने की प्रतीक्षा";
 "All synced" = "सब सिंक हो गया";
+"Go!" = "चलो!";
 "Last time: %@" = "पिछली बार: %@";
 "No workout running" = "कोई वर्कआउट नहीं चल रहा";
 "Not synced yet" = "अभी सिंक नहीं हुआ";

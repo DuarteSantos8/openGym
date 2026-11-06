@@ -8,15 +8,12 @@
 "Rest" = "พัก";
 "Skip" = "ข้าม";
 "Finish workout" = "จบการออกกำลังกาย";
-"Finish workout?" = "จบการออกกำลังกายไหม?";
-"Finish and save" = "จบและบันทึก";
 "Discard workout" = "ทิ้งการออกกำลังกายนี้";
 "Continue workout" = "ออกกำลังกายต่อ";
 "Cancel" = "ยกเลิก";
 "Rest’s over. Next set!" = "หมดเวลาพักแล้ว เซ็ตถัดไป!";
 "Left" = "ซ้าย";
 "Right" = "ขวา";
-"Bodyweight" = "น้ำหนักตัว";
 "Superset" = "ซูเปอร์เซ็ต";
 "Weight" = "น้ำหนัก";
 "Sets" = "เซ็ต";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "เซ็ตนั้นหนักแค่ไหน?";
 "Waiting to sync" = "รอซิงค์";
 "All synced" = "ซิงค์ครบแล้ว";
+"Go!" = "ไป!";
 "Last time: %@" = "ครั้งก่อน: %@";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";

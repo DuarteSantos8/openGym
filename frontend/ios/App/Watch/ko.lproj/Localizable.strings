@@ -8,15 +8,12 @@
 "Rest" = "휴식";
 "Skip" = "건너뛰기";
 "Finish workout" = "운동 마치기";
-"Finish workout?" = "운동을 마칠까요?";
-"Finish and save" = "마치고 저장";
 "Discard workout" = "운동 버리기";
 "Continue workout" = "운동 계속하기";
 "Cancel" = "취소";
 "Rest’s over. Next set!" = "휴식 끝. 다음 세트!";
 "Left" = "왼쪽";
 "Right" = "오른쪽";
-"Bodyweight" = "맨몸 운동";
 "Superset" = "슈퍼세트";
 "Weight" = "무게";
 "Sets" = "세트";
@@ -41,6 +38,7 @@
 "How hard was that set?" = "이 세트는 얼마나 힘들었나요?";
 "Waiting to sync" = "동기화 대기 중";
 "All synced" = "모두 동기화됨";
+"Go!" = "시작!";
 "Last time: %@" = "지난번: %@";
 "No workout running" = "진행 중인 운동이 없어요";
 "Not synced yet" = "아직 동기화되지 않았어요";
