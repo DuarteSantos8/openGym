@@ -100,6 +100,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// Whether the phone is in reach now, and how many of this watch's events still wait for it.
     @Published private(set) var reachable = true
     @Published private(set) var queued = 0
+    /// Sets logged here that have not reached the phone yet (OutboxCore.waitingSets).
+    @Published private(set) var unsentSets = 0
     /// Whether a snapshot from the phone ever arrived on this watch. The phone sends only while
     /// openGym runs there, so until then the start screen says to open it once.
     @Published private(set) var heardFromPhone = UserDefaults.standard.bool(forKey: SessionStore.heardKey)
@@ -257,6 +259,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     /// Events wait on the watch for a phone out of reach: "Saved on the watch, syncs later".
     var offline: Bool { queued > 0 && !reachable }
+
+    /// Whether the sets logged here have reached the iPhone (WatchCore SyncState).
+    var sync: SyncState { SyncState.of(waiting: unsentSets, reachable: reachable) }
 
     func isSkipped(_ exId: String, _ si: Int) -> Bool { SessionCore.isSkipped(state, exId, si) }
 
@@ -474,6 +479,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     var widgetState: WidgetState {
         var w = widgetStateWithoutLang
         w.lang = state.settings.lang
+        w.unsent = unsentSets > 0 ? unsentSets : nil
         return w
     }
 
@@ -1303,10 +1309,13 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         guard WCSession.isSupported() else { return }
         let session = WCSession.default
         let r = session.activationState == .activated && session.isReachable
-        let q = OutboxCore.waiting(box)
+        let o = box
+        let q = OutboxCore.waiting(o)
+        let sets = OutboxCore.waitingSets(o)
         DispatchQueue.main.async {
             if self.reachable != r { self.reachable = r }
             if self.queued != q { self.queued = q }
+            if self.unsentSets != sets { self.unsentSets = sets }
         }
     }
 
@@ -1437,7 +1446,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
                 self.lastLogged = SetRef(entry: 0, set: 1)
             }
             if screen == "hold" { self.startHold() }
-            if screen == "offline" { self.reachable = false; self.queued = 3 }
+            if screen == "offline" { self.reachable = false; self.queued = 3; self.unsentSets = 3 }
+            if screen == "waiting" { self.queued = 2; self.unsentSets = 2; self.tab = .overview }
             if screen == "summary" || screen == "summary-end" || screen == "ended" {
                 self.summary = WorkoutSummary(name: "Push day", unit: "kg", duration: 52 * 60 + 13, sets: 17, volume: 4320,
                                               prs: ["Bench Press", "Plank"], hrAvg: 118, hrMax: 156, calories: 312,

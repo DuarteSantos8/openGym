@@ -39,6 +39,8 @@
 "Discard workout?" = "تجاهل التمرين؟";
 "Up next" = "التالي";
 "How hard was that set?" = "ما مدى صعوبة تلك المجموعة؟";
+"Waiting to sync" = "بانتظار المزامنة";
+"All synced" = "تمت مزامنة كل شيء";
 "Last time: %@" = "المرة السابقة: %@";
 "No workout running" = "لا يوجد تمرين جارٍ";
 "Not synced yet" = "لم تتم المزامنة بعد";
@@ -55,7 +57,6 @@
 "Workout saved" = "تم حفظ التمرين";
 "Ended on your iPhone" = "انتهى على iPhone";
 "Log this one on your iPhone." = "سجّل هذا على iPhone.";
-"Saved on the watch, syncs later" = "حُفظ على الساعة، تتم المزامنة لاحقًا";
 "All done?" = "هل انتهيت؟";
 "Lock" = "قفل";
 "Skip this set?" = "تخطي هذه المجموعة؟";

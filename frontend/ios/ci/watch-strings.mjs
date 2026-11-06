@@ -61,6 +61,8 @@ const FROM_APP = {
   'Discard workout?': 'Discard workout?',
   'Up next': 'Up next',
   'How hard was that set?': 'How hard was that set?',
+  'Waiting to sync': 'Waiting to sync',
+  'All synced': 'All synced',
 }
 // Built from an app word: "Last time: %@".
 const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
@@ -167,10 +169,6 @@ const OWN = {
   'Log this one on your iPhone.': {
     de: 'Das hier trägst du am iPhone ein.', fr: 'Celui-ci se note sur ton iPhone.', es: 'Este se registra en tu iPhone.', it: 'Questo si registra sull’iPhone.', 'pt-PT': 'Este regista-se no iPhone.', 'pt-BR': 'Este você registra no iPhone.', pl: 'To zapisz na iPhonie.', hu: 'Ezt az iPhone-on rögzítsd.', tr: 'Bunu iPhone’da kaydet.', ru: 'Это записывается на iPhone.', uk: 'Це записуй на iPhone.', ar: 'سجّل هذا على iPhone.', hi: 'इसे iPhone पर दर्ज करें।', bn: 'এটা iPhone-এ লিখুন।', th: 'อันนี้บันทึกบน iPhone', ko: '이건 iPhone에서 기록하세요.', 'zh-Hans': '这个请在 iPhone 上记录。', 'zh-Hant': '這個請在 iPhone 上記錄。',
     cs: 'Tohle zapiš na iPhonu.', fa: 'این را در iPhone ثبت کنید.', id: 'Catat yang ini di iPhone kamu.', lt: 'Šią užregistruokite iPhone.', sv: 'Logga den här på din iPhone.', vi: 'Ghi bài này trên iPhone.',
-  },
-  'Saved on the watch, syncs later': {
-    de: 'Auf der Watch gespeichert, synct später', fr: 'Gardé sur la montre, synchro plus tard', es: 'Guardado en el reloj, se sincroniza luego', it: 'Salvato sull’orologio, si sincronizza dopo', 'pt-PT': 'Guardado no relógio, sincroniza depois', 'pt-BR': 'Salvo no relógio, sincroniza depois', pl: 'Zapisano na zegarku, zsynchronizuje się później', hu: 'Az órán mentve, később szinkronizál', tr: 'Saatte kaydedildi, sonra eşitlenir', ru: 'Сохранено на часах, синхронизируется позже', uk: 'Збережено на годиннику, синхронізується пізніше', ar: 'حُفظ على الساعة، تتم المزامنة لاحقًا', hi: 'वॉच पर सहेजा, बाद में सिंक होगा', bn: 'ঘড়িতে সেভ হয়েছে, পরে সিঙ্ক হবে', th: 'บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง', ko: '워치에 저장됨, 나중에 동기화돼요', 'zh-Hans': '已存在手表上，稍后同步', 'zh-Hant': '已存在手錶上，稍後同步',
-    cs: 'Uloženo v hodinkách, synchronizuje se později', fa: 'روی ساعت ذخیره شد، بعداً همگام می‌شود', id: 'Disimpan di jam, disinkronkan nanti', lt: 'Išsaugota laikrodyje, bus sinchronizuota vėliau', sv: 'Sparat på klockan, synkas senare', vi: 'Đã lưu trên đồng hồ, sẽ đồng bộ sau',
   },
   'All done?': {
     de: 'Alles erledigt?', fr: 'Terminé ?', es: '¿Has terminado?', it: 'Hai finito?', 'pt-PT': 'Terminaste?', 'pt-BR': 'Terminou?', pl: 'Koniec treningu?', hu: 'Végeztél?', tr: 'Bitirdin mi?', ru: 'Тренировка окончена?', uk: 'Тренування завершено?', ar: 'هل انتهيت؟', hi: 'हो गया?', bn: 'শেষ হয়েছে?', th: 'เสร็จแล้วหรือยัง', ko: '다 끝났나요?', 'zh-Hans': '练完了吗？', 'zh-Hant': '練完了嗎？',

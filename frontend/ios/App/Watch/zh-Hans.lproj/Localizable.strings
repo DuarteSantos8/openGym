@@ -39,6 +39,8 @@
 "Discard workout?" = "放弃训练？";
 "Up next" = "下一个";
 "How hard was that set?" = "这组有多吃力？";
+"Waiting to sync" = "等待同步";
+"All synced" = "已全部同步";
 "Last time: %@" = "上次: %@";
 "No workout running" = "没有进行中的训练";
 "Not synced yet" = "尚未同步";
@@ -55,7 +57,6 @@
 "Workout saved" = "训练已保存";
 "Ended on your iPhone" = "已在 iPhone 上结束";
 "Log this one on your iPhone." = "这个请在 iPhone 上记录。";
-"Saved on the watch, syncs later" = "已存在手表上，稍后同步";
 "All done?" = "练完了吗？";
 "Lock" = "锁定";
 "Skip this set?" = "跳过这一组？";

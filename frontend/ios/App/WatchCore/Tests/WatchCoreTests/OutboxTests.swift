@@ -97,4 +97,25 @@ final class OutboxTests: XCTestCase {
         XCTAssertNil(s.startId)
         XCTAssertNil(s.pending["sq#0"]?.id)
     }
+
+    func testOnlySetsNotDeliveredCountAsWaitingToSync() throws {
+        var o = Outbox()
+        for (id, type) in [("a", "setDone"), ("b", "watchStatus"), ("c", "setDone"), ("d", "setHr")] {
+            o = try XCTUnwrap(OutboxCore.add(o, ["id": id, "type": type])).0
+        }
+        XCTAssertEqual(OutboxCore.waitingSets(o), 2, "the watch's status and a heart rate are not sets")
+        XCTAssertEqual(OutboxCore.waiting(o), 4)
+        o = OutboxCore.delivered(o, ["a"])
+        XCTAssertEqual(OutboxCore.waitingSets(o), 1, "on the phone now")
+        o = OutboxCore.ack(o, ["c"])
+        XCTAssertEqual(OutboxCore.waitingSets(o), 0)
+    }
+
+    func testSyncStateSaysWhatTheLifterNeedsToKnow() {
+        XCTAssertEqual(SyncState.of(waiting: 0, reachable: false), .synced, "nothing waits: all there, phone or not")
+        XCTAssertEqual(SyncState.of(waiting: 3, reachable: true), .waiting(3))
+        XCTAssertEqual(SyncState.of(waiting: 3, reachable: false), .away(3))
+        XCTAssertEqual(SyncState.away(3).count, 3)
+        XCTAssertEqual(SyncState.synced.count, 0)
+    }
 }

@@ -39,6 +39,8 @@
 "Discard workout?" = "Elveted az edzést?";
 "Up next" = "Következő";
 "How hard was that set?" = "Mennyire volt nehéz ez a sorozat?";
+"Waiting to sync" = "Szinkronizálásra vár";
+"All synced" = "Minden szinkronizálva";
 "Last time: %@" = "Legutóbb: %@";
 "No workout running" = "Nincs folyamatban edzés";
 "Not synced yet" = "Még nincs szinkronizálva";
@@ -55,7 +57,6 @@
 "Workout saved" = "Edzés mentve";
 "Ended on your iPhone" = "Az iPhone-on befejezve";
 "Log this one on your iPhone." = "Ezt az iPhone-on rögzítsd.";
-"Saved on the watch, syncs later" = "Az órán mentve, később szinkronizál";
 "All done?" = "Végeztél?";
 "Lock" = "Zárolás";
 "Skip this set?" = "Kihagyod ezt a sorozatot?";

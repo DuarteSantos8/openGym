@@ -289,11 +289,7 @@ struct SummaryView: View {
                                                     format: .measurement(width: .abbreviated, usage: .asProvided,
                                                                          numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
                     }
-                    if store.offline {
-                        Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
-                            .font(.caption2)
-                            .foregroundStyle(Theme.label2)
-                    }
+                    SyncLine().padding(.top, 2)
                     Button {
                         guard Date().timeIntervalSince(shownAt) >= 1 else { return }
                         store.closeSummary()

@@ -39,6 +39,8 @@
 "Discard workout?" = "Antrenman iptal edilsin mi?";
 "Up next" = "Sıradaki";
 "How hard was that set?" = "O set ne kadar zordu?";
+"Waiting to sync" = "Eşitlenmeyi bekliyor";
+"All synced" = "Her şey eşitlendi";
 "Last time: %@" = "Geçen sefer: %@";
 "No workout running" = "Devam eden antrenman yok";
 "Not synced yet" = "Henüz eşitlenmedi";
@@ -55,7 +57,6 @@
 "Workout saved" = "Antrenman kaydedildi";
 "Ended on your iPhone" = "iPhone’da bitirildi";
 "Log this one on your iPhone." = "Bunu iPhone’da kaydet.";
-"Saved on the watch, syncs later" = "Saatte kaydedildi, sonra eşitlenir";
 "All done?" = "Bitirdin mi?";
 "Lock" = "Kilitle";
 "Skip this set?" = "Bu set atlansın mı?";

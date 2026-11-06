@@ -39,6 +39,8 @@
 "Discard workout?" = "Zahodit trénink?";
 "Up next" = "Na řadě";
 "How hard was that set?" = "Jak těžká byla série?";
+"Waiting to sync" = "Čeká na synchronizaci";
+"All synced" = "Vše synchronizováno";
 "Last time: %@" = "Naposledy: %@";
 "No workout running" = "Žádný trénink neběží";
 "Not synced yet" = "Zatím nesynchronizováno";
@@ -55,7 +57,6 @@
 "Workout saved" = "Trénink uložen";
 "Ended on your iPhone" = "Ukončeno na iPhonu";
 "Log this one on your iPhone." = "Tohle zapiš na iPhonu.";
-"Saved on the watch, syncs later" = "Uloženo v hodinkách, synchronizuje se později";
 "All done?" = "Hotovo?";
 "Lock" = "Zamknout";
 "Skip this set?" = "Přeskočit tuhle sérii?";

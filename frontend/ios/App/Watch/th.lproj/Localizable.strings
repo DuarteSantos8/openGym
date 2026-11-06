@@ -39,6 +39,8 @@
 "Discard workout?" = "ทิ้งการออกกำลังกายนี้?";
 "Up next" = "ถัดไป";
 "How hard was that set?" = "เซ็ตนั้นหนักแค่ไหน?";
+"Waiting to sync" = "รอซิงค์";
+"All synced" = "ซิงค์ครบแล้ว";
 "Last time: %@" = "ครั้งก่อน: %@";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";
@@ -55,7 +57,6 @@
 "Workout saved" = "บันทึกการฝึกแล้ว";
 "Ended on your iPhone" = "จบบน iPhone แล้ว";
 "Log this one on your iPhone." = "อันนี้บันทึกบน iPhone";
-"Saved on the watch, syncs later" = "บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง";
 "All done?" = "เสร็จแล้วหรือยัง";
 "Lock" = "ล็อก";
 "Skip this set?" = "ข้ามเซ็ตนี้ไหม";

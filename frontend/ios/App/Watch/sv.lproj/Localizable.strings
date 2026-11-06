@@ -39,6 +39,8 @@
 "Discard workout?" = "Släng passet?";
 "Up next" = "Härnäst";
 "How hard was that set?" = "Hur tungt var setet?";
+"Waiting to sync" = "Väntar på synk";
+"All synced" = "Allt synkat";
 "Last time: %@" = "Förra gången: %@";
 "No workout running" = "Inget pass pågår";
 "Not synced yet" = "Inte synkat än";
@@ -55,7 +57,6 @@
 "Workout saved" = "Passet sparat";
 "Ended on your iPhone" = "Avslutat på din iPhone";
 "Log this one on your iPhone." = "Logga den här på din iPhone.";
-"Saved on the watch, syncs later" = "Sparat på klockan, synkas senare";
 "All done?" = "Klar?";
 "Lock" = "Lås";
 "Skip this set?" = "Hoppa över det här setet?";

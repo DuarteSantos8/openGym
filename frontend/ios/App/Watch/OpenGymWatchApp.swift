@@ -106,20 +106,6 @@ struct RootView: View {
     }
 }
 
-/// The phone is out of reach and events wait on the watch: a small sign, said in words to VoiceOver.
-struct OfflineSign: View {
-    @EnvironmentObject var store: SessionStore
-
-    var body: some View {
-        if store.offline {
-            Image(systemName: "iphone.slash")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .accessibilityLabel(Text("Saved on the watch, syncs later"))
-        }
-    }
-}
-
 /// The 3-2-1 before a workout started here: big numbers in a ring that empties once. A tap
 /// starts at once; the small button cancels (nothing starts, nothing is logged).
 struct CountdownView: View {

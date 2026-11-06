@@ -39,6 +39,8 @@
 "Discard workout?" = "ওয়ার্কআউট বাদ দেবেন?";
 "Up next" = "এরপর";
 "How hard was that set?" = "সেটটি কতটা কঠিন ছিল?";
+"Waiting to sync" = "সিঙ্কের অপেক্ষায়";
+"All synced" = "সব সিঙ্ক হয়েছে";
 "Last time: %@" = "গতবার: %@";
 "No workout running" = "কোনো ওয়ার্কআউট চলছে না";
 "Not synced yet" = "এখনো সিঙ্ক হয়নি";
@@ -55,7 +57,6 @@
 "Workout saved" = "ওয়ার্কআউট সেভ হয়েছে";
 "Ended on your iPhone" = "iPhone-এ শেষ হয়েছে";
 "Log this one on your iPhone." = "এটা iPhone-এ লিখুন।";
-"Saved on the watch, syncs later" = "ঘড়িতে সেভ হয়েছে, পরে সিঙ্ক হবে";
 "All done?" = "শেষ হয়েছে?";
 "Lock" = "লক করুন";
 "Skip this set?" = "এই সেটটি বাদ দেবেন?";

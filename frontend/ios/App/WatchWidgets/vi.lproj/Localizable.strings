@@ -39,6 +39,8 @@
 "Discard workout?" = "Hủy buổi tập?";
 "Up next" = "Tiếp theo";
 "How hard was that set?" = "Hiệp đó nặng đến mức nào?";
+"Waiting to sync" = "Đang chờ đồng bộ";
+"All synced" = "Đã đồng bộ tất cả";
 "Last time: %@" = "Lần trước: %@";
 "No workout running" = "Không có buổi tập nào đang chạy";
 "Not synced yet" = "Chưa đồng bộ";
@@ -55,7 +57,6 @@
 "Workout saved" = "Đã lưu buổi tập";
 "Ended on your iPhone" = "Đã kết thúc trên iPhone";
 "Log this one on your iPhone." = "Ghi bài này trên iPhone.";
-"Saved on the watch, syncs later" = "Đã lưu trên đồng hồ, sẽ đồng bộ sau";
 "All done?" = "Xong chưa?";
 "Lock" = "Khóa";
 "Skip this set?" = "Bỏ qua hiệp này?";

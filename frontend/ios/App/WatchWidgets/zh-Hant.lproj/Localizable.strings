@@ -39,6 +39,8 @@
 "Discard workout?" = "捨棄本次訓練？";
 "Up next" = "接下來";
 "How hard was that set?" = "這組感覺有多吃力？";
+"Waiting to sync" = "等待同步中";
+"All synced" = "已全數同步";
 "Last time: %@" = "上次: %@";
 "No workout running" = "沒有進行中的訓練";
 "Not synced yet" = "尚未同步";
@@ -55,7 +57,6 @@
 "Workout saved" = "訓練已儲存";
 "Ended on your iPhone" = "已在 iPhone 上結束";
 "Log this one on your iPhone." = "這個請在 iPhone 上記錄。";
-"Saved on the watch, syncs later" = "已存在手錶上，稍後同步";
 "All done?" = "練完了嗎？";
 "Lock" = "鎖定";
 "Skip this set?" = "跳過這一組？";

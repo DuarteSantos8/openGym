@@ -39,6 +39,8 @@
 "Discard workout?" = "Atsisakyti treniruotės?";
 "Up next" = "Kitas";
 "How hard was that set?" = "Kiek sunki buvo ta serija?";
+"Waiting to sync" = "Laukiama sinchronizacijos";
+"All synced" = "Viskas sinchronizuota";
 "Last time: %@" = "Paskutinį kartą: %@";
 "No workout running" = "Treniruotė nevyksta";
 "Not synced yet" = "Dar nesinchronizuota";
@@ -55,7 +57,6 @@
 "Workout saved" = "Treniruotė išsaugota";
 "Ended on your iPhone" = "Baigta iPhone";
 "Log this one on your iPhone." = "Šią užregistruokite iPhone.";
-"Saved on the watch, syncs later" = "Išsaugota laikrodyje, bus sinchronizuota vėliau";
 "All done?" = "Viskas?";
 "Lock" = "Užrakinti";
 "Skip this set?" = "Praleisti šią seriją?";

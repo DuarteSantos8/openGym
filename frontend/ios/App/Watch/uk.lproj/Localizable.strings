@@ -39,6 +39,8 @@
 "Discard workout?" = "Скасувати тренування?";
 "Up next" = "Далі";
 "How hard was that set?" = "Наскільки важким був підхід?";
+"Waiting to sync" = "Очікує синхронізації";
+"All synced" = "Усе синхронізовано";
 "Last time: %@" = "Минулого разу: %@";
 "No workout running" = "Тренування не триває";
 "Not synced yet" = "Ще не синхронізовано";
@@ -55,7 +57,6 @@
 "Workout saved" = "Тренування збережено";
 "Ended on your iPhone" = "Завершено на iPhone";
 "Log this one on your iPhone." = "Це записуй на iPhone.";
-"Saved on the watch, syncs later" = "Збережено на годиннику, синхронізується пізніше";
 "All done?" = "Тренування завершено?";
 "Lock" = "Блокування";
 "Skip this set?" = "Пропустити цей підхід?";

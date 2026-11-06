@@ -40,6 +40,8 @@ struct HomeView: View {
                         }
                         .padding(.top, ready.today == nil ? 0 : 6)
                     }
+                    // A workout finished here with the phone away: its sets are still on their way.
+                    SyncLine(showSynced: false).padding(.top, 4)
                     VersionLine()
                 }
                 .padding(.horizontal, 2)

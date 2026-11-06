@@ -39,6 +39,8 @@
 "Discard workout?" = "Discard workout?";
 "Up next" = "Up next";
 "How hard was that set?" = "How hard was that set?";
+"Waiting to sync" = "Waiting to sync";
+"All synced" = "All synced";
 "Last time: %@" = "Last time: %@";
 "No workout running" = "No workout running";
 "Not synced yet" = "Not synced yet";
@@ -55,7 +57,6 @@
 "Workout saved" = "Workout saved";
 "Ended on your iPhone" = "Ended on your iPhone";
 "Log this one on your iPhone." = "Log this one on your iPhone.";
-"Saved on the watch, syncs later" = "Saved on the watch, syncs later";
 "All done?" = "All done?";
 "Lock" = "Lock";
 "Skip this set?" = "Skip this set?";

@@ -39,6 +39,8 @@
 "Discard workout?" = "تمرین کنار گذاشته شود؟";
 "Up next" = "بعدی";
 "How hard was that set?" = "این ست چقدر سخت بود؟";
+"Waiting to sync" = "در انتظار همگام‌سازی";
+"All synced" = "همه همگام‌سازی شدند";
 "Last time: %@" = "آخرین بار: %@";
 "No workout running" = "هیچ تمرینی در جریان نیست";
 "Not synced yet" = "هنوز همگام نشده";
@@ -55,7 +57,6 @@
 "Workout saved" = "تمرین ذخیره شد";
 "Ended on your iPhone" = "در iPhone پایان یافت";
 "Log this one on your iPhone." = "این را در iPhone ثبت کنید.";
-"Saved on the watch, syncs later" = "روی ساعت ذخیره شد، بعداً همگام می‌شود";
 "All done?" = "تمام شد؟";
 "Lock" = "قفل";
 "Skip this set?" = "این ست رد شود؟";

@@ -39,6 +39,8 @@
 "Discard workout?" = "운동을 버릴까요?";
 "Up next" = "다음";
 "How hard was that set?" = "이 세트는 얼마나 힘들었나요?";
+"Waiting to sync" = "동기화 대기 중";
+"All synced" = "모두 동기화됨";
 "Last time: %@" = "지난번: %@";
 "No workout running" = "진행 중인 운동이 없어요";
 "Not synced yet" = "아직 동기화되지 않았어요";
@@ -55,7 +57,6 @@
 "Workout saved" = "운동 저장됨";
 "Ended on your iPhone" = "iPhone에서 끝났어요";
 "Log this one on your iPhone." = "이건 iPhone에서 기록하세요.";
-"Saved on the watch, syncs later" = "워치에 저장됨, 나중에 동기화돼요";
 "All done?" = "다 끝났나요?";
 "Lock" = "잠금";
 "Skip this set?" = "이 세트를 건너뛸까요?";

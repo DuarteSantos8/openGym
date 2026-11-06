@@ -28,6 +28,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - New pages beside the set: Metrics (the workout's time big, then heart rate, calories, volume and sets, filling bigger watches) and Apple's own music controls, one more swipe away. Lower your wrist on the Overview or the music and the watch goes back to the set.
 - The Overview shows each exercise's picture, the still of the animation the phone already sends for the workout, greyed once it's done.
 - The weigh-in, the summary and "All done?" got the new look. "All done?" is a card instead of a system alert, says how long nothing happened, sends Finish to the Overview's hold, and goes away by itself when you log a set on the phone. The summary shows the time big, and its Done ignores taps for its first second.
+- The watch says plainly whether your sets reached the iPhone: a small orange arrow with a count beside the clock while sets are on their way (a crossed-out phone when it is out of reach), "Waiting to sync 3" or "All synced" on the Overview and the summary, and the count on the complication and in the Smart Stack, even after the workout ended. It comes straight from the outbox, so it is right after a relaunch too.
 
 **Sign in with your identity provider (OIDC)**
 - Self-hosting with Authentik, Authelia, Keycloak, voidAuth or Pocket ID? openGym signs people in through it now, next to passkeys: set OIDC_ISSUER and OIDC_CLIENT_ID and the sign-in screen gets a "Sign in with ..." button (#130, idea and first version by @melduarmir (#391), testing by @austinwilcox).

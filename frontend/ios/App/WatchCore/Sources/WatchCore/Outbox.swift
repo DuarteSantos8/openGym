@@ -104,4 +104,36 @@ enum OutboxCore {
 
     /// Events the phone's side has not stored yet: the watch's small "syncs later" count.
     static func waiting(_ o: Outbox) -> Int { o.items.filter { !$0.delivered }.count }
+
+    /// Sets logged here that have not reached the phone yet (setDone events not delivered): what
+    /// the watch shows as "Waiting to sync", and the complication too. Other events (the watch's
+    /// status, a heart rate for a set) are not sets the lifter would miss.
+    static func waitingSets(_ o: Outbox) -> Int {
+        o.items.filter { !$0.delivered && eventType($0) == "setDone" }.count
+    }
+
+    /// An event's type, read from its JSON.
+    static func eventType(_ item: OutItem) -> String? {
+        guard let ev = (try? JSONSerialization.jsonObject(with: Data(item.json.utf8))) as? [String: Any] else { return nil }
+        return ev["type"] as? String
+    }
+}
+
+/// What the watch says about its sets and the phone: all there, some on their way, or some
+/// waiting for a phone out of reach.
+enum SyncState: Equatable {
+    case synced
+    case waiting(Int)
+    case away(Int)
+
+    static func of(waiting n: Int, reachable: Bool) -> SyncState {
+        n <= 0 ? .synced : (reachable ? .waiting(n) : .away(n))
+    }
+
+    var count: Int {
+        switch self {
+        case .synced: return 0
+        case .waiting(let n), .away(let n): return n
+        }
+    }
 }

@@ -39,6 +39,8 @@
 "Discard workout?" = "Buang sesi latihan?";
 "Up next" = "Berikutnya";
 "How hard was that set?" = "Seberapa berat set tersebut?";
+"Waiting to sync" = "Menunggu untuk disinkronkan";
+"All synced" = "Semua disinkronkan";
 "Last time: %@" = "Terakhir kali: %@";
 "No workout running" = "Tidak ada latihan berjalan";
 "Not synced yet" = "Belum disinkronkan";
@@ -55,7 +57,6 @@
 "Workout saved" = "Latihan disimpan";
 "Ended on your iPhone" = "Diakhiri di iPhone kamu";
 "Log this one on your iPhone." = "Catat yang ini di iPhone kamu.";
-"Saved on the watch, syncs later" = "Disimpan di jam, disinkronkan nanti";
 "All done?" = "Sudah selesai?";
 "Lock" = "Kunci";
 "Skip this set?" = "Lewati set ini?";

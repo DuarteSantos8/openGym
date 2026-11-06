@@ -39,6 +39,8 @@
 "Discard workout?" = "Отменить тренировку?";
 "Up next" = "Далее";
 "How hard was that set?" = "Насколько тяжёлым был подход?";
+"Waiting to sync" = "Ожидает синхронизации";
+"All synced" = "Всё синхронизировано";
 "Last time: %@" = "В прошлый раз: %@";
 "No workout running" = "Тренировка не идёт";
 "Not synced yet" = "Ещё не синхронизировано";
@@ -55,7 +57,6 @@
 "Workout saved" = "Тренировка сохранена";
 "Ended on your iPhone" = "Завершено на iPhone";
 "Log this one on your iPhone." = "Это записывается на iPhone.";
-"Saved on the watch, syncs later" = "Сохранено на часах, синхронизируется позже";
 "All done?" = "Тренировка окончена?";
 "Lock" = "Блокировка";
 "Skip this set?" = "Пропустить этот подход?";

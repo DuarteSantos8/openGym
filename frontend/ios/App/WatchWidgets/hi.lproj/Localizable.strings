@@ -39,6 +39,8 @@
 "Discard workout?" = "वर्कआउट छोड़ें?";
 "Up next" = "अगला";
 "How hard was that set?" = "वह सेट कितना मुश्किल था?";
+"Waiting to sync" = "सिंक होने की प्रतीक्षा";
+"All synced" = "सब सिंक हो गया";
 "Last time: %@" = "पिछली बार: %@";
 "No workout running" = "कोई वर्कआउट नहीं चल रहा";
 "Not synced yet" = "अभी सिंक नहीं हुआ";
@@ -55,7 +57,6 @@
 "Workout saved" = "वर्कआउट सहेजा गया";
 "Ended on your iPhone" = "iPhone पर खत्म हुआ";
 "Log this one on your iPhone." = "इसे iPhone पर दर्ज करें।";
-"Saved on the watch, syncs later" = "वॉच पर सहेजा, बाद में सिंक होगा";
 "All done?" = "हो गया?";
 "Lock" = "लॉक करें";
 "Skip this set?" = "यह सेट छोड़ें?";

@@ -39,6 +39,8 @@
 "Discard workout?" = "Descartar treino?";
 "Up next" = "Próximo";
 "How hard was that set?" = "Quão dura foi a série?";
+"Waiting to sync" = "Aguardando sincronização";
+"All synced" = "Tudo sincronizado";
 "Last time: %@" = "Da última vez: %@";
 "No workout running" = "Nenhum treino em andamento";
 "Not synced yet" = "Ainda não sincronizado";
@@ -55,7 +57,6 @@
 "Workout saved" = "Treino salvo";
 "Ended on your iPhone" = "Encerrado no iPhone";
 "Log this one on your iPhone." = "Este você registra no iPhone.";
-"Saved on the watch, syncs later" = "Salvo no relógio, sincroniza depois";
 "All done?" = "Terminou?";
 "Lock" = "Bloquear";
 "Skip this set?" = "Pular esta série?";

@@ -39,14 +39,73 @@ struct SessionView: View {
     }
 }
 
-/// Beside the clock: the heart rate, and whether sets wait for the phone.
+/// Beside the clock: whether sets wait for the phone, and the heart rate.
 struct SessionBadges: View {
     @EnvironmentObject var store: SessionStore
 
     var body: some View {
         HStack(spacing: 4) {
-            OfflineSign()
+            SyncPill()
             if store.show.showHr { HeartRateBadge(health: store.health) }
+        }
+    }
+}
+
+/// Sets on their way to the iPhone: an arrow and how many, quiet but there; the phone crossed out
+/// while it is out of reach. Nothing at all once everything arrived.
+struct SyncPill: View {
+    @EnvironmentObject var store: SessionStore
+    @Environment(\.isLuminanceReduced) private var dimmed
+
+    var body: some View {
+        let state = store.sync
+        if state.count > 0 {
+            HStack(spacing: 2) {
+                Image(systemName: state == .away(state.count) ? "iphone.slash" : "arrow.up")
+                    .font(.system(size: 9, weight: .bold))
+                Text(verbatim: "\(state.count)").font(.system(size: 11, weight: .semibold, design: .rounded).monospacedDigit())
+            }
+            .foregroundStyle(Theme.orange)
+            .padding(.horizontal, 5)
+            .frame(minHeight: 16)
+            .background(Capsule().fill(dimmed ? Color.clear : Theme.orange.opacity(0.18)))
+            .overlay(Capsule().stroke(Theme.orange.opacity(0.6), lineWidth: dimmed ? 1 : 0))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Waiting to sync"))
+            .accessibilityValue(Text(verbatim: "\(state.count)"))
+        }
+    }
+}
+
+/// The same in words, for the Overview, the start screen and the summary: "All synced", or
+/// "Waiting to sync 3" and, with the phone away, "iPhone out of reach". The count comes after the
+/// words, so no language needs a plural for it.
+struct SyncLine: View {
+    @EnvironmentObject var store: SessionStore
+    /// Say "All synced" too (the Overview, the summary); the start screen only speaks up when sets wait.
+    var showSynced = true
+    @Environment(\.accent) private var accent
+
+    var body: some View {
+        let state = store.sync
+        if state.count > 0 {
+            VStack(alignment: .leading, spacing: 0) {
+                Label {
+                    Text("Waiting to sync") + Text(verbatim: " \(state.count)")
+                } icon: {
+                    Image(systemName: "arrow.up.circle")
+                }
+                .foregroundStyle(Theme.orange)
+                if state == .away(state.count) {
+                    Text("iPhone out of reach").foregroundStyle(Theme.label2)
+                }
+            }
+            .font(.system(.caption2, design: .rounded))
+            .accessibilityElement(children: .combine)
+        } else if showSynced && store.heardFromPhone {
+            Label { Text("All synced") } icon: { Image(systemName: "checkmark.circle") }
+                .font(.system(.caption2, design: .rounded))
+                .foregroundStyle(Theme.label2)
         }
     }
 }
@@ -124,8 +183,11 @@ struct OverviewPage: View {
                         OverviewRowView(row: row)
                             .padding(.bottom, row.inSuperset && !isLastOfGroup(w, row.index) ? 0 : 2)
                     }
+                    SyncLine()
+                        .padding(.top, 6)
+                        .padding(.leading, 4)
                     HoldToFinish { store.finish() }
-                        .padding(.top, 10)
+                        .padding(.top, 6)
                     Button(role: .destructive) { confirmDiscard = true } label: {
                         Text("Discard workout").frame(maxWidth: .infinity)
                     }
