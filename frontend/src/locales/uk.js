@@ -3887,4 +3887,8 @@ export default {
   "{0}’s {1}": "{1} ({0})",
   "“{0}” needs a fix in the editor before it can start.": "«{0}» треба виправити в редакторі, перш ніж запускати.",
   "“{0}” needs you to choose how to count its weeks.": "Для «{0}» обери, як рахувати його тижні.",
+  "Its sets already count for your programme, so this session keeps these settings.": "Його підходи вже зараховано в цикл, тож це заняття зберігає ці налаштування.",
+  "They count from the next round you have not started.": "Вони діють з найближчого кола, яке ти ще не почав.",
+  "{0} has no 1RM yet; its first session asks for one.": "У {0} ще немає 1RM; перше заняття спитає його.",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: після невиконаного кола {1}; після пропущеного {2}. Обираєш під час запуску.",
 }

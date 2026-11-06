@@ -3894,4 +3894,8 @@ export default {
   "{0}’s {1}": "{0}: {1}",
   "“{0}” needs a fix in the editor before it can start.": "A(z) „{0}” programot a szerkesztőben javítani kell, mielőtt elindulhat.",
   "“{0}” needs you to choose how to count its weeks.": "A(z) „{0}” programnál válaszd ki, hogyan számítsanak a hetek.",
+  "Its sets already count for your programme, so this session keeps these settings.": "A sorozatai már beszámítanak a programodba, ezért ez az edzés megtartja ezeket a beállításokat.",
+  "They count from the next round you have not started.": "A következő, még el nem kezdett körtől számítanak.",
+  "{0} has no 1RM yet; its first session asks for one.": "{0} gyakorlatnak még nincs 1RM-je; az első edzése megkérdezi.",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: elrontott kör után {1}; kihagyott kör után {2}. Az indításkor te döntesz.",
 }

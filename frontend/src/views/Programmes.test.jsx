@@ -32,6 +32,9 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => to => mocks.navs.push(to
 vi.mock('../sheets.jsx', () => ({ confirmSheet: o => { mocks.confirm = o }, menuSheet: o => { mocks.menu = o }, exportProgrammeFile: vi.fn(), referenceSheet: vi.fn() }))
 
 const { default: Programmes, ProgrammeEdit } = await import('./Programmes.jsx')
+// SelectRow opens its picker through the bound UI store: the mocked one here.
+const { bindUI } = await import('../components/ui.jsx')
+bindUI((await import('../store/useUI.js')).useUI)
 const { migratedFixture } = await import('../lib/test-fixtures.js')
 const { legacyWeeksOf, setLegacyWeeks, startProgramme, programmeView } = await import('../lib/programmes.js')
 const { buildSessionExposures } = await import('../lib/session-start.js')
@@ -68,6 +71,18 @@ const sectionOf = title => [...host.querySelectorAll('section.sect')].find(x => 
 const rowOf = (title, within = host) => [...within.querySelectorAll('.lrow')].find(r => r.querySelector('.lrow-t')?.textContent.startsWith(title))
 const choice = (sect, row, label) => [...rowOf(row, sect ? sectionOf(sect) : host).querySelectorAll('button')].find(b => b.textContent === label || b.textContent.startsWith(label + ' ('))
 const pick = (sect, row, label) => { click(choice(sect, row, label)); sheet() }
+// A picker row (SelectRow): its sheet opens on top (its own host, so the sheet under it keeps its
+// state), the option is tapped, and the sheet under it is drawn again.
+const picker = row => {
+  click(rowOf(row))
+  const top = document.createElement('div'); document.body.appendChild(top)
+  const r = createRoot(top)
+  act(() => r.render(mocks.sheets.pop()(() => {})))
+  return { buttons: [...top.querySelectorAll('button.lrow')], done: () => { act(() => r.unmount()); top.remove(); sheet() } }
+}
+const options = row => { const p = picker(row); const out = p.buttons.map(b => b.textContent); p.done(); return out }
+const choose = (row, label) => { const p = picker(row); click(p.buttons.find(b => b.querySelector('.lrow-t')?.textContent === label)); p.done() }
+const valueOf = row => rowOf(row)?.querySelector('.lrow-s')?.textContent ?? null
 const pressed = (sect, row) => [...rowOf(row, sect ? sectionOf(sect) : host).querySelectorAll('button[aria-pressed="true"]')].map(b => b.textContent)
 const startButton = () => [...host.querySelectorAll('button')].find(b => b.textContent === 'Start programme')
 const runOf = () => Object.values(mocks.S.programmeRuns)[0]
@@ -75,7 +90,7 @@ const runOf = () => Object.values(mocks.S.programmeRuns)[0]
 const answerAll = (missed = 'Move on', skipped = 'Repeat it', end = 'Stop') => {
   pick('For every exercise', 'After a missed week', missed)
   pick('For every exercise', 'After a skipped week', skipped)
-  pick(null, 'When the weeks run out', end)
+  choose('When the weeks run out', end)
 }
 
 describe('the programme list', () => {
@@ -124,7 +139,11 @@ describe('a programme', () => {
     click(button('End programme'))
     // Ending asks about the weights reached; leaving the routines as they were.
     expect(mocks.menu.subtitle).toContain('Keep the weights you reached in your routines?')
-    act(() => mocks.menu.items.find(i => i.label === 'Leave my routines as they were').onClick())
+    // Both answers end it (destructive); Cancel leaves it running.
+    expect(mocks.menu.sections.map(g => g.items.map(i => [i.label, !!i.danger]))).toEqual([[['Keep the weights', true], ['Leave my routines as they were', true]], [['Cancel', false]]])
+    act(() => mocks.menu.sections[1].items[0].onClick())
+    expect(mocks.S.programme).not.toBeNull()
+    act(() => mocks.menu.sections[0].items.find(i => i.label === 'Leave my routines as they were').onClick())
     expect(mocks.S.week).toEqual({ 1: ['r1'] })
     expect(mocks.S.programme).toBeNull()
   })
@@ -180,7 +199,7 @@ describe('the activation sheet', () => {
     click(startButton())
     sheet()
   }
-  const status = () => host.querySelector('[role="status"]')?.textContent ?? ''
+  const status = () => [...(host.querySelector('[role="status"]')?.children || [])].map(d => d.textContent).join(' ')
 
   it('Start stays disabled until every exercise has both choices and an end choice; the default is marked, not chosen', () => {
     mocks.S.programmeEnd = 'extend'
@@ -189,10 +208,10 @@ describe('the activation sheet', () => {
     expect(status()).toBe('Choose both answers for every exercise. Choose what happens when the weeks run out.')
     // Nothing is chosen for you: no answer pressed, the Config default only marked.
     expect(pressed('For every exercise', 'After a missed week')).toEqual([])
-    expect(pressed(null, 'When the weeks run out')).toEqual([])
-    expect(choice(null, 'When the weeks run out', 'Keep going until every goal is reached (your default)')).toBeTruthy()
+    expect(valueOf('When the weeks run out')).toBeNull()
+    // The picker marks the Config default under its answer, and nothing is ticked.
+    expect(options('When the weeks run out')).toEqual(['Stop', 'Keep going until every goal is reached(your default)'])
     // …and nothing looks chosen either: no segment is raised until one is picked.
-    expect(rowOf('When the weeks run out').querySelector('.seg-sel')).toBeNull()
     expect(rowOf('After a missed week', sectionOf('For every exercise')).querySelector('.seg-sel')).toBeNull()
     pick('Barbell Bench Press', 'After a missed week', 'Move on')
     pick('Barbell Bench Press', 'After a skipped week', 'Move on')
@@ -202,9 +221,9 @@ describe('the activation sheet', () => {
     expect(status()).toBe('Choose what happens when the weeks run out.')
     click(startButton())
     expect(mocks.S.programmeRuns).toBeUndefined()   // a disabled Start starts nothing
-    pick(null, 'When the weeks run out', 'Stop')
+    choose('When the weeks run out', 'Stop')
     expect(startButton().disabled).toBe(false)
-    expect(rowOf('When the weeks run out').querySelector('.seg-sel')).not.toBeNull()
+    expect(valueOf('When the weeks run out')).toBe('Stop')
     expect(status()).toBe('')
     click(startButton())
     expect(runOf()).toMatchObject({ end: 'stop', tracks: {
@@ -222,7 +241,7 @@ describe('the activation sheet', () => {
     // Mixed answers: the row on top shows none, and stays there to set them all again.
     expect(pressed('For every exercise', 'After a missed week')).toEqual([])
     pick('For every exercise', 'After a skipped week', 'Move on')
-    pick(null, 'When the weeks run out', 'Keep going until every goal is reached')
+    choose('When the weeks run out', 'Keep going until every goal is reached')
     click(startButton())
     expect(runOf()).toMatchObject({ end: 'extend', tracks: {
       't:P:r1:o0': { policy: { onFailure: 'advance', onSkipped: 'advance' } }, 't:P:r2:o0': { policy: { onFailure: 'repeat', onSkipped: 'advance' } } } })
@@ -257,13 +276,13 @@ describe('the activation sheet', () => {
     seed([{}, {}], { sequence: ['r1', 'r2'] })
     answerAll()
     expect(status()).toBe('Choose how to count the weeks for this rotation')
-    pick(null, 'Choose how to count the weeks for this rotation', 'By rounds, any days')
+    choose('Choose how to count the weeks for this rotation', 'By rounds, any days')
     expect(rowOf('Choose how to count the weeks for this rotation')).toBeTruthy()   // still there to change
     expect(host.textContent).toContain('Skipping ahead counts the sessions in between as skipped')
     expect(host.textContent).not.toContain('Sessions can move')
     pick('For every exercise', 'After a missed round', 'Move on')
     pick('For every exercise', 'After a skipped round', 'Move on')
-    pick(null, 'When the rounds run out', 'Stop')
+    choose('When the rounds run out', 'Stop')
     click(startButton())
     expect(mocks.S.programmes.P).toMatchObject({ schedule: { mode: 'rotation', sequence: ['r1', 'r2'] }, duration: { n: 2, unit: 'blocks' } })
     expect(mocks.S.programmes.P.needs).toBeUndefined()
@@ -323,6 +342,7 @@ describe('the running card', () => {
     // Monday's bench went unattempted: skipped, so repeated. Squat waits for its effort.
     expect(card.textContent).toContain('Barbell Bench Press · Training week 1 · second try')
     expect(card.textContent).toContain('Barbell Full Squat · Waiting for effort on Wednesday’s set')
+    expect(button('Count it as missed').getAttribute('aria-label')).toBe('Count it as missed, Barbell Full Squat')
     click(button('Count it as missed'))
     expect(Object.values(mocks.S.programmeEvents).filter(e => e.type === 'resolve')).toEqual([expect.objectContaining({ slot: 'p1:a1:r2:o0', as: 'failed' })])
     render(<Programmes />)
@@ -348,6 +368,24 @@ describe('the running card', () => {
     expect(host.textContent).toContain('Stopped after week 2. Barbell Bench Press did not reach its goal. Barbell Full Squat did not reach its goal.')
     expect(host.textContent).not.toContain('Every goal reached.')
   })
+
+  it('a finished run that cannot run again says why, and its Choices give the missing answer', () => {
+    running('2026-10-05')
+    delete mocks.S.programmeRuns[mocks.S.programme.runId].tracks['t:P:r2:o0'].policy   // squat has no recorded answer
+    render(<Programmes />)
+    click(button('Run it again'))
+    expect(mocks.toasts.at(-1)).toBe('Not yet: Choose both answers for every exercise.')
+    expect(Object.keys(mocks.S.programmeRuns)).toHaveLength(1)
+    click(button('Choices'))
+    sheet()
+    pick('Barbell Full Squat', 'After a missed week', 'Move on')
+    pick('Barbell Full Squat', 'After a skipped week', 'Repeat it')
+    click(button('Save'))
+    render(<Programmes />)
+    click(button('Run it again'))
+    expect(Object.keys(mocks.S.programmeRuns)).toHaveLength(2)
+    expect(Object.values(mocks.S.programmeRuns).find(r => r.cycle === 2).tracks['t:P:r2:o0'].policy).toEqual({ onFailure: 'advance', onSkipped: 'repeat' })
+  })
 })
 
 describe('the upgrade notice', () => {
@@ -362,7 +400,7 @@ describe('the upgrade notice', () => {
     expect(host.textContent).toContain('Your running programme moves on each week as before; choose differently any time')
     expect(host.textContent).toContain('Barbell Bench Press: 100 kg, estimated 3 Nov')
     expect(host.textContent.match(/Barbell Bench Press: 100 kg/g)).toHaveLength(1)   // each lift once
-    expect(host.textContent).toContain('Barbell Full Squat: No 1RM yet: your first session asks for one')
+    expect(host.textContent).toContain('Barbell Full Squat has no 1RM yet; its first session asks for one.')
     click(button('Got it'))
     expect(mocks.S.contractNotice).toBeUndefined()
     render(<Programmes />)

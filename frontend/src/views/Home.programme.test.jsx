@@ -9,10 +9,10 @@ import { createRoot } from 'react-dom/client'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import Home from './Home.jsx'
-import { workoutDetailSheet } from '../sheets.jsx'
+import { swapActiveWorkoutExercise, workoutDetailSheet } from '../sheets.jsx'
 import { migratedFixture, ruleOccurrence } from '../lib/test-fixtures.js'
 import { programmeView, setLegacyWeeks, startProgramme } from '../lib/programmes.js'
-import { buildSessionExposures } from '../lib/session-start.js'
+import { buildSessionExposures, occurrenceFor } from '../lib/session-start.js'
 import { entriesForExposures } from '../lib/session-ui-adapter.js'
 import { buildCompletedSession } from '../lib/finish-session.js'
 import { isWarmupRow } from '../lib/workout-model.js'
@@ -168,5 +168,31 @@ describe('a programme session in history', () => {
     expect(lines('2026-10-07')).toContain('Target missed; moved on to week 2 as you chose')
     expect(lines('2026-10-14')).toContain('Goal reached')
     expect(lines('2026-10-21')).toContain('Kept steady (goal reached)')
+  })
+})
+
+describe('another exercise in a programme exercise s place', () => {
+  it('swapping before any work set builds the new exercise outside the programme, on its own rule', () => {
+    at(2026, 10, 26)
+    running({ days: { 1: ['r1'] }, weeks: [{ t: { '0025': { pct: 75 } } }, {}], startedOn: '2026-10-26',
+      more: { oneRepMaxes: { b: { id: 'b', exerciseId: '0025', value: 100, unit: 'kg', source: 'manual', capturedAt: '2026-10-01T10:00:00.000Z' } } } })
+    mount()
+    startToday()
+    const held = useStore.getState().A.exposures[0]
+    expect(held.programme).toMatchObject({ slot: 'p1:a0:r1:o0', role: 'work' })
+    // A dumbbell press in the bench's place, on the bench's own occurrence (as a planned backup keeps it).
+    swapActiveWorkoutExercise(0)
+    const picker = top()
+    act(() => picker.render(picker.close).props.onPick({ id: '0043' }))
+    const config = top()
+    act(() => config.render(config.close).props.onSave({ ...occurrenceFor('0043', { sets: 3, reps: 8, weight: 40 }, { id: 'r1:o0', routineId: 'r1' }) }))
+    const swapped = useStore.getState().A.exposures[0]
+    expect(swapped.exerciseId).toBe('0043')
+    expect(swapped.programme).toBeUndefined()
+    expect(swapped.excludedFromProgression).toBe(true)
+    // Its own rule: 40 kg, never 75 % of the bench's 100 kg.
+    expect(useStore.getState().S.prescriptions[swapped.prescriptionId].rows.map(r => r.load?.value)).toEqual([40, 40, 40])
+    // The bench's appointment is open again, as not done.
+    expect(Object.values(programmeView(useStore.getState().S, null, useStore.getState().A).tracks)[0].slots[0]).toMatchObject({ outcome: 'pending' })
   })
 })

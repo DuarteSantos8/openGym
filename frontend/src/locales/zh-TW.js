@@ -3883,4 +3883,8 @@ export default {
   "{0}’s {1}": "{0}的{1}",
   "“{0}” needs a fix in the editor before it can start.": "「{0}」需要先在編輯器中修正才能開始。",
   "“{0}” needs you to choose how to count its weeks.": "「{0}」需要你選擇週數怎麼算。",
+  "Its sets already count for your programme, so this session keeps these settings.": "它的組數已經計入你的訓練週期，所以本次訓練保留這些設定。",
+  "They count from the next round you have not started.": "從你還沒開始的下一輪起生效。",
+  "{0} has no 1RM yet; its first session asks for one.": "{0} 還沒有 1RM；它的第一次訓練會問你。",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}：未完成一輪後{1}；略過一輪後{2}。開始時由你選擇。",
 }

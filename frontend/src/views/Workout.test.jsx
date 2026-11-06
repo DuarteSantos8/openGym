@@ -1109,28 +1109,59 @@ describe('Workout discard timer lifecycle', () => {
 
 // Spec 8.2: a discarded session of a running programme says what it leaves on each exercise's
 // week before the confirm, and records exactly that: missed once a work set was ticked, else skipped.
+// A session of a running programme (Push: bench and squat, planned today), mounted on the screen.
+async function mountProgrammeSession({ tick = false } = {}) {
+  const today = todayISO()
+  const S = {
+    ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }, { id: '0043', sets: 3, reps: 5, weight: 80 }] }] }),
+    restSec: 90, sound: false, effort: 'none', gifSize: 'full', exWeights: {}, dayPlan: {}, programme: null,
+  }
+  S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{}, {}], S, { days: { [new Date().getDay()]: ['r1'] } }) }
+  const advance = { onFailure: 'advance', onSkipped: 'advance' }
+  expect(startProgramme(S, 'P', { policies: Object.fromEntries(S.programmes.P.tracks.map(tr => [tr.id, advance])), end: 'stop', today, now: Date.now() })).toEqual({ ok: true })
+  const exposures = buildSessionExposures(S, S.routines[0], { now: Date.now(), newId: x => x })
+  const entries = entriesForExposures(exposures, S.prescriptions).map(e => ({ ...e, rid: 'r1' }))
+  if (tick) entries[0].sets.find(row => !isWarmupRow(row)).done = true   // a bench set ticked, squat untouched
+  mocks.S = S
+  mocks.A = { id: 'active', name: 'Push', d: today, start: Date.now(), cur: 0, routineIds: ['r1'], exposures, entries }
+  installDom()
+  await act(async () => { root.render(React.createElement(Workout)) })
+}
+
+// Spec 8.2: a discarded session of a running programme says what it leaves on each exercise's
+// week before the confirm, and records exactly that: missed once a work set was ticked, else skipped.
 describe('discarding a programme session', () => {
   it('discard explains missed versus skipped for a programme exercise', async () => {
-    const today = todayISO()
-    const S = {
-      ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }, { id: '0043', sets: 3, reps: 5, weight: 80 }] }] }),
-      restSec: 90, sound: false, effort: 'none', gifSize: 'full', exWeights: {}, dayPlan: {}, programme: null,
-    }
-    S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{}, {}], S, { days: { [new Date().getDay()]: ['r1'] } }) }
-    const advance = { onFailure: 'advance', onSkipped: 'advance' }
-    expect(startProgramme(S, 'P', { policies: Object.fromEntries(S.programmes.P.tracks.map(tr => [tr.id, advance])), end: 'stop', today, now: Date.now() })).toEqual({ ok: true })
-    const exposures = buildSessionExposures(S, S.routines[0], { now: Date.now(), newId: x => x })
-    const entries = entriesForExposures(exposures, S.prescriptions).map(e => ({ ...e, rid: 'r1' }))
-    entries[0].sets.find(row => !isWarmupRow(row)).done = true   // a bench set ticked, squat untouched
-    mocks.S = S
-    mocks.A = { id: 'active', name: 'Push', d: today, start: Date.now(), cur: 0, routineIds: ['r1'], exposures, entries }
-    installDom()
-    await act(async () => { root.render(React.createElement(Workout)) })
+    await mountProgrammeSession({ tick: true })
     await requestDiscard()
     const confirm = mocks.confirmSheet.mock.calls.at(-1)[0]
     expect(confirm.message).toBe('The sets you logged in this session will be lost. Barbell Bench Press counts as a missed session for training week 1. Barbell Full Squat counts as skipped for training week 1.')
     await act(async () => { confirm.onConfirm() })
     expect(Object.values(mocks.S.programmeEvents).map(e => [e.type, e.slot, e.worked])).toEqual([['discard', expect.stringMatching(/:r1:o0$/), true], ['discard', expect.stringMatching(/:r1:o1$/), false]])
+  })
+})
+
+// Spec 13 and 7.4: an exercise of a programme keeps its appointment when its settings are changed
+// before any work, and keeps its logged sets as they were judged once one was ticked.
+describe('changing a programme exercise mid-session', () => {
+  it('before any work set it is built again as the same work on its own appointment', async () => {
+    await mountProgrammeSession()
+    const slot = mocks.A.exposures[0].programme.slot
+    await pressProgression(0)
+    const [, editable, save] = mocks.exConfigSheet.mock.calls.at(-1)
+    await act(async () => { save(editable) })
+    expect(mocks.A.exposures[0].programme).toMatchObject({ slot, role: 'work' })
+    expect(mocks.A.exposures[0].excludedFromProgression).toBe(false)
+  })
+
+  it('after a ticked work set its settings stay, and it says why', async () => {
+    await mountProgrammeSession({ tick: true })
+    const before = structuredClone(mocks.A)
+    mocks.exConfigSheet.mockClear()
+    await pressProgression(0)
+    expect(mocks.exConfigSheet).not.toHaveBeenCalled()
+    expect(mocks.toast).toHaveBeenCalledWith('Its sets already count for your programme, so this session keeps these settings.')
+    expect(mocks.A).toEqual(before)
   })
 })
 

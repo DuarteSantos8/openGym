@@ -11,7 +11,7 @@ import { DAYN, DAYS, exerciseNameText, fmtNum, todayISO, weekOrder, weekStartOf 
 import { confirmSheet, exportProgrammeFile, menuSheet, referenceSheet } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
 import EmptyState from '../components/EmptyState.jsx'
-import { Button, NumberField, Row, Section, Segmented, Stepper, Switch } from '../components/ui.jsx'
+import { Button, NumberField, Row, Section, Segmented, Stepper, Switch, openSelectSheet } from '../components/ui.jsx'
 import { effortOf, modeOf, isBw } from '../lib/history.js'
 import { exOr } from '../lib/exercises.js'
 import { planPhase, operatorFor } from '../lib/prescription/index.js'
@@ -95,15 +95,19 @@ function PolicyRows({ def, policies, setPolicies }) {
   </>
 }
 
+// A choice with long answers: a row that opens the app's picker, the answer chosen shown under its
+// title where it wraps (a segmented control or a row value cannot hold these answers on a phone).
+function PickRow({ title, value, options, onChange }) {
+  return <Row title={title} subtitle={options.find(o => o.value === value)?.label} accessory="chevron"
+    onClick={() => openSelectSheet({ title, value, options, onChange })} />
+}
+
 /** Stop at the last week, or keep going until every goal is reached (spec 8.5); the Config default marked, not chosen. */
 function EndRow({ S, rounds, end, setEnd }) {
-  const uid = useId()
   const mine = S.programmeEnd === 'extend' ? 'extend' : 'stop'
-  const mark = v => (v === mine ? ' ' + t('(your default)') : '')
-  return <Row title={<span id={uid}>{rounds ? t('When the rounds run out') : t('When the weeks run out')}</span>}>
-    <Segmented className="seg-inline" ariaLabelledby={uid} value={end} onChange={setEnd}
-      options={[{ value: 'stop', label: t('Stop') + mark('stop') }, { value: 'extend', label: t('Keep going until every goal is reached') + mark('extend') }]} />
-  </Row>
+  const mark = v => (v === mine ? { subtitle: t('(your default)') } : {})
+  return <PickRow title={rounds ? t('When the rounds run out') : t('When the weeks run out')} value={end} onChange={setEnd}
+    options={[{ value: 'stop', label: t('Stop'), ...mark('stop') }, { value: 'extend', label: t('Keep going until every goal is reached'), ...mark('extend') }]} />
 }
 
 /**
@@ -145,9 +149,8 @@ function StartSheet({ id, close, nav }) {
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Its schedule takes over your plan until you end it. Then your plan comes back as it was.')}</div>
     {(binding || missing.includes('effort-off') || missing.includes('repair')) && <Section>
       {missing.includes('effort-off') && <Row icon="gauge" iconTint="var(--purple)" title={missingText('effort-off')} accessory="chevron" onClick={() => { close(); nav('/settings/workout') }} />}
-      {binding && <Row icon="repeat" iconTint="var(--orange)" title={missingText('binding')}>
-        <Segmented className="seg-inline" value={bind} onChange={setBind} options={[{ value: 'weeks', label: t('One round a week') }, { value: 'rounds', label: t('By rounds, any days') }]} />
-      </Row>}
+      {binding && <PickRow title={missingText('binding')} value={bind} onChange={setBind}
+        options={[{ value: 'weeks', label: t('One round a week') }, { value: 'rounds', label: t('By rounds, any days') }]} />}
       {missing.includes('repair') && <Row icon="wrench" iconTint="var(--orange)" title={missingText('repair')} accessory="chevron" onClick={() => { close(); nav('/plan/prog/' + id) }} />}
     </Section>}
     <PolicyRows def={def} policies={policies} setPolicies={setPolicies} />
@@ -164,7 +167,7 @@ function StartSheet({ id, close, nav }) {
     {!rounds && <div className="small dim" style={{ margin: '0 2px 6px' }}>{t('Sessions can move to another day of the same week')}</div>}
     {(rounds || def.schedule.ordered === true) && <div className="small dim" style={{ margin: '0 2px 6px' }}>{t('Skipping ahead counts the sessions in between as skipped')}</div>}
     <Button variant="primary" icon="play" disabled={missing.length > 0} aria-describedby={missing.length ? missId : undefined} onClick={go} style={{ marginTop: 8 }}>{t('Start programme')}</Button>
-    {missing.length > 0 && <div id={missId} className="small dim" role="status" style={{ margin: '6px 2px 0' }}>{missing.map(m => missingText(m, rounds)).join(' ')}</div>}
+    {missing.length > 0 && <div id={missId} className="small dim" role="status" style={{ margin: '6px 2px 0' }}>{missing.map(m => <div key={m}>{missingText(m, rounds)}</div>)}</div>}
   </>
 }
 const startSheet = (id, nav) => useUI.getState().openSheet(close => <StartSheet id={id} close={close} nav={nav} />)
@@ -186,7 +189,7 @@ function ChoicesSheet({ close }) {
   }
   return <>
     <h3>{t('Choices')}</h3>
-    <div className="muted small" style={{ marginBottom: 12 }}>{t('They count from the next week you have not started.')}</div>
+    <div className="muted small" style={{ marginBottom: 12 }}>{now.def.schedule.mode === 'rotation' ? t('They count from the next round you have not started.') : t('They count from the next week you have not started.')}</div>
     <PolicyRows def={now.def} policies={policies} setPolicies={setPolicies} />
     <Section><EndRow S={S} rounds={now.def.schedule.mode === 'rotation'} end={end} setEnd={setEnd} /></Section>
     <Button variant="primary" onClick={save}>{t('Save')}</Button>
@@ -199,9 +202,12 @@ function confirmEnd(name) {
   menuSheet({
     title: t('End “{0}”?', name || t('Programme')),
     subtitle: t('Your plan from before it comes back.') + ' ' + t('Keep the weights you reached in your routines?'),
-    items: [
-      { icon: 'check', accent: true, label: t('Keep the weights'), onClick: () => end(true) },
-      { icon: 'xmark', label: t('Leave my routines as they were'), onClick: () => end(false) },
+    sections: [
+      { items: [
+        { icon: 'check', danger: true, label: t('Keep the weights'), onClick: () => end(true) },
+        { icon: 'reset', danger: true, label: t('Leave my routines as they were'), onClick: () => end(false) },
+      ] },
+      { items: [{ icon: 'xmark', label: t('Cancel'), onClick: () => {} }] },
     ],
   })
 }
@@ -221,7 +227,7 @@ function TrackLine({ S, v, id, tv }) {
   const ex = tv.def?.tracks.find(tr => tr.id === id)?.exerciseId
   return <div className="row between" style={{ gap: 8, marginTop: 6 }}>
     <span className="small" style={{ minWidth: 0 }}><span className="capitalize">{exName(ex)}</span> · <span className="dim">{line}</span></span>
-    {unknown.length > 0 && <Button size="sm" variant="tinted" onClick={() => update(s => { for (const sl of unknown) resolveSlot(s, sl.id, 'failed') })}>{t('Count it as missed')}</Button>}
+    {unknown.length > 0 && <Button size="sm" variant="tinted" aria-label={`${t('Count it as missed')}, ${exName(ex)}`} onClick={() => update(s => { for (const sl of unknown) resolveSlot(s, sl.id, 'failed') })}>{t('Count it as missed')}</Button>}
   </div>
 }
 
@@ -244,11 +250,12 @@ function RunningCard({ S, nav }) {
     confirmText: rounds ? t('Close this round') : t('Close this week'),
     onConfirm: () => update(s => { closeWeek(s) }),
   })
+  const choices = () => useUI.getState().openSheet(c => <ChoicesSheet close={c} />)
   // A repeat that cannot start says why, as the start would.
   const again = bump => {
     let res = null
     update(s => { res = repeatProgramme(s, todayISO(), bump) })
-    if (!res?.ok) useUI.getState().toast(t('Not yet: {0}', res.missing.map(m => missingText(m, rounds)).join(' ')))
+    if (!res?.ok) useUI.getState().toast(t('Not yet: {0}', missingText(res.missing[0], rounds)))
   }
   return <div className="card prog-run">
     <div className="row between" style={{ gap: 8 }}>
@@ -268,6 +275,8 @@ function RunningCard({ S, nav }) {
       <div className="prog-actions">
         <Button size="sm" variant="tinted" onClick={() => again(REPEAT_BUMP)}>{t('Again, a bit heavier')}</Button>
         <Button size="sm" variant="tinted" onClick={() => again(0)}>{t('Run it again')}</Button>
+        {/* Where an answer a repeat needs is given (an exercise added since). */}
+        <Button size="sm" onClick={choices}>{t('Choices')}</Button>
         <Button size="sm" onClick={() => confirmEnd(p.name)}>{t('Back to my plan')}</Button>
       </div>
       <div className="small dim" style={{ marginTop: 6 }}>{t('Heavier means every %1RM goes up {0} points.', fmtNum(REPEAT_BUMP))}</div>
@@ -276,7 +285,7 @@ function RunningCard({ S, nav }) {
         ? <Button size="sm" variant="tinted" icon="play" onClick={() => update(s => { resumeProgramme(s) })}>{t('Resume')}</Button>
         : <Button size="sm" variant="tinted" icon="pause" onClick={() => update(s => { pauseProgramme(s) })}>{t('Pause')}</Button>}
       {open.length > 0 && <Button size="sm" onClick={close}>{rounds ? t('Close this round') : t('Close this week')}</Button>}
-      <Button size="sm" onClick={() => useUI.getState().openSheet(c => <ChoicesSheet close={c} />)}>{t('Choices')}</Button>
+      <Button size="sm" onClick={choices}>{t('Choices')}</Button>
       <Button size="sm" onClick={() => nav('/plan/prog/' + p.id)}>{t('Edit')}</Button>
       <Button size="sm" variant="danger" onClick={() => confirmEnd(p.name)}>{t('End programme')}</Button>
     </div>}
@@ -305,7 +314,7 @@ function AdoptionNotice({ S }) {
     {lines.map((l, i) => <div key={i} className="small" style={{ marginTop: 6 }}>{l}</div>)}
     {refs.length > 0 && <>
       <div className="small muted" style={{ marginTop: 10 }}>{t('The 1RM each lift keeps')}</div>
-      {refs.map(i => <div key={i.exerciseId} className="small dim" style={{ marginTop: 4 }}><span className="capitalize">{exName(i.exerciseId)}</span>: {i.ref ? refText(i.ref) : t('No 1RM yet: your first session asks for one')}</div>)}
+      {refs.map(i => <div key={i.exerciseId} className="small dim" style={{ marginTop: 4 }}>{i.ref ? `${exName(i.exerciseId)}: ${refText(i.ref)}` : t('{0} has no 1RM yet; its first session asks for one.', exName(i.exerciseId))}</div>)}
     </>}
     <div className="prog-actions"><Button size="sm" variant="tinted" onClick={dismiss}>{t('Got it')}</Button></div>
   </div>

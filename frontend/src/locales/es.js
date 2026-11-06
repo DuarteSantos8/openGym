@@ -3891,4 +3891,8 @@ export default {
   "{0}’s {1}": "{1} del {0}",
   "“{0}” needs a fix in the editor before it can start.": "“{0}” necesita un arreglo en el editor antes de empezar.",
   "“{0}” needs you to choose how to count its weeks.": "En “{0}” tienes que elegir cómo contar sus semanas.",
+  "Its sets already count for your programme, so this session keeps these settings.": "Sus series ya cuentan para tu programa, así que esta sesión mantiene estos ajustes.",
+  "They count from the next round you have not started.": "Cuentan desde la próxima ronda que aún no empezaste.",
+  "{0} has no 1RM yet; its first session asks for one.": "{0} aún no tiene 1RM; su primera sesión lo pide.",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: tras una ronda fallida, {1}; tras una saltada, {2}. Tú eliges al empezarlo.",
 }

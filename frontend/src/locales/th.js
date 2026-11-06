@@ -3902,4 +3902,8 @@ export default {
   "{0}’s {1}": "{1} {0}",
   "“{0}” needs a fix in the editor before it can start.": "\"{0}\" ต้องแก้ในตัวแก้ไขก่อนจึงจะเริ่มได้",
   "“{0}” needs you to choose how to count its weeks.": "\"{0}\" ต้องเลือกวิธีนับสัปดาห์",
+  "Its sets already count for your programme, so this session keeps these settings.": "เซ็ตของท่านี้นับในโปรแกรมแล้ว เซสชันนี้จึงใช้การตั้งค่าเดิม",
+  "They count from the next round you have not started.": "มีผลตั้งแต่รอบถัดไปที่คุณยังไม่เริ่ม",
+  "{0} has no 1RM yet; its first session asks for one.": "{0} ยังไม่มี 1RM เซสชันแรกของมันจะถาม",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: หลังรอบที่ทำไม่ถึง {1}; หลังรอบที่ข้าม {2} คุณเลือกเองตอนเริ่ม",
 }

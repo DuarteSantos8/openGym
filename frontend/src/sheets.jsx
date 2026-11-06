@@ -1921,10 +1921,14 @@ export function swapActiveWorkoutExercise(index, backup) {
     // keeps the slot's own `rid` and reads its prescription from that routine (not a
     // session-wide one). A slot with no `rid` is freestyle.
     const freestyle = !slotRoutine
+    // Another exercise in a programme's place (spec 13) is extra work on its own rule: it never
+    // takes the programme's targets or its credit. The place keeps its logged sets, or reads as
+    // not done when it had none.
+    const held = !!(currentActive.exposures || []).find(x => x.exposureId === exposureId)?.programme
     let exposure = null
     update(st => {
       exposure = buildSessionExposures(st, { ...(slotRoutine || { id: 'freestyle' }), ex: [occurrence] }, {
-        now: Date.now(), newId: uid, unit: st.unit, active: currentActive
+        now: Date.now(), newId: uid, unit: st.unit, active: currentActive, ...(held ? { extra: true } : {})
       })[0]
     })
     if (!exposure) return

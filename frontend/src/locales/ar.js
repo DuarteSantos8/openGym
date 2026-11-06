@@ -3945,4 +3945,8 @@ export default {
   "{0}’s {1}": "{1} يوم {0}",
   "“{0}” needs a fix in the editor before it can start.": "\"{0}\" يحتاج إلى إصلاح في المحرر قبل أن يبدأ.",
   "“{0}” needs you to choose how to count its weeks.": "في \"{0}\" عليك أن تختار طريقة عدّ الأسابيع.",
+  "Its sets already count for your programme, so this session keeps these settings.": "مجموعاته تُحتسب بالفعل في برنامجك، لذا تحتفظ هذه الجلسة بهذه الإعدادات.",
+  "They count from the next round you have not started.": "تسري من الجولة التالية التي لم تبدأها بعد.",
+  "{0} has no 1RM yet; its first session asks for one.": "لا يوجد 1RM لـ {0} بعد؛ ستسألك أول جلسة له عنه.",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: بعد جولة لم تكتمل {1}؛ بعد جولة متخطاة {2}. تختار عند بدئه.",
 }

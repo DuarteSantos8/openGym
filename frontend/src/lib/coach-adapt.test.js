@@ -181,8 +181,11 @@ describe('a review that sets warm-ups or writes a programme', () => {
     // Spec 13: the card says what the Coach fixes, apart from what the exercise's own progression keeps deciding.
     expect(changeMeaning(p.changes[0])).toMatch(/Week 1: fixed at 75%.*Week 3: deload/)
     const open = { type: 'programme', after: { weeks: [{ rpe: 8, t: { [BENCH]: { rpe: 8, policy: { onFailure: 'repeat', onSkipped: 'advance' } } } }] } }
-    expect(changeMeaning(open)).toBe('Saved under Plan → Programmes. It starts when you start it. Week 1: your progression picks the rest (RPE 8) '
+    expect(changeMeaning(open)).toBe('Saved under Plan → Programmes. It starts when you start it. Week 1: your progression picks the rest (RPE 8) · '
       + 'Barbell Bench Press: after a missed week, repeat it; after a skipped week, move on. You choose when you start it.')
+    // A programme that runs in rounds reads its weeks as rounds.
+    const rot = { programmes: { rot: { ...prog, id: 'rot', schedule: { mode: 'rotation', sequence: ['push'] }, duration: { n: 3, unit: 'blocks' } } } }
+    expect(changeMeaning({ ...open, target: { programmeId: 'rot' } }, rot)).toContain('Round 1: your progression picks the rest (RPE 8) · Barbell Bench Press: after a missed round, repeat it; after a skipped round, move on.')
     revertLast(S)
     expect(programmesOf(S)).toEqual([])
   })

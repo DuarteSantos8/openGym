@@ -3891,4 +3891,8 @@ export default {
   "{0}’s {1}": "{0} {1}",
   "“{0}” needs a fix in the editor before it can start.": "“{0}” başlamadan önce düzenleyicide düzeltilmeli.",
   "“{0}” needs you to choose how to count its weeks.": "“{0}” için haftaların nasıl sayılacağını seçmelisin.",
+  "Its sets already count for your programme, so this session keeps these settings.": "Setleri programında zaten sayılıyor, bu yüzden bu seans bu ayarları korur.",
+  "They count from the next round you have not started.": "Henüz başlamadığın bir sonraki turdan itibaren geçerli.",
+  "{0} has no 1RM yet; its first session asks for one.": "{0} için henüz 1RM yok; ilk seansı onu soracak.",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: kaçırılan turdan sonra {1}; atlanan turdan sonra {2}. Başlatırken sen seçersin.",
 }

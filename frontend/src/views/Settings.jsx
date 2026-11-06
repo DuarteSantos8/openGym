@@ -61,7 +61,7 @@ import { passwordOn, PasswordRow, openPasswordSignIn, openPasswordRegister } fro
 import { usePasskeys, PasskeysRow, DeviceLinkRow, openDeviceLinkRedeem, PairSheet } from '../components/Passkeys.jsx'
 import { DeleteAccountRow } from '../components/DeleteAccount.jsx'
 import { warmupAutoOf } from '../lib/warmup-ramp.js'
-import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField } from '../components/ui.jsx'
+import { Section, Row, SelectRow, Switch, Segmented, Button, TextField, SearchField, openSelectSheet } from '../components/ui.jsx'
 import { POLICIES_FOR, POLICY_NAME, POLICY_DESC, profileRule } from '../lib/prescription/vocabulary.js'
 import { PAGES, ROOT_GROUPS, pageVisible, searchSettings, pageTrail } from './settings-pages.js'
 import { platformNow } from '../lib/platform-now.js'
@@ -854,18 +854,18 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           adopted one kept (S.refUpdates, absent reads as ask), and what a programme's start proposes
           for its end (S.programmeEnd, absent reads as stop). A running programme keeps its own. */}
       <Section title={t('Progression')} footer={t('A programme still asks at its start; a running one keeps the choices it started with.')}>
-        <SelectRow icon="chartLine" iconTint="var(--teal)" title={t('New 1RM estimates')}
-          value={S.refUpdates === 'keep' ? 'keep' : 'ask'} onChange={v => update(s => { s.refUpdates = v })}
-          options={[
+        {/* Their answers are sentences: shown under the title, where they wrap, not cut at the row's end. */}
+        {[
+          { icon: 'chartLine', tint: 'var(--teal)', title: t('New 1RM estimates'), value: S.refUpdates === 'keep' ? 'keep' : 'ask', set: v => update(s => { s.refUpdates = v }), options: [
             { value: 'ask', label: t('Ask me first'), subtitle: t('A newer 1RM is offered before any weight changes.') },
             { value: 'keep', label: t('Keep the one in use'), subtitle: t('Weights keep the 1RM they use, and no newer one is offered.') },
-          ]} />
-        <SelectRow icon="calendar" iconTint="var(--orange)" title={t('When a programme’s weeks run out')}
-          value={S.programmeEnd === 'extend' ? 'extend' : 'stop'} onChange={v => update(s => { s.programmeEnd = v })}
-          options={[
+          ] },
+          { icon: 'calendar', tint: 'var(--orange)', title: t('When a programme’s weeks run out'), value: S.programmeEnd === 'extend' ? 'extend' : 'stop', set: v => update(s => { s.programmeEnd = v }), options: [
             { value: 'stop', label: t('Stop') },
             { value: 'extend', label: t('Keep going until every goal is reached') },
-          ]} />
+          ] },
+        ].map(r => <Row key={r.title} icon={r.icon} iconTint={r.tint} title={r.title} subtitle={r.options.find(o => o.value === r.value).label} accessory="chevron"
+          onClick={() => openSelectSheet({ title: r.title, value: r.value, options: r.options, onChange: r.set })} />)}
       </Section>
     </>,
 

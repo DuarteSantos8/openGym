@@ -3891,4 +3891,8 @@ export default {
   "{0}’s {1}": "{0} का {1}",
   "“{0}” needs a fix in the editor before it can start.": "\"{0}\" शुरू होने से पहले एडिटर में ठीक करना होगा।",
   "“{0}” needs you to choose how to count its weeks.": "\"{0}\" के हफ़्ते कैसे गिने जाएँ, चुनें।",
+  "Its sets already count for your programme, so this session keeps these settings.": "इसके सेट पहले से आपके प्रोग्राम में गिने जा चुके हैं, इसलिए यह सेशन यही सेटिंग्स रखता है।",
+  "They count from the next round you have not started.": "ये अगले उस राउंड से लागू होते हैं जो आपने अभी शुरू नहीं किया।",
+  "{0} has no 1RM yet; its first session asks for one.": "{0} का अभी 1RM नहीं है; इसका पहला सेशन इसे पूछेगा।",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: अधूरे राउंड के बाद {1}; छोड़े गए राउंड के बाद {2}। शुरू करते समय आप चुनते हैं।",
 }

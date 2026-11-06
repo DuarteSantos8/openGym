@@ -832,7 +832,7 @@ export function warmupWord(mode, rows) {
  * line the exercise settings show under each rule. Next to the Coach's `why`, so "double
  * progression" is never the whole explanation. Null for changes that need none.
  */
-export function changeMeaning(c) {
+export function changeMeaning(c, S = null) {
   if ((c.type === 'exercise-prog' || c.type === 'routine-prog') && POLICY_DESC[c.after]) return t(POLICY_NAME[c.after]) + ': ' + t(POLICY_DESC[c.after])
   if (c.type === 'warmup') {
     return c.after?.mode === 'auto' ? t('The app ramps up from your work weight: more warm-up sets when it is heavy, fewer when it is light, on your gym’s plates.')
@@ -852,12 +852,16 @@ export function changeMeaning(c) {
     const fixed = x => x.sets != null || x.reps != null || x.sec != null || x.weight != null || x.rest != null || x.pct != null
     const policies = new Map(weeks.flatMap(w => Object.entries(w.t || {}).filter(([, x]) => x.policy).map(([k, x]) => [k.split(':').at(-1), x.policy])))
     const word = v => (v === 'repeat' ? t('repeat it') : t('move on'))
-    return [t('Saved under Plan → Programmes. It starts when you start it.'), weeks.map((w, i) => {
+    // A programme revised in rounds (a rotation) reads its weeks as rounds.
+    const rounds = programmeById(S, c.target?.programmeId)?.schedule.mode === 'rotation'
+    return t('Saved under Plan → Programmes. It starts when you start it.') + ' ' + [...weeks.map((w, i) => {
       const bits = Object.values(w.t || {}).filter(fixed).map(bit).filter(Boolean)
       const open = Object.values(w.t || {}).some(x => !fixed(x)) || !Object.keys(w.t || {}).length
-      return t('Week {0}', i + 1) + ': ' + (w.deload ? t('deload')
+      return (rounds ? t('Round {0}', i + 1) : t('Week {0}', i + 1)) + ': ' + (w.deload ? t('deload')
         : [bits.length ? t('fixed at {0}', [...new Set(bits)].join(', ')) : null, open ? t('your progression picks the rest') + (w.rpe != null ? ' (RPE ' + w.rpe + ')' : '') : null].filter(Boolean).join('; '))
-    }).join(' · '), ...[...policies].map(([id, p]) => t('{0}: after a missed week, {1}; after a skipped week, {2}. You choose when you start it.', exTitle(id), word(p.onFailure), word(p.onSkipped)))].join(' ')
+    }), ...[...policies].map(([id, p]) => (rounds
+      ? t('{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.', exTitle(id), word(p.onFailure), word(p.onSkipped))
+      : t('{0}: after a missed week, {1}; after a skipped week, {2}. You choose when you start it.', exTitle(id), word(p.onFailure), word(p.onSkipped))))].join(' · ')
   }
   return null
 }

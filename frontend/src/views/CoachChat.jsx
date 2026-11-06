@@ -491,7 +491,7 @@ function ChangeRow({ c, S, stale, badge, children }) {
       {vals && <div className="pcard-chg-v"><span className="tag">{vals.before}</span><Icon name="chevronRight" style={{ fontSize: 'var(--fs-caption)', color: 'var(--label-3)' }} /><span className="tag acc">{vals.after}</span></div>}
       <div className="pcard-chg-w">{c.why}</div>
       {/* What the change means at the gym, in the app's own words (lib/coach.js changeMeaning). */}
-      {changeMeaning(c) && <div className="pcard-chg-m small dim">{changeMeaning(c)}</div>}
+      {changeMeaning(c, S) && <div className="pcard-chg-m small dim">{changeMeaning(c, S)}</div>}
       {stale && <div className="pcard-chg-stale">{t('Doesn’t match your plan any more, so it can’t be applied.')}</div>}
     </div>
     {badge}

@@ -3891,4 +3891,8 @@ export default {
   "{0}’s {1}": "{0} {1}",
   "“{0}” needs a fix in the editor before it can start.": "\"{0}\"은(는) 시작하기 전에 편집기에서 고쳐야 해요.",
   "“{0}” needs you to choose how to count its weeks.": "\"{0}\"의 주를 어떻게 셀지 골라 주세요.",
+  "Its sets already count for your programme, so this session keeps these settings.": "이미 기록한 세트가 프로그램에 반영돼서, 이번 세션은 이 설정을 그대로 유지해요.",
+  "They count from the next round you have not started.": "아직 시작하지 않은 다음 라운드부터 적용돼요.",
+  "{0} has no 1RM yet; its first session asks for one.": "{0}은(는) 아직 1RM이 없어요. 첫 세션에서 물어봐요.",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: 못 채운 라운드 다음에는 {1}, 건너뛴 라운드 다음에는 {2}. 시작할 때 직접 골라요.",
 }

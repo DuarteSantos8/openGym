@@ -1816,11 +1816,16 @@ function ActiveWorkout() {
       ],
     })
   }
+  // A programme exercise with a work set ticked (spec 13): those sets were judged against the
+  // prescription they were done under, so its settings stay for this session. Before that, it is
+  // built again on its own appointment.
+  const lockedByProgramme = (entry, exposure) => !!exposure?.programme && (entry?.sets || []).some(x => !isWarmupRow(x) && (x.done || x.sides?.L?.done || x.sides?.R?.done))
   const openProgressionSettings = idx => {
     const activeState = useStore.getState().A
     const entry = activeState?.entries?.[idx]
     const currentExposure = activeState?.exposures?.find(x => x.exposureId === entry?.exposureId)
     if (!entry || !currentExposure) return
+    if (lockedByProgramme(entry, currentExposure)) { useUI.getState().toast(t('Its sets already count for your programme, so this session keeps these settings.')); return }
     const activeId = activeState.id
     const entryId = entry.id
     const exposureId = currentExposure.exposureId
@@ -1845,6 +1850,8 @@ function ActiveWorkout() {
       // exercise at the captured index is what "nothing shifted" means.
       const current = useStore.getState().A
       if (current?.id !== activeId || current.entries?.length !== entryCount || current.entries?.[idx]?.exposureId !== exposureId) return
+      // A set ticked meanwhile (the watch): the same rule as above, never a reinterpretation.
+      if (lockedByProgramme(current.entries[idx], currentExposure)) { useUI.getState().toast(t('Its sets already count for your programme, so this session keeps these settings.')); return }
       // The sheet hands back an occurrence with a validated rule. Re-generate the live rows
       // through `buildSessionExposures`, wrapped as a scratch one-occurrence routine, so the
       // prescription comes from the same engine path as session start.
@@ -1854,7 +1861,8 @@ function ActiveWorkout() {
       let exposure = null
       try {
         useStore.getState().update(s => {
-          exposure = buildSessionExposures(s, scratchRoutine, { now: Date.now(), newId: uid, unit: s.unit, active: current })[0]
+          // The workout without the exposure being replaced: it takes its own appointment back.
+          exposure = buildSessionExposures(s, scratchRoutine, { now: Date.now(), newId: uid, unit: s.unit, active: { ...current, exposures: (current.exposures || []).filter(x => x.exposureId !== exposureId) } })[0]
         })
       } catch { return }
       if (!exposure) return

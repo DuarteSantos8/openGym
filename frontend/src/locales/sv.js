@@ -3937,4 +3937,8 @@ export default {
   "{0}’s {1}": "{1} på {0}",
   "“{0}” needs a fix in the editor before it can start.": "”{0}” behöver rättas i redigeraren innan det kan starta.",
   "“{0}” needs you to choose how to count its weeks.": "För ”{0}” behöver du välja hur veckorna räknas.",
+  "Its sets already count for your programme, so this session keeps these settings.": "Dess set räknas redan för ditt program, så det här passet behåller de här inställningarna.",
+  "They count from the next round you have not started.": "De gäller från nästa runda du inte har påbörjat.",
+  "{0} has no 1RM yet; its first session asks for one.": "{0} har inget 1RM än; dess första pass frågar efter det.",
+  "{0}: after a missed round, {1}; after a skipped round, {2}. You choose when you start it.": "{0}: efter en missad runda {1}; efter en hoppad runda {2}. Du väljer när du startar det.",
 }
