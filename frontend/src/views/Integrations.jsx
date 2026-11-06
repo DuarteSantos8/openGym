@@ -20,6 +20,8 @@ import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
 import { isOn } from '../lib/modules.js'
 import { tokensOn } from '../lib/api-tokens.js'
 import { useWebdavConfig, webdavSheet } from '../components/WebDavBackup.jsx'
+import { calendarSheet } from '../components/CalendarFeed.jsx'
+import { getCalendar } from '../lib/api-tokens.js'
 
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
    with what it is, whether it is on, and the one thing to do next. The cards are thin on purpose:
@@ -122,8 +124,12 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const platform = MOBILE ? (ios ? 'ios' : android ? 'android' : health?.platform || platformNow()) : null
   const S = useStore(s => s.S)
   const webdav = useWebdavConfig()
+  const tokens = tokensOn(config, user, DEMO) && isOn(S, 'integrations')
+  // The calendar feed's state, asked once per visit where the server has tokens.
+  const [calendar, setCalendarState] = useState(null)
+  useEffect(() => { if (tokens) getCalendar().then(setCalendarState).catch(() => {}) }, [tokens])
   const ctx = {
-    webdav,
+    webdav, tokens, calendar,
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,
@@ -131,7 +137,6 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const dir = directory(ctx)
 
   const webhookCtx = { server, lan: !!config?.integrations?.lan, toast }
-  const tokens = tokensOn(config, user, DEMO) && isOn(S, 'integrations')
   const act = card => {
     const { action, status } = card.state
     switch (card.id) {
@@ -147,6 +152,9 @@ export default function IntegrationsPage({ android = false, ios = false }) {
         if (action === 'connect') return addWebhookSheet(webhookCtx)
         return webhookListSheet(webhookCtx)
       case 'webdav': return webdavSheet()
+      case 'calendar':
+        if (status === 'server') return infoSheet(card, t('The calendar link is served by your own openGym server, so it needs one. Connect this device to it in Account.'))
+        return calendarSheet(setCalendarState)
       case 'coach': return nav(MOBILE ? '/coach/setup' : '/coach')
       case 'mcp':
         if (status === 'server') return infoSheet(card, t('The MCP server runs next to your own openGym server and reads your data there.'), MCP_DOCS)
@@ -161,6 +169,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
     if (card.state.status === 'device' || card.state.status === 'server' || card.state.action === 'open' && card.id === 'webhook') return act(card)
     if (card.id === 'webhook') return card.state.action === 'connect' ? detailSheet(card, { act: () => act(card) }) : webhookListSheet(webhookCtx)
     if (card.id === 'webdav' && card.state.action === 'manage') return webdavSheet()
+    if (card.id === 'calendar' && card.state.action === 'manage') return calendarSheet(setCalendarState)
     if (card.id === 'apple-health' || card.id === 'health-connect') {
       return detailSheet(card, { act: () => act(card), health, onDisconnect: healthOn(health) ? () => disconnectHealth(card, toast) : null, retry: () => nav('/settings/' + card.id) })
     }

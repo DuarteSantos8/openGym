@@ -87,7 +87,11 @@ function prune(db, now) {
 }
 
 /** A new token for `user`. Past TOKENS_MAX the profile is told no rather than losing one silently. */
-export function createToken(db, user, { name, scopes, days } = {}, now = Date.now()) {
+// `kind: 'calendar'` (integrations/calendar.js): a token for one calendar feed address. It is
+// listed with the others and revoked like them, but no token route takes it (tokenAuth), and the
+// feed route takes nothing else.
+export const TOKEN_KINDS = ['calendar'];
+export function createToken(db, user, { name, scopes, days, kind } = {}, now = Date.now()) {
   prune(db, now);
   const clean = cleanTokenScopes(scopes);
   if (grantsNothing(clean)) throw new ScopeError(400, 'nothing-granted', 'a token needs at least one thing it may see');
@@ -105,6 +109,7 @@ export function createToken(db, user, { name, scopes, days } = {}, now = Date.no
     // base64url characters say nothing useful about the other 37.
     hint: token.slice(TOKEN_PREFIX.length, TOKEN_PREFIX.length + 6),
     name: nameOf(name), scopes: clean, created: now, exp: d ? now + d * DAY : null, used: null,
+    ...(TOKEN_KINDS.includes(kind) ? { kind } : {}),
   };
   db.apiTokens.push(row);
   return { token, row };
@@ -137,7 +142,7 @@ export function touchToken(row, now = Date.now()) {
  *  version (sign out everywhere, a new password) ended, are not listed. */
 export const listTokens = (db, user, now = Date.now()) => (db.apiTokens || [])
   .filter(r => r && r.userId === user.id && r.sv === (user.sv || 0) && !(r.exp && r.exp <= now))
-  .map(r => ({ id: r.id, name: r.name, hint: r.hint, scopes: { ...r.scopes }, created: r.created, exp: r.exp || null, used: r.used || null }));
+  .map(r => ({ id: r.id, name: r.name, hint: r.hint, scopes: { ...r.scopes }, created: r.created, exp: r.exp || null, used: r.used || null, ...(r.kind ? { kind: r.kind } : {}) }));
 
 /** One token gone (`id`), or all of a profile's (no `id`). Returns the rows that went. */
 export function revokeTokens(db, userId, id = null) {

@@ -40,3 +40,11 @@ export const endsLabel = (exp, now = Date.now()) => {
   const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
   return fmtDate(iso, false, d.getFullYear() !== new Date(now).getFullYear())
 }
+
+// The calendar feed (api/integrations/calendar.js, docs/CALENDAR.md): a private ICS address of the
+// plan, made of a token of its own kind. Settings → Integrations → Calendar feed.
+export const getCalendar = () => api('/api/calendar')
+export const setCalendar = ({ done, renew = false }) => api('/api/calendar', { method: 'POST', body: JSON.stringify({ done: !!done, ...(renew ? { renew: true } : {}) }) })
+export const stopCalendar = () => api('/api/calendar/revoke', { method: 'POST', body: '{}' })
+/** The address a calendar app opens straight away: the same feed as webcal://. */
+export const webcalUrl = url => String(url || '').replace(/^https?:\/\//, 'webcal://')

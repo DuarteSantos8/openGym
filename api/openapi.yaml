@@ -1076,6 +1076,73 @@ paths:
                   revoked: { type: integer }
                   tokens: { type: array, items: { $ref: '#/components/schemas/ApiToken' } }
         '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/calendar:
+    get:
+      tags: [tokens]
+      operationId: calendarGet
+      summary: The profile's calendar feed, if it has one
+      description: The private ICS address (docs/CALENDAR.md), whether it shows finished workouts, and when a calendar last fetched it.
+      responses:
+        '200':
+          description: The feed, or `on false`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarFeed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [tokens]
+      operationId: calendarSet
+      summary: Turn the calendar feed on, change what it shows, or make a new address
+      description: With a feed already on, `done` changes what it shows and the address stays. `renew` (or no feed yet) makes a new address and ends the old one.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                done: { type: boolean, description: Also show finished workouts }
+                renew: { type: boolean }
+      responses:
+        '200':
+          description: The feed.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarFeed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: The profile has as many tokens as it may hold. }
+  /api/calendar/revoke:
+    post:
+      tags: [tokens]
+      operationId: calendarRevoke
+      summary: Turn the calendar feed off
+      description: Its address stops working at once.
+      responses:
+        '200':
+          description: Off.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarFeed' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+  /api/calendar/{token}.ics:
+    get:
+      tags: [tokens]
+      operationId: calendarFeed
+      summary: The calendar feed (iCalendar)
+      description: For a calendar app to subscribe to. The token in the path is the feed's own; no other token, cookie or header is read. Planned sessions as all-day events from a week back to eight weeks ahead, and with `done` the workouts of the last 90 days.
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string, pattern: '^ogt_[A-Za-z0-9_-]{43}$' }
+      responses:
+        '200':
+          description: The feed.
+          content:
+            text/calendar:
+              schema: { type: string }
+        '404': { description: No such feed (never was, or turned off). }
+        '429': { description: Fetched too often. }
   /api/token/me:
     get:
       tags: [tokens]
@@ -5967,6 +6034,15 @@ components:
         bodyweight: { type: string, enum: [off, view, apply] }
         measurements: { type: string, enum: [off, view, apply] }
         notes: { type: string, enum: [off, view] }
+    CalendarFeed:
+      type: object
+      properties:
+        on: { type: boolean }
+        id: { type: string }
+        url: { type: string, description: The address to subscribe to. }
+        done: { type: boolean, description: Finished workouts are in it too. }
+        created: { type: integer }
+        used: { type: integer, nullable: true }
     ApiToken:
       type: object
       properties:
@@ -5977,6 +6053,7 @@ components:
         created: { type: integer }
         exp: { type: integer, nullable: true }
         used: { type: integer, nullable: true, description: Last use, to the minute. }
+        kind: { type: string, enum: [calendar], description: Set on a calendar feed's token, which only its feed takes. }
     Error:
       type: object
       required: [error]

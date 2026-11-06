@@ -3914,3 +3914,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 @media (prefers-reduced-motion:reduce){.tempo-stage{transition:none}}
 /* WebDAV backup (#582): the last run's line, in the warning tint when it failed. */
 .intg-note.warn{color:var(--orange-ink, var(--orange))}
+/* The calendar feed's address (components/CalendarFeed.jsx): readable, selectable, never wider
+   than the sheet. */
+.cal-url{background:var(--surface-2);border-radius:12px;padding:10px 12px;margin:4px 0 8px;user-select:all;-webkit-user-select:all}
+.cal-url code{font-size:var(--fs-footnote);word-break:break-all;color:var(--label);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}

@@ -90,3 +90,13 @@ describe('the WebDAV card (#582)', () => {
     expect(cardState('webdav', { demo: true })).toBeNull()
   })
 })
+
+describe('the calendar card', () => {
+  it('needs the server and its tokens, and says when it is on', async () => {
+    const { cardState } = await import('./integrations.js')
+    expect(cardState('calendar', { user: null })).toEqual({ status: 'server', action: null })
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: false })).toBeNull()
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: true, calendar: { on: false } })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('calendar', { user: { id: 'u' }, tokens: true, calendar: { on: true } })).toEqual({ status: 'connected', action: 'manage' })
+  })
+})

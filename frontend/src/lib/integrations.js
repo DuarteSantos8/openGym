@@ -49,6 +49,11 @@ export const CARDS = [
     syncs: ['The full backup, once a day while the app is open, and whenever you tap Back up now.', 'Restore it on a new phone in two taps.'],
   },
   {
+    id: 'calendar', cat: 'backup', name: 'Calendar feed', translate: true, icon: 'calendar', tint: 'var(--red)',
+    desc: 'Your planned sessions in Apple, Google or Outlook calendar.',
+    syncs: ['Planned sessions from a week back to eight weeks ahead, as all-day events.', 'Finished workouts too, if you like.'],
+  },
+  {
     id: 'webhook', cat: 'automation', name: 'Webhooks', translate: true, icon: 'webhook', tint: 'var(--indigo)',
     desc: 'Tell Home Assistant, n8n or ntfy when you finish a workout.',
     syncs: ['A signed JSON message when a workout is finished, a record falls or you weigh in.', 'Sent by your server, from whichever device you logged on.'],
@@ -97,7 +102,8 @@ const healthTrouble = h => !!(h && ((h.on && h.error === 'permission') || (healt
  *        health: { status, on, readHr, readWeight, error, readError } | null  (this phone's store)
  *        server: { providers: [id], connections: [..] } | null  (GET /api/integrations)
  *        offered: [provider ids] (config.integrations.providers), coach: bool, coachMode,
- *        webdav: this device's WebDAV backup settings (lib/webdav.js loadConfig) | null }
+ *        webdav: this device's WebDAV backup settings (lib/webdav.js loadConfig) | null,
+ *        tokens: whether the server has scoped tokens (the calendar feed is one), calendar: GET /api/calendar | null }
  * Answers { status: key of PILL | null, action: 'connect' | 'manage' | 'import' | 'export' | 'open' | null }.
  */
 export function cardState(id, ctx) {
@@ -137,6 +143,11 @@ export function cardState(id, ctx) {
       if (w.last && w.last.ok === false) return { status: 'attention', action: 'manage' }
       return { status: 'connected', action: 'manage' }
     }
+    case 'calendar':
+      // A private address your server serves (api/integrations/calendar.js), on its token system.
+      if (ctx.demo || !ctx.user) return { status: 'server', action: null }
+      if (!ctx.tokens) return null
+      return ctx.calendar?.on ? { status: 'connected', action: 'manage' } : { status: 'off', action: 'connect' }
     case 'coach':
       if (ctx.mobile) return { status: ctx.coachMode ? 'connected' : 'off', action: ctx.coachMode ? 'manage' : 'connect' }
       return ctx.coach ? { status: 'connected', action: 'open' } : null
@@ -149,7 +160,7 @@ export function cardState(id, ctx) {
 }
 
 // The module (lib/modules.js) a card belongs to: with it off, the card is not in the directory.
-export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', coach: 'coach' }
+export const CARD_MODULE = { 'apple-health': 'health', 'health-connect': 'health', webhook: 'integrations', mcp: 'integrations', calendar: 'integrations', coach: 'coach' }
 
 /** The directory for this device: categories with their visible cards, empty ones left out.
  *  `ctx.mod(id)` says whether a module is on (absent: all on). */
