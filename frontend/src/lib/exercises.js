@@ -579,6 +579,11 @@ const CAT_PRIOR = { strength: 3, calisthenics: 3, olympic: 2, plyometrics: 1, is
 // The one version every gym has, where the catalogue's name hides it: "leg press" means the 45°
 // sled, not the Smith machine or a one-leg variant (Discord, 2026-10-09).
 const EVERYDAY = { '0739': 6 }
+// A bare word that means one exercise in every gym, though no catalogue name is just that word:
+// "plank" is the front plank, not the jack plank (Discord, 2026-11-04). It counts as typing the
+// whole name, so the everyday one leads and the variations follow.
+const MEANT = { plank: '0463', crunch: '0274', row: '0027' }
+const meantScore = (e, typedForms) => (typedForms.some(q => MEANT[q] === e.id) ? 50 : 0)
 const priorOf = e => (CLASSIC.has(e.id) ? 3 : 0) + (EQ_PRIOR[e.eq] || 0) + (CAT_PRIOR[e.cat] || 0) + (EVERYDAY[e.id] || 0)
 
 // The lifts most people mean when they search a muscle ("chest", "back", "Beine"): the staples of
@@ -630,7 +635,7 @@ function rankByRelevance(found, tokens) {
     // The name exactly as typed wins outright ("burpee" before "dumbbell burpee"), and every
     // word the name has beyond the query costs a little, more than the equipment preference.
     const plain = entry.name.split(' (')[0].replace(/[-‐-―]/g, ' ')
-    const whole = wholeNameScore(plain, typedForms)
+    const whole = Math.max(wholeNameScore(plain, typedForms), meantScore(e, typedForms))
     const extra = Math.max(0, entry.nameWords.length - tokens.length) * 3
     return { e, i, score: tokens.reduce((sum, tok) => sum + tokenScore(entry, tok, ctx), 0) + priorOf(e) + whole - extra, len: entry.nameWords.length }
   })

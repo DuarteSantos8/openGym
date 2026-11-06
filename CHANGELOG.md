@@ -47,6 +47,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Switch each part on or off: title, date, duration, volume, sets, PRs, exercises, muscle map, streak, heart rate and the logo. Stories keep clear of Instagram's own buttons, and there is a 4:5 size for the feed next to the 9:16 story and the square.
 
 **Small things you asked for**
+- Searching "plank" opens on the front plank instead of jack plank and five cousins, and "crunch" and "row" open on the everyday one too (thanks ad08008 on Discord).
 - Notes come over whole when you import from Hevy, Strong, FitNotes and friends: no more cut at 280 characters, and any note in the app can now run to 2,000 (D#876, thanks @MiquelAlvarez).
 
 **Advent calendar, reworked**
