@@ -6,6 +6,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Fresh from the tracker (new-146)**
+- Plan → Routine from a past workout: pick something you did (imported histories too) and its exercises and sets become a routine to tweak. Also on the empty Plan once you have workouts (idea by @alexgrandasoto, #1010).
+- Body measurements: a custom field can be renamed now, and every reading stays with it (#1009, thanks @claire-puppylove).
+- Health Connect: body water from your scale (Renpho and friends) shows next to body fat, lean and bone mass (#1014, thanks @elmillgoa).
+- Android 16: the workout chip by the clock has its own text, the sets done of all or the paused rest's time, so it shows up where a bare timer did not (#874, thanks @radu781 for chasing the Samsung chip).
+- Fixed: on Android a rest could chime twice, once from the alarm and once more when the app thawed and caught up. Each end rings once now (#1007, thanks @sgoendoer).
+- Fixed: the star was missing in the sheet an exercise opens in when you add it mid-workout, so you could not favourite it there (#1006, thanks @xwr3).
+
 **Voice for the spoken cues**
 - Pick the voice that says your cues: Settings → Timer alerts → Voice. Every voice your phone or browser has for the app's language, with a preview, plus speed and pitch sliders.
 - Styles: Just the facts (as before), Calm coach, Drill sergeant, Hype man (LET'S GO! ONE MORE, CHAMP!) and Deadpan, in every language, with new lines as a rest starts, at 10 seconds, when it ends, before your last set and on a new record.
