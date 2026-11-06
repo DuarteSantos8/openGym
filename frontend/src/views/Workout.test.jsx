@@ -3761,11 +3761,19 @@ describe('the workout screen chrome (v1.3.11)', () => {
     expect(mocks.S.gifSize).toBe('full')
   })
 
-  it('has no thumbnail with full animations, or in the compact layout', async () => {
+  it('has no thumbnail with full animations', async () => {
     await mount([exercise('plain-bench', [false])], 0, { gifSize: 'full' })
     expect(container.querySelector('.wthumb')).toBeNull()
+  })
+
+  // Discord 11-02: the compact layout showed no picture at all. Now a small still, unless off.
+  it('keeps a small still in the compact layout, and none with animations off', async () => {
+    await mount([exercise('plain-bench', [false])], 0, { gifSize: 'full', active: { workoutView: 'compact' } })
+    expect(container.querySelector('.wthumb')).toBeTruthy()
+    await click(container.querySelector('.wthumb'))
+    expect(mocks.S.gifSize).toBe('full')
     await unmount()
-    await mount([exercise('plain-bench', [false])], 0, { gifSize: 'mini', active: { workoutView: 'compact' } })
+    await mount([exercise('plain-bench', [false])], 0, { gifSize: 'off', active: { workoutView: 'compact' } })
     expect(container.querySelector('.wthumb')).toBeNull()
   })
 })
