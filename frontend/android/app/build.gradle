@@ -48,6 +48,11 @@ android {
     // or ML Kit (see the F-Droid block below the dependencies), no updater (F-Droid updates it),
     // the repository's 180 px animations only. Same applicationId and versionCode as the APK;
     // F-Droid signs it with its own key unless its build matches ours (docs/APP_STORES.md).
+    // "offline" is openGym Offline: the F-Droid build with the INTERNET permission taken out
+    // (src/offline/AndroidManifest.xml), so the phone itself guarantees it never talks to anyone.
+    // Its own applicationId and name, so it sits next to the normal app; the page hides everything
+    // that needs a network (lib/build-caps.js: sync, the Coach, YouTube, webhooks, WebDAV...).
+    // Same code as F-Droid otherwise: no Play services, no ML Kit, no Garmin, 180 px animations.
     flavorDimensions = ["channel"]
     productFlavors {
         sideload {
@@ -67,6 +72,12 @@ android {
             // The gym reminder needs no Play services (the platform's proximity alerts).
             buildConfigField "boolean", "BACKGROUND_LOCATION", "true"
         }
+        offline {
+            dimension = "channel"
+            applicationIdSuffix ".offline"
+            buildConfigField "String", "CHANNEL", '"offline"'
+            buildConfigField "boolean", "BACKGROUND_LOCATION", "true"
+        }
     }
     // The Wear OS link (WatchBridgePlugin, WatchListenerService) talks to the watch through the
     // Wearable Data Layer of Google Play services: in the APK and the Play build only. The F-Droid
@@ -77,6 +88,8 @@ android {
     sourceSets {
         sideload.java.srcDirs += ['src/gms/java', 'src/ciq/java']
         play.java.srcDirs += ['src/gms/java', 'src/ciq/java']
+        // openGym Offline answers "no watch, no Garmin, no packs, no updater" like F-Droid.
+        offline.java.srcDirs += ['src/fdroid/java']
     }
     // Plan B for Google Play's background-location review (docs/APP_STORES.md): with
     // -PplayWithoutBackgroundLocation the Play build leaves out ACCESS_BACKGROUND_LOCATION, so no
@@ -137,7 +150,7 @@ apply from: 'capacitor.build.gradle'
 // which win over main's).
 def fdroidDroppedPlugins = ['@capacitor-mlkit/barcode-scanning']
 configurations.configureEach { c ->
-    if (c.name.toLowerCase().contains('fdroid')) {
+    if (c.name.toLowerCase().contains('fdroid') || c.name.toLowerCase().contains('offline')) {
         c.exclude module: 'capacitor-mlkit-barcode-scanning'
     }
 }
@@ -156,8 +169,9 @@ def fdroidPluginList = tasks.register('fdroidCapacitorPlugins') {
     }
 }
 android.sourceSets.fdroid.assets.srcDir(fdroidAssetsDir)
+android.sourceSets.offline.assets.srcDir(fdroidAssetsDir)
 tasks.configureEach { t ->
-    if (t.name ==~ /(merge|generate)Fdroid\w*Assets|lintVitalAnalyzeFdroid\w*|.*Fdroid\w*Lint\w*/) t.dependsOn fdroidPluginList
+    if (t.name ==~ /(merge|generate)(Fdroid|Offline)\w*Assets|lintVitalAnalyze(Fdroid|Offline)\w*|.*(Fdroid|Offline)\w*Lint\w*/) t.dependsOn fdroidPluginList
 }
 
 // The asset packs themselves, generated on the release machine only (settings.gradle).

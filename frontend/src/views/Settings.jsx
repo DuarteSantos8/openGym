@@ -103,6 +103,11 @@ import { dailyModeOf, settleAll } from '../lib/weigh-ins.js'
 import { voiceShortcutsSheet, voiceRowTitle } from '../components/VoiceShortcuts.jsx'
 import { readOrientation, setOrientation } from '../lib/orientation.js'
 import { AvatarFace, AvatarSection } from '../components/Avatar.jsx'
+import { useOfflineBuild } from '../lib/use-offline-build.js'
+import { offlineBuild } from '../lib/build-caps.js'
+import NetworkLogPage, { NetworkLogRow } from './NetworkLog.jsx'
+import ReminderSounds from '../components/ReminderSounds.jsx'
+import DisplayRows from '../components/DisplayRows.jsx'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -128,7 +133,7 @@ export function SettingsRoute() {
   const modules = useStore(s => s.S.modules), checkIn = useStore(s => s.S.checkIn)
   const trainers = useStore(s => !!s.config?.trainers?.on)
   const apiTokens = useStore(s => !!s.config?.api_tokens)
-  const ctx = { user: useStore(s => s.user), mobile: MOBILE, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
+  const ctx = { user: useStore(s => s.user), mobile: MOBILE, offline: offlineBuild(), trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
@@ -235,6 +240,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const [selfUpdate, setSelfUpdate] = useState(false)   // the sideloaded APK, which updates itself
   const [play, setPlay] = useState(false)   // the Google Play build: no donation links (Play payments policy)
   const [fdroid, setFdroid] = useState(false)   // the F-Droid build: F-Droid updates it, no Wear OS link
+  // openGym Offline (lib/build-caps.js): no INTERNET, so nothing that needs a network is offered.
+  const offline = useOfflineBuild()
   const [gymReminder, setGymReminder] = useState(true)   // false in a Play build without background location
   const [checking, setChecking] = useState(false)
   // Where auto-backup writes on this Android phone, for the Auto-backup row's own subtitle.
@@ -255,7 +262,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       const own = channel === 'sideload'
       setSelfUpdate(own)
       setPlay(channel === 'play')
-      setFdroid(channel === 'fdroid')
+      setFdroid(channel === 'fdroid' || channel === 'offline')
       if (ok) gymReminderBuilt().then(setGymReminder)
       // Nothing newer: an update APK still in the cache is the one already installed.
       if (own && page === 'about') checkForUpdate().then(info => { setUpdateInfo(info); if (!info?.hasUpdate) forgetDownloadedUpdate() }).catch(() => {})
@@ -455,7 +462,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
   const nfcOK = useNfcSupported()
   const canVibrate = vibrateSupported()
   const ctx = {
-    user, mobile: MOBILE, android, ios: MOBILE && ios, appIcons: MOBILE && !!platformNow(), demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
+    user, mobile: MOBILE, offline, android, ios: MOBILE && ios, appIcons: MOBILE && !!platformNow(), demo: DEMO, wakeOK, hasMedia, pwOn, webauthn: webauthnOK(),
     sound: !!S.sound, playOnSilent: playOnSilentSupported(), canVibrate, vibrate: S.vibrate !== false,
     profiles: (S.equipProfiles || []).length > 0, nameLang: EXERCISE_NAME_LANGS.includes(baseLang(lang)),
     pushOK: !MOBILE && pushSupported(), reminderOn: !!S.reminder?.on, nudge: !!S.reminder?.nudge,
@@ -575,6 +582,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     garmin: () => <GarminSettingsPage />,
     zepp: () => <ZeppSettingsPage />,
     gym: () => <GymReminderPage />,
+    network: () => <NetworkLogPage />,
     'gym-find': () => <GymFindPage />,
     'gym-edit': () => <GymEditPage />,
     workout: () => <>
@@ -878,6 +886,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {MOBILE && gymReminder && <Section footer={t('A nudge when you walk into your gym.')}>
         <Row icon="mapPin" iconTint="var(--green)" title={t('Gym reminder')} value={gymOn ? t('On') : t('Off')} accessory="chevron" onClick={() => nav('/settings/gym')} />
       </Section>}
+       {/* Settings → Reminders → Sounds (components/ReminderSounds.jsx): the Android app only. */}
+      {MOBILE && android && <ReminderSounds gym={!!gymReminder} />}
     </>,
 
     plan: () => <>
@@ -1078,6 +1088,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           <Switch aria-label={t('Sport counts for the streak')} checked={S.activityStreak === true}
             onChange={v => update(s => { if (v) s.activityStreak = true; else delete s.activityStreak })} />
         </Row>}
+        {/* Motion and text size (lib/display-prefs.js): this device only, like the app icon. */}
+        <DisplayRows />
         {/* The home-screen icon: the phone's own, not synced; in the phone app only. */}
         {MOBILE && platformNow() && <AppIconRow />}
         {/* How the muscle map is drawn. The exercise drawings follow it until they are set below. */}
@@ -1204,7 +1216,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         {/* One row per set for spreadsheets and other apps (#647); our own importer reads it back. */}
         <Row icon="share" iconTint="var(--green)" title={t('Export as spreadsheet (CSV)')} subtitle={t('Workouts, body weight and measurements')} accessory="chevron" onClick={csvExportSheet} tour="data-csv" />
         {/* A daily copy in a WebDAV folder of your own (#582), the same sheet as Integrations'. */}
-        {!DEMO && <WebDavRow />}
+        {!DEMO && !offline && <WebDavRow />}
         {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock
             that module wholesale; mobile.autobackup.test.js pins the two together. */}
         {MOBILE && <Row icon="folder" iconTint="var(--blue)" title={t('Auto-backup on changes')} tour="data-auto"
@@ -1221,9 +1233,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="download" iconTint="var(--teal)" title={t('Import from another app')}
           subtitle={t('Strong, Hevy, FitNotes, Liftosaur, Fitbod, StrongLifts, JEFIT and more, or body weight from Apple Health')}
           accessory="chevron" onClick={() => importRef.current.click()} tour="data-apps" />
-        <Row icon="key" iconTint="var(--teal)" title={t('Import from Hevy')}
+        {!offline && <Row icon="key" iconTint="var(--teal)" title={t('Import from Hevy')}
           subtitle={t('Pull your history with a Hevy Pro API key')}
-          accessory="chevron" onClick={importFromHevy} />
+          accessory="chevron" onClick={importFromHevy} />}
       </Section>
       {hasMedia && <Section><MediaRow /></Section>}
       <Section>
@@ -1243,11 +1255,11 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           release is newer (checksum verified, see onUpdateRowClick). On the web the app updates
           with its server, so the row points at the APK for the phone instead. iOS and the Google
           Play build are updated by their store. */}
-      <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : fdroid ? t('F-Droid installs the updates for this build.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
+      <Section footer={MOBILE ? (selfUpdate ? t('Releases are checked on GitHub. The download is verified against its checksum before the installer opens.') : offline ? t('openGym Offline never checks for updates, it can’t. New versions come from wherever you got this one.') : fdroid ? t('F-Droid installs the updates for this build.') : null) : t('The web app updates together with your server. The Android app installs its own updates from here.')}>
         {/* The sideloaded APK comes in three kinds that differ only in the animations built in
             (lib/apk-variant.js): which one this is, so nobody has to guess from the file size. */}
         <Row icon="info" iconTint="var(--grey)" title={t('Version')} value={'v' + __APP_VERSION__}
-          subtitle={MOBILE && selfUpdate ? t('{0} APK, animations at {1} px', VARIANT_NAMES[APK_VARIANT], BUILTIN_PX) : undefined} />
+          subtitle={MOBILE && selfUpdate ? t('{0} APK, animations at {1} px', VARIANT_NAMES[APK_VARIANT], BUILTIN_PX) : offline ? t('openGym Offline, no internet permission') : undefined} />
         {MOBILE
           ? selfUpdate && <Row icon="download" iconTint="var(--green)"
               title={updateInfo?.hasUpdate ? t('Update to openGym v{0}', updateInfo.latestVersion) : t('Check for updates')}
@@ -1262,6 +1274,10 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           leaves out): said here rather than having a watch that silently never connects. */}
       {fdroid && <Section footer={t('Wear OS watches talk to the phone through Google Play services, which F-Droid apps leave out. The APK from opengym.ch and the Google Play app have the watch link.')}>
         <Row icon="watch" iconTint="var(--grey)" title={t('Wear OS watch')} value={t('Not in this build')} />
+      </Section>}
+      {/* What this copy of the app sent where since it started (lib/net-log.js), phone app only. */}
+      {MOBILE && <Section>
+        <NetworkLogRow />
       </Section>}
       {/* Tutorials (components/Tour.jsx): the tour from the top, and the four short guided runs
           its closing card offers. Not over a running workout: the tour's practice session and the
@@ -1336,11 +1352,12 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {/* account (demo and mobile builds have nothing to sign in to) */}
       {/* A local-only phone has no account to hand another device a code for (#551). */}
       {!(MOBILE && user) && <Section title={MOBILE ? t('Your data') : DEMO ? t('Demo') : t('Account')}
-        footer={MOBILE ? t('Signing in on your computer too needs your own server. Connect this phone to it, and Add another device then gives the computer a code.') : null}>
+        footer={MOBILE ? (offline ? t('This is openGym Offline: Android doesn’t even let it on the internet. Want sync? The normal openGym app can do that, next to this one.') : t('Signing in on your computer too needs your own server. Connect this phone to it, and Add another device then gives the computer a code.')) : null}>
         {MOBILE ? <>
           <Row icon="lock" iconTint="var(--acc)" title={t('All data stays on this phone')} subtitle={t('No account, no cloud. Back it up anytime in Data & backup.')} />
-          <Row icon="cloud" iconTint="var(--indigo)" title={t('Connect to my server')} subtitle={t('Sync this device to your own self-hosted openGym instead.')} accessory="chevron"
-            onClick={connectServer} />
+          {/* openGym Offline cannot reach a server at all (lib/build-caps.js). */}
+          {!offline && <Row icon="cloud" iconTint="var(--indigo)" title={t('Connect to my server')} subtitle={t('Sync this device to your own self-hosted openGym instead.')} accessory="chevron"
+            onClick={connectServer} />}
           <KeptChangesRows />
         </> : DEMO ? <>
           <Row icon="info" iconTint="var(--acc)" title={t('You’re in the demo')} subtitle={t('Example data, stored only in this browser. Go wild and change anything you like.')} />

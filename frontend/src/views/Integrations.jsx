@@ -1,3 +1,4 @@
+import { offlineBuild } from '../lib/build-caps.js'
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -131,7 +132,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const [calendar, setCalendarState] = useState(null)
   useEffect(() => { if (tokens) getCalendar().then(setCalendarState).catch(() => {}) }, [tokens])
   const ctx = {
-    webdav, tokens, calendar, nutrition,
+    offline: offlineBuild(), webdav, tokens, calendar, nutrition,
     mobile: MOBILE, platform, user, demo: DEMO, admin: !!user?.admin, health, server: server.data, offered,
     mod: id => isOn(S, id),
     coach: coachAvailable(config, user, { demo: DEMO }), coachMode: coachLocal?.mode === 'server' || coachLocal?.mode === 'byok' ? coachLocal.mode : null,

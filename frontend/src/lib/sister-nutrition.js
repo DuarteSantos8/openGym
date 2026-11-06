@@ -19,9 +19,11 @@
 // kept in the phone's secure storage (lib/coach-secrets.js) and never in S, a backup or the sync. A second device
 // links on its own. Off until linked; unlinking forgets the token and the numbers.
 //
-// Network only: the offline build (lib/build-caps.js, gm-android) leaves the card out.
+// Network only: openGym Offline (lib/build-caps.js) leaves the card out (OFFLINE_OFF_CARDS), and
+// link() / refresh() / loadLink() do nothing there, so no screen ever shows or asks for it.
 import { nativeFetch } from './capacitor-fetch.js'
 import { secureGet, secureSet, secureRemove } from './coach-secrets.js'
+import { offlineBuild } from './build-caps.js'
 
 export const NUTRITION_KEY = 'gym_sister_nutrition_v1'
 // The token itself: the phone's secure storage (Keychain / Keystore), this browser's storage on the web.
@@ -110,6 +112,7 @@ export function cleanSummary(body) {
 
 /** This device's link, or null: { url, hint, linkedAt, show: { report, story, home }, days: { iso: day }, fasting, at, error }. */
 export function loadLink() {
+  if (offlineBuild()) return null
   try {
     const v = JSON.parse(store()?.getItem(NUTRITION_KEY) || 'null')
     if (!isObj(v) || !cleanUrl(v.url)) return null
@@ -176,6 +179,7 @@ export async function readSummary(url, token, from, to, fetchFn = doFetch) {
  * 'revoked', 'missing', 'notnutrition', 'busy', 'failed').
  */
 export async function link(rawUrl, secret, { fetchFn = doFetch, now = Date.now() } = {}) {
+  if (offlineBuild()) throw new LinkError('unreachable')
   const url = cleanUrl(rawUrl)
   if (!url) throw new LinkError('url')
   const s = String(secret || '').trim()

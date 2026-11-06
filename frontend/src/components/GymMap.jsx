@@ -6,6 +6,7 @@
 // darkens the tiles in CSS (index.css .gym-map), Reduce Motion turns the glides into jumps.
 import { useEffect, useRef } from 'react'
 import { TILES } from '../lib/gym-places.js'
+import { offlineBuild } from '../lib/build-caps.js'
 
 const still = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches } catch { return false } }
 
@@ -37,7 +38,8 @@ export default function GymMap({ pos, radius, onMove, label }) {
       const zoom = pos ? zoomFor(rNow.current, start.lat, host.current.clientHeight || 300) : 2
       const map = L.map(host.current, { zoomControl: false, attributionControl: true, zoomSnap: 0.5, inertia: !still() }).setView([start.lat, start.lng], zoom)
       map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>')
-      L.tileLayer(TILES.url, { maxZoom: TILES.maxZoom, attribution: TILES.attribution, className: 'gym-tiles' }).addTo(map)
+      // openGym Offline (lib/build-caps.js) loads no tiles: the pin and the circle on a plain card.
+      if (!offlineBuild()) L.tileLayer(TILES.url, { maxZoom: TILES.maxZoom, attribution: TILES.attribution, className: 'gym-tiles' }).addTo(map)
       const circle = L.circle([start.lat, start.lng], { radius: rNow.current, className: 'gym-radius', interactive: false }).addTo(map)
       // A move we made ourselves (a search, the locate button) is not one to report back.
       let ours = false

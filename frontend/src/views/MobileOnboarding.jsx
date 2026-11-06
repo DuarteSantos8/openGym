@@ -12,6 +12,7 @@ import { askAddDeviceData } from '../sheets.jsx'
 import { normalizeServerUrl } from '../lib/remote.js'
 import { loadCfAccess, saveCfAccess } from '../lib/cf-access.js'
 import { useSheetKeyboard } from '../lib/use-sheet-keyboard.js'
+import { useOfflineBuild } from '../lib/use-offline-build.js'
 import { serverConfig } from '../lib/api.js'
 import { oidcOn, oidcLabel } from '../lib/oidc.js'
 
@@ -176,6 +177,8 @@ export function ConnectSheet({ close, initialUrl = '', again = false }) {
 
 export default function MobileOnboarding() {
   const { chooseLocalMode } = useStore()
+  // openGym Offline (lib/build-caps.js): there is no server to connect to, so one way in.
+  const offline = useOfflineBuild()
   const head = <>
     <div style={{ fontSize: 54, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="dumbbell" /></div>
     <h1 className="t-large" style={{ fontWeight: 700, margin: '10px 0 4px' }}>openGym</h1>
@@ -184,6 +187,13 @@ export default function MobileOnboarding() {
   return (
     <div className="narrow" style={wrap}>
       {head}
+      {offline ? <>
+        <div className="muted" style={{ marginBottom: 34 }}>{t('openGym Offline has no internet permission. Your training stays on this phone, full stop.')}</div>
+        <Button variant="primary" icon="lock" onClick={() => chooseLocalMode()}>{t('Let’s go')}</Button>
+        <div className="dim small" style={{ marginTop: 26, lineHeight: 1.5 }}>
+          {t('Back it up now and then in Settings, Data & backup. A file on your phone is the only copy there is.')}
+        </div>
+      </> : <>
       <div className="muted" style={{ marginBottom: 34 }}>{t('How do you want to use openGym?')}</div>
       <Button variant="primary" icon="lock" onClick={() => chooseLocalMode()}>{t('Use on this device')}</Button>
       <div style={{ height: 10 }} />
@@ -193,6 +203,7 @@ export default function MobileOnboarding() {
       </div>
       <div style={{ height: 18 }} />
       <Button icon="gear" onClick={() => openCfAccess()}>{t('Connection settings')}</Button>
+      </>}
     </div>
   )
 }

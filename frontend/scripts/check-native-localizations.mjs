@@ -12,6 +12,8 @@ const androidEnglish = {
   rest_channel_desc: 'Rest between sets, in the notification shade. The lock screen shows it only when notifications are allowed there.',
 }
 const androidKeys = Object.keys(androidEnglish)
+// Translated where someone did it (Italian, #760), English elsewhere: allowed, not required.
+const androidOptional = ['workout_channel_name', 'workout_channel_desc']
 const usageKeys = ['NSCameraUsageDescription', 'NSMicrophoneUsageDescription']
 const errors = []
 const fail = message => errors.push(message)
@@ -27,7 +29,7 @@ function readAndroidStrings(file, locale) {
   for (const key of androidKeys) {
     if (names.filter(name => name === key).length !== 1) fail(`${locale}: expected one Android ${key}`)
   }
-  if (locale === 'Italian' && names.some(name => !androidKeys.includes(name))) fail(`${locale}: unexpected Android string key`)
+  if (locale === 'Italian' && names.some(name => !androidKeys.includes(name) && !androidOptional.includes(name))) fail(`${locale}: unexpected Android string key`)
   if (entries.some(([, , value]) => !value.trim())) fail(`${locale}: empty Android string value`)
   return new Map(entries.map(([, key, value]) => [key, value]))
 }

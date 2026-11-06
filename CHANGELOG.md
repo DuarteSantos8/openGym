@@ -18,6 +18,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Fixed: the trainer's nutrition card read openNutrition's days as all empty (it looked for kcal and carbs where openNutrition says energy and carbohydrate), and an unlogged macro read as zero.
 - Fixed: the Apple Health / Health Connect card said Off while only body composition or vitals were being read, and Disconnect on it left those two reads running.
 
+**openGym Offline, network log, reminder sounds**
+- openGym Offline: a second Android app without the internet permission, so Android itself makes sure it never talks to anyone. Everything that works on the phone alone, 180 px animations, no sync, Coach, YouTube, update check, webhooks, Strava, WebDAV, calendar feed, API tokens, community library or gym search. Its own name and package, so it sits next to the normal app.
+- Network log in the phone app (Settings → About & updates → Network log): every request this session, by host, with the time. A phone on its own shows 0.
+- A sound for each reminder (Android, Settings → Reminders → Sounds): workout days and the nudge, the check-in and the gym reminder can each ring with the phone's default, any phone sound, one of openGym's tones, your own sound or nothing.
+- Motion and text size (Settings → Look & Home): Less motion turns every slide, bounce and snowflake off, text from small to larger, for this device.
+- Themed app icon on Android 13 and up (#311), and the widget picker shows a preview with numbers instead of the app icon.
+
 **Daily form, vitals and your month as a story**
 - Daily check-in before a workout: sleep, energy, soreness and stress, 1 to 5, four taps, every one optional. Off until you switch it on (Settings → Workout → Before and during → Daily check-in, or the Daily form card in Stats asks once).
 - A run of rough check-ins now counts towards the automatic deload-week suggestion, together with lifts that stopped climbing.

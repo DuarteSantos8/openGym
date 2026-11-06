@@ -352,7 +352,7 @@ final class GymReminder {
         String body = gym != null && !gym.optString("text", "").trim().isEmpty() ? gym.optString("text") : st.optString("body", "");
         if (title.isEmpty()) title = "Gym spotted";
         if (body.isEmpty()) body = "Ready for your workout? 💪";
-        if (!post(ctx, title, body, st.optString("channel", ""))) return false;
+        if (!post(ctx, title, body, st.optString("channel", ""), st.optString("channelId", ""))) return false;
         p.edit().putString("lastFired", GymReminderRules.isoOf(now)).apply();
         note(ctx, "at " + gymId + ": posted");
         return true;
@@ -435,17 +435,25 @@ final class GymReminder {
         }
     }
 
-    static boolean post(Context ctx, String title, String body, String channelName) {
+    /**
+     * `soundChannel`: the channel Settings → Reminders → Sounds made for the gym reminder
+     * (ReminderSoundPlugin), when one was picked and it still exists; otherwise the gym reminder's
+     * own channel, with the phone's default sound.
+     */
+    static boolean post(Context ctx, String title, String body, String channelName, String soundChannel) {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm == null || !nm.areNotificationsEnabled()) return false;
-        if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CHANNEL_ID) == null) {
+        String channelId = CHANNEL_ID;
+        if (Build.VERSION.SDK_INT >= 26 && ReminderSounds.ofKind(soundChannel, "gym") && nm.getNotificationChannel(soundChannel) != null) {
+            channelId = soundChannel;
+        } else if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CHANNEL_ID) == null) {
             NotificationChannel ch = new NotificationChannel(CHANNEL_ID, channelName.isEmpty() ? "Gym reminder" : channelName, NotificationManager.IMPORTANCE_DEFAULT);
             nm.createNotificationChannel(ch);
         }
         Intent open = new Intent(ctx, MainActivity.class).setAction(actionOpen(ctx));
         open.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent tap = PendingIntent.getActivity(ctx, NOTIFICATION_ID, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, CHANNEL_ID) : new Notification.Builder(ctx);
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(ctx, channelId) : new Notification.Builder(ctx);
         b.setSmallIcon(R.drawable.ic_stat_dumbbell)
                 .setContentTitle(title)
                 .setContentText(body)

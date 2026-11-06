@@ -155,3 +155,18 @@ describe('sister-nutrition: where it shows', () => {
     expect(daysIn(l, '2026-11-03', '2026-11-30').map(d => d.date)).toEqual(['2026-11-03'])
   })
 })
+
+describe('sister-nutrition: openGym Offline', () => {
+  it('never links, reads or shows anything in the build without the network', async () => {
+    const { setOfflineBuild, OFFLINE_OFF_CARDS } = await import('./build-caps.js')
+    expect(OFFLINE_OFF_CARDS).toContain('opennutrition')
+    const m = mockNutrition()
+    await link('https://nutrition.example.com', 'GYM12345', { fetchFn: m.fetchFn, now: NOW })
+    setOfflineBuild(true)
+    try {
+      expect(loadLink()).toBe(null)
+      expect(await refresh({ force: true, fetchFn: m.fetchFn })).toBe(null)
+      await expect(link('https://nutrition.example.com', 'GYM12345', { fetchFn: m.fetchFn })).rejects.toMatchObject({ code: 'unreachable' })
+    } finally { setOfflineBuild(false) }
+  })
+})

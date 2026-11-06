@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DEMO } from './lib/demo.js'
 import { useDailyWebdav } from './lib/use-daily-webdav.js'
+import { offlineBuild } from './lib/build-caps.js'
 import { hideBoot } from './lib/boot.js'
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
@@ -157,7 +158,7 @@ function Shell() {
   // the figure shown (components/Animations.jsx). Nothing on the web.
   useAnimPacksBoot()
   // Backup to WebDAV (#582): this device's daily copy, when one is set up (lib/webdav-run.js).
-  useDailyWebdav(ready && !DEMO)
+  useDailyWebdav(ready && !DEMO && !offlineBuild())
   // A circuit's clock that was running before a reload carries on from where it is now.
   useEffect(() => { if (!ready) return; wireCircuit(); restoreCircuit() }, [ready])
   const isGuest = useStore(s => s.isGuest())

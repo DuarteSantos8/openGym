@@ -15,6 +15,7 @@ import { Section, Row, Switch, SearchField, Segmented, Button, SelectRow } from 
 import { gymsOf, gymLabel } from '../lib/gym-inventory.js'
 import Icon from '../components/Icon.jsx'
 import GymMap from '../components/GymMap.jsx'
+import { useOfflineBuild } from '../lib/use-offline-build.js'
 import { confirmSheet } from '../sheets.jsx'
 import { platformNow } from '../lib/platform-now.js'
 import { findPlaces, placeOfPick, addressAt, searchSource, fmtDistance, googleMapsUrl, appleMapsUrl } from '../lib/gym-places.js'
@@ -180,6 +181,7 @@ const hintOf = kind => kind === 'gym' ? t('Gym') : kind === 'sport' ? t('Sports 
  */
 export function GymFindPage({ find = findPlaces }) {
   const nav = useNavigate()
+  const offline = useOfflineBuild()
   const toast = useUI(s => s.toast)
   const [q, setQ] = useState('')
   const [hits, setHits] = useState(null)
@@ -239,6 +241,14 @@ export function GymFindPage({ find = findPlaces }) {
             title={h.name} subtitle={[fmtDistance(h.distance), hintOf(h.kind), h.address].filter(Boolean).join(' · ')}
             onClick={() => pick(h)} />)
 
+  // openGym Offline (lib/build-caps.js): no search and no map to ask, but the phone's GPS works fine.
+  if (offline) return <>
+    <p className="gym-find-note">{t('No map search in openGym Offline. Stand in your gym, tap Current location, done.')}</p>
+    <Section>
+      <Row icon="location" iconTint="var(--blue)" className="gym-here" title={t('Current location')}
+        subtitle={locating ? t('Finding you…') : null} onClick={here} />
+    </Section>
+  </>
   return <>
     <div className="gym-find-bar" role="search">
       <SearchField value={q} onChange={e => setQ(e.target.value)} onClear={() => setQ('')} autoFocus

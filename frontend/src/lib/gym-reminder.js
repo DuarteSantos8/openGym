@@ -261,6 +261,8 @@ export async function pushGymStatus(S, force = false) {
   if (!p) return false
   await pushGymServer(p)
   const status = statusOf(S)
+  // Settings → Reminders → Sounds (lib/reminder-sounds.js): the channel of the gym reminder's sound.
+  try { const ch = await (await import('./reminder-sounds.js')).reminderChannel(S, 'gym'); if (ch) status.channelId = ch } catch { /* the default channel */ }
   const key = JSON.stringify(status)
   if (!force && key === lastStatus) return false
   try { await p.GymReminder.status(status); lastStatus = key; return true } catch { return false }

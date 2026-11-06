@@ -13,8 +13,13 @@ const ALLOWED = new Set(['FrameLayout', 'LinearLayout', 'RelativeLayout', 'GridL
 
 describe('the Android widget (#981)', () => {
   const layouts = readdirSync(new URL('layout/', res)).filter(f => f.startsWith('widget_'))
-  it('has its layouts (three shapes, and the set logger in two, v1.4.5)', () => {
-    expect(layouts.sort()).toEqual(['widget_logger.xml', 'widget_logger_row.xml', 'widget_medium.xml', 'widget_row.xml', 'widget_small.xml'])
+  it('has its layouts (three shapes, the set logger in two and the picker preview, v1.4.5)', () => {
+    expect(layouts.sort()).toEqual(['widget_logger.xml', 'widget_logger_row.xml', 'widget_medium.xml', 'widget_preview.xml', 'widget_row.xml', 'widget_small.xml'])
+  })
+  it('the widget picker shows the preview with numbers, not an empty widget (Android 12+)', () => {
+    const info = readFileSync(new URL('xml/opengym_widget_info.xml', res), 'utf8')
+    expect(info).toMatch(/android:previewLayout="@layout\/widget_preview"/)
+    expect(readFileSync(new URL('layout/widget_preview.xml', res), 'utf8')).toMatch(/android:text="12"/)
   })
   it.each(layouts)('%s holds only what RemoteViews can inflate', f => {
     const xml = readFileSync(new URL('layout/' + f, res), 'utf8').replace(/<!--[\s\S]*?-->/g, '')

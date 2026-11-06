@@ -4229,3 +4229,13 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Your own kit (components/KitChips.jsx): the chips, then a field with a plus to name a new one. */
 .kit-add{display:flex;align-items:center;gap:8px}
 .kit-add .input{flex:1;min-width:0}
+
+/* Settings → About & updates → Network log (views/NetworkLog.jsx): the count first, big, then who. */
+.netlog-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:8px 16px 22px}
+.netlog-ico{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:rgba(48,209,88,.16);background:color-mix(in srgb, var(--green) 16%, transparent);color:var(--green);font-size:26px}
+.netlog-n{font-size:var(--fs-title2);font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-top:6px}
+.netlog-lead{margin:0;max-width:34ch;font-size:var(--fs-subhead);color:var(--label-2);line-height:1.4;text-wrap:pretty}
+.netlog-url{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--fs-footnote);word-break:break-all}
+
+/* Settings → Look & Home → Motion: Less (lib/display-prefs.js), the app's own Reduce Motion. */
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
