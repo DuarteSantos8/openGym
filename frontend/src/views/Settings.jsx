@@ -21,7 +21,7 @@ import NewExDefaultsSheet, { newExLine } from '../components/NewExDefaultsSheet.
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
-import { setSlot, slotChoice, slotSound, toneFor } from '../lib/user-sounds.js'
+import { setSlot, slotChoice, slotSound, toneFor, kindChoice, setKindSound, soundsOf, REST_KINDS } from '../lib/user-sounds.js'
 import OwnSounds from '../components/OwnSounds.jsx'
 import { StreakIconRows } from '../components/StreakIconPicker.jsx'
 import { StreakRuleRow } from '../components/StreakRule.jsx'
@@ -1541,11 +1541,65 @@ export function RestSoundSheet({ close }) {
         onClick={() => pickRestSound(id, slot)} /> })}
     </Section>
     <OwnSounds slot={slot} />
+    {slot === 'rest' && <RestKindSounds S={S} />}
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={close}>{t('Done')}</Button>
   </>
 }
 const restSoundSheet = () => useUI.getState().openSheet(close => <RestSoundSheet close={close} />)
+
+// A sound for each kind of rest (#165, idea by @kurktchiev): the end of a rest says what comes
+// next without a look. Each kind follows the rest's sound until it is given one of its own
+// (lib/user-sounds.js kindChoice, S.restSoundByKind).
+const REST_KIND_COPY = {
+  warmup: ['After a warm-up set', 'The ramp is still going.'],
+  work: ['Between working sets', 'Same exercise, next set.'],
+  superset: ['Between superset rounds', 'Back to the top of the superset.'],
+  exercise: ['Before the next exercise', 'Time to move on.'],
+}
+const soundName = (S, id) => {
+  if (typeof id === 'string' && id.startsWith('u:')) return soundsOf(S).find(e => 'u:' + e.id === id)?.name || t('Sound')
+  return t(REST_SOUND_LABEL[id] || 'Chime (louder)')
+}
+const playChoice = (S, id) => {
+  unlock(true)
+  const own = typeof id === 'string' && id.startsWith('u:') ? soundsOf(S).find(e => 'u:' + e.id === id) : null
+  chime(true, own ? 'u:' + own.m.hash : id)
+}
+function RestKindSounds({ S }) {
+  return <Section title={t('A sound for each kind of rest')}
+    footer={t('Know from your pocket whether to stay put, go back to the top of the superset or move on.')}>
+    {REST_KINDS.map(k => {
+      const own = kindChoice(S, k)
+      return <Row key={k} icon="bell" iconTint="var(--pink)" title={t(REST_KIND_COPY[k][0])}
+        subtitle={own ? t(REST_KIND_COPY[k][1]) : t('Same as the rest ({0})', soundName(S, slotChoice(S, 'rest')))}
+        value={own ? soundName(S, own) : null} accessory="chevron" onClick={() => restKindSheet(k)} />
+    })}
+  </Section>
+}
+export function RestKindSheet({ kind, close }) {
+  const S = useStore(s => s.S)
+  const own = kindChoice(S, kind)
+  const rest = slotChoice(S, 'rest')
+  const set = v => { useStore.getState().update(s => { setKindSound(s, kind, v) }); playChoice(useStore.getState().S, v == null ? rest : v) }
+  return <>
+    <h3>{t(REST_KIND_COPY[kind][0])}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>{t('Tap one to hear it.')}</div>
+    <Section>
+      <Row icon={own ? 'play' : 'speaker'} iconTint="var(--pink)" title={t('Same as the rest ({0})', soundName(S, rest))}
+        accessory={own ? 'none' : 'check'} onClick={() => set(null)} />
+      {REST_SOUND_IDS.map(id => <Row key={id} icon={own === id ? 'speaker' : 'play'} iconTint="var(--pink)" title={t(REST_SOUND_LABEL[id])}
+        accessory={own === id ? 'check' : 'none'} onClick={() => set(id)} />)}
+    </Section>
+    {soundsOf(S).length > 0 && <Section title={t('Your own sounds')}>
+      {soundsOf(S).map(e => <Row key={e.id} icon={own === 'u:' + e.id ? 'speaker' : 'play'} iconTint="var(--pink)" title={e.name}
+        accessory={own === 'u:' + e.id ? 'check' : 'none'} onClick={() => set('u:' + e.id)} />)}
+    </Section>}
+    <div style={{ height: 14 }} />
+    <Button variant="primary" onClick={close}>{t('Done')}</Button>
+  </>
+}
+const restKindSheet = kind => useUI.getState().openSheet(close => <RestKindSheet kind={kind} close={close} />)
 
 function effortHelpSheet() {
   useUI.getState().openSheet(close => <>

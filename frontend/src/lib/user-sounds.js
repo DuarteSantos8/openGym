@@ -12,6 +12,12 @@
  *
  * What the timer plays is a "tone": a built-in id, or 'u:<sha-256>' naming the file itself, which
  * the native sides find in the app's media folder (RestTone.java / RestTone.swift).
+ *
+ * A sound for each kind of rest (#165, v1.4.5): the rest after a warm-up, between working sets,
+ * between the rounds of a superset and into the next exercise can each end with a sound of its
+ * own, so a pocket says what comes next. S.restSoundByKind = { warmup, work, superset, exercise },
+ * each a built-in id or 'u:<id>', only the kinds given one; the rest follow S.restSound. It syncs
+ * as one settings field, the device that changed it last wins. An older app ignores it.
  */
 import { normalizeMediaRef } from './media-refs.js'
 import { restSoundOf, REST_SOUNDS } from './rest-sounds.js'
@@ -19,6 +25,7 @@ import { restSoundOf, REST_SOUNDS } from './rest-sounds.js'
 export const SOUNDS_MAX = 8
 export const NAME_MAX = 40
 export const SLOTS = ['rest', 'hold']
+export const REST_KINDS = ['warmup', 'work', 'superset', 'exercise']
 const SLOT_KEY = { rest: 'restSound', hold: 'holdSound' }
 const TONE_RE = /^u:[0-9a-f]{64}$/
 
@@ -55,6 +62,11 @@ export function removeSound (s, id) {
   s.sounds = (Array.isArray(s.sounds) ? s.sounds : []).filter(e => e?.id !== id)
   for (const k of Object.values(SLOT_KEY)) if (s[k] === 'u:' + id) s[k] = k === 'restSound' ? 'chime' : undefined
   if (s.holdSound === undefined) delete s.holdSound
+  // A kind of rest that used it goes back to following the rest's sound.
+  if (s.restSoundByKind && typeof s.restSoundByKind === 'object') {
+    const left = Object.fromEntries(Object.entries(s.restSoundByKind).filter(([, v]) => v !== 'u:' + id))
+    if (Object.keys(left).length) s.restSoundByKind = left; else delete s.restSoundByKind
+  }
 }
 
 export function renameSound (s, id, name) {
@@ -85,8 +97,32 @@ export function slotSound (S, slot = 'rest') {
   return c.startsWith('u:') ? soundsOf(S).find(e => 'u:' + e.id === c) || null : null
 }
 
-/** What the timer plays for a slot: a built-in id, or 'u:<sha-256>' for one's own. */
-export function toneFor (S, slot = 'rest') {
+/** The sound a kind of rest was given: a built-in id or 'u:<id>', or null to follow the rest's. */
+export function kindChoice (S, kind) {
+  if (!REST_KINDS.includes(kind)) return null
+  const map = S?.restSoundByKind
+  const raw = map && typeof map === 'object' && !Array.isArray(map) ? map[kind] : null
+  if (typeof raw !== 'string' || !raw) return null
+  if (raw.startsWith('u:')) return soundsOf(S).some(e => 'u:' + e.id === raw) ? raw : null
+  return Object.hasOwn(REST_SOUNDS, raw) ? raw : null
+}
+
+/** Gives a kind of rest its own sound on a store draft; null takes it back to the rest's. */
+export function setKindSound (s, kind, value) {
+  if (!REST_KINDS.includes(kind)) return
+  const map = { ...(s.restSoundByKind && typeof s.restSoundByKind === 'object' ? s.restSoundByKind : {}) }
+  if (value == null || value === '') delete map[kind]; else map[kind] = value
+  if (Object.keys(map).length) s.restSoundByKind = map; else delete s.restSoundByKind
+}
+
+/** What the timer plays for a slot: a built-in id, or 'u:<sha-256>' for one's own. A rest of a
+ *  known `kind` plays that kind's own sound when it was given one. */
+export function toneFor (S, slot = 'rest', kind = null) {
+  if (slot === 'rest' && kind) {
+    const c = kindChoice(S, kind)
+    if (c && c.startsWith('u:')) { const own = soundsOf(S).find(e => 'u:' + e.id === c); if (own) return 'u:' + own.m.hash }
+    else if (c) return c
+  }
   const own = slotSound(S, slot)
   return own ? 'u:' + own.m.hash : slotChoice(S, slot)
 }

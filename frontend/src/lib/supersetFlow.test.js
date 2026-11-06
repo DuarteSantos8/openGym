@@ -337,3 +337,14 @@ describe('transitionRestFor', () => {
     expect(transitionRestFor([e({})], [0], undefined)).toBeNull()
   })
 })
+
+describe('restKindAfter (#165)', () => {
+  it('names the rest a ticked set starts', async () => {
+    const { restKindAfter } = await import('./supersetFlow.js')
+    expect(restKindAfter({ row: { w: 60, r: 8 }, unitDone: true })).toBe('exercise')
+    expect(restKindAfter({ row: { w: 60, r: 8 }, superset: true })).toBe('superset')
+    expect(restKindAfter({ row: { w: 20, r: 8, phase: 'warmup' } })).toBe('warmup')
+    expect(restKindAfter({ row: { w: 60, r: 8 } })).toBe('work')
+    expect(restKindAfter({})).toBe('work')
+  })
+})

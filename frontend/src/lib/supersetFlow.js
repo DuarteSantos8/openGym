@@ -234,3 +234,15 @@ export function advanceAfterTimedRest(entries, units, forIdx, cur, isTimed) {
   return next ? next[0] : null
 }
 
+
+/**
+ * The kind of rest a ticked set starts (#165), for the sound at its end: 'exercise' once the unit
+ * is done and another one follows, 'superset' between the rounds of a superset, 'warmup' after a
+ * warm-up set, 'work' between working sets. Settings → Sound can give each its own.
+ */
+export function restKindAfter({ row, unitDone = false, superset = false }) {
+  if (unitDone) return 'exercise'
+  if (superset) return 'superset'
+  if (row && isWarmupRow(row)) return 'warmup'
+  return 'work'
+}
