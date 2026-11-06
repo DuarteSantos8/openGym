@@ -1114,6 +1114,10 @@ export const useStore = create((set, get) => {
     // the signed-out person ate: on a shared device it must not show on the next account's Home,
     // report or month story. Their token goes too; linking again is one code.
     unlinkNutrition().catch(() => {})
+    // The phone Coach's waiting proposal (lib/coach-device.js) is a plan made from the signed-out
+    // account's log: the next person must not be offered it. How the Coach runs (and its key,
+    // the device owner's choice) stays.
+    if (MOBILE) saveCoachDevice({ pending: null }).catch(() => {})
     setSync({ offline: false, auth: false, lastError: null, pending: false, lastSynced: 0 })
     // On a phone the file is wiped with it, now rather than after the usual wait: a start in
     // between would open in local mode on the signed-out account's data, since that boot takes

@@ -100,6 +100,7 @@ describe('the WebDAV card (#582)', () => {
     expect(cardState('webdav', { user: null })).toEqual({ status: 'off', action: 'connect' })
     expect(cardState('webdav', { webdav: { url: 'https://x/', lastOk: 1 } })).toEqual({ status: 'connected', action: 'manage' })
     expect(cardState('webdav', { webdav: { url: 'https://x/', last: { ok: false } } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(cardState('webdav', { webdav: { url: 'https://x/', lastOk: 1, foreign: true } })).toEqual({ status: 'attention', action: 'manage' })
     expect(cardState('webdav', { demo: true })).toBeNull()
   })
 })

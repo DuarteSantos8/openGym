@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useUI } from '../store/useUI.js'
+import { useStore } from '../store/useStore.js'
 import { t, tn } from '../lib/i18n.js'
 import { fmtAgo } from '../lib/format.js'
 import { loadConfig, saveConfig, onConfigChange, urlProblem, folderUrl, errorText, DavError } from '../lib/webdav.js'
-import { runBackup, listBackups, fetchBackup, forgetWebdav, getPassword, setPassword, clientFor } from '../lib/webdav-run.js'
+import { runBackup, listBackups, fetchBackup, forgetWebdav, getPassword, setPassword, clientFor, currentOwner, claimWebdav, webdavView } from '../lib/webdav-run.js'
 import { confirmBackupImport } from './backup-restore.js'
 import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, Switch, Button, TextField } from './ui.jsx'
@@ -15,15 +16,20 @@ import Icon from './Icon.jsx'
 
 export const WEBDAV_DOCS = 'https://github.com/DuarteSantos8/openGym/blob/main/docs/WEBDAV_BACKUP.md'
 
+/** This device's WebDAV settings, with `foreign` while another account than the one active set them up. */
 export function useWebdavConfig() {
   const [cfg, setCfg] = useState(() => loadConfig())
   useEffect(() => onConfigChange(setCfg), [])
-  return cfg
+  const owner = useStore(s => currentOwner(s))
+  // Settings from before they had an owner become the active account's (lib/webdav-run.js).
+  useEffect(() => { if (owner) claimWebdav(owner) }, [owner])
+  return webdavView(cfg, owner)
 }
 
 /** The line a row or a card shows about the last backup. */
 export function webdavStatus(cfg) {
   if (!cfg) return null
+  if (cfg.foreign) return { tone: 'attention', text: t('This backup belongs to another account') }
   if (cfg.last && !cfg.last.ok) return { tone: 'attention', text: t(errorText({ code: cfg.last.msg })) }
   if (cfg.lastOk) return { tone: 'ok', text: t('Last backup {0}', fmtAgo(cfg.lastOk)) }
   return { tone: 'ok', text: t('No backup yet') }
@@ -33,7 +39,32 @@ export const webdavSheet = () => useUI.getState().openSheet(close => <WebDavShee
 
 export function WebDavSheet({ close }) {
   const cfg = useWebdavConfig()
+  if (cfg?.foreign) return <WebDavForeign close={close} />
   return cfg ? <WebDavManage cfg={cfg} close={close} /> : <WebDavSetup close={close} />
+}
+
+const confirmForget = () => confirmSheet({
+  title: t('Disconnect WebDAV?'), message: t('This device stops backing up and forgets the password. The backups already in the folder stay there.'),
+  confirmText: t('Disconnect'), danger: true, onConfirm: () => { forgetWebdav(); toast(t('Disconnected')) },
+})
+
+/* Somebody else set this device's WebDAV backup up (a shared phone or browser): nothing of this
+   account goes to their folder and nothing of theirs is read back. Their address is not shown
+   either. Disconnecting frees the device for a folder of this account's own. */
+function WebDavForeign({ close }) {
+  return <>
+    <div className="intg-head">
+      <h3 className="intg-h"><Icon name="cloud" /><span>{t('WebDAV backup')}</span></h3>
+      <span className="intg-pill attention">{t('Paused')}</span>
+    </div>
+    <p className="intg-note warn" role="status">{t('This backup belongs to another account')}</p>
+    <p className="intg-lead">{t('Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.')}</p>
+    <div className="sect-b intg-end">
+      <button type="button" className="lrow tap danger" onClick={confirmForget}><Icon name="trash" className="intg-act-i" /><span className="lrow-m"><span className="lrow-t">{t('Disconnect')}</span></span></button>
+    </div>
+    <div style={{ height: 8 }} />
+    <Button variant="plain" onClick={close}>{t('Done')}</Button>
+  </>
 }
 
 const toast = m => useUI.getState().toast(m)
@@ -49,7 +80,8 @@ export function WebDavSetup({ close, cfg = null }) {
     const p = urlProblem(url)
     if (p) { setErr(t(p)); return }
     setBusy(true); setErr(null)
-    const next = { ...(cfg || {}), url: folderUrl(url), user: user.trim(), daily: cfg ? cfg.daily : true }
+    // Bound to whoever sets it up: another account on this device never backs up into it.
+    const next = { ...(cfg || {}), url: folderUrl(url), user: user.trim(), daily: cfg ? cfg.daily : true, owner: currentOwner() || cfg?.owner || undefined }
     try {
       const password = pass || await getPassword()
       if (!password) throw new DavError('no-password')
@@ -105,10 +137,7 @@ function WebDavManage({ cfg, close }) {
     if (!list.length) { toast(t('No openGym backups in that folder yet.')); return }
     useUI.getState().openSheet(c => <RestoreList list={list} close={c} />)
   }
-  const forget = () => confirmSheet({
-    title: t('Disconnect WebDAV?'), message: t('This device stops backing up and forgets the password. The backups already in the folder stay there.'),
-    confirmText: t('Disconnect'), danger: true, onConfirm: () => { forgetWebdav(); toast(t('Disconnected')) },
-  })
+  const forget = confirmForget
   return <>
     <div className="intg-head">
       <h3 className="intg-h"><Icon name="cloud" /><span>{t('WebDAV backup')}</span></h3>

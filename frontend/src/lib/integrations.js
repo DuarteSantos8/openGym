@@ -164,6 +164,8 @@ export function cardState(id, ctx) {
       if (ctx.demo) return null
       const w = ctx.webdav
       if (!w) return { status: 'off', action: 'connect' }
+      // Set up by another account on this device: paused, the sheet only offers Disconnect.
+      if (w.foreign) return { status: 'attention', action: 'manage' }
       if (w.last && w.last.ok === false) return { status: 'attention', action: 'manage' }
       return { status: 'connected', action: 'manage' }
     }

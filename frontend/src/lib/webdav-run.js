@@ -5,9 +5,42 @@
 import { useStore } from '../store/useStore.js'
 import { secureGet, secureSet, secureRemove } from './coach-secrets.js'
 import { nativeFetch } from './capacitor-fetch.js'
-import { davClient, backupTo, readBackup, loadConfig, saveConfig, isDue, DavError, SECRET_KEY } from './webdav.js'
+import { davClient, backupTo, readBackup, loadConfig, saveConfig, isDue, ownership, DavError, SECRET_KEY } from './webdav.js'
 
 let running = null
+
+/**
+ * Who is using the app right now, as WebDAV settings remember it: the signed-in (or paired)
+ * account, or 'local' for a guest or a phone in local mode. null while the app is still starting
+ * and does not know yet.
+ */
+export function currentOwner(st = useStore.getState()) {
+  if (!st.ready) return null
+  return st.user?.id ? 'u:' + st.user.id : 'local'
+}
+
+/**
+ * Settings from before they had an owner are taken as the active one's, once the app knows who
+ * that is: on that device they were almost surely theirs. Returns the settings as they are now.
+ */
+export function claimWebdav(owner = currentOwner()) {
+  const cfg = loadConfig()
+  if (cfg && !cfg.owner && owner) return saveConfig({ ...cfg, owner })
+  return cfg
+}
+
+/** The settings as the screens see them: with `foreign` when another account set them up here. */
+export function webdavView(cfg = loadConfig(), owner = currentOwner()) {
+  if (!cfg) return null
+  return owner && ownership(cfg, owner) === 'foreign' ? { ...cfg, foreign: true } : cfg
+}
+
+// Nothing goes up to and nothing comes down from another person's folder.
+const guard = cfg => {
+  const owner = currentOwner()
+  if (!owner) throw new DavError('not-ready')
+  if (ownership(cfg && !cfg.owner ? claimWebdav(owner) : cfg, owner) === 'foreign') throw new DavError('foreign')
+}
 
 export const getPassword = () => secureGet(SECRET_KEY)
 export const setPassword = v => secureSet(SECRET_KEY, v)
@@ -37,6 +70,7 @@ export function runBackup({ manual = false, now = Date.now(), fetchFn = nativeFe
   running = (async () => {
     const cfg = loadConfig()
     if (!cfg) return { ok: false, skipped: 'off' }
+    try { guard(cfg) } catch (e) { return manual ? { ok: false, error: e } : { ok: false, skipped: e.code } }
     if (!manual && !isDue(cfg, now)) return { ok: false, skipped: 'not-due' }
     const S = useStore.getState().S
     if (!hasSomething(S)) {
@@ -59,12 +93,14 @@ export function runBackup({ manual = false, now = Date.now(), fetchFn = nativeFe
 
 /** The list of backups in the folder, newest first. Throws a DavError. */
 export async function listBackups({ fetchFn = nativeFetch } = {}) {
+  guard(loadConfig())
   const client = await clientFor(loadConfig(), null, fetchFn)
   return client.index()
 }
 
 /** One backup's text, checked. Throws a DavError. */
 export async function fetchBackup(name, { fetchFn = nativeFetch } = {}) {
+  guard(loadConfig())
   const client = await clientFor(loadConfig(), null, fetchFn)
   return readBackup(client, name)
 }

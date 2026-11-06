@@ -2,7 +2,7 @@
 // Backup to WebDAV (#582): the folder address, the client against a pretend server (GET, PUT,
 // DELETE, MKCOL only), the index with its fourteen days, the runs and what they keep.
 import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { folderUrl, urlProblem, basicAuth, backupName, cleanIndex, nextIndex, davClient, backupTo, readBackup, isDue, loadConfig, saveConfig, errorText, INDEX_NAME, KEEP, DUE_MS, CONFIG_KEY } from './webdav.js'
+import { folderUrl, urlProblem, basicAuth, backupName, cleanIndex, nextIndex, davClient, backupTo, readBackup, isDue, loadConfig, saveConfig, errorText, ownership, INDEX_NAME, KEEP, DUE_MS, DAY_MS, CONFIG_KEY } from './webdav.js'
 
 // A WebDAV folder in memory. `needsFolder`: PUT answers 409 until MKCOL made it.
 function server({ user = 'me', pass = 'pw', needsFolder = false, down = false } = {}) {
@@ -109,7 +109,7 @@ describe('the runs (lib/webdav-run.js)', () => {
   it('backs up when due, keeps the outcome, and stays quiet otherwise', async () => {
     const { useStore } = await import('../store/useStore.js')
     const { runBackup, setPassword } = await import('./webdav-run.js')
-    useStore.setState({ S: { ...useStore.getState().S, ...S } })
+    useStore.setState({ ready: true, user: null, S: { ...useStore.getState().S, ...S } })
     const srv = server()
     expect(await runBackup({ fetchFn: srv.fetchFn })).toMatchObject({ skipped: 'off' })
     saveConfig({ url: URL_, user: 'me', daily: true })
@@ -125,5 +125,49 @@ describe('the runs (lib/webdav-run.js)', () => {
     expect(loadConfig().last).toMatchObject({ ok: false, msg: 'auth' })
     // A failed run keeps the last good one's time: the daily one tries again next hour.
     expect(loadConfig().lastOk).toBe(now)
+  })
+})
+
+describe('one person’s folder (shared devices)', () => {
+  beforeEach(() => localStorage.clear())
+  it('another account, or a guest, never backs up into it or reads it back', async () => {
+    const { useStore } = await import('../store/useStore.js')
+    const { runBackup, setPassword, listBackups, fetchBackup } = await import('./webdav-run.js')
+    useStore.setState({ ready: true, user: { id: 'olga' }, S: { ...useStore.getState().S, ...S } })
+    const srv = server()
+    saveConfig({ url: URL_, user: 'me', daily: true, owner: 'u:olga' })
+    await setPassword('pw')
+    const now = new Date(2026, 10, 6, 9).getTime()
+    expect(await runBackup({ now, fetchFn: srv.fetchFn })).toMatchObject({ ok: true })
+    const calls = srv.calls.length
+    for (const user of [{ id: 'boris' }, null]) {
+      useStore.setState({ user })
+      expect(await runBackup({ now: now + 2 * DAY_MS, fetchFn: srv.fetchFn })).toMatchObject({ ok: false, skipped: 'foreign' })
+      const r = await runBackup({ manual: true, now: now + 2 * DAY_MS, fetchFn: srv.fetchFn })
+      expect(r.error.code).toBe('foreign')
+      await expect(listBackups({ fetchFn: srv.fetchFn })).rejects.toMatchObject({ code: 'foreign' })
+      await expect(fetchBackup('opengym-backup-2026-11-06.json', { fetchFn: srv.fetchFn })).rejects.toMatchObject({ code: 'foreign' })
+    }
+    expect(srv.calls.length).toBe(calls)
+    // Her settings are untouched: back on her account, the daily backup goes on.
+    expect(loadConfig()).toMatchObject({ owner: 'u:olga', lastOk: now })
+    useStore.setState({ user: { id: 'olga' } })
+    expect(await runBackup({ now: now + 2 * DAY_MS, fetchFn: srv.fetchFn })).toMatchObject({ ok: true })
+    useStore.setState({ user: null })
+  })
+  it('settings from before owners belong to whoever is active once the app knows', async () => {
+    const { useStore } = await import('../store/useStore.js')
+    const { claimWebdav, webdavView, runBackup, currentOwner } = await import('./webdav-run.js')
+    saveConfig({ url: URL_, user: 'me', daily: true })
+    useStore.setState({ ready: false, user: null })
+    expect(currentOwner()).toBeNull()
+    expect(await runBackup()).toMatchObject({ skipped: 'not-ready' })
+    expect(loadConfig().owner).toBeUndefined()
+    useStore.setState({ ready: true, user: { id: 'olga' } })
+    expect(claimWebdav()).toMatchObject({ owner: 'u:olga' })
+    expect(webdavView(loadConfig(), 'u:olga').foreign).toBeUndefined()
+    expect(webdavView(loadConfig(), 'local').foreign).toBe(true)
+    expect(ownership(null, 'local')).toBeNull()
+    useStore.setState({ user: null })
   })
 })

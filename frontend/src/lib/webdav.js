@@ -10,6 +10,9 @@
 //   - the password (an app password, please): the platform's secure storage, like the Coach's
 //     API key (lib/coach-secrets.js): the Keychain on iPhone, the Keystore on Android; a browser
 //     has nothing better than its own storage
+//   - whose it is (`owner`, see ownerOf in lib/webdav-run.js): the account or the local profile
+//     that set it up. A device is sometimes shared: when someone else is signed in, nothing goes
+//     up and nothing is read back, the sheet only offers Disconnect.
 //
 // Only GET, PUT and DELETE are used, plus one MKCOL to make the folder when it is missing: the
 // phone apps send through native HTTP (no CORS there), and Android's HTTP stack knows no PROPFIND.
@@ -71,6 +74,7 @@ const clean = c => {
     daily: c?.daily !== false,
     lastOk: Number.isFinite(c?.lastOk) ? c.lastOk : 0,
     ...(last ? { last } : {}),
+    ...(typeof c?.owner === 'string' && c.owner ? { owner: c.owner.slice(0, 200) } : {}),
   }
 }
 
@@ -86,6 +90,16 @@ export function saveConfig(c) {
 }
 const listeners = new Set()
 export const onConfigChange = fn => { listeners.add(fn); return () => listeners.delete(fn) }
+
+/**
+ * Whose the settings are, for the account or local profile `owner` that is active now:
+ * 'mine', 'foreign' (set up by somebody else on this device), or null when none are set up.
+ * Settings from before they had an owner are taken as the active one's (see claimWebdav).
+ */
+export function ownership(cfg, owner) {
+  if (!cfg) return null
+  return !cfg.owner || cfg.owner === owner ? 'mine' : 'foreign'
+}
 
 /** "Basic …" for a name and password, UTF-8 safe. */
 export function basicAuth(user, pass) {
@@ -135,6 +149,7 @@ export function errorText(e) {
     case 'no-password': return 'Type the password again: this device does not have it.'
     case 'not-backup': return 'That file is not an openGym backup.'
     case 'empty': return 'Nothing to back up yet: log a workout first.'
+    case 'foreign': return 'This backup belongs to another account'
     default: return 'The server answered with an error.'
   }
 }
