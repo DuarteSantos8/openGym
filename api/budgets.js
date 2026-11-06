@@ -11,6 +11,7 @@ export const BUDGETS = {
   'trainer.detail': { max: 600, windowMs: H },        // one member's projection (dashboard, later)
   'trainer.ops': { max: 300, windowMs: H },           // writes into members' plans (later)
   'trainer.comment': { max: 100, windowMs: H },
+  'trainer.photo': { max: 1200, windowMs: H },        // progress photos, one file per call
   'trainer.answer': { max: 300, windowMs: H },        // confirm, decline, disconnect
   // Member side
   'sharing.read': { max: 600, windowMs: H },          // the sharing page, the log, the export

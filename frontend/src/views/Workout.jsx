@@ -76,6 +76,7 @@ import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-tre
 import { formulaOf } from '../lib/onerm.js'
 import { setNoteOf } from '../lib/set-notes.js'
 import { isOn } from '../lib/modules.js'
+import CardioEffortChip from '../components/CardioEffortChip.jsx'
 
 // How long after a key starts a hold the same key is not yet its "Done" (#133). A USB button
 // that bounces, or a double press, sends two presses a moment apart: the first starts the hold,
@@ -488,6 +489,8 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   const backups = (entry.target?.subs || []).map(id => EXIDX[id]).filter(b => b && b.id !== entry.id)
   // Form videos are a module (Settings → Modules): off, nothing offers to film; filmed ones stay.
   const videosOn = isOn(S, 'videos')
+  // Settings → Modules → Effort off: no cardio chip either (the set menu keeps its row).
+  const effortOn = isOn(S, 'effort')
   const filmAt = videosOn ? filmTarget(entry) : -1
   const setTitle = (s, i) => isWarmupRow(s) ? t('Warm-up') : sideTagOf(s) ? t('Set {0} ({1})', setNumOf(s, i), sideTagOf(s)) : t('Set {0}', setNumOf(s, i))
   // A timed per-side hold is one set over two rows; its video sits on the first of them.
@@ -847,7 +850,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
       <div className={'sethead' + (col3 ? ' eff3' : '') + (timed ? ' timed' : '') + (perSide ? ' per-side' : '') + (wc.steppers ? '' : ' plain')}><span className="n-sp" /><span className="w-sp">{col1.hd}</span>{col2 && <span className="r-sp">{cardio && !editing
         ? <button type="button" className="hd-swap" onClick={switchCardioBy} aria-label={byDist ? t('Log speed instead') : t('Log distance instead')}
           title={byDist ? t('Log speed instead') : t('Log distance instead')}>{col2.hd}<Icon name="swap" /></button>
-        : col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
+        : col2.hd}</span>}{col3 && <span className={col3.eff ? 'eff-sp' : 'r-sp inc-sp'}>{col3.hd}</span>}{timed && <span className="ck-sp" />}<span className="ck-sp" /></div>
       <span id={optsId} className="vh">{t('Options: copy, remove')}</span>
       {entry.sets.map((s, i) => {
         const warm = isWarmupRow(s)
@@ -884,6 +887,11 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
               </div>
             </div>
           ) : pairHead ? <>{plainRow(s, i)}{plainRow(entry.sets[i + 1], i + 1)}</> : plainRow(s, i))}
+          {/* Cardio's "how hard it felt", on the row instead of only in the set menu (Q5). Its own
+              line under the inputs, so a narrow phone keeps all three columns. */}
+          {!pairTail && cardio && effortOn && !isWarmupRow(s) && <div className="cardio-eff-line">
+            <CardioEffortChip value={s.rpe ?? null} onOpen={() => effortPickerSheet('rpe', s.rpe ?? null, nv => onField(i, 'rpe', nv), { cardio: true })} />
+          </div>}
           {swipeHint && swipeHint.i === i && swipeOn && <div className="swhint">
             <button type="button" onClick={() => setUI({ swipeHint: null })}>
               <Icon name="swap" /><span>{t('Psst: swipe a set. Left deletes, right copies.')}</span><Icon name="xmark" />

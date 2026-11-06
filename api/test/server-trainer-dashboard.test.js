@@ -12,6 +12,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { boundPort } from './helpers.mjs';
+import * as M from './media-samples.mjs';
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SECRET = crypto.randomBytes(32).toString('hex');
@@ -29,7 +30,7 @@ const USERS = [
 const today = new Date().toISOString().slice(0, 10);
 const daysAgo = n => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
 
-async function start(t, env = {}) {
+async function start(t, env = {}, lea = {}) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gym-dash-'));
   fs.writeFileSync(path.join(dataDir, 'secret'), SECRET, { mode: 0o600 });
   fs.writeFileSync(path.join(dataDir, 'db.json'), JSON.stringify({ users: USERS.map(u => ({ ...u, created: new Date().toISOString() })), creds: [], subs: [], invites: [] }));
@@ -41,7 +42,7 @@ async function start(t, env = {}) {
       { id: 'w0', name: 'Legs', d: daysAgo(9), start: 1, end: 2, entries: [] },
     ],
     bodyweight: [{ d: daysAgo(14), w: 70 }, { d: daysAgo(1), w: 68.4 }], routines: [{ id: 'r1', name: 'Push A', ex: [{ id: 'bench' }] }],
-    measurements: [{ d: daysAgo(3), waist: 80 }], dayNotes: { [daysAgo(2)]: { text: 'knee sore' } }, week: {}
+    measurements: [{ d: daysAgo(3), waist: 80 }], dayNotes: { [daysAgo(2)]: { text: 'knee sore' } }, week: {}, ...lea
   }));
   fs.writeFileSync(path.join(dataDir, 'state-u_marco.json'), JSON.stringify({
     unit: 'kg', _rev: 1,
@@ -65,6 +66,9 @@ async function start(t, env = {}) {
     });
     return { status: r.status, body: await r.json().catch(() => null) };
   };
+  h.raw = (who, method, p, body, headers = {}) => fetch(`http://127.0.0.1:${port}${p}`, {
+    method, headers: { ...(who ? { Cookie: `gymsid=${mint(who)}` } : {}), ...headers }, ...(body ? { body } : {})
+  });
   h.state = uid => JSON.parse(fs.readFileSync(path.join(dataDir, `state-${uid}.json`), 'utf8'));
   return h;
 }
@@ -247,18 +251,24 @@ test('gym join code, and a trainer leaving: stay connected privately', async t =
   assert.equal(tim.levels.metrics, 'view');
   assert.equal(tim.levels.workouts, 'off');
 
-  // Lena takes Marco off the gym. Lea's connection pauses and she gets the offer.
+  // Lena takes Marco off the gym. Lea's connection pauses; Marco may not train outside a gym, so
+  // there is nothing to offer her, and it simply waits for him to come back.
   assert.equal((await call('u_lena', 'POST', '/api/gym/staff', { gymId: gym.id, user: 'u_marco', on: false })).status, 200);
   assert.equal((await call('u_marco', 'GET', `/api/trainer/member?id=u_lea`)).status, 403);
+  assert.equal((await call('u_lea', 'GET', '/api/sharing/inbox')).body.items.some(i => i.kind === 'offer'), false);
+  assert.equal((await call('u_lena', 'POST', '/api/gym/staff', { gymId: gym.id, user: 'u_marco', on: true })).status, 200);
+  assert.equal((await call('u_marco', 'GET', `/api/trainer/member?id=u_lea`)).status, 200);
+  // Now an admin lets him train freely, and Lena takes him off again: this time Lea gets the offer.
+  await call('u_admin', 'POST', '/api/admin/user/trainer', { id: 'u_marco', free: true });
+  assert.equal((await call('u_lena', 'POST', '/api/gym/staff', { gymId: gym.id, user: 'u_marco', on: false })).status, 200);
   const offer = (await call('u_lea', 'GET', '/api/sharing/inbox')).body.items.find(i => i.kind === 'offer');
   assert.deepEqual(offer.names, ['Marco', 'FitBox']);
   assert.ok(offer.expires > Date.now() + 29 * 86400000);
-  // She keeps him: a private connection, without the lead row. It works once he may train freely.
+  // She keeps him: a private connection, without the lead row, working at once.
   const sharing = (await call('u_lea', 'GET', '/api/sharing')).body;
   const yes = (await call('u_lea', 'POST', '/api/sharing/inbox/answer', { id: offer.id, accept: true, consent: sharing.consent })).body;
   assert.equal(yes.status, 'accepted');
-  assert.equal(yes.paused, 'not-trainer');
-  await call('u_admin', 'POST', '/api/admin/user/trainer', { id: 'u_marco', free: true });
+  assert.equal(yes.paused, null);
   const list = (await call('u_marco', 'GET', '/api/trainer/members')).body.members;
   assert.equal(list.length, 1);
   assert.equal(list[0].gym, null);
@@ -276,4 +286,106 @@ test('nothing of it with TRAINERS off', async t => {
     assert.equal(r.status, 404, p);
     assert.equal(r.body.code, 'trainers-off');
   }
+});
+
+test('progress photos: a trainer with the photos grant sees them, without it 403, other media never', async t => {
+  const day = M.jpeg(1200), onWorkout = M.jpeg(1300), custom = M.jpeg(1400), video = M.jpeg(1500);
+  const ref = (b, mime = 'image/jpeg') => ({ kind: 'image', hash: M.sha(b), mime, size: b.length, width: 3, height: 4, at: 1 });
+  const h = await start(t, {}, {
+    dayPhotos: { [M.sha(day)]: { d: daysAgo(4), m: ref(day), _ts: 1 } },
+    customEx: [{ id: 'c_me', name: 'Mine', media: ref(custom) }],
+    avatar: { m: ref(video) },
+  });
+  const { call } = h;
+  // The workout photo rides on w1 (the fixture's first workout).
+  const S = h.state('u_lea');
+  S.workouts[0].media = [ref(onWorkout)];
+  fs.writeFileSync(path.join(h.dataDir, 'state-u_lea.json'), JSON.stringify(S));
+  for (const b of [day, onWorkout, custom, video]) {
+    assert.equal((await h.raw('u_lea', 'PUT', `/api/media/${M.sha(b)}`, b, { 'Content-Type': 'image/jpeg', Origin: 'http://localhost:8080' })).status, 201);
+  }
+  const photo = (who, b) => h.raw(who, 'GET', `/api/trainer/member/photo?id=u_lea&hash=${M.sha(b)}`);
+
+  // Nobody's trainer yet: 404, nothing to learn.
+  assert.equal((await photo('u_tim', day)).status, 404);
+  const { conn, consent } = await connected(h, { metrics: 'view', workouts: 'view' });
+  // Connected, but photos are not shared: 403, and the detail has no photos at all.
+  const no = await photo('u_marco', day);
+  assert.equal(no.status, 403);
+  assert.equal((await no.json()).code, 'level');
+  assert.equal((await call('u_marco', 'GET', `/api/trainer/member?id=u_lea&today=${today}`)).body.photos, undefined);
+  assert.equal((await photo('u_tim', day)).status, 404);
+
+  // She shares them: both progress photos, newest first, with the locked-down headers.
+  await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'view', photos: 'view' }, consent });
+  const d = (await call('u_marco', 'GET', `/api/trainer/member?id=u_lea&today=${today}`)).body;
+  assert.equal(d.photos.count, 2);
+  assert.deepEqual(d.photos.items.map(p => p.hash), [M.sha(onWorkout), M.sha(day)]);
+  assert.equal(d.photos.items[0].workoutId, 'w1');
+  const ok = await photo('u_marco', day);
+  assert.equal(ok.status, 200);
+  assert.equal(ok.headers.get('content-type'), 'image/jpeg');
+  assert.equal(ok.headers.get('cache-control'), 'private, no-store');
+  assert.match(ok.headers.get('content-security-policy'), /sandbox/);
+  assert.ok(Buffer.from(await ok.arrayBuffer()).equals(day));
+  assert.equal((await photo('u_marco', onWorkout)).status, 200);
+  // Her custom exercise's picture and her profile picture are not progress photos.
+  assert.equal((await photo('u_marco', custom)).status, 404);
+  assert.equal((await photo('u_marco', video)).status, 404);
+  assert.equal((await h.raw('u_marco', 'GET', '/api/trainer/member/photo?id=u_lea&hash=nope')).status, 400);
+  // Her own media route still only ever answers her.
+  assert.equal((await h.raw('u_marco', 'GET', `/api/media/${M.sha(day)}`)).status, 404);
+  // The look is in her log.
+  const lg = (await call('u_lea', 'GET', '/api/sharing/log')).body.log;
+  assert.ok(lg.some(e => e.ev === 'access' && e.cat === 'photos' && e.actor.name === 'Marco'));
+
+  // Photos off again: 403 on the very next file.
+  await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'view', photos: 'off' }, consent });
+  assert.equal((await photo('u_marco', day)).status, 403);
+});
+
+test('workout.edit: a correction applied with "Change directly", suggested otherwise, undone by the member', async t => {
+  const h = await start(t);
+  const { call } = h;
+  const { conn, consent } = await connected(h, { metrics: 'view', workouts: 'apply' });
+  const fix = { op: 'workout.edit', id: 'w1', sets: [{ e: 0, s: 0, ex: 'bench', w: 62.5 }] };
+  const r = (await call('u_marco', 'POST', '/api/trainer/ops', { memberId: 'u_lea', ops: [fix] })).body;
+  assert.deepEqual([r.applied, r.suggested], [1, 0]);
+  let w = h.state('u_lea').workouts.find(x => x.id === 'w1');
+  assert.equal(w.entries[0].sets[0].w, 62.5);
+  assert.equal(w._edit.name, 'Marco');
+  assert.equal(w.note, 'felt strong');                      // the rest of her workout untouched
+  const d = (await call('u_marco', 'GET', `/api/trainer/member?id=u_lea&today=${today}`)).body;
+  assert.equal(d.workouts.list[0]._edit.name, 'Marco');
+  assert.equal(d.changes[0].summary[0].kind, 'workout.edit');
+  // Her Undo puts the 60 back.
+  const inbox = (await call('u_lea', 'GET', '/api/sharing/inbox')).body;
+  assert.equal((await call('u_lea', 'POST', '/api/sharing/undo', { id: inbox.undo[0].id })).status, 200);
+  w = h.state('u_lea').workouts.find(x => x.id === 'w1');
+  assert.equal(w.entries[0].sets[0].w, 60);
+
+  // At "Suggest" it waits for her; at "See" it is refused.
+  await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'suggest' }, consent });
+  const s = (await call('u_marco', 'POST', '/api/trainer/ops', { memberId: 'u_lea', ops: [{ ...fix, name: 'Push A (fixed)' }] })).body;
+  assert.deepEqual([s.applied, s.suggested], [0, 1]);
+  assert.equal(h.state('u_lea').workouts.find(x => x.id === 'w1').name, 'Push A');
+  await call('u_lea', 'POST', '/api/sharing/update', { id: conn.id, scopes: { metrics: 'view', workouts: 'view' }, consent });
+  assert.equal((await call('u_marco', 'POST', '/api/trainer/ops', { memberId: 'u_lea', ops: [fix] })).status, 403);
+});
+
+test('an offer to stay privately lapses once the trainer may no longer train freely', async t => {
+  const h = await start(t);
+  const { call } = h;
+  const { gym } = await connected(h, { metrics: 'view' });
+  await call('u_admin', 'POST', '/api/admin/user/trainer', { id: 'u_marco', free: true });
+  await call('u_lena', 'POST', '/api/gym/staff', { gymId: gym.id, user: 'u_marco', on: false });
+  const offer = (await call('u_lea', 'GET', '/api/sharing/inbox')).body.items.find(i => i.kind === 'offer');
+  assert.ok(offer);
+  await call('u_admin', 'POST', '/api/admin/user/trainer', { id: 'u_marco', free: false });
+  const sharing = (await call('u_lea', 'GET', '/api/sharing')).body;
+  const r = await call('u_lea', 'POST', '/api/sharing/inbox/answer', { id: offer.id, accept: true, consent: sharing.consent });
+  assert.equal(r.status, 409);
+  assert.equal(r.body.code, 'not-free');
+  assert.equal((await call('u_lea', 'GET', '/api/sharing/inbox')).body.items.find(i => i.id === offer.id).status, 'lapsed');
+  assert.equal((await call('u_lea', 'GET', '/api/sharing')).body.grants?.some?.(g => !g.gym && g.status === 'active') ?? false, false);
 });

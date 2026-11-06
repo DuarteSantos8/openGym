@@ -391,6 +391,36 @@ export const TRAINER_COPY = {
       "body": "함께 비공개로 계속 운동할까요? 정할 시간은 30일이에요."
     }
   },
+  "lt": {
+    "connected": {
+      "title": "{0} dabar jūsų treneris",
+      "body": "Jie mato tai, kuo pasidalinote, nieko daugiau. Pakeisti galite bet kada skiltyje „Treneris ir sporto salė“."
+    },
+    "scopes": {
+      "title": "Jūsų bendrinimas pasikeitė",
+      "body": "Ką mato {0}, ką tik pasikeitė. Ne jūs? Patikrinkite skiltį „Treneris ir sporto salė“."
+    },
+    "joined": {
+      "title": "Sveiki atvykę į {0}",
+      "body": "Jūsų salės vadovas mato tik tai, ką pažymėjote."
+    },
+    "change": {
+      "title": "{0} atnaujino jūsų treniruotes",
+      "body": "Pažiūrėkite. Jei netinka, atšaukti galima vienu bakstelėjimu skiltyje „Treneris ir sporto salė“."
+    },
+    "suggest": {
+      "title": "{0} turi jums idėją",
+      "body": "Priimkite arba atmeskite skiltyje „Treneris ir sporto salė“."
+    },
+    "comment": {
+      "title": "{0} paliko jums žinutę",
+      "body": ""
+    },
+    "offer": {
+      "title": "{0} išėjo iš {1}",
+      "body": "Tęsti treniruotes kartu asmeniškai? Apsispręsti turite 30 dienų."
+    }
+  },
   "pl": {
     "connected": {
       "title": "{0} jest teraz twoim trenerem",

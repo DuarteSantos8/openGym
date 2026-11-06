@@ -57,10 +57,12 @@ export function trainerRoutes({ json, readBody, readSession, requireAdmin, userB
   // Open suggestions of a connection that ended lapse (design 3.3): what was taken stays the member's.
   const lapseSuggestions = (memberId, grantIds) => log.updateInbox(memberId,
     i => i.status === 'open' && i.kind === 'suggest' && grantIds.includes(i.grantId), { status: 'expired', answeredAt: Date.now() });
-  // "Keep training with Marco privately?" for every studio trainer grant a gym change cut (design 3.5, 3.6).
+  // "Keep training with Marco privately?" for every studio trainer grant a gym change cut (design 3.5, 3.6),
+  // but only where Marco may train people outside a gym: a private connection to a trainer who may
+  // not would sit paused for nothing. Without the offer the grant waits paused for his return.
   const offerPrivate = (grants, gymName) => {
     for (const g of grants) {
-      if (g.kind !== 'trainer' || !g.gymId) continue;
+      if (g.kind !== 'trainer' || !g.gymId || !org.rolesOf(g.granteeId).freeTrainer) continue;
       const tName = nameOf(g.granteeId);
       log.addInbox(g.memberId, { kind: 'offer', grantId: g.id, gymId: g.gymId, from: { kind: 'trainer', id: g.granteeId, name: tName },
         names: [tName, gymName || ''], expires: g.offerUntil || Date.now() + OFFER_DAYS * 86400000 });

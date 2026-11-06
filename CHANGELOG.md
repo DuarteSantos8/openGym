@@ -44,6 +44,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Form and exercise videos can be bigger: a clip over 12 MB is shrunk on your phone first (to 1280 px, the button counts up while it works), and the server takes up to 100 MB instead of 40. Self-hosting? MEDIA_VIDEO_MAX_MB and MEDIA_UPLOAD_MAX (now 112m) set it, see docs/SELF_HOSTING.md.
 - Your own sounds: Settings → Sound → Add a sound takes an MP3, M4A, WAV or OGG, trims the silence, keeps up to 30 seconds and plays it at the end of a rest, or of a hold (each can have its own). It rings in the app, on the locked phone and in the iPhone notification, and comes along to your other devices.
 - A profile picture: Settings → Account → Profile picture takes a photo from the camera or your library (drag and zoom to frame it) or one of a dozen icons. It is shrunk to a small square on your phone with the location and camera details stripped, follows your account to your other devices, and nobody else sees it, admins included. No picture, no problem: your initial stays (thanks dreeper999 for the idea).
+- Finished early? The next Start asks once whether to begin with the exercises you didn't get to, then today's plan as usual. The start picker offers it on top too, and "Just today's plan" lets them go for good (#985, thanks @xwr3 for the idea).
+- New exercises start with your numbers: Settings → Workout → New exercises start with sets the sets, reps and hold seconds an exercise gets when you add it (2 × 8 if that is your thing, instead of 3 × 10). Thanks thedyude for asking.
+- The "rest's over" notification names the set waiting: "Rest's over: Bench press, 80 kg × 8" (or "Plank, 45 s", "Treadmill, 20 min"), on Android, iPhone and in the browser's push, so you can load the bar before you even look (thanks ayeeebroham and mattiaoinzz for the idea).
+- Check-in: when a scan or a photo can't read your gym card, you can now type the number instead. EAN and UPC numbers have to pass their check digit, the others you type twice, and the code is drawn big so you can hold it next to the card. A typed card reminds you once to give it a test run at the turnstile (#550).
+- Cardio: how hard it felt is now a little chip right under the row (and on the Focus card): "Rate it", then "RPE 7" in its effort colour. It used to hide in the set menu where nobody found it (thanks thehypetrainhobo for saying so). Switch Effort off in Modules and the chip goes too.
 
 **Advent calendar, reworked**
 - The advent calendar is now a gym thing: every door is something to do (or a number from your own year), each open door hangs a bauble on a little tree, and training that day lights it up. Swipe the doors open. What is behind them stays a surprise until 1 December.
@@ -57,6 +62,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Settings → Look & Home → Icons: pick your own streak flame and freeze, from openGym's icons or any emoji. The colors around it (the flame's glow and bar, the frozen week, the freeze chips) follow its color in light and dark mode, and Reset to default is right there. Syncs like the rest of your settings; the watches and widgets keep their own flame.
 
 **Fixes from your reports**
+- Cardio on a 320 px phone: a row with the incline pushed its tick off the card. Below 360 px the incline now takes a typed number without the − and +, and the tick is back.
 - Your own sounds come back from a backup with photos and videos too. They went into the zip, but the import left them out.
 - A routine's backup exercise gets its own plan: tap it under Backups to set its sets, reps, weight, rest and progression, and a swap mid-workout opens it at that plan (#978).
 - Android widget: it loads at every size again instead of "Unable to load widget" when stretched, and its "What to show" screen is wide enough to read (#981).
@@ -119,6 +125,10 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - A trainer leaving a gym (or a member leaving it) no longer just cuts things off: each member gets 30 days to keep that trainer privately, with the same sharing and without the gym lead, or the connection ends by itself.
 - Nutrition is a category you can share already; it stays empty until a nutrition app is linked. openNutrition plugs in with its read-only `summary:read` token (`NUTRITION_SOURCE`, `NUTRITION_URL`), and a trainer never sees the token.
 - "See what Marco sees" in Trainer & gym shows you the very screen your trainer gets.
+- Progress photos you share with a trainer they can now actually see: your day photos and workout photos, newest first, each file checked against your sharing on every look and logged. Your form videos, exercise pictures and profile picture stay yours. The photo count no longer said 0 either.
+- Trainers can fix a typo in a logged workout (Correct, on the workout): the weight, reps or name, never adding or removing sets. Like every other trainer change it is labelled with their name, waits for a yes at "Suggest", shows in your sharing log and is one tap to undo. Logging a whole workout and a body check-in for you now have buttons too.
+- "Keep training privately?" only shows up when that trainer may train people outside a gym on your server. Otherwise the connection just waits, in case they come back.
+- The streak in a trainer's list counts with the member's own phone's rules, freeze history included, so it is never a week off what the member sees.
 
 **Community: share with your server, if you like (self-hosted, `LIBRARY=on`, off by default)**
 - Exercises, plans and routines, sounds, gym equipment profiles, tips, looks and measurement fields you made can be shared with everyone on your server. Nothing is shared unless you pick it and say yes, one item at a time, after a short consent: it is public to everyone on this server, and it is yours to share.
@@ -138,6 +148,7 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 **Community: new languages, a sharper catalogue and a calmer Coach**
 - Four new languages: Bahasa Indonesia (thanks @m-ridha in #965), Vietnamese (thanks @langpn in #606), Czech with exercise names and steps (thanks @LiberaFatum in #576) and Persian, right to left, with exercise names and steps (thanks @SeyedHashtag in #856). What the app learnt since they were written is translated too.
+- Lithuanian: the whole app speaks Lietuvių now (thanks @evaldass in #535). Everything added since it was written is translated too.
 - Chinese: every exercise has its Chinese name, description and steps now (thanks @nine-orders in #959), and no two exercises share a name any more (thanks @daoshi818-crypto in #629).
 - French: descriptions and steps for 40 everyday gym exercises (thanks @Neoko-First in #935).
 - Exercise details show each muscle's share in percent, the rest folded into a tappable Other (thanks @sg41 in #954).

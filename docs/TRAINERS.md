@@ -88,8 +88,10 @@ away. Give the role back and it works again. `GET /api/sharing` reports `paused`
 ### A trainer or member leaves a gym: "stay connected privately?"
 
 When a trainer stops working at a gym (an admin or the lead takes the role, or the trainer leaves
-with `POST /api/trainer/leave-gym`), their gym grants pause and get `offerUntil` (30 days). Each
-member gets an `offer` in their inbox and a push: keep training with them privately. Taking it
+with `POST /api/trainer/leave-gym`), their gym grants pause and get `offerUntil` (30 days). If the
+trainer may train freely (an admin's switch), each member gets an `offer` in their inbox and a push:
+keep training with them privately. A trainer who may not gets no offers; the grants just wait paused
+for the 30 days. An offer taken after the trainer lost that switch lapses with 409 `not-free`. Taking it
 (`POST /api/sharing/inbox/answer` with `accept` and the current consent) makes a new private grant
 with the same levels and a fresh consent record; the gym lead row stays, as it belongs to the
 membership. Declining ends the paused grant; no answer ends it after 30 days (`expireOffers`, run
@@ -198,7 +200,8 @@ in the store, localStorage or a file.
 | Route | Who | What |
 |---|---|---|
 | `GET /api/trainer/members` | trainer | Every connected member with their levels and a summary: last workout, streak (weeks, with the member's freeze rule), this week's sessions against the plan, sessions a week, and flags: `missed` (planned days without a workout or a day note in the last 7), `pr` (records in the last 7 days), `inactive` (no workout for 7 days, `?inactive=` changes it), `weight` (1 or more up or down in two weeks), `pending` (suggestions not answered). A flag only shows when its category is shared: no key numbers, no streak. Budget `trainer.list`. |
-| `GET /api/trainer/member?id=` | trainer, gym lead | One member's projection (`api/trainers/projections.js`): only shared categories are in the answer at all. Workouts come without media and photos, and without notes unless notes are shared, paged by `before`. Plans with the week, the next 28 days of day plans, queue and rotation. Body weight, measurements, day notes of 90 days, a photo count. Plus this person's own comments, suggestions and changes. Each category shown is one line per day in the member's sharing log. Budget `trainer.detail`. |
+| `GET /api/trainer/member?id=` | trainer, gym lead | One member's projection (`api/trainers/projections.js`): only shared categories are in the answer at all. Workouts come without media and photos, and without notes unless notes are shared, paged by `before`. Plans with the week, the next 28 days of day plans, queue and rotation. Body weight, measurements, day notes of 90 days, the progress photos (count, newest date and the newest 60 as references). Plus this person's own comments, suggestions and changes. Each category shown is one line per day in the member's sharing log. Budget `trainer.detail`. |
+| `GET /api/trainer/member/photo?id=&hash=` | trainer, gym lead | One progress photo (a still filed under a day or on a workout), only while `photos` is shared with this person, checked for every file. 403 `level` without the grant. Form videos, custom exercise pictures, sounds and the profile picture are never served. Logged like any other look. Budget `trainer.photo`. |
 | `POST /api/trainer/ops` | trainer | Changes, see below. Budget `trainer.ops`. |
 | `POST /api/trainer/assign` | trainer | One of the trainer's own routines to up to 50 members, optionally onto a weekday. Per member `applied`, `suggested` or `skipped` (with the reason). Each member spends one `trainer.ops`. |
 | `POST /api/trainer/comment` | trainer | A comment on a workout (needs workouts at See). It goes to the member's inbox and a push, never into their data. Budget `trainer.comment`. |
@@ -213,7 +216,10 @@ probe who exists), and 403 `not-shared` to someone who was and is not any more.
 
 A trainer never sends a document. `POST /api/trainer/ops` carries up to 20 whitelisted ops
 (`api/trainers/ops.js`): `routine.put` (new or an existing routine), `routine.remove` (also takes it
-off the week), `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`. Assigning adds two
+off the week), `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`, `workout.edit` (a
+correction of a logged workout: its name and the weight, reps or tick of sets it already has, each
+addressed by position with its exercise id, so a workout that changed shape since is refused with
+409 `changed-since`; the workout keeps its owner and gets `_edit` with the trainer's name). Assigning adds two
 the server makes itself: the custom exercises the routine needs (`custom.put`, without media; one
 the member already has stays theirs) and `week.add`. Each op is checked against its category, for
 this member, in the moment of the write:

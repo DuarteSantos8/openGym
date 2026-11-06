@@ -17,6 +17,7 @@ import { inventoryFor, ownsPlates } from '../lib/plates.js'
 import { BAR_TYPES, ownBarDefault } from '../lib/bar.js'
 import { dumbbellsOf, ownsNoDumbbells } from '../lib/dumbbells.js'
 import { effortOf } from '../lib/history.js'
+import NewExDefaultsSheet, { newExLine } from '../components/NewExDefaultsSheet.jsx'
 import { figureOf } from '../lib/exercises.js'
 import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
@@ -620,6 +621,9 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('A small ↑, = or ↓ on each set you finish, in the workout and in History.')}>
           <Switch aria-label={t('Compare sets with last time')} checked={S.setTrend !== false} onChange={v => update(s => { s.setTrend = v })} />
         </Row>
+        {/* QOL Q10: 2 × 8 instead of 3 × 10 for everything you add (lib/history.js newExDefaultsOf). */}
+        <Row icon="plus" iconTint="var(--green)" title={t('New exercises start with')} value={newExLine(S)} accessory="chevron"
+          onClick={() => useUI.getState().openSheet(close => <NewExDefaultsSheet close={close} />)} />
         {/* One exercise at a time (cards with Prev/Next), the whole session stacked as a
             scrollable list, or that list stripped to just names and set rows (compact). Legacy or
             unknown values read as cards. The workout's ⋯ menu can override it for one session. */}

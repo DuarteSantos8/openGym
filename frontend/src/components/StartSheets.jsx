@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { startFlow } from '../sheets.jsx'
+import { startFlow, menuSheet } from '../sheets.jsx'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
-import { exCount, todayISO, DAYN } from '../lib/format.js'
+import { exCount, todayISO, DAYN, fmtDaysAgo } from '../lib/format.js'
 import { setLabel } from '../lib/history.js'
 import { isWarmupRow } from '../lib/workout-model.js'
 import { buildCombinedEntries, deriveSessionName } from '../lib/session-merge.js'
@@ -11,6 +11,7 @@ import { daySessionsStatus } from '../lib/day-sessions.js'
 import { exOr } from '../lib/exercises.js'
 import { speedUnitOf } from '../lib/speed.js'
 import { glyphOf } from '../lib/glyphs.js'
+import { leftoversBefore } from '../lib/leftovers.js'
 import { Button, Row } from './ui.jsx'
 import MiniBodyMap from './MiniBodyMap.jsx'
 
@@ -22,8 +23,31 @@ const S = () => useStore.getState().S
 // the way it always did. Every start of a planned session goes through here.
 export function startOrPreview(routineIds) {
   const ids = [].concat(routineIds || [])
+  // #985: the last session ended before its routine did. Asked once per such session, then the
+  // answer is remembered (S.leftoverSeen) and Start goes back to one tap.
+  const left = ids.length ? leftoversBefore(S(), todayISO(), ids) : null
+  if (left) return askLeftovers(left, ids)
   if (S().previewStart === true && ids.length) { previewSheet(ids); return }
   startFlow(ids)
+}
+
+const answered = left => useStore.getState().update(s => { s.leftoverSeen = left.key })
+const leftFrom = left => t('From {0}, {1}', deriveSessionName(left.routines.map(r => r.name)), fmtDaysAgo(left.d))
+/** Starts the leftovers first, then `ids` (today's plan, or nothing). */
+export function startWithLeftovers(left, ids = []) {
+  answered(left)
+  startFlow(ids, { lead: left })
+}
+function askLeftovers(left, ids) {
+  const n = left.ex.length
+  menuSheet({
+    title: tn('You didn’t get to {0} exercise last time', 'You didn’t get to {0} exercises last time', n),
+    subtitle: leftFrom(left),
+    items: [
+      { icon: 'play', label: tn('Start with the {0} exercise you didn’t get to', 'Start with the {0} exercises you didn’t get to', n), sub: t('Then today’s plan, as usual'), onClick: () => startWithLeftovers(left, ids) },
+      { icon: 'skipForward', label: t('Just today’s plan'), sub: t('Let them go. No one’s counting.'), onClick: () => { answered(left); startOrPreview(ids) } },
+    ],
+  })
 }
 
 /* ---------- the start picker (#930) ---------- */
@@ -39,11 +63,18 @@ function StartPicker({ close }) {
   const others = (st.routines || []).filter(r => !planned.has(r.id))
   const go = ids => { close(); startOrPreview(ids) }
   const nameOf = s => deriveSessionName(s.routines.map(r => r.name))
+  const firstOpen = sessions.find(x => !x.done)
+  const left = leftoversBefore(st, today, firstOpen ? firstOpen.ids : [])
   return <>
     <h3 style={{ marginBottom: 2 }}>{t('What are we training?')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>
       {sessions.length ? t('Today is {0}. Or pick anything else.', sessions.map(nameOf).join(', ')) : t('Rest day, but no one’s stopping you.')}
     </div>
+    {left && <div className="list menu-list" style={{ marginBottom: 14 }}>
+      <Row icon="history" iconTint="var(--orange)" title={tn('Start with the {0} exercise you didn’t get to', 'Start with the {0} exercises you didn’t get to', left.ex.length)}
+        subtitle={leftFrom(left) + (firstOpen ? ' · ' + t('then {0}', nameOf(firstOpen)) : '')} accessory="chevron"
+        onClick={() => { close(); startWithLeftovers(left, firstOpen ? firstOpen.ids : []) }} />
+    </div>}
     {sessions.length > 0 && <>
       <h4 className="sec">{t('Today')} · {t(DAYN[new Date(today + 'T12:00:00').getDay()])}</h4>
       <div className="list menu-list start-today" style={{ marginBottom: 14 }}>

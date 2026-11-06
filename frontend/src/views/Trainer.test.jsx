@@ -137,6 +137,41 @@ describe('one member', () => {
     expect(host.textContent).toContain('from Marco')
     expect(host.textContent).toContain('Assign a routine')
   })
+  it('corrects a workout, logs one and a check-in, each as the member allows', async () => {
+    mocks.params = { id: 'u_lea' }
+    const m = mocks.answers['/api/trainer/member']
+    mocks.answers['/api/trainer/member'] = { ...m, levels: lv({ workouts: 'apply', measurements: 'suggest' }), shared: ['metrics', 'workouts', 'plans', 'measurements'],
+      measurements: { entries: [], custom: [] },
+      workouts: { list: [{ ...m.workouts.list[0], entries: [{ id: '0025', sets: [{ w: 60, r: 5, done: true }, { w: 60, r: 3, done: true }] }], _edit: { kind: 'trainer', name: 'Marco' } }], next: null } }
+    mocks.answers['POST /api/trainer/ops'] = { ok: true, applied: 1, suggested: 0 }
+    const host = render(<TrainerPage />)
+    await settle()
+    await click(byText(host, 'Workouts'))
+    expect(host.textContent).toContain('Corrected by Marco')
+    await click(byText(host, 'Correct'))
+    const sheet = render(mocks.sheets.at(-1)(() => {}))
+    expect(sheet.textContent).toContain('Correct this workout')
+    const save = byText(sheet, 'Save')
+    expect(save.disabled).toBe(true)                            // nothing changed yet
+    const reps = sheet.querySelector('[aria-label="Set 2: reps"]')
+    const set = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+    await act(() => { set.call(reps, '5'); reps.dispatchEvent(new Event('input', { bubbles: true })) })
+    await click(byText(sheet, 'Save'))
+    expect(mocks.posts.at(-1)).toEqual(['/api/trainer/ops', { memberId: 'u_lea', ops: [{ op: 'workout.edit', id: 'w1', sets: [{ e: 0, s: 1, ex: '0025', r: 5 }] }] }])
+    // Log a workout: the button is there at "Change directly".
+    await click(byText(host, 'Log a workout'))
+    const add = render(mocks.sheets.at(-1)(() => {}))
+    expect(add.textContent).toContain('For a session you ran together.')
+    expect([...add.querySelectorAll('.tr-pick-i')].length).toBe(1)   // her recent exercise as a quick pick
+    // Measurements at "Suggest": the button says so.
+    await click(byText(host, 'Body'))
+    await click(byText(host, 'Suggest a check-in'))
+    const ms = render(mocks.sheets.at(-1)(() => {}))
+    const waist = ms.querySelector('[aria-label="Waist"]')
+    await act(() => { set.call(waist, '80'); waist.dispatchEvent(new Event('input', { bubbles: true })) })
+    await click(byText(ms, 'Send'))
+    expect(mocks.posts.at(-1)[1].ops[0]).toMatchObject({ op: 'measurement.put', values: { waist: 80 } })
+  })
   it('says it plainly when the connection ended', async () => {
     mocks.params = { id: 'u_lea' }
     mocks.answers['/api/trainer/member'] = undefined

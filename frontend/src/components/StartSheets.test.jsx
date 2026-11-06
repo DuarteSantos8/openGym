@@ -10,7 +10,8 @@ import { bindUI } from './ui.jsx'
 import { todayISO } from '../lib/format.js'
 
 const started = vi.hoisted(() => [])
-vi.mock('../sheets.jsx', () => ({ startFlow: ids => started.push(ids) }))
+const menus = vi.hoisted(() => [])
+vi.mock('../sheets.jsx', () => ({ startFlow: (ids, opts) => started.push(opts?.lead ? { ids, lead: opts.lead.ex.map(x => x.id) } : ids), menuSheet: m => menus.push(m) }))
 import { startPickerSheet, startOrPreview, previewSheet } from './StartSheets.jsx'
 import TabBar, { START_HOLD_MS } from './TabBar.jsx'
 
@@ -22,6 +23,7 @@ let host, root
 const wd = new Date(todayISO() + 'T12:00:00').getDay()
 beforeEach(() => {
   started.length = 0
+  menus.length = 0
   const S = structuredClone(DEF)
   S.routines = [
     { id: 'push', name: 'Push', emoji: null, ex: [{ id: '0025', sets: 3, reps: 8, w: 60 }] },
@@ -91,5 +93,47 @@ describe('the preview (#976)', () => {
     click('Choose a different workout')
     renderTop()
     expect(host.querySelector('h3').textContent).toBe('What are we training?')
+  })
+})
+
+describe('the exercises you didn’t get to (#985)', () => {
+  const yesterday = () => { const d = new Date(todayISO() + 'T12:00:00'); d.setDate(d.getDate() - 1); return d.toISOString().slice(0, 10) }
+  const leftPull = () => useStore.setState(st => ({ S: { ...st.S,
+    routines: st.S.routines.map(r => (r.id === 'pull' ? { ...r, ex: [{ id: '0027' }, { id: '0029' }, { id: '0031' }] } : r)),
+    workouts: [{ id: 'w9', d: yesterday(), start: 1, routineIds: ['pull'], entries: [{ id: '0027', rid: 'pull', sets: [{ w: 40, r: 10, done: true }] }] }] } }))
+
+  it('Start asks once: with them first, then today; the answer is remembered', () => {
+    leftPull()
+    startOrPreview(['push'])
+    expect(started).toEqual([])
+    const m = menus.at(-1)
+    expect(m.title).toBe('You didn’t get to 2 exercises last time')
+    expect(m.items[0].label).toBe('Start with the 2 exercises you didn’t get to')
+    m.items[0].onClick()
+    expect(started).toEqual([{ ids: ['push'], lead: ['0029', '0031'] }])
+    expect(useStore.getState().S.leftoverSeen).toBe('w9')
+    startOrPreview(['push'])
+    expect(started.at(-1)).toEqual(['push'])                 // no second ask
+    expect(menus).toHaveLength(1)
+  })
+
+  it('"Just today’s plan" lets them go, and today’s own routine is never offered twice', () => {
+    leftPull()
+    startOrPreview(['pull'])                                    // the same routine again: it has them anyway
+    expect(menus).toHaveLength(0)
+    expect(started).toEqual([['pull']])
+    startOrPreview(['push'])
+    menus.at(-1).items[1].onClick()
+    expect(started.at(-1)).toEqual(['push'])
+    expect(useStore.getState().S.leftoverSeen).toBe('w9')
+  })
+
+  it('the picker offers them on top, then today', () => {
+    leftPull()
+    startPickerSheet(); renderTop()
+    expect(host.textContent).toContain('Start with the 2 exercises you didn’t get to')
+    expect(host.textContent).toContain('then Push')
+    click('Start with the 2 exercises you didn’t get to')
+    expect(started).toEqual([{ ids: ['push'], lead: ['0029', '0031'] }])
   })
 })

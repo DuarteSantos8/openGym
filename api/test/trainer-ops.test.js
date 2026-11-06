@@ -96,6 +96,46 @@ test('assigning the same routine again replaces the copy, with its custom exerci
   assert.equal(T.customEx[0].name, 'Mine');
 });
 
+test('workout.edit corrects sets in place, labelled, and the undo puts the workout back', () => {
+  const S = base();
+  S.workouts = [{ id: 'w1', d: '2026-11-03', name: 'Push', start: 1, end: 2, _ts: 5, prs: ['bench'],
+    entries: [{ id: 'bench', sets: [{ w: 60, r: 5, done: true, rpe: 8, media: [{ hash: 'a' }] }, { w: 60, r: 3, done: true }] },
+      null, { id: 'curl', sets: [{ sides: { L: { w: 10, r: 8, done: true }, R: { w: 10, r: 6, done: true } } }] }] }];
+  assert.throws(() => cleanOps([{ op: 'workout.edit', id: 'w1' }]), /nothing to correct/);
+  assert.throws(() => cleanOps([{ op: 'workout.edit', id: 'w1', sets: [{ e: 0, s: 0, ex: 'bench' }] }]), /changes something/);
+  assert.throws(() => cleanOps([{ op: 'workout.edit', id: 'w1', sets: [{ e: 0, s: 0, ex: 'bench', w: 9999 }] }]), /weight/);
+  const ops = cleanOps([{ op: 'workout.edit', id: 'w1', name: ' Push heavy ', sets: [
+    { e: 0, s: 1, ex: 'bench', r: 5 }, { e: 1, s: 0, ex: 'curl', side: 'R', r: 8, sneaky: 1 }] }]);
+  assert.equal(ops[0].sets[1].sneaky, undefined);
+  const before = JSON.parse(JSON.stringify(S.workouts[0]));
+  const recs = applyOps(S, ops, { by, t: 100 });
+  const w = S.workouts[0];
+  assert.equal(w.name, 'Push heavy');
+  assert.equal(w.entries[0].sets[1].r, 5);
+  assert.deepEqual(w.entries[0].sets[0], before.entries[0].sets[0]);   // its RPE and video untouched
+  assert.equal(w.entries[2].sets[0].sides.R.r, 8);                       // the null entry is skipped, like the projection
+  assert.equal(w._edit.name, 'Marco');
+  assert.equal(w._by, undefined);                                         // still the member's own workout
+  assert.equal(w._ts, 100);
+  assert.equal(w._f.entries, 100);
+  assert.deepEqual(recs[0].summary, { kind: 'workout.edit', d: '2026-11-03', name: 'Push heavy', n: 2 });
+  assert.equal(project(S, { workouts: 'view' }, { today: '2026-11-05' }).workouts.list[0]._edit.name, 'Marco');
+  // A workout that changed shape since the trainer looked is refused, not guessed at.
+  assert.throws(() => applyOps(S, cleanOps([{ op: 'workout.edit', id: 'w1', sets: [{ e: 0, s: 0, ex: 'curl', w: 1 }] }]), { by, t: 110 }), e => e.code === 'changed-since');
+  assert.throws(() => applyOps(S, cleanOps([{ op: 'workout.edit', id: 'w1', sets: [{ e: 1, s: 0, ex: 'curl', w: 1 }] }]), { by, t: 110 }), e => e.code === 'changed-since');   // sides need a side
+  assert.throws(() => applyOps(S, cleanOps([{ op: 'workout.edit', id: 'nope', name: 'x' }]), { by, t: 110 }), e => e.code === 'no-workout');
+  // One from before workouts had ids goes by date|start.
+  S.workouts.push({ d: '2026-10-01', start: 77, name: 'Old', entries: [{ id: 'row', sets: [{ w: 40, r: 10, done: true }] }] });
+  applyOps(S, cleanOps([{ op: 'workout.edit', id: '2026-10-01|77', sets: [{ e: 0, s: 0, ex: 'row', w: 45 }] }]), { by, t: 120 });
+  assert.equal(S.workouts[1].entries[0].sets[0].w, 45);
+  assert.throws(() => cleanOps([{ op: 'workout.edit', id: 'x|y', name: 'a' }]), /bad workout id/);
+  applyRestores(S, recs[0].inverse, { t: 200 });
+  const back = S.workouts[0];
+  assert.equal(back.name, 'Push');
+  assert.equal(back.entries[0].sets[1].r, 3);
+  assert.equal(back._edit, undefined);
+});
+
 test('projections show only the shared categories, without media or notes', () => {
   const S = {
     unit: 'kg', weekStart: 1,
@@ -103,7 +143,7 @@ test('projections show only the shared categories, without media or notes', () =
       entries: [{ id: 'bench', note: 'shoulder', photo: 'abc', sets: [{ w: 100, r: 5, done: true }, { w: 50, r: 5, done: true, phase: 'warmup' }, { w: 90, r: 5, done: false }] }] }],
     bodyweight: [{ d: '2026-10-20', w: 80 }, { d: '2026-11-03', w: 78.5 }],
     routines: [{ id: 'r1', name: 'Push', ex: [{ id: 'bench', video: 'v' }] }], week: { 1: 'r1' },
-    dayNotes: { '2026-11-02': { text: 'sick' } }, dayPhotos: { '2026-11-01': [{ h: 'x' }] }, measurements: [{ d: '2026-11-01', waist: 80, t: 1 }],
+    dayNotes: { '2026-11-02': { text: 'sick' } }, dayPhotos: { 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa': { d: '2026-11-01', m: { kind: 'image', hash: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', mime: 'image/jpeg' }, _ts: 1 }, ['b'.repeat(64)]: { _ts: 2 } }, measurements: [{ d: '2026-11-01', waist: 80, t: 1 }],
   };
   const lv = { metrics: 'view', workouts: 'view', plans: 'off', bodyweight: 'off', measurements: 'off', photos: 'off', notes: 'off', nutrition: 'off' };
   const p = project(S, lv, { today: '2026-11-05' });
@@ -155,6 +195,8 @@ test('streak weeks follow the freeze rule; missed days skip excused ones', () =>
   assert.equal(weekOf('2026-11-05', { weekStart: 0 }), '2026-11-01');
   assert.equal(streakWeeks(S, '2026-11-05'), 5);                                    // the missed week used a freeze
   assert.equal(streakWeeks({ ...S, streakRule: { rule: 'off' } }, '2026-11-05'), 1);
+  // Not retroactive: the missed week was judged by `generous`, in force then, so it stays covered.
+  assert.equal(streakWeeks({ ...S, streakRule: { rule: 'off', since: '2026-11-02', history: [{ rule: 'generous', since: null }] } }, '2026-11-05'), 5);
   const P = { routines: [{ id: 'r', name: 'x', ex: [] }], week: { 2: 'r', 3: 'r' }, workouts: [], dayNotes: { '2026-11-03': { tag: 'sick' } } };
   assert.deepEqual(missedDays(P, '2026-11-05'), ['2026-11-04']);   // Tuesday has a sick note
   assert.deepEqual(missedDays(P, '2026-11-05', 9), ['2026-11-04', '2026-10-28', '2026-10-27']);

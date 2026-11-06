@@ -30,6 +30,7 @@ import './FocusView.css'
 import { youtubeSearchUrl } from '../lib/youtube.js'
 import { openExternal } from '../components/CustomMedia.jsx'
 import { isOn } from '../lib/modules.js'
+import CardioEffortChip from '../components/CardioEffortChip.jsx'
 
 const firstIncomplete = entry => {
   const index = entry.sets.findIndex(set => !set.done)
@@ -381,6 +382,12 @@ export default function FocusView({
         {mode === 'reps' && effortField && <button className={'effcell focus-effort' + (effortValue == null ? ' is-empty' : '')}
           style={effortTint ? { color: effortTint, borderColor: effortTint, background: `color-mix(in srgb, ${effortTint} 20%, var(--surface-2))` } : undefined}
           aria-label={t(EFFORT[effort].hd)} disabled={readOnly} onClick={openEffort}>{effortValue == null ? t(EFFORT[effort].hd) : fmtNum(effortValue)}</button>}
+        {/* Cardio: how hard it felt, on the card (Q5). Rated after the fact too, so a done set
+            still takes it; only a set further down the list waits its turn. */}
+        {mode === 'cardio' && isOn(S, 'effort') && !isWarmupRow(set) && <div className="focus-cardio-eff">
+          <CardioEffortChip value={set.rpe ?? null} disabled={locked}
+            onOpen={() => effortPickerSheet('rpe', set.rpe ?? null, value => onField(setIdx, 'rpe', value), { cardio: true })} />
+        </div>}
       </div>
       <Button variant="primary" icon="check" data-tour="tick" aria-label={t('Complete set')} onClick={complete}>{set.done ? t('Completed') : t('Complete')}</Button>
       <div className="focus-secondary">

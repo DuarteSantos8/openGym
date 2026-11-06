@@ -2929,7 +2929,11 @@ paths:
                   type: string
                   pattern: '^[A-Za-z0-9_-]{8,64}$'
                   description: The browser's own token, see `POST /api/push/subscribe`. Optional.
-            example: { seconds: 90, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f" }
+                next:
+                  type: string
+                  maxLength: 120
+                  description: The set waiting after the rest, in the person's language ("Bench press, 80 kg × 8"). It becomes the push's body, one line of plain text cut at 120 characters. Optional; without it the body is the general "Time for your next set."
+            example: { seconds: 90, deviceId: "3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f", next: "Bench press, 80 kg × 8" }
       responses:
         '200':
           description: Timer scheduled.
@@ -4873,13 +4877,52 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
+  /api/trainer/member/photo:
+    get:
+      tags: [trainers]
+      operationId: trainerMemberPhoto
+      summary: 'The trainer or gym lead: one progress photo of a member'
+      description: >-
+        The bytes of one progress photo (a still filed under a day or on a workout, `photos.items` of the member projection), only while the member shares `photos` with this person; the grant is checked for every file. Sent with the same headers as `GET /api/media/{hash}`. Form videos, custom exercise pictures, sounds and the profile picture are never served here. 403 `level` with photos not shared, 404 for a stranger or a file outside the category. Budget `trainer.photo`.
+      parameters:
+        - { name: id, in: query, required: false, schema: { type: string }, description: 'Member id' }
+        - { name: hash, in: query, required: false, schema: { type: string }, description: 'The photo (lowercase sha256)' }
+      responses:
+        '200':
+          description: The file.
+          content:
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/png: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        '400':
+          description: Not a sha256 (`bad-request`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Photos not shared with this person (`level`), or the connection ended (`not-shared`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: Not found, or `trainers-off`.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Over the account budget (`rate-limited`).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
   /api/trainer/ops:
     post:
       tags: [trainers]
       operationId: trainerOps
       summary: 'The trainer: change a member''s data'
       description: >-
-        Whitelisted ops (`routine.put`, `routine.remove`, `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled `_by`, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.
+        Whitelisted ops (`routine.put`, `routine.remove`, `week.set`, `bodyweight.put`, `measurement.put`, `workout.add`, `workout.edit`), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled `_by`, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.
       requestBody:
         required: true
         content:

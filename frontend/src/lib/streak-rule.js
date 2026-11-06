@@ -17,53 +17,12 @@
 // older app version that does not know it) counts every week with `generous`, as it always did.
 // It syncs as one setting (lib/sync-merge.js: the last change wins whole) and travels in backups.
 import { weekKey, todayISO, weekStartOf } from './format.js'
+import { streakRuleOf, LEGACY_RULE, HISTORY_MAX, RULE_IDS } from '../../../api/coach/core/streak.js'
 
-export const STREAK_RULES = {
-  off: { every: 4, max: 0 },
-  gentle: { every: 4, max: 1 },
-  generous: { every: 4, max: 2 },
-}
-export const RULE_IDS = ['off', 'gentle', 'generous']
-export const LEGACY_RULE = 'generous'
-export const NEW_PROFILE_RULE = 'gentle'
-export const HISTORY_MAX = 24
+// The reading side lives in api/coach/core/streak.js, shared with the server's streak.
+export { STREAK_RULES, RULE_IDS, LEGACY_RULE, NEW_PROFILE_RULE, HISTORY_MAX, streakRuleOf, ruleTimeline, ruleAt } from '../../../api/coach/core/streak.js'
 
-const isISO = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)
 const okRule = r => (RULE_IDS.includes(r) ? r : null)
-const entry = e => {
-  if (!e || typeof e !== 'object' || !okRule(e.rule)) return null
-  return { rule: e.rule, since: isISO(e.since) ? e.since : null }
-}
-
-/** S.streakRule cleaned, or null when the profile never picked one (it counts as `generous`). */
-export function streakRuleOf (S) {
-  const cur = entry(S?.streakRule)
-  if (!cur) return null
-  const hist = (Array.isArray(S.streakRule.history) ? S.streakRule.history : []).map(entry).filter(Boolean)
-    // Only what came before the rule in force, in order; a second entry for the same start, the
-    // later one.
-    .filter(h => cur.since === null ? false : (h.since === null || h.since < cur.since))
-    .sort((a, b) => (a.since ?? '').localeCompare(b.since ?? ''))
-  const byStart = new Map()
-  for (const h of hist) byStart.set(h.since ?? '', h)
-  return { ...cur, history: [...byStart.values()].slice(-HISTORY_MAX) }
-}
-
-/** Every rule with the week it starts, oldest first: [{ rule, since }] (since null = always). */
-export function ruleTimeline (S) {
-  const r = streakRuleOf(S)
-  if (!r) return [{ rule: LEGACY_RULE, since: null }]
-  const list = [...r.history, { rule: r.rule, since: r.since }]
-  // Before the first known start, the rule a profile had before it ever picked one.
-  return list[0].since === null ? list : [{ rule: LEGACY_RULE, since: null }, ...list]
-}
-
-/** The rule that judges the week `wk` (a week key), from a timeline with its starts as week keys. */
-export function ruleAt (timeline, wk) {
-  let rule = LEGACY_RULE
-  for (const e of timeline) if (e.since === null || e.since <= wk) rule = e.rule
-  return rule
-}
 
 /** The rule in force now, for the settings and the words. */
 export const currentRule = S => streakRuleOf(S)?.rule || LEGACY_RULE

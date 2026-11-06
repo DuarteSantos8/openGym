@@ -250,7 +250,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   <p class="api-facts">
     <span>OpenAPI 3.1.0</span>
     <span>openGym v1.4.3</span>
-    <span>149 endpoints</span>
+    <span>150 endpoints</span>
     <span>AGPL-3.0-or-later</span>
   </p>
 
@@ -2353,10 +2353,16 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="p-type">string</span>
     <span class="p-desc">The browser's own token, see <code>POST /api/push/subscribe</code>. Optional.</span>
   </div>
+  <div class="prow">
+    <span class="p-name">next</span>
+    <span class="p-type">string <span class="p-hint">(&le; 120 chars)</span></span>
+    <span class="p-desc">The set waiting after the rest, in the person's language (&quot;Bench press, 80 kg × 8&quot;). It becomes the push's body, one line of plain text cut at 120 characters. Optional; without it the body is the general &quot;Time for your next set.&quot;</span>
+  </div>
 </div>
 <pre><code>{
   &quot;seconds&quot;: 90,
-  &quot;deviceId&quot;: &quot;3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f&quot;
+  &quot;deviceId&quot;: &quot;3f9c1d2e7b0a4c6d9e8f1a2b3c4d5e6f&quot;,
+  &quot;next&quot;: &quot;Bench press, 80 kg × 8&quot;
 }</code></pre>
     <p class="ep-h">Responses</p>
     <div class="ptab">
@@ -4235,6 +4241,59 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
   </div>
 </details>
 
+<details class="ep" id="op-trainerMemberPhoto">
+  <summary>
+    <span class="m get">GET</span>
+    <span class="ep-path"><code>/api/trainer/member/photo</code></span>
+    <span class="ep-chev" aria-hidden="true"></span>
+    <span class="ep-sum">The trainer or gym lead: one progress photo of a member</span>
+  </summary>
+  <div class="ep-body">
+<p>The bytes of one progress photo (a still filed under a day or on a workout, <code>photos.items</code> of the member projection), only while the member shares <code>photos</code> with this person; the grant is checked for every file. Sent with the same headers as <code>GET /api/media/{hash}</code>. Form videos, custom exercise pictures, sounds and the profile picture are never served here. 403 <code>level</code> with photos not shared, 404 for a stranger or a file outside the category. Budget <code>trainer.photo</code>.</p>
+    <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
+<p class="ep-h">Query parameters</p><div class="ptab">
+  <div class="prow">
+    <span class="p-name">id</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">Member id</span>
+  </div>
+  <div class="prow">
+    <span class="p-name">hash</span>
+    <span class="p-type">string</span>
+    <span class="p-desc">The photo (lowercase sha256)</span>
+  </div>
+</div>
+
+    <p class="ep-h">Responses</p>
+    <div class="ptab">
+  <div class="prow rrow">
+    <span class="r-code s2">200</span>
+    <span class="p-desc">The file.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">400</span>
+    <span class="p-desc">Not a sha256 (<code>bad-request</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">401</span>
+    <span class="p-desc">No session, expired/revoked session, or a disabled account.<span class="r-sig"><code>{&quot;error&quot;:&quot;not signed in&quot;}</code></span></span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">403</span>
+    <span class="p-desc">Photos not shared with this person (<code>level</code>), or the connection ended (<code>not-shared</code>).</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">404</span>
+    <span class="p-desc">Not found, or <code>trainers-off</code>.</span>
+  </div>
+  <div class="prow rrow">
+    <span class="r-code s4">429</span>
+    <span class="p-desc">Over the account budget (<code>rate-limited</code>).</span>
+  </div>
+    </div>
+  </div>
+</details>
+
 <details class="ep" id="op-trainerOps">
   <summary>
     <span class="m post">POST</span>
@@ -4243,7 +4302,7 @@ main.api-main .lead { color: var(--fg-2); max-width: 58ch; margin: 14px 0 0; fon
     <span class="ep-sum">The trainer: change a member's data</span>
   </summary>
   <div class="ep-body">
-<p>Whitelisted ops (<code>routine.put</code>, <code>routine.remove</code>, <code>week.set</code>, <code>bodyweight.put</code>, <code>measurement.put</code>, <code>workout.add</code>), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled <code>_by</code>, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.</p>
+<p>Whitelisted ops (<code>routine.put</code>, <code>routine.remove</code>, <code>week.set</code>, <code>bodyweight.put</code>, <code>measurement.put</code>, <code>workout.add</code>, <code>workout.edit</code>), each checked against its category: applied at once where the member allows changes (written through the same sync stamps as PUT /api/data, every entry labelled <code>_by</code>, undoable by the member for 30 days), sent as one suggestion to the member's inbox where they allow suggestions, refused otherwise.</p>
     <p class="ep-auth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Requires a session: the cookie set at sign-in, or <code>Authorization: Bearer &lt;token&gt;</code> from mobile-app pairing.</span></p>
 
 <p class="ep-h">Request body <span class="p-hint">(JSON)</span></p><div class="ptab">

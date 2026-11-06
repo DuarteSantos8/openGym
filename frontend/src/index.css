@@ -1718,6 +1718,21 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 
 /* drop-set drops / rest-pause bursts riding on a work row, editable like the row itself
    (issue: drop-sets & rest-pause) */
+/* Cardio's effort chip (Q5): a quiet pill under the row until rated, then the value in its effort
+   colour. 28px tall to sit light under the row; the ::before lends it a 40px tap area. */
+.cardio-eff-line{display:flex;padding-inline:32px 0;margin:-3px 0 5px}
+.cardio-eff{position:relative;display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 11px 0 9px;border-radius:99px;
+  border:1px dashed var(--label-3);background:transparent;color:var(--label-2);font:inherit;font-size:var(--fs-caption);font-weight:500;
+  font-variant-numeric:tabular-nums;white-space:nowrap;cursor:pointer;transition:transform 160ms var(--ease),background-color 160ms ease}
+.cardio-eff::before{content:'';position:absolute;inset:-6px -2px}
+.cardio-eff .icn{font-size:13px}
+.cardio-eff.on{border-style:solid;border-color:var(--eff);color:var(--eff);background:var(--surface-2);background:color-mix(in srgb,var(--eff) 16%,var(--surface-2));font-weight:600}
+.cardio-eff:active:not(:disabled){transform:scale(var(--press-scale))}
+.cardio-eff:disabled{opacity:.45;cursor:default}
+.cardio-eff:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.focus-cardio-eff{display:flex;justify-content:center;margin-top:10px}
+.focus-cardio-eff .cardio-eff{height:34px;padding:0 14px 0 12px;font-size:var(--fs-subhead)}
+@media (prefers-reduced-motion:reduce){.cardio-eff{transition:none}}
 .subrow{display:flex;align-items:center;gap:6px;padding-block:3px;padding-inline:32px 0}
 /* A done set's drops and bursts are done with it (Discord, dark._.ninja): greyed like the row. */
 .subrow.done>*{opacity:.45}
@@ -1734,6 +1749,13 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .subrow .stp.mini .val{min-width:var(--num)}
 .subrow .stp.mini .num{font-size:var(--fs-footnote);min-height:30px}
 .subrow .iconbtn{width:26px;height:26px;font-size:var(--fs-caption2);flex:none}
+/* A cardio row with the incline is three steppers too, and at 320 px it pushed the tick past the
+   card's edge. Below 360 px the incline gives up its −/+ like the effort column does: the number
+   stays and takes a typed grade. */
+@media (max-width:359px){
+  .setrow .stp.inc:not(.plain)>button{display:none}
+  .setrow .stp.inc,.sethead .inc-sp{--btn-floor:0px}
+}
 /* label 46, two minis at their floors 70 + 60, the ✕ and three gaps: 252 px with the indent — the
    whole row at 320 px. The label starts under the number circle's inner edge there instead. */
 @media (max-width:359px){
@@ -2952,7 +2974,26 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* The QR itself: lean-qr paints 1 module per pixel, so scale it up with the browser's
    nearest-neighbour so every module stays a crisp square instead of a blurred blob. White
    quiet-zone padding is baked in by the renderer; the plate underneath just frames it. */
+.nexd{display:flex;flex-direction:column;gap:12px;margin:4px 0 10px}
+.nexd-note{margin:0 0 14px;line-height:var(--lh-small)}
 .ci-qr-plate{background:#fff;border-radius:var(--r-lg);padding:16px}
+/* Typing a code by hand, only after a scan or photo found nothing */
+.ci-fallback{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin:-4px 0 16px;padding:10px 12px;border-radius:12px;background:var(--surface-2);font-size:var(--fs-subhead);color:var(--label-2)}
+.ci-fallback>span{flex:1 1 180px;min-width:0}
+.ci-typedform{display:flex;flex-direction:column;gap:10px;margin:-4px 0 18px;padding:14px;border-radius:var(--r-card);background:var(--surface-2)}
+.ci-typed-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ci-typed-row .sect-t{margin:0}
+.ci-typed-in{font:600 var(--fs-title3)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.ci-typed-hint{min-height:1.3em;font-size:var(--fs-footnote);color:var(--label-2);line-height:var(--lh-small)}
+.ci-typed-hint.bad{color:var(--red)}
+.ci-typed-big{align-self:center;max-width:100%;box-sizing:border-box}
+.ci-typed-big canvas{max-width:100%;height:auto}
+.ci-typed-v{font:600 var(--fs-title2)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-align:center;color:var(--label);overflow-wrap:anywhere}
+.ci-typed-note{text-align:center}
+.ci-typed-act{gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.ci-typed{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:10px;font-size:var(--fs-footnote);color:var(--label-2);text-align:start}
+.ci-typed .icn{flex:none;color:var(--orange)}
+.ci-typed>span{flex:1 1 160px;min-width:0}
 .qr-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;transition:opacity var(--fast)}
 /* the trailing add card — a big + on a dashed outline, same footprint as a real card */
 .ci-add{
@@ -3618,7 +3659,21 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-day:not(.on) .tr-day-r{color:var(--label-3)}
 .tr-foot{color:var(--label-2);font-size:var(--fs-footnote);margin:16px 4px 0;line-height:var(--lh-small)}
 .tr-foot-a{margin-top:16px}
-.tr-photos{padding:0 4px}
+.tr-ph-n{color:var(--label-2);font-weight:500;font-variant-numeric:tabular-nums}
+.tr-ph-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+@media (min-width:640px){.tr-ph-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tr-ph{position:relative;aspect-ratio:3/4;border:0;padding:0;border-radius:10px;overflow:hidden;background:var(--surface-2);color:var(--label-3);display:grid;place-items:center;cursor:pointer;transition:transform 160ms var(--ease)}
+.tr-ph:active:not(:disabled){transform:scale(var(--press-scale-card))}
+.tr-ph:disabled{cursor:default}
+.tr-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 200ms ease}
+.tr-ph.in img{opacity:1}
+.tr-ph-d{position:absolute;inset-inline:0;bottom:0;padding:14px 6px 4px;font-size:var(--fs-caption2);color:#fff;text-align:start;background:linear-gradient(transparent,rgba(0,0,0,.55));font-variant-numeric:tabular-nums}
+.tr-ph:not(.in) .tr-ph-d{background:none;color:var(--label-3)}
+.tr-ph-big{margin:0 0 10px;border-radius:12px;overflow:hidden;background:var(--surface-2)}
+.tr-ph-big img{display:block;width:100%;max-height:70vh;object-fit:contain;background:#000}
+.tr-ph-wait{aspect-ratio:3/4;max-height:70vh}
+.tr-ph-big figcaption{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;font-size:var(--fs-footnote);color:var(--label-2)}
+@media (prefers-reduced-motion:reduce){.tr-ph,.tr-ph img{transition:none}}
 
 /* sheets: a code, a weigh-in */
 .tr-code{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 16px}
@@ -3626,6 +3681,17 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-code-v{font:600 var(--fs-title3)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;-webkit-user-select:all;user-select:all}
 .tr-code-a{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
 .tr-num{width:72px;text-align:end}
+.tr-edit-ex{margin-top:10px;background:var(--surface-2)}
+.tr-edit-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tr-set{display:flex;align-items:center;gap:8px;min-height:44px}
+.tr-set+.tr-set{border-top:var(--hair) solid var(--sep)}
+.tr-set-l{flex:1;min-width:0;font-size:var(--fs-subhead);overflow-wrap:anywhere}
+.tr-set .tr-num{flex:none}
+.tr-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tr-pick-i{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:6px 12px;border:0;border-radius:99px;background:var(--surface-2);color:var(--label);font:inherit;font-size:var(--fs-subhead);cursor:pointer;max-width:100%;overflow-wrap:anywhere;text-align:start;transition:transform 160ms var(--ease)}
+.tr-pick-i .icn{color:var(--acc-ink);flex:none}
+.tr-pick-i:active{transform:scale(var(--press-scale))}
+@media (max-width:360px){.tr-set .tr-num{width:60px}}
 .tr-weigh{display:flex;align-items:center;gap:10px;margin:6px 0 16px;font-size:var(--fs-title2)}
 .tr-weigh input{font-size:var(--fs-title2);flex:1;min-width:0}
 

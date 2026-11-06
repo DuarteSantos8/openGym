@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { dayReminderPush, restTimerPush, routineEmoji, testPush } from '../push-messages.js';
+import { dayReminderPush, restTimerPush, routineEmoji, testPush, cleanNext } from '../push-messages.js';
 
 test('localizes every server-generated notification in pt-BR', () => {
   assert.deepEqual(restTimerPush('pt-BR'), {
@@ -70,4 +70,12 @@ test('leaves a literal emoji alone and falls back for anything else', () => {
   assert.equal(routineEmoji('trophy'), '🏋️');
   assert.equal(routineEmoji(''), '🏋️');
   assert.equal(routineEmoji(undefined), '🏋️');
+});
+
+test('the rest push names the next set when the app sent one, as one clean line', () => {
+  assert.deepEqual(restTimerPush('de', 'Bankdrücken, 80 kg × 8'), { title: restTimerPush('de').title, body: 'Bankdrücken, 80 kg × 8', tag: 'rest-timer' });
+  assert.equal(restTimerPush('en', '   ').body, restTimerPush('en').body);
+  assert.equal(restTimerPush('en', { evil: true }).body, restTimerPush('en').body);
+  assert.equal(cleanNext('Plank,\n45 s\u202e'), 'Plank, 45 s');
+  assert.equal(cleanNext('x'.repeat(300)).length, 120);
 });
