@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { unlink as unlinkNutrition } from '../lib/sister-nutrition.js'
 import { api, setRemoteAuth } from '../lib/api.js'
 import { localTZ } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
@@ -1109,6 +1110,10 @@ export const useStore = create((set, get) => {
     handedOver = false
     // Signed out, this device is nobody's: the sign-in screen is in the instance's language.
     persist(freshState(), false)
+    // The openNutrition link (lib/sister-nutrition.js) is this device's, but what it cached is what
+    // the signed-out person ate: on a shared device it must not show on the next account's Home,
+    // report or month story. Their token goes too; linking again is one code.
+    unlinkNutrition().catch(() => {})
     setSync({ offline: false, auth: false, lastError: null, pending: false, lastSynced: 0 })
     // On a phone the file is wiped with it, now rather than after the usual wait: a start in
     // between would open in local mode on the signed-out account's data, since that boot takes
