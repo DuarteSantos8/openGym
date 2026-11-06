@@ -49,8 +49,8 @@ describe('WebDAV backup sheet', () => {
     typeInto(host.querySelector('#dav-user'), 'me')
     typeInto(host.querySelector('#dav-pass'), 'nope')
     act(() => btn('Connect').click())
-    await flush()
-    expect(host.querySelector('[role="alert"]').textContent).toMatch(/did not take that name and password/)
+    // On a busy CI runner the refusal can land after one flush, so wait for it.
+    await vi.waitFor(() => expect(host.querySelector('[role="alert"]')?.textContent).toMatch(/did not take that name and password/), { timeout: 3000 })
     expect(loadConfig()).toBeNull()
   })
   it('connects, backs up at once, and keeps the password out of the settings', async () => {
