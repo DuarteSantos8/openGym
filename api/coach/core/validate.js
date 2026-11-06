@@ -44,7 +44,7 @@ export const WARMUP_MODES = ['auto', 'own', 'none'];
 const MAX_PROGRAMME_WEEKS = 16;
 const MAX_WEEK_TARGETS = 24;
 const halfStep = v => Math.round(v * 2) / 2;
-const POLICIES = ['off', 'linear', 'greyskull', 'double', 'triple', 'time'];
+const POLICIES = ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density', 'time'];
 const MODES = ['reps', 'time', 'cardio'];
 const MAX_INC = 50;
 // A prescription, not a world record. Anything past this is a model slip or a hostile answer,

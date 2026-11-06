@@ -131,6 +131,8 @@ function cleanEx(e) {
   // Triple progression's set ceiling (progression.js tripleSetsOf), rep work only.
   if (mode === 'reps' && e.setsMax > 0) o.setsMax = Math.min(MAX_TRIPLE_SETS, Math.round(e.setsMax))
   if (e.repsMax != null) o.repsMax = e.repsMax
+  // Shorter rests' floor (progression.js densityRestOf), rep work only.
+  if (mode === 'reps' && e.restMin > 0) o.restMin = Math.round(e.restMin)
   // The exercise's own rest (issue #10) is part of how it is prescribed, so it travels too —
   // only when set, so a plan that never asked for one leaves the recipient's own default
   // timer in charge. parsePlan and mergePlan carry it through by spread.

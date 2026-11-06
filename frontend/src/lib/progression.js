@@ -25,11 +25,11 @@ import { isPyramid } from './pyramid.js'
 import { backoffAt } from './backoff.js'
 import { ownedWeightsFor, ownedKindFor, ownedUp, ownedDeload, ownedAround } from './dumbbells.js'
 
-export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'triple', 'time']
+export const POLICIES = ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density', 'time']
 
 // Which policies can sensibly drive which logging mode.
 export const POLICIES_FOR = {
-  reps: ['off', 'linear', 'greyskull', 'double', 'triple'],
+  reps: ['off', 'linear', 'greyskull', 'double', 'steady', 'triple', 'undulating', 'density'],
   time: ['off', 'time'],
   cardio: ['off']
 }
@@ -40,6 +40,9 @@ export const POLICY_NAME = {
   greyskull: 'Greyskull LP',
   double: 'Double progression',
   triple: 'Triple progression',
+  steady: 'Steady double progression',
+  undulating: 'Undulating days',
+  density: 'Shorter rests',
   time: 'Add time'
 }
 export const POLICY_DESC = {
@@ -48,13 +51,16 @@ export const POLICY_DESC = {
   greyskull: 'Two straight sets plus a final set taken to failure. Beat the target on that set and the weight goes up (twice as much if you double the reps). One failure resets 10 %.',
   double: 'Work up through a rep range at the same weight. Reach the top of the range in every set and the weight goes up, reps back to the bottom.',
   triple: 'Reps climb to the top of the range, then a set is added, up to your most sets. All of them at the top and the weight goes up, back to your first sets and reps.',
+  steady: 'Work up a rep range one rep at a time. Every set has to hit the target before it moves, and at the top of the range the weight goes up.',
+  undulating: 'Each session rotates: a medium day at your reps, a heavy day with fewer, a light day with more. The weights come from your estimated max, so they climb as you get stronger.',
+  density: 'Same weight, a bit less rest each time every set is clean. At your shortest rest the weight goes up and the rest starts over.',
   time: 'Hold every set for the full duration and the target goes up.'
 }
 
 // The Epley target is a soft objective mapped onto the exercise's real load grid. Keep the
 // default out of saved configs so plans written before this policy stays byte-for-byte compatible.
 export const DELOAD_FACTOR = 0.9
-export const DELOAD_AFTER = { linear: 3, greyskull: 1, double: 3, triple: 3, time: 3 }
+export const DELOAD_AFTER = { linear: 3, greyskull: 1, double: 3, steady: 3, triple: 3, density: 3, time: 3 }
 export const DELOAD_FACTOR_MIN = 0.5
 export const DELOAD_FACTOR_MAX = 0.95
 
@@ -450,6 +456,56 @@ export function stallCount(sessions, policy) {
   return n
 }
 
+// --- undulating (daily undulating periodisation) --------------------------------------------
+//
+// Three kinds of day in turn, medium → heavy → light → medium …: the plan's reps, about 60 % of
+// them, and about 150 % of them. The day a session was is stamped on its target (`target.dup`,
+// 0..2), so the next one is simply the one after it. It reads the exercise's whole history, not
+// one routine's: undulating is usually one lift spread over the week's different days, and three
+// routines would otherwise each run their own rotation.
+// The weight is never stored either. It comes from the best estimated max (Epley, on the weakest
+// set) of the last three loaded sessions, at about two reps in reserve for the day's reps, on the
+// load grid. More reps at the same weight raise that estimate, so the weights climb with you, and
+// one bad day does not drag the next ones down.
+// Idea and first version of the extra progression templates by giulioleuci (#823 to #825).
+export const DUP_DAYS = ['medium', 'heavy', 'light']
+const DUP_RIR = 2
+const DUP_LOOKBACK = 3
+/** The reps of one undulating day, from the plan's reps; per-side work stays even. */
+export function dupReps(cfg, day) {
+  const stride = repStep(cfg || {})
+  const base = Math.max(stride, Math.round(Number(cfg?.reps)) || 8)
+  const f = day === 'heavy' ? 0.6 : day === 'light' ? 1.5 : 1
+  return Math.max(stride, Math.round((base * f) / stride) * stride)
+}
+/** Which undulating day comes next: the one after the last stamped session, else the medium day. */
+export function dupDayIndex(sessions) {
+  for (let i = sessions.length - 1; i >= 0; i--) {
+    const d = sessions[i]?.target?.dup
+    if (Number.isInteger(d) && d >= 0 && d < DUP_DAYS.length) return (d + 1) % DUP_DAYS.length
+  }
+  return 0
+}
+/** The best estimated max of the last few loaded sessions, or null. */
+export function recentEstimatedMax(sessions, perSide = false, lookback = DUP_LOOKBACK) {
+  const loaded = sessions.filter(s => s.mode === 'reps' && s.weight > 0 && s.low > 0).slice(-lookback)
+  const est = loaded.map(s => epley1RM(s.weight, perSide ? s.low / 2 : s.low)).filter(v => v > 0)
+  return est.length ? Math.max(...est) : null
+}
+
+// --- shorter rests (density) ------------------------------------------------------------------
+// Same weight and reps, rest a step shorter after every clean session down to a floor; a clean
+// session at the floor earns the next weight and the rest starts over. The rest a session was
+// given is the one stamped on its target (target.restSec), which the rest timer runs on too.
+// The rest you actually took is not measured: the timer is the honest part, skipping it is on you.
+export const DENSITY_STEP = 15
+export const DENSITY_FLOOR = 45
+export function densityRestOf(S, cfg) {
+  const start = cfg?.restSec > 0 ? cfg.restSec : S?.restSec > 0 ? S.restSec : 90
+  const floor = Math.min(start, cfg?.restMin > 0 ? cfg.restMin : DENSITY_FLOOR)
+  return { start, floor }
+}
+
 /**
  * The next prescription for one exercise.
  *
@@ -504,7 +560,15 @@ export function nextPrescription(S, cfg, routine) {
   const range3 = triple ? normalizeRepRange(cfg.reps || 10, cfg.repsMin, repStep(cfg)) : null
   const sets3 = triple ? tripleSetsOf(cfg) : null
   const startRows = reps => Array(sets3.setsMin).fill(reps)
+  // Steady double progression starts a range at its bottom, every set together.
+  const steady = policy === 'steady' && mode === 'reps'
+  const rangeS = steady ? normalizeRepRange(cfg.reps || last?.goal || 10, cfg.repsMin, repStep(cfg)) : null
+  if (policy === 'undulating' && mode === 'reps') {
+    const out = undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted })
+    if (out) return out
+  }
   if (!last) {
+    if (steady) return { policy, kind: 'first', reps: rangeS.repsMin, rowReps: Array(Math.max(1, cfg.sets || 1)).fill(rangeS.repsMin), why: ['Nothing logged yet, so this session sets the baseline.'] }
     if (triple) return { policy, kind: 'first', reps: range3.repsMin, sets: sets3.setsMin, rowReps: startRows(range3.repsMin), why: ['Nothing logged yet, so this session sets the baseline.'] }
     return { policy, kind: 'first', why: ['Nothing logged yet, so this session sets the baseline.'] }
   }
@@ -541,7 +605,7 @@ export function nextPrescription(S, cfg, routine) {
       const aim = set ? range3.repsMin : Math.min(range3.reps, Math.max(range3.repsMin, last.low + repStep(cfg)))
       return { policy, kind: 'hold', ...held, reps: aim, sets: sets3.setsMin, rowReps: startRows(aim), why }
     }
-    if (policy === 'double') {
+    if (policy === 'double' || steady) {
       const range = normalizeRepRange(cfg.reps || last.goal || 10, cfg.repsMin, repStep(cfg))
       // A new weight starts at the bottom of the range, the way a raise does: the reps managed
       // were managed at another load.
@@ -611,7 +675,7 @@ export function nextPrescription(S, cfg, routine) {
   const epleyDeload = () => {
     // Epley reads load as the work done; on an assistance machine it is the work taken away.
     if (assisted) return null
-    if (mode !== 'reps' || (policy !== 'linear' && policy !== 'double')) return null
+    if (mode !== 'reps' || (policy !== 'linear' && policy !== 'double' && policy !== 'steady')) return null
     const previous = last.target || {}
     const target = {
       ...cfg,
@@ -637,7 +701,7 @@ export function nextPrescription(S, cfg, routine) {
       step: inc,
       factor: deloadFactorOf(cfg),
       reps: target.reps,
-      repsMin: policy === 'double' ? target.repsMin : undefined,
+      repsMin: policy === 'double' || policy === 'steady' ? target.repsMin : undefined,
       perSide: isPerSide(target),
       owned
     })
@@ -704,6 +768,72 @@ export function nextPrescription(S, cfg, routine) {
     return out('up', harder(w, inc), startRows(bottom), assisted
       ? ['Top of the range on all {0} sets. {1} {2} less help, back to {3} sets of {4}.', n, inc, unit, setsMin, bottom]
       : ['Top of the range on all {0} sets. {1} {2} more, back to {3} sets of {4}.', n, inc, unit, setsMin, bottom])
+  }
+
+  if (steady) {
+    const top = rangeS.reps
+    const bottom = rangeS.repsMin
+    const step = repStep(cfg)
+    // The target the last session was held to, inside today's range: a session from before the
+    // switch to this rule held to the top of the range starts where it stands.
+    const aim = Math.min(top, Math.max(bottom, last.goal || bottom))
+    if (last.ok && aim >= top) {
+      if (topped(w)) return toppedOut(w, { reps: top })
+      const up = harder(w, inc)
+      const by = owned ? Math.round((up - w) * 100) / 100 : inc
+      return {
+        policy, kind: 'up', weight: up, reps: bottom,
+        why: assisted
+          ? ['Top of the rep range in every set. {0} {1} less help, back to {2} reps.', inc, unit, bottom]
+          : ['Top of the rep range in every set. {0} {1} more, back to {2} reps.', by, unit, bottom]
+      }
+    }
+    if (last.ok) {
+      const next = Math.min(top, aim + step)
+      return { policy, kind: 'hold', weight: w, reps: next, why: ['Every set hit {0}. Same weight, {1} reps this time.', aim, next] }
+    }
+    if (stalls >= deloadAt) {
+      const selected = epleyDeload()
+      if (selected) return selected
+      const dw = easier(w)
+      return {
+        policy, kind: 'deload', weight: dw, reps: bottom,
+        why: assisted
+          ? ['Stuck for {0} sessions. Back to {1} {2} of help, then build up again.', stalls, dw, unit]
+          : ['Stuck for {0} sessions. Deload to {1} {2}.', stalls, dw, unit]
+      }
+    }
+    return { policy, kind: 'hold', weight: w, reps: aim, why: ['Not every set reached {0} yet. Same weight and target again ({1} of {2} to go).', aim, deloadAt - stalls, deloadAt] }
+  }
+
+  if (policy === 'density') {
+    const { start, floor } = densityRestOf(S, cfg)
+    const had = last.target && last.target.restSec > 0 ? last.target.restSec : start
+    const rest = Math.min(start, Math.max(floor, had))
+    if (last.ok && rest - DENSITY_STEP >= floor) {
+      const next = rest - DENSITY_STEP
+      return { policy, kind: 'hold', weight: w, rest: next, why: ['Every set clean. Same weight with {0}s less rest: {1}s.', DENSITY_STEP, next] }
+    }
+    if (last.ok) {
+      if (topped(w)) return toppedOut(w, { rest })
+      const up = harder(w, inc)
+      const by = owned ? Math.round((up - w) * 100) / 100 : inc
+      return { policy, kind: 'up', weight: up, rest: start, why: assisted
+        ? ['Clean at your shortest rest. {0} {1} less help, rest back to {2}s.', inc, unit, start]
+        : ['Clean at your shortest rest. {0} {1} more, rest back to {2}s.', by, unit, start] }
+    }
+    // Missing reps on short rest is the rest talking, so a stall gives the rest back, not the weight.
+    if (stalls >= deloadAt && rest < start) {
+      const back = Math.min(start, rest + 2 * DENSITY_STEP)
+      return { policy, kind: 'deload', weight: w, rest: back, why: ['Stuck for {0} sessions. Same weight with more rest: {1}s.', stalls, back] }
+    }
+    if (stalls >= deloadAt) {
+      const dw = easier(w)
+      return { policy, kind: 'deload', weight: dw, rest: start, why: assisted
+        ? ['Stuck for {0} sessions. Back to {1} {2} of help, then build up again.', stalls, dw, unit]
+        : ['Stuck for {0} sessions. Deload to {1} {2}.', stalls, dw, unit] }
+    }
+    return { policy, kind: 'hold', weight: w, rest, why: ['Missed reps last time. Same weight and rest again ({0} of {1} to go).', deloadAt - stalls, deloadAt] }
   }
 
   if (policy === 'double') {
@@ -774,6 +904,36 @@ export function nextPrescription(S, cfg, routine) {
     }
   }
   return { policy, kind: 'hold', weight: w, why: ['Missed reps last time. Same weight again ({0} of {1} to go).', deloadAt - stalls, deloadAt] }
+}
+
+// The undulating day's prescription, or null to fall back to the shared rules: nothing loaded yet
+// (a bodyweight lift climbs reps, a first session sets the baseline) or an assistance machine,
+// whose "max" would be the help it gives.
+function undulatingPrescription(S, cfg, { policy, inc, unit, owned, assisted }) {
+  if (assisted) return null
+  const all = sessionsFor(S, cfg.id, cfg, null).filter(s => s.mode === 'reps')
+  const day = dupDayIndex(all)
+  const reps = dupReps(cfg, DUP_DAYS[day])
+  const perSide = isPerSide(cfg)
+  const max = recentEstimatedMax(all, perSide)
+  if (!(max > 0)) {
+    const lastW = all.length ? all[all.length - 1].weight : 0
+    if (all.length && !(lastW > 0)) return null
+    return { policy, kind: 'first', dup: day, reps, why: ['Nothing logged yet, so this session sets the baseline.'] }
+  }
+  const ideal = max / (1 + ((perSide ? reps / 2 : reps) + DUP_RIR) / 30)
+  let weight
+  if (owned) {
+    const near = ownedAround(ideal, owned, Math.max(...owned))
+    weight = near.length ? near.reduce((a, b) => (Math.abs(b - ideal) < Math.abs(a - ideal) ? b : a)) : owned[0]
+  } else weight = Math.max(inc, snapWeight(ideal, inc))
+  // Compared with the last session of the same kind of day: that is what "up" means here.
+  const prev = [...all].reverse().find(s => s.target && s.target.dup === day && s.weight > 0)
+  const kind = prev && weight > prev.weight + 1e-9 ? 'up' : 'hold'
+  const why = day === 1 ? ['Heavy day: {0} reps at {1} {2}, from your estimated max of {3} {2}.', reps, weight, unit, round1(max)]
+    : day === 2 ? ['Light day: {0} reps at {1} {2}, from your estimated max of {3} {2}.', reps, weight, unit, round1(max)]
+      : ['Medium day: {0} reps at {1} {2}, from your estimated max of {3} {2}.', reps, weight, unit, round1(max)]
+  return { policy, kind, dup: day, weight, reps, why }
 }
 
 /**

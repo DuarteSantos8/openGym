@@ -70,7 +70,7 @@ import { exerciseHistory } from './lib/exercise-history.js'
 import { relativeSeries } from './lib/relative-strength.js'
 import { isBellEx, dbLoadOf, dbLoadFor, withDbLoad, entryDbLoad, currentDbLoad, isOneArm, dumbbellsOf, ownsDumbbells, withDumbbells, ownsNoDumbbells, withNoDumbbells, presetWeights, cleanWeights, canHaveStack, stackOf, withStack, stackFromStep, parseWeightList } from './lib/dumbbells.js'
 import { nextStep } from './lib/weight-step.js'
-import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS } from './lib/progression.js'
+import { policyFor, profileRule, defaultIncrement, POLICIES_FOR, POLICY_NAME, POLICY_DESC, MAX_BW_SETS, MAX_TRIPLE_SETS, DENSITY_FLOOR, dupReps } from './lib/progression.js'
 import { normalizeRepRange } from './lib/rep-range.js'
 import { isBackoff, backoffWeights } from './lib/backoff.js'
 import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeight, pyramidFromFlat, flatFromPyramid, pyramidLabel, PYRAMID_MAX, MAX_PYRAMID_SETS, PYRAMID_PRESETS } from './lib/pyramid.js'
@@ -2294,7 +2294,7 @@ const backoffOffered = (c, mode, ex, bw) => mode === 'reps' && !bw && !isAssiste
 
 // Double and triple progression both climb a rep range (`repsMin`..`reps`), so the sheet keeps it
 // normalised for either.
-const climbsRange = policy => policy === 'double' || policy === 'triple'
+const climbsRange = policy => policy === 'double' || policy === 'steady' || policy === 'triple'
 // Triple progression's set ceiling while it is being edited: never below the starting sets.
 const setsMaxOf = c => Math.max(Math.max(1, Math.round(c.sets) || 1), Math.min(MAX_TRIPLE_SETS, Math.round(c.setsMax) || 0))
 
@@ -2302,7 +2302,9 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
   // Triple progression adds sets and then load. Bodyweight work with nothing added already climbs
   // reps and then sets on its own (the rep ceiling below), and has no load to finish the cycle
   // with, so it is not offered there.
-  const options = (POLICIES_FOR[mode] || ['off']).filter(p => p !== 'triple' || !bw || c.weight > 0 || c.prog === 'triple')
+  // Undulating days and shorter rests move a load too, so the same holds for them.
+  const LOADED_ONLY = ['triple', 'undulating', 'density']
+  const options = (POLICIES_FOR[mode] || ['off']).filter(p => !LOADED_ONLY.includes(p) || !bw || c.weight > 0 || c.prog === p)
   if (options.length < 2) return null
   const inherited = policyFor({ id: ex.id }, routine, mode, fallback)
   // Freestyle has no routine to follow (#910). An exercise added there opens at what you did last
@@ -2374,6 +2376,13 @@ function ProgressionFields({ ex, mode, c, setC, routine, unit, perSide, bw, fall
         onChange={v => setC(x => ({ ...x, setsMax: v }))} />}
       {epleyEligible && <Stepper label={t('Deload 1RM (%)')} value={deloadPercent} step={5} min={50} max={95} decimal={false}
         onChange={v => setC(x => ({ ...x, deloadFactor: Number(v) / 100 }))} />}
+      {/* Shorter rests stop at this floor; the start is the exercise's own rest (or the default). */}
+      {active === 'density' && <Stepper label={t('Rest down to (s)')} value={c.restMin ?? DENSITY_FLOOR} step={15} min={15} max={600} decimal={false}
+        onChange={v => setC(x => ({ ...x, restMin: v }))} />}
+    </div>}
+    {/* What the three undulating days ask for, from the reps above. */}
+    {active === 'undulating' && mode === 'reps' && <div className="small dim" style={{ marginTop: -8, marginBottom: 18 }}>
+      {t('Medium {0} reps · heavy {1} · light {2}', dupReps({ ...c, id: ex.id }, 'medium'), dupReps({ ...c, id: ex.id }, 'heavy'), dupReps({ ...c, id: ex.id }, 'light'))}
     </div>}
     {invalid && <div className="small" role="alert" style={{ color: 'var(--red)', marginTop: -10, marginBottom: 18 }}>
       {t('Enter a positive step to use this progression rule.')}
@@ -2555,6 +2564,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     if (mode === 'reps' && !bw && (activePolicy === 'linear' || climbsRange(activePolicy))) {
       const deloadFactor = Math.max(0.5, Math.min(0.95, Number(c.deloadFactor) || 0.9))
       if (deloadFactor !== 0.9) prog.deloadFactor = deloadFactor
+    }
+    // Shorter rests: the floor, only when it is not the default.
+    if (mode === 'reps' && activePolicy === 'density') {
+      const restMin = Math.max(15, Math.min(600, Math.round(Number(c.restMin)) || DENSITY_FLOOR))
+      if (restMin !== DENSITY_FLOOR) prog.restMin = restMin
     }
     // Written only when it differs from what the dataset already says, so a barbell config
     // stays exactly the shape it was before these flags existed.
