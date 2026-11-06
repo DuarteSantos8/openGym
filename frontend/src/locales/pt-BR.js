@@ -3765,6 +3765,7 @@ export const PT_BR_OVERRIDES = {
 
   // --- WebDAV backup on a shared device (qa2-146) ---
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Outra pessoa configurou neste dispositivo, então nada seu vai para a pasta dela. Desconecte para configurar a sua.",
+  "This backup belongs to another account": "Este backup pertence a outra conta",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

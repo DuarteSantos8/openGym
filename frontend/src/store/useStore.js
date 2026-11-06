@@ -1114,15 +1114,15 @@ export const useStore = create((set, get) => {
     // the signed-out person ate: on a shared device it must not show on the next account's Home,
     // report or month story. Their token goes too; linking again is one code.
     unlinkNutrition().catch(() => {})
-    // The phone Coach's waiting proposal (lib/coach-device.js) is a plan made from the signed-out
-    // account's log: the next person must not be offered it. How the Coach runs (and its key,
-    // the device owner's choice) stays.
-    if (MOBILE) saveCoachDevice({ pending: null }).catch(() => {})
     setSync({ offline: false, auth: false, lastError: null, pending: false, lastSynced: 0 })
     // On a phone the file is wiped with it, now rather than after the usual wait: a start in
     // between would open in local mode on the signed-out account's data, since that boot takes
     // the file whenever storage holds nothing.
     const wiped = MOBILE ? nativePersist(true) : null
+    // The phone Coach's waiting proposal (lib/coach-device.js) is a plan made from the signed-out
+    // account's log: the next person must not be offered it. How the Coach runs (and its key,
+    // the device owner's choice) stays. After the state file, which must not wait for it.
+    const coachGone = MOBILE ? Promise.resolve(wiped).then(() => saveCoachDevice({ pending: null })).catch(() => {}) : null
     // The account's photos and videos go with its copy (a shared device keeps nothing of it),
     // except the ones a stash still refers to — whatever was pending is in a stash by now
     // (signOut refuses otherwise) and comes back with it. A file picked from here on is kept.
@@ -1138,7 +1138,7 @@ export const useStore = create((set, get) => {
         .then(all => mediaStore.retainOnly(new Set(Object.values(all).flatMap(e => [...keptHashes(e?.state)])), { keepPutAfter: since }))
         .catch(() => {})
     }
-    return wiped
+    return MOBILE ? Promise.all([wiped, coachGone]).then(([w]) => w) : wiped
   }
 
   /* The changes a forced sign-out or disconnect keeps, so that no change is ever lost silently.
