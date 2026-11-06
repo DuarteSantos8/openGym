@@ -82,6 +82,12 @@ describe('Stats redesign: Overview', () => {
     expect(mocks.nav).toHaveBeenCalledWith('/history')
   })
 
+  it('offers Progress photos before the first workout, so the first photo can be taken', () => {
+    mount(Object.assign(clone(DEF), { workouts: [] }))
+    const titles = [...host.querySelectorAll('[data-stats-links] .lrow-t')].map(t => t.textContent)
+    expect(titles).toContain('Progress photos')
+  })
+
   it('puts the pages behind Stats in one grouped list of rows under Body', () => {
     mount(Object.assign(clone(DEF), buildDemoState()))
     const list = card('#stats-body [data-stats-links]')

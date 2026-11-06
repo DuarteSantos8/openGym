@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { countedS } from '../lib/counted-log.js'
-import { dayPhotosOf } from '../lib/day-photos.js'
+import { dayPhotosOf, serverTakesDayPhotos } from '../lib/day-photos.js'
 import { EXIDX, matchExercise, betterWeight, isAssisted } from '../lib/exercises.js'
 import { lastBW, setLabel, modeOf, effortOf, entriesForExercise, metricEntriesForExercise, metricModeForEntry, bestWeightForEntry, completedRepsOf, workoutDay, workoutAt, lifetimeVolume } from '../lib/history.js'
 import { fmtNum, fmtDate, fmtVol, fmtDur, todayISO, isoOf, weekKey, weekStartOf, exerciseNameText } from '../lib/format.js'
@@ -559,6 +559,8 @@ export default function Stats() {
   const nav = useNavigate()
   // Exercises kept out of progression are kept out of the statistics too (lib/counted-log.js).
   const S = countedS(useStore(s => s.S))
+  const photoUser = useStore(s => s.user)
+  const photoConfig = useStore(s => s.config)
   const [range, setRange] = useState(90)
   // Plan's "Weekly muscle volume" row lands here (/stats?focus=weekly-volume): the Muscles card
   // opens on Planned and scrolls into view. The router is a HashRouter, so the query sits in the
@@ -867,7 +869,9 @@ export default function Stats() {
     bodyOn && <Row key="m" title={t('Body measurements')} accessory="chevron" tour="stats-measure" className="stats-link"
       value={(S.measurements || []).length ? fmtDate(S.measurements[S.measurements.length - 1].d, true) : null}
       onClick={() => nav('/measurements')} />,
-    bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
+    // Also before the first workout wherever a photo can be filed under a day: else the gallery,
+    // and its camera, could not be reached to add the very first one.
+    bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0 || serverTakesDayPhotos(photoUser, photoConfig)) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
     workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
     ...wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
       className="stats-link" onClick={() => openWrapped(y)} />),
