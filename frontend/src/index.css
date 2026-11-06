@@ -3912,3 +3912,5 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tempo-count{font-size:64px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;color:var(--label)}
 .tempo-sub{font-size:var(--fs-footnote);color:var(--label-2)}
 @media (prefers-reduced-motion:reduce){.tempo-stage{transition:none}}
+/* WebDAV backup (#582): the last run's line, in the warning tint when it failed. */
+.intg-note.warn{color:var(--orange-ink, var(--orange))}

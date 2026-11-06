@@ -12,7 +12,7 @@ describe('the directory', () => {
     expect(cardState('webhook', web)).toEqual({ status: 'server', action: null })
     expect(cardState('mcp', web)).toEqual({ status: 'server', action: null })
     expect(ids(web)).not.toContain('coach')   // the server's Coach, not offered here
-    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'automation', 'ai'])
+    expect(directory(web).map(c => c.id)).toEqual(['health', 'training', 'backup', 'automation', 'ai'])
   })
 
   it('a phone shows its own store only, by what the store says', () => {
@@ -78,5 +78,15 @@ describe('normalizeWebhookUrl', () => {
     expect(normalizeWebhookUrl('ftp://nas/x')).toBe('ftp://nas/x')
     expect(normalizeWebhookUrl('not a url')).toBe('not a url')
     expect(normalizeWebhookUrl('')).toBe('')
+  })
+})
+
+describe('the WebDAV card (#582)', () => {
+  it('needs no server, says when the last backup failed, and stays out of the demo', async () => {
+    const { cardState } = await import('./integrations.js')
+    expect(cardState('webdav', { user: null })).toEqual({ status: 'off', action: 'connect' })
+    expect(cardState('webdav', { webdav: { url: 'https://x/', lastOk: 1 } })).toEqual({ status: 'connected', action: 'manage' })
+    expect(cardState('webdav', { webdav: { url: 'https://x/', last: { ok: false } } })).toEqual({ status: 'attention', action: 'manage' })
+    expect(cardState('webdav', { demo: true })).toBeNull()
   })
 })

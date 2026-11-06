@@ -23,6 +23,8 @@ import { unlock, chime, playOnSilentSupported, vibrateSupported, appleTouchDevic
 import { REST_SOUND_IDS, restSoundOf } from '../lib/rest-sounds.js'
 import { setSlot, slotChoice, slotSound, toneFor, kindChoice, setKindSound, soundsOf, REST_KINDS } from '../lib/user-sounds.js'
 import OwnSounds from '../components/OwnSounds.jsx'
+import { confirmBackupImport } from '../components/backup-restore.js'
+import { WebDavRow } from '../components/WebDavBackup.jsx'
 import { StreakIconRows } from '../components/StreakIconPicker.jsx'
 import { StreakRuleRow } from '../components/StreakRule.jsx'
 import { scheduleModeOf, chooseFixedWeek, chooseRotation } from '../lib/rotation.js'
@@ -388,43 +390,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       const { backupImportError } = await import('../lib/backup-media.js')
       toast(backupImportError(e)); return
     }
-    const apply = async mergeWith => {
-      if (read.files.length) {
-        const { storeBackupMedia } = await import('../lib/backup-media.js')
-        await storeBackupMedia(read.files, { limits: limitsFrom(useStore.getState().config) })
-      }
-      importBackup(read.state, { mergeWith })
-      // The photos it brought are pending here and maybe gone from the server (a reset): sent now,
-      // not after the ten-minute dedupe of the run before the reset.
-      if (read.files.length) syncMedia({ force: true })
-      toast(t('Backup imported'))
-    }
-    // Signed in, the server is asked first: a workout logged since the backup was made, or on
-    // another device meanwhile, would be deleted from the profile by the replace — said, with the
-    // choice to merge those in instead (useStore importConflict / importBackup).
-    const conflict = await importConflict(read.state)
-    if (conflict) {
-      const n = conflict.workouts
-      menuSheet({
-        title: t('Import backup?'),
-        subtitle: conflict.device
-          ? t(n === 1 ? 'This device has 1 workout that is not in this backup. Replacing deletes it.'
-            : 'This device has {0} workouts that are not in this backup. Replacing deletes them.', n)
-          : t(n === 1
-            ? 'The server has 1 workout that is not in this backup, logged since it was made or on another device. Replacing deletes it.'
-            : 'The server has {0} workouts that are not in this backup, logged since it was made or on another device. Replacing deletes them.', n),
-        items: [
-          { icon: 'trash', label: t('Replace anyway'), danger: true, onClick: () => apply(null) },
-          { icon: 'merge', label: t('Merge them in'), onClick: () => apply(conflict) },
-          { icon: 'xmark', label: t('Cancel'), onClick: () => {} },
-        ],
-      })
-      return
-    }
-    confirmSheet({
-      title: t('Import backup?'), message: t('This replaces all current data with the backup file.'), confirmText: t('Import'), danger: true,
-      onConfirm: () => apply(null)
-    })
+    await confirmBackupImport(read)
   }
   // Whether any custom exercise has a photo or video: the rows about them only show then.
   const hasMedia = referencedFiles(S).length > 0
@@ -1195,6 +1161,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="note" iconTint="var(--green)" title={t('Performance report (PDF)')} subtitle={t('Charts, totals and every workout of the last days or weeks.')} accessory="chevron" onClick={reportSheet} />
         {/* One row per set for spreadsheets and other apps (#647); our own importer reads it back. */}
         <Row icon="share" iconTint="var(--green)" title={t('Export as spreadsheet (CSV)')} subtitle={t('Workouts, body weight and measurements')} accessory="chevron" onClick={csvExportSheet} tour="data-csv" />
+        {/* A daily copy in a WebDAV folder of your own (#582), the same sheet as Integrations'. */}
+        {!DEMO && <WebDavRow />}
         {/* 14 is AUTO_BACKUP_KEEP in lib/mobile.js, written out because the Settings tests mock
             that module wholesale; mobile.autobackup.test.js pins the two together. */}
         {MOBILE && <Row icon="folder" iconTint="var(--blue)" title={t('Auto-backup on changes')} tour="data-auto"
