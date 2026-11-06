@@ -153,13 +153,26 @@ final class OpenGymUITests: XCTestCase {
         app.launch()
         chooseLocal()
         shot("1-home")
-        tap(app.buttons["Load starter plan"], "Load starter plan")
-        tap(button(startingWith: "Full Body"), "the Full Body plan")
-        tap(app.buttons["Choose a different workout"], "Choose a different workout")
-        startFullBodyA()
+        // A retry (-retry-tests-on-failure) starts where the failed try stopped: the plan loaded
+        // and a workout running. Pick up from there instead of looking for the empty home again.
+        let finish = app.buttons["Finish"]
+        let resume = app.buttons["Resume"]
+        if app.buttons["Load starter plan"].waitForExistence(timeout: 5) {
+            tap(app.buttons["Load starter plan"], "Load starter plan")
+            tap(button(startingWith: "Full Body"), "the Full Body plan")
+        }
+        if !finish.exists && resume.exists { resume.tap() }
+        if !finish.waitForExistence(timeout: 5) {
+            tap(app.buttons["Choose a different workout"], "Choose a different workout")
+            startFullBodyA()
+        }
         shot("2-workout")
-        let tick = app.switches["Set 1 done"]
-        tap(tick, "Set 1 done")
+        // The first set not yet ticked (Set 1 on a first try, the next one on a retry).
+        // Pinned by its label, so the retry tap below can never land on the set after it.
+        let open = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@ AND label ENDSWITH %@ AND value == %@", "Set ", " done", "0")).firstMatch
+        XCTAssertTrue(open.waitForExistence(timeout: 15), "no unticked set")
+        let tick = app.switches[open.label]
+        tap(tick, open.label)
         // The first rest asks for notifications; on a slow simulator the question can take a while.
         let countdown = button(startingWith: "1:")
         let allow = springboard.alerts.buttons["Allow"]
@@ -184,8 +197,10 @@ final class OpenGymUITests: XCTestCase {
 
         XCUIDevice.shared.press(.home)
         // The rest is 90 s; its end has to arrive on its own, with the app in the background.
+        // The title names the set waiting ("Rest’s over: Goblet Squat, 10 reps", lib/rest-next.js)
+        // and is "Rest’s over. Next set!" only when nothing is left, so match what both share.
         let banner = springboard.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Next set")).firstMatch
+            .matching(NSPredicate(format: "label CONTAINS[c] %@ OR label CONTAINS[c] %@", "Rest’s over", "Rest's over")).firstMatch
         let arrived = banner.waitForExistence(timeout: 120)
         shot("4-notification")
         XCTAssertTrue(arrived, "the end of the rest never arrived as a notification")

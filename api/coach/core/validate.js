@@ -121,6 +121,22 @@ const ALREADY_IN = (where, c, routine) =>
 const exIdsOf = routine => (routine.ex || []).map(e => `"${e.id}"`).join(', ') || '(none)';
 const ODD_PER_SIDE = where =>
   `${where} is a per-side exercise, so reps are the total across both sides and must be an even number`;
+// The longest plan note the Coach may write on an exercise: a cue or two, not an essay.
+export const NOTE_TIP_MAX = 300;
+export const MAX_COACH_BACKUPS = 3;
+function backupsOf(list, selfId, ctx) {
+  if (!Array.isArray(list)) return [];
+  const out = [];
+  for (const raw of list) {
+    if (!isStr(raw) && !(typeof raw === 'number' && Number.isInteger(raw))) continue;
+    const id = libraryHas(raw) ? raw : asLibraryId(raw);
+    if (!libraryHas(id) || id === selfId || out.includes(id) || offEquipment(ctx, id)) continue;
+    out.push(id);
+    if (out.length >= MAX_COACH_BACKUPS) break;
+  }
+  return out;
+}
+
 const INVERTED_RANGE = where =>
   `${where} sets a rep ceiling below its own floor — repsMax must be at least repsMin`;
 
@@ -216,6 +232,14 @@ export function validatePlan(data, ctx = {}) {
       if (perSide) clean.side = true;
       if (isStr(e.sg)) clean.sg = clampStr(e.sg, 20);
       if (isStr(e.why)) clean.why = clampText(e.why, 1500);
+      // What to keep in mind while doing it ("brace before you unrack"), kept on the routine as
+      // the exercise's plan note, which the workout shows under its name (#1003).
+      if (isStr(e.note)) clean.note = clampText(e.note, NOTE_TIP_MAX);
+      // Backups for a taken machine (#1003): library exercises only (a routine's backups are the
+      // catalogue's, plan-share.js), never the exercise itself, never off the gym's equipment.
+      // Optional extras, so one that does not resolve is left out rather than failing the plan.
+      const subs = backupsOf(e.subs, eid, ctx);
+      if (subs.length) clean.subs = subs;
       // The same exercise twice in one routine has no honest reading: `reorder` can never be
       // satisfied again (it demands each id once), and every targeted change resolves to
       // whichever copy comes first.

@@ -12,6 +12,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Hevy API import keeps workout and exercise notes, routine rest timers and rep ranges, which become double progression (#815, idea by @lodepav).
 - Fixed: Strong's "Lat Pulldown (Cable)" and "Lat Pulldown (Machine)" arrived as new exercises of your own instead of the lat pulldown.
 
+**Backups, coach tips, gyms and planned sessions**
+- Fixed: the iPhone UI test looked for "Next set" in the rest-over notification, which now names the set waiting ("Rest’s over: Barbell Full Squat, 8 reps"). The notification was arriving all along; the test now reads its title, and a retry picks up the workout the first try left running.
+- Coach plans keep their tips and backups: a cue per exercise ("Brace before each rep") lands in the routine and shows under the exercise in every workout, and up to three backups per exercise come along for when the machine is taken. Reviews and revisions see the notes and backups you already have and keep them (#1003, idea by @SANCLA).
+- The swap picker in a workout has "Ask the Coach for a swap" at the top when the Coach is set up, opening straight on "Machine’s taken" (#1003).
+- No Coach? The Backups sheet suggests a few in one tap: the same movement or muscle, on other kit your gym has (#1003).
+- Numbers per gym: an exercise can keep separate numbers for each gym (exercise settings → Per gym), so last time, the rows a session opens with and the next weight come from the gym you are at. Add the machine's brand and the same brand at another gym shares the numbers. The exercise history gets an All gyms chooser (#988, idea by @RobinRHL, brand-as-label design from @lodepav).
+- Session targets: a coach or planner can set the exact rows for one routine on one day (warm-ups, load, reps and rest per row) through the synced profile. The workout opens at them, your routine and its progression stay untouched, and a target that does not fit is refused with a reason instead of half applied. Format in docs/dev/SESSION_TARGETS.md (#972, idea by @soshiforehead-spec).
+
 **Watch sync, rebuilt to not lose a single set**
 - Apple Watch and Wear OS keep every set, start, finish and discard in an outbox of their own and send it again until the phone confirms it applied it. A failed transfer, a killed app or a phone that was off all day no longer eats a set.
 - Apple Watch: sets reach the iPhone in a moment while it is near, instead of whenever the system felt like it, so logging on both devices back and forth stays in step (#882).

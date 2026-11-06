@@ -54,7 +54,10 @@ const EX_SCHEMA = {
     weight: { type: 'number' }, prog: STR, inc: { type: 'number' },
     repsMin: { type: 'integer' }, repsMax: { type: 'integer' },
     bodyweight: { type: 'boolean' }, side: { type: 'boolean' },
-    sg: STR, why: STR, position: { type: 'integer' }
+    sg: STR, why: STR, position: { type: 'integer' },
+    // A tip to keep in mind while doing it, and up to three library ids to do instead when the
+    // machine is taken (#1003). Both kept with the routine; `why` is for the review screen only.
+    note: STR, subs: { type: 'array', maxItems: 3, items: STR }
   },
   required: ['id', 'sets']
 };
