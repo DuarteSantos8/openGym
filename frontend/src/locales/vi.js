@@ -4352,4 +4352,7 @@ export default {
   "{0} of {1} min": "{0} / {1} phút",
   "Level": "Mức",
   "Level {0}": "Mức {0}",
+  "Rest before the next exercise": "Nghỉ trước bài tiếp theo",
+  "After the last set of an exercise, while you walk to the next machine.": "Sau hiệp cuối của một bài, trong lúc bạn đi sang máy tiếp theo.",
+  "The break after this exercise’s last set, to change machines before the next one.": "Quãng nghỉ sau hiệp cuối của bài này, để đổi máy trước bài tiếp theo.",
 };

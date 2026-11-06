@@ -4384,4 +4384,7 @@ export default {
   "{0} of {1} min": "{0} з {1} хв",
   "Level": "Рівень",
   "Level {0}": "Рівень {0}",
+  "Rest before the next exercise": "Відпочинок перед наступною вправою",
+  "After the last set of an exercise, while you walk to the next machine.": "Після останнього підходу вправи, поки йдеш до наступного тренажера.",
+  "The break after this exercise’s last set, to change machines before the next one.": "Пауза після останнього підходу цієї вправи, щоб перейти до іншого тренажера.",
 }

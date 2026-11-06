@@ -4380,4 +4380,7 @@ export default {
   "{0} of {1} min": "{0} / {1} 分鐘",
   "Level": "阻力段",
   "Level {0}": "阻力 {0} 段",
+  "Rest before the next exercise": "下一個動作前的休息",
+  "After the last set of an exercise, while you walk to the next machine.": "一個動作的最後一組之後，走去下一台器材的時間。",
+  "The break after this exercise’s last set, to change machines before the next one.": "這個動作最後一組之後的休息，好在下一個動作前換器材。",
 }

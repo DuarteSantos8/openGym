@@ -4390,4 +4390,7 @@ export default {
   "{0} of {1} min": "{0} / {1} perc",
   "Level": "Fokozat",
   "Level {0}": "{0}. fokozat",
+  "Rest before the next exercise": "Pihenő a következő gyakorlat előtt",
+  "After the last set of an exercise, while you walk to the next machine.": "Egy gyakorlat utolsó sorozata után, amíg átsétálsz a következő géphez.",
+  "The break after this exercise’s last set, to change machines before the next one.": "A szünet a gyakorlat utolsó sorozata után, hogy gépet válts a következő előtt.",
 }

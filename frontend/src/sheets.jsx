@@ -2365,6 +2365,9 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
   // No warm-up rest of its own: the profile's (Settings > Workout) when it has one, else the work rest.
   const warmAll = typeof st.warmupRestSec === 'number' ? st.warmupRestSec : null
   const warmLikeAll = warmAll === null ? t('Like the work sets') : t('Default ({0})', warmAll > 0 ? fmtRest(warmAll) : t('No timer'))
+  // And the rest into the next exercise (D#487): the profile's, else like the work sets.
+  const nextAll = typeof st.nextRestSec === 'number' ? st.nextRestSec : null
+  const nextLikeAll = nextAll === null ? t('Like the work sets') : t('Default ({0})', nextAll > 0 ? fmtRest(nextAll) : t('No timer'))
   // A hold's switch-sides pause when it has none of its own (Workout.jsx SWITCH_SIDES_SEC).
   const sideDefault = t('Default ({0})', fmtRest(10))
   // No rest of its own: the default rest timer's, which may itself be off.
@@ -2476,8 +2479,11 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // Planned substitutes (lib/routine-backups.js): kept whenever the slot has them, whichever
     // sheet saves it, so an edit here never drops them; only real exercises, never itself.
     const withSubs = withBackups(c.subs, ex.id, id => !!EXIDX[id], c.subCfg)
+    // The rest into the next exercise (D#487), only when picked: else the profile's or the work rest.
+    const withNext = c.nextRestOff === true ? { nextRestOff: true } : c.nextRestSec > 0 ? { nextRestSec: Math.round(c.nextRestSec) } : {}
     const withSetRests = {
       ...(c.warmupRestOff === true ? { warmupRestOff: true } : c.warmupRestSec > 0 ? { warmupRestSec: Math.round(c.warmupRestSec) } : {}),
+      ...withNext,
       ...(perSide && mode === 'time' && c.sideRestOff === true ? { sideRestOff: true }
         : perSide && c.sideRestSec > 0 ? { sideRestSec: Math.round(c.sideRestSec) } : {}),
       // Holds that start by themselves, this exercise's own say (lib/auto-holds.js autoHoldsFor):
@@ -2487,7 +2493,7 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     // The treadmill's grade, only when it has one, so a flat slot keeps the shape it had.
     const incline = clampIncline(c.incline)
     const level = clampLevel(c.level)
-    if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...withNote, ...withRest, ...withSubs })
+    if (cardio) saveAs({ sets, min: Math.max(1, Math.round(c.min) || 20), speed: Math.max(0, c.speed || 8), ...(incline > 0 ? { incline } : {}), ...(level > 0 ? { level } : {}), ...withNote, ...withRest, ...withNext, ...withSubs })
     else if (mode === 'time') saveAs({ sets, mode: 'time', sec: Math.max(1, Math.round(c.sec) || 45), weight: Math.max(0, c.weight || 0), ...flags, ...(perSide ? { side: true } : {}), ...prog, ...withNote, ...withWarmups, ...withRest, ...withSetRests, ...withMeant, ...withFailure, ...withSubs })
     else {
       // A unilateral target is stored even: the split has to divide, and a typed 15 would
@@ -2662,6 +2668,27 @@ function ExConfig({ ex, existing, onSave, onDelete, onReplace, close, routine, i
     <div className="small dim" style={{ marginBottom: 18 }}>
       {t('Rest after each set of this exercise. No timer means no countdown, you go when you’re ready.')}
     </div>
+    {/* The rest after this exercise's last set, into the next one (D#487). */}
+    {<>
+      <div className="sect-b cfg-rest" style={{ marginBottom: 6 }}>
+        <Row icon="timer" iconTint="var(--teal)" title={t('Rest before the next exercise')} accessory="chevron"
+          value={c.nextRestOff === true ? t('No timer') : c.nextRestSec > 0 ? fmtRest(c.nextRestSec) : nextLikeAll}
+          onClick={() => menuSheet({
+            title: t('Rest before the next exercise'),
+            items: [
+              { icon: 'timer', label: nextLikeAll, on: !(c.nextRestOff === true) && !(c.nextRestSec > 0), onClick: () => setC(x => { const { nextRestOff, nextRestSec, ...rest } = x; return rest }) },
+              { icon: 'pause', label: t('No timer'), on: c.nextRestOff === true, onClick: () => setC(x => { const { nextRestSec, ...rest } = x; return { ...rest, nextRestOff: true } }) },
+              { icon: 'clock', label: t('Pick a time'), on: c.nextRestOff !== true && c.nextRestSec > 0, onClick: () => durationSheet({
+                title: t('Rest before the next exercise'), value: c.nextRestSec > 0 ? c.nextRestSec : (nextAll > 0 ? nextAll : 120), max: REST_MAX, off: t('No timer'),
+                onDone: v => setC(x => { const { nextRestOff, nextRestSec, ...rest } = x; return v > 0 ? { ...rest, nextRestSec: v } : { ...rest, nextRestOff: true } }),
+              }) },
+            ],
+          })} />
+      </div>
+      <div className="small dim" style={{ marginBottom: 18 }}>
+        {t('The break after this exercise’s last set, to change machines before the next one.')}
+      </div>
+    </>}
     {/* The warm-ups' own rest: the profile's or like the work sets (no field, as always), no timer,
         or a time of their own. The last warm-up still rests the full work rest before the first work set. */}
     {!cardio && <>

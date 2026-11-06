@@ -4387,4 +4387,7 @@ export default {
   "{0} of {1} min": "{0} / {1} 分钟",
   "Level": "阻力档",
   "Level {0}": "阻力 {0} 档",
+  "Rest before the next exercise": "下一个动作前的休息",
+  "After the last set of an exercise, while you walk to the next machine.": "一个动作的最后一组之后，走去下一台器械的时间。",
+  "The break after this exercise’s last set, to change machines before the next one.": "这个动作最后一组之后的休息，好在下一个动作前换器械。",
 }

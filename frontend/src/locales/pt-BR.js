@@ -2948,6 +2948,8 @@ export const PT_BR_OVERRIDES = {
   "Weekly cardio goal": "Meta semanal de cardio",
   "150 minutes a week is the number health advice keeps repeating. Pick yours, or none.": "150 minutos por semana é o número que as dicas de saúde não param de repetir. Escolha o seu, ou nenhum.",
   "Cardio this week": "Cardio nesta semana",
+  "After the last set of an exercise, while you walk to the next machine.": "Depois da última série de um exercício, enquanto você vai para o próximo aparelho.",
+  "The break after this exercise’s last set, to change machines before the next one.": "A pausa depois da última série deste exercício, para trocar de aparelho antes do próximo.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -21,7 +21,7 @@ import { pinState } from '../lib/queue.js'
 import { t, tn, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import { api, beacon } from '../lib/api.js'
 import { pyramidRestFor, maxRecordAt, isPyramid, pyramidLabel } from '../lib/pyramid.js'
-import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest } from '../lib/supersetFlow.js'
+import { insertionIndexAfterCurrentUnit, nextUnfinishedUnit, setProgressHighWater, supersetFlowStep, restAfterSet, restOnRecheck, restSecFor, warmupRestSecFor, sideRestFor, ownSetRest, ownExerciseRest, stepUnitIndex, advanceAfterTimedRest, transitionRestFor } from '../lib/supersetFlow.js'
 import Media from '../components/Media.jsx'
 import WorkoutScrollAnchor from '../components/WorkoutScrollAnchor.jsx'
 import WorkoutChips from '../components/WorkoutChips.jsx'
@@ -2104,7 +2104,13 @@ function ActiveWorkout() {
       // profile's); the last ramp set, into the first work set, still gets the working rest.
       // A set given its own rest in its menu (#609) keeps it, whatever the exercise would rest.
       const ownRest = ownSetRest(fresh.entries[idx].sets[setSpanAt(fresh.entries[idx].sets, i)[0]])
-      const restAfter = ownRest ?? warmupRestSecFor(fresh.entries[idx], i, restSec, useStore.getState().S.warmupRestSec)
+      let restAfter = ownRest ?? warmupRestSecFor(fresh.entries[idx], i, restSec, useStore.getState().S.warmupRestSec)
+      // The exercise is done and another follows: the rest into it may be a transition of its
+      // own (D#487), the exercise's or the profile's. A set given its own rest still keeps that.
+      if (ownRest == null && freshUnitDone && nextUnit) {
+        const into = transitionRestFor(fresh.entries, freshUnit || [idx], useStore.getState().S.nextRestSec)
+        if (into !== null) restAfter = into
+      }
 
       // A re-check of finished work must not navigate or reopen a sheet, but it may still owe
       // you a rest — see restOnRecheck, and the other half of issue #3. A rest that already ran

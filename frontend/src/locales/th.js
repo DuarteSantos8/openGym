@@ -4398,4 +4398,7 @@ export default {
   "{0} of {1} min": "{0} จาก {1} นาที",
   "Level": "ระดับ",
   "Level {0}": "ระดับ {0}",
+  "Rest before the next exercise": "พักก่อนท่าถัดไป",
+  "After the last set of an exercise, while you walk to the next machine.": "หลังเซ็ตสุดท้ายของท่า ระหว่างเดินไปเครื่องถัดไป",
+  "The break after this exercise’s last set, to change machines before the next one.": "ช่วงพักหลังเซ็ตสุดท้ายของท่านี้ เพื่อย้ายเครื่องก่อนท่าถัดไป",
 }

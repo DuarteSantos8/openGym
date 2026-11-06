@@ -4387,4 +4387,7 @@ export default {
   "{0} of {1} min": "{1}분 중 {0}분",
   "Level": "강도",
   "Level {0}": "강도 {0}",
+  "Rest before the next exercise": "다음 운동 전 휴식",
+  "After the last set of an exercise, while you walk to the next machine.": "한 운동의 마지막 세트 후, 다음 기구로 가는 동안이에요.",
+  "The break after this exercise’s last set, to change machines before the next one.": "이 운동의 마지막 세트 후 쉬는 시간이에요. 다음 운동 전에 기구를 바꿔요.",
 }

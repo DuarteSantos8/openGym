@@ -4442,4 +4442,7 @@ export default {
   "{0} of {1} min": "{0} من {1} د",
   "Level": "المستوى",
   "Level {0}": "المستوى {0}",
+  "Rest before the next exercise": "راحة قبل التمرين التالي",
+  "After the last set of an exercise, while you walk to the next machine.": "بعد آخر مجموعة من التمرين، وأنت في طريقك إلى الجهاز التالي.",
+  "The break after this exercise’s last set, to change machines before the next one.": "الاستراحة بعد آخر مجموعة من هذا التمرين، لتنتقل إلى جهاز آخر قبل التالي.",
 }

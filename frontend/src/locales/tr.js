@@ -4387,4 +4387,7 @@ export default {
   "{0} of {1} min": "{0} / {1} dk",
   "Level": "Seviye",
   "Level {0}": "Seviye {0}",
+  "Rest before the next exercise": "Sonraki egzersizden önce dinlenme",
+  "After the last set of an exercise, while you walk to the next machine.": "Bir egzersizin son setinden sonra, sıradaki makineye yürürken.",
+  "The break after this exercise’s last set, to change machines before the next one.": "Bu egzersizin son setinden sonraki mola, sıradakinden önce makine değiştirmek için.",
 }

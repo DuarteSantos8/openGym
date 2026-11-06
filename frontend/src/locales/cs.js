@@ -4352,4 +4352,7 @@ export default {
   "{0} of {1} min": "{0} z {1} min",
   "Level": "Úroveň",
   "Level {0}": "Úroveň {0}",
+  "Rest before the next exercise": "Pauza před dalším cvikem",
+  "After the last set of an exercise, while you walk to the next machine.": "Po poslední sérii cviku, než dojdeš k dalšímu stroji.",
+  "The break after this exercise’s last set, to change machines before the next one.": "Pauza po poslední sérii tohoto cviku, abys stihl přejít k dalšímu stroji.",
 }

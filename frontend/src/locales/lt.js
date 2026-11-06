@@ -4383,4 +4383,7 @@ export default {
   "{0} of {1} min": "{0} iš {1} min",
   "Level": "Lygis",
   "Level {0}": "{0} lygis",
+  "Rest before the next exercise": "Poilsis prieš kitą pratimą",
+  "After the last set of an exercise, while you walk to the next machine.": "Po paskutinio pratimo serijos, kol einate prie kito treniruoklio.",
+  "The break after this exercise’s last set, to change machines before the next one.": "Pertrauka po paskutinės šio pratimo serijos, kad spėtumėte pereiti prie kito treniruoklio.",
 }

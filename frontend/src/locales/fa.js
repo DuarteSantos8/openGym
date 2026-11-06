@@ -4352,4 +4352,7 @@ export default {
   "{0} of {1} min": "{0} از {1} دقیقه",
   "Level": "سطح",
   "Level {0}": "سطح {0}",
+  "Rest before the next exercise": "استراحت پیش از حرکت بعدی",
+  "After the last set of an exercise, while you walk to the next machine.": "بعد از آخرین ست یک حرکت، وقتی به سمت دستگاه بعدی می‌روی.",
+  "The break after this exercise’s last set, to change machines before the next one.": "استراحت بعد از آخرین ست این حرکت، برای عوض کردن دستگاه پیش از حرکت بعدی.",
 }

@@ -4387,4 +4387,7 @@ export default {
   "{0} of {1} min": "{0} z {1} min",
   "Level": "Poziom",
   "Level {0}": "Poziom {0}",
+  "Rest before the next exercise": "Przerwa przed następnym ćwiczeniem",
+  "After the last set of an exercise, while you walk to the next machine.": "Po ostatniej serii ćwiczenia, gdy idziesz do następnej maszyny.",
+  "The break after this exercise’s last set, to change machines before the next one.": "Przerwa po ostatniej serii tego ćwiczenia, by zmienić maszynę przed następnym.",
 }

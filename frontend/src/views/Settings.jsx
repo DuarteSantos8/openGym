@@ -567,6 +567,25 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       ],
     })} />
 
+  // The rest into the next exercise for every exercise without its own (D#487). Absent is like
+  // the work sets, 0 no timer (lib/supersetFlow.js transitionRestFor).
+  const nextAll = typeof S.nextRestSec === 'number' ? S.nextRestSec : null
+  const setNext = v => update(s => { if (v === null) delete s.nextRestSec; else s.nextRestSec = v })
+  const nextRestRow = <Row icon="timer" iconTint="var(--teal)" title={t('Rest before the next exercise')} accessory="chevron"
+    subtitle={t('After the last set of an exercise, while you walk to the next machine.')}
+    value={nextAll === null ? t('Like the work sets') : nextAll > 0 ? fmtRest(nextAll) : t('No timer')}
+    onClick={() => menuSheet({
+      title: t('Rest before the next exercise'),
+      items: [
+        { icon: 'timer', label: t('Like the work sets'), on: nextAll === null, onClick: () => setNext(null) },
+        { icon: 'pause', label: t('No timer'), on: nextAll === 0, onClick: () => setNext(0) },
+        { icon: 'clock', label: t('Pick a time'), on: nextAll > 0, onClick: () => durationSheet({
+          title: t('Rest before the next exercise'), value: nextAll > 0 ? nextAll : 120, max: REST_MAX, off: t('No timer'),
+          onDone: v => setNext(v > 0 ? v : 0),
+        }) },
+      ],
+    })} />
+
   const pages = {
     modules: () => <ModulesPage />,
     watch: () => <WatchSettingsPage />,
@@ -595,6 +614,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       <Section title={t('Rest')} footer={t('Each exercise can have its own rest too. Set it in the exercise settings of a routine.')}>
         {restRow}
         {warmupRestRow}
+        {nextRestRow}
         {restPauseRow}
       </Section>
       <Section title={t('Logging')}>
