@@ -306,3 +306,5 @@ sign-in `rolesFromGroups(idToken.groups, rules)` gives `{ access, admin, freeTra
 Hand `staff`, `freeTrainer` and `memberOf` to `org.syncClaimRoles(uid, roles)`: it only adds and
 removes rows marked `source: 'oidc'`, so roles an admin gave by hand stay. `access` decides whether
 a sign-in may create an account; `admin` maps onto `user.admin` (owner rules unchanged).
+This is wired up in `api/oidc/` (1.4.5): `OIDC_ROLE_MAP` is read at boot and applied at every
+provider sign-in; docs/SELF_HOSTING.md has the operator's side.

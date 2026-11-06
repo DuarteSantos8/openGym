@@ -469,6 +469,186 @@ that only has a password cannot sign in.
 The mobile app keeps pairing: someone with a password signs in to the website with it and pairs
 from Settings → Account → "Pair the mobile app", as with a passkey.
 
+### Sign in with your identity provider (OIDC, optional)
+
+Already running Authentik, Authelia, Keycloak, voidAuth or Pocket ID for the rest of your
+homelab? openGym can sign people in through it, next to passkeys (not instead of them). Off
+until you set an issuer and a client:
+
+```bash
+OIDC_ISSUER=https://auth.example.com/application/o/opengym   # whatever the provider calls its issuer
+OIDC_CLIENT_ID=opengym
+OIDC_CLIENT_SECRET=...            # leave out for a public client (PKCE only)
+OIDC_LABEL=Authentik              # the name on the button: "Sign in with Authentik"
+```
+
+At the provider, make a client with the **authorization code** flow and register exactly one
+redirect URI: `<ORIGIN>/api/oidc/callback`, e.g. `https://gym.example.com/api/oidc/callback`
+(on a subpath install, set `OIDC_REDIRECT_URI` to the full callback address). openGym reads
+`<OIDC_ISSUER>/.well-known/openid-configuration` at the first sign-in and every hour after, so
+the issuer you set must be the one that document names.
+
+What it does:
+
+- The sign-in screen shows **Sign in with {label}** first. A first sign-in makes a profile, named
+  after what the provider calls the person, and `FIRST_USER_ADMIN` works for it exactly as for a
+  passkey sign-up: the very first profile on an empty instance becomes its admin and owner.
+- The phone app finds the button on its "Connect to my server" sheet as soon as the address is
+  typed. It opens the provider in the system browser (Safari's sign-in sheet on iPhone, a Custom Tab
+  on Android) and comes back on `opengym://oidc`. Nothing to register for that: the app's way back
+  is a one-time code the server hands out itself, and it only works with a secret that never
+  leaves the phone.
+- A passkey profile can link the provider in Settings → Account → **Sign in with {label}**
+  (it asks the usual passkey or password check first), and unlink it again while it has another
+  way in. Someone who only ever signed in through the provider can still add passkeys, and
+  confirms sensitive changes (pairing a phone, adding a passkey, deleting the account) with a
+  fresh sign-in at the provider.
+- Admin → **Identity provider** shows what the server was told, whether the provider answered,
+  how many signing keys it loaded, and the last error. **Check now** asks again without a restart.
+
+**Who gets in.** With no group settings, anyone your provider signs in gets a profile. To let
+in only a group (the "being in the openGym group is the invite" setup):
+
+```bash
+OIDC_SCOPES=openid profile email groups     # add whatever scope makes your provider send groups
+OIDC_GROUPS_CLAIM=groups                    # the claim name; a dotted path works (realm_access.roles)
+OIDC_ALLOWED_GROUPS=opengym                 # comma separated; one of them is enough
+```
+
+Groups are read from the ID token, or from userinfo when the ID token has none. Someone taken out of
+the group is refused at their next provider sign-in, and every session their profile still had
+ends right then. With `INVITE_ONLY=1` and no groups set, provider sign-in only works for profiles
+that already exist (linked in Settings); with groups set, the group is the invite.
+
+**Roles from groups.** `OIDC_ROLE_MAP` maps groups onto openGym roles, `role=group` pairs, comma
+separated. `access` lets a group in, `admin` makes its members admins, `trainer` free trainers,
+and with `TRAINERS=on` a studio role names its gym id:
+
+```bash
+OIDC_ROLE_MAP="access=opengym, admin=opengym-admins, trainer=pt-freelance, lead@g_x1=fitbox-leads, trainer@g_x1=fitbox-staff, member@g_x1=fitbox"
+```
+
+A role the map gave is taken away again when the group goes; a role an admin gave by hand never is,
+and the owner always stays admin. Roles are applied at each provider sign-in.
+
+**Linking by e-mail** is off. With `OIDC_EMAIL_LINKING=1`, a first provider sign-in whose address
+matches a profile's sign-in e-mail (Settings → Account, with `PASSWORD_LOGIN`) is linked to that
+profile, but only when the provider says `email_verified: true`. Turn it on only if your provider
+really verifies addresses (some let people type any address and still call it verified); otherwise
+link from Settings. An unverified match is always refused, never linked and never duplicated.
+
+**Provider only.** `OIDC_ONLY=1` makes the provider the way in: no passkey or password sign-ups,
+and passkey and password sign-ins only for admins, so a provider outage never locks you out of your
+own server. Pairing a phone and existing sessions keep working.
+
+**Signing out there too.** `OIDC_LOGOUT=1` sends the browser on to the provider's
+`end_session_endpoint` after Sign out (with `client_id` and `post_logout_redirect_uri=<ORIGIN>/`,
+which some providers want registered as well). Providers without one (Authelia, for one) simply
+ignore it.
+
+**Other knobs.** `OIDC_TOKEN_AUTH=post` sends the client secret in the form instead of as Basic
+auth, for providers that want `client_secret_post`. `SESSION_SAMESITE=strict` keeps the session
+cookie off every request another site starts (the default `lax` is what older installs had).
+
+**What is checked.** The authorization code flow with PKCE (S256), a fresh `state` and `nonce`
+for each sign-in and a 10-minute cookie that ties the callback to the browser that started it. The
+ID token's signature is verified against the provider's JWKS (RS, PS, ES and EdDSA; never `none`
+or HS), and `iss`, `aud`/`azp`, `exp`, `iat`, `nbf` and the `nonce` have to match. The callback is
+rate-limited per address, and wrong states and tokens count toward the same pause as wrong
+passwords. A failure is in the activity log with the check that refused it.
+
+#### Recipes
+
+Each provider below needs the client described above: authorization code, PKCE allowed, the
+redirect URI `https://gym.example.com/api/oidc/callback`, scopes `openid profile email` plus
+whatever carries groups.
+
+**Authentik.** Applications → Create with provider → OAuth2/OpenID Provider. Client type
+confidential, redirect URI as above, signing key set (any certificate; without one Authentik signs
+with HS256, which openGym refuses). The default `profile` scope mapping sends `groups`.
+
+```bash
+OIDC_ISSUER=https://authentik.example.com/application/o/opengym/
+OIDC_CLIENT_ID=<client id>
+OIDC_CLIENT_SECRET=<client secret>
+OIDC_LABEL=Authentik
+OIDC_ALLOWED_GROUPS=opengym
+```
+
+**Authelia.** In `configuration.yml`, under `identity_providers.oidc.clients`:
+
+```yaml
+- client_id: opengym
+  client_name: openGym
+  client_secret: '$pbkdf2-sha512$...'   # authelia crypto hash generate
+  authorization_policy: one_factor
+  require_pkce: true
+  pkce_challenge_method: S256
+  redirect_uris: ['https://gym.example.com/api/oidc/callback']
+  scopes: [openid, profile, email, groups]
+  token_endpoint_auth_method: client_secret_basic
+```
+
+```bash
+OIDC_ISSUER=https://auth.example.com
+OIDC_CLIENT_ID=opengym
+OIDC_CLIENT_SECRET=<the secret before hashing>
+OIDC_SCOPES=openid profile email groups
+OIDC_LABEL=Authelia
+OIDC_ALLOWED_GROUPS=opengym
+```
+
+Authelia sends groups from userinfo, which openGym reads by itself.
+
+**Keycloak.** Clients → Create client, OpenID Connect, client authentication on, standard flow
+on, valid redirect URI as above, Advanced → PKCE method S256. For groups add a mapper (Client
+scopes → `<client>-dedicated` → Add mapper → Group Membership, token claim name `groups`, full
+group path off), or use realm roles:
+
+```bash
+OIDC_ISSUER=https://keycloak.example.com/realms/home
+OIDC_CLIENT_ID=opengym
+OIDC_CLIENT_SECRET=<credentials tab>
+OIDC_LABEL=Keycloak
+OIDC_ALLOWED_GROUPS=opengym          # with the group mapper
+# or: OIDC_GROUPS_CLAIM=realm_access.roles and a realm role
+OIDC_LOGOUT=1                        # Keycloak has an end_session_endpoint
+```
+
+**voidAuth.** Admin → OIDC Apps → Add, redirect URL as above, auth method `client_secret_basic`,
+PKCE allowed. voidAuth sends the user's groups in `groups` with the `groups` scope. Take the issuer
+from the discovery address voidAuth shows for the app (the part before `/.well-known/...`).
+
+```bash
+OIDC_ISSUER=https://voidauth.example.com/oidc
+OIDC_CLIENT_ID=opengym
+OIDC_CLIENT_SECRET=<client secret>
+OIDC_SCOPES=openid profile email groups
+OIDC_LABEL=voidAuth
+OIDC_ALLOWED_GROUPS=opengym
+```
+
+**Pocket ID.** OIDC Clients → Add, callback URL as above. Pocket ID clients can be public (PKCE
+only, leave the secret out); groups come with the `groups` scope, and "Allowed user groups" on the
+client already limits who Pocket ID lets through.
+
+```bash
+OIDC_ISSUER=https://id.example.com
+OIDC_CLIENT_ID=<client id>
+OIDC_SCOPES=openid profile email groups
+OIDC_LABEL=Pocket ID
+OIDC_ALLOWED_GROUPS=opengym
+```
+
+**If it does not work.** Admin → Identity provider says whether the discovery document and the
+keys came through. "the discovery document names another issuer": `OIDC_ISSUER` has to be the
+exact `issuer` in `/.well-known/openid-configuration` (a trailing slash does not matter, a path
+does). A sign-in that comes back with "could not verify" is in the activity log as
+`auth.oidc.fail` with the check: `signature` or `alg` is usually an HS256 client (give it a
+signing key), `audience` a client id mismatch, `expired` a clock that is off on one of the two
+machines. "came from another tab" means the callback arrived in a browser without the cookie from
+the start, often a redirect URI pointing at another host name than the one you opened.
+
 ## 5. Fitting it into an existing stack
 
 Running Kubernetes? Example manifests (Deployment, PVCs, Service, Gateway API route) are in
