@@ -32,6 +32,7 @@
 "More" = "أكثر";
 "Effort" = "الجهد";
 "None" = "بدون";
+"Exercises" = "التمارين";
 "Last time: %@" = "المرة السابقة: %@";
 "No workout running" = "لا يوجد تمرين جارٍ";
 "Not synced yet" = "لم تتم المزامنة بعد";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "ابدأ تمرينًا على iPhone وسيظهر هنا.";
 "All sets done" = "اكتملت كل المجموعات";
 "measuring" = "جارٍ القياس …";
-"Next: %@, set %lld" = "التالي: %@، المجموعة %lld";
 "%@, set %lld" = "%@، المجموعة %lld";
 "Calories" = "السعرات";
 "Heart rate" = "النبض";
@@ -48,14 +48,12 @@
 "Start hold" = "ابدأ";
 "Workout saved" = "تم حفظ التمرين";
 "Ended on your iPhone" = "انتهى على iPhone";
-"Tap a dot to do a skipped set." = "اضغط نقطة لأداء مجموعة متخطاة.";
 "Log this one on your iPhone." = "سجّل هذا على iPhone.";
 "Saved on the watch, syncs later" = "حُفظ على الساعة، تتم المزامنة لاحقًا";
 "All done?" = "هل انتهيت؟";
 "Lock" = "قفل";
 "Skip this set?" = "تخطي هذه المجموعة؟";
 "Turn the Digital Crown to change it." = "أدر Digital Crown للتغيير.";
-"%lld done" = "%lld مكتملة";
 "%lld avg · %lld max" = "متوسط %lld · أقصى %lld";
 "Set %lld of %lld" = "المجموعة %lld من %lld";
 "%lld of %lld sets" = "%lld من %lld مجموعات";

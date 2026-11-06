@@ -50,6 +50,7 @@ import { garminSnapshot } from './garmin-snapshot.js'
 import { plannedType } from './health-connect.js'
 import { exView, exConverted, exUnitOf, viewEntry, viewRow, shownWeight, storedWeight } from './ex-unit.js'
 import { streakInfo } from './streak.js'
+import { accentValue, accentPair, customAccentVars } from './accent.js'
 
 export const SNAPSHOT_VERSION = 1
 const APPLIED_KEY = 'gym_watch_applied'
@@ -678,7 +679,19 @@ export function watchExtras (S) {
     ...(EFFORT[effortOf(S)] ? { effort: effortOf(S) } : {}),
     // Settings → Workout → "Timed holds start by themselves": the watch's holds count in after a rest too.
     ...(S?.autoHolds === true ? { autoHolds: true } : {}),
+    // The accent the app wears, as the dark theme draws it, and the ink on it: the watch wears it too.
+    ...watchAccent(S),
   }
+}
+
+/** The app's accent for the watch's black screen: a preset as is, the user's own colour made readable on black. */
+export function watchAccent (S) {
+  try {
+    const v = accentValue(S)
+    const own = customAccentVars(v, 'dark')
+    const pair = accentPair(v)
+    return { accent: own ? own['--acc'] : pair.accent, onAccent: own ? own['--on-acc'] : pair.ink }
+  } catch { return {} }
 }
 
 /**

@@ -1,5 +1,6 @@
 import Foundation
 import HealthKit
+import SwiftUI
 import UIKit
 import UserNotifications
 import WatchConnectivity
@@ -73,6 +74,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         return bundle.localizedString(forKey: key, value: key, table: nil)
     }
     var crownStartsOnWeight: Bool { state.settings.crown == "weight" }
+
+    /// The app's accent as the phone sends it (its dark shade), and the ink on it; green and black
+    /// until the phone has said.
+    var accent: Color { Color(hex: state.settings.accent) ?? Theme.green }
+    var onAccent: Color { Color(hex: state.settings.onAccent) ?? .black }
 
     /// Apple Health: the workout session, its heart rate, and the switch (WorkoutManager).
     let health = WorkoutManager()
@@ -629,6 +635,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
 
     func closeSummary() {
         summary = nil
+        homeLock.lock(at: Date())
     }
 
     /* ---------- workouts deleted in openGym, out of Apple Health ---------- */
@@ -667,9 +674,14 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     /// The body weight on the weigh-in's crown.
     @Published var bodyWeight: Double = 70
 
+    /// Taps on Start are held back for a second after the summary's Done: the thumb that closed it
+    /// is still on the glass, right where Start comes up. The complication's Start is never held back.
+    private var homeLock = TouchLock()
+
     /// Starts a ready session here, the phone asleep or not: first the weigh-in, as on the phone,
     /// unless it is switched off there (Settings → During a workout).
-    func start(_ session: ReadySession) {
+    func start(_ session: ReadySession, fromLink: Bool = false) {
+        guard fromLink || homeLock.allows(at: Date()) else { return }
         if state.settings.weighIn != false && !isDemo {
             bodyWeight = state.settings.lastBw ?? (unit == "lb" ? 160 : 70)
             weighInFor = session

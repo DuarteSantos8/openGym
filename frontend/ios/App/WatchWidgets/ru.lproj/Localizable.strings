@@ -32,6 +32,7 @@
 "More" = "Больше";
 "Effort" = "Усилие";
 "None" = "Нет";
+"Exercises" = "Упражнения";
 "Last time: %@" = "В прошлый раз: %@";
 "No workout running" = "Тренировка не идёт";
 "Not synced yet" = "Ещё не синхронизировано";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "Начните её на iPhone, и она появится здесь.";
 "All sets done" = "Все подходы сделаны";
 "measuring" = "измеряю …";
-"Next: %@, set %lld" = "Далее: %@, подход %lld";
 "%@, set %lld" = "%@, подход %lld";
 "Calories" = "Калории";
 "Heart rate" = "Пульс";
@@ -48,14 +48,12 @@
 "Start hold" = "Начать";
 "Workout saved" = "Тренировка сохранена";
 "Ended on your iPhone" = "Завершено на iPhone";
-"Tap a dot to do a skipped set." = "Нажмите на точку, чтобы сделать пропущенный подход.";
 "Log this one on your iPhone." = "Это записывается на iPhone.";
 "Saved on the watch, syncs later" = "Сохранено на часах, синхронизируется позже";
 "All done?" = "Тренировка окончена?";
 "Lock" = "Блокировка";
 "Skip this set?" = "Пропустить этот подход?";
 "Turn the Digital Crown to change it." = "Поверните Digital Crown, чтобы изменить.";
-"%lld done" = "%lld сделано";
 "%lld avg · %lld max" = "ср. %lld · макс. %lld";
 "Set %lld of %lld" = "Подход %lld из %lld";
 "%lld of %lld sets" = "%lld из %lld подходов";

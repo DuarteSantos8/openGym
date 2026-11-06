@@ -15,6 +15,11 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Sets logged on the watch after you saved the workout on the phone join the saved workout, even for an exercise the phone had left empty.
 - A late copy of a watch workout's start no longer starts it all over again, and a watch workout started while another one ran on the phone waits its turn instead of being thrown away.
 
+**Apple Watch, redesigned**
+- Watch redesign: idea and first versions by @cubetes (#832 to #966).
+- The watch wears openGym's look: the app's greys, its rounded type and its accent colour (your own, if you picked one on the phone). The start screen says Today beside the clock, tells you how big the routine is (exercises and sets) and has one big Start, with the other routines as rows under it.
+- The watch speaks all 24 of openGym's languages: Czech, Persian, Indonesian, Lithuanian, Swedish and Vietnamese are new.
+
 **Sign in with your identity provider (OIDC)**
 - Self-hosting with Authentik, Authelia, Keycloak, voidAuth or Pocket ID? openGym signs people in through it now, next to passkeys: set OIDC_ISSUER and OIDC_CLIENT_ID and the sign-in screen gets a "Sign in with ..." button (#130, idea and first version by @melduarmir (#391), testing by @austinwilcox).
 - The phone app signs in the same way from "Connect to my server", in the system browser, and comes straight back to the app. No pairing code needed.

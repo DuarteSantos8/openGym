@@ -32,6 +32,7 @@
 "More" = "More";
 "Effort" = "Effort";
 "None" = "None";
+"Exercises" = "Exercises";
 "Last time: %@" = "Last time: %@";
 "No workout running" = "No workout running";
 "Not synced yet" = "Not synced yet";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "Start one on your iPhone and it shows up here.";
 "All sets done" = "All sets done";
 "measuring" = "measuring";
-"Next: %@, set %lld" = "Next: %@, set %lld";
 "%@, set %lld" = "%@, set %lld";
 "Calories" = "Calories";
 "Heart rate" = "Heart rate";
@@ -48,14 +48,12 @@
 "Start hold" = "Start hold";
 "Workout saved" = "Workout saved";
 "Ended on your iPhone" = "Ended on your iPhone";
-"Tap a dot to do a skipped set." = "Tap a dot to do a skipped set.";
 "Log this one on your iPhone." = "Log this one on your iPhone.";
 "Saved on the watch, syncs later" = "Saved on the watch, syncs later";
 "All done?" = "All done?";
 "Lock" = "Lock";
 "Skip this set?" = "Skip this set?";
 "Turn the Digital Crown to change it." = "Turn the Digital Crown to change it.";
-"%lld done" = "%lld done";
 "%lld avg · %lld max" = "%lld avg · %lld max";
 "Set %lld of %lld" = "Set %lld of %lld";
 "%lld of %lld sets" = "%lld of %lld sets";

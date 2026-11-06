@@ -32,6 +32,7 @@
 "More" = "Mais";
 "Effort" = "Esforço";
 "None" = "Nenhum";
+"Exercises" = "Exercícios";
 "Last time: %@" = "Da última vez: %@";
 "No workout running" = "Nenhum treino em andamento";
 "Not synced yet" = "Ainda não sincronizado";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "Comece um no iPhone e ele aparece aqui.";
 "All sets done" = "Todas as séries feitas";
 "measuring" = "medindo …";
-"Next: %@, set %lld" = "A seguir: %@, série %lld";
 "%@, set %lld" = "%@, série %lld";
 "Calories" = "Calorias";
 "Heart rate" = "Frequência cardíaca";
@@ -48,14 +48,12 @@
 "Start hold" = "Começar";
 "Workout saved" = "Treino salvo";
 "Ended on your iPhone" = "Encerrado no iPhone";
-"Tap a dot to do a skipped set." = "Toque num ponto para fazer uma série pulada.";
 "Log this one on your iPhone." = "Este você registra no iPhone.";
 "Saved on the watch, syncs later" = "Salvo no relógio, sincroniza depois";
 "All done?" = "Terminou?";
 "Lock" = "Bloquear";
 "Skip this set?" = "Pular esta série?";
 "Turn the Digital Crown to change it." = "Gire a Digital Crown para mudar.";
-"%lld done" = "%lld feitas";
 "%lld avg · %lld max" = "média %lld · máx. %lld";
 "Set %lld of %lld" = "Série %lld de %lld";
 "%lld of %lld sets" = "%lld de %lld séries";

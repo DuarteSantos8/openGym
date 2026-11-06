@@ -32,6 +32,7 @@
 "More" = "বেশি";
 "Effort" = "পরিশ্রম";
 "None" = "কিছু না";
+"Exercises" = "ব্যায়াম";
 "Last time: %@" = "গতবার: %@";
 "No workout running" = "কোনো ওয়ার্কআউট চলছে না";
 "Not synced yet" = "এখনো সিঙ্ক হয়নি";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "iPhone-এ একটি শুরু করুন, এখানে দেখা যাবে।";
 "All sets done" = "সব সেট শেষ";
 "measuring" = "মাপা হচ্ছে …";
-"Next: %@, set %lld" = "এরপর: %@, সেট %lld";
 "%@, set %lld" = "%@, সেট %lld";
 "Calories" = "ক্যালোরি";
 "Heart rate" = "হার্ট রেট";
@@ -48,14 +48,12 @@
 "Start hold" = "শুরু করুন";
 "Workout saved" = "ওয়ার্কআউট সেভ হয়েছে";
 "Ended on your iPhone" = "iPhone-এ শেষ হয়েছে";
-"Tap a dot to do a skipped set." = "বাদ দেওয়া সেট করতে একটি বিন্দুতে ট্যাপ করুন।";
 "Log this one on your iPhone." = "এটা iPhone-এ লিখুন।";
 "Saved on the watch, syncs later" = "ঘড়িতে সেভ হয়েছে, পরে সিঙ্ক হবে";
 "All done?" = "শেষ হয়েছে?";
 "Lock" = "লক করুন";
 "Skip this set?" = "এই সেটটি বাদ দেবেন?";
 "Turn the Digital Crown to change it." = "বদলাতে Digital Crown ঘোরান।";
-"%lld done" = "%lldটি শেষ";
 "%lld avg · %lld max" = "গড় %lld · সর্বোচ্চ %lld";
 "Set %lld of %lld" = "সেট %lld / %lld";
 "%lld of %lld sets" = "%lld / %lld সেট";

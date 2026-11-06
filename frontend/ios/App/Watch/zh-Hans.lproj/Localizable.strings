@@ -32,6 +32,7 @@
 "More" = "更多";
 "Effort" = "强度";
 "None" = "无";
+"Exercises" = "动作库";
 "Last time: %@" = "上次: %@";
 "No workout running" = "没有进行中的训练";
 "Not synced yet" = "尚未同步";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "在 iPhone 上开始，它就会出现在这里。";
 "All sets done" = "所有组已完成";
 "measuring" = "测量中 …";
-"Next: %@, set %lld" = "下一个：%@，第 %lld 组";
 "%@, set %lld" = "%@，第 %lld 组";
 "Calories" = "卡路里";
 "Heart rate" = "心率";
@@ -48,14 +48,12 @@
 "Start hold" = "开始";
 "Workout saved" = "训练已保存";
 "Ended on your iPhone" = "已在 iPhone 上结束";
-"Tap a dot to do a skipped set." = "轻点圆点来做跳过的组。";
 "Log this one on your iPhone." = "这个请在 iPhone 上记录。";
 "Saved on the watch, syncs later" = "已存在手表上，稍后同步";
 "All done?" = "练完了吗？";
 "Lock" = "锁定";
 "Skip this set?" = "跳过这一组？";
 "Turn the Digital Crown to change it." = "转动数码表冠来更改。";
-"%lld done" = "已完成 %lld";
 "%lld avg · %lld max" = "平均 %lld · 最高 %lld";
 "Set %lld of %lld" = "第 %lld 组，共 %lld 组";
 "%lld of %lld sets" = "%lld / %lld 组";

@@ -32,6 +32,7 @@
 "More" = "Çok";
 "Effort" = "Zorluk";
 "None" = "Yok";
+"Exercises" = "Egzersizler";
 "Last time: %@" = "Geçen sefer: %@";
 "No workout running" = "Devam eden antrenman yok";
 "Not synced yet" = "Henüz eşitlenmedi";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "iPhone’unda bir tane başlat, burada görünür.";
 "All sets done" = "Tüm setler tamam";
 "measuring" = "ölçülüyor …";
-"Next: %@, set %lld" = "Sıradaki: %@, set %lld";
 "%@, set %lld" = "%@, set %lld";
 "Calories" = "Kalori";
 "Heart rate" = "Nabız";
@@ -48,14 +48,12 @@
 "Start hold" = "Başlat";
 "Workout saved" = "Antrenman kaydedildi";
 "Ended on your iPhone" = "iPhone’da bitirildi";
-"Tap a dot to do a skipped set." = "Atlanan bir set için bir noktaya dokun.";
 "Log this one on your iPhone." = "Bunu iPhone’da kaydet.";
 "Saved on the watch, syncs later" = "Saatte kaydedildi, sonra eşitlenir";
 "All done?" = "Bitirdin mi?";
 "Lock" = "Kilitle";
 "Skip this set?" = "Bu set atlansın mı?";
 "Turn the Digital Crown to change it." = "Değiştirmek için Digital Crown’u çevir.";
-"%lld done" = "%lld tamam";
 "%lld avg · %lld max" = "ort. %lld · maks. %lld";
 "Set %lld of %lld" = "Set %lld / %lld";
 "%lld of %lld sets" = "%lld / %lld set";

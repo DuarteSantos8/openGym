@@ -32,6 +32,7 @@
 "More" = "Több";
 "Effort" = "Megerőltetés";
 "None" = "Nincs";
+"Exercises" = "Gyakorlatok";
 "Last time: %@" = "Legutóbb: %@";
 "No workout running" = "Nincs folyamatban edzés";
 "Not synced yet" = "Még nincs szinkronizálva";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "Indíts egyet az iPhone-on, és itt megjelenik.";
 "All sets done" = "Minden sorozat kész";
 "measuring" = "mérés …";
-"Next: %@, set %lld" = "Következik: %@, %lld. sorozat";
 "%@, set %lld" = "%@, %lld. sorozat";
 "Calories" = "Kalória";
 "Heart rate" = "Pulzus";
@@ -48,14 +48,12 @@
 "Start hold" = "Indítás";
 "Workout saved" = "Edzés mentve";
 "Ended on your iPhone" = "Az iPhone-on befejezve";
-"Tap a dot to do a skipped set." = "Koppints egy pöttyre egy kihagyott sorozathoz.";
 "Log this one on your iPhone." = "Ezt az iPhone-on rögzítsd.";
 "Saved on the watch, syncs later" = "Az órán mentve, később szinkronizál";
 "All done?" = "Végeztél?";
 "Lock" = "Zárolás";
 "Skip this set?" = "Kihagyod ezt a sorozatot?";
 "Turn the Digital Crown to change it." = "Forgasd a Digital Crownt a módosításhoz.";
-"%lld done" = "%lld kész";
 "%lld avg · %lld max" = "átl. %lld · max. %lld";
 "Set %lld of %lld" = "%lld. sorozat / %lld";
 "%lld of %lld sets" = "%lld / %lld sorozat";

@@ -32,6 +32,7 @@
 "More" = "มาก";
 "Effort" = "ความหนัก";
 "None" = "ไม่มี";
+"Exercises" = "ท่าออกกำลังกาย";
 "Last time: %@" = "ครั้งก่อน: %@";
 "No workout running" = "ไม่มีการฝึกที่กำลังทำอยู่";
 "Not synced yet" = "ยังไม่ได้ซิงค์";
@@ -39,7 +40,6 @@
 "Start one on your iPhone and it shows up here." = "เริ่มบน iPhone แล้วจะแสดงที่นี่";
 "All sets done" = "ครบทุกเซ็ตแล้ว";
 "measuring" = "กำลังวัด …";
-"Next: %@, set %lld" = "ถัดไป: %@ เซ็ต %lld";
 "%@, set %lld" = "%@ เซ็ต %lld";
 "Calories" = "แคลอรี";
 "Heart rate" = "ชีพจร";
@@ -48,14 +48,12 @@
 "Start hold" = "เริ่ม";
 "Workout saved" = "บันทึกการฝึกแล้ว";
 "Ended on your iPhone" = "จบบน iPhone แล้ว";
-"Tap a dot to do a skipped set." = "แตะจุดเพื่อทำเซ็ตที่ข้ามไป";
 "Log this one on your iPhone." = "อันนี้บันทึกบน iPhone";
 "Saved on the watch, syncs later" = "บันทึกบนนาฬิกาแล้ว จะซิงค์ทีหลัง";
 "All done?" = "เสร็จแล้วหรือยัง";
 "Lock" = "ล็อก";
 "Skip this set?" = "ข้ามเซ็ตนี้ไหม";
 "Turn the Digital Crown to change it." = "หมุน Digital Crown เพื่อเปลี่ยน";
-"%lld done" = "เสร็จ %lld";
 "%lld avg · %lld max" = "เฉลี่ย %lld · สูงสุด %lld";
 "Set %lld of %lld" = "เซ็ต %lld จาก %lld";
 "%lld of %lld sets" = "%lld จาก %lld เซ็ต";

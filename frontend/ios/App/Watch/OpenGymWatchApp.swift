@@ -33,7 +33,6 @@ struct OpenGymWatchApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(delegate.store)
-                .tint(Theme.accent)
                 .background(Color.black)
                 .modifier(DemoEnvironment())
         }
@@ -68,20 +67,6 @@ struct DemoEnvironment: ViewModifier {
     }
 }
 
-enum Theme {
-    /// The app's default accent (frontend/src/index.css --green, dark).
-    static let accent = Color(red: 0x30 / 255, green: 0xd1 / 255, blue: 0x58 / 255)
-    /// Warm-up sets (the app's --orange).
-    static let warmup = Color(red: 1, green: 0x9f / 255, blue: 0x0a / 255)
-    static let dim = Color.white.opacity(0.14)
-    /// The smallest a thing a finger has to hit may be.
-    static let tap: CGFloat = 44
-}
-
-func formatNumber(_ v: Double) -> String {
-    v.rounded() == v ? String(Int(v)) : String(format: "%.1f", v)
-}
-
 struct RootView: View {
     @EnvironmentObject var store: SessionStore
 
@@ -94,7 +79,7 @@ struct RootView: View {
             } else if store.workout == nil, let from = store.countdownFrom {
                 CountdownView(from: from)
             } else if store.workout == nil {
-                IdleView()
+                HomeView()
             } else if let from = store.holdCountFrom {
                 CountdownView(from: from, label: Text("Start hold"), start: { store.startHold(auto: true) }, cancel: { store.stopHoldCount() })
             } else if let end = store.holdEndsAt {
@@ -106,8 +91,11 @@ struct RootView: View {
             }
         }
         // The app's language, as the phone sends it, not the watch's own (SwiftUI looks every
-        // Text's words up by this locale).
+        // Text's words up by this locale), and the app's accent.
         .environment(\.locale, store.locale)
+        .environment(\.accent, store.accent)
+        .environment(\.onAccent, store.onAccent)
+        .tint(store.accent)
         // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Finish page.
         .alert(Text("All done?"), isPresented: $store.askDone) {
             Button("Continue workout", role: .cancel) { store.keepGoing() }
@@ -120,31 +108,13 @@ struct RootView: View {
         .simultaneousGesture(TapGesture().onEnded { store.ackRestOver() })
         // The complication's Start: today's workout, when none runs yet.
         .onOpenURL { url in
-            if url.host == "start", store.workout == nil, let today = store.ready?.today { store.start(today) }
+            if url.host == "start", store.workout == nil, let today = store.ready?.today { store.start(today, fromLink: true) }
         }
         .onChange(of: store.widgetState) { state in
             guard !store.isDemo else { return }
             state.write()
             WidgetCenter.shared.reloadAllTimelines()
         }
-    }
-}
-
-/// A word in a small capsule: "Warm-up", "Left", "Superset".
-struct Tag: View {
-    let text: Text
-    let color: Color
-
-    var body: some View {
-        text
-            .font(.system(.caption2, design: .rounded).weight(.bold))
-            .textCase(.uppercase)
-            .foregroundStyle(color)
-            .lineLimit(1)
-            .minimumScaleFactor(0.7)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 1)
-            .background(Capsule().fill(color.opacity(0.18)))
     }
 }
 
@@ -158,67 +128,6 @@ struct OfflineSign: View {
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
                 .accessibilityLabel(Text("Saved on the watch, syncs later"))
-        }
-    }
-}
-
-/* ---------- a big round primary button ---------- */
-
-struct RoundButton: View {
-    let systemImage: String
-    let label: Text
-    var size: CGFloat = 76
-    /// The label under the button, said in words (on by default: "Done" under the check).
-    var caption = true
-    let action: () -> Void
-    @Environment(\.isLuminanceReduced) private var dimmed
-
-    var body: some View {
-        VStack(spacing: 3) {
-            Button(action: action) {
-                Image(systemName: systemImage)
-                    .font(.system(size: size * 0.44, weight: .heavy))
-                    .foregroundStyle(dimmed ? Theme.accent : Color.black)
-                    .frame(width: size, height: size)
-                    .background(Circle().fill(dimmed ? Color.clear : Theme.accent))
-                    .overlay(Circle().stroke(Theme.accent, lineWidth: dimmed ? 2 : 0))
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(label)
-            // The word under it in the accent too, so Done reads as the one thing to press.
-            if caption { label.font(.caption2.weight(.bold)).foregroundStyle(dimmed ? Color.secondary : Theme.accent).lineLimit(1) }
-        }
-    }
-}
-
-/// A small round secondary button at an edge: an SF Symbol on a dim disc, a 44 pt target.
-struct EdgeButton: View {
-    let systemImage: String
-    let label: Text
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: Theme.tap, height: Theme.tap)
-                .background(Circle().fill(Theme.dim))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-    }
-}
-
-/// Water Lock, as Apple's Workout has it: the screen and the crown's press stop doing anything
-/// (a sleeve or a bent wrist no longer leaves the workout or taps Done); turning the crown unlocks.
-/// watchOS allows it only while a workout session runs, so without Apple Health there is none.
-struct LockButton: View {
-    @ObservedObject var health: WorkoutManager
-
-    var body: some View {
-        if health.running {
-            EdgeButton(systemImage: "drop.fill", label: Text("Lock")) { WKInterfaceDevice.current().enableWaterLock() }
         }
     }
 }
@@ -258,75 +167,6 @@ struct CountdownView: View {
             }
         }
         .ignoresSafeArea(edges: .bottom)
-    }
-}
-
-/* ---------- no workout: start one ---------- */
-
-struct IdleView: View {
-    @EnvironmentObject var store: SessionStore
-    @State private var debug = false
-
-    var body: some View {
-        content
-            // Hidden: a long press shows what arrived from the phone (animations, sync, heart rate).
-            .onLongPressGesture(minimumDuration: 2) { debug = true }
-            .sheet(isPresented: $debug) { DebugView() }
-    }
-
-    @ViewBuilder private var content: some View {
-        if let ready = store.ready, ready.today != nil || !ready.others.isEmpty {
-            ScrollView {
-                VStack(spacing: 10) {
-                    if let today = ready.today {
-                        Text(today.name)
-                            .font(.system(.headline, design: .rounded))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.7)
-                            .multilineTextAlignment(.center)
-                        RoundButton(systemImage: "play.fill", label: Text("Start workout")) { store.start(today) }
-                    }
-                    if !ready.others.isEmpty {
-                        VStack(spacing: 4) {
-                            ForEach(Array(ready.others.enumerated()), id: \.offset) { pair in
-                                Button { store.start(pair.element) } label: {
-                                    HStack {
-                                        Text(pair.element.name).lineLimit(1).minimumScaleFactor(0.8)
-                                        Spacer(minLength: 4)
-                                        Image(systemName: "play.fill").font(.caption2).foregroundStyle(.secondary)
-                                    }
-                                    .frame(minHeight: Theme.tap)
-                                    .padding(.horizontal, 10)
-                                    .background(RoundedRectangle(cornerRadius: 12).fill(Theme.dim))
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .padding(.top, 6)
-                    }
-                }
-                .padding(.horizontal, 4)
-            }
-        } else {
-            // Nothing from the phone yet (it sends only while openGym runs there): say so, rather
-            // than a "no workout" that reads as if the two were in touch.
-            let fresh = !store.heardFromPhone && store.ready == nil
-            VStack(spacing: 10) {
-                OpenGymLogo()
-                    .fill(Theme.accent)
-                    .frame(width: 60, height: 30)
-                    .accessibilityHidden(true)
-                Text(fresh ? LocalizedStringKey("Not synced yet") : LocalizedStringKey("No workout running"))
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
-                Text(fresh ? LocalizedStringKey("Open openGym on your iPhone once and your routines show up here.")
-                     : LocalizedStringKey("Start one on your iPhone and it shows up here."))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, 8)
-        }
     }
 }
 
