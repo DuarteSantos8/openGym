@@ -1893,6 +1893,23 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setnote-line span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 @media (max-width:359px){.setnote-line{padding-inline-start:24px}}
 .setnote-mark{display:inline-block;margin-inline-start:3px;font-size:var(--fs-caption2);color:var(--gold-ink);vertical-align:-1px}
+/* Records on the set (lib/set-records.js, components/SetRecord.jsx). The trophy line arrives once,
+   the moment the set is ticked: a short rise from just under full size, then it sits still. Rare
+   enough to earn a little motion; reduced motion keeps only the fade. The hint before a set is
+   quieter still, the same size and colour as the plan line. */
+.setrec{display:flex;align-items:center;gap:6px;min-height:24px;margin:0 0 2px;padding-inline:32px 4px;
+  font-size:var(--fs-caption);line-height:1.3;color:var(--label-2);animation:setrec-in var(--med) var(--ease) both}
+.setrec .icn{flex:none;font-size:var(--fs-footnote);color:var(--gold-ink);animation:setrec-pop 360ms var(--ease) both}
+.setrec b{color:var(--gold-ink);font-weight:600}
+.setrec span{min-width:0}
+.setrec-hint{display:flex;align-items:center;gap:6px;min-height:22px;margin:0 0 2px;padding-inline:32px 4px;font-size:var(--fs-caption);line-height:1.3;color:var(--label-2)}
+.setrec-hint .icn{flex:none;font-size:var(--fs-caption);opacity:.8}
+.setrec-mark{display:inline-block;margin-inline-start:3px;font-size:var(--fs-caption);color:var(--gold-ink);vertical-align:-1px}
+@keyframes setrec-in{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+@keyframes setrec-pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@media (max-width:359px){.setrec,.setrec-hint{padding-inline-start:24px}}
+@media (prefers-reduced-motion:reduce){.setrec,.setrec .icn{animation:fade-only var(--fast) ease both}}
+@keyframes fade-only{from{opacity:0}to{opacity:1}}
 .setnote-hist{margin-top:3px;display:flex;gap:4px;align-items:baseline}
 .setnote-hist .icn{flex:none;font-size:var(--fs-caption2);color:var(--gold-ink);transform:translateY(1px)}
 /* No +/- buttons: the number field takes the whole cell and is the tap target. */
@@ -3930,3 +3947,41 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    than the sheet. */
 .cal-url{background:var(--surface-2);border-radius:12px;padding:10px 12px;margin:4px 0 8px;user-select:all;-webkit-user-select:all}
 .cal-url code{font-size:var(--fs-footnote);word-break:break-all;color:var(--label);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+/* The rep-record table of the exercise history sheet (lib/set-records.js repRecordTable): reps,
+   the heaviest for that many with its date, and greyed what the best e1RM says is possible. */
+.reptable{width:100%;border-collapse:collapse;font-size:var(--fs-footnote);font-variant-numeric:tabular-nums}
+.reptable th,.reptable td{padding:6px 4px;text-align:start;border-bottom:var(--hair) solid var(--sep)}
+.reptable thead th{font-size:var(--fs-caption);font-weight:500;color:var(--label-2);padding-top:0}
+.reptable tbody th{width:3.5em;font-weight:600;color:var(--label-2)}
+.reptable td:last-child{text-align:end;white-space:nowrap}
+.reptable tr:last-child th,.reptable tr:last-child td{border-bottom:0}
+/* Recovery in hours (Stats → Muscles → Fatigue): each tired muscle and when it is ready again.
+   One line each, the wait and the clock time in tabular figures so the column reads down. */
+.rec-etas{margin-top:12px;border-top:var(--hair) solid var(--sep);padding-top:8px}
+.rec-etas-h{font-size:var(--fs-caption);font-weight:600;color:var(--label-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.rec-eta{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:8px;width:100%;min-height:40px;padding:6px 4px;
+  border:0;border-radius:var(--r-sm);background:none;color:var(--label);font:inherit;font-size:var(--fs-footnote);text-align:start;cursor:pointer;
+  font-variant-numeric:tabular-nums;transition:background var(--fast) var(--ease)}
+.rec-eta:active{background:var(--press-fill)}
+.rec-eta.on{background:var(--press-fill)}
+.rec-eta .rec-n{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rec-eta .rec-t{color:var(--label-2)}
+.rec-eta .rec-at{color:var(--label-2);min-width:5.5em;text-align:end}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
+.rec-dot.fatigued{background:var(--red)}
+/* Tools (Stats → More → Tools, views/Tools.jsx): one card per calculator, a headline with its
+   icon, the inputs as the app's steppers, and one big answer. */
+.tools-card{padding:14px 14px 12px}
+.tools-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:var(--fs-body);font-weight:600;letter-spacing:-.01em}
+.tools-h .icn{color:var(--acc-ink);font-size:18px}
+.tools-sub{margin:14px 0 6px;font-size:var(--fs-subhead);font-weight:600}
+.tools-chips{margin-bottom:10px}
+.tools-result{display:flex;flex-direction:column;gap:2px;padding:6px 0 2px}
+.tools-big{font-size:var(--fs-title2);font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tools-tiles{margin-bottom:4px}
+.tools-tiles .tile{background:var(--surface-2)}
+.tools-table td:first-of-type{text-align:start}
+.tools-time{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.tools-time .stp-l{text-align:start}
+.tools-time input{width:100%;font-variant-numeric:tabular-nums}
+.tools-foot{text-align:center;margin:4px 16px 24px}

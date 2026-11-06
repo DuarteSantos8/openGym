@@ -88,6 +88,7 @@ const Measurements = lazyView(() => import('./views/Measurements.jsx'))
 const CoachIntake = lazyView(() => import('./views/CoachIntake.jsx'))
 const CoachSetup = lazyView(() => import('./views/CoachSetup.jsx'))
 const StructuralBalance = lazyView(() => import('./views/StructuralBalance.jsx'))
+const Tools = lazyView(() => import('./views/Tools.jsx'))
 const ProgressPhotos = lazyView(() => import('./views/ProgressPhotos.jsx'))
 // The trainer dashboard (docs/TRAINERS.md): only for sessions that train someone or lead a gym.
 const Trainer = lazyView(() => import('./views/Trainer.jsx'))
@@ -389,6 +390,7 @@ function Shell() {
       <Route path="/muscles" element={<Muscles />} />
       {isOn(S, 'community') && <Route path="/community" element={<Community />} />}
       <Route path="/structural-balance" element={<StructuralBalance />} />
+      <Route path="/tools" element={<Tools />} />
       {isOn(S, 'body') && <Route path="/progress-photos" element={<ProgressPhotos />} />}
       {isOn(S, 'body') && <Route path="/measurements" element={<Measurements />} />}
       <Route path="/settings" element={<SettingsRoute />} />

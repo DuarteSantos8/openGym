@@ -80,6 +80,8 @@ import { isPyramid, normalizePyramid, normalizePyramidRest, normalizePyramidWeig
 import { MOBILE, shareExport, shareExportBlob } from './lib/mobile.js'
 import { speedUnitOf, toSpeed, fromSpeed } from './lib/speed.js'
 import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP, clampLevel, levelFits, LEVEL_MAX } from './lib/incline.js'
+import { savedEntryRecords, repRecordTable, liveRecordsOn } from './lib/set-records.js'
+import { RecordBadge } from './components/SetRecord.jsx'
 import { sessionPrs, buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
@@ -1644,6 +1646,15 @@ function ExerciseHistory({ exId }) {
     <h3 className={exerciseNameClass(ex)}>{exerciseNameFor(ex)}</h3>
     <div className="empty"><div className="ico"><Icon name="history" /></div>{t('No sessions logged yet')}</div>
   </>
+  // Records per rep count (gm-live 1.4.5, lib/set-records.js): the heaviest for 1 to 12 reps with
+  // its date, and greyed beside it what the best estimated 1RM says is possible for that many.
+  const repTable = h.metric === 'weight' ? repRecordTable(st, exId, { as: currentDbLoad(st, exId), formula }) : []
+  // The trophies each set of a session earned, against the sessions before it.
+  const recsOf = s => {
+    if (!liveRecordsOn(st)) return []
+    const wk = st.workouts.find(x => x.id != null && x.id === s.id)
+    return wk && s.mode === 'reps' ? savedEntryRecords(st, wk, { id: exId, sets: s.sets }, { as: currentDbLoad(st, exId), formula }) : []
+  }
   const tail = s => [
     s.volume > 0 && t('Volume') + ' ' + fmtVol(s.volume, st.unit),
     s.e1rm != null && t('Est. 1RM') + ' ' + fmtNum(s.e1rm) + ' ' + st.unit,
@@ -1666,18 +1677,37 @@ function ExerciseHistory({ exId }) {
       {t('Best:')} <b className="accent">{onRel ? fmtNum(relBest) + ' % BW' : fmtNum(onE1 ? e1Best : h.best) + ' ' + (onE1 ? st.unit : unit)}</b>
     </div>
     {onRel && <div className="small dim">{relTop ? t('Heaviest set as a share of body weight, per workout') : t('Estimated 1RM as a share of body weight, per workout')}</div>}
+    {repTable.length > 0 && <RepRecords rows={repTable} unit={st.unit} assisted={isAssisted(exId)} />}
     <FormVideosSection exId={exId} />
     <h4 className="sec">{h.sessions.length < h.total ? t('Last {0} sessions', h.sessions.length) : t('Sessions')}</h4>
     <div className="list">
       {h.sessions.map(s => <div key={s.id} className="item" style={{ alignItems: 'flex-start' }}>
         <div className="grow">
           <div className="tt">{fmtDate(s.d, true)} {s.pr && <span className="pr"><Icon name="trophy" />PR</span>}</div>
-          <div className="ss">{s.sets.map(x => setLabel(exId, x, s.target, speedUnitOf(st))).join('  ·  ')}</div>
+          <div className="ss">{(recs => s.sets.map((x, j) => <Fragment key={j}>{j > 0 && '  ·  '}{setLabel(exId, x, s.target, speedUnitOf(st))}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(exId)} />}</Fragment>))(recsOf(s))}</div>
           {tail(s) && <div className="small dim" style={{ marginTop: 3 }}>{tail(s)}</div>}
         </div>
         {s.value != null && s.value > 0 && <b className="accent nocap" style={{ whiteSpace: 'nowrap' }}>{fmtNum(s.value)} {unit}</b>}
       </div>)}
     </div>
+  </>
+}
+// The rep-record table of the history sheet. Rows with nothing logged and nothing estimated stay
+// out; "possible" is shown only where it is more than what you have done.
+function RepRecords({ rows, unit, assisted }) {
+  const shown = rows.filter(r => r.best || r.possible)
+  if (!shown.length) return null
+  return <>
+    <h4 className="sec">{t('Rep records')}</h4>
+    <table className="reptable">
+      <thead><tr><th scope="col">{t('Reps')}</th><th scope="col">{t('Best')}</th><th scope="col">{!assisted && t('Possible')}</th></tr></thead>
+      <tbody>{shown.map(r => <tr key={r.r}>
+        <th scope="row">{r.r}</th>
+        <td>{r.best ? <><b>{fmtNum(r.best.w)} {unit}</b> <span className="dim">{fmtDate(r.best.d, true)}</span></> : <span className="dim">–</span>}</td>
+        <td className="dim">{!assisted && r.possible && (!r.best || r.possible > r.best.w) ? `${r.r} × ${fmtNum(r.possible)} ${unit}` : ''}</td>
+      </tr>)}</tbody>
+    </table>
+    {!assisted && shown.some(r => r.possible) && <div className="small dim" style={{ marginTop: 4 }}>{t('Possible: what your best estimated 1RM says you could do for that many reps.')}</div>}
   </>
 }
 export const exerciseHistorySheet = exId => ui().openSheet(close => <ExerciseHistory exId={exId} close={close} />)
@@ -3509,12 +3539,14 @@ function WorkoutDetail({ w, close }) {
     const ve = viewEntry(st, e)
     const last = trendsOn ? lastTimeBefore(st, w, e) : null
     const trends = last ? setTrendsFor(ve, viewEntry(st, { ...last, id: e.id }), { formula: formulaOf(st) }) : []
+    // The same trophies the sets earned live (lib/set-records.js), against the workouts before this one.
+    const recs = liveRecordsOn(st) ? savedEntryRecords(st, w, e, { as: entryDbLoad(e), formula: formulaOf(st) }) : []
     const unit = exUnitOf(st, e.id)
     const shown = ve.sets.map((s, j) => [s, j]).filter(([s]) => hasCompletedWork(s))
     if (!shown.length) return t('no sets')
     return shown.map(([s, j], k) => <Fragment key={j}>
       {k > 0 && '  ·  '}
-      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}</span>
+      <span className="wd-set">{setLabel(e.id, s, e.target, speedUnitOf(st)) + hrLabel(s)}{trends[j] && <span className={'settrend inline ' + (trends[j].dir > 0 ? 'up' : trends[j].dir < 0 ? 'down' : 'same')} role="img" aria-label={trendLabel(trends[j], unit)} title={trendLabel(trends[j], unit)}>{trendGlyph(trends[j])}</span>}{recs[j]?.length > 0 && <RecordBadge kinds={recs[j]} assisted={isAssisted(e.id)} />}{setNoteOf(s) && <Icon name="note" className="setnote-mark" role="img" aria-hidden="false" aria-label={t('Note: {0}', setNoteOf(s))} />}</span>
     </Fragment>)
   }
   // Every set's note of an entry, numbered the way the workout numbers its rows (warm-ups apart).

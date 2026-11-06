@@ -32,7 +32,7 @@ import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
 import { loadOfWeeklyPlan, loadOfWorkouts, muscleBalanceWindow, rankOf, MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
 import { fatigueOf, strengthOf, STRENGTH_FLOOR, LB_TO_KG } from '../lib/recovery.js'
 import { strengthExerciseRowsForMuscle } from '../lib/strength-exercises.js'
-import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn } from '../lib/recovery-view.js'
+import { fatigueStateOf, fatigueRecoveryMs, fmtRecoveryIn, recoveryEtas, fmtRecoveryShort, fmtReadyAt } from '../lib/recovery-view.js'
 import { e1rmSeries, best1RM, formulaOf } from '../lib/onerm.js'
 import { currentDbLoad, workoutAs } from '../lib/dumbbells.js'
 import { maxRepsSeries } from '../lib/pyramid.js'
@@ -228,6 +228,7 @@ function MusclesCard({ S, planFocus = false }) {
     aria-label={t('Exercises for {0}', t(MUSCLE_NAME[m]))} onClick={() => openMuscle(m)}>{t('Exercises')}<Icon name="chevronRight" /></button>
   const selFatigue = sel ? (fatigue[sel] || 0) : 0
   const selRecovery = sel ? fatigueRecoveryMs(selFatigue, sel) : { toRecoveringMs: null, toReadyMs: null }
+  const etas = useMemo(() => recoveryEtas(fatigue, now), [fatigue, now])
 
   const ws = weekStartOf(S)
   const currentWeek = weekKey(todayISO(), ws)
@@ -339,11 +340,23 @@ function MusclesCard({ S, planFocus = false }) {
       <BodyMap className="tappable hm-fatigue" load={fatigue} thresholds={FATIGUE_LEVELS} body={S.body} selected={sel} onMuscle={toggleSel} />
       <FatigueLegend />
       <div className="muted small" style={{ marginTop: 10 }}>{t('Fatigue shows how recently each muscle was trained. High means rest.')}</div>
+      {/* Recovery in hours (gm-live 1.4.5): when each tired muscle is ready again, from the same
+          half-life model, assuming you rest it. Soonest first; a tap shows it on the map. */}
+      {etas.length > 0 && <div className="rec-etas" data-recovery-etas>
+        <div className="rec-etas-h">{t('Ready again')}</div>
+        {etas.map(e => <button type="button" key={e.slug} className={'rec-eta' + (sel === e.slug ? ' on' : '')} data-eta={e.slug} aria-pressed={sel === e.slug}
+          aria-label={t('{0} ready in {1} ({2})', t(MUSCLE_NAME[e.slug]), fmtRecoveryShort(e.ms), fmtReadyAt(e.at, now))} onClick={() => toggleSel(e.slug)}>
+          <span className={'rec-dot ' + e.state} aria-hidden="true" />
+          <span className="rec-n">{t(MUSCLE_NAME[e.slug])}</span>
+          <span className="rec-t">{fmtRecoveryShort(e.ms)}</span>
+          <span className="rec-at">{fmtReadyAt(e.at, now)}</span>
+        </button>)}
+      </div>}
       {sel && <div className="fdetail" style={{ borderTop: 'var(--hair) solid var(--sep)', marginTop: 4, paddingTop: 10 }}>
         <div className="fname"><b>{t(MUSCLE_NAME[sel])}</b></div>
         <FatigueBar value={selFatigue} />
         {selRecovery.toRecoveringMs != null && <div className="small dim" style={{ marginTop: 6 }}>{t('Recovering {0}', fmtRecoveryIn(selRecovery.toRecoveringMs))}</div>}
-        {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))}</div>}
+        {selRecovery.toReadyMs != null && <div className="small dim">{t('Ready {0}', fmtRecoveryIn(selRecovery.toReadyMs))} ({fmtReadyAt(now + selRecovery.toReadyMs, now)})</div>}
       </div>}
     </> : <>
       <BodyMap className="tappable hm-strength" load={strength} thresholds={STRENGTH_LEVELS} body={S.body} selected={sel} onMuscle={toggleSel} />
@@ -872,6 +885,7 @@ export default function Stats() {
     // Also before the first workout wherever a photo can be filed under a day: else the gallery,
     // and its camera, could not be reached to add the very first one.
     bodyOn && (workouts.length > 0 || dayPhotosOf(S).length > 0 || serverTakesDayPhotos(photoUser, photoConfig)) && <Row key="p" title={t('Progress photos')} accessory="chevron" className="stats-link" onClick={() => nav('/progress-photos')} />,
+    <Row key="t" title={t('Tools')} subtitle={t('1RM table, RPE load, DOTS, BMI, body fat, pace.')} accessory="chevron" className="stats-link" onClick={() => nav('/tools')} />,
     workouts.length > 0 && <Row key="b" title={t('Structural balance')} subtitle={t('See which lift is holding back the rest.')} accessory="chevron" className="stats-link" onClick={() => nav('/structural-balance')} />,
     ...wrapped.map(y => <Row key={y} title={t('Your year')} value={y === thisYear ? t('So far') : String(y)} accessory="chevron"
       className="stats-link" onClick={() => openWrapped(y)} />),

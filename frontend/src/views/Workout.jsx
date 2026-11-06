@@ -75,6 +75,8 @@ import { sessionGymView, gymsOf, activeGym, gymLabel, switchGym, reRoundOpenSets
 import { exView, viewEntry, inEntryUnit } from '../lib/ex-unit.js'
 import { setTrendOn, setTrendsFor, trendGlyph, trendLabel } from '../lib/set-trend.js'
 import { formulaOf } from '../lib/onerm.js'
+import { recordBaseline, entryRecords, recordHint, liveRecordsOn, recordHintsOn, recordSoundOn } from '../lib/set-records.js'
+import { RecordMark, RecordHintLine } from '../components/SetRecord.jsx'
 import { setNoteOf } from '../lib/set-notes.js'
 import { isOn } from '../lib/modules.js'
 import CardioEffortChip from '../components/CardioEffortChip.jsx'
@@ -303,6 +305,22 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
   // "40 total" is not a record a "22 each" set has to beat.
   const meaning = entryDbLoad(entry)
   const bestHist = bestWeightFor(H, entry.id, meaning)
+  // Records on the set (lib/set-records.js): the trophy on a set the moment it is ticked, and the
+  // quiet line before the next one saying how close it is. Rep work only, and not while a saved
+  // workout is being corrected: its records are History's to show.
+  const recBase = mode === 'reps' && !editing && (liveRecordsOn(S) || recordHintsOn(S)) ? recordBaseline(H, entry.id, { as: meaning, formula: formulaOf(S) }) : null
+  const recs = recBase && liveRecordsOn(S) ? entryRecords(entry, recBase, formulaOf(S)) : null
+  const hintAt = recBase && recordHintsOn(S) ? entry.sets.findIndex(x => !x.done && !isWarmupRow(x)) : -1
+  const hint = hintAt >= 0 ? (() => {
+    const row = entry.sets[hintAt]
+    // A per-side row is planned as one load for both sides: its first open side speaks for it.
+    const side = isSideSet(row) ? (!row.sides.L.done ? row.sides.L : row.sides.R) : row
+    return recordHint({ w: side.w, r: side.r }, recBase, formulaOf(S))
+  })() : null
+  const recordLine = i => <>
+    {recs?.[i]?.length > 0 && <RecordMark kinds={recs[i]} assisted={recBase.assisted} />}
+    {hint && hintAt === i && <RecordHintLine hint={hint} assisted={recBase.assisted} />}
+  </>
   const bestKept = (H.exWeights[entry.id] || {}).w || 0
   const best = cardio ? 0
     : bestHist > 0 && bestKept > 0 ? betterWeight(entry.id, bestHist, bestKept) : Math.max(bestHist, bestKept)
@@ -934,6 +952,7 @@ function ExerciseBlock({ entryIdx, compact, dense, editing, onToggle, onToggleSi
               </div>
             </div>
           ) : pairHead ? <>{plainRow(s, i)}{plainRow(entry.sets[i + 1], i + 1)}</> : plainRow(s, i))}
+          {!pairTail && recordLine(i)}
           {/* Cardio's "how hard it felt", on the row instead of only in the set menu (Q5). Its own
               line under the inputs, so a narrow phone keeps all three columns. */}
           {!pairTail && cardio && effortOn && !isWarmupRow(s) && <div className="cardio-eff-line">
@@ -2071,6 +2090,18 @@ function ActiveWorkout() {
   // `quiet`: the hold that ticks this set has just ended with the chime and its buzz pattern
   // (store/useUI.js). The tick's own beep would sound over the chime's first note and clip it,
   // and its short buzz would cut the pattern off: a new vibrate call replaces the running one.
+  // A set that just set a record (lib/set-records.js) gets its own buzz and, with sounds on, two
+  // bright notes after the tick's beep: the trophy on the row says which record it was.
+  const cheerRecord = (idx, i) => {
+    const st = useStore.getState().S
+    const e = st.active?.entries?.[idx]
+    if (!e || !liveRecordsOn(st) || modeAt(idx) !== 'reps') return
+    const formula = formulaOf(st)
+    const kinds = entryRecords(e, recordBaseline(sessionHistory(st), e.id, { as: entryDbLoad(e), formula }), formula)[i] || []
+    if (!kinds.length) return
+    vibrate([40, 60, 40, 60, 120])
+    if (recordSoundOn(st)) { beep(st.sound, 1320, 0.1, 0.14); beep(st.sound, 1760, 0.22, 0.26) }
+  }
   const toggle = (idx, i, side, { quiet = false, onFocusProgress } = {}) => {
     // Ticking a set ends the typing in that row: drop the keyboard before the rest timer, the
     // effort sheet or the next exercise moves in. WebKit keeps the input focused across the
@@ -2110,6 +2141,7 @@ function ActiveWorkout() {
       }
     }, true)
     if (editing) return
+    if (checked && !quiet) cheerRecord(idx, i)
     if (workoutDone) workoutCompleteSheet()
     else if (exJustDone && cardioEntry) useUI.getState().toast(t('Cardio logged'))
     else if (exJustDone && m === 'time') useUI.getState().toast(t('Hold logged'))

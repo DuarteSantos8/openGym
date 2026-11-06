@@ -612,6 +612,20 @@ export default function Settings({ page = null, find = null, via = null, entryKe
           subtitle={t('A small ↑, = or ↓ on each set you finish, in the workout and in History.')}>
           <Switch aria-label={t('Compare sets with last time')} checked={S.setTrend !== false} onChange={v => update(s => { s.setTrend = v })} />
         </Row>
+        {/* Records on the set (lib/set-records.js): the trophy the moment a set beats a record, the
+            same mark in History, and the quiet line before a set. All on unless switched off. */}
+        <Row icon="trophy" iconTint="var(--yellow)" title={t('Record trophies')}
+          subtitle={t('A trophy and a buzz the moment a set beats a record, and the same mark in History.')}>
+          <Switch aria-label={t('Record trophies')} checked={S.liveRecords !== false} onChange={v => update(s => { s.liveRecords = v })} />
+        </Row>
+        {S.liveRecords !== false && <Row icon="bell" iconTint="var(--orange)" title={t('Cheer on a record')}
+          subtitle={t('Two happy notes after the tick, when sounds are on.')}>
+          <Switch aria-label={t('Cheer on a record')} checked={S.recordSound !== false} onChange={v => update(s => { s.recordSound = v })} />
+        </Row>}
+        <Row icon="target" iconTint="var(--blue)" title={t('How close to a record')}
+          subtitle={t('Under the next set: its share of your best e1RM and the reps a record needs.')}>
+          <Switch aria-label={t('How close to a record')} checked={S.recordHints !== false} onChange={v => update(s => { s.recordHints = v })} />
+        </Row>
         {/* QOL Q10: 2 × 8 instead of 3 × 10 for everything you add (lib/history.js newExDefaultsOf). */}
         <Row icon="plus" iconTint="var(--green)" title={t('New exercises start with')} value={newExLine(S)} accessory="chevron"
           onClick={() => useUI.getState().openSheet(close => <NewExDefaultsSheet close={close} />)} />
