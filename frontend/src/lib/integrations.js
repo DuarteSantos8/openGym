@@ -55,7 +55,7 @@ export const CARDS = [
   {
     id: 'mcp', cat: 'ai', name: 'MCP server', translate: true, icon: 'plug', tint: 'var(--purple)',
     desc: 'Let Claude Desktop, Cursor and friends read your training log.',
-    syncs: ['Runs next to your server and reads your data from there.', 'Read-only, apart from logging a workout you ask it to.'],
+    syncs: ['Runs next to your server, or over HTTPS with a token from Settings.', 'Sees and changes only what the token was given.'],
   },
 ]
 export const CARD = Object.fromEntries(CARDS.map(c => [c.id, c]))

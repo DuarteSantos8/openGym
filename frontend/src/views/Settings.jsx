@@ -76,6 +76,7 @@ import { platformNow } from '../lib/platform-now.js'
 import { pathBefore } from '../lib/nav.js'
 import WatchSettingsPage from './WatchSettings.jsx'
 import IntegrationsPage from './Integrations.jsx'
+import ApiTokensPage from './ApiTokens.jsx'
 import MyTrainerPage from './MyTrainer.jsx'
 import { libraryOn } from '../lib/shared-api.js'
 import ZeppSettingsPage from './ZeppSettings.jsx'
@@ -118,7 +119,8 @@ export function SettingsRoute() {
   // The modules (lib/modules.js): a page of a module that is off goes back to the root too.
   const modules = useStore(s => s.S.modules), checkIn = useStore(s => s.S.checkIn)
   const trainers = useStore(s => !!s.config?.trainers?.on)
-  const ctx = { user: useStore(s => s.user), mobile: MOBILE, trainers, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
+  const apiTokens = useStore(s => !!s.config?.api_tokens)
+  const ctx = { user: useStore(s => s.user), mobile: MOBILE, trainers, apiTokens, ios: MOBILE && platformNow() !== 'android', android: MOBILE && platformNow() !== 'ios', mod: id => isOn({ modules, checkIn }, id) }
   if (page && (!PAGES[page] || !pageVisible(PAGES[page].parent || page, ctx) || !pageVisible(page, ctx))) return <Navigate to="/settings" replace />
   if (page === 'coach') return <Navigate to="/coach/setup" replace />
   return <Settings key={page || 'root'} page={page || null} find={loc.state?.find || null} via={loc.state?.via || null} entryKey={loc.key} />
@@ -489,6 +491,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     autoBackup: !!S.autoBackup, synced: !!sync, installTip: !MOBILE && !standalone(), androidWeb: IS_ANDROID, desktopWeb: !IS_ANDROID && !APPLE_UA,
     integrations: config?.integrations?.providers || [],
     trainers: !!config?.trainers?.on,
+    apiTokens: !!config?.api_tokens,
     library: libraryOn(config, user),
     rotation: scheduleModeOf(S) === 'rotation' && !externalQ,
     spokenCues: S.spokenCues === true,
@@ -591,6 +594,7 @@ export default function Settings({ page = null, find = null, via = null, entryKe
     modules: () => <ModulesPage />,
     watch: () => <WatchSettingsPage />,
     integrations: () => <IntegrationsPage android={android} ios={ios} />,
+    'api-tokens': () => <ApiTokensPage />,
     trainer: () => <MyTrainerPage />,
     // The phone's health store (#200, #544): its switches, moved here from Data & backup in 1.4.4.
     'apple-health': () => <HealthPage key="apple-health" S={S} toast={toast} android={false} />,

@@ -18,6 +18,7 @@ import Icon from '../components/Icon.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import { Section, Row, Switch, Button, TextField } from '../components/ui.jsx'
 import { isOn } from '../lib/modules.js'
+import { tokensOn } from '../lib/api-tokens.js'
 
 /* Settings → Integrations (v1.4.4): one directory of what openGym can talk to, grouped, each card
    with what it is, whether it is on, and the one thing to do next. The cards are thin on purpose:
@@ -127,6 +128,7 @@ export default function IntegrationsPage({ android = false, ios = false }) {
   const dir = directory(ctx)
 
   const webhookCtx = { server, lan: !!config?.integrations?.lan, toast }
+  const tokens = tokensOn(config, user, DEMO) && isOn(S, 'integrations')
   const act = card => {
     const { action, status } = card.state
     switch (card.id) {
@@ -144,6 +146,8 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       case 'coach': return nav(MOBILE ? '/coach/setup' : '/coach')
       case 'mcp':
         if (status === 'server') return infoSheet(card, t('The MCP server runs next to your own openGym server and reads your data there.'), MCP_DOCS)
+        // A server with scoped tokens: the token page, where the address and the keys are.
+        if (tokens) return nav('/settings/api-tokens')
         return window.open(MCP_DOCS, '_blank', 'noopener')
       default:
     }
@@ -167,6 +171,9 @@ export default function IntegrationsPage({ android = false, ios = false }) {
       </Section>
       {cat.id === 'health' && <WorksWith platform={platform} nav={nav} />}
     </div>)}
+    {tokens && <Section footer={t('For AI assistants over MCP, planners and scripts. Each sees only what you tick.')}>
+      <Row icon="key" iconTint="var(--purple)" title={t('API tokens')} accessory="chevron" onClick={() => nav('/settings/api-tokens')} />
+    </Section>}
     <input ref={fileRef} type="file" accept=".csv,.xml,text/csv,text/xml" style={{ display: 'none' }}
       onChange={ev => { const f = ev.target.files[0]; if (f) importFromApp(f); ev.target.value = '' }} />
   </>
