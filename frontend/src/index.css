@@ -4180,3 +4180,6 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .ladder-tag{flex:none;font-size:var(--fs-caption);font-weight:600;color:var(--acc-ink)}
 .ladder-edit-list{list-style:none;padding:0}
 .ladder-num{flex:none;width:22px;text-align:center;color:var(--label-2);font-variant-numeric:tabular-nums}
+/* Your own kit (components/KitChips.jsx): the chips, then a field with a plus to name a new one. */
+.kit-add{display:flex;align-items:center;gap:8px}
+.kit-add .input{flex:1;min-width:0}

@@ -53,8 +53,11 @@ describe('starter plan chooser', () => {
     starterPlanSheet()
     const host = renderTop()
     expect([...host.querySelectorAll('.item .tt')].map(el => el.textContent))
-      .toEqual(['Push / Pull / Legs', 'Upper / Lower', 'Full Body', '5×5'])
+      .toEqual(['Push / Pull / Legs', 'Upper / Lower', 'Full Body', '5×5', 'No equipment', 'Dumbbells only', 'Resistance bands', 'Hotel room'])
     expect(rowFor(host, 'Upper / Lower').querySelector('.ss').textContent).toContain('4 days per week')
+    // The four for training away from the gym sit under their own heading.
+    expect(host.textContent).toContain('Away from the gym')
+    expect(rowFor(host, 'Hotel room').querySelector('.ss').textContent).toContain('2 days per week')
   })
 
   it('loads straight away when the plan’s weekdays are free, without asking', () => {

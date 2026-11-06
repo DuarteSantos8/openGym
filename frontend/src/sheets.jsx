@@ -7,7 +7,7 @@ import { useStore } from './store/useStore.js'
 import { exView, exUnitPin, exUnitOf, exUnitTag, withExUnit, profileUnit, viewTarget, storedTarget, storedBar, viewEntry, viewRow, shownWeight } from './lib/ex-unit.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
-import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
+import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V, kitOf, knownKit } from './lib/equipment.js'
 import { MACHINE_EQ, profileMachines, machinesOf, machineFields, machinesSummary } from './lib/machine-kinds.js'
 import { machinePickerSheet, NotHereButton } from './components/MachinePicker.jsx'
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
@@ -36,6 +36,7 @@ import DateField from './components/DateField.jsx'
 import { durationSheet } from './components/DurationWheel.jsx'
 import { cleanBackups, cleanBackupConfigs, withBackups, MAX_BACKUPS, backupSlotConfig } from './lib/routine-backups.js'
 import { replaceSlotExercise } from './lib/routines.js'
+import KitChips from './components/KitChips.jsx'
 import { normalizeAliases } from './lib/exercise-aliases.js'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
 import { SG_NAME_MAX } from './lib/superset-meta.js'
@@ -1772,6 +1773,9 @@ function CustomExForm({ existing, prefill, onDone, close }) {
   const [aliasesOpen, setAliasesOpen] = useState(false)
   const [bp, setBp] = useState(existing ? existing.bp : '')
   const [eq, setEq] = useState(existing ? (existing.eq || '') : '')
+  // Your own kit it needs (#323): it then shows only at gyms whose profile has it.
+  const [kit, setKit] = useState(() => kitOf(existing))
+  const knownKitList = knownKit(useStore.getState().S)
   const storedEq = existing && typeof existing.eq === 'string' && existing.eq && !ALL_EQUIPMENT.includes(existing.eq) ? existing.eq : null
   const [desc, setDesc] = useState(existing ? (existing.desc || '') : '')
   const [media, setMedia] = useState(() => mediaOf(existing))
@@ -1843,6 +1847,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
     let id = existing && existing.id
     const extra = c => {
       c.aliases = normalizeAliases(aliases)
+      if (kit.length) c.kit = kit; else delete c.kit
       if (!keepMedia) { if (ref) c.media = ref; else delete c.media }
       if (link) c.url = link; else delete c.url
     }
@@ -1877,6 +1882,7 @@ function CustomExForm({ existing, prefill, onDone, close }) {
           Hevy import). It stays a chip of its own, picked, so Save does not stop on "Pick equipment". */}
       {storedEq && <button key={storedEq} className={'chip' + (eq === storedEq ? ' on' : '')} onClick={() => setEq(storedEq)}>{t(storedEq)}</button>}
     </div>
+    <KitChips value={kit} onChange={setKit} known={knownKitList} label={t('Needs your own kit (optional)')} />
     {bp && <>
       {bp !== 'cardio' && <MultiSelectRow title={t('Primary muscle groups')} sheetTitle={t('Primary muscle groups')}
         values={primaries}
@@ -2279,6 +2285,9 @@ function EquipmentProfileSheet({ profile, close }) {
   // The machines (#923) are cards of their own, one sheet deeper: null until they are edited
   // there, so a profile saved without touching them keeps its machine fields exactly as they were.
   const [kinds, setKinds] = useState(null)
+  // Your own kit (#323, lib/equipment.js): tags the catalogue has no word for.
+  const [kit, setKit] = useState(() => kitOf(profile))
+  const known = knownKit(useStore.getState().S)
   const toggle = k => setChecked(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
   const draft = { equipment: [...checked], machines: kinds ?? profileMachines(profile) }
   const openMachines = () => machinePickerSheet({
@@ -2294,9 +2303,10 @@ function EquipmentProfileSheet({ profile, close }) {
       const fields = kinds ? machineFields([...checked], kinds) : { equipment: [...checked] }
       if (profile) {
         const p = s.equipProfiles.find(x => x.id === profile.id)
-        if (p) { p.name = name; p.equipment = fields.equipment; p.accV = ACC_V; if (fields.machines) p.machines = fields.machines }
+        if (p) { p.name = name; p.equipment = fields.equipment; p.accV = ACC_V; if (fields.machines) p.machines = fields.machines; if (kit.length) p.kit = kit; else delete p.kit }
       } else {
         const p = newProfile(name); p.equipment = fields.equipment
+        if (kit.length) p.kit = kit
         if (fields.machines?.length) p.machines = fields.machines
         s.equipProfiles.push(p)
         if (!s.activeEquipId) s.activeEquipId = p.id
@@ -2320,6 +2330,9 @@ function EquipmentProfileSheet({ profile, close }) {
     <div className="sect-b" style={{ marginTop: 14 }}>
       <Row icon="machine" iconTint="var(--indigo)" title={t('Machines')} subtitle={summaryOf} accessory="chevron" onClick={openMachines} />
     </div>
+    <h4 className="sec" style={{ marginTop: 16 }}>{t('Your own kit')}</h4>
+    <KitChips value={kit} onChange={setKit} known={known}
+      label={t('Things the list has no word for. Your own exercises that need them show only here.')} />
     <div className="dim small" style={{ marginTop: 10 }}>
       {t('Body-weight exercises are always available, unless they need a pull-up bar or a bench.')}
     </div>
