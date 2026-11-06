@@ -274,6 +274,9 @@ export default {
   'Routines': 'รูทีน',
   'No routines yet.': 'ยังไม่มีรูทีน',
   'Make one, or grab the starter plan to get going.': 'สร้างใหม่ หรือหยิบแผนเริ่มต้นไปใช้ก่อนก็ได้',
+  'Make one, copy a workout you did, or grab the starter plan to get going.': 'สร้างใหม่ คัดลอกการฝึกที่เคยทำ หรือหยิบแผนเริ่มต้นไปใช้ก่อนก็ได้',
+  'Copy a workout as a routine': 'คัดลอกการฝึกเป็นรูทีน',
+  'Pick one and its exercises and targets become a new routine. Your workout history is kept.': 'เลือกหนึ่งรายการ ท่าและเป้าหมายของมันจะกลายเป็นรูทีนใหม่ ประวัติการฝึกของคุณยังอยู่ครบ',
   // --- routine edit ---
   'Superset with exercise above': 'ซูเปอร์เซ็ตกับท่าด้านบน',
   'Note (optional): loading cues, "bar only, then +1 plate/side each set", anything worth remembering': 'บันทึก (ไม่บังคับ): เคล็ดลับการใส่น้ำหนัก เช่น "เอาแค่บาร์เปล่าก่อน แล้วเพิ่มข้างละ 1 แผ่นทุกเซ็ต" หรืออะไรก็ได้ที่อยากจำไว้',
