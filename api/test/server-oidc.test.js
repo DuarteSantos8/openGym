@@ -297,7 +297,7 @@ test('linking from Settings: needs the proof, a ticket for this session', async 
   h.mock.next = { sub: 'bo-at-idp', name: 'Bo' };
   const r = await roundTrip(h, { query: link2.body.url.slice('/api/oidc/start'.length), cookie: bo });
   assert.equal(landed(r).get('oidc'), 'linked');
-  assert.match(r.location, /#\/settings$/);
+  assert.match(r.location, /#\/settings\/account$/);
   assert.equal(h.db().users.find(u => u.id === 'u_bo').oidc.sub, 'bo-at-idp');
   // Signing in with the provider now finds Bo.
   const again = await roundTrip(h);

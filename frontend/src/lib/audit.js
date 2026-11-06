@@ -28,6 +28,17 @@ const LABELS = {
   'auth.pair.create': 'Created a pairing code',
   'auth.pair.ok': 'Paired a phone',
   'auth.pair.fail': 'Pairing failed',
+  // Sign-in with the identity provider (OIDC). `msg` on a failure is the check that refused it
+  // (state, nonce, expired, audience, issuer, signature, group, link-needed, ...).
+  'auth.oidc.ok': 'Signed in with the identity provider',
+  'auth.oidc.create': 'Created a profile through the identity provider',
+  'auth.oidc.app': 'Signed the phone app in through the identity provider',
+  'auth.oidc.link': 'Linked the identity provider',
+  'auth.oidc.unlink': 'Unlinked the identity provider',
+  'auth.oidc.reauth': 'Confirmed it is them at the identity provider',
+  'auth.oidc.fail': 'Identity provider sign-in failed',
+  'auth.oidc.denied': 'Identity provider sign-in refused',
+  'admin.oidc.check': 'Checked the identity provider',
   'auth.watch.pair': 'Created a watch pairing code',
   'auth.watch.ok': 'Paired a Zepp OS watch',
   'auth.watch.fail': 'Watch pairing failed',

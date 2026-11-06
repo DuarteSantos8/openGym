@@ -365,6 +365,24 @@ export async function pairRedeem(serverBase, code, { probeMs = PROBE_MS } = {}) 
   return data
 }
 
+// The phone app's provider sign-in (lib/oidc-app.js): the one-time code from opengym://oidc and
+// the verifier only this app holds, traded for the same token a pairing gives. Straight to the
+// server typed in, like pairRedeem.
+export async function oidcRedeem(serverBase, code, verifier) {
+  const data = await request(serverBase + '/api/oidc/app/redeem', {
+    method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, accessFor(serverBase)), body: JSON.stringify({ code, verifier })
+  }, TIMEOUT_GET_MS)
+  if (!data.token || !data.user) throw failure(t('The server answered with something other than openGym data.'), 'bad-response', 200)
+  return data
+}
+
+// What a server offers before this phone is connected to it (the provider button on the
+// connect sheet). null when it cannot be read: the pairing code still works then.
+export async function serverConfig(serverBase) {
+  try { return await request(serverBase + '/api/config', { headers: accessFor(serverBase) }, 8000) }
+  catch { return null }
+}
+
 const bufToB64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 const b64uToBuf = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)).buffer
 

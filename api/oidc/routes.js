@@ -68,8 +68,8 @@ export function oidcRoutes(d) {
     res.end();
   }
   // Where a browser lands: the app, with what happened in the query (lib/oidc.js reads it and
-  // tidies the address bar). Settings for the two flows that started there.
-  const webLanding = (flow, q) => `${cfg.appBase}/?${q}#/${flow && (flow.mode === 'link' || flow.mode === 'reauth') ? 'settings' : ''}`;
+  // tidies the address bar). Settings → Account for the two flows that started there.
+  const webLanding = (flow, q) => `${cfg.appBase}/?${q}#/${flow && (flow.mode === 'link' || flow.mode === 'reauth') ? 'settings/account' : ''}`;
   function finishError(res, flow, code) {
     if (flow?.mode === 'app') {
       return redirect(res, `${flow.app.ret}?error=${encodeURIComponent(code)}&astate=${encodeURIComponent(flow.app.astate)}`, [clearFlowCookie]);
