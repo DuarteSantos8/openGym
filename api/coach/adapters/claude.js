@@ -50,6 +50,17 @@ export const LOCKDOWN = Object.freeze({
   maxTurns: 1
 });
 
+/* How much effort the model puts into a job, from COACH_EFFORT on the server (the SDK's `effort`
+   option). Unset, or anything that is not one of the SDK's levels, sends nothing, so the model's
+   own default applies exactly as before. Read from the api's environment, never handed to the
+   model process: the job environment is still built from nothing (config.jobEnv). A model
+   without effort support is the runtime's to downgrade, not ours. */
+export const EFFORTS = Object.freeze(['low', 'medium', 'high', 'xhigh', 'max']);
+export function effortFrom(env = process.env) {
+  const v = String(env.COACH_EFFORT ?? '').trim().toLowerCase();
+  return EFFORTS.includes(v) ? v : undefined;
+}
+
 let cached;
 /** Resolve the SDK, or null when this image was built without it. Never throws. */
 async function sdk() {
@@ -97,6 +108,7 @@ export default {
     if (!m) return { code: -1, text: '', stderr: `${PKG} is not installed`, timedOut: false, spawnError: true };
 
     let text = '', stderr = '', failure = '', timedOut = false;
+    const effort = effortFrom();
     const abortController = new AbortController();
     const timer = setTimeout(() => { timedOut = true; abortController.abort(); }, timeoutMs);
 
@@ -112,6 +124,7 @@ export default {
           // and the VAPID keys cannot reach the model process by inheritance.
           env: { ...env, CLAUDE_AGENT_SDK_CLIENT_APP: CLIENT_APP },
           model: model || undefined,
+          ...(effort ? { effort } : {}),
           systemPrompt: SYSTEM_PROMPT,
           stderr: data => { if (stderr.length < OUTPUT_CAP) stderr += data; },
           spawnClaudeCodeProcess: spawnAsCoach
