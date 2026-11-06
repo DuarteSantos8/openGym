@@ -643,7 +643,8 @@ public final class RestAlert {
         if (c.total > 0) b.setProgress(c.total, c.done, false);
         long start = attributes == null ? 0 : attributes.optLong("start", 0);
         if (start > 0) b.setWhen(start).setShowWhen(true).setUsesChronometer(true);
-        promote(b, null);
+        // An explicit chip text: the chip must not depend on the chronometer fallback alone.
+        promote(ctx, b, c.total > 0 ? c.done + "/" + c.total : null);
         return b.build();
     }
 
@@ -662,6 +663,8 @@ public final class RestAlert {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         ensureCountdownChannel(ctx, nm);
         Notification.Builder b = ongoing(ctx);
+        // No CATEGORY_PROGRESS here: the rest notification is promoted with a ProgressStyle.
+        b.setCategory(null);
         String rest = label(labels, "rest", "Rest");
         String clock = clock(left);
         if (c != null && c.cur != null) {
@@ -682,7 +685,7 @@ public final class RestAlert {
                 control(ctx, paused ? ACTION_PAUSE : ACTION_MINUS, paused ? 51 : 52)).build());
         b.addAction(new Notification.Action.Builder(null, plus, control(ctx, ACTION_PLUS, 53)).build());
         b.addAction(new Notification.Action.Builder(null, skip, control(ctx, ACTION_SKIP, 54)).build());
-        promote(b, paused ? clock : null);
+        promote(ctx, b, clock);
         return b.build();
     }
 
@@ -709,12 +712,17 @@ public final class RestAlert {
      * The extra is what Notification.Builder.setRequestPromotedOngoing sets; that method is only in
      * the 36.1 SDK, the extra works from 36 on. The user can turn it off in the app's settings.
      */
-    private static void promote(Notification.Builder b, String chip) {
+    private static void promote(Context ctx, Notification.Builder b, String chip) {
         if (Build.VERSION.SDK_INT < 36) return;
         Bundle extras = new Bundle();
         extras.putBoolean("android.requestPromotedOngoing", true);
         b.addExtras(extras);
         if (chip != null) b.setShortCriticalText(chip);
+        // Samsung's Now Bar shows this as a chip only with the automation flag. The flag also
+        // makes One UI label the entry "Gemini Intelligence"; without it there is no chip.
+        Bundle samsung = new Bundle();
+        samsung.putBoolean("android.ongoingActivityNoti.automation", true);
+        b.addExtras(samsung);
     }
 
     private static String label(JSONObject labels, String key, String fallback) {
