@@ -8,7 +8,6 @@ import {
   pctWeight, programmeRoutineIds, rpeAs, refPreference, referenceContexts, acceptReference, reviewReference,
   closeWeek, skipSlot, resolveSlot, setRunPolicy, setRunEnd, markBrokenProgrammes,
   setSchedule, setDuration, setTarget, setStageKind, copyStage, moveStage, linkSlots, linkable, applyTemplate, setTrackChoice, checkedEdit, referenceOffers, legacyScheduleOf,
-  bindProgramme,
   confirmRepair, repairNotes,
 } from './programmes.js'
 import * as programmesModule from './programmes.js'
@@ -577,57 +576,6 @@ describe('a Coach programme change', () => {
   })
 })
 
-describe('the Coach and how a running programme counts', () => {
-  const review = changes => ({ id: 'r1', kind: 'review', summary: 's', changes: changes.map((c, i) => ({ id: 'c' + i, why: 'w', status: 'proposed', ...c })) })
-  const change = (s, weeks) => ({ type: 'programme', target: { programmeId: 'P' }, before: { name: 'Strength block', weeks: 3, rev: programmeById(s, 'P').rev }, after: { name: 'Strength block', weeks } })
-  const heavier = [{ t: { [BENCH]: { pct: 85 } } }, { t: { [BENCH]: { pct: 90 } } }, { deload: true }]
-  const amends = s => Object.values(s.programmeEvents || {}).filter(e => e.type === 'amend')
-  // The block as a loop, bound at its start: by rounds (a rotation) or one round a week (an ordered week).
-  const running = (sequence, how) => {
-    const s = state({ week: { 1: ['A'], 4: ['B'] } })
-    withBlock(s, { sequence })
-    s.programmes.P = bindProgramme(s.programmes.P, how)
-    expect(start(s, '2026-10-19')).toEqual({ ok: true })
-    return s
-  }
-
-  it('a Coach change on a running rotation programme revises its rounds, an amend; it never makes it count weeks', () => {
-    const s = running(['A', 'rest', 'B'], 'rounds')
-    applyChangeSet(s, markStale(review([change(s, heavier)]), s), ['c0'])
-    const def = programmeById(s, 'P')
-    expect(def).toMatchObject({ schedule: { mode: 'rotation', sequence: ['A', 'rest', 'B'] }, duration: { n: 3, unit: 'blocks' } })
-    expect(def).not.toHaveProperty('needs')
-    expect(weekPcts(def, BENCH)).toEqual([85, 90, null])
-    expect(amends(s)).toHaveLength(1)
-    expect(amends(s)[0].def.schedule.mode).toBe('rotation')
-    expect(programmeView(s, '2026-10-21')).toMatchObject({ status: 'running', nominal: { unit: 'blocks' } })
-  })
-
-  it('a Coach change on a running weeks programme still applies as an amend, its order and sessions kept, no binding asked', () => {
-    const s = running(['A', 'B'], 'weeks')
-    applyChangeSet(s, markStale(review([change(s, heavier)]), s), ['c0'])
-    const def = programmeById(s, 'P')
-    expect(def.schedule).toEqual({ mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }], ordered: true })
-    expect(def).not.toHaveProperty('needs')
-    expect(weekPcts(def, BENCH)).toEqual([85, 90, null])
-    expect(amends(s)).toHaveLength(1)
-    expect(startProgramme(s, 'P', { policies: policies(s), end: 'stop', today: '2026-10-21' }).ok).toBe(true)
-  })
-
-  it('whatever the route, a save that would switch how the running programme counts is refused and nothing changes', () => {
-    const s = running(['A', 'B'], 'rounds')
-    const before = clone(s)
-    // As the store does: the change is made on a draft, kept only when it returns.
-    const draft = clone(s)
-    expect(() => saveProgramme(draft, { ...programmeById(draft, 'P'), schedule: { mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }] }, duration: { n: 3, unit: 'weeks' } })).toThrow('running programme')
-    expect(amends(draft)).toHaveLength(0)
-    expect(s).toEqual(before)
-    // The same programme once stopped, or another one, saves.
-    endProgramme(draft, '2026-10-21')
-    expect(saveProgramme(draft, { ...programmeById(draft, 'P'), schedule: { mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }] }, duration: { n: 3, unit: 'weeks' } }).schedule.mode).toBe('weeks')
-  })
-})
-
 describe('authoring (the programme editor)', () => {
   const B = `t:P:${BENCH_A}`, SQ = `t:P:${SQUAT_A}`
   const ids = (def, id) => def.tracks.find(t => t.id === id).stages.map(st => st.id)
@@ -831,5 +779,55 @@ describe('the editor, fix round 2', () => {
     expect(checkedEdit(s, toRounds(programmeById(s, 'P'))).errors).toEqual(['schedule.mode cannot change while the programme runs'])
     endProgramme(s, '2026-10-21')
     expect(checkedEdit(s, toRounds(programmeById(s, 'P'))).def.schedule.mode).toBe('rotation')
+  })
+})
+
+describe('the editor, fix round 3: the Coach and how a running programme counts', () => {
+  const review = changes => ({ id: 'r1', kind: 'review', summary: 's', changes: changes.map((c, i) => ({ id: 'c' + i, why: 'w', status: 'proposed', ...c })) })
+  const change = (s, weeks) => ({ type: 'programme', target: { programmeId: 'P' }, before: { name: 'Strength block', weeks: 3, rev: programmeById(s, 'P').rev }, after: { name: 'Strength block', weeks } })
+  const heavier = [{ t: { [BENCH]: { pct: 85 } } }, { t: { [BENCH]: { pct: 90 } } }, { deload: true }]
+  const amends = s => Object.values(s.programmeEvents || {}).filter(e => e.type === 'amend')
+  const running = schedule => {
+    const s = state({ week: { 1: ['A'], 4: ['B'] } })
+    withBlock(s)
+    s.programmes.P = checkedEdit(s, setSchedule(s.programmes.P, schedule, s)).def
+    expect(start(s, '2026-10-19')).toEqual({ ok: true })
+    return s
+  }
+
+  it('a Coach change on a running rotation programme revises its rounds, an amend; it never makes it count weeks', () => {
+    const s = running({ mode: 'rotation', sequence: ['A', 'rest', 'B'] })
+    applyChangeSet(s, markStale(review([change(s, heavier)]), s), ['c0'])
+    const def = programmeById(s, 'P')
+    expect(def).toMatchObject({ schedule: { mode: 'rotation', sequence: ['A', 'rest', 'B'] }, duration: { n: 3, unit: 'blocks' } })
+    expect(def).not.toHaveProperty('needs')
+    expect(weekPcts(def, BENCH)).toEqual([85, 90, null])
+    expect(amends(s)).toHaveLength(1)
+    expect(amends(s)[0].def.schedule.mode).toBe('rotation')
+    expect(programmeView(s, '2026-10-21')).toMatchObject({ status: 'running', nominal: { unit: 'blocks' } })
+  })
+
+  it('a Coach change on a running weeks programme still applies as an amend, its order and sessions kept, no binding asked', () => {
+    const s = running({ mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }], ordered: true })
+    applyChangeSet(s, markStale(review([change(s, heavier)]), s), ['c0'])
+    const def = programmeById(s, 'P')
+    expect(def.schedule).toEqual({ mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }], ordered: true })
+    expect(def).not.toHaveProperty('needs')
+    expect(weekPcts(def, BENCH)).toEqual([85, 90, null])
+    expect(amends(s)).toHaveLength(1)
+    expect(startProgramme(s, 'P', { policies: policies(s), end: 'stop', today: '2026-10-21' }).ok).toBe(true)
+  })
+
+  it('whatever the route, a save that would switch how the running programme counts is refused and nothing changes', () => {
+    const s = running({ mode: 'rotation', sequence: ['A', 'B'] })
+    const before = clone(s)
+    // As the store does: the change is made on a draft, kept only when it returns.
+    const draft = clone(s)
+    expect(() => saveProgramme(draft, { ...programmeById(draft, 'P'), schedule: { mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }] }, duration: { n: 3, unit: 'weeks' } })).toThrow('running programme')
+    expect(amends(draft)).toHaveLength(0)
+    expect(s).toEqual(before)
+    // The same programme once stopped, or another one, saves.
+    endProgramme(draft, '2026-10-21')
+    expect(saveProgramme(draft, { ...programmeById(draft, 'P'), schedule: { mode: 'weeks', appts: [{ rid: 'A' }, { rid: 'B' }] }, duration: { n: 3, unit: 'weeks' } }).schedule.mode).toBe('weeks')
   })
 })
