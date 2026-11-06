@@ -6,6 +6,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Circuits, AMRAP, EMOM, Tabata and run/walk** (ideas by @Seexelas #560, @dodo-rieder and @yogainalift #725, @maku #765, @Space-Hermes #626, @rubenixnagios #507)
+- A routine can run on the clock now: Plan → a routine → Routine type → Circuit, AMRAP, EMOM, Intervals (Tabata 20/10 × 8 is one tap) or Run/walk program. A superset can do the same from its name above the exercises (How it runs), so a finisher can sit after your strength work, and a one-exercise EMOM is fine.
+- A full-screen player with a big clock, the station you are on with its animation, what comes next, Pause, Done and Skip. Beeps, a buzz and 3-2-1 at the end of each interval, the voice says "Go! Burpees" when Spoken cues are on (the speaker in the player switches them), the screen stays on, and a locked phone still rings every interval. The Lock Screen and the workout notification count it down too.
+- Every station lands in the workout as a normal set as it happens, so history, stats, records and progression just work. The workout keeps the rounds, the AMRAP score (rounds + reps), the round times and how that compares with last time ("Round 3 today: 12 s faster").
+- After a finished run: one more rep or five more seconds per station for next time, one tap to put it in the routine. The run/walk program moves up a level after three finished runs.
+- Apple Watch, Wear OS and Garmin show the station you are on and count down the circuit's rests.
+
 **Tempo, rest sounds, backups, calendar and Strava**
 - Tempo per exercise or per set, like 3-1-1-0: set it in the exercise's settings or for one set from its menu. The workout shows it on the exercise, and a tap starts a guide that counts every rep through lower, pause, lift and squeeze, with a tone and a buzz per phase you can hear from the floor. It goes along in the CSV export and import, shared plans and the sync (#572, idea by @WENeko).
 - A sound for each kind of rest: after a warm-up, between working sets, between superset rounds and before the next exercise can each end with their own sound, built-in or one of yours, on the phone's lock-screen alarm too (Settings → Timer alerts → Sound; #165, idea by @kurktchiev).
