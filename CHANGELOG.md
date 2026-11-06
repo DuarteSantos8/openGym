@@ -46,6 +46,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Your photo: pick one from the workout, the gallery or the camera, drag and pinch it into place. It stays on your device, and the picture that leaves carries no location or camera data.
 - Switch each part on or off: title, date, duration, volume, sets, PRs, exercises, muscle map, streak, heart rate and the logo. Stories keep clear of Instagram's own buttons, and there is a 4:5 size for the feed next to the 9:16 story and the square.
 
+**Small things you asked for**
+- Notes come over whole when you import from Hevy, Strong, FitNotes and friends: no more cut at 280 characters, and any note in the app can now run to 2,000 (D#876, thanks @MiquelAlvarez).
+
 **Advent calendar, reworked**
 - The advent calendar is now a gym thing: every door is something to do (or a number from your own year), each open door hangs a bauble on a little tree, and training that day lights it up. Swipe the doors open. What is behind them stays a surprise until 1 December.
 - Christmas shows up only in December now, every year, and it brought friends: a lot more to spot around the app, and someone with a shiny nose who likes hide and seek.

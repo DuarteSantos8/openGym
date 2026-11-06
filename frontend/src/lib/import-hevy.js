@@ -10,6 +10,7 @@ import { uid } from './format.js'
 import { isWarmupRow } from './workout-model.js'
 import { HEVY_ID_MAP, HEVY_TITLE_MAP } from './hevy-id-map.js'
 import { daysBetween, importId, priorCustom, roundWeight } from './import-csv.js'
+import { NOTE_MAX } from './history.js'
 
 export { HEVY_ID_MAP, HEVY_TITLE_MAP }
 export const HEVY_API = 'https://api.hevyapp.com'
@@ -382,7 +383,7 @@ export function parseHevyRoutines(routines, templates, { unit = 'kg', customEx =
         cfg = { id, sets: nWork, reps: reps || 10, weight: wgt || 0, mode: 'reps' }
       }
       if (warm > 0) cfg.warmupSets = Math.min(5, warm)
-      if (he.notes) cfg.note = String(he.notes).slice(0, 280)
+      if (he.notes) cfg.note = String(he.notes).slice(0, NOTE_MAX)
 
       if (he.superset_id != null && he.superset_id !== '') {
         const key = String(he.superset_id)

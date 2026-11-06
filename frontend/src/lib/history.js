@@ -462,8 +462,9 @@ function lastEntryIn(S, exId, rid) {
   return null
 }
 
-/** How long any single note may get. Long enough for a paragraph, short enough to stay a note. */
-export const NOTE_MAX = 500
+/** How long any single note may get: a few paragraphs, so the long form cues people keep in Hevy or
+ *  Strong come over whole on import (D#876) instead of being cut mid-sentence. */
+export const NOTE_MAX = 2000
 
 /**
  * The most recent session note the user pinned for this exercise, or null.
