@@ -6,6 +6,15 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**API tokens and MCP over HTTPS**
+- API tokens: in Settings → Integrations, make a key for one program (an AI assistant, a planner, a script). Pick per category what it may see and what it may change, and when it ends. It never gets more than you have, only your own profile, it is shown once and stored only as a hash, and revoking it stops it on the next request. Every look and change shows in your sharing log (#480, idea by @rkj; #566, idea by @kurktchiev).
+- MCP over HTTPS: an optional container serves openGym's MCP tools at https://your-server/mcp, so assistants on the web, a phone or another machine can use them with a token. Turn it on with `COMPOSE_PROFILES=mcp` and `MCP=on` (docs/MCP_REMOTE.md; #781, idea by @czepter; #314, idea by @mzspicoli).
+- The MCP server can read through your server instead of the data folder, so it runs anywhere and never sees other profiles (#880, idea by @krapnixvitu).
+- New MCP tools: create_routine, update_routine and delete_routine. Edits keep every setting you did not mention, and a confirmed change or a delete lands on exactly the version you saw or not at all (#960, idea by @sajlx; #310, idea by @ameer-khan-ashraf).
+- log_workout logs cardio: minutes, speed or distance, incline, in mph or km/h (#942, idea by @matthewjablack).
+- Fixed: log_workout's dry run said no PRs even when the save then gave PR badges (#942).
+- Fixed: the MCP's workout labels showed cardio in km/h on a profile that uses mph.
+
 **Importing, with a say in it**
 - Check and choose: the import summary lists every exercise in the file and what it becomes. Tap one to pick the right library exercise or keep it as your own, and the pick is remembered for the next import (#931, idea by @lodepav).
 - Untick exercises you don't want, narrow the dates, or leave the notes and RPE/RIR behind; the counts follow before anything is written (#849, idea by @Suslicke).

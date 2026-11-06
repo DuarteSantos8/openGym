@@ -31,6 +31,8 @@ to install.
 | [Kubernetes](SELF_HOSTING_KUBERNETES.md) | You run a cluster instead of Docker Compose |
 | [AI coach](AI_COACH.md) | You're deciding whether to turn the coach on, and with which provider |
 | [MCP server](../mcp/README.md) | You want Claude Desktop, Cursor or another AI client to read your training history |
+| [MCP over HTTPS](MCP_REMOTE.md) | An assistant on the web, a phone or another machine should use openGym's tools at `/mcp` |
+| [API tokens](API_TOKENS.md) | A program (an assistant, a planner, a script) should see or change only some of your data |
 | [Integrations](INTEGRATIONS.md) | You're turning on webhooks (`INTEGRATIONS`), or letting them reach your home network |
 | [Trainers](TRAINERS.md) | You're turning on gyms, gym leads and trainers (`TRAINERS`), or want admins to see training data again (`ADMIN_DATA_VIEW`) |
 | [NixOS](NIX.md) | You run NixOS and want openGym native: flake packages and a NixOS module, no Docker |
