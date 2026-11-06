@@ -18,6 +18,10 @@ import '../admin.css'
 // the server (accounts, invites, the Coach). A teacher only ever gets their own students from the
 // server, the owner gets everyone.
 
+// Who is listed. A teacher: their students (and the owner, if the owner picked them as a teacher).
+// The owner: everyone, the other teachers included, since a teacher's own plans and workouts are
+// the owner's to look after too.
+const isListed = (u, me, owner) => u.id !== me && (owner || !u.admin || u.owner)
 const isStudent = (u, me, owner) => u.id !== me && (!u.admin || (u.owner && !owner))
 
 export default function Students() {
@@ -38,11 +42,12 @@ export default function Students() {
   if (!user?.admin) return null
 
   const owner = !!(users || []).find(u => u.id === user.id)?.owner
-  const students = (users || []).filter(u => isStudent(u, user.id, owner))
+  const listed = (users || []).filter(u => isListed(u, user.id, owner))
+  const students = listed.filter(u => isStudent(u, user.id, owner))
   const sum = hubSummary(users || [], user.id)
-  const counts = filterCounts(students, user.id)
-  const shown = filterStudents(students, { query, filter, sort, me: user.id })
-  const filters = [['all', t('All')], ['live', t('Training now')], ['quiet', t('Inactive 7+ days')], ['noplan', t('No plan yet')], ['mine', t('My students')]]
+  const counts = filterCounts(listed, user.id)
+  const shown = filterStudents(listed, { query, filter, sort, me: user.id })
+  const filters = [['all', t('All')], ['live', t('Training now')], ['quiet', t('Inactive 7+ days')], ['noplan', t('No plan yet')], ['mine', t('My students')], ['staff', t('Teachers')]]
     .filter(([id]) => id === 'all' || id === filter || counts[id] > 0)
 
   const invite = () => api('/api/admin/invites/new', { method: 'POST', body: '{}' })
@@ -114,18 +119,18 @@ export default function Students() {
       <div className="list">
         {shown.map(u => <div key={u.id} className="item" onClick={() => nav('/students/' + encodeURIComponent(u.id))} style={u.disabled ? { opacity: .55 } : null}>
           <div className="grow">
-            <div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {pill(u)}
-              {u.routines === 0 && !u.pending && !u.disabled && <span className="adm-pill" style={{ marginInlineStart: 4 }}>{t('No plan yet')}</span>}
+            <div className="tt">{u.live && <Icon name="dot" style={{ fontSize: 9, color: 'var(--green)', display: 'inline-block', marginInlineEnd: 5 }} />}{u.name} {u.admin && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{u.owner ? t('owner') : t('teacher')}</span>} {pill(u)}
+              {!u.admin && u.routines === 0 && !u.pending && !u.disabled && <span className="adm-pill" style={{ marginInlineStart: 4 }}>{t('No plan yet')}</span>}
               {u.pending > 0 && <span className="adm-pill acc" style={{ marginInlineStart: 4 }}>{t('plan on its way')}</span>}</div>
             <div className="ss">{u.live ? t('training now') + ' · ' + u.live.name : t('{0} workouts', u.workouts) + (u.lastWorkout ? ' · ' + t('last {0}', fmtDate(u.lastWorkout)) : '') + ' · ' + t('{0} plans', u.routines || 0)}</div>
             {owner && u.teacherName && <div className="ss">{t('Teacher: {0}', u.teacherName)}</div>}
           </div>
-          {!u.disabled && <button className="iconbtn adm-iconbtn" onClick={e => { e.stopPropagation(); openSheet(done => <StudentPlanSheet student={u} onSent={load} close={done} />) }}
+          {!u.disabled && !u.admin && <button className="iconbtn adm-iconbtn" onClick={e => { e.stopPropagation(); openSheet(done => <StudentPlanSheet student={u} onSent={load} close={done} />, { locked: true }) }}
             aria-label={t('New plan for {0}', u.name)} title={t('New plan for {0}', u.name)}><Icon name="clipboard" /></button>}
           <Icon name="chevronRight" className="chev" />
         </div>)}
-        {users && !students.length && <div className="adm-empty">{t('No students yet. “Invite a student” makes a code to give them.')}</div>}
-        {users && students.length > 0 && !shown.length && <div className="adm-empty">{t('No one matches. Try another name or filter.')}</div>}
+        {users && !listed.length && <div className="adm-empty">{t('No students yet. “Invite a student” makes a code to give them.')}</div>}
+        {users && listed.length > 0 && !shown.length && <div className="adm-empty">{t('No one matches. Try another name or filter.')}</div>}
       </div>
     </div>
 

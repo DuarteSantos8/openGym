@@ -54,7 +54,7 @@ export function FichasPanel({ d, canDelete, act, reload }) {
   const openSheet = useUI(s => s.openSheet)
   const [open, setOpen] = useState(null)
   const u = d.user
-  const create = () => openSheet(done => <StudentPlanSheet student={u} onSent={reload} close={done} />)
+  const create = () => openSheet(done => <StudentPlanSheet student={u} onSent={reload} close={done} />, { locked: true })
   const archive = (r, archived) => act('/api/admin/user/routines/archive', { routines: [String(r.id)], archived },
     x => toast(archived ? t('{0} archived', x.changed) : t('{0} restored', x.changed)))
   const remove = r => confirmSheet({

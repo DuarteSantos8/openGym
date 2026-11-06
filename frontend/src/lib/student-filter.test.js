@@ -43,11 +43,17 @@ describe('filterStudents', () => {
 
 describe('filterCounts / quietDays', () => {
   it('counts each filter for the chips', () => {
-    expect(filterCounts(users, 'me', now)).toEqual({ all: 6, live: 1, quiet: 2, mine: 4, noplan: 1, disabled: 1 })
+    expect(filterCounts(users, 'me', now)).toEqual({ all: 6, live: 1, quiet: 2, mine: 4, noplan: 1, disabled: 1, staff: 1 })
   })
   it('counts whole days since the last sync', () => {
     expect(quietDays({ lastSync: ago(12) }, now)).toBe(12)
     expect(quietDays({ lastSync: null }, now)).toBeNull()
+  })
+})
+
+describe('staff', () => {
+  it('lists the other admins, the teachers', () => {
+    expect(ids(filterStudents(users, { filter: 'staff', now }))).toEqual(['me'])
   })
 })
 

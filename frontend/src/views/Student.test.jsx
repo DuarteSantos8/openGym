@@ -112,6 +112,21 @@ describe('Students (the list)', () => {
     await settle()
     expect(page.textContent).toContain('Download everyone')
   })
+  it('the owner also lists the teachers, to reach their own plans and workouts; a teacher does not', async () => {
+    mocks.answers['/api/admin/users'].users.push({ id: 'kar', name: 'Karine', admin: true, workouts: 1, lastSync: Date.now(), routines: 1 })
+    let page = render(<Students />)
+    await settle()
+    expect(page.textContent).not.toContain('Karine')
+    mocks.answers['/api/admin/users'].users[0].owner = true
+    page = render(<Students />)
+    await settle()
+    const row = [...page.querySelectorAll('.item')].find(el => el.textContent.includes('Karine'))
+    expect(row).toBeTruthy()
+    expect(row.textContent).toContain('teacher')
+    expect(row.querySelector('button[aria-label^="New plan for"]')).toBeNull()
+    act(() => row.click())
+    expect(mocks.nav).toHaveBeenCalledWith('/students/kar')
+  })
   it('renders nothing for someone who is not an admin', async () => {
     mocks.me = { id: 'x', name: 'X' }
     const page = render(<Students />)

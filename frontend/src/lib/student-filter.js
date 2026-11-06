@@ -21,7 +21,9 @@ const FILTERS = {
   mine: (u, me) => !!me && u.teacher === me && u.id !== me,
   // Nobody to train yet: no plan on their side and none on its way.
   noplan: u => !u.admin && !u.disabled && u.routines === 0 && !u.pending,
-  disabled: u => !!u.disabled
+  disabled: u => !!u.disabled,
+  // The owner's view of the people who teach (other admins): their own plans and workouts too.
+  staff: u => !!u.admin
 }
 
 export const FILTER_IDS = Object.keys(FILTERS)

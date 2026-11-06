@@ -160,7 +160,8 @@ const wk = (id, d) => ({ id, d, name: id, start: Date.parse(d + 'T10:00:00Z'), e
 const states = () => ({
   sA: { _rev: 3, _ts: 1000, workouts: [wk('w1', '2026-10-01'), wk('w2', '2026-10-02')], routines: [{ id: 'r1', name: 'A', prog: 'linear', ex: [{ id: '0001', sets: 3, reps: 10 }] }, { id: 'r2', name: 'B', ex: [] }], customEx: [{ id: 'cx1', n: 'Cable fly', bp: 'chest' }], week: { 1: ['r1', 'r2'], 3: ['r1'] }, dayPlan: { '2026-11-10': 'r1', '2026-11-11': 'r2' } },
   sB: { _rev: 1, workouts: [wk('x1', '2026-10-01')], routines: [] },
-  owner: { _rev: 1, workouts: [wk('o1', '2026-10-01')], routines: [] }
+  owner: { _rev: 1, workouts: [wk('o1', '2026-10-01')], routines: [] },
+  tA: { _rev: 1, workouts: [wk('t1', '2026-10-05')], routines: [{ id: 'tr1', name: 'Teacher own', ex: [{ id: '0001', sets: 3, reps: 10 }] }] }
 });
 
 test('a teacher deletes a student\'s workout the way a device would: removal on record, revision moved', async t => {
@@ -249,4 +250,22 @@ test('the drill-down carries what a plan file is made of: contents, weekdays, ru
   // A profile with none of it still answers with the same shape.
   const bare = (await call('tB', 'GET', '/api/admin/user?id=sB')).body;
   assert.deepEqual([bare.week, bare.customEx], [{}, []]);
+});
+
+test('the owner deletes the plans and workouts of another person, a teacher, which no other teacher can', async t => {
+  const call = await startScoped(t, states());
+  // Another teacher (and a student) is refused, and nothing changes.
+  assert.equal((await call('tB', 'POST', '/api/admin/user/routines/delete', { id: 'tA', routines: ['tr1'] })).status, 403);
+  assert.equal((await call('tB', 'POST', '/api/admin/user/workouts/delete', { id: 'tA', workouts: ['t1'] })).status, 403);
+  assert.equal((await call('sA', 'POST', '/api/admin/user/routines/delete', { id: 'tA', routines: ['tr1'] })).status, 403);
+  assert.equal((await call('tA', 'GET', '/api/data')).body.state.routines.length, 1);
+
+  // The owner reaches the teacher's own profile and takes both away, for good.
+  const d = (await call('owner', 'GET', '/api/admin/user?id=tA')).body;
+  assert.deepEqual([d.routines.length, d.workouts.length], [1, 1]);
+  assert.deepEqual((await call('owner', 'POST', '/api/admin/user/routines/delete', { id: 'tA', routines: ['tr1'] })).body, { ok: true, removed: 1 });
+  assert.deepEqual((await call('owner', 'POST', '/api/admin/user/workouts/delete', { id: 'tA', workouts: ['t1'] })).body, { ok: true, removed: 1 });
+  const mine = (await call('tA', 'GET', '/api/data')).body;
+  assert.deepEqual([mine.state.routines.length, mine.state.workouts.length], [0, 0]);
+  assert.ok(mine.state.deleted.routines.tr1 > 0 && mine.state.deleted.workouts.t1 > 0);
 });
