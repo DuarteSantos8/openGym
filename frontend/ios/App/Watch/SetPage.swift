@@ -481,7 +481,7 @@ struct KeypadView: View {
 
     var body: some View {
         GeometryReader { g in
-            let keyH = max(22, (g.size.height - 34) / 4 - 3)
+            let keyH = max(20, (g.size.height - 54) / 4 - 3)
             VStack(spacing: 3) {
                 HStack(spacing: 4) {
                     display
@@ -499,6 +499,8 @@ struct KeypadView: View {
                     .accessibilityLabel(Text("Save"))
                 }
                 .frame(height: 31)
+                // Below the sheet's blurred top edge, where the close button lives.
+                .padding(.top, 20)
                 ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], [".", "0", "⌫"]], id: \.self) { keys in
                     HStack(spacing: 3) {
                         ForEach(keys, id: \.self) { key in keyButton(key, height: keyH) }
