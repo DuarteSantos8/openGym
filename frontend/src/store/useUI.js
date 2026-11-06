@@ -171,7 +171,7 @@ const runWork = (set, get) => {
     const snd = st.sound, endSound = toneFor(st, 'hold')   // a timed hold's own slot (lib/user-sounds.js)
     if (left <= 0) {
       if (seenLive && !wk.alerted) {
-        endTone(snd, endSound)
+        endTone(snd, endSound, wk.endsAt)
         alertBuzz([200, 100, 200]); get().flashTimer()
       }
       if (wk.overtime && left > -MAX_WORK_OVERTIME_SEC) { set({ work: { ...wk, left, alerted: true } }); return }
@@ -239,7 +239,7 @@ const runRest = (set, get) => {
     if (left <= 0 && tm.kind === 'switch') {
       // Over like a hold is: the chime and its buzz, then the bar goes. No "Ready", no toast:
       // the other side is the next thing, one tap away.
-      if (seenLive) { endTone(snd, endSound); alertBuzz([200, 100, 200]); get().flashTimer() }
+      if (seenLive) { endTone(snd, endSound, tm.endsAt); alertBuzz([200, 100, 200]); get().flashTimer() }
       stopRestTicking()
       set({ timer: null })
       return
@@ -247,8 +247,9 @@ const runRest = (set, get) => {
     if (left <= 0) {
       if (seenLive) {
         // The Android alarm for this end stays quiet while the app is on screen, so this chime is
-        // the only one. Locked, this branch never runs and the alarm's tone does.
-        endTone(snd, endSound)
+        // the only one. Locked, this branch never runs and the alarm's tone does. `endsAt` lets the
+        // phone ring this end once when both think they saw it (#1007).
+        endTone(snd, endSound, tm.endsAt)
         alertBuzz([200, 100, 200]); get().flashTimer()
         cues.restOver()
       }
@@ -274,11 +275,11 @@ const runRest = (set, get) => {
 
 // The end of a rest or a hold, on screen. In the Android app the native side plays it, so music
 // ducks for it; anywhere else, or if that fails, the page's own chime.
-function endTone(enabled, kind) {
+function endTone(enabled, kind, at = 0) {
   if (!enabled) return
   if (!MOBILE) { chime(enabled, kind); return }
   const onSilent = useStore.getState().S.soundOnSilent === true
-  toneNative(kind === true ? 'classic' : kind, { onSilent }).then(ok => { if (!ok) chime(enabled, kind) })
+  toneNative(kind === true ? 'classic' : kind, { onSilent, at }).then(ok => { if (!ok) chime(enabled, kind) })
 }
 
 export const useUI = create((set, get) => ({

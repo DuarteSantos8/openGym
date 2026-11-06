@@ -187,6 +187,17 @@ describe('the alarm buzz in the Android app', () => {
     expect(calls.buzz).toHaveLength(1)
   })
 
+  // #1007: the end's own time goes with the tone, so Android rings a rest once when the alarm
+  // already did and a thawed page catches up a moment later.
+  it('toneNative names the end it is for, and leaves it out without one', async () => {
+    h.platform = 'android'
+    const calls = capture()
+    const alert = await import('./rest-alert.js')
+    await expect(alert.toneNative('bell', { at: 1_700_000_000_000.4 })).resolves.toBe(true)
+    await expect(alert.toneNative('chime')).resolves.toBe(true)
+    expect(calls.tone).toEqual([{ kind: 'bell', onSilent: false, at: 1_700_000_000_000 }, { kind: 'chime', onSilent: false }])
+  })
+
   it('answers false in a browser shell without touching any plugin', async () => {
     h.platform = 'web'
     const alert = await import('./rest-alert.js')

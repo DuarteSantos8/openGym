@@ -96,8 +96,11 @@ describe('the rest the app starts, pauses and ends', () => {
     useStore.setState({ S: { ...useStore.getState().S, timerFlash: true } })
     useUI.getState().startRest(1)
     const armed = disarmRestAlert.mock.calls.length
+    const endsAt = useUI.getState().timer.endsAt
     vi.advanceTimersByTime(1000)
     expect(toneNative).toHaveBeenCalledTimes(1)
+    // The end goes with the tone, so the phone rings it once with the alarm (#1007).
+    expect(toneNative.mock.calls[0][1]).toMatchObject({ at: endsAt })
     expect(chime).not.toHaveBeenCalled()
     expect(useUI.getState().timerFlashId).toBe(1)
     expect(disarmRestAlert.mock.calls.length).toBe(armed)

@@ -141,6 +141,15 @@ public class RestAlertPlugin extends Plugin {
             call.reject("no context");
             return;
         }
+        // `at`: the end of the rest or hold this tone is for. When the alarm already rang it (the
+        // page thawed after a lock or an app switch and caught up), once is enough (#1007).
+        long at = number(call, "at", 0);
+        if (at > 0 && !RestAlert.claimForPage(at)) {
+            JSObject res = new JSObject();
+            res.put("skipped", true);
+            call.resolve(res);
+            return;
+        }
         RestAlert.playNow(ctx.getApplicationContext(), call.getString("kind", "chime"));
         call.resolve();
     }

@@ -86,4 +86,19 @@ public class RestCountdownPlanTest {
         // The card's own clock is always the rest on screen, also after a skip into a hold chain.
         assertEquals(RestCountdownPlan.FIRE, RestCountdownPlan.alarmVerdict(900_000, 900_000, 1_000_000, true));
     }
+
+    @Test
+    public void anEndRingsOnceBetweenThePageAndTheAlarm() {
+        long end = 1_000_000;
+        // Nothing rang yet, or no end given: ring.
+        assertFalse(RestCountdownPlan.alreadyRang(end, 0, true));
+        assertFalse(RestCountdownPlan.alreadyRang(0, end, true));
+        // The page and the alarm on the same rest, a thawed WebView's clock a second off (#1007).
+        assertTrue(RestCountdownPlan.alreadyRang(end + 1_200, end, true));
+        assertTrue(RestCountdownPlan.alreadyRang(end - 2_000, end, true));
+        assertFalse(RestCountdownPlan.alreadyRang(end + 2_001, end, true));
+        // Two native callers: only the very same end, a chain's cues are seconds apart.
+        assertTrue(RestCountdownPlan.alreadyRang(end, end, false));
+        assertFalse(RestCountdownPlan.alreadyRang(end + 1_000, end, false));
+    }
 }

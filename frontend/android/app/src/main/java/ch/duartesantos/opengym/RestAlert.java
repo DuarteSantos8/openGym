@@ -75,6 +75,8 @@ public final class RestAlert {
 
     private static AudioTrack current;
     private static long firedFor;
+    // Whether the end in firedFor was played by the page (RestAlertPlugin.tone with its `at`).
+    private static boolean firedByPage;
     // The end of the rest booked last (schedule, updateAlarm, chainNext): an alarm for another
     // end is a left-over one (#995). 0 after cancel, and after the process restarted.
     private static volatile long bookedAt;
@@ -301,11 +303,30 @@ public final class RestAlert {
         new Thread(() -> fire(ctx, intent), "opengym-rest").start();
     }
 
-    /** One alert per end: the countdown and an exact alarm reach the same end in the same instant. */
+    /**
+     * One alert per end: the countdown and an exact alarm reach the same end in the same instant,
+     * and the page may have played it on screen already (#1007: a WebView that thawed late chimed
+     * a second time after the alarm). Near enough counts when the page is one of the two.
+     */
     private static synchronized boolean claim(long at) {
-        if (at > 0 && at == firedFor) return false;
+        if (RestCountdownPlan.alreadyRang(at, firedFor, firedByPage)) return false;
         firedFor = at;
+        firedByPage = false;
         return true;
+    }
+
+    /** The page is about to play the end of `at` itself: false when this end already rang. */
+    static synchronized boolean claimForPage(long at) {
+        if (RestCountdownPlan.alreadyRang(at, firedFor, true)) return false;
+        if (at > 0) {
+            firedFor = at;
+            firedByPage = true;
+        }
+        return true;
+    }
+
+    private static synchronized boolean pageRang(long at) {
+        return firedByPage && RestCountdownPlan.alreadyRang(at, firedFor, true);
     }
 
     /** Runs off the main thread. Holds the CPU until the tone has finished. */
@@ -322,7 +343,11 @@ public final class RestAlert {
             rebook(ctx, intent, at);
             return;
         }
-        if (!claim(at)) return;
+        if (!claim(at)) {
+            // The page rang this end on screen: the card is the only thing left to take down.
+            if (pageRang(at)) stopCountdown(ctx);
+            return;
+        }
         PowerManager.WakeLock cpu = null;
         try {
             PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
