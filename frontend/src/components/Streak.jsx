@@ -201,7 +201,7 @@ export function LevelBar ({ info }) {
     aria-label={t('Level {0}', lv.n) + '. ' + line}>
     <span className="level-n" aria-hidden="true"><span className="level-k">{t('Level')}</span><b>{lv.n}</b></span>
     <span className="level-m">
-      <span className="pbar-t small"><span>{line}</span><span className="pbar-n">{lv.points}</span></span>
+      <span className="pbar-t small"><span>{line}</span></span>
       <span className="pbar" aria-hidden="true"><i style={{ '--p': Math.min(1, lv.pct) }} /></span>
     </span>
     <Icon name="chevronRight" className="chev" />

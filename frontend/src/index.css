@@ -2642,7 +2642,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .level-bar{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:10px 12px;border:0;border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast)}
 .level-bar:active{background:var(--press-fill)}
 .level-n{flex:none;display:grid;justify-items:center;min-width:44px;line-height:1}
-.level-k{font-size:var(--fs-caption2);color:var(--label-2);text-transform:uppercase;letter-spacing:.06em}
+.level-k{font-size:var(--fs-caption);color:var(--label-2)}
 .level-n b{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px;color:var(--streak-ink)}
 .level-m{flex:1;min-width:0;display:grid}
 .level-bar .chev{flex:none;color:var(--label-3)}
@@ -4164,7 +4164,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .sb-item .ss{white-space:normal}
 .sb-total{margin:10px 2px 0}
 .sb-actions{display:grid;gap:8px;margin-top:16px}
-.sb-actions .row > *{flex:1}
+.sb-actions-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
 /* Skill ladders (components/Ladders.jsx): each chain a card, its rungs a vertical track with a dot
    per rung, filled once reached, the next one ringed in the accent. Shapes as well as colour. */
 .ladder-card h3{font-size:var(--fs-title3)}

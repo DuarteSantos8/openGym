@@ -77,7 +77,7 @@ export function SessionBuilder ({ terms, close }) {
     {!empty && <div className="small muted sb-total">{t('About {0} min, {1}.', session.minutes, tn('{0} exercise', '{0} exercises', session.picks.length))}</div>}
     <div className="sb-actions">
       <Button variant="primary" icon="play" disabled={empty} onClick={start}>{t('Start workout')}</Button>
-      <div className="row" style={{ gap: 8 }}>
+      <div className="sb-actions-2">
         <Button variant="tinted" icon="shuffle" onClick={shuffle}>{t('Shuffle')}</Button>
         <Button variant="tinted" icon="clipboard" disabled={empty} onClick={save}>{t('Save as routine')}</Button>
       </div>

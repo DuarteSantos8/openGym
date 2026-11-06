@@ -6,6 +6,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Build a session, skill ladders, deload weeks and streak levels**
+- Build a session from the muscle map: tap muscles or groups, pick 20, 40 or 60 minutes, and get a session that fits the active gym (bench, dumbbells, machines, your own kit), leaves out muscles still recovering and puts what you already do and your favourites first, each with a line on why. Swap one, shuffle, start it or save it as a routine (Exercises → By muscle → Build a session).
+- Skill ladders: push-up, pull-up, dip, single-leg squat, hinge, core and handstand chains from easy to hard, with the rungs you reached. Train it puts the next rung in a routine on the new Skill ladder rule: a rep more each clean session, and at the top of the range in every set the workout offers the next rung with Swap in routine. Make your own ladders too (Exercises → Ladders).
+- Starter plans for away from the gym: no equipment, dumbbells only, resistance bands and a hotel room (Plan → Load starter plan → Away from the gym).
+- Your own kit: name equipment the list has no word for (a sandbag, rings) on a gym's profile, tag your own exercises with it, and they show only at gyms that have it (Settings → Equipment → a profile → Your own kit; #323).
+- Deload weeks without a programme: every 4, 5, 6 or 8 weeks, or suggested when your numbers dip two weeks running (and your check-ins say tired, once you log them). A deload week trains 40% fewer sets at the same weights and stays out of progression. Home shows it coming with Push it back a week and Skip this one (Settings → Advanced → Deload weeks).
+- Cluster as a set type: every set cut into mini-sets at the same weight with a short rest between them, like 3+3+3 with 20 s (exercise settings → Set type → Cluster).
+- Favourite routines: a star in the routine editor, and the starred ones lead Plan and the Start sheet (#327).
+- Sick and travel weeks keep the streak: a day note saying sick, travelling or injured on any day of a missed week excuses it, no freeze spent, up to 4 weeks a year by default. The calendar marks the week and says why, and a trainer sees the same number (Settings → Look & Home → Sick and travel weeks).
+- Levels: points from the weeks you trained, streak badges and finished challenges, with the bar to the next level on Stats → Week streak and in the widgets. Pin up to three badges next to your profile picture (tap the level, or Settings → Account → Badges on your profile).
+
 **Journal, check-in reminders, blood pressure and recovery**
 - Journal: every note in one feed (workout, exercise and set notes, the always-on ones, routine tips, check-in notes, day notes, sauna notes), filtered by kind, exercise, dates, words or "with photos". Save a filter as a folder, open a note whole, jump to its workout, or pin it at a gym (Stats → More → Journal).
 - Notes per gym: "seat 4, pad 2" pinned at one gym shows on that exercise only while that gym is active, and a pin without an exercise sits at the top of every workout there. Pin from the journal or write it in the exercise's note (⋯ → Add note → Only at …).
