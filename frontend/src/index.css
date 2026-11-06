@@ -4100,7 +4100,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    Flat ground, the phase in one colour (work: the accent, rest: blue, get ready: orange), the
    numbers tabular so the clock never jitters, every control a thumb-sized target. Above the
    app, under the sheets (#modal-root, z 100), so a confirm can still open over it. */
-.cp{position:fixed;inset:0;z-index:95;background:var(--bg);color:var(--label);display:flex;justify-content:center;
+.cp-screen{position:fixed;inset:0;z-index:95;background:var(--bg);color:var(--label);display:flex;justify-content:center;
   overflow-y:auto;overscroll-behavior:contain;outline:none;
   padding:calc(var(--sat) + 8px) 16px calc(var(--sab) + 16px);
   --cp-phase:var(--acc);animation:cp-in 260ms var(--ease)}
@@ -4169,7 +4169,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-next{width:100%;display:flex;flex-direction:column;gap:8px}
 .cp-next-h{margin:6px 2px 0;font-size:var(--fs-subhead);font-weight:600;color:var(--label-dim)}
 .cp-result>.btn:last-child{margin-top:auto}
-@media (prefers-reduced-motion: reduce){.cp{animation:none}}
+@media (prefers-reduced-motion: reduce){.cp-screen{animation:none}}
 @media (max-height:640px){.cp-media{width:min(100%,34vh)}.cp-clock{width:min(60vw,32vh)}}
 /* The circuit's card in the workout (views/Workout.jsx CircuitCard). */
 .cc{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 0 10px;border-radius:var(--r-card);background:var(--acc-soft)}

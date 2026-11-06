@@ -248,7 +248,7 @@ export default function CircuitPlayer() {
     return () => { window.removeEventListener('keydown', onKey); setOverlayBack(null) }
   }, [open])
   if (!open || !S?.active && !result) return null
-  return <div ref={box} className="cp" role="dialog" aria-modal="true" aria-label={t('Circuit timer')} tabIndex={-1}>
+  return <div ref={box} className="cp-screen" role="dialog" aria-modal="true" aria-label={t('Circuit timer')} tabIndex={-1}>
     {ask && run ? <Ask S={S} run={run} m={ask.m} />
       : result && run ? <Result S={S} run={run} result={result} close={close} />
       : run && !run.ended ? <Running S={S} run={run} close={close} />
