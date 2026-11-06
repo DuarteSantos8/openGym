@@ -29,7 +29,7 @@ struct SessionView: View {
             }
             .tabViewStyle(.page)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { SessionBadges() }
+                ToolbarItem(placement: .topBarLeading) { SessionBadges().environmentObject(store) }
             }
         }
         // Wrist down on the Overview: the set is what the next glance is for.

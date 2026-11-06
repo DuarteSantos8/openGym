@@ -792,7 +792,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         }
         // The last three seconds, one click each, so the wrist knows without a look.
         holdTicks.forEach { $0.cancel() }
-        holdTicks = [3.0, 2.0, 1.0].filter { seconds > $0 + 1 }.map { left in
+        holdTicks = [3.0, 2.0, 1.0].filter { seconds > $0 + 1 }.map { (left: Double) -> DispatchWorkItem in
             let item = DispatchWorkItem { Haptics.count() }
             DispatchQueue.main.asyncAfter(deadline: .now() + seconds - left, execute: item)
             return item

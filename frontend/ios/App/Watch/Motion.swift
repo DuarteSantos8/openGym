@@ -20,8 +20,9 @@ enum Motion {
 
     /// The set's lines after ‹ (-1) or › (+1): in from that side, or just a fade.
     static func nudge(_ direction: Int, reduceMotion: Bool) -> AnyTransition {
-        guard !reduceMotion else { return .opacity }
-        return .asymmetric(insertion: .offset(x: CGFloat(12 * direction)).combined(with: .opacity), removal: .identity)
+        guard !reduceMotion else { return AnyTransition.opacity }
+        return AnyTransition.asymmetric(insertion: AnyTransition.offset(x: CGFloat(12 * direction)).combined(with: .opacity),
+                                        removal: AnyTransition.identity)
     }
 }
 
@@ -50,9 +51,9 @@ struct CountdownView: View {
                                 .font(.system(size: 64, weight: .bold, design: .rounded).monospacedDigit())
                                 .foregroundStyle(accent)
                                 .id(n)
-                                .transition(reduceMotion || dimmed ? .opacity
-                                            : .asymmetric(insertion: .scale(scale: 0.6).combined(with: .opacity),
-                                                          removal: .scale(scale: 1.35).combined(with: .opacity)))
+                                .transition(reduceMotion || dimmed ? AnyTransition.opacity
+                                            : AnyTransition.asymmetric(insertion: AnyTransition.scale(scale: 0.6).combined(with: .opacity),
+                                                                       removal: AnyTransition.scale(scale: 1.35).combined(with: .opacity)))
                         }
                         .animation(dimmed ? nil : (reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.35, dampingFraction: 0.75)), value: n)
                         .accessibilityElement(children: .ignore)
