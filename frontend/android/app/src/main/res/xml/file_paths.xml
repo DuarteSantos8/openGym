@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- What the share sheet may hand to another app: only the app's own cache folder, where
      lib/mobile.js writes a backup export just before sharing it. The app shares nothing from
-     shared storage, so that is not exposed. -->
+     shared storage, so that is not exposed.
+     reminder-sounds/: the sound files of the reminders' notification channels
+     (ReminderSoundPlugin), read by the system's notification sound player and nothing else. -->
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <cache-path name="my_cache_images" path="." />
+    <files-path name="reminder_sounds" path="reminder-sounds/" />
 </paths>

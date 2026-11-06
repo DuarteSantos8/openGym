@@ -67,6 +67,11 @@ export function removeSound (s, id) {
     const left = Object.fromEntries(Object.entries(s.restSoundByKind).filter(([, v]) => v !== 'u:' + id))
     if (Object.keys(left).length) s.restSoundByKind = left; else delete s.restSoundByKind
   }
+  // A reminder that rang with it goes back to the phone's default (lib/reminder-sounds.js).
+  if (s.reminderSounds && typeof s.reminderSounds === 'object') {
+    const left = Object.fromEntries(Object.entries(s.reminderSounds).filter(([, v]) => v?.tone !== 'u:' + id))
+    if (Object.keys(left).length) s.reminderSounds = left; else delete s.reminderSounds
+  }
 }
 
 export function renameSound (s, id, name) {

@@ -106,6 +106,7 @@ import { AvatarFace, AvatarSection } from '../components/Avatar.jsx'
 import { useOfflineBuild } from '../lib/use-offline-build.js'
 import { offlineBuild } from '../lib/build-caps.js'
 import NetworkLogPage, { NetworkLogRow } from './NetworkLog.jsx'
+import ReminderSounds from '../components/ReminderSounds.jsx'
 
 /* Settings (v1.3.11). The root is one screen: an account card, eleven rows that each open a page
    (/settings/<page>), and a search over every row. Rare things live one level further down
@@ -879,6 +880,8 @@ export default function Settings({ page = null, find = null, via = null, entryKe
       {MOBILE && gymReminder && <Section footer={t('A nudge when you walk into your gym.')}>
         <Row icon="mapPin" iconTint="var(--green)" title={t('Gym reminder')} value={gymOn ? t('On') : t('Off')} accessory="chevron" onClick={() => nav('/settings/gym')} />
       </Section>}
+       {/* Settings → Reminders → Sounds (components/ReminderSounds.jsx): the Android app only. */}
+      {MOBILE && android && <ReminderSounds gym={!!gymReminder} />}
     </>,
 
     plan: () => <>

@@ -230,6 +230,12 @@ export function buildNudgeNotifications(S, now = new Date()) {
   return notifications
 }
 
+// The channel ids of the workout and check-in reminders' sounds, null for the default channel.
+const reminderChannels = S => import('./reminder-sounds.js')
+  .then(m => Promise.all([m.reminderChannel(S, 'workout'), m.reminderChannel(S, 'checkin')]))
+  .catch(() => [null, null])
+export const onChannel = (list, channelId) => (channelId ? list.map(n => ({ ...n, channelId })) : list)
+
 // (Re)schedule the workout-day reminder: one one-off notification per future calendar date in
 // the bounded window. Cheap enough to run after any state change — the plan or the reminder time
 // may just have been edited. `interactive` gates the OS permission prompt to the Settings toggle;
@@ -255,8 +261,10 @@ export async function syncReminder(S, interactive = false) {
     let perm = await LocalNotifications.checkPermissions()
     if (perm.display !== 'granted' && interactive) perm = await LocalNotifications.requestPermissions()
     if (perm.display !== 'granted') { await check([]); return false }
-    const notifications = r?.on ? [...buildReminderNotifications(S), ...buildNudgeNotifications(S)] : []
-    const checkins = checkin ? buildCheckinNotifications(S, { t, names: keys => checkinNames(S, keys, t) }) : []
+    // Settings → Reminders → Sounds (lib/reminder-sounds.js): each kind on the channel of its sound.
+    const [workoutCh, checkinCh] = await reminderChannels(S)
+    const notifications = onChannel(r?.on ? [...buildReminderNotifications(S), ...buildNudgeNotifications(S)] : [], workoutCh)
+    const checkins = onChannel(checkin ? buildCheckinNotifications(S, { t, names: keys => checkinNames(S, keys, t) }) : [], checkinCh)
     if (notifications.length || checkins.length) await LocalNotifications.schedule({ notifications: [...notifications, ...checkins] })
     await check(notifications)
     return true
