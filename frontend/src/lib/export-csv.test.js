@@ -243,3 +243,25 @@ describe('a note on one set (v1.4.5)', () => {
     expect(rows.map(r => [r[col('note')], r[col('set_note')]])).toEqual([['all good', ''], ['', 'grip slipped']])
   })
 })
+
+describe('the cardio resistance level', () => {
+  const S = { unit: 'kg', workouts: [{ id: 'w', d: '2026-11-05', start: at('2026-11-05', 7), end: at('2026-11-05', 8), name: 'Spin', entries: [
+    { id: '2138', sets: [{ min: 20, speed: 25, level: 8, done: true }, { min: 10, speed: 22, done: true }] },
+  ] }] }
+
+  it('has a column of its own and comes back from our own file', () => {
+    const rows = workoutRows(S)
+    const col = name => WORKOUT_COLUMNS.indexOf(name)
+    expect(col('resistance_level')).toBe(col('incline') + 1)
+    expect(rows.map(r => r[col('resistance_level')])).toEqual(['8', ''])
+    const sets = parseWorkoutCSV(workoutsCSV(S), { unit: 'kg' }).workouts[0].entries[0].sets
+    expect(sets[0].level).toBe(8)
+    expect('level' in sets[1]).toBe(false)
+  })
+
+  it('reads another app\'s Resistance Level column, clamped to 1 to 30', () => {
+    const csv = 'Date,Exercise,Distance (km),Duration (min),Resistance Level\n2026-11-05,Stationary Bike,10,20,45\n'
+    const set = parseWorkoutCSV(csv, { unit: 'kg' }).workouts[0]?.entries[0]?.sets[0]
+    expect(set?.level).toBe(30)
+  })
+})
