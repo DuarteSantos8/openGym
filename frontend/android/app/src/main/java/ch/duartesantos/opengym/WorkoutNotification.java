@@ -176,6 +176,11 @@ final class WorkoutNotification {
         return b;
     }
 
+    /** Android 16: the text in the status-bar chip, where a chronometer does not give it one. */
+    private static void chip(Notification.Builder b, String text) {
+        if (Build.VERSION.SDK_INT >= 36 && text != null && !text.isEmpty()) b.setShortCriticalText(text);
+    }
+
     private static int accentOf(JSONObject attrs) {
         String hex = attrs.optString("accent", "");
         try {
@@ -224,6 +229,8 @@ final class WorkoutNotification {
             b.setShowWhen(false);
         }
         progress(b, state.optInt("done", 0), state.optInt("total", 0), accent);
+        // The chip's own text: a rest counts down in it by itself, a set shows how far along you are.
+        if (!resting) chip(b, WorkoutCard.chipText(state.optInt("done", 0), state.optInt("total", 0)));
         String wid = wid(attrs);
         if (cur != null) {
             b.addAction(action(ctx, WorkoutCardReceiver.LOG, wid, WorkoutCard.key(cur), WorkoutCard.label(attrs, "done", "Log set"), 61));
@@ -247,6 +254,7 @@ final class WorkoutNotification {
         String restWord = WorkoutCard.label(attrs, "rest", "Rest");
         if (paused) {
             b.setContentTitle(restWord + " " + RestAlert.clock((int) RestCountdownPlan.clockSeconds(left))).setShowWhen(false);
+            chip(b, RestAlert.clock((int) RestCountdownPlan.clockSeconds(left)));
         } else {
             b.setContentTitle(restWord).setUsesChronometer(true).setShowWhen(true)
                     .setWhen(System.currentTimeMillis() + left + 999);

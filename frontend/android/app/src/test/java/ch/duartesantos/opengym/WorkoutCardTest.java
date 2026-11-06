@@ -93,4 +93,12 @@ public class WorkoutCardTest {
         assertEquals("Rest", WorkoutCard.label(attrs, "rest", "Rest"));
         assertNull(WorkoutCard.parse("not json"));
     }
+
+    @Test
+    public void theChipSaysHowFarAlongTheSessionIs() {
+        assertEquals("3/12", WorkoutCard.chipText(3, 12));
+        assertEquals("12/12", WorkoutCard.chipText(14, 12));
+        assertEquals("0/5", WorkoutCard.chipText(-1, 5));
+        assertEquals("", WorkoutCard.chipText(0, 0));
+    }
 }

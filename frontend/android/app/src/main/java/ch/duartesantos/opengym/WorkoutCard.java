@@ -192,6 +192,17 @@ final class WorkoutCard {
     }
 
     /** The line under the exercise: "Set 2 of 4 · 80 kg × 8". */
+    /**
+     * The chip by the clock on Android 16 (a Live Update's short critical text, #874): sets done of
+     * all, "3/12", where nothing else gives it a text (the set card; a paused rest has its clock).
+     * Empty without a plan. Samsung's Now Bar was seen without a chip when only a chronometer
+     * stood behind it.
+     */
+    static String chipText(int done, int total) {
+        if (total <= 0) return "";
+        return Math.max(0, Math.min(done, total)) + "/" + total;
+    }
+
     static String setText(JSONObject set) {
         if (set == null) return "";
         String line = set.optString("setLine", "");
