@@ -90,11 +90,16 @@ describe('planExport: the file another student (or another Plan tab) can import'
   })
 })
 
-describe('a workout history is not a plan, and the importer says so', () => {
-  it('names what the file is instead of the blunt refusal', () => {
+describe('a workout history opens as a plan', () => {
+  it('builds one routine per workout name from its latest session', () => {
     const history = workoutExport(doc, null, 'json', now).text
-    expect(() => parsePlan(history, 'kg')).toThrowError(/workout history, not a plan/)
-    try { parsePlan(history, 'kg') } catch (e) { expect(e.code).toBe('not-plan') }
+    const p = parsePlan(history, 'kg')
+    expect(p.routineCount).toBe(2)
+    expect(p.routines[1].ex[0]).toMatchObject({ id: '0001', sets: 1, reps: 8, weight: 60 })
+  })
+  it('says so when no workout has an exercise (an empty history)', () => {
+    const empty = { ...doc, workouts: [{ id: 'e', d: '2026-11-04', name: 'Empty', entries: [] }] }
+    try { parsePlan(JSON.stringify(empty), 'kg'); throw new Error('no') } catch (e) { expect(e.code).toBe('not-plan'); expect(e.message).toMatch(/workout history/) }
   })
   it('still refuses anything else the old way', () => {
     expect(() => parsePlan('{"hello":1}', 'kg')).toThrowError(/plan file/)

@@ -73,10 +73,10 @@ describe('StudentPlanSheet: starting a plan', () => {
     expect(body.bundle.routines.map(r => r.name)).toEqual(['TREINO A', 'TREINO B'])
     expect(Object.keys(body.bundle.week).sort()).toEqual(['1', '4'])
   })
-  it('refuses a workout history and says what it is', async () => {
+  it('refuses an empty workout history and says what it is', async () => {
     const host = render(<StudentPlanSheet student={{ id: 's2', name: 'Bob' }} close={() => {}} />)
     await load(host, JSON.stringify({ user: { name: 'Karine' }, workouts: [{ id: 'w', entries: [] }] }), 'workouts.json')
-    expect(mocks.toast).toHaveBeenCalledWith(expect.stringMatching(/workout history, not a plan/))
+    expect(mocks.toast).toHaveBeenCalledWith(expect.stringMatching(/workout history and none of its workouts/))
     expect(mocks.posts).toHaveLength(0)
   })
   it('refuses a file that is not JSON at all without throwing', async () => {

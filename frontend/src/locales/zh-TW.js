@@ -56,7 +56,7 @@ export default {
   "There is no other student to send it to.": "There is no other student to send it to.",
   "This is the workout history, not a plan. To copy a plan, use Plans.": "This is the workout history, not a plan. To copy a plan, use Plans.",
   "Those workouts have no completed sets, so the spreadsheet would be empty. The JSON still has them.": "Those workouts have no completed sets, so the spreadsheet would be empty. The JSON still has them.",
-  "this file is a workout history, not a plan. Download the plan from the student’s Plans tab, or use “Export plan file” in the Plan options": "this file is a workout history, not a plan. Download the plan from the student’s Plans tab, or use “Export plan file” in the Plan options",
+  "this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it": "this file is a workout history and none of its workouts has an exercise, so there is no plan to build from it",
   "Account and access": "Account and access",
   "An invite code is single use. Whoever joins with it becomes your student automatically.": "An invite code is single use. Whoever joins with it becomes your student automatically.",
   "As the owner you can download the workouts of any profile on this server, in one file.": "As the owner you can download the workouts of any profile on this server, in one file.",
