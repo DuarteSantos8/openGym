@@ -3867,6 +3867,9 @@ export const PT_BR_OVERRIDES = {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Outra pessoa configurou neste dispositivo, então nada seu vai para a pasta dela. Desconecte para configurar a sua.",
   "This backup belongs to another account": "Este backup pertence a outra conta",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "Escolha um que você fez, importados também. Os exercícios e séries viram uma rotina que você pode ajustar.",
+  "Saved as a routine. Your workout stays as it was.": "Salvo como rotina. Seu treino continua como estava.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "Nada anotado ainda. Treine uma vez ou importe seu histórico e ele aparece aqui.",
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

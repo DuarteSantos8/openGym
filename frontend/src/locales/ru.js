@@ -5463,4 +5463,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "Эта резервная копия принадлежит другому аккаунту",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Её настроил на этом устройстве кто-то другой, поэтому ничего твоего в его папку не попадёт. Отключи её, чтобы настроить свою.",
+  "Routine from a past workout": "Программа из прошлой тренировки",
+  "From a past workout": "Из прошлой тренировки",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "Выбери тренировку, которую уже сделал, импортированные тоже подходят. Её упражнения и подходы станут программой, которую можно подправить.",
+  "That workout has no exercises to copy.": "В этой тренировке нечего копировать.",
+  "Saved as a routine. Your workout stays as it was.": "Сохранено как программа. Тренировка осталась как была.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "Пока ничего нет. Потренируйся разок или импортируй историю, и она появится здесь.",
 }

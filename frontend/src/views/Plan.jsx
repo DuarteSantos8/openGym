@@ -33,6 +33,8 @@ import {
 import { isOn } from '../lib/modules.js'
 import { groupRoutines, folderOpen, setFolderOpen, folderOf } from '../lib/routine-folders.js'
 import { isFavRoutine } from '../lib/routine-favs.js'
+import { routineFromWorkoutSheet } from '../components/RoutineFromWorkout.jsx'
+import { routineSources } from '../lib/session-routines.js'
 
 // Plan has two views (v1.3.11): Schedule (how you train, and when) and Routines (what you
 // train). The last one you looked at comes back: a per-device convenience, never synced, so it
@@ -165,6 +167,7 @@ export default function Plan() {
         { icon: 'note', label: t('Print / Save as PDF'), disabled: !has, onClick: printWholePlan },
         { icon: 'download', label: t('Import a plan file'), onClick: () => fileRef.current?.click() },
         { icon: 'clipboard', label: t('Load starter plan'), onClick: starterPlanSheet },
+        { icon: 'history', label: t('Routine from a past workout'), disabled: !routineSources(S.workouts, 1).length, onClick: () => routineFromWorkoutSheet(id => nav('/plan/r/' + id)) },
         { icon: 'calendar', label: t('Programmes'), sub: t('Your routines as a block of weeks, with starter programmes to try.'), onClick: () => nav('/plan/programmes') },
       ],
     })
@@ -322,6 +325,8 @@ function Schedule({ S, update, nav, mode }) {
 
     {!S.routines.length && <EmptyState className="plan-empty" icon="clipboard" title={t('No routines yet.')} text={t('Make one, or grab the starter plan to get going.')}>
       <Button variant="tinted" icon="clipboard" onClick={starterPlanSheet}>{t('Load starter plan')}</Button>
+      {/* Workouts but no routines, an imported history mostly (#1010): start from those. */}
+      {routineSources(S.workouts, 1).length > 0 && <Button variant="plain" icon="history" onClick={() => routineFromWorkoutSheet(id => nav('/plan/r/' + id))}>{t('From a past workout')}</Button>}
     </EmptyState>}
 
     {/* A queue payload that arrived unusable: a fix-up, shown whichever way you train. Giving it

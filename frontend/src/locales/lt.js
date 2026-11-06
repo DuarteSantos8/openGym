@@ -5455,4 +5455,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "Ši atsarginė kopija priklauso kitai paskyrai",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Šiame įrenginyje ją nustatė kažkas kitas, todėl niekas iš tavo duomenų nekeliauja į jo aplanką. Atjunk ją ir nusistatyk savo.",
+  "Routine from a past workout": "Rutina iš ankstesnės treniruotės",
+  "From a past workout": "Iš ankstesnės treniruotės",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "Pasirinkite atliktą treniruotę, tinka ir importuotos. Jos pratimai ir serijos taps rutina, kurią galėsite pataisyti.",
+  "That workout has no exercises to copy.": "Šioje treniruotėje nėra pratimų, kuriuos būtų galima nukopijuoti.",
+  "Saved as a routine. Your workout stays as it was.": "Išsaugota kaip rutina. Jūsų treniruotė liko tokia pati.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "Dar nieko neįrašyta. Pasitreniruokite kartą arba importuokite istoriją, ir ji atsiras čia.",
 }

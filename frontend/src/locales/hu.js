@@ -5462,4 +5462,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "Ez a mentés egy másik fiókhoz tartozik",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Valaki más állította be ezen az eszközön, így semmi sem kerül tőled az ő mappájába. Bontsd a kapcsolatot, és állítsd be a sajátodat.",
+  "Routine from a past workout": "Rutin egy korábbi edzésből",
+  "From a past workout": "Egy korábbi edzésből",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "Válassz egyet, amit csináltál, az importáltak is jók. A gyakorlatai és sorozatai rutinná válnak, amit igazíthatsz.",
+  "That workout has no exercises to copy.": "Ebben az edzésben nincs másolható gyakorlat.",
+  "Saved as a routine. Your workout stays as it was.": "Rutinként mentve. Az edzésed marad, ahogy volt.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "Még nincs semmi rögzítve. Edz egyszer, vagy importáld az előzményeidet, és itt lesz.",
 }

@@ -357,7 +357,9 @@ describe('Plan — Schedule extras', () => {
     mount()
     click(byLabel('Plan options'))
     const items = menuSheet.mock.calls.at(-1)[0].items.filter(Boolean)
-    expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Load starter plan', 'Programmes'])
+    expect(items.map(i => i.label)).toEqual(['Export plan file', 'Print / Save as PDF', 'Import a plan file', 'Load starter plan', 'Routine from a past workout', 'Programmes'])
+    // #1010: off until there is a workout to start from.
+    expect(items.find(i => i.label === 'Routine from a past workout').disabled).toBe(!(mocks.S.workouts || []).length)
   })
 })
 

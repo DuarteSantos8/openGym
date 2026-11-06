@@ -5425,4 +5425,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "Tahle záloha patří jinému účtu",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Nastavil ji na tomhle zařízení někdo jiný, takže nic tvého do jeho složky nejde. Odpoj ji a nastav si vlastní.",
+  "Routine from a past workout": "Rutina z dřívějšího tréninku",
+  "From a past workout": "Z dřívějšího tréninku",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "Vyber trénink, který jsi odcvičil, i importovaný. Jeho cviky a série se stanou rutinou, kterou můžeš upravit.",
+  "That workout has no exercises to copy.": "Tenhle trénink nemá žádné cviky ke zkopírování.",
+  "Saved as a routine. Your workout stays as it was.": "Uloženo jako rutina. Tvůj trénink zůstává, jak byl.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "Zatím nic zapsaného. Odcvič jeden trénink nebo importuj historii a objeví se tady.",
 }

@@ -5506,4 +5506,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "Den här säkerhetskopian tillhör ett annat konto",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Någon annan har ställt in den på den här enheten, så inget av ditt hamnar i deras mapp. Koppla från den för att ställa in din egen.",
+  "Routine from a past workout": "Rutin från ett tidigare pass",
+  "From a past workout": "Från ett tidigare pass",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "Välj ett pass du gjort, importerade räknas också. Dess övningar och set blir en rutin du kan finjustera.",
+  "That workout has no exercises to copy.": "Det passet har inga övningar att kopiera.",
+  "Saved as a routine. Your workout stays as it was.": "Sparat som rutin. Ditt pass är kvar som det var.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "Inget loggat än. Träna en gång eller importera din historik så dyker det upp här.",
 }

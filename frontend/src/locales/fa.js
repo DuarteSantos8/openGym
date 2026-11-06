@@ -5425,4 +5425,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "این پشتیبان مال حساب دیگری است",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "کس دیگری آن را روی این دستگاه راه انداخته، پس هیچ چیز شما به پوشه او نمی‌رود. قطعش کنید تا مال خودتان را راه بیندازید.",
+  "Routine from a past workout": "روتین از یک تمرین قبلی",
+  "From a past workout": "از یک تمرین قبلی",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "یکی از تمرین‌هایی را که انجام داده‌اید انتخاب کنید، واردشده‌ها هم حساب‌اند. حرکات و ست‌هایش روتینی می‌شود که می‌توانید تغییرش دهید.",
+  "That workout has no exercises to copy.": "این تمرین حرکتی برای کپی ندارد.",
+  "Saved as a routine. Your workout stays as it was.": "به‌عنوان روتین ذخیره شد. تمرین شما همان‌طور که بود می‌ماند.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "هنوز چیزی ثبت نشده. یک بار تمرین کنید یا سابقه‌تان را وارد کنید تا اینجا بیاید.",
 }

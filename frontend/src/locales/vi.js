@@ -5425,4 +5425,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "Bản sao lưu này thuộc về tài khoản khác",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "Người khác đã thiết lập nó trên thiết bị này, nên không có gì của bạn vào thư mục của họ. Ngắt kết nối để thiết lập của riêng bạn.",
+  "Routine from a past workout": "Lịch tập từ một buổi tập trước",
+  "From a past workout": "Từ một buổi tập trước",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "Chọn một buổi bạn đã tập, buổi nhập vào cũng được. Các bài và hiệp của nó thành một lịch tập bạn có thể chỉnh.",
+  "That workout has no exercises to copy.": "Buổi tập đó không có bài nào để sao chép.",
+  "Saved as a routine. Your workout stays as it was.": "Đã lưu thành lịch tập. Buổi tập của bạn vẫn giữ nguyên.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "Chưa có gì được ghi. Tập một buổi hoặc nhập lịch sử của bạn, nó sẽ hiện ở đây.",
 };

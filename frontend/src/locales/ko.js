@@ -5459,4 +5459,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "이 백업은 다른 계정의 것이에요",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "다른 사람이 이 기기에서 설정했어요. 그래서 내 데이터는 그 폴더로 가지 않아요. 연결을 끊고 내 백업을 설정하세요.",
+  "Routine from a past workout": "지난 운동으로 루틴 만들기",
+  "From a past workout": "지난 운동으로",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "했던 운동 하나를 고르세요. 가져온 기록도 돼요. 그 운동의 종목과 세트가 수정할 수 있는 루틴이 돼요.",
+  "That workout has no exercises to copy.": "이 운동에는 복사할 종목이 없어요.",
+  "Saved as a routine. Your workout stays as it was.": "루틴으로 저장했어요. 운동 기록은 그대로예요.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "아직 기록이 없어요. 한 번 운동하거나 기록을 가져오면 여기에 나와요.",
 }

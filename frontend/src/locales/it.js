@@ -5469,4 +5469,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "Questo backup appartiene a un altro account",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "L’ha configurato qualcun altro su questo dispositivo, quindi niente di tuo finisce nella sua cartella. Scollegalo per configurare il tuo.",
+  "Routine from a past workout": "Routine da un allenamento passato",
+  "From a past workout": "Da un allenamento passato",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "Scegline uno che hai fatto, anche importato. Esercizi e serie diventano una routine da ritoccare.",
+  "That workout has no exercises to copy.": "Quell’allenamento non ha esercizi da copiare.",
+  "Saved as a routine. Your workout stays as it was.": "Salvato come routine. Il tuo allenamento resta com’era.",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "Ancora niente registrato. Allenati una volta o importa lo storico e compare qui.",
 }

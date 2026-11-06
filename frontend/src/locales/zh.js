@@ -5459,4 +5459,10 @@ export default {
   // --- WebDAV backup on a shared device (qa2-146) ---
   "This backup belongs to another account": "这个备份属于另一个账号",
   "Someone else set it up on this device, so nothing of yours goes to their folder. Disconnect it to set up your own.": "这是别人在这台设备上设置的，所以你的数据不会进入对方的文件夹。断开连接后就能设置你自己的。",
+  "Routine from a past workout": "用以前的训练建计划",
+  "From a past workout": "用以前的训练",
+  "Pick one you did, imported ones too. Its exercises and sets become a routine you can tweak.": "选一次你练过的训练，导入的也行。它的动作和组数会变成一个可以再调整的计划。",
+  "That workout has no exercises to copy.": "这次训练没有可复制的动作。",
+  "Saved as a routine. Your workout stays as it was.": "已存为计划。你的训练记录保持原样。",
+  "Nothing logged yet. Train once, or import your history, and it shows up here.": "还没有记录。练一次或导入你的历史，它就会出现在这里。",
 }
