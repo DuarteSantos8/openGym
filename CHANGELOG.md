@@ -55,6 +55,13 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Sets logged on the watch after you saved the workout on the phone join the saved workout, even for an exercise the phone had left empty.
 - A late copy of a watch workout's start no longer starts it all over again, and a watch workout started while another one ran on the phone waits its turn instead of being thrown away.
 
+**Garmin, like the Apple Watch**
+- The phone apps now talk to the openGym Garmin watch app (Connect IQ): your workout shows on the wrist, sets, starts, finishes and discards logged there land on the phone, and the Garmin can start today's routine by itself. On Android it goes through Garmin Connect; on the iPhone you pick your watch once in Settings → Garmin.
+- Settings → Garmin: which Garmins the phone knows, whether openGym is on them, and the watch switches (send workouts, open on the watch when a workout starts).
+- The Garmin keeps every event until the phone confirms it applied it, like the other watches, so a set logged while openGym on the phone was closed is not lost.
+- The F-Droid build stays free of Garmin's closed SDK; its Garmin page says so.
+- Fixed: an event the watch sent again long after the phone applied it is named in the next confirmation again, so a watch that was away for a whole workout lets go of all of it.
+
 **Apple Watch, redesigned**
 - Watch redesign: idea and first versions by @cubetes (#832 to #966).
 - The watch wears openGym's look: the app's greys, its rounded type and its accent colour (your own, if you picked one on the phone). The start screen says Today beside the clock, tells you how big the routine is (exercises and sets) and has one big Start, with the other routines as rows under it.

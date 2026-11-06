@@ -944,6 +944,18 @@ function lateRow (w, exId, setIdx) {
 }
 
 /** Whether a watch is paired and has the app, for Settings → Apple Watch. */
+/**
+ * Settings → Garmin (views/GarminSettings.jsx): the native Garmin calls of WatchBridge
+ * (garminStatus, garminPick, garminStore; docs/GARMIN.md). No phone app, or a build without them:
+ * null.
+ */
+export async function garminCall (name, args = {}) {
+  if (!['garminStatus', 'garminPick', 'garminStore'].includes(name)) return null
+  const p = await watchPlugin()
+  if (!p) return null
+  try { return (await p.WatchBridge[name](args)) || null } catch { return null }
+}
+
 export async function watchStatus () {
   const p = await watchPlugin()
   if (!p) return { paired: false, installed: false }

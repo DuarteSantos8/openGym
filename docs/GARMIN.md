@@ -4,15 +4,16 @@ A Connect IQ watch app for Garmin watches, the Apple Watch and Wear OS apps' lit
 phone stays the source of truth, the watch follows the workout the phone runs, logs sets on it and
 can start today's routine by itself. Source: `frontend/garmin` (Monkey C).
 
-**Status (v1.4.4):** the watch app is written, its strings are in, its logic has unit tests, and
+**Status (v1.4.5):** the watch app is written, its strings are in, its logic has unit tests, and
 `node frontend/garmin/check.mjs` passes (CI runs it). It **compiles** with Connect IQ SDK 9.2.0
 for a watch of every kind (round AMOLED and MIP, square, black and white, the smallest memory),
 and its unit tests compile, against stand-in device files ("Compile checks without a Garmin
-login" below); the real device files and a run in the simulator are still the owner's (see "What
-the owner does"). On the page, the phone already makes the Garmin snapshot and pauses it with
-Settings → Modules → Watch; the native half of the bridge (the Connect IQ Mobile SDK in the
-Android and iPhone apps) is specified below but not wired up, so the watch app does nothing
-useful with a phone until it is.
+login" below). **The phone side is wired up in v1.4.5**: the Connect IQ Mobile SDK in the Android
+app (APK and Play builds, `android/app/src/ciq`) and in the iPhone app (`ios/App/App/GarminLink.swift`,
+the Swift package added at build time by `ios/ci/add-garmin.rb`), behind the same `WatchBridge`
+plugin as the other watches, with Settings → Garmin for pairing and status. Both compile in CI;
+none of it has met a real Garmin yet. That, the simulator run and the Connect IQ Store submission
+are the owner's (see "What the owner does" and `/root/uploads/opengym-146/garmin-store/`).
 
 ## What it does
 
@@ -96,9 +97,14 @@ booleans on its own.
 | `finish` / `discard` | `id, wid, at` |
 | `hello` | `id, at`: for the bridge only ("send me the latest snapshot"), never queued for the page |
 
-Events wait in the watch's storage until `transmit` reports them delivered, so a set logged with
-the phone away is sent when it is back; one sent twice is applied once (the page keeps the ids).
-Times are ms since 1970 as `Long`.
+Events wait in the watch's outbox (`ob`) until the phone's snapshot names them in `acked` (the
+1.4.5 outbox protocol of the other watches, `Core.ackOutbox`): `transmit` reporting a message
+delivered only means Garmin Connect took it, and with openGym on the phone not running it can go
+nowhere. So `obn` counts the events at the front already sent; what is not confirmed a minute later
+goes again (`Link.retry`), what was never sent after 30 s. One sent twice is applied once (the page
+keeps the ids, and names a resent one again as the newest, so the short `acked` list of a Garmin,
+`GARMIN_ACKED_MAX` = 16, still gets to it). The outbox keeps at most 60, dropping the oldest sent
+ones first. Times are ms since 1970 as `Long`.
 
 ### The phone side
 
@@ -110,36 +116,57 @@ JavaScript, not twice in Java and Swift (`watch-sync.garmin.test.js`). With the 
 off (Settings → Modules) or the watch's own switch off, that is the empty snapshot, as for every
 other watch: no workout, nothing ready, no streak. The Garmin stays paired, and the Modules page
 asks once before Watch goes off while one is there (it remembers the last `status()` in
-`localStorage` `gym_garmin_link_v1`, `readGarminLink` in lib/watch-settings.js). There is no
-Garmin page in Settings: the watch app's one setting lives in the Connect IQ app, and pairing is
-Garmin Connect's. If the bridge ever needs a page of its own, it takes `mod: 'watch'` in
-views/settings-pages.js like the Apple Watch and Zepp OS pages.
+`localStorage` `gym_garmin_link_v1`, `readGarminLink` in lib/watch-settings.js).
 
-**The native half (to do):**
+**Settings → Garmin (v1.4.5, `views/GarminSettings.jsx`, words in `lib/garmin-view.js`).** In the
+phone apps (module Watch): the Garmins the phone knows (connected or not, openGym on them or not),
+"Choose watches" on the iPhone (Garmin Connect opens with its list and comes back) or "Look again"
+on Android (Garmin Connect's pairing is the list), "Get openGym for Garmin" while a watch lacks the
+app (the Connect IQ Store page once `STORE_ID` / `storeId` are filled in, this guide until then), and
+the two switches every watch shares: send workouts, open on the watch. In a build without the link
+(F-Droid, or an iPhone build without the package) it says why. It asks the native side through
+`garminCall` in lib/watch-sync.js: `garminStatus`, `garminPick`, `garminStore`.
 
-1. **Android** (`android/app`, play flavour first): the Connect IQ Mobile SDK
-   (`com.garmin.connectiq:ciq-companion-app-sdk`, Maven Central, Garmin's licence). On start,
-   `ConnectIQ.getInstance(ctx, IQConnectType.WIRELESS)`, `initialize`, then for each
-   `getConnectedDevices()` an `IQApp("3c533c63754d40189c000ad529e400b9")` (the manifest id) and
-   `registerForAppEvents`. Incoming `events` go into the same `WatchEventQueue` file the Wear OS
-   listener writes (the page drains them as it does now); a `hello` instead re-sends the last
-   snapshot. `sendSnapshot({ json, garmin })` converts `JSON.parse(garmin)` to `Map`/`List` and
-   calls `sendMessage`. `status()` reports `paired && installed && garmin: true` when a Garmin
-   with the app is connected (`getApplicationInfo`).
-2. **iPhone** (`ios/App/App`): the Connect IQ iOS SDK (`ConnectIQ.xcframework`). It needs a URL
-   scheme in Info.plist: `showConnectIQDeviceSelection` hands over to Garmin Connect Mobile, which
-   returns the chosen watches through that URL; the app keeps them. Then `register(forAppMessages:)`
-   and `sendMessage` as on Android. The Apple Watch keeps priority when both are paired.
-3. **Licence and builds.** The Connect IQ Mobile SDK is not open source. It goes into the store
-   flavours only (Play, App Store); the sideload / F-Droid-style APK stays free of it, and there the
-   Garmin app simply finds no phone. This needs a check against the CLA and AGPL notes in
-   NOTICE.md before it ships.
-4. **Opening the app on the watch** when a workout starts on the phone: the Mobile SDK's
-   `openApplication` shows a prompt on the watch ("open openGym?"); the Settings → Apple Watch
-   "Open on the watch" switch can drive it.
+**The native half (done in v1.4.5).**
 
-This was left out of v1.4.4 on purpose: adding a closed-source SDK and a second link to both phone
-builds is the kind of change that wants its own release, a real watch and a review.
+1. **Android** (`android/app/src/ciq/.../GarminLink.java`, pure parts in `main/.../GarminMessages.java`
+   with `GarminMessagesTest`): `com.garmin.connectiq:ciq-companion-app-sdk:2.4.0` (Maven Central),
+   in the `sideload` and `play` flavours only. One `GarminLink` per process, started by
+   `WatchBridgePlugin.load`: `ConnectIQ.getInstance(ctx, WIRELESS)`, `initialize` (no SDK dialogs),
+   then for each `getKnownDevices()` `registerForDeviceEvents`, `registerForAppEvents` for
+   `IQApp("3c533c63754d40189c000ad529e400b9")` and `getApplicationInfo` (installed or not). Incoming
+   `events` go into the same queue file as the Wear OS watch's (`WatchBridgePlugin.storeEvent`, by
+   the event's `at` as `seq`), a `hello` re-sends the last snapshot instead. `sendSnapshot({ json,
+   garmin })` turns the Garmin JSON into maps and lists (nulls left out, ms as `Long`) and sends it
+   to every connected Garmin with the app; the last one goes again when a watch connects or says
+   hello. `status()` adds `garmin: true` when a Garmin has the app, and counts it as paired and
+   installed so the page sends at all. `openOnWatch` also asks each connected Garmin to open the app
+   (`openApplication`: "open openGym?" on the watch, Settings → Garmin "Open on the watch").
+   Garmin Connect Mobile delivers messages while the app's process lives (the page may sleep); with
+   the process gone they are lost on the phone, which is why the watch now keeps them until `acked`.
+2. **iPhone** (`ios/App/App/GarminLink.swift`): the Swift package
+   `github.com/garmin/connectiq-companion-app-sdk-ios` 1.8.0 (a binary `ConnectIQ.xcframework`),
+   added to the App target at build time by `ios/ci/add-garmin.rb` (ios.yml runs it in all three
+   jobs, so the App Store archive has it; `-ObjC` as Garmin asks). The file compiles either way:
+   without the package `canImport(ConnectIQ)` is false and it answers "no Garmin" (`state: build`).
+   Info.plist: the URL scheme `opengym-ciq` (Garmin Connect returns the picked watches there;
+   SceneDelegate and AppDelegate hand it to `GarminLink.handle`), `LSApplicationQueriesSchemes`
+   `gcm-ciq`, the Bluetooth usage strings and the `bluetooth-central` background mode (a set from
+   the wrist reaches the phone in the pocket). The SDK starts only once a Garmin was picked (it
+   opens Bluetooth, and iOS asks): at launch when one is saved (`garmin-devices.plist`, the picked
+   `IQDevice`s), else on "Choose watches". Then `register(forDeviceEvents:)`,
+   `register(forAppMessages:)`, `getAppStatus`, `sendMessage`, `openAppRequest` as on Android. The
+   Apple Watch keeps its own snapshot; both can be linked at once.
+3. **Licence and builds.** The Connect IQ Mobile SDK is not open source (Garmin's Connect IQ SDK
+   License Agreement and Application Developer Agreement; the Maven POM says so too). It is in the
+   builds that already carry closed platform code: the GitHub APK and Play build (beside Google Play
+   services) and the App Store build. The F-Droid flavour has none of it: its `WatchBridgePlugin`
+   (src/fdroid) answers `garmin: false` and `garminStatus` `state: "build"`, and
+   `scripts/android/check-fdroid.sh` fails on `connectiq` / `com.garmin` in its classpath or
+   manifest. Nothing of Garmin's is in the repository: Gradle and Xcode fetch it. NOTICE.md says so.
+   Whether AGPL distribution next to it needs an explicit additional permission (as for the app
+   stores) is the owner's call; it is the same question as Play services and ML Kit in the APK.
+4. **Opening the app on the watch** when a workout starts on the phone: done, see 1.
 
 ## Garmin Connect and the health apps
 
@@ -259,13 +286,16 @@ changing them there. 17 languages; Connect IQ has no Hindi or Bengali, and one P
 4. Build, run the unit tests, and try the six watches above in the simulator (it needs a desktop;
    pve has no display and lacks its GTK and WebKit libraries). The code compiles already; what is
    left to see is memory on the small watches and how each screen looks.
-5. Wire up the phone side ("The phone side (to do)"), then test with a real Garmin: borrow one or
-   ask a Garmin owner from Discord for a sideload test.
+5. Test the phone side (done in v1.4.5) with a real Garmin: sideload the `.prg`, install the APK
+   or a TestFlight build, Settings → Garmin. Borrow one or ask a Garmin owner from Discord.
 6. Publish: apps.garmin.com/developer → Upload an app → `openGym.iq`, with the store listing
    (name, description, at least one screenshot per screen shape, the icon, category Health &
    Fitness), the privacy policy URL (the app sends heart rate only to the user's own phone app),
    and "requires a companion app" pointing at the Play Store and App Store listings. Garmin reviews
    it, usually within a few days. The app id in `manifest.xml` stays the same forever.
+   Once it is live, put its store id into `GarminLink.STORE_ID` (Android) and `GarminLink.storeId`
+   (iPhone) so "Get openGym for Garmin" opens its store page. The listing text and a checklist are in
+   `/root/uploads/opengym-146/garmin-store/` on the release machine.
 7. Each release after that: `monkeyc … -e` with the same key and the new `version` in
    `manifest.xml`, uploaded as a new version of the same app.
 

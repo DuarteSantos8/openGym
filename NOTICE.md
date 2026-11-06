@@ -162,3 +162,19 @@ by the Capawesome Team (Robin Genz), a Capacitor wrapper around Google's ML Kit,
 **Apache License 2.0**. openGym pins the `7.x` line to stay on Capacitor 7. The full license text is
 available at <https://www.apache.org/licenses/LICENSE-2.0> and in the package's own `LICENSE` file.
 The decoded string is what openGym keeps; the photo itself is never stored.
+
+## Garmin watches: the Connect IQ Mobile SDK
+
+The phone's link to the openGym Garmin watch app (docs/GARMIN.md) uses Garmin's **Connect IQ
+Mobile SDK**: on Android `com.garmin.connectiq:ciq-companion-app-sdk` (Maven Central), on the
+iPhone the `ConnectIQ.xcframework` Swift package from
+<https://github.com/garmin/connectiq-companion-app-sdk-ios>. It is **not open source**: Garmin
+licenses it under the *Garmin Connect IQ SDK License Agreement* and the *Connect IQ Application
+Developer Agreement* (<https://developer.garmin.com/connect-iq/sdk/>). openGym's repository does not
+contain it; the build fetches it.
+
+It is only in the builds that already carry other closed platform code: the GitHub APK and the
+Google Play build (beside Google Play services' Wearable Data Layer) and the App Store build. The
+F-Droid build leaves it out (`app/build.gradle`, checked by `scripts/android/check-fdroid.sh`), and
+there the Garmin page says the link is not in that build. openGym's own Garmin code
+(`frontend/garmin`, `GarminLink`, `GarminMessages`) stays AGPL.
