@@ -1410,7 +1410,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   display:flex;align-items:center;justify-content:center;pointer-events:none;
 }
 .pp-handle::before{content:'';position:absolute;inset-block:0;width:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.3)}
-.pp-grip{width:36px;height:36px;border-radius:99px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.pp-grip{flex:none;width:36px;height:36px;border-radius:99px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.4)}
 .pp-label{
   position:absolute;bottom:14px;font-size:var(--fs-caption);font-weight:600;color:#fff;
   background:rgba(0,0,0,.55);padding:4px 9px;border-radius:99px;pointer-events:none;
