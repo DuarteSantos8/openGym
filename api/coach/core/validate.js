@@ -572,7 +572,7 @@ export function validateReview(data, plan, ctx = {}) {
             const has = Object.keys(fix).length ? fix : null;
             for (const e of named(x)) {
               const mode = MODES.includes(e.mode) ? e.mode : e.sec != null ? 'time' : 'reps';   // cleanEx always says
-              const why = (has && e.preset ? 'an exercise with its own engine rule (`preset`) keeps its numbers' : null)
+              const why = ((has || pct != null) && e.preset ? 'an exercise with its own engine rule (`preset`) keeps its numbers' : null)
                 || leafMisfit({ mode, loaded: loadedWork(e, LIB_BY_ID.get(e.id), mode), pct, fix: has });
               if (why) { errors.push(`${at} does not fit exercise "${x.exId}": ${why}`); return; }
             }

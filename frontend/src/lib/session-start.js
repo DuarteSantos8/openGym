@@ -75,12 +75,16 @@ export function effectiveExerciseId(occ, profile) {
 export function buildSessionExposures(stored, routine, ctx) {
   stored.prescriptions ||= {}
   const past = ctx.history || stored
-  const date = ctx.date || stored.active?.d || isoOf(new Date(ctx.now))
+  // The workout in progress (`ctx.active`): an exercise added to it never takes a slot it holds already.
+  const active = ctx.active ?? stored.active ?? null
+  const date = ctx.date || active?.d || isoOf(new Date(ctx.now))
   // Only the records a run reads: spreading the draft would copy the whole profile.
   const runView = () => programmeView(ctx.replaceId == null ? stored : { programme: stored.programme, programmeRuns: stored.programmeRuns, programmeEvents: stored.programmeEvents,
-    prescriptions: stored.prescriptions, routines: stored.routines, workouts: (stored.workouts || []).filter(w => w.id !== ctx.replaceId) })
-  let view = routine?.excludeFromProgression === true ? null : runView()
-  const placed = (routine?.ex || []).map(occ => (view ? slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date }) : null))
+    prescriptions: stored.prescriptions, routines: stored.routines, workouts: (stored.workouts || []).filter(w => w.id !== ctx.replaceId) }, null, active)
+  // Logged as extra (`ctx.extra`, the person's answer to a bypass): outside the run, moving nothing.
+  const outside = routine?.excludeFromProgression === true || ctx.extra === true
+  let view = outside ? null : runView()
+  const placed = (routine?.ex || []).map(occ => (view ? slotFor({ view, run: view.run, rid: routine.id, oid: occ.occurrenceId, date, appt: ctx.appts?.[routine.id] ?? null }) : null))
   const bypass = [...new Set(placed.flatMap(x => x?.bypass || []))]
   if (bypass.length) return Object.assign([], { bypass })
   return (routine?.ex || []).map((original, i) => {
@@ -103,7 +107,7 @@ export function buildSessionExposures(stored, routine, ctx) {
     // The week's execution options over the occurrence's own (an incline lives in its cardio settings).
     const occ = prog ? { ...base, ...options, ...(options.incline != null ? { cardio: { ...base.cardio, incline: options.incline } } : {}) } : base
     // A programme's maintenance, extra and recovery work is logged and moves nothing.
-    const excluded = routine.excludeFromProgression === true || occ.excludeFromProgression === true || !!inputs?.blocked || (!!prog && (at.role !== 'work' || prog.rule.program.adaptive === false))
+    const excluded = outside || occ.excludeFromProgression === true || !!inputs?.blocked || (!!prog && (at.role !== 'work' || prog.rule.program.adaptive === false))
     const trackId = prog ? prog.trackId : occ.occurrenceId
     const meaning = dbLoadFor(profile, occ)
     const owned = ownedWeightsFor(profile, occ)

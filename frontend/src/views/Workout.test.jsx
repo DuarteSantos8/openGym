@@ -4,12 +4,15 @@ import { parseHTML } from 'linkedom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import Workout from './Workout.jsx'
 import { api, beacon } from '../lib/api.js'
-import { exposuresWithPerformance } from '../lib/session-ui-adapter.js'
+import { entriesForExposures, exposuresWithPerformance } from '../lib/session-ui-adapter.js'
 import { buildSessionExposures, occurrenceFor } from '../lib/session-start.js'
 import { defaultPlanRule, planPhase } from '../lib/prescription/index.js'
 import { finishWorkout, finishWorkoutSheet } from '../sheets.jsx'
 import { discardedFor } from '../lib/watch-sync.js'
 import { isWarmupRow } from '../lib/workout-model.js'
+import { migratedFixture } from '../lib/test-fixtures.js'
+import { setLegacyWeeks, startProgramme } from '../lib/programmes.js'
+import { todayISO } from '../lib/format.js'
 
 const menuItemsOf = menu => (menu.sections ? menu.sections.flatMap(g => g.more ? g.more.flatMap(s => s.items || []) : g.items || []) : menu.items || []).filter(Boolean)
 
@@ -1101,6 +1104,33 @@ describe('Workout discard timer lifecycle', () => {
     await act(async () => { mocks.confirmSheet.mock.calls[0][0].onConfirm() })
     expect(discardedFor()).toContain(wid)
     vi.unstubAllGlobals()
+  })
+})
+
+// Spec 8.2: a discarded session of a running programme says what it leaves on each exercise's
+// week before the confirm, and records exactly that: missed once a work set was ticked, else skipped.
+describe('discarding a programme session', () => {
+  it('discard explains missed versus skipped for a programme exercise', async () => {
+    const today = todayISO()
+    const S = {
+      ...migratedFixture({ unit: 'kg', weekStart: 1, workouts: [], routines: [{ id: 'r1', name: 'Push', ex: [{ id: '0025', sets: 3, reps: 5, weight: 60 }, { id: '0043', sets: 3, reps: 5, weight: 80 }] }] }),
+      restSec: 90, sound: false, effort: 'none', gifSize: 'full', exWeights: {}, dayPlan: {}, programme: null,
+    }
+    S.programmes = { P: setLegacyWeeks({ id: 'P', name: 'Block', at: 1, rev: 1, end: 'stop', refs: 'inherit' }, [{}, {}], S, { days: { [new Date().getDay()]: ['r1'] } }) }
+    const advance = { onFailure: 'advance', onSkipped: 'advance' }
+    expect(startProgramme(S, 'P', { policies: Object.fromEntries(S.programmes.P.tracks.map(tr => [tr.id, advance])), end: 'stop', today, now: Date.now() })).toEqual({ ok: true })
+    const exposures = buildSessionExposures(S, S.routines[0], { now: Date.now(), newId: x => x })
+    const entries = entriesForExposures(exposures, S.prescriptions).map(e => ({ ...e, rid: 'r1' }))
+    entries[0].sets.find(row => !isWarmupRow(row)).done = true   // a bench set ticked, squat untouched
+    mocks.S = S
+    mocks.A = { id: 'active', name: 'Push', d: today, start: Date.now(), cur: 0, routineIds: ['r1'], exposures, entries }
+    installDom()
+    await act(async () => { root.render(React.createElement(Workout)) })
+    await requestDiscard()
+    const confirm = mocks.confirmSheet.mock.calls.at(-1)[0]
+    expect(confirm.message).toBe('The sets you logged in this session will be lost. Barbell Bench Press counts as a missed session for training week 1. Barbell Full Squat counts as skipped for training week 1.')
+    await act(async () => { confirm.onConfirm() })
+    expect(Object.values(mocks.S.programmeEvents).map(e => [e.type, e.slot, e.worked])).toEqual([['discard', expect.stringMatching(/:r1:o0$/), true], ['discard', expect.stringMatching(/:r1:o1$/), false]])
   })
 })
 

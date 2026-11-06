@@ -292,14 +292,9 @@ export function pushSnapshot(s, proposalId, label) {
 export function revertLast(s) {
   const c = coachOf(s)
   const snap = (c.snapshots || []).at(-1)
-  if (!snap) return false
-  // A programme the Coach wrote and you edited since (or a revised one you deleted since): putting
-  // it back would overwrite that edit, so Undo does nothing at all (spec 13). Compared by content,
-  // not by revision: an Undo before this one saved what this batch wrote again, one revision up.
-  // Older snapshots have no `written`.
+  if (!snap || overwrites(s, snap)) return false
   const pr = snap.programmeRestore
   const nowDef = pr?.id ? programmeById(s, pr.id) : null
-  if (pr?.id && pr.written != null && (nowDef ? writtenOf(nowDef) !== pr.written : !!pr.prev)) return false
   let routines = snap.routines
   let audit = snap.migrationAudit
   if (routines.some(r => (r.ex || []).some(o => !o?.occurrenceId || !o?.exerciseId))) {
@@ -336,7 +331,17 @@ export function revertLast(s) {
   appendLog(s, { kind: 'revert', at: Date.now(), proposalId: snap.proposalId, snap: snapshotKey(snap), summary: t('Reverted the last Coach changes.') })
   return true
 }
-export const canRevert = S => !!(S?.coach?.snapshots || []).length
+// A programme the Coach wrote and you edited since (or a revised one you deleted since): putting it
+// back would overwrite that edit, so Undo does nothing at all and is not offered (spec 13).
+// Compared by content, not by revision: an Undo before this one saved what this batch wrote again,
+// one revision up. Older snapshots have no `written`.
+function overwrites(s, snap) {
+  const pr = snap.programmeRestore
+  if (!pr?.id || pr.written == null) return false
+  const nowDef = programmeById(s, pr.id)
+  return nowDef ? writtenOf(nowDef) !== pr.written : !!pr.prev
+}
+export const canRevert = S => { const snap = (S?.coach?.snapshots || []).at(-1); return !!snap && !overwrites(S, snap) }
 // A definition's content without its revision counter: what Undo compares.
 const writtenOf = def => contentHash({ ...def, rev: 0 })
 
@@ -843,10 +848,16 @@ export function changeMeaning(c) {
       return [x.pct != null ? x.pct + '%' : x.weight != null ? x.weight + ' kg' : null,
         x.sets != null ? x.sets + '×' + (amount ?? '') : amount, x.rpe != null ? 'RPE ' + x.rpe : null].filter(v => v != null).join(' ')
     }
-    return t('Saved under Plan → Programmes. It starts when you start it.') + ' ' + weeks.map((w, i) => {
-      const bits = Object.values(w.t || {}).map(bit).filter(Boolean)
-      return t('Week {0}', i + 1) + ': ' + (w.deload ? t('deload') : bits.length ? [...new Set(bits)].join(', ') : w.rpe != null ? 'RPE ' + w.rpe : '–')
-    }).join(' · ')
+    // Spec 13: what the Coach fixes, against what the exercise's own progression keeps deciding.
+    const fixed = x => x.sets != null || x.reps != null || x.sec != null || x.weight != null || x.rest != null || x.pct != null
+    const policies = new Map(weeks.flatMap(w => Object.entries(w.t || {}).filter(([, x]) => x.policy).map(([k, x]) => [k.split(':').at(-1), x.policy])))
+    const word = v => (v === 'repeat' ? t('repeat it') : t('move on'))
+    return [t('Saved under Plan → Programmes. It starts when you start it.'), weeks.map((w, i) => {
+      const bits = Object.values(w.t || {}).filter(fixed).map(bit).filter(Boolean)
+      const open = Object.values(w.t || {}).some(x => !fixed(x)) || !Object.keys(w.t || {}).length
+      return t('Week {0}', i + 1) + ': ' + (w.deload ? t('deload')
+        : [bits.length ? t('fixed at {0}', [...new Set(bits)].join(', ')) : null, open ? t('your progression picks the rest') + (w.rpe != null ? ' (RPE ' + w.rpe + ')' : '') : null].filter(Boolean).join('; '))
+    }).join(' · '), ...[...policies].map(([id, p]) => t('{0}: after a missed week, {1}; after a skipped week, {2}. You choose when you start it.', exTitle(id), word(p.onFailure), word(p.onSkipped)))].join(' ')
   }
   return null
 }

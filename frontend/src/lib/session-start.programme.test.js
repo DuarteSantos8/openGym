@@ -11,7 +11,7 @@ import { migratedFixture } from './test-fixtures.js'
 import { isWarmupRow } from './workout-model.js'
 import { mergeStates } from './sync-merge.js'
 import { contentHash, defaultPlanRule, generatePrescription, slotFor, slotInputs } from './prescription/index.js'
-import { programmeView, startProgramme, saveProgramme, setLegacyWeek, legacyWeeksOf, discardEvents } from './programmes.js'
+import { programmeView, startProgramme, saveProgramme, setLegacyWeek, legacyWeeksOf, discardEvents, bypassOf } from './programmes.js'
 import { convertLegacyProgramme } from '../../../api/migration/programme-upgrade.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
 
@@ -222,5 +222,27 @@ describe('a session of a running programme', () => {
     expect(x.programme).toMatchObject({ role: 'work' })
     expect(S.prescriptions[x.prescriptionId].ruleSnapshot.options).toEqual({ incline: 2 })
     expect(S.routines[0].ex[0].cardio.incline).toBe(1)
+  })
+
+  it('an exercise built into a workout in progress never takes a slot that workout holds; an ordered week sees it begun', () => {
+    const S = running()
+    const A = session(S, 'A', '2026-10-21T10:00:00Z', { done: false })
+    expect(benchOf(A).programme).toMatchObject({ slot: 'p1:a0:a-bench', role: 'work' })
+    // Built again mid-workout (a re-set exercise, an added routine): extra while A holds the slot.
+    const again = ctx => buildSessionExposures(S, { ...routine(S, 'A'), ex: [routine(S, 'A').ex[0]] }, { now: Date.parse('2026-10-21T10:30:00Z'), newId: s => s + ':2', ...ctx })[0]
+    expect(again({ active: A }).programme).toMatchObject({ slot: 'p1:a0:a-bench', role: 'extra' })
+    expect(again({ active: A }).excludedFromProgression).toBe(true)
+    expect(again({}).programme).toMatchObject({ slot: 'p1:a0:a-bench', role: 'work' })   // what it did before: a second claim
+    // An ordered week: adding routine B to the session that is doing A passes nothing.
+    S.programmeRuns[S.programme.runId].def.schedule.ordered = true
+    const O = { ...S, programmeRuns: { ...S.programmeRuns } }
+    const B = ctx => buildSessionExposures(O, routine(O, 'B'), { now: Date.parse('2026-10-21T10:40:00Z'), newId: s => s + ':3', ...ctx })
+    expect(B({}).bypass).toEqual(['p1:a0'])
+    // The question asked before adding it (sheets.jsx) reads the same way.
+    expect(bypassOf(O, 'B', Date.parse('2026-10-21T10:40:00Z')).map(b => b.id)).toEqual(['p1:a0'])
+    expect(bypassOf(O, 'B', Date.parse('2026-10-21T10:40:00Z'), null, A)).toEqual([])
+    const added = B({ active: A })
+    expect(added.bypass).toBeUndefined()
+    expect(added[0].programme).toMatchObject({ slot: 'p1:a1:b-squat', role: 'work' })
   })
 })

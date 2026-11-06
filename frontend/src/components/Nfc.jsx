@@ -124,7 +124,7 @@ export function addExerciseToSession(id) {
     const noProg = routine?.excludeFromProgression === true || curEntry?.noProg === true
     const cfg = routine ? pickedExerciseConfig(id) : freestyleConfig(sessionHistory(s), { id, ...pickedExerciseConfig(id) })
     const occurrence = occurrenceFor(id, cfg, { id: uid(), unit: s.unit, routineId: routine?.id })
-    const exposures = buildSessionExposures(s, { id: routine?.id || A.id, ex: [occurrence] }, { now: Date.now(), newId: () => uid() })
+    const exposures = buildSessionExposures(s, { id: routine?.id || A.id, ex: [occurrence] }, { now: Date.now(), newId: () => uid(), active: A })
     const [built] = entriesForExposures(exposures, s.prescriptions)
     const at = insertionIndexAfterCurrentUnit(supersetUnits(A.entries), A.cur, A.entries.length)
     A.entries.splice(at, 0, joinSessionNoProg(A, { id, ...built, ...(curRid ? { rid: curRid, addedInSession: true } : {}), ...(noProg ? { noProg: true } : {}) }))

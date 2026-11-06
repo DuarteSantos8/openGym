@@ -850,6 +850,23 @@ export default function Settings({ page = null, find = null, via = null, entryKe
         <Row icon="slider" iconTint="var(--teal)" title={t('Weekly sets per muscle')} subtitle={t('The range each muscle aims for')} accessory="chevron" onClick={muscleTargetsSheet} />
         <Row icon="clipboard" iconTint="var(--green)" title={t('Load starter plan')} accessory="chevron" onClick={starterPlanSheet} />
       </Section>
+      {/* The Config defaults of programmes (lib/programmes.js): whether a newer 1RM is offered or the
+          adopted one kept (S.refUpdates, absent reads as ask), and what a programme's start proposes
+          for its end (S.programmeEnd, absent reads as stop). A running programme keeps its own. */}
+      <Section title={t('Progression')} footer={t('A programme still asks at its start; a running one keeps the choices it started with.')}>
+        <SelectRow icon="chartLine" iconTint="var(--teal)" title={t('New 1RM estimates')}
+          value={S.refUpdates === 'keep' ? 'keep' : 'ask'} onChange={v => update(s => { s.refUpdates = v })}
+          options={[
+            { value: 'ask', label: t('Ask me first'), subtitle: t('A newer 1RM is offered before any weight changes.') },
+            { value: 'keep', label: t('Keep the one in use'), subtitle: t('Weights keep the 1RM they use, and no newer one is offered.') },
+          ]} />
+        <SelectRow icon="calendar" iconTint="var(--orange)" title={t('When a programme’s weeks run out')}
+          value={S.programmeEnd === 'extend' ? 'extend' : 'stop'} onChange={v => update(s => { s.programmeEnd = v })}
+          options={[
+            { value: 'stop', label: t('Stop') },
+            { value: 'extend', label: t('Keep going until every goal is reached') },
+          ]} />
+      </Section>
     </>,
 
     units: () => <>

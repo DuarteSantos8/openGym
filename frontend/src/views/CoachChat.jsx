@@ -411,6 +411,13 @@ const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
 
 /* ---------------------------------- a review ---------------------------------- */
 
+// What a refused apply says (lib/coach.js throws its own codes there): plain words, never a code.
+const applyError = e => ({
+  'stale programme': t('That programme changed since the Coach looked at it. Ask for a fresh review.'),
+  'missing programme': t('That programme is gone, so nothing changed.'),
+  'bad programme': t('Those weeks do not fit the programme’s exercises, so nothing changed.'),
+})[e?.message] ?? (e?.message === t('That proposal can’t be read.') ? e.message : t('Could not apply those changes'))
+
 function ReviewCard({ p, S, update, toast, refresh }) {
   const marked = useMemo(() => markStale(p, S), [p, S])
   const usable = applicable(marked)
@@ -428,7 +435,7 @@ function ReviewCard({ p, S, update, toast, refresh }) {
       resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {})
       toast(tn('{0} change applied', '{0} changes applied', ids.length))
       refresh()
-    } catch (e) { toast(e.message || t('Could not apply those changes')) }
+    } catch (e) { toast(applyError(e)) }
   }
   const discard = () => confirmSheet({
     title: t('Dismiss these suggestions?'), message: t('Nothing changes, and the Coach will remember you turned these down.'),

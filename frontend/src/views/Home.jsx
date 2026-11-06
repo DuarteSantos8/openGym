@@ -4,9 +4,9 @@ import { useStore } from '../store/useStore.js'
 import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, lastBW, setsDoneActive } from '../lib/history.js'
 import { streakInfo } from '../lib/streak.js'
 import { StreakFlame, StreakMeta, StreakParty } from '../components/Streak.jsx'
-import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
+import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, exerciseNameText, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
-import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet, referenceSheet } from '../sheets.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import CardHead from '../components/CardHead.jsx'
@@ -24,7 +24,8 @@ import { glyphOf } from '../lib/glyphs.js'
 import { dayNoteOf } from '../lib/day-notes.js'
 import { weighInAt } from '../lib/bodyweight.js'
 import WeightRate from '../components/WeightRate.jsx'
-import { programmeChip } from '../lib/programmes.js'
+import { programmeChip, referenceOffers } from '../lib/programmes.js'
+import { exOr } from '../lib/exercises.js'
 import { SeasonDeco } from '../components/Seasonal.jsx'
 import { WrappedHomeCard } from '../components/WrappedEntry.jsx'
 import RecoveryHint from '../components/RecoveryHint.jsx'
@@ -122,6 +123,9 @@ export default function Home() {
   // A chip on the coach week's progress row starts that one routine, in any order. A session
   // already in progress wins, as on the today row — starting another would overwrite it.
   const progChip = programmeChip(S)
+  // A newer 1RM a routine or the running programme could take, until it is reviewed or put off
+  // (lib/programmes.js referenceOffers; the sheet is sheets.jsx referenceSheet).
+  const offer = useMemo(() => referenceOffers(S).find(o => !o.later) || null, [S])
   const onQueueStart = id => { if (A) nav('/workout'); else startFlow([id]) }
 
   return <div className="narrow">
@@ -191,6 +195,11 @@ export default function Home() {
       </div>}
       <SeasonDeco spot="home-hero" />
     </div>
+
+    {offer && <div className="card tap-host">
+      <CardHead icon="chartLine" tint="var(--teal)" title={t('New 1RM for {0}', exerciseNameText(exOr(offer.exerciseId)))} sub={t('Update future sessions?')}
+        open={{ onClick: () => referenceSheet(offer), haspopup: 'dialog' }} action={<Icon name="chevronRight" className="chev" />} />
+    </div>}
 
     {/* Monday: Your week; the 1st: Your month (lib/recap.js). Off in Settings → Look & Home. */}
     <RecapHomeCard S={S} />

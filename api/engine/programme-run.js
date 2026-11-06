@@ -368,9 +368,11 @@ const attainedOf = credits => Object.fromEntries([...credits].sort(byTime).filte
  * Where a session of occurrence `oid` in routine `rid` on local `date` goes: its slot in the run,
  * as work, maintenance or extra (logged, earning nothing), or null when the run gives it none. In a
  * rotation or an ordered week, continuing past earlier unresolved appointments of the same period
- * lists them in `bypass`; only a recorded bypass event skips them.
+ * lists them in `bypass`; only a recorded bypass event skips them. `appt` (an appointment index)
+ * is the one the person picked when the routine has several open in the period (spec 7.2); without
+ * it, or when it is not open, the earliest open one is taken.
  */
-export function slotFor({ view, run, rid, oid, date }) {
+export function slotFor({ view, run, rid, oid, date, appt = null }) {
   const none = { assignment: null, bypass: [] }
   if (view.status !== 'running' || date < run.startedOn) return none
   const found = Object.entries(view.tracks).find(([id, tv]) => tv.def?.tracks.find(t => t.id === id)?.slots.some(s => s.rid === rid && s.oid === oid))
@@ -383,7 +385,7 @@ export function slotFor({ view, run, rid, oid, date }) {
   const mark = i => view.taken[`p${period}:a${i}`]
   const open = i => mark(i) !== true && !mark(i)?.includes(oid)
   const mine = appts.map((r, i) => i).filter(i => appts[i] === rid && owed(i))
-  const a = mine.find(open) ?? mine[0] ?? appts.indexOf(rid)
+  const a = (mine.includes(appt) && open(appt) ? appt : null) ?? mine.find(open) ?? mine[0] ?? appts.indexOf(rid)
   if (a < 0) return none
   const slot = `p${period}:a${a}:${oid}`
   const listed = open(a) && tv.period === period && tv.slots.some(s => s.id === slot)

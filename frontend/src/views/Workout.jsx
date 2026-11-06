@@ -3,7 +3,7 @@ import SwipeCards from '../components/SwipeCards.jsx'
 import SwipeRow from '../components/SwipeRow.jsx'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
-import { discardEvents, programmeView } from '../lib/programmes.js'
+import { discardEvents, discardNotes, programmeView } from '../lib/programmes.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { useUI } from '../store/useUI.js'
 import { autoHoldsFor, forecastHolds, nextAutoHold } from '../lib/auto-holds.js'
@@ -1682,7 +1682,7 @@ function ActiveWorkout() {
       if (freestyle) occurrence = { ...occurrence, repeatLast: true }
       const scratchRoutine = { ...(routine || { id: 'freestyle' }), ex: [occurrence] }
       useStore.getState().update(s => {
-        exposure = buildSessionExposures(s, scratchRoutine, { now: Date.now(), newId: uid, unit: s.unit })[0]
+        exposure = buildSessionExposures(s, scratchRoutine, { now: Date.now(), newId: uid, unit: s.unit, active: useStore.getState().A })[0]
       })
       if (!exposure) return
       if (freestyle) delete exposure.routineId
@@ -1722,10 +1722,19 @@ function ActiveWorkout() {
     if (events.length) update(s => { s.programmeEvents = { ...(s.programmeEvents || {}), ...Object.fromEntries(events.map(e => [e.id, e])) } })
     markDiscarded(A?.id); useStore.getState().clearActive(); stopRest(); stopWork(); nav('/home')
   }
-  const discardWorkout = () => confirmSheet({
-    title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
-    onConfirm: discardNow,
-  })
+  // It says beforehand what a programme will record (spec 8.2): a missed session once a work row was ticked, else skipped.
+  const discardWorkout = () => {
+    const { A: now, S: st } = useStore.getState()
+    const notes = discardNotes(now, programmeView(st, null, now)).map(n => {
+      const name = exerciseNameText(exOr(n.exerciseId))
+      return n.worked ? (n.rounds ? t('{0} counts as a missed session for training round {1}.', name, n.week) : t('{0} counts as a missed session for training week {1}.', name, n.week))
+        : n.rounds ? t('{0} counts as skipped for training round {1}.', name, n.week) : t('{0} counts as skipped for training week {1}.', name, n.week)
+    })
+    confirmSheet({
+      title: t('Discard workout?'), message: [t('The sets you logged in this session will be lost.'), ...notes].join(' '), confirmText: t('Discard'), danger: true,
+      onConfirm: discardNow,
+    })
+  }
   // Which gym this session is at (#808): small in the header, one tap to switch, only with two gyms
   // or more. A saved workout being edited shows where it was done and does not switch. Switching
   // mid-session asks first, then moves the sets not done yet onto that gym's plates and dumbbells.
@@ -1845,7 +1854,7 @@ function ActiveWorkout() {
       let exposure = null
       try {
         useStore.getState().update(s => {
-          exposure = buildSessionExposures(s, scratchRoutine, { now: Date.now(), newId: uid, unit: s.unit })[0]
+          exposure = buildSessionExposures(s, scratchRoutine, { now: Date.now(), newId: uid, unit: s.unit, active: current })[0]
         })
       } catch { return }
       if (!exposure) return

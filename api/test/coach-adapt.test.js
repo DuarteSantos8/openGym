@@ -233,6 +233,14 @@ test('review: a programme, new or revised, over exercises of the plan', async ()
   bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', sets: 4 }] }] }, /does not fit/);
   bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', policy: { onFailure: 'skip', onSkipped: 'advance' } }] }] }, /policy must be/);
   bad({}, { name: 'x', weeks: [{ targets: [{ exId: '0043', policy: REPEAT }] }, { targets: [{ exId: '0043', policy: { onFailure: 'advance', onSkipped: 'advance' } }] }] }, /one choice per exercise/);
+  // An exercise with an engine rule of its own (a training max) keeps its numbers: a %1RM week alone
+  // is refused here as the apply refuses it; an RPE alone stays a guide it may set.
+  const preset = structuredClone(plan);
+  for (const r of preset.routines) for (const e of r.ex) if (e.id === '0043') e.preset = 'five_three_one';
+  const week = x => validateReview({ coach_contract: 1, summary: 's', changes: [{ id: 'c', type: 'programme', target: {}, after: { name: 'x', weeks: [{ targets: [{ exId: '0043', ...x }] }] }, why: 'w' }] }, preset, {});
+  assert.equal(week({ pct: 70 }).ok, false);
+  assert.match(week({ pct: 70 }).errors.join(' '), /keeps its numbers/);
+  assert.equal(week({ rpe: 8 }).ok, true, JSON.stringify(week({ rpe: 8 }).errors));
   const two = validateReview({ coach_contract: 1, summary: 's', changes: [
     { id: 'a', type: 'programme', target: {}, after: { name: 'A', weeks: [{}] }, why: 'w' },
     { id: 'b', type: 'programme', target: {}, after: { name: 'B', weeks: [{}] }, why: 'w' }

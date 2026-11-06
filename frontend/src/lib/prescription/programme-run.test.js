@@ -831,3 +831,13 @@ test('dateIn gives the zone\'s local calendar day as YYYY-MM-DD', () => {
   expect(dateIn('2026-03-01T23:30:00.000Z', 'America/Los_Angeles')).toBe('2026-03-01')
   expect(dateIn('2026-03-09', 'Asia/Tokyo')).toBe('2026-03-09')
 })
+
+test('a routine planned twice in a week takes the appointment picked, while it is open; else the earliest open one', () => {
+  const d = def([trackOf('bench', ['rA:o0'])], { schedule: { mode: 'weeks', appts: [{ rid: 'rA', day: 1 }, { rid: 'rA', day: 4 }] } })
+  const r = run(d)
+  const at = (xs, appt) => slotFor({ view: derive(r, xs, [], date(1)), run: r, rid: 'rA', oid: 'rA:o0', date: date(1), appt }).assignment
+  expect(at([], null)).toMatchObject({ slot: 'p1:a0:rA:o0', role: 'work' })
+  expect(at([], 1)).toMatchObject({ slot: 'p1:a1:rA:o0', role: 'work' })
+  // Thursday's is taken: picking it again gives the one still open.
+  expect(at([ex('p1:a1:rA:o0')], 1)).toMatchObject({ slot: 'p1:a0:rA:o0', role: 'work' })
+})

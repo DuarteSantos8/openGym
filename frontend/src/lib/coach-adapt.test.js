@@ -178,7 +178,11 @@ describe('a review that sets warm-ups or writes a programme', () => {
     expect(legacyWeeksOf(prog)).toEqual([{ t: { [BENCH]: { pct: 75 } } }, { t: { [BENCH]: { pct: 80 } } }, { deload: true }])
     expect(prog.schedule.appts).toEqual([{ rid: 'push', day: 1 }])
     expect(S.programme).toBeUndefined()
-    expect(changeMeaning(p.changes[0])).toMatch(/Week 1: 75%.*Week 3: deload/)
+    // Spec 13: the card says what the Coach fixes, apart from what the exercise's own progression keeps deciding.
+    expect(changeMeaning(p.changes[0])).toMatch(/Week 1: fixed at 75%.*Week 3: deload/)
+    const open = { type: 'programme', after: { weeks: [{ rpe: 8, t: { [BENCH]: { rpe: 8, policy: { onFailure: 'repeat', onSkipped: 'advance' } } } }] } }
+    expect(changeMeaning(open)).toBe('Saved under Plan → Programmes. It starts when you start it. Week 1: your progression picks the rest (RPE 8) '
+      + 'Barbell Bench Press: after a missed week, repeat it; after a skipped week, move on. You choose when you start it.')
     revertLast(S)
     expect(programmesOf(S)).toEqual([])
   })

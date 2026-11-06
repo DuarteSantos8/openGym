@@ -245,16 +245,21 @@ export function ServerSyncSection({ children }) {
   useStore(s => s.S)   // the count of waiting changes follows every edit
   useStore(s => s.config)   // whether "Sign in" may offer a password
   const unsynced = useStore(s => s.unsyncedChanges)
+  // A server that does not read this app's programmes yet (useStore doPush): changes wait here.
+  const blockedBy = useStore(s => s.syncBlocked)
   const online = useOnline()
   const [busy, setBusy] = useState(false)
   // "Last synced: 3 minutes ago" goes stale on an open screen; a re-render now and then keeps it true.
   const [, tick] = useState(0)
   useEffect(() => { const iv = setInterval(() => tick(n => n + 1), 30000); return () => clearInterval(iv) }, [])
   if (!user || !sync) return null
-  const view = connectionView(sync, { online })
+  const seen = connectionView(sync, { online })
+  // Only over a line that claims a working connection: offline, refused or an error keep their own words.
+  const view = blockedBy === 'server-upgrade' && (seen.tone === 'ok' || seen.tone === 'wait')
+    ? { ...seen, tone: 'bad', icon: 'warning', line: t('This server needs an update to sync programmes') } : seen
   // While everything is fine, a change still in its short debounce is not news; once anything
   // is wrong, how much is waiting is exactly what the person needs.
-  const owed = sync.status !== 'ok' && typeof unsynced === 'function' ? unsynced() : { owed: false }
+  const owed = (sync.status !== 'ok' || view !== seen) && typeof unsynced === 'function' ? unsynced() : { owed: false }
   const sub = [
     sync.lastSynced ? t('Last synced: {0}', fmtAgo(sync.lastSynced)) : t('Not synced with this server yet'),
     owed.owed && (owed.count > 0 ? t('Not on your server yet: {0}', changeCount(owed.count)) : owed.count == null ? t('Some changes on this device have not reached your server.') : null),

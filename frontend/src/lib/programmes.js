@@ -18,14 +18,14 @@
 // THE SCHEDULE IS APPLIED, NOT RESOLVED. Starting a run writes its appointments into S.week (or
 // S.rotation), keeping the plan you had in `saved`; ending it puts that plan back. Home's Today,
 // Plan, the reminders and the MCP keep reading S.week and S.queue as always.
-import { localTZ, todayISO, uid, SUNDAY } from './format.js'
+import { fmtDate, fmtNum, localTZ, todayISO, uid, SUNDAY } from './format.js'
 import { queueOf } from './queue.js'
 import { REST, saveRotation, startPass, stopPass, chooseFixedWeek } from './rotation.js'
 import { best1RM } from './onerm.js'
 import { effortOf } from './history.js'
 import { isWarmupRow } from './workout-model.js'
 import { t } from './i18n-core.js'
-import { OPERATOR_METRICS, currentOneRm, deriveRun, editPlan, slotFor, validateProgramme } from './prescription/index.js'
+import { OPERATOR_METRICS, currentOneRm, deriveRun, editPlan, needsOneRm, referenceProposals, slotFor, validateProgramme } from './prescription/index.js'
 import { dateIn } from '../../../api/engine/programme-run.js'
 import { convertLegacyProgramme, seedOf } from '../../../api/migration/programme-upgrade.js'
 import { LIB_BY_ID } from '../../../api/coach/core/library.js'
@@ -293,6 +293,8 @@ function owedFrom(def, today, weekStart) {
   const from = (new Date(today + 'T12:00:00').getDay() - weekStart + 7) % 7
   return def.schedule.appts.map((a, i) => i).filter(i => def.schedule.appts[i].day == null || (def.schedule.appts[i].day - weekStart + 7) % 7 >= from)
 }
+/** The appointments a start on `today` owes in its partial first week (weeks only; undefined for a rotation). */
+export const firstWeekOf = (S, def, today) => owedFrom(def, today, ws(S))
 
 function makeRun(s, def, { policies, acks = {}, end, firstWeek, today, now, cycle = 1, bump = 0, tms = {} }) {
   const runDef = bumped(def, bump)
@@ -325,7 +327,7 @@ const operational = def => def.tracks.some(tr => tr.stages.some(st => Object.val
  */
 // What a run of `def` still needs before it may start (spec 8.1, 8.5, 11, 7.1): a recorded choice
 // for every track and the end, effort logging for operational effort, a binding, a repair.
-function missingFor(s, def, policies, end) {
+export function missingFor(s, def, policies, end) {
   const missing = []
   if (def.tracks.some(tr => !isPolicy(policies?.[tr.id]))) missing.push('policy')
   if (!['stop', 'extend'].includes(end)) missing.push('end')
@@ -432,6 +434,15 @@ export function repeatProgramme(s, today = todayISO(), bump = 0, now = Date.now(
   return { ok: true }
 }
 
+/** The choices the current run goes by now: each exercise's latest advance/repeat answers and the end policy. */
+export function runChoices(S) {
+  const run = currentRun(S)
+  if (!run) return null
+  const def = programmeView(S)?.def ?? run.def
+  const policies = Object.fromEntries(def.tracks.map(tr => [tr.id, lastOf(S, run, 'policy', e => e.trackId === tr.id)?.policy ?? run.tracks?.[tr.id]?.policy]).filter(([, p]) => isPolicy(p)))
+  return { def, policies, end: lastOf(S, run, 'end-policy')?.end ?? run.end }
+}
+
 /** Closes the current week (or round) now: what it left unattempted is skipped (spec 7.2). */
 export function closeWeek(s, now = Date.now()) {
   const v = programmeView(s)
@@ -454,34 +465,130 @@ export function setRunEnd(s, end, now = Date.now()) {
   if (run && ['stop', 'extend'].includes(end)) addEvent(s, run, 'end-policy', { end }, now)
 }
 
+// Where a session of routine `rid` on `now` goes in the current run, one slotFor answer per
+// occurrence; `A`, a workout in progress, holds its own appointments already.
+function placed(S, rid, now, appt = null, A = null) {
+  const view = programmeView(S, null, A)
+  if (!view) return []
+  const date = dateIn(now, view.run.tz || 'UTC')
+  return ((S.routines || []).find(r => r.id === rid)?.ex || []).map(o => slotFor({ view, run: view.run, rid, oid: o.occurrenceId, date, appt }))
+}
+
+/**
+ * The appointments of routine `rid` still open this week when it has two or more (spec 7.2), for
+ * the person to say which one this session is: `[{ appt, day }]`, else none.
+ */
+export function sessionChoices(S, rid, now = Date.now(), A = null) {
+  const view = programmeView(S, null, A)
+  if (view?.def.schedule.mode !== 'weeks') return []
+  const appts = view.def.schedule.appts
+  const open = appts.map((a, i) => i).filter(i => appts[i].rid === rid
+    && placed(S, rid, now, i, A).some(x => x.assignment?.role === 'work' && x.assignment.slot.startsWith(`p${x.assignment.period}:a${i}:`)))
+  return open.length > 1 ? open.map(i => ({ appt: i, day: appts[i].day ?? null })) : []
+}
+
+/**
+ * The earlier appointments a session of routine `rid` (at appointment `appt`) would pass in an
+ * ordered week or a rotation (spec 7.3): `[{ id, period, appt, rid }]`, none when it passes nothing.
+ */
+export function bypassOf(S, rid, now = Date.now(), appt = null, A = null) {
+  const view = programmeView(S, null, A)
+  const ids = [...new Set(placed(S, rid, now, appt, A).flatMap(x => x.bypass))]
+  return ids.map(id => { const [, p, a] = /^p(\d+):a(\d+)$/.exec(id); return { id, period: Number(p), appt: Number(a), rid: apptRids(view.def)[Number(a)] } })
+}
+
 /**
  * Continuing with routine `rid` past the earlier appointments of its week or round (spec 7.3): the
  * acknowledged bypass, recorded as `bypass { period, appts }` per period. Returns the bypassed
  * appointment ids (`p<n>:a<i>`), none when there is nothing to pass.
  */
-export function bypassTo(s, rid, now = Date.now()) {
-  const view = programmeView(s)
-  if (!view) return []
-  const date = dateIn(now, view.run.tz || 'UTC')
-  const occs = (s.routines || []).find(r => r.id === rid)?.ex || []
-  const ids = [...new Set(occs.flatMap(o => slotFor({ view, run: view.run, rid, oid: o.occurrenceId, date }).bypass))]
+export function bypassTo(s, rid, now = Date.now(), appt = null, A = null) {
+  const view = programmeView(s, null, A)
+  const passed = bypassOf(s, rid, now, appt, A)
   const periods = {}
-  for (const id of ids) { const [, p, a] = /^p(\d+):a(\d+)$/.exec(id); (periods[p] ||= []).push(Number(a)) }
+  for (const b of passed) (periods[b.period] ||= []).push(b.appt)
   for (const [period, appts] of Object.entries(periods)) addEvent(s, view.run, 'bypass', { period: Number(period), appts }, now)
-  return ids
+  return passed.map(b => b.id)
 }
+
+/** The training week (or round) a stage is, from 1, in the definition a track runs; 0 when it has none. */
+export const stageNumber = (def, trackId, stageId) => (def?.tracks.find(t => t.id === trackId)?.stages.findIndex(s => s.id === stageId) ?? -1) + 1
+
+// The work slots a workout in progress holds, and whether a work row of each was ticked.
+const heldSlots = (A, view) => (A?.exposures || []).filter(x => view && x?.programme?.runId === view.run.id && x.programme.role === 'work')
+const workedOn = (A, x) => ((A.entries || []).find(e => e.exposureId === x.exposureId)?.sets || []).some(row => row.done && !isWarmupRow(row))
 
 /**
  * The events a discarded workout leaves on its programme slots (spec 8.2): `discard { slot, worked }`
  * per work slot, `worked` once a work row was ticked (failed as abandoned; skipped without).
  * Maintenance and extra work decide nothing, so they leave none.
  */
-export function discardEvents(A, view, now = Date.now()) {
-  if (!A || !view) return []
-  return (A.exposures || []).filter(x => x?.programme?.runId === view.run.id && x.programme.role === 'work').map(x => {
-    const rows = (A.entries || []).find(e => e.exposureId === x.exposureId)?.sets || []
-    return event(view.run, 'discard', { slot: x.programme.slot, worked: rows.some(row => row.done && !isWarmupRow(row)) }, now)
-  })
+export const discardEvents = (A, view, now = Date.now()) => heldSlots(A, view).map(x => event(view.run, 'discard', { slot: x.programme.slot, worked: workedOn(A, x) }, now))
+
+/** What discarding says it records (spec 8.2): per programme exercise, its training week (or round) and whether it counts as missed. */
+export const discardNotes = (A, view) => heldSlots(A, view).map(x => ({
+  exerciseId: x.exerciseId, worked: workedOn(A, x), rounds: view.def.schedule.mode === 'rotation',
+  week: stageNumber(view.tracks[x.programme.trackId]?.def ?? view.def, x.programme.trackId, x.programme.stage),
+}))
+
+/**
+ * A loop programme's binding, chosen at its start (spec 15.3): 'weeks' runs one round a week in its
+ * order (skipping ahead skips the sessions passed); 'rounds' makes it a free rotation, one round per block.
+ */
+export function bindProgramme(def, how) {
+  const { needs, ...rest } = def
+  const left = (needs || []).filter(n => n !== 'binding')
+  const out = { ...rest, ...(left.length ? { needs: left } : {}) }
+  if (how !== 'rounds') return { ...out, schedule: { ...def.schedule, ordered: true } }
+  const have = new Set(apptRids(def))
+  const sequence = (Array.isArray(def.src?.sequence) ? def.src.sequence : apptRids(def)).filter(x => x === REST || have.has(x))
+  return { ...out, schedule: { mode: 'rotation', sequence }, duration: { n: def.duration.n, unit: 'blocks' } }
+}
+
+/** The 1RM each lift of `def` that is planned as a %1RM keeps from its start (spec 10.1): `[{ exerciseId, ref }]`, `ref` null without one yet. */
+export function startReferences(S, def) {
+  const pct = tr => tr.stages.some(st => tr.slots.some(sl => {
+    const x = map(st.targets)[sl.oid], occ = occOf(S, sl.rid, sl.oid)
+    return x?.own === 'set' ? x.phase?.parameters?.load?.mode === 'percent_1rm' : !!occ?.rule && needsOneRm(occ.rule)
+  }))
+  return [...new Set(def.tracks.filter(pct).map(tr => tr.exerciseId))].map(exerciseId => ({ exerciseId, ref: currentOneRm(S?.oneRepMaxes, exerciseId) ?? null }))
+}
+
+/** The appointments of the current week or round a required session is still open in, in order: `[{ appt, rid, day }]`. */
+export function openSessions(view) {
+  const k = view.period.index
+  const appts = view.def.schedule.mode === 'weeks' ? view.def.schedule.appts : view.def.schedule.sequence.map(rid => ({ rid }))
+  const open = new Set(Object.values(view.tracks).filter(tv => tv.period === k && tv.state === 'active')
+    .flatMap(tv => tv.slots.filter(sl => sl.required && sl.outcome === 'pending').map(sl => sl.appt)))
+  return [...open].sort((a, b) => a - b).filter(i => appts[i]).map(i => ({ appt: i, rid: appts[i].rid, day: appts[i].day ?? null }))
+}
+
+// Any run replayed as of now: the current one through programmeView, an older one (a session in
+// history) on its own, memoized per profile.
+const pastViews = new WeakMap()
+function runViewOf(S, runId) {
+  if (S?.programme?.runId === runId) return programmeView(S)
+  const run = map(S?.programmeRuns)[runId]
+  if (!isMap(run)) return null
+  if (!pastViews.has(S)) pastViews.set(S, new Map())
+  const views = pastViews.get(S)
+  if (!views.has(runId)) views.set(runId, { ...deriveRun({ run, events: map(S.programmeEvents), workouts: S.workouts || [], prescriptions: map(S.prescriptions), today: dateIn(Date.now(), run.tz || 'UTC'), routines: S.routines || [] }), run })
+  return views.get(runId)
+}
+
+/**
+ * What became of a logged programme session (spec 14, evaluation apart from advancement), from the
+ * stamp it was saved with: `{ role }` for extra and maintenance work; for work, once its week (or
+ * round) was decided, `{ action, week, missed, rounds }`, `week` the training week it tried. Null
+ * while that is still open.
+ */
+export function sessionOutcome(S, stamp) {
+  if (!stamp?.runId) return null
+  if (stamp.role !== 'work') return { role: stamp.role }
+  const tv = runViewOf(S, stamp.runId)?.tracks[stamp.trackId]
+  const d = tv?.decisions.find(x => x.stage === stamp.stage && x.attempt === stamp.attempt && x.action !== 'hold')
+  if (!d) return null
+  return { role: 'work', action: d.action, week: stageNumber(tv.def, stamp.trackId, d.stage), missed: d.reasons.failed.length + d.reasons.skipped.length > 0, rounds: tv.def.schedule.mode === 'rotation' }
 }
 
 /* ------------------------------------ references (spec 10) ------------------------------------ */
@@ -532,12 +639,11 @@ export function referenceContexts(S, today = null) {
  * Adopts `proposal.to` (referenceProposals) for the selected contexts, atomically (spec 10.2): when
  * any of them no longer adopts the reference the person reviewed, nothing is written and the answer
  * is `{ ok: false, stale: true }`. A standalone occurrence takes it at its next session, a running
- * track at its next unstarted week (a `reference` event naming the reference it replaces).
- * ponytail: `rebaseTm` is accepted and changes nothing yet: a context with a training max gets no
- * 1RM proposal (referenceProposals), and a TM rebase needs its own before/after preview (spec 10.3).
+ * track at its next unstarted week (a `reference` event naming the reference it replaces). A context
+ * with a training max gets no 1RM proposal (referenceProposals): rebasing one needs its own
+ * before/after preview (spec 10.3), which nothing offers yet.
  */
-export function acceptReference(s, keys, proposal, { rebaseTm = false } = {}, now = Date.now()) {
-  void rebaseTm
+export function acceptReference(s, keys, proposal, now = Date.now()) {
   const ctx = Object.fromEntries(referenceContexts(s).map(c => [c.key, c]))
   const fresh = k => ctx[k] && ctx[k].exerciseId === proposal?.exerciseId && (ctx[k].ref?.id ?? null) === (proposal?.from?.id ?? null)
   if (!keys?.length || !proposal?.to || !keys.every(fresh)) return { ok: false, stale: true }
@@ -554,6 +660,45 @@ export function reviewReference(s, keys, proposal, decision, now = Date.now()) {
   s.refReviews = { ...map(s.refReviews), ...Object.fromEntries((keys || []).map(k => [k, { candidateId: proposal.candidateId, decision, at: now }])) }
 }
 
+/**
+ * The 1RM proposals to show (spec 10.2), one per exercise and candidate: `{ exerciseId, to,
+ * candidateId, later, contexts }`, each context a referenceProposals answer (its own adopted `from`
+ * and samples) plus where it lives (`routineId`, or `programmeId`) and when it would take the new
+ * value (`next`: 'session', 'week' or 'round'). `later` once every context was put off for this candidate.
+ */
+export function referenceOffers(S, today = null) {
+  const contexts = referenceContexts(S, today)
+  const byKey = Object.fromEntries(contexts.map(c => [c.key, c]))
+  const reviews = map(S?.refReviews)
+  const out = new Map()
+  for (const p of referenceProposals({ contexts, oneRepMaxes: S?.oneRepMaxes || {}, reviews })) {
+    const id = `${p.exerciseId}|${p.candidateId}`
+    if (!out.has(id)) out.set(id, { exerciseId: p.exerciseId, to: p.to, candidateId: p.candidateId, contexts: [] })
+    const c = byKey[p.key], run = c.runId ? map(S.programmeRuns)[c.runId] : null
+    out.get(id).contexts.push({ ...p, ...(run
+      ? { programmeId: run.programmeId, next: run.def.schedule.mode === 'rotation' ? 'round' : 'week' }
+      : { routineId: (S.routines || []).find(r => (r.ex || []).some(o => o.occurrenceId === c.occurrenceId))?.id ?? null, next: 'session' }) })
+  }
+  return [...out.values()].map(o => ({ ...o, later: o.contexts.every(c => reviews[c.key]?.decision === 'later' && reviews[c.key].candidateId === o.candidateId) }))
+}
+
+/** Takes an offer's new 1RM for the ticked contexts (`keys`), each over its own adopted value; all or nothing. */
+export function acceptOffer(s, offer, keys, now = Date.now()) {
+  const picked = (offer?.contexts || []).filter(c => keys.includes(c.key))
+  const ctx = Object.fromEntries(referenceContexts(s).map(c => [c.key, c]))
+  if (!picked.length || picked.some(p => !ctx[p.key] || (ctx[p.key].ref?.id ?? null) !== (p.from?.id ?? null))) return { ok: false, stale: true }
+  for (const p of picked) acceptReference(s, [p.key], p, now)
+  return { ok: true }
+}
+
+/** Keep (or later) for every context of an offer. */
+export const reviewOffer = (s, offer, decision, now = Date.now()) => reviewReference(s, offer.contexts.map(c => c.key), offer, decision, now)
+
+/** When and how a 1RM came: "estimated 3 Nov", "entered 3 Nov". */
+export const refWhen = ref => (ref.source === 'estimated' ? t('estimated {0}', fmtDate(String(ref.capturedAt).slice(0, 10))) : t('entered {0}', fmtDate(String(ref.capturedAt).slice(0, 10))))
+/** A 1RM as a start keeps it: "100 kg, estimated 3 Nov". */
+export const refText = ref => `${fmtNum(ref.value)} ${ref.unit}, ${refWhen(ref)}`
+
 /** The first reference a running track adopts, when its first session finds a 1RM (spec 10.1). */
 export function captureReference(s, trackId, ref, now = Date.now()) {
   const run = currentRun(s)
@@ -566,7 +711,8 @@ export function programmeChip(S, today = null) {
   if (!v) return null
   if (['stopped', 'complete', 'ended'].includes(v.status)) return t('Programme done')
   if (v.status === 'paused') return t('{0}, paused', programmeById(S, v.run.programmeId)?.name || v.def.name || t('Programme'))
-  return t('Week {0} of {1}', Math.min(v.nominal.used + 1, v.nominal.of), v.nominal.of)
+  const n = Math.min(v.nominal.used + 1, v.nominal.of)
+  return v.nominal.unit === 'blocks' ? t('Round {0} of {1}', n, v.nominal.of) : t('Week {0} of {1}', n, v.nominal.of)
 }
 
 const round1 = v => Math.round(v * 10) / 10

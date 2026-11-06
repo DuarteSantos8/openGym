@@ -33,7 +33,7 @@ import Icon from './components/Icon.jsx'
 import { SeasonDeco } from './components/Seasonal.jsx'
 import ExerciseAliasesEditor, { ExerciseAliasesField, ExerciseAliasesLink } from './components/ExerciseAliases.jsx'
 import { useNfcSupported, nfcExerciseSheet } from './components/Nfc.jsx'
-import { Button, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
+import { Button, Check, Slider, Switch, Segmented, SelectRow, Row, TextField, NumberField, MultiSelectRow } from './components/ui.jsx'
 import { glyphOf, GLYPH_GROUPS, DEFAULT_GLYPH } from './lib/glyphs.js'
 import BodyMap from './components/BodyMap.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
@@ -91,7 +91,8 @@ import { workoutsOn, backfillStart, backfillEnd, completeBackfill, historyAsOf, 
 import { legacyEntriesOf, appendOneRm, canonicalJSON, cardioParameters, defaultPlanRule, editPlan, planOptions, planPhase, presetForPolicy, planWarmupRows, supports, validatePlanRule, validateWarmup, warmupMaxCount, warmupSteps, withRest } from './lib/prescription/index.js'
 import RuleEditor, { Disclosure, PRESET_LABEL } from './components/RuleEditor.jsx'
 import { profileRule } from './lib/prescription/vocabulary.js'
-import { auditFields, badgeFor } from './views/history-outcome.js'
+import { auditFields, badgeFor, programmeLine } from './views/history-outcome.js'
+import { acceptOffer, bypassOf, bypassTo, programmeById, refWhen, reviewOffer, sessionChoices } from './lib/programmes.js'
 import { findingText } from './lib/progression-copy.js'
 import { moveWorkout, sameWorkout, startTimeOf, durationMinOf, setWorkoutDuration, rebuildPrHistory, MAX_DURATION_MIN, endsInFuture } from './lib/workout-date.js'
 import { stampWorkout } from './lib/sync-merge.js'
@@ -1923,7 +1924,7 @@ export function swapActiveWorkoutExercise(index, backup) {
     let exposure = null
     update(st => {
       exposure = buildSessionExposures(st, { ...(slotRoutine || { id: 'freestyle' }), ex: [occurrence] }, {
-        now: Date.now(), newId: uid, unit: st.unit
+        now: Date.now(), newId: uid, unit: st.unit, active: currentActive
       })[0]
     })
     if (!exposure) return
@@ -2943,6 +2944,8 @@ function WorkoutDetail({ w, close }) {
           {badge === 'out-of-plan' && <span style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>{auditFields(e.exposure).map(field => <span key={field} className="tag">{findingText(e.exposure.audit.find(x => x.field === field))}</span>)}</span>}
           {e.exposure.sourceAudit?.derivedFromOutOfPlan && <span className="dim">{t('Suggested from a session logged out of plan.')}</span>}
         </span>}
+        {/* What its programme made of it (views/history-outcome.js): moved on, repeating, kept steady. */}
+        {programmeLine(st, e.exposure) && <span className="small dim" style={{ marginTop: 3 }}>{programmeLine(st, e.exposure)}</span>}
         {times[i] > 0 && <span className="small dim" style={{ marginTop: 3 }}>
           <Icon name="timer" style={{ fontSize: 'var(--fs-caption)', marginInlineEnd: 4, verticalAlign: '-1px' }} />{fmtDur(Math.max(times[i], 60000))}
         </span>}
@@ -3251,6 +3254,9 @@ export function startFlow(routineIds) {
 // is at the wrist, so there is no question to answer here first.
 export function beginWorkout(routineIds, bw, opts = {}) {
   const routines = [].concat(routineIds ?? []).map(id => S().routines.find(r => r.id === id)).filter(Boolean)
+  // A running programme's questions come first (spec 7.2, 7.3). Not on the watch: there a session
+  // that would skip earlier ones is logged as extra (startSession).
+  if (!opts.id && !opts.asked) { askProgrammeStart(routines, choice => beginWorkout(routineIds, bw, { ...opts, ...choice, asked: true })); return }
   const missing = opts.id ? [] : missingOneRms(S(), routines)
   if (!missing.length) { startSession(routineIds, bw, opts); return }
   ui().openSheet(close => <OneRmPrompt exerciseIds={missing} close={close} onDone={() => startSession(routineIds, bw, opts)} />, { kind: 'center', locked: true })
@@ -3285,7 +3291,71 @@ function OneRmPrompt({ exerciseIds, onDone, close }) {
   </>
 }
 
-function startSession(routineIds, bw, { id = null, start = null } = {}) {
+// Which session of a programme this is, when its routine has two open this week, and whether
+// continuing past earlier ones of an ordered week or a rotation skips them (spec 7.2, 7.3): Skip
+// records the bypass, Log as extra keeps the session out of the programme, Cancel starts nothing.
+// `go({ appts, extra })` starts it. Nothing is asked without a running programme. `active`: the
+// workout in progress a routine is added to, whose own appointments are taken already.
+function askProgrammeStart(routines, go, active = null, appts = {}) {
+  const now = Date.now()
+  const r = routines.find(x => !(x.id in appts) && sessionChoices(S(), x.id, now, active).length)
+  if (r) {
+    menuSheet({ title: t('Which session is this?'), subtitle: r.name, items: sessionChoices(S(), r.id, now, active).map((c, k) => ({
+      icon: 'calendar', label: c.day != null ? t('{0}’s {1}', t(DAYN[c.day]), r.name) : `${r.name} ${k + 1}`,
+      onClick: () => askProgrammeStart(routines, go, active, { ...appts, [r.id]: c.appt }),
+    })) })
+    return
+  }
+  const passed = routines.flatMap(x => bypassOf(S(), x.id, now, appts[x.id] ?? null, active))
+  if (!passed.length) { go({ appts }); return }
+  const skipped = [...new Set(passed.map(b => S().routines.find(x => x.id === b.rid)?.name).filter(Boolean))].join(', ')
+  menuSheet({ title: t('This skips {0}. Count this as {1}?', skipped, routines.map(x => x.name).join(' + ')), items: [
+    { icon: 'skipForward', accent: true, label: t('Skip {0}', skipped), onClick: () => { update(s => { for (const x of routines) bypassTo(s, x.id, Date.now(), appts[x.id] ?? null, active) }); go({ appts }) } },
+    { icon: 'plusCircle', label: t('Log as extra'), onClick: () => go({ appts, extra: true }) },
+    { icon: 'xmark', label: t('Cancel'), onClick: () => {} },
+  ] })
+}
+
+// A newer 1RM offered for the contexts that adopted an older one (lib/programmes.js referenceOffers,
+// spec 10.2): each with its own value now and when it would change, ticked ones updated together.
+// Keep marks this candidate reviewed everywhere it is offered; Later leaves it listed.
+function ReferenceSheet({ offer, close }) {
+  const st = useStore(s => s.S)
+  const [ticked, setTicked] = useState(() => new Set(offer.contexts.map(c => c.key)))
+  const name = exerciseNameText(exOr(offer.exerciseId))
+  const kg = r => `${fmtNum(r.value)} ${r.unit}`
+  const froms = [...new Set(offer.contexts.map(c => kg(c.from)))]
+  const where = c => (c.programmeId ? programmeById(st, c.programmeId)?.name || t('Programme') : st.routines.find(r => r.id === c.routineId)?.name || t('Routine'))
+  const when = c => (c.next === 'session' ? t('from your next session') : c.next === 'round' ? t('from the next round') : t('from next training week'))
+  const sample = c => c.samples[0] && t('{0}% becomes {1} ({2} on your plates)', fmtNum(c.samples[0].percent), kg({ value: Math.round(offer.to.value * c.samples[0].percent) / 100, unit: offer.to.unit }), kg({ value: c.samples[0].to, unit: offer.to.unit }))
+  const toggle = key => setTicked(x => { const n = new Set(x); n.has(key) ? n.delete(key) : n.add(key); return n })
+  const take = () => {
+    let res = null
+    update(s => { res = acceptOffer(s, offer, [...ticked]) })
+    close()
+    toast(res?.ok ? t('Updated. Sessions already done keep their weights.') : t('That 1RM changed since. Have another look.'))
+  }
+  const review = decision => { update(s => { reviewOffer(s, offer, decision) }); close() }
+  return <>
+    <h3>{t('New 1RM for {0}', name)}</h3>
+    <div className="muted small" style={{ marginBottom: 12 }}>{froms.length === 1
+      ? t('Your 1RM for {0} changed from {1} to {2} ({3}). Update future sessions?', name, froms[0], kg(offer.to), refWhen(offer.to))
+      : t('Your 1RM for {0} is now {1} ({2}). Update future sessions?', name, kg(offer.to), refWhen(offer.to))}</div>
+    <div className="sect-b" style={{ marginBottom: 14 }}>
+      {offer.contexts.map(c => <Row key={c.key} title={where(c)} subtitle={[t('Uses {0}', kg(c.from)), sample(c), when(c)].filter(Boolean).join(' · ')}>
+        <Check checked={ticked.has(c.key)} onChange={() => toggle(c.key)} label={where(c)} />
+      </Row>)}
+    </div>
+    <Button variant="primary" disabled={!ticked.size} onClick={take}>{t('Update')}</Button>
+    <div style={{ height: 8 }} />
+    <Button onClick={() => review('keep')}>{froms.length === 1 ? t('Keep {0}', froms[0]) : t('Keep as they are')}</Button>
+    <div style={{ height: 8 }} />
+    <Button variant="ghost" onClick={() => review('later')}>{t('Later')}</Button>
+  </>
+}
+export const referenceSheet = offer => ui().openSheet(close => <ReferenceSheet offer={offer} close={close} />)
+
+function startSession(routineIds, bw, { id = null, start = null, appts = {}, extra = false } = {}) {
   const startAt = Number.isFinite(start) && start > 0 ? start : Date.now()
   const session = {
     id: id || uid(), d: id && start ? isoOf(new Date(startAt)) : todayISO(), start: startAt,
@@ -3297,7 +3367,10 @@ function startSession(routineIds, bw, { id = null, start = null } = {}) {
     workoutView: S().workoutView || 'cards',
   }
   useStore.getState().update(s => {
-    const out = buildCombinedExposures(s, routineIds, { now: session.start, newId: uid, unit: s.unit })
+    // A skip nobody acknowledged (the watch, or a session another device recorded since) is never
+    // made here: the session is logged as extra and the earlier ones stay open.
+    const passes = [].concat(routineIds ?? []).some(rid => bypassOf(s, rid, session.start, appts[rid] ?? null).length)
+    const out = buildCombinedExposures(s, routineIds, { now: session.start, newId: uid, unit: s.unit, appts, extra: extra || passes })
     session.routineIds = out.routineIds
     session.name = out.routines.length ? deriveSessionName(out.routines.map(r => r.name)) : t('Freestyle')
     session.exposures = out.exposures
@@ -3458,9 +3531,9 @@ function AddRoutineToSession({ close }) {
   const active = useStore(s => s.A)
   if (!active) return null
   const inSession = new Set([].concat(active.routineIds || []))
-  const add = r => {
+  const add = r => askProgrammeStart([r], choice => {
     let exposures = []
-    useStore.getState().update(s => { exposures = buildSessionExposures(s, r, { now: Date.now(), newId: uid, unit: s.unit }) })
+    useStore.getState().update(s => { exposures = buildSessionExposures(s, r, { now: Date.now(), newId: uid, unit: s.unit, active: useStore.getState().A, ...choice }) })
     // A session kept out of progression as a whole (the header ⋮) keeps the routine's exercises out too.
     if (sessionNoProg(active)) exposures.forEach(x => { x.excludedFromProgression = true })
     const entries = entriesForExposures(exposures, S().prescriptions)
@@ -3475,7 +3548,7 @@ function AddRoutineToSession({ close }) {
     })
     close()
     toast(t('{0} added ({1})', r.name, exCount(r.ex.length)))
-  }
+  }, useStore.getState().A)
   return <>
     <h3>{t('Add routine')}</h3>
     <div className="list">
@@ -3884,6 +3957,10 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
     {(prs.length > 0 || e1prs.length > 0) && <div style={{ textAlign: 'start', marginBottom: 12 }}>
       {prs.map(id => <div key={id} className="small accent row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="trophy" style={{ fontSize: 'var(--fs-footnote)', marginTop: 2, flex: 'none' }} /><span>{t('New PR:')} <span className={exerciseNameClass(EXIDX[id])}>{EXIDX[id] ? exerciseNameFor(EXIDX[id]) : id}</span></span></div>)}
       {e1prs.map(p => <div key={p.id} className="small accent row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="chartLine" style={{ fontSize: 'var(--fs-footnote)', marginTop: 2, flex: 'none' }} /><span>{t('Best estimated 1RM:')} <span className={exerciseNameClass(EXIDX[p.id])}>{EXIDX[p.id] ? exerciseNameFor(EXIDX[p.id]) : p.id}</span> · {fmtNum(p.est)} {st.unit}</span></div>)}
+    </div>}
+    {/* A programme's word on each of its exercises, as History shows it (views/history-outcome.js). */}
+    {(w.exposures || []).some(x => programmeLine(st, x)) && <div style={{ textAlign: 'start', marginBottom: 12 }}>
+      {(w.exposures || []).filter(x => programmeLine(st, x)).map(x => <div key={x.exposureId} className="small dim row" style={{ gap: 6, alignItems: 'flex-start' }}><Icon name="calendar" style={{ fontSize: 'var(--fs-footnote)', marginTop: 2, flex: 'none' }} /><span><span className={exerciseNameClass(EXIDX[x.exerciseId])}>{EXIDX[x.exerciseId] ? exerciseNameFor(EXIDX[x.exerciseId]) : x.exerciseId}</span>: {programmeLine(st, x)}</span></div>)}
     </div>}
     {/* Done is one tap away right under the numbers: the body map, what's next and the photo
         corner sit below it for whoever wants them, nobody has to scroll to leave (Discord). */}

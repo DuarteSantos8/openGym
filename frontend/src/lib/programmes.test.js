@@ -16,7 +16,7 @@ import { queueOf } from './queue.js'
 import { todayISO } from './format.js'
 import { planPhase, referenceProposals } from './prescription/index.js'
 import { validateCanonicalProfile } from '../../../api/migration/profile-validation.js'
-import { applyChangeSet, markStale, revertLast } from './coach.js'
+import { applyChangeSet, canRevert, markStale, revertLast } from './coach.js'
 import { validateReview } from '../../../api/coach/core/validate.js'
 import { cleanPlan } from '../../../api/coach/core/payload.js'
 import { buildCompletedSession } from './finish-session.js'
@@ -525,6 +525,9 @@ describe('a Coach programme change', () => {
     const before = clone(edited)
     expect(revertLast(edited)).toBe(false)
     expect(edited).toEqual(before)
+    // …and is not offered (the Coach menu's Undo row reads canRevert).
+    expect(canRevert(edited)).toBe(false)
+    expect(canRevert(s)).toBe(true)
     // Not edited since: Undo puts the weeks back, through an amend of its own, for the weeks to come.
     expect(revertLast(s)).toBe(true)
     expect(legacyWeeksOf(programmeById(s, 'P')).map(w => w.t?.[BENCH]?.pct)).toEqual([75, 80, undefined])
