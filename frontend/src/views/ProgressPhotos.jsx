@@ -15,6 +15,8 @@
 // own "photos" grant (api/permissions.js), the community library only when the person shares one
 // themselves on a server that allows personal media (api/library/config.js), and the comparison
 // picture only goes where the person sends it from the share sheet.
+import { checkinReminderSheet } from '../components/CheckinReminder.jsx'
+import { reminderOf } from '../lib/checkin-reminder.js'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
@@ -299,6 +301,7 @@ export default function ProgressPhotos() {
     <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
       <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Progress photos')}</h1>
         <div className="sub">{tn('{0} photo', '{0} photos', photos.length)}</div></div>
+      {!comparing && <button className="iconbtn" onClick={checkinReminderSheet} aria-label={t('Check-in reminders')} title={t('Check-in reminders')}><Icon name={reminderOf(S).items.photos && reminderOf(S).on ? 'bell' : 'bellSlash'} /></button>}
       {photos.length >= 2 && (comparing
         ? <Button size="sm" variant="ghost" onClick={cancelCompare}>{t('Cancel')}</Button>
         : <Button size="sm" variant="tinted" onClick={() => setComparing(true)}>{t('Compare')}</Button>)}

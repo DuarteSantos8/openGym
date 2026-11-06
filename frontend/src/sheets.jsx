@@ -114,6 +114,9 @@ import { workoutText } from './lib/workout-text.js'
 import ShareWorkout from './components/ShareWorkout.jsx'
 import { streakInfo } from './lib/streak.js'
 import { streakWeeks } from './lib/streak-explain.js'
+import { gymNoteText, withGymNote } from './lib/journal.js'
+import { recoveryDays, recoveryOn } from './lib/recovery-sessions.js'
+import { recoverySheet, RecoveryRow } from './components/RecoverySheet.jsx'
 import { StreakSummary, StreakLegend, WeekMark, WeekNote } from './components/StreakCalendar.jsx'
 import { copyText } from './lib/clipboard.js'
 import { queueRemaining, pinState } from './lib/queue.js'
@@ -3288,6 +3291,7 @@ function DayOverride({ iso, close }) {
   // A note on a day off (#261, lib/day-notes.js): offered on today and past days with nothing
   // logged, kept in view on any day that already has one. Quiet on purpose: a row, not a button.
   const note = dayNoteOf(st, iso)
+  const recs = recoveryOn(st, iso)
   const canNote = !!note || (canNoteDay(iso) && !workoutsOn(st, iso).length)
   // The coach week's sessions still to do come first, in slot order: picking one here pins it
   // to this day — the same per-date override, read back by queueNext (lib/queue.js). A session
@@ -3322,6 +3326,15 @@ function DayOverride({ iso, close }) {
           : <div className="tt">{t('Add a note for this day')}</div>}</div>
         <Icon name={note ? 'pencil' : 'plus'} className="chev" />
       </div>
+    </div>}
+    {/* Recovery sessions on this day (lib/recovery-sessions.js), and a way to log one on a past day or today. */}
+    {(recs.length > 0 || iso <= todayISO()) && <div className="list" style={{ marginBottom: 14 }}>
+      {recs.map(r => <RecoveryRow key={r.id} r={r} showDate={false} />)}
+      {iso <= todayISO() && <div className="item rec-row" {...tappable(() => { close(); recoverySheet({ day: iso }) })}>
+        <span className="lrow-i rec-i" aria-hidden="true"><Icon name="sparkles" /></span>
+        <div className="grow"><div className="tt">{t('Log recovery')}</div><div className="ss">{t('Sauna, ice bath, massage, mobility')}</div></div>
+        <Icon name="plus" className="chev" />
+      </div>}
     </div>}
     {coach.length > 0 && <>
       <h4 className="sec" style={{ marginTop: 0 }}>{ownLoop ? t('Your loop') : t('Coach week')}</h4>
@@ -3745,7 +3758,9 @@ function Calendar({ start, close, help = false }) {
   // The streak's week by week (components/StreakCalendar.jsx), with Motivation on and a workout
   // to count: a mark at the end of each row, the frozen weeks washed, one tapped week explained.
   const streakOn = isOn(st, 'motivation') && st.workouts.length > 0
-  const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart, st.streakRule]) // eslint-disable-line react-hooks/exhaustive-deps
+  const weeks = useMemo(() => (streakOn ? streakWeeks(st) : null), [streakOn, st.workouts, st.weekStart, st.streakRule, st.recoverySessions, st.recoveryStreak]) // eslint-disable-line react-hooks/exhaustive-deps
+  // Days with a sauna, an ice bath, a massage (lib/recovery-sessions.js): a teal dot of their own.
+  const recDays = useMemo(() => recoveryDays(st), [st.recoverySessions]) // eslint-disable-line react-hooks/exhaustive-deps
   const [selWk, setSelWkRaw] = useState(null)
   // A tapped missed planned day (its line in WeekNote); a week and a day are never both picked.
   const [selDay, setSelDay] = useState(null)
@@ -3782,7 +3797,8 @@ function Calendar({ start, close, help = false }) {
     const missed = !ws && !note && planned && iso < today
     // A trained day that was moved keeps a hint of the orange (index.css .cal-d i.moved).
     const moved = !!ws && ovr && st.dayPlan[iso] !== 'rest'
-    const dotCls = ws ? (moved ? 'done moved' : 'done') : note ? 'noted' : missed ? 'miss' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
+    const rec = !ws && recDays.has(iso)
+    const dotCls = ws ? (moved ? 'done moved' : 'done') : note ? 'noted' : rec ? 'recov' : missed ? 'miss' : ovr && planned ? 'ovr' : planned ? 'plan' : ''
     const wkOf = weeks ? weekKey(iso, weekStartOf(st)) : null
     const frozenDay = !!wkOf && weeks.log.get(wkOf)?.s === 'frozen'
     cells.push(<button key={d} className={'cal-d' + (ws ? ' has' : '') + (note ? ' noted' : '') + (missed ? ' missed' : '') + (selDay === iso ? ' sel-day' : '') + (frozenDay ? ' wk-frozen' : '') + (iso === today ? ' today' : '')}
@@ -3815,6 +3831,8 @@ function Calendar({ start, close, help = false }) {
       <span><i className="miss" />{t('Missed plan')}</span>
       {Object.keys(st.dayNotes || {}).some(k => k.startsWith(y + '-' + String(mo + 1).padStart(2, '0')) && dayNoteOf(st, k)) &&
         <span><i style={{ background: 'var(--indigo)' }} />{t('Day note')}</span>}
+      {[...recDays].some(k => k.startsWith(y + '-' + String(mo + 1).padStart(2, '0'))) &&
+        <span><i style={{ background: 'var(--teal)' }} />{t('Recovery')}</span>}
     </div>
     {weeks && <><StreakLegend /><WeekNote wk={selWk} day={selDay}
       entry={selDay ? weeks.log.get(weekKey(selDay, weekStartOf(st))) : selWk ? weeks.log.get(selWk) : null}
@@ -4097,6 +4115,9 @@ function ExerciseNote({ entryIdx, close }) {
   const [note, setNote] = useState(entry?.note || '')
   const [pin, setPin] = useState(!!entry?.notePin)
   const [standing, setStanding] = useState(entry ? (st.exNotes?.[entry.id] || '') : '')
+  // Only true at one gym ("seat 4" on that brand of machine): pinned at the active gym (lib/journal.js).
+  const gym = !editing ? activeGym(st) : null
+  const [atGym, setAtGym] = useState(gym && entry ? gymNoteText(st, gym.id, entry.id) : '')
   useEffect(() => { if (!entry) close() }, [!entry])
   if (!entry) return null
 
@@ -4114,6 +4135,7 @@ function ExerciseNote({ entryIdx, close }) {
         if (always) s.exNotes[entry.id] = always
         else delete s.exNotes[entry.id]
       }
+      if (gym && atGym.trim() !== gymNoteText(st, gym.id, entry.id)) s.gymNotes = withGymNote(s.gymNotes, gym.id, entry.id, atGym)
     })
     close()
   }
@@ -4137,6 +4159,13 @@ function ExerciseNote({ entryIdx, close }) {
       <textarea className="input" rows={2} maxLength={NOTE_MAX} value={standing}
         placeholder={t('Seat height, pin position, a form cue. Shown every session.')}
         onChange={e => setStanding(e.target.value)} />
+    </>}
+    {gym && <>
+      <div style={{ height: 18 }} />
+      <div className="small muted" style={{ marginBottom: 6 }}><Icon name="mapPin" style={{ marginInlineEnd: 4, verticalAlign: '-2px' }} />{t('Only at {0}', gymLabel(gym))}</div>
+      <textarea className="input" rows={2} maxLength={NOTE_MAX} value={atGym}
+        placeholder={t('The machine here, the rack you like. Shown when you train at this gym.')}
+        onChange={e => setAtGym(e.target.value)} />
     </>}
     <div style={{ height: 18 }} />
     <Button variant="primary" onClick={save}>{t('Save')}</Button>

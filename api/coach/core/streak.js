@@ -86,6 +86,15 @@ export function streakWalk(S, today, { log = null, weekKey = weekKeyOf } = {}) {
     const k = weekKey(w.d, ws);
     if (k <= cur) trained.add(k);
   }
+  // Recovery sessions (frontend/src/lib/recovery-sessions.js) count only when the profile opted in:
+  // a sauna week is a week you showed up for yourself, but not everyone wants it to keep a streak.
+  if (S?.recoveryStreak === true && S.recoverySessions && typeof S.recoverySessions === 'object') {
+    for (const r of Object.values(S.recoverySessions)) {
+      if (!r || !isISO(r.d) || !(Number(r.min) >= 1)) continue;
+      const k = weekKey(r.d, ws);
+      if (k <= cur) trained.add(k);
+    }
+  }
   // The rules and the weeks they start, in this profile's weeks.
   const timeline = ruleTimeline(S).map(e => ({ rule: e.rule, since: e.since === null ? null : weekKey(e.since, ws) }));
   const nowRule = ruleAt(timeline, cur);

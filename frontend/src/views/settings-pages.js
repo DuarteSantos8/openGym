@@ -169,6 +169,7 @@ export const SEARCH = [
   { page: 'reminders', title: 'Reminder time', icon: 'clock', tint: 'var(--purple)', kw: 'reminder time clock hour when', when: c => remind(c) && c.reminderOn, via: PUSH },
   { page: 'reminders', title: 'Nudge me when I skip a planned workout', icon: 'bell', tint: 'var(--red)', kw: 'nudge skip missed motivation', when: c => remind(c) && c.reminderOn, via: PUSH },
   { page: 'reminders', title: 'Nudge tone', icon: 'chat', tint: 'var(--blue)', kw: 'nudge tone friendly guilt drill sergeant', opts: ['Friendly', 'Guilt trip', 'Drill sergeant'], when: c => remind(c) && c.reminderOn && c.nudge, via: PUSH },
+  { page: 'reminders', title: 'Check-in reminders', icon: 'ruler', tint: 'var(--teal)', kw: 'measurement measure tape photo progress picture weigh weight blood pressure remind every two weeks', when: remind, via: PUSH },
   { page: 'reminders', title: 'Gym reminder', icon: 'mapPin', tint: 'var(--green)', kw: 'gym location arrive arrival geofence place map nearby', when: c => !!c.mobile && c.gymReminder !== false },
   { page: 'reminders', title: 'Send test notification', icon: 'bell', tint: 'var(--red)', kw: 'test push notification try', when: c => !c.mobile && c.pushOK, via: PUSH },
   // Plan & schedule
@@ -202,6 +203,7 @@ export const SEARCH = [
   { page: 'look', title: 'Icons', icon: 'sparkles', tint: 'var(--orange)', kw: 'emoji icons flame medal snowflake pictures' },
   { page: 'look', title: 'Streak flame', icon: 'flame', tint: 'var(--orange)', mod: 'motivation', kw: 'streak flame fire icon emoji custom own symbol colour color' },
   { page: 'look', title: 'Streak freezes', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze freezes rule strict gentle generous off missed week forgiving', opts: ['No freezes', 'Gentle', 'Generous'] },
+  { page: 'look', title: 'Recovery counts for the streak', icon: 'sparkles', tint: 'var(--teal)', mod: 'motivation', kw: 'recovery sauna ice bath cold massage mobility streak count' },
   { page: 'look', title: 'Streak freeze', icon: 'snowflake', tint: 'var(--teal)', mod: 'motivation', kw: 'streak freeze snowflake icon emoji custom own symbol colour color' },
   { page: 'look', title: 'App icon', icon: 'grid', tint: 'var(--indigo)', kw: 'app icon home screen launcher logo dark light', when: c => !!c.appIcons },
   { page: 'look', title: 'Body diagram', icon: 'figureStrength', tint: 'var(--teal)', kw: 'muscle map body male female', opts: ['Male', 'Female'] },
@@ -231,6 +233,7 @@ export const SEARCH = [
   { page: 'data', title: 'Import from another app', icon: 'download', tint: 'var(--teal)', kw: 'strong hevy fitnotes gymmane apple health csv import' },
   { page: 'data', title: 'Import from Hevy', icon: 'key', tint: 'var(--teal)', kw: 'hevy api import' },
   { page: 'data', title: 'Photos & videos', icon: 'image', tint: 'var(--teal)', kw: 'media storage photos videos upload', when: c => c.hasMedia },
+  { page: 'data', title: 'Delete workouts only', icon: 'trash', tint: 'var(--orange)', kw: 'delete workouts history log clear fresh start keep routines' },
   { page: 'data', title: 'Reset everything', icon: 'trash', tint: 'var(--red)', kw: 'delete wipe reset erase' },
   // Integrations: the cards (lib/integrations.js cardState says where each shows)
   { page: 'integrations', title: 'Apple Health', icon: 'heart', tint: 'var(--red)', mod: 'health', kw: 'apple health healthkit iphone heart rate watch', when: c => !c.mobile },
