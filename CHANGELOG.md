@@ -258,6 +258,14 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Calendar: on the 1st of a month west of UTC it opens on that month, not the one before (thanks @TheViniAlmeida in #497).
 - AI Coach: a running programme's week follows the job's clock, not the machine's (thanks @TheBlackSide243 and @kurktchiev in #975).
 
+**Shared devices and small fixes (qa2-146)**
+- WebDAV backup belongs to the account that set it up: when someone else signs in on the same phone or browser (or uses it as a guest), nothing goes to the first person's folder and nothing of theirs can be restored. The sheet says "This backup belongs to another account" and offers Disconnect.
+- Signing out on a phone drops the Coach's waiting proposal, a plan made from the signed-out account's log. The Coach's setup and key stay.
+- Delete workouts only says that activities (runs, rides, matches) stay, like recovery sessions. They always did.
+- Indonesian and Vietnamese: equipment, badges, "Per gym", Mini-set, Pace and friends are translated instead of left in English.
+- Home no longer says "All done this week" while today's planned routine is still waiting, even when extra workouts earlier in the week reached the count.
+- Settings: a worded value next to a long title and subtitle ("Wie die Arbeitssätze") sits under the text on a phone, instead of squeezing the title into a narrow column.
+
 **Thanks we owed**
 - Timed holds that run themselves (1.4.4): idea and first version by @kurktchiev (#490).
 - Ask the Coach mid-workout (1.4.4): idea and first version by @bbolinger (#852).

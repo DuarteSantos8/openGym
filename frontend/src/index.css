@@ -562,6 +562,18 @@ h4.sec{
    title column was left its longest word and stacked "Rest / between / warm-ups" one word a line
    (design review 1.4.5). */
 .lrow:has(.lrow-s)>.lrow-v{max-width:44%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:break-word;text-wrap:balance}
+/* Still too tight on a phone when the value is words, not a number: in German "Wie die
+   Arbeitssätze" beside "Pause vor der nächsten Übung" left the title a narrow column (QA 1.4.5).
+   There the value moves under the subtitle, the way Settings' root rows show their preview
+   (.sp-root-row below); Row adds .lrow-vlong only to rows with an icon, a subtitle and a long
+   worded value. Wider screens keep it beside the title. */
+@media (max-width:430px){
+  .lrow.lrow-vlong{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:3px}
+  .lrow.lrow-vlong>.lrow-i{grid-column:1;grid-row:1 / span 2}
+  .lrow.lrow-vlong>.lrow-m{grid-column:2;grid-row:1}
+  .lrow.lrow-vlong>.lrow-v{grid-column:2;grid-row:2;max-width:none;text-align:start;font-size:var(--fs-subhead);color:var(--label)}
+  .lrow.lrow-vlong>.lrow-c{grid-column:3;grid-row:1 / span 2}
+}
 .lrow-c{color:var(--label);font-size:var(--fs-subhead);flex:none;--icon-stroke:2.4}
 .lrow-k{color:var(--acc-ink);font-size:var(--fs-body);flex:none;--icon-stroke:2.4}
 .lrow.danger,.lrow.danger .lrow-t{color:var(--red)}

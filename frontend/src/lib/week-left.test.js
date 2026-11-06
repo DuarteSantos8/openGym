@@ -16,6 +16,15 @@ describe('workouts left this week (#753)', () => {
     const S = base({ week: { 1: ['A'] }, workouts: [wk('2026-10-26'), wk('2026-10-27', 'B')] })
     expect(workoutsLeft(S, TODAY)).toEqual({ left: 0, of: 1, done: 2 })
   })
+  test('today’s planned routine still open is never "all done", however many came before (QA2 1.4.5)', () => {
+    // Mon A, Tue B and Wed C planned; Mon, Tue and an extra on Mon already reach the count of 3.
+    const S = base({ week: { 1: ['A'], 2: ['B'], 3: ['C'] }, workouts: [wk('2026-10-26'), wk('2026-10-26', 'B'), wk('2026-10-27', 'B')] })
+    expect(workoutsLeft(S, TODAY)).toEqual({ left: 1, of: 3, done: 3 })
+    // Today's Legs logged: done for real.
+    expect(workoutsLeft({ ...S, workouts: [...S.workouts, wk(TODAY, 'C')] }, TODAY).left).toBe(0)
+    // Today moved to rest: nothing open.
+    expect(workoutsLeft({ ...S, dayPlan: { [TODAY]: 'rest' } }, TODAY).left).toBe(0)
+  })
   test('last week does not count', () => {
     const S = base({ week: { 1: ['A'], 3: ['B'] }, workouts: [wk('2026-10-20')] })
     expect(workoutsLeft(S, TODAY).left).toBe(2)
