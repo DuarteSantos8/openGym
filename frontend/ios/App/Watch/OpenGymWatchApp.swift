@@ -80,6 +80,8 @@ struct RootView: View {
                 CountdownView(from: from)
             } else if store.workout == nil {
                 HomeView()
+            } else if store.askDone && store.restEndsAt == nil && store.holdEndsAt == nil {
+                IdlePrompt()
             } else {
                 SessionView()
             }
@@ -90,14 +92,6 @@ struct RootView: View {
         .environment(\.accent, store.accent)
         .environment(\.onAccent, store.onAccent)
         .tint(store.accent)
-        // No set for 20 minutes. Never a finish in one tap: "Finish workout" goes to the Overview's hold.
-        .alert(Text("All done?"), isPresented: $store.askDone) {
-            Button("Continue workout", role: .cancel) { store.keepGoing() }
-            Button("Finish workout") {
-                store.keepGoing()
-                store.tab = .overview
-            }
-        }
         // Any touch: the rest-over alarm was noticed (it would tap once more otherwise).
         .simultaneousGesture(TapGesture().onEnded { store.ackRestOver() })
         // The complication's Start: today's workout, when none runs yet.
@@ -171,96 +165,6 @@ extension Effort {
     }
 }
 
-/// The workout's active calories so far, redrawn only when they change (WorkoutManager throttles).
-struct CaloriesText: View {
-    @ObservedObject var health: WorkoutManager
-
-    var body: some View {
-        if let kcal = health.calories { Text(verbatim: "\(Int(kcal)) kcal") }
-    }
-}
-
-/// The weigh-in before a workout started here, as the phone asks for it: the body weight on the
-/// crown in two parts (whole units, then a tap on the tenth for the tenth), Save and start, or
-/// start without. One crown in tenths ran a whole kilo away in a flick.
-struct WeighInView: View {
-    @EnvironmentObject var store: SessionStore
-    enum Part: Hashable { case whole, tenth }
-    @FocusState private var part: Part?
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
-
-    private var whole: Binding<Double> {
-        Binding(get: { WeighIn.parts(store.bodyWeight).whole },
-                set: { store.bodyWeight = WeighIn.join(whole: $0, tenth: WeighIn.parts(store.bodyWeight).tenth) })
-    }
-    private var tenth: Binding<Double> {
-        Binding(get: { WeighIn.parts(store.bodyWeight).tenth },
-                set: { store.bodyWeight = WeighIn.join(whole: WeighIn.parts(store.bodyWeight).whole, tenth: $0) })
-    }
-
-    var body: some View {
-        let p = WeighIn.parts(store.bodyWeight)
-        ScrollView {
-            VStack(spacing: 6) {
-                Text("Quick check-in").font(.system(.headline, design: .rounded))
-                HStack(alignment: .firstTextBaseline, spacing: 0) {
-                    digits(String(Int(p.whole)), .whole, whole, 20...(store.unit == "lb" ? 700 : 320))
-                    Text(verbatim: ".").font(.system(size: size, weight: .semibold, design: .rounded)).foregroundStyle(.secondary)
-                    digits(String(Int(p.tenth)), .tenth, tenth, 0...9)
-                    Text(verbatim: " " + store.unit).font(.system(size: 13, weight: .medium, design: .rounded)).foregroundStyle(.secondary)
-                }
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .frame(maxWidth: .infinity, minHeight: Theme.tap)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text("Body weight"))
-                .accessibilityValue(Text(verbatim: String(format: "%.1f %@", store.bodyWeight, store.unit)))
-                .accessibilityHint(Text("Turn the Digital Crown to change it."))
-                .accessibilityAdjustableAction { d in
-                    let v = store.bodyWeight + (d == .increment ? 0.1 : -0.1)
-                    let q = WeighIn.parts(v)
-                    store.bodyWeight = WeighIn.join(whole: q.whole, tenth: q.tenth)
-                }
-                Button { store.finishWeighIn(save: true) } label: {
-                    Text("Save & start workout").font(.body.weight(.semibold)).frame(maxWidth: .infinity, minHeight: Theme.tap)
-                }
-                .tint(Theme.accent)
-                Button { store.finishWeighIn(save: false) } label: {
-                    Text("Start without weighing in").font(.footnote).frame(maxWidth: .infinity, minHeight: Theme.tap)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                Button(role: .cancel) { store.cancelWeighIn() } label: {
-                    Text("Cancel").font(.footnote).frame(maxWidth: .infinity, minHeight: 32)
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 4)
-        }
-        .onAppear { part = .whole }
-    }
-
-    /// One part of the number: the one the crown turns is in the accent colour on a soft tile,
-    /// a tap on the other one hands the crown to it.
-    private func digits(_ text: String, _ which: Part, _ value: Binding<Double>, _ range: ClosedRange<Double>) -> some View {
-        let on = part == which
-        return Text(verbatim: text)
-            .font(.system(size: which == .whole ? size : size * 0.8, weight: .semibold, design: .rounded).monospacedDigit())
-            .foregroundStyle(on ? Theme.accent : Color.white)
-            .contentTransition(.numericText())
-            .padding(.horizontal, 4)
-            .frame(minWidth: Theme.tap * 0.7, minHeight: Theme.tap)
-            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(on ? Theme.dim : Color.clear))
-            .contentShape(Rectangle())
-            .focusable()
-            .focused($part, equals: which)
-            .digitalCrownRotation(value, from: range.lowerBound, through: range.upperBound, by: 1,
-                                  sensitivity: .low, isContinuous: false, isHapticFeedbackEnabled: true)
-            .onTapGesture { part = which }
-    }
-}
-
 /* ---------- the rest, and a hold: a ring counting down ---------- */
 
 /// A ring that empties from `start` to `end`. With the wrist down (Always On) it moves once a
@@ -284,92 +188,6 @@ struct CountdownRing: View {
             }
         }
         .accessibilityHidden(true)
-    }
-}
-
-/* ---------- the end of a workout ---------- */
-
-struct SummaryView: View {
-    @EnvironmentObject var store: SessionStore
-    @Environment(\.locale) private var locale
-    let summary: WorkoutSummary
-
-    var body: some View {
-        ScrollViewReader { reader in
-        ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: summary.endedOnPhone ? "iphone" : "checkmark.circle.fill")
-                        .foregroundStyle(Theme.accent)
-                        .accessibilityHidden(true)
-                    Text(summary.endedOnPhone ? LocalizedStringKey("Ended on your iPhone") : LocalizedStringKey("Workout saved"))
-                        .font(.system(.headline, design: .rounded))
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Text(verbatim: summary.name).font(.footnote).foregroundStyle(.secondary)
-                if let d = summary.duration { stat(Text("Time"), Text(verbatim: SummaryView.duration(d, locale: locale))) }
-                stat(Text("Sets"), Text(verbatim: "\(summary.sets)"))
-                if summary.volume > 0 {
-                    stat(Text("Volume"), Text(verbatim: "\(summary.volume.formatted(.number.precision(.fractionLength(0)))) \(summary.unit)"))
-                }
-                if let avg = summary.hrAvg, let top = summary.hrMax {
-                    stat(Text("Heart rate"), Text("\(Int(avg)) avg · \(Int(top)) max"), color: .red)
-                }
-                if let kcal = summary.calories {
-                    stat(Text("Calories"), Text(Measurement(value: kcal, unit: UnitEnergy.kilocalories),
-                                                format: .measurement(width: .abbreviated, usage: .asProvided,
-                                                                     numberFormatStyle: .number.precision(.fractionLength(0))).locale(locale)))
-                }
-                if !summary.prs.isEmpty {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Label { Text("Personal records") } icon: { Image(systemName: "trophy.fill").foregroundStyle(.yellow) }
-                            .font(.caption.weight(.semibold))
-                        ForEach(summary.prs, id: \.self) { name in
-                            Text(verbatim: name).font(.footnote)
-                        }
-                    }
-                    .accessibilityElement(children: .combine)
-                    .padding(.top, 2)
-                }
-                if store.offline {
-                    Label { Text("Saved on the watch, syncs later") } icon: { Image(systemName: "iphone.slash") }
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                Button { store.closeSummary() } label: {
-                    Text("Done").frame(maxWidth: .infinity, minHeight: Theme.tap)
-                }
-                .tint(Theme.accent)
-                .padding(.top, 4)
-                .id("done")
-            }
-            .padding(.horizontal, 4)
-            // The title starts under the clock, not beside it (it ran into the time on 41 mm).
-            .padding(.top, 14)
-        }
-        // CI: the end of the summary too (heart rate, calories, records).
-        .onAppear { if SessionStore.demoScreen == "summary-end" { reader.scrollTo("done", anchor: .bottom) } }
-        }
-    }
-
-    private func stat(_ label: Text, _ value: Text, color: Color = .white) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            label.font(.caption2).foregroundStyle(.secondary)
-            value.font(.system(.title3, design: .rounded).weight(.semibold).monospacedDigit()).foregroundStyle(color)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .accessibilityElement(children: .combine)
-    }
-
-    /// "52 min", "1 h 5 min", in the watch's language.
-    static func duration(_ seconds: Double, locale: Locale = .current) -> String {
-        let f = DateComponentsFormatter()
-        var calendar = Calendar.current
-        calendar.locale = locale
-        f.calendar = calendar
-        f.allowedUnits = seconds >= 3600 ? [.hour, .minute] : [.minute]
-        f.unitsStyle = .short
-        return f.string(from: max(60, seconds)) ?? ""
     }
 }
 

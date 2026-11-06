@@ -110,6 +110,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     private var phoneRestEnd: Double?
     /// "All done?": the workout has had no set logged for 20 minutes (WatchCore's Idle).
     @Published var askDone = false
+    /// How long nothing has happened in the workout, for the card's words.
+    @Published private(set) var idleMinutes = 0
     /// A set picked by hand in an exercise (entry index → set index); otherwise the first not done.
     @Published private var picked: [Int: Int] = [:]
 
@@ -985,8 +987,11 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // Picked up from the phone, changed there (a set edited, an exercise added) or answered
         // "keep going" since: counted from then, never ended earlier.
         let since = Idle.since(lastSet: last, seen: seen, activity: ms(activityAt), snooze: ms(idleSnooze))
+        idleMinutes = max(0, Int((now - since) / 60000))
         switch Idle.state(since: since, now: now) {
-        case .active: break
+        case .active:
+            // Something happened since (a set on the phone): the card goes away by itself.
+            if askDone { askDone = false }
         case .ask:
             if !askDone { askDone = true; Haptics.ask() }
         case .end:
@@ -1404,6 +1409,9 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             switch screen {
             case "set", "weight", "rest", "offline", "edit-weight", "edit-reps", "keypad": self.picked[0] = 2
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
+            case "metrics": self.picked[0] = 2; self.tab = .metrics
+            case "music": self.tab = .music
+            case "prompt": self.idleMinutes = 23; self.askDone = true
             case "hold": self.state.entryIndex = 1
             case "bodyweight": self.state.entryIndex = 2
             case "side": self.state.entryIndex = 3

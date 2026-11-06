@@ -24,6 +24,8 @@ struct SessionView: View {
             TabView(selection: $store.tab) {
                 OverviewPage().tag(SessionTab.overview)
                 LivePage().tag(SessionTab.set)
+                MetricsPage().tag(SessionTab.metrics)
+                MusicPage().tag(SessionTab.music)
             }
             .tabViewStyle(.page)
             .toolbar {
@@ -192,18 +194,40 @@ struct OverviewRowView: View {
         .accessibilityAddTraits(row.current ? AccessibilityTraits([.isButton, .isSelected]) : AccessibilityTraits.isButton)
     }
 
+    /// The exercise's still (the first frame of the animation the phone already sent for this
+    /// workout, nothing new), with its state on the corner; without one, the state in a circle.
+    /// Always On: no pictures (no large lit areas), only the outlined slot.
     @ViewBuilder private var mark: some View {
+        let still = store.show.showClip && !dimmed ? store.clips[row.id]?.images.first : nil
         ZStack {
-            Circle().fill(dimmed ? Color.clear : Theme.surface2)
-            Circle().stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0)
-            if row.current {
-                Image(systemName: "play.fill").font(.system(size: 11, weight: .bold)).foregroundStyle(accent)
-            } else if row.finished {
-                Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(Theme.label2)
+            if let image = still {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .brightness(-0.15)
+                    .saturation(row.finished ? 0 : 1)
+                    .opacity(row.finished ? 0.6 : 1)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    .overlay(alignment: .bottomTrailing) { glyph(small: true).offset(x: 3, y: 3) }
+            } else {
+                RoundedRectangle(cornerRadius: 7, style: .continuous).fill(dimmed ? Color.clear : Theme.surface2)
+                RoundedRectangle(cornerRadius: 7, style: .continuous).stroke(Theme.surface2, lineWidth: dimmed ? 1 : 0)
+                glyph(small: false)
             }
         }
-        .frame(width: 26, height: 26)
+        .frame(width: 30, height: 30)
         .accessibilityHidden(true)
+    }
+
+    @ViewBuilder private func glyph(small: Bool) -> some View {
+        let symbol = row.current ? "play.fill" : (row.finished ? "checkmark" : "")
+        if !symbol.isEmpty {
+            Image(systemName: symbol)
+                .font(.system(size: small ? 8 : 11, weight: .bold))
+                .foregroundStyle(row.current ? accent : Theme.label2)
+                .frame(width: small ? 14 : 30, height: small ? 14 : 30)
+                .background(Circle().fill(small ? Color.black : Color.clear))
+        }
     }
 }
 

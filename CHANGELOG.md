@@ -25,6 +25,9 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Rate the effort while you rest: four chips under the timer (RIR 0, 1, 2, 3+ or RPE 10, 9, 8, ≤7, whichever the phone logs), one tap and it's on the set. The rest got −15 s next to Skip and +15 s, waits a second before its buttons take a tap, and ‹ opens the set you just did to fix it while the clock keeps running.
 - Timed holds: a big countdown with a bar that turns orange for the last five seconds and a click for each of the last three. Finishing the workout mid-hold logs the seconds you held instead of dropping the set. Per-side sets say Left or Right on the set, the hold and Up next, and supersets name their partner under the exercise.
 - Fixed: a snapshot from the phone no longer undoes a ±15 s on the watch or brings back a rest you skipped there.
+- New pages beside the set: Metrics (the workout's time big, then heart rate, calories, volume and sets, filling bigger watches) and Apple's own music controls, one more swipe away. Lower your wrist on the Overview or the music and the watch goes back to the set.
+- The Overview shows each exercise's picture, the still of the animation the phone already sends for the workout, greyed once it's done.
+- The weigh-in, the summary and "All done?" got the new look. "All done?" is a card instead of a system alert, says how long nothing happened, sends Finish to the Overview's hold, and goes away by itself when you log a set on the phone. The summary shows the time big, and its Done ignores taps for its first second.
 
 **Sign in with your identity provider (OIDC)**
 - Self-hosting with Authentik, Authelia, Keycloak, voidAuth or Pocket ID? openGym signs people in through it now, next to passkeys: set OIDC_ISSUER and OIDC_CLIENT_ID and the sign-in screen gets a "Sign in with ..." button (#130, idea and first version by @melduarmir (#391), testing by @austinwilcox).
