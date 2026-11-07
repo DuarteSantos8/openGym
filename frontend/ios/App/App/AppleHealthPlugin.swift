@@ -370,7 +370,7 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private func saveSession(_ s: [String: Any]) async throws {
-        guard let id = s["id"] as? String,
+        guard let id = s["id"] as? String, !id.isEmpty,
               let startMs = (s["start"] as? NSNumber)?.doubleValue, let endMs = (s["end"] as? NSNumber)?.doubleValue, endMs > startMs else { return }
         if try await watchSaved(id) { return }
         // The iPhone's own workout session (AirPods heart rate, #818) saved this one live, with its
@@ -387,19 +387,24 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         try await builder.addMetadata(meta)
         // The estimated active energy, with a sync identifier of its own so a rewrite replaces it
         // too. The Apple Watch measures its own; this is for a workout the phone logged.
-        if let estimate = (s["kcal"] as? NSNumber)?.doubleValue, estimate > 0, caloriesGranted, let type = activeEnergy {
+        if let estimate = (s["kcal"] as? NSNumber)?.doubleValue, estimate > 0, caloriesGranted, let type = activeEnergy,
+           AppleHealthPlugin.fits(type, from: start, to: end) {
             // A watch worn while the phone logged (any that saves to Apple Health) measured the
             // real thing: that goes on the workout instead (idea from #434). Apple Health's own
             // totals take one source per stretch of time, so nothing counts twice.
             let measured = await measuredEnergy(type, from: start, to: end)
             let kcal = measured ?? estimate
-            var kmeta = syncMetadata(id + "-kcal")
-            kmeta["OpenGymEstimate"] = measured == nil
-            let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .kilocalorie(), doubleValue: kcal),
-                                          start: start, end: end, device: .local(), metadata: kmeta)
-            try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
-                builder.add([sample]) { _, error in
-                    if let error = error { cont.resume(throwing: error) } else { cont.resume() }
+            // HealthKit raises an Objective-C exception, which Swift cannot catch, for a value it
+            // won't take: that killed the app at every launch (TestFlight 59). Checked first instead.
+            if kcal.isFinite, kcal > 0, kcal < 100_000 {
+                var kmeta = syncMetadata(id + "-kcal")
+                kmeta["OpenGymEstimate"] = measured == nil
+                let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .kilocalorie(), doubleValue: kcal),
+                                              start: start, end: end, device: .local(), metadata: kmeta)
+                try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+                    builder.add([sample]) { _, error in
+                        if let error = error { cont.resume(throwing: error) } else { cont.resume() }
+                    }
                 }
             }
         }
@@ -438,9 +443,20 @@ public class AppleHealthPlugin: CAPPlugin, CAPBridgedPlugin {
         return samples.contains { $0.sourceRevision.source.bundleIdentifier != me }
     }
 
+    /// Whether HealthKit takes a sample of this type over this stretch: an end before the start, or
+    /// a stretch longer (or shorter) than the type allows, is an uncatchable exception at creation.
+    /// Two days at most (a forgotten workout left open), and nothing before 2001, HealthKit's epoch.
+    static func fits(_ type: HKSampleType, from start: Date, to end: Date) -> Bool {
+        let d = end.timeIntervalSince(start)
+        guard d.isFinite, d >= 0, d <= 2 * 86_400, start.timeIntervalSinceReferenceDate > 0 else { return false }
+        if type.isMaximumDurationRestricted && d > type.maximumAllowedDuration { return false }
+        if type.isMinimumDurationRestricted && d < type.minimumAllowedDuration { return false }
+        return true
+    }
+
     private func weightSample(_ w: [String: Any]) -> HKQuantitySample? {
-        guard let id = w["id"] as? String, let time = (w["time"] as? NSNumber)?.doubleValue,
-              let kg = (w["kg"] as? NSNumber)?.doubleValue, kg > 0 else { return nil }
+        guard let id = w["id"] as? String, !id.isEmpty, let time = (w["time"] as? NSNumber)?.doubleValue, time.isFinite,
+              let kg = (w["kg"] as? NSNumber)?.doubleValue, kg.isFinite, kg > 0, kg < 1000 else { return nil }
         let at = Date(timeIntervalSince1970: time / 1000)
         return HKQuantitySample(type: bodyMass, quantity: HKQuantity(unit: .gramUnit(with: .kilo), doubleValue: kg),
                                 start: at, end: at, metadata: syncMetadata(id))
