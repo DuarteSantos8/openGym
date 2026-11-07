@@ -3,7 +3,8 @@ import { DEMO } from './lib/demo.js'
 import { useDailyWebdav } from './lib/use-daily-webdav.js'
 import { offlineBuild } from './lib/build-caps.js'
 import { hideBoot } from './lib/boot.js'
-import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType } from 'react-router-dom'
+import { flushSync } from 'react-dom'
+import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation, useNavigationType, unstable_HistoryRouter as HistoryRouter, UNSAFE_createHashHistory as createHashHistory } from 'react-router-dom'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { bindUI } from './components/ui.jsx'
@@ -29,6 +30,7 @@ import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
 import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen } from './lib/watch-sync.js'
+import { wrapHistory, installTransitions, navMotion } from './lib/transitions.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startWatchRelay } from './lib/watch-relay.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
@@ -131,6 +133,7 @@ const prefetchViews = () => {
 const scrollPositions = new Map()
 
 document.documentElement.dataset.platform = platformFlag()   // index.css: the glass material is iOS only
+const IOS = document.documentElement.dataset.platform === 'ios'
 initFeel()   // the iPhone's press light and chip haptic (lib/feel.js); nothing elsewhere
 bindUI(useUI)   // lets the shared controls open sheets without importing the store at module scope
 
@@ -437,7 +440,7 @@ function Shell() {
           lands it simply stays: same key, same parent, so React keeps it instead of mounting
           the route again. */}
       <div id="app">
-        <Page key={loc.pathname} loc={loc} render={view} motion={pageMotion(pathRef.current, loc.pathname, navType)} />
+        <Page key={loc.pathname} loc={loc} render={view} motion={IOS ? navMotion(loc.pathname) : pageMotion(pathRef.current, loc.pathname, navType)} />
         {showPreview && <Page key={preview} loc={previewLoc(preview)} render={view} under scrollY={scrollPositions.get(preview) || 0} />}
       </div>
       {/* Outside #app: the view's fade-in animates a transform, and a fixed element inside it
@@ -481,7 +484,8 @@ function Page({ loc, render, under = false, scrollY = 0, motion = 'fade' }) {
     const el = ref.current
     if (el) { el.style.transform = ''; el.style.transition = ''; el.style.visibility = '' }
   }, [under])
-  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
+  // 'none': a View Transition animates it (lib/transitions.js), a class would start over when it ends
+  return <div ref={ref} className={'page' + (under ? ' under' : wasUnder.current || arrival.current === 'none' ? '' : arrival.current === 'push' ? ' vpush' : arrival.current === 'pop' ? ' vpop' : ' vfade')}
     data-path={loc.pathname} data-promoted={promoted ? '' : undefined}
     aria-hidden={under || undefined} inert={under || undefined}>
     <div className="page-in" style={under && scrollY ? { transform: `translateY(${-scrollY}px)` } : undefined}>
@@ -607,5 +611,10 @@ export default function App() {
       autoGymHere()
     })
   }, [])
-  return <HashRouter><Shell /></HashRouter>
+  // iPhone: the same hash router on a history whose push, back and tab re-tap animate
+  // (lib/transitions.js). A router update is not deferred there, so a move can render inside the
+  // View Transition's callback. Everywhere else the router is what it was.
+  const [history] = useState(() => IOS ? wrapHistory(createHashHistory({ v5Compat: true }), { flush: flushSync, scrollOf: p => scrollPositions.get(p) || 0 }) : null)
+  useEffect(() => (IOS ? installTransitions() : undefined), [])
+  return IOS ? <HistoryRouter history={history} useTransitions={false}><Shell /></HistoryRouter> : <HashRouter><Shell /></HashRouter>
 }

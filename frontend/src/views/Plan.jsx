@@ -487,7 +487,7 @@ function Routines({ S, update, nav }) {
           if (!g.routines.length) return null
           const open = !g.folder || (openFolders[g.folder.toLowerCase()] ?? folderOpen(g.folder))
           const list = open && <div key={'l' + (g.fav ? '*' : g.folder)} className="list routine-list plan-routines" data-folder={g.folder || undefined} data-favs={g.fav || undefined}>{g.routines.map(r => {
-          const row = <div key={r.id} className="item plan-routine" {...tappable(() => nav('/plan/r/' + r.id))}>
+          const row = <div key={r.id} className="item plan-routine" data-vt="zoom" {...tappable(() => nav('/plan/r/' + r.id))}>
             <span className="lrow-i"><Icon name={glyphOf(r.emoji)} /></span>
             <div className="grow"><div className="tt">{isFavRoutine(r) && <Icon name="starFill" className="fav-star" />}{r.name}</div><div className="ss">{sub(r)}</div></div>
             <MiniBodyMap routines={[r]} body={S.body} />

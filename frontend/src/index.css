@@ -389,6 +389,86 @@ body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
   visibility:hidden;pointer-events:none;will-change:transform;
 }
 
+/* Screen transitions on the iPhone (Liquid Glass G6, lib/transitions.js). The JS puts
+   html[data-nav] = slide-push slide-pop zoom-push zoom-pop fly-push fly-pop fade (Reduce Motion) on
+   <html> for the length of one move and names each piece that moves (view-transition-name + class);
+   the CSS picks pieces by class. Needs view-transition-class (Safari 18.2): older iOS skips the
+   API, and the page's own .vpush / .vpop / .vfade run instead. */
+:root[data-platform="ios"]{--slow:1;--dir:1}
+:root[data-platform="ios"][dir="rtl"]{--dir:-1}
+/* While the pictures are taken a page is a viewport-sized clipped box (the app scrolls the window, and a
+   Library of 1,324 rows must not become one huge picture), its content moved up by the scroll it was left at. */
+:root[data-platform="ios"] #app > .page.vt-f{position:fixed;top:0;left:0;right:0;bottom:0;overflow:clip;padding:inherit;max-width:inherit;margin:0 auto;background:var(--bg)}
+:root[data-platform="ios"] #app > .page.vt-f > .page-in{position:relative;top:calc(var(--vt-y,0px)*-1)}
+:root[data-platform="ios"] #app .page h1:focus{outline:none}
+html[data-nav^=slide]{--vtd:380ms}
+html[data-nav^=zoom]{--vtd:400ms}
+html[data-nav^=fly]{--vtd:300ms}
+html[data-nav=fade]{--vtd:150ms}
+::view-transition-group(root),::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+/* GLASS never moves, in any style. Header: a 150 ms crossfade in place, so the back chevron can appear.
+   Bottom edge and tab bar: no motion, the old copy hidden, the new one live (the lens still slides).
+   Their opacity sits on a CHILD (.edge, .inl), never on the named piece: a named element's opacity is not in its picture. */
+::view-transition-group(*.top){z-index:20;animation-duration:calc(.15s*var(--slow));animation-timing-function:linear}
+::view-transition-group(*.bot){z-index:20;animation:none}
+::view-transition-old(*.bot){display:none}
+::view-transition-new(*.bot){animation:none}
+/* SLIDE: the new page slides in from the right over the old, which goes 30 % left and dims. Pop: the reverse. */
+::view-transition-group(*.page){z-index:2;overflow:clip;animation-duration:calc(var(--vtd)*var(--slow));animation-timing-function:var(--ease)}
+::view-transition-old(*.page),::view-transition-new(*.page){mix-blend-mode:normal;animation-fill-mode:both}
+html[data-nav=slide-push]::view-transition-old(*.page){animation-name:vt-under}
+html[data-nav=slide-push]::view-transition-new(*.page){animation-name:vt-in;box-shadow:-12px 0 32px rgba(0,0,0,.3)}
+html[data-nav=slide-pop]::view-transition-old(*.page){animation-name:vt-out;z-index:2;box-shadow:-12px 0 32px rgba(0,0,0,.3)}
+html[data-nav=slide-pop]::view-transition-new(*.page){animation-name:vt-back}
+@keyframes vt-in{from{transform:translateX(calc(100%*var(--dir)))}}
+@keyframes vt-under{to{transform:translateX(calc(-30%*var(--dir)));filter:brightness(.82)}}
+@keyframes vt-out{to{transform:translateX(calc(100%*var(--dir)))}}
+@keyframes vt-back{from{transform:translateX(calc(-30%*var(--dir)));filter:brightness(.82)}}
+/* REDUCE MOTION (every style): one 150 ms fade of the page; the old stays solid, the new fades in over it. */
+html[data-nav=fade]::view-transition-group(*.page){animation-timing-function:linear}
+html[data-nav=fade]::view-transition-old(*.page){animation:none}
+html[data-nav=fade]::view-transition-new(*.page){animation-name:vt-fi}
+@keyframes vt-fi{from{opacity:0}}
+/* FADE-FLY: the old page stays solid, the new one fades in with a 28 pt drift (300 ms)... */
+html[data-nav=fly-push]::view-transition-old(*.page),html[data-nav=fly-pop]::view-transition-old(*.page){animation:none}
+html[data-nav=fly-push]::view-transition-new(*.page){animation-name:vt-fly-r}
+html[data-nav=fly-pop]::view-transition-new(*.page){animation-name:vt-fly-l}
+@keyframes vt-fly-r{from{opacity:0;transform:translateX(calc(28px*var(--dir)))}}
+@keyframes vt-fly-l{from{opacity:0;transform:translateX(calc(-28px*var(--dir)))}}
+/* ...and ONE picture flies thumbnail <-> hero (380 ms, no overshoot), only the big snapshot shown so it stays sharp;
+   the corner radius animates on the clip, 9 <-> 20 pt. A row whose thumbnail is hidden gets the fade only. */
+::view-transition-group(*.pic){z-index:6;animation-duration:calc(380ms*var(--slow));animation-timing-function:var(--ease)}
+::view-transition-image-pair(*.pic){overflow:clip;animation:vt-r-up calc(380ms*var(--slow)) var(--ease) both}
+html[data-nav=fly-pop]::view-transition-image-pair(*.pic){animation-name:vt-r-down}
+::view-transition-old(*.pic),::view-transition-new(*.pic){animation:none;mix-blend-mode:normal}
+html[data-nav=fly-push]::view-transition-old(*.pic),html[data-nav=fly-pop]::view-transition-new(*.pic){display:none}
+@keyframes vt-r-up{from{border-radius:9px}to{border-radius:20px}}
+@keyframes vt-r-down{from{border-radius:20px}to{border-radius:9px}}
+/* ZOOM: the tapped card IS the page. One group grows from the card's box to the screen's (pop: back into the card),
+   clipping a top-left-anchored picture of the page. The list behind (base) steps back to .94 and dims.
+   The corner radius 16 <-> the screen's own is animated from JS on the group (the browser does not do it). */
+::view-transition-group(*.row){z-index:5;overflow:clip;animation-duration:calc(var(--vtd)*var(--slow));animation-timing-function:var(--ease)}
+::view-transition-old(*.row),::view-transition-new(*.row){mix-blend-mode:normal;animation-fill-mode:both}
+::view-transition-old(*.row){animation-name:vt-z-hold}
+::view-transition-new(*.row){animation-name:vt-z-in}
+html[data-nav=zoom-pop]::view-transition-new(*.row){animation-name:vt-z-in-pop}
+::view-transition-group(*.base){z-index:1;overflow:clip;animation-duration:calc(var(--vtd)*var(--slow));animation-timing-function:var(--ease)}
+::view-transition-old(*.base),::view-transition-new(*.base){mix-blend-mode:normal;animation-fill-mode:both}
+html[data-nav=zoom-push]::view-transition-old(*.base){animation-name:vt-z-back}
+html[data-nav=zoom-pop]::view-transition-new(*.base){animation-name:vt-z-front}
+@keyframes vt-z-hold{0%,55%{opacity:1}100%{opacity:0}}
+@keyframes vt-z-in{0%{opacity:0}20%,100%{opacity:1}}
+@keyframes vt-z-in-pop{0%,30%{opacity:0}70%,100%{opacity:1}}
+@keyframes vt-z-back{to{transform:scale(.94);filter:brightness(.7)}}
+@keyframes vt-z-front{from{transform:scale(.94);filter:brightness(.7)}}
+/* TAB SWITCH, and fly without View Transitions: a plain fade (no View Transition, so the tab bar's lens stays live).
+   Reduce Motion: 150 ms for every style, also without View Transitions (the global rule above would switch them off). */
+@keyframes vt-fadein{from{opacity:0}}
+:root[data-platform="ios"] #app > .page.vfade{animation:vt-fadein 140ms linear both}
+@media (prefers-reduced-motion: reduce){
+  :root[data-platform="ios"] #app > .page.vfade,:root[data-platform="ios"] #app > .page.vpush,:root[data-platform="ios"] #app > .page.vpop{animation:vt-fadein 150ms linear both!important}
+}
+
 /* Connection indicator (components/SyncBanner.jsx): pinned under the status bar for as long as
    the app is not connected to a server. It carries the page's own ground and blur, like the
    pinned workout header, so rows scrolling under it read as under it; --conn is the height of
