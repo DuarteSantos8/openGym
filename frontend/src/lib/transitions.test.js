@@ -37,6 +37,8 @@ describe('the decisions', () => {
     expect(styleFor(document.getElementById('b1'))).toBe('fly')
     expect(styleFor(document.getElementById('c1'))).toBe('slide')
     expect(styleFor(null)).toBe('slide')
+    document.body.innerHTML = '<div class="row wd-ex"><img class="thumb"><button id="w1">w</button></div>'   // workout page row
+    expect(styleFor(document.getElementById('w1'))).toBe('fly')
   })
   it('a pop mirrors the way in; a picture flies one step only; a re-tap zooms only straight back to the root', () => {
     expect(popStyle('zoom')).toBe('zoom'); expect(popStyle('fly')).toBe('fly')
@@ -318,6 +320,34 @@ describe('wrapHistory (View Transitions): the pop waits for the history event', 
   })
 })
 
+describe('wrapHistory (View Transitions): a newer input wins', () => {
+  it('a tap on the lit tab right after a card tap: the waiting push never lands', async () => {
+    fakeVT()
+    const h = fakeHistory('/plan'), w = wrap(h)
+    click(document.getElementById('cardb'))
+    w.push('/plan/r/7')
+    click(document.querySelector('#tabbar button'))
+    w.replace('/plan')   // same tab root: still a new input
+    await tick(40)
+    expect(h.push).not.toHaveBeenCalled()
+    expect(h.replace).toHaveBeenCalledTimes(1)
+  })
+  it('replace after an edge swipe is plain, and no pic on the new page fades the thumbnail out', async () => {
+    const h = fakeHistory('/plan/r/7', { vt: { style: 'zoom', opener: 0, fit: false, from: '/plan' } }), w = wrap(h)
+    st.swiped = true
+    w.replace('/plan')
+    expect(st.busy).toBe(false)
+    expect(navMotion('/plan')).toBe('fade')
+    fakeVT({ sync: true })
+    document.getElementById('app').innerHTML = '<div class="page"><div class="page-in"><div class="gh"></div><img id="t"></div></div>'
+    run('push', 'fly', () => swapPage(), { pic: isNew => (isNew ? null : document.getElementById('t')) })
+    await tick(1)
+    expect(document.documentElement.hasAttribute('data-nopic')).toBe(true)
+    await tick(30)
+    expect(document.documentElement.hasAttribute('data-nopic')).toBe(false)
+  })
+})
+
 describe('taps while something moves', () => {
   it('a row on the page is ignored, glass is not', () => {
     document.getElementById('app').innerHTML = '<div class="page"><div class="page-in"><div class="gh"><button id="g">back</button></div><button id="r">row</button></div></div>'
@@ -336,10 +366,12 @@ describe('taps while something moves', () => {
     g.addEventListener('click', hit)
     g.getBoundingClientRect = () => ({ left: 0, right: 44, top: 0, bottom: 44 })
     document.documentElement.dataset.nav = 'slide-push'
+    const dn = (x, y) => document.documentElement.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: x, clientY: y }))
     const up = (x, y) => document.documentElement.dispatchEvent(new MouseEvent('pointerup', { bubbles: true, clientX: x, clientY: y }))
-    up(300, 300); expect(hit).not.toHaveBeenCalled()
-    up(20, 20); expect(hit).toHaveBeenCalledTimes(1)
+    dn(300, 300); up(300, 300); expect(hit).not.toHaveBeenCalled()
+    dn(300, 300); up(20, 20); expect(hit).not.toHaveBeenCalled()   // a drag that ends over the button
+    dn(20, 20); up(20, 20); expect(hit).toHaveBeenCalledTimes(1)
     document.documentElement.removeAttribute('data-nav')
-    up(20, 20); expect(hit).toHaveBeenCalledTimes(1)
+    dn(20, 20); up(20, 20); expect(hit).toHaveBeenCalledTimes(1)
   })
 })

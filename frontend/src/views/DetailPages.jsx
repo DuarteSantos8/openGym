@@ -25,7 +25,9 @@ function useLeave(fallback, gone) {
     afterSheets(() => (hasBack ? nav(-1) : nav(fallback, { replace: true })))
   }
   useEffect(() => { if (gone) leave() }, [gone])
-  const backBtn = <button className="iconbtn" data-back={(hasBack ? pathBefore() : null) || fallback} onClick={leave} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
+  // the Back tap's move can be dropped by a newer input (transitions halt()), so it lets go again
+  const back = () => { leave(); setTimeout(() => { left.current = false }, 600) }
+  const backBtn = <button className="iconbtn" data-back={(hasBack ? pathBefore() : null) || fallback} onClick={back} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
   return { leave, backBtn }
 }
 

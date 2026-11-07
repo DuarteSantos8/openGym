@@ -442,6 +442,8 @@ html[data-nav=fly-pop]::view-transition-new(*.page){animation-name:vt-fly-l}
 html[data-nav=fly-pop]::view-transition-image-pair(*.pic){animation-name:vt-r-down}
 ::view-transition-old(*.pic),::view-transition-new(*.pic){animation:none;mix-blend-mode:normal}
 html[data-nav=fly-push]::view-transition-old(*.pic),html[data-nav=fly-pop]::view-transition-new(*.pic){display:none}
+html[data-nav=fly-push][data-nopic]::view-transition-old(*.pic){display:block;animation:vt-pic-out calc(300ms*var(--slow)) linear both}
+@keyframes vt-pic-out{to{opacity:0}}
 @keyframes vt-r-up{from{border-radius:9px}to{border-radius:20px}}
 @keyframes vt-r-down{from{border-radius:20px}to{border-radius:9px}}
 /* ZOOM: the tapped card IS the page. One group grows from the card's box to the screen's (pop: back into the card),

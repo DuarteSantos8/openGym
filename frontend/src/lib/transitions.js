@@ -43,7 +43,7 @@ export const screenR = h => SCREEN_R[h] ?? 47
 // and lifting it out would make it jump.
 export const inView = (r, navBottom, barTop) => r.top >= navBottom && r.bottom <= barTop
 
-export const thumbOf = el => el?.closest('.item,.lrow')?.querySelector('img.thumb') ?? null
+export const thumbOf = el => el?.closest('.item,.lrow,.wd-ex')?.querySelector('img.thumb') ?? null
 export const cardOf = el => el?.closest('[data-vt="zoom"]') ?? el
 // What was tapped decides the style: a routine card zooms, a row with a picture flies, the rest slides.
 export const styleFor = el => (!el ? 'slide' : el.closest('[data-vt="zoom"]') ? 'zoom' : thumbOf(el) ? 'fly' : 'slide')
@@ -98,7 +98,7 @@ function stopVT() {
   const r = st.ref; st.ref = null
   try { r?.skipTransition() } catch { /* already over */ }
   st.busy = false
-  root().removeAttribute('data-nav')
+  root().removeAttribute('data-nav'); root().removeAttribute('data-nopic')
   document.querySelectorAll('[style*="view-transition"]').forEach(e => { e.style.removeProperty('view-transition-name'); e.style.removeProperty('view-transition-class') })
   unfreeze()
 }
@@ -144,6 +144,8 @@ export function run(kind, style, update, x = {}) {
       freeze(topPage(), st.y ?? 0)
       if (st.y != null) window.scrollTo(0, st.y)
       names(true)
+      // no picture on the new page: the old thumbnail fades out instead of vanishing (index.css)
+      if (push && pic && !pic(true)) root().dataset.nopic = ''
     })
   })
   // skipped or failed: nothing to report. Every promise is caught, so a skipped move is no unhandled rejection.
@@ -221,8 +223,10 @@ export function wrapHistory(h, { flush, scrollOf }) {
 
   w.replace = (to, state) => {
     const path = pathOf(to), vt = here().state?.vt, was = here().pathname
-    if (!path || path === was || !isTabRoot(path) || onSheetEntry()) return plain(path, () => h.replace(to, state))
     const user = !!takeTap()
+    // a tab tap is a new input even on the lit tab: a push or slide still waiting must not land after it
+    if (user && isTabRoot(path)) halt()
+    if (st.swiped || !path || path === was || !isTabRoot(path) || onSheetEntry()) return plain(path, () => h.replace(to, state))
     // tab switch: the plain 140 ms fade, the new page's title takes focus
     if (!vt || seg(path) !== seg(was)) {
       plain(path, () => h.replace(to, state))
@@ -236,7 +240,7 @@ export function wrapHistory(h, { flush, scrollOf }) {
   }
 
   w.go = delta => {
-    const vt = here().state?.vt, to = pathBefore()
+    const vt = here().state?.vt, to = pathBefore(Math.max(1, -delta))
     if (delta >= 0 || !vt || !to || st.swiped || onSheetEntry()) return plain(to || '', () => h.go(delta))
     const style = popStyle(delta < -1 ? 'slide' : vt.style, -delta)
     const go = () => new Promise(res => {
@@ -262,15 +266,20 @@ export function installTransitions() {
   // While a View Transition runs the browser may send every tap to <html>. Pass it on to the GLASS
   // control under the finger only (back, round buttons, tab bar). pointerup, not click: iOS often
   // gives no click for a tap on a non-interactive target.
+  // Only a tap that went down AND up on the same glass control: the end of a scroll is not a tap.
+  const glassAt = e => [...document.querySelectorAll('.gh button,.gh [data-back],#tabbar button')].find(b => {
+    const r = b.getBoundingClientRect(); return !b.disabled && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom
+  })
+  let downOn = null
+  const onPtrDown = e => { downOn = e.target === root() && root().hasAttribute('data-nav') ? glassAt(e) : null }
   const onUp = e => {
+    const was = downOn; downOn = null
     if (e.target !== root() || !root().hasAttribute('data-nav')) return
-    const hit = [...document.querySelectorAll('.gh button,.gh [data-back],#tabbar button')].find(b => {
-      const r = b.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom
-    })
-    hit?.click()
+    const hit = glassAt(e)
+    if (hit && hit === was) hit.click()
   }
   // ...and a swallowed tap on <html> would also move focus from the new title to <body> (mousedown blurs)
   const onDown = e => { if (e.target === root() && root().hasAttribute('data-nav')) e.preventDefault() }
-  addEventListener('click', onClick, true); addEventListener('pointerup', onUp, true); addEventListener('mousedown', onDown, true)
-  return () => { removeEventListener('click', onClick, true); removeEventListener('pointerup', onUp, true); removeEventListener('mousedown', onDown, true) }
+  addEventListener('click', onClick, true); addEventListener('pointerdown', onPtrDown, true); addEventListener('pointerup', onUp, true); addEventListener('mousedown', onDown, true)
+  return () => { removeEventListener('click', onClick, true); removeEventListener('pointerdown', onPtrDown, true); removeEventListener('pointerup', onUp, true); removeEventListener('mousedown', onDown, true) }
 }
