@@ -23,6 +23,8 @@
 //   pos  the exercise on screen (window position; entries.size() is the end page)
 //   sk   sets passed over here ("exId#si")    rest when the rest ends (ms), or null
 //   ob   events not yet handed to the phone  rec  id of the workout Garmin Connect records
+//   pre  the phone's rest end the watch last followed (ms): the same end again does not undo a
+//        +15 / -15 / Skip pressed here (restFollows, the other watches' RestMath.follows)
 import Toybox.Lang;
 import Toybox.Math;
 import Toybox.Time;
@@ -79,7 +81,7 @@ module Core {
     function emptyState() {
         return {
             "w" => null, "rd" => null, "set" => {}, "u" => "kg", "rs" => 90, "stk" => null, "sy" => false,
-            "sh" => null, "fh" => [], "p" => {}, "pos" => 0, "sk" => [], "rest" => null, "ob" => [], "obn" => 0, "rec" => null
+            "sh" => null, "fh" => [], "p" => {}, "pos" => 0, "sk" => [], "rest" => null, "ob" => [], "obn" => 0, "rec" => null, "pre" => null
         };
     }
 
@@ -268,11 +270,28 @@ module Core {
         }
         s["pos"] = pos;
 
-        // A rest started on the phone runs here as well.
+        // A rest started on the phone runs here as well, but only a new one: the same end sent
+        // again (with some other change) must not undo a +15 / -15 / Skip pressed here.
         var rest = dictOf(nx["rest"]);
         var endsAt = rest == null ? null : toMs(rest["endsAt"]);
-        if (endsAt != null && endsAt > nowMs()) { s["rest"] = endsAt; }
+        if (endsAt == null) {
+            s["pre"] = null;
+        } else if (restFollows(endsAt, s["pre"])) {
+            s["pre"] = endsAt;
+            if (endsAt > nowMs()) { s["rest"] = endsAt; }
+        }
         return null;
+    }
+
+    //! Whether the watch follows a rest end from the phone: only one it has not followed before.
+    function restFollows(phoneEnd, last) {
+        return last == null || phoneEnd != last;
+    }
+
+    //! The rest's end after -15 s, or null when that is the end of it (a Skip, as on the phone).
+    function restMinus(end, now, by) {
+        var to = end - by;
+        return to - now >= 1000 ? to : null;
     }
 
     //! Whether the workout has exercises after the window (the phone sends them later).
@@ -344,6 +363,14 @@ module Core {
     //! A set ticked here: the state with it done, and the event for the phone (watch-sync.js
     //! setDone), or null when there is no such set. `hr` is [avg, max] or null.
     function tick(s, pos, si, side, w, r, sec, hr) {
+        return tickAt(s, pos, si, side, w, r, sec, hr, [nowMs(), null]);
+    }
+
+    //! tick at a given time, with an effort or none: when = [at, [kind, value] or null], the kind
+    //! "rir" or "rpe" (older watches allow 9 arguments at most).
+    function tickAt(s, pos, si, side, w, r, sec, hr, when) {
+        var at = when[0];
+        var eff = when[1];
         var wk = dictOf(s["w"]);
         var e = entryAt(s, pos);
         if (wk == null || e == null) { return null; }
@@ -351,7 +378,6 @@ module Core {
         if (si < 0 || si >= sets.size()) { return null; }
         var row = dictOf(sets[si]);
         if (row == null) { return null; }
-        var at = nowMs();
         var oneSide = (side != null && (row["sides"] instanceof Lang.Dictionary)) ? side : null;
         if (oneSide != null) {
             markSide(row, oneSide, w, r, at);
@@ -372,7 +398,197 @@ module Core {
         if (sec != null) { ev["sec"] = sec; }
         if (oneSide != null) { ev["side"] = oneSide; }
         if (hr != null) { ev["hr"] = { "avg" => hr[0], "max" => hr[1] }; }
+        if (eff != null) { ev[eff[0]] = eff[1]; }
         return ev;
+    }
+
+    /* ---------- fixing a logged set (the other watches' SetFix) ---------- */
+
+    //! What was logged on a done set (one side's numbers on a per-side set) as [w, r, sec], or null.
+    function logged(s, pos, si, side) {
+        var e = entryAt(s, pos);
+        var sets = e == null ? [] : arrOf(e["sets"]);
+        if (si < 0 || si >= sets.size() || isCardio(e)) { return null; }
+        var row = dictOf(sets[si]);
+        if (row == null) { return null; }
+        var sd = dictOf(row["sides"]);
+        if (side != null && sd != null) {
+            var one = dictOf(sd[side]);
+            return (one != null && isTrue(one["done"])) ? [toF(one["w"]), toF(one["r"]), null] : null;
+        }
+        return isTrue(row["done"]) ? [toF(row["w"]), toF(row["r"]), toF(row["sec"])] : null;
+    }
+
+    //! A done set with new numbers (or an effort): the setDone the phone already knows, a moment
+    //! later than the set's own tick so it wins there (Workout.jsx setDone: the later tick wins),
+    //! and without `hr`, so the phone keeps the set's own heart rate. Null for a set not done.
+    function fix(s, pos, si, side, w, r, sec, eff) {
+        var e = entryAt(s, pos);
+        var was = logged(s, pos, si, side);
+        if (was == null) { return null; }
+        var row = dictOf(arrOf(e["sets"])[si]);
+        var oneSide = dictOf(row["sides"]) != null ? side : null;
+        var rowAt = toMs(row["at"]);
+        var at = nowMs();
+        if (rowAt != null && rowAt + 1 > at) { at = rowAt + 1; }
+        if (isTimed(e)) {
+            r = null;
+            if (was[0] == null || was[0] <= 0) { w = null; }
+        } else {
+            sec = null;
+        }
+        var k = key(e["id"], si, oneSide);
+        var had = s["p"][k];
+        // a tick the phone has not confirmed yet stays one set; a fix of a confirmed set is none
+        var newTick = had != null && had.size() == 4;
+        var ev = tickAt(s, pos, si, oneSide, w, r, sec, null, [at, eff]);
+        if (!newTick) { s["p"][k].add(true); }
+        return ev;
+    }
+
+    //! Every set done in the window, in order, as [pos, si, side]: what ‹ and › step through.
+    function fixList(s) {
+        var out = [];
+        var es = entries(s);
+        for (var pos = 0; pos < es.size(); pos += 1) {
+            var e = dictOf(es[pos]);
+            if (e == null || isCardio(e)) { continue; }
+            var sets = arrOf(e["sets"]);
+            for (var si = 0; si < sets.size(); si += 1) {
+                var row = dictOf(sets[si]);
+                var sd = row == null ? null : dictOf(row["sides"]);
+                if (sd != null) {
+                    if (logged(s, pos, si, "L") != null) { out.add([pos, si, "L"]); }
+                    if (logged(s, pos, si, "R") != null) { out.add([pos, si, "R"]); }
+                } else if (row != null && isTrue(row["done"])) {
+                    out.add([pos, si, null]);
+                }
+            }
+        }
+        return out;
+    }
+
+    //! The done set `by` steps from [pos, si, side] in fixList (from null: the last one), or null.
+    function fixStep(s, from, by) {
+        var all = fixList(s);
+        if (all.size() == 0) { return null; }
+        if (from == null) { return by < 0 ? all[all.size() - 1] : null; }
+        for (var i = 0; i < all.size(); i += 1) {
+            var a = all[i];
+            if (a[0] == from[0] && a[1] == from[1] && (a[2] == null ? from[2] == null : same(a[2], from[2]))) {
+                var j = i + by;
+                return (j >= 0 && j < all.size()) ? all[j] : null;
+            }
+        }
+        return null;
+    }
+
+    //! Where an exercise is in the window now, by its id, or null (the window moved on).
+    function posOf(s, exId) {
+        var es = entries(s);
+        for (var i = 0; i < es.size(); i += 1) {
+            var e = dictOf(es[i]);
+            if (e != null && same(e["id"], exId)) { return i; }
+        }
+        return null;
+    }
+
+    /* ---------- what the screens say ---------- */
+
+    //! "Set 2 of 4": a work set among the work sets, a warm-up among the warm-ups, as [n, of].
+    function place(e, si) {
+        var sets = arrOf(e["sets"]);
+        if (si < 0 || si >= sets.size()) { return [0, 0]; }
+        var warm = isTrue(dictOf(sets[si])["warmup"]);
+        var n = 0;
+        var of = 0;
+        for (var i = 0; i < sets.size(); i += 1) {
+            var row = dictOf(sets[i]);
+            if (row != null && isTrue(row["warmup"]) == warm) {
+                of += 1;
+                if (i <= si) { n = of; }
+            }
+        }
+        return [n, of];
+    }
+
+    //! What the start screen says about a routine: [exercises, work sets] (warm-ups don't count).
+    function planSize(entries) {
+        var ex = 0;
+        var sets = 0;
+        for (var i = 0; i < entries.size(); i += 1) {
+            var rows = arrOf(dictOf(entries[i])["sets"]);
+            if (rows.size() == 0) { continue; }
+            ex += 1;
+            for (var j = 0; j < rows.size(); j += 1) {
+                if (!isTrue(dictOf(rows[j])["warmup"])) { sets += 1; }
+            }
+        }
+        return [ex, sets];
+    }
+
+    //! The other exercises of pos's superset in the window, by name (a group of one is none).
+    function partners(s, pos) {
+        var es = entries(s);
+        var e = entryAt(s, pos);
+        var out = [];
+        var g = e == null ? null : e["group"];
+        if (g == null) { return out; }
+        for (var i = 0; i < es.size(); i += 1) {
+            var o = dictOf(es[i]);
+            if (i != pos && o != null && same(o["group"], g)) { out.add(strOf(o["name"])); }
+        }
+        return out;
+    }
+
+    //! Sets logged here the phone has not stored yet: setDone events still in the outbox (a hello
+    //! or the workout's start is not a set the lifter would miss). The other watches' waitingSets.
+    function waiting(s) {
+        var n = 0;
+        var ob = s["ob"];
+        for (var i = 0; i < ob.size(); i += 1) {
+            var ev = dictOf(ob[i]);
+            if (ev != null && same(ev["type"], "setDone")) { n += 1; }
+        }
+        return n;
+    }
+
+    //! The last sign of life in a workout (ms): its newest set, the phone's last use, else its start.
+    function lastSet(w) {
+        var best = toMs(w["activeAt"]);
+        var es = arrOf(w["entries"]);
+        for (var i = 0; i < es.size(); i += 1) {
+            var rows = arrOf(dictOf(es[i])["sets"]);
+            for (var j = 0; j < rows.size(); j += 1) {
+                var at = toMs(dictOf(rows[j])["at"]);
+                if (at != null && (best == null || at > best)) { best = at; }
+            }
+        }
+        return best != null ? best : toMs(w["start"]);
+    }
+
+    //! "All done?" after 20 minutes without a set (since the last set, or the last "Continue").
+    const ASK_AFTER = 1200000;
+    function asks(last, snooze, now) {
+        var since = last;
+        if (snooze != null && (since == null || snooze > since)) { since = snooze; }
+        return since != null && now - since >= ASK_AFTER;
+    }
+
+    //! The number up `ms` into the 3-2-1: 3, 2, 1, then 0 (Go!).
+    function countNumber(ms) {
+        var n = 3 - (ms < 0 ? 0 : ms / 1000);
+        return n < 0 ? 0 : n;
+    }
+
+    //! The quick effort ratings during the rest, hardest first: RIR 0/1/2/3+ or RPE 10/9/8/<8.
+    function chips(kind) {
+        return same(kind, "rpe") ? [10, 9, 8, 7] : [0, 1, 2, 3];
+    }
+    function chipLabel(kind, v) {
+        if (same(kind, "rpe") && v <= 7) { return "<8"; }
+        if (!same(kind, "rpe") && v >= 3) { return "3+"; }
+        return v.toString();
     }
 
     //! A set passed over here: not done, the next one comes up.
@@ -482,7 +698,12 @@ module Core {
         }
         var pr = arrOf(w["progress"]);
         if (pr.size() == 2) {
-            return [toI(pr[0], 0) + s["p"].size(), toI(pr[1], all)];
+            var ticks = 0;
+            var pv = s["p"].values();
+            for (var k = 0; k < pv.size(); k += 1) {
+                if (pv[k].size() == 4) { ticks += 1; }
+            }
+            return [toI(pr[0], 0) + ticks, toI(pr[1], all)];
         }
         return [done, all];
     }

@@ -9,19 +9,102 @@ import Toybox.System;
 import Toybox.WatchUi;
 
 module Ui {
-    //! openGym's green on AMOLED (the app's --green); on MIP the palette's own bright lime, which
-    //! shows as it is instead of being rounded to a dull green.
+    // The redesign's look (the Apple Watch's Theme.swift, adapted): black, the phone's accent for
+    // what you press or change, number boxes. AMOLED screens get filled grey boxes like the other
+    // watches; MIP screens (64 colours) outlines, with the accent rounded to the nearest colour
+    // the screen has; black-and-white ones (the Instinct) outlines, and the focused box inverted.
+
+    var accS = null;
+    var accV = null;
+    var inkV = null;
+
+    //! "#30d158" as 0x30D158, or null.
+    function hex(v) {
+        if (!(v instanceof Lang.String) || v.length() != 7 || !v.substring(0, 1).equals("#")) {
+            return null;
+        }
+        var n = 0;
+        var digits = "0123456789abcdef";
+        var low = v.toLower();
+        for (var i = 1; i < 7; i += 1) {
+            var d = digits.find(low.substring(i, i + 1));
+            if (d == null) {
+                return null;
+            }
+            n = n * 16 + d;
+        }
+        return n;
+    }
+
+    //! A colour as the screen has it: as is on AMOLED, else each channel on the MIP palette's grid.
+    function onScreen(c) {
+        if (amoled()) {
+            return c;
+        }
+        var out = 0;
+        for (var sh = 16; sh >= 0; sh -= 8) {
+            var ch = (c >> sh) & 0xFF;
+            out = (out << 8) | (((ch + 42) / 85) * 85);
+        }
+        return out;
+    }
+
+    //! Whether text on c should be black (a light colour) rather than white.
+    function light(c) {
+        return ((c >> 16) & 0xFF) * 3 + ((c >> 8) & 0xFF) * 6 + (c & 0xFF) > 1100;
+    }
+
+    //! The phone's accent (settings.accent), else openGym's green; and the ink on it.
     (:color)
     function accent() {
-        var ds = System.getDeviceSettings();
-        if ((ds has :requiresBurnInProtection) && ds.requiresBurnInProtection) {
-            return 0x30D158;
+        var st = G.state == null ? null : G.state["set"];
+        var a = (st instanceof Lang.Dictionary) ? st["accent"] : null;
+        if (accV == null || !(a == null ? accS == null : Core.same(a, accS))) {
+            accS = a;
+            var c = hex(a);
+            // the phone makes the user's own colour readable on black; a very dark one is not
+            if (c == null || (((c >> 16) & 0xFF) < 0x50 && ((c >> 8) & 0xFF) < 0x50 && (c & 0xFF) < 0x50)) {
+                c = amoled() ? 0x30D158 : 0x55FF55;
+            }
+            accV = onScreen(c);
+            var ink = amoled() ? hex(st instanceof Lang.Dictionary ? st["onAccent"] : null) : null;
+            inkV = ink != null && c == hex(a) ? ink : (light(accV) ? Graphics.COLOR_BLACK : Graphics.COLOR_WHITE);
         }
-        return 0x55FF55;
+        return accV;
     }
     (:mono)
     function accent() {
         return Graphics.COLOR_WHITE;
+    }
+    (:color)
+    function onAccent() {
+        accent();
+        return inkV;
+    }
+    (:mono)
+    function onAccent() {
+        return Graphics.COLOR_BLACK;
+    }
+    //! Screens that stay lit (AMOLED): filled boxes, a smooth 3-2-1. MIP and mono: outlines, steps.
+    (:color)
+    function amoled() {
+        var ds = System.getDeviceSettings();
+        return (ds has :requiresBurnInProtection) && ds.requiresBurnInProtection;
+    }
+    (:mono)
+    function amoled() {
+        return false;
+    }
+    (:color)
+    function mono() {
+        return false;
+    }
+    (:mono)
+    function mono() {
+        return true;
+    }
+    function smooth() {
+        return amoled();
     }
     (:color)
     function quiet() {
@@ -33,7 +116,7 @@ module Ui {
     }
     (:color)
     function warm() {
-        return 0xFFAA00;
+        return amoled() ? 0xFF9F0A : 0xFFAA00;
     }
     (:mono)
     function warm() {
@@ -46,6 +129,167 @@ module Ui {
     (:mono)
     function heart() {
         return Graphics.COLOR_WHITE;
+    }
+    //! The Metrics page's time (Apple Workout's yellow), a hold's bar (teal).
+    (:color)
+    function yellow() {
+        return amoled() ? 0xFFD60A : 0xFFFF55;
+    }
+    (:mono)
+    function yellow() {
+        return Graphics.COLOR_WHITE;
+    }
+    (:color)
+    function teal() {
+        return amoled() ? 0x40C8E0 : 0x55FFFF;
+    }
+    (:mono)
+    function teal() {
+        return Graphics.COLOR_WHITE;
+    }
+    (:color)
+    function dim() {
+        return amoled() ? 0x2C2C2E : 0x555555;
+    }
+    (:mono)
+    function dim() {
+        return Graphics.COLOR_WHITE;
+    }
+
+    //! A number box: grey on AMOLED, outlined on MIP, the focused one ringed in the accent (inverted
+    //! on black and white). Returns the colour for the text in it.
+    (:color)
+    function box(dc, x, y, w, h, focused) {
+        var r = h / 5;
+        if (amoled()) {
+            dc.setColor(0x1C1C1E, Graphics.COLOR_TRANSPARENT);
+            dc.fillRoundedRectangle(x, y, w, h, r);
+        }
+        if (focused || !amoled()) {
+            dc.setColor(focused ? accent() : 0x555555, Graphics.COLOR_TRANSPARENT);
+            dc.setPenWidth(focused ? 3 : 1);
+            dc.drawRoundedRectangle(x, y, w, h, r);
+            dc.setPenWidth(1);
+        }
+        return focused ? accent() : Graphics.COLOR_WHITE;
+    }
+    (:mono)
+    function box(dc, x, y, w, h, focused) {
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        if (focused) {
+            dc.fillRoundedRectangle(x, y, w, h, h / 5);
+            return Graphics.COLOR_BLACK;
+        }
+        dc.drawRoundedRectangle(x, y, w, h, h / 5);
+        return Graphics.COLOR_WHITE;
+    }
+
+    //! A bar that fills to frac: a grey track on colour screens, an outline on black and white.
+    function bar(dc, x, y, w, h, frac, col) {
+        if (frac < 0) { frac = 0.0; }
+        if (frac > 1) { frac = 1.0; }
+        dc.setColor(dim(), Graphics.COLOR_TRANSPARENT);
+        if (mono()) {
+            dc.drawRoundedRectangle(x, y, w, h, h / 2);
+        } else {
+            dc.fillRoundedRectangle(x, y, w, h, h / 2);
+        }
+        var fw = (w * frac).toNumber();
+        if (fw >= h) {
+            dc.setColor(col, Graphics.COLOR_TRANSPARENT);
+            dc.fillRoundedRectangle(x, y, fw, h, h / 2);
+        }
+    }
+
+    //! The sync pill: an arrow and the number of sets still on their way to the phone (orange; an
+    //! outline on black and white). Returns its width.
+    function syncPill(dc, x, cy, n, draw) {
+        var f = Graphics.FONT_XTINY;
+        var t = n.toString();
+        var h = dc.getFontHeight(f) - 2;
+        if (h > 22) { h = 22; }
+        var w = dc.getTextWidthInPixels(t, f) + h + 6;
+        if (!draw) {
+            return w;
+        }
+        var y = cy - h / 2;
+        var ink = Graphics.COLOR_BLACK;
+        dc.setColor(warm(), Graphics.COLOR_TRANSPARENT);
+        if (mono()) {
+            dc.drawRoundedRectangle(x, y, w, h, h / 2);
+            ink = Graphics.COLOR_WHITE;
+        } else {
+            dc.fillRoundedRectangle(x, y, w, h, h / 2);
+        }
+        dc.setColor(ink, Graphics.COLOR_TRANSPARENT);
+        var ax = x + h / 2 + 1;
+        var a = h / 4;
+        dc.fillPolygon([[ax - a - 1, cy], [ax, cy - a - 2], [ax + a + 1, cy]]);
+        dc.fillRectangle(ax - 1, cy, 3, a + 2);
+        dc.drawText(x + h, cy, f, t, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        return w;
+    }
+
+    //! The line at a screen's top, as the other watches have it beside their clock: the time (or a
+    //! rest's time left, while a set is being fixed), the heart rate, and the sync pill. Returns
+    //! its height.
+    function status(dc, y, first) {
+        var f = Graphics.FONT_XTINY;
+        var fh = dc.getFontHeight(f);
+        var text = first != null ? first : clockNow();
+        var tw = dc.getTextWidthInPixels(text, f);
+        var total = tw;
+        var bpm = G.bpm;
+        var st = Core.dictOf(G.state["set"]);
+        var show = st == null ? null : Core.dictOf(st["show"]);
+        if (bpm != null && (show == null || show["hr"] != false)) {
+            total += 8 + 14 + dc.getTextWidthInPixels(bpm.toString(), f);
+        } else {
+            bpm = null;
+        }
+        var n = Core.waiting(G.state);
+        var pw = n > 0 ? syncPill(dc, 0, 0, n, false) : 0;
+        if (n > 0) {
+            total += 8 + pw;
+        }
+        var maxW = widthFor(dc, y + fh / 2, fh);
+        if (total > maxW && bpm != null) {
+            total -= 8 + 14 + dc.getTextWidthInPixels(bpm.toString(), f);
+            bpm = null;
+        }
+        var x = cxFor(dc, y + fh / 2, fh) - total / 2;
+        dc.setColor(first != null ? accent() : Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(x, y + fh / 2, f, text, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+        x += tw + 8;
+        if (bpm != null) {
+            var bw = 14 + dc.getTextWidthInPixels(bpm.toString(), f);
+            hr(dc, x + bw / 2, y + fh / 2, bpm);
+            x += bw + 8;
+        }
+        if (n > 0) {
+            syncPill(dc, x, y + fh / 2, n, true);
+        }
+        return fh;
+    }
+
+    //! The watch's time, as its settings say (24 h, or 12 h without am / pm).
+    function clockNow() {
+        var ct = System.getClockTime();
+        var h = ct.hour;
+        if (!System.getDeviceSettings().is24Hour) {
+            h = h % 12 == 0 ? 12 : h % 12;
+        }
+        return h.toString() + ":" + ct.min.format("%02d");
+    }
+
+    //! The sync line in words: "Waiting to sync 3", "Phone out of reach", "All synced" (or null
+    //! when everything is synced and that is not worth saying).
+    function syncText(always) {
+        var n = Core.waiting(G.state);
+        if (n > 0) {
+            return G.awayAt != null ? t(Rez.Strings.phone_out_of_reach) + " (" + n + ")" : t(Rez.Strings.waiting_sync) + " " + n;
+        }
+        return always ? t(Rez.Strings.all_synced) : null;
     }
 
     function t(id) {
@@ -238,17 +482,14 @@ module Ui {
         dc.drawText(cxFor(dc, y, hOf(dc, font)), y, font, s, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
-    //! A few lines, centred around y, broken at spaces (CJK and Thai, which have none, break
-    //! anywhere: the width check is per character then).
-    function wrap(dc, y, font, s, color, maxLines) {
-        var lines = [];
+    //! s broken into at most maxLines lines of maxW, at spaces (CJK and Thai, which have none,
+    //! anywhere: the width check is per character then); what does not fit is cut with "...".
+    function lines(dc, s, font, maxW, maxLines) {
+        var out = [];
         var rest = s;
-        var fh = dc.getFontHeight(font);
-        var top = y - (fh * (maxLines - 1)) / 2;
-        while (rest.length() > 0 && lines.size() < maxLines) {
-            var maxW = widthFor(dc, top + fh * lines.size(), fh);
+        while (rest.length() > 0 && out.size() < maxLines) {
             if (dc.getTextWidthInPixels(rest, font) <= maxW) {
-                lines.add(rest);
+                out.add(rest);
                 rest = "";
                 break;
             }
@@ -264,20 +505,54 @@ module Ui {
             if (sp > 0) {
                 cut = sp;
             }
-            lines.add(rest.substring(0, cut));
+            out.add(rest.substring(0, cut));
             rest = rest.substring(cut, rest.length());
             while (rest.length() > 0 && rest.substring(0, 1).equals(" ")) {
                 rest = rest.substring(1, rest.length());
             }
         }
-        if (rest.length() > 0 && lines.size() > 0) {
-            var k = lines.size() - 1;
-            lines[k] = fit(dc, lines[k] + " " + rest, font, widthFor(dc, top + fh * k, fh));
+        if (rest.length() > 0 && out.size() > 0) {
+            var k = out.size() - 1;
+            out[k] = fit(dc, out[k] + " " + rest, font, maxW);
         }
-        top = y - (fh * (lines.size() - 1)) / 2;
-        for (var i = 0; i < lines.size(); i += 1) {
-            line(dc, top + fh * i, font, lines[i], color);
+        return out;
+    }
+
+    //! A title (an exercise's or a routine's name) set as big as it fits: the biggest of fonts that
+    //! takes it whole in maxLines lines of the width at y, else the smallest, cut. [font, lines].
+    function title(dc, s, fonts, y, maxLines) {
+        for (var i = 0; i < fonts.size(); i += 1) {
+            var fh = dc.getFontHeight(fonts[i]);
+            var maxW = widthFor(dc, y + fh * (maxLines - 1) / 2, fh * maxLines);
+            var ls = lines(dc, s, fonts[i], maxW, maxLines);
+            var whole = true;
+            for (var j = 0; j < ls.size(); j += 1) {
+                var l = ls[j];
+                if (l.length() >= 3 && l.substring(l.length() - 3, l.length()).equals("...") && s.find("...") == null) {
+                    whole = false;
+                }
+            }
+            if (whole || i == fonts.size() - 1) {
+                return [fonts[i], ls];
+            }
         }
+        return [fonts[0], [s]];
+    }
+
+    //! Lines from the top at y, centred, each cut to the width at its height.
+    function drawLines(dc, y, font, ls, color) {
+        var fh = dc.getFontHeight(font);
+        for (var i = 0; i < ls.size(); i += 1) {
+            line(dc, y + fh * i + fh / 2, font, ls[i], color);
+        }
+        return fh * ls.size();
+    }
+
+    //! A few lines, centred around y.
+    function wrap(dc, y, font, s, color, maxLines) {
+        var fh = dc.getFontHeight(font);
+        var ls = lines(dc, s, font, widthFor(dc, y, fh * maxLines), maxLines);
+        drawLines(dc, y - fh * ls.size() / 2, font, ls, color);
     }
 
     //! A pill button centred at cy: lime with black text (filled), or outlined. Returns its box
@@ -301,7 +576,7 @@ module Ui {
         if (filled) {
             dc.setColor(accent(), Graphics.COLOR_TRANSPARENT);
             dc.fillRoundedRectangle(x, y, w, h, h / 2);
-            dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+            dc.setColor(onAccent(), Graphics.COLOR_TRANSPARENT);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
             dc.setPenWidth(2);
@@ -322,8 +597,11 @@ module Ui {
 
     //! A small heart (two dots and a point) and the bpm after it, centred at (cx, y).
     function hr(dc, cx, y, bpm) {
+        hrIn(dc, cx, y, bpm, Graphics.FONT_XTINY);
+    }
+
+    function hrIn(dc, cx, y, bpm, font) {
         var s = bpm.toString();
-        var font = Graphics.FONT_XTINY;
         var tw = dc.getTextWidthInPixels(s, font);
         var x0 = cx - (tw + 14) / 2;
         dc.setColor(heart(), Graphics.COLOR_TRANSPARENT);
@@ -332,6 +610,69 @@ module Ui {
         dc.fillPolygon([[x0, y - 1], [x0 + 11, y - 1], [x0 + 5, y + 5]]);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(x0 + 14, y, font, s, Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+    }
+
+    //! A ring round a round screen that empties to frac (a bar along the top elsewhere, left of the
+    //! Instinct's sub-screen). Sets the inset the lines inside keep; returns the bar's bottom (or 0).
+    function ring(dc, frac, col, y) {
+        var w = dc.getWidth();
+        var h = dc.getHeight();
+        if (frac < 0) { frac = 0.0; }
+        if (isRound()) {
+            var pen = w > 300 ? 8 : 6;
+            var r = w / 2 - pen / 2 - 2;
+            dc.setPenWidth(pen);
+            dc.setColor(dim(), Graphics.COLOR_TRANSPARENT);
+            if (mono()) {
+                dc.setPenWidth(1);
+            }
+            dc.drawCircle(w / 2, h / 2, r);
+            dc.setPenWidth(pen);
+            if (frac > 0.003) {
+                dc.setColor(col, Graphics.COLOR_TRANSPARENT);
+                if (frac >= 0.999) {
+                    dc.drawCircle(w / 2, h / 2, r);
+                } else {
+                    dc.drawArc(w / 2, h / 2, r, Graphics.ARC_CLOCKWISE, 90, 90 - (360 * frac).toNumber());
+                }
+            }
+            dc.setPenWidth(1);
+            inset = pen + 4;
+            return 0;
+        }
+        var sb = subscreen();
+        var x0 = 12 + cut(dc, y + 3);
+        var bw = (sb != null ? sb[0] - 8 : w - 12) - x0;
+        bar(dc, x0, y, bw, 6, frac, col);
+        return y + 6;
+    }
+
+    //! The 3-2-1 (the workout's start, a hold's): a ring that drains, the number in the middle,
+    //! then "Go!" in the full ring. Smooth on AMOLED, a step a second elsewhere.
+    function countdown(dc, from, label) {
+        clear(dc);
+        var h = dc.getHeight();
+        var el = System.getTimer() - from;
+        var n = Core.countNumber(el);
+        var frac = n == 0 ? 1.0 : (smooth() ? 1.0 - el / 3000.0 : n / 3.0);
+        var top = ring(dc, frac, accent(), (h * 0.04).toNumber() + 2);
+        var xt = Graphics.FONT_XTINY;
+        var xh = dc.getFontHeight(xt);
+        var big = n == 0 ? t(Rez.Strings.go) : n.toString();
+        var f = n == 0 ? textFont(dc, big, widthAt(dc, h / 2)) : numFont(dc, Graphics.FONT_NUMBER_HOT, h - top - xh * 3, [big], widthAt(dc, h / 2));
+        if (n == 0 && f == Graphics.FONT_SMALL && dc.getTextWidthInPixels(big, Graphics.FONT_LARGE) <= widthAt(dc, h / 2)) {
+            f = Graphics.FONT_LARGE;
+        }
+        var nh = n == 0 ? dc.getFontHeight(f) : hOf(dc, f);
+        var y = (h - nh - xh) / 2;
+        if (y < top + 4) { y = top + 4; }
+        line(dc, y + xh / 2, xt, label, quiet());
+        if (n == 0) {
+            line(dc, y + xh + nh / 2, f, big, accent());
+        } else {
+            num(dc, y + xh + nh / 2, f, big, Graphics.COLOR_WHITE);
+        }
+        inset = 0;
     }
 
     //! 62.5 → "62.5", 60.0 → "60", 1.25 → "1.25".

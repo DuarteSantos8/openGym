@@ -20,6 +20,29 @@ module G {
     var bpm = null;
     //! The last time the phone could not be reached (ms), for "Phone out of reach".
     var awayAt = null;
+    //! The session's page: :over (Overview) <- :set (the set, its rest and hold) -> :met (Metrics).
+    var page = :set;
+    //! System.getTimer() until which the buttons wait (the thumb that hit Done is still there).
+    var lock = 0;
+    //! The set logged last here, [exId, si, side], and the effort given to it (the rest's chips).
+    var last = null;
+    var rated = null;
+    //! The done set being fixed, [exId, si, side] (‹ on the set, "Previous set" in the menu), or null.
+    var fix = null;
+    //! A hold running: [System.getTimer() at its start, seconds to hold]; its 3-2-1 began at hcd.
+    var hold = null;
+    var hcd = null;
+    //! The workout's own 3-2-1: [System.getTimer() at its start, the session to start].
+    var cd = null;
+    //! "All done?": up, and when the lifter last said "Continue" (ms).
+    var ask = false;
+    var snooze = null;
+    //! When the summary came up (System.getTimer()): its Done waits a second.
+    var endedAt = 0;
+
+    function locked() {
+        return System.getTimer() < lock;
+    }
 
     function save() {
         try {
@@ -100,7 +123,9 @@ class OpenGymApp extends Application.AppBase {
         if (ended != null) {
             Workout.end(true);
             ended["hr"] = Workout.hrTotals();
-            G.ended = ended;
+            Actions.ended(ended);
+        } else if (G.state["w"] == null) {
+            Actions.reset();
         } else if (had == null && G.state["w"] != null) {
             // Started on the phone: the watch measures and records it too.
             Workout.begin();
@@ -114,6 +139,8 @@ class OpenGymApp extends Application.AppBase {
     function onTick() as Void {
         Workout.sample();
         Rest.tick();
+        Actions.holdTick();
+        Actions.askTick();
         Link.retry();
         WatchUi.requestUpdate();
     }
@@ -338,24 +365,40 @@ module Rest {
     var nudged = false;
     var over = false;
 
+    //! The rest's length in seconds, for its ring (one started on the phone: what was left then).
+    var total = null;
+
     function start(sec) {
         G.state["rest"] = Core.nowMs() + (sec.toNumber() * 1000).toLong();
+        total = sec.toNumber();
         nudged = false;
         over = false;
         G.save();
     }
 
+    //! +15 s, or -15 s (at 15 s or less that is a Skip, as on the phone).
     function add(sec) {
         var r = G.state["rest"];
-        if (r != null) {
-            G.state["rest"] = r + (sec * 1000).toLong();
-            nudged = false;
-            G.save();
+        if (r == null) {
+            return;
         }
+        var to = sec > 0 ? r + (sec * 1000).toLong() : Core.restMinus(r, Core.nowMs(), (-sec * 1000).toLong());
+        if (to == null) {
+            stop();
+            Nav.follow();
+            return;
+        }
+        G.state["rest"] = to;
+        if (total != null && sec > 0) {
+            total += sec;
+        }
+        nudged = false;
+        G.save();
     }
 
     function stop() {
         G.state["rest"] = null;
+        total = null;
         G.save();
         // The next set's heart rate counts from here, not from the rest.
         Workout.newSet();
@@ -384,6 +427,11 @@ module Rest {
             over = true;
             buzz([[100, 400], [0, 200], [100, 400]]);
             stop();
+            // "Timed holds start by themselves" (the phone's setting): the hold's 3-2-1 comes up.
+            var st = Core.dictOf(G.state["set"]);
+            if (st != null && Core.isTrue(st["autoHolds"]) && Core.isTimed(Core.entryAt(G.state, G.state["pos"])) && G.fix == null) {
+                Actions.holdCount();
+            }
             Nav.follow();
         }
     }
@@ -402,5 +450,53 @@ module Rest {
             v.add(new Attention.VibeProfile(pattern[i][0], pattern[i][1]));
         }
         Attention.vibrate(v);
+    }
+}
+
+//! The 3-2-1 (the workout's, and a hold's): a faster tick while it runs, nothing otherwise. On a
+//! screen that stays on (AMOLED) the ring drains smoothly; on MIP and black-and-white screens it
+//! steps once a second (Ui.smooth), no animation there.
+module Motion {
+    var timer = null;
+    var lastN = -1;
+
+    function run() {
+        lastN = -1;
+        if (timer == null) {
+            timer = new Timer.Timer();
+            timer.start(new Lang.Method(Motion, :tick), Ui.smooth() ? 100 : 250, true);
+        }
+    }
+
+    function stop() {
+        if (timer != null) {
+            timer.stop();
+            timer = null;
+        }
+    }
+
+    function tick() as Void {
+        var from = G.cd != null ? G.cd[0] : G.hcd;
+        if (from == null) {
+            stop();
+            return;
+        }
+        var el = System.getTimer() - from;
+        var n = Core.countNumber(el);
+        if (n != lastN) {
+            lastN = n;
+            Rest.buzz(n == 0 ? [[100, 250]] : [[30, 40]]);
+        }
+        // "Go!" stays up for 0.7 s, then it starts
+        if (el >= 3700) {
+            stop();
+            if (G.cd != null) {
+                Actions.startNow();
+            } else {
+                Actions.holdStart();
+            }
+            return;
+        }
+        WatchUi.requestUpdate();
     }
 }

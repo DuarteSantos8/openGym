@@ -2,7 +2,10 @@
 // Writes sim/source/SimData.mc: the snapshot the simulator build starts with, made from
 // test/snapshot.json (the watch's fixture) as the phone would send it before a workout: nothing
 // running, today's routine ready with its exercises (so START on the watch starts it), two more
-// routines by name, a streak kept this week. Monkey C has no JSON parser, so it becomes a literal.
+// routines by name, a streak kept this week. For the redesign's screens the routine also has a
+// superset with a long name (the partner line, wrapping) and a timed hold (its 3-2-1, the bar), and
+// the settings carry the app's accent and the RIR effort scale. Monkey C has no JSON parser, so it
+// becomes a literal.
 //   node frontend/garmin/sim/gen.mjs
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -12,12 +15,19 @@ const here = dirname(fileURLToPath(import.meta.url))
 const snap = JSON.parse(readFileSync(join(here, '..', 'test', 'snapshot.json'), 'utf8'))
 const active = snap.active
 const fresh = active.entries.map(e => ({ ...e, sets: e.sets.map(({ at, ...row }) => ({ ...row, done: false })) }))
+const row = (w, r, sec = null) => ({ w, r, sec, done: false, warmup: false })
+const extra = [
+  { id: 'sim-a', name: 'Lat Pulldown', mode: 'reps', restSec: 90, last: '50×10, 50×9', step: 2.5, group: 'a', sets: [row(50, 10), row(50, 10)] },
+  { id: 'sim-b', name: 'Single Arm Dumbbell Lateral Raise', mode: 'reps', restSec: 90, last: null, step: 1, group: 'a', sets: [row(8, 12), row(8, 12)] },
+  { id: 'sim-p', name: 'Plank', mode: 'time', restSec: 60, last: null, sets: [row(null, null, 30), row(null, null, 30)] },
+]
 const out = {
   ...snap,
+  settings: { ...snap.settings, accent: '#30d158', onAccent: '#000000', effort: 'rir' },
   active: null,
   streak: { weeks: 12, thisWeekDone: true },
   ready: {
-    today: { name: active.name, routineIds: ['sim-push'], entries: fresh },
+    today: { name: active.name, routineIds: ['sim-push'], entries: [fresh[0], ...extra, fresh[1]] },
     others: [{ name: 'Pull day', routineIds: ['sim-pull'] }, { name: 'Legs', routineIds: ['sim-legs'] }]
   }
 }
