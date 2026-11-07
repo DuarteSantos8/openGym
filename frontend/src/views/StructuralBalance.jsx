@@ -5,6 +5,7 @@ import { countedS } from '../lib/counted-log.js'
 import { exOr } from '../lib/exercises.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import { Button, Segmented } from '../components/ui.jsx'
 import { exercisePicker, bwSheet } from '../sheets.jsx'
 import { computeBalance, overrideKey, withOverride } from '../lib/structuralBalance.js'
@@ -44,9 +45,8 @@ export default function StructuralBalance() {
   }
 
   return <>
-    <div className="hdr"><button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('Structural balance')}</h1>
-        <div className="sub">{t('Compare your lifts against a published ratio table to find the weak link.')}</div></div></div>
+    <ScreenHeader title={t('Structural balance')} sub={t('Compare your lifts against a published ratio table to find the weak link.')}
+      left={<button className="iconbtn" data-back="/stats" onClick={() => nav('/stats')} aria-label={t('Stats')}><Icon name="chevronLeft" /></button>} />
 
     <Segmented className="seg-range" value={templateId}
       onChange={id => update(s => { s.balanceTemplate = id })}

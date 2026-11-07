@@ -9,6 +9,7 @@ import { encodeBars } from '../lib/barcode.js'
 import { TYPED_FMTS, checkTyped, hasCheckDigit } from '../lib/checkin-typed.js'
 import { scanCode, importCodeFromImage, webScanner } from '../lib/scan.js'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import QrCanvas from '../components/QrCanvas.jsx'
 import CameraScan from '../components/CameraScan.jsx'
 import { Button, TextField, MenuButton } from '../components/ui.jsx'
@@ -72,13 +73,8 @@ export default function CheckIn() {
   }
 
   return <div className="narrow">
-    <div className="hdr">
-      <button className="iconbtn" data-back="/home" onClick={() => nav('/home')} aria-label={t('Home')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12 }}>
-        <h1>{t('Check in')}</h1>
-        <div className="sub">{cards.length ? t('Show this at the gym') : t('Add your gym card')}</div>
-      </div>
-    </div>
+    <ScreenHeader title={t('Check in')} sub={cards.length ? t('Show this at the gym') : t('Add your gym card')}
+      left={<button className="iconbtn" data-back="/home" onClick={() => nav('/home')} aria-label={t('Home')}><Icon name="chevronLeft" /></button>} />
 
     <div className="ci-rail" ref={railRef} onScroll={onScroll}>
       {cards.map((card, i) => <CardFace

@@ -20,6 +20,7 @@ import {
 import { confirmSheet } from '../sheets.jsx'
 import { Section, Row, Button, SearchField, Segmented, Check, TextField, openSelectSheet } from '../components/ui.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import TrainerMember, { Avatar, FlagPill } from '../components/TrainerMember.jsx'
 import { InviteSheet, GymCodeSheet, AssignSheet, CommentSheet, WeighSheet, WorkoutEditSheet, WorkoutAddSheet, MeasureSheet } from '../components/TrainerSheets.jsx'
 
@@ -120,13 +121,11 @@ function MemberList({ list, overview, reload, selected, setSelected, openMember,
   const n = list?.members?.length || 0
   const mixed = new Set((list?.members || []).map(m => m.gym?.id || '')).size > 1
   return <div className="tr-list">
-    <div className="hdr">
-      <div><h1>{t('Trainer')}</h1><div className="sub">{n ? t('{0} people trust you with their training', n) : t('Nobody connected yet')}</div></div>
-      <div className="hdr-actions">
+    <ScreenHeader hard title={t('Trainer')} sub={n ? t('{0} people trust you with their training', n) : t('Nobody connected yet')}
+      right={<div className="hdr-actions">
         {n > 0 && <Button size="sm" variant="plain" onClick={selecting ? stop : () => setSelecting(true)}>{selecting ? t('Done') : t('Select')}</Button>}
         <button className="iconbtn" onClick={invite} aria-label={t('Connect a member')}><Icon name="qr" /></button>
-      </div>
-    </div>
+      </div>} />
     <Requests overview={overview} reload={reload} />
     {n > 0 && <>
       <SearchField value={query} onChange={setQuery} onClear={() => setQuery('')} placeholder={t('Search members')} aria-label={t('Search members')} />
@@ -179,10 +178,8 @@ function GymView({ gymId, openMember }) {
     onConfirm: () => setGymTrainer(gymId, tr.id, false).then(() => { toast(t('Done')); load() }).catch(e => toast(trainerError(e))),
   })
   return <div className="tr-list">
-    <div className="hdr">
-      <div><h1>{g.gym.name}</h1><div className="sub">{t('Members: {0} · Trainers: {1}', g.members.length, g.trainers.length)}</div></div>
-      <div className="hdr-actions"><button className="iconbtn" onClick={() => openSheet(close => <GymCodeSheet gym={g.gym} close={close} />)} aria-label={t('Gym join code')}><Icon name="qr" /></button></div>
-    </div>
+    <ScreenHeader hard title={g.gym.name} sub={t('Members: {0} · Trainers: {1}', g.members.length, g.trainers.length)}
+      right={<div className="hdr-actions"><button className="iconbtn" onClick={() => openSheet(close => <GymCodeSheet gym={g.gym} close={close} />)} aria-label={t('Gym join code')}><Icon name="qr" /></button></div>} />
     <Section title={t('Trainers')} footer={t('Add a trainer by the account id from their Settings. Members still decide what each trainer sees.')}>
       {g.trainers.map(tr => <Row key={tr.id} icon="personCircle" iconTint="var(--acc)" title={tr.name} subtitle={t('Members: {0}', tr.members)}>
         <Button size="xs" variant="plain" className="tr-danger" onClick={() => remove(tr)}>{t('Remove')}</Button>

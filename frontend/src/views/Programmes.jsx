@@ -8,6 +8,7 @@ import { t, tn } from '../lib/i18n.js'
 import { DAYS, exerciseNameText, fmtNum, todayISO, weekOrder, weekStartOf } from '../lib/format.js'
 import { confirmSheet, exportProgrammeFile } from '../sheets.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import EmptyState from '../components/EmptyState.jsx'
 import { Button, NumberField, Row, Section, Stepper, Switch } from '../components/ui.jsx'
 import { effortOf, modeOf, isBw } from '../lib/history.js'
@@ -127,11 +128,8 @@ export default function Programmes() {
   }
 
   return <div className="narrow">
-    <div className="hdr">
-      <button className="iconbtn" data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Plan')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, margin: '0 12px', minWidth: 0 }}><h1>{t('Programmes')}</h1>
-        <div className="sub">{t('Your routines as a block of weeks, each week with its own %1RM or RPE.')}</div></div>
-    </div>
+    <ScreenHeader hard title={t('Programmes')} sub={t('Your routines as a block of weeks, each week with its own %1RM or RPE.')}
+      left={<button className="iconbtn" data-back="/plan" onClick={() => nav('/plan')} aria-label={t('Plan')}><Icon name="chevronLeft" /></button>} />
     <RunningCard S={S} nav={nav} />
     <Section title={t('Your programmes')}>
       {list.length ? list.map(p => <Row key={p.id} icon="calendar" title={p.name || t('Programme')} accessory="chevron"

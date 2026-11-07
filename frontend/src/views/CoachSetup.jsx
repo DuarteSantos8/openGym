@@ -23,6 +23,7 @@ import { DATA_CATEGORIES } from '../../../api/coach/core/categories.js'
 import { ConnectSheet } from './MobileOnboarding.jsx'
 import { AiConsentSection } from '../components/CoachConsentSheet.jsx'
 import Icon from '../components/Icon.jsx'
+import ScreenHeader from '../components/ScreenHeader.jsx'
 import { Section, Row, Button, TextField } from '../components/ui.jsx'
 
 // Literal t() calls, so check-source-strings sees the three lines; t(s) over a list of keys hid them.
@@ -152,10 +153,8 @@ export default function CoachSetup() {
     : t('Off. Choose how the Coach should run.')
 
   return <div className="narrow">
-    <div className="hdr">
-      <button className="iconbtn" data-back="/settings" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>
-      <div style={{ flex: 1, marginInlineStart: 12 }}><h1>{t('AI Coach')}</h1></div>
-    </div>
+    <ScreenHeader title={t('AI Coach')}
+      left={<button className="iconbtn" data-back="/settings" onClick={() => nav('/settings')} aria-label={t('Back')}><Icon name="chevronLeft" /></button>} />
 
     <Section title={t('How should the Coach run?')} footer={current}>
       <Row icon="rocket" iconTint="var(--indigo)" title={t('Use my self-hosted openGym')}
