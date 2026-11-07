@@ -541,18 +541,28 @@ class SessionView extends WatchUi.View {
         var pillOnTag = false;
         if (tl[1][0].find("...") != null) {
             var minNum = Ui.hOf(dc, Graphics.FONT_NUMBER_MILD);
-            var t3 = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], top + statusH, 3);
-            var need = dc.getFontHeight(t3[0]) * t3[1].size() + base + minNum;
-            if (need <= avail) {
-                tl = t3;
-            } else if (statusH > 0 && !restTop && need - statusH <= avail) {
-                avail += statusH;
-                statusH = 0;
-                pillOnTag = true;
-                tl = Ui.title(dc, name, [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY], top, 3);
-            } else {
-                tl = Ui.title(dc, name, [Graphics.FONT_XTINY], top + statusH, 1);
+            var fonts = [Graphics.FONT_SMALL, Graphics.FONT_TINY, Graphics.FONT_XTINY];
+            var found = null;
+            for (var pass = 0; pass < 2 && found == null; pass += 1) {
+                var sh = pass == 0 ? statusH : 0;
+                if (pass == 1 && (statusH == 0 || restTop)) {
+                    break;
+                }
+                for (var i = 0; i < 3 && found == null; i += 1) {
+                    var t = Ui.title(dc, name, [fonts[i]], top + sh, 3);
+                    var l = t[1][t[1].size() - 1];
+                    var whole = l.length() < 3 || !l.substring(l.length() - 3, l.length()).equals("...");
+                    if (whole && dc.getFontHeight(fonts[i]) * t[1].size() + base + minNum <= avail + statusH - sh) {
+                        found = t;
+                        if (pass == 1) {
+                            avail += statusH;
+                            statusH = 0;
+                            pillOnTag = true;
+                        }
+                    }
+                }
             }
+            tl = found != null ? found : Ui.title(dc, name, [Graphics.FONT_XTINY], top + statusH, 1);
         }
         var nameF = tl[0];
         var nfh = dc.getFontHeight(nameF);
