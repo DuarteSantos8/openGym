@@ -7,14 +7,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TabBar from './TabBar.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 
+const path = vi.hoisted(() => ({ now: '/plan' }))
 vi.mock('react-router-dom', () => ({
   useNavigate: () => () => {},
-  useLocation: () => ({ pathname: '/plan' }),
+  useLocation: () => ({ pathname: path.now }),
 }))
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 let host, root, originalS, originalUser
 beforeEach(() => {
+  path.now = '/plan'
   const store = useStore.getState()
   originalS = store.S; originalUser = store.user
   useStore.setState({ S: JSON.parse(JSON.stringify(DEF)), user: { id: 1, name: 'test' } })
@@ -65,6 +67,15 @@ describe('the floating tab bar', () => {
     act(() => t[1].click())
     expect(bar().classList.contains('min')).toBe(false)
   })
+
+  it('shows only Home, and not inert, when shrunk on a page with no tab lit', () => {
+    path.now = '/settings'
+    act(() => { root.render(<TabBar onStart={() => {}} />) })
+    vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 1000)
+    Object.defineProperty(document.documentElement, 'scrollHeight', { value: 5000, configurable: true })
+    scrollTo(100); scrollTo(130)
+    expect([...bar().querySelectorAll('.gt')].map(e => e.inert)).toEqual([false, true, true, true])
+  })
 })
 
 describe('Reduce Motion in index.css', () => {
@@ -74,9 +85,10 @@ describe('Reduce Motion in index.css', () => {
   it('leaves the lens with a transition on opacity alone', async () => {
     const { readFileSync } = await import('node:fs')
     const css = readFileSync('src/index.css', 'utf8')
-    const from = css.indexOf(':root[data-platform="ios"] #tabbar{')
+    const from = css.indexOf(':root[data-platform="ios"] #tabbar{'), to = css.indexOf('/* Glass fallbacks', from)
+    expect(from).toBeGreaterThan(-1); expect(to).toBeGreaterThan(from)
     const sheet = document.createElement('style')
-    sheet.textContent = css.slice(from, css.indexOf('/* Glass fallbacks', from)).replace(/\/\*[\s\S]*?\*\//g, '').replaceAll(':root[data-platform="ios"] ', '')
+    sheet.textContent = css.slice(from, to).replace(/\/\*[\s\S]*?\*\//g, '').replaceAll(':root[data-platform="ios"] ', '')
     document.head.appendChild(sheet)
     host.innerHTML = '<nav id="tabbar"><span class="lens"></span></nav>'
     const nav = host.firstChild

@@ -67,16 +67,20 @@ export default function TabBar({ onStart, onPick }) {
   const scr = useRef(null)
   const found = ['home', 'plan', 'stats', 'library'].findIndex(on)
   const idx = Math.max(found, 0)                 // no tab lit: the capsule still shows Home
-  const rm = ios && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  const ax = ios && parseFloat(getComputedStyle(document.documentElement).fontSize) >= 20   // Settings → Text size: Larger
+  const rmQ = () => window.matchMedia?.('(prefers-reduced-motion: reduce)')
+  const axNow = () => ios && parseFloat(getComputedStyle(document.documentElement).fontSize) >= 20   // Settings → Text size: Larger
+  const [rm, setRm] = useState(() => ios && !!rmQ()?.matches)
+  const [ax, setAx] = useState(axNow)
   const dir = !was.current || was.current.min ? '' : lensDir(was.current.idx, idx)
   const expand = () => { if (scr.current) { scr.current.min = false; scr.current.acc = 0 } setMinAt(null) }
 
   useEffect(() => {
     if (!ios) return undefined
-    const onResize = () => setVw(window.innerWidth)
+    const onResize = () => { setVw(window.innerWidth); setAx(axNow()) }
+    const q = rmQ(), onRm = () => setRm(!!q.matches)
     window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    q?.addEventListener?.('change', onRm)
+    return () => { window.removeEventListener('resize', onResize); q?.removeEventListener?.('change', onRm) }
   }, [ios])
 
   // The page scrolls the window (App.jsx). A restored scroll position is not a gesture, so the
@@ -92,12 +96,12 @@ export default function TabBar({ onStart, onPick }) {
       if (r.min === s.min) return
       s.min = r.min
       // Focus on a tab that is about to go inert would be lost: it moves to the one that stays.
-      if (r.min && document.activeElement?.classList.contains('gt')) barRef.current.querySelectorAll('.gt')[idx]?.focus({ preventScroll: true })
+      if (r.min && document.activeElement?.classList.contains('gt')) (barRef.current.querySelector('.gt.on') ?? barRef.current.querySelector('.gt'))?.focus({ preventScroll: true })
       setMinAt(r.min ? loc.pathname : null)
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [ios, loc.pathname, idx])
+  }, [ios, loc.pathname])
 
   // The lens: two elements, each placed by its two edges (lib/tabbar-glass.js). Reduce Motion
   // fades the idle one in at the new place and the other out, so it never slides.

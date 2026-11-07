@@ -2935,15 +2935,14 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar.min .tl{height:0;margin-top:0;opacity:0}
 /* shrunk: the other three glide into the one you are on and fade; they are inert (Tab, TabBar.jsx) */
 :root[data-platform="ios"] #tabbar.min .gt{left:4px;width:52px}
-:root[data-platform="ios"] #tabbar.min .gt:not(.on){opacity:0;transform:scale(.5);pointer-events:none}
-:root[data-platform="ios"] #tabbar.none.min .gt:first-of-type{opacity:1;transform:none;pointer-events:auto}
+:root[data-platform="ios"] #tabbar.min .gt[inert]{opacity:0;transform:scale(.5);pointer-events:none}
 :root[data-platform="ios"] #tabbar.ax.min .gt{width:56px}
 /* Start: a raised orb in the full bar, a compact one inside the capsule */
 :root[data-platform="ios"] #tabbar .orb{--d:52px;width:64px;height:auto;top:calc(var(--bh) - 12px - var(--d) - 2px - var(--lab));left:calc(8px + 2*var(--tw));
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* the long press must not open the iOS callout */
 :root[data-platform="ios"] #tabbar .cir{position:relative;display:grid;place-items:center;width:var(--d);height:var(--d);border-radius:50%;
-  background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge),0 6px 18px -4px var(--acc);
-  box-shadow:var(--glass-prom-edge),0 6px 18px -4px color-mix(in srgb,var(--acc) 55%,transparent);
+  background:var(--acc-fill);color:var(--on-acc);box-shadow:var(--glass-prom-edge),0 6px 18px -4px var(--glow);
+  box-shadow:var(--glass-prom-edge),0 6px 18px -4px color-mix(in srgb,var(--glow) 55%,transparent);--glow:var(--acc);
   transition:width var(--mt) var(--spring-soft),height var(--mt) var(--spring-soft),background-color var(--med),transform var(--fast) var(--ease)}
 :root[data-platform="ios"] #tabbar .orb:active .cir{transform:scale(.93)}
 :root[data-platform="ios"] #tabbar .cir .icn{font-size:26px;--icon-stroke:2;color:inherit}
@@ -2952,7 +2951,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar.min .orb{--d:44px;left:64px;top:4px;width:44px}
 :root[data-platform="ios"] #tabbar.ax.min .orb{--d:50px;left:68px;width:50px}
 /* running: an orange orb with the time inside it (black on orange, about 10:1), a ring that pulses three times and rests */
-:root[data-platform="ios"] #tabbar .orb.rec .cir{background:var(--orange);color:#000;box-shadow:var(--glass-prom-edge),0 6px 18px -4px var(--orange);box-shadow:var(--glass-prom-edge),0 6px 18px -4px color-mix(in srgb,var(--orange) 55%,transparent)}
+:root[data-platform="ios"] #tabbar .orb.rec .cir{background:var(--orange);color:#000;--glow:var(--orange)}
 :root[data-platform="ios"] #tabbar .orb.rec .cir::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--orange);animation:ping 1.9s var(--ease) 3}
 :root[data-platform="ios"] #tabbar.min .cir::after{content:none}   /* the ring would grow past the capsule */
 :root[data-platform="ios"] #tabbar .gt:focus-visible,:root[data-platform="ios"] #tabbar .orb:focus-visible{outline:2px solid var(--label);outline-offset:-2px;border-radius:999px}
