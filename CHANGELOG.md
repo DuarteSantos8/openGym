@@ -160,6 +160,19 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - The watch says plainly whether your sets reached the iPhone: a small orange arrow with a count beside the clock while sets are on their way (a crossed-out phone when it is out of reach), "Waiting to sync 3" or "All synced" on the Overview and the summary, and the count on the complication and in the Smart Stack, even after the workout ended. It comes straight from the outbox, so it is right after a relaunch too.
 - Calmer, clearer motion: screens fade into each other instead of cutting, ‹ and › slide the set in from the side you went to while the arrows and Done stay put, and the 3-2-1 before a workout (or a hold that starts by itself) drains its ring smoothly, springs each number in and ends on GO! in the full ring. With Reduce Motion on it's short fades only, and in Always On nothing moves.
 
+**Wear OS, redesigned**
+- Wear OS gets the watch redesign, idea and first versions by @cubetes. Pixel Watch, Galaxy Watch and every other Wear OS watch now look and work like the Apple Watch: one design on every wrist.
+- openGym's look on Wear OS: the app's dark greys and your accent colour from the phone. Start says Today beside the clock, shows the routine's exercises and sets, one wide Start and the build number at the bottom.
+- The Wear OS watch speaks all 24 of openGym's languages: Czech, Persian, Indonesian, Lithuanian and Vietnamese are new there.
+- One session screen: swipe between the Overview, the set, Metrics and music controls. The rest and holds run on the set page, Finish is a one-second hold, and the Overview shows up by itself after your last set.
+- The set page: the crown (or the rotating bezel) turns the outlined number, tap it again for a keypad, and ‹ › take you back to a logged set to fix it. The fix is the same setDone the phone already knows, so your heart rate for the set stays.
+- Rest and holds: effort chips while you rest (RIR or RPE, whichever the phone logs), −15 s, Skip and +15 s that wait a second after Done, a hold bar that goes orange for the last five seconds, the superset partner by name, and finishing mid-hold keeps the seconds you held.
+- The weigh-in before a watch start, "All done?" after 20 quiet minutes (it asks, it never ends a workout on its own), a summary with the time big, and a small music remote one swipe past Metrics.
+- Sync you can see: an orange arrow with a count beside the clock while sets wait for the phone, "Waiting to sync 3" or "All synced" in words, and the count on the Tile and the complication.
+- Calm motion: screens fade, ‹ › slide the set in from the side you went, and a 3-2-1 ring ends on Go!. Remove animations means short fades only, and in Always On the watch draws outlines and nothing moves.
+- Fixed: on Wear OS a snapshot from the phone could undo a ±15 s or bring back a rest you skipped on the watch.
+- Fixed: the Wear OS rest screen's "Next: …" line was in English in every language.
+
 **Sign in with your identity provider (OIDC)**
 - Self-hosting with Authentik, Authelia, Keycloak, voidAuth or Pocket ID? openGym signs people in through it now, next to passkeys: set OIDC_ISSUER and OIDC_CLIENT_ID and the sign-in screen gets a "Sign in with ..." button (#130, idea and first version by @melduarmir (#391), testing by @austinwilcox).
 - The phone app signs in the same way from "Connect to my server", in the system browser, and comes straight back to the app. No pairing code needed.

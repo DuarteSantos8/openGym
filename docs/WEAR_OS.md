@@ -11,29 +11,71 @@ track first. Drop the label (`app_name` in `wear/wear-strings.mjs`) once testers
 
 ## What it does
 
-- **Start**: today's planned routine with one tap, Quick start (the first routine) on a day
-  without a plan, or any of the routines the phone offers. Before anything came from the phone it
-  says so, instead of pretending there is nothing to do.
-- **The set**: the exercise, set k of n, warm-up / side / superset tags, last time, and weight and
-  reps as two big tiles. The crown (or the rotating bezel) turns the lime-outlined one; a second
-  tap opens it full screen with − and + for watches without a crown. Done logs the set (a long
-  press skips it). Holds log seconds; cardio is logged on the phone.
-- **The rest**: a ring that empties, the countdown, the next set, +15 and Skip. A nudge ten
-  seconds before the end, a clear double buzz at the end.
-  A rest started on the phone runs on the watch as well.
+Since 1.4.5 it has the Apple Watch's design and features (the watch redesign, idea and first
+versions by @cubetes): one design on every wrist. The rules live in `WatchLogic.kt`, the twin of
+`ios/App/WatchCore` (Plan, Overview, SetNav, RestMath, Outbox), tested case for case in
+`WatchLogicTest.kt`; the screens are Compose for Wear OS (`ui/`).
+
+- **Look**: the phone's dark tokens and the accent the app wears (`settings.accent`/`onAccent`
+  from watchExtras), green until the phone has said. Always On draws outlines, no lit fills, and
+  nothing moves.
+- **Start**: "Today" beside the clock, the routine's name, its exercises and sets, one wide Start,
+  the other routines as rows, the build number at the bottom. Quick start on a day without a plan.
+  Before anything came from the phone it says so. Start waits a second after the summary's Done.
+- **Weigh-in** before a start on the watch (unless the phone's check-in is off), then a 3-2-1 ring
+  that ends on Go! while the heart-rate sensor warms up.
+- **One session screen**, pages side by side: Overview ← Set → Metrics → Music.
+  - Overview: every exercise with its work sets, the current one outlined, supersets under one
+    heading, "Waiting to sync 3" or "All synced", **Finish as a 1 s hold**, Discard with its own
+    question. It comes up by itself after the last set. Wrist down there: back to the set.
+  - Set: the exercise, "Set 2 of 4" with warm-up / left / right, the superset partner, the numbers
+    in boxes, last time, and ‹ Done ›. The crown (or bezel) turns the outlined number in the
+    exercise's steps; tap the other box to hand it the crown, tap the outlined one again for a
+    keypad (62.25 kg). ‹ › open a logged set to fix it: the same `setDone` again with a later `at`
+    and no `hr`, so the phone keeps the set's heart rate. A long press on Done skips the set.
+  - Rest (on the set page): the time big, a draining bar, Up next with what to load, effort chips
+    (RIR 0/1/2/3+ or RPE 10/9/8/≤7, as the phone logs), −15 s / Skip / +15 s, which ignore taps for
+    a second after Done. ‹ opens the set just done to fix it while the rest runs on.
+  - Hold: the seconds left big, a teal bar whose last 5 s turn orange, a tick for each of the last
+    three, Stop. Finish mid-hold logs the seconds held. "Timed holds start by themselves" on the
+    phone: a 3-2-1 after the rest, then the hold.
+  - Metrics: the workout's time (it stands still while the phone has the workout paused), heart
+    rate, volume, sets. Music: a small remote (previous, play/pause, next, volume) for whatever
+    plays on the watch.
+- **"All done?"** after 20 minutes without a set: a card, Continue or Finish (which goes to the
+  Overview's hold). On Wear OS it only asks; it never ends a workout by itself.
+- **Summary**: the time big, sets, volume, PRs, heart rate, the sync line; Done ignores its first
+  second.
+- **Sync status**: sets the phone's side has not stored yet (`setDone` events in the outbox not
+  delivered), as an orange pill beside the clock, in words on Start, the Overview and the summary,
+  and on the Tile and the complication.
+- **Motion**: screens and panels fade (0.2 s ease-out), ‹ › slide the set's lines in from that
+  side, the 3-2-1 springs each number in. With Remove animations on: short fades only.
 - **Heart rate**: Health Services, as a strength-training exercise while a workout runs. Each set
   logged on the watch carries its average and maximum, exactly the `hr` the Apple Watch sends.
-- **The end**: Finish and save (the phone's own Finish and save runs), Continue, or Discard (two
-  taps). The summary shows time, sets, volume, heart rate and the PRs; "Ended on your phone" when
-  the phone finished it first.
-- **Ongoing activity**: the running workout stays on the watch face and in recents; on the watch
-  face it shows the rest counting down, else the sets so far. A tap goes back in.
-- **Tile**: the week streak, big (lime once this week has a workout), and today's plan, or a rest
-  day. While a workout runs: its sets as a ring and the exercise up next.
-- **Complication**: sets done as a ring with 3/12 during a workout, else the week streak.
-- **Language**: the app's, not the watch's (the phone sends it), in all the app's languages.
+- **Ongoing activity**, **Tile** (streak and today's plan, or the sets as a ring and the exercise
+  up next, plus the waiting count) and **complication** (sets done as a ring, else the streak;
+  "↑3" as its title while sets wait).
+- **Language**: the app's, not the watch's (the phone sends it), in all 24 of the app's languages.
+- **The rest from the phone**: a rest started on the phone runs on the watch as well. The watch
+  follows only a *new* rest end from the phone, so a snapshot with the same end can't undo a ±15
+  or a Skip pressed on the watch (`RestMath.follows`).
 
 No exercise media goes to the watch: text and numbers only.
+
+Still not on Wear OS: calories (Health Services can give them; not wired up yet), the
+forgotten-workout end after 45 minutes (it needs the phone's answer, #904), and a Settings page on
+the watch (the phone's settings apply).
+
+### Screenshots
+
+Debug builds show any screen with a demo workout (`src/debug/assets/demo-snapshot.json`, text
+and numbers only):
+
+```bash
+adb shell am start -n ch.duartesantos.opengym.test/ch.duartesantos.opengym.wear.MainActivity --es demo rest
+# start, rest, overview, metrics, media, fix, hold, summary, weighin, countdown, go, idle; --es ambient 1 for Always On
+```
 
 ## How it talks to the phone
 
@@ -63,8 +105,6 @@ is built by `SessionCore.kt` (`CodecTest.kt`) and applied by `watch-sync.wear.te
 session logic (`SessionCore.kt`) is a port of `ios/App/WatchCore` with its cases in
 `SessionCoreTest.kt`.
 
-Not ported yet from the Apple Watch: the weigh-in before a start, the effort (RPE/RIR) editor,
-the forgotten-workout check, animations, and a Settings page on Android (the defaults apply).
 
 ## Building
 
