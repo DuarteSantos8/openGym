@@ -36,7 +36,7 @@
   --label-2:   rgba(235,235,245,.60);
   --label-3:   rgba(235,235,245,.32);
   --label-4:   rgba(235,235,245,.18);
-  --label-dim: rgba(235,235,245,.50);
+  --label-dim: rgba(235,235,245,.55);   /* .50 was 4.1:1 on a dialog's #2c2c2e; .55 is 4.7:1 there */
 
   /* lines */
   --sep:       rgba(84,84,88,.60);
@@ -373,6 +373,9 @@ button.conn:active{filter:brightness(1.12)}
 .conn-bar.quiet .conn{min-height:26px;padding-block:2px;padding-inline:4px 2px;background:none;color:var(--label-2);font-size:var(--fs-caption);gap:6px}
 .conn-bar.quiet .conn .icn{font-size:var(--fs-footnote);color:var(--label-3)}
 .conn-bar.quiet .conn-a{padding:2px 9px;font-size:var(--fs-caption);color:var(--acc-ink);background:var(--acc-soft)}
+/* light: the green ink on its own 16% tint was 4.1:1; a shade darker is 5.7:1 */
+:root[data-theme="light"] .conn-bar.quiet .conn-a{color:color-mix(in srgb,var(--acc-ink) 80%,#000)}
+@supports not (color: color-mix(in srgb, red 50%, blue)){:root[data-theme="light"] .conn-bar.quiet .conn-a{color:var(--acc-ink)}}
 /* its × (#454): beside the line, not inside its button, so hiding it never also connects */
 .conn-bar.quiet .conn-row{display:flex;align-items:center;gap:2px}
 .conn-x{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:99px;color:var(--label-3);font-size:var(--fs-caption)}
@@ -947,6 +950,9 @@ body.chips-dragging *{cursor:inherit}
   transition:box-shadow var(--fast);
 }
 .field::placeholder,.input::placeholder{color:var(--label-3)}
+/* The two search boxes sit on a grey fill, where --label-3 is 2.6:1 (dark) and 1.7:1 (light); a placeholder is text */
+.search .input::placeholder,.searchf .field::placeholder{color:var(--label-2)}
+:root[data-theme="light"] .search .input::placeholder,:root[data-theme="light"] .searchf .field::placeholder{color:rgba(60,60,67,.8)}
 .field:focus,.input:focus{box-shadow:inset 0 0 0 2px var(--acc)}
 .field.area,textarea.input{min-height:92px;resize:vertical;line-height:1.42}
 .measure-date{display:block;margin-bottom:14px}
@@ -1713,11 +1719,11 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* A ticked set fades back. Its parts fade, not the row: the number keeps full opacity and is drawn
    in the faded colours instead, so the set-vs-last arrow and the failure mark on it stay readable
    (at .45 the light theme's arrow was 2:1). The look is the same as the old row opacity. */
-.setrow.done>*:not(.n){opacity:.45}
-.setrow.done .n{background:var(--acc);color:var(--on-acc);
-  background:color-mix(in srgb,var(--acc) 45%,var(--surface));color:color-mix(in srgb,var(--on-acc) 45%,var(--surface))}
-/* Safari before 16.2: the number fades as a whole, as the row did before */
-@supports not (color: color-mix(in srgb, red 50%, blue)){.setrow.done .n{color:var(--on-acc);opacity:.45}}
+.setrow.done>*:not(.n){opacity:.6}
+/* .45 left the text at 1.8 to 3.1:1. At .6 the --label text holds 5.7:1 (light) and the units and
+   empty cells, which are --label-2 and would fade to ~2.5:1, take --label so they land the same. */
+.setrow.done .stp .val i,.setrow.done .effcell.is-empty{color:var(--label)}
+.setrow.done .n{background:var(--acc);color:var(--on-acc)}
 
 /* Swipe on sets (v1.3.11, components/SwipeRow.jsx). The row slides over two panes: Copy at the
    start of the line, Delete at its end, each as wide as the swipe has gone and zero wide at rest.
@@ -1869,8 +1875,8 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   .setrow.timed .stp.r,.sethead.timed .r-sp{--num:41px}
   .setrow.timed .stp.w:not(.plain),.setrow.timed .stp.r:not(.plain),.sethead.timed:not(.plain) .w-sp,.sethead.timed:not(.plain) .r-sp{--btn-floor:16px}
 }
+/* a side row is a .setrow, so its children already fade; fading the row too stacked to .36 */
 .setrow.side.done .sidetag{background:var(--acc);color:var(--on-acc)}
-.setrow.side.done{opacity:.45}
 
 /* drop-set drops / rest-pause bursts riding on a work row, editable like the row itself
    (issue: drop-sets & rest-pause) */
@@ -1891,7 +1897,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 @media (prefers-reduced-motion:reduce){.cardio-eff{transition:none}}
 .subrow{display:flex;align-items:center;gap:6px;padding-block:3px;padding-inline:32px 0}
 /* A done set's drops and bursts are done with it (Discord, dark._.ninja): greyed like the row. */
-.subrow.done>*{opacity:.45}
+.subrow.done>*{opacity:.6}
 /* Under an L/R row the set number already sits outside the .side-rows box, so the indent that
    tucks a straight row's drops under its number would be paid twice — at 320 px both number
    fields of a per-side drop collapsed to 0 px (QA C3). The label starts under the badge instead. */

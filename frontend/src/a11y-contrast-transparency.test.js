@@ -78,3 +78,36 @@ describe('Reduce Transparency (#708)', () => {
     for (const sel of blurred) expect(off, sel).toContain(sel)
   })
 })
+
+describe('Text that was under 4.5:1 (Liquid Glass pass)', () => {
+  const css = read('index.css')
+  const dark = rule(css, ':root'), light = rule(css, ':root[data-theme="light"]')
+  const mix = (a, b, p) => a.map((c, i) => c * p + b[i] * (1 - p))
+  const text = (c, bg) => ratio(over(rgba(c), bg), bg)
+
+  it('dialog small note (--label-dim) reads on the dialog fill', () => {
+    expect(text(token(dark, '--label-dim'), hex(token(dark, '--surface-raised')))).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('light "Sign in" ink reads on its 16% tint', () => {
+    const pct = +rule(css, ':root[data-theme="light"] .conn-bar.quiet .conn-a').match(/(\d+)%,#000/)[1] / 100
+    const ink = mix(hex('#1a7f37'), [0, 0, 0], pct) // lime, the lightest-ink preset
+    const pill = mix(hex('#34c759'), hex(token(light, '--bg')), 0.16)
+    expect(ratio(ink, pill)).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('a ticked set keeps its text at 4.5:1 once faded', () => {
+    const k = +rule(css, '.setrow.done>*:not(.n)').match(/opacity:\s*([\d.]+)/)[1]
+    for (const [theme, t] of [['dark', dark], ['light', light]]) {
+      const card = hex(token(t, '--surface')), label = hex(token(t, '--label'))
+      expect(ratio(mix(label, card, k), card), theme).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  it('search placeholders read on the grey field', () => {
+    expect(text(token(dark, '--label-2'), hex(token(dark, '--surface-2')))).toBeGreaterThanOrEqual(4.5)
+    const v = rule(css, ':root[data-theme="light"] .search .input::placeholder,:root[data-theme="light"] .searchf .field::placeholder')
+    const field = over({ rgb: [118, 118, 128], a: 0.12 }, hex(token(light, '--bg')))
+    expect(text(v.match(/color:\s*(rgba\([^)]+\))/)[1], field)).toBeGreaterThanOrEqual(4.5)
+  })
+})

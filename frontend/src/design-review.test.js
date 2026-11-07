@@ -129,8 +129,8 @@ describe('1.4.5 features pass', () => {
   })
   it('a ticked set fades its parts, not the number that carries the arrow', () => {
     expect(rule('.setrow.done')).toBe('')
-    expect(rule('.setrow.done>*:not(.n)')).toMatch(/opacity:\.45/)
-    expect(rule('.setrow.done .n')).toMatch(/background:var\(--acc\);color:var\(--on-acc\);\s*background:color-mix/)
+    expect(rule('.setrow.done>*:not(.n)')).toMatch(/opacity:\.6\b/)
+    expect(rule('.setrow.done .n')).toMatch(/background:var\(--acc\);color:var\(--on-acc\)/)
   })
 })
 
