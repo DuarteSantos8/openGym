@@ -490,7 +490,7 @@ class SessionCoreTest {
     }
 
     @Test fun theSetHrEventIsTheAppleWatchs() {
-        val ev = SessionCore.setHrEvent("p1", PhoneTick("0025", 0, 1, 3000.0), 128 to 151, "h1")
+        val ev = SessionCore.setHrEvent("p1", "0025", 0, 1, "h1", hr = 128 to 151)
         assertEquals("setHr", str(ev, "type"))
         assertEquals("h1", str(ev, "id"))
         assertEquals("p1", str(ev, "wid"))
@@ -500,5 +500,15 @@ class SessionCoreTest {
         val hr = ev["hr"] as kotlinx.serialization.json.JsonObject
         assertEquals("128", (hr["avg"] as kotlinx.serialization.json.JsonPrimitive).content)
         assertEquals("151", (hr["max"] as kotlinx.serialization.json.JsonPrimitive).content)
+        assertNull("no rest reading on a set's", ev["restHr"])
+    }
+
+    @Test fun theRestsHeartRateGoesToTheSetBeforeIt() {
+        val ev = SessionCore.setHrEvent("p1", "0025", 0, 1, "r1", restHr = 112 to 140)
+        assertEquals("setHr", str(ev, "type"))
+        assertNull("the set's own reading went with its setDone", ev["hr"])
+        val rest = ev["restHr"] as kotlinx.serialization.json.JsonObject
+        assertEquals("112", (rest["avg"] as kotlinx.serialization.json.JsonPrimitive).content)
+        assertEquals("140", (rest["max"] as kotlinx.serialization.json.JsonPrimitive).content)
     }
 }

@@ -200,11 +200,16 @@ object SessionCore {
         return out.sortedBy { it.at }
     }
 
-    /** The heart rate of a set ticked on the phone, for the phone (watch-sync.js setHr; the watch has the sensor). */
-    fun setHrEvent(wid: String, t: PhoneTick, hr: Pair<Int, Int>, id: String): Event = buildJsonObject {
-        put("id", id); put("type", "setHr"); put("wid", wid); put("exId", t.exId)
-        put("entryIdx", t.entryIdx); put("setIdx", t.setIdx)
-        put("hr", buildJsonObject { put("avg", hr.first); put("max", hr.second) })
+    /**
+     * Heart rate on a set for the phone (watch-sync.js setHr; the watch has the sensor): `hr` for a
+     * set ticked on the phone, `restHr` for the rest after a set, once that rest is over.
+     */
+    fun setHrEvent(wid: String, exId: String, entryIdx: Int, setIdx: Int, id: String,
+                   hr: Pair<Int, Int>? = null, restHr: Pair<Int, Int>? = null): Event = buildJsonObject {
+        put("id", id); put("type", "setHr"); put("wid", wid); put("exId", exId)
+        put("entryIdx", entryIdx); put("setIdx", setIdx)
+        if (hr != null) put("hr", buildJsonObject { put("avg", hr.first); put("max", hr.second) })
+        if (restHr != null) put("restHr", buildJsonObject { put("avg", restHr.first); put("max", restHr.second) })
     }
 
     /** A set passed over here: not done, the next one comes up. */
