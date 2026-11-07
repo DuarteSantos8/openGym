@@ -83,6 +83,32 @@ describe('the docked row on the iPhone', () => {
     expect(xv.inert).toBe(true)
   })
 
+  it('the page is inert but #modal-root and the toast are not, so a sheet opened from the view works', () => {
+    const app = document.createElement('div'); app.id = 'root'
+    const mr = document.createElement('div'); mr.id = 'modal-root'
+    const toast = document.createElement('div'); toast.id = 'toast'
+    app.append(host, mr, toast); document.body.appendChild(app)
+    act(() => useUI.setState({ timer: rest() }))
+    mount()
+    act(() => document.querySelector('.trow .clk').click())
+    expect(host.inert).toBe(true)
+    expect([app.inert, mr.inert, toast.inert]).toEqual([false, false, false])
+    act(() => document.querySelector('.xv .dg').click())
+    expect(useUI.getState().sheets).toHaveLength(1)
+    expect(mr.closest('[inert]')).toBeNull()
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })))
+    expect(host.inert).toBe(false)
+    act(() => root.render(null)); app.remove()
+  })
+
+  it('the pause button has a changing label and no aria-pressed', () => {
+    act(() => useUI.setState({ timer: rest({ paused: true }) }))
+    mount()
+    const b = document.querySelector('.trow .pz')
+    expect(b.getAttribute('aria-label')).toBe('Resume')
+    expect(b.hasAttribute('aria-pressed')).toBe(false)
+  })
+
   it('the glow is only marked for the last three seconds', () => {
     act(() => useUI.setState({ timer: rest({ left: 4 }) }))
     mount()

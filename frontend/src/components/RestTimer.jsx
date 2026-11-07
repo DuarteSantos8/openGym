@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useUI } from '../store/useUI.js'
 import { useStore } from '../store/useStore.js'
+import { holdInert, pageBehind } from '../lib/inert.js'
 import { restNextLine } from '../lib/rest-next.js'
 import { restView, clock } from '../lib/rest-timer-view.js'
 import { t } from '../lib/i18n.js'
@@ -86,7 +87,7 @@ function AutoRow({ paused, restart = true }) {
   const { pauseAuto, resumeAuto, restartHold, stopAuto } = useUI.getState()
   return (
     <div className="autorow" role="group" aria-label={t('Timed holds start by themselves')}>
-      <Button size="sm" icon={paused ? 'play' : 'pause'} aria-pressed={!!paused}
+      <Button size="sm" icon={paused ? 'play' : 'pause'}
         onClick={() => (paused ? resumeAuto() : pauseAuto())}>{t(paused ? 'Resume' : 'Pause')}</Button>
       {restart && <Button size="sm" icon="reset" onClick={() => restartHold()}>{t('Restart')}</Button>}
       <Button size="sm" icon="xmark" onClick={() => stopAuto()}>{t('Stop auto')}</Button>
@@ -112,8 +113,8 @@ const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').
 export function TimerRow({ docked = false }) {
   const kind = useUI(fusedKind)
   const c = useUI(s => s.work ?? s.timer)
-  const S = useStore(s => s.S)
   const [x, setX] = useState(false)
+  const S = useStore(s => (x ? s.S : null))   // only the full view reads it (the next-up line)
   const [said, setSaid] = useState('')
   const rowRef = useRef(null), xvRef = useRef(null), dgRef = useRef(null), closeRef = useRef(null)
   const clkRef = useRef(null), tRef = useRef(null), mtRef = useRef(null), mttRef = useRef(null)
@@ -176,14 +177,13 @@ export function TimerRow({ docked = false }) {
   useEffect(() => {
     if (!x) return undefined
     const xv = xvRef.current, min = isMin()
-    const els = [...document.body.children].filter(e => e !== xv && e.id !== 'modal-root' && !e.inert)
-    els.forEach(e => { e.inert = true })
+    const release = holdInert(pageBehind(xv))
     closeRef.current?.focus({ preventScroll: true })
     const onKey = e => { if (e.key === 'Escape' && !document.getElementById('modal-root')?.classList.contains('open')) close() }
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
-      els.forEach(e => { e.inert = false })
+      release()
       if (document.activeElement === document.body || xv.contains(document.activeElement)) ((min ? mtRef.current : clkRef.current) ?? document.querySelector('#tabbar .orb'))?.focus({ preventScroll: true })
     }
   }, [x])
@@ -197,7 +197,7 @@ export function TimerRow({ docked = false }) {
     onTouchEnd: e => { if (touchY.current != null && xvRef.current.scrollTop <= 0 && e.changedTouches[0].clientY - touchY.current > 80) close(); touchY.current = null } }
   const pause = cls => c.ready
     ? <button type="button" className={'b pz slot-off ' + cls} disabled tabIndex={-1} aria-hidden="true"><Icon name="pause" /></button>
-    : <button type="button" className={'b pz ' + cls} aria-label={t(c.paused ? 'Resume' : 'Pause')} aria-pressed={!!c.paused}
+    : <button type="button" className={'b pz ' + cls} aria-label={t(c.paused ? 'Resume' : 'Pause')}
       onClick={c.paused ? U().resumeRest : U().pauseRest}><Icon name={c.paused ? 'play' : 'pause'} /></button>
   const minus = <button type="button" className="b adj" onClick={() => U().addRest(-15)}>−15s</button>
   const plus = <button type="button" className="b adj" disabled={view.plusOff} onClick={() => U().addRest(15)}>{view.plusLabel}</button>
@@ -342,7 +342,7 @@ export default function RestTimer({ docked = false }) {
         {timer.ready
           ? <Button size="sm" className="pause-slot" icon="pause" disabled tabIndex={-1} aria-hidden="true" />
           : <Button size="sm" className="pause" icon={timer.paused ? 'play' : 'pause'}
-            aria-label={t(timer.paused ? 'Resume' : 'Pause')} aria-pressed={!!timer.paused}
+            aria-label={t(timer.paused ? 'Resume' : 'Pause')}
             onClick={timer.paused ? resumeRest : pauseRest} />}
         <button type="button" className={'btn primary sm skip' + (skipFits ? '' : ' icon-only')} onClick={() => skipRest()}
           aria-label={skipFits ? undefined : t(timer.ready ? 'Dismiss' : 'Skip')}>

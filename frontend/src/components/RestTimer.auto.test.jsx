@@ -60,7 +60,6 @@ describe('the count-in', () => {
     expect(host.querySelector('#timer .lbl').textContent).toBe('Waiting till you close that')
     const resume = [...host.querySelectorAll('#timer .autorow button')][0]
     expect(resume.textContent.trim()).toBe('Resume')
-    expect(resume.getAttribute('aria-pressed')).toBe('true')
     press('Resume')
     expect(s.resumeAuto).toHaveBeenCalledOnce()
   })
