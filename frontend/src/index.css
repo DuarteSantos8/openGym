@@ -97,6 +97,7 @@
      the clear pair is for round buttons over a photo, with a dim layer for bright pictures. */
   --glass-bg:color-mix(in srgb,var(--bg-el) 74%,transparent);
   --glass-bg-bar:color-mix(in srgb,var(--bg) 74%,transparent);   /* pinned bars sit on the page, not on a card */
+  --glass-bg-tab:color-mix(in srgb,var(--bg-el) 58%,transparent);   /* the floating tab bar: thinner, so the page shows through (phone check) */
   --sheet-bg:color-mix(in srgb,var(--bg-el) 94%,transparent);
   --glass-blur:saturate(180%) blur(20px);
   --glass-bg-clear:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),color-mix(in srgb,var(--bg-el) 58%,transparent);
@@ -2912,7 +2913,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-platform="ios"] #tabbar.ax{--bh:76px;--ic:28px;--lab:17px;--lf:13px;--bhm:58px;--mw:126px;--gx:32px;--ox:93px;--os:.962}   /* Text size: Larger. Labels stop at 13 so "Exercises" fits the lens */
 :root[data-platform="ios"] #tabbar::before,:root[data-platform="ios"] #tabbar::after{content:"";position:absolute;inset:0;border-radius:999px;pointer-events:none}
 :root[data-platform="ios"] #tabbar::before{
-  background:var(--glass-bg);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge);
+  background:var(--glass-bg-tab);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge);
   clip-path:inset(0 0 0 0 round 32px);transition:clip-path var(--mt) var(--spring-soft);
 }
 /* the drop shadow cannot follow a clip-path (it would be cut), so it fades out with the full bar */
@@ -3001,7 +3002,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
    setting, the media query may not reach WKWebView), no backdrop-filter, no color-mix (Safari 15, tokens only). */
 @media (prefers-reduced-transparency: reduce),(prefers-contrast: more){
   :root:root{
-    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
     --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
     --glass-edge:inset 0 0 0 1px var(--sep-op);
     --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;
@@ -3011,20 +3012,20 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   :root:root{--glass-edge:inset 0 0 0 1px var(--sep);--glass-label:var(--label);--glass-lens-edge:inset 0 0 0 1.5px var(--label)}
 }
 :root:root[data-reduce-transparency]{
-  --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+  --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
   --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
   --glass-edge:inset 0 0 0 1px var(--sep-op);
   --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;
 }
 @supports not (color:color-mix(in srgb,red 50%,blue)){
   :root,:root[data-theme="light"]{
-    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
     --glass-edge:inset 0 0 0 1px var(--sep-op);
   }
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   :root:root{
-    --glass-bg:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
+    --glass-bg:var(--bg-el);--glass-bg-tab:var(--bg-el);--glass-bg-bar:var(--bg);--sheet-bg:var(--bg-el);--glass-bg-clear:var(--bg-el);
     --glass-blur:none;--glass-blur-clear:none;--glass-shadow:none;
     --glass-edge:inset 0 0 0 1px var(--sep-op);
     --glass-lens:var(--surface-2);--glass-lens-edge:inset 0 0 0 1px var(--sep);--glass-prom-edge:none;
