@@ -701,10 +701,43 @@ object WearStore {
 
     private fun commit(s: SessionState) {
         val had = _state.value.workout != null
+        val wasId = _state.value.workout?.id
         _state.value = s
+        if (wasId != s.workout?.id) dropStaleStills(s.workout?.id)
         prefs.edit().putString("state", WireJson.encodeToString(SessionState.serializer(), s)).apply()
         if (had != (s.workout != null) || s.workout != null) WorkoutService.sync(app)
         refreshSurfacesSoon()
+    }
+
+    /* ---------- the exercises' stills (Stills in WatchLogic.kt) ---------- */
+
+    /** Up by one when a still arrives or goes: the Overview loads its pictures again. */
+    val stillsVersion = MutableStateFlow(0)
+
+    private fun stillsDir() = java.io.File(app.filesDir, "stills")
+
+    /** Where this workout's still of that exercise is (or would be); none for a name that is not plain. */
+    fun stillFile(wid: String?, exId: String?): java.io.File? =
+        if (::app.isInitialized && Stills.safe(wid) && Stills.safe(exId)) java.io.File(stillsDir(), "$wid/$exId.webp") else null
+
+    /** A still from the phone, kept for its workout (written to a temp file, then renamed). */
+    fun saveStill(wid: String?, exId: String?, bytes: ByteArray) {
+        if (bytes.isEmpty() || bytes.size > Stills.MAX_BYTES) return
+        val f = stillFile(wid, exId) ?: return
+        try {
+            f.parentFile?.mkdirs()
+            val tmp = java.io.File(f.path + ".tmp")
+            tmp.writeBytes(bytes)
+            if (tmp.renameTo(f)) stillsVersion.value++
+        } catch (_: Exception) {}
+    }
+
+    /** Another workout runs, or none: the stills of every other go. */
+    private fun dropStaleStills(running: String?) {
+        if (!::app.isInitialized) return
+        val dirs = stillsDir().list()?.toList() ?: return
+        Stills.stale(dirs, running).forEach { java.io.File(stillsDir(), it).deleteRecursively() }
+        stillsVersion.value++
     }
 
     /** The Tile and the complication, at most twice a second. */

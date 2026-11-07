@@ -60,6 +60,7 @@ class WorkoutService : Service() {
     override fun onCreate() {
         super.onCreate()
         alive = true
+        starting = false
         WearStore.init(this)
         val n = notification(this, WearStore.state.value, WearStore.rest.value)
         try {
@@ -118,6 +119,8 @@ class WorkoutService : Service() {
         const val NOTIF_ID = 7
         private const val CHANNEL = "workout"
         @Volatile private var alive = false
+        /** Asked to start, onCreate not run yet: Android kills the app if it is stopped before startForeground. */
+        @Volatile private var starting = false
 
         fun hasHrPermission(ctx: Context): Boolean {
             val perm = if (Build.VERSION.SDK_INT >= 36) "android.permission.health.READ_HEART_RATE" else Manifest.permission.BODY_SENSORS
@@ -136,13 +139,15 @@ class WorkoutService : Service() {
             val app = ctx.applicationContext
             val active = WearStore.state.value.workout != null
             if (!active) {
-                app.stopService(Intent(app, WorkoutService::class.java))
+                // A start still on its way stops itself in onCreate, once it is in the foreground.
+                if (!starting) app.stopService(Intent(app, WorkoutService::class.java))
                 app.getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
                 return
             }
-            if (alive) return
+            if (alive || starting) return
             if (hasHrPermission(app) && !fromPhone) {
-                try { ContextCompat.startForegroundService(app, Intent(app, WorkoutService::class.java)); return } catch (_: Exception) {}
+                starting = true
+                try { ContextCompat.startForegroundService(app, Intent(app, WorkoutService::class.java)); return } catch (_: Exception) { starting = false }
             }
             post(app)
         }

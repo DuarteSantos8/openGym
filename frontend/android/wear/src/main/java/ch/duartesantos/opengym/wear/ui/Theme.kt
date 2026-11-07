@@ -5,6 +5,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -91,6 +93,16 @@ fun OpenGymTheme(accent: Accent = Accent(), ambient: Boolean = false, reduceMoti
     ) {
         MaterialTheme(colorScheme = scheme, content = content)
     }
+}
+
+/**
+ * A screen that can't scroll (the set, the rest, a hold) takes the watch's font size only up to
+ * 1.12×, like the Apple Watch's `.dynamicTypeSize(...accessibility2)` there; lists take it all.
+ */
+@Composable
+fun CapText(content: @Composable () -> Unit) {
+    val d = LocalDensity.current
+    CompositionLocalProvider(LocalDensity provides Density(d.density, d.fontScale.coerceAtMost(1.12f)), content = content)
 }
 
 /** 62.5 → "62.5", 60.0 → "60", 1.25 → "1.25". */
