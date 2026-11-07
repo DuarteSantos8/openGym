@@ -348,6 +348,8 @@ button,.chip,.tile,.item,.wday,.cal-d,.swatch,.hm-c,.lrow,.seg button,.stp butto
 body.resting #app{padding-bottom:calc(166px + var(--sab))}
 /* The workout screen has no tab bar (App.jsx): only the docked rest bar, when it is there. */
 body.no-tabbar #app{padding-bottom:calc(24px + var(--sab))}
+/* iPhone floating bar: room for bar bottom (max(sab-13, 8)) + 64 bar + 15 orb raise + 12 margin; 88 + sab left 1pt when sab is 0 */
+:root[data-platform="ios"] body:not(.no-tabbar):not(.resting) #app{padding-bottom:calc(max(var(--sab) - 13px, 8px) + 91px)}
 body.no-tabbar.resting #app{padding-bottom:calc(96px + var(--sab))}
 .workout-end-spacer{height:0}
 /* The end of a workout (Workout.jsx, P3): Add exercise and the session note as one inset list. */
@@ -2953,7 +2955,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 /* running: an orange orb with the time inside it (black on orange, about 10:1), a ring that pulses three times and rests */
 :root[data-platform="ios"] #tabbar .orb.rec .cir{background:var(--orange);color:#000;--glow:var(--orange)}
 :root[data-platform="ios"] #tabbar .orb.rec .cir::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--orange);animation:ping 1.9s var(--ease) 3}
-:root[data-platform="ios"] #tabbar.min .cir::after{content:none}   /* the ring would grow past the capsule */
+:root[data-platform="ios"] #tabbar.min .orb.rec .cir::after{content:none}   /* the ring would grow past the capsule */
 :root[data-platform="ios"] #tabbar .gt:focus-visible,:root[data-platform="ios"] #tabbar .orb:focus-visible{outline:2px solid var(--label);outline-offset:-2px;border-radius:999px}
 /* "Choose routine": the way to the long-press picker for a keyboard, VoiceOver or Switch Control. Invisible until focused. */
 :root[data-platform="ios"] #tabbar .alt{position:absolute;z-index:3;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);height:44px;padding:0 18px;border:0;border-radius:22px;
@@ -2961,7 +2963,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
   color:var(--label);font:inherit;font-size:15px;font-weight:600;white-space:nowrap;opacity:0;pointer-events:none}
 :root[data-platform="ios"] #tabbar .alt:focus-visible{opacity:1;outline:2px solid var(--label)}
 :root[data-platform="ios"] #tabbar .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-/* Reduce Motion: end states only. The lens cross-fades between its two elements and never slides; the
+/* Reduce Motion: end states only. The lens never slides (the global reduce rule makes the swap instant); the
    selectors are this deep on purpose, .fwd/.back/.min .lens above would otherwise keep the spring. */
 :root[data-platform="ios"] #tabbar.rm,:root[data-platform="ios"] #tabbar.rm .gt,:root[data-platform="ios"] #tabbar.rm .orb,:root[data-platform="ios"] #tabbar.rm .cir,:root[data-platform="ios"] #tabbar.rm .tl,:root[data-platform="ios"] #tabbar.rm .gt .icn{transition:none}
 :root[data-platform="ios"] #tabbar.rm .lens,:root[data-platform="ios"] #tabbar.rm.fwd .lens,:root[data-platform="ios"] #tabbar.rm.back .lens,:root[data-platform="ios"] #tabbar.rm.min .lens{transition:opacity .15s linear}
