@@ -82,9 +82,13 @@ object WearStore {
     /** The weigh-in before a workout started here, and the body weight on its crown. */
     val weighInFor = MutableStateFlow<ReadySession?>(null)
     val bodyWeight = MutableStateFlow(70.0)
-    /** "All done?": no set for a while. */
+    /** "Still training?": no set for a while (forgotten workouts, WatchLogic Idle). */
     val askDone = MutableStateFlow(false)
     val idleMinutes = MutableStateFlow(0)
+    /** The question is "Looks like you left the gym" (the phone walked out of the gym). */
+    val idleLeft = MutableStateFlow(false)
+    /** When the workout ends by itself if nobody answers (ms), null when it never does (an older phone). */
+    val idleEndsAt = MutableStateFlow<Long?>(null)
     /** Always On (wrist down): outlines, nothing moves (MainActivity's AmbientLifecycleObserver). */
     val ambient = MutableStateFlow(false)
 
@@ -93,6 +97,8 @@ object WearStore {
     private var setFrom = 0L
     private var seenAt = 0L
     private var idleSnooze = 0L
+    /** The screenshot rig put a screen up (debug builds): the idle clock leaves it alone. */
+    private var demoOn = false
     private val picked = mutableMapOf<Int, Int>()
     private var phoneRestEnd: Double? = null
     private var lastTickAt = 0L
@@ -453,13 +459,12 @@ object WearStore {
     /* ---------- finishing ---------- */
 
     /** Finish (a 1 s hold on the Overview): saved on the phone, as its Finish and save. */
-    fun finish() {
+    fun finish(at: Long = now(), idle: Boolean = false, left: Boolean = false) {
         // Finished mid-hold: the seconds held so far are that set, not lost.
-        if (_hold.value != null) endHold(early = true)
+        if (!idle && _hold.value != null) endHold(early = true)
         val before = _state.value
         val w = before.workout ?: return
-        val at = now()
-        val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString())
+        val (s1, event) = SessionCore.finish(before, at.toDouble(), UUID.randomUUID().toString(), idle = idle, left = left)
         event?.let { PhoneLink.send(app, it) }
         _summary.value = SessionCore.summary(w, at.toDouble(), hr = hrOf(0))
         endAll()
@@ -480,7 +485,7 @@ object WearStore {
     private fun endAll() {
         stopHoldCount(); stopHold(); stopRest(); closeFix()
         readings.clear()
-        askDone.value = false
+        lowerIdle()
         lastLogged.value = null
         page.value = Page.SET
     }
@@ -625,19 +630,54 @@ object WearStore {
 
     private fun checkIdle() {
         val w = _state.value.workout
-        if (w == null) { askDone.value = false; return }
+        if (w == null) { lowerIdle(); return }
         // A rest or a hold running is a workout going on, however long it takes.
         if (_hold.value != null || _rest.value != null) return
+        // Paused on the phone: not forgotten.
+        if ((w.pausedAt ?: 0.0) > 0) { lowerIdle(); return }
+        if (demoOn) return
         val t = now().toDouble()
         val since = Idle.since(Idle.lastSet(w) ?: seenAt.toDouble(), seenAt.toDouble(), idleSnooze.toDouble())
         idleMinutes.value = Idle.minutes(since, t)
-        val ask = Idle.asks(since, t)
-        if (ask && !askDone.value) Haptics.restOver(app)
-        askDone.value = ask
+        val rules = Idle.Rules.from(_state.value.settings.forgotten)
+        when (Idle.state(since, t, rules, w.leftGymAt)) {
+            Idle.State.ACTIVE -> lowerIdle()
+            Idle.State.ASK -> raiseIdle(false, Idle.endsAt(since, rules, w.leftGymAt))
+            Idle.State.LEFT -> raiseIdle(true, Idle.endsAt(since, rules, w.leftGymAt))
+            Idle.State.END -> {
+                // Nobody answered: saved on the phone, ending at the last set plus its rest. The
+                // phone keeps it running instead if it was used there (staleWatchFinish).
+                val left = rules.leaveGym && (w.leftGymAt ?: 0.0) > since
+                lowerIdle()
+                finish(at = Idle.endAt(w, t).toLong(), idle = true, left = left)
+            }
+        }
     }
 
-    /** "Continue workout" on "All done?". */
-    fun keepGoing() { idleSnooze = now(); askDone.value = false }
+    private fun raiseIdle(left: Boolean, endsAt: Double?) {
+        idleEndsAt.value = endsAt?.toLong()
+        if (!askDone.value || idleLeft.value != left) {
+            idleLeft.value = left
+            Haptics.restOver(app)
+            // With the screen off or another app in front, the card alone is not seen: a notification too.
+            IdleNotice.post(app, left, endsAt?.toLong())
+        }
+        askDone.value = true
+    }
+
+    private fun lowerIdle() {
+        if (askDone.value) IdleNotice.cancel(app)
+        askDone.value = false
+        idleLeft.value = false
+    }
+
+    /** "Keep going" on "Still training?": idle counts from now, here and on the phone. */
+    fun keepGoing() {
+        val at = now()
+        idleSnooze = at
+        lowerIdle()
+        SessionCore.stillHere(_state.value, at.toDouble(), UUID.randomUUID().toString())?.let { PhoneLink.send(app, it) }
+    }
 
     /* ---------- heart rate (WorkoutService) ---------- */
 
@@ -690,8 +730,9 @@ object WearStore {
     /** Puts the store on one of the screens the docs and the store listing show. Debug builds only. */
     fun demo(screen: String, snapshot: String) {
         if (!BuildConfig.DEBUG) return
+        demoOn = true
         _summary.value = null; stopRest(); stopHold(); closeFix(); weighInFor.value = null; cancelCountIn()
-        askDone.value = false; touchLock.unlock(); lastTickAt = 0; goAt.value = null; stopHoldCount()
+        askDone.value = false; idleLeft.value = false; touchLock.unlock(); lastTickAt = 0; goAt.value = null; stopHoldCount()
         applySnapshotJson(snapshot)
         when (screen) {
             "start" -> commit(_state.value.copy(workout = null))
@@ -711,7 +752,8 @@ object WearStore {
             "weighin" -> _state.value.ready?.today?.let { commit(_state.value.copy(workout = null)); weighInFor.value = it; bodyWeight.value = 78.4 }
             "countdown" -> _state.value.ready?.today?.let { commit(_state.value.copy(workout = null)); _countIn.value = CountIn(now() - 1200, it) }
             "go" -> goAt.value = now() + 600_000
-            "idle" -> { askDone.value = true; idleMinutes.value = 23 }
+            "idle" -> { askDone.value = true; idleMinutes.value = 47; idleEndsAt.value = now() + 180_000 }
+            "left" -> { askDone.value = true; idleLeft.value = true; idleEndsAt.value = now() + 240_000 }
         }
     }
 }

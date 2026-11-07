@@ -8,7 +8,7 @@ export default function GymHiddenLine({ count, profile, onShowAll }) {
   if (!(count > 0) || !profile) return null
   return <div className="small dim row" style={{ margin: '10px 4px', gap: 6, alignItems: 'center' }}>
     <span>{t('Not in "{0}": {1} more', profile.name, fmtNum(count))}</span>
-    <button className="chip nocap" style={{ marginInlineStart: 'auto', padding: '3px 10px', fontSize: 12 }} onClick={onShowAll}>
+    <button className="chip nocap" style={{ marginInlineStart: 'auto', padding: '3px 10px', fontSize: 'var(--fs-caption)' }} onClick={onShowAll}>
       {t('Show all equipment')}
     </button>
   </div>

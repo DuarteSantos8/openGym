@@ -22,6 +22,7 @@
     <string name="ended_on_phone">Ended on your phone</string>
     <string name="exercises">Exercises</string>
     <string name="finish_and_save">Finish and save</string>
+    <string name="finish_now">Finish now</string>
     <string name="finish_workout">Finish workout</string>
     <string name="finish_workout_q">Finish workout?</string>
     <string name="go">Go!</string>
@@ -31,12 +32,20 @@
     <string name="how_hard">How hard was that set?</string>
     <string name="hr_avg_max">%1$d avg · %2$d max</string>
     <string name="hr_why">Allow heart rate to see your pulse on every set.</string>
+    <string name="idle_ends_at">Nothing logged for a while. If you’re done, it ends by itself at %1$s, saved at your last set.</string>
+    <string name="keep_going">Keep going</string>
     <string name="last_time">Last time: %1$s</string>
     <string name="left">Left</string>
+    <string name="left_ends_at">Finish the workout now? Otherwise it ends by itself at %1$s.</string>
+    <string name="left_gym">Looks like you left the gym</string>
     <string name="less">Less</string>
     <string name="log_on_phone">Log this one on your phone.</string>
     <string name="media_louder">Louder</string>
     <string name="media_next">Next track</string>
+    <string name="media_now_playing">Now playing</string>
+    <string name="media_on_watch">Playing on your watch</string>
+    <string name="media_open">Open Media Controls</string>
+    <string name="media_phone_hint">Music on your phone? Media Controls has it.</string>
     <string name="media_play">Play or pause</string>
     <string name="media_prev">Previous track</string>
     <string name="media_quieter">Quieter</string>
@@ -77,6 +86,7 @@
     <string name="start_on_phone">Start one on your phone and it shows up here.</string>
     <string name="start_without_weighin">Start without weighing in</string>
     <string name="start_workout">Start workout</string>
+    <string name="still_training">Still training?</string>
     <string name="stop">Stop</string>
     <string name="superset">Superset</string>
     <string name="tap_to_change">Tap to change it.</string>

@@ -65,11 +65,21 @@ class MainActivity : ComponentActivity() {
             }
         }
         demo(intent)
+        openPage(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         demo(intent)
+        openPage(intent)
+    }
+
+    /** Finish on the "Still training?" notification: the Overview, where the hold finishes. */
+    private fun openPage(intent: Intent?) {
+        if (intent?.getStringExtra(IdleNotice.EXTRA_PAGE) != "overview") return
+        intent.removeExtra(IdleNotice.EXTRA_PAGE)
+        WearStore.keepGoing()
+        WearStore.page.value = Page.OVERVIEW
     }
 
     override fun onResume() {

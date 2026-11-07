@@ -21,6 +21,7 @@
     <string name="ended_on_phone">Terminato sul telefono</string>
     <string name="exercises">Esercizi</string>
     <string name="finish_and_save">Termina e salva</string>
+    <string name="finish_now">Termina ora</string>
     <string name="finish_workout">Termina allenamento</string>
     <string name="finish_workout_q">Terminare l’allenamento?</string>
     <string name="go">Via!</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">Quanto è stata dura la serie?</string>
     <string name="hr_avg_max">media %1$d · max %2$d</string>
     <string name="hr_why">Consenti il battito per vederlo a ogni serie.</string>
+    <string name="idle_ends_at">Niente registrato da un po’. Se hai finito, finisce da solo alle %1$s, salvato alla tua ultima serie.</string>
+    <string name="keep_going">Continua</string>
     <string name="last_time">L\'ultima volta: %1$s</string>
     <string name="left">Sinistra</string>
+    <string name="left_ends_at">Terminare l’allenamento ora? Altrimenti finisce da solo alle %1$s.</string>
+    <string name="left_gym">Sembra che tu sia uscito dalla palestra</string>
     <string name="less">Meno</string>
     <string name="log_on_phone">Questo si registra sul telefono.</string>
     <string name="media_louder">Più forte</string>
     <string name="media_next">Brano successivo</string>
+    <string name="media_now_playing">In riproduzione</string>
+    <string name="media_on_watch">Suona sull’orologio</string>
+    <string name="media_open">Apri Controlli multimediali</string>
+    <string name="media_phone_hint">Musica sul telefono? Ci pensa Controlli multimediali.</string>
     <string name="media_play">Riproduci o pausa</string>
     <string name="media_prev">Brano precedente</string>
     <string name="media_quieter">Più piano</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">Avviane uno sul telefono e compare qui.</string>
     <string name="start_without_weighin">Inizia senza pesarti</string>
     <string name="start_workout">Inizia allenamento</string>
+    <string name="still_training">Ti stai ancora allenando?</string>
     <string name="stop">Stop</string>
     <string name="superset">Superset</string>
     <string name="tap_to_change">Tocca per cambiarlo.</string>

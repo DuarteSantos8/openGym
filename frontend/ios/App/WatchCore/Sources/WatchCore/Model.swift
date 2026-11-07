@@ -56,6 +56,9 @@ struct ActiveWorkout: Codable, Equatable {
     /// Paused on the phone at this moment (ms, #976): the workout clock stands still until it
     /// resumes, when `start` moves on by the pause. Older phones never send it.
     var pausedAt: Double? = nil
+    /// The phone walked out of the gym at this moment (ms) during this workout (forgotten
+    /// workouts, 1.4.5): "Looks like you left the gym" at once. Older phones never send it.
+    var leftGymAt: Double? = nil
 }
 
 struct RestInfo: Codable, Equatable {
@@ -165,6 +168,18 @@ struct WatchSettings: Codable, Equatable {
     /// The app's accent colour ("#rrggbb", the dark theme's) and the ink that reads on it (1.4.5).
     var accent: String?
     var onAccent: String?
+    /// The phone's Settings → Workout → Forgotten workouts (1.4.5); nil from an older phone.
+    var forgotten: ForgottenSettings?
+}
+
+/// When "Still training?" comes and how long it waits for an answer (lib/forgotten-workout.js).
+struct ForgottenSettings: Codable, Equatable {
+    /// Minutes without a set before asking; 0: never asks, never ends by itself.
+    var askMin: Double?
+    /// Minutes the question waits before the workout finishes by itself.
+    var graceMin: Double?
+    /// Leaving the gym asks at once (the phone's gym reminder, set up and switched on).
+    var leaveGym: Bool?
 }
 
 /// What a workout screen shows. Each nil means its default.

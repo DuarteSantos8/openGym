@@ -110,8 +110,12 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
     @Published private(set) var restStartedAt: Date?
     /// The last rest end a snapshot carried (ms): followed once, not again.
     private var phoneRestEnd: Double?
-    /// "All done?": the workout has had no set logged for 20 minutes (WatchCore's Idle).
+    /// "Still training?": the workout has had no set logged for the phone's quiet spell (WatchCore's Idle).
     @Published var askDone = false
+    /// The question is "Looks like you left the gym" (the phone walked out of the gym).
+    @Published private(set) var idleLeft = false
+    /// When the workout ends by itself if nobody answers, for the card's words.
+    @Published private(set) var idleEndsAt: Date?
     /// How long nothing has happened in the workout, for the card's words.
     @Published private(set) var idleMinutes = 0
     /// A set picked by hand in an exercise (entry index → set index); otherwise the first not done.
@@ -993,6 +997,7 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         idleTimer = nil
         idleSnooze = nil
         askDone = false
+        idleLeft = false
         guard workout != nil, !isDemo else { return }
         let t = Timer(timeInterval: 30, repeats: true) { [weak self] _ in self?.checkIdle() }
         t.tolerance = 10
@@ -1012,15 +1017,26 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
         // "keep going" since: counted from then, never ended earlier.
         let since = Idle.since(lastSet: last, seen: seen, activity: ms(activityAt), snooze: ms(idleSnooze))
         idleMinutes = max(0, Int((now - since) / 60000))
-        switch Idle.state(since: since, now: now) {
+        let rules = idleRules
+        switch Idle.state(since: since, now: now, rules: rules, leftAt: w.leftGymAt) {
         case .active:
             // Something happened since (a set on the phone): the card goes away by itself.
             if askDone { askDone = false }
         case .ask:
-            if !askDone { askDone = true; Haptics.ask() }
+            raiseIdle(left: false, endsAt: since + rules.askAfter + rules.grace)
+        case .left:
+            raiseIdle(left: true, endsAt: (w.leftGymAt ?? now) + rules.grace)
         case .end:
             confirmEnd(wid: w.id, since: since, last: last)
         }
+    }
+
+    /// The phone's Settings → Workout → Forgotten workouts (an older phone: 20 and 45 minutes).
+    private var idleRules: Idle.Rules { Idle.Rules.from(state.settings.forgotten) }
+
+    private func raiseIdle(left: Bool, endsAt: Double) {
+        idleEndsAt = Date(timeIntervalSince1970: endsAt / 1000)
+        if !askDone || idleLeft != left { idleLeft = left; askDone = true; Haptics.ask() }
     }
 
     /// The phone being asked whether the workout goes on there.
@@ -1059,32 +1075,42 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             let phoneAt = Date(timeIntervalSince1970: at / 1000)
             if activityAt.map({ $0 < phoneAt }) ?? true { activityAt = phoneAt }
         }
-        switch Idle.verdict(since: since, now: Date().timeIntervalSince1970 * 1000, wid: wid, reply: reply) {
+        let now = Date().timeIntervalSince1970 * 1000
+        let rules = idleRules
+        switch Idle.verdict(since: since, now: now, wid: wid, reply: reply, rules: rules, leftAt: w.leftGymAt) {
         case .active:
             askDone = false
         case .ask:
-            if !askDone { askDone = true; Haptics.ask() }
+            raiseIdle(left: false, endsAt: since + rules.askAfter + rules.grace)
+        case .left:
+            raiseIdle(left: true, endsAt: (w.leftGymAt ?? now) + rules.grace)
         case .end:
             askDone = false
-            finish(at: Date(timeIntervalSince1970: last / 1000), idle: true)
+            // Its last set plus that set's rest, so the duration stays honest (never a later "now").
+            let left = rules.leaveGym && (w.leftGymAt ?? 0) > since
+            finish(at: Date(timeIntervalSince1970: Idle.endAt(w, now: now) / 1000), idle: true, left: left)
         }
     }
 
-    /// "Continue workout" on "All done?".
+    /// "Keep going" on "Still training?" (or on "Looks like you left the gym"): idle counts from
+    /// now, here and on the phone, which stops asking too.
     func keepGoing() {
-        idleSnooze = Date()
+        let at = Date()
+        idleSnooze = at
         askDone = false
+        idleLeft = false
+        if let ev = SessionCore.stillHere(state, at: at.timeIntervalSince1970 * 1000, id: UUID().uuidString) { send(event: ev) }
     }
 
     /// Finishes the session: the phone saves it with its own Finish and save. `end`: when it really
     /// ended (a workout left running ends at its last set), else now.
-    func finish(at end: Date = Date(), idle: Bool = false) {
+    func finish(at end: Date = Date(), idle: Bool = false, left: Bool = false) {
         // Finished mid-hold: the seconds held so far are that set, not lost.
         if !idle, holdEndsAt != nil { endHold(early: true) }
         closeRest(at: end)
         let now = end.timeIntervalSince1970 * 1000
         let ended = workout
-        let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString, idle: idle)
+        let (next, event) = SessionCore.finish(state, at: now, id: UUID().uuidString, idle: idle, left: left)
         guard let ev = event else { return }
         if let w = ended { summary = SessionCore.summary(w, end: now, startedAt: workoutSeenAt.map { $0.timeIntervalSince1970 * 1000 }) }
         ran(ended?.id)
@@ -1440,7 +1466,8 @@ final class SessionStore: NSObject, ObservableObject, WCSessionDelegate, UNUserN
             case "fix": self.picked[0] = 2; self.open(SetRef(entry: 0, set: 1)); self.fixR = 7
             case "metrics": self.picked[0] = 2; self.tab = .metrics
             case "music": self.tab = .music
-            case "prompt": self.idleMinutes = 23; self.askDone = true
+            case "prompt": self.idleMinutes = 47; self.idleEndsAt = Date().addingTimeInterval(180); self.askDone = true
+            case "left": self.idleLeft = true; self.idleEndsAt = Date().addingTimeInterval(240); self.askDone = true
             case "go": self.goAt = .distantFuture
             case "hold": self.state.entryIndex = 1
             case "bodyweight": self.state.entryIndex = 2

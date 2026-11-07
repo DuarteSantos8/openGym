@@ -61,9 +61,21 @@ const FROM_APP = {
   'Waiting to sync': 'Waiting to sync',
   'All synced': 'All synced',
   'Go!': 'Go!',
+  // Forgotten workouts (1.4.5), the phone's words.
+  'Still training?': 'Still training?',
+  'Looks like you left the gym': 'Looks like you left the gym',
+  'Keep going': 'Keep going',
+  'Finish now': 'Finish now',
 }
 // Built from an app word: "Last time: %@".
-const COMPOSED = { 'Last time: %@': ['Last time', w => `${w}: %@`] }
+const COMPOSED = {
+  'Last time: %@': ['Last time', w => `${w}: %@`],
+  // The phone's sentence with the time it ends by itself in the place of {0}.
+  'Nothing logged for a while. If you’re done, it ends by itself at %@, saved at your last set.':
+    ['Nothing logged for a while. If you’re done, it ends by itself at {0}, saved at your last set.', w => w.replace('{0}', '%@')],
+  'Finish the workout now? Otherwise it ends by itself at %@.':
+    ['Finish the workout now? Otherwise it ends by itself at {0}.', w => w.replace('{0}', '%@')],
+}
 
 // Only the watch says these. %@ is a name, %lld a number, as the Swift source interpolates them.
 const OWN = {

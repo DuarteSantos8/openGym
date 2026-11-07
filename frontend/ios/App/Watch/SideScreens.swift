@@ -102,40 +102,63 @@ struct MusicPage: View {
     }
 }
 
-/* ---------- "All done?": nothing logged for a while ---------- */
+/* ---------- "Still training?": nothing logged for a while, or the phone left the gym ---------- */
 
-/// A card instead of a system alert. Finish goes to the Overview's hold, so nothing ends in one
-/// tap; a set logged on the phone (or a rest, a hold) takes the card away by itself.
+/// A card instead of a system alert (forgotten workouts, the phone's lib/forgotten-workout.js).
+/// Finish goes to the Overview's hold, so nothing ends in one tap; a set logged on the phone (or a
+/// rest, a hold) takes the card away by itself. Nobody answers: the workout ends by itself at the
+/// time it says, saved at its last set plus the rest.
 struct IdlePrompt: View {
     @EnvironmentObject var store: SessionStore
     @Environment(\.accent) private var accent
 
+    private var endsAt: String {
+        (store.idleEndsAt ?? Date()).formatted(Date.FormatStyle(date: .omitted, time: .shortened).locale(store.locale))
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 6) {
-                Image(systemName: "hourglass")
+                Image(systemName: store.idleLeft ? "figure.walk.departure" : "hourglass")
                     .font(.system(size: 26, weight: .semibold))
                     .foregroundStyle(accent)
                     .accessibilityHidden(true)
-                Text("All done?")
+                Text(store.idleLeft ? LocalizedStringKey("Looks like you left the gym") : LocalizedStringKey("Still training?"))
                     .font(.system(.title3, design: .rounded).weight(.bold))
-                if store.idleMinutes > 0 {
-                    Text("No set for \(Int64(store.idleMinutes)) min. Still at it?")
-                        .font(.footnote)
-                        .foregroundStyle(Theme.label2)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                Group {
+                    if store.idleLeft {
+                        Text("Finish the workout now? Otherwise it ends by itself at \(endsAt).")
+                    } else {
+                        Text("Nothing logged for a while. If you’re done, it ends by itself at \(endsAt), saved at your last set.")
+                    }
                 }
-                Button { store.keepGoing() } label: { Text("Continue workout") }
-                    .buttonStyle(PrimaryButtonStyle())
-                    .padding(.top, 4)
-                Button {
-                    store.keepGoing()
-                    store.tab = .overview
-                } label: {
-                    Text("Finish workout").frame(maxWidth: .infinity)
+                .font(.footnote)
+                .foregroundStyle(Theme.label2)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                if store.idleLeft {
+                    Button {
+                        store.keepGoing()
+                        store.tab = .overview
+                    } label: { Text("Finish now").frame(maxWidth: .infinity) }
+                        .buttonStyle(PrimaryButtonStyle())
+                        .padding(.top, 4)
+                    Button { store.keepGoing() } label: { Text("Keep going").frame(maxWidth: .infinity) }
+                        .buttonStyle(RowButtonStyle())
+                } else {
+                    Button { store.keepGoing() } label: { Text("Keep going") }
+                        .buttonStyle(PrimaryButtonStyle())
+                        .padding(.top, 4)
+                    Button {
+                        store.keepGoing()
+                        store.tab = .overview
+                    } label: {
+                        Text("Finish workout").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(RowButtonStyle())
                 }
-                .buttonStyle(RowButtonStyle())
             }
             .padding(.horizontal, 4)
         }

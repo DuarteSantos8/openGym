@@ -10,12 +10,14 @@ import { bindUI } from './components/ui.jsx'
 import { setWeightDecimals } from './lib/format.js'
 import { accentValue, applyAccent } from './lib/accent.js'
 import { seasonAccent } from './lib/seasonal.js'
-import { setLang, useLang, baseLang } from './lib/i18n.js'
+import { setLang, useLang, baseLang, t } from './lib/i18n.js'
 import { effectiveLang } from './lib/default-lang.js'
 import { setPlayOnSilent, setVibrate, setAlarmBuzzer, setNativeBuzzer } from './lib/sound.js'
 import { buzzAsAlarm } from './lib/rest-alert.js'
 import { setNav, notePath, keyBefore, navToWorkout, nav } from './lib/nav.js'
-import { onGymReminderOpen } from './lib/gym-reminder.js'
+import { onGymReminderOpen, readGymConfig, readGymLeft, onGymLeft } from './lib/gym-reminder.js'
+import { startForgotten, keepGoing } from './lib/forgotten-phone.js'
+import { openForgottenPrompt } from './components/ForgottenPrompt.jsx'
 import { autoGymHere } from './lib/gym-auto.js'
 import { workoutVolume } from './lib/history.js'
 import { setSystemAccent, setSystemBarsLight } from './lib/system-bars.js'
@@ -25,7 +27,7 @@ import { applyOrientation } from './lib/orientation.js'
 import { initBackButton } from './lib/back.js'
 import { installEdgeSwipeBack, BACK_PREVIEW_EVENT } from './lib/edge-swipe-back.js'
 import { pageMotion } from './lib/page-motion.js'
-import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim } from './lib/watch-sync.js'
+import { startWatchSync, bindWatchAppActions, patchSetIn, watchStatus, watchClaimed, onWatchClaim, markDiscarded, notePhoneOpen } from './lib/watch-sync.js'
 import { readWatchPrefs, readWatchStatus } from './lib/watch-settings.js'
 import { startWatchRelay } from './lib/watch-relay.js'
 import { startPhoneWorkout } from './lib/phone-workout.js'
@@ -45,7 +47,7 @@ import { syncPushSubscription } from './lib/push.js'
 import { MOBILE, nativePlatform } from './lib/mobile.js'
 import { isOn } from './lib/modules.js'
 import { useTour, tourState, openTour, readTour, shouldOffer, resumeAt } from './lib/tour.js'
-import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet } from './sheets.jsx'
+import { exitWorkoutEdit, startFlow, beginWorkout, bwSheet, finishWorkoutNow, confirmSheet } from './sheets.jsx'
 import Icon from './components/Icon.jsx'
 import TabBar from './components/TabBar.jsx'
 import { startOrPreview, startPickerSheet } from './components/StartSheets.jsx'
@@ -481,6 +483,7 @@ function Page({ loc, render, under = false, scrollY = 0, motion = 'fade' }) {
 
 export default function App() {
   const boot = useStore(s => s.boot)
+  const ready = useStore(s => s.ready)
   useEffect(() => { boot() }, [boot])
   useEffect(() => { prefetchViews() }, [])
   // Android system back — sheet, then page, then press-again-to-exit (see lib/back.js)
@@ -510,11 +513,38 @@ export default function App() {
       patchSet: (where, fields, opts = {}) => useStore.getState().update(s => {
         patchSetIn(s, where, fields, stampWorkout, { ...opts, recount: w => { w.vol = workoutVolume(w) } })
       }),
+      // "Keep going" on a watch's "Still training?": the phone stops asking too (lib/forgotten-phone.js).
+      stillHere: at => keepGoing(at),
       // Ticks from the watch are the workout screen's to apply: it opens, and drains the queue.
       openWorkout: () => { if (!String(window.location.hash || '').startsWith('#/workout')) navToWorkout() },
     })
     return () => { gone = true; stop?.(); stopRelay?.(); unbind() }
   }, [])
+  // Settings → Workout → Forgotten workouts (lib/forgotten-phone.js): "Still training?" after a
+  // quiet spell, "Looks like you left the gym" from the gym reminder, and the finish nobody answered.
+  useEffect(() => {
+    if (!ready) return
+    return startForgotten({
+      useStore, useUI,
+      finish: opts => finishWorkoutNow(opts),
+      // Discard from the card asks once more, as the workout screen's Discard does.
+      discard: () => confirmSheet({
+        title: t('Discard workout?'), message: t('The sets you logged in this session will be lost.'), confirmText: t('Discard'), danger: true,
+        onConfirm: () => {
+          markDiscarded(useStore.getState().S.active?.id)
+          useStore.getState().update(s => { s.active = null })
+          useUI.getState().stopRest(); useUI.getState().stopWork()
+          nav('/home')
+        },
+      }),
+      openPrompt: openForgottenPrompt(useUI),
+      gymOn: () => readGymConfig().on,
+      // Keep going here counts as the phone used in the workout: the watches' clocks start again too.
+      noteUse: (wid, at) => notePhoneOpen(wid, at),
+      readLeft: readGymLeft,
+      onLeft: onGymLeft,
+    })
+  }, [ready])
   // iPhone app on iOS 26+: the phone's own workout session when no Apple Watch app takes the
   // workout, so AirPods that measure the heart rate fill each set's, as the watch does (#818,
   // lib/phone-workout.js). Nothing on the web, on Android or on an older iOS.

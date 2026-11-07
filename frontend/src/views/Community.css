@@ -28,21 +28,21 @@
 /* The byline: face + "by Anna · 3 Nov". */
 .com-by{display:inline-flex;align-items:center;gap:6px;margin-top:3px;max-width:100%;color:var(--label-2);font-size:var(--fs-caption);font-weight:500;line-height:1.2}
 .com-by>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.com-face{flex:none;display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;color:#fff;font-size:11px;font-weight:700;
+.com-face{flex:none;display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;color:#fff;font-size:var(--fs-caption2);font-weight:700;
   box-shadow:0 0 0 1.5px var(--surface),0 0 0 2.5px var(--sep)}
 .com-face img{width:100%;height:100%;object-fit:cover;display:block}
 
 /* Previews: one 56 px tile per kind. */
-.com-pre{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;background:var(--surface-2);font-size:24px;overflow:hidden;position:relative}
-.com-pre.sm{width:36px;height:36px;border-radius:10px;font-size:17px}
+.com-pre{flex:none;width:56px;height:56px;border-radius:14px;display:grid;place-items:center;background:var(--surface-2);font-size:1.5rem;overflow:hidden;position:relative}
+.com-pre.sm{width:36px;height:36px;border-radius:10px;font-size:var(--fs-body)}
 .com-pre-pic img{width:100%;height:100%;object-fit:cover}
 .com-pre-pic.big,.com-sheet-top .com-pre{width:84px;height:84px;border-radius:18px}
 .com-pre-look{grid-auto-flow:column;gap:2px;background:color-mix(in srgb,var(--look) 16%,var(--surface-2))}
-.com-pre-look .com-emoji{font-size:22px;line-height:1}
+.com-pre-look .com-emoji{font-size:var(--fs-title2);line-height:1}
 .com-swatch{width:26px;height:26px;border-radius:50%}
 .com-pic-wait{display:block;width:100%;height:100%;background:var(--surface-3)}
 .com-pre-sound{background:color-mix(in srgb,var(--blue) 14%,var(--surface-2))}
-.com-play{width:40px;height:40px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--blue);color:#fff;font-size:17px;
+.com-play{width:40px;height:40px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--blue);color:#fff;font-size:var(--fs-body);
   transition:transform 140ms cubic-bezier(.23,1,.32,1);position:relative;z-index:1}
 .com-play:active{transform:scale(.94)}
 .com-play[aria-pressed="true"]{background:var(--label)}

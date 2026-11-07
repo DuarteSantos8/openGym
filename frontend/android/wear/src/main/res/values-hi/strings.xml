@@ -21,6 +21,7 @@
     <string name="ended_on_phone">फ़ोन पर खत्म हुआ</string>
     <string name="exercises">व्यायाम</string>
     <string name="finish_and_save">समाप्त करें और सहेजें</string>
+    <string name="finish_now">अभी खत्म करें</string>
     <string name="finish_workout">वर्कआउट समाप्त करें</string>
     <string name="finish_workout_q">वर्कआउट समाप्त करें?</string>
     <string name="go">चलो!</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">वह सेट कितना मुश्किल था?</string>
     <string name="hr_avg_max">औसत %1$d · अधिकतम %2$d</string>
     <string name="hr_why">हर सेट पर अपनी धड़कन देखने के लिए हार्ट रेट की अनुमति दें।</string>
+    <string name="idle_ends_at">कुछ देर से कुछ दर्ज नहीं। अगर हो गया, तो यह %1$s पर अपने आप खत्म होगा, आखिरी सेट पर सेव।</string>
+    <string name="keep_going">जारी रखें</string>
     <string name="last_time">पिछली बार: %1$s</string>
     <string name="left">बायाँ</string>
+    <string name="left_ends_at">वर्कआउट अभी खत्म करें? वरना यह %1$s पर अपने आप खत्म होगा।</string>
+    <string name="left_gym">लगता है आप जिम से निकल गए</string>
     <string name="less">कम</string>
     <string name="log_on_phone">इसे फ़ोन पर दर्ज करें।</string>
     <string name="media_louder">तेज़</string>
     <string name="media_next">अगला ट्रैक</string>
+    <string name="media_now_playing">अभी चल रहा है</string>
+    <string name="media_on_watch">आपकी घड़ी पर चल रहा है</string>
+    <string name="media_open">मीडिया कंट्रोल खोलें</string>
+    <string name="media_phone_hint">फ़ोन पर संगीत? वह मीडिया कंट्रोल में है।</string>
     <string name="media_play">चलाएँ या रोकें</string>
     <string name="media_prev">पिछला ट्रैक</string>
     <string name="media_quieter">धीमा</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">फ़ोन पर एक शुरू करें, यह यहाँ दिखेगा।</string>
     <string name="start_without_weighin">बिना तौले शुरू करें</string>
     <string name="start_workout">वर्कआउट शुरू करें</string>
+    <string name="still_training">अभी भी ट्रेनिंग?</string>
     <string name="stop">रोकें</string>
     <string name="superset">सुपरसेट</string>
     <string name="tap_to_change">बदलने के लिए टैप करें।</string>

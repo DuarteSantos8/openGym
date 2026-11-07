@@ -6,6 +6,17 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 
 ## Unreleased (v1.4.5)
 
+**Watches polished, text your size, forgotten workouts (watch-polish-146)**
+- Text size has six steps now, Smallest to Largest, with a preview right in the picker (Settings → Look & Home → Text size). Default follows your phone's own text size (Android font size, iPhone Dynamic Type) without doubling it, and a size of your own replaces the phone's instead of stacking on it.
+- Text that ignored the size now follows it, and the screens hold up at Smallest and Largest. Search finds it under "font", "text", "size" or "bigger" in every language.
+- Forgotten workouts: after a quiet spell (45 minutes unless you pick 30, 60, 90 or Off) the phone and your watch ask "Still training?" with Keep going or Finish (Settings → Workout → Forgotten workouts).
+- Walked out of the gym with a workout running? With the gym reminder set up, the phone asks right away: finish now, keep going or discard. The places stay on your phone.
+- Nobody answers within 5 minutes (or 2, or 10), and the workout finishes by itself. It never throws anything away, and it ends at your last set plus its rest, so a forgotten evening still reads as the 52 minutes it was. Reopen it from the summary or History for 24 hours.
+- Apple Watch and Wear OS ask the same question and follow the same choices, Keep going on the wrist tells the phone too, and Wear OS now ends a forgotten workout as well (#904) once the phone is on 1.4.5.
+- Wear OS: the music page is a Now playing remote for music on the watch, with one tap to the system's Media Controls for music on your phone.
+- Fixed: on Wear OS the summary's heart rate ran into the round edge ("164 max" cut off). The max sits on its own smaller line now.
+- Fixed: Android scaled only the letters with a big system font, not the rows and buttons around them, so set rows clipped. The whole layout grows now.
+
 **Fresh from the tracker (new-146)**
 - Plan → Routine from a past workout: pick something you did (imported histories too) and its exercises and sets become a routine to tweak. Also on the empty Plan once you have workouts (idea by @alexgrandasoto, #1010).
 - Body measurements: a custom field can be renamed now, and every reading stays with it (#1009, thanks @claire-puppylove).

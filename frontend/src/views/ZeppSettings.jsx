@@ -95,7 +95,7 @@ export default function ZeppSettingsPage ({ api = { relayLinks, relayPairCode, r
         <Button size="sm" variant="tinted" icon="copy" aria-label={t('Copy address')} title={t('Copy address')} onClick={() => copy(address)} />
       </Row>
       <Row icon="key" iconTint="var(--green)" title={t('Pairing code')}>
-        <span className="lrow-v zepp-copyable" style={{ fontSize: 22, fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }} data-testid="zepp-code">{pair.code}</span>
+        <span className="lrow-v zepp-copyable" style={{ fontSize: 'var(--fs-title2)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }} data-testid="zepp-code">{pair.code}</span>
         <Button size="sm" variant="tinted" icon="copy" aria-label={t('Copy code')} title={t('Copy code')} onClick={() => copy(pair.code)} />
       </Row>
     </Section>}

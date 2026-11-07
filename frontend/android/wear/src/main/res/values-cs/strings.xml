@@ -21,6 +21,7 @@
     <string name="ended_on_phone">Ukončeno v telefonu</string>
     <string name="exercises">Cviky</string>
     <string name="finish_and_save">Dokončit a uložit</string>
+    <string name="finish_now">Ukončit teď</string>
     <string name="finish_workout">Dokončit trénink</string>
     <string name="finish_workout_q">Dokončit trénink?</string>
     <string name="go">Teď!</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">Jak těžká byla série?</string>
     <string name="hr_avg_max">průměr %1$d · max %2$d</string>
     <string name="hr_why">Povol tep a uvidíš ho u každé série.</string>
+    <string name="idle_ends_at">Chvíli nic zapsáno. Jestli máš hotovo, skončí sám v %1$s, uložený na poslední sérii.</string>
+    <string name="keep_going">Pokračovat</string>
     <string name="last_time">Naposledy: %1$s</string>
     <string name="left">Levá</string>
+    <string name="left_ends_at">Ukončit trénink teď? Jinak skončí sám v %1$s.</string>
+    <string name="left_gym">Vypadá to, že jsi odešel z posilovny</string>
     <string name="less">Méně</string>
     <string name="log_on_phone">Tohle zapiš v telefonu.</string>
     <string name="media_louder">Hlasitěji</string>
     <string name="media_next">Další skladba</string>
+    <string name="media_now_playing">Právě hraje</string>
+    <string name="media_on_watch">Hraje na hodinkách</string>
+    <string name="media_open">Otevřít Ovládání médií</string>
+    <string name="media_phone_hint">Hudba v telefonu? Najdeš ji v Ovládání médií.</string>
     <string name="media_play">Přehrát nebo pozastavit</string>
     <string name="media_prev">Předchozí skladba</string>
     <string name="media_quieter">Tišeji</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">Spusť ho v telefonu a objeví se tady.</string>
     <string name="start_without_weighin">Začít bez vážení</string>
     <string name="start_workout">Začít trénink</string>
+    <string name="still_training">Ještě trénuješ?</string>
     <string name="stop">Stop</string>
     <string name="superset">Supersérie</string>
     <string name="tap_to_change">Klepni a změň to.</string>

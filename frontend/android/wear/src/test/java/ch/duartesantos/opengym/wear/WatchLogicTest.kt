@@ -296,6 +296,80 @@ class WatchLogicTest {
         assertEquals("keep going counts from then", 99_000.0, Idle.since(5_000.0, null, 99_000.0), 0.0)
     }
 
+    /* ---------- forgotten workouts (1.4.5): the phone's choices ---------- */
+
+    private val min = 60_000.0
+
+    @Test fun thePhonesChoicesSetTheQuestionAndTheGrace() {
+        val rules = Idle.Rules.from(ForgottenSettings(askMin = 45.0, graceMin = 5.0, leaveGym = false))
+        assertEquals(Idle.State.ACTIVE, Idle.state(0.0, 44 * min, rules))
+        assertEquals(Idle.State.ASK, Idle.state(0.0, 45 * min, rules))
+        assertEquals(Idle.State.ASK, Idle.state(0.0, 49 * min, rules))
+        assertEquals(Idle.State.END, Idle.state(0.0, 50 * min, rules))
+        assertEquals(50 * min, Idle.endsAt(0.0, rules)!!, 0.0)
+        val off = Idle.Rules.from(ForgottenSettings(askMin = 0.0))
+        assertEquals(Idle.State.ACTIVE, Idle.state(0.0, 600 * min, off))
+        assertNull(Idle.endsAt(0.0, off))
+    }
+
+    @Test fun anOlderPhoneOnlyAsksAndNeverEnds() {
+        assertEquals(Idle.Rules.OLDER, Idle.Rules.from(null))
+        assertEquals(Idle.State.ASK, Idle.state(0.0, 20 * min))
+        assertEquals("hours later still only asks", Idle.State.ASK, Idle.state(0.0, 600 * min))
+        assertNull(Idle.endsAt(0.0, Idle.Rules.OLDER))
+    }
+
+    @Test fun leavingTheGymAsksAtOnceThenEnds() {
+        val rules = Idle.Rules.from(ForgottenSettings(askMin = 45.0, graceMin = 5.0, leaveGym = true))
+        assertEquals(Idle.State.LEFT, Idle.state(10 * min, 13 * min, rules, leftAt = 12 * min))
+        assertEquals(Idle.State.END, Idle.state(10 * min, 17 * min, rules, leftAt = 12 * min))
+        assertEquals(17 * min, Idle.endsAt(10 * min, rules, 12 * min)!!, 0.0)
+        assertEquals("out to the car and back: old news", Idle.State.ACTIVE, Idle.state(10 * min, 13 * min, rules, leftAt = 9 * min))
+        val quiet = rules.copy(leaveGym = false)
+        assertEquals(Idle.State.ACTIVE, Idle.state(10 * min, 13 * min, quiet, leftAt = 12 * min))
+    }
+
+    @Test fun itEndsAtTheLastSetPlusItsRest() {
+        val w = workout(entry("b", listOf(row(done = true, at = 3 * min), row(done = true, at = 11 * min), row())).copy(restSec = 120.0))
+        assertEquals(11 * min + 120_000, Idle.endAt(w, 300 * min), 0.0)
+        assertEquals("never later than now", 11 * min + 30_000, Idle.endAt(w, 11 * min + 30_000), 0.0)
+        assertEquals("nothing logged: where it began", 1_000.0, Idle.endAt(workout(entry("b", listOf(row()))).copy(start = 1_000.0), 300 * min), 0.0)
+    }
+
+    @Test fun keepGoingTellsThePhoneAndAnIdleFinishSaysSo() {
+        val s = SessionState(workout = workout(entry("b", listOf(row(done = true, at = 3 * min)))).copy(id = "w1"))
+        val ev = SessionCore.stillHere(s, 50 * min, "k1")!!
+        assertEquals("stillHere", ev["type"]!!.jsonPrimitive.content)
+        assertEquals("w1", ev["wid"]!!.jsonPrimitive.content)
+        assertNull(SessionCore.stillHere(SessionState(), 1.0, "k2"))
+        val (_, idle) = SessionCore.finish(s, 5 * min, "e1", idle = true, left = true)
+        assertEquals("true", idle!!["idle"]!!.jsonPrimitive.content)
+        assertEquals("true", idle["left"]!!.jsonPrimitive.content)
+        val (_, tapped) = SessionCore.finish(s, 5 * min, "e2")
+        assertNull("a hold on Finish is no idle finish", tapped!!["idle"])
+        val (_, dropped) = SessionCore.finish(s, 5 * min, "e3", discard = true, idle = true)
+        assertNull(dropped!!["idle"])
+    }
+
+    @Test fun theNewFieldsAreOptional() {
+        val snap = WireJson.decodeFromString(ActiveWorkout.serializer(), """{"id":"w1","leftGymAt":4321}""")
+        assertEquals(4321.0, snap.leftGymAt!!, 0.0)
+        val st = WireJson.decodeFromString(WatchSettings.serializer(), """{"forgotten":{"askMin":30,"graceMin":2,"leaveGym":true}}""")
+        assertEquals(ForgottenSettings(30.0, 2.0, true), st.forgotten)
+        assertNull(WireJson.decodeFromString(WatchSettings.serializer(), "{}").forgotten)
+    }
+
+    @Test fun theSummarysHeartRateSplitsIntoTwoLines() {
+        assertEquals("128 avg" to "164 max", ch.duartesantos.opengym.wear.ui.splitStat("128 avg · 164 max"))
+        assertEquals("Ø 128" to "max. 164", ch.duartesantos.opengym.wear.ui.splitStat("Ø 128 · max. 164"))
+        assertEquals("128" to null, ch.duartesantos.opengym.wear.ui.splitStat("128"))
+    }
+
+    @Test fun everyMediaControlsAppIsVisibleThroughTheManifest() {
+        val manifest = java.io.File("src/main/AndroidManifest.xml").readText()
+        for (p in MediaControls.PACKAGES) assertTrue("$p in <queries>", manifest.contains("<package android:name=\"$p\""))
+    }
+
     @Test fun theCrownMovesOnTheFieldsGrid() {
         assertEquals(62.5, nudge(60.0, 1, 2.5, 0.0, 700.0), 0.0)
         assertEquals("an off-grid weight lands on the grid first", 62.5, nudge(61.0, 1, 2.5, 0.0, 700.0), 0.0)

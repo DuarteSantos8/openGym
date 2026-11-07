@@ -13,7 +13,7 @@ import { machinePickerSheet, NotHereButton } from './components/MachinePicker.js
 import { activeGym, gymsOf, gymLabel, copyInventory, gymHasStack } from './lib/gym-inventory.js'
 import { autoGymHere } from './lib/gym-auto.js'
 import { withDayApart } from './lib/day-sessions.js'
-import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
+import { fmtDate, fmtClock, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekKey, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, sessionVolume, countsWarmups, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, pickedExerciseConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX, exLine } from './lib/history.js'
 import { usesBar, hasBarOverride, isNoBar, barTypeWeight, ownBarDefault, barPicks, withBarDefault, withStandardBars, defaultBarWeight, BAR_TYPES } from './lib/bar.js'
 import { plateSizesFor, isPlateSize, isStandardPlate, withoutPlateSize, DEFAULT_PAIRS, pairsOf, ownsPlates, withPlatePairs, withStandardPlates, withLoadKind, loadKindFor, baseWeightFor, dropGrid } from './lib/plates.js'
@@ -89,6 +89,7 @@ import { clampIncline, inclineFits, INCLINE_MAX, INCLINE_STEP, clampLevel, level
 import { savedEntryRecords, repRecordTable, liveRecordsOn } from './lib/set-records.js'
 import { RecordBadge } from './components/SetRecord.jsx'
 import { sessionPrs, buildCompletedWorkout, sessionEnd } from './lib/finish-workout.js'
+import { reopenRecord, saveReopen, readReopen, canReopen, applyReopen } from './lib/forgotten-workout.js'
 import { refillAfter } from './lib/rotation.js'
 import { isWarmupRow, hasCompletedWork } from './lib/workout-model.js'
 import { ownExerciseRest } from './lib/supersetFlow.js'
@@ -3751,6 +3752,8 @@ function WorkoutDetail({ w, close }) {
   return <>
     <h3>{w.name}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{[fmtDate(w.d, true), ...durPart(w.end - w.start), fmtVol(sessionVolume(w, st), st.unit), ...(w.bw ? [fmtNum(w.bw) + ' ' + st.unit] : [])].join(' · ')}</div>
+    {/* Ended by itself (lib/forgotten-workout.js): said so, with Reopen for 24 hours. */}
+    <AutoEndedNote w={w} close={close} />
     {/* Circuits, AMRAPs, EMOMs and intervals: the score and the round times (lib/circuit.js). */}
     <CircuitResults w={w} />
     {grouped ? groups.map(g => {
@@ -4469,7 +4472,7 @@ export const supersetSheet = (meta, onSave, opts = {}) => ui().openSheet(close =
 // Shown when the last exercise's last set is checked — finish, or keep going.
 function WorkoutComplete({ close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="checkCircle" /></div>
+    <div style={{ fontSize: '2.75rem', display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="checkCircle" /></div>
     <h3 style={{ margin: '8px 0' }}>{t("That's the whole workout!")}</h3>
     <div className="muted small" style={{ marginBottom: 16 }}>{t('All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.')}</div>
     <Button variant="primary" icon="flag" onClick={() => { close(); finishWorkout() }}>{t('Finish workout')}</Button>
@@ -4625,8 +4628,9 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     {/* Sticky, so the summary can be left from the top however far it has been scrolled. */}
     <div className="fin-x"><button type="button" className="iconbtn" aria-label={t('Close')} onClick={() => closeThenNav(close, '/home')}><Icon name="xmark" /></button></div>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)', position: 'relative' }}><Icon name="trophy" /><SeasonDeco spot="finish" workout /></div>
+    <div style={{ fontSize: '2.75rem', display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)', position: 'relative' }}><Icon name="trophy" /><SeasonDeco spot="finish" workout /></div>
     <h3 style={{ margin: '8px 0' }}>{t('Workout complete!')}</h3>
+    <AutoEndedNote w={w} />
     <div className="tiles fin" style={{ textAlign: 'start' }}>
       <div className="tile"><div className="l">{t('Duration')}</div><div className="v v-sm">{fmtDur(w.end - w.start)}</div></div>
       <div className="tile"><div className="l">{t('Volume')}</div><div className="v v-sm">{fmtVol(sessionVolume(w, st), st.unit)}</div></div>
@@ -4690,8 +4694,10 @@ export function finishWorkoutSheet({ onDiscard } = {}) {
 }
 // Finish and save without a question: the Apple Watch's Finish (lib/watch-sync.js) runs exactly
 // what the phone's Finish and save runs.
-export const finishWorkoutNow = () => doFinishWorkout()
-function doFinishWorkout() {
+// `end` and `auto` (lib/forgotten-workout.js): a workout that ended by itself is saved ending at
+// its last set plus the usual rest, marked as such, and can be reopened for 24 hours.
+export const finishWorkoutNow = (opts) => doFinishWorkout(opts && typeof opts === 'object' && !opts.nativeEvent ? opts : undefined)
+function doFinishWorkout({ end: endAt, auto } = {}) {
   // A circuit's clock still running (store/useCircuit.js) stops first, so its result is saved too.
   useCircuit.getState().wrapUp()
   const st = S()
@@ -4704,13 +4710,16 @@ function doFinishWorkout() {
   // (QA 1.3.9). The confirmed weights are left alone either way.
   // The decision itself is lib/finish-workout.js sessionPrs, shared with the live trophy.
   const { prs, e1prs } = past ? { prs: [], e1prs: [] } : sessionPrs(st, A.entries)
+  const autoEnd = !past && auto && Number(endAt) > 0 ? Math.max(Number(A.start) || 0, Math.min(Date.now(), Number(endAt))) : null
   const w = buildCompletedWorkout(A, {
-    end: past ? backfillEnd(A) : sessionEnd(A),
+    end: past ? backfillEnd(A) : autoEnd || sessionEnd(A),
     prs,
     snapshotFor: e => isCustomEx(EXIDX[e.id]) ? exerciseMuscleSnapshot(EXIDX[e.id]) : null,
     brandFor: id => (isGymSplit(st, id) ? brandAt(st, id, A.gym?.id) : ''),
   })
   w.vol = workoutVolume(w)
+  // Ended by itself: said on the summary and in History, and Reopen kept here for 24 hours.
+  if (autoEnd) { w.autoEnded = auto === 'left' ? 'left' : 'idle'; saveReopen(reopenRecord(st, A, w, { reason: w.autoEnded })) }
   // Read before the session is gone: the summary offers these to their routines (#592).
   const additions = past ? [] : routineAdditions(A, st.routines)
   let shown = w
@@ -4746,4 +4755,39 @@ function doFinishWorkout() {
   useUI.getState().stopWork()
   beep(snd(), 880, 0.15); beep(snd(), 1100, 0.15, 0.18); beep(snd(), 1320, 0.3, 0.36)
   ui().openSheet(close => <FinishSummary w={shown} prs={prs} e1prs={e1prs} additions={additions} close={close} />, { kind: 'center', locked: true, wide: true })
+}
+
+/**
+ * Reopen (lib/forgotten-workout.js): a workout that ended by itself goes back to running, as it
+ * was, within 24 hours and on the device that ended it. False when that is no longer possible.
+ */
+export function reopenWorkout(wid) {
+  const rec = readReopen()
+  if (!rec || rec.wid !== wid || S().active) {
+    if (S().active) toast(t('Finish the workout you’re on first, then reopen this one.'))
+    return false
+  }
+  let ok = false
+  update(s => { ok = applyReopen(s, rec) })
+  if (!ok) return false
+  saveReopen(null)
+  useUI.getState().closeAll()
+  nav('/workout')
+  toast(t('Back in the workout. Pick up where you left off.'))
+  return true
+}
+
+// "Ended by itself" on the summary and in History, with Reopen while it can be.
+function AutoEndedNote({ w, close }) {
+  const [rec] = useState(() => readReopen())
+  if (!w?.autoEnded) return null
+  const when = fmtClock(w.end)
+  return <div className="auto-ended" data-auto-ended>
+    <Icon name="clock" className="auto-ended-i" />
+    <div className="auto-ended-m">
+      <div className="auto-ended-t">{w.autoEnded === 'left' ? t('Ended by itself when you left the gym') : t('Ended by itself after a quiet spell')}</div>
+      <div className="auto-ended-s">{t('Saved as ending at {0}, after your last set and its rest.', when)}</div>
+    </div>
+    {canReopen(w, rec) && <Button size="sm" variant="tinted" onClick={() => { close?.(); reopenWorkout(w.id) }}>{t('Reopen workout')}</Button>}
+  </div>
 }

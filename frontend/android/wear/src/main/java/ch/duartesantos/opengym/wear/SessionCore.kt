@@ -236,7 +236,7 @@ object SessionCore {
     }
 
     /** The session finished here, or discarded here (the phone drops it unsaved). */
-    fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false): Pair<SessionState, Event?> {
+    fun finish(s0: SessionState, at: Double, id: String, discard: Boolean = false, idle: Boolean = false, left: Boolean = false): Pair<SessionState, Event?> {
         val w = s0.workout ?: return s0 to null
         val s = s0.copy(
             workout = null, pending = emptyMap(), skipped = emptyList(), startedHere = null, startId = null,
@@ -244,8 +244,18 @@ object SessionCore {
         )
         val event = buildJsonObject {
             put("id", id); put("type", if (discard) "discard" else "finish"); put("wid", w.id ?: ""); put("at", at.toLong())
+            // Ended as forgotten (Idle), not by a hold: the phone checks it against its own log
+            // (lib/watch-sync.js staleWatchFinish) and saves it ending at `at` (the last set + rest).
+            if (idle && !discard) put("idle", true)
+            if (idle && left && !discard) put("left", true)
         }
         return s to event
+    }
+
+    /** "Keep going" on "Still training?": the phone stops asking too (lib/watch-sync.js stillHere). */
+    fun stillHere(s: SessionState, at: Double, id: String): Event? {
+        val w = s.workout ?: return null
+        return buildJsonObject { put("id", id); put("type", "stillHere"); put("wid", w.id ?: ""); put("at", at.toLong()) }
     }
 
     /** Work sets done and in all, for the Tile's and the complication's ring. */

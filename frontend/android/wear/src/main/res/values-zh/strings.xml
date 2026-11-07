@@ -21,6 +21,7 @@
     <string name="ended_on_phone">已在手机上结束</string>
     <string name="exercises">动作库</string>
     <string name="finish_and_save">结束并保存</string>
+    <string name="finish_now">现在结束</string>
     <string name="finish_workout">结束训练</string>
     <string name="finish_workout_q">结束训练？</string>
     <string name="go">开始！</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">这组有多吃力？</string>
     <string name="hr_avg_max">平均 %1$d · 最高 %2$d</string>
     <string name="hr_why">允许读取心率，每组都能看到脉搏。</string>
+    <string name="idle_ends_at">有一阵没记录了。如果练完了，它会在 %1$s 自动结束，按最后一组保存。</string>
+    <string name="keep_going">继续</string>
     <string name="last_time">上次: %1$s</string>
     <string name="left">左侧</string>
+    <string name="left_ends_at">现在结束训练吗？否则它会在 %1$s 自动结束。</string>
+    <string name="left_gym">看起来你离开健身房了</string>
     <string name="less">更少</string>
     <string name="log_on_phone">这个请在手机上记录。</string>
     <string name="media_louder">调高音量</string>
     <string name="media_next">下一首</string>
+    <string name="media_now_playing">正在播放</string>
+    <string name="media_on_watch">正在手表上播放</string>
+    <string name="media_open">打开媒体控制</string>
+    <string name="media_phone_hint">音乐在手机上？去“媒体控制”。</string>
     <string name="media_play">播放或暂停</string>
     <string name="media_prev">上一首</string>
     <string name="media_quieter">调低音量</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">在手机上开始，它就会出现在这里。</string>
     <string name="start_without_weighin">不称重直接开始</string>
     <string name="start_workout">开始训练</string>
+    <string name="still_training">还在练吗？</string>
     <string name="stop">停止</string>
     <string name="superset">超级组</string>
     <string name="tap_to_change">轻点以更改。</string>

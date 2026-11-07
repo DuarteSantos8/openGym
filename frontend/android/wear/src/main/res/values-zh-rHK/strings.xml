@@ -21,6 +21,7 @@
     <string name="ended_on_phone">已在手機上結束</string>
     <string name="exercises">動作庫</string>
     <string name="finish_and_save">結束並儲存</string>
+    <string name="finish_now">現在結束</string>
     <string name="finish_workout">結束訓練</string>
     <string name="finish_workout_q">結束訓練？</string>
     <string name="go">開始！</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">這組感覺有多吃力？</string>
     <string name="hr_avg_max">平均 %1$d · 最高 %2$d</string>
     <string name="hr_why">允許讀取心率，每組都能看到脈搏。</string>
+    <string name="idle_ends_at">有一陣沒記錄了。如果練完了，它會在 %1$s 自動結束，按最後一組儲存。</string>
+    <string name="keep_going">繼續</string>
     <string name="last_time">上次: %1$s</string>
     <string name="left">左側</string>
+    <string name="left_ends_at">現在結束訓練嗎？否則它會在 %1$s 自動結束。</string>
+    <string name="left_gym">看起來你離開健身房了</string>
     <string name="less">較少</string>
     <string name="log_on_phone">這個請在手機上記錄。</string>
     <string name="media_louder">調高音量</string>
     <string name="media_next">下一首</string>
+    <string name="media_now_playing">正在播放</string>
+    <string name="media_on_watch">正在手錶上播放</string>
+    <string name="media_open">開啟媒體控制</string>
+    <string name="media_phone_hint">音樂在手機上？去「媒體控制」。</string>
     <string name="media_play">播放或暫停</string>
     <string name="media_prev">上一首</string>
     <string name="media_quieter">調低音量</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">在手機上開始，它就會出現在這裡。</string>
     <string name="start_without_weighin">不量體重直接開始</string>
     <string name="start_workout">開始訓練</string>
+    <string name="still_training">還在練嗎？</string>
     <string name="stop">停止</string>
     <string name="superset">超級組</string>
     <string name="tap_to_change">輕點以更改。</string>

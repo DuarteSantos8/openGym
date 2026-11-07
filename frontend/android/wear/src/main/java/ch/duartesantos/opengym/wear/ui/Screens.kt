@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -40,6 +41,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -70,6 +72,7 @@ import ch.duartesantos.opengym.wear.Fix
 import ch.duartesantos.opengym.wear.Keypad
 import ch.duartesantos.opengym.wear.Overview
 import ch.duartesantos.opengym.wear.Page
+import ch.duartesantos.opengym.wear.MediaControls
 import ch.duartesantos.opengym.wear.PhoneLink
 import ch.duartesantos.opengym.wear.Plan
 import ch.duartesantos.opengym.wear.R
@@ -457,14 +460,18 @@ fun SetPanel(onScreen: Boolean) {
     val partners = Overview.partners(w.entries, ref.entry).joinToString(", ").ifEmpty { null }
     val round = LocalRound.current
     BoxWithConstraints(Modifier.fillMaxSize().crown(focus) { d -> sel?.let { bump(it, d) } }) {
-        // What fits: on a small watch the name takes one line and the extra lines go.
-        var spare = maxHeight.value - (if (round) 170 else 160)
-        val partnerLine = partners != null && spare >= 15
-        if (partnerLine) spare -= 15
+        // What fits: on a small watch the name takes one line and the extra lines go. With a big
+        // system font every line of text costs more (about 110 dp of the fixed part is text), so
+        // the budget grows with the font scale and "Last time" gives way before it hides behind Done.
+        val fs = maxOf(1f, LocalDensity.current.fontScale)
+        var spare = maxHeight.value - (if (round) 170 else 160) - (fs - 1) * 110
+        val partnerLine = partners != null && spare >= 15 * fs
+        if (partnerLine) spare -= 15 * fs
         val hasLast = !fixing && !row.warmup && s.settings.show?.showLast != false && !e.last.isNullOrEmpty()
-        val lastLine = hasLast && spare >= 14
-        if (lastLine) spare -= 14
-        val twoLines = spare >= 20
+        // At the biggest fonts on a ~40 mm watch it never fits under the boxes (it sat behind Done).
+        val lastLine = hasLast && spare >= 14 * fs && !(fs > 1.15f && maxHeight.value < 260)
+        if (lastLine) spare -= 14 * fs
+        val twoLines = spare >= 20 * fs
         Column(
             Modifier.fillMaxSize().padding(start = if (round) 22.dp else 8.dp, end = if (round) 22.dp else 8.dp, top = 26.dp, bottom = if (round) 24.dp else 6.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -694,9 +701,13 @@ fun RestView(rest: Rest) {
             if (s.settings.show?.showNext != false) UpNext(roomy)
             Spacer(Modifier.weight(1f))
             if (WearStore.canRateLast() && !dim) EffortChips(roomy)
-            if (!dim) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Round: the row sits low, where the circle narrows, so −15 and +15 step in from the edge.
+            if (!dim) Row(Modifier.fillMaxWidth().padding(horizontal = if (LocalRound.current) 8.dp else 0.dp), horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                 EdgeButton("−15 s", text = "−15", size = 40.dp) { WearStore.minusRest() }
-                RowButton(stringResource(R.string.skip), Modifier.weight(1f).height(40.dp), icon = G.NEXT) { WearStore.skipRest() }
+                // At the largest font sizes "Skip" no longer fits its 40 dp row: the glyph alone, the word for TalkBack.
+                val skip = stringResource(R.string.skip)
+                val bigFont = LocalDensity.current.fontScale > 1.15f
+                RowButton(if (bigFont) "" else skip, Modifier.weight(1f).height(40.dp).semantics { contentDescription = skip }, icon = G.NEXT) { WearStore.skipRest() }
                 EdgeButton("+15 s", text = "+15", size = 40.dp) { WearStore.addRest(15) }
             } else Spacer(Modifier.height(40.dp))
         }
@@ -907,13 +918,21 @@ private fun MetricRow(value: String, unit: String?, glyph: G?, size: Float, colo
 }
 
 /**
- * A small remote for whatever plays: previous, play or pause, next, and the volume. The keys go to
- * the media session on the watch (AudioManager), the same as a headset's buttons.
+ * Now playing: a small remote for music on the watch (previous, play or pause, next, the volume:
+ * media keys to the watch's media session, the same as a headset's buttons), and one tap to the
+ * system's Media Controls app, which is where music playing on the phone is controlled from the
+ * wrist. Reading which song another app plays would take notification access, a lot to ask of a
+ * gym app, so the page says where the music is instead: on the watch, or (if nothing plays here)
+ * probably on the phone.
  */
 @Composable
 fun MediaPage() {
     val ctx = LocalContext.current
     val audio = remember { ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager }
+    val controls = remember { MediaControls.intent(ctx) }
+    var here by remember { mutableStateOf(audio.isMusicActive) }
+    // Whether something plays on the watch, looked at again every 2 s while the page is up.
+    LaunchedEffect(Unit) { while (true) { here = audio.isMusicActive; kotlinx.coroutines.delay(2_000) } }
     fun key(code: Int) {
         try {
             audio.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, code))
@@ -928,45 +947,84 @@ fun MediaPage() {
     }
     val a = LocalAccent.current
     val dim = LocalAmbient.current
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 30.dp), horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
-        Quiet(stringResource(R.string.media_title), 12.sp)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            EdgeButton(stringResource(R.string.media_prev), glyph = G.PREV) { key(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS) }
-            val said = stringResource(R.string.media_play)
-            Box(
-                Modifier.size(60.dp).clip(CircleShape).background(if (dim) Color.Transparent else a.accent).border(if (dim) 1.5.dp else 0.dp, a.accent, CircleShape)
-                    .combinedClickable(role = Role.Button) { key(android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) }
-                    .semantics { contentDescription = said },
-                contentAlignment = Alignment.Center,
-            ) { Glyph(G.PLAY_PAUSE, if (dim) a.accent else a.on, 26.dp) }
-            EdgeButton(stringResource(R.string.media_next), glyph = G.NEXT) { key(android.view.KeyEvent.KEYCODE_MEDIA_NEXT) }
+    val list = rememberTransformingLazyColumnState()
+    // Nothing on the watch: the phone's music is the likely one, so Media Controls comes first.
+    val openFirst = controls != null && !here && !dim
+    @Composable fun OpenControls() {
+        RowButton(stringResource(R.string.media_open), Modifier.fillMaxWidth()) { try { ctx.startActivity(controls) } catch (_: Exception) {} }
+    }
+    TransformingLazyColumn(
+        state = list, modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 18.dp, end = 18.dp, top = 30.dp, bottom = 34.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item { Text(stringResource(R.string.media_now_playing), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1) }
+        item { Quiet(stringResource(if (here) R.string.media_on_watch else R.string.media_phone_hint), 11.sp, lines = 3) }
+        if (openFirst) item { OpenControls() }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                EdgeButton(stringResource(R.string.media_prev), glyph = G.PREV) { key(android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS) }
+                val said = stringResource(R.string.media_play)
+                Box(
+                    Modifier.size(56.dp).clip(CircleShape).background(if (dim) Color.Transparent else a.accent).border(if (dim) 1.5.dp else 0.dp, a.accent, CircleShape)
+                        .combinedClickable(role = Role.Button) { key(android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) }
+                        .semantics { contentDescription = said },
+                    contentAlignment = Alignment.Center,
+                ) { Glyph(G.PLAY_PAUSE, if (dim) a.accent else a.on, 24.dp) }
+                EdgeButton(stringResource(R.string.media_next), glyph = G.NEXT) { key(android.view.KeyEvent.KEYCODE_MEDIA_NEXT) }
+            }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            EdgeButton(stringResource(R.string.media_quieter), glyph = G.MINUS, size = 40.dp) { vol(-1) }
-            EdgeButton(stringResource(R.string.media_louder), glyph = G.PLUS, size = 40.dp) { vol(1) }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                EdgeButton(stringResource(R.string.media_quieter), glyph = G.MINUS, size = 40.dp) { vol(-1) }
+                EdgeButton(stringResource(R.string.media_louder), glyph = G.PLUS, size = 40.dp) { vol(1) }
+            }
         }
+        if (controls != null && !openFirst && !dim) item { OpenControls() }
     }
 }
 
-/* ---------- "All done?" ---------- */
+/* ---------- "Still training?" / "Looks like you left the gym" ---------- */
 
-/** A card instead of a system alert. Finish goes to the Overview's hold, so nothing ends in one tap. */
+/**
+ * A card instead of a system alert (forgotten workouts, WatchLogic Idle). Finish goes to the
+ * Overview's hold, so nothing ends in one tap. Nobody answers: the workout ends by itself at the
+ * time it says (with a phone from 1.4.5 on), saved at its last set plus the rest.
+ */
 @Composable
 fun IdlePrompt() {
     val minutes by WearStore.idleMinutes.collectAsState()
+    val left by WearStore.idleLeft.collectAsState()
+    val endsAt by WearStore.idleEndsAt.collectAsState()
+    val clock = endsAt?.let { java.text.DateFormat.getTimeInstance(java.text.DateFormat.SHORT).format(java.util.Date(it)) }
     val list = rememberTransformingLazyColumnState()
     TransformingLazyColumn(
         state = list, modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 34.dp, bottom = 36.dp),
+        contentPadding = PaddingValues(start = 14.dp, end = 14.dp, top = 40.dp, bottom = 36.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
-        item { Text(stringResource(R.string.all_done_q), fontSize = 20.sp, fontWeight = FontWeight.Bold) }
-        if (minutes > 0) item { Quiet(stringResource(R.string.no_set_for, minutes), 12.sp, lines = 3) }
-        item { PrimaryButton(stringResource(R.string.continue_workout), Modifier.fillMaxWidth().padding(top = 4.dp)) { WearStore.keepGoing() } }
         item {
-            RowButton(stringResource(R.string.finish_workout), Modifier.fillMaxWidth()) {
-                WearStore.keepGoing(); WearStore.page.value = Page.OVERVIEW
+            // The top of a round screen is its narrowest part: a smaller title with a round-safe inset.
+            Text(stringResource(if (left) R.string.left_gym else R.string.still_training), fontSize = 16.sp, fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center, maxLines = 3, modifier = Modifier.padding(horizontal = 14.dp))
+        }
+        when {
+            clock != null -> item { Quiet(stringResource(if (left) R.string.left_ends_at else R.string.idle_ends_at, clock), 12.sp, lines = 4) }
+            minutes > 0 -> item { Quiet(stringResource(R.string.no_set_for, minutes), 12.sp, lines = 3) }
+        }
+        if (left) {
+            item {
+                PrimaryButton(stringResource(R.string.finish_now), Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                    WearStore.keepGoing(); WearStore.page.value = Page.OVERVIEW
+                }
+            }
+            item { RowButton(stringResource(R.string.keep_going), Modifier.fillMaxWidth()) { WearStore.keepGoing() } }
+        } else {
+            item { PrimaryButton(stringResource(R.string.keep_going), Modifier.fillMaxWidth().padding(top = 4.dp)) { WearStore.keepGoing() } }
+            item {
+                RowButton(stringResource(R.string.finish_workout), Modifier.fillMaxWidth()) {
+                    WearStore.keepGoing(); WearStore.page.value = Page.OVERVIEW
+                }
             }
         }
     }
@@ -1014,7 +1072,7 @@ fun SummaryScreen(sum: WorkoutSummary) {
             item { Quiet(stringResource(R.string.personal_records), 11.sp, color = Og.Yellow, modifier = Modifier.padding(top = 2.dp)) }
             items(sum.prs) { Text(it, fontSize = 13.sp, textAlign = TextAlign.Center, maxLines = 2) }
         }
-        if (sum.hrAvg != null && sum.hrMax != null) item { SumStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax), Og.Red) }
+        if (sum.hrAvg != null && sum.hrMax != null) item { HrStat(stringResource(R.string.heart_rate), stringResource(R.string.hr_avg_max, sum.hrAvg, sum.hrMax)) }
         item { SyncLine(sync) }
         item {
             PrimaryButton(stringResource(R.string.done), Modifier.fillMaxWidth().padding(top = 4.dp)) {
@@ -1030,6 +1088,39 @@ private fun SumStat(label: String, value: String, color: Color = Og.Text) {
         Quiet(label, 10.sp, lines = 1)
         Text(value, style = Og.Number, fontSize = 18.sp, color = color, maxLines = 1)
     }
+}
+
+/**
+ * The heart rate near the foot of the summary, where a round screen is at its narrowest: "128 avg ·
+ * 164 max" in one 18 sp line ran into the edge ("164 max" cut off). The average stays big, the max
+ * goes on a smaller line under it, both inside a round-safe inset, and each line shrinks to fit at
+ * the largest font scale instead of clipping.
+ */
+@Composable
+private fun HrStat(label: String, value: String) {
+    val parts = splitStat(value)
+    val inset = if (LocalConfiguration.current.isScreenRound) 0.12f else 0.04f
+    val width = LocalConfiguration.current.screenWidthDp.dp * (1 - 2 * inset)
+    Column(horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.widthIn(max = width).semantics(mergeDescendants = true) {}) {
+        Quiet(label, 10.sp, lines = 1)
+        FitText(parts.first, 18.sp, Og.Red, style = Og.Number)
+        parts.second?.let { FitText(it, 13.sp, Og.Label2, style = Og.Number) }
+    }
+}
+
+/** "128 avg · 164 max" → ("128 avg", "164 max"); a line without the dot stays whole. */
+fun splitStat(s: String): Pair<String, String?> {
+    val i = s.indexOf(" · ")
+    return if (i < 0) s to null else s.substring(0, i).trim() to s.substring(i + 3).trim()
+}
+
+/** One line that shrinks (down to 70 %) rather than clip or wrap. */
+@Composable
+fun FitText(text: String, size: androidx.compose.ui.unit.TextUnit, color: Color, style: androidx.compose.ui.text.TextStyle = androidx.compose.ui.text.TextStyle.Default) {
+    var scale by remember(text) { mutableStateOf(1f) }
+    Text(text, style = style, fontSize = size * scale, color = color, maxLines = 1, softWrap = false, textAlign = TextAlign.Center,
+        onTextLayout = { r -> if (r.hasVisualOverflow && scale > 0.7f) scale -= 0.08f })
 }
 
 /** "52 min", "1 hr 5 min", in the app's language. */

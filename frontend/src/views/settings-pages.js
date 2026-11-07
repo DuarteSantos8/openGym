@@ -154,6 +154,10 @@ export const SEARCH = [
   { page: 'workout', title: 'Screen orientation', icon: 'phoneScreen', tint: 'var(--indigo)', kw: 'orientation rotate rotation portrait landscape lock auto-rotate sideways upright turn', opts: ['Follow phone', 'Portrait', 'Landscape'], when: c => c.android },
   { page: 'workout', title: 'Exercise animations', icon: 'image', tint: 'var(--teal)', kw: 'gif animation video media pictures images', opts: ['Full', 'Small', 'Hidden'] },
   { page: 'workout', title: 'Animation quality', icon: 'image', tint: 'var(--indigo)', kw: 'animation quality resolution sharp hd download pack still px', when: c => c.mobile },
+  // Forgotten workouts (lib/forgotten-workout.js), the phone apps only.
+  { page: 'workout', title: 'Ask “Still training?”', icon: 'clock', tint: 'var(--orange)', kw: 'forgotten forgot workout left running idle still training auto finish end automatically by itself stop timeout minutes', when: c => c.mobile, tkw: () => t('forgotten workout auto finish') },
+  { page: 'workout', title: 'End by itself when I leave the gym', icon: 'mapPin', tint: 'var(--green)', kw: 'forgotten leave left gym geofence location auto finish end automatically', when: c => c.mobile },
+  { page: 'workout', title: 'Time to answer', icon: 'timer', tint: 'var(--yellow)', kw: 'forgotten grace minutes answer auto finish', when: c => c.mobile },
   { page: 'workout', title: 'Fine-tuning', icon: 'wrench', tint: 'var(--grey)', kw: 'advanced more options' },
   // Fine-tuning
   { page: 'advanced', title: 'Deload weeks', icon: 'battery', tint: 'var(--indigo)', kw: 'deload deloading lighter easy week recover rhythm every weeks cycle' },
@@ -242,7 +246,7 @@ export const SEARCH = [
   { page: 'themes', title: 'Christmas', icon: 'gift', tint: 'var(--red)', kw: 'christmas xmas seasonal theme snow santa sleigh reindeer advent calendar december decoration on off', when: () => available('christmas') },
   { page: 'themes', title: 'Festive colors', icon: 'palette', tint: 'var(--purple)', kw: 'christmas red green accent color colour seasonal', when: () => available('christmas') },
   { page: 'look', title: 'Motion', icon: 'sparkles', tint: 'var(--teal)', kw: 'reduce motion animation animations accessibility calm still vestibular', opts: ['Like the phone', 'Less'] },
-  { page: 'look', title: 'Text size', icon: 'note', tint: 'var(--blue)', kw: 'text size font bigger larger smaller accessibility zoom read', opts: ['Small', 'Default', 'Large', 'Larger'] },
+  { page: 'look', title: 'Text size', icon: 'note', tint: 'var(--blue)', kw: 'text size font fonts letters type typeface bigger larger smaller tiny huge big small scale dynamic accessibility zoom read reading eyes glasses', opts: ['Smallest', 'Small', 'Default', 'Large', 'Larger', 'Largest'], tkw: () => t('font text size bigger smaller letters') },
   { page: 'look', title: 'Show connection status', icon: 'cloud', tint: 'var(--blue)', kw: 'sync offline banner bar connection', when: c => !c.demo },
   // Data & backup
   { page: 'data', title: 'Export backup (JSON)', icon: 'share', tint: 'var(--blue)', kw: 'export backup json download save' },

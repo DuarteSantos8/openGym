@@ -21,6 +21,7 @@
     <string name="ended_on_phone">Avslutat på telefonen</string>
     <string name="exercises">Övningar</string>
     <string name="finish_and_save">Avsluta och spara</string>
+    <string name="finish_now">Avsluta nu</string>
     <string name="finish_workout">Avsluta passet</string>
     <string name="finish_workout_q">Avsluta passet?</string>
     <string name="go">Kör!</string>
@@ -30,12 +31,20 @@
     <string name="how_hard">Hur tungt var setet?</string>
     <string name="hr_avg_max">snitt %1$d · max %2$d</string>
     <string name="hr_why">Tillåt puls för att se den vid varje set.</string>
+    <string name="idle_ends_at">Inget loggat på ett tag. Om du är klar slutar det av sig självt kl. %1$s, sparat vid ditt sista set.</string>
+    <string name="keep_going">Fortsätt</string>
     <string name="last_time">Förra gången: %1$s</string>
     <string name="left">Vänster</string>
+    <string name="left_ends_at">Avsluta passet nu? Annars slutar det av sig självt kl. %1$s.</string>
+    <string name="left_gym">Ser ut som att du har lämnat gymmet</string>
     <string name="less">Mindre</string>
     <string name="log_on_phone">Logga det här på telefonen.</string>
     <string name="media_louder">Högre</string>
     <string name="media_next">Nästa låt</string>
+    <string name="media_now_playing">Spelas nu</string>
+    <string name="media_on_watch">Spelas på klockan</string>
+    <string name="media_open">Öppna Mediekontroller</string>
+    <string name="media_phone_hint">Musik på telefonen? Den finns i Mediekontroller.</string>
     <string name="media_play">Spela eller pausa</string>
     <string name="media_prev">Föregående låt</string>
     <string name="media_quieter">Tystare</string>
@@ -76,6 +85,7 @@
     <string name="start_on_phone">Starta ett på telefonen så dyker det upp här.</string>
     <string name="start_without_weighin">Starta utan att väga in</string>
     <string name="start_workout">Starta passet</string>
+    <string name="still_training">Tränar du fortfarande?</string>
     <string name="stop">Stopp</string>
     <string name="superset">Superset</string>
     <string name="tap_to_change">Tryck för att ändra.</string>
