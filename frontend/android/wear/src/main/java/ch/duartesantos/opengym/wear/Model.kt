@@ -68,6 +68,8 @@ data class ActiveWorkout(
     val healthType: String? = null,
     /** When it was last worked on on the phone (ms, #904). */
     val activeAt: Double? = null,
+    /** Paused on the phone at this moment (ms, #976): the workout clock stands still until it resumes. */
+    val pausedAt: Double? = null,
 )
 
 @Serializable
@@ -143,6 +145,9 @@ data class WatchSettings(
     val show: WatchShow? = null,
     val effort: String? = null,
     val autoHolds: Boolean? = null,
+    /** The app's accent colour ("#rrggbb", the dark theme's) and the ink that reads on it (1.4.5). */
+    val accent: String? = null,
+    val onAccent: String? = null,
 )
 
 @Serializable
