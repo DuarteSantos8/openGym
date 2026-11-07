@@ -99,7 +99,10 @@ describe('1.4.5 features pass', () => {
     const chip = rule('.setrow .n .settrend,.setrow-side>.n .settrend')
     expect(chip).toMatch(/background:var\(--surface-raised\)/)
     expect(chip).toMatch(/var\(--raised-line\)/)
-    expect(Number(chip.match(/font-size:(\d+)px/)[1])).toBeGreaterThanOrEqual(11)
+    // In rem since 1.4.5 (it follows Settings → Text size): 16 CSS px a rem at the default size.
+    const fs = chip.match(/font-size:(?:var\(--fs-caption2\)|([\d.]+)(px|rem))/)
+    expect(fs).toBeTruthy()
+    expect(fs[1] ? Number(fs[1]) * (fs[2] === 'rem' ? 16 : 1) : 11).toBeGreaterThanOrEqual(11)
   })
   it('rows divide between themselves, not above the first (no :first-of-type that never matched)', () => {
     expect(css).not.toMatch(/\.(wsets|slevel)-row:first-of-type/)

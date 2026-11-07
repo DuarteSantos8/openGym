@@ -228,6 +228,21 @@ describe('the search lands on a row', () => {
     }
   })
 
+  // Settings → Look & Home → Text size (1.4.5): people ask for a bigger font in their own words.
+  it('finds Text size by font, text, size and bigger, in every language', async () => {
+    const { readdirSync } = await import('node:fs')
+    const dir = resolve(process.cwd(), 'src/locales')
+    for (const f of readdirSync(dir).filter(x => x.endsWith('.js'))) {
+      const dict = (await import(/* @vite-ignore */ resolve(dir, f))).default
+      const tr = s => dict[s] || s
+      for (const q of ['font', 'text', 'size', 'bigger', fold(tr('Larger')).split(' ')[0], fold(tr('Largest')).split(' ')[0]]) {
+        expect(searchSettings(q, guestWeb, tr).map(h => h.title), `${f}: ${q}`).toContain('Text size')
+      }
+    }
+    expect(searchSettings('forgotten', { ...guestWeb, mobile: true }, s => s).map(h => h.title)).toContain('Ask “Still training?”')
+    expect(searchSettings('forgotten', guestWeb, s => s)).toEqual([])
+  })
+
   it('finds the rows that used to be missing', () => {
     const tr = s => s
     const web = { ...guestWeb, user: { id: 'u' }, synced: true, pushOK: true, reminderOn: true, nudge: true }

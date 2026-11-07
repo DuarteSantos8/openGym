@@ -412,7 +412,7 @@ button.conn:active{filter:brightness(1.12)}
 .iconbtn{
   width:36px;height:36px;border-radius:50%;flex:none;
   background:var(--surface);color:var(--label);
-  display:flex;align-items:center;justify-content:center;font-size:18px;
+  display:flex;align-items:center;justify-content:center;font-size:1.125rem;
   transition:background var(--fast),transform var(--fast);
 }
 .iconbtn:active{transform:scale(var(--press-scale-sm))}
@@ -448,7 +448,7 @@ h4.sec{
 .card-head-title{font-size:var(--fs-body);font-weight:600;line-height:1.25;letter-spacing:var(--ls-body);overflow-wrap:break-word;text-wrap:balance}
 .card-head-sub{font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
 .card-head-g{flex:none;display:grid;place-items:center;width:29px;height:29px;font-size:var(--fs-title2)}
-.card-head>.iconbtn{flex:none;width:30px;height:30px;font-size:14px}
+.card-head>.iconbtn{flex:none;width:30px;height:30px;font-size:.875rem}
 /* the card × owns its corner (card dismiss pass): 54 x 50 px, from the 8px gap before it to the
    card's padding edge, so a slightly-off tap still puts the card away (UUX touch-target-size) */
 .card-head>.iconbtn::before{inset-block:-10px;inset-inline:-8px -16px}
@@ -472,7 +472,7 @@ h4.sec{
   background:var(--surface);border-radius:var(--r-card);
   padding:16px;margin-bottom:12px;
 }
-.card .big{font-size:30px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
+.card .big{font-size:1.875rem;font-weight:600;letter-spacing:-.026em;line-height:1.1}
 /* A whole card that opens something (check-in, the streak's calendar, the advent card) answers the
    press the way a button does. A scale, not a fill: the seasonal cards bring their own ground. */
 .card.tappable{transition:transform var(--fast) var(--ease)}
@@ -529,7 +529,7 @@ h4.sec{
 .lrow:has(.lrow-i)+.lrow:has(.lrow-i)::before{inset-inline-start:55px}
 .lrow.tap:active{background:var(--press-fill)}
 .lrow-i{
-  width:29px;height:29px;border-radius:7px;flex:none;font-size:18px;
+  width:29px;height:29px;border-radius:7px;flex:none;font-size:1.125rem;
   display:flex;align-items:center;justify-content:center;
   background:var(--tint,var(--acc));color:#fff;
 }
@@ -614,7 +614,7 @@ h4.sec{
   letter-spacing:-.012em;background:var(--surface-2);color:var(--label);
   transition:transform var(--fast) var(--ease),background var(--fast),opacity var(--fast);
 }
-.btn .icn{font-size:19px}
+.btn .icn{font-size:1.1875rem}
 .btn:active{transform:scale(var(--press-scale))}
 .btn.primary{background:var(--acc);color:var(--on-acc)}
 .btn.primary:active{background:var(--acc-2)}
@@ -654,7 +654,7 @@ h4.sec{
 /* 11px: the minimum text size Apple's HIG gives for iOS (11 pt) */
 #tabbar button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
-  color:var(--label-2);font-size:11px;font-weight:500;letter-spacing:.005em;padding-top:3px;
+  color:var(--label-2);font-size:var(--fs-caption2);font-weight:500;letter-spacing:.005em;padding-top:3px;
   transition:color var(--fast);
 }
 /* The inactive tint is semi-transparent, so wherever two strokes cross inside an
@@ -662,7 +662,7 @@ h4.sec{
    the alpha doubled up and the icon read as a stack of loose layers. Carrying the
    fade on the <svg> instead of in the stroke colour flattens the icon first and
    fades it as one shape — and it does that for every icon, not just this one. */
-#tabbar button .icn{font-size:25px;--icon-stroke:1.65;color:var(--label)}
+#tabbar button .icn{font-size:1.5625rem;--icon-stroke:1.65;color:var(--label)}
 #tabbar button.on{color:var(--acc-ink)}
 #tabbar button.on .icn{--icon-stroke:2;color:inherit;opacity:1}
 /* A connection problem while the banner is switched off (Settings → Show connection status):
@@ -681,7 +681,7 @@ h4.sec{
   transition:transform var(--fast) var(--ease);
 }
 #tabbar button.start:active .cir{transform:scale(.93)}
-#tabbar button.start .cir .icn{font-size:26px;--icon-stroke:2;color:inherit;opacity:1}
+#tabbar button.start .cir .icn{font-size:1.625rem;--icon-stroke:2;color:inherit;opacity:1}
 #tabbar button.start span{color:var(--acc-ink);font-weight:600}
 #tabbar button.start .tab-time{font-variant-numeric:tabular-nums}
 /* `.cir` is itself a <span>, so the label rules above and below reach it too and
@@ -820,7 +820,7 @@ h4.sec{
    a long press and no drag ghost when a scroll starts on the picture */
 .thumb,.exmedia img,.exmedia video{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none}
 .thumb-x{
-  display:flex;align-items:center;justify-content:center;font-size:21px;
+  display:flex;align-items:center;justify-content:center;font-size:1.3125rem;
   background:var(--surface-2);color:var(--label-2);
 }
 .item .tt{font-size:var(--fs-callout);font-weight:400;line-height:1.25;letter-spacing:-.009em}
@@ -861,7 +861,7 @@ h4.sec{
 .list.ex-grid,#app .list.ex-grid,#modal-root .list.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .ex-grid .item{position:relative;flex-direction:column;align-items:stretch;gap:8px;padding:8px}
 .ex-grid .item .thumb{width:100%;height:auto;aspect-ratio:1;border-radius:12px}
-.ex-grid .item .thumb-x{font-size:36px}
+.ex-grid .item .thumb-x{font-size:2.25rem}
 .ex-grid .item .tt{font-size:var(--fs-subhead)}
 /* The badges ride on the picture's top corners and "+ Plan" spans the foot of the card. The
    picker's "+" carries an inline padding/margin that widens its hit area in a row; on a card it
@@ -872,7 +872,7 @@ h4.sec{
 /* "Create your own exercise" stays a row across the top of the grid */
 .ex-grid .item.ex-new{grid-column:1/-1;flex-direction:row;align-items:center;gap:12px;padding:10px 12px}
 .ex-grid .item.ex-new .thumb{width:50px;height:50px;border-radius:9px}
-.ex-grid .item.ex-new .thumb-x{font-size:21px}
+.ex-grid .item.ex-new .thumb-x{font-size:1.3125rem}
 /* The list/cards button (ExerciseViewToggle) at the end of the search field, as tall as it and
    dressed like it; pressed while the cards are on. */
 .search-row{display:flex;gap:8px}
@@ -903,7 +903,7 @@ h4.sec{
 .chips .chip::before{top:0;bottom:0}
 .chip{
   flex:none;padding:6px 13px;border-radius:99px;background:var(--surface);
-  font-size:14px;font-weight:400;color:var(--label);text-transform:capitalize;
+  font-size:.875rem;font-weight:400;color:var(--label);text-transform:capitalize;
   letter-spacing:-.006em;transition:background var(--fast),color var(--fast),transform var(--fast) var(--ease);
 }
 .chip:active{transform:scale(var(--press-scale))}
@@ -965,7 +965,7 @@ body.chips-dragging *{cursor:inherit}
 .measure-form{display:grid;grid-template-columns:1fr 1fr;gap:11px 10px}
 .measure-field{min-width:0}
 .measure-input{height:47px;background:var(--surface-2);border-radius:var(--r);display:flex;align-items:center;padding:0 12px;gap:6px}
-.measure-input .num{width:100%;min-width:0;background:transparent;border:0;outline:none;font-size:18px;font-weight:500;color:var(--label);padding:0}
+.measure-input .num{width:100%;min-width:0;background:transparent;border:0;outline:none;font-size:1.125rem;font-weight:500;color:var(--label);padding:0}
 .measure-input i{font-style:normal;color:var(--label-3);font-size:var(--fs-footnote)}
 .measure-options{margin:12px 0 16px}
 .measure-select{margin-bottom:10px;background:var(--surface-2)}
@@ -1110,7 +1110,7 @@ body.chips-dragging *{cursor:inherit}
 :root:not([data-theme="light"]) .seg{background:rgba(118,118,128,.24)}
 :root:not([data-theme="light"]) .seg-sel{background:#636366;box-shadow:0 3px 8px rgba(0,0,0,.24),0 1px 1px rgba(0,0,0,.12)}
 .seg button{
-  position:relative;z-index:1;padding:6px 8px;font-size:14px;font-weight:500;
+  position:relative;z-index:1;padding:6px 8px;font-size:.875rem;font-weight:500;
   letter-spacing:-.006em;color:var(--label);display:flex;align-items:center;
   justify-content:center;gap:5px;min-height:32px;transition:opacity var(--fast),transform var(--fast) var(--ease);
 }
@@ -1144,7 +1144,7 @@ body.chips-dragging *{cursor:inherit}
 .seg-inline{display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
 .seg-inline button{padding:5px 12px;font-size:var(--fs-footnote);min-height:28px}
 .seg-inline button span{white-space:nowrap}
-.seg-inline button .icn{font-size:14px}
+.seg-inline button .icn{font-size:.875rem}
 
 /* native time input, restyled to sit in a row like a value label */
 .timef{
@@ -1282,7 +1282,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .wthumb:active{transform:scale(var(--press-scale-sm))}
 .wthumb-x{
   position:absolute;inset-inline-end:3px;bottom:3px;width:16px;height:16px;border-radius:5px;
-  display:flex;align-items:center;justify-content:center;font-size:10px;
+  display:flex;align-items:center;justify-content:center;font-size:.625rem;
   background:rgba(0,0,0,.55);color:#fff;--icon-stroke:2.4;
 }
 .exhd{align-items:center}
@@ -1334,7 +1334,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 /* both the animation and the still failed to load: a neutral tile instead of the browser's
    broken-image glyph; same heights as the picture so the card does not jump. tap retries. */
 .exmedia.broken{background:var(--surface-2)}
-.exmedia-x{width:100%;height:320px;display:flex;align-items:center;justify-content:center;color:var(--label-3);font-size:34px}
+.exmedia-x{width:100%;height:320px;display:flex;align-items:center;justify-content:center;color:var(--label-3);font-size:2.125rem}
 .exmedia.compact .exmedia-x{height:120px}
 .exmedia.mini .exmedia-x{height:84px}
 /* a custom exercise's own video (components/CustomMedia.jsx): the same box as a picture, on black
@@ -1360,7 +1360,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .exlink-icon{
   width:34px;height:34px;border-radius:9px;
   display:flex;align-items:center;justify-content:center;
-  background:var(--surface-2);color:var(--label);font-size:18px;flex:none;
+  background:var(--surface-2);color:var(--label);font-size:1.125rem;flex:none;
 }
 .exlink-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .exlink-title{
@@ -1372,7 +1372,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   font-size:var(--fs-caption);color:var(--label-2);line-height:1.2;text-align:start;unicode-bidi:plaintext;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.exlink-arr{color:var(--label-3);font-size:14px;flex:none}
+.exlink-arr{color:var(--label-3);font-size:.875rem;flex:none}
 .exlink-card.mini{padding:6px 12px;gap:10px}
 .exlink-card.mini .exlink-icon{width:28px;height:28px;font-size:var(--fs-subhead);border-radius:7px}
 .exlink-card.mini .exlink-title{font-size:var(--fs-footnote)}
@@ -1430,14 +1430,14 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   width:min(100%,calc(var(--fv-h) * var(--fv-r,.75)));align-self:center;margin-inline:auto;display:flex;align-items:center;justify-content:center}
 .fv-player.compact .fv-stage{--fv-h:46vh}
 .fv-stage video,.fv-stage img{width:100%;height:100%;object-fit:contain;display:block;background:#000}
-.fv-x{color:#fff;opacity:.5;font-size:28px}
+.fv-x{color:#fff;opacity:.5;font-size:1.75rem}
 .fv-msg{position:absolute;inset-inline:12px;bottom:12px;text-align:center;color:#fff;font-size:var(--fs-footnote);
   background:rgba(0,0,0,.55);border-radius:10px;padding:6px 10px}
 .fv-msg:empty{display:none}
 .fv-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .fv-speed{display:inline-flex;gap:4px}
 .fv-speed .chip{padding:4px 10px;font-variant-numeric:tabular-nums}
-.fv-ask{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}
+.fv-ask{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.875rem}
 .fv-ask>span{flex:1;min-width:140px;font-weight:600}
 .fv-section{margin-top:4px}
 .fv-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
@@ -1503,13 +1503,13 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .pp-check{font-variant-numeric:tabular-nums;font-weight:700;color:var(--on-acc)}
 /* Adding photos, one at a time with each its own day (#940). */
 .pp-preview{height:min(34vh,260px);border-radius:var(--r-lg);overflow:hidden;background:var(--surface-2);
-  display:flex;align-items:center;justify-content:center;color:var(--label-3);font-size:28px}
+  display:flex;align-items:center;justify-content:center;color:var(--label-3);font-size:1.75rem}
 .pp-preview img{width:100%;height:100%;object-fit:contain;display:block}
 .pp-step{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:8px;font-variant-numeric:tabular-nums}
 .pp-warn{color:var(--orange)}
 .pp-redate{display:inline-flex;align-items:center;gap:6px;border:0;background:rgba(255,255,255,.12);color:#fff;
-  font:inherit;font-size:14px;padding:6px 12px;border-radius:99px;cursor:pointer}
-.pp-redate .icn{font-size:12px;opacity:.8}
+  font:inherit;font-size:.875rem;padding:6px 12px;border-radius:99px;cursor:pointer}
+.pp-redate .icn{font-size:var(--fs-caption);opacity:.8}
 /* The comparison (#950): cells of one shape in centred rows, or the slider; a photo can be dragged. */
 .pcmp-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px;overflow:hidden}
 .pcmp-rows{display:flex;flex-direction:column;gap:6px;align-items:center}
@@ -1531,7 +1531,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .pc-ghost{position:absolute;object-fit:cover;pointer-events:none;-webkit-user-select:none;user-select:none;transition:opacity var(--fast) linear}
 .pc-wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.7);font-size:var(--fs-footnote)}
 .pc-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
-.pc-msg>.icn{font-size:34px;opacity:.6}
+.pc-msg>.icn{font-size:2.125rem;opacity:.6}
 .pc-msg p{margin:0;max-width:30ch;line-height:var(--lh-small);color:rgba(255,255,255,.85)}
 .pc-controls{flex:none;padding:10px 16px 14px;display:flex;flex-direction:column;gap:10px}
 .pc-review{flex-direction:row}
@@ -1562,7 +1562,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 @keyframes pop-fade{from{opacity:0}to{opacity:1}}
 .mviewer-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;flex:none}
 .mviewer .iconbtn{color:#fff;background:rgba(255,255,255,.12)}
-.mviewer-count{font-size:14px;font-variant-numeric:tabular-nums;opacity:.85}
+.mviewer-count{font-size:.875rem;font-variant-numeric:tabular-nums;opacity:.85}
 .mviewer-stage{flex:1;min-height:0;display:flex}
 .exmedia.viewer{flex:1;min-width:0;margin:0;border-radius:0;background:#000;display:flex;align-items:center;justify-content:center}
 .exmedia.viewer img,.exmedia.viewer video{width:100%;height:100%;max-height:100%;object-fit:contain;background:#000}
@@ -1683,13 +1683,13 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setrow.eff3 .stp.r,.sethead.eff3 .r-sp{flex:1.1}
 .setrow.eff3 .effcell,.sethead.eff3 .eff-sp{flex:.7 1 0}
 .setrow.eff3 .stp.w button,.setrow.eff3 .stp.r button{width:26px}
-.setrow.eff3 .stp .num{font-size:14px}
+.setrow.eff3 .stp .num{font-size:.875rem}
 /* the same reserved widths as a plain row's, at the smaller font */
 .setrow.eff3 .stp.w,.sethead.eff3 .w-sp{--num:41px}
 .setrow.eff3 .stp.r,.sethead.eff3 .r-sp{--num:30px}
 .setrow.eff3 .effcell-stp>button[aria-label="Decrease"],
 .setrow.eff3 .effcell-stp>button[aria-label="Increase"]{width:22px}
-.setrow.eff3 .effcell-stp .val{font-size:14px}
+.setrow.eff3 .effcell-stp .val{font-size:.875rem}
 /* effort quick picker sheet: colour-coded preset buttons, hardest (purple) first */
 /* effort picker: the ⋯-menu list with the value in the icon square, tinted per band; the
    exact-value row carries the same stepper as the logged cell in the set row. */
@@ -1732,7 +1732,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .swpane .lab{position:absolute;top:0;bottom:0;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--fs-caption)}
 .swpane.del .lab{inset-inline-start:0}
 .swpane.cp .lab{inset-inline-end:0}
-.swpane .lab .icn{font-size:21px;transform:scale(.8);transition:transform .16s var(--ease)}
+.swpane .lab .icn{font-size:1.3125rem;transform:scale(.8);transition:transform .16s var(--ease)}
 .swpane .lab b{font-weight:500}
 .swpane.armed .lab .icn{transform:scale(1)}
 .swpane.armed .lab b{font-weight:800}
@@ -1794,7 +1794,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
      buttons on) lost the per-side reps number the same way at 320 and 368 px (QA C2, C3) */
   .setrow-side .setrow.side{gap:4px}
   .setrow-side .setrow.side .sidetag{width:20px}
-  .setrow-side .setrow.side .stp .num{font-size:14px}
+  .setrow-side .setrow.side .stp .num{font-size:.875rem}
   .setrow-side .setrow.side .stp.w,.sethead.per-side .w-sp{--num:41px}
   .setrow-side .setrow.side .stp.r,.sethead.per-side .r-sp{--num:30px}
   .setrow-side .side-rows .setrow.side .stp.w button,.setrow-side .side-rows .setrow.side .stp.r button{width:18px}
@@ -1857,7 +1857,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   /* A weighted timed hold has one control more than a straight row (the play button before the
      tick) and was 15 px over at 320 px with the full-size floors: seconds ("120") and the load
      ("102.5") at the 14 px size and 16 px button floors, as an effort row does. */
-  .setrow.timed .stp .num{font-size:14px}
+  .setrow.timed .stp .num{font-size:.875rem}
   .setrow.timed .stp.w,.sethead.timed .w-sp{--num:30px}
   .setrow.timed .stp.r,.sethead.timed .r-sp{--num:41px}
   .setrow.timed .stp.w:not(.plain),.setrow.timed .stp.r:not(.plain),.sethead.timed:not(.plain) .w-sp,.sethead.timed:not(.plain) .r-sp{--btn-floor:16px}
@@ -1874,7 +1874,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   border:1px dashed var(--label-3);background:transparent;color:var(--label-2);font:inherit;font-size:var(--fs-caption);font-weight:500;
   font-variant-numeric:tabular-nums;white-space:nowrap;cursor:pointer;transition:transform 160ms var(--ease),background-color 160ms ease}
 .cardio-eff::before{content:'';position:absolute;inset:-6px -2px}
-.cardio-eff .icn{font-size:13px}
+.cardio-eff .icn{font-size:var(--fs-footnote)}
 .cardio-eff.on{border-style:solid;border-color:var(--eff);color:var(--eff);background:var(--surface-2);background:color-mix(in srgb,var(--eff) 16%,var(--surface-2));font-weight:600}
 .cardio-eff:active:not(:disabled){transform:scale(var(--press-scale))}
 .cardio-eff:disabled{opacity:.45;cursor:default}
@@ -1920,12 +1920,12 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setrow .n::before{content:'';position:absolute;inset:-10px}
 /* A set taken to failure: a small "F" on the number's corner, in the colour the effort scale
    gives "nothing left" (effort.js EFFORT_BANDS). */
-.setrow .n .failmark,.setrow-side>.n .failmark{position:absolute;top:-5px;inset-inline-end:-6px;min-width:13px;height:13px;padding:0 2px;border-radius:7px;background:var(--purple);color:#fff;font-size:9px;font-weight:700;line-height:13px;text-align:center;pointer-events:none}
+.setrow .n .failmark,.setrow-side>.n .failmark{position:absolute;top:-5px;inset-inline-end:-6px;min-width:13px;height:13px;padding:0 2px;border-radius:7px;background:var(--purple);color:#fff;font-size:.5625rem;font-weight:700;line-height:13px;text-align:center;pointer-events:none}
 /* Set vs last time (#907): a small arrow on the set's number, the bottom corner (the failure "F"
    has the top one). A raised chip with a hairline (P11), so it reads over a ticked number's
    green; the glyph in the status inks, never the bare system colours (1.4.5 features pass). */
 .setrow .n .settrend,.setrow-side>.n .settrend{position:absolute;bottom:-6px;inset-inline-end:-7px;min-width:15px;height:15px;padding:0 2px;border-radius:8px;
-  background:var(--surface-raised);box-shadow:0 0 0 1px var(--raised-line);font-size:11px;font-weight:700;line-height:15px;text-align:center;pointer-events:none}
+  background:var(--surface-raised);box-shadow:0 0 0 1px var(--raised-line);font-size:var(--fs-caption2);font-weight:700;line-height:15px;text-align:center;pointer-events:none}
 .settrend.inline{display:inline-block;margin-inline-start:3px;font-weight:700;font-size:.95em}
 .settrend.up{color:var(--green-ink)}
 .settrend.same{color:var(--label-2)}
@@ -1981,7 +1981,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 }
 .menu-sec{font-size:var(--fs-footnote);font-weight:600;color:var(--label-2);padding:0 6px 6px;letter-spacing:.005em}
 .menu-list .menu-item.accent .lrow-i{background:var(--acc);color:var(--on-acc)}
-.menu-chev{color:var(--label-3);font-size:14px;flex:none}
+.menu-chev{color:var(--label-3);font-size:.875rem;flex:none}
 [dir="rtl"] .menu-chev{transform:scaleX(-1)}
 /* The "More" fold: its sub lists what is inside on one line, cut with an ellipsis. */
 .menu-list .menu-more .grow{min-width:0}
@@ -2036,7 +2036,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
 .setrow .setgo{
   width:30px;height:30px;border-radius:50%;flex:none;
   display:flex;align-items:center;justify-content:center;
-  background:var(--surface-2);color:var(--acc-ink);font-size:14px;
+  background:var(--surface-2);color:var(--acc-ink);font-size:.875rem;
   transition:background var(--fast),opacity var(--fast);
 }
 .setrow .setgo:disabled{opacity:.3;cursor:default}
@@ -2080,7 +2080,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
    gives: in a long language on a narrow phone it becomes an icon, RestTimer.jsx useSkipFits). The label under the
    clock fills the clock's width but does not widen it. */
 #timer .tclock{flex:none;min-width:0;display:flex;flex-direction:column;align-items:flex-start;text-align:start;padding:2px 0}
-#timer .t{font-size:28px;font-weight:600;line-height:1.1;letter-spacing:-.026em;font-variant-numeric:tabular-nums;white-space:nowrap}
+#timer .t{font-size:1.75rem;font-weight:600;line-height:1.1;letter-spacing:-.026em;font-variant-numeric:tabular-nums;white-space:nowrap}
 /* The rest clock is as wide as the wider of its two faces, the time and Ready: the face not
    showing sits in a hidden zero-height line (data-alt), so turning Ready does not move the
    buttons beside it. */
@@ -2090,7 +2090,7 @@ button.whdr-gym{color:var(--acc-ink);cursor:pointer}
   font-size:var(--fs-caption);color:var(--label-2);width:0;min-width:100%;margin-top:1px;
   display:inline-flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-#timer .lbl .icn{font-size:10px;flex:none;opacity:.8}
+#timer .lbl .icn{font-size:.625rem;flex:none;opacity:.8}
 #timer .acts{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:1 1 auto;min-width:0}
 #timer .acts .btn{padding-top:11px;padding-bottom:11px}   /* sweaty hands, mid-set */
 #timer .acts .adj{padding-inline:9px;gap:2px}
@@ -2138,7 +2138,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 }
 @media (max-width:359px){
   body.no-tabbar #timer,#timer{padding-inline:10px}
-  #timer .t{font-size:25px}
+  #timer .t{font-size:1.5625rem}
   #timer .acts .skip{min-width:0}
 }
 /* Timed holds that run themselves (lib/auto-holds.js): the chain's controls are a second row
@@ -2156,7 +2156,7 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 #timer.countin{box-shadow:inset 0 0 0 var(--hair) var(--acc),0 12px 34px -8px rgba(0,0,0,.55)}
 body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10px 30px -14px rgba(0,0,0,.55)}
 #timer.countin .tclock{flex:1 1 0;min-width:0}
-#timer.countin .t{font-size:40px;color:var(--acc-ink);animation:countpop .35s var(--ease)}
+#timer.countin .t{font-size:2.5rem;color:var(--acc-ink);animation:countpop .35s var(--ease)}
 #timer.countin .lbl{display:block}
 #timer.countin.paused .t,#timer.countin.paused .bar,#timer.working.paused .t,#timer.working.paused .bar{opacity:.5}
 #timer.countin.paused .t{animation:none}
@@ -2164,7 +2164,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 @media (max-width:359px){
   #timer .autorow{gap:4px}
   #timer .autorow .btn{padding-inline:6px;gap:3px}
-  #timer.countin .t{font-size:34px}
+  #timer.countin .t{font-size:2.125rem}
 }
 
 /* ---------------------------------------------------------------- modal -- */
@@ -2273,7 +2273,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .glyph-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
 .glyph-cell{
   aspect-ratio:1;border-radius:13px;background:var(--surface);
-  display:flex;align-items:center;justify-content:center;font-size:24px;
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;
   color:var(--label);transition:background var(--fast),color var(--fast),transform var(--fast);
 }
 .glyph-cell:active{transform:scale(var(--press-scale-sm))}
@@ -2281,15 +2281,15 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 /* Settings → Icons → Streak flame / freeze (components/StreakIconPicker.jsx). Each icon cell is
    drawn in the colour it will have, so the grid previews the tint too; the picked one gets a ring
    in that colour rather than the accent fill, which would hide it. */
-.sip-val{display:inline-flex;font-size:20px;color:var(--frost)}
+.sip-val{display:inline-flex;font-size:var(--fs-title3);color:var(--frost)}
 .sip-val .frz-g .icn{--icon-stroke:2}
 .sip-preview{display:grid;gap:10px;padding:14px;border-radius:var(--r-lg);background:var(--surface)}
 .sip-p-line{display:flex;align-items:center;gap:8px;font-size:var(--fs-callout)}
-.sip-p-line .flame{font-size:22px}
-.sip-p-line .streak-freezes{margin-inline-start:auto;font-size:12px}
+.sip-p-line .flame{font-size:var(--fs-title2)}
+.sip-p-line .streak-freezes{margin-inline-start:auto;font-size:var(--fs-caption)}
 .sip-p-week{display:grid;grid-template-columns:repeat(7,1fr) 26px;gap:5px}
 .sip-p-week .cal-d{aspect-ratio:1;font-size:var(--fs-footnote);color:var(--label-2)}
-.sip-p-week .cal-wk{font-size:15px;cursor:default}
+.sip-p-week .cal-wk{font-size:var(--fs-subhead);cursor:default}
 .sip-cap{margin:8px 2px 0}
 .sip-h{margin:18px 2px 8px}
 .sip-cell{color:var(--sip-c,var(--label))}
@@ -2297,7 +2297,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 :root[data-theme="light"] .sip-cell{color:var(--sip-cl,var(--label))}
 .sip-cell.on{background:var(--surface-2);color:var(--sip-c,var(--label));box-shadow:inset 0 0 0 2px var(--sip-c,var(--acc))}
 .sip-emoji{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:10px}
-.sip-e{font-size:22px;border-radius:11px}
+.sip-e{font-size:var(--fs-title2);border-radius:11px}
 .sip-e.on{box-shadow:inset 0 0 0 2px var(--acc)}
 .sip-bad{margin-top:6px;color:var(--red-ink)}
 
@@ -2318,12 +2318,12 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mk-card:active{transform:scale(var(--press-scale-sm))}
 .mk-card:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .mk-ic{flex:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  background:var(--surface-2);color:var(--label-2);font-size:18px;transition:background var(--fast),color var(--fast)}
+  background:var(--surface-2);color:var(--label-2);font-size:1.125rem;transition:background var(--fast),color var(--fast)}
 .mk-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .mk-n{font-size:var(--fs-subhead);font-weight:500;line-height:1.25;overflow-wrap:anywhere}
 .mk-c{font-size:var(--fs-caption);color:var(--label-2)}
 .mk-ck{flex:none;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  box-shadow:inset 0 0 0 1.5px var(--label-4);font-size:14px}
+  box-shadow:inset 0 0 0 1.5px var(--label-4);font-size:.875rem}
 .mk-card.on{background:var(--acc-soft)}
 .mk-card.on .mk-ic{background:var(--acc-soft);color:var(--acc-ink)}
 .mk-card.on .mk-ck{background:var(--acc);color:var(--on-acc);box-shadow:none}
@@ -2339,15 +2339,15 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .bwstep{display:flex;align-items:center;justify-content:center;gap:18px;margin:14px 0 6px}
 .bw-pm{
   width:46px;height:46px;border-radius:50%;background:var(--surface);flex:none;
-  color:var(--label);display:flex;align-items:center;justify-content:center;font-size:19px;
+  color:var(--label);display:flex;align-items:center;justify-content:center;font-size:1.1875rem;
   transition:background var(--fast),transform var(--fast);--icon-stroke:2.2;
 }
 .bw-pm:active{transform:scale(var(--press-scale-sm))}
 .bw-read{
-  font-size:52px;font-weight:600;letter-spacing:-.035em;min-width:158px;text-align:center;
+  font-size:3.25rem;font-weight:600;letter-spacing:-.035em;min-width:158px;text-align:center;
   font-variant-numeric:tabular-nums;line-height:1;
 }
-.bw-read .u{font-size:19px;color:var(--label-2);font-weight:400;letter-spacing:-.01em}
+.bw-read .u{font-size:1.1875rem;color:var(--label-2);font-weight:400;letter-spacing:-.01em}
 .bw-read .num{
   display:inline-block;vertical-align:baseline;background:none;border:none;outline:none;
   padding:0;margin:0;color:inherit;font:inherit;letter-spacing:inherit;
@@ -2375,7 +2375,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .hm-months span{flex:none;width:14px;font-size:var(--fs-caption2);color:var(--label-3);white-space:nowrap;overflow:visible}
 .hm-body{display:flex}
 .hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px}
-.hm-days span{height:11px;font-size:10px;color:var(--label-2);line-height:11px}
+.hm-days span{height:11px;font-size:.625rem;color:var(--label-2);line-height:11px}
 .hm-grid{display:flex;gap:3px}
 .hm-col{display:flex;flex-direction:column;gap:3px}
 .hm-c{width:11px;height:11px;border-radius:3px;background:var(--surface-2);flex:none}
@@ -2519,7 +2519,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .bm-v path{stroke:var(--surface);stroke-width:2.5;stroke-linejoin:round}
 
 .mrow{display:flex;align-items:center;gap:9px;padding:5px 0}
-.mrow .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .nm{flex:1;min-width:0;font-size:.875rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mrow .bar{width:74px;height:5px;border-radius:3px;background:var(--surface-2);flex:none;overflow:hidden}
 .mrow .bar i{display:block;height:100%;background:var(--acc);border-radius:3px}
 .mrow .v{font-size:var(--fs-caption);color:var(--label-2);min-width:52px;text-align: end;flex:none}
@@ -2531,7 +2531,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
    its marker, the 0–100% endpoints under it and each zone named beneath itself. Ready is
    the map's unshaded base, so the left zone stays neutral; margins leave room for the
    value bubble above the bar. */
-.fname{font-size:14px;padding:5px 0 0}
+.fname{font-size:.875rem;padding:5px 0 0}
 .fbarwrap{position:relative;height:8px;margin-top:20px}
 .fbar{position:relative;display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--surface-2)}
 .fbar .zone{height:100%}
@@ -2541,8 +2541,8 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .fbarwrap .knob{position:absolute;top:-3px;bottom:-3px;width:3px;border-radius:2px;background:var(--label);box-shadow:0 0 0 1.5px var(--surface);pointer-events:none}
 .fbarwrap .fval{position:absolute;bottom:100%;margin-bottom:3px;transform:translateX(-50%);font-size:var(--fs-caption2);font-weight:600;color:var(--label);white-space:nowrap;pointer-events:none}
 [dir="rtl"] .fbarwrap .fval{transform:translateX(50%)}
-.fends{display:flex;justify-content:space-between;font-size:10px;color:var(--label-3);margin-top:3px}
-.fzones{display:flex;font-size:10px;color:var(--label-3);line-height:1.2}
+.fends{display:flex;justify-content:space-between;font-size:.625rem;color:var(--label-3);margin-top:3px}
+.fzones{display:flex;font-size:.625rem;color:var(--label-3);line-height:1.2}
 /* A zone is a quarter of the bar, 64px on a 320px phone: "Восстанавливается" or "En
    recuperación" don't fit and were cut to "Восстанав…". A name may spill past its zone instead,
    centred on it, and Ready starts at the bar's start so the middle one has room on both sides. */
@@ -2553,7 +2553,7 @@ body.no-tabbar #timer.countin{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .fzones .z.fatigued{width:50%}
 /* A headline number inside a card — tile weight without a tile around it, for the pair of
    readings at the top of the effort card. */
-.stat-v{font-size:26px;font-weight:600;letter-spacing:-.026em;line-height:1.1}
+.stat-v{font-size:1.625rem;font-weight:600;letter-spacing:-.026em;line-height:1.1}
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
 /* The import summary's "Check and choose" (components/ImportChoices.jsx, #931 #849). Closed it is
    one row like a menu item; open, the dates, two switches and one row per exercise name. */
@@ -2593,8 +2593,8 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
   color:var(--label-2);font-size:var(--fs-footnote);font-weight:400;letter-spacing:-.004em;
   text-transform:none;display:flex;align-items:center;gap:5px;
 }
-.tile .l .icn{font-size:14px;color:var(--label)}
-.tile .v{font-size:26px;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
+.tile .l .icn{font-size:.875rem;color:var(--label)}
+.tile .v{font-size:1.625rem;font-weight:600;letter-spacing:-.026em;margin-top:5px;line-height:1.1}
 /* a tile that holds a count beside other counts (import summaries, the finish sheet, admin): the body size, not the headline figure */
 .tile .v.v-sm{font-size:var(--fs-body);letter-spacing:var(--ls-body)}
 .tile.tappable:active{background:var(--press-fill)}
@@ -2654,7 +2654,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 @keyframes flame-sway{0%,100%{transform:none}35%{transform:skewX(-3deg) scaleY(1.04)}70%{transform:skewX(2deg) scaleY(.97)}}
 @keyframes flame-core{0%,100%{transform:none}50%{transform:scale(.9,1.1)}}
 .streak-flame-wrap{position:relative;display:inline-flex}
-.streak-num{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:34px;font-weight:700;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
+.streak-num{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:2.125rem;font-weight:700;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}
 .streak-num .flame{font-size:.92em;vertical-align:0}
 .streak-side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;text-align:end}
 
@@ -2664,7 +2664,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .frz{display:inline-grid;place-items:center;width:1.6em;height:1.6em;border-radius:50%;color:var(--label-3);box-shadow:inset 0 0 0 1px var(--label-4)}
 .frz .icn{font-size:1.05em}
 .frz.on{color:var(--frost);background:var(--frost-soft);box-shadow:none;--icon-stroke:2}
-.streak-freezes.big{font-size:14px;gap:4px}
+.streak-freezes.big{font-size:.875rem;gap:4px}
 .tile-freezes{margin-inline-start:8px;font-size:var(--fs-caption2)}
 
 /* The medals: one per milestone, tiers bronze to legend; one still to earn is a dashed outline. */
@@ -2682,8 +2682,8 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .medal-locked .medal-ring,.medal-locked .medal-star{display:none}
 .streak-badges{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:14px}
 .streak-badge{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:10px 0 8px;border-radius:12px;background:var(--surface-2);color:var(--label-2)}
-.streak-badge-art{position:relative;display:inline-flex;font-size:28px}
-.streak-badge .lk{position:absolute;inset-inline-end:-4px;bottom:-1px;font-size:14px;padding:2px;border-radius:50%;background:var(--surface-2);color:var(--label-2);--icon-stroke:2}
+.streak-badge-art{position:relative;display:inline-flex;font-size:1.75rem}
+.streak-badge .lk{position:absolute;inset-inline-end:-4px;bottom:-1px;font-size:.875rem;padding:2px;border-radius:50%;background:var(--surface-2);color:var(--label-2);--icon-stroke:2}
 .streak-badge .n{font-size:var(--fs-footnote);font-weight:600;font-variant-numeric:tabular-nums}
 .streak-badge.got{color:var(--label)}
 .streak-next{margin-top:14px}
@@ -2694,7 +2694,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .level-bar:active{background:var(--press-fill)}
 .level-n{flex:none;display:grid;justify-items:center;min-width:44px;line-height:1}
 .level-k{font-size:var(--fs-caption);color:var(--label-2)}
-.level-n b{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px;color:var(--streak-ink)}
+.level-n b{font-size:var(--fs-title2);font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px;color:var(--streak-ink)}
 .level-m{flex:1;min-width:0;display:grid}
 .level-bar .chev{flex:none;color:var(--label-3)}
 .lv-parts{display:flex;flex-wrap:wrap;gap:6px 14px}
@@ -2702,15 +2702,15 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .badge-opt{position:relative;display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 12px;border:0;border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;font-size:var(--fs-footnote);text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast),box-shadow var(--fast)}
 .badge-opt:active{background:var(--press-fill)}
 .badge-opt.on{box-shadow:inset 0 0 0 2px var(--acc)}
-.badge-opt-art{flex:none;font-size:26px;display:inline-grid;place-items:center}
+.badge-opt-art{flex:none;font-size:1.625rem;display:inline-grid;place-items:center}
 .badge-opt-t{min-width:0;line-height:var(--lh-small);text-wrap:pretty}
-.badge-opt-pin{position:absolute;top:6px;inset-inline-end:6px;font-size:12px;color:var(--acc-ink)}
+.badge-opt-pin{position:absolute;top:6px;inset-inline-end:6px;font-size:var(--fs-caption);color:var(--acc-ink)}
 .badge-crown{display:inline-grid;place-items:center;color:var(--gold-ink)}
-.pinned-badges{flex:none;display:inline-flex;gap:2px;font-size:20px;margin-inline-end:4px}
+.pinned-badges{flex:none;display:inline-flex;gap:2px;font-size:var(--fs-title3);margin-inline-end:4px}
 .streak-hint{margin-top:10px}
 .streak-what{margin-top:2px}
 .streak-how{display:flex;align-items:center;gap:6px;width:100%;min-height:44px;margin-top:8px;margin-bottom:-6px;padding:0;border:0;background:none;color:var(--acc-ink);font:inherit;font-size:var(--fs-subhead);text-align:start;cursor:pointer}
-.streak-how .chev{margin-inline-start:auto;color:var(--label-3);font-size:14px}
+.streak-how .chev{margin-inline-start:auto;color:var(--label-3);font-size:.875rem}
 .streak-how:active{opacity:.6}
 .streak-frozen{display:flex;align-items:flex-start;gap:6px;margin-top:6px}
 .streak-frozen .frz-g{flex:none;margin-top:2px;color:var(--frost)}
@@ -2736,7 +2736,7 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .streak-party:active{transform:scale(var(--press-scale-card));transition:transform var(--fast) var(--ease)}
 .streak-party.gold{background:rgba(255,214,10,.18)}
 .streak-party.is-week{background:var(--flame-soft)}
-.streak-party-icon{position:relative;flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--surface);font-size:30px}
+.streak-party-icon{position:relative;flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--surface);font-size:1.875rem}
 .streak-party-art{display:inline-flex;animation:party-pop .55s cubic-bezier(.34,1.56,.64,1) .08s both}
 .streak-party-text{min-width:0;text-wrap:pretty}
 .streak-party.still,.streak-party.still .streak-party-art{animation:none}
@@ -2779,11 +2779,11 @@ button.mchip{border:none;font:inherit;font-size:var(--fs-caption);cursor:pointer
 .ch-note{display:flex;align-items:center;gap:6px;margin-top:14px}
 .ch-crown{color:var(--gold-ink)}
 .challenges.gold{background:rgba(255,214,10,.08);background:color-mix(in srgb,var(--yellow) 8%,var(--surface))}
-.ch-party .streak-party-icon .ch-crown{font-size:24px;--icon-stroke:2}
+.ch-party .streak-party-icon .ch-crown{font-size:1.5rem;--icon-stroke:2}
 .ch-shelf-h{margin:20px 0 8px;font-size:var(--fs-footnote);font-weight:600;letter-spacing:-.004em;color:var(--label)}
 .ch-shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;padding-top:6px}
 .ch-month{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 4px 9px;border-radius:12px;background:var(--surface-2)}
-.ch-medals{display:inline-flex;align-items:center;gap:1px;min-height:22px;font-size:21px}
+.ch-medals{display:inline-flex;align-items:center;gap:1px;min-height:22px;font-size:1.3125rem}
 .ch-slot{width:11px;height:11px;margin:0 4px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3)}
 .ch-m{font-size:var(--fs-caption);font-weight:600;color:var(--label-2);white-space:nowrap}
 .ch-month.gold{background:rgba(255,214,10,0.12);background:color-mix(in srgb,var(--yellow) 12%,var(--surface-2))}
@@ -2864,7 +2864,7 @@ body.no-tabbar.resting #toast{bottom:calc(100px + var(--sab))}
 :root[data-theme="light"] #totop{background:var(--surface)}
 #totop:active{transform:scale(var(--press-scale-sm))}
 #totop:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
-#totop .icn{font-size:21px;--icon-stroke:2.1}
+#totop .icn{font-size:1.3125rem;--icon-stroke:2.1}
 body.resting #totop{bottom:calc(172px + var(--sab))}
 /* While it shows, the page ends a button's height further up, so the last row's controls scroll
    out from under it rather than sitting beneath it. */
@@ -2873,12 +2873,12 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
 
 /* ---------------------------------------------------------------- misc --- */
 .empty{text-align:center;color:var(--label-2);padding:44px 20px;font-size:var(--fs-subhead);line-height:1.45}
-.empty .ico{font-size:34px;color:var(--label-2);margin-bottom:12px;display:flex;justify-content:center}
+.empty .ico{font-size:2.125rem;color:var(--label-2);margin-bottom:12px;display:flex;justify-content:center}
 /* An empty list with its first action in place (components/EmptyState.jsx, P9): the sentence and
    the button together, centred in a quiet frame where the rows will appear. */
 .empty-state{background:var(--surface);border-radius:var(--r-card);padding:28px 20px 22px;margin-block:4px 16px}
 .empty-state.in-sect{background:none;margin:0;padding:22px 16px 18px}
-.empty-state .ico{font-size:30px;margin-bottom:10px}
+.empty-state .ico{font-size:1.875rem;margin-bottom:10px}
 .empty-t{font-size:var(--fs-body);font-weight:600;color:var(--label);margin-bottom:4px}
 .empty-x{text-wrap:pretty}
 .empty-acts{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:16px}
@@ -2932,7 +2932,7 @@ body.totop-on.resting #app{padding-bottom:calc(232px + var(--sab))}
    mark, a frozen week washed in the freeze's colour, one line on the tapped week. The marks are
    shapes as well as colours (flame, freeze, ring, dashed ring), so they read without colour. */
 .cal-grid.with-wk{grid-template-columns:repeat(7,1fr) 26px}
-.cal-wk{grid-column:8;align-self:stretch;display:grid;place-items:center;min-height:24px;padding:0;border:0;border-radius:9px;background:none;color:inherit;font-size:15px;cursor:pointer;touch-action:manipulation;transition:background var(--fast)}
+.cal-wk{grid-column:8;align-self:stretch;display:grid;place-items:center;min-height:24px;padding:0;border:0;border-radius:9px;background:none;color:inherit;font-size:var(--fs-subhead);cursor:pointer;touch-action:manipulation;transition:background var(--fast)}
 button.cal-wk:active{background:var(--press-fill)}
 .cal-wk.sel{background:var(--surface-2);box-shadow:inset 0 0 0 1.5px var(--label-3)}
 .cal-d.wk-frozen{background:var(--frost-soft)}
@@ -2947,17 +2947,17 @@ button.cal-wk:active{background:var(--press-fill)}
 .streak-excused .wk-exc{flex:none;margin-top:2px}
 .wk-legend{flex-wrap:wrap;row-gap:6px;margin-top:8px}
 .wk-legend > span{display:inline-flex;align-items:center;gap:5px}
-.wk-legend-g{display:inline-grid;place-items:center;flex:none;width:18px;font-size:14px}
+.wk-legend-g{display:inline-grid;place-items:center;flex:none;width:18px;font-size:.875rem}
 .wk-note{display:flex;align-items:flex-start;gap:8px;min-height:2.8em;margin-top:12px;padding:10px 12px;border-radius:var(--r);background:var(--surface);line-height:var(--lh-small);text-wrap:pretty}
 .wk-note b{font-weight:600}
-.wk-note-g{flex:none;display:inline-grid;place-items:center;width:1.2em;margin-top:1px;font-size:15px}
+.wk-note-g{flex:none;display:inline-grid;place-items:center;width:1.2em;margin-top:1px;font-size:var(--fs-subhead)}
 /* The streak's freeze rule (components/StreakRule.jsx): three choices as rows, a check on the
    picked one, and the line on what saving means. */
 .rule-opts{display:grid;gap:8px}
 .rule-opt{display:flex;align-items:flex-start;gap:12px;width:100%;padding:12px 14px;border:0;border-radius:var(--r);background:var(--surface);color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast),box-shadow var(--fast)}
 .rule-opt:active{background:var(--press-fill)}
 .rule-opt.on{box-shadow:inset 0 0 0 2px var(--acc)}
-.rule-dot{flex:none;display:grid;place-items:center;width:22px;height:22px;margin-top:1px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);font-size:13px;color:var(--on-acc);--icon-stroke:2.4}
+.rule-dot{flex:none;display:grid;place-items:center;width:22px;height:22px;margin-top:1px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);font-size:var(--fs-footnote);color:var(--on-acc);--icon-stroke:2.4}
 .rule-opt.on .rule-dot{background:var(--acc);box-shadow:none}
 .rule-txt{display:grid;gap:2px;min-width:0}
 .rule-t{font-weight:600;font-size:var(--fs-callout)}
@@ -2970,11 +2970,11 @@ button.cal-wk:active{background:var(--press-fill)}
 /* The calendar's head: the streak, what it counts, the freezes, the how-to the first time. */
 .streak-sum{margin-bottom:14px}
 .streak-sum-top{display:flex;align-items:center;gap:10px}
-.streak-sum-flame{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--flame-soft);font-size:24px;flex:none}
+.streak-sum-flame{display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--flame-soft);font-size:1.5rem;flex:none}
 .streak-sum-n{font-size:var(--fs-title3);font-weight:700;letter-spacing:var(--ls-title);line-height:var(--lh-title);font-variant-numeric:tabular-nums}
 .streak-sum-i{flex:none;color:var(--label-2)}
 .streak-sum-frz{display:flex;align-items:center;gap:8px;margin-top:10px;padding-inline-start:50px;line-height:var(--lh-small)}
-.streak-sum-frz .streak-freezes{font-size:12px;flex:none}
+.streak-sum-frz .streak-freezes{font-size:var(--fs-caption);flex:none}
 .streak-howto{margin-top:12px;padding:12px 14px 14px;border-radius:var(--r-lg);background:var(--surface);animation:howto-in var(--med) var(--ease) both}
 .streak-howto-t{font-weight:600;font-size:var(--fs-subhead);margin-bottom:6px}
 .streak-howto ul{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px;font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
@@ -2990,14 +2990,14 @@ button.cal-wk:active{background:var(--press-fill)}
   min-width:0;max-width:100%;color:var(--label)}
 .datef time,.datef .datef-ph{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .datef .datef-ph{color:var(--label-3)}
-.datef>.icn{flex:none;color:var(--label-3);font-size:18px}
+.datef>.icn{flex:none;color:var(--label-3);font-size:1.125rem}
 .field.datef:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--acc)}
 .timef.datef{display:inline-flex;min-height:32px;margin-inline-start:auto}
 .datep-label{text-align:center;margin-bottom:2px}
 .datep-head{margin-bottom:2px;gap:6px}
 .datep-title{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 8px;border-radius:10px;min-width:0}
 .datep-title .datep-t{font-size:var(--fs-title3);font-weight:600;letter-spacing:-.021em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.datep-title>.icn{flex:none;font-size:14px;color:var(--label-3)}
+.datep-title>.icn{flex:none;font-size:.875rem;color:var(--label-3)}
 .datep-title:active{background:var(--surface)}
 .datep-grid{gap:4px}
 .datep-grid .cal-d,.datep-m{aspect-ratio:auto;min-height:44px;font-variant-numeric:tabular-nums}
@@ -3043,7 +3043,7 @@ button.cal-wk:active{background:var(--press-fill)}
 .ss-label-btn .ss-label-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ss-label-btn .dim{font-weight:500;white-space:nowrap}
 /* A1, A2…: a member's place in the round (#293). */
-.ss-pos{flex:none;min-width:26px;height:22px;padding:0 5px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:var(--acc-ink);background:var(--acc-soft, var(--surface-2))}
+.ss-pos{flex:none;min-width:26px;height:22px;padding:0 5px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:.7188rem;font-weight:700;color:var(--acc-ink);background:var(--acc-soft, var(--surface-2))}
 .item.in-ss{box-shadow:inset 3px 0 0 var(--acc)}
 /* A past workout's detail: each exercise opens its history, and a superset's exercises share the
    routine editor's label and bar. */
@@ -3238,9 +3238,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* header row: edit — title — trash. The two icon buttons are equal fixed widths so the title,
    flexed between them, stays optically centered on the card no matter how long it is. */
 .ci-card-hd{display:flex;align-items:center;gap:8px;width:100%}
-.ci-card-btn{width:30px;height:30px;font-size:14px;flex:none}
-.ci-card .ci-label{flex:1;min-width:0;font-size:19px;font-weight:600;letter-spacing:-.014em;text-align:center;overflow-wrap:anywhere}
-.ci-card .ci-value{font-size:14px;color:var(--label-2);word-break:break-all;text-align:center;font-variant-numeric:tabular-nums}
+.ci-card-btn{width:30px;height:30px;font-size:.875rem;flex:none}
+.ci-card .ci-label{flex:1;min-width:0;font-size:1.1875rem;font-weight:600;letter-spacing:-.014em;text-align:center;overflow-wrap:anywhere}
+.ci-card .ci-value{font-size:.875rem;color:var(--label-2);word-break:break-all;text-align:center;font-variant-numeric:tabular-nums}
 /* reorder row under a card (only shown with >1 card): ◀ position ▶ to nudge the card one slot
    along the rail. A plain, reliable control — no drag gesture to fight the horizontal scroll. */
 .ci-reorder{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:2px}
@@ -3278,7 +3278,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
 }
 .ci-add:active{transform:scale(var(--press-scale-card))}
-.ci-add .icn{font-size:40px;--icon-stroke:1.8}
+.ci-add .icn{font-size:2.5rem;--icon-stroke:1.8}
 .ci-add .ci-add-t{font-size:var(--fs-callout);font-weight:500}
 /* dots under the rail — which card you're on. Purely a hint; the rail itself is the control. */
 .ci-dots{display:flex;justify-content:center;gap:7px;margin-top:4px}
@@ -3325,12 +3325,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Edit mode, as on an iPhone: a red minus at the start, a handle at the end */
 .plan-minus{
   width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;
-  background:var(--red);color:#fff;font-size:14px;--icon-stroke:2.6;position:relative;
+  background:var(--red);color:#fff;font-size:.875rem;--icon-stroke:2.6;position:relative;
 }
 .plan-minus::before{content:'';position:absolute;inset:-10px}
 .plan-handle{
   flex:none;align-self:stretch;display:flex;align-items:center;padding:0 6px;margin:-10px -6px -10px 0;
-  color:var(--label-3);font-size:18px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
+  color:var(--label-3);font-size:1.125rem;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;
 }
 .plan-handle:active{cursor:grabbing;color:var(--label-2)}
 .plan [data-reorder-row]{transition:transform var(--fast) var(--ease)}
@@ -3363,7 +3363,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .dw-it.out{color:var(--label-4)}
 .dw-unit{position:absolute;top:calc(var(--dw-item) * 2);height:var(--dw-item);display:flex;align-items:center;
   inset-inline-start:calc(50% + 8px);font-size:var(--fs-body);font-weight:600;color:var(--label);pointer-events:none}
-.dw-read{text-align:center;font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:-4px 0 2px}
+.dw-read{text-align:center;font-size:2.125rem;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:-4px 0 2px}
 .dw-foot{text-align:center;margin:-6px 0 14px;line-height:1.4}
 @media (hover:hover){.dw-it:hover{color:var(--label)}}
 
@@ -3386,27 +3386,27 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .sp-search{margin-bottom:18px}
 /* the account card on top of the root: a big round avatar, the name, one line under it */
 .lrow.sp-acct{padding-block:12px;gap:14px}
-.sp-avatar{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:30px;
+.sp-avatar{width:56px;height:56px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:1.875rem;
   background:linear-gradient(160deg,var(--surface-3),var(--surface-2));color:var(--label-2)}
-.sp-acct .lrow-t{font-size:19px;font-weight:600}
-.sp-avatar.on{background:var(--acc-soft);color:var(--acc-ink);font-size:24px;font-weight:700}
+.sp-acct .lrow-t{font-size:1.1875rem;font-weight:600}
+.sp-avatar.on{background:var(--acc-soft);color:var(--acc-ink);font-size:1.5rem;font-weight:700}
 /* The profile picture (components/Avatar.jsx): a photo fills the circle, a built-in one sits on
    the accent's tint like the letter does. */
 .sp-avatar{overflow:hidden;position:relative}
 .sp-avatar.av-photo{background:var(--surface-2)}
 .sp-avatar > img{width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none;user-select:none}
-.sp-avatar.av-preset{font-size:28px}
-.sp-avatar.av-lg{width:96px;height:96px;font-size:42px}
-.sp-avatar.av-lg.av-preset{font-size:46px}
+.sp-avatar.av-preset{font-size:1.75rem}
+.sp-avatar.av-lg{width:96px;height:96px;font-size:2.625rem}
+.sp-avatar.av-lg.av-preset{font-size:2.875rem}
 .lrow.av-edit{justify-content:center;padding-block:16px 12px}
 .av-edit-face{position:relative;border:0;padding:0;background:none;border-radius:50%;cursor:pointer;color:inherit;
   transition:transform var(--fast)}
 .av-edit-face:active{transform:scale(var(--press-scale-sm))}
 .av-edit-face:focus-visible{outline:2.5px solid var(--acc-ink);outline-offset:3px;border-radius:50%}
 .av-edit-badge{position:absolute;right:-2px;bottom:-2px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
-  background:var(--acc);color:var(--on-acc);font-size:16px;box-shadow:0 0 0 3px var(--surface)}
+  background:var(--acc);color:var(--on-acc);font-size:var(--fs-callout);box-shadow:0 0 0 3px var(--surface)}
 .av-presets{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:6px 0 14px}
-.av-preset{aspect-ratio:1;border-radius:50%;border:0;background:var(--acc-soft);color:var(--acc-ink);font-size:30px;
+.av-preset{aspect-ratio:1;border-radius:50%;border:0;background:var(--acc-soft);color:var(--acc-ink);font-size:1.875rem;
   display:grid;place-items:center;cursor:pointer;transition:transform var(--fast),box-shadow var(--fast)}
 .av-preset:active{transform:scale(var(--press-scale-sm))}
 .av-preset.on{box-shadow:0 0 0 2.5px var(--acc)}
@@ -3423,7 +3423,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .av-crop-img{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform;pointer-events:none}
 .av-crop-ring{position:absolute;inset:0;border-radius:50%;pointer-events:none;
   box-shadow:0 0 0 999px rgba(0,0,0,.52),inset 0 0 0 1.5px rgba(255,255,255,.75)}
-.av-zoom{display:flex;align-items:center;gap:10px;margin:0 auto 16px;max-width:264px;color:var(--label-2);font-size:15px}
+.av-zoom{display:flex;align-items:center;gap:10px;margin:0 auto 16px;max-width:264px;color:var(--label-2);font-size:var(--fs-subhead)}
 .av-zoom input{flex:1;accent-color:var(--acc)}
 .sp-version{text-align:center;margin-top:4px;line-height:1.6}
 /* The root rows' previews ("2:00 de descanso · Tarjetas", "Som · Vibração") are two or three facts, and a
@@ -3476,7 +3476,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .lrow-s .intg-pill{margin-inline-start:6px;margin-top:0;vertical-align:1px}
 .intg-chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 14px}
 .btn.intg-chip{background:var(--surface-2);color:var(--label);font-weight:500;min-height:32px}
-.btn.intg-chip .icn{font-size:14px;color:var(--label-2)}
+.btn.intg-chip .icn{font-size:.875rem;color:var(--label-2)}
 /* The sheets: one header (glyph, name, the state on the same line), a lead in the secondary grey,
    then the content, then the actions. */
 .intg-head{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin-bottom:10px}
@@ -3496,7 +3496,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .intg-does{list-style:none;margin:0;padding:6px 16px}
 .intg-does li{display:flex;align-items:flex-start;gap:10px;padding-block:8px;font-size:var(--fs-subhead);line-height:1.35}
 .intg-does li+li{border-top:var(--hair) solid var(--sep)}
-.intg-does .icn{flex:none;font-size:17px;margin-top:1px;color:var(--green-ink);--icon-stroke:2.2}
+.intg-does .icn{flex:none;font-size:var(--fs-body);margin-top:1px;color:var(--green-ink);--icon-stroke:2.2}
 /* The sheets' quiet actions: one grouped list, glyphs in the accent ink (as the routine editor's,
    P4). The destructive one comes last, apart, red. */
 .intg-acts{margin-bottom:22px}
@@ -3509,7 +3509,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .intg-hook .lrow-s{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
 .intg-hook .lrow-s .intg-pill{margin:0}
 .intg-log .lrow-t{display:flex;align-items:center;gap:8px}
-.intg-log-i{flex:none;font-size:17px}
+.intg-log-i{flex:none;font-size:var(--fs-body)}
 .intg-log .ok .intg-log-i{color:var(--green-ink)}
 .intg-log .bad .intg-log-i{color:var(--orange-ink)}
 .intg-log .lrow-s{padding-inline-start:25px}
@@ -3579,7 +3579,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gym-map{position:absolute;inset:0;z-index:0;background:var(--surface-2)}
 :root:not([data-theme="light"]) .gym-map .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.7)}
 .gym-map.leaflet-container{font:inherit}
-.gym-map.leaflet-container .leaflet-control-attribution{font-size:10px;line-height:1.5;background:var(--surface);color:var(--label-2);opacity:.9;border-radius:8px 0 0 0;padding:1px 7px}
+.gym-map.leaflet-container .leaflet-control-attribution{font-size:.625rem;line-height:1.5;background:var(--surface);color:var(--label-2);opacity:.9;border-radius:8px 0 0 0;padding:1px 7px}
 .gym-map.leaflet-container .leaflet-control-attribution a{color:var(--label)}
 .gym-radius{stroke:var(--acc);fill:var(--acc);fill-opacity:.14;stroke-width:2}
 .gmap-pin{position:absolute;z-index:1000;left:50%;top:50%;width:30px;height:30px;margin:-30px 0 0 -15px;pointer-events:none;transition:transform var(--fast) var(--ease)}
@@ -3589,7 +3589,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .gmap.moving .gmap-pin{transform:translateY(-8px)}
 .gmap.moving .gmap-pin::after{transform:translateY(8px) scale(1.4)}
 @media (prefers-reduced-motion:reduce){.gmap-pin,.gmap-pin::after{transition:none}}
-.gmap-locate{position:absolute;z-index:1000;top:10px;inset-inline-end:10px;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:var(--surface);color:var(--acc-ink);font-size:19px;box-shadow:0 1px 6px rgba(0,0,0,.25);cursor:pointer}
+.gmap-locate{position:absolute;z-index:1000;top:10px;inset-inline-end:10px;width:40px;height:40px;display:grid;place-items:center;border-radius:10px;background:var(--surface);color:var(--acc-ink);font-size:1.1875rem;box-shadow:0 1px 6px rgba(0,0,0,.25);cursor:pointer}
 .gmap-locate:active{background:var(--surface-2)}
 .gmap-locate:disabled{opacity:.6}
 .gmap-hint{display:flex;flex-direction:column;gap:2px;margin:0 4px 20px}
@@ -3744,7 +3744,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Your week / Your month: four tiles in the sheet. The figure is a display size in a fixed box. */
 .recap-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
 .recap-tile{padding:12px;border-radius:var(--r-card);background:var(--surface-2);min-width:0}
-.recap-v{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recap-v{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .recap-most{display:flex;align-items:center;gap:6px;margin:4px 0 16px}
 .recap-most .icn{flex:none}
 
@@ -3839,7 +3839,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-row-t{font-size:var(--fs-body);font-weight:600;letter-spacing:var(--ls-body);line-height:var(--lh-title);display:flex;gap:8px;align-items:baseline;min-width:0;overflow-wrap:anywhere}
 .tr-row-g{font-size:var(--fs-caption);font-weight:500;color:var(--label-2);white-space:nowrap}
 .tr-row-s{font-size:var(--fs-footnote);line-height:var(--lh-small);color:var(--label-2)}
-.tr-row-c{flex:none;color:var(--label-3);font-size:13px}
+.tr-row-c{flex:none;color:var(--label-3);font-size:var(--fs-footnote)}
 .tr-av{flex:none;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;font-weight:650;letter-spacing:.01em;
   color:var(--tint);background:var(--surface-2);background:color-mix(in srgb,var(--tint) 18%,transparent)}
 .tr-dots{flex:none;display:inline-flex;gap:4px;align-items:center}
@@ -3849,7 +3849,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-flags-wide{margin:-4px 0 14px}
 .tr-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 6px;border-radius:99px;font-size:var(--fs-caption);font-weight:500;line-height:1.5;
   color:var(--pill);background:var(--surface-2);background:color-mix(in srgb,var(--pill) 14%,transparent)}
-.tr-pill .icn{font-size:11px}
+.tr-pill .icn{font-size:var(--fs-caption2)}
 .tr-pill.good{--pill:var(--green)}
 .tr-pill.warn{--pill:var(--orange)}
 .tr-pill.info{--pill:var(--blue)}
@@ -3857,7 +3857,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
   border-radius:var(--r-lg);background:var(--bg-el);background:color-mix(in srgb,var(--bg-el) 82%,transparent);backdrop-filter:blur(20px) saturate(170%);-webkit-backdrop-filter:blur(20px) saturate(170%);
   box-shadow:0 8px 30px rgba(0,0,0,.28),inset 0 0 0 var(--hair) var(--raised-line);font-weight:600}
 .tr-hello{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:28px 18px 32px;background:var(--surface);border-radius:var(--r-card)}
-.tr-hello>.icn{font-size:34px;color:var(--acc-ink)}
+.tr-hello>.icn{font-size:2.125rem;color:var(--acc-ink)}
 .tr-hello p{color:var(--label-2);max-width:32ch;text-wrap:balance;line-height:var(--lh-small)}
 .tr-hello .btn{width:auto}
 .tr-empty{color:var(--label-2);font-size:var(--fs-subhead);padding:14px 4px;line-height:var(--lh-small)}
@@ -3867,7 +3867,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-add .field,.tr-add input{flex:1;min-width:0}
 .tr-chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 12px}
 .tr-placeholder{display:grid;place-items:center;gap:10px;text-align:center;padding:90px 30px;color:var(--label-3)}
-.tr-placeholder .icn{font-size:44px}
+.tr-placeholder .icn{font-size:2.75rem}
 .tr-placeholder p{max-width:34ch;color:var(--label-2);text-wrap:balance}
 
 /* one member */
@@ -3894,12 +3894,12 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-line-v{font-size:var(--fs-subhead);font-variant-numeric:tabular-nums;text-align:end}
 .tr-line-v b.up{color:var(--green);font-weight:600}
 .tr-line-v b.down{color:var(--red);font-weight:600}
-.tr-line-i{color:var(--label-2);font-size:13px}
-.tr-pr{color:var(--yellow);font-size:13px}
+.tr-line-i{color:var(--label-2);font-size:var(--fs-footnote)}
+.tr-pr{color:var(--yellow);font-size:var(--fs-footnote)}
 .tr-note{flex-basis:100%;font-size:var(--fs-footnote);color:var(--label-2);font-style:italic}
 .tr-badge{font-size:var(--fs-caption2);font-weight:600;padding:1px 7px;border-radius:99px;color:var(--acc-ink);background:var(--acc-soft)}
 .tr-by{font-size:var(--fs-caption);color:var(--label-2);margin-top:6px}
-.tr-x{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:0;background:var(--surface-2);color:var(--label-2);cursor:pointer;font-size:11px}
+.tr-x{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:0;background:var(--surface-2);color:var(--label-2);cursor:pointer;font-size:var(--fs-caption2)}
 .tr-x:active{transform:scale(var(--press-scale-sm))}
 .tr-bars{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;height:118px;align-items:end}
 .tr-bar{display:grid;grid-template-rows:16px 1fr 16px;height:100%;text-align:center;min-width:0}
@@ -3918,7 +3918,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-wo-d{grid-area:d;font-size:var(--fs-caption);color:var(--label-2)}
 .tr-wo-n{grid-area:n;font-size:var(--fs-body);font-weight:600;letter-spacing:var(--ls-body)}
 .tr-wo-m{grid-area:m;font-size:var(--fs-footnote);color:var(--label-2);font-variant-numeric:tabular-nums}
-.tr-wo-c{grid-area:c;color:var(--label-3);font-size:13px}
+.tr-wo-c{grid-area:c;color:var(--label-3);font-size:var(--fs-footnote)}
 .tr-wo-b{padding:0 14px 6px}
 .tr-wo-a{padding:4px 14px 14px;display:flex;gap:8px}
 .tr-card>.tr-wo-a{padding-inline:0;padding-bottom:0}
@@ -3975,7 +3975,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .tr-inbox-list .tr-card{background:var(--surface-2)}
 .tr-inbox-h{display:flex;align-items:center;gap:10px;font-size:var(--fs-callout);line-height:var(--lh-small)}
 .tr-inbox-h>span:nth-child(2){flex:1;min-width:0}
-.tr-inbox-i{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;color:#fff;background:var(--tint);font-size:15px}
+.tr-inbox-i{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;color:#fff;background:var(--tint);font-size:var(--fs-subhead)}
 .tr-inbox-l{margin:10px 0 0 40px;padding:0;list-style:none;font-size:var(--fs-subhead);display:flex;flex-direction:column;gap:3px}
 .tr-inbox-p{margin:8px 0 0 40px;font-size:var(--fs-subhead);color:var(--label-2);line-height:var(--lh-small)}
 .tr-quote{margin:8px 0 0 40px;padding:8px 12px;border-inline-start:3px solid var(--acc);background:var(--surface);border-radius:0 10px 10px 0;font-size:var(--fs-subhead);line-height:var(--lh-small);overflow-wrap:anywhere}
@@ -4024,15 +4024,15 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* Tempo (#572, components/Tempo.jsx): the tag on an exercise, the picker's big readout and the
    guide's stage. The phase tints the stage so a glance from the bench says lower or lift. */
 .tag.tempo-tag{border:0;font:inherit;font-size:var(--fs-caption);font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
-.tag.tempo-tag .icn{font-size:12px}
-.tempo-big{font-size:34px;font-weight:700;letter-spacing:.04em;text-align:center;margin:4px 0 12px;font-variant-numeric:tabular-nums;color:var(--label)}
+.tag.tempo-tag .icn{font-size:var(--fs-caption)}
+.tempo-big{font-size:2.125rem;font-weight:700;letter-spacing:.04em;text-align:center;margin:4px 0 12px;font-variant-numeric:tabular-nums;color:var(--label)}
 .tempo-stage{display:grid;place-items:center;gap:2px;min-height:168px;margin:6px 0 14px;padding:18px 12px;border-radius:18px;
   background:var(--surface-2);text-align:center;transition:background-color .25s ease}
 .tempo-stage.ph-down{background:var(--surface-2);background:color-mix(in srgb,var(--blue) 18%,var(--surface-2))}
 .tempo-stage.ph-up{background:var(--surface-2);background:color-mix(in srgb,var(--green) 20%,var(--surface-2))}
 .tempo-stage.ph-bottom,.tempo-stage.ph-top{background:var(--surface-2);background:color-mix(in srgb,var(--orange) 16%,var(--surface-2))}
 .tempo-phase{font-size:var(--fs-title2);font-weight:700;color:var(--label)}
-.tempo-count{font-size:64px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;color:var(--label)}
+.tempo-count{font-size:4rem;line-height:1;font-weight:700;font-variant-numeric:tabular-nums;color:var(--label)}
 .tempo-sub{font-size:var(--fs-footnote);color:var(--label-2)}
 @media (prefers-reduced-motion:reduce){.tempo-stage{transition:none}}
 /* WebDAV backup (#582): the last run's line, in the warning tint when it failed. */
@@ -4067,7 +4067,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
    icon, the inputs as the app's steppers, and one big answer. */
 .tools-card{padding:14px 14px 12px}
 .tools-h{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:var(--fs-body);font-weight:600;letter-spacing:-.01em}
-.tools-h .icn{color:var(--acc-ink);font-size:18px}
+.tools-h .icn{color:var(--acc-ink);font-size:1.125rem}
 .tools-sub{margin:14px 0 6px;font-size:var(--fs-subhead);font-weight:600}
 .tools-chips{margin-bottom:10px;flex-wrap:wrap;overflow:visible}
 .tools-chips .chip{flex:none}
@@ -4153,7 +4153,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-name{margin:0;font-size:var(--fs-title2,1.375rem);line-height:var(--lh-title);letter-spacing:var(--ls-title);text-transform:capitalize}
 .cp-target{font-size:var(--fs-body);color:var(--label-2,var(--label-dim));font-variant-numeric:tabular-nums;min-width:7.5em}
 .cp-reps{display:flex;align-items:center;gap:12px}
-.cp-round-btn{width:48px;height:48px;border-radius:50%;background:var(--surface);color:var(--label);display:grid;place-items:center;font-size:20px;
+.cp-round-btn{width:48px;height:48px;border-radius:50%;background:var(--surface);color:var(--label);display:grid;place-items:center;font-size:var(--fs-title3);
   transition:transform var(--fast) var(--ease),background var(--fast)}
 .cp-round-btn:active{transform:scale(var(--press-scale-sm))}
 .cp-after{display:flex;gap:6px;font-size:var(--fs-subhead);color:var(--label-dim);text-transform:capitalize}
@@ -4161,7 +4161,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-ctrl{width:100%;display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:10px;margin-top:auto;padding-top:8px}
 .cp-ctrl button{min-height:64px;border-radius:var(--r-xl);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   font-size:var(--fs-footnote);font-weight:600;transition:transform var(--fast) var(--ease),opacity var(--fast)}
-.cp-ctrl button .ic,.cp-ctrl button svg{font-size:22px}
+.cp-ctrl button .ic,.cp-ctrl button svg{font-size:var(--fs-title2)}
 .cp-ctrl button:active:not(:disabled){transform:scale(var(--press-scale))}
 .cp-ctrl button:disabled{opacity:.4}
 .cp-side{background:var(--surface);color:var(--label)}
@@ -4181,8 +4181,8 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .cp-ask{justify-content:center}
 .cp-ask-n{font-size:5rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
 .cp-ask-row{display:flex;gap:24px;margin-bottom:12px}
-.cp-ask-row .cp-round-btn{width:64px;height:64px;font-size:26px}
-.cp-result-ico{font-size:52px;color:var(--acc-ink);display:flex;margin-top:8px}
+.cp-ask-row .cp-round-btn{width:64px;height:64px;font-size:1.625rem}
+.cp-result-ico{font-size:3.25rem;color:var(--acc-ink);display:flex;margin-top:8px}
 .cp-score{font-size:clamp(2rem,9vw,2.75rem);font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;text-align:center}
 .cp-rounds,.cp-next-l{list-style:none;margin:0;padding:0;width:100%;background:var(--surface);border-radius:var(--r-card)}
 .cp-rounds li,.cp-next-l li{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;min-height:44px;align-items:center}
@@ -4212,7 +4212,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .ladder-next{display:flex;align-items:center;gap:10px;margin:6px 0 0;padding:10px 12px;border-radius:var(--r);background:var(--acc-soft);color:var(--label)}
 .ladder-next .grow{display:grid;gap:1px;min-width:0}
 .ladder-next b{font-weight:600;font-size:var(--fs-callout);overflow-wrap:anywhere}
-.ladder-next-i{flex:none;color:var(--acc-ink);font-size:20px}
+.ladder-next-i{flex:none;color:var(--acc-ink);font-size:var(--fs-title3)}
 .ladder-next-ok{flex:none;color:var(--green)}
 /* The session builder (components/SessionBuilder.jsx): a duration switch, the picks as a plain
    list with why each is there, the total, then Start and the two quieter actions. */
@@ -4229,7 +4229,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 .ladder-steps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:2px;position:relative}
 .ladder-step button{display:flex;align-items:center;gap:12px;width:100%;min-height:40px;padding:6px 8px;border:0;border-radius:10px;background:none;color:var(--label);font:inherit;text-align:start;cursor:pointer;touch-action:manipulation;transition:background var(--fast)}
 .ladder-step button:active{background:var(--press-fill)}
-.ladder-dot{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);font-size:12px;color:var(--on-acc);--icon-stroke:2.6}
+.ladder-dot{flex:none;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--label-3);font-size:var(--fs-caption);color:var(--on-acc);--icon-stroke:2.6}
 .ladder-step.is-done .ladder-dot{background:var(--acc);box-shadow:none}
 .ladder-step.is-next .ladder-dot{box-shadow:inset 0 0 0 2.5px var(--acc)}
 .ladder-step.is-todo .ladder-n{color:var(--label-2)}
@@ -4244,7 +4244,7 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 
 /* Settings → About & updates → Network log (views/NetworkLog.jsx): the count first, big, then who. */
 .netlog-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:8px 16px 22px}
-.netlog-ico{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:rgba(48,209,88,.16);background:color-mix(in srgb, var(--green) 16%, transparent);color:var(--green);font-size:26px}
+.netlog-ico{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:rgba(48,209,88,.16);background:color-mix(in srgb, var(--green) 16%, transparent);color:var(--green);font-size:1.625rem}
 .netlog-n{font-size:var(--fs-title2);font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums;margin-top:6px}
 .netlog-lead{margin:0;max-width:34ch;font-size:var(--fs-subhead);color:var(--label-2);line-height:1.4;text-wrap:pretty}
 .netlog-url{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:var(--fs-footnote);word-break:break-all}

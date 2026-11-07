@@ -4472,7 +4472,7 @@ export const supersetSheet = (meta, onSave, opts = {}) => ui().openSheet(close =
 // Shown when the last exercise's last set is checked — finish, or keep going.
 function WorkoutComplete({ close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="checkCircle" /></div>
+    <div style={{ fontSize: '2.75rem', display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)' }}><Icon name="checkCircle" /></div>
     <h3 style={{ margin: '8px 0' }}>{t("That's the whole workout!")}</h3>
     <div className="muted small" style={{ marginBottom: 16 }}>{t('All exercises done. Nice work! Finish up, or add another one if you’ve got more in you.')}</div>
     <Button variant="primary" icon="flag" onClick={() => { close(); finishWorkout() }}>{t('Finish workout')}</Button>
@@ -4628,7 +4628,7 @@ function FinishSummary({ w, prs, e1prs = [], additions = [], close }) {
   return <div style={{ textAlign: 'center', padding: '8px 0' }}>
     {/* Sticky, so the summary can be left from the top however far it has been scrolled. */}
     <div className="fin-x"><button type="button" className="iconbtn" aria-label={t('Close')} onClick={() => closeThenNav(close, '/home')}><Icon name="xmark" /></button></div>
-    <div style={{ fontSize: 44, display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)', position: 'relative' }}><Icon name="trophy" /><SeasonDeco spot="finish" workout /></div>
+    <div style={{ fontSize: '2.75rem', display: 'flex', justifyContent: 'center', color: 'var(--acc-ink)', position: 'relative' }}><Icon name="trophy" /><SeasonDeco spot="finish" workout /></div>
     <h3 style={{ margin: '8px 0' }}>{t('Workout complete!')}</h3>
     <AutoEndedNote w={w} />
     <div className="tiles fin" style={{ textAlign: 'start' }}>

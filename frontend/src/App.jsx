@@ -483,6 +483,7 @@ function Page({ loc, render, under = false, scrollY = 0, motion = 'fade' }) {
 
 export default function App() {
   const boot = useStore(s => s.boot)
+  const ready = useStore(s => s.ready)
   useEffect(() => { boot() }, [boot])
   useEffect(() => { prefetchViews() }, [])
   // Android system back — sheet, then page, then press-again-to-exit (see lib/back.js)
@@ -533,7 +534,7 @@ export default function App() {
           markDiscarded(useStore.getState().S.active?.id)
           useStore.getState().update(s => { s.active = null })
           useUI.getState().stopRest(); useUI.getState().stopWork()
-          navigate('/home')
+          nav('/home')
         },
       }),
       openPrompt: openForgottenPrompt(useUI),
