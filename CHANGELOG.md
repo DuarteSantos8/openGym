@@ -153,6 +153,8 @@ tag. Write it for the people using the app: what changed for them, short, no em 
 - Settings → Garmin: which Garmins the phone knows, whether openGym is on them, and the watch switches (send workouts, open on the watch when a workout starts).
 - The Garmin keeps every event until the phone confirms it applied it, like the other watches, so a set logged while openGym on the phone was closed is not lost.
 - The F-Droid build stays free of Garmin's closed SDK; its Garmin page says so.
+- The Garmin app ran in Garmin's simulator on six watches (Forerunner 265, 255 and 55, Venu Sq 2, Instinct 2, fēnix 8): every screen now sizes its big numbers to the watch, so nothing overlaps on the small ones, and nothing hides under the Instinct's little round window anymore.
+- Fixed: on the Venu Sq 2 the top button did nothing in the Garmin app. It starts, logs a set and skips the rest like START on the other watches.
 - Fixed: an event the watch sent again long after the phone applied it is named in the next confirmation again, so a watch that was away for a whole workout lets go of all of it.
 
 **Apple Watch, redesigned**

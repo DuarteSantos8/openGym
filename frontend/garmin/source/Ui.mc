@@ -66,21 +66,148 @@ module Ui {
         dc.clear();
     }
 
-    //! The width that is really on screen at height y: a chord on a round screen, less a margin.
+    //! The Instinct's round sub-screen (top right) as [x, y, w, h], or null: nothing is drawn under it.
+    var sub = null;
+    var subAsked = false;
+
+    function subscreen() {
+        if (!subAsked) {
+            subAsked = true;
+            if (WatchUi has :getSubscreen) {
+                var b = WatchUi.getSubscreen();
+                if (b != null) {
+                    sub = [b.x, b.y, b.width, b.height];
+                }
+            }
+        }
+        return sub;
+    }
+
+    //! Extra room kept free at a round screen's edge (the rest ring), in px per side.
+    var inset = 0;
+
+    //! Whether a line of height hh centred at y runs beside the sub-screen.
+    function besideSub(y, hh) {
+        var sb = subscreen();
+        return sb != null && y + hh / 2 > sb[1] && y - hh / 2 < sb[1] + sb[3];
+    }
+
+    //! The width that is really on screen at height y: a chord on a round screen, less a margin;
+    //! beside the Instinct's sub-screen, only what is left of it.
     function widthAt(dc, y) {
         var w = dc.getWidth();
+        var out;
         if (!isRound()) {
-            return w - 16;
+            out = w - 16 - 2 * cut(dc, y);
+        } else {
+            var r = w / 2.0 - inset;
+            var dy = y - dc.getHeight() / 2.0;
+            if (dy < 0) {
+                dy = -dy;
+            }
+            out = dy >= r ? 0 : (2 * Math.sqrt(r * r - dy * dy) - 20).toNumber();
         }
-        var r = w / 2.0;
-        var dy = y - dc.getHeight() / 2.0;
-        if (dy < 0) {
-            dy = -dy;
+        if (besideSub(y, 2)) {
+            var sb = subscreen();
+            if (sb[0] - 8 - cut(dc, y) < out) {
+                out = sb[0] - 8 - cut(dc, y);
+            }
         }
-        if (dy >= r) {
+        return out;
+    }
+
+    //! How far the Instinct's semi-octagon cuts into the screen at height y, on each side (its
+    //! corners are cut off at 45 degrees); 0 elsewhere.
+    function cut(dc, y) {
+        if (System.getDeviceSettings().screenShape != System.SCREEN_SHAPE_SEMI_OCTAGON) {
             return 0;
         }
-        return (2 * Math.sqrt(r * r - dy * dy) - 20).toNumber();
+        var c = (dc.getWidth() * 0.16).toNumber();
+        var d = y < dc.getHeight() - y ? y : dc.getHeight() - y;
+        return d < c ? (c - d).toNumber() : 0;
+    }
+
+    //! The width for a line of height hh centred at y: the narrower of its top and bottom edge
+    //! (a little inside, glyphs do not fill the whole line height).
+    function widthFor(dc, y, hh) {
+        var a = widthAt(dc, y - hh * 0.35);
+        var b = widthAt(dc, y + hh * 0.35);
+        if (besideSub(y, hh)) {
+            var sb = subscreen();
+            var c = cut(dc, y - hh * 0.35);
+            if (sb[0] - 8 - c < a) {
+                a = sb[0] - 8 - c;
+            }
+        }
+        return a < b ? a : b;
+    }
+
+    //! The centre of a line at y: the middle, or beside the sub-screen the middle of what is left.
+    function cxFor(dc, y, hh) {
+        if (besideSub(y, hh)) {
+            return (subscreen()[0] + cut(dc, y - hh * 0.35)) / 2;
+        }
+        return dc.getWidth() / 2;
+    }
+
+    //! The height a font takes in a stack of lines. Number fonts carry room above and below the
+    //! digits (they have no lower case), so they stack a little tighter.
+    function hOf(dc, font) {
+        var fh = dc.getFontHeight(font);
+        if (font == Graphics.FONT_NUMBER_MILD || font == Graphics.FONT_NUMBER_MEDIUM || font == Graphics.FONT_NUMBER_HOT) {
+            return (fh * 0.8).toNumber();
+        }
+        return fh;
+    }
+
+    //! The biggest number font, from `top` down, that takes no more than `room` px in the stack and
+    //! keeps every text no wider than maxW (one watch's FONT_NUMBER_MEDIUM is a fifth of the
+    //! screen, another's two fifths).
+    function numFont(dc, top, room, texts, maxW) {
+        var fonts = [Graphics.FONT_NUMBER_HOT, Graphics.FONT_NUMBER_MEDIUM, Graphics.FONT_NUMBER_MILD];
+        var i = top == Graphics.FONT_NUMBER_HOT ? 0 : (top == Graphics.FONT_NUMBER_MEDIUM ? 1 : 2);
+        while (i < 2) {
+            if (hOf(dc, fonts[i]) <= room && widest(dc, texts, fonts[i]) <= maxW) {
+                return fonts[i];
+            }
+            i += 1;
+        }
+        return Graphics.FONT_NUMBER_MILD;
+    }
+
+    function widest(dc, texts, font) {
+        var m = 0;
+        for (var i = 0; i < texts.size(); i += 1) {
+            var tw = dc.getTextWidthInPixels(texts[i], font);
+            if (tw > m) {
+                m = tw;
+            }
+        }
+        return m;
+    }
+
+    //! The biggest text font that fits s in maxW: SMALL, else TINY, else XTINY (cut to fit then).
+    function textFont(dc, s, maxW) {
+        if (dc.getTextWidthInPixels(s, Graphics.FONT_SMALL) <= maxW) {
+            return Graphics.FONT_SMALL;
+        }
+        if (dc.getTextWidthInPixels(s, Graphics.FONT_TINY) <= maxW) {
+            return Graphics.FONT_TINY;
+        }
+        return Graphics.FONT_XTINY;
+    }
+
+    //! The height a stack of lines may take: a round screen's top and bottom are too narrow.
+    function room(dc) {
+        return (dc.getHeight() * (isRound() ? 0.88 : 0.95)).toNumber();
+    }
+
+    //! Where a stack of lines this tall starts: centred, but clear of the round edge's top.
+    function stackTop(dc, total) {
+        var h = dc.getHeight();
+        var y = (h - total) / 2;
+        var min = (h * (isRound() ? 0.06 : 0.03)).toNumber();
+        return y < min ? min : y;
     }
 
     //! The text cut to fit maxW, with "..." when it had to be.
@@ -100,8 +227,15 @@ module Ui {
 
     //! One line, centred, cut to the width at its height.
     function line(dc, y, font, s, color) {
+        var fh = dc.getFontHeight(font);
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(dc.getWidth() / 2, y, font, fit(dc, s, font, widthAt(dc, y)), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(cxFor(dc, y, fh), y, font, fit(dc, s, font, widthFor(dc, y, fh)), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+    }
+
+    //! A big number, centred at y (beside the sub-screen where it reaches it).
+    function num(dc, y, font, s, color) {
+        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(cxFor(dc, y, hOf(dc, font)), y, font, s, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     //! A few lines, centred around y, broken at spaces (CJK and Thai, which have none, break
@@ -112,7 +246,7 @@ module Ui {
         var fh = dc.getFontHeight(font);
         var top = y - (fh * (maxLines - 1)) / 2;
         while (rest.length() > 0 && lines.size() < maxLines) {
-            var maxW = widthAt(dc, top + fh * lines.size());
+            var maxW = widthFor(dc, top + fh * lines.size(), fh);
             if (dc.getTextWidthInPixels(rest, font) <= maxW) {
                 lines.add(rest);
                 rest = "";
@@ -138,7 +272,7 @@ module Ui {
         }
         if (rest.length() > 0 && lines.size() > 0) {
             var k = lines.size() - 1;
-            lines[k] = fit(dc, lines[k] + " " + rest, font, widthAt(dc, top + fh * k));
+            lines[k] = fit(dc, lines[k] + " " + rest, font, widthFor(dc, top + fh * k, fh));
         }
         top = y - (fh * (lines.size() - 1)) / 2;
         for (var i = 0; i < lines.size(); i += 1) {
@@ -150,8 +284,8 @@ module Ui {
     //! [x, y, w, h], for taps.
     function pill(dc, cy, label, filled) {
         var font = Graphics.FONT_SMALL;
-        var h = dc.getFontHeight(font) + 8;
-        var maxW = widthAt(dc, cy + h / 2) - 8;
+        var h = pillH(dc);
+        var maxW = widthFor(dc, cy, h / 0.7) - 8;
         var w = dc.getTextWidthInPixels(label, font) + 32;
         if (w < dc.getWidth() * 0.42) {
             w = (dc.getWidth() * 0.42).toNumber();
@@ -159,7 +293,10 @@ module Ui {
         if (w > maxW) {
             w = maxW;
         }
-        var x = (dc.getWidth() - w) / 2;
+        // a label too long for the pill gets a smaller font before it gets cut
+        font = textFont(dc, label, w - 12);
+        var cx = cxFor(dc, cy, h);
+        var x = cx - w / 2;
         var y = cy - h / 2;
         if (filled) {
             dc.setColor(accent(), Graphics.COLOR_TRANSPARENT);
@@ -171,8 +308,12 @@ module Ui {
             dc.drawRoundedRectangle(x, y, w, h, h / 2);
             dc.setPenWidth(1);
         }
-        dc.drawText(dc.getWidth() / 2, cy, font, fit(dc, label, font, w - 12), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(cx, cy, font, fit(dc, label, font, w - 12), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         return [x, y, w, h];
+    }
+
+    function pillH(dc) {
+        return dc.getFontHeight(Graphics.FONT_SMALL) + 8;
     }
 
     function inBox(box, x, y) {

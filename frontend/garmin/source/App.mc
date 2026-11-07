@@ -52,7 +52,7 @@ class OpenGymApp extends Application.AppBase {
             saved = null;
         }
         G.state = Core.normalize(saved);
-        if (Communications has :registerForPhoneAppMessages) {
+        if (Link.wired() && (Communications has :registerForPhoneAppMessages)) {
             Communications.registerForPhoneAppMessages(method(:onPhone));
         }
         _timer = new Timer.Timer();
@@ -63,6 +63,16 @@ class OpenGymApp extends Application.AppBase {
         }
         // Ask the phone for the latest; anything still unsent goes along.
         Link.hello();
+        simStart();
+    }
+
+    //! The simulator build (sim/monkey.jungle) plays the phone's part; the real one has nothing here.
+    (:live)
+    function simStart() as Void {
+    }
+    (:sim)
+    function simStart() as Void {
+        Sim.begin();
     }
 
     function onStop(state) {
@@ -120,6 +130,18 @@ module Link {
     //! The most events kept for a phone that never answers: the oldest sent ones go first.
     const MAX = 60;
 
+    //! Whether there is a phone link at all. The simulator build has none: without an Android
+    //! phone on ADB, the Linux simulator's first transmit puts up a dialog and then crashes, so
+    //! there sim/Sim.mc plays the phone and events stay in the outbox.
+    (:live)
+    function wired() as Boolean {
+        return Communications has :transmit;
+    }
+    (:sim)
+    function wired() as Boolean {
+        return false;
+    }
+
     //! An event for the phone: stored, then sent.
     function send(ev) {
         if (ev == null) {
@@ -137,7 +159,7 @@ module Link {
 
     //! "Send me the latest": the phone's bridge answers with a snapshot (docs/GARMIN.md).
     function hello() {
-        if (!(Communications has :transmit) || busy) {
+        if (!wired() || busy) {
             return;
         }
         busy = true;
@@ -147,7 +169,7 @@ module Link {
     function flush() {
         var ob = G.state["ob"];
         var from = Core.toI(G.state["obn"], 0);
-        if (busy || from >= ob.size() || !(Communications has :transmit)) {
+        if (busy || from >= ob.size() || !wired()) {
             return;
         }
         busy = true;

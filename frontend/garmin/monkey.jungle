@@ -2,12 +2,13 @@
 project.manifest = manifest.xml
 
 # Colour watches build the (:color) drawing helpers (source/Ui.mc), the black-and-white ones
-# (Instinct MIP) the (:mono) ones. Unit tests ((:test)) only go into monkeyc -t builds.
-base.excludeAnnotations = mono
-instinct2.excludeAnnotations = color
-instinct2s.excludeAnnotations = color
-instinct2x.excludeAnnotations = color
-instinct3solar45mm.excludeAnnotations = color
-instinctcrossover.excludeAnnotations = color
-instincte40mm.excludeAnnotations = color
-instincte45mm.excludeAnnotations = color
+# (Instinct MIP) the (:mono) ones. Unit tests ((:test)) only go into monkeyc -t builds. (:sim) is
+# the simulator build's (sim/monkey.jungle), left out of every real one.
+base.excludeAnnotations = mono;sim
+instinct2.excludeAnnotations = color;sim
+instinct2s.excludeAnnotations = color;sim
+instinct2x.excludeAnnotations = color;sim
+instinct3solar45mm.excludeAnnotations = color;sim
+instinctcrossover.excludeAnnotations = color;sim
+instincte40mm.excludeAnnotations = color;sim
+instincte45mm.excludeAnnotations = color;sim
